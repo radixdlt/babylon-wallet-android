@@ -186,11 +186,10 @@ fun NavigationHost(
             },
             onPersonaEdit = {
                 navController.personaEditScreen(it)
-            },
-            onDappClick = {
-                navController.dappDetailScreen(it)
             }
-        )
+        ) {
+            navController.dappDetailScreen(it)
+        }
         personaEditScreen(onBackClick = {
             navController.navigateUp()
         })
@@ -210,9 +209,9 @@ fun NavigationHost(
                 )
             }
         )
-        accountPreferencesScreen(onBackClick = {
+        accountPreferencesScreen {
             navController.popBackStack()
-        })
+        }
         dAppLoginAuthorized(
             navController,
             onBackClick = {

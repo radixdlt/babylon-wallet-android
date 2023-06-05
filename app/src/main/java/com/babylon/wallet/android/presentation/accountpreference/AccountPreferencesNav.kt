@@ -38,7 +38,7 @@ fun NavGraphBuilder.accountPreferencesScreen(onBackClick: () -> Unit) {
     ) {
         AccountPreferenceScreen(
             viewModel = hiltViewModel(),
-            onBackClick = onBackClick,
+            onBackClick = onBackClick
         )
     }
 }

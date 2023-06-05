@@ -4,6 +4,7 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.shrinkVertically
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -12,7 +13,6 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
@@ -31,27 +31,32 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import coil.compose.AsyncImage
+import coil.compose.rememberAsyncImagePainter
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.domain.model.Resource
+import com.babylon.wallet.android.domain.model.Resources
 import com.babylon.wallet.android.presentation.transfer.SpendingAsset
 import com.babylon.wallet.android.presentation.ui.composables.ImageSize
 import com.babylon.wallet.android.presentation.ui.composables.NftTokenHeaderItem
+import com.babylon.wallet.android.presentation.ui.composables.applyImageAspectRatio
 import com.babylon.wallet.android.presentation.ui.composables.rememberImageUrl
-import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.ImmutableSet
 
 @Composable
 fun NonFungibleAssetsChooser(
     modifier: Modifier = Modifier,
-    resources: ImmutableList<Resource.NonFungibleResource>,
+    resources: Resources?,
     selectedAssets: ImmutableSet<SpendingAsset>,
     onAssetSelectionChanged: (SpendingAsset, Boolean) -> Unit
 ) {
-    val collapsedState = remember(resources) { resources.map { true }.toMutableStateList() }
+    val collections = resources?.nonFungibleResources.orEmpty()
+    val collapsedState = remember(collections) {
+        collections.map { true }.toMutableStateList()
+    }
 
     LazyColumn(
         modifier = modifier
@@ -59,7 +64,7 @@ fun NonFungibleAssetsChooser(
             .padding(horizontal = RadixTheme.dimensions.paddingDefault),
         contentPadding = PaddingValues(vertical = RadixTheme.dimensions.paddingDefault)
     ) {
-        resources.forEachIndexed { collectionIndex, collection ->
+        collections.forEachIndexed { collectionIndex, collection ->
             val collapsed = collapsedState[collectionIndex]
             item(key = collection.resourceAddress) {
                 NftTokenHeaderItem(
@@ -152,18 +157,22 @@ private fun Item(
             verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingDefault)
         ) {
             if (resource.imageUrl != null) {
-                AsyncImage(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .heightIn(max = 150.dp)
-                        .clip(RadixTheme.shapes.roundedRectMedium)
-                        .background(Color.Transparent, RadixTheme.shapes.roundedRectMedium),
+                val painter = rememberAsyncImagePainter(
                     model = rememberImageUrl(
                         fromUrl = resource.imageUrl.toString(),
-                        size = ImageSize.LARGE,
-                        placeholder = com.babylon.wallet.android.R.drawable.img_placeholder,
-                        error = com.babylon.wallet.android.R.drawable.img_placeholder
+                        size = ImageSize.LARGE
                     ),
+                    placeholder = painterResource(id = com.babylon.wallet.android.R.drawable.img_placeholder),
+                    error = painterResource(id = com.babylon.wallet.android.R.drawable.img_placeholder)
+                )
+
+                Image(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .applyImageAspectRatio(painter = painter)
+                        .clip(RadixTheme.shapes.roundedRectMedium)
+                        .background(Color.Transparent, RadixTheme.shapes.roundedRectMedium),
+                    painter = painter,
                     contentDescription = null,
                     alignment = Alignment.Center,
                     contentScale = ContentScale.Crop
@@ -181,7 +190,7 @@ private fun Item(
                 )
 
                 Text(
-                    text = resource.localId,
+                    text = resource.localId.displayable,
                     style = RadixTheme.typography.body1HighImportance.copy(
                         textAlign = TextAlign.End
                     ),

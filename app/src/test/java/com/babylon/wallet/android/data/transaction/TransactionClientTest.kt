@@ -31,7 +31,6 @@ import org.junit.Test
 import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.gateway.GetCurrentGatewayUseCase
-import rdx.works.profile.domain.signing.GetFactorSourcesAndSigningEntitiesUseCase
 import java.math.BigDecimal
 
 internal class TransactionClientTest {
@@ -44,13 +43,12 @@ internal class TransactionClientTest {
     private val getProfileUseCase = mockk<GetProfileUseCase>()
     private val getAccountsWithResourcesUseCase = mockk<GetAccountsWithResourcesUseCase>()
     private val collectSignersSignaturesUseCase = mockk<CollectSignersSignaturesUseCase>()
-    private val getFactorSourcesAndSigningEntitiesUseCase = mockk<GetFactorSourcesAndSigningEntitiesUseCase>()
     private val submitTransactionUseCase = mockk<SubmitTransactionUseCase>()
-    private val networkId = Radix.Gateway.hammunet.network.networkId().value
+    private val networkId = 242
 
     private lateinit var transactionClient: TransactionClient
 
-    private val addressWithFunds = "account_tdx_22_1pp59nka549kq56lrh4evyewk00thgnw0cntfwgyjqn7q2py8ej"
+    private val addressWithFunds = "account_sim1cyvgx33089ukm2pl97pv4max0x40ruvfy4lt60yvya744cve475w0q"
     private val accountWithFunds = AccountWithResources(
         account = account(address = addressWithFunds),
         resources = Resources(
@@ -62,7 +60,7 @@ internal class TransactionClientTest {
             nonFungibleResources = emptyList()
         )
     )
-    private val addressWithNoFunds = "account_tdx_22_1pzg5a7htq650xh33x23zq9k90j5me3dvd8jql2wrkk8sd64ak7"
+    private val addressWithNoFunds = "account_sim1cyzfj6p254jy6lhr237s7pcp8qqz6c8ahq9mn6nkdjxxxat5syrgz9"
     private val accountWithNoFunds = AccountWithResources(
         account = account(address = addressWithNoFunds),
         resources = Resources.EMPTY
@@ -76,7 +74,6 @@ internal class TransactionClientTest {
             getCurrentGatewayUseCase,
             getProfileUseCase,
             collectSignersSignaturesUseCase,
-            getFactorSourcesAndSigningEntitiesUseCase,
             getAccountsWithResourcesUseCase,
             submitTransactionUseCase
         )
@@ -111,7 +108,7 @@ internal class TransactionClientTest {
                 data = listOf(accountWithFunds)
             )
 
-            val addressToLockFee = transactionClient.selectAccountAddressToLockFee(networkId, manifest)
+            val addressToLockFee = transactionClient.findFeePayerInManifest(manifest).getOrThrow().feePayerAddressFromManifest
             manifest = manifest.addLockFeeInstructionToManifest(addressToLockFee!!)
             val signingEntities = transactionClient.getSigningEntities(networkId, manifest)
 
@@ -127,7 +124,7 @@ internal class TransactionClientTest {
     @Test
     fun `when given address has no funds but there is another address with funds, use the other address for the transaction`() =
         runTest {
-            var manifest = ManifestBuilder().addInstruction(
+            val manifest = ManifestBuilder().addInstruction(
                 Instruction.SetMetadata(
                     entityAddress = ManifestAstValue.Address(addressWithNoFunds),
                     ManifestAstValue.String("name"),
@@ -148,13 +145,9 @@ internal class TransactionClientTest {
                 data = listOf(accountWithFunds)
             )
 
-            val addressToLockFee = transactionClient.selectAccountAddressToLockFee(networkId, manifest)
-            manifest = manifest.addLockFeeInstructionToManifest(addressToLockFee!!)
-            val signingEntities = transactionClient.getSigningEntities(networkId, manifest)
-
-            Assert.assertEquals(2, signingEntities.size)
-            Assert.assertTrue(signingEntities.any { it.address == addressWithFunds })
-
+            val addressToLockFee = transactionClient.findFeePayerInManifest(manifest).getOrThrow()
+            assert(addressToLockFee.feePayerAddressFromManifest == null)
+            assert(addressToLockFee.candidates.size == 1)
         }
 
     @OptIn(ExperimentalCoroutinesApi::class)
@@ -176,7 +169,7 @@ internal class TransactionClientTest {
         )
 
         try {
-            transactionClient.selectAccountAddressToLockFee(networkId, manifest)
+            transactionClient.findFeePayerInManifest(manifest)
         } catch (exception: Exception) {
             Assert.assertEquals(
                 DappRequestException(

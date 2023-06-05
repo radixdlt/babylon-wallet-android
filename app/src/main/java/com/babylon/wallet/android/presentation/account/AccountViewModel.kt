@@ -140,7 +140,7 @@ data class AccountUiState(
     val showSecurityPrompt: Boolean
         get() {
             val unsecuredFactorSourceId = accountWithResources?.account?.unsecuredFactorSourceId() ?: return false
-            return accountWithResources.hasXrd() && backedUpFactorSourceIds.none { it == unsecuredFactorSourceId.value }
+            return accountWithResources.resources?.hasXrd() == true && backedUpFactorSourceIds.none { it == unsecuredFactorSourceId.value }
         }
 }
 

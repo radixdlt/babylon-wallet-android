@@ -65,7 +65,7 @@ object TestData {
                             networkID = network1.network.networkId().value,
                             securityState = SecurityState.Unsecured(
                                 unsecuredEntityControl = SecurityState.UnsecuredEntityControl(
-                                    genesisFactorInstance = FactorInstance(
+                                    transactionSigning = FactorInstance(
                                         derivationPath = DerivationPath.forAccount(
                                             networkId = network1.network.networkId(),
                                             accountIndex = 0,
@@ -84,7 +84,7 @@ object TestData {
                             networkID = network1.network.networkId().value,
                             securityState = SecurityState.Unsecured(
                                 unsecuredEntityControl = SecurityState.UnsecuredEntityControl(
-                                    genesisFactorInstance = FactorInstance(
+                                    transactionSigning = FactorInstance(
                                         derivationPath = DerivationPath.forAccount(
                                             networkId = network1.network.networkId(),
                                             accountIndex = 0,
@@ -110,7 +110,7 @@ object TestData {
                             networkID = network2.network.networkId().value,
                             securityState = SecurityState.Unsecured(
                                 unsecuredEntityControl = SecurityState.UnsecuredEntityControl(
-                                    genesisFactorInstance = FactorInstance(
+                                    transactionSigning = FactorInstance(
                                         derivationPath = DerivationPath.forAccount(
                                             networkId = network2.network.networkId(),
                                             accountIndex = 0,
@@ -129,7 +129,7 @@ object TestData {
                             networkID = network2.network.networkId().value,
                             securityState = SecurityState.Unsecured(
                                 unsecuredEntityControl = SecurityState.UnsecuredEntityControl(
-                                    genesisFactorInstance = FactorInstance(
+                                    transactionSigning = FactorInstance(
                                         derivationPath = DerivationPath.forAccount(
                                             networkId = network2.network.networkId(),
                                             accountIndex = 0,

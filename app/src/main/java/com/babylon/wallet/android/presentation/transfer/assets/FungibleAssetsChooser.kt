@@ -4,6 +4,7 @@ import android.graphics.drawable.ColorDrawable
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -21,7 +22,6 @@ import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CheckboxDefaults
 import androidx.compose.material3.Divider
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -37,30 +37,29 @@ import com.babylon.wallet.android.designsystem.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.listItemShape
 import com.babylon.wallet.android.domain.model.Resource
+import com.babylon.wallet.android.domain.model.Resources
 import com.babylon.wallet.android.presentation.transfer.SpendingAsset
 import com.babylon.wallet.android.presentation.ui.composables.ImageSize
 import com.babylon.wallet.android.presentation.ui.composables.rememberImageUrl
 import com.google.accompanist.drawablepainter.rememberDrawablePainter
-import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.ImmutableSet
 import rdx.works.core.displayableQuantity
 
 @Composable
 fun FungibleAssetsChooser(
     modifier: Modifier = Modifier,
-    resources: ImmutableList<Resource.FungibleResource>,
+    resources: Resources?,
     selectedAssets: ImmutableSet<SpendingAsset>,
     onAssetSelectionChanged: (SpendingAsset, Boolean) -> Unit
 ) {
-    val (xrdResource, restResources) = remember(resources) {
-        val xrdResource = resources.find { it.isXrd }
-        xrdResource to resources.filterNot { it == xrdResource }
-    }
+    val xrdResource = resources?.xrd
+    val restResources = resources?.nonXrdFungibles.orEmpty()
 
     LazyColumn(
         modifier = modifier
             .fillMaxSize()
-            .padding(horizontal = RadixTheme.dimensions.paddingDefault)
+            .padding(horizontal = RadixTheme.dimensions.paddingDefault),
+        contentPadding = PaddingValues(vertical = RadixTheme.dimensions.paddingDefault)
     ) {
         if (xrdResource != null) {
             item {

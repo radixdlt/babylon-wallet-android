@@ -2,10 +2,13 @@ package com.babylon.wallet.android.presentation.settings.personadetail
 
 import androidx.lifecycle.SavedStateHandle
 import app.cash.turbine.test
+import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
+import com.babylon.wallet.android.data.transaction.ROLAClient
 import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.fakes.DAppConnectionRepositoryFake
 import com.babylon.wallet.android.mockdata.profile
 import com.babylon.wallet.android.presentation.StateViewModelTest
+import com.babylon.wallet.android.utils.AppEventBus
 import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -17,6 +20,7 @@ import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Test
 import rdx.works.profile.domain.GetProfileUseCase
+import rdx.works.profile.domain.account.AddAuthSigningFactorInstanceUseCase
 
 @OptIn(ExperimentalCoroutinesApi::class)
 internal class PersonaDetailViewModelTest : StateViewModelTest<PersonaDetailViewModel>() {
@@ -24,18 +28,34 @@ internal class PersonaDetailViewModelTest : StateViewModelTest<PersonaDetailView
     private val dAppConnectionRepository = DAppConnectionRepositoryFake()
     private val getProfileUseCase = mockk<GetProfileUseCase>()
     private val savedStateHandle = mockk<SavedStateHandle>()
+    private val incomingRequestRepository = mockk<IncomingRequestRepository>()
+    private val addAuthSigningFactorInstanceUseCase = mockk<AddAuthSigningFactorInstanceUseCase>()
+    private val rolaClient = mockk<ROLAClient>()
+    private val eventBus = mockk<AppEventBus>()
 
     override fun initVM(): PersonaDetailViewModel {
-        return PersonaDetailViewModel(dAppConnectionRepository, getProfileUseCase, savedStateHandle)
+        return PersonaDetailViewModel(
+            dAppConnectionRepository,
+            getProfileUseCase,
+            eventBus,
+            addAuthSigningFactorInstanceUseCase,
+            rolaClient,
+            incomingRequestRepository,
+            savedStateHandle
+        )
     }
 
     @Before
     override fun setUp() {
         super.setUp()
         every { savedStateHandle.get<String>(ARG_PERSONA_ADDRESS) } returns "1"
-        every { getProfileUseCase() } returns flowOf(profile(personas = listOf(
-            SampleDataProvider().samplePersona("1")
-        )))
+        every { getProfileUseCase() } returns flowOf(
+            profile(
+                personas = listOf(
+                    SampleDataProvider().samplePersona("1")
+                )
+            )
+        )
     }
 
     @Test

@@ -14,6 +14,7 @@ import io.mockk.mockk
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
@@ -67,6 +68,7 @@ class TransferViewModelTest : StateViewModelTest<TransferViewModel>() {
     @Before
     override fun setUp() = runTest {
         super.setUp()
+        every { appEventBus.events } returns emptyFlow()
         every { savedStateHandle.get<String>(ARG_ACCOUNT_ID) } returns fromAccount.address
         every { getProfileUseCase() } returns flowOf(profile(accounts = listOf(fromAccount) + otherAccounts))
     }

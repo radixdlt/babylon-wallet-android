@@ -5,10 +5,10 @@ import com.babylon.wallet.android.data.manifest.addFreeXrdInstruction
 import com.babylon.wallet.android.data.manifest.addLockFeeInstruction
 import com.babylon.wallet.android.data.repository.networkinfo.NetworkInfoRepository
 import com.babylon.wallet.android.data.repository.transaction.TransactionRepository
-import com.babylon.wallet.android.data.transaction.TransactionApprovalRequest
+import com.babylon.wallet.android.data.transaction.DappRequestFailure
 import com.babylon.wallet.android.data.transaction.TransactionClient
+import com.babylon.wallet.android.data.transaction.model.TransactionApprovalRequest
 import com.babylon.wallet.android.di.coroutines.IoDispatcher
-import com.babylon.wallet.android.domain.common.Result
 import com.babylon.wallet.android.domain.common.onValue
 import com.babylon.wallet.android.domain.common.value
 import com.babylon.wallet.android.domain.usecases.transaction.PollTransactionStatusUseCase
@@ -20,8 +20,9 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 import rdx.works.core.preferences.PreferencesManager
 import rdx.works.profile.domain.gateway.GetCurrentGatewayUseCase
-import timber.log.Timber
 import javax.inject.Inject
+import kotlin.Result
+import com.babylon.wallet.android.domain.common.Result as ResultInternal
 
 @Suppress("LongParameterList")
 class GetFreeXrdUseCase @Inject constructor(
@@ -46,14 +47,13 @@ class GetFreeXrdUseCase @Inject constructor(
                     faucetComponentAddress = faucetComponentAddress
                 )
                 when (val epochResult = transactionRepository.getLedgerEpoch()) {
-                    is Result.Error -> {
-                        Timber.e("GetFreeXrdUseCase failed to get ledger epoch")
-                        epochResult
-                    }
-                    is Result.Success -> {
+                    is ResultInternal.Error -> Result.failure(
+                        exception = epochResult.exception ?: DappRequestFailure.TransactionApprovalFailure.PrepareNotarizedTransaction
+                    )
+                    is ResultInternal.Success -> {
                         val request = TransactionApprovalRequest(manifest = manifest, hasLockFee = true)
                         val submitResult = transactionClient.signAndSubmitTransaction(request)
-                        submitResult.onValue { txId ->
+                        submitResult.onSuccess { txId ->
                             val transactionStatus = pollTransactionStatusUseCase(txId)
                             transactionStatus.onValue {
                                 preferencesManager.updateEpoch(address, epochResult.data)
@@ -63,7 +63,7 @@ class GetFreeXrdUseCase @Inject constructor(
                     }
                 }
             } ?: run {
-                Result.Error(Throwable("Unable to fetch faucet address"))
+                Result.failure(Throwable("Unable to fetch faucet address"))
             }
         }
     }
@@ -91,8 +91,8 @@ class GetFreeXrdUseCase @Inject constructor(
                 true
             } else {
                 when (val currentEpoch = transactionRepository.getLedgerEpoch()) {
-                    is Result.Error -> false
-                    is Result.Success -> {
+                    is ResultInternal.Error -> false
+                    is ResultInternal.Success -> {
                         when {
                             currentEpoch.data < lastUsedEpoch -> true // edge case ledger was reset - allow
                             else -> {

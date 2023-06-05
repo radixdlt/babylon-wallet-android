@@ -51,7 +51,7 @@ class RestoreMnemonicViewModel @Inject constructor(
             val profile = getProfileUseCase().first()
             val account = profile.currentNetwork.accounts.find { it.address == args.accountAddress }
             val factorSourceId = (account?.securityState as? SecurityState.Unsecured)
-                ?.unsecuredEntityControl?.genesisFactorInstance?.factorSourceId
+                ?.unsecuredEntityControl?.transactionSigning?.factorSourceId
             val factorSource = profile.factorSources.find { it.id == factorSourceId }
 
             _state.update {
@@ -83,7 +83,7 @@ class RestoreMnemonicViewModel @Inject constructor(
 
     fun onRestore() {
         val account = _state.value.accountOnNetwork ?: return
-        val factorInstance = (account.securityState as? SecurityState.Unsecured)?.unsecuredEntityControl?.genesisFactorInstance ?: return
+        val factorInstance = (account.securityState as? SecurityState.Unsecured)?.unsecuredEntityControl?.transactionSigning ?: return
         val derivationPath = factorInstance.derivationPath ?: return
 
         val mnemonicWithPassphrase = MnemonicWithPassphrase(

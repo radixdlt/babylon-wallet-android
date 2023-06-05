@@ -41,7 +41,7 @@ fun WalletApp(
                             )
                         }
                         is MessageFromDataChannel.IncomingRequest.AuthorizedRequest -> {
-                            navController.dAppLoginAuthorized(incomingRequest.requestId)
+                            navController.dAppLoginAuthorized(incomingRequest.interactionId)
                         }
                         is MessageFromDataChannel.IncomingRequest.UnauthorizedRequest -> {
                             navController.dAppLoginUnauthorized(incomingRequest.requestId)

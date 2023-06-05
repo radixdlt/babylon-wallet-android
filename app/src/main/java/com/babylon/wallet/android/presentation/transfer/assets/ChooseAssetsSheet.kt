@@ -46,7 +46,6 @@ import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
 import com.babylon.wallet.android.presentation.ui.composables.sheets.SheetHeader
 import com.babylon.wallet.android.presentation.ui.composables.tabs.pagerTabIndicatorOffset
-import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.launch
 
 @Composable
@@ -134,12 +133,12 @@ fun ChooseAssetsSheet(
 
                     when (tab) {
                         ChooseAssets.Tab.Tokens -> FungibleAssetsChooser(
-                            resources = state.resources?.fungibleResources.orEmpty().toPersistentList(),
+                            resources = state.resources,
                             selectedAssets = state.targetAccount.assets,
                             onAssetSelectionChanged = onAssetSelectionChanged
                         )
                         ChooseAssets.Tab.NFTs -> NonFungibleAssetsChooser(
-                            resources = state.resources?.nonFungibleResources.orEmpty().toPersistentList(),
+                            resources = state.resources,
                             selectedAssets = state.targetAccount.assets,
                             onAssetSelectionChanged = onAssetSelectionChanged
                         )

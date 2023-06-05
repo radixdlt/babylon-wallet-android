@@ -2,6 +2,7 @@ package com.babylon.wallet.android.domain.usecases.transaction
 
 import com.babylon.wallet.android.data.dapp.LedgerMessenger
 import com.babylon.wallet.android.data.dapp.model.DerivePublicKeyRequest
+import com.babylon.wallet.android.data.dapp.model.LedgerDeviceModel
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.babylon.wallet.android.utils.getLedgerDeviceModel
 import com.radixdlt.toolkit.models.crypto.PublicKey
@@ -11,45 +12,129 @@ import kotlinx.coroutines.flow.first
 import rdx.works.core.UUIDGenerator
 import rdx.works.core.decodeHex
 import rdx.works.core.toHexString
-import rdx.works.profile.data.model.SigningEntity
 import rdx.works.profile.data.model.factorsources.FactorSource
+import rdx.works.profile.data.model.factorsources.Slip10Curve
+import rdx.works.profile.data.model.pernetwork.Entity
 import rdx.works.profile.data.model.pernetwork.SecurityState
+import rdx.works.profile.data.model.pernetwork.SigningPurpose
 import rdx.works.profile.data.model.pernetwork.updateLastUsed
 import rdx.works.profile.data.repository.ProfileRepository
 import rdx.works.profile.data.repository.profile
 import javax.inject.Inject
 
+typealias SignatureProviderResult = Result<List<MessageFromDataChannel.LedgerResponse.SignatureOfSigner>>
+typealias SignatureProviderCall = suspend (List<Pair<String, Slip10Curve>>, LedgerDeviceModel) -> SignatureProviderResult
+
 class SignWithLedgerFactorSourceUseCase @Inject constructor(
     private val ledgerMessenger: LedgerMessenger,
     private val profileRepository: ProfileRepository
 ) {
-
     suspend operator fun invoke(
         ledgerFactorSource: FactorSource,
-        signers: List<SigningEntity>,
-        dataToSign: ByteArray
+        signers: List<Entity>,
+        signRequest: SignRequest,
+        signingPurpose: SigningPurpose = SigningPurpose.SignTransaction
     ): Result<List<SignatureWithPublicKey>> {
-        val pathToCurve = signers.map { signer ->
+        return when (signingPurpose) {
+            SigningPurpose.SignAuth -> {
+                require(signRequest is SignRequest.SignAuthChallengeRequest)
+                signAuth(
+                    signers = signers,
+                    ledgerFactorSource = ledgerFactorSource,
+                    request = signRequest,
+                    signingPurpose = signingPurpose
+                )
+            }
+            SigningPurpose.SignTransaction -> {
+                signTransaction(
+                    signers = signers,
+                    ledgerFactorSource = ledgerFactorSource,
+                    dataToSign = signRequest.dataToSign,
+                    signingPurpose = signingPurpose
+                )
+            }
+        }
+    }
+
+    private suspend fun signTransaction(
+        signers: List<Entity>,
+        ledgerFactorSource: FactorSource,
+        dataToSign: ByteArray,
+        signingPurpose: SigningPurpose
+    ): Result<List<SignatureWithPublicKey>> {
+        return signCommon(
+            signers = signers,
+            ledgerFactorSource = ledgerFactorSource,
+            signingPurpose = signingPurpose
+        ) { pathToCurve, deviceModel ->
+            ledgerMessenger.signTransactionRequest(
+                interactionId = UUIDGenerator.uuid().toString(),
+                signersDerivationPathToCurve = pathToCurve,
+                compiledTransactionIntent = dataToSign.toHexString(),
+                ledgerDevice = DerivePublicKeyRequest.LedgerDevice(
+                    ledgerFactorSource.label,
+                    deviceModel,
+                    ledgerFactorSource.id.value
+                )
+            ).mapCatching { response ->
+                response.signatures
+            }
+        }
+    }
+
+    private suspend fun signAuth(
+        signers: List<Entity>,
+        ledgerFactorSource: FactorSource,
+        request: SignRequest.SignAuthChallengeRequest,
+        signingPurpose: SigningPurpose
+    ): Result<List<SignatureWithPublicKey>> {
+        return signCommon(
+            signers = signers,
+            ledgerFactorSource = ledgerFactorSource,
+            signingPurpose = signingPurpose
+        ) { pathToCurve, deviceModel ->
+            ledgerMessenger.signChallengeRequest(
+                interactionId = UUIDGenerator.uuid().toString(),
+                ledgerDevice = DerivePublicKeyRequest.LedgerDevice(
+                    ledgerFactorSource.label,
+                    deviceModel,
+                    ledgerFactorSource.id.value
+                ),
+                signersDerivationPathToCurve = pathToCurve,
+                challengeHex = request.dataToSign.toHexString(),
+                origin = request.origin,
+                dAppDefinitionAddress = request.dAppDefinitionAddress
+            ).mapCatching { response ->
+                response.signatures
+            }
+        }
+    }
+
+    private suspend fun signCommon(
+        signers: List<Entity>,
+        ledgerFactorSource: FactorSource,
+        signingPurpose: SigningPurpose,
+        signaturesProvider: SignatureProviderCall
+    ): Result<List<SignatureWithPublicKey>> {
+        val derivationPathToCurve = signers.map { signer ->
             when (val securityState = signer.securityState) {
                 is SecurityState.Unsecured -> {
-                    val derivationPath = checkNotNull(securityState.unsecuredEntityControl.genesisFactorInstance.derivationPath)
-                    derivationPath.path to securityState.unsecuredEntityControl.genesisFactorInstance.publicKey.curve
+                    val factorInstance = when (signingPurpose) {
+                        SigningPurpose.SignAuth ->
+                            securityState.unsecuredEntityControl.authenticationSigning
+                                ?: securityState.unsecuredEntityControl.transactionSigning
+                        SigningPurpose.SignTransaction -> securityState.unsecuredEntityControl.transactionSigning
+                    }
+                    val derivationPath = checkNotNull(factorInstance.derivationPath)
+                    val curve = factorInstance.publicKey.curve
+                    derivationPath.path to curve
                 }
             }
         }
         val deviceModel = requireNotNull(ledgerFactorSource.getLedgerDeviceModel())
-        val signTransactionResponse = ledgerMessenger.signTransactionRequest(
-            interactionId = UUIDGenerator.uuid().toString(),
-            signersDerivationPathToCurve = pathToCurve,
-            compiledTransactionIntent = dataToSign.toHexString(),
-            ledgerDevice = DerivePublicKeyRequest.LedgerDevice(
-                ledgerFactorSource.label,
-                deviceModel,
-                ledgerFactorSource.id.value
-            )
-        )
-        return if (signTransactionResponse.isSuccess) {
-            val ledgerSignatures = signTransactionResponse.getOrThrow().signatures.map { signatureOfSigner ->
+        val signaturesResult = signaturesProvider(derivationPathToCurve, deviceModel)
+        return if (signaturesResult.isSuccess) {
+            val ledgerSignatures = signaturesResult.getOrThrow().map { signatureOfSigner ->
                 when (signatureOfSigner.derivedPublicKey.curve) {
                     MessageFromDataChannel.LedgerResponse.DerivedPublicKey.Curve.Curve25519 -> {
                         SignatureWithPublicKey.EddsaEd25519(

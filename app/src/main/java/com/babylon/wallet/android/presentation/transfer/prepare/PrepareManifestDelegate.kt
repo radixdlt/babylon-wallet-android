@@ -3,9 +3,6 @@ package com.babylon.wallet.android.presentation.transfer.prepare
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.data.manifest.toTransactionRequest
 import com.babylon.wallet.android.data.transaction.MethodName
-import com.babylon.wallet.android.domain.common.Result
-import com.babylon.wallet.android.domain.common.onError
-import com.babylon.wallet.android.domain.common.onValue
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.babylon.wallet.android.domain.model.Resource
 import com.babylon.wallet.android.presentation.common.UiMessage
@@ -29,12 +26,12 @@ class PrepareManifestDelegate(
 
     suspend fun onSubmit() {
         val fromAccount = state.value.fromAccount ?: return
-        prepareRequest(fromAccount, state.value).onValue { request ->
+        prepareRequest(fromAccount, state.value).onSuccess { request ->
             state.update { it.copy(transferRequestId = request.requestId) }
             Timber.d("Manifest for ${request.requestId} prepared:")
             Timber.d(request.transactionManifestData.instructions)
             incomingRequestRepository.add(request)
-        }.onError { error ->
+        }.onFailure { error ->
             state.update { it.copy(error = UiMessage.ErrorMessage(error)) }
         }
     }
@@ -178,5 +175,5 @@ class PrepareManifestDelegate(
 }
 
 private fun Resource.NonFungibleResource.Item.toManifestLocalId(): ManifestAstValue.NonFungibleLocalId {
-    return ManifestAstValue.NonFungibleLocalId(localId)
+    return ManifestAstValue.NonFungibleLocalId(localId.code)
 }

@@ -30,7 +30,7 @@ data class AuthLoginWithChallengeRequestResponseItem(
     @SerialName("challenge")
     val challenge: String,
     @SerialName("proof")
-    val proof: AccountProof
+    val proof: Proof
 ) : AuthLoginRequestResponseItem()
 
 @Serializable
