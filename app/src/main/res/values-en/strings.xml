@@ -157,9 +157,7 @@
   <string name="authorizedDapps_dAppDetails_dAppDefinition">dApp Definition</string>
   <string name="authorizedDapps_dAppDetails_missingDescription">Missing description</string>
   <string name="authorizedDapps_dAppDetails_website">Website</string>
-  <string name="authorizedDapps_dAppDetails_tokens">Associated Tokens</string>
   <string name="authorizedDapps_dAppDetails_unknownTokenName">Unknown name</string>
-  <string name="authorizedDapps_dAppDetails_nfts">Associated NFTs</string>
   <string name="authorizedDapps_dAppDetails_personasHeading">Here are the Personas that you have previously used to connect to this dApp.</string>
   <string name="authorizedDapps_dAppDetails_noPersonasHeading">No Personas have been used to connect to this dApp.</string>
   <string name="authorizedDapps_dAppDetails_forgetDapp">Forget this dApp</string>

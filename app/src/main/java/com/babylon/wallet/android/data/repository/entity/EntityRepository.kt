@@ -44,7 +44,6 @@ import com.babylon.wallet.android.domain.model.metadata.SymbolMetadataItem
 import com.babylon.wallet.android.presentation.model.ActionableAddress
 import rdx.works.profile.data.model.pernetwork.Network
 import java.io.IOException
-import java.math.BigDecimal
 import javax.inject.Inject
 
 interface EntityRepository {
@@ -396,7 +395,7 @@ class EntityRepositoryImpl @Inject constructor(
                 val metadataMap = fungibleItem.metadata.asMetadataStringMap()
                 Resource.FungibleResource(
                     resourceAddress = fungibleItem.address,
-                    amount = BigDecimal.ZERO, // No amount given in metadata
+                    amount = null, // No amount given in metadata
                     nameMetadataItem = metadataMap[ExplicitMetadataKey.NAME.key]?.let { NameMetadataItem(it) },
                     symbolMetadataItem = metadataMap[ExplicitMetadataKey.SYMBOL.key]?.let { SymbolMetadataItem(it) },
                     descriptionMetadataItem = metadataMap[ExplicitMetadataKey.DESCRIPTION.key]?.let { DescriptionMetadataItem(it) },

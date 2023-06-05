@@ -334,21 +334,22 @@ fun DappDetails(
             modifier = Modifier
                 .fillMaxSize()
         ) {
-            item {
-                PersonaRoundedAvatar(
-                    url = dappWithMetadata?.iconUrl?.toString().orEmpty(),
-                    modifier = Modifier
-                        .padding(vertical = dimensions.paddingDefault)
-                        .size(104.dp)
-                )
-                Divider(
-                    modifier = Modifier.padding(horizontal = dimensions.paddingDefault),
-                    color = RadixTheme.colors.gray5
-                )
+            dappWithMetadata?.iconUrl?.let {
+                val url = it.toString()
+                if (url.isNotEmpty()) {
+                    item {
+                        PersonaRoundedAvatar(
+                            url = url,
+                            modifier = Modifier
+                                .padding(vertical = dimensions.paddingDefault)
+                                .size(104.dp)
+                        )
+                        Divider(color = RadixTheme.colors.gray5)
+                    }
+                }
             }
             dappWithMetadata?.description?.let { description ->
                 item {
-                    Divider(color = RadixTheme.colors.gray5)
                     Text(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -356,7 +357,7 @@ fun DappDetails(
                         text = description,
                         style = RadixTheme.typography.body1Regular,
                         color = RadixTheme.colors.gray1,
-                        textAlign = TextAlign.Center
+                        textAlign = TextAlign.Start
                     )
                     Divider(color = RadixTheme.colors.gray5)
                 }
@@ -408,7 +409,7 @@ fun DappDetails(
                     }
                     StandardOneLineCard(
                         image = fungibleToken.iconUrl.toString(),
-                        title = fungibleToken.symbol,
+                        title = fungibleToken.displayTitle,
                         modifier = Modifier
                             .shadow(elevation = 8.dp, shape = RadixTheme.shapes.roundedRectMedium)
                             .clip(RadixTheme.shapes.roundedRectMedium)

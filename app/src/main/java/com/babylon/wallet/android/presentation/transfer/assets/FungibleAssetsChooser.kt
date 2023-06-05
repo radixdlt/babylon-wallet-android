@@ -199,12 +199,14 @@ private fun Item(
             maxLines = 1
         )
         Spacer(modifier = Modifier.width(RadixTheme.dimensions.paddingMedium))
-        Text(
-            text = resource.amount.displayableQuantity(),
-            style = RadixTheme.typography.secondaryHeader,
-            color = RadixTheme.colors.gray1,
-            maxLines = 2
-        )
+        resource.amount?.let { amount ->
+            Text(
+                text = amount.displayableQuantity(),
+                style = RadixTheme.typography.secondaryHeader,
+                color = RadixTheme.colors.gray1,
+                maxLines = 2
+            )
+        }
 
         Checkbox(
             checked = isSelected,

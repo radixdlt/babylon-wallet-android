@@ -244,13 +244,15 @@ private fun ColumnScope.FungibleSpendingAsset(
                 textDecoration = TextDecoration.Underline
             )
 
-            Text(
-                text = "- Balance: ${resource.amount.displayableQuantity()}",
-                style = RadixTheme.typography.body2HighImportance.copy(
-                    color = RadixTheme.colors.gray2,
-                    fontSize = 12.sp
+            resource.amount?.let { amount ->
+                Text(
+                    text = "- Balance: ${amount.displayableQuantity()}",
+                    style = RadixTheme.typography.body2HighImportance.copy(
+                        color = RadixTheme.colors.gray2,
+                        fontSize = 12.sp
+                    )
                 )
-            )
+            }
         }
     }
 
