@@ -12,9 +12,14 @@ sealed interface MessageFromDataChannel {
         val metadata: RequestMetadata
     ) : MessageFromDataChannel {
 
+        val isInternal: Boolean
+            get() {
+                return metadata.isInternal
+            }
+
         data class AuthorizedRequest(
             val dappId: String, // from which dapp comes the message
-            val requestId: String,
+            val interactionId: String,
             val requestMetadata: RequestMetadata,
             val authRequest: AuthRequest,
             val oneTimeAccountsRequestItem: AccountsRequestItem? = null,
@@ -22,7 +27,7 @@ sealed interface MessageFromDataChannel {
             val oneTimePersonaDataRequestItem: PersonaRequestItem? = null,
             val ongoingPersonaDataRequestItem: PersonaRequestItem? = null,
             val resetRequestItem: ResetRequestItem? = null
-        ) : IncomingRequest(dappId, requestId, requestMetadata) {
+        ) : IncomingRequest(dappId, interactionId, requestMetadata) {
 
             fun hasOngoingRequestItemsOnly(): Boolean {
                 return isUsePersonaAuth() && hasNoOneTimeRequestItems() && hasNoResetRequestItem() &&
@@ -46,10 +51,8 @@ sealed interface MessageFromDataChannel {
             }
 
             fun hasOnlyAuthItem(): Boolean {
-                return ongoingAccountsRequestItem == null &&
-                    ongoingPersonaDataRequestItem == null &&
-                    oneTimeAccountsRequestItem == null &&
-                    oneTimePersonaDataRequestItem == null
+                return ongoingAccountsRequestItem == null && ongoingPersonaDataRequestItem == null &&
+                    oneTimeAccountsRequestItem == null && oneTimePersonaDataRequestItem == null
             }
 
             fun isValidRequest(): Boolean {
@@ -83,7 +86,7 @@ sealed interface MessageFromDataChannel {
             val dappId: String, // from which dapp comes the message
             val requestId: String,
             val transactionManifestData: TransactionManifestData,
-            val requestMetadata: RequestMetadata
+            val requestMetadata: RequestMetadata,
         ) : IncomingRequest(dappId, requestId, requestMetadata)
 
         data class RequestMetadata(
@@ -105,9 +108,9 @@ sealed interface MessageFromDataChannel {
 
         data class AccountsRequestItem(
             val isOngoing: Boolean,
-            val requiresProofOfOwnership: Boolean,
             val numberOfAccounts: Int,
-            val quantifier: AccountNumberQuantifier
+            val quantifier: AccountNumberQuantifier,
+            val challenge: String?
         ) {
             enum class AccountNumberQuantifier {
                 Exactly, AtLeast;

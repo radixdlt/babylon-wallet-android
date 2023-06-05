@@ -5,12 +5,12 @@ import com.radixdlt.crypto.toECKeyPair
 import com.radixdlt.toolkit.models.crypto.PrivateKey
 import com.radixdlt.toolkit.models.crypto.PublicKey
 import com.radixdlt.toolkit.models.crypto.Signature
-import rdx.works.profile.data.model.SigningEntity
+import rdx.works.profile.data.model.pernetwork.Entity
 import rdx.works.profile.data.utils.toEnginePublicKeyModel
 import com.radixdlt.model.PrivateKey as SLIP10PrivateKey
 
 data class NotaryAndSigners(
-    val signers: List<SigningEntity>,
+    val signers: List<Entity>,
     val ephemeralNotaryPrivateKey: PrivateKey = PrivateKey.EddsaEd25519.newRandom()
 ) {
     val notaryAsSignatory: Boolean

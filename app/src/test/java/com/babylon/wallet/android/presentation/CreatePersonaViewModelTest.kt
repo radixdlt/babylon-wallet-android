@@ -59,7 +59,7 @@ class CreatePersonaViewModelTest : StateViewModelTest<CreatePersonaViewModel>() 
             fields = emptyList(),
             securityState = SecurityState.Unsecured(
                 unsecuredEntityControl = SecurityState.UnsecuredEntityControl(
-                    genesisFactorInstance = FactorInstance(
+                    transactionSigning = FactorInstance(
                         derivationPath = DerivationPath.forIdentity(
                             networkId = Radix.Gateway.default.network.networkId(),
                             identityIndex = 0,

@@ -38,7 +38,6 @@ import com.babylon.wallet.android.presentation.ui.composables.NotSecureAlertDial
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUiMessageHandler
 import com.babylon.wallet.android.utils.biometricAuthenticate
-import com.babylon.wallet.android.utils.findFragmentActivity
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterialApi::class)
@@ -46,7 +45,7 @@ import kotlinx.coroutines.launch
 fun AccountPreferenceScreen(
     viewModel: AccountPreferenceViewModel,
     onBackClick: () -> Unit,
-    modifier: Modifier = Modifier,
+    modifier: Modifier = Modifier
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val scope = rememberCoroutineScope()
@@ -54,7 +53,6 @@ fun AccountPreferenceScreen(
         initialValue = ModalBottomSheetValue.Hidden,
         skipHalfExpanded = true
     )
-
     ModalBottomSheetLayout(
         modifier = modifier
 //            .systemBarsPadding()
@@ -80,9 +78,6 @@ fun AccountPreferenceScreen(
     ) {
         AccountPreferenceContent(
             onBackClick = onBackClick,
-            modifier = Modifier
-                .fillMaxSize()
-                .background(RadixTheme.colors.defaultBackground),
             onGetFreeXrdClick = viewModel::onGetFreeXrdClick,
             onShowQRCodeClick = {
                 scope.launch { sheetState.show() }
@@ -90,8 +85,13 @@ fun AccountPreferenceScreen(
             canUseFaucet = state.canUseFaucet,
             loading = state.isLoading,
             isDeviceSecure = state.isDeviceSecure,
+            onMessageShown = viewModel::onMessageShown,
             error = state.error,
-            onMessageShown = viewModel::onMessageShown
+            modifier = Modifier
+                .fillMaxSize()
+                .background(RadixTheme.colors.defaultBackground),
+            hasAuthKey = state.hasAuthKey,
+            onCreateAndUploadAuthKey = viewModel::onCreateAndUploadAuthKey
         )
     }
 }
@@ -107,6 +107,8 @@ private fun AccountPreferenceContent(
     onMessageShown: () -> Unit,
     error: UiMessage?,
     modifier: Modifier = Modifier,
+    hasAuthKey: Boolean,
+    onCreateAndUploadAuthKey: () -> Unit,
 ) {
     var showNotSecuredDialog by remember { mutableStateOf(false) }
     Column(
@@ -136,11 +138,9 @@ private fun AccountPreferenceContent(
                     text = stringResource(R.string.accountSettings_getXrdTestTokens),
                     onClick = {
                         if (isDeviceSecure) {
-                            context.findFragmentActivity()?.let { activity ->
-                                activity.biometricAuthenticate(true) { authenticatedSuccessfully ->
-                                    if (authenticatedSuccessfully) {
-                                        onGetFreeXrdClick()
-                                    }
+                            context.biometricAuthenticate { authenticatedSuccessfully ->
+                                if (authenticatedSuccessfully) {
+                                    onGetFreeXrdClick()
                                 }
                             }
                         } else {
@@ -149,7 +149,15 @@ private fun AccountPreferenceContent(
                     },
                     enabled = !loading && canUseFaucet
                 )
-
+                if (!hasAuthKey) {
+                    RadixSecondaryButton(
+                        modifier = Modifier.fillMaxWidth(),
+                        text = stringResource(R.string.accountSettings_debug_createAndUploadAuthKey),
+                        onClick = onCreateAndUploadAuthKey,
+                        enabled = !loading,
+                        throttleClicks = true
+                    )
+                }
                 RadixSecondaryButton(
                     modifier = Modifier.fillMaxWidth(),
                     text = stringResource(R.string.addressAction_showAccountQR),
@@ -197,7 +205,9 @@ fun AccountPreferencePreview() {
             loading = false,
             isDeviceSecure = true,
             onMessageShown = {},
-            error = null
+            error = null,
+            hasAuthKey = false,
+            onCreateAndUploadAuthKey = {}
         )
     }
 }

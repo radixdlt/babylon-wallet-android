@@ -63,7 +63,10 @@ fun PersonaDetailScreen(
         persona = state.persona,
         onEditPersona = onEditPersona,
         authorizedDapps = state.authorizedDapps,
-        onDappClick = onDappClick
+        onDappClick = onDappClick,
+        hasAuthKey = state.hasAuthKey,
+        loading = state.loading,
+        onCreateAndUploadAuthKey = viewModel::onCreateAndUploadAuthKey
     )
 }
 
@@ -74,7 +77,10 @@ private fun PersonaDetailContent(
     persona: Network.Persona?,
     onEditPersona: (String) -> Unit,
     authorizedDapps: ImmutableList<Network.AuthorizedDapp>,
-    onDappClick: (String) -> Unit
+    onDappClick: (String) -> Unit,
+    hasAuthKey: Boolean,
+    onCreateAndUploadAuthKey: () -> Unit,
+    loading: Boolean
 ) {
     Box(modifier = modifier) {
         persona?.let { persona ->
@@ -101,7 +107,10 @@ private fun PersonaDetailContent(
                         persona = persona,
                         authorizedDapps = authorizedDapps,
                         onDappClick = onDappClick,
-                        onEditPersona = onEditPersona
+                        onEditPersona = onEditPersona,
+                        hasAuthKey = hasAuthKey,
+                        onCreateAndUploadAuthKey = onCreateAndUploadAuthKey,
+                        loading = loading
                     )
                 }
             }
@@ -118,7 +127,10 @@ private fun PersonaDetailList(
     persona: Network.Persona,
     authorizedDapps: ImmutableList<Network.AuthorizedDapp>,
     onDappClick: (String) -> Unit,
-    onEditPersona: (String) -> Unit
+    onEditPersona: (String) -> Unit,
+    hasAuthKey: Boolean,
+    onCreateAndUploadAuthKey: () -> Unit,
+    loading: Boolean
 ) {
     LazyColumn(
         contentPadding = PaddingValues(vertical = dimensions.paddingDefault),
@@ -162,6 +174,18 @@ private fun PersonaDetailList(
                 throttleClicks = true
             )
             Spacer(modifier = Modifier.height(dimensions.paddingDefault))
+            if (!hasAuthKey) {
+                RadixSecondaryButton(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = dimensions.paddingDefault),
+                    text = stringResource(R.string.accountSettings_debug_createAndUploadAuthKey),
+                    onClick = onCreateAndUploadAuthKey,
+                    enabled = !loading,
+                    throttleClicks = true
+                )
+                Spacer(modifier = Modifier.height(dimensions.paddingDefault))
+            }
         }
         if (authorizedDapps.isNotEmpty()) {
             item {
@@ -207,11 +231,15 @@ private fun PersonaDetailList(
 fun DappDetailContentPreview() {
     RadixWalletTheme {
         PersonaDetailContent(
-            modifier = Modifier.fillMaxSize(),
             onBackClick = {},
+            modifier = Modifier.fillMaxSize(),
             persona = SampleDataProvider().samplePersona(),
             onEditPersona = {},
-            authorizedDapps = persistentListOf()
-        ) {}
+            authorizedDapps = persistentListOf(),
+            onDappClick = {},
+            hasAuthKey = false,
+            onCreateAndUploadAuthKey = {},
+            loading = false
+        )
     }
 }

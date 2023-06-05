@@ -89,7 +89,7 @@ fun DappDetailScreen(
     viewModel: DappDetailViewModel,
     onBackClick: () -> Unit,
     modifier: Modifier = Modifier,
-    onEditPersona: (String, String) -> Unit,
+    onEditPersona: (String, String) -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     LaunchedEffect(Unit) {

@@ -9,13 +9,16 @@ import com.babylon.wallet.android.data.gateway.generated.models.TransactionPrevi
 import com.babylon.wallet.android.data.gateway.generated.models.TransactionPreviewRequestFlags
 import com.babylon.wallet.android.data.gateway.generated.models.TransactionPreviewResponse
 import com.babylon.wallet.android.data.manifest.addLockFeeInstructionToManifest
+import com.babylon.wallet.android.data.manifest.convertManifestInstructionsToString
 import com.babylon.wallet.android.data.repository.transaction.TransactionRepository
 import com.babylon.wallet.android.data.transaction.TransactionConfig.COST_UNIT_LIMIT
-import com.babylon.wallet.android.domain.common.Result
+import com.babylon.wallet.android.data.transaction.model.FeePayerSearchResult
+import com.babylon.wallet.android.data.transaction.model.TransactionApprovalRequest
 import com.babylon.wallet.android.domain.common.value
 import com.babylon.wallet.android.domain.model.findAccountWithEnoughXRDBalance
 import com.babylon.wallet.android.domain.usecases.GetAccountsWithResourcesUseCase
 import com.babylon.wallet.android.domain.usecases.transaction.CollectSignersSignaturesUseCase
+import com.babylon.wallet.android.domain.usecases.transaction.SignRequest
 import com.babylon.wallet.android.domain.usecases.transaction.SubmitTransactionUseCase
 import com.radixdlt.crypto.getCompressedPublicKey
 import com.radixdlt.crypto.toECKeyPair
@@ -38,16 +41,19 @@ import com.radixdlt.toolkit.models.transaction.SignedTransactionIntent
 import com.radixdlt.toolkit.models.transaction.TransactionHeader
 import com.radixdlt.toolkit.models.transaction.TransactionIntent
 import com.radixdlt.toolkit.models.transaction.TransactionManifest
-import rdx.works.profile.data.model.SigningEntity
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
+import rdx.works.profile.data.model.pernetwork.Entity
 import rdx.works.profile.data.model.pernetwork.Network
-import rdx.works.profile.derivation.model.NetworkId
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.accountsOnCurrentNetwork
 import rdx.works.profile.domain.gateway.GetCurrentGatewayUseCase
-import rdx.works.profile.domain.signing.GetFactorSourcesAndSigningEntitiesUseCase
+import rdx.works.profile.domain.personaOnCurrentNetwork
 import timber.log.Timber
 import java.security.SecureRandom
 import javax.inject.Inject
+import kotlin.Result
+import com.babylon.wallet.android.domain.common.Result as ResultInternal
 
 @Suppress("LongParameterList")
 class TransactionClient @Inject constructor(
@@ -55,7 +61,6 @@ class TransactionClient @Inject constructor(
     private val getCurrentGatewayUseCase: GetCurrentGatewayUseCase,
     private val getProfileUseCase: GetProfileUseCase,
     private val collectSignersSignaturesUseCase: CollectSignersSignaturesUseCase,
-    private val getFactorSourcesAndSigningEntitiesUseCase: GetFactorSourcesAndSigningEntitiesUseCase,
     private val getAccountsWithResourcesUseCase: GetAccountsWithResourcesUseCase,
     private val submitTransactionUseCase: SubmitTransactionUseCase
 ) {
@@ -65,108 +70,103 @@ class TransactionClient @Inject constructor(
 
     suspend fun signAndSubmitTransaction(request: TransactionApprovalRequest): Result<String> {
         val networkId = getCurrentGatewayUseCase().network.networkId().value
-        return signAndSubmitTransaction(request.manifest, request.ephemeralNotaryPrivateKey, networkId, request.hasLockFee)
+        return signAndSubmitTransaction(
+            request.manifest,
+            request.ephemeralNotaryPrivateKey,
+            networkId,
+            request.feePayerAddress
+        )
     }
 
     suspend fun manifestInStringFormat(manifest: TransactionManifest): Result<TransactionManifest> {
-        val manifestConversionResult = convertManifestInstructionsToString(
-            manifest = manifest
+        val networkId = getCurrentGatewayUseCase().network.networkId()
+        val manifestConversionResult = manifest.convertManifestInstructionsToString(
+            networkId = networkId.value
         )
-        val stringManifest = when (manifestConversionResult) {
-            is Result.Error -> return manifestConversionResult
-            is Result.Success -> manifestConversionResult.data
+        return manifestConversionResult.map { response ->
+            response
         }
-        return Result.Success(stringManifest)
     }
 
     private suspend fun signAndSubmitTransaction(
         jsonTransactionManifest: TransactionManifest,
         ephemeralNotaryPrivateKey: PrivateKey,
         networkId: Int,
-        hasLockFeeInstruction: Boolean,
+        feePayerAddress: String?,
     ): Result<String> {
-        val manifestWithTransactionFee = if (hasLockFeeInstruction) {
+        val manifestWithTransactionFee = if (feePayerAddress == null) {
             jsonTransactionManifest
         } else {
-            val accountAddressToLockFee = selectAccountAddressToLockFee(networkId, jsonTransactionManifest)
-                ?: return Result.Error(
-                    DappRequestException(
-                        DappRequestFailure.TransactionApprovalFailure.FailedToFindAccountWithEnoughFundsToLockFee
-                    )
-                )
-            jsonTransactionManifest.addLockFeeInstructionToManifest(accountAddressToLockFee)
+            jsonTransactionManifest.addLockFeeInstructionToManifest(feePayerAddress)
         }
+        Timber.d("Approving: \n${Json.encodeToString(manifestWithTransactionFee)}")
         val signers = getSigningEntities(networkId, manifestWithTransactionFee)
-        val signersPerFactorSource = getFactorSourcesAndSigningEntitiesUseCase(signers)
         val notaryAndSigners = NotaryAndSigners(signers, ephemeralNotaryPrivateKey)
-        when (val transactionHeaderResult = buildTransactionHeader(networkId, notaryAndSigners)) {
-            is Result.Error -> return transactionHeaderResult
-            is Result.Success -> {
-                val compileTransactionIntentRequest = CompileTransactionIntentRequest(
-                    transactionHeaderResult.data,
-                    manifestWithTransactionFee
+        return buildTransactionHeader(networkId, notaryAndSigners).map { header ->
+            val compileTransactionIntentRequest = CompileTransactionIntentRequest(
+                header,
+                manifestWithTransactionFee
+            )
+            val txId = compileTransactionIntentRequest.transactionId().getOrNull() ?: return Result.failure(
+                DappRequestException(
+                    DappRequestFailure.TransactionApprovalFailure.CompileTransactionIntent
                 )
-                val txId = compileTransactionIntentRequest.transactionId().getOrNull()
-                if (txId == null) {
-                    Timber.e("Failed to compile intent request: transactionId is null")
-                    return Result.Error(
-                        DappRequestException(
-                            DappRequestFailure.TransactionApprovalFailure.CompileTransactionIntent
-                        )
-                    )
-                }
-                val compiledTransactionIntent = engine.compileTransactionIntent(
-                    compileTransactionIntentRequest
-                ).getOrNull()?.compiledIntent ?: return Result.Error(
+            )
+            val compiledTransactionIntent = engine.compileTransactionIntent(
+                compileTransactionIntentRequest
+            ).getOrNull()?.compiledIntent ?: return Result.failure(
+                DappRequestException(
+                    DappRequestFailure.TransactionApprovalFailure.PrepareNotarizedTransaction
+                )
+            )
+            val signaturesResult = collectSignersSignaturesUseCase(
+                signers = signers,
+                signRequest = SignRequest.SignTransactionRequest(compiledTransactionIntent)
+            )
+            if (signaturesResult.isFailure) {
+                return Result.failure(
                     DappRequestException(
-                        DappRequestFailure.TransactionApprovalFailure.PrepareNotarizedTransaction
+                        DappRequestFailure.TransactionApprovalFailure.SignCompiledTransactionIntent
                     )
                 )
-                val signaturesResult = collectSignersSignaturesUseCase(signersPerFactorSource, compiledTransactionIntent)
-                if (signaturesResult.isFailure) {
-                    return Result.Error(
-                        DappRequestException(
-                            DappRequestFailure.TransactionApprovalFailure.SignCompiledTransactionIntent
-                        )
-                    )
-                }
-                val signedTransactionIntent = SignedTransactionIntent(
-                    TransactionIntent(
-                        header = transactionHeaderResult.data,
-                        manifest = manifestWithTransactionFee
-                    ),
-                    intentSignatures = signaturesResult.getOrThrow().toTypedArray()
-                )
-                val signedCompiledTransactionIntent = signedTransactionIntent.compile().getOrNull() ?: return Result.Error(
-                    DappRequestException(
-                        DappRequestFailure.TransactionApprovalFailure.PrepareNotarizedTransaction
-                    )
-                )
-                val compiledNotarizedIntent =
-                    engine.compileNotarizedTransaction(
-                        CompileNotarizedTransactionRequest(
-                            signedIntent = signedTransactionIntent,
-                            notarySignature = notaryAndSigners.signWithNotary(signedCompiledTransactionIntent)
-                        )
-                    ).getOrElse { e ->
-                        return Result.Error(
-                            DappRequestException(
-                                DappRequestFailure.TransactionApprovalFailure.PrepareNotarizedTransaction,
-                                msg = e.message,
-                                e = e
-                            )
-                        )
-                    }.compiledNotarizedIntent
-                val submitResult = submitTransactionUseCase(
-                    txId.toHexString(),
-                    compiledNotarizedIntent
-                )
-                return if (submitResult.isSuccess) {
-                    Result.Success(submitResult.getOrThrow())
-                } else {
-                    Result.Error(submitResult.exceptionOrNull())
-                }
             }
+            val signedTransactionIntent = SignedTransactionIntent(
+                TransactionIntent(
+                    header = header,
+                    manifest = manifestWithTransactionFee
+                ),
+                intentSignatures = signaturesResult.getOrThrow().toTypedArray()
+            )
+            val signedCompiledTransactionIntent = signedTransactionIntent.compile().getOrNull() ?: return Result.failure(
+                DappRequestException(
+                    DappRequestFailure.TransactionApprovalFailure.PrepareNotarizedTransaction
+                )
+            )
+            val compiledNotarizedIntent =
+                engine.compileNotarizedTransaction(
+                    CompileNotarizedTransactionRequest(
+                        signedIntent = signedTransactionIntent,
+                        notarySignature = notaryAndSigners.signWithNotary(signedCompiledTransactionIntent)
+                    )
+                ).getOrElse { e ->
+                    return Result.failure(
+                        DappRequestException(
+                            DappRequestFailure.TransactionApprovalFailure.PrepareNotarizedTransaction,
+                            msg = e.message,
+                            e = e
+                        )
+                    )
+                }.compiledNotarizedIntent
+            val submitResult = submitTransactionUseCase(
+                txId.toHexString(),
+                compiledNotarizedIntent
+            )
+            if (submitResult.isFailure) {
+                return Result.failure(
+                    submitResult.exceptionOrNull() ?: DappRequestFailure.TransactionApprovalFailure.SubmitNotarizedTransaction
+                )
+            }
+            submitResult.getOrThrow()
         }
     }
 
@@ -196,50 +196,69 @@ class TransactionClient @Inject constructor(
         Timber.d("Compiled Notarized tx intent: ${compiledNotarizedTransactionIntent.toHexString()}")
     }
 
-    suspend fun selectAccountAddressToLockFee(networkId: Int, manifestJson: TransactionManifest): String? {
+    suspend fun findFeePayerInManifest(manifestJson: TransactionManifest): Result<FeePayerSearchResult> {
+        val networkId = getCurrentGatewayUseCase().network.networkId().value
         val allAccounts = getProfileUseCase.accountsOnCurrentNetwork()
         val result = engine.extractAddressesFromManifest(ExtractAddressesFromManifestRequest(networkId.toUByte(), manifestJson))
         val searchedAccounts = mutableSetOf<Network.Account>()
-        return result.getOrNull()?.let { analyzeManifestResponse ->
-            val withdrawnFromCandidates = findFeePayerCandidates(
+        return if (result.isSuccess) {
+            val analyzeManifestResponse = result.getOrThrow()
+            val withdrawnFromCandidates = findFeePayerCandidatesWithinOwnedAccounts(
                 entityAddress = analyzeManifestResponse.accountsWithdrawnFrom.toList(),
-                accounts = allAccounts
+                ownedAccounts = allAccounts
             )
             searchedAccounts.addAll(withdrawnFromCandidates)
-            val withdrawnFromCandidate = findFeePayerWithin(withdrawnFromCandidates)
-            if (withdrawnFromCandidate != null) return withdrawnFromCandidate
+            val withdrawnFromCandidate = findFeePayerWithFundsWithin(withdrawnFromCandidates)
+            if (withdrawnFromCandidate != null) return Result.success(FeePayerSearchResult(withdrawnFromCandidate))
 
-            val requiringAuthCandidates = findFeePayerCandidates(
+            val requiringAuthCandidates = findFeePayerCandidatesWithinOwnedAccounts(
                 entityAddress = analyzeManifestResponse.accountsRequiringAuth.toList(),
-                accounts = allAccounts
+                ownedAccounts = allAccounts
             )
             searchedAccounts.addAll(requiringAuthCandidates)
-            val requiringAuthCandidate = findFeePayerWithin(requiringAuthCandidates)
-            if (requiringAuthCandidate != null) return requiringAuthCandidate
+            val requiringAuthCandidate = findFeePayerWithFundsWithin(requiringAuthCandidates)
+            if (requiringAuthCandidate != null) return Result.success(FeePayerSearchResult(requiringAuthCandidate))
 
-            val depositedIntoCandidates = findFeePayerCandidates(
+            val depositedIntoCandidates = findFeePayerCandidatesWithinOwnedAccounts(
                 entityAddress = analyzeManifestResponse.accountsDepositedInto.toList(),
-                accounts = allAccounts
+                ownedAccounts = allAccounts
             )
             searchedAccounts.addAll(depositedIntoCandidates)
-            val depositedIntoCandidate = findFeePayerWithin(depositedIntoCandidates)
-            if (depositedIntoCandidate != null) return depositedIntoCandidate
+            val depositedIntoCandidate = findFeePayerWithFundsWithin(depositedIntoCandidates)
+            if (depositedIntoCandidate != null) return Result.success(FeePayerSearchResult(depositedIntoCandidate))
 
             val accountsLeftToSearch = allAccounts.minus(searchedAccounts)
-            return findFeePayerWithin(accountsLeftToSearch.toList())
+            val candidatesWithinOwnAccounts = findFeePayerCandidatesWithinOwnedAccounts(accountsLeftToSearch.toList())
+            if (candidatesWithinOwnAccounts.isEmpty()) {
+                Result.failure(DappRequestFailure.TransactionApprovalFailure.FailedToFindAccountWithEnoughFundsToLockFee)
+            } else {
+                Result.success(FeePayerSearchResult(candidates = candidatesWithinOwnAccounts))
+            }
+        } else {
+            Result.failure(
+                result.exceptionOrNull() ?: DappRequestFailure.TransactionApprovalFailure.FailedToFindAccountWithEnoughFundsToLockFee
+            )
         }
     }
 
-    private fun findFeePayerCandidates(entityAddress: List<String>, accounts: List<Network.Account>): List<Network.Account> {
+    private fun findFeePayerCandidatesWithinOwnedAccounts(
+        entityAddress: List<String>,
+        ownedAccounts: List<Network.Account>
+    ): List<Network.Account> {
         return entityAddress
             .mapNotNull { address ->
-                accounts.find { it.address == address }
+                ownedAccounts.find { it.address == address }
             }
     }
 
-    private suspend fun findFeePayerWithin(accounts: List<Network.Account>): String? {
+    private suspend fun findFeePayerWithFundsWithin(accounts: List<Network.Account>): String? {
         return getAccountsWithResourcesUseCase(accounts = accounts, isRefreshing = true)
             .value()?.findAccountWithEnoughXRDBalance(TransactionConfig.DEFAULT_LOCK_FEE)?.account?.address
+    }
+
+    private suspend fun findFeePayerCandidatesWithinOwnedAccounts(accounts: List<Network.Account>): List<Network.Account> {
+        return getAccountsWithResourcesUseCase(accounts = accounts, isRefreshing = true)
+            .value()?.filter { it.hasXrd(TransactionConfig.DEFAULT_LOCK_FEE) }?.map { it.account }.orEmpty()
     }
 
     private suspend fun buildTransactionHeader(
@@ -247,10 +266,10 @@ class TransactionClient @Inject constructor(
         notaryAndSigners: NotaryAndSigners,
     ): Result<TransactionHeader> {
         val epochResult = transactionRepository.getLedgerEpoch()
-        if (epochResult is Result.Success) {
+        if (epochResult is ResultInternal.Success) {
             val epoch = epochResult.data
             return try {
-                Result.Success(
+                Result.success(
                     TransactionHeader(
                         version = TransactionVersion.Default.value.toUByte(),
                         networkId = networkId.toUByte(),
@@ -264,7 +283,7 @@ class TransactionClient @Inject constructor(
                     )
                 )
             } catch (e: Exception) {
-                Result.Error(
+                Result.failure(
                     DappRequestException(
                         DappRequestFailure.TransactionApprovalFailure.BuildTransactionHeader,
                         e.message,
@@ -273,7 +292,7 @@ class TransactionClient @Inject constructor(
                 )
             }
         } else {
-            return Result.Error(DappRequestException(DappRequestFailure.GetEpoch))
+            return Result.failure(DappRequestException(DappRequestFailure.GetEpoch))
         }
     }
 
@@ -282,7 +301,7 @@ class TransactionClient @Inject constructor(
     ): Result<ConvertManifestResponse> {
         val networkId = getCurrentGatewayUseCase().network.networkId()
         return try {
-            Result.Success(
+            Result.success(
                 engine.convertManifest(
                     ConvertManifestRequest(
                         networkId = networkId.value.toUByte(),
@@ -292,7 +311,7 @@ class TransactionClient @Inject constructor(
                 ).getOrThrow()
             )
         } catch (e: Exception) {
-            Result.Error(
+            Result.failure(
                 DappRequestException(
                     failure = DappRequestFailure.TransactionApprovalFailure.ConvertManifest,
                     msg = e.message,
@@ -302,48 +321,28 @@ class TransactionClient @Inject constructor(
         }
     }
 
-    suspend fun convertManifestInstructionsToString(
-        manifest: TransactionManifest,
-    ): Result<ConvertManifestResponse> {
-        val networkId = getCurrentGatewayUseCase().network.networkId()
-        return try {
-            Result.Success(
-                engine.convertManifest(
-                    ConvertManifestRequest(
-                        networkId = networkId.value.toUByte(),
-                        instructionsOutputKind = ManifestInstructionsKind.String,
-                        manifest = manifest
-                    )
-                ).getOrThrow()
-            )
-        } catch (e: Exception) {
-            Result.Error(
-                DappRequestException(
-                    DappRequestFailure.TransactionApprovalFailure.ConvertManifest,
-                    e.message,
-                    e
-                )
-            )
-        }
-    }
-
-    suspend fun getSigningEntities(networkId: Int, manifestJson: TransactionManifest): List<SigningEntity> {
+    suspend fun getSigningEntities(networkId: Int, manifestJson: TransactionManifest): List<Entity> {
         val result = engine.extractAddressesFromManifest(ExtractAddressesFromManifestRequest(networkId.toUByte(), manifestJson))
         val allAccounts = getProfileUseCase.accountsOnCurrentNetwork()
         return result.getOrNull()?.let { analyzeManifestResponse ->
-            val addressesNeededToSign = analyzeManifestResponse.accountsRequiringAuth.toSet()
-            allAccounts.filter { addressesNeededToSign.contains(it.address) }
+            val accountsNeededToSign = analyzeManifestResponse.accountsRequiringAuth.toSet()
+            val identitiesNeededToSign = analyzeManifestResponse.identitiesRequiringAuth.toSet()
+            allAccounts.filter {
+                accountsNeededToSign.contains(it.address)
+            } + identitiesNeededToSign.mapNotNull { identityAddress ->
+                getProfileUseCase.personaOnCurrentNetwork(identityAddress)
+            }
         }.orEmpty()
     }
 
-    fun analyzeManifestWithPreviewContext(
-        networkId: NetworkId,
+    suspend fun analyzeManifestWithPreviewContext(
         transactionManifest: TransactionManifest,
         transactionReceipt: ByteArray
-    ): kotlin.Result<AnalyzeTransactionExecutionResponse> {
+    ): Result<AnalyzeTransactionExecutionResponse> {
+        val networkId = getCurrentGatewayUseCase().network.networkId().value
         return engine.analyzeTransactionExecution(
             AnalyzeTransactionExecutionRequest(
-                networkId = networkId.value.toUByte(),
+                networkId = networkId.toUByte(),
                 manifest = transactionManifest,
                 transactionReceipt = transactionReceipt
             )
@@ -353,13 +352,13 @@ class TransactionClient @Inject constructor(
     suspend fun getTransactionPreview(
         manifest: TransactionManifest,
         ephemeralNotaryPrivateKey: PrivateKey,
-        networkId: Int,
         blobs: Array<out ByteArray>
     ): Result<TransactionPreviewResponse> {
+        val networkId = getCurrentGatewayUseCase().network.networkId().value
         var startEpochInclusive = 0L
         var endEpochExclusive = 0L
         val epochResult = transactionRepository.getLedgerEpoch()
-        if (epochResult is Result.Success) {
+        if (epochResult is ResultInternal.Success) {
             val epoch = epochResult.data
             startEpochInclusive = epoch
             endEpochExclusive = epoch + 1L
@@ -372,7 +371,7 @@ class TransactionClient @Inject constructor(
             keyType = PublicKeyType.eddsaEd25519,
             keyHex = notaryPrivateKey.toECKeyPair().getCompressedPublicKey().removeLeadingZero().toHexString()
         )
-        return transactionRepository.getTransactionPreview(
+        val previewResult = transactionRepository.getTransactionPreview(
             // TODO things like tipPercentage might change later on
             TransactionPreviewRequest(
                 manifest = manifest.toStringWithoutBlobs(),
@@ -388,6 +387,10 @@ class TransactionClient @Inject constructor(
                 notaryAsSignatory = notaryAndSigners.notaryAsSignatory
             )
         )
+        return when (val result = previewResult) {
+            is ResultInternal.Error -> Result.failure(result.exception ?: DappRequestFailure.InvalidRequest)
+            is ResultInternal.Success -> Result.success(result.data)
+        }
     }
 
     @Suppress("MagicNumber")
@@ -402,9 +405,3 @@ class TransactionClient @Inject constructor(
         return nonce
     }
 }
-
-data class TransactionApprovalRequest(
-    val manifest: TransactionManifest,
-    val hasLockFee: Boolean = false,
-    val ephemeralNotaryPrivateKey: PrivateKey = PrivateKey.EddsaEd25519.newRandom()
-)

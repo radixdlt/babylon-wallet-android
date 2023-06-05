@@ -18,7 +18,7 @@ fun account(
     networkID = 10,
     securityState = SecurityState.Unsecured(
         unsecuredEntityControl = SecurityState.UnsecuredEntityControl(
-            genesisFactorInstance = FactorInstance(
+            transactionSigning = FactorInstance(
                 derivationPath = DerivationPath.forAccount(
                     networkId = NetworkId.Mainnet,
                     accountIndex = 0,
