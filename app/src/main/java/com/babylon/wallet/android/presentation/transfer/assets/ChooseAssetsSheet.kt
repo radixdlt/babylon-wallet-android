@@ -46,7 +46,6 @@ import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
 import com.babylon.wallet.android.presentation.ui.composables.sheets.SheetHeader
 import com.babylon.wallet.android.presentation.ui.composables.tabs.pagerTabIndicatorOffset
-import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.launch
 
 @Composable

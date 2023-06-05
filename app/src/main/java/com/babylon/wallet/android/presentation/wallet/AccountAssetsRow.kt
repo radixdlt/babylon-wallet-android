@@ -133,7 +133,6 @@ private fun AssetsContent(
                     shape = RadixTheme.shapes.circle
                 )
 
-
             if (fungible.isXrd) {
                 Image(
                     modifier = iconModifier,
@@ -210,7 +209,6 @@ private fun AssetsContent(
                 painter = painterResource(id = R.drawable.ic_nfts),
                 contentDescription = null
             )
-
         }
     }
 }
