@@ -1,10 +1,4 @@
-@file:OptIn(
-    ExperimentalMaterialApi::class,
-    ExperimentalMaterialApi::class,
-    ExperimentalMaterialApi::class,
-    ExperimentalMaterialApi::class,
-    ExperimentalMaterialApi::class
-)
+@file:OptIn(ExperimentalMaterialApi::class)
 
 package com.babylon.wallet.android.presentation.transaction
 
@@ -26,7 +20,6 @@ import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.ModalBottomSheetState
 import androidx.compose.material.ModalBottomSheetValue
 import androidx.compose.material.rememberModalBottomSheetState
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -94,7 +87,11 @@ fun TransactionApprovalScreen(
         initialValue = ModalBottomSheetValue.Hidden,
         skipHalfExpanded = true
     )
-
+    BackHandler(enabled = bottomSheetState.isVisible) {
+        scope.launch {
+            bottomSheetState.hide()
+        }
+    }
     TransactionPreviewContent(
         onBackClick = viewModel::onBackClick,
         isLoading = state.isLoading,
@@ -117,6 +114,7 @@ fun TransactionApprovalScreen(
         onGuaranteesCloseClick = viewModel::onGuaranteesCloseClick,
         onGuaranteeValueChanged = viewModel::onGuaranteeValueChanged,
         bottomSheetMode = state.bottomSheetMode,
+        onPayerSelected = viewModel::onPayerSelected,
         onPayerConfirmed = {
             scope.launch {
                 bottomSheetState.hide()
@@ -124,12 +122,10 @@ fun TransactionApprovalScreen(
                 viewModel.onPayerConfirmed()
             }
         },
-        onPayerSelected = viewModel::onPayerSelected,
         feePayerCandidates = state.feePayerCandidates,
-        bottomSheetState = bottomSheetState,
-        resetBottomSheetMode = viewModel::resetBottomSheetMode
+        resetBottomSheetMode = viewModel::resetBottomSheetMode,
+        bottomSheetState = bottomSheetState
     )
-
     LaunchedEffect(Unit) {
         viewModel.oneOffEvent.collect { event ->
             when (event) {
@@ -147,7 +143,7 @@ fun TransactionApprovalScreen(
 }
 
 @Composable
-@OptIn(ExperimentalMaterialApi::class, ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterialApi::class)
 private fun TransactionPreviewContent(
     onBackClick: () -> Unit,
     isLoading: Boolean,
@@ -172,19 +168,12 @@ private fun TransactionPreviewContent(
     bottomSheetMode: BottomSheetMode,
     onPayerSelected: (AccountItemUiModel) -> Unit,
     onPayerConfirmed: () -> Unit,
-    bottomSheetState: ModalBottomSheetState,
     feePayerCandidates: ImmutableList<AccountItemUiModel>,
-    resetBottomSheetMode: () -> Unit
+    resetBottomSheetMode: () -> Unit,
+    bottomSheetState: ModalBottomSheetState
 ) {
     var showNotSecuredDialog by remember { mutableStateOf(false) }
     var showRawManifest by remember { mutableStateOf(false) }
-
-    // this is for the result bottom slide-up dialog
-    val resultBottomSheetState = rememberModalBottomSheetState()
-    val bottomSheetState = rememberModalBottomSheetState(
-        initialValue = ModalBottomSheetValue.Hidden,
-        skipHalfExpanded = true
-    )
     val scope = rememberCoroutineScope()
     if (bottomSheetState.currentValue != ModalBottomSheetValue.Hidden) {
         DisposableEffect(Unit) {
@@ -193,12 +182,6 @@ private fun TransactionPreviewContent(
             }
         }
     }
-    BackHandler(enabled = bottomSheetState.isVisible) {
-        scope.launch {
-            bottomSheetState.hide()
-        }
-    }
-
     DefaultModalSheetLayout(
         modifier = modifier
             .navigationBarsPadding()
@@ -551,12 +534,9 @@ fun TransactionPreviewContentPreview() {
             bottomSheetMode = BottomSheetMode.Guarantees,
             onPayerSelected = {},
             onPayerConfirmed = {},
-            bottomSheetState = rememberModalBottomSheetState(
-                initialValue = ModalBottomSheetValue.Hidden,
-                skipHalfExpanded = true
-            ),
             feePayerCandidates = persistentListOf(),
-            resetBottomSheetMode = {}
+            resetBottomSheetMode = {},
+            bottomSheetState = rememberModalBottomSheetState(initialValue = ModalBottomSheetValue.Hidden)
         )
     }
 }

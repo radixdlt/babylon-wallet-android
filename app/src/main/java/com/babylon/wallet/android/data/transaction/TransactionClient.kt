@@ -44,10 +44,6 @@ import com.radixdlt.toolkit.models.transaction.TransactionManifest
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import rdx.works.profile.data.model.pernetwork.Entity
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asSharedFlow
-import rdx.works.profile.data.model.SigningEntity
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.accountsOnCurrentNetwork
@@ -71,8 +67,6 @@ class TransactionClient @Inject constructor(
 
     private val engine = RadixEngineToolkit
     val signingState = collectSignersSignaturesUseCase.signingEvent
-    private val _transactionState = MutableStateFlow<SigningEvent?>(null)
-    val transactionState: Flow<SigningEvent?> = _transactionState.asSharedFlow()
 
     suspend fun signAndSubmitTransaction(request: TransactionApprovalRequest): Result<String> {
         val networkId = getCurrentGatewayUseCase().network.networkId().value
@@ -264,7 +258,7 @@ class TransactionClient @Inject constructor(
 
     private suspend fun findFeePayerCandidatesWithinOwnedAccounts(accounts: List<Network.Account>): List<Network.Account> {
         return getAccountsWithResourcesUseCase(accounts = accounts, isRefreshing = true)
-            .value()?.filter { it.hasXrd(TransactionConfig.DEFAULT_LOCK_FEE) }?.map { it.account }.orEmpty()
+            .value()?.filter { it.resources?.hasXrd(TransactionConfig.DEFAULT_LOCK_FEE) == true }?.map { it.account }.orEmpty()
     }
 
     private suspend fun buildTransactionHeader(

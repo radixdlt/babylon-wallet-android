@@ -319,7 +319,7 @@ class TransactionApprovalViewModel @Inject constructor(
                     incomingRequestRepository.requestHandled(args.requestId)
                     approvalJob = null
                 } else {
-                    _state.update { it.copy(isSigning = true) }
+                    _state.update { it.copy(isLoading = true) }
                     val txManifest = TransactionManifest(
                         instructions = ManifestInstructions.StringInstructions(manifestData.instructions),
                         blobs = manifestData.blobs.toTypedArray()
@@ -418,15 +418,14 @@ class TransactionApprovalViewModel @Inject constructor(
                             message = exception.failure.getDappMessage()
                         )
                     }
-                    appEventBus.sendEvent(
-                        AppEvent.TransactionEvent.FailedTransaction(
-                            args.requestId,
-                            exception.failure.toDescriptionRes()
-                        )
-                    )
                 }
+                appEventBus.sendEvent(
+                    AppEvent.TransactionEvent.FailedTransaction(
+                        args.requestId,
+                        exception?.failure?.toDescriptionRes()
+                    )
+                )
             }
-            approvalJob = null
         }.onFailure { error ->
             _state.update {
                 it.copy(
@@ -444,13 +443,13 @@ class TransactionApprovalViewModel @Inject constructor(
                         message = exception.failure.getDappMessage()
                     )
                 }
-                sendEvent(
-                    TransactionApprovalEvent.FlowCompletedWithError(
-                        requestId = args.requestId,
-                        errorTextRes = exception.failure.toDescriptionRes()
-                    )
-                )
             }
+            appEventBus.sendEvent(
+                AppEvent.TransactionEvent.FailedTransaction(
+                    args.requestId,
+                    exception?.failure?.toDescriptionRes()
+                )
+            )
         }
     }
 
@@ -492,7 +491,6 @@ class TransactionApprovalViewModel @Inject constructor(
     }
 
     fun resetBottomSheetMode() {
-        // Reset local depositing accounts to initial values
         _state.update {
             it.copy(bottomSheetMode = BottomSheetMode.Guarantees)
         }
@@ -679,10 +677,5 @@ enum class BottomSheetMode {
 
 sealed interface TransactionApprovalEvent : OneOffEvent {
     object NavigateBack : TransactionApprovalEvent
-    data class FlowCompletedWithSuccess(val requestId: String) : TransactionApprovalEvent
     object SelectFeePayer : TransactionApprovalEvent
-    data class FlowCompletedWithError(
-        val requestId: String,
-        @StringRes val errorTextRes: Int
-    ) : TransactionApprovalEvent
 }
