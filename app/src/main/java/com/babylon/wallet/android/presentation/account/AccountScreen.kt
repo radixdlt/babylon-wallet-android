@@ -475,14 +475,14 @@ fun AssetsContent(
                     when (AssetTypeTab.values()[page]) {
                         AssetTypeTab.TOKEN_TAB -> {
                             FungibleResourcesContent(
-                                fungibles = resources?.fungibleResources.orEmpty().toPersistentList(),
+                                resources = resources,
                                 modifier = Modifier.fillMaxSize(),
                                 onFungibleTokenClick = onFungibleTokenClick
                             )
                         }
                         AssetTypeTab.NTF_TAB -> {
                             NonFungibleResourcesContent(
-                                items = resources?.nonFungibleResources.orEmpty(),
+                                resources = resources,
                                 modifier = Modifier.fillMaxSize(),
                                 onNftClick = onNonFungibleItemClick
                             )

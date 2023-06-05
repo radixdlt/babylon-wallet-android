@@ -39,6 +39,7 @@ import androidx.compose.ui.unit.dp
 import coil.compose.rememberAsyncImagePainter
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.domain.model.Resource
+import com.babylon.wallet.android.domain.model.Resources
 import com.babylon.wallet.android.presentation.transfer.SpendingAsset
 import com.babylon.wallet.android.presentation.ui.composables.ImageSize
 import com.babylon.wallet.android.presentation.ui.composables.NftTokenHeaderItem
@@ -50,11 +51,14 @@ import kotlinx.collections.immutable.ImmutableSet
 @Composable
 fun NonFungibleAssetsChooser(
     modifier: Modifier = Modifier,
-    resources: ImmutableList<Resource.NonFungibleResource>,
+    resources: Resources?,
     selectedAssets: ImmutableSet<SpendingAsset>,
     onAssetSelectionChanged: (SpendingAsset, Boolean) -> Unit
 ) {
-    val collapsedState = remember(resources) { resources.map { true }.toMutableStateList() }
+    val collections = resources?.nonFungibleResources.orEmpty()
+    val collapsedState = remember(collections) {
+        collections.map { true }.toMutableStateList()
+    }
 
     LazyColumn(
         modifier = modifier
@@ -62,7 +66,7 @@ fun NonFungibleAssetsChooser(
             .padding(horizontal = RadixTheme.dimensions.paddingDefault),
         contentPadding = PaddingValues(vertical = RadixTheme.dimensions.paddingDefault)
     ) {
-        resources.forEachIndexed { collectionIndex, collection ->
+        collections.forEachIndexed { collectionIndex, collection ->
             val collapsed = collapsedState[collectionIndex]
             item(key = collection.resourceAddress) {
                 NftTokenHeaderItem(

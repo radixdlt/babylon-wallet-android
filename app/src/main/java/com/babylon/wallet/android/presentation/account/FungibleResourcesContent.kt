@@ -22,6 +22,7 @@ import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.model.Resource
+import com.babylon.wallet.android.domain.model.Resources
 import com.babylon.wallet.android.domain.model.metadata.SymbolMetadataItem
 import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.persistentListOf
@@ -31,12 +32,12 @@ import java.math.BigDecimal
 @Composable
 fun FungibleResourcesContent(
     modifier: Modifier = Modifier,
-    fungibles: PersistentList<Resource.FungibleResource>,
+    resources: Resources?,
     onFungibleTokenClick: (Resource.FungibleResource) -> Unit,
 ) {
-    val (xrdItem, restItems) = remember(fungibles) {
-        fungibles.find { it.isXrd } to fungibles.filterNot { it.isXrd }
-    }
+    val xrdItem = resources?.xrd
+    val restItems = resources?.nonXrdFungibles.orEmpty()
+
     LazyColumn(
         contentPadding = PaddingValues(RadixTheme.dimensions.paddingMedium),
         modifier = modifier,
@@ -102,7 +103,7 @@ fun FungibleResourcesContent(
 fun ListOfTokenItemsEmptyPreview() {
     RadixWalletTheme {
         FungibleResourcesContent(
-            fungibles = persistentListOf(),
+            resources = null,
             modifier = Modifier.heightIn(min = 200.dp, max = 600.dp),
             onFungibleTokenClick = {}
         )
@@ -115,12 +116,15 @@ fun ListOfTokenItemsEmptyPreview() {
 fun ListOfTokenItemsPreview() {
     RadixWalletTheme {
         FungibleResourcesContent(
-            fungibles = persistentListOf(
-                Resource.FungibleResource(
-                    resourceAddress = "account_rdx_abcdef",
-                    amount = BigDecimal.TEN,
-                    symbolMetadataItem = SymbolMetadataItem(symbol = "XRD")
-                )
+            resources = Resources(
+                fungibleResources = persistentListOf(
+                    Resource.FungibleResource(
+                        resourceAddress = "account_rdx_abcdef",
+                        amount = BigDecimal.TEN,
+                        symbolMetadataItem = SymbolMetadataItem(symbol = "XRD")
+                    )
+                ),
+                nonFungibleResources = persistentListOf()
             ),
             modifier = Modifier.heightIn(min = 200.dp, max = 600.dp),
             onFungibleTokenClick = {}

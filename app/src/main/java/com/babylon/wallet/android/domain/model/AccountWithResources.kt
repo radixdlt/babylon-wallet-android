@@ -6,21 +6,17 @@ import java.math.BigDecimal
 data class AccountWithResources(
     val account: Network.Account,
     val resources: Resources?
-) {
-
-    val fungibleResources: List<Resource.FungibleResource> = resources?.fungibleResources.orEmpty()
-    val nonFungibleResources: List<Resource.NonFungibleResource> = resources?.nonFungibleResources.orEmpty()
-
-    val xrd: Resource.FungibleResource? = fungibleResources.find { it.isXrd }
-    val nonXrdFungibles: List<Resource.FungibleResource> = fungibleResources.filterNot { it.isXrd }
-
-    fun hasXrd(minimumBalance: Long = 1L): Boolean = xrd?.let { it.amount >= BigDecimal(minimumBalance) } == true
-}
+)
 
 data class Resources(
     val fungibleResources: List<Resource.FungibleResource>,
     val nonFungibleResources: List<Resource.NonFungibleResource>,
 ) {
+
+    val xrd: Resource.FungibleResource? = fungibleResources.find { it.isXrd }
+    val nonXrdFungibles: List<Resource.FungibleResource> = fungibleResources.filterNot { it.isXrd }
+
+    fun hasXrd(minimumBalance: Long = 1L): Boolean = xrd?.let { it.amount >= BigDecimal(minimumBalance) } == true
 
     companion object {
         val EMPTY = Resources(fungibleResources = emptyList(), nonFungibleResources = emptyList())
@@ -28,7 +24,7 @@ data class Resources(
 }
 
 fun List<AccountWithResources>.findAccountWithEnoughXRDBalance(minimumBalance: Long) = find {
-    it.hasXrd(minimumBalance)
+    it.resources?.hasXrd(minimumBalance) ?: false
 }
 
 fun List<Resource.NonFungibleResource>.allNftItemsSize() = map { it.items }.flatten().size

@@ -134,12 +134,12 @@ fun ChooseAssetsSheet(
 
                     when (tab) {
                         ChooseAssets.Tab.Tokens -> FungibleAssetsChooser(
-                            resources = state.resources?.fungibleResources.orEmpty().toPersistentList(),
+                            resources = state.resources,
                             selectedAssets = state.targetAccount.assets,
                             onAssetSelectionChanged = onAssetSelectionChanged
                         )
                         ChooseAssets.Tab.NFTs -> NonFungibleAssetsChooser(
-                            resources = state.resources?.nonFungibleResources.orEmpty().toPersistentList(),
+                            resources = state.resources,
                             selectedAssets = state.targetAccount.assets,
                             onAssetSelectionChanged = onAssetSelectionChanged
                         )
