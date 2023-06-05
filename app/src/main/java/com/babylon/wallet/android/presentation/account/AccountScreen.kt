@@ -81,7 +81,6 @@ import com.google.accompanist.pager.pagerTabIndicatorOffset
 import com.google.accompanist.swiperefresh.SwipeRefresh
 import com.google.accompanist.swiperefresh.SwipeRefreshIndicator
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
-import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.launch
 import rdx.works.profile.data.model.factorsources.FactorSource
 
@@ -475,14 +474,14 @@ fun AssetsContent(
                     when (AssetTypeTab.values()[page]) {
                         AssetTypeTab.TOKEN_TAB -> {
                             FungibleResourcesContent(
-                                fungibles = resources?.fungibleResources.orEmpty().toPersistentList(),
+                                resources = resources,
                                 modifier = Modifier.fillMaxSize(),
                                 onFungibleTokenClick = onFungibleTokenClick
                             )
                         }
                         AssetTypeTab.NTF_TAB -> {
                             NonFungibleResourcesContent(
-                                items = resources?.nonFungibleResources.orEmpty(),
+                                resources = resources,
                                 modifier = Modifier.fillMaxSize(),
                                 onNftClick = onNonFungibleItemClick
                             )
