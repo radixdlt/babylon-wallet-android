@@ -17,10 +17,10 @@ import com.babylon.wallet.android.domain.common.Result
 import com.babylon.wallet.android.domain.common.onError
 import com.babylon.wallet.android.domain.common.onValue
 import com.babylon.wallet.android.domain.common.value
-import com.babylon.wallet.android.domain.model.DAppWithAssociatedResources
+import com.babylon.wallet.android.domain.model.DAppWithMetadataAndAssociatedResources
 import com.babylon.wallet.android.domain.model.MetadataConstants
 import com.babylon.wallet.android.domain.model.TransactionManifestData
-import com.babylon.wallet.android.domain.usecases.GetDAppWithAssociatedResourcesUseCase
+import com.babylon.wallet.android.domain.usecases.GetDAppWithMetadataAndAssociatedResourcesUseCase
 import com.babylon.wallet.android.domain.usecases.transaction.GetTransactionComponentResourcesUseCase
 import com.babylon.wallet.android.domain.usecases.transaction.GetTransactionProofResourcesUseCase
 import com.babylon.wallet.android.domain.usecases.transaction.PollTransactionStatusUseCase
@@ -70,7 +70,7 @@ class TransactionApprovalViewModel @Inject constructor(
     private val deviceSecurityHelper: DeviceSecurityHelper,
     private val dAppMessenger: DappMessenger,
     private val pollTransactionStatusUseCase: PollTransactionStatusUseCase,
-    private val dAppWithAssociatedResourcesUseCase: GetDAppWithAssociatedResourcesUseCase,
+    private val dAppWithAssociatedResourcesUseCase: GetDAppWithMetadataAndAssociatedResourcesUseCase,
     @ApplicationScope private val appScope: CoroutineScope,
     private val appEventBus: AppEventBus,
     savedStateHandle: SavedStateHandle,
@@ -565,7 +565,7 @@ class TransactionApprovalViewModel @Inject constructor(
         }
     }
 
-    fun onDAppClick(dApp: DAppWithAssociatedResources) {
+    fun onDAppClick(dApp: DAppWithMetadataAndAssociatedResources) {
         _state.update {
             it.copy(
                 selectedSheetState = SelectedSheetState.DApp(dApp)
@@ -659,7 +659,7 @@ data class TransactionUiState(
     val depositingAccounts: ImmutableList<PreviewAccountItemsUiModel> = persistentListOf(),
     val guaranteesAccounts: ImmutableList<GuaranteesAccountItemUiModel> = persistentListOf(),
     val presentingProofs: ImmutableList<PresentingProofUiModel> = persistentListOf(),
-    val connectedDApps: ImmutableList<DAppWithAssociatedResources> = persistentListOf(),
+    val connectedDApps: ImmutableList<DAppWithMetadataAndAssociatedResources> = persistentListOf(),
     val guaranteePercent: BigDecimal = BigDecimal("100"),
     val selectedSheetState: SelectedSheetState? = null
 ) : UiState
@@ -676,6 +676,6 @@ sealed interface TransactionApprovalEvent : OneOffEvent {
 sealed interface SelectedSheetState {
     object Guarantees : SelectedSheetState
     data class DApp(
-        val dApp: DAppWithAssociatedResources
+        val dApp: DAppWithMetadataAndAssociatedResources
     ) : SelectedSheetState
 }

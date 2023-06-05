@@ -37,8 +37,8 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixTheme.dimensions
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.SampleDataProvider
-import com.babylon.wallet.android.domain.model.DAppWithAssociatedResources
 import com.babylon.wallet.android.domain.model.DAppWithMetadata
+import com.babylon.wallet.android.domain.model.DAppWithMetadataAndAssociatedResources
 import com.babylon.wallet.android.domain.model.Resource
 import com.babylon.wallet.android.presentation.common.FullscreenCircularProgressContent
 import com.babylon.wallet.android.presentation.model.toDisplayResource
@@ -86,11 +86,11 @@ private fun PersonaDetailContent(
     onBackClick: () -> Unit,
     persona: Network.Persona?,
     onEditPersona: (String) -> Unit,
-    authorizedDapps: ImmutableList<DAppWithAssociatedResources>,
+    authorizedDapps: ImmutableList<DAppWithMetadataAndAssociatedResources>,
     selectedDAppWithMetadata: DAppWithMetadata?,
     selectedDAppAssociatedFungibleTokens: ImmutableList<Resource.FungibleResource>,
     selectedDAppAssociatedNonFungibleTokens: ImmutableList<Resource.NonFungibleResource.Item>,
-    onDAppClick: (DAppWithAssociatedResources) -> Unit
+    onDAppClick: (DAppWithMetadataAndAssociatedResources) -> Unit
 ) {
     val bottomSheetState =
         rememberModalBottomSheetState(initialValue = ModalBottomSheetValue.Hidden, skipHalfExpanded = true)
@@ -162,8 +162,8 @@ private fun PersonaDetailContent(
 private fun PersonaDetailList(
     modifier: Modifier = Modifier,
     persona: Network.Persona,
-    authorizedDapps: ImmutableList<DAppWithAssociatedResources>,
-    onDAppClick: (DAppWithAssociatedResources) -> Unit,
+    authorizedDapps: ImmutableList<DAppWithMetadataAndAssociatedResources>,
+    onDAppClick: (DAppWithMetadataAndAssociatedResources) -> Unit,
     onEditPersona: (String) -> Unit
 ) {
     LazyColumn(

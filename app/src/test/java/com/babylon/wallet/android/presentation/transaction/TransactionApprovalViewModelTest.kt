@@ -13,7 +13,7 @@ import com.babylon.wallet.android.data.transaction.TransactionClient
 import com.babylon.wallet.android.domain.common.Result
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.babylon.wallet.android.domain.model.TransactionManifestData
-import com.babylon.wallet.android.domain.usecases.GetDAppWithAssociatedResourcesUseCase
+import com.babylon.wallet.android.domain.usecases.GetDAppWithMetadataAndAssociatedResourcesUseCase
 import com.babylon.wallet.android.domain.usecases.transaction.GetTransactionComponentResourcesUseCase
 import com.babylon.wallet.android.domain.usecases.transaction.GetTransactionProofResourcesUseCase
 import com.babylon.wallet.android.domain.usecases.transaction.PollTransactionStatusUseCase
@@ -47,7 +47,7 @@ internal class TransactionApprovalViewModelTest : StateViewModelTest<Transaction
     private val getTransactionComponentResourcesUseCase = mockk<GetTransactionComponentResourcesUseCase>()
     private val getTransactionProofResourcesUseCase = mockk<GetTransactionProofResourcesUseCase>()
     private val pollTransactionStatusUseCase = mockk<PollTransactionStatusUseCase>()
-    private val getDAppWithAssociatedResourcesUseCase = mockk<GetDAppWithAssociatedResourcesUseCase>()
+    private val getDAppWithAssociatedResourcesUseCase = mockk<GetDAppWithMetadataAndAssociatedResourcesUseCase>()
     private val incomingRequestRepository = IncomingRequestRepositoryImpl()
     private val dAppMessenger = mockk<DappMessenger>()
     private val appEventBus = mockk<AppEventBus>()

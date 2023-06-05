@@ -26,7 +26,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
-import com.babylon.wallet.android.domain.model.DAppWithAssociatedResources
+import com.babylon.wallet.android.domain.model.DAppWithMetadataAndAssociatedResources
 import com.babylon.wallet.android.presentation.ui.composables.InfoLink
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.StandardOneLineCard
@@ -56,7 +56,7 @@ fun AuthorizedDAppsScreen(
 @Composable
 private fun AuthorizedDAppsContent(
     onBackClick: () -> Unit,
-    dApps: ImmutableList<DAppWithAssociatedResources>,
+    dApps: ImmutableList<DAppWithMetadataAndAssociatedResources>,
     onDAppClick: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {

@@ -5,7 +5,7 @@ import app.cash.turbine.test
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepositoryImpl
 import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.domain.common.Result
-import com.babylon.wallet.android.domain.usecases.GetDAppWithAssociatedResourcesUseCase
+import com.babylon.wallet.android.domain.usecases.GetDAppWithMetadataAndAssociatedResourcesUseCase
 import com.babylon.wallet.android.fakes.DAppConnectionRepositoryFake
 import com.babylon.wallet.android.mockdata.profile
 import com.babylon.wallet.android.presentation.StateViewModelTest
@@ -31,7 +31,7 @@ internal class DappDetailViewModelTest : StateViewModelTest<DappDetailViewModel>
     }
     private val getProfileUseCase = mockk<GetProfileUseCase>()
     private val savedStateHandle = mockk<SavedStateHandle>()
-    private val getDAppWithAssociatedResourcesUseCase = mockk<GetDAppWithAssociatedResourcesUseCase>()
+    private val getDAppWithAssociatedResourcesUseCase = mockk<GetDAppWithMetadataAndAssociatedResourcesUseCase>()
     private val samplePersonas = listOf(
         sampleDataProvider.samplePersona("address1"),
         sampleDataProvider.samplePersona(sampleDataProvider.randomAddress())

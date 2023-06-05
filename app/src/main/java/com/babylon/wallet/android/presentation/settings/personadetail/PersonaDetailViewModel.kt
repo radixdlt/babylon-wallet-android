@@ -3,10 +3,10 @@ package com.babylon.wallet.android.presentation.settings.personadetail
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.domain.common.value
-import com.babylon.wallet.android.domain.model.DAppWithAssociatedResources
 import com.babylon.wallet.android.domain.model.DAppWithMetadata
+import com.babylon.wallet.android.domain.model.DAppWithMetadataAndAssociatedResources
 import com.babylon.wallet.android.domain.model.Resource
-import com.babylon.wallet.android.domain.usecases.GetDAppWithAssociatedResourcesUseCase
+import com.babylon.wallet.android.domain.usecases.GetDAppWithMetadataAndAssociatedResourcesUseCase
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.presentation.common.StateViewModel
@@ -30,7 +30,7 @@ class PersonaDetailViewModel @Inject constructor(
     dAppConnectionRepository: DAppConnectionRepository,
     getProfileUseCase: GetProfileUseCase,
     savedStateHandle: SavedStateHandle,
-    private val dAppWithAssociatedResourcesUseCase: GetDAppWithAssociatedResourcesUseCase
+    private val dAppWithAssociatedResourcesUseCase: GetDAppWithMetadataAndAssociatedResourcesUseCase
 ) : StateViewModel<PersonaDetailUiState>(), OneOffEventHandler<DappDetailEvent> by OneOffEventHandlerImpl() {
 
     private val args = PersonaDetailScreenArgs(savedStateHandle)
@@ -63,7 +63,7 @@ class PersonaDetailViewModel @Inject constructor(
         }
     }
 
-    fun onDAppClick(dApp: DAppWithAssociatedResources) {
+    fun onDAppClick(dApp: DAppWithMetadataAndAssociatedResources) {
         _state.update { state ->
             state.copy(
                 selectedDAppWithMetadata = dApp.dAppWithMetadata,
@@ -76,7 +76,7 @@ class PersonaDetailViewModel @Inject constructor(
 
 data class PersonaDetailUiState(
     val loading: Boolean = true,
-    val authorizedDapps: ImmutableList<DAppWithAssociatedResources> = persistentListOf(),
+    val authorizedDapps: ImmutableList<DAppWithMetadataAndAssociatedResources> = persistentListOf(),
     val persona: Network.Persona? = null,
     val selectedDAppWithMetadata: DAppWithMetadata? = null,
     val selectedDAppAssociatedFungibleTokens: ImmutableList<Resource.FungibleResource> = persistentListOf(),

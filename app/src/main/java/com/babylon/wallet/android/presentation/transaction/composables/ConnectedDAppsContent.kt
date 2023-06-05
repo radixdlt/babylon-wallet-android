@@ -38,8 +38,8 @@ import coil.compose.AsyncImage
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.domain.model.DAppResources
-import com.babylon.wallet.android.domain.model.DAppWithAssociatedResources
 import com.babylon.wallet.android.domain.model.DAppWithMetadata
+import com.babylon.wallet.android.domain.model.DAppWithMetadataAndAssociatedResources
 import com.babylon.wallet.android.presentation.ui.composables.ImageSize
 import com.babylon.wallet.android.presentation.ui.composables.rememberImageUrl
 import com.babylon.wallet.android.utils.throttleClickable
@@ -48,8 +48,8 @@ import kotlinx.collections.immutable.persistentListOf
 
 @Composable
 fun ConnectedDAppsContent(
-    connectedDApps: ImmutableList<DAppWithAssociatedResources>,
-    onDAppClick: (DAppWithAssociatedResources) -> Unit,
+    connectedDApps: ImmutableList<DAppWithMetadataAndAssociatedResources>,
+    onDAppClick: (DAppWithMetadataAndAssociatedResources) -> Unit,
     modifier: Modifier = Modifier
 ) {
     if (connectedDApps.isEmpty()) return
@@ -161,7 +161,7 @@ fun ConnectedDAppsContent(
 fun ConnectedDAppsContentPreview() {
     ConnectedDAppsContent(
         persistentListOf(
-            DAppWithAssociatedResources(
+            DAppWithMetadataAndAssociatedResources(
                 dAppWithMetadata = DAppWithMetadata(
                     dAppAddress = "account_tdx_19jd32jd3928jd3892jd329"
                 ),

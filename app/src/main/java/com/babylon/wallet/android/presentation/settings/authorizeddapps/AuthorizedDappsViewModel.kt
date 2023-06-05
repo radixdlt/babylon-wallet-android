@@ -2,8 +2,8 @@ package com.babylon.wallet.android.presentation.settings.authorizeddapps
 
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.domain.common.value
-import com.babylon.wallet.android.domain.model.DAppWithAssociatedResources
-import com.babylon.wallet.android.domain.usecases.GetDAppWithAssociatedResourcesUseCase
+import com.babylon.wallet.android.domain.model.DAppWithMetadataAndAssociatedResources
+import com.babylon.wallet.android.domain.usecases.GetDAppWithMetadataAndAssociatedResourcesUseCase
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiState
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -18,7 +18,7 @@ import javax.inject.Inject
 @Suppress("MagicNumber")
 @HiltViewModel
 class AuthorizedDappsViewModel @Inject constructor(
-    private val dAppWithAssociatedResourcesUseCase: GetDAppWithAssociatedResourcesUseCase,
+    private val dAppWithAssociatedResourcesUseCase: GetDAppWithMetadataAndAssociatedResourcesUseCase,
     private val dAppConnectionRepository: DAppConnectionRepository
 ) : StateViewModel<AuthorizedDappsUiState>() {
 
@@ -45,5 +45,5 @@ class AuthorizedDappsViewModel @Inject constructor(
 }
 
 data class AuthorizedDappsUiState(
-    val dApps: ImmutableList<DAppWithAssociatedResources> = persistentListOf()
+    val dApps: ImmutableList<DAppWithMetadataAndAssociatedResources> = persistentListOf()
 ) : UiState

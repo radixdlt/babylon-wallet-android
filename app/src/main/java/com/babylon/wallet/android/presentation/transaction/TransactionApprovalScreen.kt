@@ -44,7 +44,7 @@ import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
 import com.babylon.wallet.android.designsystem.composable.RadixTextButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
-import com.babylon.wallet.android.domain.model.DAppWithAssociatedResources
+import com.babylon.wallet.android.domain.model.DAppWithMetadataAndAssociatedResources
 import com.babylon.wallet.android.presentation.common.FullscreenCircularProgressContent
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.settings.dappdetail.DAppDetailsSheetContent
@@ -141,7 +141,7 @@ private fun TransactionPreviewContent(
     networkFee: String,
     rawManifestContent: String,
     presentingProofs: ImmutableList<PresentingProofUiModel>,
-    connectedDApps: ImmutableList<DAppWithAssociatedResources>,
+    connectedDApps: ImmutableList<DAppWithMetadataAndAssociatedResources>,
     withdrawingAccounts: ImmutableList<PreviewAccountItemsUiModel>,
     depositingAccounts: ImmutableList<PreviewAccountItemsUiModel>,
     guaranteesAccounts: ImmutableList<GuaranteesAccountItemUiModel>,
@@ -149,7 +149,7 @@ private fun TransactionPreviewContent(
     onGuaranteesApplyClick: () -> Unit,
     onGuaranteesCloseClick: () -> Unit,
     promptForGuaranteesClick: () -> Unit,
-    onDAppClick: (DAppWithAssociatedResources) -> Unit,
+    onDAppClick: (DAppWithMetadataAndAssociatedResources) -> Unit,
     onGuaranteeValueChanged: (Pair<String, GuaranteesAccountItemUiModel>) -> Unit
 ) {
     var showNotSecuredDialog by remember { mutableStateOf(false) }

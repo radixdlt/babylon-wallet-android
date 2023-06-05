@@ -6,18 +6,18 @@ import com.babylon.wallet.android.domain.common.Result
 import com.babylon.wallet.android.domain.common.map
 import com.babylon.wallet.android.domain.common.switchMap
 import com.babylon.wallet.android.domain.common.value
-import com.babylon.wallet.android.domain.model.DAppWithAssociatedResources
+import com.babylon.wallet.android.domain.model.DAppWithMetadataAndAssociatedResources
 import com.babylon.wallet.android.domain.model.metadata.ClaimedWebsiteMetadataItem
 import javax.inject.Inject
 
-class GetDAppWithAssociatedResourcesUseCase @Inject constructor(
+class GetDAppWithMetadataAndAssociatedResourcesUseCase @Inject constructor(
     private val entityRepository: EntityRepository,
     private val dAppMetadataRepository: DappMetadataRepository,
 ) {
     suspend operator fun invoke(
         definitionAddress: String,
         needMostRecentData: Boolean
-    ): Result<DAppWithAssociatedResources> = dAppMetadataRepository.getDAppMetadata(
+    ): Result<DAppWithMetadataAndAssociatedResources> = dAppMetadataRepository.getDAppMetadata(
         definitionAddress = definitionAddress,
         needMostRecentData = false
     ).switchMap { dAppMetadata ->
@@ -43,7 +43,7 @@ class GetDAppWithAssociatedResourcesUseCase @Inject constructor(
 
         entityRepository.getDAppResources(dAppMetadata = updatedDAppMetadata, needMostRecentData)
             .map { resources ->
-                DAppWithAssociatedResources(
+                DAppWithMetadataAndAssociatedResources(
                     dAppWithMetadata = updatedDAppMetadata,
                     resources = resources
                 )
