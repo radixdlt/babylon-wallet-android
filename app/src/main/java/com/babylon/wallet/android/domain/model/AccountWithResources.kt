@@ -8,17 +8,13 @@ data class AccountWithResources(
     val resources: Resources?
 ) {
 
-    val fungibleResources: List<Resource.FungibleResource>
-        get() = resources?.fungibleResources.orEmpty()
+    val fungibleResources: List<Resource.FungibleResource> = resources?.fungibleResources.orEmpty()
+    val nonFungibleResources: List<Resource.NonFungibleResource> = resources?.nonFungibleResources.orEmpty()
 
-    val nonFungibleResources: List<Resource.NonFungibleResource>
-        get() = resources?.nonFungibleResources.orEmpty()
+    val xrd: Resource.FungibleResource? = fungibleResources.find { it.isXrd }
+    val nonXrdFungibles: List<Resource.FungibleResource> = fungibleResources.filterNot { it.isXrd }
 
-    fun hasXrd(minimumBalance: Long = 1L): Boolean {
-        return fungibleResources.any {
-            it.isXrd && it.amount >= BigDecimal(minimumBalance)
-        }
-    }
+    fun hasXrd(minimumBalance: Long = 1L): Boolean = xrd?.let { it.amount >= BigDecimal(minimumBalance) } == true
 }
 
 data class Resources(
