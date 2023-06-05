@@ -4,6 +4,7 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.shrinkVertically
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -31,15 +32,17 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import coil.compose.AsyncImage
+import coil.compose.rememberAsyncImagePainter
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.domain.model.Resource
 import com.babylon.wallet.android.presentation.transfer.SpendingAsset
 import com.babylon.wallet.android.presentation.ui.composables.ImageSize
 import com.babylon.wallet.android.presentation.ui.composables.NftTokenHeaderItem
+import com.babylon.wallet.android.presentation.ui.composables.applyImageAspectRatio
 import com.babylon.wallet.android.presentation.ui.composables.rememberImageUrl
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.ImmutableSet
@@ -152,18 +155,22 @@ private fun Item(
             verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingDefault)
         ) {
             if (resource.imageUrl != null) {
-                AsyncImage(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .heightIn(max = 150.dp)
-                        .clip(RadixTheme.shapes.roundedRectMedium)
-                        .background(Color.Transparent, RadixTheme.shapes.roundedRectMedium),
+                val painter = rememberAsyncImagePainter(
                     model = rememberImageUrl(
                         fromUrl = resource.imageUrl.toString(),
-                        size = ImageSize.LARGE,
-                        placeholder = com.babylon.wallet.android.R.drawable.img_placeholder,
-                        error = com.babylon.wallet.android.R.drawable.img_placeholder
+                        size = ImageSize.LARGE
                     ),
+                    placeholder = painterResource(id = com.babylon.wallet.android.R.drawable.img_placeholder),
+                    error = painterResource(id = com.babylon.wallet.android.R.drawable.img_placeholder)
+                )
+
+                Image(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .applyImageAspectRatio(painter = painter)
+                        .clip(RadixTheme.shapes.roundedRectMedium)
+                        .background(Color.Transparent, RadixTheme.shapes.roundedRectMedium),
+                    painter = painter,
                     contentDescription = null,
                     alignment = Alignment.Center,
                     contentScale = ContentScale.Crop
