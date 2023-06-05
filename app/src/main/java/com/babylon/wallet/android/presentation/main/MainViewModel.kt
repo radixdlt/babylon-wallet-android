@@ -154,6 +154,7 @@ class MainViewModel @Inject constructor(
 
     private fun terminatePeerdroid() {
         incomingDappRequestsJob?.cancel()
+        incomingDappRequestsJob = null
         processingDappRequestJob?.cancel()
         processingDappRequestJob = null
         peerdroidClient.terminate()
