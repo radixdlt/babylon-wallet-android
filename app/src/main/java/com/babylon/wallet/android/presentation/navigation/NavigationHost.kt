@@ -40,7 +40,6 @@ import com.babylon.wallet.android.presentation.settings.seedphrase.settingsShowM
 import com.babylon.wallet.android.presentation.settings.settingsNavGraph
 import com.babylon.wallet.android.presentation.transaction.transactionApprovalScreen
 import com.babylon.wallet.android.presentation.transactionstatus.transactionStatusDialog
-import com.babylon.wallet.android.presentation.transfer.ROUTE_TRANSFER
 import com.babylon.wallet.android.presentation.transfer.transfer
 import com.babylon.wallet.android.presentation.transfer.transferScreen
 import com.babylon.wallet.android.presentation.ui.composables.resultdialog.success.successBottomDialog
@@ -200,12 +199,7 @@ fun NavigationHost(
         })
         transactionApprovalScreen(
             onBackClick = {
-                val transferScreenExist = navController.currentBackStack.value.any { it.destination.route == ROUTE_TRANSFER }
-                if (transferScreenExist) {
-                    navController.popBackStack(ROUTE_TRANSFER, true)
-                } else {
-                    navController.popBackStack()
-                }
+                navController.popBackStack()
             }
         )
         transferScreen {

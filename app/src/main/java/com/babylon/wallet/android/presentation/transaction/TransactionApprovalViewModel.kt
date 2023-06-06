@@ -386,7 +386,6 @@ class TransactionApprovalViewModel @Inject constructor(
             feePayerAddress = feePayerAddress
         )
         transactionClient.signAndSubmitTransaction(request).onSuccess { txId ->
-            sendEvent(TransactionApprovalEvent.NavigateBack, delayAfterCloseMs)
             appEventBus.sendEvent(AppEvent.TransactionEvent.TransactionSent(args.requestId))
             // Send confirmation to the dApp that tx was submitted before status polling
             if (!transactionWriteRequest.isInternal) {

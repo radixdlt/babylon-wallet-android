@@ -1,7 +1,6 @@
 package com.babylon.wallet.android.presentation.common
 
 import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlin.reflect.KProperty
@@ -9,7 +8,7 @@ import kotlin.reflect.KProperty
 interface OneOffEvent
 
 interface OneOffEventHandler<T : OneOffEvent> {
-    suspend fun sendEvent(event: T, delayAfterMs: Long = 0L)
+    suspend fun sendEvent(event: T)
     val oneOffEvent: Flow<T>
 }
 
@@ -22,10 +21,7 @@ class OneOffEventHandlerImpl<T : OneOffEvent> : OneOffEventHandler<T> {
         return oneOffEvent
     }
 
-    override suspend fun sendEvent(event: T, delayAfterMs: Long) {
+    override suspend fun sendEvent(event: T) {
         eventChannel.send(event)
-        if (delayAfterMs != 0L) {
-            delay(delayAfterMs)
-        }
     }
 }

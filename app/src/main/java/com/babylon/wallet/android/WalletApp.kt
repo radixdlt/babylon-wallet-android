@@ -11,8 +11,10 @@ import com.babylon.wallet.android.presentation.main.MAIN_ROUTE
 import com.babylon.wallet.android.presentation.main.MainEvent
 import com.babylon.wallet.android.presentation.main.MainViewModel
 import com.babylon.wallet.android.presentation.navigation.NavigationHost
+import com.babylon.wallet.android.presentation.transaction.ROUTE_TRANSACTION_APPROVAL
 import com.babylon.wallet.android.presentation.transaction.transactionApproval
 import com.babylon.wallet.android.presentation.transactionstatus.transactionStatusDialog
+import com.babylon.wallet.android.presentation.transfer.ROUTE_TRANSFER
 import com.babylon.wallet.android.presentation.ui.composables.resultdialog.success.successBottomDialog
 import com.google.accompanist.navigation.animation.rememberAnimatedNavController
 
@@ -56,6 +58,12 @@ fun WalletApp(
                     )
                 }
                 is MainEvent.TransactionStatusEvent -> {
+                    val transferScreenExist = navController.currentBackStack.value.any { it.destination.route == ROUTE_TRANSFER }
+                    if (transferScreenExist) {
+                        navController.popBackStack(ROUTE_TRANSFER, true)
+                    } else {
+                        navController.popBackStack(ROUTE_TRANSACTION_APPROVAL, true)
+                    }
                     navController.transactionStatusDialog(
                         requestId = event.requestId
                     )
