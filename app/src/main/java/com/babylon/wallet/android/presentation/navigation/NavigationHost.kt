@@ -30,6 +30,7 @@ import com.babylon.wallet.android.presentation.main.main
 import com.babylon.wallet.android.presentation.navigation.Screen.Companion.ARG_ACCOUNT_ID
 import com.babylon.wallet.android.presentation.onboarding.OnboardingScreen
 import com.babylon.wallet.android.presentation.settings.backup.restoreMnemonicScreen
+import com.babylon.wallet.android.presentation.settings.connector.settingsConnectorScreen
 import com.babylon.wallet.android.presentation.settings.dappdetail.dappDetailScreen
 import com.babylon.wallet.android.presentation.settings.incompatibleprofile.IncompatibleProfileContent
 import com.babylon.wallet.android.presentation.settings.incompatibleprofile.ROUTE_INCOMPATIBLE_PROFILE
@@ -39,6 +40,7 @@ import com.babylon.wallet.android.presentation.settings.seedphrase.settingsShowM
 import com.babylon.wallet.android.presentation.settings.settingsNavGraph
 import com.babylon.wallet.android.presentation.transaction.transactionApprovalScreen
 import com.babylon.wallet.android.presentation.transactionstatus.transactionStatusDialog
+import com.babylon.wallet.android.presentation.transfer.ROUTE_TRANSFER
 import com.babylon.wallet.android.presentation.transfer.transfer
 import com.babylon.wallet.android.presentation.transfer.transferScreen
 import com.babylon.wallet.android.presentation.ui.composables.resultdialog.success.successBottomDialog
@@ -141,6 +143,9 @@ fun NavigationHost(
             },
             goBackToCreateAccount = {
                 navController.popBackStack(ROUTE_CREATE_ACCOUNT, false)
+            },
+            onAddP2PLink = {
+                navController.settingsConnectorScreen(scanQr = true)
             }
         )
         createAccountConfirmationScreen(
@@ -195,20 +200,17 @@ fun NavigationHost(
         })
         transactionApprovalScreen(
             onBackClick = {
-                navController.popBackStack()
+                val transferScreenExist = navController.currentBackStack.value.any { it.destination.route == ROUTE_TRANSFER }
+                if (transferScreenExist) {
+                    navController.popBackStack(ROUTE_TRANSFER, true)
+                } else {
+                    navController.popBackStack()
+                }
             }
         )
-        transferScreen(
-            onBackClick = {
-                navController.popBackStack()
-            },
-            onDismiss = {
-                navController.popBackStack(
-                    route = it,
-                    inclusive = true,
-                )
-            }
-        )
+        transferScreen {
+            navController.popBackStack()
+        }
         accountPreferencesScreen {
             navController.popBackStack()
         }

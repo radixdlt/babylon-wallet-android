@@ -25,7 +25,10 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
@@ -42,6 +45,7 @@ import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.presentation.common.FullscreenCircularProgressContent
 import com.babylon.wallet.android.presentation.model.AddLedgerSheetState
 import com.babylon.wallet.android.presentation.ui.composables.AddLedgerBottomSheet
+import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.DefaultModalSheetLayout
 import com.babylon.wallet.android.presentation.ui.composables.LedgerSelector
 import kotlinx.collections.immutable.ImmutableList
@@ -54,7 +58,8 @@ fun CreateAccountWithLedgerScreen(
     viewModel: CreateAccountWithLedgerViewModel,
     onBackClick: () -> Unit,
     modifier: Modifier = Modifier,
-    goBackToCreateAccount: () -> Unit
+    goBackToCreateAccount: () -> Unit,
+    onAddP2PLink: () -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     if (state.loading) {
@@ -77,7 +82,9 @@ fun CreateAccountWithLedgerScreen(
             addLedgerSheetState = state.addLedgerSheetState,
             onConfirmLedgerName = viewModel::onConfirmLedgerName,
             onUseLedger = viewModel::onUseLedger,
-            waitingForLedgerResponse = state.waitingForLedgerResponse
+            waitingForLedgerResponse = state.waitingForLedgerResponse,
+            hasP2pLinks = state.hasP2pLinks,
+            onAddP2PLink = onAddP2PLink
         )
     }
 }
@@ -93,8 +100,13 @@ fun CreateAccountWithLedgerContent(
     addLedgerSheetState: AddLedgerSheetState,
     onConfirmLedgerName: (String) -> Unit,
     onUseLedger: () -> Unit,
-    waitingForLedgerResponse: Boolean
+    waitingForLedgerResponse: Boolean,
+    hasP2pLinks: Boolean,
+    onAddP2PLink: () -> Unit
 ) {
+    var showNoP2pLinksDialog by remember {
+        mutableStateOf(false)
+    }
     val scope = rememberCoroutineScope()
     val bottomSheetState =
         rememberModalBottomSheetState(initialValue = ModalBottomSheetValue.Hidden, skipHalfExpanded = true)
@@ -196,8 +208,12 @@ fun CreateAccountWithLedgerContent(
                         .fillMaxWidth()
                         .imePadding(),
                     onClick = {
-                        scope.launch {
-                            bottomSheetState.show()
+                        if (hasP2pLinks) {
+                            scope.launch {
+                                bottomSheetState.show()
+                            }
+                        } else {
+                            showNoP2pLinksDialog = true
                         }
                     },
                     text = stringResource(id = com.babylon.wallet.android.R.string.ledgerHardwareDevices_addNewLedger)
@@ -216,6 +232,31 @@ fun CreateAccountWithLedgerContent(
                 FullscreenCircularProgressContent()
             }
         }
+        if (showNoP2pLinksDialog) {
+            BasicPromptAlertDialog(
+                finish = {
+                    if (it) {
+                        onAddP2PLink()
+                    }
+                    showNoP2pLinksDialog = false
+                },
+                title = {
+                    Text(
+                        text = stringResource(id = com.babylon.wallet.android.R.string.ledgerHardwareDevices_linkConnectorAlert_title),
+                        style = RadixTheme.typography.body2Header,
+                        color = RadixTheme.colors.gray1
+                    )
+                },
+                text = {
+                    Text(
+                        text = stringResource(id = com.babylon.wallet.android.R.string.ledgerHardwareDevices_linkConnectorAlert_message),
+                        style = RadixTheme.typography.body2Regular,
+                        color = RadixTheme.colors.gray1
+                    )
+                },
+                confirmText = stringResource(id = com.babylon.wallet.android.R.string.ledgerHardwareDevices_linkConnectorAlert_continue)
+            )
+        }
     }
 }
 
@@ -233,7 +274,9 @@ fun CreateAccountWithLedgerContentPreview() {
             addLedgerSheetState = AddLedgerSheetState.Connect,
             onConfirmLedgerName = {},
             onUseLedger = {},
-            waitingForLedgerResponse = false
+            waitingForLedgerResponse = false,
+            hasP2pLinks = false,
+            onAddP2PLink = {}
         )
     }
 }
