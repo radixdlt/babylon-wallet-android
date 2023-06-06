@@ -1,34 +1,49 @@
 package com.babylon.wallet.android.presentation.settings.authorizeddapps
 
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.babylon.wallet.android.domain.common.value
+import com.babylon.wallet.android.domain.model.DAppWithMetadataAndAssociatedResources
+import com.babylon.wallet.android.domain.usecases.GetDAppWithMetadataAndAssociatedResourcesUseCase
+import com.babylon.wallet.android.presentation.common.StateViewModel
+import com.babylon.wallet.android.presentation.common.UiState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
-import kotlinx.collections.immutable.toPersistentList
-import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.stateIn
-import rdx.works.profile.data.model.pernetwork.Network
+import kotlinx.collections.immutable.toImmutableList
+import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 import rdx.works.profile.data.repository.DAppConnectionRepository
 import javax.inject.Inject
 
 @Suppress("MagicNumber")
 @HiltViewModel
 class AuthorizedDappsViewModel @Inject constructor(
-    dAppConnectionRepository: DAppConnectionRepository
-) : ViewModel() {
+    private val dAppWithAssociatedResourcesUseCase: GetDAppWithMetadataAndAssociatedResourcesUseCase,
+    private val dAppConnectionRepository: DAppConnectionRepository
+) : StateViewModel<AuthorizedDappsUiState>() {
 
-    val state =
-        dAppConnectionRepository.getAuthorizedDapps().map {
-            AuthorizedDappsUiState(it.toPersistentList())
-        }.stateIn(
-            viewModelScope,
-            SharingStarted.WhileSubscribed(5000L),
-            AuthorizedDappsUiState()
-        )
+    override fun initialState(): AuthorizedDappsUiState = AuthorizedDappsUiState()
+
+    init {
+        viewModelScope.launch {
+            dAppConnectionRepository.getAuthorizedDapps().collect {
+                val dApps = it.mapNotNull { dApp ->
+                    val metadataResult = dAppWithAssociatedResourcesUseCase.invoke(
+                        definitionAddress = dApp.dAppDefinitionAddress,
+                        needMostRecentData = false
+                    )
+                    metadataResult.value()
+                }
+                _state.update { state ->
+                    state.copy(
+                        dApps = dApps.toImmutableList()
+                    )
+                }
+            }
+        }
+    }
 }
 
 data class AuthorizedDappsUiState(
-    val dapps: ImmutableList<Network.AuthorizedDapp> = persistentListOf()
-)
+    val dApps: ImmutableList<DAppWithMetadataAndAssociatedResources> = persistentListOf()
+) : UiState

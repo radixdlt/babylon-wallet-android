@@ -15,10 +15,14 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.ModalBottomSheetValue
+import androidx.compose.material.rememberModalBottomSheetState
 import androidx.compose.material3.Divider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -33,8 +37,13 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixTheme.dimensions
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.SampleDataProvider
+import com.babylon.wallet.android.domain.model.DAppWithMetadata
+import com.babylon.wallet.android.domain.model.DAppWithMetadataAndAssociatedResources
+import com.babylon.wallet.android.domain.model.Resource
 import com.babylon.wallet.android.presentation.common.FullscreenCircularProgressContent
 import com.babylon.wallet.android.presentation.model.toDisplayResource
+import com.babylon.wallet.android.presentation.settings.dappdetail.DAppDetailsSheetContent
+import com.babylon.wallet.android.presentation.ui.composables.DefaultModalSheetLayout
 import com.babylon.wallet.android.presentation.ui.composables.GrayBackgroundWrapper
 import com.babylon.wallet.android.presentation.ui.composables.PersonaPropertyRow
 import com.babylon.wallet.android.presentation.ui.composables.PersonaRoundedAvatar
@@ -43,6 +52,7 @@ import com.babylon.wallet.android.presentation.ui.composables.StandardOneLineCar
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
+import kotlinx.coroutines.launch
 import rdx.works.profile.data.model.pernetwork.Network
 
 @Composable
@@ -50,8 +60,7 @@ fun PersonaDetailScreen(
     viewModel: PersonaDetailViewModel,
     onBackClick: () -> Unit,
     modifier: Modifier = Modifier,
-    onEditPersona: (String) -> Unit,
-    onDappClick: (String) -> Unit
+    onEditPersona: (String) -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     PersonaDetailContent(
@@ -63,25 +72,36 @@ fun PersonaDetailScreen(
         persona = state.persona,
         onEditPersona = onEditPersona,
         authorizedDapps = state.authorizedDapps,
-        onDappClick = onDappClick,
+        selectedDAppWithMetadata = state.selectedDAppWithMetadata,
+        selectedDAppAssociatedFungibleTokens = state.selectedDAppAssociatedFungibleTokens,
+        selectedDAppAssociatedNonFungibleTokens = state.selectedDAppAssociatedNonFungibleTokens,
+        onDAppClick = viewModel::onDAppClick,
         hasAuthKey = state.hasAuthKey,
         loading = state.loading,
         onCreateAndUploadAuthKey = viewModel::onCreateAndUploadAuthKey
     )
 }
 
+@OptIn(ExperimentalMaterialApi::class)
 @Composable
 private fun PersonaDetailContent(
-    onBackClick: () -> Unit,
     modifier: Modifier = Modifier,
+    onBackClick: () -> Unit,
     persona: Network.Persona?,
     onEditPersona: (String) -> Unit,
-    authorizedDapps: ImmutableList<Network.AuthorizedDapp>,
-    onDappClick: (String) -> Unit,
+    authorizedDapps: ImmutableList<DAppWithMetadataAndAssociatedResources>,
+    selectedDAppWithMetadata: DAppWithMetadata?,
+    selectedDAppAssociatedFungibleTokens: ImmutableList<Resource.FungibleResource>,
+    selectedDAppAssociatedNonFungibleTokens: ImmutableList<Resource.NonFungibleResource.Item>,
+    onDAppClick: (DAppWithMetadataAndAssociatedResources) -> Unit,
     hasAuthKey: Boolean,
     onCreateAndUploadAuthKey: () -> Unit,
     loading: Boolean
 ) {
+    val bottomSheetState =
+        rememberModalBottomSheetState(initialValue = ModalBottomSheetValue.Hidden, skipHalfExpanded = true)
+    val scope = rememberCoroutineScope()
+
     Box(modifier = modifier) {
         persona?.let { persona ->
             Box(
@@ -93,25 +113,46 @@ private fun PersonaDetailContent(
                     )
                     .clip(shape = RadixTheme.shapes.roundedRectTopMedium)
             ) {
-                Column(Modifier.fillMaxSize()) {
-                    RadixCenteredTopAppBar(
-                        title = persona.displayName,
-                        onBackClick = onBackClick,
-                        contentColor = RadixTheme.colors.gray1,
-                    )
-                    Divider(color = RadixTheme.colors.gray5)
-                    PersonaDetailList(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .weight(1f),
-                        persona = persona,
-                        authorizedDapps = authorizedDapps,
-                        onDappClick = onDappClick,
-                        onEditPersona = onEditPersona,
-                        hasAuthKey = hasAuthKey,
-                        onCreateAndUploadAuthKey = onCreateAndUploadAuthKey,
-                        loading = loading
-                    )
+                DefaultModalSheetLayout(
+                    modifier = Modifier
+                        .navigationBarsPadding()
+                        .background(RadixTheme.colors.defaultBackground)
+                        .fillMaxSize(),
+                    sheetState = bottomSheetState,
+                    sheetContent = {
+                        DAppDetailsSheetContent(
+                            onBackClick = {
+                                scope.launch {
+                                    bottomSheetState.hide()
+                                }
+                            },
+                            dappName = selectedDAppWithMetadata?.name.orEmpty(),
+                            dappWithMetadata = selectedDAppWithMetadata,
+                            associatedFungibleTokens = selectedDAppAssociatedFungibleTokens,
+                            associatedNonFungibleTokens = selectedDAppAssociatedNonFungibleTokens
+                        )
+                    }
+                ) {
+                    Column(Modifier.fillMaxSize()) {
+                        RadixCenteredTopAppBar(
+                            title = persona.displayName,
+                            onBackClick = onBackClick,
+                            contentColor = RadixTheme.colors.gray1,
+                        )
+                        Divider(color = RadixTheme.colors.gray5)
+                        PersonaDetailList(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .weight(1f),
+                            persona = persona,
+                            authorizedDapps = authorizedDapps,
+                            onDAppClick = onDAppClick,
+                            onEditPersona = onEditPersona,
+                            hasAuthKey = hasAuthKey,
+                            onCreateAndUploadAuthKey = onCreateAndUploadAuthKey,
+                            loading = loading
+                        )
+                    }
                 }
             }
         }
@@ -125,8 +166,8 @@ private fun PersonaDetailContent(
 private fun PersonaDetailList(
     modifier: Modifier = Modifier,
     persona: Network.Persona,
-    authorizedDapps: ImmutableList<Network.AuthorizedDapp>,
-    onDappClick: (String) -> Unit,
+    authorizedDapps: ImmutableList<DAppWithMetadataAndAssociatedResources>,
+    onDAppClick: (DAppWithMetadataAndAssociatedResources) -> Unit,
     onEditPersona: (String) -> Unit,
     hasAuthKey: Boolean,
     onCreateAndUploadAuthKey: () -> Unit,
@@ -200,16 +241,16 @@ private fun PersonaDetailList(
                     Spacer(modifier = Modifier.height(dimensions.paddingLarge))
                 }
             }
-            items(authorizedDapps) { dapp ->
+            items(authorizedDapps) { dApp ->
                 GrayBackgroundWrapper {
                     StandardOneLineCard(
                         "",
-                        dapp.displayName,
+                        dApp.dAppWithMetadata.name.orEmpty(),
                         modifier = Modifier
                             .shadow(elevation = 8.dp, shape = RadixTheme.shapes.roundedRectMedium)
                             .clip(RadixTheme.shapes.roundedRectMedium)
                             .throttleClickable {
-                                onDappClick(dapp.dAppDefinitionAddress)
+                                onDAppClick(dApp)
                             }
                             .fillMaxWidth()
                             .background(RadixTheme.colors.white, shape = RadixTheme.shapes.roundedRectMedium)
@@ -236,7 +277,10 @@ fun DappDetailContentPreview() {
             persona = SampleDataProvider().samplePersona(),
             onEditPersona = {},
             authorizedDapps = persistentListOf(),
-            onDappClick = {},
+            selectedDAppWithMetadata = null,
+            selectedDAppAssociatedFungibleTokens = persistentListOf(),
+            selectedDAppAssociatedNonFungibleTokens = persistentListOf(),
+            onDAppClick = {},
             hasAuthKey = false,
             onCreateAndUploadAuthKey = {},
             loading = false

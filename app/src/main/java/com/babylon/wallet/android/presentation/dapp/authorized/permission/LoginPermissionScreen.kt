@@ -39,7 +39,7 @@ import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
-import com.babylon.wallet.android.domain.model.DappWithMetadata
+import com.babylon.wallet.android.domain.model.DAppWithMetadata
 import com.babylon.wallet.android.domain.model.metadata.NameMetadataItem
 import com.babylon.wallet.android.presentation.dapp.authorized.InitialAuthorizedLoginRoute
 import com.babylon.wallet.android.presentation.dapp.authorized.login.DAppAuthorizedLoginEvent
@@ -96,7 +96,7 @@ fun LoginPermissionScreen(
 @Composable
 private fun LoginPermissionContent(
     onContinueClick: () -> Unit,
-    dappWithMetadata: DappWithMetadata?,
+    dappWithMetadata: DAppWithMetadata?,
     onBackClick: () -> Unit,
     numberOfAccounts: Int,
     isExactAccountsCount: Boolean,
@@ -231,7 +231,7 @@ fun LoginPermissionContentPreview() {
     RadixWalletTheme {
         LoginPermissionContent(
             onContinueClick = {},
-            dappWithMetadata = DappWithMetadata(
+            dappWithMetadata = DAppWithMetadata(
                 dAppAddress = "account_tdx_abc",
                 nameItem = NameMetadataItem("Collabo.fi")
             ),
@@ -250,7 +250,7 @@ fun LoginPermissionContentFirstTimePreview() {
     RadixWalletTheme {
         LoginPermissionContent(
             onContinueClick = {},
-            dappWithMetadata = DappWithMetadata(
+            dappWithMetadata = DAppWithMetadata(
                 dAppAddress = "account_tdx_abc",
                 nameItem = NameMetadataItem("Collabo.fi")
             ),

@@ -13,9 +13,9 @@ import com.babylon.wallet.android.data.transaction.model.FeePayerSearchResult
 import com.babylon.wallet.android.data.transaction.TransactionClient
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.babylon.wallet.android.domain.model.TransactionManifestData
+import com.babylon.wallet.android.domain.usecases.GetDAppWithMetadataAndAssociatedResourcesUseCase
 import com.babylon.wallet.android.domain.usecases.transaction.GetTransactionComponentResourcesUseCase
 import com.babylon.wallet.android.domain.usecases.transaction.GetTransactionProofResourcesUseCase
-import com.babylon.wallet.android.domain.usecases.transaction.GetValidDAppMetadataUseCase
 import com.babylon.wallet.android.domain.usecases.transaction.PollTransactionStatusUseCase
 import com.babylon.wallet.android.presentation.StateViewModelTest
 import com.babylon.wallet.android.utils.AppEventBus
@@ -48,8 +48,8 @@ internal class TransactionApprovalViewModelTest : StateViewModelTest<Transaction
     private val getCurrentGatewayUseCase = mockk<GetCurrentGatewayUseCase>()
     private val getTransactionComponentResourcesUseCase = mockk<GetTransactionComponentResourcesUseCase>()
     private val getTransactionProofResourcesUseCase = mockk<GetTransactionProofResourcesUseCase>()
-    private val getValidDAppMetadataUseCase = mockk<GetValidDAppMetadataUseCase>()
     private val pollTransactionStatusUseCase = mockk<PollTransactionStatusUseCase>()
+    private val getDAppWithAssociatedResourcesUseCase = mockk<GetDAppWithMetadataAndAssociatedResourcesUseCase>()
     private val incomingRequestRepository = IncomingRequestRepositoryImpl()
     private val dAppMessenger = mockk<DappMessenger>()
     private val appEventBus = mockk<AppEventBus>()
@@ -76,9 +76,6 @@ internal class TransactionApprovalViewModelTest : StateViewModelTest<Transaction
         every { deviceSecurityHelper.isDeviceSecure() } returns true
         every { savedStateHandle.get<String>(ARG_TRANSACTION_REQUEST_ID) } returns sampleRequestId
         coEvery { getCurrentGatewayUseCase() } returns Radix.Gateway.nebunet
-        coEvery { getValidDAppMetadataUseCase.invoke(any()) } returns listOf(
-            ConnectedDAppsUiModel("", "")
-        )
         coEvery { getTransactionProofResourcesUseCase.invoke(any()) } returns listOf(
             PresentingProofUiModel("", "")
         )
@@ -118,12 +115,12 @@ internal class TransactionApprovalViewModelTest : StateViewModelTest<Transaction
             transactionClient,
             getTransactionComponentResourcesUseCase,
             getTransactionProofResourcesUseCase,
-            getValidDAppMetadataUseCase,
             incomingRequestRepository,
             getCurrentGatewayUseCase,
             deviceSecurityHelper,
             dAppMessenger,
             pollTransactionStatusUseCase,
+            getDAppWithAssociatedResourcesUseCase,
             TestScope(),
             appEventBus,
             savedStateHandle

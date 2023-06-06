@@ -130,12 +130,14 @@ private fun ResourceAddressRow(
 @Composable
 private fun TokenBalance(resource: Resource.FungibleResource, modifier: Modifier = Modifier) {
     Row(modifier = modifier) {
-        Text(
-            modifier = Modifier.alignByBaseline(),
-            text = resource.amount.displayableQuantity(),
-            style = RadixTheme.typography.title,
-            color = RadixTheme.colors.gray1
-        )
+        resource.amount?.let { amount ->
+            Text(
+                modifier = Modifier.alignByBaseline(),
+                text = amount.displayableQuantity(),
+                style = RadixTheme.typography.title,
+                color = RadixTheme.colors.gray1
+            )
+        }
         Text(
             modifier = Modifier.alignByBaseline(),
             text = " ${resource.symbol}",

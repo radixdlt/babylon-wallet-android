@@ -2,6 +2,7 @@
 
 package com.babylon.wallet.android.presentation.settings.dappdetail
 
+import android.graphics.drawable.ColorDrawable
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
@@ -21,6 +22,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.ModalBottomSheetValue
 import androidx.compose.material.rememberModalBottomSheetState
@@ -43,6 +45,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -58,10 +61,12 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixTheme.dimensions
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.SampleDataProvider
-import com.babylon.wallet.android.domain.model.DappWithMetadata
+import com.babylon.wallet.android.domain.model.DAppWithMetadata
+import com.babylon.wallet.android.domain.model.Resource
 import com.babylon.wallet.android.domain.model.metadata.DescriptionMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.NameMetadataItem
-import com.babylon.wallet.android.presentation.account.composable.AssetMetadataRow
+import com.babylon.wallet.android.presentation.account.composable.FungibleTokenBottomSheetDetails
+import com.babylon.wallet.android.presentation.account.composable.NonFungibleTokenBottomSheetDetails
 import com.babylon.wallet.android.presentation.common.FullscreenCircularProgressContent
 import com.babylon.wallet.android.presentation.dapp.authorized.account.AccountItemUiModel
 import com.babylon.wallet.android.presentation.dapp.authorized.selectpersona.PersonaUiModel
@@ -77,12 +82,14 @@ import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
 import com.babylon.wallet.android.presentation.ui.composables.SimpleAccountCard
 import com.babylon.wallet.android.presentation.ui.composables.StandardOneLineCard
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
+import com.google.accompanist.drawablepainter.rememberDrawablePainter
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.launch
 import rdx.works.profile.data.model.pernetwork.Network
+import java.util.Locale
 
 @Composable
 fun DappDetailScreen(
@@ -109,11 +116,15 @@ fun DappDetailScreen(
             .navigationBarsPadding()
             .fillMaxSize()
             .background(RadixTheme.colors.defaultBackground),
-        dappName = state.dapp?.displayName.orEmpty(),
+        dappName = state.dappWithMetadata?.name.orEmpty(),
         personaList = state.personas,
         dappWithMetadata = state.dappWithMetadata,
+        associatedFungibleTokens = state.associatedTokens,
+        associatedNonFungibleTokens = state.associatedNfts,
         onPersonaClick = viewModel::onPersonaClick,
-        selectedPersona = state.selectedPersona,
+        onFungibleTokenClick = viewModel::onFungibleTokenClick,
+        onNftClick = viewModel::onNftClick,
+        selectedSheetState = state.selectedSheetState,
         selectedPersonaSharedAccounts = state.sharedPersonaAccounts,
         onDisconnectPersona = viewModel::onDisconnectPersona,
         personaDetailsClosed = viewModel::onPersonaDetailsClosed,
@@ -131,9 +142,13 @@ private fun DappDetailContent(
     modifier: Modifier = Modifier,
     dappName: String,
     personaList: ImmutableList<Network.Persona>,
-    dappWithMetadata: DappWithMetadata?,
+    dappWithMetadata: DAppWithMetadata?,
+    associatedFungibleTokens: ImmutableList<Resource.FungibleResource>,
+    associatedNonFungibleTokens: ImmutableList<Resource.NonFungibleResource.Item>,
     onPersonaClick: (Network.Persona) -> Unit,
-    selectedPersona: PersonaUiModel?,
+    onFungibleTokenClick: (Resource.FungibleResource) -> Unit,
+    onNftClick: (Resource.NonFungibleResource.Item) -> Unit,
+    selectedSheetState: SelectedSheetState?,
     selectedPersonaSharedAccounts: ImmutableList<AccountItemUiModel>,
     onDisconnectPersona: (Network.Persona) -> Unit,
     personaDetailsClosed: () -> Unit,
@@ -165,33 +180,64 @@ private fun DappDetailContent(
                 modifier = Modifier.fillMaxSize(),
                 sheetState = bottomSheetState,
                 sheetContent = {
-                    Column(Modifier.fillMaxSize()) {
-                        selectedPersona?.let { persona ->
-                            PersonaDetailsSheet(
-                                persona = persona,
-                                sharedPersonaAccounts = selectedPersonaSharedAccounts,
-                                onCloseClick = {
-                                    scope.launch {
-                                        bottomSheetState.hide()
-                                    }
-                                },
-                                modifier = Modifier
-                                    .fillMaxSize()
-                                    .background(
-                                        RadixTheme.colors.defaultBackground,
-                                        shape = RadixTheme.shapes.roundedRectTopMedium
+                    Column(
+                        Modifier
+                            .fillMaxWidth(),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        when (selectedSheetState) {
+                            is SelectedSheetState.SelectedPersona -> {
+                                selectedSheetState.persona?.let {
+                                    PersonaDetailsSheet(
+                                        persona = it,
+                                        sharedPersonaAccounts = selectedPersonaSharedAccounts,
+                                        onCloseClick = {
+                                            scope.launch {
+                                                bottomSheetState.hide()
+                                            }
+                                        },
+                                        modifier = Modifier
+                                            .fillMaxSize()
+                                            .background(
+                                                RadixTheme.colors.defaultBackground,
+                                                shape = RadixTheme.shapes.roundedRectTopMedium
+                                            )
+                                            .clip(shape = RadixTheme.shapes.roundedRectTopMedium),
+                                        dappName = dappName,
+                                        onDisconnectPersona = { persona ->
+                                            scope.launch {
+                                                bottomSheetState.hide()
+                                            }
+                                            onDisconnectPersona(persona)
+                                        },
+                                        onEditPersona = onEditPersona,
+                                        onEditAccountSharing = onEditAccountSharing
                                     )
-                                    .clip(shape = RadixTheme.shapes.roundedRectTopMedium),
-                                dappName = dappName,
-                                onDisconnectPersona = {
-                                    scope.launch {
-                                        bottomSheetState.hide()
+                                }
+                            }
+                            is SelectedSheetState.SelectedFungibleResource -> {
+                                FungibleTokenBottomSheetDetails(
+                                    modifier = Modifier.fillMaxSize(),
+                                    fungible = selectedSheetState.fungible,
+                                    onCloseClick = {
+                                        scope.launch {
+                                            bottomSheetState.hide()
+                                        }
                                     }
-                                    onDisconnectPersona(it)
-                                },
-                                onEditPersona = onEditPersona,
-                                onEditAccountSharing = onEditAccountSharing
-                            )
+                                )
+                            }
+                            is SelectedSheetState.SelectedNonFungibleResource -> {
+                                NonFungibleTokenBottomSheetDetails(
+                                    modifier = Modifier.fillMaxSize(),
+                                    item = selectedSheetState.nftItem,
+                                    onCloseClick = {
+                                        scope.launch {
+                                            bottomSheetState.hide()
+                                        }
+                                    }
+                                )
+                            }
+                            else -> {}
                         }
                     }
                 },
@@ -201,9 +247,23 @@ private fun DappDetailContent(
                         dappName = dappName,
                         onBackClick = onBackClick,
                         dappWithMetadata = dappWithMetadata,
+                        associatedFungibleTokens = associatedFungibleTokens,
+                        associatedNonFungibleTokens = associatedNonFungibleTokens,
                         personaList = personaList,
                         onPersonaClick = { persona ->
                             onPersonaClick(persona)
+                            scope.launch {
+                                bottomSheetState.show()
+                            }
+                        },
+                        onFungibleTokenClick = { fungibleResource ->
+                            onFungibleTokenClick(fungibleResource)
+                            scope.launch {
+                                bottomSheetState.show()
+                            }
+                        },
+                        onNftClick = { nftItem ->
+                            onNftClick(nftItem)
                             scope.launch {
                                 bottomSheetState.show()
                             }
@@ -248,13 +308,17 @@ private fun DappDetailContent(
 }
 
 @Composable
-private fun DappDetails(
+fun DappDetails(
     modifier: Modifier,
     dappName: String,
     onBackClick: () -> Unit,
-    dappWithMetadata: DappWithMetadata?,
+    dappWithMetadata: DAppWithMetadata?,
     personaList: ImmutableList<Network.Persona>,
+    associatedFungibleTokens: ImmutableList<Resource.FungibleResource>,
+    associatedNonFungibleTokens: ImmutableList<Resource.NonFungibleResource.Item>,
     onPersonaClick: (Network.Persona) -> Unit,
+    onFungibleTokenClick: (Resource.FungibleResource) -> Unit,
+    onNftClick: (Resource.NonFungibleResource.Item) -> Unit,
     onDeleteDapp: () -> Unit
 ) {
     Column(modifier = modifier) {
@@ -267,23 +331,25 @@ private fun DappDetails(
         LazyColumn(
             contentPadding = PaddingValues(vertical = dimensions.paddingDefault),
             horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier.fillMaxSize()
+            modifier = Modifier
+                .fillMaxSize()
         ) {
-            item {
-                PersonaRoundedAvatar(
-                    url = "",
-                    modifier = Modifier
-                        .padding(vertical = dimensions.paddingDefault)
-                        .size(104.dp)
-                )
-                Divider(
-                    modifier = Modifier.padding(horizontal = dimensions.paddingDefault),
-                    color = RadixTheme.colors.gray5
-                )
+            dappWithMetadata?.iconUrl?.let {
+                val url = it.toString()
+                if (url.isNotEmpty()) {
+                    item {
+                        PersonaRoundedAvatar(
+                            url = url,
+                            modifier = Modifier
+                                .padding(vertical = dimensions.paddingDefault)
+                                .size(104.dp)
+                        )
+                        Divider(color = RadixTheme.colors.gray5)
+                    }
+                }
             }
             dappWithMetadata?.description?.let { description ->
                 item {
-                    Divider(color = RadixTheme.colors.gray5)
                     Text(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -291,7 +357,7 @@ private fun DappDetails(
                         text = description,
                         style = RadixTheme.typography.body1Regular,
                         color = RadixTheme.colors.gray1,
-                        textAlign = TextAlign.Center
+                        textAlign = TextAlign.Start
                     )
                     Divider(color = RadixTheme.colors.gray5)
                 }
@@ -308,18 +374,102 @@ private fun DappDetails(
                     Spacer(modifier = Modifier.height(dimensions.paddingDefault))
                 }
             }
-            dappWithMetadata?.displayableMetadata?.let { metadata ->
+            dappWithMetadata?.claimedWebsite?.let {
                 item {
-                    metadata.forEach { mapEntry ->
-                        AssetMetadataRow(
-                            Modifier
+                    DAppWebsiteAddressRow(
+                        websiteAddress = it,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = dimensions.paddingDefault)
+                    )
+                    Spacer(modifier = Modifier.height(dimensions.paddingDefault))
+                }
+            }
+            if (associatedFungibleTokens.isNotEmpty()) {
+                item {
+                    GrayBackgroundWrapper {
+                        Text(
+                            modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(horizontal = dimensions.paddingDefault),
-                            mapEntry.key,
-                            mapEntry.value
+                                .padding(RadixTheme.dimensions.paddingDefault),
+                            text = stringResource(id = R.string.authorizedDapps_dAppDetails_associated_tokens),
+                            style = RadixTheme.typography.body1Regular,
+                            color = RadixTheme.colors.gray2,
+                            textAlign = TextAlign.Start
                         )
-                        Spacer(modifier = Modifier.height(dimensions.paddingDefault))
                     }
+                }
+            }
+            itemsIndexed(associatedFungibleTokens) { _, fungibleToken ->
+                GrayBackgroundWrapper {
+                    val placeholder = if (fungibleToken.isXrd) {
+                        painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_xrd_token)
+                    } else {
+                        rememberDrawablePainter(drawable = ColorDrawable(RadixTheme.colors.gray3.toArgb()))
+                    }
+                    StandardOneLineCard(
+                        image = fungibleToken.iconUrl.toString(),
+                        title = fungibleToken.displayTitle,
+                        modifier = Modifier
+                            .shadow(elevation = 8.dp, shape = RadixTheme.shapes.roundedRectMedium)
+                            .clip(RadixTheme.shapes.roundedRectMedium)
+                            .throttleClickable {
+                                onFungibleTokenClick(fungibleToken)
+                            }
+                            .fillMaxWidth()
+                            .background(
+                                RadixTheme.colors.white,
+                                shape = RadixTheme.shapes.roundedRectMedium
+                            )
+                            .padding(
+                                horizontal = dimensions.paddingLarge,
+                                vertical = dimensions.paddingDefault
+                            ),
+                        showChevron = false,
+                        placeholder = placeholder
+                    )
+                    Spacer(modifier = Modifier.height(dimensions.paddingDefault))
+                }
+            }
+            if (associatedNonFungibleTokens.isNotEmpty()) {
+                item {
+                    GrayBackgroundWrapper {
+                        Text(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(RadixTheme.dimensions.paddingDefault),
+                            text = stringResource(id = R.string.authorizedDapps_dAppDetails_associated_nfts),
+                            style = RadixTheme.typography.body1Regular,
+                            color = RadixTheme.colors.gray2,
+                            textAlign = TextAlign.Start
+                        )
+                    }
+                }
+            }
+            items(associatedNonFungibleTokens) { nftItem ->
+                GrayBackgroundWrapper {
+                    StandardOneLineCard(
+                        image = nftItem.imageUrl?.toString().orEmpty(),
+                        title = nftItem.localId.displayable,
+                        modifier = Modifier
+                            .shadow(elevation = 8.dp, shape = RadixTheme.shapes.roundedRectMedium)
+                            .clip(RadixTheme.shapes.roundedRectMedium)
+                            .throttleClickable {
+                                onNftClick(nftItem)
+                            }
+                            .fillMaxWidth()
+                            .background(
+                                RadixTheme.colors.white,
+                                shape = RadixTheme.shapes.roundedRectMedium
+                            )
+                            .padding(
+                                horizontal = dimensions.paddingLarge,
+                                vertical = dimensions.paddingDefault
+                            ),
+                        showChevron = false,
+                        placeholder = rememberDrawablePainter(drawable = ColorDrawable(RadixTheme.colors.gray3.toArgb()))
+                    )
+                    Spacer(modifier = Modifier.height(dimensions.paddingDefault))
                 }
             }
             item {
@@ -385,7 +535,7 @@ private fun DappDetails(
 }
 
 @Composable
-private fun DappDefinitionAddressRow(
+fun DappDefinitionAddressRow(
     dappDefinitionAddress: String,
     modifier: Modifier = Modifier
 ) {
@@ -404,6 +554,32 @@ private fun DappDefinitionAddressRow(
             address = dappDefinitionAddress,
             textStyle = RadixTheme.typography.body1Regular,
             textColor = RadixTheme.colors.gray1
+        )
+    }
+}
+
+@Composable
+fun DAppWebsiteAddressRow(
+    websiteAddress: String,
+    modifier: Modifier = Modifier
+) {
+    Row(
+        modifier = modifier,
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+        Text(
+            text = stringResource(id = R.string.authorizedDapps_dAppDetails_website).replaceFirstChar {
+                if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString()
+            },
+            style = RadixTheme.typography.body1Regular,
+            color = RadixTheme.colors.gray2
+        )
+
+        Text(
+            text = websiteAddress,
+            style = RadixTheme.typography.body1Regular,
+            color = RadixTheme.colors.gray1
         )
     }
 }
@@ -630,13 +806,17 @@ fun DappDetailContentPreview() {
             onBackClick = {},
             dappName = "Dapp",
             personaList = persistentListOf(SampleDataProvider().samplePersona()),
-            dappWithMetadata = DappWithMetadata(
+            dappWithMetadata = DAppWithMetadata(
                 dAppAddress = "account_tdx_abc",
                 nameItem = NameMetadataItem("Dapp"),
                 descriptionItem = DescriptionMetadataItem("Description")
             ),
+            associatedFungibleTokens = persistentListOf(),
+            associatedNonFungibleTokens = persistentListOf(),
             onPersonaClick = {},
-            selectedPersona = PersonaUiModel(SampleDataProvider().samplePersona()),
+            onFungibleTokenClick = {},
+            onNftClick = {},
+            selectedSheetState = null,
             selectedPersonaSharedAccounts = persistentListOf(
                 AccountItemUiModel("account_tdx_efgh", "Account1", 0)
             ),

@@ -3,11 +3,12 @@ package com.babylon.wallet.android.presentation.settings.dappdetail
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
-import com.babylon.wallet.android.data.repository.dappmetadata.DappMetadataRepository
 import com.babylon.wallet.android.domain.common.onError
 import com.babylon.wallet.android.domain.common.onValue
-import com.babylon.wallet.android.domain.model.DappWithMetadata
+import com.babylon.wallet.android.domain.model.DAppWithMetadata
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
+import com.babylon.wallet.android.domain.model.Resource
+import com.babylon.wallet.android.domain.usecases.GetDAppWithMetadataAndAssociatedResourcesUseCase
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
@@ -35,7 +36,7 @@ import javax.inject.Inject
 @HiltViewModel
 class DappDetailViewModel @Inject constructor(
     private val dAppConnectionRepository: DAppConnectionRepository,
-    private val dappMetadataRepository: DappMetadataRepository,
+    private val dAppWithAssociatedResourcesUseCase: GetDAppWithMetadataAndAssociatedResourcesUseCase,
     private val getProfileUseCase: GetProfileUseCase,
     private val incomingRequestRepository: IncomingRequestRepository,
     savedStateHandle: SavedStateHandle
@@ -48,13 +49,19 @@ class DappDetailViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            val metadataResult = dappMetadataRepository.getDAppMetadata(
+            val metadataResult = dAppWithAssociatedResourcesUseCase.invoke(
                 definitionAddress = args.dappDefinitionAddress,
                 needMostRecentData = false
             )
-            metadataResult.onValue { metadata ->
+            metadataResult.onValue { dAppWithAssociatedResources ->
+
                 _state.update { state ->
-                    state.copy(dappWithMetadata = metadata, loading = false)
+                    state.copy(
+                        dappWithMetadata = dAppWithAssociatedResources.dAppWithMetadata,
+                        associatedTokens = dAppWithAssociatedResources.fungibleResources.toPersistentList(),
+                        associatedNfts = dAppWithAssociatedResources.nonFungibleResources.toPersistentList(),
+                        loading = false
+                    )
                 }
             }
             metadataResult.onError {
@@ -79,10 +86,6 @@ class DappDetailViewModel @Inject constructor(
                     getProfileUseCase.personaOnCurrentNetwork(personaSimple.identityAddress)
                 }
                 _state.update { state ->
-                    val selectedPersona = personas.firstOrNull {
-                        it.address == state.selectedPersona?.persona?.address
-                    } ?: state.selectedPersona?.persona
-                    selectedPersona?.let { persona -> updateSelectedPersonaData(persona) }
                     state.copy(
                         dapp = authorizedDapp,
                         personas = personas.toPersistentList(),
@@ -98,6 +101,28 @@ class DappDetailViewModel @Inject constructor(
         }
     }
 
+    fun onFungibleTokenClick(fungibleResource: Resource.FungibleResource) {
+        viewModelScope.launch {
+            _state.update {
+                it.copy(
+                    selectedSheetState = SelectedSheetState.SelectedFungibleResource(fungibleResource)
+                )
+            }
+        }
+    }
+
+    fun onNftClick(nftItem: Resource.NonFungibleResource.Item) {
+        viewModelScope.launch {
+            _state.update {
+                it.copy(
+                    selectedSheetState = SelectedSheetState.SelectedNonFungibleResource(
+                        nftItem = nftItem
+                    )
+                )
+            }
+        }
+    }
+
     private suspend fun updateSelectedPersonaData(persona: Network.Persona) {
         val personaSimple =
             authorizedDapp.referencesToAuthorizedPersonas.firstOrNull { it.identityAddress == persona.address }
@@ -108,17 +133,23 @@ class DappDetailViewModel @Inject constructor(
         val requiredFieldKinds = persona.fields.filter { requiredFieldIds.contains(it.id) }.map {
             it.id
         }
+        val selectedPersona = PersonaUiModel(persona, requiredFieldIDs = requiredFieldKinds)
         _state.update {
             it.copy(
-                selectedPersona = PersonaUiModel(persona, requiredFieldIDs = requiredFieldKinds),
-                sharedPersonaAccounts = sharedAccounts.toPersistentList()
+                sharedPersonaAccounts = sharedAccounts.toPersistentList(),
+                selectedSheetState = SelectedSheetState.SelectedPersona(selectedPersona)
             )
         }
     }
 
     fun onPersonaDetailsClosed() {
-        _state.update {
-            it.copy(selectedPersona = null, sharedPersonaAccounts = persistentListOf())
+        if (_state.value.selectedSheetState is SelectedSheetState.SelectedPersona) {
+            _state.update {
+                it.copy(
+                    selectedSheetState = SelectedSheetState.SelectedPersona(null),
+                    sharedPersonaAccounts = persistentListOf()
+                )
+            }
         }
     }
 
@@ -137,39 +168,48 @@ class DappDetailViewModel @Inject constructor(
 
     fun onEditPersona() {
         viewModelScope.launch {
-            state.value.selectedPersona?.let { persona ->
-                sendEvent(DappDetailEvent.EditPersona(persona.persona.address, persona.requiredFieldIDs.encodeToString()))
+            if (_state.value.selectedSheetState is SelectedSheetState.SelectedPersona) {
+                (_state.value.selectedSheetState as SelectedSheetState.SelectedPersona).persona?.let { persona ->
+                    sendEvent(
+                        DappDetailEvent.EditPersona(persona.persona.address, persona.requiredFieldIDs.encodeToString())
+                    )
+                }
             }
         }
     }
 
     fun onEditAccountSharing() {
         viewModelScope.launch {
-            val persona = checkNotNull(state.value.selectedPersona?.persona)
-            val sharedAccounts = checkNotNull(
-                authorizedDapp.referencesToAuthorizedPersonas.firstOrNull {
-                    it.identityAddress == persona.address
-                }?.sharedAccounts
-            )
-            val request = MessageFromDataChannel.IncomingRequest.AuthorizedRequest(
-                dappId = "",
-                interactionId = UUIDGenerator.uuid().toString(),
-                requestMetadata = MessageFromDataChannel.IncomingRequest.RequestMetadata(
-                    authorizedDapp.networkID,
-                    "",
-                    authorizedDapp.dAppDefinitionAddress,
-                    isInternal = false
-                ),
-                authRequest = MessageFromDataChannel.IncomingRequest.AuthorizedRequest.AuthRequest.UsePersonaRequest(persona.address),
-                ongoingAccountsRequestItem = MessageFromDataChannel.IncomingRequest.AccountsRequestItem(
-                    isOngoing = true,
-                    numberOfAccounts = sharedAccounts.request.quantity,
-                    quantifier = sharedAccounts.request.quantifier.toQuantifierUsedInRequest(),
-                    challenge = null
-                ),
-                resetRequestItem = MessageFromDataChannel.IncomingRequest.ResetRequestItem(accounts = true, personaData = false)
-            )
-            incomingRequestRepository.add(incomingRequest = request)
+            if (_state.value.selectedSheetState is SelectedSheetState.SelectedPersona) {
+                (_state.value.selectedSheetState as SelectedSheetState.SelectedPersona).persona?.persona?.let { persona ->
+                    val sharedAccounts = checkNotNull(
+                        authorizedDapp.referencesToAuthorizedPersonas.firstOrNull {
+                            it.identityAddress == persona.address
+                        }?.sharedAccounts
+                    )
+                    val request = MessageFromDataChannel.IncomingRequest.AuthorizedRequest(
+                        dappId = "",
+                        interactionId = UUIDGenerator.uuid().toString(),
+                        requestMetadata = MessageFromDataChannel.IncomingRequest.RequestMetadata(
+                            authorizedDapp.networkID,
+                            "",
+                            authorizedDapp.dAppDefinitionAddress,
+                            isInternal = false
+                        ),
+                        authRequest = MessageFromDataChannel.IncomingRequest.AuthorizedRequest.AuthRequest.UsePersonaRequest(
+                            persona.address
+                        ),
+                        ongoingAccountsRequestItem = MessageFromDataChannel.IncomingRequest.AccountsRequestItem(
+                            isOngoing = true,
+                            numberOfAccounts = sharedAccounts.request.quantity,
+                            quantifier = sharedAccounts.request.quantifier.toQuantifierUsedInRequest(),
+                            challenge = null
+                        ),
+                        resetRequestItem = MessageFromDataChannel.IncomingRequest.ResetRequestItem(accounts = true, personaData = false)
+                    )
+                    incomingRequestRepository.add(incomingRequest = request)
+                }
+            }
         }
     }
 }
@@ -183,8 +223,20 @@ sealed interface DappDetailEvent : OneOffEvent {
 data class DappDetailUiState(
     val loading: Boolean = true,
     val dapp: Network.AuthorizedDapp? = null,
-    val dappWithMetadata: DappWithMetadata? = null,
+    val dappWithMetadata: DAppWithMetadata? = null,
+    val associatedTokens: ImmutableList<Resource.FungibleResource> = persistentListOf(),
+    val associatedNfts: ImmutableList<Resource.NonFungibleResource.Item> = persistentListOf(),
     val personas: ImmutableList<Network.Persona> = persistentListOf(),
-    val selectedPersona: PersonaUiModel? = null,
     val sharedPersonaAccounts: ImmutableList<AccountItemUiModel> = persistentListOf(),
+    val selectedSheetState: SelectedSheetState? = null
 ) : UiState
+
+sealed interface SelectedSheetState {
+    data class SelectedFungibleResource(val fungible: Resource.FungibleResource) : SelectedSheetState
+    data class SelectedNonFungibleResource(
+        val nftItem: Resource.NonFungibleResource.Item
+    ) : SelectedSheetState
+    data class SelectedPersona(
+        val persona: PersonaUiModel?
+    ) : SelectedSheetState
+}

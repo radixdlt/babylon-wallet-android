@@ -1,12 +1,13 @@
 package com.babylon.wallet.android.fakes
 
 import com.babylon.wallet.android.data.gateway.model.ExplicitMetadataKey
-import com.babylon.wallet.android.data.repository.dappmetadata.DappMetadataRepository
+import com.babylon.wallet.android.data.repository.dappmetadata.DAppRepository
 import com.babylon.wallet.android.domain.common.Result
-import com.babylon.wallet.android.domain.model.DappWithMetadata
+import com.babylon.wallet.android.domain.model.DAppResources
+import com.babylon.wallet.android.domain.model.DAppWithMetadata
 import com.babylon.wallet.android.domain.model.metadata.NameMetadataItem
 
-class DappMetadataRepositoryFake : DappMetadataRepository {
+class DAppRepositoryFake : DAppRepository {
 
     override suspend fun verifyDapp(origin: String, dAppDefinitionAddress: String): Result<Boolean> {
         return Result.Success(true)
@@ -16,9 +17,9 @@ class DappMetadataRepositoryFake : DappMetadataRepository {
         definitionAddress: String,
         explicitMetadata: Set<ExplicitMetadataKey>,
         needMostRecentData: Boolean
-    ): Result<DappWithMetadata> {
+    ): Result<DAppWithMetadata> {
         return Result.Success(
-            DappWithMetadata(
+            DAppWithMetadata(
                 dAppAddress = "dapp_address",
                 nameItem = NameMetadataItem(name = "dApp")
             )
@@ -29,13 +30,25 @@ class DappMetadataRepositoryFake : DappMetadataRepository {
         definitionAddresses: List<String>,
         explicitMetadata: Set<ExplicitMetadataKey>,
         needMostRecentData: Boolean
-    ): Result<List<DappWithMetadata>> {
+    ): Result<List<DAppWithMetadata>> {
         return Result.Success(
             listOf(
-                DappWithMetadata(
+                DAppWithMetadata(
                     dAppAddress = "dapp_address",
                     nameItem = NameMetadataItem(name = "dApp")
                 )
+            )
+        )
+    }
+
+    override suspend fun getDAppResources(
+        dAppMetadata: DAppWithMetadata,
+        isRefreshing: Boolean
+    ): Result<DAppResources> {
+        return Result.Success(
+            DAppResources(
+                fungibleResources = emptyList(),
+                nonFungibleResources = emptyList()
             )
         )
     }

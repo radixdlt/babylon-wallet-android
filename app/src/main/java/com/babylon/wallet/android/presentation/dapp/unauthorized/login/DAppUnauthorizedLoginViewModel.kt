@@ -6,12 +6,12 @@ import com.babylon.wallet.android.data.dapp.DappMessenger
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.data.dapp.model.WalletErrorType
 import com.babylon.wallet.android.data.dapp.model.toKind
-import com.babylon.wallet.android.data.repository.dappmetadata.DappMetadataRepository
+import com.babylon.wallet.android.data.repository.dappmetadata.DAppRepository
 import com.babylon.wallet.android.data.transaction.DappRequestException
 import com.babylon.wallet.android.data.transaction.DappRequestFailure
 import com.babylon.wallet.android.domain.common.onError
 import com.babylon.wallet.android.domain.common.onValue
-import com.babylon.wallet.android.domain.model.DappWithMetadata
+import com.babylon.wallet.android.domain.model.DAppWithMetadata
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel.IncomingRequest.AccountsRequestItem
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
@@ -44,7 +44,7 @@ class DAppUnauthorizedLoginViewModel @Inject constructor(
     private val dAppMessenger: DappMessenger,
     private val getProfileUseCase: GetProfileUseCase,
     private val getCurrentGatewayUseCase: GetCurrentGatewayUseCase,
-    private val dappMetadataRepository: DappMetadataRepository,
+    private val dAppRepository: DAppRepository,
     private val incomingRequestRepository: IncomingRequestRepository
 ) : StateViewModel<DAppUnauthorizedLoginUiState>(),
     OneOffEventHandler<DAppUnauthorizedLoginEvent> by OneOffEventHandlerImpl() {
@@ -74,7 +74,7 @@ class DAppUnauthorizedLoginViewModel @Inject constructor(
                 handleRequestError(DappRequestFailure.InvalidRequest)
                 return@launch
             }
-            val result = dappMetadataRepository.getDAppMetadata(
+            val result = dAppRepository.getDAppMetadata(
                 definitionAddress = request.metadata.dAppDefinitionAddress,
                 needMostRecentData = false
             )
@@ -214,7 +214,7 @@ sealed interface DAppUnauthorizedLoginEvent : OneOffEvent {
 }
 
 data class DAppUnauthorizedLoginUiState(
-    val dappWithMetadata: DappWithMetadata? = null,
+    val dappWithMetadata: DAppWithMetadata? = null,
     val uiMessage: UiMessage? = null,
     val initialUnauthorizedLoginRoute: InitialUnauthorizedLoginRoute? = null,
     val selectedOnetimeDataFields: ImmutableList<Network.Persona.Field> = persistentListOf(),

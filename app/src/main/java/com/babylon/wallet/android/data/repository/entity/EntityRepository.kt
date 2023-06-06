@@ -419,6 +419,6 @@ class EntityRepositoryImpl @Inject constructor(
     }
 
     companion object {
-        private const val CHUNK_SIZE_OF_ITEMS = 20
+        const val CHUNK_SIZE_OF_ITEMS = 20
     }
 }

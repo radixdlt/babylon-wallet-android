@@ -11,12 +11,12 @@ import com.babylon.wallet.android.presentation.createpersona.personaScreen
 import com.babylon.wallet.android.presentation.main.MAIN_ROUTE
 import com.babylon.wallet.android.presentation.navigation.Screen
 import com.babylon.wallet.android.presentation.settings.appsettings.appSettingsScreen
-import com.babylon.wallet.android.presentation.settings.authorizeddapps.authorizedDappsScreen
+import com.babylon.wallet.android.presentation.settings.authorizeddapps.authorizedDAppsScreen
 import com.babylon.wallet.android.presentation.settings.backup.backupScreen
 import com.babylon.wallet.android.presentation.settings.backup.restoreMnemonic
 import com.babylon.wallet.android.presentation.settings.backup.systemBackupSettingsScreen
 import com.babylon.wallet.android.presentation.settings.connector.settingsConnectorScreen
-import com.babylon.wallet.android.presentation.settings.dappdetail.dappDetailScreen
+import com.babylon.wallet.android.presentation.settings.dappdetail.dAppDetailScreen
 import com.babylon.wallet.android.presentation.settings.editgateway.SettingsEditGatewayScreen
 import com.babylon.wallet.android.presentation.settings.ledgerfactorsource.settingsLedgerFactorSourcesScreen
 import com.babylon.wallet.android.presentation.settings.legacyimport.settingsImportOlympiaAccounts
@@ -51,15 +51,15 @@ fun NavGraphBuilder.settingsNavGraph(
                 navController.popBackStack()
             }
         )
-        authorizedDappsScreen(
+        authorizedDAppsScreen(
             onBackClick = {
                 navController.popBackStack()
             },
-            onDappClick = { dappDefinitionAddress ->
-                navController.dappDetailScreen(dappDefinitionAddress)
+            onDAppClick = { dAppDefinitionAddress ->
+                navController.dAppDetailScreen(dAppDefinitionAddress)
             }
         )
-        dappDetailScreen(
+        dAppDetailScreen(
             onBackClick = {
                 navController.popBackStack()
             }
@@ -114,7 +114,7 @@ private fun NavGraphBuilder.settingsAll(navController: NavController) {
                         navController.settingsConnectorScreen()
                     }
                     SettingsItem.TopLevelSettings.AuthorizedDapps -> {
-                        navController.authorizedDappsScreen()
+                        navController.authorizedDAppsScreen()
                     }
                     SettingsItem.TopLevelSettings.AppSettings -> {
                         navController.appSettingsScreen()

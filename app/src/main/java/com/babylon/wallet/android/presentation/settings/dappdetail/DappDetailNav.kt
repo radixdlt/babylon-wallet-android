@@ -24,12 +24,12 @@ internal class DappDetailScreenArgs(val dappDefinitionAddress: String) {
     )
 }
 
-fun NavController.dappDetailScreen(dappDefinitionAddress: String) {
+fun NavController.dAppDetailScreen(dappDefinitionAddress: String) {
     navigate("settings_dapp_detail/$dappDefinitionAddress")
 }
 
 @OptIn(ExperimentalAnimationApi::class)
-fun NavGraphBuilder.dappDetailScreen(
+fun NavGraphBuilder.dAppDetailScreen(
     onBackClick: () -> Unit,
     onEditPersona: (String, String) -> Unit
 ) {

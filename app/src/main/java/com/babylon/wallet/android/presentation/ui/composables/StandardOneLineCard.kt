@@ -9,6 +9,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
@@ -18,7 +19,13 @@ import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 
 @Composable
-fun StandardOneLineCard(image: String, title: String, modifier: Modifier = Modifier, showChevron: Boolean = true) {
+fun StandardOneLineCard(
+    image: String,
+    title: String,
+    modifier: Modifier = Modifier,
+    showChevron: Boolean = true,
+    placeholder: Painter = painterResource(id = R.drawable.img_placeholder)
+) {
     Row(
         modifier = modifier,
         verticalAlignment = Alignment.CenterVertically,
@@ -26,9 +33,9 @@ fun StandardOneLineCard(image: String, title: String, modifier: Modifier = Modif
     ) {
         AsyncImage(
             model = image,
-            placeholder = painterResource(id = R.drawable.img_placeholder),
-            fallback = painterResource(id = R.drawable.img_placeholder),
-            error = painterResource(id = R.drawable.img_placeholder),
+            placeholder = placeholder,
+            fallback = placeholder,
+            error = placeholder,
             contentDescription = null,
             contentScale = ContentScale.Crop,
             modifier = Modifier

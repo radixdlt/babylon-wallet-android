@@ -31,7 +31,6 @@ import com.babylon.wallet.android.presentation.navigation.Screen.Companion.ARG_A
 import com.babylon.wallet.android.presentation.onboarding.OnboardingScreen
 import com.babylon.wallet.android.presentation.settings.backup.restoreMnemonicScreen
 import com.babylon.wallet.android.presentation.settings.connector.settingsConnectorScreen
-import com.babylon.wallet.android.presentation.settings.dappdetail.dappDetailScreen
 import com.babylon.wallet.android.presentation.settings.incompatibleprofile.IncompatibleProfileContent
 import com.babylon.wallet.android.presentation.settings.incompatibleprofile.ROUTE_INCOMPATIBLE_PROFILE
 import com.babylon.wallet.android.presentation.settings.personadetail.personaDetailScreen
@@ -191,9 +190,7 @@ fun NavigationHost(
             onPersonaEdit = {
                 navController.personaEditScreen(it)
             }
-        ) {
-            navController.dappDetailScreen(it)
-        }
+        )
         personaEditScreen(onBackClick = {
             navController.navigateUp()
         })

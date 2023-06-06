@@ -26,26 +26,26 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
+import com.babylon.wallet.android.domain.model.DAppWithMetadataAndAssociatedResources
 import com.babylon.wallet.android.presentation.ui.composables.InfoLink
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.StandardOneLineCard
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
-import rdx.works.profile.data.model.pernetwork.Network
 
 @Composable
-fun AuthorizedDappsScreen(
+fun AuthorizedDAppsScreen(
     viewModel: AuthorizedDappsViewModel,
     onBackClick: () -> Unit,
-    onDappClick: (String) -> Unit,
+    onDAppClick: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
-    AuthorizedDappsContent(
+    AuthorizedDAppsContent(
         onBackClick = onBackClick,
-        dapps = state.dapps,
-        onDappClick = onDappClick,
+        dApps = state.dApps,
+        onDAppClick = onDAppClick,
         modifier = modifier
             .navigationBarsPadding()
             .fillMaxSize()
@@ -54,10 +54,10 @@ fun AuthorizedDappsScreen(
 }
 
 @Composable
-private fun AuthorizedDappsContent(
+private fun AuthorizedDAppsContent(
     onBackClick: () -> Unit,
-    dapps: ImmutableList<Network.AuthorizedDapp>,
-    onDappClick: (String) -> Unit,
+    dApps: ImmutableList<DAppWithMetadataAndAssociatedResources>,
+    onDAppClick: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Column(modifier = modifier) {
@@ -83,15 +83,15 @@ private fun AuthorizedDappsContent(
                 InfoLink(stringResource(R.string.authorizedDapps_whatIsDapp), modifier = Modifier.fillMaxWidth())
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
             }
-            items(dapps) { dapp ->
+            items(dApps) { dApp ->
                 StandardOneLineCard(
                     "",
-                    dapp.displayName,
+                    dApp.dAppWithMetadata.name.orEmpty(),
                     modifier = Modifier
                         .shadow(elevation = 8.dp, shape = RadixTheme.shapes.roundedRectMedium)
                         .clip(RadixTheme.shapes.roundedRectMedium)
                         .throttleClickable {
-                            onDappClick(dapp.dAppDefinitionAddress)
+                            onDAppClick(dApp.dAppWithMetadata.dAppAddress)
                         }
                         .fillMaxWidth()
                         .background(RadixTheme.colors.white, shape = RadixTheme.shapes.roundedRectMedium)
@@ -108,12 +108,12 @@ private fun AuthorizedDappsContent(
 
 @Preview(showBackground = true)
 @Composable
-fun AuthorizedDappsContentPreview() {
+fun AuthorizedDAppsContentPreview() {
     RadixWalletTheme {
-        AuthorizedDappsContent(
+        AuthorizedDAppsContent(
             onBackClick = {},
-            dapps = persistentListOf(),
-            onDappClick = {}
+            dApps = persistentListOf(),
+            onDAppClick = {}
         )
     }
 }

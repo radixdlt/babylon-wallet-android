@@ -16,7 +16,11 @@ data class Resources(
     val xrd: Resource.FungibleResource? = fungibleResources.find { it.isXrd }
     val nonXrdFungibles: List<Resource.FungibleResource> = fungibleResources.filterNot { it.isXrd }
 
-    fun hasXrd(minimumBalance: Long = 1L): Boolean = xrd?.let { it.amount >= BigDecimal(minimumBalance) } == true
+    fun hasXrd(minimumBalance: Long = 1L): Boolean = xrd?.let {
+        it.amount?.let { amount ->
+            amount >= BigDecimal(minimumBalance)
+        }
+    } == true
 
     companion object {
         val EMPTY = Resources(fungibleResources = emptyList(), nonFungibleResources = emptyList())

@@ -41,7 +41,7 @@ import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.SampleDataProvider
-import com.babylon.wallet.android.domain.model.DappWithMetadata
+import com.babylon.wallet.android.domain.model.DAppWithMetadata
 import com.babylon.wallet.android.domain.model.metadata.NameMetadataItem
 import com.babylon.wallet.android.presentation.dapp.authorized.InitialAuthorizedLoginRoute
 import com.babylon.wallet.android.presentation.dapp.authorized.login.DAppAuthorizedLoginEvent
@@ -110,7 +110,7 @@ fun PersonaDataOngoingScreen(
 @Composable
 private fun PersonaDataOngoingPermissionContent(
     onContinueClick: () -> Unit,
-    dappWithMetadata: DappWithMetadata?,
+    dappWithMetadata: DAppWithMetadata?,
     onBackClick: () -> Unit,
     modifier: Modifier = Modifier,
     isFirstScreenInFlow: Boolean,
@@ -225,7 +225,7 @@ fun LoginPermissionContentPreview() {
     RadixWalletTheme {
         PersonaDataOngoingPermissionContent(
             onContinueClick = {},
-            dappWithMetadata = DappWithMetadata(
+            dappWithMetadata = DAppWithMetadata(
                 dAppAddress = "account_tdx_abc",
                 nameItem = NameMetadataItem("Collabo.fi")
             ),

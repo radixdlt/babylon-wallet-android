@@ -32,8 +32,7 @@ fun NavController.personaDetailScreen(personaAddress: String) {
 @OptIn(ExperimentalAnimationApi::class)
 fun NavGraphBuilder.personaDetailScreen(
     onBackClick: () -> Unit,
-    onPersonaEdit: (String) -> Unit,
-    onDappClick: (String) -> Unit
+    onPersonaEdit: (String) -> Unit
 ) {
     composable(
         route = ROUTE_PERSONA_DETAIL,
@@ -61,8 +60,7 @@ fun NavGraphBuilder.personaDetailScreen(
         PersonaDetailScreen(
             viewModel = hiltViewModel(),
             onBackClick = onBackClick,
-            onEditPersona = onPersonaEdit,
-            onDappClick = onDappClick
+            onEditPersona = onPersonaEdit
         )
     }
 }

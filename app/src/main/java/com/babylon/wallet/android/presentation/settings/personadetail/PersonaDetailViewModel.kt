@@ -6,8 +6,13 @@ import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.data.manifest.getStringInstructions
 import com.babylon.wallet.android.data.transaction.ROLAClient
 import com.babylon.wallet.android.data.transaction.TransactionVersion
+import com.babylon.wallet.android.domain.common.value
+import com.babylon.wallet.android.domain.model.DAppWithMetadata
+import com.babylon.wallet.android.domain.model.DAppWithMetadataAndAssociatedResources
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
+import com.babylon.wallet.android.domain.model.Resource
 import com.babylon.wallet.android.domain.model.TransactionManifestData
+import com.babylon.wallet.android.domain.usecases.GetDAppWithMetadataAndAssociatedResourcesUseCase
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.utils.AppEvent
@@ -15,6 +20,7 @@ import com.babylon.wallet.android.utils.AppEventBus
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
+import kotlinx.collections.immutable.toImmutableList
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.filter
@@ -40,6 +46,7 @@ class PersonaDetailViewModel @Inject constructor(
     private val addAuthSigningFactorInstanceUseCase: AddAuthSigningFactorInstanceUseCase,
     private val rolaClient: ROLAClient,
     private val incomingRequestRepository: IncomingRequestRepository,
+    private val dAppWithAssociatedResourcesUseCase: GetDAppWithMetadataAndAssociatedResourcesUseCase,
     savedStateHandle: SavedStateHandle
 ) : StateViewModel<PersonaDetailUiState>() {
 
@@ -52,19 +59,29 @@ class PersonaDetailViewModel @Inject constructor(
             combine(
                 getProfileUseCase.personaOnCurrentNetworkFlow(args.personaAddress),
                 dAppConnectionRepository.getAuthorizedDappsByPersona(args.personaAddress)
-            ) { persona, dapps ->
-                persona to dapps
-            }.collect { personaToDapps ->
+            ) { persona, dApps ->
+                persona to dApps
+            }.collect { personaToDApps ->
+                val metadataResults = personaToDApps.second.map { authorizedDApp ->
+                    dAppWithAssociatedResourcesUseCase.invoke(
+                        definitionAddress = authorizedDApp.dAppDefinitionAddress,
+                        needMostRecentData = false
+                    ).value()
+                }
+                val dApps = metadataResults.mapNotNull { dAppWithAssociatedResources ->
+                    dAppWithAssociatedResources
+                }
                 _state.update { state ->
                     state.copy(
-                        persona = personaToDapps.first,
-                        authorizedDapps = personaToDapps.second.toPersistentList(),
+                        authorizedDapps = dApps.toImmutableList(),
+                        persona = personaToDApps.first,
                         loading = false,
-                        hasAuthKey = personaToDapps.first.hasAuthSigning()
+                        hasAuthKey = personaToDApps.first.hasAuthSigning()
                     )
                 }
             }
         }
+
         viewModelScope.launch {
             appEventBus.events.filterIsInstance<AppEvent.TransactionEvent>().filter { it.requestId == uploadAuthKeyRequestId }
                 .collect { event ->
@@ -81,6 +98,16 @@ class PersonaDetailViewModel @Inject constructor(
                         else -> {}
                     }
                 }
+        }
+    }
+
+    fun onDAppClick(dApp: DAppWithMetadataAndAssociatedResources) {
+        _state.update { state ->
+            state.copy(
+                selectedDAppWithMetadata = dApp.dAppWithMetadata,
+                selectedDAppAssociatedFungibleTokens = dApp.fungibleResources.toPersistentList(),
+                selectedDAppAssociatedNonFungibleTokens = dApp.nonFungibleResources.toPersistentList()
+            )
         }
     }
 
@@ -116,7 +143,10 @@ class PersonaDetailViewModel @Inject constructor(
 
 data class PersonaDetailUiState(
     val loading: Boolean = true,
-    val authorizedDapps: ImmutableList<Network.AuthorizedDapp> = persistentListOf(),
+    val authorizedDapps: ImmutableList<DAppWithMetadataAndAssociatedResources> = persistentListOf(),
     val persona: Network.Persona? = null,
-    val hasAuthKey: Boolean = false
+    val hasAuthKey: Boolean = false,
+    val selectedDAppWithMetadata: DAppWithMetadata? = null,
+    val selectedDAppAssociatedFungibleTokens: ImmutableList<Resource.FungibleResource> = persistentListOf(),
+    val selectedDAppAssociatedNonFungibleTokens: ImmutableList<Resource.NonFungibleResource.Item> = persistentListOf(),
 ) : UiState

@@ -47,16 +47,16 @@ data class StateEntityDetailsResponseFungibleResourceDetails (
     val divisibility: kotlin.Int,
 
     /* String-encoded decimal representing the amount of a related fungible resource. */
-    @SerialName(value = "total_supply")
-    val totalSupply: kotlin.String,
-
-    /* String-encoded decimal representing the amount of a related fungible resource. */
-    @SerialName(value = "total_minted")
-    val totalMinted: kotlin.String,
-
-    /* String-encoded decimal representing the amount of a related fungible resource. */
-    @SerialName(value = "total_burned")
-    val totalBurned: kotlin.String
+//    @SerialName(value = "total_supply")
+//    val totalSupply: kotlin.String,
+//
+//    /* String-encoded decimal representing the amount of a related fungible resource. */
+//    @SerialName(value = "total_minted")
+//    val totalMinted: kotlin.String,
+//
+//    /* String-encoded decimal representing the amount of a related fungible resource. */
+//    @SerialName(value = "total_burned")
+//    val totalBurned: kotlin.String
 
 ) : StateEntityDetailsResponseItemDetails()
 

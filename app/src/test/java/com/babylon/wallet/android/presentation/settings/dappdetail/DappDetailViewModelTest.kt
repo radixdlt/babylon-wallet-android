@@ -3,10 +3,14 @@ package com.babylon.wallet.android.presentation.settings.dappdetail
 import androidx.lifecycle.SavedStateHandle
 import app.cash.turbine.test
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepositoryImpl
+import com.babylon.wallet.android.domain.SampleDataProvider
+import com.babylon.wallet.android.domain.common.Result
+import com.babylon.wallet.android.domain.usecases.GetDAppWithMetadataAndAssociatedResourcesUseCase
 import com.babylon.wallet.android.fakes.DAppConnectionRepositoryFake
-import com.babylon.wallet.android.fakes.DappMetadataRepositoryFake
 import com.babylon.wallet.android.mockdata.profile
 import com.babylon.wallet.android.presentation.StateViewModelTest
+import com.babylon.wallet.android.presentation.dapp.authorized.selectpersona.toUiModel
+import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -25,9 +29,9 @@ internal class DappDetailViewModelTest : StateViewModelTest<DappDetailViewModel>
     private val dAppConnectionRepository = DAppConnectionRepositoryFake().apply {
         state = DAppConnectionRepositoryFake.InitialState.PredefinedDapp
     }
-    private val dappMetadataRepository = DappMetadataRepositoryFake()
     private val getProfileUseCase = mockk<GetProfileUseCase>()
     private val savedStateHandle = mockk<SavedStateHandle>()
+    private val getDAppWithAssociatedResourcesUseCase = mockk<GetDAppWithMetadataAndAssociatedResourcesUseCase>()
     private val samplePersonas = listOf(
         sampleDataProvider.samplePersona("address1"),
         sampleDataProvider.samplePersona(sampleDataProvider.randomAddress())
@@ -36,7 +40,7 @@ internal class DappDetailViewModelTest : StateViewModelTest<DappDetailViewModel>
     override fun initVM(): DappDetailViewModel {
         return DappDetailViewModel(
             dAppConnectionRepository,
-            dappMetadataRepository,
+            getDAppWithAssociatedResourcesUseCase,
             getProfileUseCase,
             incomingRequestRepository,
             savedStateHandle
@@ -69,6 +73,10 @@ internal class DappDetailViewModelTest : StateViewModelTest<DappDetailViewModel>
                 )
             )
         )
+        coEvery { getDAppWithAssociatedResourcesUseCase("address1", false) } returns
+                Result.Success(
+                    SampleDataProvider().sampleDAppWithResources()
+                )
     }
 
     @Test
@@ -96,13 +104,14 @@ internal class DappDetailViewModelTest : StateViewModelTest<DappDetailViewModel>
 
     @Test
     fun `persona click sets persona detail data`() = runTest {
+        val expectedPersona = samplePersonas[0].toUiModel()
         val vm = vm.value
         advanceUntilIdle()
         vm.onPersonaClick(samplePersonas[0])
         advanceUntilIdle()
         vm.state.test {
             val item = expectMostRecentItem()
-            assert(item.selectedPersona?.persona == samplePersonas[0])
+            assert((item.selectedSheetState as SelectedSheetState.SelectedPersona).persona == expectedPersona)
             assert(item.sharedPersonaAccounts.size == 1)
         }
     }
@@ -117,7 +126,7 @@ internal class DappDetailViewModelTest : StateViewModelTest<DappDetailViewModel>
         advanceUntilIdle()
         vm.state.test {
             val item = expectMostRecentItem()
-            assert(item.selectedPersona == null)
+            assert((item.selectedSheetState as SelectedSheetState.SelectedPersona).persona == null)
             assert(item.sharedPersonaAccounts.size == 0)
         }
     }

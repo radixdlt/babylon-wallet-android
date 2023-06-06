@@ -8,8 +8,8 @@ import com.babylon.wallet.android.data.dapp.LedgerMessenger
 import com.babylon.wallet.android.data.dapp.LedgerMessengerImpl
 import com.babylon.wallet.android.data.repository.cache.HttpCache
 import com.babylon.wallet.android.data.repository.cache.HttpCacheImpl
-import com.babylon.wallet.android.data.repository.dappmetadata.DappMetadataRepository
-import com.babylon.wallet.android.data.repository.dappmetadata.DappMetadataRepositoryImpl
+import com.babylon.wallet.android.data.repository.dappmetadata.DAppRepository
+import com.babylon.wallet.android.data.repository.dappmetadata.DAppRepositoryImpl
 import com.babylon.wallet.android.data.repository.entity.EntityRepository
 import com.babylon.wallet.android.data.repository.entity.EntityRepositoryImpl
 import com.babylon.wallet.android.data.repository.networkinfo.NetworkInfoRepository
@@ -43,8 +43,8 @@ interface DataModule {
 
     @Binds
     fun bindDappMetadataRepository(
-        dappMetadataRepository: DappMetadataRepositoryImpl
-    ): DappMetadataRepository
+        dappMetadataRepository: DAppRepositoryImpl
+    ): DAppRepository
 
     @Binds
     fun bindDAppMessenger(

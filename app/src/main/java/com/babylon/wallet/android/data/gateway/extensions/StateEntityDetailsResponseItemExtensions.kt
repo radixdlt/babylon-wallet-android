@@ -2,7 +2,7 @@ package com.babylon.wallet.android.data.gateway.extensions
 
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponseItem
 
-private val StateEntityDetailsResponseItem.fungibleResourceAddresses: List<String>
+val StateEntityDetailsResponseItem.fungibleResourceAddresses: List<String>
     get() = fungibleResources?.items?.map { it.resourceAddress }.orEmpty()
 
 val StateEntityDetailsResponseItem.nonFungibleResourceAddresses: List<String>

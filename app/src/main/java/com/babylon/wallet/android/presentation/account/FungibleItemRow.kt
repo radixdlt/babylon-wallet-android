@@ -78,15 +78,17 @@ fun FungibleItemRow(
                 color = RadixTheme.colors.gray1,
                 maxLines = 1
             )
-            Text(
-                modifier = Modifier.fillMaxWidth(),
-                text = fungible.amount.displayableQuantity(),
-                style = RadixTheme.typography.body2HighImportance,
-                color = RadixTheme.colors.gray1,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-                textAlign = TextAlign.End
-            )
+            fungible.amount?.let { amount ->
+                Text(
+                    modifier = Modifier.fillMaxWidth(),
+                    text = amount.displayableQuantity(),
+                    style = RadixTheme.typography.body2HighImportance,
+                    color = RadixTheme.colors.gray1,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    textAlign = TextAlign.End
+                )
+            }
         }
     }
 }

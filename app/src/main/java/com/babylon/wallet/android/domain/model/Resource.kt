@@ -16,7 +16,7 @@ sealed class Resource {
 
     data class FungibleResource(
         override val resourceAddress: String,
-        val amount: BigDecimal,
+        val amount: BigDecimal?,
         private val nameMetadataItem: NameMetadataItem? = null,
         private val symbolMetadataItem: SymbolMetadataItem? = null,
         private val descriptionMetadataItem: DescriptionMetadataItem? = null,

@@ -11,7 +11,7 @@ import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.babylon.wallet.android.fakes.DAppConnectionRepositoryFake
 import com.babylon.wallet.android.fakes.DappMessengerFake
-import com.babylon.wallet.android.fakes.DappMetadataRepositoryFake
+import com.babylon.wallet.android.fakes.DAppRepositoryFake
 import com.babylon.wallet.android.mockdata.profile
 import com.babylon.wallet.android.presentation.StateViewModelTest
 import com.babylon.wallet.android.presentation.dapp.authorized.InitialAuthorizedLoginRoute
@@ -38,7 +38,7 @@ import rdx.works.profile.domain.gateway.GetCurrentGatewayUseCase
 class DAppAuthorizedLoginViewModelTest : StateViewModelTest<DAppAuthorizedLoginViewModel>() {
 
     private val incomingRequestRepository = mockk<IncomingRequestRepository>()
-    private val dappMetadataRepository = DappMetadataRepositoryFake()
+    private val dappMetadataRepository = DAppRepositoryFake()
     private val getCurrentGatewayUseCase = mockk<GetCurrentGatewayUseCase>()
     private val getProfileUseCase = mockk<GetProfileUseCase>()
     private val savedStateHandle = mockk<SavedStateHandle>()

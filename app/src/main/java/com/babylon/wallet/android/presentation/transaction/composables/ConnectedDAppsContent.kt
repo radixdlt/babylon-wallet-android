@@ -37,15 +37,19 @@ import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
-import com.babylon.wallet.android.presentation.transaction.ConnectedDAppsUiModel
+import com.babylon.wallet.android.domain.model.DAppResources
+import com.babylon.wallet.android.domain.model.DAppWithMetadata
+import com.babylon.wallet.android.domain.model.DAppWithMetadataAndAssociatedResources
 import com.babylon.wallet.android.presentation.ui.composables.ImageSize
 import com.babylon.wallet.android.presentation.ui.composables.rememberImageUrl
+import com.babylon.wallet.android.utils.throttleClickable
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 
 @Composable
 fun ConnectedDAppsContent(
-    connectedDApps: ImmutableList<ConnectedDAppsUiModel>,
+    connectedDApps: ImmutableList<DAppWithMetadataAndAssociatedResources>,
+    onDAppClick: (DAppWithMetadataAndAssociatedResources) -> Unit,
     modifier: Modifier = Modifier
 ) {
     if (connectedDApps.isEmpty()) return
@@ -102,6 +106,9 @@ fun ConnectedDAppsContent(
             connectedDApps.forEach { connectedDApp ->
                 Row(
                     modifier = Modifier
+                        .throttleClickable {
+                            onDAppClick(connectedDApp)
+                        }
                         .drawBehind {
                             drawRoundRect(
                                 color = strokeColor,
@@ -121,7 +128,10 @@ fun ConnectedDAppsContent(
                 ) {
                     val placeholder = painterResource(id = R.drawable.ic_unknown_component)
                     AsyncImage(
-                        model = rememberImageUrl(fromUrl = connectedDApp.iconUrl, size = ImageSize.SMALL),
+                        model = rememberImageUrl(
+                            fromUrl = connectedDApp.dAppWithMetadata.iconUrl.toString(),
+                            size = ImageSize.SMALL
+                        ),
                         placeholder = placeholder,
                         fallback = placeholder,
                         error = placeholder,
@@ -132,8 +142,9 @@ fun ConnectedDAppsContent(
                             .clip(RadixTheme.shapes.circle)
                     )
                     Spacer(modifier = Modifier.width(RadixTheme.dimensions.paddingDefault))
+                    connectedDApp.dAppWithMetadata.name.orEmpty()
                     Text(
-                        text = connectedDApp.title.ifEmpty { stringResource(id = R.string.transactionReview_unknown) },
+                        text = connectedDApp.dAppWithMetadata.name ?: stringResource(id = R.string.transactionReview_unknown),
                         style = RadixTheme.typography.body1HighImportance,
                         color = RadixTheme.colors.gray1,
                         overflow = TextOverflow.Ellipsis
@@ -150,10 +161,16 @@ fun ConnectedDAppsContent(
 fun ConnectedDAppsContentPreview() {
     ConnectedDAppsContent(
         persistentListOf(
-            ConnectedDAppsUiModel(
-                "account_tdx_19jd32jd3928jd3892jd329",
-                "Connected DApp"
+            DAppWithMetadataAndAssociatedResources(
+                dAppWithMetadata = DAppWithMetadata(
+                    dAppAddress = "account_tdx_19jd32jd3928jd3892jd329"
+                ),
+                resources = DAppResources(
+                    emptyList(),
+                    emptyList()
+                )
             )
-        )
+        ),
+        onDAppClick = {}
     )
 }

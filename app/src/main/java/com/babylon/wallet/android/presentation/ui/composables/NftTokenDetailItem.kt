@@ -42,7 +42,7 @@ fun NftTokenDetailItem(
     Card(
         modifier = modifier
             .fillMaxWidth()
-            .padding(20.dp, 0.dp, 20.dp),
+            .padding(bottom = 1.dp),
         shape = RoundedCornerShape(0.dp, 0.dp, bottomCorners, bottomCorners),
         backgroundColor = RadixTheme.colors.defaultBackground,
         elevation = 4.dp,

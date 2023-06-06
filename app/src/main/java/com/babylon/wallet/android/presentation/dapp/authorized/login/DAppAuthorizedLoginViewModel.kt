@@ -6,12 +6,12 @@ import com.babylon.wallet.android.data.dapp.DappMessenger
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.data.dapp.model.WalletErrorType
 import com.babylon.wallet.android.data.dapp.model.toKind
-import com.babylon.wallet.android.data.repository.dappmetadata.DappMetadataRepository
+import com.babylon.wallet.android.data.repository.dappmetadata.DAppRepository
 import com.babylon.wallet.android.data.transaction.DappRequestException
 import com.babylon.wallet.android.data.transaction.DappRequestFailure
 import com.babylon.wallet.android.domain.common.onError
 import com.babylon.wallet.android.domain.common.onValue
-import com.babylon.wallet.android.domain.model.DappWithMetadata
+import com.babylon.wallet.android.domain.model.DAppWithMetadata
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel.IncomingRequest.AccountsRequestItem
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel.IncomingRequest.AuthorizedRequest
@@ -59,7 +59,7 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
     private val dAppConnectionRepository: DAppConnectionRepository,
     private val getProfileUseCase: GetProfileUseCase,
     private val getCurrentGatewayUseCase: GetCurrentGatewayUseCase,
-    private val dappMetadataRepository: DappMetadataRepository,
+    private val dAppRepository: DAppRepository,
     private val incomingRequestRepository: IncomingRequestRepository,
     private val buildAuthorizedDappResponseUseCase: BuildAuthorizedDappResponseUseCase,
 ) : StateViewModel<DAppLoginUiState>(),
@@ -101,7 +101,7 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
                 request.requestMetadata.dAppDefinitionAddress
             )
             editedDapp = authorizedDapp
-            val result = dappMetadataRepository.getDAppMetadata(
+            val result = dAppRepository.getDAppMetadata(
                 definitionAddress = request.metadata.dAppDefinitionAddress,
                 needMostRecentData = false
             )
@@ -659,7 +659,7 @@ sealed interface DAppAuthorizedLoginEvent : OneOffEvent {
 }
 
 data class DAppLoginUiState(
-    val dappWithMetadata: DappWithMetadata? = null,
+    val dappWithMetadata: DAppWithMetadata? = null,
     val uiMessage: UiMessage? = null,
     val initialAuthorizedLoginRoute: InitialAuthorizedLoginRoute? = null,
     val selectedAccountsOngoing: List<AccountItemUiModel> = emptyList(),

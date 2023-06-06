@@ -4,6 +4,8 @@ import android.net.Uri
 import com.babylon.wallet.android.data.gateway.generated.models.EntityMetadataItemValue
 import com.babylon.wallet.android.domain.model.metadata.AccountTypeMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.AccountTypeMetadataItem.AccountType
+import com.babylon.wallet.android.domain.model.metadata.ClaimedEntitiesMetadataItem
+import com.babylon.wallet.android.domain.model.metadata.ClaimedWebsiteMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.DAppDefinitionMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.DescriptionMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.DomainMetadataItem
@@ -27,6 +29,8 @@ enum class ExplicitMetadataKey(val key: String) {
     DOMAIN("domain"),
     DAPP_DEFINITION("dapp_definition"),
     RELATED_WEBSITES("related_websites"),
+    CLAIMED_WEBSITES("claimed_websites"),
+    CLAIMED_ENTITIES("claimed_entities"),
     ACCOUNT_TYPE("account_type"),
     TAGS("tags"),
     KEY_IMAGE_URL("key_image_url"),
@@ -35,6 +39,7 @@ enum class ExplicitMetadataKey(val key: String) {
     URL("url"), // TODO it should be info_url ?
     OWNER_KEYS("owner_keys");
 
+    @Suppress("CyclomaticComplexMethod")
     fun toStandardMetadataItem(value: EntityMetadataItemValue): StandardMetadataItem = when (this) {
         DESCRIPTION -> DescriptionMetadataItem(description = value.asString.orEmpty())
         SYMBOL -> SymbolMetadataItem(symbol = value.asString.orEmpty())
@@ -42,7 +47,11 @@ enum class ExplicitMetadataKey(val key: String) {
         DOMAIN -> DomainMetadataItem(domain = Uri.parse(value.asString.orEmpty()))
         DAPP_DEFINITION -> DAppDefinitionMetadataItem(address = value.asString.orEmpty())
         RELATED_WEBSITES -> RelatedWebsiteMetadataItem(website = value.asString.orEmpty())
-        ACCOUNT_TYPE -> AccountTypeMetadataItem(type = AccountType.valueOf(value.asString.orEmpty()))
+        ACCOUNT_TYPE -> AccountTypeMetadataItem(
+            type = (AccountType.values().find { it.asString == value.asString } ?: DAPP_DEFINITION) as AccountType
+        )
+        CLAIMED_WEBSITES -> ClaimedWebsiteMetadataItem(website = value.asString.orEmpty())
+        CLAIMED_ENTITIES -> ClaimedEntitiesMetadataItem(entity = value.asString.orEmpty())
         TAGS -> TagsMetadataItem(tags = listOf(value.asString.orEmpty()))
         KEY_IMAGE_URL -> IconUrlMetadataItem(url = Uri.parse(value.asString.orEmpty()))
         INFO_URL -> InfoUrlMetadataItem(url = Uri.parse(value.asString.orEmpty()))
