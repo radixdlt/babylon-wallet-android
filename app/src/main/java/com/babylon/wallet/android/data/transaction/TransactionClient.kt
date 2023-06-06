@@ -258,7 +258,7 @@ class TransactionClient @Inject constructor(
 
     private suspend fun findFeePayerCandidatesWithinOwnedAccounts(accounts: List<Network.Account>): List<Network.Account> {
         return getAccountsWithResourcesUseCase(accounts = accounts, isRefreshing = true)
-            .value()?.filter { it.hasXrd(TransactionConfig.DEFAULT_LOCK_FEE) }?.map { it.account }.orEmpty()
+            .value()?.filter { it.resources?.hasXrd(TransactionConfig.DEFAULT_LOCK_FEE) == true }?.map { it.account }.orEmpty()
     }
 
     private suspend fun buildTransactionHeader(
