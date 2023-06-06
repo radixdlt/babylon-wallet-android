@@ -3,6 +3,7 @@ package com.babylon.wallet.android.fakes
 import com.babylon.wallet.android.data.gateway.model.ExplicitMetadataKey
 import com.babylon.wallet.android.data.repository.dappmetadata.DAppRepository
 import com.babylon.wallet.android.domain.common.Result
+import com.babylon.wallet.android.domain.model.DAppResources
 import com.babylon.wallet.android.domain.model.DAppWithMetadata
 import com.babylon.wallet.android.domain.model.metadata.NameMetadataItem
 
@@ -36,6 +37,18 @@ class DAppRepositoryFake : DAppRepository {
                     dAppAddress = "dapp_address",
                     nameItem = NameMetadataItem(name = "dApp")
                 )
+            )
+        )
+    }
+
+    override suspend fun getDAppResources(
+        dAppMetadata: DAppWithMetadata,
+        isRefreshing: Boolean
+    ): Result<DAppResources> {
+        return Result.Success(
+            DAppResources(
+                fungibleResources = emptyList(),
+                nonFungibleResources = emptyList()
             )
         )
     }
