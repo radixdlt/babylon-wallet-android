@@ -146,7 +146,12 @@ private fun PersonaDetailContent(
                                 .weight(1f),
                             persona = persona,
                             authorizedDapps = authorizedDapps,
-                            onDAppClick = onDAppClick,
+                            onDAppClick = {
+                                onDAppClick(it)
+                                scope.launch {
+                                    bottomSheetState.show()
+                                }
+                            },
                             onEditPersona = onEditPersona,
                             hasAuthKey = hasAuthKey,
                             onCreateAndUploadAuthKey = onCreateAndUploadAuthKey,
@@ -244,8 +249,8 @@ private fun PersonaDetailList(
             items(authorizedDapps) { dApp ->
                 GrayBackgroundWrapper {
                     StandardOneLineCard(
-                        "",
-                        dApp.dAppWithMetadata.name.orEmpty(),
+                        image = dApp.dAppWithMetadata.iconUrl.toString(),
+                        title = dApp.dAppWithMetadata.name.orEmpty(),
                         modifier = Modifier
                             .shadow(elevation = 8.dp, shape = RadixTheme.shapes.roundedRectMedium)
                             .clip(RadixTheme.shapes.roundedRectMedium)
