@@ -10,18 +10,18 @@ import com.babylon.wallet.android.domain.model.metadata.ClaimedWebsiteMetadataIt
 import javax.inject.Inject
 
 class GetDAppWithMetadataAndAssociatedResourcesUseCase @Inject constructor(
-    private val dAppMetadataRepository: DAppRepository,
+    private val dAppRepository: DAppRepository,
 ) {
     suspend operator fun invoke(
         definitionAddress: String,
         needMostRecentData: Boolean
-    ): Result<DAppWithMetadataAndAssociatedResources> = dAppMetadataRepository.getDAppMetadata(
+    ): Result<DAppWithMetadataAndAssociatedResources> = dAppRepository.getDAppMetadata(
         definitionAddress = definitionAddress,
         needMostRecentData = false
     ).switchMap { dAppMetadata ->
         // If well known file verification fails, we dont want claimed websites
         val isWebsiteAuthentic = dAppMetadata.claimedWebsite?.let { website ->
-            dAppMetadataRepository.verifyDapp(
+            dAppRepository.verifyDapp(
                 origin = website,
                 dAppDefinitionAddress = dAppMetadata.dAppAddress
             ).value() == true
@@ -39,7 +39,7 @@ class GetDAppWithMetadataAndAssociatedResourcesUseCase @Inject constructor(
             }
         )
 
-        dAppMetadataRepository.getDAppResources(dAppMetadata = updatedDAppMetadata, needMostRecentData)
+        dAppRepository.getDAppResources(dAppMetadata = updatedDAppMetadata, needMostRecentData)
             .map { resources ->
                 DAppWithMetadataAndAssociatedResources(
                     dAppWithMetadata = updatedDAppMetadata,

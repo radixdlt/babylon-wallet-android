@@ -44,7 +44,7 @@ class DAppUnauthorizedLoginViewModel @Inject constructor(
     private val dAppMessenger: DappMessenger,
     private val getProfileUseCase: GetProfileUseCase,
     private val getCurrentGatewayUseCase: GetCurrentGatewayUseCase,
-    private val dappMetadataRepository: DAppRepository,
+    private val dAppRepository: DAppRepository,
     private val incomingRequestRepository: IncomingRequestRepository
 ) : StateViewModel<DAppUnauthorizedLoginUiState>(),
     OneOffEventHandler<DAppUnauthorizedLoginEvent> by OneOffEventHandlerImpl() {
@@ -74,7 +74,7 @@ class DAppUnauthorizedLoginViewModel @Inject constructor(
                 handleRequestError(DappRequestFailure.InvalidRequest)
                 return@launch
             }
-            val result = dappMetadataRepository.getDAppMetadata(
+            val result = dAppRepository.getDAppMetadata(
                 definitionAddress = request.metadata.dAppDefinitionAddress,
                 needMostRecentData = false
             )

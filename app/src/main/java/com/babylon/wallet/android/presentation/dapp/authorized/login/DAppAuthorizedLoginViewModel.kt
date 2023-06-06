@@ -59,7 +59,7 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
     private val dAppConnectionRepository: DAppConnectionRepository,
     private val getProfileUseCase: GetProfileUseCase,
     private val getCurrentGatewayUseCase: GetCurrentGatewayUseCase,
-    private val dappMetadataRepository: DAppRepository,
+    private val dAppRepository: DAppRepository,
     private val incomingRequestRepository: IncomingRequestRepository,
     private val buildAuthorizedDappResponseUseCase: BuildAuthorizedDappResponseUseCase,
 ) : StateViewModel<DAppLoginUiState>(),
@@ -101,7 +101,7 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
                 request.requestMetadata.dAppDefinitionAddress
             )
             editedDapp = authorizedDapp
-            val result = dappMetadataRepository.getDAppMetadata(
+            val result = dAppRepository.getDAppMetadata(
                 definitionAddress = request.metadata.dAppDefinitionAddress,
                 needMostRecentData = false
             )

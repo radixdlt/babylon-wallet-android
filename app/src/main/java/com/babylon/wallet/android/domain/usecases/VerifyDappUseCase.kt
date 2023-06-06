@@ -16,7 +16,7 @@ import rdx.works.profile.domain.security
 import javax.inject.Inject
 
 class VerifyDappUseCase @Inject constructor(
-    private val dappMetadataRepository: DAppRepository,
+    private val dAppRepository: DAppRepository,
     private val dAppMessenger: DappMessenger,
     private val getProfileUseCase: GetProfileUseCase
 ) {
@@ -37,7 +37,7 @@ class VerifyDappUseCase @Inject constructor(
         return if (developerMode) {
             Result.Success(true)
         } else {
-            val validationResult = dappMetadataRepository.verifyDapp(
+            val validationResult = dAppRepository.verifyDapp(
                 origin = request.metadata.origin,
                 dAppDefinitionAddress = request.metadata.dAppDefinitionAddress
             )
