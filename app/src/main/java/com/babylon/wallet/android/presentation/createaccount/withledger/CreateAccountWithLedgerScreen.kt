@@ -83,7 +83,7 @@ fun CreateAccountWithLedgerScreen(
             onConfirmLedgerName = viewModel::onConfirmLedgerName,
             onUseLedger = viewModel::onUseLedger,
             waitingForLedgerResponse = state.waitingForLedgerResponse,
-            hasP2pLinks = state.hasP2pLinks,
+            hasP2PLinks = state.hasP2pLinks,
             onAddP2PLink = onAddP2PLink
         )
     }
@@ -101,10 +101,10 @@ fun CreateAccountWithLedgerContent(
     onConfirmLedgerName: (String) -> Unit,
     onUseLedger: () -> Unit,
     waitingForLedgerResponse: Boolean,
-    hasP2pLinks: Boolean,
+    hasP2PLinks: Boolean,
     onAddP2PLink: () -> Unit
 ) {
-    var showNoP2pLinksDialog by remember {
+    var showNoP2PLinksDialog by remember {
         mutableStateOf(false)
     }
     val scope = rememberCoroutineScope()
@@ -208,12 +208,12 @@ fun CreateAccountWithLedgerContent(
                         .fillMaxWidth()
                         .imePadding(),
                     onClick = {
-                        if (hasP2pLinks) {
+                        if (hasP2PLinks) {
                             scope.launch {
                                 bottomSheetState.show()
                             }
                         } else {
-                            showNoP2pLinksDialog = true
+                            showNoP2PLinksDialog = true
                         }
                     },
                     text = stringResource(id = com.babylon.wallet.android.R.string.ledgerHardwareDevices_addNewLedger)
@@ -232,13 +232,13 @@ fun CreateAccountWithLedgerContent(
                 FullscreenCircularProgressContent()
             }
         }
-        if (showNoP2pLinksDialog) {
+        if (showNoP2PLinksDialog) {
             BasicPromptAlertDialog(
                 finish = {
                     if (it) {
                         onAddP2PLink()
                     }
-                    showNoP2pLinksDialog = false
+                    showNoP2PLinksDialog = false
                 },
                 title = {
                     Text(
@@ -275,7 +275,7 @@ fun CreateAccountWithLedgerContentPreview() {
             onConfirmLedgerName = {},
             onUseLedger = {},
             waitingForLedgerResponse = false,
-            hasP2pLinks = false,
+            hasP2PLinks = false,
             onAddP2PLink = {}
         )
     }

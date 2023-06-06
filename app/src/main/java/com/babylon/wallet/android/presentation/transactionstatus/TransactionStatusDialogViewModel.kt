@@ -26,16 +26,15 @@ class TransactionStatusDialogViewModel @Inject constructor(
         viewModelScope.launch {
             appEventBus.events.filterIsInstance<AppEvent.TransactionEvent>().collect { event ->
                 when (event) {
-                    is AppEvent.TransactionEvent.FailedTransaction -> {
+                    is AppEvent.TransactionEvent.Failed -> {
                         _state.update { it.copy(transactionStatus = TransactionStatus.Failed(event.errorTextRes)) }
                     }
-                    is AppEvent.TransactionEvent.SuccessfulTransaction -> {
+                    is AppEvent.TransactionEvent.Successful -> {
                         _state.update { it.copy(transactionStatus = TransactionStatus.Success) }
                     }
-                    is AppEvent.TransactionEvent.TransactionSent -> {
+                    is AppEvent.TransactionEvent.Sent -> {
                         _state.update { it.copy(transactionStatus = TransactionStatus.Completing) }
                     }
-                    else -> {}
                 }
             }
         }

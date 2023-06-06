@@ -83,7 +83,7 @@ class MainViewModel @Inject constructor(
         viewModelScope.launch {
             appEventBus.events.filterIsInstance<AppEvent.TransactionEvent>().collect { event ->
                 when (event) {
-                    is AppEvent.TransactionEvent.TransactionSent -> {
+                    is AppEvent.TransactionEvent.Sent -> {
                         sendEvent(MainEvent.TransactionStatusEvent(event.requestId))
                     }
                     else -> {}

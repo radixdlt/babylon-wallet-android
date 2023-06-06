@@ -29,8 +29,8 @@ sealed interface AppEvent {
     ) : AppEvent
 
     sealed class TransactionEvent(val requestId: String) : AppEvent {
-        data class TransactionSent(private val reqId: String) : TransactionEvent(reqId)
-        data class SuccessfulTransaction(private val reqId: String) : TransactionEvent(reqId)
-        data class FailedTransaction(private val reqId: String, val errorTextRes: Int?) : TransactionEvent(reqId)
+        data class Sent(private val reqId: String) : TransactionEvent(reqId)
+        data class Successful(private val reqId: String) : TransactionEvent(reqId)
+        data class Failed(private val reqId: String, val errorTextRes: Int?) : TransactionEvent(reqId)
     }
 }

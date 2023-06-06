@@ -384,7 +384,7 @@ class TransactionApprovalViewModel @Inject constructor(
             feePayerAddress = feePayerAddress
         )
         transactionClient.signAndSubmitTransaction(request).onSuccess { txId ->
-            appEventBus.sendEvent(AppEvent.TransactionEvent.TransactionSent(args.requestId))
+            appEventBus.sendEvent(AppEvent.TransactionEvent.Sent(args.requestId))
             // Send confirmation to the dApp that tx was submitted before status polling
             if (!transactionWriteRequest.isInternal) {
                 dAppMessenger.sendTransactionWriteResponseSuccess(
@@ -396,7 +396,7 @@ class TransactionApprovalViewModel @Inject constructor(
             val transactionStatus = pollTransactionStatusUseCase(txId)
             transactionStatus.onValue { _ ->
                 _state.update { it.copy(isSigning = false) }
-                appEventBus.sendEvent(AppEvent.TransactionEvent.SuccessfulTransaction(args.requestId))
+                appEventBus.sendEvent(AppEvent.TransactionEvent.Successful(args.requestId))
             }
             transactionStatus.onError { error ->
                 _state.update {
@@ -417,7 +417,7 @@ class TransactionApprovalViewModel @Inject constructor(
                     }
                 }
                 appEventBus.sendEvent(
-                    AppEvent.TransactionEvent.FailedTransaction(
+                    AppEvent.TransactionEvent.Failed(
                         args.requestId,
                         exception?.failure?.toDescriptionRes()
                     )
@@ -442,7 +442,7 @@ class TransactionApprovalViewModel @Inject constructor(
                 }
             }
             appEventBus.sendEvent(
-                AppEvent.TransactionEvent.FailedTransaction(
+                AppEvent.TransactionEvent.Failed(
                     args.requestId,
                     exception?.failure?.toDescriptionRes()
                 )

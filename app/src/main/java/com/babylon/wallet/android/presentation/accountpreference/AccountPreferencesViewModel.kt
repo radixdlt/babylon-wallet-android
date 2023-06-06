@@ -59,10 +59,10 @@ class AccountPreferenceViewModel @Inject constructor(
             appEventBus.events.filterIsInstance<AppEvent.TransactionEvent>().filter { it.requestId == uploadAuthKeyRequestId }
                 .collect { event ->
                     when (event) {
-                        is AppEvent.TransactionEvent.FailedTransaction -> {
+                        is AppEvent.TransactionEvent.Failed -> {
                             _state.update { it.copy(isLoading = false) }
                         }
-                        is AppEvent.TransactionEvent.SuccessfulTransaction -> {
+                        is AppEvent.TransactionEvent.Successful -> {
                             val account = requireNotNull(state.value.account)
                             val authSigningFactorInstance = requireNotNull(authSigningFactorInstance)
                             addAuthSigningFactorInstanceUseCase(account, authSigningFactorInstance)
