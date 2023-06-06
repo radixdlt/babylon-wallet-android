@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.presentation.ui.composables.resultdialog.completing
+package com.babylon.wallet.android.presentation.ui.composables.resultdialog.signing
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.SheetState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -25,23 +24,24 @@ import com.babylon.wallet.android.presentation.ui.composables.BottomSheetWrapper
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CompletingBottomDialog(
+fun SigningStatusBottomDialog(
     modifier: Modifier = Modifier,
-    onDismissDialogClick: () -> Unit,
-    bottomSheetState: SheetState
+    onDismissDialogClick: () -> Unit
 ) {
+    val dismissHandler = {
+        onDismissDialogClick()
+    }
     BottomSheetWrapper(
-        onDismissRequest = onDismissDialogClick,
-        bottomSheetState = bottomSheetState
+        onDismissRequest = dismissHandler
     ) {
-        CompletingBottomDialogContent(
+        SigningStatusBottomDialog(
             modifier = modifier
         )
     }
 }
 
 @Composable
-private fun CompletingBottomDialogContent(
+private fun SigningStatusBottomDialog(
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -70,8 +70,8 @@ private fun CompletingBottomDialogContent(
 
 @Preview(showBackground = true)
 @Composable
-fun CompletingBottomDialogPreview() {
+fun SigningStatusBottomDialogPreview() {
     RadixWalletTheme {
-        CompletingBottomDialogContent()
+        SigningStatusBottomDialog()
     }
 }

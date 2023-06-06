@@ -17,21 +17,20 @@ import androidx.compose.ui.tooling.preview.Preview
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
+import com.babylon.wallet.android.presentation.transactionstatus.TransactionStatusDialogViewModel
 import com.babylon.wallet.android.presentation.ui.composables.BottomSheetWrapper
-import com.babylon.wallet.android.presentation.ui.composables.resultdialog.ResultBottomDialogViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SuccessBottomDialog(
     modifier: Modifier = Modifier,
-    viewModel: ResultBottomDialogViewModel,
-    requestId: String,
+    viewModel: TransactionStatusDialogViewModel,
     isFromTransaction: Boolean,
     dAppName: String,
     onBackPress: () -> Unit
 ) {
     val dismissHandler = {
-        viewModel.incomingRequestHandled(requestId)
+        viewModel.incomingRequestHandled()
         onBackPress()
     }
     BottomSheetWrapper(

@@ -41,17 +41,17 @@ class CollectSignersSignaturesUseCase @Inject constructor(
                     signaturesWithPublicKeys.addAll(signatures)
                 }
                 FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET -> {
-                    _signingEvent.update { SigningEvent.SigningWithLedger(factorSource) }
+                    _signingEvent.update { SigningEvent.WithLedger(factorSource) }
                     signWithLedgerFactorSourceUseCase(
                         ledgerFactorSource = factorSource,
                         signers = signers,
                         signRequest = signRequest,
                         signingPurpose = signingPurpose
                     ).onSuccess { signatures ->
-                        _signingEvent.update { SigningEvent.SigningWithLedgerSuccess(factorSource.id) }
+                        _signingEvent.update { SigningEvent.WithLedgerSucceeded(factorSource.id) }
                         signaturesWithPublicKeys.addAll(signatures)
                     }.onFailure {
-                        _signingEvent.update { SigningEvent.SigningWithLedgerFailed(factorSource.id) }
+                        _signingEvent.update { SigningEvent.WithLedgerFailed(factorSource.id) }
                         return Result.failure(it)
                     }
                 }

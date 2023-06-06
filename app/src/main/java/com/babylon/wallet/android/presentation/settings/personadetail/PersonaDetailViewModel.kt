@@ -23,6 +23,7 @@ import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -82,13 +83,21 @@ class PersonaDetailViewModel @Inject constructor(
         }
 
         viewModelScope.launch {
-            appEventBus.events.filterIsInstance<AppEvent.ApprovedTransaction>().collect { event ->
-                if (event.requestId == uploadAuthKeyRequestId) {
-                    val persona = requireNotNull(state.value.persona)
-                    val authSigningFactorInstance = requireNotNull(authSigningFactorInstance)
-                    addAuthSigningFactorInstanceUseCase(persona, authSigningFactorInstance)
+            appEventBus.events.filterIsInstance<AppEvent.TransactionEvent>().filter { it.requestId == uploadAuthKeyRequestId }
+                .collect { event ->
+                    when (event) {
+                        is AppEvent.TransactionEvent.Failed -> {
+                            _state.update { it.copy(loading = false) }
+                        }
+                        is AppEvent.TransactionEvent.Successful -> {
+                            val persona = requireNotNull(state.value.persona)
+                            val authSigningFactorInstance = requireNotNull(authSigningFactorInstance)
+                            addAuthSigningFactorInstanceUseCase(persona, authSigningFactorInstance)
+                            _state.update { it.copy(loading = false) }
+                        }
+                        else -> {}
+                    }
                 }
-            }
         }
     }
 
@@ -127,7 +136,6 @@ class PersonaDetailViewModel @Inject constructor(
                     )
                     incomingRequestRepository.add(internalMessage)
                 }
-                _state.update { it.copy(loading = false) }
             }
         }
     }
