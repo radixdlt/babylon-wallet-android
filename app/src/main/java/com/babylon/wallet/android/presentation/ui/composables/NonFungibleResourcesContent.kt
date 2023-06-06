@@ -1,9 +1,6 @@
 package com.babylon.wallet.android.presentation.ui.composables
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.expandVertically
-import androidx.compose.animation.shrinkVertically
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -20,61 +17,60 @@ import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.model.Resource
 import com.babylon.wallet.android.domain.model.Resources
 
-@Suppress("MutableParams", "UnstableCollections")
 @Composable
 fun NonFungibleResourcesContent(
+    modifier: Modifier = Modifier,
     resources: Resources?,
     onNftClick: (Resource.NonFungibleResource, Resource.NonFungibleResource.Item) -> Unit,
-    modifier: Modifier = Modifier,
 ) {
     val collections = resources?.nonFungibleResources.orEmpty()
     val collapsedState = remember(collections) {
         collections.map { true }.toMutableStateList()
     }
 
-    LazyColumn(modifier) {
-        collections.forEachIndexed { i, collection ->
-            val collapsed = collapsedState[i]
-            item(key = "header_$i") {
-                NftTokenHeaderItem(
-                    modifier = Modifier
-                        .padding(horizontal = 20.dp),
-                    nftImageUrl = collection.iconUrl.toString(),
-                    nftName = collection.name,
-                    nftsInCirculation = "?",
-                    nftsInPossession = collection.items.size.toString(),
-                    nftChildCount = collection.items.size,
-                    collapsed = collapsed
-                ) {
-                    collapsedState[i] = !collapsed
-                }
-            }
-            items(
-                collection.items,
-                key = { item -> item.globalAddress }
-            ) { item ->
-                AnimatedVisibility(
-                    visible = !collapsed,
-                    enter = expandVertically(),
-                    exit = shrinkVertically(animationSpec = tween(150))
-                ) {
-                    var bottomCornersRounded = false
-                    if (collection.items.last() == item) {
-                        bottomCornersRounded = true
+    LazyColumn(
+        modifier = modifier,
+        contentPadding = PaddingValues(
+            start = RadixTheme.dimensions.paddingDefault,
+            end = RadixTheme.dimensions.paddingDefault,
+            bottom = RadixTheme.dimensions.paddingDefault
+        )
+    ) {
+        collections.forEachIndexed { collectionIndex, collection ->
+            val collapsed = collapsedState[collectionIndex]
+
+            item(
+                key = collection.resourceAddress,
+                contentType = { "collection" }
+            ) {
+                NonFungibleResourceCollectionHeader(
+                    modifier = Modifier.padding(bottom = 1.dp),
+                    collection = collection,
+                    collapsed = collapsed,
+                    parentSectionClick = {
+                        collapsedState[collectionIndex] = !collapsed
                     }
-                    NftTokenDetailItem(
-                        item = item,
-                        bottomCornersRounded = bottomCornersRounded,
-                        onItemClicked = {
-                            onNftClick(collection, item)
-                        }
-                    )
-                }
+                )
             }
-            item { Spacer(modifier = Modifier.height(if (collapsed) 0.dp else RadixTheme.dimensions.paddingDefault)) }
-        }
-        item {
-            Spacer(modifier = Modifier.height(100.dp))
+
+            items(
+                items = if (collapsed) emptyList() else collection.items,
+                key = { item -> item.globalAddress },
+                contentType = { "nft" }
+            ) { item ->
+                NftTokenDetailItem(
+                    modifier = Modifier.padding(vertical = 1.dp),
+                    item = item,
+                    bottomCornersRounded = collection.items.last().globalAddress == item.globalAddress,
+                    onItemClicked = {
+                        onNftClick(collection, item)
+                    }
+                )
+            }
+
+            if (collectionIndex != collections.lastIndex) {
+                item { Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault)) }
+            }
         }
     }
 }

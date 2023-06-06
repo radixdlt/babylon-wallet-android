@@ -24,7 +24,6 @@ import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -32,16 +31,14 @@ import coil.compose.rememberAsyncImagePainter
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
+import com.babylon.wallet.android.domain.model.Resource
+import com.babylon.wallet.android.domain.model.metadata.NameMetadataItem
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
-fun NftTokenHeaderItem(
+fun NonFungibleResourceCollectionHeader(
     modifier: Modifier = Modifier,
-    nftImageUrl: String?,
-    nftName: String?,
-    nftsInCirculation: String?,
-    nftsInPossession: String?,
-    nftChildCount: Int,
+    collection: Resource.NonFungibleResource,
     cardHeight: Dp = 103.dp,
     collapsed: Boolean = false,
     groupInnerPadding: Dp = 6.dp,
@@ -53,7 +50,7 @@ fun NftTokenHeaderItem(
         modifier = modifier
     ) {
         if (collapsed) {
-            if (nftChildCount >= 2) {
+            if (collection.items.size >= 2) {
                 val scaleFactor = 0.8f
                 val topOffset = cardHeight * (1 - scaleFactor) + groupInnerPadding + groupInnerPadding * scaleFactor
                 Surface(
@@ -69,7 +66,7 @@ fun NftTokenHeaderItem(
                 )
             }
 
-            if (nftChildCount >= 1) {
+            if (collection.items.isNotEmpty()) {
                 val scaleFactor = 0.9f
                 val topOffset = cardHeight * (1 - scaleFactor) + groupInnerPadding
                 Surface(
@@ -104,7 +101,7 @@ fun NftTokenHeaderItem(
             ) {
                 Image(
                     painter = rememberAsyncImagePainter(
-                        model = rememberImageUrl(fromUrl = nftImageUrl, size = ImageSize.SMALL),
+                        model = rememberImageUrl(fromUrl = collection.iconUrl?.toString().orEmpty(), size = ImageSize.SMALL),
                         placeholder = painterResource(id = R.drawable.img_placeholder),
                         error = painterResource(id = R.drawable.img_placeholder)
                     ),
@@ -115,25 +112,25 @@ fun NftTokenHeaderItem(
                         .clip(RadixTheme.shapes.roundedRectSmall)
                 )
                 Column(verticalArrangement = Arrangement.Center) {
-                    nftName?.let { name ->
-                        if (name.isNotEmpty()) {
-                            Text(
-                                name,
-                                style = RadixTheme.typography.secondaryHeader,
-                                color = RadixTheme.colors.gray1,
-                                maxLines = 2
-                            )
-                        }
+                    if (collection.name.isNotEmpty()) {
+                        Text(
+                            collection.name,
+                            style = RadixTheme.typography.secondaryHeader,
+                            color = RadixTheme.colors.gray1,
+                            maxLines = 2
+                        )
                     }
-                    Text(
-                        stringResource(
-                            id = R.string.assetDetails_NFTDetails_ownedOfTotal,
-                            nftsInPossession?.toIntOrNull() ?: 0,
-                            nftsInCirculation?.toIntOrNull() ?: 0
-                        ),
-                        style = RadixTheme.typography.body2HighImportance,
-                        color = RadixTheme.colors.gray2,
-                    )
+
+// Not implemented yet
+//                    Text(
+//                        stringResource(
+//                            id = R.string.assetDetails_NFTDetails_ownedOfTotal,
+//                            collection.items.size,
+//                            circulation
+//                        ),
+//                        style = RadixTheme.typography.body2HighImportance,
+//                        color = RadixTheme.colors.gray2,
+//                    )
                 }
             }
         }
@@ -144,13 +141,30 @@ fun NftTokenHeaderItem(
 @Composable
 fun CollapsableParentItemPreview() {
     RadixWalletTheme {
-        NftTokenHeaderItem(
+        NonFungibleResourceCollectionHeader(
             modifier = Modifier.padding(all = 30.dp),
-            nftImageUrl = "url",
-            nftName = "Rypto Punks",
-            nftsInCirculation = "300,000",
-            nftsInPossession = "1",
-            nftChildCount = 3,
+            collection = Resource.NonFungibleResource(
+                resourceAddress = "resource_rdx_abcde",
+                amount = 1,
+                nameMetadataItem = NameMetadataItem(name = "Crypto Punks"),
+                items = listOf(
+                    Resource.NonFungibleResource.Item(
+                        collectionAddress = "resource_rdx_abcde",
+                        localId = Resource.NonFungibleResource.Item.ID.from("#1#"),
+                        iconMetadataItem = null
+                    ),
+                    Resource.NonFungibleResource.Item(
+                        collectionAddress = "resource_rdx_abcde",
+                        localId = Resource.NonFungibleResource.Item.ID.from("#2#"),
+                        iconMetadataItem = null
+                    ),
+                    Resource.NonFungibleResource.Item(
+                        collectionAddress = "resource_rdx_abcde",
+                        localId = Resource.NonFungibleResource.Item.ID.from("#3#"),
+                        iconMetadataItem = null
+                    )
+                )
+            ),
             collapsed = false
         ) { }
     }
@@ -160,13 +174,30 @@ fun CollapsableParentItemPreview() {
 @Composable
 fun ExpandedParentItemPreview() {
     RadixWalletTheme {
-        NftTokenHeaderItem(
+        NonFungibleResourceCollectionHeader(
             modifier = Modifier.padding(all = 16.dp),
-            nftImageUrl = "url",
-            nftName = "Rypto Punks",
-            nftsInCirculation = "300,000",
-            nftsInPossession = "1",
-            nftChildCount = 3,
+            collection = Resource.NonFungibleResource(
+                resourceAddress = "resource_rdx_abcde",
+                amount = 1,
+                nameMetadataItem = NameMetadataItem(name = "Crypto Punks"),
+                items = listOf(
+                    Resource.NonFungibleResource.Item(
+                        collectionAddress = "resource_rdx_abcde",
+                        localId = Resource.NonFungibleResource.Item.ID.from("#1#"),
+                        iconMetadataItem = null
+                    ),
+                    Resource.NonFungibleResource.Item(
+                        collectionAddress = "resource_rdx_abcde",
+                        localId = Resource.NonFungibleResource.Item.ID.from("#2#"),
+                        iconMetadataItem = null
+                    ),
+                    Resource.NonFungibleResource.Item(
+                        collectionAddress = "resource_rdx_abcde",
+                        localId = Resource.NonFungibleResource.Item.ID.from("#3#"),
+                        iconMetadataItem = null
+                    )
+                )
+            ),
             collapsed = true
         ) { }
     }
@@ -176,13 +207,25 @@ fun ExpandedParentItemPreview() {
 @Composable
 fun ExpandedParentItemPreviewWithTwo() {
     RadixWalletTheme {
-        NftTokenHeaderItem(
+        NonFungibleResourceCollectionHeader(
             modifier = Modifier.padding(all = 16.dp),
-            nftImageUrl = "url",
-            nftName = "Rypto Punks",
-            nftsInCirculation = "300,000",
-            nftsInPossession = "1",
-            nftChildCount = 2,
+            collection = Resource.NonFungibleResource(
+                resourceAddress = "resource_rdx_abcde",
+                amount = 1,
+                nameMetadataItem = NameMetadataItem(name = "Crypto Punks"),
+                items = listOf(
+                    Resource.NonFungibleResource.Item(
+                        collectionAddress = "resource_rdx_abcde",
+                        localId = Resource.NonFungibleResource.Item.ID.from("#1#"),
+                        iconMetadataItem = null
+                    ),
+                    Resource.NonFungibleResource.Item(
+                        collectionAddress = "resource_rdx_abcde",
+                        localId = Resource.NonFungibleResource.Item.ID.from("#2#"),
+                        iconMetadataItem = null
+                    )
+                )
+            ),
             collapsed = true
         ) { }
     }
@@ -192,13 +235,20 @@ fun ExpandedParentItemPreviewWithTwo() {
 @Composable
 fun CollapsableParentItemWithLargeFontPreview() {
     RadixWalletTheme {
-        NftTokenHeaderItem(
+        NonFungibleResourceCollectionHeader(
             modifier = Modifier.padding(all = 16.dp),
-            nftImageUrl = "url",
-            nftName = "Rypto Punks",
-            nftsInCirculation = "300,000",
-            nftsInPossession = "1",
-            nftChildCount = 3,
+            collection = Resource.NonFungibleResource(
+                resourceAddress = "resource_rdx_abcde",
+                amount = 1,
+                nameMetadataItem = NameMetadataItem(name = "Crypto Punks"),
+                items = listOf(
+                    Resource.NonFungibleResource.Item(
+                        collectionAddress = "resource_rdx_abcde",
+                        localId = Resource.NonFungibleResource.Item.ID.from("#1#"),
+                        iconMetadataItem = null
+                    )
+                )
+            ),
             collapsed = false
         ) { }
     }

@@ -40,9 +40,7 @@ fun NftTokenDetailItem(
 ) {
     val bottomCorners by animateDpAsState(targetValue = if (bottomCornersRounded) 12.dp else 0.dp)
     Card(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(bottom = 1.dp),
+        modifier = modifier.fillMaxWidth(),
         shape = RoundedCornerShape(0.dp, 0.dp, bottomCorners, bottomCorners),
         backgroundColor = RadixTheme.colors.defaultBackground,
         elevation = 4.dp,

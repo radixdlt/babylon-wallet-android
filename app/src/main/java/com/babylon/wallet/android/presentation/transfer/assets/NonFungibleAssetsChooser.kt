@@ -1,9 +1,5 @@
 package com.babylon.wallet.android.presentation.transfer.assets
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.expandVertically
-import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -11,11 +7,13 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material.Text
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -41,7 +39,7 @@ import com.babylon.wallet.android.domain.model.Resource
 import com.babylon.wallet.android.domain.model.Resources
 import com.babylon.wallet.android.presentation.transfer.SpendingAsset
 import com.babylon.wallet.android.presentation.ui.composables.ImageSize
-import com.babylon.wallet.android.presentation.ui.composables.NftTokenHeaderItem
+import com.babylon.wallet.android.presentation.ui.composables.NonFungibleResourceCollectionHeader
 import com.babylon.wallet.android.presentation.ui.composables.applyImageAspectRatio
 import com.babylon.wallet.android.presentation.ui.composables.rememberImageUrl
 import kotlinx.collections.immutable.ImmutableSet
@@ -59,57 +57,53 @@ fun NonFungibleAssetsChooser(
     }
 
     LazyColumn(
-        modifier = modifier
-            .fillMaxSize()
-            .padding(horizontal = RadixTheme.dimensions.paddingDefault),
-        contentPadding = PaddingValues(vertical = RadixTheme.dimensions.paddingDefault)
+        modifier = modifier.fillMaxSize(),
+        contentPadding = PaddingValues(all = RadixTheme.dimensions.paddingDefault)
     ) {
         collections.forEachIndexed { collectionIndex, collection ->
             val collapsed = collapsedState[collectionIndex]
-            item(key = collection.resourceAddress) {
-                NftTokenHeaderItem(
-                    modifier = Modifier.padding(
-                        top = if (collectionIndex == 0) 0.dp else RadixTheme.dimensions.paddingDefault,
-                        bottom = 1.dp
-                    ),
-                    nftImageUrl = collection.iconUrl.toString(),
-                    nftName = collection.name,
-                    nftsInCirculation = "?",
-                    nftsInPossession = collection.items.size.toString(),
-                    nftChildCount = collection.items.size,
-                    collapsed = collapsed
+            val isLastCollection = collectionIndex == collections.lastIndex
+            item(
+                key = collection.resourceAddress,
+                contentType = { "collection" }
+            ) {
+                NonFungibleResourceCollectionHeader(
+                    modifier = Modifier.padding(bottom = 1.dp),
+                    collection = collection,
+                    collapsed = collapsed,
+                    parentSectionClick = {
+                        collapsedState[collectionIndex] = !collapsed
+                    }
+                )
+            }
+
+            items(
+                items = if (collapsed) emptyList() else collection.items,
+                key = { item -> item.globalAddress },
+                contentType = { "nft" }
+            ) { item ->
+                val isLastItem = collection.items.last().globalAddress == item.globalAddress
+                ItemContainer(
+                    modifier = Modifier.padding(vertical = 1.dp),
+                    shape = if (isLastItem) {
+                        RadixTheme.shapes.roundedRectBottomMedium
+                    } else {
+                        RectangleShape
+                    }
                 ) {
-                    collapsedState[collectionIndex] = !collapsed
+                    Item(
+                        resource = item,
+                        isSelected = selectedAssets.any { it.address == item.globalAddress },
+                        onCheckChanged = {
+                            val nonFungibleAsset = SpendingAsset.NFT(item = item)
+                            onAssetSelectionChanged(nonFungibleAsset, it)
+                        }
+                    )
                 }
             }
 
-            itemsIndexed(
-                items = collection.items,
-                key = { _, item -> item.globalAddress }
-            ) { itemIndex, item ->
-                AnimatedVisibility(
-                    visible = !collapsed,
-                    enter = expandVertically(),
-                    exit = shrinkVertically(animationSpec = tween(150))
-                ) {
-                    ItemContainer(
-                        modifier = Modifier.padding(vertical = 1.dp),
-                        shape = if (itemIndex == collection.items.lastIndex) {
-                            RadixTheme.shapes.roundedRectBottomMedium
-                        } else {
-                            RectangleShape
-                        }
-                    ) {
-                        Item(
-                            resource = item,
-                            isSelected = selectedAssets.any { it.address == item.globalAddress },
-                            onCheckChanged = {
-                                val nonFungibleAsset = SpendingAsset.NFT(item = item)
-                                onAssetSelectionChanged(nonFungibleAsset, it)
-                            }
-                        )
-                    }
-                }
+            if (!isLastCollection) {
+                item { Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault)) }
             }
         }
     }
