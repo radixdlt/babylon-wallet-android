@@ -2,10 +2,6 @@
 
 package com.babylon.wallet.android.data.dapp
 
-import com.babylon.wallet.android.data.dapp.model.AuthLoginWithoutChallengeRequestResponseItem
-import com.babylon.wallet.android.data.dapp.model.AuthUsePersonaRequestResponseItem
-import com.babylon.wallet.android.data.dapp.model.Persona
-import com.babylon.wallet.android.data.dapp.model.WalletAuthorizedRequestResponseItems
 import com.babylon.wallet.android.data.dapp.model.WalletErrorType
 import com.babylon.wallet.android.data.dapp.model.WalletInteractionFailureResponse
 import com.babylon.wallet.android.data.dapp.model.WalletInteractionResponse
@@ -16,6 +12,7 @@ import com.babylon.wallet.android.data.dapp.model.WalletUnauthorizedRequestRespo
 import com.babylon.wallet.android.data.dapp.model.toDataModel
 import com.babylon.wallet.android.domain.common.Result
 import com.babylon.wallet.android.presentation.dapp.authorized.account.AccountItemUiModel
+import com.babylon.wallet.android.presentation.dapp.authorized.account.toDataModel
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import rdx.works.profile.data.model.pernetwork.Network
@@ -52,13 +49,7 @@ interface DappMessenger {
 
     suspend fun sendWalletInteractionAuthorizedSuccessResponse(
         dappId: String,
-        interactionId: String,
-        persona: Network.Persona,
-        usePersona: Boolean,
-        oneTimeAccounts: List<AccountItemUiModel> = emptyList(),
-        ongoingAccounts: List<AccountItemUiModel> = emptyList(),
-        ongoingDataFields: List<Network.Persona.Field> = emptyList(),
-        onetimeDataFields: List<Network.Persona.Field> = emptyList()
+        response: WalletInteractionResponse
     ): Result<Unit>
 }
 
@@ -124,25 +115,10 @@ class DappMessengerImpl @Inject constructor(
 
     override suspend fun sendWalletInteractionAuthorizedSuccessResponse(
         dappId: String,
-        interactionId: String,
-        persona: Network.Persona,
-        usePersona: Boolean,
-        oneTimeAccounts: List<AccountItemUiModel>,
-        ongoingAccounts: List<AccountItemUiModel>,
-        ongoingDataFields: List<Network.Persona.Field>,
-        onetimeDataFields: List<Network.Persona.Field>
+        response: WalletInteractionResponse
     ): Result<Unit> {
-        val walletSuccessResponse: WalletInteractionResponse = buildSuccessResponse(
-            interactionId = interactionId,
-            usePersona = usePersona,
-            persona = persona,
-            oneTimeAccounts = oneTimeAccounts,
-            ongoingAccounts = ongoingAccounts,
-            ongoingDataFields = ongoingDataFields,
-            onetimeDataFields = onetimeDataFields
-        )
         val messageJson = try {
-            Json.encodeToString(walletSuccessResponse)
+            Json.encodeToString(response)
         } catch (e: Exception) {
             Timber.d(e)
             ""
@@ -151,41 +127,5 @@ class DappMessengerImpl @Inject constructor(
             is rdx.works.peerdroid.helpers.Result.Success -> Result.Success(Unit)
             is rdx.works.peerdroid.helpers.Result.Error -> Result.Error()
         }
-    }
-
-    private fun buildSuccessResponse(
-        interactionId: String,
-        usePersona: Boolean,
-        persona: Network.Persona,
-        oneTimeAccounts: List<AccountItemUiModel>,
-        ongoingAccounts: List<AccountItemUiModel>,
-        ongoingDataFields: List<Network.Persona.Field>,
-        onetimeDataFields: List<Network.Persona.Field>
-    ): WalletInteractionResponse {
-        val walletSuccessResponse: WalletInteractionResponse = WalletInteractionSuccessResponse(
-            interactionId = interactionId,
-            items = WalletAuthorizedRequestResponseItems(
-                auth = if (usePersona) {
-                    AuthUsePersonaRequestResponseItem(
-                        Persona(
-                            persona.address,
-                            persona.displayName
-                        )
-                    )
-                } else {
-                    AuthLoginWithoutChallengeRequestResponseItem(
-                        Persona(
-                            persona.address,
-                            persona.displayName
-                        )
-                    )
-                },
-                oneTimeAccounts = oneTimeAccounts.toDataModel(),
-                ongoingAccounts = ongoingAccounts.toDataModel(),
-                ongoingPersonaData = ongoingDataFields.toDataModel(),
-                oneTimePersonaData = onetimeDataFields.toDataModel()
-            )
-        )
-        return walletSuccessResponse
     }
 }

@@ -2,47 +2,66 @@ package com.babylon.wallet.android.presentation.settings.personadetail
 
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
+import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
+import com.babylon.wallet.android.data.manifest.getStringInstructions
+import com.babylon.wallet.android.data.transaction.ROLAClient
+import com.babylon.wallet.android.data.transaction.TransactionVersion
 import com.babylon.wallet.android.domain.common.value
 import com.babylon.wallet.android.domain.model.DAppWithMetadata
 import com.babylon.wallet.android.domain.model.DAppWithMetadataAndAssociatedResources
+import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.babylon.wallet.android.domain.model.Resource
+import com.babylon.wallet.android.domain.model.TransactionManifestData
 import com.babylon.wallet.android.domain.usecases.GetDAppWithMetadataAndAssociatedResourcesUseCase
-import com.babylon.wallet.android.presentation.common.OneOffEventHandler
-import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiState
-import com.babylon.wallet.android.presentation.settings.dappdetail.DappDetailEvent
+import com.babylon.wallet.android.utils.AppEvent
+import com.babylon.wallet.android.utils.AppEventBus
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.collections.immutable.toPersistentList
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import rdx.works.core.UUIDGenerator
+import rdx.works.profile.data.model.pernetwork.FactorInstance
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.data.repository.DAppConnectionRepository
+import rdx.works.profile.data.utils.hasAuthSigning
 import rdx.works.profile.domain.GetProfileUseCase
-import rdx.works.profile.domain.personaOnCurrentNetwork
+import rdx.works.profile.domain.account.AddAuthSigningFactorInstanceUseCase
+import rdx.works.profile.domain.personaOnCurrentNetworkFlow
 import javax.inject.Inject
 
+@Suppress("LongParameterList")
 @HiltViewModel
 class PersonaDetailViewModel @Inject constructor(
     dAppConnectionRepository: DAppConnectionRepository,
     getProfileUseCase: GetProfileUseCase,
-    savedStateHandle: SavedStateHandle,
-    private val dAppWithAssociatedResourcesUseCase: GetDAppWithMetadataAndAssociatedResourcesUseCase
-) : StateViewModel<PersonaDetailUiState>(), OneOffEventHandler<DappDetailEvent> by OneOffEventHandlerImpl() {
+    private val appEventBus: AppEventBus,
+    private val addAuthSigningFactorInstanceUseCase: AddAuthSigningFactorInstanceUseCase,
+    private val rolaClient: ROLAClient,
+    private val incomingRequestRepository: IncomingRequestRepository,
+    private val dAppWithAssociatedResourcesUseCase: GetDAppWithMetadataAndAssociatedResourcesUseCase,
+    savedStateHandle: SavedStateHandle
+) : StateViewModel<PersonaDetailUiState>() {
 
     private val args = PersonaDetailScreenArgs(savedStateHandle)
-
-    private val authorizedDApps = dAppConnectionRepository.getAuthorizedDappsByPersona(args.personaAddress)
-
-    override fun initialState(): PersonaDetailUiState = PersonaDetailUiState()
+    private var authSigningFactorInstance: FactorInstance? = null
+    private lateinit var uploadAuthKeyRequestId: String
 
     init {
         viewModelScope.launch {
-            authorizedDApps.collect { authorizedDApps ->
-                val metadataResults = authorizedDApps.map { authorizedDApp ->
+            combine(
+                getProfileUseCase.personaOnCurrentNetworkFlow(args.personaAddress),
+                dAppConnectionRepository.getAuthorizedDappsByPersona(args.personaAddress)
+            ) { persona, dApps ->
+                persona to dApps
+            }.collect { personaToDApps ->
+                val metadataResults = personaToDApps.second.map { authorizedDApp ->
                     dAppWithAssociatedResourcesUseCase.invoke(
                         definitionAddress = authorizedDApp.dAppDefinitionAddress,
                         needMostRecentData = false
@@ -51,13 +70,23 @@ class PersonaDetailViewModel @Inject constructor(
                 val dApps = metadataResults.mapNotNull { dAppWithAssociatedResources ->
                     dAppWithAssociatedResources
                 }
-
                 _state.update { state ->
                     state.copy(
-                        persona = getProfileUseCase.personaOnCurrentNetwork(args.personaAddress),
+                        authorizedDapps = dApps.toImmutableList(),
+                        persona = personaToDApps.first,
                         loading = false,
-                        authorizedDapps = dApps.toImmutableList()
+                        hasAuthKey = personaToDApps.first.hasAuthSigning()
                     )
+                }
+            }
+        }
+
+        viewModelScope.launch {
+            appEventBus.events.filterIsInstance<AppEvent.ApprovedTransaction>().collect { event ->
+                if (event.requestId == uploadAuthKeyRequestId) {
+                    val persona = requireNotNull(state.value.persona)
+                    val authSigningFactorInstance = requireNotNull(authSigningFactorInstance)
+                    addAuthSigningFactorInstanceUseCase(persona, authSigningFactorInstance)
                 }
             }
         }
@@ -72,12 +101,43 @@ class PersonaDetailViewModel @Inject constructor(
             )
         }
     }
+
+    override fun initialState(): PersonaDetailUiState {
+        return PersonaDetailUiState()
+    }
+
+    fun onCreateAndUploadAuthKey() {
+        viewModelScope.launch {
+            state.value.persona?.let { persona ->
+                _state.update { it.copy(loading = true) }
+                val authSigningFactorInstance = rolaClient.generateAuthSigningFactorInstance(persona)
+                this@PersonaDetailViewModel.authSigningFactorInstance = authSigningFactorInstance
+                rolaClient.createAuthKeyManifestWithStringInstructions(persona, authSigningFactorInstance)?.let { manifest ->
+                    uploadAuthKeyRequestId = UUIDGenerator.uuid().toString()
+                    val internalMessage = MessageFromDataChannel.IncomingRequest.TransactionRequest(
+                        dappId = "",
+                        requestId = uploadAuthKeyRequestId,
+                        transactionManifestData = TransactionManifestData(
+                            instructions = requireNotNull(manifest.getStringInstructions()),
+                            version = TransactionVersion.Default.value,
+                            networkId = persona.networkID,
+                            blobs = manifest.blobs?.toList().orEmpty()
+                        ),
+                        requestMetadata = MessageFromDataChannel.IncomingRequest.RequestMetadata.internal(persona.networkID)
+                    )
+                    incomingRequestRepository.add(internalMessage)
+                }
+                _state.update { it.copy(loading = false) }
+            }
+        }
+    }
 }
 
 data class PersonaDetailUiState(
     val loading: Boolean = true,
     val authorizedDapps: ImmutableList<DAppWithMetadataAndAssociatedResources> = persistentListOf(),
     val persona: Network.Persona? = null,
+    val hasAuthKey: Boolean = false,
     val selectedDAppWithMetadata: DAppWithMetadata? = null,
     val selectedDAppAssociatedFungibleTokens: ImmutableList<Resource.FungibleResource> = persistentListOf(),
     val selectedDAppAssociatedNonFungibleTokens: ImmutableList<Resource.NonFungibleResource.Item> = persistentListOf(),

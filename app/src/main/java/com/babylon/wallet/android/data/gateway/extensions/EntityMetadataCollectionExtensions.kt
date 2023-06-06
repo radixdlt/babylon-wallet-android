@@ -15,7 +15,7 @@ fun EntityMetadataCollection.asMetadataStringMap() = items.associate { metadataI
 fun EntityMetadataItem.toMetadataItem(): MetadataItem {
     val explicitMetadataKey = ExplicitMetadataKey.from(key = key)
 
-    return explicitMetadataKey?.toStandardMetadataItem(value.asString.orEmpty())
+    return explicitMetadataKey?.toStandardMetadataItem(value)
         ?: StringMetadataItem(
             key = key,
             value = value.asString.orEmpty()

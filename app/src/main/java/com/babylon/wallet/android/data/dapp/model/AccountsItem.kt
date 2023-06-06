@@ -2,7 +2,6 @@ package com.babylon.wallet.android.data.dapp.model
 
 import com.babylon.wallet.android.data.dapp.model.AccountsRequestItem.NumberOfAccounts
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel.IncomingRequest
-import com.babylon.wallet.android.presentation.dapp.authorized.account.AccountItemUiModel
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
@@ -37,22 +36,12 @@ fun AccountsRequestItem.toDomainModel(isOngoing: Boolean = true): IncomingReques
     ) {
         return null
     }
-
-    return if (this.challenge == null) {
-        IncomingRequest.AccountsRequestItem(
-            isOngoing = isOngoing,
-            requiresProofOfOwnership = true,
-            numberOfAccounts = numberOfAccounts.quantity,
-            quantifier = numberOfAccounts.quantifier.toDomainModel()
-        )
-    } else {
-        IncomingRequest.AccountsRequestItem(
-            isOngoing = isOngoing,
-            requiresProofOfOwnership = false,
-            numberOfAccounts = numberOfAccounts.quantity,
-            quantifier = numberOfAccounts.quantifier.toDomainModel()
-        )
-    }
+    return IncomingRequest.AccountsRequestItem(
+        isOngoing = isOngoing,
+        numberOfAccounts = numberOfAccounts.quantity,
+        quantifier = numberOfAccounts.quantifier.toDomainModel(),
+        challenge = challenge
+    )
 }
 
 fun NumberOfAccounts.AccountNumberQuantifier.toDomainModel(): IncomingRequest.AccountsRequestItem.AccountNumberQuantifier {
@@ -82,25 +71,5 @@ data class AccountsRequestResponseItem(
         @SerialName("address") val address: String,
         @SerialName("label") val label: String,
         @SerialName("appearanceId") val appearanceId: Int,
-    )
-}
-
-fun List<AccountItemUiModel>.toDataModel(): AccountsRequestResponseItem? {
-    if (this.isEmpty()) {
-        return null
-    }
-
-    val accounts = map { accountItemUiModel ->
-        AccountsRequestResponseItem.Account(
-            address = accountItemUiModel.address,
-            label = accountItemUiModel.displayName.orEmpty(),
-            appearanceId = accountItemUiModel.appearanceID
-        )
-    }
-
-    return AccountsRequestResponseItem(
-        accounts = accounts,
-        challenge = null,
-        proofs = null
     )
 }

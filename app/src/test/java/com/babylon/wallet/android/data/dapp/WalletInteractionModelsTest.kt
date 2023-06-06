@@ -6,6 +6,7 @@ import com.babylon.wallet.android.data.dapp.model.AccountsRequestResponseItem
 import com.babylon.wallet.android.data.dapp.model.AuthLoginWithChallengeRequestItem
 import com.babylon.wallet.android.data.dapp.model.AuthLoginWithoutChallengeRequestItem
 import com.babylon.wallet.android.data.dapp.model.AuthUsePersonaRequestItem
+import com.babylon.wallet.android.data.dapp.model.Proof
 import com.babylon.wallet.android.data.dapp.model.WalletAuthorizedRequestItems
 import com.babylon.wallet.android.data.dapp.model.WalletInteraction
 import com.babylon.wallet.android.data.dapp.model.WalletInteractionResponse
@@ -41,18 +42,18 @@ class WalletInteractionModelsTest {
             proofs = listOf(
                 AccountProof(
                     accountAddress = "address1",
-                    proof = AccountProof.Proof(
+                    proof = Proof(
                         publicKey = "publicKey1",
                         signature = "signature1",
-                        curve = AccountProof.Proof.Curve.Curve25519
+                        curve = Proof.Curve.Curve25519
                     )
                 ),
                 AccountProof(
                     accountAddress = "address2",
-                    proof = AccountProof.Proof(
+                    proof = Proof(
                         publicKey = "publicKey2",
                         signature = "signature2",
-                        curve = AccountProof.Proof.Curve.Secp256k1
+                        curve = Proof.Curve.Secp256k1
                     )
                 )
             )

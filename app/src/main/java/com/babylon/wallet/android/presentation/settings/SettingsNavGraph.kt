@@ -62,11 +62,10 @@ fun NavGraphBuilder.settingsNavGraph(
         dAppDetailScreen(
             onBackClick = {
                 navController.popBackStack()
-            },
-            onEditPersona = { personaAddress, requiredFields ->
-                navController.personaEditScreen(personaAddress, requiredFields)
             }
-        )
+        ) { personaAddress, requiredFields ->
+            navController.personaEditScreen(personaAddress, requiredFields)
+        }
         settingsGatewayEdit(navController)
         settingsShowMnemonic(
             onBackClick = { navController.popBackStack() },

@@ -91,7 +91,7 @@ class CreatePersonaWithDeviceFactorSourceUseCaseTest {
                                 networkID = network.network.networkId().value,
                                 securityState = SecurityState.Unsecured(
                                     unsecuredEntityControl = SecurityState.UnsecuredEntityControl(
-                                        genesisFactorInstance = FactorInstance(
+                                        transactionSigning = FactorInstance(
                                             derivationPath = DerivationPath.forAccount(
                                                 networkId = network.network.networkId(),
                                                 accountIndex = 0,

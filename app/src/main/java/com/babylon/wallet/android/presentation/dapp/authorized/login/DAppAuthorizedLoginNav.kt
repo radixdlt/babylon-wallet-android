@@ -12,12 +12,12 @@ import androidx.navigation.navArgument
 import com.google.accompanist.navigation.animation.composable
 
 @VisibleForTesting
-internal const val ARG_REQUEST_ID = "request_id"
+internal const val ARG_INTERACTION_ID = "interaction_id"
 
-const val ROUTE_DAPP_LOGIN_AUTHORIZED = "dapp_login_authorized/{$ARG_REQUEST_ID}"
+const val ROUTE_DAPP_LOGIN_AUTHORIZED = "dapp_login_authorized/{$ARG_INTERACTION_ID}"
 
-internal class DAppAuthorizedLoginArgs(val requestId: String) {
-    constructor(savedStateHandle: SavedStateHandle) : this(checkNotNull(savedStateHandle[ARG_REQUEST_ID]) as String)
+internal class DAppAuthorizedLoginArgs(val interactionId: String) {
+    constructor(savedStateHandle: SavedStateHandle) : this(checkNotNull(savedStateHandle[ARG_INTERACTION_ID]) as String)
 }
 
 fun NavController.dAppLoginAuthorized(requestId: String) {
@@ -34,7 +34,7 @@ fun NavGraphBuilder.dAppLoginAuthorized(
     composable(
         route = ROUTE_DAPP_LOGIN_AUTHORIZED,
         arguments = listOf(
-            navArgument(ARG_REQUEST_ID) {
+            navArgument(ARG_INTERACTION_ID) {
                 type = NavType.StringType
             }
         )

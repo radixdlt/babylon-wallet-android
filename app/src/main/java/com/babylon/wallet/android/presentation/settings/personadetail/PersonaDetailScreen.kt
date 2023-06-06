@@ -75,7 +75,10 @@ fun PersonaDetailScreen(
         selectedDAppWithMetadata = state.selectedDAppWithMetadata,
         selectedDAppAssociatedFungibleTokens = state.selectedDAppAssociatedFungibleTokens,
         selectedDAppAssociatedNonFungibleTokens = state.selectedDAppAssociatedNonFungibleTokens,
-        onDAppClick = viewModel::onDAppClick
+        onDAppClick = viewModel::onDAppClick,
+        hasAuthKey = state.hasAuthKey,
+        loading = state.loading,
+        onCreateAndUploadAuthKey = viewModel::onCreateAndUploadAuthKey
     )
 }
 
@@ -90,7 +93,10 @@ private fun PersonaDetailContent(
     selectedDAppWithMetadata: DAppWithMetadata?,
     selectedDAppAssociatedFungibleTokens: ImmutableList<Resource.FungibleResource>,
     selectedDAppAssociatedNonFungibleTokens: ImmutableList<Resource.NonFungibleResource.Item>,
-    onDAppClick: (DAppWithMetadataAndAssociatedResources) -> Unit
+    onDAppClick: (DAppWithMetadataAndAssociatedResources) -> Unit,
+    hasAuthKey: Boolean,
+    onCreateAndUploadAuthKey: () -> Unit,
+    loading: Boolean
 ) {
     val bottomSheetState =
         rememberModalBottomSheetState(initialValue = ModalBottomSheetValue.Hidden, skipHalfExpanded = true)
@@ -140,13 +146,11 @@ private fun PersonaDetailContent(
                                 .weight(1f),
                             persona = persona,
                             authorizedDapps = authorizedDapps,
-                            onDAppClick = {
-                                onDAppClick(it)
-                                scope.launch {
-                                    bottomSheetState.show()
-                                }
-                            },
-                            onEditPersona = onEditPersona
+                            onDAppClick = onDAppClick,
+                            onEditPersona = onEditPersona,
+                            hasAuthKey = hasAuthKey,
+                            onCreateAndUploadAuthKey = onCreateAndUploadAuthKey,
+                            loading = loading
                         )
                     }
                 }
@@ -164,7 +168,10 @@ private fun PersonaDetailList(
     persona: Network.Persona,
     authorizedDapps: ImmutableList<DAppWithMetadataAndAssociatedResources>,
     onDAppClick: (DAppWithMetadataAndAssociatedResources) -> Unit,
-    onEditPersona: (String) -> Unit
+    onEditPersona: (String) -> Unit,
+    hasAuthKey: Boolean,
+    onCreateAndUploadAuthKey: () -> Unit,
+    loading: Boolean
 ) {
     LazyColumn(
         contentPadding = PaddingValues(vertical = dimensions.paddingDefault),
@@ -208,6 +215,18 @@ private fun PersonaDetailList(
                 throttleClicks = true
             )
             Spacer(modifier = Modifier.height(dimensions.paddingDefault))
+            if (!hasAuthKey) {
+                RadixSecondaryButton(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = dimensions.paddingDefault),
+                    text = stringResource(R.string.accountSettings_debug_createAndUploadAuthKey),
+                    onClick = onCreateAndUploadAuthKey,
+                    enabled = !loading,
+                    throttleClicks = true
+                )
+                Spacer(modifier = Modifier.height(dimensions.paddingDefault))
+            }
         }
         if (authorizedDapps.isNotEmpty()) {
             item {
@@ -253,15 +272,18 @@ private fun PersonaDetailList(
 fun DappDetailContentPreview() {
     RadixWalletTheme {
         PersonaDetailContent(
-            modifier = Modifier.fillMaxSize(),
             onBackClick = {},
+            modifier = Modifier.fillMaxSize(),
             persona = SampleDataProvider().samplePersona(),
             onEditPersona = {},
             authorizedDapps = persistentListOf(),
             selectedDAppWithMetadata = null,
             selectedDAppAssociatedFungibleTokens = persistentListOf(),
             selectedDAppAssociatedNonFungibleTokens = persistentListOf(),
-            onDAppClick = {}
+            onDAppClick = {},
+            hasAuthKey = false,
+            onCreateAndUploadAuthKey = {},
+            loading = false
         )
     }
 }

@@ -218,9 +218,9 @@ fun NavigationHost(
                 )
             }
         )
-        accountPreferencesScreen(onBackClick = {
+        accountPreferencesScreen {
             navController.popBackStack()
-        })
+        }
         dAppLoginAuthorized(
             navController,
             onBackClick = {

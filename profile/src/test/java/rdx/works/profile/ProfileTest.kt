@@ -519,25 +519,25 @@ class ProfileTest {
             assertEquals(
                 "The accounts[$accountIndex] derivation path are the same",
                 (expected.networks.first().accounts[accountIndex].securityState as SecurityState.Unsecured)
-                    .unsecuredEntityControl.genesisFactorInstance.derivationPath,
+                    .unsecuredEntityControl.transactionSigning.derivationPath,
                 (actual.networks.first().accounts[accountIndex].securityState as SecurityState.Unsecured)
-                    .unsecuredEntityControl.genesisFactorInstance.derivationPath
+                    .unsecuredEntityControl.transactionSigning.derivationPath
             )
 
             assertEquals(
                 "The accounts[$accountIndex] public key are the same",
                 (expected.networks.first().accounts[accountIndex].securityState as SecurityState.Unsecured)
-                    .unsecuredEntityControl.genesisFactorInstance.publicKey,
+                    .unsecuredEntityControl.transactionSigning.publicKey,
                 (actual.networks.first().accounts[accountIndex].securityState as SecurityState.Unsecured)
-                    .unsecuredEntityControl.genesisFactorInstance.publicKey
+                    .unsecuredEntityControl.transactionSigning.publicKey
             )
 
             assertEquals(
                 "The accounts[$accountIndex] factor source ids are the same",
                 (expected.networks.first().accounts[accountIndex].securityState as SecurityState.Unsecured)
-                    .unsecuredEntityControl.genesisFactorInstance.factorSourceId,
+                    .unsecuredEntityControl.transactionSigning.factorSourceId,
                 (actual.networks.first().accounts[accountIndex].securityState as SecurityState.Unsecured)
-                    .unsecuredEntityControl.genesisFactorInstance.factorSourceId
+                    .unsecuredEntityControl.transactionSigning.factorSourceId
             )
         }
 
@@ -585,25 +585,25 @@ class ProfileTest {
             assertEquals(
                 "The persona[$personaIndex] factor source id is the same",
                 (expected.networks.first().personas[personaIndex].securityState as SecurityState.Unsecured)
-                    .unsecuredEntityControl.genesisFactorInstance.factorSourceId,
+                    .unsecuredEntityControl.transactionSigning.factorSourceId,
                 (actual.networks.first().personas[personaIndex].securityState as SecurityState.Unsecured)
-                    .unsecuredEntityControl.genesisFactorInstance.factorSourceId
+                    .unsecuredEntityControl.transactionSigning.factorSourceId
             )
 
             assertEquals(
                 "The persona[$personaIndex] derivation path is the same",
                 (expected.networks.first().personas[personaIndex].securityState as SecurityState.Unsecured)
-                    .unsecuredEntityControl.genesisFactorInstance.derivationPath,
+                    .unsecuredEntityControl.transactionSigning.derivationPath,
                 (actual.networks.first().personas[personaIndex].securityState as SecurityState.Unsecured)
-                    .unsecuredEntityControl.genesisFactorInstance.derivationPath
+                    .unsecuredEntityControl.transactionSigning.derivationPath
             )
 
             assertEquals(
                 "The persona[$personaIndex] public key is the same",
                 (expected.networks.first().personas[personaIndex].securityState as SecurityState.Unsecured)
-                    .unsecuredEntityControl.genesisFactorInstance.publicKey,
+                    .unsecuredEntityControl.transactionSigning.publicKey,
                 (actual.networks.first().personas[personaIndex].securityState as SecurityState.Unsecured)
-                    .unsecuredEntityControl.genesisFactorInstance.publicKey
+                    .unsecuredEntityControl.transactionSigning.publicKey
             )
         }
 

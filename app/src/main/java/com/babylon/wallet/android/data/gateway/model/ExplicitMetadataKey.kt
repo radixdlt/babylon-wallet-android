@@ -1,6 +1,7 @@
 package com.babylon.wallet.android.data.gateway.model
 
 import android.net.Uri
+import com.babylon.wallet.android.data.gateway.generated.models.EntityMetadataItemValue
 import com.babylon.wallet.android.domain.model.metadata.AccountTypeMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.AccountTypeMetadataItem.AccountType
 import com.babylon.wallet.android.domain.model.metadata.ClaimedEntitiesMetadataItem
@@ -11,6 +12,7 @@ import com.babylon.wallet.android.domain.model.metadata.DomainMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.IconUrlMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.InfoUrlMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.NameMetadataItem
+import com.babylon.wallet.android.domain.model.metadata.OwnerKeysMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.RelatedWebsiteMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.StandardMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.SymbolMetadataItem
@@ -34,26 +36,28 @@ enum class ExplicitMetadataKey(val key: String) {
     KEY_IMAGE_URL("key_image_url"),
     ICON_URL("icon_url"),
     INFO_URL("info_url"),
-    URL("url"); // TODO it should be info_url ?
+    URL("url"), // TODO it should be info_url ?
+    OWNER_KEYS("owner_keys");
 
     @Suppress("CyclomaticComplexMethod")
-    fun toStandardMetadataItem(value: String): StandardMetadataItem = when (this) {
-        DESCRIPTION -> DescriptionMetadataItem(description = value)
-        SYMBOL -> SymbolMetadataItem(symbol = value)
-        NAME -> NameMetadataItem(name = value)
-        DOMAIN -> DomainMetadataItem(domain = Uri.parse(value))
-        DAPP_DEFINITION -> DAppDefinitionMetadataItem(address = value)
-        RELATED_WEBSITES -> RelatedWebsiteMetadataItem(website = value)
-        CLAIMED_WEBSITES -> ClaimedWebsiteMetadataItem(website = value)
-        CLAIMED_ENTITIES -> ClaimedEntitiesMetadataItem(entity = value)
+    fun toStandardMetadataItem(value: EntityMetadataItemValue): StandardMetadataItem = when (this) {
+        DESCRIPTION -> DescriptionMetadataItem(description = value.asString.orEmpty())
+        SYMBOL -> SymbolMetadataItem(symbol = value.asString.orEmpty())
+        NAME -> NameMetadataItem(name = value.asString.orEmpty())
+        DOMAIN -> DomainMetadataItem(domain = Uri.parse(value.asString.orEmpty()))
+        DAPP_DEFINITION -> DAppDefinitionMetadataItem(address = value.asString.orEmpty())
+        RELATED_WEBSITES -> RelatedWebsiteMetadataItem(website = value.asString.orEmpty())
         ACCOUNT_TYPE -> AccountTypeMetadataItem(
-            type = (AccountType.values().find { it.asString == value } ?: DAPP_DEFINITION) as AccountType
+            type = (AccountType.values().find { it.asString == value.asString } ?: DAPP_DEFINITION) as AccountType
         )
-        TAGS -> TagsMetadataItem(tags = listOf(value))
-        KEY_IMAGE_URL -> IconUrlMetadataItem(url = Uri.parse(value))
-        INFO_URL -> InfoUrlMetadataItem(url = Uri.parse(value))
-        ICON_URL -> IconUrlMetadataItem(url = Uri.parse(value))
-        URL -> InfoUrlMetadataItem(url = Uri.parse(value))
+        CLAIMED_WEBSITES -> ClaimedWebsiteMetadataItem(website = value.asString.orEmpty())
+        CLAIMED_ENTITIES -> ClaimedEntitiesMetadataItem(entity = value.asString.orEmpty())
+        TAGS -> TagsMetadataItem(tags = listOf(value.asString.orEmpty()))
+        KEY_IMAGE_URL -> IconUrlMetadataItem(url = Uri.parse(value.asString.orEmpty()))
+        INFO_URL -> InfoUrlMetadataItem(url = Uri.parse(value.asString.orEmpty()))
+        ICON_URL -> IconUrlMetadataItem(url = Uri.parse(value.asString.orEmpty()))
+        URL -> InfoUrlMetadataItem(url = Uri.parse(value.asString.orEmpty()))
+        OWNER_KEYS -> OwnerKeysMetadataItem(ownerKeys = value.asStringCollection.orEmpty())
     }
 
     companion object {

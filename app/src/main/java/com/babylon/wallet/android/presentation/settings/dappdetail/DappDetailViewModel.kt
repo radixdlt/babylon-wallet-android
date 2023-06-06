@@ -189,7 +189,7 @@ class DappDetailViewModel @Inject constructor(
                     )
                     val request = MessageFromDataChannel.IncomingRequest.AuthorizedRequest(
                         dappId = "",
-                        requestId = UUIDGenerator.uuid().toString(),
+                        interactionId = UUIDGenerator.uuid().toString(),
                         requestMetadata = MessageFromDataChannel.IncomingRequest.RequestMetadata(
                             authorizedDapp.networkID,
                             "",
@@ -201,16 +201,13 @@ class DappDetailViewModel @Inject constructor(
                         ),
                         ongoingAccountsRequestItem = MessageFromDataChannel.IncomingRequest.AccountsRequestItem(
                             isOngoing = true,
-                            requiresProofOfOwnership = false,
                             numberOfAccounts = sharedAccounts.request.quantity,
-                            quantifier = sharedAccounts.request.quantifier.toQuantifierUsedInRequest()
+                            quantifier = sharedAccounts.request.quantifier.toQuantifierUsedInRequest(),
+                            challenge = null
                         ),
-                        resetRequestItem = MessageFromDataChannel.IncomingRequest.ResetRequestItem(
-                            accounts = true,
-                            personaData = false
-                        )
+                        resetRequestItem = MessageFromDataChannel.IncomingRequest.ResetRequestItem(accounts = true, personaData = false)
                     )
-                    incomingRequestRepository.add(request)
+                    incomingRequestRepository.add(incomingRequest = request)
                 }
             }
         }

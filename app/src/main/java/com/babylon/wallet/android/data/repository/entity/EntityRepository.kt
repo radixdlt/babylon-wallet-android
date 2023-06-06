@@ -40,6 +40,7 @@ import com.babylon.wallet.android.domain.model.metadata.DescriptionMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.IconUrlMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.MetadataItem.Companion.consume
 import com.babylon.wallet.android.domain.model.metadata.NameMetadataItem
+import com.babylon.wallet.android.domain.model.metadata.OwnerKeysMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.SymbolMetadataItem
 import com.babylon.wallet.android.presentation.model.ActionableAddress
 import rdx.works.profile.data.model.pernetwork.Network
@@ -65,6 +66,8 @@ interface EntityRepository {
         dAppMetadata: DAppWithMetadata,
         isRefreshing: Boolean = true
     ): Result<DAppResources>
+
+    suspend fun getEntityOwnerKeys(entityAddress: String, isRefreshing: Boolean = false): Result<OwnerKeysMetadataItem?>
 }
 
 @Suppress("TooManyFunctions")
@@ -470,6 +473,22 @@ class EntityRepositoryImpl @Inject constructor(
                 timeoutDuration = NO_CACHE
             ),
             map = { it }
+        )
+    }
+
+    override suspend fun getEntityOwnerKeys(entityAddress: String, isRefreshing: Boolean): Result<OwnerKeysMetadataItem?> {
+        return stateApi.entityDetails(
+            StateEntityDetailsRequest(
+                addresses = listOf(entityAddress)
+            )
+        ).execute(
+            cacheParameters = CacheParameters(
+                httpCache = cache,
+                timeoutDuration = if (isRefreshing) NO_CACHE else TimeoutDuration.FIVE_MINUTES
+            ),
+            map = { response ->
+                response.items.first().metadata.asMetadataItems().filterIsInstance<OwnerKeysMetadataItem>().firstOrNull()
+            },
         )
     }
 

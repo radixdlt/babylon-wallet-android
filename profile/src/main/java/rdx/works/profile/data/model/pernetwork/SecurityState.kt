@@ -26,8 +26,11 @@ sealed class SecurityState {
      */
     @Serializable
     data class UnsecuredEntityControl(
-        @SerialName("genesisFactorInstance")
-        val genesisFactorInstance: FactorInstance
+        @SerialName("transactionSigning")
+        val transactionSigning: FactorInstance,
+
+        @SerialName("authenticationSigning")
+        val authenticationSigning: FactorInstance? = null
     )
 
     companion object {
@@ -38,7 +41,7 @@ sealed class SecurityState {
             factorSourceId: FactorSource.ID
         ): Unsecured = Unsecured(
             unsecuredEntityControl = UnsecuredEntityControl(
-                genesisFactorInstance = FactorInstance(
+                transactionSigning = FactorInstance(
                     derivationPath = derivationPath,
                     factorSourceId = factorSourceId,
                     publicKey = publicKey
