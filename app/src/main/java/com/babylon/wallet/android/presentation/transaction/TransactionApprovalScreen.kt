@@ -1,10 +1,4 @@
-@file:OptIn(
-    ExperimentalMaterialApi::class,
-    ExperimentalMaterialApi::class,
-    ExperimentalMaterialApi::class,
-    ExperimentalMaterialApi::class,
-    ExperimentalMaterialApi::class
-)
+@file:OptIn(ExperimentalMaterialApi::class)
 
 package com.babylon.wallet.android.presentation.transaction
 
@@ -26,10 +20,8 @@ import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.ModalBottomSheetState
 import androidx.compose.material.ModalBottomSheetValue
 import androidx.compose.material.rememberModalBottomSheetState
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
-import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -70,7 +62,6 @@ import com.babylon.wallet.android.presentation.transaction.composables.WithdrawA
 import com.babylon.wallet.android.presentation.ui.composables.DefaultModalSheetLayout
 import com.babylon.wallet.android.presentation.ui.composables.NotSecureAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUiMessageHandler
-import com.babylon.wallet.android.presentation.ui.composables.resultdialog.completing.CompletingBottomDialog
 import com.babylon.wallet.android.utils.biometricAuthenticate
 import com.babylon.wallet.android.utils.findFragmentActivity
 import kotlinx.collections.immutable.ImmutableList
@@ -85,9 +76,7 @@ private const val PAYER_DIALOG_CLOSE_DELAY = 300L
 fun TransactionApprovalScreen(
     modifier: Modifier = Modifier,
     viewModel: TransactionApprovalViewModel,
-    onBackClick: () -> Unit,
-    showSuccessDialog: (requestId: String) -> Unit,
-    showErrorDialog: (requestId: String, errorTextRes: Int) -> Unit
+    onBackClick: () -> Unit
 ) {
     val scope = rememberCoroutineScope()
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -98,7 +87,11 @@ fun TransactionApprovalScreen(
         initialValue = ModalBottomSheetValue.Hidden,
         skipHalfExpanded = true
     )
-
+    BackHandler(enabled = bottomSheetState.isVisible) {
+        scope.launch {
+            bottomSheetState.hide()
+        }
+    }
     TransactionPreviewContent(
         onBackClick = viewModel::onBackClick,
         isLoading = state.isLoading,
@@ -121,6 +114,7 @@ fun TransactionApprovalScreen(
         onGuaranteesCloseClick = viewModel::onGuaranteesCloseClick,
         onGuaranteeValueChanged = viewModel::onGuaranteeValueChanged,
         bottomSheetMode = state.bottomSheetMode,
+        onPayerSelected = viewModel::onPayerSelected,
         onPayerConfirmed = {
             scope.launch {
                 bottomSheetState.hide()
@@ -128,25 +122,15 @@ fun TransactionApprovalScreen(
                 viewModel.onPayerConfirmed()
             }
         },
-        onPayerSelected = viewModel::onPayerSelected,
         feePayerCandidates = state.feePayerCandidates,
-        bottomSheetState = bottomSheetState,
-        resetBottomSheetMode = viewModel::resetBottomSheetMode
+        resetBottomSheetMode = viewModel::resetBottomSheetMode,
+        bottomSheetState = bottomSheetState
     )
-
     LaunchedEffect(Unit) {
         viewModel.oneOffEvent.collect { event ->
             when (event) {
                 TransactionApprovalEvent.NavigateBack -> {
                     onBackClick()
-                }
-                is TransactionApprovalEvent.FlowCompletedWithSuccess -> {
-                    onBackClick()
-                    showSuccessDialog(event.requestId)
-                }
-                is TransactionApprovalEvent.FlowCompletedWithError -> {
-                    onBackClick()
-                    showErrorDialog(event.requestId, event.errorTextRes)
                 }
                 TransactionApprovalEvent.SelectFeePayer -> {
                     scope.launch {
@@ -159,7 +143,7 @@ fun TransactionApprovalScreen(
 }
 
 @Composable
-@OptIn(ExperimentalMaterialApi::class, ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterialApi::class)
 private fun TransactionPreviewContent(
     onBackClick: () -> Unit,
     isLoading: Boolean,
@@ -184,15 +168,12 @@ private fun TransactionPreviewContent(
     bottomSheetMode: BottomSheetMode,
     onPayerSelected: (AccountItemUiModel) -> Unit,
     onPayerConfirmed: () -> Unit,
-    bottomSheetState: ModalBottomSheetState,
     feePayerCandidates: ImmutableList<AccountItemUiModel>,
-    resetBottomSheetMode: () -> Unit
+    resetBottomSheetMode: () -> Unit,
+    bottomSheetState: ModalBottomSheetState
 ) {
     var showNotSecuredDialog by remember { mutableStateOf(false) }
     var showRawManifest by remember { mutableStateOf(false) }
-
-    // this is for the result bottom slide-up dialog
-    val resultBottomSheetState = rememberModalBottomSheetState()
     val scope = rememberCoroutineScope()
     if (bottomSheetState.currentValue != ModalBottomSheetValue.Hidden) {
         DisposableEffect(Unit) {
@@ -201,12 +182,6 @@ private fun TransactionPreviewContent(
             }
         }
     }
-    BackHandler(enabled = bottomSheetState.isVisible) {
-        scope.launch {
-            bottomSheetState.hide()
-        }
-    }
-
     DefaultModalSheetLayout(
         modifier = modifier
             .navigationBarsPadding()
@@ -345,18 +320,8 @@ private fun TransactionPreviewContent(
                     }
                 }
             }
-            if (isLoading) {
-                FullscreenCircularProgressContent()
-            }
-            if (isSigning) {
-                CompletingBottomDialog(
-                    onDismissDialogClick = {
-                        scope.launch {
-                            resultBottomSheetState.hide()
-                        }
-                    },
-                    bottomSheetState = resultBottomSheetState
-                )
+            if (isLoading || isSigning) {
+                FullscreenCircularProgressContent(addOverlay = true, clickable = true)
             }
             SnackbarUiMessageHandler(message = error) {
                 onMessageShown()
@@ -569,12 +534,9 @@ fun TransactionPreviewContentPreview() {
             bottomSheetMode = BottomSheetMode.Guarantees,
             onPayerSelected = {},
             onPayerConfirmed = {},
-            bottomSheetState = rememberModalBottomSheetState(
-                initialValue = ModalBottomSheetValue.Hidden,
-                skipHalfExpanded = true
-            ),
             feePayerCandidates = persistentListOf(),
-            resetBottomSheetMode = {}
+            resetBottomSheetMode = {},
+            bottomSheetState = rememberModalBottomSheetState(initialValue = ModalBottomSheetValue.Hidden)
         )
     }
 }

@@ -1,6 +1,5 @@
 package com.babylon.wallet.android.presentation.transaction
 
-import androidx.annotation.StringRes
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.dapp.DappMessenger
@@ -323,7 +322,6 @@ class TransactionApprovalViewModel @Inject constructor(
                         instructions = ManifestInstructions.StringInstructions(manifestData.instructions),
                         blobs = manifestData.blobs.toTypedArray()
                     )
-
                     transactionClient.convertManifestInstructionsToJSON(
                         txManifest
                     ).onSuccess { manifestJsonResponse ->
@@ -386,6 +384,7 @@ class TransactionApprovalViewModel @Inject constructor(
             feePayerAddress = feePayerAddress
         )
         transactionClient.signAndSubmitTransaction(request).onSuccess { txId ->
+            appEventBus.sendEvent(AppEvent.TransactionEvent.Sent(args.requestId))
             // Send confirmation to the dApp that tx was submitted before status polling
             if (!transactionWriteRequest.isInternal) {
                 dAppMessenger.sendTransactionWriteResponseSuccess(
@@ -397,8 +396,7 @@ class TransactionApprovalViewModel @Inject constructor(
             val transactionStatus = pollTransactionStatusUseCase(txId)
             transactionStatus.onValue { _ ->
                 _state.update { it.copy(isSigning = false) }
-                appEventBus.sendEvent(AppEvent.ApprovedTransaction(args.requestId))
-                sendEvent(TransactionApprovalEvent.FlowCompletedWithSuccess(requestId = args.requestId))
+                appEventBus.sendEvent(AppEvent.TransactionEvent.Successful(args.requestId))
             }
             transactionStatus.onError { error ->
                 _state.update {
@@ -417,13 +415,13 @@ class TransactionApprovalViewModel @Inject constructor(
                             message = exception.failure.getDappMessage()
                         )
                     }
-                    sendEvent(
-                        TransactionApprovalEvent.FlowCompletedWithError(
-                            requestId = args.requestId,
-                            errorTextRes = exception.failure.toDescriptionRes()
-                        )
-                    )
                 }
+                appEventBus.sendEvent(
+                    AppEvent.TransactionEvent.Failed(
+                        args.requestId,
+                        exception?.failure?.toDescriptionRes()
+                    )
+                )
             }
         }.onFailure { error ->
             _state.update {
@@ -442,13 +440,13 @@ class TransactionApprovalViewModel @Inject constructor(
                         message = exception.failure.getDappMessage()
                     )
                 }
-                sendEvent(
-                    TransactionApprovalEvent.FlowCompletedWithError(
-                        requestId = args.requestId,
-                        errorTextRes = exception.failure.toDescriptionRes()
-                    )
-                )
             }
+            appEventBus.sendEvent(
+                AppEvent.TransactionEvent.Failed(
+                    args.requestId,
+                    exception?.failure?.toDescriptionRes()
+                )
+            )
         }
     }
 
@@ -490,7 +488,6 @@ class TransactionApprovalViewModel @Inject constructor(
     }
 
     fun resetBottomSheetMode() {
-        // Reset local depositing accounts to initial values
         _state.update {
             it.copy(bottomSheetMode = BottomSheetMode.Guarantees)
         }
@@ -677,10 +674,5 @@ enum class BottomSheetMode {
 
 sealed interface TransactionApprovalEvent : OneOffEvent {
     object NavigateBack : TransactionApprovalEvent
-    data class FlowCompletedWithSuccess(val requestId: String) : TransactionApprovalEvent
     object SelectFeePayer : TransactionApprovalEvent
-    data class FlowCompletedWithError(
-        val requestId: String,
-        @StringRes val errorTextRes: Int
-    ) : TransactionApprovalEvent
 }

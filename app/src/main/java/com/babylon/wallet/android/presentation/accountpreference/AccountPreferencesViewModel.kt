@@ -18,6 +18,7 @@ import com.babylon.wallet.android.utils.AppEventBus
 import com.babylon.wallet.android.utils.DeviceSecurityHelper
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
@@ -55,13 +56,21 @@ class AccountPreferenceViewModel @Inject constructor(
     init {
         loadAccount()
         viewModelScope.launch {
-            appEventBus.events.filterIsInstance<AppEvent.ApprovedTransaction>().collect { event ->
-                if (event.requestId == uploadAuthKeyRequestId) {
-                    val account = requireNotNull(state.value.account)
-                    val authSigningFactorInstance = requireNotNull(authSigningFactorInstance)
-                    addAuthSigningFactorInstanceUseCase(account, authSigningFactorInstance)
+            appEventBus.events.filterIsInstance<AppEvent.TransactionEvent>().filter { it.requestId == uploadAuthKeyRequestId }
+                .collect { event ->
+                    when (event) {
+                        is AppEvent.TransactionEvent.Failed -> {
+                            _state.update { it.copy(isLoading = false) }
+                        }
+                        is AppEvent.TransactionEvent.Successful -> {
+                            val account = requireNotNull(state.value.account)
+                            val authSigningFactorInstance = requireNotNull(authSigningFactorInstance)
+                            addAuthSigningFactorInstanceUseCase(account, authSigningFactorInstance)
+                            _state.update { it.copy(isLoading = false) }
+                        }
+                        else -> {}
+                    }
                 }
-            }
         }
         viewModelScope.launch {
             getFreeXrdUseCase.isAllowedToUseFaucet(args.address).collect { isAllowed ->
@@ -133,7 +142,6 @@ class AccountPreferenceViewModel @Inject constructor(
                     )
                     incomingRequestRepository.add(internalMessage)
                 }
-                _state.update { it.copy(isLoading = false) }
             }
         }
     }

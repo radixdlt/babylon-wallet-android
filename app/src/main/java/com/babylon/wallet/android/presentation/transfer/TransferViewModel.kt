@@ -15,8 +15,6 @@ import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.presentation.transfer.accounts.AccountsChooserDelegate
 import com.babylon.wallet.android.presentation.transfer.assets.AssetsChooserDelegate
 import com.babylon.wallet.android.presentation.transfer.prepare.PrepareManifestDelegate
-import com.babylon.wallet.android.utils.AppEvent
-import com.babylon.wallet.android.utils.AppEventBus
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.ImmutableSet
@@ -25,7 +23,6 @@ import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.persistentSetOf
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.collections.immutable.toPersistentSet
-import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.UUIDGenerator
@@ -42,8 +39,7 @@ class TransferViewModel @Inject constructor(
     getProfileUseCase: GetProfileUseCase,
     getAccountsWithResourcesUseCase: GetAccountsWithResourcesUseCase,
     incomingRequestRepository: IncomingRequestRepository,
-    savedStateHandle: SavedStateHandle,
-    appEventBus: AppEventBus
+    savedStateHandle: SavedStateHandle
 ) : StateViewModel<TransferViewModel.State>(), OneOffEventHandler<TransferViewModel.Event> by OneOffEventHandlerImpl() {
 
     internal val args = TransferArgs(savedStateHandle)
@@ -71,14 +67,6 @@ class TransferViewModel @Inject constructor(
 
             _state.update {
                 it.copy(fromAccount = sourceAccount)
-            }
-        }
-
-        viewModelScope.launch {
-            appEventBus.events.filter { event ->
-                event is AppEvent.TransactionSent && event.requestId == _state.value.transferRequestId
-            }.collect {
-                sendEvent(Event.Dismiss)
             }
         }
     }

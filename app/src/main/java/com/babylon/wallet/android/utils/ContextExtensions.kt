@@ -10,12 +10,23 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
 import androidx.fragment.app.FragmentActivity
+import androidx.navigation.NavController
 
 fun Context.biometricAuthenticate(authenticationCallback: (successful: Boolean) -> Unit) {
     findFragmentActivity()?.let { activity ->
         activity.biometricAuthenticate(true) { authenticatedSuccessfully ->
             authenticationCallback(authenticatedSuccessfully)
         }
+    }
+}
+
+@Suppress("SwallowedException")
+fun NavController.routeExist(route: String): Boolean {
+    return try {
+        getBackStackEntry(route)
+        true
+    } catch (e: Exception) {
+        false
     }
 }
 

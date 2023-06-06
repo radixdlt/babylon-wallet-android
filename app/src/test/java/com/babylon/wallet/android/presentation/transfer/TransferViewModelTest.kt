@@ -60,8 +60,7 @@ class TransferViewModelTest : StateViewModelTest<TransferViewModel>() {
             getProfileUseCase = getProfileUseCase,
             getAccountsWithResourcesUseCase = getAccountsWithResourcesUseCase,
             incomingRequestRepository = incomingRequestRepository,
-            savedStateHandle = savedStateHandle,
-            appEventBus = appEventBus
+            savedStateHandle = savedStateHandle
         )
     }
 
