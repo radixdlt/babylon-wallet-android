@@ -1,7 +1,6 @@
 package com.babylon.wallet.android.domain.usecases
 
-import com.babylon.wallet.android.data.repository.dappmetadata.DappMetadataRepository
-import com.babylon.wallet.android.data.repository.entity.EntityRepository
+import com.babylon.wallet.android.data.repository.dappmetadata.DAppRepository
 import com.babylon.wallet.android.domain.common.Result
 import com.babylon.wallet.android.domain.common.map
 import com.babylon.wallet.android.domain.common.switchMap
@@ -11,8 +10,7 @@ import com.babylon.wallet.android.domain.model.metadata.ClaimedWebsiteMetadataIt
 import javax.inject.Inject
 
 class GetDAppWithMetadataAndAssociatedResourcesUseCase @Inject constructor(
-    private val entityRepository: EntityRepository,
-    private val dAppMetadataRepository: DappMetadataRepository,
+    private val dAppMetadataRepository: DAppRepository,
 ) {
     suspend operator fun invoke(
         definitionAddress: String,
@@ -41,7 +39,7 @@ class GetDAppWithMetadataAndAssociatedResourcesUseCase @Inject constructor(
             }
         )
 
-        entityRepository.getDAppResources(dAppMetadata = updatedDAppMetadata, needMostRecentData)
+        dAppMetadataRepository.getDAppResources(dAppMetadata = updatedDAppMetadata, needMostRecentData)
             .map { resources ->
                 DAppWithMetadataAndAssociatedResources(
                     dAppWithMetadata = updatedDAppMetadata,

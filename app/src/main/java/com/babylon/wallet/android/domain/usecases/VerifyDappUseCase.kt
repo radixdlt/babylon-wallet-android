@@ -2,7 +2,7 @@ package com.babylon.wallet.android.domain.usecases
 
 import com.babylon.wallet.android.data.dapp.DappMessenger
 import com.babylon.wallet.android.data.dapp.model.WalletErrorType
-import com.babylon.wallet.android.data.repository.dappmetadata.DappMetadataRepository
+import com.babylon.wallet.android.data.repository.dappmetadata.DAppRepository
 import com.babylon.wallet.android.data.transaction.DappRequestException
 import com.babylon.wallet.android.data.transaction.DappRequestFailure
 import com.babylon.wallet.android.domain.common.Result
@@ -16,7 +16,7 @@ import rdx.works.profile.domain.security
 import javax.inject.Inject
 
 class VerifyDappUseCase @Inject constructor(
-    private val dappMetadataRepository: DappMetadataRepository,
+    private val dappMetadataRepository: DAppRepository,
     private val dAppMessenger: DappMessenger,
     private val getProfileUseCase: GetProfileUseCase
 ) {

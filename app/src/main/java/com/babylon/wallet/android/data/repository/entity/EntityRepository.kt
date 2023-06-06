@@ -62,11 +62,6 @@ interface EntityRepository {
         isRefreshing: Boolean = true
     ): Result<StateEntityDetailsResponse>
 
-    suspend fun getDAppResources(
-        dAppMetadata: DAppWithMetadata,
-        isRefreshing: Boolean = true
-    ): Result<DAppResources>
-
     suspend fun getEntityOwnerKeys(entityAddress: String, isRefreshing: Boolean = false): Result<OwnerKeysMetadataItem?>
 }
 
@@ -377,67 +372,6 @@ class EntityRepositoryImpl @Inject constructor(
         map = { it }
     )
 
-    override suspend fun getDAppResources(
-        dAppMetadata: DAppWithMetadata,
-        isRefreshing: Boolean
-    ): Result<DAppResources> {
-        val claimedResources = dAppMetadata.claimedEntities.filter {
-            ActionableAddress.Type.from(it) == ActionableAddress.Type.RESOURCE
-        }
-
-        val listOfEntityDetailsResponsesResult = getStateEntityDetailsResponse(
-            addresses = claimedResources,
-            explicitMetadata = ExplicitMetadataKey.forAssets,
-            isRefreshing = isRefreshing
-        )
-
-        return listOfEntityDetailsResponsesResult.switchMap { entityDetailsResponses ->
-            val allResources = entityDetailsResponses.map {
-                it.items
-            }.flatten()
-
-            val fungibleItems = allResources.filter {
-                it.details?.type == StateEntityDetailsResponseItemDetailsType.fungibleResource
-            }
-            val nonFungibleItems = allResources.filter {
-                it.details?.type == StateEntityDetailsResponseItemDetailsType.nonFungibleResource
-            }
-
-            val fungibleResources = fungibleItems.map { fungibleItem ->
-                val metadataMap = fungibleItem.metadata.asMetadataStringMap()
-                Resource.FungibleResource(
-                    resourceAddress = fungibleItem.address,
-                    amount = null, // No amount given in metadata
-                    nameMetadataItem = metadataMap[ExplicitMetadataKey.NAME.key]?.let { NameMetadataItem(it) },
-                    symbolMetadataItem = metadataMap[ExplicitMetadataKey.SYMBOL.key]?.let { SymbolMetadataItem(it) },
-                    descriptionMetadataItem = metadataMap[ExplicitMetadataKey.DESCRIPTION.key]?.let { DescriptionMetadataItem(it) },
-                    iconUrlMetadataItem = metadataMap[ExplicitMetadataKey.ICON_URL.key]?.let { IconUrlMetadataItem(it.toUri()) }
-                )
-            }
-
-            val nonFungibleResource = nonFungibleItems.map { nonFungibleItem ->
-                val metadataMap = nonFungibleItem.metadata.asMetadataStringMap()
-
-                Resource.NonFungibleResource.Item(
-                    collectionAddress = nonFungibleItem.address,
-                    localId = Resource.NonFungibleResource.Item.ID.from(
-                        nonFungibleItem.ancestorIdentities?.globalAddress.orEmpty()
-                    ),
-                    iconMetadataItem = metadataMap[ExplicitMetadataKey.ICON_URL.key]?.let {
-                        IconUrlMetadataItem(it.toUri())
-                    }
-                )
-            }
-
-            val dAppsWithResources = DAppResources(
-                fungibleResources = fungibleResources,
-                nonFungibleResources = nonFungibleResource,
-            )
-
-            Result.Success(dAppsWithResources)
-        }
-    }
-
     private suspend fun nextFungiblesPage(
         accountAddress: String,
         nextCursor: String
@@ -493,6 +427,6 @@ class EntityRepositoryImpl @Inject constructor(
     }
 
     companion object {
-        private const val CHUNK_SIZE_OF_ITEMS = 20
+        const val CHUNK_SIZE_OF_ITEMS = 20
     }
 }
