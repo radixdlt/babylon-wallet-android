@@ -78,8 +78,6 @@ class TransactionApprovalViewModel @Inject constructor(
 ) : StateViewModel<TransactionUiState>(),
     OneOffEventHandler<TransactionApprovalEvent> by OneOffEventHandlerImpl() {
 
-    @Suppress("MagicNumber")
-    private val delayAfterCloseMs = 500L // TODO this is not necessary but on the UI looks smoother
     private val args = TransactionApprovalArgs(savedStateHandle)
     private val transactionWriteRequest =
         incomingRequestRepository.getTransactionWriteRequest(args.requestId)
