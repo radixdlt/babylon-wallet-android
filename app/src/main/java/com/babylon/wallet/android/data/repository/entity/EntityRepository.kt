@@ -4,7 +4,6 @@ import android.net.Uri
 import androidx.core.net.toUri
 import com.babylon.wallet.android.data.gateway.apis.StateApi
 import com.babylon.wallet.android.data.gateway.extensions.asMetadataItems
-import com.babylon.wallet.android.data.gateway.extensions.asMetadataStringMap
 import com.babylon.wallet.android.data.gateway.generated.models.FungibleResourcesCollection
 import com.babylon.wallet.android.data.gateway.generated.models.FungibleResourcesCollectionItemVaultAggregated
 import com.babylon.wallet.android.data.gateway.generated.models.NonFungibleResourcesCollection
@@ -13,7 +12,6 @@ import com.babylon.wallet.android.data.gateway.generated.models.ResourceAggregat
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsOptIns
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsRequest
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponse
-import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponseItemDetailsType
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityFungiblesPageRequest
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityFungiblesPageResponse
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityNonFungibleIdsPageRequest
@@ -32,17 +30,11 @@ import com.babylon.wallet.android.domain.common.map
 import com.babylon.wallet.android.domain.common.switchMap
 import com.babylon.wallet.android.domain.common.value
 import com.babylon.wallet.android.domain.model.AccountWithResources
-import com.babylon.wallet.android.domain.model.DAppResources
-import com.babylon.wallet.android.domain.model.DAppWithMetadata
 import com.babylon.wallet.android.domain.model.Resource
 import com.babylon.wallet.android.domain.model.Resources
-import com.babylon.wallet.android.domain.model.metadata.DescriptionMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.IconUrlMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.MetadataItem.Companion.consume
-import com.babylon.wallet.android.domain.model.metadata.NameMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.OwnerKeysMetadataItem
-import com.babylon.wallet.android.domain.model.metadata.SymbolMetadataItem
-import com.babylon.wallet.android.presentation.model.ActionableAddress
 import rdx.works.profile.data.model.pernetwork.Network
 import java.io.IOException
 import java.math.BigDecimal
