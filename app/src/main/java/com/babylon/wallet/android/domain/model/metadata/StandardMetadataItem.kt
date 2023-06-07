@@ -2,7 +2,6 @@ package com.babylon.wallet.android.domain.model.metadata
 
 import android.net.Uri
 import com.babylon.wallet.android.data.gateway.model.ExplicitMetadataKey
-import rdx.works.profile.data.model.pernetwork.FactorInstance
 
 /**
  * Metadata items that are known to the wallet and are prominently presented.
@@ -88,35 +87,32 @@ data class TagsMetadataItem(
     override val key: String = ExplicitMetadataKey.TAGS.key
 }
 
-data class OwnerKeysMetadataItem(
+data class OwnerKeyHashesMetadataItem(
     val ownerKeys: List<String>
 ) : StandardMetadataItem {
     override val key: String = ExplicitMetadataKey.OWNER_KEYS.key
 
     @Suppress("MagicNumber")
-    fun toPublicKeys(): List<FactorInstance.PublicKey> {
-        val curve25519Prefix = "EddsaEd25519PublicKey"
-        val secp256k1Prefix = "EcdsaSecp256k1PublicKey"
+    fun toPublicKeyHashes(): Set<String> {
+        val curve25519Prefix = "EddsaEd25519PublicKeyHash"
+        val secp256k1Prefix = "EcdsaSecp256k1PublicKeyHash"
         val lengthCurve25519Prefix = curve25519Prefix.length
         val lengthSecp256k1Prefix = secp256k1Prefix.length
         val lengthQuoteAndParenthesis = 2
         val lengthQuotesAndTwoParenthesis = 2 * lengthQuoteAndParenthesis
-        val lengthCurve25519PubKeyHex = 32 * 2
-        val lengthSecp256K1PubKeyHex = 33 * 2
-        val slip10Keys = ownerKeys.map { ownerKey ->
+        val lengthCurve25519PubKeyHex = 29 * 2
+        val lengthSecp256K1PubKeyHex = 29 * 2
+        return ownerKeys.map { ownerKey ->
             when {
                 ownerKey.startsWith(curve25519Prefix) -> {
                     require(ownerKey.length == lengthQuotesAndTwoParenthesis + lengthCurve25519Prefix + lengthCurve25519PubKeyHex)
-                    val keyHex = ownerKey.drop(lengthQuoteAndParenthesis + lengthCurve25519Prefix).dropLast(lengthQuoteAndParenthesis)
-                    FactorInstance.PublicKey.curve25519PublicKey(keyHex)
+                    ownerKey.drop(lengthQuoteAndParenthesis + lengthCurve25519Prefix).dropLast(lengthQuoteAndParenthesis)
                 }
                 else -> {
                     require(ownerKey.length == lengthQuotesAndTwoParenthesis + lengthSecp256k1Prefix + lengthSecp256K1PubKeyHex)
-                    val keyHex = ownerKey.drop(lengthQuoteAndParenthesis + lengthSecp256k1Prefix).dropLast(lengthQuoteAndParenthesis)
-                    FactorInstance.PublicKey.curveSecp256k1PublicKey(keyHex)
+                    ownerKey.drop(lengthQuoteAndParenthesis + lengthSecp256k1Prefix).dropLast(lengthQuoteAndParenthesis)
                 }
             }
-        }
-        return slip10Keys
+        }.toSet()
     }
 }

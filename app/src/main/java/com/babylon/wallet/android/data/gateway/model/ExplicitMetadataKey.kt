@@ -12,7 +12,7 @@ import com.babylon.wallet.android.domain.model.metadata.DomainMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.IconUrlMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.InfoUrlMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.NameMetadataItem
-import com.babylon.wallet.android.domain.model.metadata.OwnerKeysMetadataItem
+import com.babylon.wallet.android.domain.model.metadata.OwnerKeyHashesMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.RelatedWebsiteMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.StandardMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.SymbolMetadataItem
@@ -57,7 +57,7 @@ enum class ExplicitMetadataKey(val key: String) {
         INFO_URL -> InfoUrlMetadataItem(url = Uri.parse(value.asString.orEmpty()))
         ICON_URL -> IconUrlMetadataItem(url = Uri.parse(value.asString.orEmpty()))
         URL -> InfoUrlMetadataItem(url = Uri.parse(value.asString.orEmpty()))
-        OWNER_KEYS -> OwnerKeysMetadataItem(ownerKeys = value.asStringCollection.orEmpty())
+        OWNER_KEYS -> OwnerKeyHashesMetadataItem(ownerKeys = value.asStringCollection.orEmpty())
     }
 
     companion object {
