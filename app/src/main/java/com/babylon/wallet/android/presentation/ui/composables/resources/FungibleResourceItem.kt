@@ -2,7 +2,6 @@ package com.babylon.wallet.android.presentation.ui.composables.resources
 
 import android.graphics.drawable.ColorDrawable
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.size
@@ -89,9 +88,7 @@ fun SelectableFungibleResourceItem(
     onCheckChanged: (Boolean) -> Unit
 ) {
     FungibleResourceItem(
-        modifier = modifier.clickable {
-            onCheckChanged(!isSelected)
-        },
+        modifier = modifier,
         resource = resource,
         trailingContent = {
             Checkbox(

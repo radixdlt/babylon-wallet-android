@@ -4,6 +4,7 @@ package com.babylon.wallet.android.presentation.transfer.assets
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -139,7 +140,12 @@ fun ChooseAssetsSheet(
                         ) { _, resource ->
                             val isSelected = state.targetAccount.assets.any { it.address == resource.resourceAddress }
                             SelectableFungibleResourceItem(
-                                modifier = Modifier.height(85.dp),
+                                modifier = Modifier
+                                    .height(85.dp)
+                                    .clickable {
+                                        val fungibleAsset = SpendingAsset.Fungible(resource = resource)
+                                        onAssetSelectionChanged(fungibleAsset, !isSelected)
+                                    },
                                 resource = resource,
                                 isSelected = isSelected,
                                 onCheckChanged = {
@@ -152,9 +158,14 @@ fun ChooseAssetsSheet(
                             resources = state.resources,
                             modifier = Modifier.fillMaxSize(),
                         ) { _, item ->
+                            val isSelected = state.targetAccount.assets.any { it.address == item.globalAddress }
                             SelectableNonFungibleResourceItem(
+                                modifier = Modifier.clickable {
+                                    val nonFungibleAsset = SpendingAsset.NFT(item = item)
+                                    onAssetSelectionChanged(nonFungibleAsset, !isSelected)
+                                },
                                 item = item,
-                                isSelected = state.targetAccount.assets.any { it.address == item.globalAddress },
+                                isSelected = isSelected,
                                 onCheckChanged = {
                                     val nonFungibleAsset = SpendingAsset.NFT(item = item)
                                     onAssetSelectionChanged(nonFungibleAsset, it)

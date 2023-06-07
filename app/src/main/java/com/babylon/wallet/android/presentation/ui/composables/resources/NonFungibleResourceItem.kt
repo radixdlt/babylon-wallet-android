@@ -2,7 +2,6 @@ package com.babylon.wallet.android.presentation.ui.composables.resources
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Arrangement.spacedBy
 import androidx.compose.foundation.layout.Column
@@ -108,9 +107,6 @@ fun SelectableNonFungibleResourceItem(
 ) {
     Row(
         modifier = modifier
-            .clickable {
-                onCheckChanged(!isSelected)
-            }
             .padding(vertical = RadixTheme.dimensions.paddingDefault)
             .padding(start = RadixTheme.dimensions.paddingDefault, end = RadixTheme.dimensions.paddingSmall),
         verticalAlignment = Alignment.CenterVertically,
