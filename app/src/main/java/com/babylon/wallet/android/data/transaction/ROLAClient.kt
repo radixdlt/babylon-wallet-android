@@ -9,6 +9,7 @@ import com.babylon.wallet.android.domain.usecases.transaction.SignRequest
 import com.radixdlt.toolkit.builders.ManifestBuilder
 import com.radixdlt.toolkit.models.crypto.SignatureWithPublicKey
 import com.radixdlt.toolkit.models.transaction.TransactionManifest
+import rdx.works.core.compressedPublicKeyHash
 import rdx.works.core.decodeHex
 import rdx.works.profile.data.model.pernetwork.Entity
 import rdx.works.profile.data.model.pernetwork.FactorInstance
@@ -36,10 +37,15 @@ class ROLAClient @Inject constructor(
         val transactionSigningKey = when (val state = entity.securityState) {
             is SecurityState.Unsecured -> state.unsecuredEntityControl.transactionSigning.publicKey
         }
-        entityRepository.getEntityOwnerKeys(entity.address, true).onValue { ownerKeys ->
-            val publicKeys = ownerKeys?.toPublicKeys().orEmpty().toMutableList()
-            publicKeys.add(authSigningFactorInstance.publicKey)
-            if (!publicKeys.contains(transactionSigningKey)) {
+        entityRepository.getEntityOwnerKeyHashes(entity.address, true).onValue { ownerKeys ->
+            val publicKeys = mutableListOf<FactorInstance.PublicKey>()
+            val ownerKeysHashes = ownerKeys?.toPublicKeyHashes().orEmpty()
+            val authSigningKeyHash = authSigningFactorInstance.publicKey.compressedData.compressedPublicKeyHash()
+            val transactionSigningKeyHash = transactionSigningKey.compressedData.compressedPublicKeyHash()
+            if (!ownerKeysHashes.contains(authSigningKeyHash)) {
+                publicKeys.add(authSigningFactorInstance.publicKey)
+            }
+            if (!ownerKeysHashes.contains(transactionSigningKeyHash)) {
                 publicKeys.add(transactionSigningKey)
             }
             resultManifest = ManifestBuilder().addSetMetadataInstructionForOwnerKeys(entity.address, publicKeys).build()

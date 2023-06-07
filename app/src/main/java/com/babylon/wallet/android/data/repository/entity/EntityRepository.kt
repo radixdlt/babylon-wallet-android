@@ -54,7 +54,7 @@ interface EntityRepository {
         isRefreshing: Boolean = true
     ): Result<StateEntityDetailsResponse>
 
-    suspend fun getEntityOwnerKeys(entityAddress: String, isRefreshing: Boolean = false): Result<OwnerKeysMetadataItem?>
+    suspend fun getEntityOwnerKeyHashes(entityAddress: String, isRefreshing: Boolean = false): Result<OwnerKeysMetadataItem?>
 }
 
 @Suppress("TooManyFunctions")
@@ -402,7 +402,7 @@ class EntityRepositoryImpl @Inject constructor(
         )
     }
 
-    override suspend fun getEntityOwnerKeys(entityAddress: String, isRefreshing: Boolean): Result<OwnerKeysMetadataItem?> {
+    override suspend fun getEntityOwnerKeyHashes(entityAddress: String, isRefreshing: Boolean): Result<OwnerKeysMetadataItem?> {
         return stateApi.entityDetails(
             StateEntityDetailsRequest(
                 addresses = listOf(entityAddress)
