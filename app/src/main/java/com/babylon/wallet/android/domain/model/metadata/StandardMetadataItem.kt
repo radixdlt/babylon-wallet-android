@@ -75,7 +75,7 @@ data class TagsMetadataItem(
     override val key: String = ExplicitMetadataKey.TAGS.key
 }
 
-data class OwnerKeysMetadataItem(
+data class OwnerKeyHashesMetadataItem(
     val ownerKeys: List<String>
 ) : StandardMetadataItem {
     override val key: String = ExplicitMetadataKey.OWNER_KEYS.key

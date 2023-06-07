@@ -8,4 +8,5 @@ fun String.blake2Hash(): ByteArray = toByteArray().blake2Hash()
 
 fun ByteArray.toHexString(): String = joinToString(separator = "") { eachByte -> "%02x".format(eachByte) }
 
+@Suppress("MagicNumber")
 fun String.compressedPublicKeyHash(): String = decodeHex().blake2Hash().takeLast(29).toHexString()
