@@ -30,11 +30,7 @@ fun NonFungibleResourcesContent(
 
     LazyColumn(
         modifier = modifier,
-        contentPadding = PaddingValues(
-            start = RadixTheme.dimensions.paddingDefault,
-            end = RadixTheme.dimensions.paddingDefault,
-            bottom = RadixTheme.dimensions.paddingDefault
-        )
+        contentPadding = PaddingValues(RadixTheme.dimensions.paddingMedium)
     ) {
         collections.forEachIndexed { collectionIndex, collection ->
             val collapsed = collapsedState[collectionIndex]

@@ -41,54 +41,50 @@ fun FungibleItemRow(
     fungible: Resource.FungibleResource,
     modifier: Modifier = Modifier
 ) {
-    Box(modifier = modifier) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.padding(
-                horizontal = RadixTheme.dimensions.paddingLarge,
-                vertical = RadixTheme.dimensions.paddingMedium
-            ),
-            horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingMedium)
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = modifier,
+        horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingMedium)
+    ) {
+        val placeholder = if (fungible.isXrd) {
+            painterResource(id = R.drawable.ic_xrd_token)
+        } else {
+            rememberDrawablePainter(drawable = ColorDrawable(RadixTheme.colors.gray3.toArgb()))
+        }
+        Box(
+            modifier = Modifier
+                .size(44.dp)
+                .background(RadixTheme.colors.gray3, shape = RadixTheme.shapes.circle)
         ) {
-            val placeholder = if (fungible.isXrd) {
-                painterResource(id = R.drawable.ic_xrd_token)
-            } else {
-                rememberDrawablePainter(drawable = ColorDrawable(RadixTheme.colors.gray3.toArgb()))
-            }
-            Box(
+            AsyncImage(
+                model = rememberImageUrl(fromUrl = fungible.iconUrl.toString(), size = ImageSize.MEDIUM),
+                placeholder = placeholder,
+                fallback = placeholder,
+                error = placeholder,
+                contentDescription = null,
+                contentScale = ContentScale.Crop,
                 modifier = Modifier
                     .size(44.dp)
-                    .background(RadixTheme.colors.gray3, shape = RadixTheme.shapes.circle)
-            ) {
-                AsyncImage(
-                    model = rememberImageUrl(fromUrl = fungible.iconUrl.toString(), size = ImageSize.MEDIUM),
-                    placeholder = placeholder,
-                    fallback = placeholder,
-                    error = placeholder,
-                    contentDescription = null,
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier
-                        .size(44.dp)
-                        .clip(RadixTheme.shapes.circle)
-                )
-            }
+                    .clip(RadixTheme.shapes.circle)
+            )
+        }
+        Text(
+            text = fungible.displayTitle,
+            style = RadixTheme.typography.body2HighImportance,
+            color = RadixTheme.colors.gray1,
+            maxLines = 1
+        )
+
+        fungible.amount?.let { amount ->
             Text(
-                text = fungible.displayTitle,
+                modifier = Modifier.fillMaxWidth(),
+                text = amount.displayableQuantity(),
                 style = RadixTheme.typography.body2HighImportance,
                 color = RadixTheme.colors.gray1,
-                maxLines = 1
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                textAlign = TextAlign.End
             )
-            fungible.amount?.let { amount ->
-                Text(
-                    modifier = Modifier.fillMaxWidth(),
-                    text = amount.displayableQuantity(),
-                    style = RadixTheme.typography.body2HighImportance,
-                    color = RadixTheme.colors.gray1,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                    textAlign = TextAlign.End
-                )
-            }
         }
     }
 }

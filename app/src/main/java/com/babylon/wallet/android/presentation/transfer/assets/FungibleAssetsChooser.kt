@@ -3,7 +3,6 @@ package com.babylon.wallet.android.presentation.transfer.assets
 import android.graphics.drawable.ColorDrawable
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -16,8 +15,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.Text
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CheckboxDefaults
 import androidx.compose.material3.Divider
@@ -25,22 +22,19 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Shape
-import androidx.compose.ui.graphics.drawscope.clipRect
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.babylon.wallet.android.designsystem.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
-import com.babylon.wallet.android.designsystem.theme.listItemShape
 import com.babylon.wallet.android.domain.model.Resource
 import com.babylon.wallet.android.domain.model.Resources
 import com.babylon.wallet.android.presentation.transfer.SpendingAsset
 import com.babylon.wallet.android.presentation.ui.composables.ImageSize
 import com.babylon.wallet.android.presentation.ui.composables.rememberImageUrl
+import com.babylon.wallet.android.presentation.ui.composables.resources.FungibleResourceCard
 import com.google.accompanist.drawablepainter.rememberDrawablePainter
 import kotlinx.collections.immutable.ImmutableSet
 import rdx.works.core.displayableQuantity
@@ -63,9 +57,8 @@ fun FungibleAssetsChooser(
     ) {
         if (xrdResource != null) {
             item {
-                ItemContainer(
-                    modifier = Modifier.padding(top = RadixTheme.dimensions.paddingDefault),
-                    shape = listItemShape()
+                FungibleResourceCard(
+                    modifier = Modifier.padding(top = RadixTheme.dimensions.paddingDefault)
                 ) {
                     val isSelected = selectedAssets.any { it.address == xrdResource.resourceAddress }
                     Item(
@@ -83,27 +76,10 @@ fun FungibleAssetsChooser(
 
         itemsIndexed(restResources) { index, resource ->
             val topPadding = if (index == 0) RadixTheme.dimensions.paddingDefault else 0.dp
-            val shadowPadding = RadixTheme.dimensions.paddingDefault
-            ItemContainer(
-                modifier = Modifier
-                    .padding(top = topPadding)
-                    .drawWithContent {
-                        // Needed to remove shadow casted above of previous elements in the top side
-                        if (index != 0 && restResources.size != 1) {
-                            val shadowPaddingPx = shadowPadding.toPx()
-                            clipRect(
-                                top = 0f,
-                                left = -shadowPaddingPx,
-                                right = size.width + shadowPaddingPx,
-                                bottom = size.height + shadowPaddingPx
-                            ) {
-                                this@drawWithContent.drawContent()
-                            }
-                        } else {
-                            this@drawWithContent.drawContent()
-                        }
-                    },
-                shape = listItemShape(itemIndex = index, allItemsSize = restResources.size),
+            FungibleResourceCard(
+                modifier = Modifier.padding(top = topPadding),
+                itemIndex = index,
+                allItemsSize = restResources.size,
                 bottomContent = if (index != restResources.lastIndex) {
                     {
                         Divider(
@@ -125,31 +101,6 @@ fun FungibleAssetsChooser(
                     }
                 )
             }
-        }
-    }
-}
-
-@Composable
-private fun ItemContainer(
-    modifier: Modifier = Modifier,
-    shape: Shape,
-    bottomContent: @Composable (() -> Unit)? = null,
-    content: @Composable () -> Unit
-) {
-    Card(
-        modifier = modifier,
-        shape = shape,
-        colors = CardDefaults.cardColors(
-            containerColor = RadixTheme.colors.defaultBackground
-        ),
-        elevation = CardDefaults.cardElevation(
-            defaultElevation = 4.dp
-        )
-    ) {
-        Column {
-            content()
-
-            bottomContent?.invoke()
         }
     }
 }

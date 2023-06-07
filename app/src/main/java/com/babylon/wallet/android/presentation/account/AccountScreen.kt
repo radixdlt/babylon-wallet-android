@@ -458,7 +458,6 @@ fun AssetsContent(
                 }
             }
         }
-        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
         HorizontalPager(
             modifier = Modifier
                 .fillMaxWidth()
