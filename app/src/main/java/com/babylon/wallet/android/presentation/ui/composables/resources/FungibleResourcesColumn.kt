@@ -32,7 +32,7 @@ fun FungibleResourcesColumn(
     contentPadding: PaddingValues = PaddingValues(
         start = RadixTheme.dimensions.paddingMedium,
         end = RadixTheme.dimensions.paddingMedium,
-        top = RadixTheme.dimensions.paddingMedium,
+        top = RadixTheme.dimensions.paddingLarge,
         bottom = 100.dp
     ),
     item: @Composable (index: Int, resource: Resource.FungibleResource) -> Unit

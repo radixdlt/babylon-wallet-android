@@ -92,4 +92,3 @@ enum class ResourceTab {
     Tokens,
     Nfts
 }
-

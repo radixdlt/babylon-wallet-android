@@ -28,7 +28,7 @@ fun NonFungibleResourcesColumn(
     contentPadding: PaddingValues = PaddingValues(
         start = RadixTheme.dimensions.paddingMedium,
         end = RadixTheme.dimensions.paddingMedium,
-        top = RadixTheme.dimensions.paddingMedium,
+        top = RadixTheme.dimensions.paddingLarge,
         bottom = 100.dp
     ),
     nftItem: @Composable (Resource.NonFungibleResource, Resource.NonFungibleResource.Item) -> Unit,
@@ -68,7 +68,7 @@ fun NonFungibleResourcesColumn(
                     targetValue = if (collection.items.last().globalAddress == item.globalAddress) 12.dp else 0.dp
                 )
                 Card(
-                    modifier = modifier
+                    modifier = Modifier
                         .padding(vertical = 1.dp)
                         .fillMaxWidth(),
                     shape = RoundedCornerShape(0.dp, 0.dp, bottomCorners, bottomCorners),

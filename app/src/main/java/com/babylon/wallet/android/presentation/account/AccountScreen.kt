@@ -412,7 +412,7 @@ fun AssetsContent(
         val pagerState = rememberPagerState()
         var selectedTab by remember { mutableStateOf(ResourceTab.Tokens) }
 
-        Spacer(modifier = Modifier.height(height = RadixTheme.dimensions.paddingDefault))
+        Spacer(modifier = Modifier.height(height = RadixTheme.dimensions.paddingLarge))
 
         ResourcesTabs(
             pagerState = pagerState,
