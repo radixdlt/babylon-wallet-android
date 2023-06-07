@@ -85,8 +85,8 @@ private fun AuthorizedDAppsContent(
             }
             items(dApps) { dApp ->
                 StandardOneLineCard(
-                    "",
-                    dApp.dAppWithMetadata.name.orEmpty(),
+                    image = dApp.dAppWithMetadata.iconUrl.toString(),
+                    title = dApp.dAppWithMetadata.name.orEmpty(),
                     modifier = Modifier
                         .shadow(elevation = 8.dp, shape = RadixTheme.shapes.roundedRectMedium)
                         .clip(RadixTheme.shapes.roundedRectMedium)
