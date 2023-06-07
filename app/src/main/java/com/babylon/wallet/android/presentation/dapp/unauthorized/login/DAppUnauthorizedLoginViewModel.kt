@@ -19,10 +19,10 @@ import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
+import com.babylon.wallet.android.presentation.dapp.InitialUnauthorizedLoginRoute
 import com.babylon.wallet.android.presentation.dapp.authorized.account.AccountItemUiModel
 import com.babylon.wallet.android.presentation.dapp.authorized.selectpersona.PersonaUiModel
 import com.babylon.wallet.android.presentation.dapp.authorized.selectpersona.toUiModel
-import com.babylon.wallet.android.presentation.dapp.unauthorized.InitialUnauthorizedLoginRoute
 import com.babylon.wallet.android.presentation.model.encodeToString
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
@@ -54,9 +54,6 @@ class DAppUnauthorizedLoginViewModel @Inject constructor(
     private val request = incomingRequestRepository.getUnauthorizedRequest(
         args.requestId
     )
-
-    private val topLevelOneOffEventHandler = OneOffEventHandlerImpl<DAppUnauthorizedLoginEvent>()
-    val topLevelOneOffEvent by topLevelOneOffEventHandler
 
     init {
         viewModelScope.launch {
@@ -125,7 +122,7 @@ class DAppUnauthorizedLoginViewModel @Inject constructor(
             failure.getDappMessage()
         )
         delay(2000)
-        topLevelOneOffEventHandler.sendEvent(DAppUnauthorizedLoginEvent.RejectLogin)
+        sendEvent(DAppUnauthorizedLoginEvent.RejectLogin)
         incomingRequestRepository.requestHandled(requestId = args.requestId)
     }
 
@@ -157,7 +154,7 @@ class DAppUnauthorizedLoginViewModel @Inject constructor(
                 args.requestId,
                 error = WalletErrorType.RejectedByUser
             )
-            topLevelOneOffEventHandler.sendEvent(DAppUnauthorizedLoginEvent.RejectLogin)
+            sendEvent(DAppUnauthorizedLoginEvent.RejectLogin)
             incomingRequestRepository.requestHandled(requestId = args.requestId)
         }
     }

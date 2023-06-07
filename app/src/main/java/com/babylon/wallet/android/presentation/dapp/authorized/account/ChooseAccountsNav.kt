@@ -2,15 +2,16 @@ package com.babylon.wallet.android.presentation.dapp.authorized.account
 
 import androidx.annotation.VisibleForTesting
 import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.runtime.remember
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.SavedStateHandle
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavType
 import androidx.navigation.navArgument
-import com.babylon.wallet.android.presentation.dapp.authorized.InitialAuthorizedLoginRoute
 import com.babylon.wallet.android.presentation.dapp.authorized.login.DAppAuthorizedLoginEvent
 import com.babylon.wallet.android.presentation.dapp.authorized.login.DAppAuthorizedLoginViewModel
+import com.babylon.wallet.android.presentation.dapp.authorized.login.ROUTE_DAPP_LOGIN_AUTHORIZED_GRAPH
 import com.google.accompanist.navigation.animation.composable
 
 @VisibleForTesting
@@ -58,44 +59,35 @@ fun NavGraphBuilder.chooseAccounts(
     onAccountCreationClick: () -> Unit,
     onChooseAccounts: (DAppAuthorizedLoginEvent.ChooseAccounts) -> Unit,
     onLoginFlowComplete: (DAppAuthorizedLoginEvent.LoginFlowCompleted) -> Unit,
-    initialAuthorizedLoginRoute: InitialAuthorizedLoginRoute.ChooseAccount?,
-    sharedViewModel: DAppAuthorizedLoginViewModel,
     onBackClick: () -> Boolean,
     onPersonaOngoingData: (DAppAuthorizedLoginEvent.PersonaDataOngoing) -> Unit,
     onPersonaDataOnetime: (DAppAuthorizedLoginEvent.PersonaDataOnetime) -> Unit,
+    navController: NavController,
 ) {
     composable(
         route = ROUTE_CHOOSE_ACCOUNTS,
         arguments = listOf(
             navArgument(ARG_NUMBER_OF_ACCOUNTS) {
                 type = NavType.IntType
-                initialAuthorizedLoginRoute?.let {
-                    defaultValue = initialAuthorizedLoginRoute.numberOfAccounts
-                }
             },
             navArgument(ARG_EXACT_ACCOUNT_COUNT) {
                 type = NavType.BoolType
-                initialAuthorizedLoginRoute?.let {
-                    defaultValue = initialAuthorizedLoginRoute.isExactAccountsCount
-                }
             },
             navArgument(ARG_ONE_TIME) {
                 type = NavType.BoolType
-                initialAuthorizedLoginRoute?.let {
-                    defaultValue = initialAuthorizedLoginRoute.oneTime
-                }
             },
             navArgument(ARG_SHOW_BACK) {
                 type = NavType.BoolType
-                initialAuthorizedLoginRoute?.let {
-                    defaultValue = initialAuthorizedLoginRoute.showBack
-                }
             },
         )
     ) {
+        val parentEntry = remember(it) {
+            navController.getBackStackEntry(ROUTE_DAPP_LOGIN_AUTHORIZED_GRAPH)
+        }
+        val sharedVM = hiltViewModel<DAppAuthorizedLoginViewModel>(parentEntry)
         ChooseAccountsScreen(
             viewModel = hiltViewModel(),
-            sharedViewModel = sharedViewModel,
+            sharedViewModel = sharedVM,
             dismissErrorDialog = dismissErrorDialog,
             onAccountCreationClick = onAccountCreationClick,
             onChooseAccounts = onChooseAccounts,

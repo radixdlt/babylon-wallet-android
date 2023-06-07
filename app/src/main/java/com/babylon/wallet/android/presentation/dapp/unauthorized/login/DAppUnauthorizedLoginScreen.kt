@@ -12,33 +12,27 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.presentation.common.FullscreenCircularProgressContent
-import com.babylon.wallet.android.presentation.dapp.unauthorized.DappUnauthorizedLoginNavigationHost
+import com.babylon.wallet.android.presentation.dapp.InitialUnauthorizedLoginRoute
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUiMessageHandler
-import com.google.accompanist.navigation.animation.rememberAnimatedNavController
 
-@OptIn(ExperimentalAnimationApi::class)
 @Composable
 fun DappUnauthorizedLoginScreen(
     viewModel: DAppUnauthorizedLoginViewModel,
-    onBackClick: () -> Unit,
-    showSuccessDialog: (requestId: String, dAppName: String) -> Unit,
+    navigateToChooseAccount: (Int, Boolean) -> Unit,
+    navigateToOneTimePersonaData: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    LaunchedEffect(Unit) {
-        viewModel.topLevelOneOffEvent.collect { event ->
-            when (event) {
-                DAppUnauthorizedLoginEvent.RejectLogin -> onBackClick()
-                else -> {}
-            }
-        }
-    }
     val state by viewModel.state.collectAsStateWithLifecycle()
+    when (val route = state.initialUnauthorizedLoginRoute) {
+        is InitialUnauthorizedLoginRoute.ChooseAccount -> navigateToChooseAccount(route.numberOfAccounts, route.isExactAccountsCount)
+        is InitialUnauthorizedLoginRoute.OnetimePersonaData -> navigateToOneTimePersonaData(route.requestedFieldsEncoded)
+        null -> {}
+    }
     Box(
         modifier = modifier
 //            .systemBarsPadding()
@@ -53,23 +47,6 @@ fun DappUnauthorizedLoginScreen(
             modifier = Modifier.fillMaxSize()
         ) {
             FullscreenCircularProgressContent()
-        }
-        AnimatedVisibility(
-            visible = state.initialUnauthorizedLoginRoute != null,
-            enter = fadeIn(),
-            exit = fadeOut(),
-            modifier = Modifier.fillMaxSize()
-        ) {
-            val navController = rememberAnimatedNavController()
-            state.initialUnauthorizedLoginRoute?.let {
-                DappUnauthorizedLoginNavigationHost(
-                    initialUnauthorizedLoginRoute = it,
-                    navController = navController,
-                    finishDappLogin = onBackClick,
-                    showSuccessDialog = showSuccessDialog,
-                    sharedViewModel = viewModel
-                )
-            }
         }
         SnackbarUiMessageHandler(
             message = state.uiMessage,

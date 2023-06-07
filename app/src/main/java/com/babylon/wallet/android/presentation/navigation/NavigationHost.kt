@@ -21,9 +21,9 @@ import com.babylon.wallet.android.presentation.createpersona.createPersonaScreen
 import com.babylon.wallet.android.presentation.createpersona.personaInfoScreen
 import com.babylon.wallet.android.presentation.createpersona.personasScreen
 import com.babylon.wallet.android.presentation.createpersona.popPersonaCreation
-import com.babylon.wallet.android.presentation.dapp.authorized.login.dAppLoginAuthorized
+import com.babylon.wallet.android.presentation.dapp.authorized.dappLoginAuthorizedNavGraph
 import com.babylon.wallet.android.presentation.dapp.completion.ChooseAccountsCompletionScreen
-import com.babylon.wallet.android.presentation.dapp.unauthorized.login.dAppLoginUnauthorized
+import com.babylon.wallet.android.presentation.dapp.unauthorized.dappLoginUnauthorizedNavGraph
 import com.babylon.wallet.android.presentation.main.MAIN_ROUTE
 import com.babylon.wallet.android.presentation.main.MainUiState
 import com.babylon.wallet.android.presentation.main.main
@@ -205,32 +205,8 @@ fun NavigationHost(
         accountPreferencesScreen {
             navController.popBackStack()
         }
-        dAppLoginAuthorized(
-            navController,
-            onBackClick = {
-                navController.popBackStack()
-            },
-            showSuccessDialog = { requestId, dAppName ->
-                navController.successBottomDialog(
-                    isFromTransaction = false,
-                    requestId = requestId,
-                    dAppName = dAppName
-                )
-            }
-        )
-        dAppLoginUnauthorized(
-            navController,
-            onBackClick = {
-                navController.popBackStack()
-            },
-            showSuccessDialog = { requestId, dAppName ->
-                navController.successBottomDialog(
-                    isFromTransaction = false,
-                    requestId = requestId,
-                    dAppName = dAppName
-                )
-            }
-        )
+        dappLoginAuthorizedNavGraph(navController = navController)
+        dappLoginUnauthorizedNavGraph(navController = navController)
         settingsNavGraph(navController)
         createPersonaConfirmationScreen(
             finishPersonaCreation = {
