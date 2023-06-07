@@ -21,9 +21,9 @@ jobs:
     steps:
       - uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8
 
-      - uses: actions/setup-java@5ffc13f4174014e2d4d4572b3d74c3fa61aeb2c2
+      - uses: actions/setup-java@v3
         with:
-          distribution: 'temurin' # See 'Supported distributions' for available options
+          distribution: 'zulu' # See 'Supported distributions' for available options
           java-version: '17'
 
       - name: Decode keystore credentials
@@ -60,9 +60,9 @@ jobs:
     steps:
       - uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8
 
-      - uses: actions/setup-java@5ffc13f4174014e2d4d4572b3d74c3fa61aeb2c2
+      - uses: actions/setup-java@v3
         with:
-          distribution: 'temurin' # See 'Supported distributions' for available options
+          distribution: 'zulu' # See 'Supported distributions' for available options
           java-version: '17'
 
       - name: Decode keystore credentials
@@ -124,9 +124,9 @@ jobs:
         with:
           fetch-depth: 0
 
-      - uses: actions/setup-java@5ffc13f4174014e2d4d4572b3d74c3fa61aeb2c2
+      - uses: actions/setup-java@v3
         with:
-          distribution: 'temurin' # See 'Supported distributions' for available options
+          distribution: 'zulu' # See 'Supported distributions' for available options
           java-version: '17'
 
       - uses: actions/download-artifact@9782bd6a9848b53b110e712e20e42d89988822b7
@@ -178,9 +178,9 @@ jobs:
       - name: Dump context
         uses: crazy-max/ghaction-dump-context@516dbb0c760f39b4cdd750ae095f1688780f68f4
 
-      - uses: actions/setup-java@5ffc13f4174014e2d4d4572b3d74c3fa61aeb2c2
+      - uses: actions/setup-java@v3
         with:
-          distribution: 'temurin' # See 'Supported distributions' for available options
+          distribution: 'zulu' # See 'Supported distributions' for available options
           java-version: '17'
 
       - name: Decode keystore credentials
