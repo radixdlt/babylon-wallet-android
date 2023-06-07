@@ -115,6 +115,7 @@ fun CreateAccountContent(
     Column(
         modifier = modifier
             .navigationBarsPadding()
+            .imePadding()
             .background(RadixTheme.colors.defaultBackground)
             .fillMaxSize()
     ) {
