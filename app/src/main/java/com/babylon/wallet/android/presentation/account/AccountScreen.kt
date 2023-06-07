@@ -1,9 +1,6 @@
 @file:OptIn(
     ExperimentalFoundationApi::class,
-    ExperimentalPagerApi::class,
-    ExperimentalFoundationApi::class,
-    ExperimentalFoundationApi::class,
-    ExperimentalFoundationApi::class
+    ExperimentalPagerApi::class
 )
 
 package com.babylon.wallet.android.presentation.account
@@ -14,6 +11,7 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
@@ -73,9 +71,12 @@ import com.babylon.wallet.android.presentation.account.composable.NonFungibleTok
 import com.babylon.wallet.android.presentation.common.FullscreenCircularProgressContent
 import com.babylon.wallet.android.presentation.ui.composables.ActionableAddressView
 import com.babylon.wallet.android.presentation.ui.composables.ApplySecuritySettingsLabel
-import com.babylon.wallet.android.presentation.ui.composables.NonFungibleResourcesContent
+import com.babylon.wallet.android.presentation.ui.composables.resources.NonFungibleResourcesColumn
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.WalletBalanceView
+import com.babylon.wallet.android.presentation.ui.composables.resources.FungibleResourceItem
+import com.babylon.wallet.android.presentation.ui.composables.resources.FungibleResourcesColumn
+import com.babylon.wallet.android.presentation.ui.composables.resources.NonFungibleResourceItem
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.pagerTabIndicatorOffset
 import com.google.accompanist.swiperefresh.SwipeRefresh
@@ -472,18 +473,34 @@ fun AssetsContent(
                 content = {
                     when (AssetTypeTab.values()[page]) {
                         AssetTypeTab.TOKEN_TAB -> {
-                            FungibleResourcesContent(
-                                resources = resources,
+                            FungibleResourcesColumn(
                                 modifier = Modifier.fillMaxSize(),
-                                onFungibleTokenClick = onFungibleTokenClick
-                            )
+                                resources = resources
+                            ) { _, item ->
+                                FungibleResourceItem(
+                                    modifier = Modifier
+                                        .height(83.dp)
+                                        .clickable {
+                                            onFungibleTokenClick(item)
+                                        },
+                                    resource = item
+                                )
+                            }
                         }
                         AssetTypeTab.NTF_TAB -> {
-                            NonFungibleResourcesContent(
+                            NonFungibleResourcesColumn(
                                 resources = resources,
                                 modifier = Modifier.fillMaxSize(),
-                                onNftClick = onNonFungibleItemClick
-                            )
+                            ) { collection, item ->
+                                NonFungibleResourceItem(
+                                    modifier = Modifier
+                                        .padding(RadixTheme.dimensions.paddingDefault)
+                                        .clickable {
+                                            onNonFungibleItemClick(collection, item)
+                                        },
+                                    item = item
+                                )
+                            }
                         }
                     }
                 }

@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.presentation.ui.composables
+package com.babylon.wallet.android.presentation.ui.composables.resources
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
@@ -16,12 +16,15 @@ import androidx.compose.material.Card
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
+import androidx.compose.material3.CardDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -33,6 +36,8 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.model.Resource
 import com.babylon.wallet.android.domain.model.metadata.NameMetadataItem
+import com.babylon.wallet.android.presentation.ui.composables.ImageSize
+import com.babylon.wallet.android.presentation.ui.composables.rememberImageUrl
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
@@ -136,6 +141,38 @@ fun NonFungibleResourceCollectionHeader(
         }
     }
 }
+
+@Composable
+fun NonFungibleResourceItemCard(
+    modifier: Modifier = Modifier,
+    itemIndex: Int,
+    allItemsSize: Int,
+    content: @Composable () -> Unit
+) {
+    androidx.compose.material3.Card(
+        modifier = modifier,
+        shape = nftItemShape(itemIndex = itemIndex, allItemsSize = allItemsSize),
+        colors = CardDefaults.cardColors(
+            containerColor = RadixTheme.colors.defaultBackground
+        ),
+        elevation = CardDefaults.cardElevation(
+            defaultElevation = 4.dp
+        )
+    ) {
+        content()
+    }
+}
+
+@Composable
+private fun nftItemShape(
+    itemIndex: Int,
+    allItemsSize: Int
+) = if (itemIndex == allItemsSize - 1) {
+    RadixTheme.shapes.roundedRectBottomMedium
+} else {
+    RectangleShape
+}
+
 
 @Preview(showBackground = true)
 @Composable

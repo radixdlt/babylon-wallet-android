@@ -1,27 +1,37 @@
-package com.babylon.wallet.android.presentation.ui.composables
+package com.babylon.wallet.android.presentation.ui.composables.resources
 
+import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
-import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.model.Resource
 import com.babylon.wallet.android.domain.model.Resources
 
 @Composable
-fun NonFungibleResourcesContent(
+fun NonFungibleResourcesColumn(
     modifier: Modifier = Modifier,
     resources: Resources?,
-    onNftClick: (Resource.NonFungibleResource, Resource.NonFungibleResource.Item) -> Unit,
+    contentPadding: PaddingValues = PaddingValues(
+        start = RadixTheme.dimensions.paddingMedium,
+        end = RadixTheme.dimensions.paddingMedium,
+        top = RadixTheme.dimensions.paddingMedium,
+        bottom = 100.dp
+    ),
+    nftItem: @Composable (Resource.NonFungibleResource, Resource.NonFungibleResource.Item) -> Unit,
 ) {
     val collections = resources?.nonFungibleResources.orEmpty()
     val collapsedState = remember(collections) {
@@ -30,7 +40,7 @@ fun NonFungibleResourcesContent(
 
     LazyColumn(
         modifier = modifier,
-        contentPadding = PaddingValues(RadixTheme.dimensions.paddingMedium)
+        contentPadding = contentPadding
     ) {
         collections.forEachIndexed { collectionIndex, collection ->
             val collapsed = collapsedState[collectionIndex]
@@ -54,30 +64,28 @@ fun NonFungibleResourcesContent(
                 key = { item -> item.globalAddress },
                 contentType = { "nft" }
             ) { item ->
-                NftTokenDetailItem(
-                    modifier = Modifier.padding(vertical = 1.dp),
-                    item = item,
-                    bottomCornersRounded = collection.items.last().globalAddress == item.globalAddress,
-                    onItemClicked = {
-                        onNftClick(collection, item)
-                    }
+                val bottomCorners by animateDpAsState(
+                    targetValue = if (collection.items.last().globalAddress == item.globalAddress) 12.dp else 0.dp
                 )
+                Card(
+                    modifier = modifier
+                        .padding(vertical = 1.dp)
+                        .fillMaxWidth(),
+                    shape = RoundedCornerShape(0.dp, 0.dp, bottomCorners, bottomCorners),
+                    colors = CardDefaults.cardColors(
+                        containerColor = RadixTheme.colors.defaultBackground
+                    ),
+                    elevation = CardDefaults.cardElevation(
+                        defaultElevation = 4.dp
+                    )
+                ) {
+                    nftItem(collection, item)
+                }
             }
 
             if (collectionIndex != collections.lastIndex) {
                 item { Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault)) }
             }
         }
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun NftTokenListEmpty() {
-    RadixWalletTheme {
-        NonFungibleResourcesContent(
-            resources = Resources.EMPTY,
-            onNftClick = { _, _ -> }
-        )
     }
 }

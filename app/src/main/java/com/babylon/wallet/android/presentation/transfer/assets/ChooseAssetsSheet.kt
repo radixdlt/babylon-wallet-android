@@ -4,6 +4,7 @@ package com.babylon.wallet.android.presentation.transfer.assets
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -44,6 +45,11 @@ import com.babylon.wallet.android.presentation.transfer.TargetAccount
 import com.babylon.wallet.android.presentation.transfer.TransferViewModel.State.Sheet.ChooseAssets
 import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
+import com.babylon.wallet.android.presentation.ui.composables.resources.FungibleResourcesColumn
+import com.babylon.wallet.android.presentation.ui.composables.resources.NonFungibleResourceItem
+import com.babylon.wallet.android.presentation.ui.composables.resources.NonFungibleResourcesColumn
+import com.babylon.wallet.android.presentation.ui.composables.resources.SelectableFungibleResourceItem
+import com.babylon.wallet.android.presentation.ui.composables.resources.SelectableNonFungibleResourceItem
 import com.babylon.wallet.android.presentation.ui.composables.sheets.SheetHeader
 import com.babylon.wallet.android.presentation.ui.composables.tabs.pagerTabIndicatorOffset
 import kotlinx.coroutines.launch
@@ -132,16 +138,35 @@ fun ChooseAssetsSheet(
                     }
 
                     when (tab) {
-                        ChooseAssets.Tab.Tokens -> FungibleAssetsChooser(
+                        ChooseAssets.Tab.Tokens -> FungibleResourcesColumn(
+                            modifier = Modifier.fillMaxSize(),
                             resources = state.resources,
-                            selectedAssets = state.targetAccount.assets,
-                            onAssetSelectionChanged = onAssetSelectionChanged
-                        )
-                        ChooseAssets.Tab.NFTs -> NonFungibleAssetsChooser(
+                            isXrdSticky = false
+                        ) { _, resource ->
+                            val isSelected = state.targetAccount.assets.any { it.address == resource.resourceAddress }
+                            SelectableFungibleResourceItem(
+                                modifier = Modifier.height(85.dp),
+                                resource = resource,
+                                isSelected = isSelected,
+                                onCheckChanged = {
+                                    val fungibleAsset = SpendingAsset.Fungible(resource = resource)
+                                    onAssetSelectionChanged(fungibleAsset, it)
+                                }
+                            )
+                        }
+                        ChooseAssets.Tab.NFTs -> NonFungibleResourcesColumn(
                             resources = state.resources,
-                            selectedAssets = state.targetAccount.assets,
-                            onAssetSelectionChanged = onAssetSelectionChanged
-                        )
+                            modifier = Modifier.fillMaxSize(),
+                        ) { _, item ->
+                            SelectableNonFungibleResourceItem(
+                                item = item,
+                                isSelected = state.targetAccount.assets.any { it.address == item.globalAddress },
+                                onCheckChanged = {
+                                    val nonFungibleAsset = SpendingAsset.NFT(item = item)
+                                    onAssetSelectionChanged(nonFungibleAsset, it)
+                                }
+                            )
+                        }
                     }
                 }
 
