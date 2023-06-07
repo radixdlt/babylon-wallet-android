@@ -1,7 +1,4 @@
-@file:OptIn(
-    ExperimentalFoundationApi::class,
-    ExperimentalPagerApi::class
-)
+@file:OptIn(ExperimentalFoundationApi::class,)
 
 package com.babylon.wallet.android.presentation.account
 
@@ -12,20 +9,17 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
@@ -36,15 +30,14 @@ import androidx.compose.material.IconButton
 import androidx.compose.material.ModalBottomSheetLayout
 import androidx.compose.material.ModalBottomSheetValue
 import androidx.compose.material.Scaffold
-import androidx.compose.material.Tab
-import androidx.compose.material.TabRow
-import androidx.compose.material.Text
 import androidx.compose.material.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -54,7 +47,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.zIndex
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.SetStatusBarColor
@@ -69,16 +61,16 @@ import com.babylon.wallet.android.domain.model.Resources
 import com.babylon.wallet.android.presentation.account.composable.FungibleTokenBottomSheetDetails
 import com.babylon.wallet.android.presentation.account.composable.NonFungibleTokenBottomSheetDetails
 import com.babylon.wallet.android.presentation.common.FullscreenCircularProgressContent
+import com.babylon.wallet.android.presentation.transfer.assets.ResourceTab
+import com.babylon.wallet.android.presentation.transfer.assets.ResourcesTabs
 import com.babylon.wallet.android.presentation.ui.composables.ActionableAddressView
 import com.babylon.wallet.android.presentation.ui.composables.ApplySecuritySettingsLabel
-import com.babylon.wallet.android.presentation.ui.composables.resources.NonFungibleResourcesColumn
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.WalletBalanceView
 import com.babylon.wallet.android.presentation.ui.composables.resources.FungibleResourceItem
 import com.babylon.wallet.android.presentation.ui.composables.resources.FungibleResourcesColumn
 import com.babylon.wallet.android.presentation.ui.composables.resources.NonFungibleResourceItem
-import com.google.accompanist.pager.ExperimentalPagerApi
-import com.google.accompanist.pager.pagerTabIndicatorOffset
+import com.babylon.wallet.android.presentation.ui.composables.resources.NonFungibleResourcesColumn
 import com.google.accompanist.swiperefresh.SwipeRefresh
 import com.google.accompanist.swiperefresh.SwipeRefreshIndicator
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
@@ -418,89 +410,60 @@ fun AssetsContent(
 ) {
     Column(modifier = modifier, horizontalAlignment = Alignment.CenterHorizontally) {
         val pagerState = rememberPagerState()
-        val scope = rememberCoroutineScope()
-        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
-        TabRow(
-            modifier = Modifier
-                .height(50.dp)
-                .width(200.dp),
-            selectedTabIndex = pagerState.currentPage,
-            divider = {}, /* Disable the built-in divider */
-            indicator = { tabPositions ->
-                if (tabPositions.isNotEmpty()) {
-                    Box(
-                        modifier = Modifier
-                            .pagerTabIndicatorOffset(pagerState, tabPositions)
-                            .fillMaxHeight()
-                            .zIndex(-1f)
-                            .background(RadixTheme.colors.gray1, RadixTheme.shapes.circle)
-                    )
-                }
-            },
-            backgroundColor = Color.Transparent,
-        ) {
-            AssetTypeTab.values().forEachIndexed { index, assetTypeTab ->
-                val selected = index == pagerState.currentPage
-                Tab(
-                    selected = selected,
-                    onClick = {
-                        scope.launch {
-                            pagerState.animateScrollToPage(index)
-                        }
-                    },
-                    interactionSource = MutableInteractionSource()
-                ) {
-                    Text(
-                        modifier = Modifier.padding(RadixTheme.dimensions.paddingMedium),
-                        text = stringResource(id = assetTypeTab.stringId),
-                        style = RadixTheme.typography.body1HighImportance,
-                        color = if (selected) RadixTheme.colors.white else RadixTheme.colors.gray1
-                    )
-                }
+        var selectedTab by remember { mutableStateOf(ResourceTab.Tokens) }
+
+        Spacer(modifier = Modifier.height(height = RadixTheme.dimensions.paddingDefault))
+
+        ResourcesTabs(
+            pagerState = pagerState,
+            selectedTab = selectedTab,
+            onTabSelected = {
+                selectedTab = it
             }
-        }
+        )
+
         HorizontalPager(
             modifier = Modifier
                 .fillMaxWidth()
                 .weight(1f),
-            pageCount = AssetTypeTab.values().size,
+            pageCount = ResourceTab.values().count(),
             state = pagerState,
             userScrollEnabled = false
         ) { page ->
+            val tab = remember(page) {
+                ResourceTab.values().find { it.ordinal == page } ?: ResourceTab.Tokens
+            }
+
             AnimatedVisibility(
                 visible = !isLoading,
                 enter = fadeIn(),
                 content = {
-                    when (AssetTypeTab.values()[page]) {
-                        AssetTypeTab.TOKEN_TAB -> {
-                            FungibleResourcesColumn(
-                                modifier = Modifier.fillMaxSize(),
-                                resources = resources
-                            ) { _, item ->
-                                FungibleResourceItem(
-                                    modifier = Modifier
-                                        .height(83.dp)
-                                        .clickable {
-                                            onFungibleTokenClick(item)
-                                        },
-                                    resource = item
-                                )
-                            }
+                    when (tab) {
+                        ResourceTab.Tokens -> FungibleResourcesColumn(
+                            modifier = Modifier.fillMaxSize(),
+                            resources = resources
+                        ) { _, item ->
+                            FungibleResourceItem(
+                                modifier = Modifier
+                                    .height(83.dp)
+                                    .clickable {
+                                        onFungibleTokenClick(item)
+                                    },
+                                resource = item
+                            )
                         }
-                        AssetTypeTab.NTF_TAB -> {
-                            NonFungibleResourcesColumn(
-                                resources = resources,
-                                modifier = Modifier.fillMaxSize(),
-                            ) { collection, item ->
-                                NonFungibleResourceItem(
-                                    modifier = Modifier
-                                        .padding(RadixTheme.dimensions.paddingDefault)
-                                        .clickable {
-                                            onNonFungibleItemClick(collection, item)
-                                        },
-                                    item = item
-                                )
-                            }
+                        ResourceTab.Nfts -> NonFungibleResourcesColumn(
+                            resources = resources,
+                            modifier = Modifier.fillMaxSize(),
+                        ) { collection, item ->
+                            NonFungibleResourceItem(
+                                modifier = Modifier
+                                    .padding(RadixTheme.dimensions.paddingDefault)
+                                    .clickable {
+                                        onNonFungibleItemClick(collection, item)
+                                    },
+                                item = item
+                            )
                         }
                     }
                 }

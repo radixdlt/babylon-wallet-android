@@ -120,8 +120,17 @@ fun ChooseAssetsSheet(
             Spacer(modifier = Modifier.height(height = RadixTheme.dimensions.paddingDefault))
 
             ResourcesTabs(
-                selectedTab = state.selectedTab,
-                onTabSelected = onTabSelected,
+                selectedTab = when (state.selectedTab) {
+                    ChooseAssets.Tab.Tokens -> ResourceTab.Tokens
+                    ChooseAssets.Tab.NFTs -> ResourceTab.Nfts
+                },
+                onTabSelected = {
+                    val viewModelTab = when (it) {
+                        ResourceTab.Tokens -> ChooseAssets.Tab.Tokens
+                        ResourceTab.Nfts -> ChooseAssets.Tab.NFTs
+                    }
+                    onTabSelected(viewModelTab)
+                },
                 pagerState = pagerState
             )
 
@@ -179,69 +188,6 @@ fun ChooseAssetsSheet(
             }
         }
     }
-}
-
-@Composable
-private fun ResourcesTabs(
-    modifier: Modifier = Modifier,
-    pagerState: PagerState,
-    selectedTab: ChooseAssets.Tab,
-    onTabSelected: (ChooseAssets.Tab) -> Unit
-) {
-    val scope = rememberCoroutineScope()
-    LaunchedEffect(selectedTab) {
-        if (selectedTab.ordinal != pagerState.currentPage) {
-            scope.launch { pagerState.animateScrollToPage(page = selectedTab.ordinal) }
-        }
-    }
-
-    TabRow(
-        modifier = modifier.width(200.dp),
-        selectedTabIndex = pagerState.currentPage,
-        containerColor = Color.Transparent,
-        divider = {},
-        indicator = { tabPositions ->
-            Box(
-                modifier = Modifier
-                    .pagerTabIndicatorOffset(
-                        pagerState = pagerState,
-                        tabPositions = tabPositions,
-                    )
-                    .fillMaxHeight()
-                    .zIndex(-1f)
-                    .background(RadixTheme.colors.gray1, RadixTheme.shapes.circle)
-            )
-        }
-    ) {
-        ChooseAssets.Tab.values().forEach { tab ->
-            val isSelected = tab == selectedTab
-            Tab(
-                selected = isSelected,
-                onClick = {
-                    if (!isSelected) {
-                        onTabSelected(tab)
-                    }
-                },
-                selectedContentColor = RadixTheme.colors.white,
-                unselectedContentColor = RadixTheme.colors.gray1
-            ) {
-                Text(
-                    modifier = Modifier.padding(
-                        horizontal = RadixTheme.dimensions.paddingMedium,
-                        vertical = RadixTheme.dimensions.paddingSmall
-                    ),
-                    text = tab.name(),
-                    style = RadixTheme.typography.body1HighImportance,
-                )
-            }
-        }
-    }
-}
-
-@Composable
-fun ChooseAssets.Tab.name(): String = when (this) {
-    ChooseAssets.Tab.Tokens -> stringResource(id = R.string.account_tokens)
-    ChooseAssets.Tab.NFTs -> stringResource(id = R.string.account_nfts)
 }
 
 @Preview
