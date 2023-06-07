@@ -114,7 +114,7 @@ fun DAppDetailsSheetContent(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(RadixTheme.dimensions.paddingDefault),
-                            text = stringResource(id = R.string.authorizedDapps_dAppDetails_associated_tokens),
+                            text = stringResource(id = R.string.authorizedDapps_dAppDetails_tokens),
                             style = RadixTheme.typography.body1Regular,
                             color = RadixTheme.colors.gray2,
                             textAlign = TextAlign.Start
@@ -157,7 +157,7 @@ fun DAppDetailsSheetContent(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(RadixTheme.dimensions.paddingDefault),
-                            text = stringResource(id = R.string.authorizedDapps_dAppDetails_associated_nfts),
+                            text = stringResource(id = R.string.authorizedDapps_dAppDetails_nfts),
                             style = RadixTheme.typography.body1Regular,
                             color = RadixTheme.colors.gray2,
                             textAlign = TextAlign.Start
