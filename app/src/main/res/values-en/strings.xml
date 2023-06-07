@@ -350,10 +350,10 @@
   <string name="transactionReview_guarantees_setGuaranteedMinimum">Set guaranteed minimum %%</string>
   <string name="transactionReview_prepareForSigning_navigationTitle">Preparing Transaction</string>
   <string name="transactionReview_prepareForSigning_body">Preparing transaction for signing</string>
-  <string name="transactionReview_selectFeePayer_navigationTitle">Select Fee Payer</string>
-  <string name="transactionReview_selectFeePayer_selectAccount">Select account to pay %s tx fee with</string>
-  <string name="transactionReview_selectFeePayer_body">The transaction you are about to sign does not involve any of your accounts so you must choose an account to pay the transaction fee with.</string>
-  <string name="transactionReview_selectFeePayer_confirmButton">Confirm Fee Payer</string>
+  <string name="transactionReview_selectFeePayer_navigationTitle">Select Fee Account</string>
+  <string name="transactionReview_selectFeePayer_selectAccount">Select Account:</string>
+  <string name="transactionReview_selectFeePayer_body">Please select an Account with enough XRD to pay 10 XRD fee for this transaction.</string>
+  <string name="transactionReview_selectFeePayer_confirmButton">Continue</string>
   <string name="transactionReview_submitTransaction_displaySubmitting">Submitting</string>
   <string name="transactionReview_submitTransaction_displaySubmittedUnknown">Submitted but not confirmed</string>
   <string name="transactionReview_submitTransaction_displayRejected">Rejected</string>
@@ -443,7 +443,7 @@
   <string name="importOlympiaAccounts_viewMnemonics">View Mnemonics</string>
   <string name="importOlympiaAccounts_whatIsMnemonic">What is a Mnemonic</string>
   <string name="importProfile_importProfile">Import Radix Wallet backup</string>
-  <string name="onboarding_newUser">I\'m a New Radix Wallet user</string>
+  <string name="onboarding_newUser">I\'m a New Radix Wallet User</string>
   <string name="onboarding_restoreFromBackup">Restore Wallet from Backup</string>
   <string name="onboarding_step1_title">Welcome to the Radix Wallet</string>
   <string name="onboarding_step1_subtitle">Your direct connection to the Radix Network</string>
