@@ -174,7 +174,7 @@ fun SomethingWentWrongDialog(
 }
 
 @Composable
-private fun SomethingWentWrongDialogContent(
+fun SomethingWentWrongDialogContent(
     modifier: Modifier = Modifier,
     title: String,
     subtitle: String

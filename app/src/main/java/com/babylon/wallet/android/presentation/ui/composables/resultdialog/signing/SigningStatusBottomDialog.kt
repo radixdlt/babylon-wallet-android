@@ -33,6 +33,7 @@ import com.babylon.wallet.android.designsystem.theme.GradientBrand2
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.presentation.ui.composables.BottomSheetDialogWrapper
+import com.babylon.wallet.android.presentation.ui.composables.SomethingWentWrongDialogContent
 import com.babylon.wallet.android.utils.formattedSpans
 import rdx.works.profile.data.model.factorsources.FactorSource
 
@@ -62,16 +63,25 @@ fun SigningStatusBottomDialogContent(
     signingState: SigningState?
 ) {
     when (signingState) {
-        is SigningState.WithDeviceFailed -> {}
-        is SigningState.WithLedgerFailed -> {}
+        is SigningState.WithDeviceFailed,
+        is SigningState.WithLedgerFailed -> {
+            SomethingWentWrongDialogContent(
+                title = stringResource(id = com.babylon.wallet.android.R.string.common_somethingWentWrong),
+                subtitle = stringResource(id = com.babylon.wallet.android.R.string.common_somethingWentWrong),
+                modifier = modifier
+            )
+        }
+
         is SigningState.WithLedgerSucceeded,
         is SigningState.WithDeviceSucceeded -> {
             SignatureSuccessfulContent(modifier = modifier)
         }
+
         is SigningState.WithDevice,
         is SigningState.WithLedger -> {
             SignatureRequestContent(signingState, modifier)
         }
+
         else -> {}
     }
 }
@@ -109,11 +119,13 @@ private fun SignatureRequestContent(
             is SigningState.WithDevice -> {
                 com.babylon.wallet.android.R.string.signing_withDeviceFactorSource_signTransaction
             }
+
             is SigningState.WithLedgerFailed,
             is SigningState.WithLedgerSucceeded,
             is SigningState.WithLedger -> {
                 com.babylon.wallet.android.R.string.signing_signatureRequest_body
             }
+
             else -> null
         }
         Text(
