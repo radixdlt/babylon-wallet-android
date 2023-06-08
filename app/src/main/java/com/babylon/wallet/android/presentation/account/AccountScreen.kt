@@ -325,7 +325,7 @@ private fun AccountContent(
     ) {
         AccountSummaryContent(
             accountAddress = state.accountWithResources?.account?.address.orEmpty(),
-            showSecurityPrompt = state.showSecurityPrompt,
+            showSecurityPrompt = state.isSecurityPromptVisible,
             onTransferClick = onTransferClick,
             onApplySecuritySettings = onApplySecuritySettings,
         )

@@ -4,6 +4,7 @@ import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.domain.common.onError
 import com.babylon.wallet.android.domain.common.onValue
 import com.babylon.wallet.android.domain.model.AccountWithResources
+import com.babylon.wallet.android.domain.usecases.GetAccountsForSecurityPromptUseCase
 import com.babylon.wallet.android.domain.usecases.GetAccountsWithResourcesUseCase
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
@@ -20,7 +21,6 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import rdx.works.core.preferences.PreferencesManager
 import rdx.works.profile.data.model.factorsources.FactorSource
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.data.utils.unsecuredFactorSourceId
@@ -34,7 +34,7 @@ import javax.inject.Inject
 class WalletViewModel @Inject constructor(
     private val getAccountsWithResourcesUseCase: GetAccountsWithResourcesUseCase,
     private val getProfileUseCase: GetProfileUseCase,
-    private val preferencesManager: PreferencesManager,
+    private val getAccountsForSecurityPromptUseCase: GetAccountsForSecurityPromptUseCase,
     private val appEventBus: AppEventBus,
     getBackupStateUseCase: GetBackupStateUseCase
 ) : StateViewModel<WalletUiState>(), OneOffEventHandler<WalletEvent> by OneOffEventHandlerImpl() {
@@ -75,12 +75,9 @@ class WalletViewModel @Inject constructor(
 
     private fun observePrompts() {
         viewModelScope.launch {
-            preferencesManager
-                .getBackedUpFactorSourceIds()
-                .distinctUntilChanged()
-                .collect { backedUpFactorSourceIds ->
-                    _state.update { it.copy(backedUpFactorSourceIds = backedUpFactorSourceIds) }
-                }
+            getAccountsForSecurityPromptUseCase().collect { accounts ->
+                _state.update { it.copy(accountsNeedSecurityPrompt = accounts) }
+            }
         }
     }
 
@@ -133,7 +130,7 @@ data class WalletUiState(
     private val accountsWithResources: List<AccountWithResources>? = null,
     private val loading: Boolean = true,
     private val refreshing: Boolean = false,
-    private val backedUpFactorSourceIds: Set<String> = emptySet(),
+    private val accountsNeedSecurityPrompt: List<Network.Account> = emptyList(),
     val isSettingsWarningVisible: Boolean = false,
     val error: UiMessage? = null,
 ) : UiState {
@@ -157,10 +154,13 @@ data class WalletUiState(
         get() = refreshing
 
     fun isSecurityPromptVisible(forAccount: Network.Account): Boolean {
-        val unsecuredFactorSourceId = forAccount.unsecuredFactorSourceId() ?: return false
+        val resourcesForAccount = accountsWithResources?.find {
+            it.account.address == forAccount.address
+        }?.resources ?: return false
 
-        return accountsWithResources?.find { it.account == forAccount }?.resources?.hasXrd() == true &&
-            backedUpFactorSourceIds.none { it == unsecuredFactorSourceId.value }
+        return accountsNeedSecurityPrompt.any {
+            it.address == forAccount.address && resourcesForAccount.hasXrd()
+        }
     }
 
     fun loadingResources(accounts: List<Network.Account>, isRefreshing: Boolean): WalletUiState = copy(
