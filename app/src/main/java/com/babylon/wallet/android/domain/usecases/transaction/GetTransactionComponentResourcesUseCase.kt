@@ -58,6 +58,13 @@ class GetTransactionComponentResourcesUseCase @Inject constructor(
         var account: Result<TransactionAccountItemUiModel> = Result.Error()
 
         entityDetailsResponse.onValue { stateEntityDetailsResponse ->
+
+            // If its newlyCreatedEntity do not ask for guarantees
+            val shouldPromptForGuarantees = if (createdEntity) false else includesGuarantees
+
+            // If its newlyCreatedEntity OR don't include guarantee, do not ask for guarantees
+            val guaranteedAmount = if (createdEntity || !includesGuarantees) null else amount
+
             val accountItem = stateEntityDetailsResponse.items.find {
                 it.details?.type == StateEntityDetailsResponseItemDetailsType.component
             }
@@ -96,7 +103,8 @@ class GetTransactionComponentResourcesUseCase @Inject constructor(
                                 IconUrlMetadataItem(
                                     it.toUri()
                                 )
-                            }
+                            },
+                            guaranteedQuantity = guaranteedAmount?.toBigDecimal()
                         )
                     }
 
@@ -130,12 +138,6 @@ class GetTransactionComponentResourcesUseCase @Inject constructor(
                 .accountOnCurrentNetwork(accountItem?.address.orEmpty())
             val accountDisplayName = accountOnProfile?.displayName.orEmpty()
             val accountAppearanceId = accountOnProfile?.appearanceID ?: 1
-
-            // If its newlyCreatedEntity do not ask for guarantees
-            val shouldPromptForGuarantees = if (createdEntity) false else includesGuarantees
-
-            // If its newlyCreatedEntity OR don't include guarantee, do not ask for guarantees
-            val guaranteedAmount = if (createdEntity || !includesGuarantees) null else amount
 
             account = Result.Success(
                 TransactionAccountItemUiModel(

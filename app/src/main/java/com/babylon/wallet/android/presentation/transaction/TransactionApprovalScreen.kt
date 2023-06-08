@@ -46,6 +46,7 @@ import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
 import com.babylon.wallet.android.designsystem.composable.RadixTextButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
+import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.domain.model.DAppWithMetadataAndAssociatedResources
 import com.babylon.wallet.android.presentation.common.FullscreenCircularProgressContent
 import com.babylon.wallet.android.presentation.common.UiMessage
@@ -221,9 +222,6 @@ private fun TransactionPreviewContent(
                     onGuaranteesApplyClick()
                 },
                 onGuaranteeValueChanged = {
-//                    scope.launch {
-//                        modalBottomSheetState.hide()
-//                    }
                     onGuaranteeValueChanged(it)
                 },
                 onCloseFeePayerSheet = {
@@ -464,127 +462,102 @@ private fun RawTransactionContent(
 @Composable
 fun TransactionPreviewContentPreview() {
     RadixWalletTheme {
-        TransactionPreviewContent(
-            onBackClick = {},
-            isLoading = false,
-            isSigning = false,
-            onApproveTransaction = {},
-            error = null,
-            onMessageShown = {},
-            isDeviceSecure = false,
-            canApprove = true,
-            transactionMessage = "Message",
-            networkFee = "0.1",
-            rawManifestContent = "",
-            presentingProofs = persistentListOf(
-                PresentingProofUiModel("", "Proof"),
-                PresentingProofUiModel("", "Proof")
-            ),
-            connectedDApps = persistentListOf(
-//                ConnectedDAppsUiModel("", "DApp"),
-//                ConnectedDAppsUiModel("", "DApp")
-            ),
-            withdrawingAccounts = persistentListOf(
-//                PreviewAccountItemsUiModel(
-//                    address = "account_tdx_19jd32jd3928jd3892jd329",
-//                    accountName = "My Savings Account",
-//                    appearanceID = 1,
-//                    accounts = listOf(
-                        TransactionAccountItemUiModel(
-                            address = "account_tdx_19jd32jd3928jd3892jd329",
-                            displayName = "My Savings Account",
-                            tokenSymbol = "XRD",
-                            tokenQuantity = "689.203",
-                            appearanceID = 1,
-                            iconUrl = "",
-//                            isTokenAmountVisible = true,
-                            shouldPromptForGuarantees = false,
-                            guaranteedQuantity = "689.203",
-                            guaranteedPercentAmount = "100"
-                        )
-//                    )
-//                )
-            ),
-            depositingAccounts = persistentListOf(
-//                PreviewAccountItemsUiModel(
-//                    address = "account_tdx_19jd32jd3928jd3892jd329",
-//                    accountName = "My Savings Account",
-//                    appearanceID = 1,
-//                    accounts = listOf(
-                        TransactionAccountItemUiModel(
-                            address = "account_tdx_19jd32jd3928jd3892jd329",
-                            displayName = "My Savings Account",
-                            tokenSymbol = "XRD",
-                            tokenQuantity = "689.203",
-                            appearanceID = 1,
-                            iconUrl = "",
-//                            isTokenAmountVisible = true,
-                            shouldPromptForGuarantees = true,
-                            guaranteedQuantity = "689.203",
-                            guaranteedPercentAmount = "100"
-                        ),
-                        TransactionAccountItemUiModel(
-                            address = "account_tdx_19jd32jd3928jd3892jd39",
-                            displayName = "My second Savings Account",
-                            tokenSymbol = "XRD",
-                            tokenQuantity = "689.203",
-                            appearanceID = 1,
-                            iconUrl = "",
-//                            isTokenAmountVisible = true,
-                            shouldPromptForGuarantees = true,
-                            guaranteedQuantity = "689.203",
-                            guaranteedPercentAmount = "100"
-                        )
-//                    )
-//                )
-            ),
-            guaranteesAccounts = persistentListOf(
-//                PreviewAccountItemsUiModel(
-//                    address = "account_tdx_19jd32jd3928jd3892jd329",
-//                    accountName = "My Savings Account",
-//                    appearanceID = 1,
-//                    accounts = listOf(
-                        TransactionAccountItemUiModel(
-                            address = "account_tdx_19jd32jd3928jd3892jd329",
-                            displayName = "My Savings Account",
-                            tokenSymbol = "XRD",
-                            tokenQuantity = "689.203",
-                            appearanceID = 1,
-                            iconUrl = "",
-//                            isTokenAmountVisible = true,
-                            shouldPromptForGuarantees = true,
-                            guaranteedQuantity = "689.203",
-                            guaranteedPercentAmount = "100"
-                        ),
-                        TransactionAccountItemUiModel(
-                            address = "account_tdx_19jd32jd3928jd3892jd39",
-                            displayName = "My second Savings Account",
-                            tokenSymbol = "XRD",
-                            tokenQuantity = "689.203",
-                            appearanceID = 1,
-                            iconUrl = "",
-//                            isTokenAmountVisible = true,
-                            shouldPromptForGuarantees = true,
-                            guaranteedQuantity = "689.203",
-                            guaranteedPercentAmount = "100"
-                        )
-//                    )
-//                )
-            ).toGuaranteesAccountsUiModel(),
-            onGuaranteesApplyClick = {},
-            onGuaranteesCloseClick = {},
-            onGuaranteeValueChanged = {},
-            bottomSheetViewMode = BottomSheetMode.Guarantees,
-            onPayerSelected = {},
-            onPayerConfirmed = {},
-            modalBottomSheetState = rememberModalBottomSheetState(
-                initialValue = ModalBottomSheetValue.Hidden,
-                skipHalfExpanded = true
-            ),
-            feePayerCandidates = persistentListOf(),
-            resetBottomSheetMode = {},
-            onDAppClick = {},
-            promptForGuaranteesClick = {}
-        )
+        with(SampleDataProvider()) {
+            TransactionPreviewContent(
+                onBackClick = {},
+                isLoading = false,
+                isSigning = false,
+                onApproveTransaction = {},
+                error = null,
+                onMessageShown = {},
+                isDeviceSecure = false,
+                canApprove = true,
+                transactionMessage = "Message",
+                networkFee = "0.1",
+                rawManifestContent = "",
+                presentingProofs = persistentListOf(
+                    PresentingProofUiModel("", "Proof"),
+                    PresentingProofUiModel("", "Proof")
+                ),
+                connectedDApps = persistentListOf(
+                    sampleDAppWithResources()
+                ),
+                withdrawingAccounts = persistentListOf(
+                    TransactionAccountItemUiModel(
+                        address = "account_tdx_19jd32jd3928jd3892jd329",
+                        displayName = "My Savings Account",
+                        tokenSymbol = "XRD",
+                        tokenQuantity = "689.203",
+                        appearanceID = 1,
+                        iconUrl = "",
+                        shouldPromptForGuarantees = false,
+                        guaranteedQuantity = "689.203",
+                        guaranteedPercentAmount = "100"
+                    )
+                ),
+                depositingAccounts = persistentListOf(
+                    TransactionAccountItemUiModel(
+                        address = "account_tdx_19jd32jd3928jd3892jd329",
+                        displayName = "My Savings Account",
+                        tokenSymbol = "XRD",
+                        tokenQuantity = "689.203",
+                        appearanceID = 1,
+                        iconUrl = "",
+                        shouldPromptForGuarantees = true,
+                        guaranteedQuantity = "689.203",
+                        guaranteedPercentAmount = "100"
+                    ),
+                    TransactionAccountItemUiModel(
+                        address = "account_tdx_19jd32jd3928jd3892jd39",
+                        displayName = "My second Savings Account",
+                        tokenSymbol = "XRD",
+                        tokenQuantity = "689.203",
+                        appearanceID = 1,
+                        iconUrl = "",
+                        shouldPromptForGuarantees = true,
+                        guaranteedQuantity = "689.203",
+                        guaranteedPercentAmount = "100"
+                    )
+                ),
+                guaranteesAccounts = persistentListOf(
+                    TransactionAccountItemUiModel(
+                        address = "account_tdx_19jd32jd3928jd3892jd329",
+                        displayName = "My Savings Account",
+                        tokenSymbol = "XRD",
+                        tokenQuantity = "689.203",
+                        appearanceID = 1,
+                        iconUrl = "",
+                        shouldPromptForGuarantees = true,
+                        guaranteedQuantity = "689.203",
+                        guaranteedPercentAmount = "100"
+                    ),
+                    TransactionAccountItemUiModel(
+                        address = "account_tdx_19jd32jd3928jd3892jd39",
+                        displayName = "My second Savings Account",
+                        tokenSymbol = "XRD",
+                        tokenQuantity = "689.203",
+                        appearanceID = 1,
+                        iconUrl = "",
+                        shouldPromptForGuarantees = true,
+                        guaranteedQuantity = "689.203",
+                        guaranteedPercentAmount = "100"
+                    )
+                ).toGuaranteesAccountsUiModel(),
+                onGuaranteesApplyClick = {},
+                onGuaranteesCloseClick = {},
+                onGuaranteeValueChanged = {},
+                bottomSheetViewMode = BottomSheetMode.Guarantees,
+                onPayerSelected = {},
+                onPayerConfirmed = {},
+                modalBottomSheetState = rememberModalBottomSheetState(
+                    initialValue = ModalBottomSheetValue.Hidden,
+                    skipHalfExpanded = true
+                ),
+                feePayerCandidates = persistentListOf(),
+                resetBottomSheetMode = {},
+                onDAppClick = {},
+                promptForGuaranteesClick = {}
+            )
+        }
     }
 }

@@ -198,32 +198,6 @@ class TransactionApprovalViewModel @Inject constructor(
                             analyzeManifestWithPreviewResponse.accountProofResources
                         )
 
-//                        val withdrawUniqueAccounts = withdrawingAccountsResults.distinctBy {
-//                            it.address
-//                        }.toPersistentList()
-
-//                        val depositUniqueAccounts = depositingAccountsResults.distinctBy {
-//                            it.address
-//                        }.toPersistentList()
-
-//                        val withdrawPreviewAccounts = withdrawUniqueAccounts.map { uniqueAccount ->
-//                            PreviewAccountItemsUiModel(
-//                                address = uniqueAccount.address,
-//                                accountName = uniqueAccount.displayName,
-//                                appearanceID = uniqueAccount.appearanceID,
-//                                accounts = withdrawingAccountsResults.filter { it.address == uniqueAccount.address }
-//                            )
-//                        }.toPersistentList()
-//
-//                        val depositPreviewAccounts = depositUniqueAccounts.map { uniqueAccount ->
-//                            PreviewAccountItemsUiModel(
-//                                address = uniqueAccount.address,
-//                                accountName = uniqueAccount.displayName,
-//                                appearanceID = uniqueAccount.appearanceID,
-//                                accounts = depositingAccountsResults.filter { it.address == uniqueAccount.address }
-//                            )
-//                        }.toPersistentList()
-
                         val guaranteesAccounts = depositingAccountsResults.toGuaranteesAccountsUiModel()
 
                         depositingAccounts = depositingAccountsResults
@@ -571,9 +545,6 @@ class TransactionApprovalViewModel @Inject constructor(
         currentDepositingAccounts.map { previewAccountUiModel ->
             if (previewAccountUiModel.address == guaranteePair.second.address
                 && previewAccountUiModel.index == guaranteePair.second.index) {
-//                if (previewAccountUiModel.index == guaranteePair.second.index) {
-//
-//                }
 
                 val fungibleResource = previewAccountUiModel.fungibleResource?.copy(
                     resourceAddress = previewAccountUiModel.fungibleResource.resourceAddress,
@@ -584,6 +555,7 @@ class TransactionApprovalViewModel @Inject constructor(
                     iconUrlMetadataItem = previewAccountUiModel.fungibleResource.iconUrlMetadataItem,
                     guaranteedQuantity = updatedGuaranteedQuantity.toBigDecimal()
                 )
+
                 previewAccountUiModel.copy(
                     address = previewAccountUiModel.address,
                     displayName = previewAccountUiModel.displayName,
@@ -648,13 +620,7 @@ data class TransactionAccountItemUiModel(
     val index: Int? = null, // Unique to identify which item state we are changing as addresses might be the same for,
     val fungibleResource: Resource.FungibleResource? = null,
     val nonFungibleResourceItems: List<Resource.NonFungibleResource.Item> = emptyList()
-) {
-    val tokenQuantityDecimal: BigDecimal
-        get() = if (tokenQuantity.isEmpty()) BigDecimal.ZERO else tokenQuantity.toBigDecimal().stripTrailingZeros()
-
-    val guaranteedQuantityDecimal: BigDecimal?
-        get() = if (guaranteedQuantity.isNullOrEmpty()) null else guaranteedQuantity.toBigDecimal().stripTrailingZeros()
-}
+)
 
 data class GuaranteesAccountItemUiModel(
     val address: String,
@@ -675,30 +641,6 @@ data class PresentingProofUiModel(
     val title: String
 )
 
-//data class PreviewAccountItemsUiModel(
-//    val address: String,
-//    val accountName: String,
-//    val appearanceID: Int,
-//    val accounts: List<TransactionAccountItemUiModel>
-//)
-
-//fun List<PreviewAccountItemsUiModel>.toGuaranteesAccountsUiModel() = map { previewAccountItemsUiModel ->
-//    previewAccountItemsUiModel.accounts
-//        .filter { it.shouldPromptForGuarantees }
-//        .map { account ->
-//            GuaranteesAccountItemUiModel(
-//                address = account.address,
-//                appearanceID = previewAccountItemsUiModel.appearanceID,
-//                displayName = account.displayName,
-//                tokenSymbol = account.tokenSymbol.orEmpty(),
-//                tokenIconUrl = account.iconUrl,
-//                tokenEstimatedQuantity = account.tokenQuantity,
-//                tokenGuaranteedQuantity = account.guaranteedQuantity.orEmpty(),
-//                guaranteedPercentAmount = account.guaranteedPercentAmount,
-//                index = account.index
-//            )
-//        }
-//}.flatten().toPersistentList()
 fun List<TransactionAccountItemUiModel>.toGuaranteesAccountsUiModel(): ImmutableList<GuaranteesAccountItemUiModel> {
     return filter { it.shouldPromptForGuarantees }
         .map { transactionAccountItemUiModel ->
