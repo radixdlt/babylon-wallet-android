@@ -208,7 +208,12 @@ private fun TransactionPreviewContent(
                 onPayerSelected = onPayerSelected,
                 onPayerConfirmed = onPayerConfirmed,
                 guaranteesAccounts = guaranteesAccounts,
-                onGuaranteesCloseClick = onGuaranteesCloseClick,
+                onGuaranteesCloseClick = {
+                    scope.launch {
+                        modalBottomSheetState.hide()
+                    }
+                    onGuaranteesCloseClick()
+                },
                 onGuaranteesApplyClick = {
                     scope.launch {
                         modalBottomSheetState.hide()
@@ -216,9 +221,9 @@ private fun TransactionPreviewContent(
                     onGuaranteesApplyClick()
                 },
                 onGuaranteeValueChanged = {
-                    scope.launch {
-                        modalBottomSheetState.hide()
-                    }
+//                    scope.launch {
+//                        modalBottomSheetState.hide()
+//                    }
                     onGuaranteeValueChanged(it)
                 },
                 onCloseFeePayerSheet = {
@@ -278,7 +283,7 @@ private fun TransactionPreviewContent(
 
                             TransactionMessageContent(transactionMessage = transactionMessage)
 
-                            WithdrawAccountContent(previewAccounts = withdrawingAccounts)
+                            WithdrawAccountContent(withdrawAccounts = withdrawingAccounts)
 
                             StrokeLine(height = 40.dp)
 
@@ -295,7 +300,7 @@ private fun TransactionPreviewContent(
                             StrokeLine()
 
                             DepositAccountContent(
-                                previewAccounts = depositingAccounts,
+                                depositAccounts = depositingAccounts,
                                 promptForGuarantees = {
                                     promptForGuaranteesClick()
                                     scope.launch {
@@ -492,7 +497,7 @@ fun TransactionPreviewContentPreview() {
                             tokenQuantity = "689.203",
                             appearanceID = 1,
                             iconUrl = "",
-                            isTokenAmountVisible = true,
+//                            isTokenAmountVisible = true,
                             shouldPromptForGuarantees = false,
                             guaranteedQuantity = "689.203",
                             guaranteedPercentAmount = "100"
@@ -513,7 +518,7 @@ fun TransactionPreviewContentPreview() {
                             tokenQuantity = "689.203",
                             appearanceID = 1,
                             iconUrl = "",
-                            isTokenAmountVisible = true,
+//                            isTokenAmountVisible = true,
                             shouldPromptForGuarantees = true,
                             guaranteedQuantity = "689.203",
                             guaranteedPercentAmount = "100"
@@ -525,7 +530,7 @@ fun TransactionPreviewContentPreview() {
                             tokenQuantity = "689.203",
                             appearanceID = 1,
                             iconUrl = "",
-                            isTokenAmountVisible = true,
+//                            isTokenAmountVisible = true,
                             shouldPromptForGuarantees = true,
                             guaranteedQuantity = "689.203",
                             guaranteedPercentAmount = "100"
@@ -546,7 +551,7 @@ fun TransactionPreviewContentPreview() {
                             tokenQuantity = "689.203",
                             appearanceID = 1,
                             iconUrl = "",
-                            isTokenAmountVisible = true,
+//                            isTokenAmountVisible = true,
                             shouldPromptForGuarantees = true,
                             guaranteedQuantity = "689.203",
                             guaranteedPercentAmount = "100"
@@ -558,7 +563,7 @@ fun TransactionPreviewContentPreview() {
                             tokenQuantity = "689.203",
                             appearanceID = 1,
                             iconUrl = "",
-                            isTokenAmountVisible = true,
+//                            isTokenAmountVisible = true,
                             shouldPromptForGuarantees = true,
                             guaranteedQuantity = "689.203",
                             guaranteedPercentAmount = "100"

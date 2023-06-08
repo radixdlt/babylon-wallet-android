@@ -125,36 +125,36 @@ fun FeePayerSelectionSheetPreview() {
     RadixWalletTheme {
         GuaranteesSheet(
             guaranteesAccounts = persistentListOf(
-                GuaranteesAccountItemUiModel(
-                    address = "f43f43f4334",
-                    appearanceID = 1,
-                    displayName = "My account 1",
-                    tokenSymbol = "XRD",
-                    tokenIconUrl = "",
-                    tokenEstimatedQuantity = "1000",
-                    tokenGuaranteedQuantity = "1000",
-                    guaranteedPercentAmount = "100"
-                ),
-                GuaranteesAccountItemUiModel(
-                    address = "f43f43f4334",
-                    appearanceID = 1,
-                    displayName = "My account 2",
-                    tokenSymbol = "XRD",
-                    tokenIconUrl = "",
-                    tokenEstimatedQuantity = "1000",
-                    tokenGuaranteedQuantity = "1000",
-                    guaranteedPercentAmount = "100"
-                ),
-                GuaranteesAccountItemUiModel(
-                    address = "f43f43f4334",
-                    appearanceID = 1,
-                    displayName = "My account 3",
-                    tokenSymbol = "XRD",
-                    tokenIconUrl = "",
-                    tokenEstimatedQuantity = "1000",
-                    tokenGuaranteedQuantity = "1000",
-                    guaranteedPercentAmount = "100"
-                )
+//                GuaranteesAccountItemUiModel(
+//                    address = "f43f43f4334",
+//                    appearanceID = 1,
+//                    displayName = "My account 1",
+//                    tokenSymbol = "XRD",
+//                    tokenIconUrl = "",
+//                    tokenEstimatedAmount = "1000",
+//                    tokenGuaranteedAmount = "1000",
+//                    guaranteedPercentAmount = "100"
+//                ),
+//                GuaranteesAccountItemUiModel(
+//                    address = "f43f43f4334",
+//                    appearanceID = 1,
+//                    displayName = "My account 2",
+//                    tokenSymbol = "XRD",
+//                    tokenIconUrl = "",
+//                    tokenEstimatedAmount = "1000",
+//                    tokenGuaranteedAmount = "1000",
+//                    guaranteedPercentAmount = "100"
+//                ),
+//                GuaranteesAccountItemUiModel(
+//                    address = "f43f43f4334",
+//                    appearanceID = 1,
+//                    displayName = "My account 3",
+//                    tokenSymbol = "XRD",
+//                    tokenIconUrl = "",
+//                    tokenEstimatedAmount = "1000",
+//                    tokenGuaranteedAmount = "1000",
+//                    guaranteedPercentAmount = "100"
+//                )
             ),
             onClose = {},
             onApplyClick = {},

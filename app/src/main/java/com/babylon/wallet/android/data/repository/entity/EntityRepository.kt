@@ -55,6 +55,12 @@ interface EntityRepository {
     ): Result<StateEntityDetailsResponse>
 
     suspend fun getEntityOwnerKeyHashes(entityAddress: String, isRefreshing: Boolean = false): Result<OwnerKeyHashesMetadataItem?>
+    
+    suspend fun nonFungibleData(
+        ids: List<String>,
+        resourceAddress: String,
+        isRefreshing: Boolean = true
+    ): Result<List<Resource.NonFungibleResource.Item>>
 }
 
 @Suppress("TooManyFunctions")
@@ -363,6 +369,38 @@ class EntityRepositoryImpl @Inject constructor(
         ),
         map = { it }
     )
+
+    override suspend fun nonFungibleData(
+        ids: List<String>,
+        resourceAddress: String,
+        isRefreshing: Boolean
+    ): Result<List<Resource.NonFungibleResource.Item>> {
+        val response = stateApi.nonFungibleData(
+            StateNonFungibleDataRequest(
+                resourceAddress = resourceAddress,
+                nonFungibleIds = ids
+            )
+        ).execute(
+            cacheParameters = CacheParameters(
+                httpCache = cache,
+                timeoutDuration = if (isRefreshing) NO_CACHE else TimeoutDuration.ONE_MINUTE
+            ),
+            map = {
+                it
+            }
+        )
+
+        return response.map { nonFungibleDataResponse ->
+            nonFungibleDataResponse.nonFungibleIds.map { nonFungibleItem ->
+                Resource.NonFungibleResource.Item(
+                    collectionAddress = resourceAddress,
+                    localId = Resource.NonFungibleResource.Item.ID.from(nonFungibleItem.nonFungibleId),
+                    iconMetadataItem = nonFungibleItem.nftImage()
+                        ?.let { imageUrl -> IconUrlMetadataItem(url = imageUrl) }
+                )
+            }
+        }
+    }
 
     private suspend fun nextFungiblesPage(
         accountAddress: String,

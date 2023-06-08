@@ -20,6 +20,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
@@ -33,19 +34,17 @@ import com.babylon.wallet.android.designsystem.R
 import com.babylon.wallet.android.designsystem.theme.AccountGradientList
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
-import com.babylon.wallet.android.presentation.model.TokenUiModel
+import com.babylon.wallet.android.presentation.transaction.TransactionAccountItemUiModel
 import com.babylon.wallet.android.presentation.ui.composables.ActionableAddressView
 import com.babylon.wallet.android.presentation.ui.composables.ImageSize
 import com.babylon.wallet.android.presentation.ui.composables.rememberImageUrl
 import com.google.accompanist.drawablepainter.rememberDrawablePainter
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
-import rdx.works.core.displayableQuantity
-import java.math.BigDecimal
 
 @Composable
 fun TransactionAccountCard(
-    tokens: ImmutableList<TokenUiModel>,
+    tokens: ImmutableList<TransactionAccountItemUiModel>,
     modifier: Modifier = Modifier,
     appearanceId: Int,
     address: String,
@@ -82,75 +81,140 @@ fun TransactionAccountCard(
             )
         }
 
-        tokens.forEachIndexed { index, token ->
-            val lastItem = index == tokens.size - 1
+        val fungibleTokens = tokens.map {
+            it.fungibleResources
+        }.flatten()
+        val nonFungibleTokens = tokens.map {
+            it.nonFungibleResourceItems
+        }.flatten()
+
+        // Fungibles
+        fungibleTokens.forEachIndexed { index, fungibleResource ->
+            val lastItem = index == fungibleTokens.plus(nonFungibleTokens).size - 1
             val shape = if (lastItem) RadixTheme.shapes.roundedRectBottomMedium else RectangleShape
-            Row(
-                verticalAlignment = CenterVertically,
-                modifier = Modifier
-                    .height(IntrinsicSize.Min)
-                    .background(
-                        color = RadixTheme.colors.gray4,
-                        shape = shape
-                    )
-                    .padding(
-                        horizontal = RadixTheme.dimensions.paddingDefault,
-                        vertical = RadixTheme.dimensions.paddingMedium
-                    ),
-                horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingMedium)
-            ) {
-                val placeholder = if (token.isXrd()) {
-                    painterResource(id = R.drawable.ic_xrd_token)
-                } else {
-                    rememberDrawablePainter(drawable = ColorDrawable(RadixTheme.colors.gray3.toArgb()))
-                }
-                Box(
-                    modifier = Modifier
-                        .size(44.dp)
-                        .background(RadixTheme.colors.gray3, shape = RadixTheme.shapes.circle)
-                ) {
-                    AsyncImage(
-                        model = rememberImageUrl(fromUrl = token.iconUrl, size = ImageSize.SMALL),
-                        placeholder = placeholder,
-                        fallback = placeholder,
-                        error = placeholder,
-                        contentDescription = null,
-                        contentScale = ContentScale.Crop,
-                        modifier = Modifier
-                            .size(44.dp)
-                            .clip(RadixTheme.shapes.circle)
-                    )
-                }
-                Text(
-                    modifier = Modifier
-                        .weight(1f),
-                    text = token.symbol.orEmpty(),
-                    style = RadixTheme.typography.body2HighImportance,
-                    color = RadixTheme.colors.gray1,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
+
+            TokenItemContent(
+                isXrdToken = fungibleResource.isXrd,
+                tokenUrl = fungibleResource.iconUrl.toString(),
+                tokenSymbol = fungibleResource.displayTitle,
+                tokenAmount = fungibleResource.amount?.toPlainString().orEmpty(),
+                guaranteedQuantity = fungibleResource.guaranteedQuantityToDisplay,
+                isTokenAmountVisible = fungibleResource.isTokenAmountVisible,
+                shape = shape
+            )
+        }
+
+        // Non fungibles
+        nonFungibleTokens.forEachIndexed { index, nonFungibleResource ->
+            val lastItem = index == fungibleTokens.plus(nonFungibleTokens).size - 1
+            val shape = if (lastItem) RadixTheme.shapes.roundedRectBottomMedium else RectangleShape
+
+            TokenItemContent(
+                isXrdToken = false,
+                tokenUrl = nonFungibleResource.imageUrl.toString(),
+                tokenSymbol = nonFungibleResource.localId.displayable,
+                isTokenAmountVisible = nonFungibleResource.isTokenAmountVisible,
+                shape = shape
+            )
+        }
+
+        // Created entities
+        if (fungibleTokens.isEmpty() && nonFungibleTokens.isEmpty()) {
+            tokens.forEachIndexed { index, transactionAccountItemUiModel ->
+                val lastItem = index == tokens.size - 1
+                val shape = if (lastItem) RadixTheme.shapes.roundedRectBottomMedium else RectangleShape
+
+                TokenItemContent(
+                    isXrdToken = false,
+                    tokenUrl = transactionAccountItemUiModel.iconUrl,
+                    tokenSymbol = transactionAccountItemUiModel.tokenSymbol,
+                    tokenAmount = transactionAccountItemUiModel.tokenQuantity,
+                    isTokenAmountVisible = true,
+                    shape = shape
                 )
-                Column(
-                    horizontalAlignment = Alignment.End
-                ) {
-                    Row(
-                        modifier = Modifier,
-                        verticalAlignment = CenterVertically
-                    ) {
-                        if (token.guaranteedQuantity != null) {
-                            Text(
-                                modifier = Modifier.padding(end = RadixTheme.dimensions.paddingSmall),
-                                text = stringResource(id = com.babylon.wallet.android.R.string.transactionReview_estimated),
-                                style = RadixTheme.typography.body2Link,
-                                color = RadixTheme.colors.gray1,
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis,
-                                textAlign = TextAlign.End
-                            )
-                        }
+            }
+        }
+    }
+}
+
+@Composable
+private fun TokenItemContent(
+    isXrdToken: Boolean,
+    tokenUrl: String,
+    tokenSymbol: String?,
+    tokenAmount: String? = null,
+    isTokenAmountVisible: Boolean,
+    guaranteedQuantity: String? = null,
+    shape: Shape
+) {
+    Row(
+        verticalAlignment = CenterVertically,
+        modifier = Modifier
+            .height(IntrinsicSize.Min)
+            .background(
+                color = RadixTheme.colors.gray4,
+                shape = shape
+            )
+            .padding(
+                horizontal = RadixTheme.dimensions.paddingDefault,
+                vertical = RadixTheme.dimensions.paddingMedium
+            ),
+        horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingMedium)
+    ) {
+        val placeholder = if (isXrdToken) {
+            painterResource(id = R.drawable.ic_xrd_token)
+        } else {
+            rememberDrawablePainter(drawable = ColorDrawable(RadixTheme.colors.gray3.toArgb()))
+        }
+        Box(
+            modifier = Modifier
+                .size(44.dp)
+                .background(RadixTheme.colors.gray3, shape = RadixTheme.shapes.circle)
+        ) {
+            AsyncImage(
+                model = rememberImageUrl(fromUrl = tokenUrl, size = ImageSize.SMALL),
+                placeholder = placeholder,
+                fallback = placeholder,
+                error = placeholder,
+                contentDescription = null,
+                contentScale = ContentScale.Crop,
+                modifier = Modifier
+                    .size(44.dp)
+                    .clip(RadixTheme.shapes.circle)
+            )
+        }
+        Text(
+            modifier = Modifier
+                .weight(1f),
+            text = tokenSymbol ?: stringResource(id = com.babylon.wallet.android.R.string.transactionReview_unknown),
+            style = RadixTheme.typography.body2HighImportance,
+            color = RadixTheme.colors.gray1,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+        )
+        Column(
+            horizontalAlignment = Alignment.End
+        ) {
+            Row(
+                modifier = Modifier,
+                verticalAlignment = CenterVertically
+            ) {
+                if (guaranteedQuantity != null) {
+                    Text(
+                        modifier = Modifier.padding(end = RadixTheme.dimensions.paddingSmall),
+                        text = stringResource(id = com.babylon.wallet.android.R.string.transactionReview_estimated),
+                        style = RadixTheme.typography.body2Link,
+                        color = RadixTheme.colors.gray1,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        textAlign = TextAlign.End
+                    )
+                }
+                if (isTokenAmountVisible) {
+                    tokenAmount?.let { amount ->
                         Text(
                             modifier = Modifier,
-                            text = if (token.isTokenAmountVisible == true) token.tokenQuantity.displayableQuantity() else "",
+                            text = amount,
                             style = RadixTheme.typography.secondaryHeader,
                             color = RadixTheme.colors.gray1,
                             maxLines = 1,
@@ -158,28 +222,28 @@ fun TransactionAccountCard(
                             textAlign = TextAlign.End
                         )
                     }
-                    token.guaranteedQuantity?.let {
-                        Row {
-                            Text(
-                                modifier = Modifier.padding(end = RadixTheme.dimensions.paddingSmall),
-                                text = stringResource(id = com.babylon.wallet.android.R.string.transactionReview_guaranteed),
-                                style = RadixTheme.typography.body2Regular,
-                                color = RadixTheme.colors.gray2,
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis,
-                                textAlign = TextAlign.End
-                            )
-                            Text(
-                                modifier = Modifier,
-                                text = token.guaranteedQuantityToDisplay,
-                                style = RadixTheme.typography.body2HighImportance,
-                                color = RadixTheme.colors.gray2,
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis,
-                                textAlign = TextAlign.End
-                            )
-                        }
-                    }
+                }
+            }
+            guaranteedQuantity?.let { guaranteedQuantity ->
+                Row {
+                    Text(
+                        modifier = Modifier.padding(end = RadixTheme.dimensions.paddingSmall),
+                        text = stringResource(id = com.babylon.wallet.android.R.string.transactionReview_guaranteed),
+                        style = RadixTheme.typography.body2Regular,
+                        color = RadixTheme.colors.gray2,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        textAlign = TextAlign.End
+                    )
+                    Text(
+                        modifier = Modifier,
+                        text = guaranteedQuantity,
+                        style = RadixTheme.typography.body2HighImportance,
+                        color = RadixTheme.colors.gray2,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        textAlign = TextAlign.End
+                    )
                 }
             }
         }
@@ -194,14 +258,19 @@ fun TransactionAccountCardPreview() {
     RadixWalletTheme {
         TransactionAccountCard(
             tokens = persistentListOf(
-                TokenUiModel(
-                    tokenQuantity = BigDecimal(689.203),
-                    resourceAddress = "d3d3nd32dko3dko3",
-                    symbol = "XRD",
-                    iconUrl = "",
-                    isTokenAmountVisible = true,
-                    guaranteedQuantity = BigDecimal(689.203)
-                )
+//                TransactionAccountItemUiModel(
+//                    "account_tdx_19jd32jd3928jd3892jd329",
+//                    "My main account",
+//                    1,
+//                    "XRD",
+//                    "1500.000",
+//                    "",
+////                    isTokenAmountVisible = true,
+//                    shouldPromptForGuarantees = false,
+//                    guaranteedQuantity = null,
+//                    fungibleResources = emptyList(),
+//                    nonFungibleResourceItems = emptyList()
+//                )
             ),
             modifier = Modifier,
             appearanceId = 0,

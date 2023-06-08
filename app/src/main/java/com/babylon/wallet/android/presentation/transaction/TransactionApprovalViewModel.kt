@@ -18,6 +18,7 @@ import com.babylon.wallet.android.domain.common.onValue
 import com.babylon.wallet.android.domain.common.value
 import com.babylon.wallet.android.domain.model.DAppWithMetadataAndAssociatedResources
 import com.babylon.wallet.android.domain.model.MetadataConstants
+import com.babylon.wallet.android.domain.model.Resource
 import com.babylon.wallet.android.domain.model.TransactionManifestData
 import com.babylon.wallet.android.domain.usecases.GetDAppWithMetadataAndAssociatedResourcesUseCase
 import com.babylon.wallet.android.domain.usecases.transaction.GetTransactionComponentResourcesUseCase
@@ -34,12 +35,12 @@ import com.babylon.wallet.android.presentation.dapp.authorized.account.toUiModel
 import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
 import com.babylon.wallet.android.utils.DeviceSecurityHelper
-import com.babylon.wallet.android.utils.toAmount
 import com.babylon.wallet.android.utils.toResourceRequest
 import com.radixdlt.toolkit.models.crypto.PrivateKey
 import com.radixdlt.toolkit.models.request.AccountDeposit
 import com.radixdlt.toolkit.models.request.AnalyzeTransactionExecutionResponse
 import com.radixdlt.toolkit.models.request.ConvertManifestResponse
+import com.radixdlt.toolkit.models.request.ResourceQuantifier
 import com.radixdlt.toolkit.models.transaction.ManifestInstructions
 import com.radixdlt.toolkit.models.transaction.TransactionManifest
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -163,7 +164,7 @@ class TransactionApprovalViewModel @Inject constructor(
                     manifestPreview.getOrNull()?.let { analyzeManifestWithPreviewResponse ->
                         Timber.d("Manifest : $analyzeManifestWithPreviewResponse")
                         val componentAccountsAddresses = analyzeManifestWithPreviewResponse.encounteredAddresses
-                            .componentAddresses.accounts
+                            .componentAddresses.userApplications
 
                         val encounteredAddressesResults = componentAccountsAddresses.map {
                             dAppWithAssociatedResourcesUseCase.invoke(
@@ -249,7 +250,16 @@ class TransactionApprovalViewModel @Inject constructor(
         analyzeManifestWithPreviewResponse: AnalyzeTransactionExecutionResponse
     ): List<Deferred<Result<TransactionAccountItemUiModel>>> {
         return analyzeManifestWithPreviewResponse.accountWithdraws.map { accountWithdraw ->
-            val amount = accountWithdraw.resourceQuantifier.toAmount()
+            var amount = ""
+            var ids = emptySet<String>()
+            when (accountWithdraw.resourceQuantifier) {
+                is ResourceQuantifier.Amount -> {
+                    amount = (accountWithdraw.resourceQuantifier as ResourceQuantifier.Amount).amount
+                }
+                is ResourceQuantifier.Ids -> {
+                    ids = (accountWithdraw.resourceQuantifier as ResourceQuantifier.Ids).ids
+                }
+            }
             val resourceRequest = accountWithdraw.resourceQuantifier.toResourceRequest(
                 newlyCreated = analyzeManifestWithPreviewResponse.newlyCreated
             )
@@ -258,6 +268,7 @@ class TransactionApprovalViewModel @Inject constructor(
                     componentAddress = accountWithdraw.componentAddress,
                     resourceRequest = resourceRequest,
                     amount = amount,
+                    ids = ids.toList(),
                     includesGuarantees = false
                 )
             }
@@ -270,7 +281,16 @@ class TransactionApprovalViewModel @Inject constructor(
         return analyzeManifestWithPreviewResponse.accountDeposits.mapIndexed { index, accountDeposit ->
             when (accountDeposit) {
                 is AccountDeposit.Predicted -> {
-                    val amount = accountDeposit.resourceQuantifier.toAmount()
+                    var amount = ""
+                    var ids = emptySet<String>()
+                    when (accountDeposit.resourceQuantifier) {
+                        is ResourceQuantifier.Amount -> {
+                            amount = (accountDeposit.resourceQuantifier as ResourceQuantifier.Amount).amount
+                        }
+                        is ResourceQuantifier.Ids -> {
+                            ids = (accountDeposit.resourceQuantifier as ResourceQuantifier.Ids).ids
+                        }
+                    }
                     val resourceRequest = accountDeposit.resourceQuantifier.toResourceRequest(
                         newlyCreated = analyzeManifestWithPreviewResponse.newlyCreated
                     )
@@ -280,6 +300,7 @@ class TransactionApprovalViewModel @Inject constructor(
                             componentAddress = accountDeposit.componentAddress,
                             resourceRequest = resourceRequest,
                             amount = amount,
+                            ids = ids.toList(),
                             instructionIndex = instructionIndex,
                             includesGuarantees = true,
                             index = index
@@ -287,7 +308,16 @@ class TransactionApprovalViewModel @Inject constructor(
                     }
                 }
                 is AccountDeposit.Guaranteed -> {
-                    val amount = accountDeposit.resourceQuantifier.toAmount()
+                    var amount = ""
+                    var ids = emptySet<String>()
+                    when (accountDeposit.resourceQuantifier) {
+                        is ResourceQuantifier.Amount -> {
+                            amount = (accountDeposit.resourceQuantifier as ResourceQuantifier.Amount).amount
+                        }
+                        is ResourceQuantifier.Ids -> {
+                            ids = (accountDeposit.resourceQuantifier as ResourceQuantifier.Ids).ids
+                        }
+                    }
                     val resourceRequest = accountDeposit.resourceQuantifier.toResourceRequest(
                         newlyCreated = analyzeManifestWithPreviewResponse.newlyCreated
                     )
@@ -296,6 +326,7 @@ class TransactionApprovalViewModel @Inject constructor(
                             componentAddress = accountDeposit.componentAddress,
                             resourceRequest = resourceRequest,
                             amount = amount,
+                            ids = ids.toList(),
                             includesGuarantees = false
                         )
                     }
@@ -554,7 +585,7 @@ class TransactionApprovalViewModel @Inject constructor(
                                 tokenQuantity = tokenUiModel.tokenQuantity,
                                 appearanceID = tokenUiModel.appearanceID,
                                 iconUrl = tokenUiModel.iconUrl,
-                                isTokenAmountVisible = tokenUiModel.isTokenAmountVisible,
+//                                isTokenAmountVisible = tokenUiModel.isTokenAmountVisible,
                                 shouldPromptForGuarantees = tokenUiModel.shouldPromptForGuarantees,
                                 guaranteedQuantity = updatedGuaranteedQuantity,
                                 guaranteedPercentAmount = guaranteePercentString,
@@ -601,17 +632,19 @@ class TransactionApprovalViewModel @Inject constructor(
 data class TransactionAccountItemUiModel(
     val address: String,
     val displayName: String,
-    val tokenSymbol: String,
+    val tokenSymbol: String?,
     val tokenQuantity: String,
     val appearanceID: Int,
     val iconUrl: String,
-    val isTokenAmountVisible: Boolean,
+//    val isTokenAmountVisible: Boolean,
     val shouldPromptForGuarantees: Boolean,
     val guaranteedQuantity: String?,
     val guaranteedPercentAmount: String = "100",
     val instructionIndex: Int? = null, // Index that instruction will be inserted at in the manifest
     val resourceAddress: String? = null,
-    val index: Int? = null // Unique to identify which item state we are changing as addresses might be the same for
+    val index: Int? = null, // Unique to identify which item state we are changing as addresses might be the same for,
+    val fungibleResources: List<Resource.FungibleResource> = emptyList(),
+    val nonFungibleResourceItems: List<Resource.NonFungibleResource.Item> = emptyList()
     // nested elements using the same address
 ) {
     val tokenQuantityDecimal: BigDecimal
@@ -655,7 +688,7 @@ fun List<PreviewAccountItemsUiModel>.toGuaranteesAccountsUiModel() = map { previ
                 address = account.address,
                 appearanceID = previewAccountItemsUiModel.appearanceID,
                 displayName = account.displayName,
-                tokenSymbol = account.tokenSymbol,
+                tokenSymbol = account.tokenSymbol.orEmpty(),
                 tokenIconUrl = account.iconUrl,
                 tokenEstimatedQuantity = account.tokenQuantity,
                 tokenGuaranteedQuantity = account.guaranteedQuantity.orEmpty(),

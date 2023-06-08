@@ -1,13 +1,20 @@
 package com.babylon.wallet.android.domain.usecases.transaction
 
+import androidx.core.net.toUri
 import com.babylon.wallet.android.data.gateway.extensions.asMetadataStringMap
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponseItemDetailsType
+import com.babylon.wallet.android.data.gateway.model.ExplicitMetadataKey
 import com.babylon.wallet.android.data.repository.entity.EntityRepository
 import com.babylon.wallet.android.domain.common.Result
 import com.babylon.wallet.android.domain.common.onValue
+import com.babylon.wallet.android.domain.common.value
 import com.babylon.wallet.android.domain.model.MetadataConstants.KEY_ICON
-import com.babylon.wallet.android.domain.model.MetadataConstants.KEY_NAME
 import com.babylon.wallet.android.domain.model.MetadataConstants.KEY_SYMBOL
+import com.babylon.wallet.android.domain.model.Resource
+import com.babylon.wallet.android.domain.model.metadata.DescriptionMetadataItem
+import com.babylon.wallet.android.domain.model.metadata.IconUrlMetadataItem
+import com.babylon.wallet.android.domain.model.metadata.NameMetadataItem
+import com.babylon.wallet.android.domain.model.metadata.SymbolMetadataItem
 import com.babylon.wallet.android.presentation.transaction.TransactionAccountItemUiModel
 import com.radixdlt.toolkit.models.request.MetadataEntry
 import com.radixdlt.toolkit.models.request.MetadataKeyValue
@@ -25,6 +32,7 @@ class GetTransactionComponentResourcesUseCase @Inject constructor(
         componentAddress: String,
         resourceRequest: ResourceRequest,
         amount: String,
+        ids: List<String>,
         instructionIndex: Int? = null,
         includesGuarantees: Boolean,
         index: Int? = null
@@ -54,9 +62,11 @@ class GetTransactionComponentResourcesUseCase @Inject constructor(
                 it.details?.type == StateEntityDetailsResponseItemDetailsType.component
             }
 
-            var tokenSymbol = "Unknown"
+            var tokenSymbol: String? = null
             var iconUrl = ""
-            var isTokenAmountVisible = true
+
+            var fungibleResources: List<Resource.FungibleResource> = emptyList()
+            var nonFungibleResources: List<Resource.NonFungibleResource.Item> = emptyList()
 
             when (resourceRequest) {
                 is ResourceRequest.Existing -> {
@@ -67,27 +77,25 @@ class GetTransactionComponentResourcesUseCase @Inject constructor(
                         it.details?.type == StateEntityDetailsResponseItemDetailsType.nonFungibleResource
                     }
 
-                    // Do not display amount if its empty AND its NFT
-                    val amountHidden = nonFungibleResourceItem != null && amount.isEmpty()
-                    isTokenAmountVisible = !amountHidden
+                    fungibleResources = fungibleResourceItem?.metadata?.asMetadataStringMap()?.let { metadataMap ->
+                        listOf(
+                            Resource.FungibleResource(
+                                resourceAddress = fungibleResourceItem.address,
+                                amount = amount.toBigDecimal(),
+                                nameMetadataItem = metadataMap[ExplicitMetadataKey.NAME.key]?.let { NameMetadataItem(it) },
+                                symbolMetadataItem = metadataMap[ExplicitMetadataKey.SYMBOL.key]?.let { SymbolMetadataItem(it) },
+                                descriptionMetadataItem = metadataMap[ExplicitMetadataKey.DESCRIPTION.key]?.let { DescriptionMetadataItem(it) },
+                                iconUrlMetadataItem = metadataMap[ExplicitMetadataKey.ICON_URL.key]?.let { IconUrlMetadataItem(it.toUri()) }
+                            )
+                        )
+                    } ?: emptyList()
 
-                    fungibleResourceItem?.metadata?.asMetadataStringMap()?.let {
-                        if (it.containsKey(KEY_SYMBOL)) {
-                            tokenSymbol = it.getValue(KEY_SYMBOL)
-                        }
-                        if (it.containsKey(KEY_ICON)) {
-                            iconUrl = it.getValue(KEY_ICON)
-                        }
-                    }
-
-                    nonFungibleResourceItem?.metadata?.asMetadataStringMap()?.let {
-                        if (it.containsKey(KEY_NAME)) {
-                            tokenSymbol = it.getValue(KEY_NAME)
-                        }
-                        if (it.containsKey(KEY_ICON)) {
-                            iconUrl = it.getValue(KEY_ICON)
-                        }
-                    }
+                    nonFungibleResources = nonFungibleResourceItem?.let { nftItem ->
+                        entityRepository.nonFungibleData(
+                            ids = ids,
+                            resourceAddress = nftItem.address
+                        ).value()
+                    } ?: emptyList()
                 }
                 is ResourceRequest.NewlyCreated -> {
                     tokenSymbol = when (val entry = resourceRequest.metadata.firstOrNull { it.key == KEY_SYMBOL }?.value) {
@@ -97,7 +105,7 @@ class GetTransactionComponentResourcesUseCase @Inject constructor(
                         }
                         else -> "Unknown"
                     }
-                    iconUrl = when (val entry = resourceRequest.metadata.firstOrNull { it.key == KEY_SYMBOL }?.value) {
+                    iconUrl = when (val entry = resourceRequest.metadata.firstOrNull { it.key == KEY_ICON }?.value) {
                         is MetadataEntry.Value -> when (val value = entry.value) {
                             is MetadataValue.Url -> value.value
                             is MetadataValue.String -> value.value
@@ -117,22 +125,23 @@ class GetTransactionComponentResourcesUseCase @Inject constructor(
             val shouldPromptForGuarantees = if (createdEntity) false else includesGuarantees
 
             // If its newlyCreatedEntity OR don't include guarantee, do not ask for guarantees
-            val guaranteedQuantity = if (createdEntity || !includesGuarantees) null else amount
+            val guaranteedAmount = if (createdEntity || !includesGuarantees) null else amount
 
             account = Result.Success(
                 TransactionAccountItemUiModel(
                     address = accountItem?.address.orEmpty(),
                     displayName = accountDisplayName,
-                    tokenSymbol = tokenSymbol,
-                    tokenQuantity = amount,
                     appearanceID = accountAppearanceId,
+                    tokenSymbol = tokenSymbol,
                     iconUrl = iconUrl,
-                    isTokenAmountVisible = isTokenAmountVisible,
+                    tokenQuantity = amount,
                     shouldPromptForGuarantees = shouldPromptForGuarantees,
-                    guaranteedQuantity = guaranteedQuantity,
+                    guaranteedQuantity = guaranteedAmount,
                     instructionIndex = instructionIndex,
                     resourceAddress = resourceAddress,
-                    index = index
+                    index = index,
+                    fungibleResources = fungibleResources,
+                    nonFungibleResourceItems = nonFungibleResources
                 )
             )
         }

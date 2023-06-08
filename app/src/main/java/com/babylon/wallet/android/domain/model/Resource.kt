@@ -21,6 +21,7 @@ sealed class Resource {
         private val symbolMetadataItem: SymbolMetadataItem? = null,
         private val descriptionMetadataItem: DescriptionMetadataItem? = null,
         private val iconUrlMetadataItem: IconUrlMetadataItem? = null,
+        private val guaranteedQuantity: BigDecimal? = null
     ) : Resource(), Comparable<FungibleResource> {
         val name: String
             get() = nameMetadataItem?.name.orEmpty()
@@ -46,6 +47,12 @@ sealed class Resource {
         val isXrd: Boolean = RadixEngineToolkit.knownEntityAddresses(
             KnownEntityAddressesRequest(networkId = Radix.Gateway.default.network.id.toUByte())
         ).getOrNull()?.xrdResourceAddress == resourceAddress
+
+        val isTokenAmountVisible: Boolean
+            get() = true  // Always amount is visible for fungible tokens on guarantees page
+
+        val guaranteedQuantityToDisplay: String?
+            get() = guaranteedQuantity?.toPlainString()
 
         @Suppress("CyclomaticComplexMethod")
         override fun compareTo(other: FungibleResource): Int {
@@ -84,7 +91,8 @@ sealed class Resource {
         private val nameMetadataItem: NameMetadataItem? = null,
         private val descriptionMetadataItem: DescriptionMetadataItem? = null,
         private val iconMetadataItem: IconUrlMetadataItem? = null,
-        val items: List<Item>
+        val items: List<Item>,
+        private val guaranteedQuantity: BigDecimal? = null
     ) : Resource(), Comparable<NonFungibleResource> {
         val name: String
             get() = nameMetadataItem?.name.orEmpty()
@@ -113,6 +121,9 @@ sealed class Resource {
 
             val imageUrl: Uri?
                 get() = iconMetadataItem?.url
+
+            val isTokenAmountVisible: Boolean
+                get() = false // No amount visible for NFT item
 
             override fun compareTo(other: Item): Int = when (localId) {
                 is ID.StringType -> (other.localId as? ID.StringType)?.compareTo(localId) ?: -1

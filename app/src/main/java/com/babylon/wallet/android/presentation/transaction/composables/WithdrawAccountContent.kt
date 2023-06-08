@@ -17,7 +17,6 @@ import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
-import com.babylon.wallet.android.presentation.model.TokenUiModel
 import com.babylon.wallet.android.presentation.transaction.PreviewAccountItemsUiModel
 import com.babylon.wallet.android.presentation.transaction.TransactionAccountItemUiModel
 import kotlinx.collections.immutable.ImmutableList
@@ -26,10 +25,10 @@ import kotlinx.collections.immutable.toPersistentList
 
 @Composable
 fun WithdrawAccountContent(
-    previewAccounts: ImmutableList<PreviewAccountItemsUiModel>,
+    withdrawAccounts: ImmutableList<PreviewAccountItemsUiModel>,
     modifier: Modifier = Modifier
 ) {
-    if (previewAccounts.isNotEmpty()) {
+    if (withdrawAccounts.isNotEmpty()) {
         Text(
             modifier = Modifier
                 .padding(horizontal = RadixTheme.dimensions.paddingDefault),
@@ -48,25 +47,33 @@ fun WithdrawAccountContent(
                 )
                 .padding(RadixTheme.dimensions.paddingMedium)
         ) {
-            previewAccounts.forEachIndexed { index, previewAccount ->
-                val lastItem = index == previewAccounts.lastIndex
-
-                val tokens = previewAccount.accounts.map { account ->
-                    TokenUiModel(
-                        iconUrl = account.iconUrl,
-                        symbol = account.tokenSymbol,
-                        tokenQuantity = account.tokenQuantityDecimal,
-                        resourceAddress = account.address,
-                        isTokenAmountVisible = account.isTokenAmountVisible,
-                        guaranteedQuantity = account.guaranteedQuantityDecimal
-                    )
-                }.toPersistentList()
+//            val withdrawAccountMap = withdrawAccounts.groupBy {
+//                it.address
+//            }
+//            withdrawAccountMap.onEachIndexed { index, accountEntry ->
+//                val lastItem = index == withdrawAccountMap.size - 1
+//                TransactionAccountCard(
+//                    appearanceId = accountEntry.value.first().appearanceID,
+//                    tokens = accountEntry.value.toPersistentList(),
+//                    address = accountEntry.value.first().address,
+//                    accountName = accountEntry.value.first().displayName
+//                )
+//
+//                if (!lastItem) {
+//                    Spacer(
+//                        modifier = Modifier
+//                            .height(RadixTheme.dimensions.paddingMedium)
+//                    )
+//                }
+//            }
+            withdrawAccounts.forEachIndexed { index, withdrawAccount ->
+                val lastItem = index == withdrawAccounts.lastIndex
 
                 TransactionAccountCard(
-                    appearanceId = previewAccount.appearanceID,
-                    tokens = tokens,
-                    address = previewAccount.address,
-                    accountName = previewAccount.accountName
+                    appearanceId = withdrawAccount.appearanceID,
+                    tokens = withdrawAccount.accounts.toPersistentList(),
+                    address = withdrawAccount.address,
+                    accountName = withdrawAccount.accountName
                 )
 
                 if (!lastItem) {
@@ -91,17 +98,18 @@ fun WithdrawAccountContentPreview() {
                     accountName = "My main account",
                     appearanceID = 1,
                     accounts = listOf(
-                        TransactionAccountItemUiModel(
-                            "account_tdx_19jd32jd3928jd3892jd329",
-                            "My main account",
-                            "XRD",
-                            "1500.000",
-                            1,
-                            "",
-                            isTokenAmountVisible = true,
-                            shouldPromptForGuarantees = false,
-                            guaranteedQuantity = null
-                        )
+//                        TransactionAccountItemUiModel(
+//                            address = "account_tdx_19jd32jd3928jd3892jd329",
+//                            displayName = "My main account",
+//                            appearanceID = 1,
+//                            tokenSymbol = "XRD",
+//                            tokenAmount = "1500.000",
+//                            iconUrl = "",
+//                            shouldPromptForGuarantees = false,
+//                            guaranteedAmount = null,
+//                            fungibleResources = emptyList(),
+//                            nonFungibleResourceItems = emptyList()
+//                        )
                     )
                 )
             )
