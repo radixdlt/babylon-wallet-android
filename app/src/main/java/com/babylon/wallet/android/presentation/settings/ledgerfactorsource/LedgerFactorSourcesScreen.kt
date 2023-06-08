@@ -4,9 +4,8 @@ package com.babylon.wallet.android.presentation.settings.ledgerfactorsource
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -28,11 +27,17 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
-import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
+import com.babylon.wallet.android.designsystem.composable.RadixSecondaryButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.presentation.model.AddLedgerSheetState
@@ -40,6 +45,7 @@ import com.babylon.wallet.android.presentation.ui.composables.AddLedgerBottomShe
 import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.DefaultModalSheetLayout
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
+import com.babylon.wallet.android.utils.timestampFormatted
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.launch
@@ -57,7 +63,7 @@ fun LedgerFactorSourcesScreen(
         modifier = modifier
             .navigationBarsPadding()
             .fillMaxSize()
-            .background(RadixTheme.colors.defaultBackground),
+            .background(RadixTheme.colors.gray5),
         onBackClick = onBackClick,
         ledgerFactorSources = state.ledgerFactorSources,
         hasP2pLinks = state.hasP2pLinks,
@@ -118,7 +124,8 @@ private fun SettingsLinkConnectorContent(
             RadixCenteredTopAppBar(
                 title = stringResource(R.string.settings_ledgerHardwareWallets),
                 onBackClick = onBackClick,
-                contentColor = RadixTheme.colors.gray1
+                contentColor = RadixTheme.colors.gray1,
+                modifier = Modifier.background(RadixTheme.colors.defaultBackground)
             )
             Divider(color = RadixTheme.colors.gray5)
             LedgerFactorSourcesDetails(
@@ -176,40 +183,37 @@ private fun LedgerFactorSourcesDetails(
     onAddLedger: () -> Unit
 ) {
     Column(modifier, horizontalAlignment = Alignment.CenterHorizontally) {
+        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingMedium))
         Text(
             modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingDefault),
             text = stringResource(id = R.string.ledgerHardwareDevices_subtitleAllLedgers),
             style = RadixTheme.typography.body1HighImportance,
             color = RadixTheme.colors.gray2
         )
-        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
+        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXLarge))
         if (ledgerFactorSources.isNotEmpty()) {
             LedgerFactorSourcesListContent(
                 modifier = Modifier
                     .weight(1f)
                     .fillMaxWidth(),
-                ledgerFactorSources = ledgerFactorSources
+                ledgerFactorSources = ledgerFactorSources,
+                onAddLedger = onAddLedger
             )
-        } else {
-            Spacer(modifier = Modifier.weight(1f))
         }
-        RadixPrimaryButton(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(RadixTheme.dimensions.paddingMedium),
-            text = stringResource(id = R.string.ledgerHardwareDevices_addNewLedger),
-            onClick = onAddLedger,
-            throttleClicks = true
-        )
     }
 }
 
 @Composable
 private fun LedgerFactorSourcesListContent(
     modifier: Modifier = Modifier,
-    ledgerFactorSources: ImmutableList<FactorSource>
+    ledgerFactorSources: ImmutableList<FactorSource>,
+    onAddLedger: () -> Unit
 ) {
-    LazyColumn(modifier) {
+    LazyColumn(
+        modifier,
+        contentPadding = PaddingValues(horizontal = RadixTheme.dimensions.paddingDefault),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
         items(
             items = ledgerFactorSources,
             key = { factorSource: FactorSource ->
@@ -217,10 +221,27 @@ private fun LedgerFactorSourcesListContent(
             },
             itemContent = { item ->
                 FactorSourceListItem(
+                    modifier = Modifier
+                        .shadow(elevation = 4.dp, shape = RadixTheme.shapes.roundedRectSmall)
+                        .fillMaxWidth()
+                        .background(RadixTheme.colors.defaultBackground, shape = RadixTheme.shapes.roundedRectSmall)
+                        .padding(RadixTheme.dimensions.paddingLarge),
                     factorSource = item
                 )
+                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingMedium))
             }
         )
+        item {
+            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
+            RadixSecondaryButton(
+                modifier = Modifier
+                    .fillMaxWidth(0.7f)
+                    .padding(bottom = RadixTheme.dimensions.paddingMedium),
+                text = stringResource(id = R.string.ledgerHardwareDevices_addNewLedger),
+                onClick = onAddLedger,
+                throttleClicks = true
+            )
+        }
     }
 }
 
@@ -230,21 +251,34 @@ private fun FactorSourceListItem(
     modifier: Modifier = Modifier,
 ) {
     Column(modifier = modifier) {
-        Row(
-            Modifier
-                .fillMaxWidth()
-                .padding(RadixTheme.dimensions.paddingDefault),
-            horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingSmall),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                modifier = Modifier.weight(1f),
-                text = "${factorSource.label} (${factorSource.description})",
-                style = RadixTheme.typography.body2Regular,
-                color = RadixTheme.colors.gray2
-            )
+        Text(
+            text = factorSource.label,
+            style = RadixTheme.typography.secondaryHeader,
+            color = RadixTheme.colors.gray1
+        )
+        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingMedium))
+        val usedText = buildAnnotatedString {
+            withStyle(SpanStyle(fontWeight = FontWeight.Bold)) {
+                append(stringResource(id = R.string.ledgerHardwareDevices_usedHeading))
+            }
+            append(": " + factorSource.lastUsedOn.timestampFormatted())
         }
-        Divider(Modifier.fillMaxWidth(), color = RadixTheme.colors.gray4)
+        val addedText = buildAnnotatedString {
+            withStyle(SpanStyle(fontWeight = FontWeight.Bold)) {
+                append(stringResource(id = R.string.ledgerHardwareDevices_addedHeading))
+            }
+            append(": " + factorSource.addedOn.timestampFormatted())
+        }
+        Text(
+            text = addedText,
+            style = RadixTheme.typography.body2Regular,
+            color = RadixTheme.colors.gray2
+        )
+        Text(
+            text = usedText,
+            style = RadixTheme.typography.body2Regular,
+            color = RadixTheme.colors.gray2
+        )
     }
 }
 

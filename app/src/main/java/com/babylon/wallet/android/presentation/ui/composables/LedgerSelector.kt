@@ -27,7 +27,7 @@ import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.designsystem.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
-import com.babylon.wallet.android.utils.addedOnTimestampFormatted
+import com.babylon.wallet.android.utils.timestampFormatted
 import kotlinx.collections.immutable.ImmutableList
 import rdx.works.profile.data.model.factorsources.FactorSource
 
@@ -54,8 +54,7 @@ fun LedgerSelector(
             val selectedLedgerDescription =
                 selectedFactorSource?.label.orEmpty() + " " + stringResource(
                     id = com.babylon.wallet.android.R.string.ledgerHardwareDevices_addedHeading
-                ) + selectedFactorSource?.addedOnTimestampFormatted()
-                    .orEmpty()
+                ) + selectedFactorSource?.addedOn?.timestampFormatted().orEmpty()
             Text(
                 modifier = Modifier.weight(1f),
                 text = selectedLedgerDescription,
