@@ -549,7 +549,9 @@
   <string name="signing_useLedgerLabel_lastUsed">Last used</string>
   <string name="signing_useLedgerLabel_addedOn">Added on</string>
   <string name="signing_signatureRequest_title">Signature Request</string>
-  <string name="signing_signatureRequest_body">Make sure the following **Ledger hardware wallet device** is connected to a computer with a linked Radix Connector browser extension, and the Radix Babylon app is launched on the device.</string>
+  <string name="signing_signatureRequest_body">Make sure the following *Ledger hardware wallet device* is connected to a computer with a linked Radix Connector browser extension, and the Radix Babylon app is launched on the device.</string>
+  <string name="signing_signatureSuccessful_title">Signed</string>
+  <string name="signing_signatureSuccessful_body">Signature successful</string>
   <string name="signing_signatureRequest_instructions">Review and sign the transaction on the Ledger device to continue.</string>
   <string name="ledgerHardwareDevices_linkConnectorAlert_title">Link a Connector</string>
   <string name="ledgerHardwareDevices_linkConnectorAlert_message">To use a Ledger hardware wallet device, it must be connected to a computer running the Radix Connector browser extension.

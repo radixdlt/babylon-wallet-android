@@ -8,6 +8,7 @@ import com.babylon.wallet.android.data.dapp.model.WalletErrorType
 import com.babylon.wallet.android.data.manifest.addGuaranteeInstructionToManifest
 import com.babylon.wallet.android.data.transaction.DappRequestException
 import com.babylon.wallet.android.data.transaction.DappRequestFailure
+import com.babylon.wallet.android.data.transaction.SigningState
 import com.babylon.wallet.android.data.transaction.TransactionClient
 import com.babylon.wallet.android.data.transaction.model.TransactionApprovalRequest
 import com.babylon.wallet.android.data.transaction.toPrettyString
@@ -96,9 +97,10 @@ class TransactionApprovalViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            transactionClient.signingState.filterNotNull().collect { event ->
-                // TODO display UI relevant to current signing state
-                Timber.d("Signing state: $event")
+            transactionClient.signingState.filterNotNull().collect { signingState ->
+                _state.update { state ->
+                    state.copy(signingState = signingState)
+                }
             }
         }
         viewModelScope.launch {
@@ -319,7 +321,7 @@ class TransactionApprovalViewModel @Inject constructor(
                             message = failure.getDappMessage()
                         )
                     }
-                    sendEvent(TransactionApprovalEvent.NavigateBack)
+                    sendEvent(TransactionApprovalEvent.Dismiss)
                     incomingRequestRepository.requestHandled(args.requestId)
                     approvalJob = null
                 } else {
@@ -460,7 +462,7 @@ class TransactionApprovalViewModel @Inject constructor(
         // TODO display dialog are we sure we want to reject transaction?
         viewModelScope.launch {
             if (approvalJob != null) {
-                sendEvent(TransactionApprovalEvent.NavigateBack)
+                sendEvent(TransactionApprovalEvent.Dismiss)
             } else {
                 if (!transactionWriteRequest.isInternal) {
                     dAppMessenger.sendWalletInteractionResponseFailure(
@@ -469,7 +471,7 @@ class TransactionApprovalViewModel @Inject constructor(
                         error = WalletErrorType.RejectedByUser
                     )
                 }
-                sendEvent(TransactionApprovalEvent.NavigateBack)
+                sendEvent(TransactionApprovalEvent.Dismiss)
                 incomingRequestRepository.requestHandled(args.requestId)
             }
         }
@@ -682,11 +684,13 @@ data class TransactionUiState(
     val connectedDApps: ImmutableList<DAppWithMetadataAndAssociatedResources> = persistentListOf(),
     val guaranteePercent: BigDecimal = BigDecimal("100"),
     val bottomSheetViewMode: BottomSheetMode = BottomSheetMode.Guarantees,
-    val feePayerCandidates: ImmutableList<AccountItemUiModel> = persistentListOf()
+    val feePayerCandidates: ImmutableList<AccountItemUiModel> = persistentListOf(),
+    val bottomSheetMode: BottomSheetMode = BottomSheetMode.Guarantees,
+    val signingState: SigningState? = null
 ) : UiState
 
 sealed interface TransactionApprovalEvent : OneOffEvent {
-    object NavigateBack : TransactionApprovalEvent
+    object Dismiss : TransactionApprovalEvent
     object SelectFeePayer : TransactionApprovalEvent
 }
 

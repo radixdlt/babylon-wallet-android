@@ -62,12 +62,14 @@ class AccountPreferenceViewModel @Inject constructor(
                         is AppEvent.TransactionEvent.Failed -> {
                             _state.update { it.copy(isLoading = false) }
                         }
+
                         is AppEvent.TransactionEvent.Successful -> {
                             val account = requireNotNull(state.value.account)
                             val authSigningFactorInstance = requireNotNull(authSigningFactorInstance)
                             addAuthSigningFactorInstanceUseCase(account, authSigningFactorInstance)
                             _state.update { it.copy(isLoading = false) }
                         }
+
                         else -> {}
                     }
                 }
@@ -124,23 +126,28 @@ class AccountPreferenceViewModel @Inject constructor(
         viewModelScope.launch {
             state.value.account?.let { account ->
                 _state.update { it.copy(isLoading = true) }
-                val authSigningFactorInstance = rolaClient.generateAuthSigningFactorInstance(account)
-                this@AccountPreferenceViewModel.authSigningFactorInstance = authSigningFactorInstance
-                rolaClient.createAuthKeyManifestWithStringInstructions(account, authSigningFactorInstance)?.let { manifest ->
-                    Timber.d("Approving: \n$manifest")
-                    uploadAuthKeyRequestId = UUIDGenerator.uuid().toString()
-                    val internalMessage = MessageFromDataChannel.IncomingRequest.TransactionRequest(
-                        dappId = "",
-                        requestId = uploadAuthKeyRequestId,
-                        transactionManifestData = TransactionManifestData(
-                            instructions = requireNotNull(manifest.getStringInstructions()),
-                            version = TransactionVersion.Default.value,
-                            networkId = account.networkID,
-                            blobs = manifest.blobs?.toList().orEmpty()
-                        ),
-                        requestMetadata = MessageFromDataChannel.IncomingRequest.RequestMetadata.internal(account.networkID)
-                    )
-                    incomingRequestRepository.add(internalMessage)
+                rolaClient.generateAuthSigningFactorInstance(account).onSuccess { authSigningFactorInstance ->
+                    this@AccountPreferenceViewModel.authSigningFactorInstance = authSigningFactorInstance
+                    rolaClient.createAuthKeyManifestWithStringInstructions(account, authSigningFactorInstance)?.let { manifest ->
+                        Timber.d("Approving: \n$manifest")
+                        uploadAuthKeyRequestId = UUIDGenerator.uuid().toString()
+                        val internalMessage = MessageFromDataChannel.IncomingRequest.TransactionRequest(
+                            dappId = "",
+                            requestId = uploadAuthKeyRequestId,
+                            transactionManifestData = TransactionManifestData(
+                                instructions = requireNotNull(manifest.getStringInstructions()),
+                                version = TransactionVersion.Default.value,
+                                networkId = account.networkID,
+                                blobs = manifest.blobs?.toList().orEmpty()
+                            ),
+                            requestMetadata = MessageFromDataChannel.IncomingRequest.RequestMetadata.internal(account.networkID)
+                        )
+                        incomingRequestRepository.add(internalMessage)
+                    }
+                }.onFailure {
+                    _state.update { state ->
+                        state.copy(isLoading = false)
+                    }
                 }
             }
         }

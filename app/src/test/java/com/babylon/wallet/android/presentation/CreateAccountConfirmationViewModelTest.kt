@@ -9,6 +9,8 @@ import com.babylon.wallet.android.presentation.createaccount.confirmation.Create
 import com.babylon.wallet.android.presentation.createaccount.confirmation.CreateAccountConfirmationViewModel
 import com.babylon.wallet.android.presentation.createaccount.confirmation.CreateAccountRequestSource
 import com.babylon.wallet.android.presentation.navigation.Screen
+import io.mockk.every
+import io.mockk.mockk
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.flowOf
@@ -20,35 +22,29 @@ import kotlinx.coroutines.test.runTest
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
-import org.mockito.Mockito.mock
-import org.mockito.kotlin.whenever
 import rdx.works.profile.domain.GetProfileUseCase
 
 @ExperimentalCoroutinesApi
 class CreateAccountConfirmationViewModelTest : StateViewModelTest<CreateAccountConfirmationViewModel>() {
 
-    private val savedStateHandle = mock(SavedStateHandle::class.java)
-    private val getProfileUseCase = mock(GetProfileUseCase::class.java)
+    private val savedStateHandle = mockk<SavedStateHandle>()
+    private val getProfileUseCase = mockk<GetProfileUseCase>()
     private val accountId = "fj3489fj348f"
     private val accountName = "My main account"
 
     @Before
     override fun setUp() = runTest {
         super.setUp()
-        whenever(savedStateHandle.get<String>(ARG_ACCOUNT_ID)).thenReturn(accountId)
-        whenever(savedStateHandle.get<String>(Screen.ARG_ACCOUNT_NAME)).thenReturn(accountName)
-        whenever(savedStateHandle.get<Boolean>(Screen.ARG_HAS_PROFILE)).thenReturn(false)
-        whenever(getProfileUseCase()).thenReturn(
-            flowOf(profile(accounts = listOf(account(address = accountId, name = accountName))))
-        )
+        every { savedStateHandle.get<String>(ARG_ACCOUNT_ID) } returns accountId
+        every { savedStateHandle.get<String>(Screen.ARG_ACCOUNT_NAME) } returns accountName
+        every { savedStateHandle.get<Boolean>(Screen.ARG_HAS_PROFILE) } returns false
+        every { getProfileUseCase() } returns flowOf(profile(accounts = listOf(account(address = accountId, name = accountName))))
     }
 
     @Test
     fun `given profile did not exist, when view model init, verify correct account state and go next`() = runTest {
         // given
-        whenever(savedStateHandle.get<CreateAccountRequestSource>(ARG_REQUEST_SOURCE)).thenReturn(
-            CreateAccountRequestSource.FirstTime
-        )
+        every { savedStateHandle.get<CreateAccountRequestSource>(ARG_REQUEST_SOURCE) } returns CreateAccountRequestSource.FirstTime
         val viewModel = vm.value
         val event = mutableListOf<CreateAccountConfirmationEvent>()
 
@@ -75,9 +71,7 @@ class CreateAccountConfirmationViewModelTest : StateViewModelTest<CreateAccountC
 
     @Test
     fun `given profile did exist, when view model init, verify correct account state and dismiss`() = runTest {
-        whenever(savedStateHandle.get<CreateAccountRequestSource>(ARG_REQUEST_SOURCE)).thenReturn(
-            CreateAccountRequestSource.AccountsList
-        )
+        every { savedStateHandle.get<CreateAccountRequestSource>(ARG_REQUEST_SOURCE) } returns CreateAccountRequestSource.AccountsList
         val event = mutableListOf<CreateAccountConfirmationEvent>()
         val viewModel = vm.value
         viewModel.accountConfirmed()

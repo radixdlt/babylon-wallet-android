@@ -9,6 +9,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -17,9 +18,10 @@ import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.model.DAppWithMetadata
 import com.babylon.wallet.android.domain.model.metadata.NameMetadataItem
 import com.babylon.wallet.android.presentation.dapp.authorized.account.AccountItemUiModel
-import com.babylon.wallet.android.presentation.dapp.unauthorized.login.DAppUnauthorizedLoginEvent
 import com.babylon.wallet.android.presentation.dapp.unauthorized.login.DAppUnauthorizedLoginViewModel
+import com.babylon.wallet.android.presentation.dapp.unauthorized.login.Event
 import com.babylon.wallet.android.presentation.ui.composables.ChooseAccountContent
+import com.babylon.wallet.android.utils.biometricAuthenticate
 import kotlinx.collections.immutable.persistentListOf
 
 @Composable
@@ -33,12 +35,20 @@ fun OneTimeChooseAccountsScreen(
     onLoginFlowCancelled: () -> Unit,
     onPersonaOnetime: (String) -> Unit
 ) {
+    val context = LocalContext.current
     LaunchedEffect(Unit) {
         sharedViewModel.oneOffEvent.collect { event ->
             when (event) {
-                is DAppUnauthorizedLoginEvent.LoginFlowCompleted -> onLoginFlowComplete(event.requestId, event.dAppName)
-                is DAppUnauthorizedLoginEvent.PersonaDataOnetime -> onPersonaOnetime(event.requiredFieldsEncoded)
-                DAppUnauthorizedLoginEvent.RejectLogin -> onLoginFlowCancelled()
+                is Event.LoginFlowCompleted -> onLoginFlowComplete(event.requestId, event.dAppName)
+                is Event.PersonaDataOnetime -> onPersonaOnetime(event.requiredFieldsEncoded)
+                Event.RejectLogin -> sharedViewModel.onRejectRequest()
+                Event.RequestCompletionBiometricPrompt -> {
+                    context.biometricAuthenticate { authenticated ->
+                        if (authenticated) {
+                            sharedViewModel.sendRequestResponse()
+                        }
+                    }
+                }
             }
         }
     }
@@ -48,6 +58,7 @@ fun OneTimeChooseAccountsScreen(
                 OneTimeChooseAccountsEvent.NavigateToCompletionScreen -> {
                     exitRequestFlow()
                 }
+
                 OneTimeChooseAccountsEvent.FailedToSendResponse -> {
                     exitRequestFlow() // TODO probably later we need to show an error message
                 }

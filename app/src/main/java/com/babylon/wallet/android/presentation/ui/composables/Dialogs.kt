@@ -41,7 +41,7 @@ import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 fun BottomSheetWrapper(
     modifier: Modifier = Modifier,
     onDismissRequest: () -> Unit,
-    bottomSheetState: SheetState = rememberModalBottomSheetState(),
+    bottomSheetState: SheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
     content: @Composable () -> Unit,
 ) {
     // TODO update dependency when this issue is resolved
@@ -73,7 +73,7 @@ fun BottomSheetWrapper(
 fun BottomSheetDialogWrapper(
     modifier: Modifier = Modifier,
     onDismissRequest: () -> Unit,
-    bottomSheetState: SheetState = rememberModalBottomSheetState(),
+    bottomSheetState: SheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
     content: @Composable () -> Unit,
 ) {
     Dialog(onDismissRequest = onDismissRequest) {

@@ -43,7 +43,9 @@ import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.model.DAppWithMetadata
 import com.babylon.wallet.android.domain.model.metadata.NameMetadataItem
 import com.babylon.wallet.android.presentation.dapp.authorized.login.DAppAuthorizedLoginEvent
+import com.babylon.wallet.android.presentation.dapp.authorized.InitialAuthorizedLoginRoute
 import com.babylon.wallet.android.presentation.dapp.authorized.login.DAppAuthorizedLoginViewModel
+import com.babylon.wallet.android.presentation.dapp.authorized.login.Event
 import com.babylon.wallet.android.presentation.ui.composables.ImageSize
 import com.babylon.wallet.android.presentation.ui.composables.rememberImageUrl
 import com.babylon.wallet.android.utils.formattedSpans
@@ -51,7 +53,7 @@ import com.babylon.wallet.android.utils.formattedSpans
 @Composable
 fun LoginPermissionScreen(
     viewModel: DAppAuthorizedLoginViewModel,
-    onChooseAccounts: (DAppAuthorizedLoginEvent.ChooseAccounts) -> Unit,
+    onChooseAccounts: (Event.ChooseAccounts) -> Unit,
     numberOfAccounts: Int,
     isExactAccountsCount: Boolean,
     onCompleteFlow: () -> Unit,
@@ -62,8 +64,8 @@ fun LoginPermissionScreen(
     LaunchedEffect(Unit) {
         viewModel.oneOffEvent.collect { event ->
             when (event) {
-                is DAppAuthorizedLoginEvent.ChooseAccounts -> onChooseAccounts(event)
-                is DAppAuthorizedLoginEvent.RejectLogin -> onCompleteFlow()
+                is Event.ChooseAccounts -> onChooseAccounts(event)
+                is Event.RejectLogin -> onCompleteFlow()
                 else -> {}
             }
         }

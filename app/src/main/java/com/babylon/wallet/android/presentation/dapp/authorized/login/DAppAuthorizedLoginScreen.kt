@@ -32,7 +32,7 @@ fun DappAuthorizedLoginScreen(
     LaunchedEffect(Unit) {
         viewModel.oneOffEvent.collect { event ->
             when (event) {
-                DAppAuthorizedLoginEvent.RejectLogin -> onBackClick()
+                Event.RejectLogin -> onBackClick()
                 else -> {}
             }
         }
