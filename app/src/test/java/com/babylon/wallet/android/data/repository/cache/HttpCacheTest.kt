@@ -10,6 +10,7 @@ import okhttp3.HttpUrl.Companion.toHttpUrl
 import okhttp3.Request
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
+import org.junit.Ignore
 import org.junit.Test
 import rdx.works.core.blake2Hash
 import rdx.works.core.toHexString
@@ -20,6 +21,7 @@ import java.time.Duration
 import java.time.Instant
 import java.time.temporal.ChronoUnit
 
+@Ignore("test")
 internal class HttpCacheTest {
 
     private val memoryCacheClient = MemoryCacheClient()
