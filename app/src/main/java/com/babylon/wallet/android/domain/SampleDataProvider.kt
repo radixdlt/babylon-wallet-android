@@ -13,6 +13,7 @@ import com.babylon.wallet.android.domain.model.metadata.SymbolMetadataItem
 import com.radixdlt.toolkit.builders.ManifestBuilder
 import com.radixdlt.toolkit.models.ManifestAstValue
 import com.radixdlt.toolkit.models.transaction.TransactionManifest
+import rdx.works.core.InstantGenerator
 import rdx.works.profile.data.model.Header
 import rdx.works.profile.data.model.MnemonicWithPassphrase
 import rdx.works.profile.data.model.Profile
@@ -29,7 +30,6 @@ import rdx.works.profile.data.model.pernetwork.SecurityState
 import rdx.works.profile.derivation.model.KeyType
 import rdx.works.profile.derivation.model.NetworkId
 import java.math.BigDecimal
-import java.time.Instant
 
 class SampleDataProvider {
 
@@ -116,7 +116,7 @@ class SampleDataProvider {
             header = Header.init(
                 id = "9958f568-8c9b-476a-beeb-017d1f843266",
                 creatingDevice = "Galaxy A53 5G (Samsung SM-A536B)",
-                creationDate = Instant.now(),
+                creationDate = InstantGenerator(),
                 numberOfNetworks = 0
             ),
             appPreferences = AppPreferences(

@@ -7,6 +7,7 @@ import com.radixdlt.toolkit.models.request.DeriveVirtualAccountAddressRequest
 import com.radixdlt.toolkit.models.request.DeriveVirtualIdentityAddressRequest
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import rdx.works.core.InstantGenerator
 import rdx.works.core.mapWhen
 import rdx.works.core.toHexString
 import rdx.works.profile.data.model.MnemonicWithPassphrase
@@ -19,7 +20,6 @@ import rdx.works.profile.data.model.factorsources.WasNotDeviceFactorSource
 import rdx.works.profile.data.utils.getNextDerivationPathForAccount
 import rdx.works.profile.derivation.model.KeyType
 import rdx.works.profile.derivation.model.NetworkId
-import java.time.Instant
 import java.util.*
 
 @Serializable
@@ -608,7 +608,7 @@ fun Profile.addPersona(
 fun Profile.updateLastUsed(id: FactorSource.ID): Profile {
     return copy(
         factorSources = this.factorSources.mapWhen(predicate = { it.id == id }) { factorSource ->
-            factorSource.copy(lastUsedOn = Instant.now())
+            factorSource.copy(lastUsedOn = InstantGenerator())
         }
     )
 }

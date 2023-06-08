@@ -1,5 +1,6 @@
 package rdx.works.profile.domain
 
+import rdx.works.core.InstantGenerator
 import rdx.works.core.UUIDGenerator
 import rdx.works.profile.data.model.Header
 import rdx.works.profile.data.model.MnemonicWithPassphrase
@@ -16,7 +17,6 @@ import rdx.works.profile.data.model.pernetwork.FactorInstance
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.data.model.pernetwork.SecurityState
 import rdx.works.profile.derivation.model.KeyType
-import java.time.Instant
 
 object TestData {
 
@@ -36,7 +36,7 @@ object TestData {
             header = Header.init(
                 id = "9958f568-8c9b-476a-beeb-017d1f843266",
                 creatingDevice = "Galaxy A53 5G (Samsung SM-A536B)",
-                creationDate = Instant.now(),
+                creationDate = InstantGenerator(),
                 numberOfNetworks = 2,
                 numberOfAccounts = 4
             ),

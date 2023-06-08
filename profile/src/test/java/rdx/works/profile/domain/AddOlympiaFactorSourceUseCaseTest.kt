@@ -10,6 +10,7 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest
 import org.junit.Test
+import rdx.works.core.InstantGenerator
 import rdx.works.profile.data.model.Header
 import rdx.works.profile.data.model.MnemonicWithPassphrase
 import rdx.works.profile.data.model.Profile
@@ -52,7 +53,7 @@ internal class AddOlympiaFactorSourceUseCaseTest {
             header = Header.init(
                 id = "9958f568-8c9b-476a-beeb-017d1f843266",
                 creatingDevice = "Galaxy A53 5G (Samsung SM-A536B)",
-                creationDate = Instant.now(),
+                creationDate = InstantGenerator(),
                 numberOfNetworks = 1,
                 numberOfAccounts = 1
             ),

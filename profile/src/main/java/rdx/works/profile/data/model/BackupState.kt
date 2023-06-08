@@ -1,6 +1,7 @@
 package rdx.works.profile.data.model
 
 import android.text.format.DateUtils
+import rdx.works.core.InstantGenerator
 import java.time.Duration
 import java.time.Instant
 
@@ -44,7 +45,7 @@ sealed class BackupState {
                 Open(
                     lastBackup = lastBackupInstant,
                     lastProfileSave = profile.header.lastModified,
-                    lastCheck = Instant.now()
+                    lastCheck = InstantGenerator()
                 )
             } else {
                 Closed

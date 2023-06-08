@@ -3,6 +3,7 @@ package rdx.works.profile.domain
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
+import rdx.works.core.InstantGenerator
 import rdx.works.core.UUIDGenerator
 import rdx.works.profile.data.model.Profile
 import rdx.works.profile.data.model.ProfileState
@@ -10,7 +11,6 @@ import rdx.works.profile.data.repository.DeviceInfoRepository
 import rdx.works.profile.data.repository.MnemonicRepository
 import rdx.works.profile.data.repository.ProfileRepository
 import rdx.works.profile.di.coroutines.DefaultDispatcher
-import java.time.Instant
 import javax.inject.Inject
 
 class GenerateProfileUseCase @Inject constructor(
@@ -30,7 +30,7 @@ class GenerateProfileUseCase @Inject constructor(
                     mnemonicWithPassphrase = mnemonicWithPassphrase,
                     id = UUIDGenerator.uuid().toString(),
                     creatingDevice = deviceInfoRepository.getDeviceInfo().displayName,
-                    creationDate = Instant.now()
+                    creationDate = InstantGenerator()
                 )
 
                 profileRepository.saveProfile(profile)
