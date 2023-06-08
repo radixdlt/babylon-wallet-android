@@ -220,7 +220,8 @@ class DAppAuthorizedLoginViewModelTest : StateViewModelTest<DAppAuthorizedLoginV
         vm.onAccountsSelected(listOf(AccountItemUiModel("random address", "account 1", 0)), false)
         advanceUntilIdle()
         vm.oneOffEvent.test {
-            assert(expectMostRecentItem() is Event.LoginFlowCompleted)
+            val mostRecentItem = expectMostRecentItem()
+            assert(mostRecentItem is Event.RequestCompletionBiometricPrompt)
         }
     }
 
