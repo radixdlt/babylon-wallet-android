@@ -81,26 +81,7 @@ fun DepositAccountContent(
                 }
             }
 
-            val shouldPromptForGuarantees = depositAccounts.any{ it.shouldPromptForGuarantees }
-//            depositAccounts.forEachIndexed { index, depositAccount ->
-//                val lastItem = index == depositAccounts.lastIndex
-//
-//                TransactionAccountCard(
-//                    appearanceId = depositAccount.appearanceID,
-//                    tokens = depositAccount.accounts.toPersistentList(),
-//                    address = depositAccount.address,
-//                    accountName = depositAccount.accountName
-//                )
-//
-//                if (!lastItem) {
-//                    Spacer(
-//                        modifier = Modifier
-//                            .height(RadixTheme.dimensions.paddingMedium)
-//                    )
-//                }
-//            }
-//
-//            val shouldPromptForGuarantees = depositAccounts.any { it.accounts.any { it.shouldPromptForGuarantees } }
+            val shouldPromptForGuarantees = depositAccounts.any { it.shouldPromptForGuarantees }
 
             if (shouldPromptForGuarantees) {
                 RadixTextButton(
@@ -147,25 +128,17 @@ fun DepositAccountContentPreview() {
         DepositAccountContent(
             depositAccounts =
             persistentListOf(
-//                PreviewAccountItemsUiModel(
-//                    address = "account_tdx_19jd32jd3928jd3892jd329",
-//                    accountName = "My main account",
-//                    appearanceID = 1,
-//                    accounts = listOf(
-//                        TransactionAccountItemUiModel(
-//                            address = "account_tdx_19jd32jd3928jd3892jd329",
-//                            displayName = "My main account",
-//                            appearanceID = 1,
-//                            tokenSymbol = "XRD",
-//                            tokenAmount = "1500.000",
-//                            iconUrl = "",
-//                            shouldPromptForGuarantees = false,
-//                            guaranteedAmount = null,
-//                            fungibleResources = emptyList(),
-//                            nonFungibleResourceItems = emptyList()
-//                        )
-//                    )
-//                )
+                TransactionAccountItemUiModel(
+                    address = "account_tdx_19jd32jd3928jd3892jd329",
+                    displayName = "My Savings Account",
+                    tokenSymbol = "XRD",
+                    tokenQuantity = "689.203",
+                    appearanceID = 1,
+                    iconUrl = "",
+                    shouldPromptForGuarantees = true,
+                    guaranteedQuantity = "689.203",
+                    guaranteedPercentAmount = "100"
+                )
             ),
             promptForGuarantees = {}
         )

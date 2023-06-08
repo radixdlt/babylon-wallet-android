@@ -258,19 +258,17 @@ fun TransactionAccountCardPreview() {
     RadixWalletTheme {
         TransactionAccountCard(
             tokens = persistentListOf(
-//                TransactionAccountItemUiModel(
-//                    "account_tdx_19jd32jd3928jd3892jd329",
-//                    "My main account",
-//                    1,
-//                    "XRD",
-//                    "1500.000",
-//                    "",
-////                    isTokenAmountVisible = true,
-//                    shouldPromptForGuarantees = false,
-//                    guaranteedQuantity = null,
-//                    fungibleResources = emptyList(),
-//                    nonFungibleResourceItems = emptyList()
-//                )
+                TransactionAccountItemUiModel(
+                    address = "account_tdx_19jd32jd3928jd3892jd329",
+                    displayName = "My Savings Account",
+                    tokenSymbol = "XRD",
+                    tokenQuantity = "689.203",
+                    appearanceID = 1,
+                    iconUrl = "",
+                    shouldPromptForGuarantees = true,
+                    guaranteedQuantity = "689.203",
+                    guaranteedPercentAmount = "100"
+                )
             ),
             modifier = Modifier,
             appearanceId = 0,

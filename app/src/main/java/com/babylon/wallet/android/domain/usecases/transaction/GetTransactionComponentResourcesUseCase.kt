@@ -113,7 +113,7 @@ class GetTransactionComponentResourcesUseCase @Inject constructor(
                             ids = ids,
                             resourceAddress = nftItem.address
                         ).value()
-                    } ?: emptyList()
+                    }.orEmpty()
                 }
                 is ResourceRequest.NewlyCreated -> {
                     tokenSymbol = when (val entry = resourceRequest.metadata.firstOrNull { it.key == KEY_SYMBOL }?.value) {

@@ -55,7 +55,7 @@ interface EntityRepository {
     ): Result<StateEntityDetailsResponse>
 
     suspend fun getEntityOwnerKeyHashes(entityAddress: String, isRefreshing: Boolean = false): Result<OwnerKeyHashesMetadataItem?>
-    
+
     suspend fun nonFungibleData(
         ids: List<String>,
         resourceAddress: String,

@@ -543,9 +543,9 @@ class TransactionApprovalViewModel @Inject constructor(
             }
 
         currentDepositingAccounts.map { previewAccountUiModel ->
-            if (previewAccountUiModel.address == guaranteePair.second.address
-                && previewAccountUiModel.index == guaranteePair.second.index) {
-
+            if (previewAccountUiModel.address == guaranteePair.second.address &&
+                previewAccountUiModel.index == guaranteePair.second.index
+            ) {
                 val fungibleResource = previewAccountUiModel.fungibleResource?.copy(
                     resourceAddress = previewAccountUiModel.fungibleResource.resourceAddress,
                     amount = previewAccountUiModel.fungibleResource.amount,
@@ -653,7 +653,7 @@ fun List<TransactionAccountItemUiModel>.toGuaranteesAccountsUiModel(): Immutable
                     tokenSymbol = item.displayTitle,
                     tokenIconUrl = item.iconUrl.toString(),
                     tokenEstimatedQuantity = item.amount?.toPlainString().orEmpty(),
-                    tokenGuaranteedQuantity = item.guaranteedQuantityToDisplay.orEmpty(),// todo this is null
+                    tokenGuaranteedQuantity = item.guaranteedQuantityToDisplay.orEmpty(),
                     guaranteedPercentAmount = transactionAccountItemUiModel.guaranteedPercentAmount,
                     index = transactionAccountItemUiModel.index
                 )

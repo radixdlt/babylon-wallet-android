@@ -65,23 +65,6 @@ fun WithdrawAccountContent(
                     )
                 }
             }
-//            withdrawAccounts.forEachIndexed { index, withdrawAccount ->
-//                val lastItem = index == withdrawAccounts.lastIndex
-//
-//                TransactionAccountCard(
-//                    appearanceId = withdrawAccount.appearanceID,
-//                    tokens = withdrawAccount.accounts.toPersistentList(),
-//                    address = withdrawAccount.address,
-//                    accountName = withdrawAccount.accountName
-//                )
-//
-//                if (!lastItem) {
-//                    Spacer(
-//                        modifier = Modifier
-//                            .height(RadixTheme.dimensions.paddingMedium)
-//                    )
-//                }
-//            }
         }
     }
 }
@@ -92,25 +75,17 @@ fun WithdrawAccountContentPreview() {
     RadixWalletTheme {
         WithdrawAccountContent(
             persistentListOf(
-//                PreviewAccountItemsUiModel(
-//                    address = "account_tdx_19jd32jd3928jd3892jd329",
-//                    accountName = "My main account",
-//                    appearanceID = 1,
-//                    accounts = listOf(
-//                        TransactionAccountItemUiModel(
-//                            address = "account_tdx_19jd32jd3928jd3892jd329",
-//                            displayName = "My main account",
-//                            appearanceID = 1,
-//                            tokenSymbol = "XRD",
-//                            tokenAmount = "1500.000",
-//                            iconUrl = "",
-//                            shouldPromptForGuarantees = false,
-//                            guaranteedAmount = null,
-//                            fungibleResources = emptyList(),
-//                            nonFungibleResourceItems = emptyList()
-//                        )
-//                    )
-//                )
+                TransactionAccountItemUiModel(
+                    address = "account_tdx_19jd32jd3928jd3892jd329",
+                    displayName = "My Savings Account",
+                    tokenSymbol = "XRD",
+                    tokenQuantity = "689.203",
+                    appearanceID = 1,
+                    iconUrl = "",
+                    shouldPromptForGuarantees = true,
+                    guaranteedQuantity = "689.203",
+                    guaranteedPercentAmount = "100"
+                )
             )
         )
     }

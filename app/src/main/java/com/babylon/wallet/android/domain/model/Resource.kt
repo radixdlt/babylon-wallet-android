@@ -49,7 +49,7 @@ sealed class Resource {
         ).getOrNull()?.xrdResourceAddress == resourceAddress
 
         val isTokenAmountVisible: Boolean
-            get() = true  // Always amount is visible for fungible tokens on guarantees page
+            get() = true // Always amount is visible for fungible tokens on guarantees page
 
         val guaranteedQuantityToDisplay: String?
             get() = guaranteedQuantity?.toPlainString()
