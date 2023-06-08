@@ -17,7 +17,6 @@ import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
-import com.babylon.wallet.android.presentation.transaction.PreviewAccountItemsUiModel
 import com.babylon.wallet.android.presentation.transaction.TransactionAccountItemUiModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
@@ -25,7 +24,7 @@ import kotlinx.collections.immutable.toPersistentList
 
 @Composable
 fun WithdrawAccountContent(
-    withdrawAccounts: ImmutableList<PreviewAccountItemsUiModel>,
+    withdrawAccounts: ImmutableList<TransactionAccountItemUiModel>,
     modifier: Modifier = Modifier
 ) {
     if (withdrawAccounts.isNotEmpty()) {
@@ -47,33 +46,16 @@ fun WithdrawAccountContent(
                 )
                 .padding(RadixTheme.dimensions.paddingMedium)
         ) {
-//            val withdrawAccountMap = withdrawAccounts.groupBy {
-//                it.address
-//            }
-//            withdrawAccountMap.onEachIndexed { index, accountEntry ->
-//                val lastItem = index == withdrawAccountMap.size - 1
-//                TransactionAccountCard(
-//                    appearanceId = accountEntry.value.first().appearanceID,
-//                    tokens = accountEntry.value.toPersistentList(),
-//                    address = accountEntry.value.first().address,
-//                    accountName = accountEntry.value.first().displayName
-//                )
-//
-//                if (!lastItem) {
-//                    Spacer(
-//                        modifier = Modifier
-//                            .height(RadixTheme.dimensions.paddingMedium)
-//                    )
-//                }
-//            }
-            withdrawAccounts.forEachIndexed { index, withdrawAccount ->
-                val lastItem = index == withdrawAccounts.lastIndex
-
+            val withdrawAccountMap = withdrawAccounts.groupBy {
+                it.address
+            }
+            withdrawAccountMap.onEachIndexed { index, accountEntry ->
+                val lastItem = index == withdrawAccountMap.size - 1
                 TransactionAccountCard(
-                    appearanceId = withdrawAccount.appearanceID,
-                    tokens = withdrawAccount.accounts.toPersistentList(),
-                    address = withdrawAccount.address,
-                    accountName = withdrawAccount.accountName
+                    appearanceId = accountEntry.value.first().appearanceID,
+                    tokens = accountEntry.value.toPersistentList(),
+                    address = accountEntry.value.first().address,
+                    accountName = accountEntry.value.first().displayName
                 )
 
                 if (!lastItem) {
@@ -83,6 +65,23 @@ fun WithdrawAccountContent(
                     )
                 }
             }
+//            withdrawAccounts.forEachIndexed { index, withdrawAccount ->
+//                val lastItem = index == withdrawAccounts.lastIndex
+//
+//                TransactionAccountCard(
+//                    appearanceId = withdrawAccount.appearanceID,
+//                    tokens = withdrawAccount.accounts.toPersistentList(),
+//                    address = withdrawAccount.address,
+//                    accountName = withdrawAccount.accountName
+//                )
+//
+//                if (!lastItem) {
+//                    Spacer(
+//                        modifier = Modifier
+//                            .height(RadixTheme.dimensions.paddingMedium)
+//                    )
+//                }
+//            }
         }
     }
 }
@@ -93,11 +92,11 @@ fun WithdrawAccountContentPreview() {
     RadixWalletTheme {
         WithdrawAccountContent(
             persistentListOf(
-                PreviewAccountItemsUiModel(
-                    address = "account_tdx_19jd32jd3928jd3892jd329",
-                    accountName = "My main account",
-                    appearanceID = 1,
-                    accounts = listOf(
+//                PreviewAccountItemsUiModel(
+//                    address = "account_tdx_19jd32jd3928jd3892jd329",
+//                    accountName = "My main account",
+//                    appearanceID = 1,
+//                    accounts = listOf(
 //                        TransactionAccountItemUiModel(
 //                            address = "account_tdx_19jd32jd3928jd3892jd329",
 //                            displayName = "My main account",
@@ -110,8 +109,8 @@ fun WithdrawAccountContentPreview() {
 //                            fungibleResources = emptyList(),
 //                            nonFungibleResourceItems = emptyList()
 //                        )
-                    )
-                )
+//                    )
+//                )
             )
         )
     }

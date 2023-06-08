@@ -164,8 +164,8 @@ private fun TransactionPreviewContent(
     rawManifestContent: String,
     presentingProofs: ImmutableList<PresentingProofUiModel>,
     connectedDApps: ImmutableList<DAppWithMetadataAndAssociatedResources>,
-    withdrawingAccounts: ImmutableList<PreviewAccountItemsUiModel>,
-    depositingAccounts: ImmutableList<PreviewAccountItemsUiModel>,
+    withdrawingAccounts: ImmutableList<TransactionAccountItemUiModel>,
+    depositingAccounts: ImmutableList<TransactionAccountItemUiModel>,
     guaranteesAccounts: ImmutableList<GuaranteesAccountItemUiModel>,
     onGuaranteesApplyClick: () -> Unit,
     onGuaranteesCloseClick: () -> Unit,
@@ -485,11 +485,11 @@ fun TransactionPreviewContentPreview() {
 //                ConnectedDAppsUiModel("", "DApp")
             ),
             withdrawingAccounts = persistentListOf(
-                PreviewAccountItemsUiModel(
-                    address = "account_tdx_19jd32jd3928jd3892jd329",
-                    accountName = "My Savings Account",
-                    appearanceID = 1,
-                    accounts = listOf(
+//                PreviewAccountItemsUiModel(
+//                    address = "account_tdx_19jd32jd3928jd3892jd329",
+//                    accountName = "My Savings Account",
+//                    appearanceID = 1,
+//                    accounts = listOf(
                         TransactionAccountItemUiModel(
                             address = "account_tdx_19jd32jd3928jd3892jd329",
                             displayName = "My Savings Account",
@@ -502,15 +502,15 @@ fun TransactionPreviewContentPreview() {
                             guaranteedQuantity = "689.203",
                             guaranteedPercentAmount = "100"
                         )
-                    )
-                )
+//                    )
+//                )
             ),
             depositingAccounts = persistentListOf(
-                PreviewAccountItemsUiModel(
-                    address = "account_tdx_19jd32jd3928jd3892jd329",
-                    accountName = "My Savings Account",
-                    appearanceID = 1,
-                    accounts = listOf(
+//                PreviewAccountItemsUiModel(
+//                    address = "account_tdx_19jd32jd3928jd3892jd329",
+//                    accountName = "My Savings Account",
+//                    appearanceID = 1,
+//                    accounts = listOf(
                         TransactionAccountItemUiModel(
                             address = "account_tdx_19jd32jd3928jd3892jd329",
                             displayName = "My Savings Account",
@@ -535,15 +535,15 @@ fun TransactionPreviewContentPreview() {
                             guaranteedQuantity = "689.203",
                             guaranteedPercentAmount = "100"
                         )
-                    )
-                )
+//                    )
+//                )
             ),
             guaranteesAccounts = persistentListOf(
-                PreviewAccountItemsUiModel(
-                    address = "account_tdx_19jd32jd3928jd3892jd329",
-                    accountName = "My Savings Account",
-                    appearanceID = 1,
-                    accounts = listOf(
+//                PreviewAccountItemsUiModel(
+//                    address = "account_tdx_19jd32jd3928jd3892jd329",
+//                    accountName = "My Savings Account",
+//                    appearanceID = 1,
+//                    accounts = listOf(
                         TransactionAccountItemUiModel(
                             address = "account_tdx_19jd32jd3928jd3892jd329",
                             displayName = "My Savings Account",
@@ -568,8 +568,8 @@ fun TransactionPreviewContentPreview() {
                             guaranteedQuantity = "689.203",
                             guaranteedPercentAmount = "100"
                         )
-                    )
-                )
+//                    )
+//                )
             ).toGuaranteesAccountsUiModel(),
             onGuaranteesApplyClick = {},
             onGuaranteesCloseClick = {},

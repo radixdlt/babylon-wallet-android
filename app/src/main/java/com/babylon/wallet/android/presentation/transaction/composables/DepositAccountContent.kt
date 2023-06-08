@@ -26,7 +26,6 @@ import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixTextButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
-import com.babylon.wallet.android.presentation.transaction.PreviewAccountItemsUiModel
 import com.babylon.wallet.android.presentation.transaction.TransactionAccountItemUiModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
@@ -34,7 +33,7 @@ import kotlinx.collections.immutable.toPersistentList
 
 @Composable
 fun DepositAccountContent(
-    depositAccounts: ImmutableList<PreviewAccountItemsUiModel>,
+    depositAccounts: ImmutableList<TransactionAccountItemUiModel>,
     modifier: Modifier = Modifier,
     promptForGuarantees: () -> Unit
 ) {
@@ -62,33 +61,16 @@ fun DepositAccountContent(
                 .padding(RadixTheme.dimensions.paddingMedium),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-//            val depositAccountsMap = depositAccounts.groupBy {
-//                it.address
-//            }
-//            depositAccountsMap.onEachIndexed { index, accountEntry ->
-//                val lastItem = index == depositAccountsMap.size - 1
-//                TransactionAccountCard(
-//                    appearanceId = accountEntry.value.first().appearanceID,
-//                    tokens = accountEntry.value.toPersistentList(),
-//                    address = accountEntry.value.first().address,
-//                    accountName = accountEntry.value.first().displayName
-//                )
-//
-//                if (!lastItem) {
-//                    Spacer(
-//                        modifier = Modifier
-//                            .height(RadixTheme.dimensions.paddingMedium)
-//                    )
-//                }
-//            }
-            depositAccounts.forEachIndexed { index, depositAccount ->
-                val lastItem = index == depositAccounts.lastIndex
-
+            val depositAccountsMap = depositAccounts.groupBy {
+                it.address
+            }
+            depositAccountsMap.onEachIndexed { index, accountEntry ->
+                val lastItem = index == depositAccountsMap.size - 1
                 TransactionAccountCard(
-                    appearanceId = depositAccount.appearanceID,
-                    tokens = depositAccount.accounts.toPersistentList(),
-                    address = depositAccount.address,
-                    accountName = depositAccount.accountName
+                    appearanceId = accountEntry.value.first().appearanceID,
+                    tokens = accountEntry.value.toPersistentList(),
+                    address = accountEntry.value.first().address,
+                    accountName = accountEntry.value.first().displayName
                 )
 
                 if (!lastItem) {
@@ -99,7 +81,26 @@ fun DepositAccountContent(
                 }
             }
 
-            val shouldPromptForGuarantees = depositAccounts.any { it.accounts.any { it.shouldPromptForGuarantees } }
+            val shouldPromptForGuarantees = depositAccounts.any{ it.shouldPromptForGuarantees }
+//            depositAccounts.forEachIndexed { index, depositAccount ->
+//                val lastItem = index == depositAccounts.lastIndex
+//
+//                TransactionAccountCard(
+//                    appearanceId = depositAccount.appearanceID,
+//                    tokens = depositAccount.accounts.toPersistentList(),
+//                    address = depositAccount.address,
+//                    accountName = depositAccount.accountName
+//                )
+//
+//                if (!lastItem) {
+//                    Spacer(
+//                        modifier = Modifier
+//                            .height(RadixTheme.dimensions.paddingMedium)
+//                    )
+//                }
+//            }
+//
+//            val shouldPromptForGuarantees = depositAccounts.any { it.accounts.any { it.shouldPromptForGuarantees } }
 
             if (shouldPromptForGuarantees) {
                 RadixTextButton(
@@ -146,11 +147,11 @@ fun DepositAccountContentPreview() {
         DepositAccountContent(
             depositAccounts =
             persistentListOf(
-                PreviewAccountItemsUiModel(
-                    address = "account_tdx_19jd32jd3928jd3892jd329",
-                    accountName = "My main account",
-                    appearanceID = 1,
-                    accounts = listOf(
+//                PreviewAccountItemsUiModel(
+//                    address = "account_tdx_19jd32jd3928jd3892jd329",
+//                    accountName = "My main account",
+//                    appearanceID = 1,
+//                    accounts = listOf(
 //                        TransactionAccountItemUiModel(
 //                            address = "account_tdx_19jd32jd3928jd3892jd329",
 //                            displayName = "My main account",
@@ -163,8 +164,8 @@ fun DepositAccountContentPreview() {
 //                            fungibleResources = emptyList(),
 //                            nonFungibleResourceItems = emptyList()
 //                        )
-                    )
-                )
+//                    )
+//                )
             ),
             promptForGuarantees = {}
         )

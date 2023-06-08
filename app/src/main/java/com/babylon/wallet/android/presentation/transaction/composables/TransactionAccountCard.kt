@@ -81,9 +81,9 @@ fun TransactionAccountCard(
             )
         }
 
-        val fungibleTokens = tokens.map {
-            it.fungibleResources
-        }.flatten()
+        val fungibleTokens = tokens.mapNotNull {
+            it.fungibleResource
+        }
         val nonFungibleTokens = tokens.map {
             it.nonFungibleResourceItems
         }.flatten()

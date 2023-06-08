@@ -65,7 +65,7 @@ class GetTransactionComponentResourcesUseCase @Inject constructor(
             var tokenSymbol: String? = null
             var iconUrl = ""
 
-            var fungibleResources: List<Resource.FungibleResource> = emptyList()
+            var fungibleResource: Resource.FungibleResource? = null
             var nonFungibleResources: List<Resource.NonFungibleResource.Item> = emptyList()
 
             when (resourceRequest) {
@@ -77,18 +77,28 @@ class GetTransactionComponentResourcesUseCase @Inject constructor(
                         it.details?.type == StateEntityDetailsResponseItemDetailsType.nonFungibleResource
                     }
 
-                    fungibleResources = fungibleResourceItem?.metadata?.asMetadataStringMap()?.let { metadataMap ->
-                        listOf(
-                            Resource.FungibleResource(
-                                resourceAddress = fungibleResourceItem.address,
-                                amount = amount.toBigDecimal(),
-                                nameMetadataItem = metadataMap[ExplicitMetadataKey.NAME.key]?.let { NameMetadataItem(it) },
-                                symbolMetadataItem = metadataMap[ExplicitMetadataKey.SYMBOL.key]?.let { SymbolMetadataItem(it) },
-                                descriptionMetadataItem = metadataMap[ExplicitMetadataKey.DESCRIPTION.key]?.let { DescriptionMetadataItem(it) },
-                                iconUrlMetadataItem = metadataMap[ExplicitMetadataKey.ICON_URL.key]?.let { IconUrlMetadataItem(it.toUri()) }
-                            )
+                    fungibleResource = fungibleResourceItem?.metadata?.asMetadataStringMap()?.let { metadataMap ->
+                        Resource.FungibleResource(
+                            resourceAddress = fungibleResourceItem.address,
+                            amount = amount.toBigDecimal(),
+                            nameMetadataItem = metadataMap[ExplicitMetadataKey.NAME.key]?.let { NameMetadataItem(it) },
+                            symbolMetadataItem = metadataMap[ExplicitMetadataKey.SYMBOL.key]?.let {
+                                SymbolMetadataItem(
+                                    it
+                                )
+                            },
+                            descriptionMetadataItem = metadataMap[ExplicitMetadataKey.DESCRIPTION.key]?.let {
+                                DescriptionMetadataItem(
+                                    it
+                                )
+                            },
+                            iconUrlMetadataItem = metadataMap[ExplicitMetadataKey.ICON_URL.key]?.let {
+                                IconUrlMetadataItem(
+                                    it.toUri()
+                                )
+                            }
                         )
-                    } ?: emptyList()
+                    }
 
                     nonFungibleResources = nonFungibleResourceItem?.let { nftItem ->
                         entityRepository.nonFungibleData(
@@ -133,14 +143,14 @@ class GetTransactionComponentResourcesUseCase @Inject constructor(
                     displayName = accountDisplayName,
                     appearanceID = accountAppearanceId,
                     tokenSymbol = tokenSymbol,
-                    iconUrl = iconUrl,
                     tokenQuantity = amount,
+                    iconUrl = iconUrl,
                     shouldPromptForGuarantees = shouldPromptForGuarantees,
                     guaranteedQuantity = guaranteedAmount,
                     instructionIndex = instructionIndex,
                     resourceAddress = resourceAddress,
                     index = index,
-                    fungibleResources = fungibleResources,
+                    fungibleResource = fungibleResource,
                     nonFungibleResourceItems = nonFungibleResources
                 )
             )

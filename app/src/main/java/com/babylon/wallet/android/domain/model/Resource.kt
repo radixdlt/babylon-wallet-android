@@ -17,11 +17,11 @@ sealed class Resource {
     data class FungibleResource(
         override val resourceAddress: String,
         val amount: BigDecimal?,
-        private val nameMetadataItem: NameMetadataItem? = null,
-        private val symbolMetadataItem: SymbolMetadataItem? = null,
-        private val descriptionMetadataItem: DescriptionMetadataItem? = null,
-        private val iconUrlMetadataItem: IconUrlMetadataItem? = null,
-        private val guaranteedQuantity: BigDecimal? = null
+        val nameMetadataItem: NameMetadataItem? = null,
+        val symbolMetadataItem: SymbolMetadataItem? = null,
+        val descriptionMetadataItem: DescriptionMetadataItem? = null,
+        val iconUrlMetadataItem: IconUrlMetadataItem? = null,
+        val guaranteedQuantity: BigDecimal? = null
     ) : Resource(), Comparable<FungibleResource> {
         val name: String
             get() = nameMetadataItem?.name.orEmpty()
