@@ -1,10 +1,10 @@
 package rdx.works.profile.data.model.factorsources
 
-import androidx.datastore.core.Storage
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonClassDiscriminator
+import rdx.works.core.InstantGenerator
 import rdx.works.profile.data.model.MnemonicWithPassphrase
 import rdx.works.profile.data.model.compressedPublicKey
 import rdx.works.profile.data.model.factorsources.DerivationPathScheme.BIP_44_OLYMPIA
@@ -289,8 +289,8 @@ data class FactorSource(
                 description = model.description(),
                 parameters = if (olympiaCompatible) olympia else babylon,
                 storage = Storage.EntityCreating(nextDerivationIndicesPerNetwork = listOf()),
-                addedOn = Instant.now(),
-                lastUsedOn = Instant.now()
+                addedOn = InstantGenerator(),
+                lastUsedOn = InstantGenerator()
             )
         }
 
@@ -306,8 +306,8 @@ data class FactorSource(
             description = description,
             parameters = if (olympiaCompatible) olympia else babylon,
             storage = Storage.EntityCreating(nextDerivationIndicesPerNetwork = listOf()),
-            addedOn = Instant.now(),
-            lastUsedOn = Instant.now()
+            addedOn = InstantGenerator(),
+            lastUsedOn = InstantGenerator()
         )
 
         fun factorSourceId(

@@ -21,6 +21,7 @@ import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.runTest
 import org.junit.Test
+import rdx.works.core.InstantGenerator
 import rdx.works.core.toHexString
 import rdx.works.profile.data.model.Header
 import rdx.works.profile.data.model.MnemonicWithPassphrase
@@ -66,7 +67,7 @@ internal class MigrateOlympiaAccountsUseCaseTest {
             header = Header.init(
                 id = "9958f568-8c9b-476a-beeb-017d1f843266",
                 creatingDevice = "Galaxy A53 5G (Samsung SM-A536B)",
-                creationDate = Instant.now(),
+                creationDate = InstantGenerator(),
                 numberOfNetworks = 1,
                 numberOfAccounts = 1
             ),

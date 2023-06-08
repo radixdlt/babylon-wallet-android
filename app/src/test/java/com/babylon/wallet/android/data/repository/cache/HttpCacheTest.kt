@@ -3,15 +3,15 @@ package com.babylon.wallet.android.data.repository.cache
 import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
-import io.mockk.mockkStatic
+import io.mockk.mockkObject
 import kotlinx.coroutines.test.runTest
 import kotlinx.serialization.KSerializer
 import okhttp3.HttpUrl.Companion.toHttpUrl
 import okhttp3.Request
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
-import org.junit.Ignore
 import org.junit.Test
+import rdx.works.core.InstantGenerator
 import rdx.works.core.blake2Hash
 import rdx.works.core.toHexString
 import rdx.works.profile.data.model.apppreferences.Radix
@@ -21,7 +21,6 @@ import java.time.Duration
 import java.time.Instant
 import java.time.temporal.ChronoUnit
 
-@Ignore("test")
 internal class HttpCacheTest {
 
     private val memoryCacheClient = MemoryCacheClient()
@@ -34,8 +33,8 @@ internal class HttpCacheTest {
         val now = Instant.now()
         val method = "GET"
         val url = "https://fake.com/fakeGet"
-        mockkStatic(Instant::class)
-        every { Instant.now() } returns now
+        mockkObject(InstantGenerator)
+        every { InstantGenerator() } returns now
         coEvery { getCurrentGatewayUseCaseMock() } returns Radix.Gateway(url, Radix.Network.nebunet)
         val mockApiCall = mockApiCall(method = method, url = url)
         val mockSerializer = mockk<KSerializer<FakeResponse>>()
@@ -56,11 +55,11 @@ internal class HttpCacheTest {
         coEvery { getCurrentGatewayUseCaseMock() } returns Radix.Gateway.default
         val nowTime = Instant.now()
         val firstRequestTime = nowTime.minus(2, ChronoUnit.MINUTES)
-        mockkStatic(Instant::class)
-        every { Instant.now() } returns firstRequestTime
+        mockkObject(InstantGenerator)
+        every { InstantGenerator() } returns firstRequestTime
         testedClass.store(mockApiCall, value, mockSerializer)
 
-        every { Instant.now() } returns nowTime
+        every { InstantGenerator() } returns nowTime
         val cachedValue = testedClass.restore(mockApiCall, mockSerializer, timeoutDuration = Duration.of(5, ChronoUnit.MINUTES))
 
         assertEquals(value, cachedValue)
@@ -74,11 +73,11 @@ internal class HttpCacheTest {
         coEvery { getCurrentGatewayUseCaseMock() } returns Radix.Gateway.default
         val nowTime = Instant.now()
         val firstRequestTime = nowTime.minus(10, ChronoUnit.MINUTES)
-        mockkStatic(Instant::class)
-        every { Instant.now() } returns firstRequestTime
+        mockkObject(InstantGenerator)
+        every { InstantGenerator() } returns firstRequestTime
         testedClass.store(mockApiCall, value, mockSerializer)
 
-        every { Instant.now() } returns nowTime
+        every { InstantGenerator() } returns nowTime
         val cachedValue = testedClass.restore(mockApiCall, mockSerializer, timeoutDuration = Duration.of(5, ChronoUnit.MINUTES))
 
         assertNull(cachedValue)

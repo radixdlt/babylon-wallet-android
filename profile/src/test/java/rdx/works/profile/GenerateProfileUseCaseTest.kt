@@ -11,6 +11,7 @@ import org.mockito.Mockito
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
+import rdx.works.core.InstantGenerator
 import rdx.works.profile.data.model.DeviceInfo
 import rdx.works.profile.data.model.Header
 import rdx.works.profile.data.model.MnemonicWithPassphrase
@@ -58,7 +59,7 @@ class GenerateProfileUseCaseTest {
                 header = Header.init(
                     id = "9958f568-8c9b-476a-beeb-017d1f843266",
                     creatingDevice = "Galaxy A53 5G (Samsung SM-A536B)",
-                    creationDate = Instant.now(),
+                    creationDate = InstantGenerator(),
                     numberOfNetworks = 1,
                     numberOfAccounts = 1
                 ),
