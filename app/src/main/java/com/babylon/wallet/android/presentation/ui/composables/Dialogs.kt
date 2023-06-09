@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -42,7 +43,7 @@ fun BottomSheetWrapper(
     modifier: Modifier = Modifier,
     onDismissRequest: () -> Unit,
     bottomSheetState: SheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
-    content: @Composable () -> Unit,
+    content: @Composable ColumnScope.() -> Unit,
 ) {
     // TODO update dependency when this issue is resolved
     // https://issuetracker.google.com/issues/268432129
@@ -74,7 +75,7 @@ fun BottomSheetDialogWrapper(
     modifier: Modifier = Modifier,
     onDismissRequest: () -> Unit,
     bottomSheetState: SheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
-    content: @Composable () -> Unit,
+    content: @Composable ColumnScope.() -> Unit,
 ) {
     Dialog(onDismissRequest = onDismissRequest) {
         BottomSheetWrapper(
@@ -154,23 +155,6 @@ fun NotSecureAlertDialog(
                 color = RadixTheme.colors.gray2
             )
         })
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun SomethingWentWrongDialog(
-    modifier: Modifier = Modifier,
-    onDismissRequest: () -> Unit,
-    subtitle: String,
-    title: String = stringResource(id = R.string.common_somethingWentWrong)
-) {
-    BottomSheetWrapper(onDismissRequest = onDismissRequest) {
-        SomethingWentWrongDialogContent(
-            title = title,
-            subtitle = subtitle,
-            modifier = modifier
-        )
-    }
 }
 
 @Composable

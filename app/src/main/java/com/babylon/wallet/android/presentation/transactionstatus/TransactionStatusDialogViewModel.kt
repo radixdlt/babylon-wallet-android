@@ -4,6 +4,7 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.presentation.common.StateViewModel
+import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
@@ -16,7 +17,7 @@ import javax.inject.Inject
 @HiltViewModel
 class TransactionStatusDialogViewModel @Inject constructor(
     private val incomingRequestRepository: IncomingRequestRepository,
-    private val appEventBus: AppEventBus,
+    val appEventBus: AppEventBus,
     private val savedStateHandle: SavedStateHandle
 ) : StateViewModel<TransactionStatusUiState>() {
 
@@ -27,7 +28,7 @@ class TransactionStatusDialogViewModel @Inject constructor(
             appEventBus.events.filterIsInstance<AppEvent.TransactionEvent>().collect { event ->
                 when (event) {
                     is AppEvent.TransactionEvent.Failed -> {
-                        _state.update { it.copy(transactionStatus = TransactionStatus.Failed(event.errorTextRes)) }
+                        _state.update { it.copy(transactionStatus = TransactionStatus.Failed(event.error)) }
                     }
                     is AppEvent.TransactionEvent.Successful -> {
                         _state.update { it.copy(transactionStatus = TransactionStatus.Success) }
@@ -47,16 +48,31 @@ class TransactionStatusDialogViewModel @Inject constructor(
     }
 
     override fun initialState(): TransactionStatusUiState {
-        return TransactionStatusUiState()
+        return TransactionStatusUiState(requestId = args.requestId)
     }
 }
 
 data class TransactionStatusUiState(
+    val requestId: String,
     val transactionStatus: TransactionStatus = TransactionStatus.Completing
-) : UiState
+) : UiState {
+
+    val isCompleting: Boolean
+        get() = transactionStatus is TransactionStatus.Completing
+
+    val isSuccess: Boolean
+        get() = transactionStatus is TransactionStatus.Success
+
+    val isFailed: Boolean
+        get() = transactionStatus is TransactionStatus.Failed
+
+    val failureError: UiMessage.ErrorMessage?
+        get() = (transactionStatus as? TransactionStatus.Failed)?.message
+
+}
 
 sealed interface TransactionStatus {
     object Completing : TransactionStatus
     object Success : TransactionStatus
-    data class Failed(val errorTextRes: Int?) : TransactionStatus
+    data class Failed(val message: UiMessage.ErrorMessage) : TransactionStatus
 }

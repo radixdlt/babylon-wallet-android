@@ -1,5 +1,6 @@
 package com.babylon.wallet.android.utils
 
+import com.babylon.wallet.android.presentation.common.UiMessage
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
@@ -31,6 +32,6 @@ sealed interface AppEvent {
     sealed class TransactionEvent(val requestId: String) : AppEvent {
         data class Sent(private val reqId: String) : TransactionEvent(reqId)
         data class Successful(private val reqId: String) : TransactionEvent(reqId)
-        data class Failed(private val reqId: String, val errorTextRes: Int?) : TransactionEvent(reqId)
+        data class Failed(private val reqId: String, val error: UiMessage.ErrorMessage) : TransactionEvent(reqId)
     }
 }

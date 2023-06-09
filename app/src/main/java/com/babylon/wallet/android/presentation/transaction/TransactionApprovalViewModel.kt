@@ -555,7 +555,7 @@ class TransactionApprovalViewModel @Inject constructor(
                 appEventBus.sendEvent(
                     AppEvent.TransactionEvent.Failed(
                         args.requestId,
-                        exception?.failure?.toDescriptionRes()
+                        UiMessage.ErrorMessage(exception?.failure)
                     )
                 )
             }
@@ -580,7 +580,7 @@ class TransactionApprovalViewModel @Inject constructor(
             appEventBus.sendEvent(
                 AppEvent.TransactionEvent.Failed(
                     args.requestId,
-                    exception?.failure?.toDescriptionRes()
+                    UiMessage.ErrorMessage(exception?.failure)
                 )
             )
         }
