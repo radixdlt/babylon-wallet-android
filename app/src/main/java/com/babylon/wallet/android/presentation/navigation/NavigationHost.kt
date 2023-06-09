@@ -199,9 +199,17 @@ fun NavigationHost(
                 navController.popBackStack()
             }
         )
-        transferScreen {
-            navController.popBackStack()
-        }
+        transferScreen(
+            onBackClick = {
+                navController.popBackStack()
+            },
+            onDismiss = {
+                navController.popBackStack(
+                    route = it,
+                    inclusive = true,
+                )
+            }
+        )
         accountPreferencesScreen {
             navController.popBackStack()
         }

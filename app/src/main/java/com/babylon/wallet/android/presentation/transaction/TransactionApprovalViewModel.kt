@@ -542,6 +542,8 @@ class TransactionApprovalViewModel @Inject constructor(
                     isInternal = transactionWriteRequest.isInternal
                 )
             )
+
+            sendEvent(TransactionApprovalEvent.NavigateBack)
         }.onFailure { error ->
             _state.update {
                 it.copy(
