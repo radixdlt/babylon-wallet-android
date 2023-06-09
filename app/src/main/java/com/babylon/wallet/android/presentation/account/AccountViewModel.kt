@@ -8,6 +8,7 @@ import com.babylon.wallet.android.domain.common.onError
 import com.babylon.wallet.android.domain.common.onValue
 import com.babylon.wallet.android.domain.model.AccountWithResources
 import com.babylon.wallet.android.domain.model.Resource
+import com.babylon.wallet.android.domain.usecases.GetAccountsForSecurityPromptUseCase
 import com.babylon.wallet.android.domain.usecases.GetAccountsWithResourcesUseCase
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
@@ -19,11 +20,9 @@ import com.babylon.wallet.android.presentation.navigation.Screen.Companion.ARG_A
 import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import rdx.works.core.preferences.PreferencesManager
 import rdx.works.profile.data.model.factorsources.FactorSource
 import rdx.works.profile.data.utils.unsecuredFactorSourceId
 import rdx.works.profile.domain.GetProfileUseCase
@@ -34,7 +33,7 @@ import javax.inject.Inject
 class AccountViewModel @Inject constructor(
     private val getAccountsWithResourcesUseCase: GetAccountsWithResourcesUseCase,
     private val getProfileUseCase: GetProfileUseCase,
-    private val preferencesManager: PreferencesManager,
+    private val getAccountsForSecurityPromptUseCase: GetAccountsForSecurityPromptUseCase,
     private val appEventBus: AppEventBus,
     savedStateHandle: SavedStateHandle
 ) : StateViewModel<AccountUiState>(), OneOffEventHandler<AccountEvent> by OneOffEventHandlerImpl() {
@@ -66,8 +65,10 @@ class AccountViewModel @Inject constructor(
 
     private fun observeBackedUpMnemonics() {
         viewModelScope.launch {
-            preferencesManager.getBackedUpFactorSourceIds().distinctUntilChanged().collect { backedUpFactorSourceIds ->
-                _state.update { it.copy(backedUpFactorSourceIds = backedUpFactorSourceIds) }
+            getAccountsForSecurityPromptUseCase().collect { accounts ->
+                _state.update { state ->
+                    state.copy(usesNotBackedUpMnemonic = accounts.any { it.address == accountId })
+                }
             }
         }
     }
@@ -130,17 +131,18 @@ internal sealed interface AccountEvent : OneOffEvent {
 
 data class AccountUiState(
     val accountWithResources: AccountWithResources? = null,
-    private val backedUpFactorSourceIds: Set<String> = emptySet(),
+    private val usesNotBackedUpMnemonic: Boolean = false,
     val isLoading: Boolean = true,
     val isRefreshing: Boolean = false,
     val selectedResource: SelectedResource? = null,
     val uiMessage: UiMessage? = null
 ) : UiState {
 
-    val showSecurityPrompt: Boolean
+    val isSecurityPromptVisible: Boolean
         get() {
-            val unsecuredFactorSourceId = accountWithResources?.account?.unsecuredFactorSourceId() ?: return false
-            return accountWithResources.resources?.hasXrd() == true && backedUpFactorSourceIds.none { it == unsecuredFactorSourceId.value }
+            val resources = accountWithResources?.resources ?: return false
+
+            return usesNotBackedUpMnemonic && resources.hasXrd()
         }
 }
 
