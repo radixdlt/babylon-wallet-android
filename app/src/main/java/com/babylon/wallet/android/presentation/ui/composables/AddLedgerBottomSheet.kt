@@ -34,6 +34,7 @@ import com.babylon.wallet.android.presentation.model.AddLedgerSheetState
 @Composable
 fun AddLedgerBottomSheet(
     modifier: Modifier,
+    deviceModel: String?,
     onSendAddLedgerRequest: () -> Unit,
     addLedgerSheetState: AddLedgerSheetState,
     onConfirmLedgerName: (String) -> Unit,
@@ -112,6 +113,15 @@ fun AddLedgerBottomSheet(
                         overflow = TextOverflow.Ellipsis,
                         textAlign = TextAlign.Center
                     )
+                    deviceModel?.let { model ->
+                        Text(
+                            text = stringResource(id = com.babylon.wallet.android.R.string.addLedger_nameLedger_detectedType, model),
+                            style = RadixTheme.typography.body1Header,
+                            color = RadixTheme.colors.gray2,
+                            overflow = TextOverflow.Ellipsis,
+                            textAlign = TextAlign.Center
+                        )
+                    }
                     RadixTextField(
                         modifier = Modifier.fillMaxWidth(),
                         onValueChanged = { ledgerNameValue = it },

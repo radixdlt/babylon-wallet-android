@@ -1,22 +1,44 @@
 package com.babylon.wallet.android.presentation.common
 
-import androidx.annotation.StringRes
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.res.stringResource
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.data.transaction.DappRequestException
 import com.babylon.wallet.android.data.transaction.DappRequestFailure
 import rdx.works.core.UUIDGenerator
 
 sealed class UiMessage(val id: String = UUIDGenerator.uuid().toString()) {
-    data class InfoMessage(val type: InfoMessageType? = null) : UiMessage()
+    sealed class InfoMessage : UiMessage() {
+        object InvalidMnemonic : InfoMessage()
+        object InvalidPayload : InfoMessage()
+        object NoMnemonicForAccounts : InfoMessage()
+        object NoAccountsForLedger : InfoMessage()
+        data class LedgerAlreadyExist(val label: String) : InfoMessage()
+
+        @Composable
+        fun userFriendlyDescriptionRes(): String {
+            return when (this) {
+                InvalidMnemonic -> stringResource(R.string.importOlympiaAccounts_invalidMnemonic)
+                InvalidPayload -> stringResource(R.string.importOlympiaAccounts_invalidPayload)
+                NoMnemonicForAccounts -> stringResource(R.string.importOlympiaAccounts_noMnemonicFound)
+                NoAccountsForLedger -> stringResource(R.string.common_somethingWentWrong)
+                is LedgerAlreadyExist -> stringResource(id = R.string.addLedger_alreadyAddedAlert_message, label)
+            }
+        }
+    }
+
     data class ErrorMessage(val error: Throwable? = null) : UiMessage()
 
-    @StringRes
-    fun getUserFriendlyDescriptionRes(): Int? {
+    @Composable
+    fun getUserFriendlyDescription(): String? {
         return when (this) {
             is ErrorMessage -> {
-                (error as? DappRequestException)?.failure?.toDescriptionRes() ?: (error as? DappRequestFailure)?.toDescriptionRes()
+                ((error as? DappRequestException)?.failure?.toDescriptionRes() ?: (error as? DappRequestFailure)?.toDescriptionRes())?.let {
+                    stringResource(id = it)
+                }
             }
-            is InfoMessage -> this.type?.userFriendlyDescriptionRes()
+
+            is InfoMessage -> this.userFriendlyDescriptionRes()
         }
     }
 
@@ -25,21 +47,6 @@ sealed class UiMessage(val id: String = UUIDGenerator.uuid().toString()) {
             error?.message
         } else {
             null
-        }
-    }
-}
-
-enum class InfoMessageType {
-    InvalidMnemonic, InvalidPayload, NoMnemonicForAccounts, NoAccountsForLedger, LedgerAlreadyExist;
-
-    @StringRes
-    fun userFriendlyDescriptionRes(): Int {
-        return when (this) {
-            InvalidMnemonic -> R.string.importOlympiaAccounts_invalidMnemonic
-            InvalidPayload -> R.string.importOlympiaAccounts_invalidPayload
-            NoMnemonicForAccounts -> R.string.importOlympiaAccounts_noMnemonicFound
-            NoAccountsForLedger -> R.string.common_somethingWentWrong
-            LedgerAlreadyExist -> R.string.common_continue
         }
     }
 }

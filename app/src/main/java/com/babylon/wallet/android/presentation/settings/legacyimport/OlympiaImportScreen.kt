@@ -64,6 +64,7 @@ import com.babylon.wallet.android.designsystem.composable.RadixTextField
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.designsystem.theme.getAccountGradientColorsFor
+import com.babylon.wallet.android.domain.model.toProfileLedgerDeviceModel
 import com.babylon.wallet.android.presentation.common.FullscreenCircularProgressContent
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.dapp.authorized.account.AccountItemUiModel
@@ -81,7 +82,6 @@ import com.babylon.wallet.android.presentation.ui.composables.SnackbarUiMessageH
 import com.babylon.wallet.android.presentation.ui.modifier.applyIf
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import com.babylon.wallet.android.utils.biometricAuthenticate
-import com.babylon.wallet.android.utils.findFragmentActivity
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
@@ -142,8 +142,9 @@ fun OlympiaImportScreen(
         addLedgerSheetState = state.addLedgerSheetState,
         onSendAddLedgerRequest = viewModel::onSendAddLedgerRequest,
         selectedFactorSourceID = state.selectedFactorSourceID,
+        onUseLedger = viewModel::onUseLedger,
         onLedgerFactorSourceSelected = viewModel::onLedgerFactorSourceSelected,
-        onUseLedger = viewModel::onUseLedger
+        deviceModel = state.recentlyConnectedLedgerDevice?.model?.toProfileLedgerDeviceModel()?.description()
     )
 }
 
@@ -186,7 +187,8 @@ private fun OlympiaImportContent(
     onSendAddLedgerRequest: () -> Unit,
     selectedFactorSourceID: FactorSource.ID?,
     onUseLedger: () -> Unit,
-    onLedgerFactorSourceSelected: (FactorSource) -> Unit
+    onLedgerFactorSourceSelected: (FactorSource) -> Unit,
+    deviceModel: String?
 ) {
     val cameraPermissionState = rememberPermissionState(permission = Manifest.permission.CAMERA)
     val pagerState = rememberPagerState()
@@ -236,11 +238,9 @@ private fun OlympiaImportContent(
                 }
                 OlympiaImportEvent.BiometricPrompt -> {
                     if (isDeviceSecure) {
-                        context.findFragmentActivity()?.let { activity ->
-                            activity.biometricAuthenticate(true) { authenticatedSuccessfully ->
-                                if (authenticatedSuccessfully) {
-                                    onImportSoftwareAccounts()
-                                }
+                        context.biometricAuthenticate { authenticatedSuccessfully ->
+                            if (authenticatedSuccessfully) {
+                                onImportSoftwareAccounts()
                             }
                         }
                     } else {
@@ -273,7 +273,8 @@ private fun OlympiaImportContent(
                     closeSheetCallback()
                 },
                 waitingForLedgerResponse = waitingForLedgerResponse,
-                onSheetClose = { closeSheetCallback() }
+                onSheetClose = { closeSheetCallback() },
+                deviceModel = deviceModel
             )
         }
     ) {
@@ -754,7 +755,9 @@ fun SettingsScreenLinkConnectorWithoutActiveConnectorPreview() {
             addLedgerSheetState = AddLedgerSheetState.Connect,
             onSendAddLedgerRequest = {},
             selectedFactorSourceID = null,
-            onUseLedger = {}
-        ) {}
+            onUseLedger = {},
+            onLedgerFactorSourceSelected = {},
+            deviceModel = null
+        )
     }
 }

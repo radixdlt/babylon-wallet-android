@@ -14,7 +14,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
-import androidx.compose.ui.res.stringResource
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.presentation.common.UiMessage
 
@@ -40,9 +39,7 @@ fun SnackbarUIMessage(
     snackbarHostState: SnackbarHostState,
     onMessageShown: () -> Unit
 ) {
-    val messageToShow = message?.getUserFriendlyDescriptionRes()?.let {
-        stringResource(id = it)
-    } ?: message?.getErrorMessage()
+    val messageToShow = message?.getUserFriendlyDescription() ?: message?.getErrorMessage()
     messageToShow?.let {
         LaunchedEffect(messageToShow, message?.id) {
             snackbarHostState.showSnackbar(message = messageToShow)

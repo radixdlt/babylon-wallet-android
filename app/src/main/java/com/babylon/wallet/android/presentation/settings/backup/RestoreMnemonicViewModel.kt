@@ -2,7 +2,6 @@ package com.babylon.wallet.android.presentation.settings.backup
 
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
-import com.babylon.wallet.android.presentation.common.InfoMessageType
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
@@ -100,7 +99,7 @@ class RestoreMnemonicViewModel @Inject constructor(
 
         val isValid = isFactorSourceIdValid && isPublicKeyValid
         if (!isValid) {
-            _state.update { it.copy(uiMessage = UiMessage.InfoMessage(type = InfoMessageType.InvalidMnemonic)) }
+            _state.update { it.copy(uiMessage = UiMessage.InfoMessage.InvalidMnemonic) }
         } else {
             viewModelScope.launch {
                 restoreMnemonicUseCase(factorSourceId = factorInstance.factorSourceId, mnemonicWithPassphrase = mnemonicWithPassphrase)

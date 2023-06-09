@@ -47,7 +47,19 @@ internal class CreateAccountWithLedgerViewModelTest : StateViewModelTest<CreateA
                 "1", MessageFromDataChannel.LedgerResponse.LedgerDeviceModel.NanoS, "device1"
             )
         )
-        coEvery { addLedgerFactorSourceUseCase(any(), any(), any()) } returns LedgerAddResult.Added(FactorSource.ID("2"))
+        coEvery {
+            addLedgerFactorSourceUseCase(
+                any(),
+                any(),
+                any()
+            )
+        } returns LedgerAddResult.Added(
+            FactorSource.ledger(
+                FactorSource.ID("2"),
+                FactorSource.LedgerHardwareWallet.DeviceModel.NanoS,
+                "ledger"
+            )
+        )
         coEvery { ledgerMessenger.sendDerivePublicKeyRequest(any(), any(), any()) } returns Result.success(
             MessageFromDataChannel.LedgerResponse.DerivePublicKeyResponse(
                 "1",

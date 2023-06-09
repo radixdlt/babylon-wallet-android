@@ -18,6 +18,7 @@ import rdx.works.core.UUIDGenerator
 import rdx.works.profile.data.model.factorsources.FactorSource
 import rdx.works.profile.domain.AddLedgerFactorSourceUseCase
 import rdx.works.profile.domain.GetProfileUseCase
+import rdx.works.profile.domain.LedgerAddResult
 import rdx.works.profile.domain.ledgerFactorSources
 import rdx.works.profile.domain.p2pLinks
 
@@ -81,8 +82,16 @@ class CreateLedgerDelegate(
                     model = ledger.model.toProfileLedgerDeviceModel(),
                     name = ledger.name
                 )
+                val message: UiMessage? = when (ledgerAddResult) {
+                    is LedgerAddResult.Exist -> UiMessage.InfoMessage.LedgerAlreadyExist(ledgerAddResult.ledgerDevice.label)
+                    else -> null
+                }
                 _state.update { state ->
-                    state.copy(selectedFactorSourceID = ledgerAddResult.id, addLedgerSheetState = AddLedgerSheetState.Connect)
+                    state.copy(
+                        selectedFactorSourceID = ledgerAddResult.ledgerDevice.id,
+                        addLedgerSheetState = AddLedgerSheetState.Connect,
+                        uiMessage = message
+                    )
                 }
             }
         }

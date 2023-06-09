@@ -8,6 +8,7 @@ import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.presentation.common.StateViewModel
+import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.presentation.model.AddLedgerSheetState
 import com.babylon.wallet.android.presentation.model.LedgerDeviceUiModel
@@ -60,7 +61,8 @@ class CreateAccountWithLedgerViewModel @Inject constructor(
                         }.toPersistentList(),
                         waitingForLedgerResponse = delegateState.waitingForLedgerResponse,
                         recentlyConnectedLedgerDevice = delegateState.recentlyConnectedLedgerDevice,
-                        hasP2pLinks = delegateState.hasP2pLinks
+                        hasP2pLinks = delegateState.hasP2pLinks,
+                        uiMessage = delegateState.uiMessage
                     )
                 }
             }
@@ -110,13 +112,18 @@ class CreateAccountWithLedgerViewModel @Inject constructor(
         createLedgerDelegate.onConfirmLedgerName(name)
     }
 
+    fun onMessageShown() {
+        _state.update { it.copy(uiMessage = null) }
+    }
+
     data class CreateAccountWithLedgerState(
         val loading: Boolean = false,
         val ledgerFactorSources: ImmutableList<Selectable<FactorSource>> = persistentListOf(),
         val hasP2pLinks: Boolean = false,
         val addLedgerSheetState: AddLedgerSheetState = AddLedgerSheetState.Connect,
         val waitingForLedgerResponse: Boolean = false,
-        var recentlyConnectedLedgerDevice: LedgerDeviceUiModel? = null
+        val recentlyConnectedLedgerDevice: LedgerDeviceUiModel? = null,
+        val uiMessage: UiMessage? = null
     ) : UiState
 }
 

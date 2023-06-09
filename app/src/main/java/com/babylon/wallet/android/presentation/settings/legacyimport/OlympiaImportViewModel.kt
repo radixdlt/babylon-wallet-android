@@ -7,7 +7,6 @@ import com.babylon.wallet.android.data.dapp.LedgerMessenger
 import com.babylon.wallet.android.data.dapp.model.Curve
 import com.babylon.wallet.android.data.dapp.model.DerivePublicKeyRequest
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
-import com.babylon.wallet.android.presentation.common.InfoMessageType
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
@@ -54,7 +53,7 @@ import javax.inject.Inject
 class OlympiaImportViewModel @Inject constructor(
     private val ledgerMessenger: LedgerMessenger,
     private val addOlympiaFactorSourceUseCase: AddOlympiaFactorSourceUseCase,
-    private val addLedgerFactorSourceUseCase: AddLedgerFactorSourceUseCase,
+    addLedgerFactorSourceUseCase: AddLedgerFactorSourceUseCase,
     private val migrateOlympiaAccountsUseCase: MigrateOlympiaAccountsUseCase,
     private val checkOlympiaFactorSourceForAccountsExistUseCase: CheckOlympiaFactorSourceForAccountsExistUseCase,
     private val getProfileUseCase: GetProfileUseCase,
@@ -100,7 +99,7 @@ class OlympiaImportViewModel @Inject constructor(
         val derivedKeys = ledgerResponse.publicKeysHex.map { it.publicKeyHex }.toSet()
         val validatedAccounts = hardwareAccountsToMigrate.filter { derivedKeys.contains(it.publicKey) }
         if (validatedAccounts.isEmpty()) {
-            _state.update { it.copy(uiMessage = UiMessage.InfoMessage(InfoMessageType.NoAccountsForLedger)) }
+            _state.update { it.copy(uiMessage = UiMessage.InfoMessage.NoAccountsForLedger) }
             return
         }
         runForSelectedLedger { ledgerFactorSource ->
@@ -122,7 +121,7 @@ class OlympiaImportViewModel @Inject constructor(
     fun onQrCodeScanned(qrData: String) {
         if (!olympiaWalletDataParser.isProperQrPayload(qrData)) {
             _state.update {
-                it.copy(uiMessage = UiMessage.InfoMessage(InfoMessageType.InvalidPayload))
+                it.copy(uiMessage = UiMessage.InfoMessage.InvalidPayload)
             }
             return
         }
@@ -260,7 +259,7 @@ class OlympiaImportViewModel @Inject constructor(
                     }
                 }
             } else {
-                _state.update { it.copy(uiMessage = UiMessage.InfoMessage(InfoMessageType.InvalidMnemonic)) }
+                _state.update { it.copy(uiMessage = UiMessage.InfoMessage.InvalidMnemonic) }
             }
         }
     }
@@ -364,7 +363,7 @@ class OlympiaImportViewModel @Inject constructor(
             val factorSourceId = checkOlympiaFactorSourceForAccountsExistUseCase(softwareAccountsToMigrate)
             if (factorSourceId == null) {
                 _state.update { state ->
-                    state.copy(uiMessage = UiMessage.InfoMessage(InfoMessageType.NoMnemonicForAccounts))
+                    state.copy(uiMessage = UiMessage.InfoMessage.NoMnemonicForAccounts)
                 }
                 return@launch
             }
