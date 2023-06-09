@@ -63,7 +63,6 @@ class LedgerFactorSourcesViewModel @Inject constructor(
     fun onMessageShown() {
         _state.update { it.copy(uiMessage = null) }
     }
-
 }
 
 data class LedgerFactorSourcesUiState(
