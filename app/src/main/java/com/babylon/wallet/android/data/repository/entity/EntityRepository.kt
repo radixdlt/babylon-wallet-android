@@ -54,11 +54,6 @@ interface EntityRepository {
         isRefreshing: Boolean = true
     ): Result<List<AccountWithResources>>
 
-    suspend fun stateEntityDetails(
-        addresses: List<String>,
-        isRefreshing: Boolean = true
-    ): Result<StateEntityDetailsResponse>
-
     suspend fun getEntityOwnerKeyHashes(entityAddress: String, isRefreshing: Boolean = false): Result<OwnerKeyHashesMetadataItem?>
 
     suspend fun nonFungibleData(
@@ -428,24 +423,6 @@ class EntityRepositoryImpl @Inject constructor(
         val value = element.value
         value.contains("https")
     }?.value?.toUri()
-
-    // TODO currently this is only used in GetTransactionComponentResourcesUseCase,
-    //  we should refactor GetTransactionComponentResourcesUseCase to use the new domain models.
-    override suspend fun stateEntityDetails(
-        addresses: List<String>,
-        isRefreshing: Boolean
-    ): Result<StateEntityDetailsResponse> = stateApi.entityDetails(
-        StateEntityDetailsRequest(
-            addresses = addresses,
-            aggregationLevel = ResourceAggregationLevel.vault
-        )
-    ).execute(
-        cacheParameters = CacheParameters(
-            httpCache = cache,
-            timeoutDuration = if (isRefreshing) NO_CACHE else TimeoutDuration.ONE_MINUTE
-        ),
-        map = { it }
-    )
 
     override suspend fun nonFungibleData(
         ids: List<String>,
