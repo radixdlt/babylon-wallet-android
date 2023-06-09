@@ -9,5 +9,4 @@ sealed interface InitialUnauthorizedLoginRoute {
         val numberOfAccounts: Int,
         val isExactAccountsCount: Boolean
     ) : InitialUnauthorizedLoginRoute
-
 }

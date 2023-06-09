@@ -1,4 +1,4 @@
-//package com.babylon.wallet.android.presentation.dapp
+// package com.babylon.wallet.android.presentation.dapp
 
 sealed interface InitialAuthorizedLoginRoute {
     data class SelectPersona(val reqId: String) : InitialAuthorizedLoginRoute
@@ -24,5 +24,4 @@ sealed interface InitialAuthorizedLoginRoute {
         val oneTime: Boolean = false,
         val showBack: Boolean = false
     ) : InitialAuthorizedLoginRoute
-
 }
