@@ -8,17 +8,15 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
@@ -29,23 +27,30 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
+import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.BottomSheetWrapper
 import com.babylon.wallet.android.presentation.ui.composables.SomethingWentWrongDialogContent
-import com.babylon.wallet.android.utils.AppEvent
-import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TransactionStatusDialog(
     modifier: Modifier = Modifier,
     viewModel: TransactionStatusDialogViewModel,
-    onBackPress: () -> Unit
+    onClose: () -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val dismissHandler = {
         viewModel.onDismiss()
-        onBackPress()
     }
+
+    LaunchedEffect(Unit) {
+        viewModel.oneOffEvent.collect { event ->
+            when (event) {
+                TransactionStatusDialogViewModel.Event.DismissDialog -> onClose()
+            }
+        }
+    }
+
     BottomSheetWrapper(
         modifier = modifier,
         onDismissRequest = dismissHandler
@@ -79,36 +84,20 @@ fun TransactionStatusDialog(
             }
         }
 
-        Row {
-            val scope = rememberCoroutineScope()
-            Button(
-                onClick = {
-                    scope.launch {
-                        viewModel.appEventBus.sendEvent(AppEvent.TransactionEvent.Successful(
-                            requestId = state.transactionStatus.transactionId,
-                            transactionId = state.transactionStatus.transactionId,
-                            isInternal = state.transactionStatus.isInternal
-                        ))
+        if (state.isIgnoreTransactionModalShowing) {
+            BasicPromptAlertDialog(
+                finish = { accepted ->
+                    if (accepted) {
+                        viewModel.onDismissConfirmed()
+                    } else {
+                        viewModel.onDismissCanceled()
                     }
-                }
-            ) {
-                Text("Success ${state.transactionStatus.transactionId}")
-            }
-
-            Button(
-                onClick = {
-                    scope.launch {
-                        viewModel.appEventBus.sendEvent(AppEvent.TransactionEvent.Failed(
-                            requestId = state.transactionStatus.transactionId,
-                            transactionId = state.transactionStatus.transactionId,
-                            isInternal = state.transactionStatus.isInternal,
-                            errorMessageRes = R.string.error_profileLoad_decodingError
-                        ))
-                    }
-                }
-            ) {
-                Text("Error ${state.transactionStatus.transactionId}")
-            }
+                },
+                text = {
+                    Text(text = "Closing this does not cancel the transaction. You will not get any notifications regarding the status of this transaction")
+                },
+                confirmText = stringResource(id = R.string.common_ok)
+            )
         }
     }
 }

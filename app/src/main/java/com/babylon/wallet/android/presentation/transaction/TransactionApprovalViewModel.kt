@@ -75,7 +75,6 @@ class TransactionApprovalViewModel @Inject constructor(
     private val getCurrentGatewayUseCase: GetCurrentGatewayUseCase,
     private val deviceSecurityHelper: DeviceSecurityHelper,
     private val dAppMessenger: DappMessenger,
-    private val pollTransactionStatusUseCase: PollTransactionStatusUseCase,
     private val dAppWithAssociatedResourcesUseCase: GetDAppWithMetadataAndAssociatedResourcesUseCase,
     @ApplicationScope private val appScope: CoroutineScope,
     private val appEventBus: AppEventBus,
@@ -536,36 +535,13 @@ class TransactionApprovalViewModel @Inject constructor(
                 )
             }
 
-//            val transactionStatus = pollTransactionStatusUseCase(txId)
-//            transactionStatus.onValue { _ ->
-//                _state.update { it.copy(isSigning = false) }
-//                appEventBus.sendEvent(AppEvent.TransactionEvent.Successful(args.requestId))
-//            }
-//            transactionStatus.onError { error ->
-//                _state.update {
-//                    it.copy(
-//                        isSigning = false,
-//                        error = UiMessage.ErrorMessage(error = error)
-//                    )
-//                }
-//                val exception = error as? DappRequestException
-//                if (exception != null) {
-//                    if (!transactionWriteRequest.isInternal) {
-//                        dAppMessenger.sendWalletInteractionResponseFailure(
-//                            dappId = transactionWriteRequest.dappId,
-//                            requestId = args.requestId,
-//                            error = exception.failure.toWalletErrorType(),
-//                            message = exception.failure.getDappMessage()
-//                        )
-//                    }
-//                }
-//                appEventBus.sendEvent(
-//                    AppEvent.TransactionEvent.Failed(
-//                        args.requestId,
-//                        UiMessage.ErrorMessage(exception?.failure)
-//                    )
-//                )
-//            }
+            appEventBus.sendEvent(
+                AppEvent.TransactionEvent.Sent(
+                    requestId = args.requestId,
+                    transactionId = txId,
+                    isInternal = transactionWriteRequest.isInternal
+                )
+            )
         }.onFailure { error ->
             _state.update {
                 it.copy(

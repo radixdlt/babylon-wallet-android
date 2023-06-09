@@ -10,7 +10,6 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.dialog
 import androidx.navigation.navArgument
 import com.babylon.wallet.android.utils.AppEvent
-import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 
@@ -35,7 +34,7 @@ fun NavController.transactionStatusDialog(transactionEvent: AppEvent.Transaction
 }
 
 fun NavGraphBuilder.transactionStatusDialog(
-    onBackPress: () -> Unit
+    onClose: () -> Unit
 ) {
     dialog(
         route = "transaction_status_dialog/{$ARG_REQUEST_EVENT}",
@@ -48,7 +47,7 @@ fun NavGraphBuilder.transactionStatusDialog(
     ) {
         TransactionStatusDialog(
             viewModel = hiltViewModel(),
-            onBackPress = onBackPress
+            onClose = onClose
         )
     }
 }

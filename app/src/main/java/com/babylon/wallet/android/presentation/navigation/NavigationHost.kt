@@ -239,7 +239,7 @@ fun NavigationHost(
             }
         )
         transactionStatusDialog(
-            onBackPress = {
+            onClose = {
                 navController.popBackStack()
             }
         )
