@@ -8,6 +8,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -27,6 +28,8 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
+import com.babylon.wallet.android.presentation.account.composable.AssetMetadataRow
+import com.babylon.wallet.android.presentation.ui.composables.ActionableAddressView
 import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.BottomSheetWrapper
 import com.babylon.wallet.android.presentation.ui.composables.SomethingWentWrongDialogContent
@@ -80,7 +83,7 @@ fun TransactionStatusDialog(
                 enter = fadeIn(),
                 exit = fadeOut()
             ) {
-                SuccessContent()
+                SuccessContent(transactionId = state.transactionId)
             }
         }
 
@@ -104,7 +107,8 @@ fun TransactionStatusDialog(
 
 @Composable
 private fun SuccessContent(
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    transactionId: String = ""
 ) {
     Column(
         modifier
@@ -125,11 +129,26 @@ private fun SuccessContent(
             style = RadixTheme.typography.title,
             color = RadixTheme.colors.gray1
         )
+
         Text(
             text = stringResource(R.string.transaction_status_success_text),
             style = RadixTheme.typography.body1Regular,
             color = RadixTheme.colors.gray1
         )
+
+        // Maybe not needed
+        if (transactionId.isNotEmpty()) {
+            AssetMetadataRow(
+                modifier = Modifier.fillMaxWidth(),
+                key = stringResource(id = R.string.transactionReview_submitTransaction_txID)
+            ) {
+                ActionableAddressView(
+                    address = transactionId,
+                    textStyle = RadixTheme.typography.body1Regular,
+                    textColor = RadixTheme.colors.gray1
+                )
+            }
+        }
     }
 }
 

@@ -121,6 +121,9 @@ class TransactionStatusDialogViewModel @Inject constructor(
         val failureError: Int?
             get() = (status as? TransactionStatus.Failed)?.messageRes
 
+        val transactionId: String
+            get() = status.transactionId
+
     }
 
     sealed interface Event : OneOffEvent {
