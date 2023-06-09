@@ -70,7 +70,7 @@ internal class CreateAccountWithLedgerViewModelTest : StateViewModelTest<CreateA
             val item = expectMostRecentItem()
             assert(item.ledgerFactorSources.size == 1)
             assert(!item.hasP2pLinks)
-            assert(item.selectedFactorSourceID?.value == "Ledger1")
+            assert(item.ledgerFactorSources.first { it.selected }.data.id.value == "Ledger1")
         }
     }
 
@@ -83,7 +83,7 @@ internal class CreateAccountWithLedgerViewModelTest : StateViewModelTest<CreateA
             val item = expectMostRecentItem()
             assert(item.ledgerFactorSources.size == 1)
             assert(!item.hasP2pLinks)
-            assert(item.selectedFactorSourceID?.value == "Ledger1")
+            assert(item.ledgerFactorSources.first { it.selected }.data.id.value == "Ledger1")
         }
     }
 
@@ -112,7 +112,6 @@ internal class CreateAccountWithLedgerViewModelTest : StateViewModelTest<CreateA
         vm.state.test {
             val item = expectMostRecentItem()
             assert(item.addLedgerSheetState == AddLedgerSheetState.Connect)
-            assert(item.selectedFactorSourceID?.value == "2")
         }
     }
 
@@ -128,7 +127,6 @@ internal class CreateAccountWithLedgerViewModelTest : StateViewModelTest<CreateA
         vm.state.test {
             val item = expectMostRecentItem()
             assert(item.addLedgerSheetState == AddLedgerSheetState.Connect)
-            assert(item.selectedFactorSourceID?.value == "2")
         }
         coVerify(exactly = 1) { addLedgerFactorSourceUseCase(any(), any(), captureNullable(ledgerName)) }
         assert(ledgerName.first() == null)

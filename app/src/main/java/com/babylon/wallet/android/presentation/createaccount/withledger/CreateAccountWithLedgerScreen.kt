@@ -1,12 +1,12 @@
-@file:OptIn(ExperimentalMaterialApi::class, ExperimentalMaterialApi::class, ExperimentalMaterialApi::class)
+@file:OptIn(ExperimentalMaterialApi::class, ExperimentalMaterialApi::class, ExperimentalMaterialApi::class, ExperimentalMaterialApi::class)
 
 package com.babylon.wallet.android.presentation.createaccount.withledger
 
 import androidx.activity.compose.BackHandler
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -14,8 +14,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.ModalBottomSheetValue
 import androidx.compose.material.rememberModalBottomSheetState
@@ -31,11 +31,14 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.designsystem.R
 import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
@@ -44,10 +47,12 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.presentation.common.FullscreenCircularProgressContent
 import com.babylon.wallet.android.presentation.model.AddLedgerSheetState
+import com.babylon.wallet.android.presentation.settings.legacyimport.Selectable
 import com.babylon.wallet.android.presentation.ui.composables.AddLedgerBottomSheet
 import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.DefaultModalSheetLayout
-import com.babylon.wallet.android.presentation.ui.composables.LedgerSelector
+import com.babylon.wallet.android.presentation.ui.composables.LedgerListItem
+import com.babylon.wallet.android.utils.throttleClickable
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.launch
@@ -76,7 +81,6 @@ fun CreateAccountWithLedgerScreen(
             modifier = modifier,
             onBackClick = onBackClick,
             ledgerFactorSources = state.ledgerFactorSources,
-            selectedFactorSourceID = state.selectedFactorSourceID,
             onLedgerFactorSourceSelected = viewModel::onLedgerFactorSourceSelected,
             onSendAddLedgerRequest = viewModel::onSendAddLedgerRequest,
             addLedgerSheetState = state.addLedgerSheetState,
@@ -93,8 +97,7 @@ fun CreateAccountWithLedgerScreen(
 fun CreateAccountWithLedgerContent(
     modifier: Modifier,
     onBackClick: () -> Unit,
-    ledgerFactorSources: ImmutableList<FactorSource>,
-    selectedFactorSourceID: FactorSource.ID?,
+    ledgerFactorSources: ImmutableList<Selectable<FactorSource>>,
     onLedgerFactorSourceSelected: (FactorSource) -> Unit,
     onSendAddLedgerRequest: () -> Unit,
     addLedgerSheetState: AddLedgerSheetState,
@@ -139,7 +142,8 @@ fun CreateAccountWithLedgerContent(
                     onConfirmLedgerName(it)
                     closeSheetCallback()
                 },
-                waitingForLedgerResponse = waitingForLedgerResponse
+                waitingForLedgerResponse = waitingForLedgerResponse,
+                onSheetClose = { closeSheetCallback() }
             )
         }
     ) {
@@ -162,71 +166,116 @@ fun CreateAccountWithLedgerContent(
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .weight(1f)
-                        .verticalScroll(rememberScrollState()),
+                        .weight(1f),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
+                    Icon(
+                        painterResource(id = R.drawable.ic_hardware_ledger),
+                        tint = Color.Unspecified,
+                        contentDescription = null
+                    )
+                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
                     Text(
-                        text = stringResource(
-                            id = com.babylon.wallet.android.R.string.createEntity_ledger_createAccount
-                        ),
+                        text = stringResource(id = com.babylon.wallet.android.R.string.ledgerHardwareDevices_navigationTitleAllowSelection),
                         style = RadixTheme.typography.title,
                         color = RadixTheme.colors.gray1,
-                        overflow = TextOverflow.Ellipsis
+                        overflow = TextOverflow.Ellipsis,
+                        textAlign = TextAlign.Center
                     )
-                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingMedium))
+                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
+                    Text(
+                        text = stringResource(id = com.babylon.wallet.android.R.string.ledgerHardwareDevices_subtitleSelectLedger),
+                        style = RadixTheme.typography.body1Header,
+                        color = RadixTheme.colors.gray1,
+                        overflow = TextOverflow.Ellipsis,
+                        textAlign = TextAlign.Center
+                    )
+                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
                     if (ledgerFactorSources.isEmpty()) {
                         Text(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .background(RadixTheme.colors.gray5, RadixTheme.shapes.roundedRectSmall)
+                                .padding(RadixTheme.dimensions.paddingLarge),
                             text = stringResource(id = com.babylon.wallet.android.R.string.ledgerHardwareDevices_subtitleNoLedgers),
                             style = RadixTheme.typography.body1Header,
-                            color = RadixTheme.colors.gray1,
+                            color = RadixTheme.colors.gray2,
                             overflow = TextOverflow.Ellipsis,
                             textAlign = TextAlign.Center
                         )
-                    } else {
-                        Text(
-                            text = stringResource(
-                                id = com.babylon.wallet.android.R.string.ledgerHardwareDevices_navigationTitleAllowSelection
-                            ),
-                            style = RadixTheme.typography.body1Header,
-                            color = RadixTheme.colors.gray1,
-                            textAlign = TextAlign.Center
-                        )
-                        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingMedium))
-                        LedgerSelector(
+                        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
+                        RadixPrimaryButton(
                             modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(RadixTheme.dimensions.paddingDefault),
-                            selectedLedgerFactorSourceID = selectedFactorSourceID,
-                            ledgerFactorSources = ledgerFactorSources,
-                            onLedgerFactorSourceSelected = onLedgerFactorSourceSelected
+                                .fillMaxWidth(0.7f)
+                                .imePadding(),
+                            onClick = {
+                                if (hasP2PLinks) {
+                                    scope.launch {
+                                        bottomSheetState.show()
+                                    }
+                                } else {
+                                    showNoP2PLinksDialog = true
+                                }
+                            },
+                            text = stringResource(id = com.babylon.wallet.android.R.string.ledgerHardwareDevices_addNewLedger)
                         )
+                    } else {
+                        LazyColumn(
+                            modifier = Modifier.fillMaxWidth().weight(1f),
+                            contentPadding = PaddingValues(horizontal = RadixTheme.dimensions.paddingDefault),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            items(
+                                items = ledgerFactorSources,
+                                key = { item ->
+                                    item.data.id.value
+                                },
+                                itemContent = { item ->
+                                    LedgerListItem(
+                                        ledgerFactorSource = item.data,
+                                        modifier = Modifier
+                                            .shadow(elevation = 4.dp, shape = RadixTheme.shapes.roundedRectSmall)
+                                            .fillMaxWidth()
+                                            .background(RadixTheme.colors.gray5, shape = RadixTheme.shapes.roundedRectSmall)
+                                            .throttleClickable {
+                                                onLedgerFactorSourceSelected(item.data)
+                                            }
+                                            .padding(RadixTheme.dimensions.paddingLarge),
+                                        selected = item.selected,
+                                        onLedgerSelected = onLedgerFactorSourceSelected
+                                    )
+                                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingMedium))
+                                }
+                            )
+                            item {
+                                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSmall))
+                                RadixSecondaryButton(
+                                    modifier = Modifier
+                                        .fillMaxWidth(0.7f)
+                                        .imePadding(),
+                                    onClick = {
+                                        if (hasP2PLinks) {
+                                            scope.launch {
+                                                bottomSheetState.show()
+                                            }
+                                        } else {
+                                            showNoP2PLinksDialog = true
+                                        }
+                                    },
+                                    text = stringResource(id = com.babylon.wallet.android.R.string.ledgerHardwareDevices_addNewLedger)
+                                )
+                            }
+                        }
                     }
                 }
-                RadixSecondaryButton(
+                RadixPrimaryButton(
                     modifier = Modifier
                         .fillMaxWidth()
                         .imePadding(),
-                    onClick = {
-                        if (hasP2PLinks) {
-                            scope.launch {
-                                bottomSheetState.show()
-                            }
-                        } else {
-                            showNoP2PLinksDialog = true
-                        }
-                    },
-                    text = stringResource(id = com.babylon.wallet.android.R.string.ledgerHardwareDevices_addNewLedger)
+                    onClick = onUseLedger,
+                    text = stringResource(id = com.babylon.wallet.android.R.string.ledgerHardwareDevices_continueWithLedger),
+                    enabled = ledgerFactorSources.any { it.selected }
                 )
-                AnimatedVisibility(visible = ledgerFactorSources.isNotEmpty()) {
-                    RadixPrimaryButton(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .imePadding(),
-                        onClick = onUseLedger,
-                        text = stringResource(id = com.babylon.wallet.android.R.string.ledgerHardwareDevices_continueWithLedger)
-                    )
-                }
             }
             if (waitingForLedgerResponse) {
                 FullscreenCircularProgressContent()
@@ -268,15 +317,13 @@ fun CreateAccountWithLedgerContentPreview() {
             modifier = Modifier.fillMaxSize(),
             onBackClick = {},
             ledgerFactorSources = persistentListOf(),
-            selectedFactorSourceID = null,
             onLedgerFactorSourceSelected = {},
             onSendAddLedgerRequest = {},
             addLedgerSheetState = AddLedgerSheetState.Connect,
             onConfirmLedgerName = {},
             onUseLedger = {},
             waitingForLedgerResponse = false,
-            hasP2PLinks = false,
-            onAddP2PLink = {}
-        )
+            hasP2PLinks = false
+        ) {}
     }
 }

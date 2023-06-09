@@ -29,10 +29,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.SpanStyle
-import androidx.compose.ui.text.buildAnnotatedString
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -44,8 +40,8 @@ import com.babylon.wallet.android.presentation.model.AddLedgerSheetState
 import com.babylon.wallet.android.presentation.ui.composables.AddLedgerBottomSheet
 import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.DefaultModalSheetLayout
+import com.babylon.wallet.android.presentation.ui.composables.LedgerListItem
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
-import com.babylon.wallet.android.utils.timestampFormatted
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.launch
@@ -117,7 +113,8 @@ private fun SettingsLinkConnectorContent(
                 onConfirmLedgerName(it)
                 closeSheetCallback()
             },
-            waitingForLedgerResponse = waitingForLedgerResponse
+            waitingForLedgerResponse = waitingForLedgerResponse,
+            onSheetClose = { closeSheetCallback() }
         )
     }) {
         Column(modifier = Modifier.fillMaxSize()) {
@@ -220,13 +217,14 @@ private fun LedgerFactorSourcesListContent(
                 factorSource.id.value
             },
             itemContent = { item ->
-                FactorSourceListItem(
+                LedgerListItem(
+                    ledgerFactorSource = item,
                     modifier = Modifier
                         .shadow(elevation = 4.dp, shape = RadixTheme.shapes.roundedRectSmall)
                         .fillMaxWidth()
                         .background(RadixTheme.colors.defaultBackground, shape = RadixTheme.shapes.roundedRectSmall)
                         .padding(RadixTheme.dimensions.paddingLarge),
-                    factorSource = item
+
                 )
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingMedium))
             }
@@ -242,43 +240,6 @@ private fun LedgerFactorSourcesListContent(
                 throttleClicks = true
             )
         }
-    }
-}
-
-@Composable
-private fun FactorSourceListItem(
-    factorSource: FactorSource,
-    modifier: Modifier = Modifier,
-) {
-    Column(modifier = modifier) {
-        Text(
-            text = factorSource.label,
-            style = RadixTheme.typography.secondaryHeader,
-            color = RadixTheme.colors.gray1
-        )
-        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingMedium))
-        val usedText = buildAnnotatedString {
-            withStyle(SpanStyle(fontWeight = FontWeight.Bold)) {
-                append(stringResource(id = R.string.ledgerHardwareDevices_usedHeading))
-            }
-            append(": " + factorSource.lastUsedOn.timestampFormatted())
-        }
-        val addedText = buildAnnotatedString {
-            withStyle(SpanStyle(fontWeight = FontWeight.Bold)) {
-                append(stringResource(id = R.string.ledgerHardwareDevices_addedHeading))
-            }
-            append(": " + factorSource.addedOn.timestampFormatted())
-        }
-        Text(
-            text = addedText,
-            style = RadixTheme.typography.body2Regular,
-            color = RadixTheme.colors.gray2
-        )
-        Text(
-            text = usedText,
-            style = RadixTheme.typography.body2Regular,
-            color = RadixTheme.colors.gray2
-        )
     }
 }
 
@@ -299,7 +260,8 @@ fun SettingsScreenLinkConnectorWithActiveConnectorPreview() {
             onAddP2PLink = {},
             onSendAddLedgerRequest = {},
             addLedgerSheetState = AddLedgerSheetState.Connect,
-            waitingForLedgerResponse = false
-        ) {}
+            waitingForLedgerResponse = false,
+            onConfirmLedgerName = {}
+        )
     }
 }

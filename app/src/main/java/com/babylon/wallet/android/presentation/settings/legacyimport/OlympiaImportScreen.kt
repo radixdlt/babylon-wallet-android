@@ -272,7 +272,8 @@ private fun OlympiaImportContent(
                     onConfirmLedgerName(it)
                     closeSheetCallback()
                 },
-                waitingForLedgerResponse = waitingForLedgerResponse
+                waitingForLedgerResponse = waitingForLedgerResponse,
+                onSheetClose = { closeSheetCallback() }
             )
         }
     ) {
