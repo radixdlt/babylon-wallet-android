@@ -314,8 +314,8 @@ private fun ConnectorNameInput(
                 .padding(horizontal = RadixTheme.dimensions.paddingMedium),
             onValueChanged = onConnectorDisplayNameChanged,
             value = connectorDisplayName,
-            hint = stringResource(R.string.linkedConnectors_newConnection_textFieldPlaceholder),
-            optionalHint = stringResource(id = R.string.linkedConnectors_newConnection_textFieldHint),
+            hint = stringResource(R.string.linkedConnectors_nameNewConnector_textFieldPlaceholder),
+            optionalHint = stringResource(id = R.string.linkedConnectors_nameNewConnector_textFieldHint),
             singleLine = true
         )
         Spacer(modifier = Modifier.size(RadixTheme.dimensions.paddingMedium))
@@ -324,7 +324,7 @@ private fun ConnectorNameInput(
                 .fillMaxWidth()
                 .imePadding()
                 .padding(horizontal = RadixTheme.dimensions.paddingMedium),
-            text = stringResource(id = R.string.linkedConnectors_newConnection_saveLinkButtonTitle),
+            text = stringResource(id = R.string.linkedConnectors_nameNewConnector_saveLinkButtonTitle),
             onClick = onLinkNewConnectorClick,
             enabled = buttonEnabled
         )

@@ -13,9 +13,9 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import rdx.works.core.InstantGenerator
 import rdx.works.core.preferences.PreferencesManager
 import rdx.works.profile.data.model.Profile
 import rdx.works.profile.data.model.ProfileSnapshot
@@ -24,7 +24,6 @@ import rdx.works.profile.data.model.ProfileState
 import rdx.works.profile.datastore.EncryptedPreferencesManager
 import rdx.works.profile.di.coroutines.ApplicationScope
 import rdx.works.profile.di.coroutines.IoDispatcher
-import java.time.Instant
 import javax.inject.Inject
 
 interface ProfileRepository {
@@ -100,7 +99,7 @@ class ProfileRepositoryImpl @Inject constructor(
 
     override suspend fun saveProfile(profile: Profile) {
         val profileToSave = profile.copy(
-            header = profile.header.copy(lastModified = Instant.now())
+            header = profile.header.copy(lastModified = InstantGenerator())
         )
         withContext(ioDispatcher) {
             val profileContent = Json.encodeToString(profileToSave.snapshot())
@@ -126,7 +125,7 @@ class ProfileRepositoryImpl @Inject constructor(
     override suspend fun saveRestoringSnapshot(snapshotSerialised: String): Boolean =
         if (deriveProfileState(snapshotSerialised) is ProfileState.Restored) {
             encryptedPreferencesManager.putProfileSnapshotFromBackup(snapshotSerialised)
-            preferencesManager.updateLastBackupInstant(Instant.now())
+            preferencesManager.updateLastBackupInstant(InstantGenerator())
             true
         } else {
             false
@@ -144,7 +143,7 @@ class ProfileRepositoryImpl @Inject constructor(
         }
 
         return if (isBackupEnabled) {
-            preferencesManager.updateLastBackupInstant(Instant.now())
+            preferencesManager.updateLastBackupInstant(InstantGenerator())
             serialisedSnapshot
         } else {
             null

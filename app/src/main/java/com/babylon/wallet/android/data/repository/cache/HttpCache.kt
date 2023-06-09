@@ -5,6 +5,7 @@ import okhttp3.HttpUrl
 import okhttp3.RequestBody
 import okio.Buffer
 import okio.IOException
+import rdx.works.core.InstantGenerator
 import rdx.works.core.blake2Hash
 import rdx.works.core.toHexString
 import rdx.works.profile.domain.gateway.GetCurrentGatewayUseCase
@@ -12,7 +13,6 @@ import retrofit2.Call
 import timber.log.Timber
 import java.net.URL
 import java.time.Duration
-import java.time.Instant
 import java.time.ZoneId
 import java.util.Date
 import javax.inject.Inject
@@ -72,7 +72,7 @@ class HttpCacheImpl @Inject constructor(
         serializer: KSerializer<T>
     ) {
         val cacheKeyData = call.cacheKeyData()
-        val now = Instant.now().toEpochMilli()
+        val now = InstantGenerator().toEpochMilli()
 
         val cachedValue = CachedValue(
             cached = response,
@@ -96,7 +96,7 @@ class HttpCacheImpl @Inject constructor(
         }
 
         return if (timeoutDuration != null) {
-            val threshold = Instant.now().minus(timeoutDuration)
+            val threshold = InstantGenerator().minus(timeoutDuration)
             val minAllowedTime = Date.from(threshold.atZone(ZoneId.systemDefault()).toInstant()).time
 
             if (cachedValue.timestamp < minAllowedTime) {
