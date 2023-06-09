@@ -345,7 +345,7 @@
   <string name="transactionReview_guarantees_subtitle">Protect yourself by setting guaranteed minimums for estimated deposits</string>
   <string name="transactionReview_guarantees_applyButtonText">Apply</string>
   <string name="transactionReview_guarantees_howDoGuaranteesWork">How do Guarantees work</string>
-  <string name="transactionReview_guarantees_setGuaranteedMinimum">Set guaranteed minimum %%</string>
+  <string name="transactionReview_guarantees_setGuaranteedMinimum">Set guaranteed minimum %</string>
   <string name="transactionReview_prepareForSigning_navigationTitle">Preparing Transaction</string>
   <string name="transactionReview_prepareForSigning_body">Preparing transaction for signing</string>
   <string name="transactionReview_selectFeePayer_navigationTitle">Select Fee Payer</string>

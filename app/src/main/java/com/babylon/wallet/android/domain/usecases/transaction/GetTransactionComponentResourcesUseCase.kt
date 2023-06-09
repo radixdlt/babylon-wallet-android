@@ -1,20 +1,11 @@
 package com.babylon.wallet.android.domain.usecases.transaction
 
-import androidx.core.net.toUri
-import com.babylon.wallet.android.data.gateway.extensions.asMetadataStringMap
-import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponseItemDetailsType
-import com.babylon.wallet.android.data.gateway.model.ExplicitMetadataKey
 import com.babylon.wallet.android.data.repository.entity.EntityRepository
 import com.babylon.wallet.android.domain.common.Result
 import com.babylon.wallet.android.domain.common.onValue
-import com.babylon.wallet.android.domain.common.value
 import com.babylon.wallet.android.domain.model.MetadataConstants.KEY_ICON
 import com.babylon.wallet.android.domain.model.MetadataConstants.KEY_SYMBOL
 import com.babylon.wallet.android.domain.model.Resource
-import com.babylon.wallet.android.domain.model.metadata.DescriptionMetadataItem
-import com.babylon.wallet.android.domain.model.metadata.IconUrlMetadataItem
-import com.babylon.wallet.android.domain.model.metadata.NameMetadataItem
-import com.babylon.wallet.android.domain.model.metadata.SymbolMetadataItem
 import com.babylon.wallet.android.presentation.transaction.TransactionAccountItemUiModel
 import com.radixdlt.toolkit.models.request.MetadataEntry
 import com.radixdlt.toolkit.models.request.MetadataKeyValue
@@ -51,69 +42,32 @@ class GetTransactionComponentResourcesUseCase @Inject constructor(
             )
         }
 
-        val entityDetailsResponse = entityRepository.stateEntityDetails(
-            addresses = validatedAddresses,
-            isRefreshing = false
-        )
         var account: Result<TransactionAccountItemUiModel> = Result.Error()
 
-        entityDetailsResponse.onValue { stateEntityDetailsResponse ->
+        // If its newlyCreatedEntity do not ask for guarantees
+        val shouldPromptForGuarantees = if (createdEntity) false else includesGuarantees
 
-            // If its newlyCreatedEntity do not ask for guarantees
-            val shouldPromptForGuarantees = if (createdEntity) false else includesGuarantees
+        // If its newlyCreatedEntity OR don't include guarantee, do not ask for guarantees
+        val guaranteedAmount = if (createdEntity || !includesGuarantees) null else amount
 
-            // If its newlyCreatedEntity OR don't include guarantee, do not ask for guarantees
-            val guaranteedAmount = if (createdEntity || !includesGuarantees) null else amount
+        var tokenSymbol: String? = null
+        var iconUrl = ""
 
-            val accountItem = stateEntityDetailsResponse.items.find {
-                it.details?.type == StateEntityDetailsResponseItemDetailsType.component
-            }
+        var fungibleResource: Resource.FungibleResource? = null
+        var nonFungibleResources: List<Resource.NonFungibleResource.Item> = emptyList()
 
-            var tokenSymbol: String? = null
-            var iconUrl = ""
-
-            var fungibleResource: Resource.FungibleResource? = null
-            var nonFungibleResources: List<Resource.NonFungibleResource.Item> = emptyList()
-
+        entityRepository.getResources(
+            addresses = validatedAddresses,
+            ids = ids,
+            amount = amount,
+            guaranteedAmount = guaranteedAmount,
+            isRefreshing = false
+        ).onValue { response ->
             when (resourceRequest) {
                 is ResourceRequest.Existing -> {
-                    val fungibleResourceItem = stateEntityDetailsResponse.items.find {
-                        it.details?.type == StateEntityDetailsResponseItemDetailsType.fungibleResource
-                    }
-                    val nonFungibleResourceItem = stateEntityDetailsResponse.items.find {
-                        it.details?.type == StateEntityDetailsResponseItemDetailsType.nonFungibleResource
-                    }
-
-                    fungibleResource = fungibleResourceItem?.metadata?.asMetadataStringMap()?.let { metadataMap ->
-                        Resource.FungibleResource(
-                            resourceAddress = fungibleResourceItem.address,
-                            amount = amount.toBigDecimal(),
-                            nameMetadataItem = metadataMap[ExplicitMetadataKey.NAME.key]?.let { NameMetadataItem(it) },
-                            symbolMetadataItem = metadataMap[ExplicitMetadataKey.SYMBOL.key]?.let {
-                                SymbolMetadataItem(
-                                    it
-                                )
-                            },
-                            descriptionMetadataItem = metadataMap[ExplicitMetadataKey.DESCRIPTION.key]?.let {
-                                DescriptionMetadataItem(
-                                    it
-                                )
-                            },
-                            iconUrlMetadataItem = metadataMap[ExplicitMetadataKey.ICON_URL.key]?.let {
-                                IconUrlMetadataItem(
-                                    it.toUri()
-                                )
-                            },
-                            guaranteedQuantity = guaranteedAmount?.toBigDecimal()
-                        )
-                    }
-
-                    nonFungibleResources = nonFungibleResourceItem?.let { nftItem ->
-                        entityRepository.nonFungibleData(
-                            ids = ids,
-                            resourceAddress = nftItem.address
-                        ).value()
-                    }.orEmpty()
+                    // todo
+                    fungibleResource = response.first
+                    nonFungibleResources = response.second
                 }
                 is ResourceRequest.NewlyCreated -> {
                     tokenSymbol = when (val entry = resourceRequest.metadata.firstOrNull { it.key == KEY_SYMBOL }?.value) {
@@ -135,13 +89,13 @@ class GetTransactionComponentResourcesUseCase @Inject constructor(
             }
 
             val accountOnProfile = getProfileUseCase
-                .accountOnCurrentNetwork(accountItem?.address.orEmpty())
+                .accountOnCurrentNetwork(componentAddress)
             val accountDisplayName = accountOnProfile?.displayName.orEmpty()
             val accountAppearanceId = accountOnProfile?.appearanceID ?: 1
 
             account = Result.Success(
                 TransactionAccountItemUiModel(
-                    address = accountItem?.address.orEmpty(),
+                    address = componentAddress,
                     displayName = accountDisplayName,
                     appearanceID = accountAppearanceId,
                     tokenSymbol = tokenSymbol,
@@ -157,6 +111,7 @@ class GetTransactionComponentResourcesUseCase @Inject constructor(
                 )
             )
         }
+
         return account
     }
 }
