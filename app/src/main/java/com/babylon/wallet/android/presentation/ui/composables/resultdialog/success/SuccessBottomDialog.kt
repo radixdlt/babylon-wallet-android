@@ -30,7 +30,7 @@ fun SuccessBottomDialog(
     onBackPress: () -> Unit
 ) {
     val dismissHandler = {
-        viewModel.incomingRequestHandled()
+        viewModel.onDismiss()
         onBackPress()
     }
     BottomSheetWrapper(

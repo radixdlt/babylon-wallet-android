@@ -161,7 +161,7 @@ fun NotSecureAlertDialog(
 fun SomethingWentWrongDialogContent(
     modifier: Modifier = Modifier,
     title: String,
-    subtitle: String
+    subtitle: String?
 ) {
     Column(
         modifier
@@ -186,11 +186,14 @@ fun SomethingWentWrongDialogContent(
             textAlign = TextAlign.Center,
             modifier = Modifier.align(alignment = Alignment.CenterHorizontally)
         )
-        Text(
-            text = subtitle,
-            style = RadixTheme.typography.body1Regular,
-            color = RadixTheme.colors.gray1
-        )
+
+        subtitle?.let {
+            Text(
+                text = it,
+                style = RadixTheme.typography.body1Regular,
+                color = RadixTheme.colors.gray1
+            )
+        }
     }
 }
 

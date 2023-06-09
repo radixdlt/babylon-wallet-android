@@ -27,10 +27,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
-import com.babylon.wallet.android.data.transaction.DappRequestFailure
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
-import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.ui.composables.BottomSheetWrapper
 import com.babylon.wallet.android.presentation.ui.composables.SomethingWentWrongDialogContent
 import com.babylon.wallet.android.utils.AppEvent
@@ -45,7 +43,7 @@ fun TransactionStatusDialog(
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val dismissHandler = {
-        viewModel.incomingRequestHandled()
+        viewModel.onDismiss()
         onBackPress()
     }
     BottomSheetWrapper(
@@ -68,7 +66,7 @@ fun TransactionStatusDialog(
             ) {
                 SomethingWentWrongDialogContent(
                     title = stringResource(id = R.string.common_somethingWentWrong),
-                    subtitle = state.failureError?.getUserFriendlyDescriptionRes()?.let { stringResource(id = it) }.orEmpty()
+                    subtitle = state.failureError?.let { stringResource(id = it) }.orEmpty()
                 )
             }
 
@@ -84,24 +82,32 @@ fun TransactionStatusDialog(
         Row {
             val scope = rememberCoroutineScope()
             Button(
-                onClick = { scope.launch {
-                    viewModel.appEventBus.sendEvent(AppEvent.TransactionEvent.Successful(state.requestId))
-                } }
+                onClick = {
+                    scope.launch {
+                        viewModel.appEventBus.sendEvent(AppEvent.TransactionEvent.Successful(
+                            requestId = state.transactionStatus.transactionId,
+                            transactionId = state.transactionStatus.transactionId,
+                            isInternal = state.transactionStatus.isInternal
+                        ))
+                    }
+                }
             ) {
-                Text("Success ${state.requestId}")
+                Text("Success ${state.transactionStatus.transactionId}")
             }
 
             Button(
-                onClick = { scope.launch {
-                    viewModel.appEventBus.sendEvent(
-                        AppEvent.TransactionEvent.Failed(
-                            state.requestId,
-                            UiMessage.ErrorMessage(DappRequestFailure.TransactionApprovalFailure.BuildTransactionHeader)
-                        )
-                    )
-                } }
+                onClick = {
+                    scope.launch {
+                        viewModel.appEventBus.sendEvent(AppEvent.TransactionEvent.Failed(
+                            requestId = state.transactionStatus.transactionId,
+                            transactionId = state.transactionStatus.transactionId,
+                            isInternal = state.transactionStatus.isInternal,
+                            errorMessageRes = R.string.error_profileLoad_decodingError
+                        ))
+                    }
+                }
             ) {
-                Text("Error ${state.requestId}")
+                Text("Error ${state.transactionStatus.transactionId}")
             }
         }
     }

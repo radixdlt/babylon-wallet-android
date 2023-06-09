@@ -1,10 +1,10 @@
 package com.babylon.wallet.android.presentation.transactionstatus
 
+import androidx.annotation.StringRes
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.presentation.common.StateViewModel
-import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
@@ -26,35 +26,25 @@ class TransactionStatusDialogViewModel @Inject constructor(
     init {
         viewModelScope.launch {
             appEventBus.events.filterIsInstance<AppEvent.TransactionEvent>().collect { event ->
-                when (event) {
-                    is AppEvent.TransactionEvent.Failed -> {
-                        _state.update { it.copy(transactionStatus = TransactionStatus.Failed(event.error)) }
-                    }
-                    is AppEvent.TransactionEvent.Successful -> {
-                        _state.update { it.copy(transactionStatus = TransactionStatus.Success) }
-                    }
-                    is AppEvent.TransactionEvent.Sent -> {
-                        _state.update { it.copy(transactionStatus = TransactionStatus.Completing) }
-                    }
-                }
+                val status = TransactionStatus.from(event)
+                _state.update { it.copy(transactionStatus = status) }
             }
         }
     }
 
-    fun incomingRequestHandled() {
+    fun onDismiss() {
         viewModelScope.launch {
-            incomingRequestRepository.requestHandled(args.requestId)
+            incomingRequestRepository.requestHandled(state.value.transactionStatus.requestId)
         }
     }
 
     override fun initialState(): TransactionStatusUiState {
-        return TransactionStatusUiState(requestId = args.requestId)
+        return TransactionStatusUiState(transactionStatus = TransactionStatus.from(args.event))
     }
 }
 
 data class TransactionStatusUiState(
-    val requestId: String,
-    val transactionStatus: TransactionStatus = TransactionStatus.Completing
+    val transactionStatus: TransactionStatus
 ) : UiState {
 
     val isCompleting: Boolean
@@ -66,13 +56,54 @@ data class TransactionStatusUiState(
     val isFailed: Boolean
         get() = transactionStatus is TransactionStatus.Failed
 
-    val failureError: UiMessage.ErrorMessage?
-        get() = (transactionStatus as? TransactionStatus.Failed)?.message
+    val failureError: Int?
+        get() = (transactionStatus as? TransactionStatus.Failed)?.messageRes
 
 }
 
 sealed interface TransactionStatus {
-    object Completing : TransactionStatus
-    object Success : TransactionStatus
-    data class Failed(val message: UiMessage.ErrorMessage) : TransactionStatus
+
+    val requestId: String
+    val transactionId: String
+    val isInternal: Boolean
+
+    data class Completing(
+        override val requestId: String,
+        override val transactionId: String,
+        override val isInternal: Boolean
+    ) : TransactionStatus
+
+    data class Success(
+        override val requestId: String,
+        override val transactionId: String,
+        override val isInternal: Boolean
+    ) : TransactionStatus
+
+    data class Failed(
+        override val requestId: String,
+        override val transactionId: String,
+        override val isInternal: Boolean,
+        @StringRes val messageRes: Int?
+    ) : TransactionStatus
+
+    companion object {
+        fun from(event: AppEvent.TransactionEvent) = when (event) {
+            is AppEvent.TransactionEvent.Failed -> Failed(
+                requestId = event.requestId,
+                transactionId = event.transactionId,
+                isInternal = event.isInternal,
+                messageRes = event.errorMessageRes
+            )
+            is AppEvent.TransactionEvent.Sent -> Completing(
+                requestId = event.requestId,
+                transactionId = event.transactionId,
+                isInternal = event.isInternal,
+            )
+            is AppEvent.TransactionEvent.Successful -> Success(
+                requestId = event.requestId,
+                transactionId = event.transactionId,
+                isInternal = event.isInternal,
+            )
+        }
+    }
 }

@@ -44,7 +44,6 @@ class MainViewModel @Inject constructor(
     private val incomingRequestRepository: IncomingRequestRepository,
     private val authorizeSpecifiedPersonaUseCase: AuthorizeSpecifiedPersonaUseCase,
     private val verifyDappUseCase: VerifyDappUseCase,
-    private val appEventBus: AppEventBus,
     getProfileStateUseCase: GetProfileStateUseCase
 ) : StateViewModel<MainUiState>(), OneOffEventHandler<MainEvent> by OneOffEventHandlerImpl() {
 
@@ -76,20 +75,6 @@ class MainViewModel @Inject constructor(
                 }
         }
         handleAllIncomingRequests()
-        observeGlobalAppEvents()
-    }
-
-    private fun observeGlobalAppEvents() {
-        viewModelScope.launch {
-            appEventBus.events.filterIsInstance<AppEvent.TransactionEvent>().collect { event ->
-                when (event) {
-                    is AppEvent.TransactionEvent.Sent -> {
-                        sendEvent(MainEvent.TransactionStatusEvent(event.requestId))
-                    }
-                    else -> {}
-                }
-            }
-        }
     }
 
     override fun initialState(): MainUiState {
@@ -186,7 +171,6 @@ class MainViewModel @Inject constructor(
 sealed class MainEvent : OneOffEvent {
 
     data class IncomingRequestEvent(val request: IncomingRequest) : MainEvent()
-    data class TransactionStatusEvent(val requestId: String) : MainEvent()
     data class HandledUsePersonaAuthRequest(
         val requestId: String,
         val dAppName: String

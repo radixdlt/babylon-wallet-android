@@ -520,7 +520,13 @@ class TransactionApprovalViewModel @Inject constructor(
         )
         transactionClient.signAndSubmitTransaction(request).onSuccess { txId ->
             _state.update { it.copy(isSigning = false) }
-            appEventBus.sendEvent(AppEvent.TransactionEvent.Sent(args.requestId))
+            appEventBus.sendEvent(
+                AppEvent.TransactionEvent.Sent(
+                    requestId = args.requestId,
+                    transactionId = txId,
+                    isInternal = transactionWriteRequest.isInternal
+                )
+            )
             // Send confirmation to the dApp that tx was submitted before status polling
             if (!transactionWriteRequest.isInternal) {
                 dAppMessenger.sendTransactionWriteResponseSuccess(
@@ -529,36 +535,37 @@ class TransactionApprovalViewModel @Inject constructor(
                     txId = txId
                 )
             }
-            val transactionStatus = pollTransactionStatusUseCase(txId)
-            transactionStatus.onValue { _ ->
-                _state.update { it.copy(isSigning = false) }
-                appEventBus.sendEvent(AppEvent.TransactionEvent.Successful(args.requestId))
-            }
-            transactionStatus.onError { error ->
-                _state.update {
-                    it.copy(
-                        isSigning = false,
-                        error = UiMessage.ErrorMessage(error = error)
-                    )
-                }
-                val exception = error as? DappRequestException
-                if (exception != null) {
-                    if (!transactionWriteRequest.isInternal) {
-                        dAppMessenger.sendWalletInteractionResponseFailure(
-                            dappId = transactionWriteRequest.dappId,
-                            requestId = args.requestId,
-                            error = exception.failure.toWalletErrorType(),
-                            message = exception.failure.getDappMessage()
-                        )
-                    }
-                }
-                appEventBus.sendEvent(
-                    AppEvent.TransactionEvent.Failed(
-                        args.requestId,
-                        UiMessage.ErrorMessage(exception?.failure)
-                    )
-                )
-            }
+
+//            val transactionStatus = pollTransactionStatusUseCase(txId)
+//            transactionStatus.onValue { _ ->
+//                _state.update { it.copy(isSigning = false) }
+//                appEventBus.sendEvent(AppEvent.TransactionEvent.Successful(args.requestId))
+//            }
+//            transactionStatus.onError { error ->
+//                _state.update {
+//                    it.copy(
+//                        isSigning = false,
+//                        error = UiMessage.ErrorMessage(error = error)
+//                    )
+//                }
+//                val exception = error as? DappRequestException
+//                if (exception != null) {
+//                    if (!transactionWriteRequest.isInternal) {
+//                        dAppMessenger.sendWalletInteractionResponseFailure(
+//                            dappId = transactionWriteRequest.dappId,
+//                            requestId = args.requestId,
+//                            error = exception.failure.toWalletErrorType(),
+//                            message = exception.failure.getDappMessage()
+//                        )
+//                    }
+//                }
+//                appEventBus.sendEvent(
+//                    AppEvent.TransactionEvent.Failed(
+//                        args.requestId,
+//                        UiMessage.ErrorMessage(exception?.failure)
+//                    )
+//                )
+//            }
         }.onFailure { error ->
             _state.update {
                 it.copy(
@@ -577,10 +584,13 @@ class TransactionApprovalViewModel @Inject constructor(
                     )
                 }
             }
+
             appEventBus.sendEvent(
                 AppEvent.TransactionEvent.Failed(
-                    args.requestId,
-                    UiMessage.ErrorMessage(exception?.failure)
+                    requestId = args.requestId,
+                    transactionId = "",
+                    isInternal = transactionWriteRequest.isInternal,
+                    errorMessageRes = UiMessage.ErrorMessage(exception?.failure).getUserFriendlyDescriptionRes()
                 )
             )
         }

@@ -9,29 +9,38 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavType
 import androidx.navigation.compose.dialog
 import androidx.navigation.navArgument
+import com.babylon.wallet.android.utils.AppEvent
+import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 
 @VisibleForTesting
-private const val ARG_REQUEST_ID = "arg_request_id"
+private const val ARG_REQUEST_EVENT = "arg_request_event"
 
 internal class TransactionStatusDialogArgs(
-    val requestId: String
+    val event: AppEvent.TransactionEvent
 ) {
     constructor(savedStateHandle: SavedStateHandle) : this(
-        checkNotNull(savedStateHandle.get<String>(ARG_REQUEST_ID))
+        checkNotNull(savedStateHandle.get<String>(ARG_REQUEST_EVENT)?.let { Json.decodeFromString<AppEvent.TransactionEvent>(it) })
     )
 }
 
-fun NavController.transactionStatusDialog(requestId: String) {
-    navigate("transaction_status_dialog/$requestId")
+fun NavController.transactionStatusDialogShown(): Boolean {
+    return currentBackStackEntry?.destination?.route?.startsWith("transaction_status_dialog") == true
+}
+
+fun NavController.transactionStatusDialog(transactionEvent: AppEvent.TransactionEvent) {
+    val serialized = Json.encodeToString(transactionEvent)
+    navigate("transaction_status_dialog/$serialized")
 }
 
 fun NavGraphBuilder.transactionStatusDialog(
     onBackPress: () -> Unit
 ) {
     dialog(
-        route = "transaction_status_dialog/{$ARG_REQUEST_ID}",
+        route = "transaction_status_dialog/{$ARG_REQUEST_EVENT}",
         arguments = listOf(
-            navArgument(ARG_REQUEST_ID) {
+            navArgument(ARG_REQUEST_EVENT) {
                 type = NavType.StringType
             }
         ),

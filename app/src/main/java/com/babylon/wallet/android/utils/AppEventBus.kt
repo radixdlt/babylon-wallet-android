@@ -1,9 +1,10 @@
 package com.babylon.wallet.android.utils
 
-import com.babylon.wallet.android.presentation.common.UiMessage
+import androidx.annotation.StringRes
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.serialization.Serializable
 import rdx.works.profile.data.model.factorsources.FactorSource
 import rdx.works.profile.data.model.pernetwork.DerivationPath
 import javax.inject.Inject
@@ -29,9 +30,33 @@ sealed interface AppEvent {
         val derivedPublicKeyHex: String
     ) : AppEvent
 
-    sealed class TransactionEvent(val requestId: String) : AppEvent {
-        data class Sent(private val reqId: String) : TransactionEvent(reqId)
-        data class Successful(private val reqId: String) : TransactionEvent(reqId)
-        data class Failed(private val reqId: String, val error: UiMessage.ErrorMessage) : TransactionEvent(reqId)
+    @Serializable
+    sealed class TransactionEvent : AppEvent {
+
+        abstract val requestId: String
+        abstract val transactionId: String
+        abstract val isInternal: Boolean
+
+        @Serializable
+        data class Sent(
+            override val requestId: String,
+            override val transactionId: String,
+            override val isInternal: Boolean
+        ) : TransactionEvent()
+
+        @Serializable
+        data class Successful(
+            override val requestId: String,
+            override val transactionId: String,
+            override val isInternal: Boolean
+        ) : TransactionEvent()
+
+        @Serializable
+        data class Failed(
+            override val requestId: String,
+            override val transactionId: String,
+            override val isInternal: Boolean,
+            @StringRes val errorMessageRes: Int?
+        ) : TransactionEvent()
     }
 }
