@@ -53,7 +53,7 @@ class WalletViewModel @Inject constructor(
 
     init {
         observeAccounts()
-        observeDeviceFactorSourcesKind()
+        observeDeviceFactorSources()
         observePrompts()
         observeProfileBackupState(getBackupStateUseCase)
         observeGlobalAppEvents()
@@ -78,7 +78,7 @@ class WalletViewModel @Inject constructor(
         }
     }
 
-    private fun observeDeviceFactorSourcesKind() {
+    private fun observeDeviceFactorSources() {
         viewModelScope.launch {
             getProfileUseCase.factorSources.collect { factorSourcesList ->
                 _state.update { state ->
