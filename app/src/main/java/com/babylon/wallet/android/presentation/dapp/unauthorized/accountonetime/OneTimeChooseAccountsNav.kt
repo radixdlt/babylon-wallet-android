@@ -2,14 +2,15 @@ package com.babylon.wallet.android.presentation.dapp.unauthorized.accountonetime
 
 import androidx.annotation.VisibleForTesting
 import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.runtime.remember
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.SavedStateHandle
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavType
 import androidx.navigation.navArgument
-import com.babylon.wallet.android.presentation.dapp.unauthorized.InitialUnauthorizedLoginRoute
 import com.babylon.wallet.android.presentation.dapp.unauthorized.login.DAppUnauthorizedLoginViewModel
+import com.babylon.wallet.android.presentation.dapp.unauthorized.login.ROUTE_DAPP_LOGIN_UNAUTHORIZED_GRAPH
 import com.google.accompanist.navigation.animation.composable
 
 @VisibleForTesting
@@ -37,39 +38,38 @@ fun NavController.chooseAccountsOneTime(numberOfAccounts: Int, isExactAccountsCo
 @Suppress("LongParameterList")
 @OptIn(ExperimentalAnimationApi::class)
 fun NavGraphBuilder.chooseAccountsOneTime(
-    sharedViewModel: DAppUnauthorizedLoginViewModel,
-    initialUnauthorizedLoginRoute: InitialUnauthorizedLoginRoute.ChooseAccount? = null,
     exitRequestFlow: () -> Unit,
     dismissErrorDialog: () -> Unit,
     onAccountCreationClick: () -> Unit,
     onLoginFlowComplete: (requestId: String, dAppName: String) -> Unit,
-    onPersonaOnetime: (String) -> Unit
+    onPersonaOnetime: (String) -> Unit,
+    navController: NavController,
+    onLoginFlowCancelled: () -> Unit
 ) {
     composable(
         route = ROUTE_CHOOSE_ACCOUNTS_ONETIME,
         arguments = listOf(
             navArgument(ARG_NUMBER_OF_ACCOUNTS) {
                 type = NavType.IntType
-                initialUnauthorizedLoginRoute?.let {
-                    defaultValue = it.numberOfAccounts
-                }
             },
             navArgument(ARG_EXACT_ACCOUNT_COUNT) {
                 type = NavType.BoolType
-                initialUnauthorizedLoginRoute?.let {
-                    defaultValue = it.isExactAccountsCount
-                }
-            },
+            }
         )
     ) {
+        val parentEntry = remember(it) {
+            navController.getBackStackEntry(ROUTE_DAPP_LOGIN_UNAUTHORIZED_GRAPH)
+        }
+        val sharedVM = hiltViewModel<DAppUnauthorizedLoginViewModel>(parentEntry)
         OneTimeChooseAccountsScreen(
             viewModel = hiltViewModel(),
-            sharedViewModel = sharedViewModel,
+            sharedViewModel = sharedVM,
             exitRequestFlow = exitRequestFlow,
             dismissErrorDialog = dismissErrorDialog,
             onAccountCreationClick = onAccountCreationClick,
             onLoginFlowComplete = onLoginFlowComplete,
-            onPersonaOnetime = onPersonaOnetime
+            onPersonaOnetime = onPersonaOnetime,
+            onLoginFlowCancelled = onLoginFlowCancelled
         )
     }
 }

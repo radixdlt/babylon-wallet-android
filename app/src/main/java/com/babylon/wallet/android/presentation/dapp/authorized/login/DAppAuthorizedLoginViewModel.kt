@@ -1,5 +1,6 @@
 package com.babylon.wallet.android.presentation.dapp.authorized.login
 
+import InitialAuthorizedLoginRoute
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.dapp.DappMessenger
@@ -23,7 +24,6 @@ import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
-import com.babylon.wallet.android.presentation.dapp.authorized.InitialAuthorizedLoginRoute
 import com.babylon.wallet.android.presentation.dapp.authorized.account.AccountItemUiModel
 import com.babylon.wallet.android.presentation.dapp.authorized.account.toUiModel
 import com.babylon.wallet.android.presentation.dapp.authorized.selectpersona.PersonaUiModel
@@ -75,9 +75,6 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
 
     private var authorizedDapp: Network.AuthorizedDapp? = null
     private var editedDapp: Network.AuthorizedDapp? = null
-
-    private val topLevelOneOffEventHandler = OneOffEventHandlerImpl<DAppAuthorizedLoginEvent>()
-    val topLevelOneOffEvent by topLevelOneOffEventHandler
 
     override fun initialState(): DAppLoginUiState = DAppLoginUiState()
 
@@ -221,7 +218,7 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
             failure.getDappMessage()
         )
         delay(2000)
-        topLevelOneOffEventHandler.sendEvent(DAppAuthorizedLoginEvent.RejectLogin)
+        sendEvent(DAppAuthorizedLoginEvent.RejectLogin)
         incomingRequestRepository.requestHandled(requestId = args.interactionId)
     }
 
@@ -512,7 +509,7 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
                     error = walletWalletErrorType
                 )
             }
-            topLevelOneOffEventHandler.sendEvent(DAppAuthorizedLoginEvent.RejectLogin)
+            sendEvent(DAppAuthorizedLoginEvent.RejectLogin)
             incomingRequestRepository.requestHandled(requestId = args.interactionId)
         }
     }

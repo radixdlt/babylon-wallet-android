@@ -2,14 +2,16 @@ package com.babylon.wallet.android.presentation.dapp.authorized.selectpersona
 
 import androidx.annotation.VisibleForTesting
 import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.runtime.remember
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.SavedStateHandle
+import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavType
 import androidx.navigation.navArgument
-import com.babylon.wallet.android.presentation.dapp.authorized.InitialAuthorizedLoginRoute
 import com.babylon.wallet.android.presentation.dapp.authorized.login.DAppAuthorizedLoginEvent
 import com.babylon.wallet.android.presentation.dapp.authorized.login.DAppAuthorizedLoginViewModel
+import com.babylon.wallet.android.presentation.dapp.authorized.login.ROUTE_DAPP_LOGIN_AUTHORIZED_GRAPH
 import com.google.accompanist.navigation.animation.composable
 
 @VisibleForTesting
@@ -21,15 +23,20 @@ internal class SelectPersonaArgs(val requestId: String) {
     constructor(savedStateHandle: SavedStateHandle) : this(checkNotNull(savedStateHandle[ARG_REQUEST_ID]) as String)
 }
 
+fun NavController.selectPersona(
+    requestId: String
+) {
+    navigate("select_persona/$requestId")
+}
+
 @OptIn(ExperimentalAnimationApi::class)
 @Suppress("LongParameterList")
 fun NavGraphBuilder.selectPersona(
+    navController: NavController,
     onBackClick: () -> Unit,
     onChooseAccounts: (DAppAuthorizedLoginEvent.ChooseAccounts) -> Unit,
     onLoginFlowComplete: (DAppAuthorizedLoginEvent.LoginFlowCompleted) -> Unit,
     createNewPersona: (Boolean) -> Unit,
-    initialAuthorizedLoginRoute: InitialAuthorizedLoginRoute.SelectPersona?,
-    sharedViewModel: DAppAuthorizedLoginViewModel,
     onDisplayPermission: (DAppAuthorizedLoginEvent.DisplayPermission) -> Unit,
     onPersonaDataOngoing: (DAppAuthorizedLoginEvent.PersonaDataOngoing) -> Unit,
     onPersonaDataOnetime: (DAppAuthorizedLoginEvent.PersonaDataOnetime) -> Unit
@@ -39,16 +46,16 @@ fun NavGraphBuilder.selectPersona(
         arguments = listOf(
             navArgument(ARG_REQUEST_ID) {
                 type = NavType.StringType
-                nullable = false
-                initialAuthorizedLoginRoute?.let {
-                    defaultValue = initialAuthorizedLoginRoute.reqId
-                }
             }
         )
     ) {
+        val parentEntry = remember(it) {
+            navController.getBackStackEntry(ROUTE_DAPP_LOGIN_AUTHORIZED_GRAPH)
+        }
+        val sharedVM = hiltViewModel<DAppAuthorizedLoginViewModel>(parentEntry)
         SelectPersonaScreen(
             viewModel = hiltViewModel(),
-            sharedViewModel = sharedViewModel,
+            sharedViewModel = sharedVM,
             onBackClick = onBackClick,
             onChooseAccounts = onChooseAccounts,
             onLoginFlowComplete = onLoginFlowComplete,
