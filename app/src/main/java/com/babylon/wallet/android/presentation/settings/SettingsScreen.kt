@@ -82,8 +82,16 @@ private fun SettingsContent(
         RadixCenteredTopAppBar(
             title = stringResource(R.string.settings_title),
             onBackClick = onBackClick,
-            contentColor = RadixTheme.colors.gray1
+            contentColor = RadixTheme.colors.gray1,
+            titleIcon = {
+               Icon(
+                    painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_settings),
+                    tint = RadixTheme.colors.gray1,
+                    contentDescription = "settings gear"
+                )
+            }
         )
+        Divider(color = RadixTheme.colors.gray4)
         LazyColumn(modifier = Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally) {
             appSettings.forEach { settingsItem ->
                 when (settingsItem) {
@@ -92,8 +100,7 @@ private fun SettingsContent(
                             ConnectionSettingItem(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .padding(RadixTheme.dimensions.paddingDefault)
-                                    .background(RadixTheme.colors.gray5, RadixTheme.shapes.roundedRectDefault)
+                                    .background(RadixTheme.colors.gray5)
                                     .padding(RadixTheme.dimensions.paddingDefault),
                                 onSettingClick = onSettingClick,
                                 settingsItem = settingsItem
@@ -266,11 +273,14 @@ private fun ConnectionSettingItem(
             textAlign = TextAlign.Center
         )
         RadixSecondaryButton(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = RadixTheme.dimensions.paddingDefault),
             text = stringResource(R.string.settings_linkToConnectorHeader_linkToConnector),
             onClick = {
                 onSettingClick(settingsItem)
             },
+            containerColor = RadixTheme.colors.gray3,
             contentColor = RadixTheme.colors.gray1,
             icon = {
                 Icon(
