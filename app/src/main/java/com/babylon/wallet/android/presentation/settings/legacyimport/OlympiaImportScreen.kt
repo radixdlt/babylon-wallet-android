@@ -73,11 +73,11 @@ import com.babylon.wallet.android.presentation.settings.connector.qrcode.CameraP
 import com.babylon.wallet.android.presentation.ui.composables.AddLedgerBottomSheet
 import com.babylon.wallet.android.presentation.ui.composables.BackIconType
 import com.babylon.wallet.android.presentation.ui.composables.DefaultModalSheetLayout
-import com.babylon.wallet.android.presentation.ui.composables.LedgerSelector
 import com.babylon.wallet.android.presentation.ui.composables.NotSecureAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.SimpleAccountCard
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUiMessageHandler
+import com.babylon.wallet.android.presentation.ui.composables.UseOrAddLedgerSection
 import com.babylon.wallet.android.presentation.ui.modifier.applyIf
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import com.babylon.wallet.android.utils.biometricAuthenticate
@@ -140,7 +140,6 @@ fun OlympiaImportScreen(
         ledgerFactorSources = state.ledgerFactorSources,
         addLedgerSheetState = state.addLedgerSheetState,
         onSendAddLedgerRequest = viewModel::onSendAddLedgerRequest,
-        selectedFactorSourceID = state.selectedFactorSourceID,
         onUseLedger = viewModel::onUseLedger,
         onLedgerFactorSourceSelected = viewModel::onLedgerFactorSourceSelected,
         deviceModel = state.recentlyConnectedLedgerDevice?.model?.toProfileLedgerDeviceModel()?.description()
@@ -181,10 +180,9 @@ private fun OlympiaImportContent(
     onConfirmLedgerName: (String) -> Unit,
     hasP2pLinks: Boolean,
     onAddP2PLink: () -> Unit,
-    ledgerFactorSources: ImmutableList<FactorSource>,
+    ledgerFactorSources: ImmutableList<Selectable<FactorSource>>,
     addLedgerSheetState: AddLedgerSheetState,
     onSendAddLedgerRequest: () -> Unit,
-    selectedFactorSourceID: FactorSource.ID?,
     onUseLedger: () -> Unit,
     onLedgerFactorSourceSelected: (FactorSource) -> Unit,
     deviceModel: String?
@@ -356,7 +354,6 @@ private fun OlympiaImportContent(
                                 waitingForLedgerResponse = waitingForLedgerResponse,
                                 hasP2pLinks = hasP2pLinks,
                                 ledgerFactorSources = ledgerFactorSources,
-                                selectedFactorSourceID = selectedFactorSourceID,
                                 onAddNewLedger = {
                                     scope.launch {
                                         bottomSheetState.show()
@@ -520,8 +517,7 @@ private fun HardwareImportScreen(
     onSkipRemainingHardwareAccounts: () -> Unit,
     waitingForLedgerResponse: Boolean,
     hasP2pLinks: Boolean,
-    ledgerFactorSources: ImmutableList<FactorSource>,
-    selectedFactorSourceID: FactorSource.ID?,
+    ledgerFactorSources: ImmutableList<Selectable<FactorSource>>,
     onAddNewLedger: () -> Unit,
     onLedgerFactorSourceSelected: (FactorSource) -> Unit,
     onUseLedger: () -> Unit
@@ -546,22 +542,21 @@ private fun HardwareImportScreen(
                     textAlign = TextAlign.Center
                 )
             } else {
-                LedgerSelector(
+                UseOrAddLedgerSection(
                     modifier = Modifier
                         .fillMaxWidth()
+                        .weight(1f)
                         .padding(RadixTheme.dimensions.paddingDefault),
-                    selectedLedgerFactorSourceID = selectedFactorSourceID,
                     ledgerFactorSources = ledgerFactorSources,
+                    onAddLedger = onAddNewLedger,
                     onLedgerFactorSourceSelected = onLedgerFactorSourceSelected
                 )
             }
-            Spacer(Modifier.weight(1f))
             RadixSecondaryButton(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .imePadding(),
-                onClick = onAddNewLedger,
-                text = stringResource(id = R.string.ledgerHardwareDevices_addNewLedger)
+                modifier = Modifier.fillMaxWidth(),
+                text = "Skip remaining accounts", // TODO skip feature will be available on iOS, so maybe we can add a String to crowdin
+                onClick = onSkipRemainingHardwareAccounts,
+                enabled = !waitingForLedgerResponse
             )
             RadixPrimaryButton(
                 modifier = Modifier
@@ -570,12 +565,6 @@ private fun HardwareImportScreen(
                 onClick = onUseLedger,
                 text = stringResource(id = R.string.ledgerHardwareDevices_continueWithLedger),
                 enabled = hasP2pLinks && ledgerFactorSources.isNotEmpty()
-            )
-            RadixSecondaryButton(
-                modifier = Modifier.fillMaxWidth(),
-                text = "Skip remaining accounts", // TODO skip feature will be available on iOS, so maybe we can add a String to crowdin
-                onClick = onSkipRemainingHardwareAccounts,
-                enabled = !waitingForLedgerResponse
             )
         }
         if (waitingForLedgerResponse) {
@@ -724,7 +713,6 @@ fun SettingsScreenLinkConnectorWithoutActiveConnectorPreview() {
             ledgerFactorSources = persistentListOf(),
             addLedgerSheetState = AddLedgerSheetState.Connect,
             onSendAddLedgerRequest = {},
-            selectedFactorSourceID = null,
             onUseLedger = {},
             onLedgerFactorSourceSelected = {},
             deviceModel = null

@@ -79,10 +79,15 @@ class OlympiaImportViewModel @Inject constructor(
         viewModelScope.launch {
             createLedgerDelegate.state.collect { delegateState ->
                 _state.update { uiState ->
+                    val selectedFactorSourceId = delegateState.selectedFactorSourceID
                     uiState.copy(
-                        selectedFactorSourceID = delegateState.selectedFactorSourceID,
                         addLedgerSheetState = delegateState.addLedgerSheetState,
-                        ledgerFactorSources = delegateState.ledgerFactorSources,
+                        ledgerFactorSources = delegateState.ledgerFactorSources.map {
+                            Selectable(
+                                it,
+                                selected = it.id == selectedFactorSourceId
+                            )
+                        }.toPersistentList(),
                         waitingForLedgerResponse = delegateState.waitingForLedgerResponse,
                         recentlyConnectedLedgerDevice = delegateState.recentlyConnectedLedgerDevice,
                         hasP2pLinks = delegateState.hasP2pLinks,
@@ -303,8 +308,8 @@ class OlympiaImportViewModel @Inject constructor(
     }
 
     private suspend fun runForSelectedLedger(action: suspend (FactorSource) -> Unit) {
-        state.value.ledgerFactorSources.firstOrNull { it.id == state.value.selectedFactorSourceID }?.let { ledgerFactorSource ->
-            action(ledgerFactorSource)
+        state.value.ledgerFactorSources.firstOrNull { it.selected }?.let { ledgerFactorSource ->
+            action(ledgerFactorSource.data)
         }
     }
 
@@ -319,10 +324,6 @@ class OlympiaImportViewModel @Inject constructor(
         viewModelScope.launch {
             internalImportOlympiaAccounts()
         }
-    }
-
-    fun onSkipLedgerName() {
-        createLedgerDelegate.onSkipLedgerName()
     }
 
     fun onConfirmLedgerName(name: String) {
@@ -446,8 +447,7 @@ data class OlympiaImportUiState(
     val hardwareAccountsLeftToImport: Int = 0,
     val waitingForLedgerResponse: Boolean = false,
     val hasP2pLinks: Boolean = false,
-    val ledgerFactorSources: ImmutableList<FactorSource> = persistentListOf(),
-    val selectedFactorSourceID: FactorSource.ID? = null,
+    val ledgerFactorSources: ImmutableList<Selectable<FactorSource>> = persistentListOf(),
     val recentlyConnectedLedgerDevice: LedgerDeviceUiModel? = null,
     val addLedgerSheetState: AddLedgerSheetState = AddLedgerSheetState.Connect,
 ) : UiState
