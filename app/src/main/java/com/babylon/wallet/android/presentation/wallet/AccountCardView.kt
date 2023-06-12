@@ -87,7 +87,7 @@ fun AccountCardView(
                     accountTagText = StringBuilder()
                         .append(" ")
                         .append(stringResource(id = R.string.dot_separator))
-                        .append(" ")
+                        .append("   ")
                         .append(stringResource(id = R.string.homePage_accountsTag_ledgerBabylon))
                         .toString()
                 }
@@ -95,7 +95,7 @@ fun AccountCardView(
                     accountTagText = StringBuilder()
                         .append(" ")
                         .append(stringResource(id = R.string.dot_separator))
-                        .append(" ")
+                        .append("   ")
                         .append(stringResource(id = R.string.homePage_accountsTag_ledgerLegacy))
                         .toString()
                 }
@@ -103,7 +103,7 @@ fun AccountCardView(
                     accountTagText = StringBuilder()
                         .append(" ")
                         .append(stringResource(id = R.string.dot_separator))
-                        .append(" ")
+                        .append("   ")
                         .append(stringResource(id = R.string.homePage_accountsTag_legacySoftware))
                         .toString()
                 }
@@ -111,7 +111,7 @@ fun AccountCardView(
                     accountTagText = StringBuilder()
                         .append(" ")
                         .append(stringResource(id = R.string.dot_separator))
-                        .append(" ")
+                        .append("   ")
                         .append(stringResource(id = R.string.homePage_accountsTag_dAppDefinition))
                         .toString()
                 }
