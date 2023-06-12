@@ -22,12 +22,16 @@ import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.profile.data.model.factorsources.FactorSource
+import rdx.works.profile.data.model.factorsources.FactorSourceKind
 import rdx.works.profile.data.model.pernetwork.Network
+import rdx.works.profile.data.utils.factorSourceId
+import rdx.works.profile.data.utils.isOlympiaAccount
 import rdx.works.profile.data.utils.unsecuredFactorSourceId
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.accountOnCurrentNetwork
 import rdx.works.profile.domain.accountsOnCurrentNetwork
 import rdx.works.profile.domain.backup.GetBackupStateUseCase
+import rdx.works.profile.domain.factorSources
 import javax.inject.Inject
 
 @HiltViewModel
@@ -49,6 +53,7 @@ class WalletViewModel @Inject constructor(
 
     init {
         observeAccounts()
+        observeDeviceFactorSourcesKind()
         observePrompts()
         observeProfileBackupState(getBackupStateUseCase)
         observeGlobalAppEvents()
@@ -69,6 +74,16 @@ class WalletViewModel @Inject constructor(
                     .onError { error ->
                         _state.update { it.onResourcesError(error) }
                     }
+            }
+        }
+    }
+
+    private fun observeDeviceFactorSourcesKind() {
+        viewModelScope.launch {
+            getProfileUseCase.factorSources.collect { factorSourcesList ->
+                _state.update { state ->
+                    state.copy(factorSources = factorSourcesList)
+                }
             }
         }
     }
@@ -131,6 +146,7 @@ data class WalletUiState(
     private val loading: Boolean = true,
     private val refreshing: Boolean = false,
     private val accountsNeedSecurityPrompt: List<Network.Account> = emptyList(),
+    private val factorSources: List<FactorSource> = emptyList(),
     val isSettingsWarningVisible: Boolean = false,
     val error: UiMessage? = null,
 ) : UiState {
@@ -163,6 +179,33 @@ data class WalletUiState(
         }
     }
 
+    fun getTag(forAccount: Network.Account): AccountTag? {
+        return when {
+            !isDappDefinitionAccount(forAccount) && !isLegacyAccount(forAccount) && !isLedgerAccount(forAccount) -> null
+            isDappDefinitionAccount(forAccount) -> AccountTag.DAPP_DEFINITION
+            isLegacyAccount(forAccount) && isLedgerAccount(forAccount) -> AccountTag.LEDGER_LEGACY
+            isLegacyAccount(forAccount) && !isLedgerAccount(forAccount) -> AccountTag.LEGACY_SOFTWARE
+            !isLegacyAccount(forAccount) && isLedgerAccount(forAccount) -> AccountTag.LEDGER_BABYLON
+            else -> null
+        }
+    }
+
+    private fun isLegacyAccount(forAccount: Network.Account): Boolean = forAccount.isOlympiaAccount()
+
+    private fun isLedgerAccount(forAccount: Network.Account): Boolean {
+        val factorSource = factorSources.find {
+            it.id == forAccount.factorSourceId()
+        }?.kind
+
+        return factorSource == FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET
+    }
+
+    private fun isDappDefinitionAccount(forAccount: Network.Account): Boolean {
+        return accountResources.find { accountWithResources ->
+            accountWithResources.account.address == forAccount.address
+        }?.isDappDefinitionAccountType ?: false
+    }
+
     fun loadingResources(accounts: List<Network.Account>, isRefreshing: Boolean): WalletUiState = copy(
         accountsWithResources = accounts.map { account ->
             AccountWithResources(
@@ -185,4 +228,11 @@ data class WalletUiState(
         loading = false,
         refreshing = false
     )
+
+    enum class AccountTag {
+        LEDGER_BABYLON,
+        DAPP_DEFINITION,
+        LEDGER_LEGACY,
+        LEGACY_SOFTWARE
+    }
 }
