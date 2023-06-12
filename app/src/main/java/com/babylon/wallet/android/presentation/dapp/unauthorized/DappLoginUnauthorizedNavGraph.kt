@@ -41,9 +41,8 @@ fun NavGraphBuilder.dappLoginUnauthorizedNavGraph(navController: NavController) 
             onAccountCreationClick = {
                 navController.createAccountScreen(CreateAccountRequestSource.ChooseAccount)
             },
-            onLoginFlowComplete = { requestId, dAppName ->
+            onLoginFlowComplete = {
                 navController.popBackStack(ROUTE_DAPP_LOGIN_UNAUTHORIZED_GRAPH, true)
-                navController.dappInteractionDialog(requestId, dAppName)
             },
             onPersonaOnetime = {
                 navController.personaDataOnetimeUnauthorized(it)
@@ -57,9 +56,8 @@ fun NavGraphBuilder.dappLoginUnauthorizedNavGraph(navController: NavController) 
             onBackClick = {
                 navController.navigateUp()
             },
-            onLoginFlowComplete = { requestId, dAppName ->
+            onLoginFlowComplete = {
                 navController.popBackStack(ROUTE_DAPP_LOGIN_UNAUTHORIZED_GRAPH, true)
-                navController.dappInteractionDialog(requestId, dAppName)
             },
             onCreatePersona = { isFirstPersonaCreated ->
                 if (isFirstPersonaCreated) {

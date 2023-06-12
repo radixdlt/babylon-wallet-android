@@ -38,7 +38,7 @@ fun NavGraphBuilder.personaDataOnetimeAuthorized(
     onEdit: (PersonaDataOnetimeEvent.OnEditPersona) -> Unit,
     onBackClick: () -> Unit,
     navController: NavController,
-    onLoginFlowComplete: (Event.LoginFlowCompleted) -> Unit,
+    onLoginFlowComplete: () -> Unit,
     onCreatePersona: (Boolean) -> Unit
 ) {
     composable(

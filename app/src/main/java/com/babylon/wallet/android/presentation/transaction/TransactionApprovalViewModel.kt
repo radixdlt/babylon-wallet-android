@@ -536,7 +536,7 @@ class TransactionApprovalViewModel @Inject constructor(
             }
 
             appEventBus.sendEvent(
-                AppEvent.TransactionEvent.Sent(
+                AppEvent.Status.Transaction.Sent(
                     requestId = args.requestId,
                     transactionId = txId,
                     isInternal = transactionWriteRequest.isInternal
@@ -564,7 +564,7 @@ class TransactionApprovalViewModel @Inject constructor(
             }
 
             appEventBus.sendEvent(
-                AppEvent.TransactionEvent.Failed(
+                AppEvent.Status.Transaction.Failed(
                     requestId = args.requestId,
                     transactionId = "",
                     isInternal = transactionWriteRequest.isInternal,

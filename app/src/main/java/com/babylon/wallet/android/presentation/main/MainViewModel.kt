@@ -44,6 +44,7 @@ class MainViewModel @Inject constructor(
     private val incomingRequestRepository: IncomingRequestRepository,
     private val authorizeSpecifiedPersonaUseCase: AuthorizeSpecifiedPersonaUseCase,
     private val verifyDappUseCase: VerifyDappUseCase,
+    private val appEventBus: AppEventBus,
     getProfileStateUseCase: GetProfileStateUseCase
 ) : StateViewModel<MainUiState>(), OneOffEventHandler<MainEvent> by OneOffEventHandlerImpl() {
 
@@ -122,21 +123,22 @@ class MainViewModel @Inject constructor(
     private fun handleAllIncomingRequests() {
         viewModelScope.launch {
             incomingRequestRepository.currentRequestToHandle.collect { request ->
-                val mainEvent = if (request.metadata.isInternal) {
-                    MainEvent.IncomingRequestEvent(request)
+                if (request.metadata.isInternal) {
+                    sendEvent(MainEvent.IncomingRequestEvent(request))
                 } else {
                     delay(REQUEST_HANDLING_DELAY)
                     val dAppData = authorizeSpecifiedPersonaUseCase(request)
                     if (dAppData.isSuccess) {
-                        MainEvent.HandledUsePersonaAuthRequest(
-                            requestId = dAppData.getOrThrow().requestId,
-                            dAppName = dAppData.getOrThrow().name
+                        appEventBus.sendEvent(
+                            AppEvent.Status.DappInteraction(
+                                requestId = dAppData.getOrThrow().requestId,
+                                dAppName = dAppData.getOrThrow().name
+                            )
                         )
                     } else {
-                        MainEvent.IncomingRequestEvent(request)
+                        sendEvent(MainEvent.IncomingRequestEvent(request))
                     }
                 }
-                sendEvent(mainEvent)
             }
         }
     }
@@ -171,10 +173,6 @@ class MainViewModel @Inject constructor(
 sealed class MainEvent : OneOffEvent {
 
     data class IncomingRequestEvent(val request: IncomingRequest) : MainEvent()
-    data class HandledUsePersonaAuthRequest(
-        val requestId: String,
-        val dAppName: String
-    ) : MainEvent()
 }
 
 data class MainUiState(

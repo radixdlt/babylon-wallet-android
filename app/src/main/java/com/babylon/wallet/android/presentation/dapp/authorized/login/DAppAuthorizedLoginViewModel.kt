@@ -30,6 +30,8 @@ import com.babylon.wallet.android.presentation.dapp.authorized.account.toUiModel
 import com.babylon.wallet.android.presentation.dapp.authorized.selectpersona.PersonaUiModel
 import com.babylon.wallet.android.presentation.dapp.authorized.selectpersona.toUiModel
 import com.babylon.wallet.android.presentation.model.encodeToString
+import com.babylon.wallet.android.utils.AppEvent
+import com.babylon.wallet.android.utils.AppEventBus
 import com.babylon.wallet.android.utils.toISO8601String
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.delay
@@ -57,6 +59,7 @@ import javax.inject.Inject
 @Suppress("LongParameterList", "TooManyFunctions", "LongMethod", "LargeClass")
 class DAppAuthorizedLoginViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
+    private val appEventBus: AppEventBus,
     private val dAppMessenger: DappMessenger,
     private val dAppConnectionRepository: DAppConnectionRepository,
     private val getProfileUseCase: GetProfileUseCase,
@@ -628,30 +631,30 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
 
     fun sendRequestResponse() {
         viewModelScope.launch {
-            val selectedPersona = state.value.selectedPersona?.persona
-            requireNotNull(selectedPersona)
-            if (request.isInternalRequest()) {
-                incomingRequestRepository.requestHandled(request.interactionId)
-            } else {
-                buildAuthorizedDappResponseUseCase(
-                    request,
-                    selectedPersona,
-                    state.value.selectedAccountsOneTime.mapNotNull { getProfileUseCase.accountOnCurrentNetwork(it.address) },
-                    state.value.selectedAccountsOngoing.mapNotNull { getProfileUseCase.accountOnCurrentNetwork(it.address) },
-                    state.value.selectedOngoingDataFields,
-                    state.value.selectedOnetimeDataFields
-                ).onSuccess { response ->
-                    dAppMessenger.sendWalletInteractionAuthorizedSuccessResponse(dappId = request.dappId, response = response)
-                    mutex.withLock {
-                        editedDapp?.let { dAppConnectionRepository.updateOrCreateAuthorizedDApp(it) }
-                    }
-                    sendEvent(
-                        Event.LoginFlowCompleted(
+        val selectedPersona = state.value.selectedPersona?.persona
+        requireNotNull(selectedPersona)
+        if (request.isInternalRequest()) {
+            incomingRequestRepository.requestHandled(request.interactionId)
+        } else {
+            buildAuthorizedDappResponseUseCase(
+                request,
+                selectedPersona,
+                state.value.selectedAccountsOneTime.mapNotNull { getProfileUseCase.accountOnCurrentNetwork(it.address) },
+                state.value.selectedAccountsOngoing.mapNotNull { getProfileUseCase.accountOnCurrentNetwork(it.address) },
+                state.value.selectedOngoingDataFields,
+                state.value.selectedOnetimeDataFields
+            ).onSuccess { response ->
+                dAppMessenger.sendWalletInteractionAuthorizedSuccessResponse(dappId = request.dappId, response = response)
+                mutex.withLock {
+                    editedDapp?.let { dAppConnectionRepository.updateOrCreateAuthorizedDApp(it) }
+                }
+                sendEvent(Event.LoginFlowCompleted)
+                if (!request.isInternalRequest()) {
+                    appEventBus.sendEvent(AppEvent.Status.DappInteraction(
                             requestId = request.interactionId,
-                            dAppName = state.value.dappWithMetadata?.name.orEmpty(),
-                            showSuccessDialog = !request.isInternalRequest()
-                        )
-                    )
+                            dAppName = state.value.dappWithMetadata?.name
+                        ))
+                    }
                 }.onFailure { throwable ->
                     if (throwable is DappRequestFailure) {
                         handleRequestError(throwable)
@@ -667,11 +670,7 @@ sealed interface Event : OneOffEvent {
     object RejectLogin : Event
     object RequestCompletionBiometricPrompt : Event
 
-    data class LoginFlowCompleted(
-        val requestId: String,
-        val dAppName: String,
-        val showSuccessDialog: Boolean = true
-    ) : Event
+    object LoginFlowCompleted: Event
 
     data class DisplayPermission(
         val numberOfAccounts: Int,

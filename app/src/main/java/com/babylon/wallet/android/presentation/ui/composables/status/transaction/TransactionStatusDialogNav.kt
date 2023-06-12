@@ -17,10 +17,10 @@ import kotlinx.serialization.json.Json
 private const val ARG_REQUEST_EVENT = "arg_request_event"
 
 internal class TransactionStatusDialogArgs(
-    val event: AppEvent.TransactionEvent
+    val event: AppEvent.Status.Transaction
 ) {
     constructor(savedStateHandle: SavedStateHandle) : this(
-        checkNotNull(savedStateHandle.get<String>(ARG_REQUEST_EVENT)?.let { Json.decodeFromString<AppEvent.TransactionEvent>(it) })
+        checkNotNull(savedStateHandle.get<String>(ARG_REQUEST_EVENT)?.let { Json.decodeFromString<AppEvent.Status.Transaction>(it) })
     )
 }
 
@@ -28,7 +28,7 @@ fun NavController.transactionStatusDialogShown(): Boolean {
     return currentBackStackEntry?.destination?.route?.startsWith("transaction_status_dialog") == true
 }
 
-fun NavController.transactionStatusDialog(transactionEvent: AppEvent.TransactionEvent) {
+fun NavController.transactionStatusDialog(transactionEvent: AppEvent.Status.Transaction) {
     val serialized = Json.encodeToString(transactionEvent)
     navigate("transaction_status_dialog/$serialized")
 }

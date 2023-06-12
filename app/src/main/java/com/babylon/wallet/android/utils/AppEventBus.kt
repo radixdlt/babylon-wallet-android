@@ -31,32 +31,42 @@ sealed interface AppEvent {
     ) : AppEvent
 
     @Serializable
-    sealed class TransactionEvent : AppEvent {
-
+    sealed class Status: AppEvent {
         abstract val requestId: String
-        abstract val transactionId: String
-        abstract val isInternal: Boolean
 
         @Serializable
-        data class Sent(
+        data class DappInteraction(
             override val requestId: String,
-            override val transactionId: String,
-            override val isInternal: Boolean
-        ) : TransactionEvent()
+            val dAppName: String?
+        ): Status()
 
         @Serializable
-        data class Successful(
-            override val requestId: String,
-            override val transactionId: String,
-            override val isInternal: Boolean
-        ) : TransactionEvent()
+        sealed class Transaction : Status() {
 
-        @Serializable
-        data class Failed(
-            override val requestId: String,
-            override val transactionId: String,
-            override val isInternal: Boolean,
-            @StringRes val errorMessageRes: Int?
-        ) : TransactionEvent()
+            abstract val transactionId: String
+            abstract val isInternal: Boolean
+
+            @Serializable
+            data class Sent(
+                override val requestId: String,
+                override val transactionId: String,
+                override val isInternal: Boolean
+            ) : Transaction()
+
+            @Serializable
+            data class Successful(
+                override val requestId: String,
+                override val transactionId: String,
+                override val isInternal: Boolean
+            ) : Transaction()
+
+            @Serializable
+            data class Failed(
+                override val requestId: String,
+                override val transactionId: String,
+                override val isInternal: Boolean,
+                @StringRes val errorMessageRes: Int?
+            ) : Transaction()
+        }
     }
 }

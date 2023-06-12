@@ -3,7 +3,6 @@ package com.babylon.wallet.android
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -26,6 +25,7 @@ import dagger.hilt.EntryPoint
 import dagger.hilt.EntryPoints
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
+import kotlinx.coroutines.flow.filterIsInstance
 
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
@@ -62,34 +62,29 @@ fun WalletApp(
                         }
                     }
                 }
-
-                is MainEvent.HandledUsePersonaAuthRequest -> {
-                    navController.dappInteractionDialog(
-                        requestId = event.requestId,
-                        dAppName = event.dAppName
-                    )
-                }
             }
         }
     }
 
-    HandleAppEvents(navController = navController, appEventBus = appEventBus)
+    HandleStatusEvents(navController = navController, appEventBus = appEventBus)
     mainViewModel.observeP2PLinks.collectAsStateWithLifecycle(null)
 }
 
 
 @Composable
-fun HandleAppEvents(navController: NavController, appEventBus: AppEventBus) {
-    val appEvent by appEventBus.events.collectAsStateWithLifecycle(initialValue = null)
-
-    LaunchedEffect(appEvent) {
-        when (val event = appEvent) {
-            is AppEvent.TransactionEvent -> {
-                if (!navController.transactionStatusDialogShown()) {
-                    navController.transactionStatusDialog(event)
+fun HandleStatusEvents(navController: NavController, appEventBus: AppEventBus) {
+    LaunchedEffect(Unit) {
+        appEventBus.events.filterIsInstance<AppEvent.Status>().collect { event ->
+            when (event) {
+                is AppEvent.Status.Transaction -> {
+                    if (!navController.transactionStatusDialogShown()) {
+                        navController.transactionStatusDialog(event)
+                    }
+                }
+                is AppEvent.Status.DappInteraction -> {
+                    navController.dappInteractionDialog(event)
                 }
             }
-            else -> {}
         }
     }
 }

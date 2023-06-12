@@ -40,7 +40,7 @@ class TransactionStatusDialogViewModel @Inject constructor(
     init {
         viewModelScope.launch {
             appEventBus.events
-                .filterIsInstance<AppEvent.TransactionEvent>()
+                .filterIsInstance<AppEvent.Status.Transaction>()
                 .filter {
                     it.requestId == state.value.status.requestId
                 }.collect { event ->
@@ -63,7 +63,7 @@ class TransactionStatusDialogViewModel @Inject constructor(
         pollTransactionStatusUseCase(status.transactionId).onValue {
             // Notify the system and this particular dialog that the transaction is completed
             appEventBus.sendEvent(
-                AppEvent.TransactionEvent.Successful(
+                AppEvent.Status.Transaction.Successful(
                     requestId = status.requestId,
                     transactionId = status.transactionId,
                     isInternal = status.isInternal
@@ -72,7 +72,7 @@ class TransactionStatusDialogViewModel @Inject constructor(
         }.onError {
             // Notify the system and this particular dialog that an error has occurred
             appEventBus.sendEvent(
-                AppEvent.TransactionEvent.Failed(
+                AppEvent.Status.Transaction.Failed(
                     requestId = status.requestId,
                     transactionId = status.transactionId,
                     isInternal = status.isInternal,
@@ -155,21 +155,21 @@ sealed interface TransactionStatus {
     ) : TransactionStatus
 
     companion object {
-        fun from(event: AppEvent.TransactionEvent) = when (event) {
-            is AppEvent.TransactionEvent.Failed -> Failed(
+        fun from(event: AppEvent.Status.Transaction) = when (event) {
+            is AppEvent.Status.Transaction.Failed -> Failed(
                 requestId = event.requestId,
                 transactionId = event.transactionId,
                 isInternal = event.isInternal,
                 messageRes = event.errorMessageRes
             )
 
-            is AppEvent.TransactionEvent.Sent -> Completing(
+            is AppEvent.Status.Transaction.Sent -> Completing(
                 requestId = event.requestId,
                 transactionId = event.transactionId,
                 isInternal = event.isInternal,
             )
 
-            is AppEvent.TransactionEvent.Successful -> Success(
+            is AppEvent.Status.Transaction.Successful -> Success(
                 requestId = event.requestId,
                 transactionId = event.transactionId,
                 isInternal = event.isInternal,

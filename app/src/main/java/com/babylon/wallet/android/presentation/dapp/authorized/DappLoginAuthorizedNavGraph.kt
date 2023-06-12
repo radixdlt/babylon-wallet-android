@@ -61,9 +61,6 @@ fun NavGraphBuilder.dappLoginAuthorizedNavGraph(navController: NavController) {
             },
             onLoginFlowComplete = {
                 navController.popBackStack(ROUTE_DAPP_LOGIN_AUTHORIZED_GRAPH, true)
-                if (it.showSuccessDialog) {
-                    navController.dappInteractionDialog(it.requestId, it.dAppName)
-                }
             },
             createNewPersona = { isFirstPersonaCreated ->
                 if (isFirstPersonaCreated) {
@@ -114,9 +111,6 @@ fun NavGraphBuilder.dappLoginAuthorizedNavGraph(navController: NavController) {
             },
             onLoginFlowComplete = {
                 navController.popBackStack(ROUTE_DAPP_LOGIN_AUTHORIZED_GRAPH, true)
-                if (it.showSuccessDialog) {
-                    navController.dappInteractionDialog(it.requestId, it.dAppName)
-                }
             },
             navController = navController,
             onBackClick = {
@@ -139,9 +133,6 @@ fun NavGraphBuilder.dappLoginAuthorizedNavGraph(navController: NavController) {
             },
             onLoginFlowComplete = {
                 navController.popBackStack(ROUTE_DAPP_LOGIN_AUTHORIZED_GRAPH, true)
-                if (it.showSuccessDialog) {
-                    navController.dappInteractionDialog(it.requestId, it.dAppName)
-                }
             },
             onPersonaDataOnetime = {
                 navController.personaDataOnetimeAuthorized(it.requiredFieldsEncoded)
@@ -165,9 +156,6 @@ fun NavGraphBuilder.dappLoginAuthorizedNavGraph(navController: NavController) {
             },
             onLoginFlowComplete = {
                 navController.popBackStack(ROUTE_DAPP_LOGIN_AUTHORIZED_GRAPH, true)
-                if (it.showSuccessDialog) {
-                    navController.dappInteractionDialog(it.requestId, it.dAppName)
-                }
             },
             onCreatePersona = { isFirstPersonaCreated ->
                 if (isFirstPersonaCreated) {

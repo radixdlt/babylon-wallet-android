@@ -10,6 +10,7 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.dialog
 import androidx.navigation.navArgument
 import com.babylon.wallet.android.R
+import com.babylon.wallet.android.utils.AppEvent
 
 @VisibleForTesting
 private const val ARG_REQUEST_ID = "arg_request_id"
@@ -28,13 +29,14 @@ internal class DappInteractionSuccessDialogArgs(
 }
 
 fun NavController.dappInteractionDialog(
-    requestId: String,
-    dAppName: String
+    event: AppEvent.Status.DappInteraction
 ) {
-    val name = dAppName.ifBlank {
+    val name = if (event.dAppName.isNullOrBlank()) {
         context.resources.getString(R.string.dAppRequest_metadata_unknownName)
+    } else {
+        event.dAppName
     }
-    navigate("dapp_interaction_dialog/$requestId/$name")
+    navigate("dapp_interaction_dialog/${event.requestId}/$name")
 }
 
 fun NavGraphBuilder.dappInteractionDialog(

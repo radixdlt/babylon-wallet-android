@@ -31,14 +31,14 @@ fun OneTimeChooseAccountsScreen(
     dismissErrorDialog: () -> Unit,
     onAccountCreationClick: () -> Unit,
     sharedViewModel: DAppUnauthorizedLoginViewModel,
-    onLoginFlowComplete: (requestId: String, dAppName: String) -> Unit,
+    onLoginFlowComplete: () -> Unit,
     onPersonaOnetime: (String) -> Unit
 ) {
     val context = LocalContext.current
     LaunchedEffect(Unit) {
         sharedViewModel.oneOffEvent.collect { event ->
             when (event) {
-                is Event.LoginFlowCompleted -> onLoginFlowComplete(event.requestId, event.dAppName)
+                is Event.LoginFlowCompleted -> onLoginFlowComplete()
                 is Event.PersonaDataOnetime -> onPersonaOnetime(event.requiredFieldsEncoded)
                 Event.RejectLogin -> sharedViewModel.onRejectRequest()
                 Event.RequestCompletionBiometricPrompt -> {
