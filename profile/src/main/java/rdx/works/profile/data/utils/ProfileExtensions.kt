@@ -22,6 +22,10 @@ fun Network.Persona.personaFactorSourceId(): FactorSource.ID? {
     return (securityState as? SecurityState.Unsecured)?.unsecuredEntityControl?.transactionSigning?.factorSourceId
 }
 
+fun Network.Account.factorSourceId(): FactorSource.ID {
+    return (this.securityState as SecurityState.Unsecured).unsecuredEntityControl.transactionSigning.factorSourceId
+}
+
 fun Entity.hasAuthSigning(): Boolean {
     return when (val state = securityState) {
         is SecurityState.Unsecured -> {
