@@ -471,6 +471,7 @@
   <string name="addLedger_addDevice_continue">Continue</string>
   <string name="addLedger_nameLedger_title">Name Your Ledger</string>
   <string name="addLedger_nameLedger_body">Enter a label for this Ledger device</string>
+  <string name="addLedger_nameLedger_detectedType">Detected type: %s</string>
   <string name="addLedger_nameLedger_namePlaceholder">Green Ledger Nano S+</string>
   <string name="addLedger_nameLedger_continueButtonTitle">Save and Continue</string>
   <string name="importMnemonic_wordHeading">word #%d</string>
