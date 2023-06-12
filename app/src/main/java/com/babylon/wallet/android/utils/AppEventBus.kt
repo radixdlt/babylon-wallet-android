@@ -4,7 +4,6 @@ import androidx.annotation.StringRes
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
-import kotlinx.serialization.Serializable
 import rdx.works.profile.data.model.factorsources.FactorSource
 import rdx.works.profile.data.model.pernetwork.DerivationPath
 import javax.inject.Inject
@@ -30,38 +29,32 @@ sealed interface AppEvent {
         val derivedPublicKeyHex: String
     ) : AppEvent
 
-    @Serializable
     sealed class Status: AppEvent {
         abstract val requestId: String
 
-        @Serializable
         data class DappInteraction(
             override val requestId: String,
             val dAppName: String?
         ): Status()
 
-        @Serializable
         sealed class Transaction : Status() {
 
             abstract val transactionId: String
             abstract val isInternal: Boolean
 
-            @Serializable
-            data class Sent(
+            data class InProgress(
                 override val requestId: String,
                 override val transactionId: String,
                 override val isInternal: Boolean
             ) : Transaction()
 
-            @Serializable
-            data class Successful(
+            data class Success(
                 override val requestId: String,
                 override val transactionId: String,
                 override val isInternal: Boolean
             ) : Transaction()
 
-            @Serializable
-            data class Failed(
+            data class Fail(
                 override val requestId: String,
                 override val transactionId: String,
                 override val isInternal: Boolean,

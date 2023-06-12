@@ -15,6 +15,7 @@ import com.babylon.wallet.android.data.transaction.toPrettyString
 import com.babylon.wallet.android.di.coroutines.ApplicationScope
 import com.babylon.wallet.android.domain.common.onError
 import com.babylon.wallet.android.domain.common.onValue
+import com.babylon.wallet.android.domain.common.Result
 import com.babylon.wallet.android.domain.common.value
 import com.babylon.wallet.android.domain.model.AccountWithResources
 import com.babylon.wallet.android.domain.model.DAppWithMetadataAndAssociatedResources
@@ -536,7 +537,7 @@ class TransactionApprovalViewModel @Inject constructor(
             }
 
             appEventBus.sendEvent(
-                AppEvent.Status.Transaction.Sent(
+                AppEvent.Status.Transaction.InProgress(
                     requestId = args.requestId,
                     transactionId = txId,
                     isInternal = transactionWriteRequest.isInternal
@@ -564,7 +565,7 @@ class TransactionApprovalViewModel @Inject constructor(
             }
 
             appEventBus.sendEvent(
-                AppEvent.Status.Transaction.Failed(
+                AppEvent.Status.Transaction.Fail(
                     requestId = args.requestId,
                     transactionId = "",
                     isInternal = transactionWriteRequest.isInternal,

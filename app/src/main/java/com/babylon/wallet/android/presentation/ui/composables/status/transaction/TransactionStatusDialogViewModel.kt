@@ -63,7 +63,7 @@ class TransactionStatusDialogViewModel @Inject constructor(
         pollTransactionStatusUseCase(status.transactionId).onValue {
             // Notify the system and this particular dialog that the transaction is completed
             appEventBus.sendEvent(
-                AppEvent.Status.Transaction.Successful(
+                AppEvent.Status.Transaction.Success(
                     requestId = status.requestId,
                     transactionId = status.transactionId,
                     isInternal = status.isInternal
@@ -72,7 +72,7 @@ class TransactionStatusDialogViewModel @Inject constructor(
         }.onError {
             // Notify the system and this particular dialog that an error has occurred
             appEventBus.sendEvent(
-                AppEvent.Status.Transaction.Failed(
+                AppEvent.Status.Transaction.Fail(
                     requestId = status.requestId,
                     transactionId = status.transactionId,
                     isInternal = status.isInternal,
@@ -156,20 +156,20 @@ sealed interface TransactionStatus {
 
     companion object {
         fun from(event: AppEvent.Status.Transaction) = when (event) {
-            is AppEvent.Status.Transaction.Failed -> Failed(
+            is AppEvent.Status.Transaction.Fail -> Failed(
                 requestId = event.requestId,
                 transactionId = event.transactionId,
                 isInternal = event.isInternal,
                 messageRes = event.errorMessageRes
             )
 
-            is AppEvent.Status.Transaction.Sent -> Completing(
+            is AppEvent.Status.Transaction.InProgress -> Completing(
                 requestId = event.requestId,
                 transactionId = event.transactionId,
                 isInternal = event.isInternal,
             )
 
-            is AppEvent.Status.Transaction.Successful -> Success(
+            is AppEvent.Status.Transaction.Success -> Success(
                 requestId = event.requestId,
                 transactionId = event.transactionId,
                 isInternal = event.isInternal,
