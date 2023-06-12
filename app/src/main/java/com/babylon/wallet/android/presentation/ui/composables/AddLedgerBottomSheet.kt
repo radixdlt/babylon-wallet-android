@@ -9,6 +9,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
@@ -39,11 +41,14 @@ fun AddLedgerBottomSheet(
     addLedgerSheetState: AddLedgerSheetState,
     onConfirmLedgerName: (String) -> Unit,
     onSheetClose: () -> Unit,
-    waitingForLedgerResponse: Boolean
+    waitingForLedgerResponse: Boolean,
+    onAddP2PLink: () -> Unit
 ) {
     Box(modifier = modifier) {
         Column(
-            modifier = Modifier.fillMaxSize(),
+            modifier = Modifier
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingSmall),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
@@ -62,7 +67,7 @@ fun AddLedgerBottomSheet(
             when (addLedgerSheetState) {
                 AddLedgerSheetState.Connect -> {
                     Icon(
-                        painterResource(id = R.drawable.ic_hardware_ledger),
+                        painterResource(id = R.drawable.ic_hardware_ledger_big),
                         tint = Color.Unspecified,
                         contentDescription = null
                     )
@@ -139,6 +144,10 @@ fun AddLedgerBottomSheet(
                             ledgerNameValue = ""
                         }
                     )
+                }
+
+                AddLedgerSheetState.LinkConnector -> {
+                    LinkConnectorSection(modifier = Modifier.fillMaxSize(), onAddP2PLink = onAddP2PLink)
                 }
             }
         }

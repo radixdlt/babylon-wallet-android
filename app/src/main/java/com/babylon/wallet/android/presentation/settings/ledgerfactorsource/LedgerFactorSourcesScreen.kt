@@ -23,10 +23,7 @@ import androidx.compose.material3.Divider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
@@ -45,7 +42,6 @@ import com.babylon.wallet.android.domain.model.toProfileLedgerDeviceModel
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.model.AddLedgerSheetState
 import com.babylon.wallet.android.presentation.ui.composables.AddLedgerBottomSheet
-import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.DefaultModalSheetLayout
 import com.babylon.wallet.android.presentation.ui.composables.LedgerListItem
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
@@ -70,7 +66,6 @@ fun LedgerFactorSourcesScreen(
             .background(RadixTheme.colors.gray5),
         onBackClick = onBackClick,
         ledgerFactorSources = state.ledgerFactorSources,
-        hasP2pLinks = state.hasP2pLinks,
         onAddP2PLink = onAddP2PLink,
         onSendAddLedgerRequest = viewModel::onSendAddLedgerRequest,
         addLedgerSheetState = state.addLedgerSheetState,
@@ -88,7 +83,6 @@ private fun SettingsLinkConnectorContent(
     modifier: Modifier = Modifier,
     onBackClick: () -> Unit,
     ledgerFactorSources: ImmutableList<FactorSource>,
-    hasP2pLinks: Boolean,
     onAddP2PLink: () -> Unit,
     onSendAddLedgerRequest: () -> Unit,
     addLedgerSheetState: AddLedgerSheetState,
@@ -98,9 +92,6 @@ private fun SettingsLinkConnectorContent(
     uiMessage: UiMessage?,
     onMessageShown: () -> Unit
 ) {
-    var showNoP2pLinksDialog by remember {
-        mutableStateOf(false)
-    }
     val scope = rememberCoroutineScope()
     val bottomSheetState =
         rememberModalBottomSheetState(initialValue = ModalBottomSheetValue.Hidden, skipHalfExpanded = true)
@@ -116,23 +107,24 @@ private fun SettingsLinkConnectorContent(
             onBackClick()
         }
     }
-    DefaultModalSheetLayout(modifier = modifier, sheetState = bottomSheetState, sheetContent = {
-        AddLedgerBottomSheet(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(RadixTheme.dimensions.paddingDefault),
-            onSendAddLedgerRequest = onSendAddLedgerRequest,
-            addLedgerSheetState = addLedgerSheetState,
-            onConfirmLedgerName = {
-                onConfirmLedgerName(it)
-                closeSheetCallback()
-            },
-            waitingForLedgerResponse = waitingForLedgerResponse,
-            onSheetClose = { closeSheetCallback() },
-            deviceModel = deviceModel
-        )
-    }) {
-        Box(modifier = Modifier.fillMaxSize()) {
+    Box(modifier = modifier) {
+        DefaultModalSheetLayout(modifier = Modifier.fillMaxSize(), sheetState = bottomSheetState, sheetContent = {
+            AddLedgerBottomSheet(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(RadixTheme.dimensions.paddingDefault),
+                deviceModel = deviceModel,
+                onSendAddLedgerRequest = onSendAddLedgerRequest,
+                addLedgerSheetState = addLedgerSheetState,
+                onConfirmLedgerName = {
+                    onConfirmLedgerName(it)
+                    closeSheetCallback()
+                },
+                onSheetClose = { closeSheetCallback() },
+                waitingForLedgerResponse = waitingForLedgerResponse,
+                onAddP2PLink = onAddP2PLink
+            )
+        }) {
             Column(modifier = Modifier.fillMaxSize()) {
                 RadixCenteredTopAppBar(
                     title = stringResource(R.string.settings_ledgerHardwareWallets),
@@ -145,51 +137,16 @@ private fun SettingsLinkConnectorContent(
                     modifier = Modifier.fillMaxWidth(),
                     ledgerFactorSources = ledgerFactorSources,
                     onAddLedger = {
-                        if (hasP2pLinks) {
-                            scope.launch {
-                                bottomSheetState.show()
-                            }
-                        } else {
-                            showNoP2pLinksDialog = true
+                        scope.launch {
+                            bottomSheetState.show()
                         }
                     }
                 )
             }
-            SnackbarUiMessageHandler(
-                message = uiMessage,
-                onMessageShown = onMessageShown
-            )
         }
-    }
-    if (showNoP2pLinksDialog) {
-        BasicPromptAlertDialog(
-            finish = {
-                if (it) {
-                    onAddP2PLink()
-                }
-                showNoP2pLinksDialog = false
-            },
-            title = {
-                Text(
-                    text = stringResource(
-                        id = R.string.ledgerHardwareDevices_linkConnectorAlert_title
-                    ),
-                    style = RadixTheme.typography.body2Header,
-                    color = RadixTheme.colors.gray1
-                )
-            },
-            text = {
-                Text(
-                    text = stringResource(
-                        id = R.string.ledgerHardwareDevices_linkConnectorAlert_message
-                    ),
-                    style = RadixTheme.typography.body2Regular,
-                    color = RadixTheme.colors.gray1
-                )
-            },
-            confirmText = stringResource(
-                id = R.string.ledgerHardwareDevices_linkConnectorAlert_continue
-            )
+        SnackbarUiMessageHandler(
+            message = uiMessage,
+            onMessageShown = onMessageShown
         )
     }
 }
@@ -298,15 +255,13 @@ fun SettingsScreenLinkConnectorWithActiveConnectorPreview() {
                     name = "My Ledger",
                 )
             ),
-            hasP2pLinks = false,
             onAddP2PLink = {},
             onSendAddLedgerRequest = {},
             addLedgerSheetState = AddLedgerSheetState.Connect,
             waitingForLedgerResponse = false,
             onConfirmLedgerName = {},
             deviceModel = null,
-            uiMessage = null,
-            onMessageShown = {}
-        )
+            uiMessage = null
+        ) {}
     }
 }

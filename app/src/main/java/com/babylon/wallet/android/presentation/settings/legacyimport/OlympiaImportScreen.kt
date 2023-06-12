@@ -72,7 +72,6 @@ import com.babylon.wallet.android.presentation.model.AddLedgerSheetState
 import com.babylon.wallet.android.presentation.settings.connector.qrcode.CameraPreview
 import com.babylon.wallet.android.presentation.ui.composables.AddLedgerBottomSheet
 import com.babylon.wallet.android.presentation.ui.composables.BackIconType
-import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.DefaultModalSheetLayout
 import com.babylon.wallet.android.presentation.ui.composables.LedgerSelector
 import com.babylon.wallet.android.presentation.ui.composables.NotSecureAlertDialog
@@ -226,6 +225,7 @@ private fun OlympiaImportContent(
                         pagerState.animateScrollToPage(pages.indexOf(event.page))
                     }
                 }
+
                 is OlympiaImportEvent.PreviousPage -> {
                     val page = event.page
                     if (page == null) {
@@ -236,6 +236,7 @@ private fun OlympiaImportContent(
                         }
                     }
                 }
+
                 OlympiaImportEvent.BiometricPrompt -> {
                     if (isDeviceSecure) {
                         context.biometricAuthenticate { authenticatedSuccessfully ->
@@ -258,27 +259,28 @@ private fun OlympiaImportContent(
             }
         })
     }
-    DefaultModalSheetLayout(
-        modifier = modifier,
-        sheetState = bottomSheetState,
-        sheetContent = {
-            AddLedgerBottomSheet(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(RadixTheme.dimensions.paddingDefault),
-                onSendAddLedgerRequest = onSendAddLedgerRequest,
-                addLedgerSheetState = addLedgerSheetState,
-                onConfirmLedgerName = {
-                    onConfirmLedgerName(it)
-                    closeSheetCallback()
-                },
-                waitingForLedgerResponse = waitingForLedgerResponse,
-                onSheetClose = { closeSheetCallback() },
-                deviceModel = deviceModel
-            )
-        }
-    ) {
-        Box(modifier = Modifier.fillMaxSize()) {
+    Box(modifier = modifier) {
+        DefaultModalSheetLayout(
+            modifier = Modifier.fillMaxSize(),
+            sheetState = bottomSheetState,
+            sheetContent = {
+                AddLedgerBottomSheet(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(RadixTheme.dimensions.paddingDefault),
+                    deviceModel = deviceModel,
+                    onSendAddLedgerRequest = onSendAddLedgerRequest,
+                    addLedgerSheetState = addLedgerSheetState,
+                    onConfirmLedgerName = {
+                        onConfirmLedgerName(it)
+                        closeSheetCallback()
+                    },
+                    onSheetClose = { closeSheetCallback() },
+                    waitingForLedgerResponse = waitingForLedgerResponse,
+                    onAddP2PLink = onAddP2PLink
+                )
+            }
+        ) {
             Column(modifier = Modifier.fillMaxSize()) {
                 RadixCenteredTopAppBar(
                     title = stringResource(R.string.importLegacyWallet_title),
@@ -318,6 +320,7 @@ private fun OlympiaImportContent(
                                 qrChunkInfo = qrChunkInfo
                             )
                         }
+
                         ImportPage.AccountList -> {
                             AccountListPage(
                                 modifier = Modifier.fillMaxSize(),
@@ -327,6 +330,7 @@ private fun OlympiaImportContent(
                                 importButtonEnabled = importButtonEnabled
                             )
                         }
+
                         ImportPage.MnemonicInput -> {
                             InputMnemonicPage(
                                 modifier = Modifier
@@ -341,6 +345,7 @@ private fun OlympiaImportContent(
                                 onMnemonicAlreadyImported = onMnemonicAlreadyImported
                             )
                         }
+
                         ImportPage.HardwareAccount -> {
                             HardwareImportScreen(
                                 Modifier
@@ -350,7 +355,6 @@ private fun OlympiaImportContent(
                                 onSkipRemainingHardwareAccounts = onSkipRemainingHardwareAccounts,
                                 waitingForLedgerResponse = waitingForLedgerResponse,
                                 hasP2pLinks = hasP2pLinks,
-                                onAddP2PLink = onAddP2PLink,
                                 ledgerFactorSources = ledgerFactorSources,
                                 selectedFactorSourceID = selectedFactorSourceID,
                                 onAddNewLedger = {
@@ -358,10 +362,11 @@ private fun OlympiaImportContent(
                                         bottomSheetState.show()
                                     }
                                 },
-                                onUseLedger = onUseLedger,
-                                onLedgerFactorSourceSelected = onLedgerFactorSourceSelected
+                                onLedgerFactorSourceSelected = onLedgerFactorSourceSelected,
+                                onUseLedger = onUseLedger
                             )
                         }
+
                         ImportPage.ImportComplete -> {
                             ImportCompletePage(
                                 modifier = Modifier
@@ -374,9 +379,9 @@ private fun OlympiaImportContent(
                     }
                 }
             }
-            SnackbarUiMessageHandler(message = uiMessage) {
-                onMessageShown()
-            }
+        }
+        SnackbarUiMessageHandler(message = uiMessage) {
+            onMessageShown()
         }
     }
 }
@@ -427,7 +432,7 @@ private fun ScanQrPage(
                     )
                 }
                 Text(
-                    text = stringResource(id = com.babylon.wallet.android.R.string.importLegacyWallet_scanQRCodeInstructions),
+                    text = stringResource(id = R.string.importLegacyWallet_scanQRCodeInstructions),
                     style = RadixTheme.typography.body1Regular,
                     color = RadixTheme.colors.gray1,
                     overflow = TextOverflow.Ellipsis,
@@ -515,16 +520,12 @@ private fun HardwareImportScreen(
     onSkipRemainingHardwareAccounts: () -> Unit,
     waitingForLedgerResponse: Boolean,
     hasP2pLinks: Boolean,
-    onAddP2PLink: () -> Unit,
     ledgerFactorSources: ImmutableList<FactorSource>,
     selectedFactorSourceID: FactorSource.ID?,
     onAddNewLedger: () -> Unit,
     onLedgerFactorSourceSelected: (FactorSource) -> Unit,
     onUseLedger: () -> Unit
 ) {
-    var showNoP2pLinksDialog by remember {
-        mutableStateOf(false)
-    }
     Box(modifier = modifier) {
         Column(
             modifier = Modifier.fillMaxSize(),
@@ -559,13 +560,7 @@ private fun HardwareImportScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .imePadding(),
-                onClick = {
-                    if (hasP2pLinks) {
-                        onAddNewLedger()
-                    } else {
-                        showNoP2pLinksDialog = true
-                    }
-                },
+                onClick = onAddNewLedger,
                 text = stringResource(id = R.string.ledgerHardwareDevices_addNewLedger)
             )
             RadixPrimaryButton(
@@ -585,31 +580,6 @@ private fun HardwareImportScreen(
         }
         if (waitingForLedgerResponse) {
             FullscreenCircularProgressContent()
-        }
-        if (showNoP2pLinksDialog) {
-            BasicPromptAlertDialog(
-                finish = {
-                    if (it) {
-                        onAddP2PLink()
-                    }
-                    showNoP2pLinksDialog = false
-                },
-                title = {
-                    Text(
-                        text = stringResource(id = R.string.ledgerHardwareDevices_linkConnectorAlert_title),
-                        style = RadixTheme.typography.body2Header,
-                        color = RadixTheme.colors.gray1
-                    )
-                },
-                text = {
-                    Text(
-                        text = stringResource(id = R.string.ledgerHardwareDevices_linkConnectorAlert_message),
-                        style = RadixTheme.typography.body2Regular,
-                        color = RadixTheme.colors.gray1
-                    )
-                },
-                confirmText = stringResource(id = R.string.ledgerHardwareDevices_linkConnectorAlert_continue)
-            )
         }
     }
 }

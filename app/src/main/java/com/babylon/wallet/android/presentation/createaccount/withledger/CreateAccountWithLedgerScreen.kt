@@ -52,6 +52,7 @@ import com.babylon.wallet.android.presentation.settings.legacyimport.Selectable
 import com.babylon.wallet.android.presentation.ui.composables.AddLedgerBottomSheet
 import com.babylon.wallet.android.presentation.ui.composables.DefaultModalSheetLayout
 import com.babylon.wallet.android.presentation.ui.composables.LedgerListItem
+import com.babylon.wallet.android.presentation.ui.composables.LinkConnectorSection
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUiMessageHandler
 import com.babylon.wallet.android.utils.throttleClickable
 import kotlinx.collections.immutable.ImmutableList
@@ -130,64 +131,80 @@ fun CreateAccountWithLedgerContent(
             onBackClick()
         }
     }
-    DefaultModalSheetLayout(
+    Box(
         modifier = modifier
             .navigationBarsPadding()
             .background(RadixTheme.colors.defaultBackground)
-            .fillMaxSize(),
-        sheetState = bottomSheetState,
-        sheetContent = {
-            AddLedgerBottomSheet(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(RadixTheme.dimensions.paddingDefault),
-                onSendAddLedgerRequest = onSendAddLedgerRequest,
-                addLedgerSheetState = addLedgerSheetState,
-                onConfirmLedgerName = {
-                    onConfirmLedgerName(it)
-                    closeSheetCallback()
-                },
-                waitingForLedgerResponse = waitingForLedgerResponse,
-                onSheetClose = { closeSheetCallback() },
-                deviceModel = deviceModel
-            )
-        }
+            .fillMaxSize()
     ) {
-        Box(modifier = Modifier.fillMaxSize()) {
-            val contentModifier = Modifier
-                .fillMaxSize()
-                .padding(
-                    horizontal = RadixTheme.dimensions.paddingLarge,
-                    vertical = RadixTheme.dimensions.paddingDefault
-                )
-            if (!hasP2PLinks) {
-                LinkConnectorSection(contentModifier, onAddP2PLink, onBackClick)
-            } else {
-                UseOrAddLedgerSection(
-                    contentModifier,
-                    onBackClick,
-                    ledgerFactorSources,
-                    scope,
-                    bottomSheetState,
-                    onLedgerFactorSourceSelected,
-                    onUseLedger
+        DefaultModalSheetLayout(
+            modifier = Modifier.fillMaxSize(),
+            sheetState = bottomSheetState,
+            sheetContent = {
+                AddLedgerBottomSheet(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(RadixTheme.dimensions.paddingDefault),
+                    deviceModel = deviceModel,
+                    onSendAddLedgerRequest = onSendAddLedgerRequest,
+                    addLedgerSheetState = addLedgerSheetState,
+                    onConfirmLedgerName = {
+                        onConfirmLedgerName(it)
+                        closeSheetCallback()
+                    },
+                    onSheetClose = { closeSheetCallback() },
+                    waitingForLedgerResponse = waitingForLedgerResponse,
+                    onAddP2PLink = onAddP2PLink
                 )
             }
-            if (waitingForLedgerResponse) {
-                FullscreenCircularProgressContent()
+        ) {
+            Box(modifier = Modifier.fillMaxSize()) {
+                val contentModifier = Modifier
+                    .fillMaxSize()
+                    .padding(
+                        horizontal = RadixTheme.dimensions.paddingLarge,
+                        vertical = RadixTheme.dimensions.paddingDefault
+                    )
+                Column(
+                    modifier = Modifier.fillMaxSize()
+                ) {
+                    Row(modifier = Modifier.fillMaxWidth()) {
+                        IconButton(onClick = onBackClick) {
+                            Icon(
+                                painterResource(id = R.drawable.ic_arrow_back),
+                                tint = RadixTheme.colors.gray1,
+                                contentDescription = "navigate back"
+                            )
+                        }
+                    }
+                    if (!hasP2PLinks) {
+                        LinkConnectorSection(contentModifier, onAddP2PLink)
+                    } else {
+                        UseOrAddLedgerSection(
+                            contentModifier,
+                            ledgerFactorSources,
+                            scope,
+                            bottomSheetState,
+                            onLedgerFactorSourceSelected,
+                            onUseLedger
+                        )
+                    }
+                }
+                if (waitingForLedgerResponse) {
+                    FullscreenCircularProgressContent()
+                }
             }
-            SnackbarUiMessageHandler(
-                message = uiMessage,
-                onMessageShown = onMessageShown
-            )
         }
+        SnackbarUiMessageHandler(
+            message = uiMessage,
+            onMessageShown = onMessageShown
+        )
     }
 }
 
 @Composable
 private fun UseOrAddLedgerSection(
     modifier: Modifier,
-    onBackClick: () -> Unit,
     ledgerFactorSources: ImmutableList<Selectable<FactorSource>>,
     scope: CoroutineScope,
     bottomSheetState: ModalBottomSheetState,
@@ -197,13 +214,6 @@ private fun UseOrAddLedgerSection(
     Column(
         modifier = modifier
     ) {
-        IconButton(onClick = onBackClick) {
-            Icon(
-                painterResource(id = R.drawable.ic_arrow_back),
-                tint = RadixTheme.colors.gray1,
-                contentDescription = "navigate back"
-            )
-        }
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -310,53 +320,6 @@ private fun UseOrAddLedgerSection(
             onClick = onUseLedger,
             text = stringResource(id = com.babylon.wallet.android.R.string.ledgerHardwareDevices_continueWithLedger),
             enabled = ledgerFactorSources.any { it.selected }
-        )
-    }
-}
-
-@Composable
-private fun LinkConnectorSection(modifier: Modifier, onAddP2PLink: () -> Unit, onBackClick: () -> Unit) {
-    Column(
-        modifier = modifier,
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Row(modifier = Modifier.fillMaxWidth()) {
-            IconButton(onClick = onBackClick) {
-                Icon(
-                    painterResource(id = R.drawable.ic_arrow_back),
-                    tint = RadixTheme.colors.gray1,
-                    contentDescription = "navigate back"
-                )
-            }
-        }
-        Icon(
-            painterResource(id = R.drawable.ic_hardware_ledger),
-            tint = Color.Unspecified,
-            contentDescription = null
-        )
-        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
-        Text(
-            text = stringResource(id = com.babylon.wallet.android.R.string.ledgerHardwareDevices_linkConnectorAlert_title),
-            style = RadixTheme.typography.title,
-            color = RadixTheme.colors.gray1,
-            overflow = TextOverflow.Ellipsis,
-            textAlign = TextAlign.Center
-        )
-        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
-        Text(
-            text = stringResource(id = com.babylon.wallet.android.R.string.ledgerHardwareDevices_linkConnectorAlert_message),
-            style = RadixTheme.typography.body1Regular,
-            color = RadixTheme.colors.gray1,
-            overflow = TextOverflow.Ellipsis,
-            textAlign = TextAlign.Center
-        )
-        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
-        RadixPrimaryButton(
-            modifier = Modifier
-                .fillMaxWidth()
-                .imePadding(),
-            onClick = onAddP2PLink,
-            text = stringResource(id = com.babylon.wallet.android.R.string.ledgerHardwareDevices_linkConnectorAlert_continue)
         )
     }
 }

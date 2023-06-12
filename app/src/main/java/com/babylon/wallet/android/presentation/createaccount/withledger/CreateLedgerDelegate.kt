@@ -19,6 +19,7 @@ import rdx.works.profile.data.model.factorsources.FactorSource
 import rdx.works.profile.domain.AddLedgerFactorSourceUseCase
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.LedgerAddResult
+import rdx.works.profile.domain.factorSource
 import rdx.works.profile.domain.ledgerFactorSources
 import rdx.works.profile.domain.p2pLinks
 
@@ -38,7 +39,12 @@ class CreateLedgerDelegate(
                     state.copy(
                         ledgerFactorSources = factorSourcesToP2pLinksExist.first.toPersistentList(),
                         hasP2pLinks = factorSourcesToP2pLinksExist.second,
-                        selectedFactorSourceID = state.selectedFactorSourceID ?: factorSourcesToP2pLinksExist.first.firstOrNull()?.id
+                        selectedFactorSourceID = state.selectedFactorSourceID ?: factorSourcesToP2pLinksExist.first.firstOrNull()?.id,
+                        addLedgerSheetState = if (factorSourcesToP2pLinksExist.second) {
+                            AddLedgerSheetState.Connect
+                        } else {
+                            AddLedgerSheetState.LinkConnector
+                        }
                     )
                 }
             }
@@ -60,12 +66,23 @@ class CreateLedgerDelegate(
             _state.update { it.copy(waitingForLedgerResponse = true) }
             val result = ledgerMessenger.sendDeviceInfoRequest(UUIDGenerator.uuid().toString())
             result.onSuccess { response ->
-                _state.update { state ->
-                    state.copy(
-                        addLedgerSheetState = AddLedgerSheetState.InputLedgerName,
-                        waitingForLedgerResponse = false,
-                        recentlyConnectedLedgerDevice = LedgerDeviceUiModel(response.deviceId, response.model)
-                    )
+                val existing = getProfileUseCase.factorSource(FactorSource.ID(response.deviceId))
+                if (existing == null) {
+                    _state.update { state ->
+                        state.copy(
+                            addLedgerSheetState = AddLedgerSheetState.InputLedgerName,
+                            waitingForLedgerResponse = false,
+                            recentlyConnectedLedgerDevice = LedgerDeviceUiModel(response.deviceId, response.model)
+                        )
+                    }
+                } else {
+                    _state.update { state ->
+                        state.copy(
+                            addLedgerSheetState = AddLedgerSheetState.Connect,
+                            uiMessage = UiMessage.InfoMessage.LedgerAlreadyExist(existing.label),
+                            waitingForLedgerResponse = false
+                        )
+                    }
                 }
             }
             result.onFailure { error ->
