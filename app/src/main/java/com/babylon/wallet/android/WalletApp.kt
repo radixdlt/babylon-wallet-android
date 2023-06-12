@@ -77,9 +77,7 @@ fun HandleStatusEvents(navController: NavController, appEventBus: AppEventBus) {
         appEventBus.events.filterIsInstance<AppEvent.Status>().collect { event ->
             when (event) {
                 is AppEvent.Status.Transaction -> {
-                    if (!navController.transactionStatusDialogShown()) {
-                        navController.transactionStatusDialog(event)
-                    }
+                    navController.transactionStatusDialog(event)
                 }
                 is AppEvent.Status.DappInteraction -> {
                     navController.dappInteractionDialog(event)

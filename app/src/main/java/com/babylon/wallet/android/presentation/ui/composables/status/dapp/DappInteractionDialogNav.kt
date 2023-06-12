@@ -16,7 +16,10 @@ import com.babylon.wallet.android.utils.AppEvent
 private const val ARG_REQUEST_ID = "arg_request_id"
 
 @VisibleForTesting
-internal const val ARG_DAPP_NAME = "arg_dapp_name"
+private const val ARG_DAPP_NAME = "arg_dapp_name"
+
+@VisibleForTesting
+private const val ROUTE = "dapp_interaction_dialog"
 
 internal class DappInteractionSuccessDialogArgs(
     val requestId: String,
@@ -36,14 +39,14 @@ fun NavController.dappInteractionDialog(
     } else {
         event.dAppName
     }
-    navigate("dapp_interaction_dialog/${event.requestId}/$name")
+    navigate("$ROUTE/${event.requestId}/$name")
 }
 
 fun NavGraphBuilder.dappInteractionDialog(
     onBackPress: () -> Unit
 ) {
     dialog(
-        route = "dapp_interaction_dialog/{$ARG_REQUEST_ID}/{$ARG_DAPP_NAME}",
+        route = "$ROUTE/{$ARG_REQUEST_ID}/{$ARG_DAPP_NAME}",
         arguments = listOf(
             navArgument(ARG_REQUEST_ID) {
                 type = NavType.StringType

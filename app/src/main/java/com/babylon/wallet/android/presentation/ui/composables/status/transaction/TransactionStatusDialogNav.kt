@@ -43,11 +43,11 @@ internal class TransactionStatusDialogArgs(
     constructor(savedStateHandle: SavedStateHandle) : this(savedStateHandle.toStatus())
 }
 
-fun NavController.transactionStatusDialogShown(): Boolean {
-    return currentBackStackEntry?.destination?.route?.startsWith(ROUTE) == true
-}
-
 fun NavController.transactionStatusDialog(transactionEvent: AppEvent.Status.Transaction) {
+    // Do not create another entry when this dialog exists
+    // New requests will be handled from the view model itself
+    if (currentBackStackEntry?.destination?.route?.startsWith(ROUTE) == true) return
+
     val errorMessageRes = if (transactionEvent is AppEvent.Status.Transaction.Fail) {
         transactionEvent.errorMessageRes.toString()
     } else {
