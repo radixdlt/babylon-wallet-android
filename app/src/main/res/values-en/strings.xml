@@ -132,7 +132,8 @@
   <string name="linkedConnectors_nameNewConnector_textFieldHint">Give a name to this Radix Connector</string>
   <string name="linkedConnectors_nameNewConnector_saveLinkButtonTitle">Save Link and Continue</string>
   <string name="linkedConnectors_removeConnectionAlert_title">Remove Connection</string>
-  <string name="linkedConnectors_removeConnectionAlert_message">Your Radix Wallet will no longer automatically connect to this Radix Connector.</string>
+  <string name="linkedConnectors_removeConnectionAlert_message">You will no longer be able to connect your wallet to this device and browser combination.</string>
+  <string name="linkedConnectors_removeConnectionAlert_removeButtonTitle">Remove</string>
   <string name="linkedConnectors_cameraPermissionDeniedAlert_title">Access Required</string>
   <string name="linkedConnectors_cameraPermissionDeniedAlert_message">Camera access is required to link to a Connector.</string>
   <string name="linkedConnectors_localNetworkPermissionDeniedAlert_title">Access Required</string>
