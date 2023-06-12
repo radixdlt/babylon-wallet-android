@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.presentation.transactionstatus
+package com.babylon.wallet.android.presentation.ui.composables.status.transaction
 
 import androidx.annotation.StringRes
 import androidx.lifecycle.SavedStateHandle
@@ -13,7 +13,6 @@ import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
-import com.babylon.wallet.android.presentation.transfer.TransferViewModel
 import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -21,7 +20,6 @@ import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import rdx.works.core.preferences.PreferencesManager
 import javax.inject.Inject
 
 @HiltViewModel

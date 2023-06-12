@@ -16,9 +16,9 @@ import com.babylon.wallet.android.presentation.main.MainEvent
 import com.babylon.wallet.android.presentation.main.MainViewModel
 import com.babylon.wallet.android.presentation.navigation.NavigationHost
 import com.babylon.wallet.android.presentation.transaction.transactionApproval
-import com.babylon.wallet.android.presentation.transactionstatus.transactionStatusDialog
-import com.babylon.wallet.android.presentation.transactionstatus.transactionStatusDialogShown
-import com.babylon.wallet.android.presentation.ui.composables.resultdialog.success.successBottomDialog
+import com.babylon.wallet.android.presentation.ui.composables.status.transaction.transactionStatusDialog
+import com.babylon.wallet.android.presentation.ui.composables.status.transaction.transactionStatusDialogShown
+import com.babylon.wallet.android.presentation.ui.composables.status.dapp.dappInteractionDialog
 import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
 import com.google.accompanist.navigation.animation.rememberAnimatedNavController
@@ -64,8 +64,7 @@ fun WalletApp(
                 }
 
                 is MainEvent.HandledUsePersonaAuthRequest -> {
-                    navController.successBottomDialog(
-                        isFromTransaction = false,
+                    navController.dappInteractionDialog(
                         requestId = event.requestId,
                         dAppName = event.dAppName
                     )
@@ -90,7 +89,6 @@ fun HandleAppEvents(navController: NavController, appEventBus: AppEventBus) {
                     navController.transactionStatusDialog(event)
                 }
             }
-
             else -> {}
         }
     }

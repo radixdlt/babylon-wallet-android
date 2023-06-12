@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.presentation.transactionstatus
+package com.babylon.wallet.android.presentation.ui.composables.status.transaction
 
 import androidx.annotation.VisibleForTesting
 import androidx.compose.ui.window.DialogProperties
