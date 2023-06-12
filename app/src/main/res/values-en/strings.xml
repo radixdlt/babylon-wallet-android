@@ -222,6 +222,7 @@
   <string name="importLegacyWallet_completion_titleNoAccounts">No accounts imported.</string>
   <string name="importLegacyWallet_completion_titleOneAccount">Imported 1 account.</string>
   <string name="importLegacyWallet_completion_titleManyAccounts">Imported #%d accounts.</string>
+  <string name="importLegacyWallet_hardwareImport_skipButton">Skip remaining accounts</string>
   <string name="createAccount_completion_explanation">Your Account lives on the Radix Network and you can access it any time in your Radix Wallet.</string>
   <string name="createAccount_completion_subtitleFirst">You’ve created your first Account!</string>
   <string name="createAccount_completion_subtitleNotFirst">Your Account has been created.</string>
