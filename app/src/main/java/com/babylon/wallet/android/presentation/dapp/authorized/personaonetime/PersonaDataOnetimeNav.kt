@@ -9,8 +9,6 @@ import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavType
 import androidx.navigation.navArgument
-import com.babylon.wallet.android.presentation.dapp.authorized.InitialAuthorizedLoginRoute
-import com.babylon.wallet.android.presentation.dapp.authorized.login.DAppAuthorizedLoginEvent
 import com.babylon.wallet.android.presentation.dapp.authorized.login.DAppAuthorizedLoginViewModel
 import com.babylon.wallet.android.presentation.dapp.authorized.login.Event
 import com.babylon.wallet.android.presentation.dapp.authorized.login.ROUTE_DAPP_LOGIN_AUTHORIZED_GRAPH
@@ -39,9 +37,7 @@ fun NavController.personaDataOnetimeAuthorized(requiredFieldsEncoded: String) {
 fun NavGraphBuilder.personaDataOnetimeAuthorized(
     onEdit: (PersonaDataOnetimeEvent.OnEditPersona) -> Unit,
     onBackClick: () -> Unit,
-    onLoginFlowComplete: (DAppAuthorizedLoginEvent.LoginFlowCompleted) -> Unit,
-    onCreatePersona: (Boolean) -> Unit,
-    navController: NavController
+    navController: NavController,
     onLoginFlowComplete: (Event.LoginFlowCompleted) -> Unit,
     onCreatePersona: (Boolean) -> Unit
 ) {

@@ -32,7 +32,6 @@ fun OneTimeChooseAccountsScreen(
     onAccountCreationClick: () -> Unit,
     sharedViewModel: DAppUnauthorizedLoginViewModel,
     onLoginFlowComplete: (requestId: String, dAppName: String) -> Unit,
-    onLoginFlowCancelled: () -> Unit,
     onPersonaOnetime: (String) -> Unit
 ) {
     val context = LocalContext.current

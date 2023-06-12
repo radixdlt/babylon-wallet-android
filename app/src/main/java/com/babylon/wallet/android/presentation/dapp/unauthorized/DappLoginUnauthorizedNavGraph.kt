@@ -48,10 +48,7 @@ fun NavGraphBuilder.dappLoginUnauthorizedNavGraph(navController: NavController) 
             onPersonaOnetime = {
                 navController.personaDataOnetimeUnauthorized(it)
             },
-            navController = navController,
-            onLoginFlowCancelled = {
-                navController.popBackStack(ROUTE_DAPP_LOGIN_UNAUTHORIZED_GRAPH, true)
-            }
+            navController = navController
         )
         personaDataOnetimeUnauthorized(
             onEdit = {

@@ -47,8 +47,6 @@ import com.babylon.wallet.android.domain.model.DAppWithMetadata
 import com.babylon.wallet.android.domain.model.metadata.NameMetadataItem
 import com.babylon.wallet.android.presentation.dapp.InitialUnauthorizedLoginRoute
 import com.babylon.wallet.android.presentation.dapp.authorized.selectpersona.PersonaUiModel
-import com.babylon.wallet.android.presentation.dapp.unauthorized.login.DAppUnauthorizedLoginEvent
-import com.babylon.wallet.android.presentation.dapp.unauthorized.InitialUnauthorizedLoginRoute
 import com.babylon.wallet.android.presentation.dapp.unauthorized.login.DAppUnauthorizedLoginViewModel
 import com.babylon.wallet.android.presentation.dapp.unauthorized.login.Event
 import com.babylon.wallet.android.presentation.ui.composables.ImageSize
@@ -79,6 +77,7 @@ fun PersonaDataOnetimeScreen(
         sharedViewModel.oneOffEvent.collect { event ->
             when (event) {
                 is Event.LoginFlowCompleted -> onLoginFlowComplete(event.requestId, event.dAppName)
+                Event.RejectLogin -> onLoginFlowCancelled()
                 Event.RequestCompletionBiometricPrompt -> {
                     context.biometricAuthenticate { authenticated ->
                         if (authenticated) {
@@ -86,9 +85,6 @@ fun PersonaDataOnetimeScreen(
                         }
                     }
                 }
-
-                is DAppUnauthorizedLoginEvent.LoginFlowCompleted -> onLoginFlowComplete(event.requestId, event.dAppName)
-                DAppUnauthorizedLoginEvent.RejectLogin -> onLoginFlowCancelled()
                 else -> {}
             }
         }

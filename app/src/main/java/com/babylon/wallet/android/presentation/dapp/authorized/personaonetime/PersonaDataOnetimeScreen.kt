@@ -47,9 +47,7 @@ import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.domain.model.DAppWithMetadata
 import com.babylon.wallet.android.domain.model.metadata.NameMetadataItem
-import com.babylon.wallet.android.presentation.dapp.authorized.login.DAppAuthorizedLoginEvent
 import com.babylon.wallet.android.presentation.dapp.SigningStateDialog
-import com.babylon.wallet.android.presentation.dapp.authorized.InitialAuthorizedLoginRoute
 import com.babylon.wallet.android.presentation.dapp.authorized.login.DAppAuthorizedLoginViewModel
 import com.babylon.wallet.android.presentation.dapp.authorized.login.Event
 import com.babylon.wallet.android.presentation.dapp.authorized.selectpersona.PersonaUiModel
