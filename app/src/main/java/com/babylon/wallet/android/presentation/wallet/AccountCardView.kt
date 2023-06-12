@@ -7,7 +7,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.Text
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -30,13 +30,13 @@ import com.babylon.wallet.android.domain.model.metadata.NameMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.SymbolMetadataItem
 import com.babylon.wallet.android.presentation.ui.composables.ActionableAddressView
 import com.babylon.wallet.android.presentation.ui.composables.ApplySecuritySettingsLabel
-import rdx.works.profile.data.utils.isOlympiaAccount
 import java.math.BigDecimal
 
 @Suppress("DestructuringDeclarationWithTooManyEntries")
 @Composable
 fun AccountCardView(
     accountWithResources: AccountWithResources,
+    accountTag: WalletUiState.AccountTag?,
     isLoadingResources: Boolean,
     isPromptVisible: Boolean,
     modifier: Modifier = Modifier,
@@ -80,18 +80,48 @@ fun AccountCardView(
             textColor = RadixTheme.colors.white.copy(alpha = 0.8f)
         )
 
-        if (accountWithResources.account.isOlympiaAccount()) {
+        var accountTagText = ""
+        accountTag?.let {
+            when (it) {
+                WalletUiState.AccountTag.LEDGER_BABYLON -> {
+                    accountTagText = StringBuilder()
+                        .append(" ")
+                        .append(stringResource(id = R.string.dot_separator))
+                        .append(" ")
+                        .append(stringResource(id = R.string.homePage_accountsTag_ledgerBabylon))
+                        .toString()
+                }
+                WalletUiState.AccountTag.LEDGER_LEGACY -> {
+                    accountTagText = StringBuilder()
+                        .append(" ")
+                        .append(stringResource(id = R.string.dot_separator))
+                        .append(" ")
+                        .append(stringResource(id = R.string.homePage_accountsTag_ledgerLegacy))
+                        .toString()
+                }
+                WalletUiState.AccountTag.LEGACY_SOFTWARE -> {
+                    accountTagText = StringBuilder()
+                        .append(" ")
+                        .append(stringResource(id = R.string.dot_separator))
+                        .append(" ")
+                        .append(stringResource(id = R.string.homePage_accountsTag_legacySoftware))
+                        .toString()
+                }
+                WalletUiState.AccountTag.DAPP_DEFINITION -> {
+                    accountTagText = StringBuilder()
+                        .append(" ")
+                        .append(stringResource(id = R.string.dot_separator))
+                        .append(" ")
+                        .append(stringResource(id = R.string.homePage_accountsTag_dAppDefinition))
+                        .toString()
+                }
+            }
             Text(
                 modifier = Modifier.constrainAs(legacyLabel) {
                     start.linkTo(addressLabel.end, margin = 8.dp)
                     bottom.linkTo(addressLabel.bottom)
                 },
-                text = StringBuilder()
-                    .append(" ")
-                    .append(stringResource(id = R.string.dot_separator))
-                    .append(" ")
-                    .append(stringResource(id = R.string.homePage_legacyAccountHeading))
-                    .toString(),
+                text = accountTagText,
                 style = RadixTheme.typography.body1Regular,
                 color = RadixTheme.colors.white
             )
@@ -166,6 +196,7 @@ fun AccountCardPreview() {
                         nonFungibleResources = listOf()
                     )
                 ),
+                accountTag = WalletUiState.AccountTag.DAPP_DEFINITION,
                 isLoadingResources = false,
                 isPromptVisible = true,
                 onApplySecuritySettings = {}
