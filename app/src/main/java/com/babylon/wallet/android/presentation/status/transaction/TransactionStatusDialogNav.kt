@@ -9,8 +9,10 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavType
 import androidx.navigation.compose.dialog
 import androidx.navigation.navArgument
+import com.babylon.wallet.android.presentation.transaction.ROUTE_TRANSACTION_APPROVAL
 import com.babylon.wallet.android.presentation.transfer.ROUTE_TRANSFER
 import com.babylon.wallet.android.utils.AppEvent
+import com.babylon.wallet.android.utils.routeExist
 
 @VisibleForTesting
 private const val ARG_STATUS = "arg_status"
@@ -63,7 +65,13 @@ fun NavController.transactionStatusDialog(transactionEvent: AppEvent.Status.Tran
             "&isInternal=${transactionEvent.isInternal}" +
             "&error=$errorMessageRes"
     ) {
-        popUpTo(route = ROUTE_TRANSFER) {
+        val popUpToRoute = if (this@transactionStatusDialog.routeExist(ROUTE_TRANSFER)) {
+            ROUTE_TRANSFER
+        } else {
+            ROUTE_TRANSACTION_APPROVAL
+        }
+
+        popUpTo(route = popUpToRoute) {
             inclusive = true
         }
     }

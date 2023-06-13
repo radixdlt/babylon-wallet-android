@@ -139,18 +139,12 @@ private fun SuccessContent(
             color = RadixTheme.colors.gray1
         )
 
-        // Maybe not needed
         if (transactionId.isNotEmpty()) {
-            AssetMetadataRow(
-                modifier = Modifier.fillMaxWidth(),
-                key = stringResource(id = R.string.transactionReview_submitTransaction_txID)
-            ) {
-                ActionableAddressView(
-                    address = transactionId,
-                    textStyle = RadixTheme.typography.body1Regular,
-                    textColor = RadixTheme.colors.gray1
-                )
-            }
+            ActionableAddressView(
+                address = transactionId,
+                textStyle = RadixTheme.typography.body1Regular,
+                textColor = RadixTheme.colors.gray1
+            )
         }
     }
 }
