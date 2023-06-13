@@ -32,7 +32,7 @@ class CollectSignersSignaturesUseCase @Inject constructor(
         signersPerFactorSource.forEach { (factorSource, signers) ->
             when (factorSource.kind) {
                 FactorSourceKind.DEVICE -> {
-                    _signingState.update { SigningState.WithDevice(factorSource) }
+                    _signingState.update { SigningState.Device.Pending(factorSource) }
                     val signatures = signWithDeviceFactorSourceUseCase(
                         deviceFactorSource = factorSource,
                         signers = signers,
@@ -40,20 +40,21 @@ class CollectSignersSignaturesUseCase @Inject constructor(
                         signingPurpose = signingPurpose
                     )
                     signaturesWithPublicKeys.addAll(signatures)
-                    _signingState.update { SigningState.WithDeviceSucceeded(factorSource) }
+                    _signingState.update { SigningState.Device.Success(factorSource) }
                 }
+
                 FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET -> {
-                    _signingState.update { SigningState.WithLedger(factorSource) }
+                    _signingState.update { SigningState.Ledger.Pending(factorSource) }
                     signWithLedgerFactorSourceUseCase(
                         ledgerFactorSource = factorSource,
                         signers = signers,
                         signRequest = signRequest,
                         signingPurpose = signingPurpose
                     ).onSuccess { signatures ->
-                        _signingState.update { SigningState.WithLedgerSucceeded(factorSource) }
+                        _signingState.update { SigningState.Ledger.Success(factorSource) }
                         signaturesWithPublicKeys.addAll(signatures)
                     }.onFailure {
-                        _signingState.update { SigningState.WithLedgerFailed(factorSource) }
+                        _signingState.update { SigningState.Ledger.Failure(factorSource) }
                         return Result.failure(it)
                     }
                 }

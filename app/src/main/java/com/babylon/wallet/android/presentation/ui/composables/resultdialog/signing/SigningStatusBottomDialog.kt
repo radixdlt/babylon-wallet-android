@@ -63,8 +63,8 @@ fun SigningStatusBottomDialogContent(
     signingState: SigningState?
 ) {
     when (signingState) {
-        is SigningState.WithDeviceFailed,
-        is SigningState.WithLedgerFailed -> {
+        is SigningState.Ledger.Failure,
+        is SigningState.Device.Failure -> {
             SomethingWentWrongDialogContent(
                 title = stringResource(id = com.babylon.wallet.android.R.string.common_somethingWentWrong),
                 subtitle = stringResource(id = com.babylon.wallet.android.R.string.common_somethingWentWrong),
@@ -72,13 +72,13 @@ fun SigningStatusBottomDialogContent(
             )
         }
 
-        is SigningState.WithLedgerSucceeded,
-        is SigningState.WithDeviceSucceeded -> {
+        is SigningState.Ledger.Success,
+        is SigningState.Device.Success -> {
             SignatureSuccessfulContent(modifier = modifier)
         }
 
-        is SigningState.WithDevice,
-        is SigningState.WithLedger -> {
+        is SigningState.Device.Pending,
+        is SigningState.Ledger.Pending -> {
             SignatureRequestContent(signingState, modifier)
         }
 
@@ -114,15 +114,15 @@ private fun SignatureRequestContent(
         )
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
         val subtitle = when (signingState) {
-            is SigningState.WithDeviceFailed,
-            is SigningState.WithDeviceSucceeded,
-            is SigningState.WithDevice -> {
+            is SigningState.Device.Failure,
+            is SigningState.Device.Success,
+            is SigningState.Device.Pending -> {
                 com.babylon.wallet.android.R.string.signing_withDeviceFactorSource_signTransaction
             }
 
-            is SigningState.WithLedgerFailed,
-            is SigningState.WithLedgerSucceeded,
-            is SigningState.WithLedger -> {
+            is SigningState.Ledger.Success,
+            is SigningState.Ledger.Failure,
+            is SigningState.Ledger.Pending -> {
                 com.babylon.wallet.android.R.string.signing_signatureRequest_body
             }
 
@@ -209,7 +209,7 @@ private fun SignatureSuccessfulContent(
 fun SignatureRequestContentPreview() {
     RadixWalletTheme {
         SignatureRequestContent(
-            signingState = SigningState.WithLedger(
+            signingState = SigningState.Ledger.Pending(
                 FactorSource.ledger(
                     FactorSource.ID(""),
                     FactorSource.LedgerHardwareWallet.DeviceModel.NanoS,
