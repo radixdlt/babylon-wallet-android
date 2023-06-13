@@ -12,7 +12,7 @@ import org.jetbrains.annotations.VisibleForTesting
 
 @VisibleForTesting
 internal const val ARG_ACCOUNT_ID = "arg_account_id"
-private const val ROUTE_TRANSFER = "transfer/{$ARG_ACCOUNT_ID}"
+const val ROUTE_TRANSFER = "transfer/{$ARG_ACCOUNT_ID}"
 
 internal class TransferArgs(val accountId: String) {
     constructor(savedStateHandle: SavedStateHandle) : this(
@@ -27,7 +27,6 @@ fun NavController.transfer(accountId: String) {
 @OptIn(ExperimentalAnimationApi::class)
 fun NavGraphBuilder.transferScreen(
     onBackClick: () -> Unit,
-    onDismiss: (String) -> Unit
 ) {
     composable(
         route = ROUTE_TRANSFER,
@@ -37,10 +36,7 @@ fun NavGraphBuilder.transferScreen(
     ) {
         TransferScreen(
             viewModel = hiltViewModel(),
-            onBackClick = onBackClick,
-            onDismiss = {
-                onDismiss(ROUTE_TRANSFER)
-            }
+            onBackClick = onBackClick
         )
     }
 }

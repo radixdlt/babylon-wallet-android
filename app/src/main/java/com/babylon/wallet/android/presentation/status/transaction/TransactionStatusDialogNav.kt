@@ -9,6 +9,7 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavType
 import androidx.navigation.compose.dialog
 import androidx.navigation.navArgument
+import com.babylon.wallet.android.presentation.transfer.ROUTE_TRANSFER
 import com.babylon.wallet.android.utils.AppEvent
 
 @VisibleForTesting
@@ -61,7 +62,11 @@ fun NavController.transactionStatusDialog(transactionEvent: AppEvent.Status.Tran
             "?txId=${transactionEvent.transactionId}" +
             "&isInternal=${transactionEvent.isInternal}" +
             "&error=$errorMessageRes"
-    )
+    ) {
+        popUpTo(route = ROUTE_TRANSFER) {
+            inclusive = true
+        }
+    }
 }
 
 fun NavGraphBuilder.transactionStatusDialog(

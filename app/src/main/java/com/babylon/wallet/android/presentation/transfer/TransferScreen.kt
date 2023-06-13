@@ -60,17 +60,8 @@ fun TransferScreen(
     modifier: Modifier = Modifier,
     viewModel: TransferViewModel,
     onBackClick: () -> Unit,
-    onDismiss: () -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
-
-    LaunchedEffect(Unit) {
-        viewModel.oneOffEvent.collect { event ->
-            when (event) {
-                TransferViewModel.Event.Dismiss -> onDismiss()
-            }
-        }
-    }
 
     TransferContent(
         modifier = modifier,
