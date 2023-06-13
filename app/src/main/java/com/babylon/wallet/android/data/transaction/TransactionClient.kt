@@ -66,7 +66,7 @@ class TransactionClient @Inject constructor(
 ) {
 
     private val engine = RadixEngineToolkit
-    val signingState = collectSignersSignaturesUseCase.signingEvent
+    val signingState = collectSignersSignaturesUseCase.signingState
 
     suspend fun signAndSubmitTransaction(request: TransactionApprovalRequest): Result<String> {
         val networkId = getCurrentGatewayUseCase().network.networkId().value
@@ -103,6 +103,7 @@ class TransactionClient @Inject constructor(
         val signers = getSigningEntities(networkId, manifestWithTransactionFee)
         val notaryAndSigners = NotaryAndSigners(signers, ephemeralNotaryPrivateKey)
         return buildTransactionHeader(networkId, notaryAndSigners).map { header ->
+            Timber.d("Transaction header: ${Json.encodeToString(header)}")
             val compileTransactionIntentRequest = CompileTransactionIntentRequest(
                 header,
                 manifestWithTransactionFee

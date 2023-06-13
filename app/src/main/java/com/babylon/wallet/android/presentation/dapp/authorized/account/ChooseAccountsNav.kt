@@ -9,8 +9,8 @@ import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavType
 import androidx.navigation.navArgument
-import com.babylon.wallet.android.presentation.dapp.authorized.login.DAppAuthorizedLoginEvent
 import com.babylon.wallet.android.presentation.dapp.authorized.login.DAppAuthorizedLoginViewModel
+import com.babylon.wallet.android.presentation.dapp.authorized.login.Event
 import com.babylon.wallet.android.presentation.dapp.authorized.login.ROUTE_DAPP_LOGIN_AUTHORIZED_GRAPH
 import com.google.accompanist.navigation.animation.composable
 
@@ -57,11 +57,11 @@ fun NavController.chooseAccounts(
 fun NavGraphBuilder.chooseAccounts(
     dismissErrorDialog: () -> Unit,
     onAccountCreationClick: () -> Unit,
-    onChooseAccounts: (DAppAuthorizedLoginEvent.ChooseAccounts) -> Unit,
-    onLoginFlowComplete: (DAppAuthorizedLoginEvent.LoginFlowCompleted) -> Unit,
+    onChooseAccounts: (Event.ChooseAccounts) -> Unit,
+    onLoginFlowComplete: (Event.LoginFlowCompleted) -> Unit,
     onBackClick: () -> Boolean,
-    onPersonaOngoingData: (DAppAuthorizedLoginEvent.PersonaDataOngoing) -> Unit,
-    onPersonaDataOnetime: (DAppAuthorizedLoginEvent.PersonaDataOnetime) -> Unit,
+    onPersonaOngoingData: (Event.PersonaDataOngoing) -> Unit,
+    onPersonaDataOnetime: (Event.PersonaDataOnetime) -> Unit,
     navController: NavController,
 ) {
     composable(

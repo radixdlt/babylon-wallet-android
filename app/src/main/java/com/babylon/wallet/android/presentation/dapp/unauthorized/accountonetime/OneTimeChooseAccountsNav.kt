@@ -43,8 +43,7 @@ fun NavGraphBuilder.chooseAccountsOneTime(
     onAccountCreationClick: () -> Unit,
     onLoginFlowComplete: (requestId: String, dAppName: String) -> Unit,
     onPersonaOnetime: (String) -> Unit,
-    navController: NavController,
-    onLoginFlowCancelled: () -> Unit
+    navController: NavController
 ) {
     composable(
         route = ROUTE_CHOOSE_ACCOUNTS_ONETIME,
@@ -63,13 +62,12 @@ fun NavGraphBuilder.chooseAccountsOneTime(
         val sharedVM = hiltViewModel<DAppUnauthorizedLoginViewModel>(parentEntry)
         OneTimeChooseAccountsScreen(
             viewModel = hiltViewModel(),
-            sharedViewModel = sharedVM,
             exitRequestFlow = exitRequestFlow,
             dismissErrorDialog = dismissErrorDialog,
             onAccountCreationClick = onAccountCreationClick,
+            sharedViewModel = sharedVM,
             onLoginFlowComplete = onLoginFlowComplete,
-            onPersonaOnetime = onPersonaOnetime,
-            onLoginFlowCancelled = onLoginFlowCancelled
+            onPersonaOnetime = onPersonaOnetime
         )
     }
 }

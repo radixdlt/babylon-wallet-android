@@ -159,7 +159,7 @@ internal class TransactionApprovalViewModelTest : StateViewModelTest<Transaction
             )
         }
         assert(errorSlot.captured == WalletErrorType.WrongNetwork)
-        assert(vm.oneOffEvent.first() is TransactionApprovalEvent.NavigateBack)
+        assert(vm.oneOffEvent.first() is TransactionApprovalEvent.Dismiss)
     }
 
     @Test

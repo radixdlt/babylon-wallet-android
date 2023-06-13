@@ -9,8 +9,8 @@ import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavType
 import androidx.navigation.navArgument
-import com.babylon.wallet.android.presentation.dapp.authorized.login.DAppAuthorizedLoginEvent
 import com.babylon.wallet.android.presentation.dapp.authorized.login.DAppAuthorizedLoginViewModel
+import com.babylon.wallet.android.presentation.dapp.authorized.login.Event
 import com.babylon.wallet.android.presentation.dapp.authorized.login.ROUTE_DAPP_LOGIN_AUTHORIZED_GRAPH
 import com.babylon.wallet.android.presentation.model.decodePersonaDataKinds
 import com.google.accompanist.navigation.animation.composable
@@ -42,10 +42,10 @@ fun NavController.personaDataOngoing(personaAddress: String, fieldsEncoded: Stri
 fun NavGraphBuilder.personaDataOngoing(
     onEdit: (PersonaDataOngoingEvent.OnEditPersona) -> Unit,
     onBackClick: () -> Unit,
-    onLoginFlowComplete: (DAppAuthorizedLoginEvent.LoginFlowCompleted) -> Unit,
-    onPersonaDataOnetime: (DAppAuthorizedLoginEvent.PersonaDataOnetime) -> Unit,
-    onChooseAccounts: (DAppAuthorizedLoginEvent.ChooseAccounts) -> Unit,
-    navController: NavController
+    navController: NavController,
+    onLoginFlowComplete: (Event.LoginFlowCompleted) -> Unit,
+    onPersonaDataOnetime: (Event.PersonaDataOnetime) -> Unit,
+    onChooseAccounts: (Event.ChooseAccounts) -> Unit
 ) {
     composable(
         route = ROUTE_PERSONA_DATA_ONGOING,

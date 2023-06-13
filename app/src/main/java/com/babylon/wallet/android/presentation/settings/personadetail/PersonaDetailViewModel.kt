@@ -119,22 +119,24 @@ class PersonaDetailViewModel @Inject constructor(
         viewModelScope.launch {
             state.value.persona?.let { persona ->
                 _state.update { it.copy(loading = true) }
-                val authSigningFactorInstance = rolaClient.generateAuthSigningFactorInstance(persona)
-                this@PersonaDetailViewModel.authSigningFactorInstance = authSigningFactorInstance
-                rolaClient.createAuthKeyManifestWithStringInstructions(persona, authSigningFactorInstance)?.let { manifest ->
-                    uploadAuthKeyRequestId = UUIDGenerator.uuid().toString()
-                    val internalMessage = MessageFromDataChannel.IncomingRequest.TransactionRequest(
-                        dappId = "",
-                        requestId = uploadAuthKeyRequestId,
-                        transactionManifestData = TransactionManifestData(
-                            instructions = requireNotNull(manifest.getStringInstructions()),
-                            version = TransactionVersion.Default.value,
-                            networkId = persona.networkID,
-                            blobs = manifest.blobs?.toList().orEmpty()
-                        ),
-                        requestMetadata = MessageFromDataChannel.IncomingRequest.RequestMetadata.internal(persona.networkID)
-                    )
-                    incomingRequestRepository.add(internalMessage)
+                rolaClient.generateAuthSigningFactorInstance(persona).onSuccess { authSigningFactorInstance ->
+                    this@PersonaDetailViewModel.authSigningFactorInstance = authSigningFactorInstance
+                    rolaClient.createAuthKeyManifestWithStringInstructions(persona, authSigningFactorInstance)?.let { manifest ->
+                        uploadAuthKeyRequestId = UUIDGenerator.uuid().toString()
+                        val internalMessage = MessageFromDataChannel.IncomingRequest.TransactionRequest(
+                            dappId = "",
+                            requestId = uploadAuthKeyRequestId,
+                            transactionManifestData = TransactionManifestData(
+                                instructions = requireNotNull(manifest.getStringInstructions()),
+                                version = TransactionVersion.Default.value,
+                                networkId = persona.networkID,
+                                blobs = manifest.blobs?.toList().orEmpty()
+                            ),
+                            requestMetadata = MessageFromDataChannel.IncomingRequest.RequestMetadata.internal(persona.networkID)
+                        )
+                        incomingRequestRepository.add(internalMessage)
+                    }
+                }.onFailure {
                 }
             }
         }
