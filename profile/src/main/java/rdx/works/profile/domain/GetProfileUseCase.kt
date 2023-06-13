@@ -12,8 +12,8 @@ import rdx.works.profile.data.model.factorsources.FactorSourceKind
 import rdx.works.profile.data.model.pernetwork.DerivationPath
 import rdx.works.profile.data.repository.ProfileRepository
 import rdx.works.profile.data.repository.profile
+import rdx.works.profile.data.utils.factorSourceId
 import rdx.works.profile.data.utils.getNextDerivationPathForAccount
-import rdx.works.profile.data.utils.personaFactorSourceId
 import rdx.works.profile.data.utils.unsecuredFactorSourceId
 import javax.inject.Inject
 
@@ -67,7 +67,7 @@ suspend fun GetProfileUseCase.nextDerivationPathForAccountOnCurrentNetwork(
 suspend fun GetProfileUseCase.personaFactorSourceIDOfDeviceKind(
     personaAddress: String,
 ): FactorSource.ID? {
-    val accountFactorSourceID = personaOnCurrentNetwork(personaAddress)?.personaFactorSourceId()
+    val accountFactorSourceID = personaOnCurrentNetwork(personaAddress)?.factorSourceId()
     return deviceFactorSources.first().firstOrNull { it.id == accountFactorSourceID && it.kind == FactorSourceKind.DEVICE }?.id
 }
 

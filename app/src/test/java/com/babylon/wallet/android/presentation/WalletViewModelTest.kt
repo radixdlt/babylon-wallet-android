@@ -85,7 +85,7 @@ class WalletViewModelTest : StateViewModelTest<WalletViewModel>() {
 
         viewModel.state.test {
             assertEquals(
-                WalletUiState(isSettingsWarningVisible = true),
+                WalletUiState(isSettingsWarningVisible = true, factorSources = sampleProfile.factorSources),
                 expectMostRecentItem()
             )
         }

@@ -1,12 +1,18 @@
 package com.babylon.wallet.android.domain.model
 
+import com.babylon.wallet.android.domain.model.metadata.AccountTypeMetadataItem
 import rdx.works.profile.data.model.pernetwork.Network
 import java.math.BigDecimal
 
 data class AccountWithResources(
     val account: Network.Account,
-    val resources: Resources?
-)
+    private val accountTypeMetadataItem: AccountTypeMetadataItem? = null,
+    val resources: Resources?,
+) {
+
+    val isDappDefinitionAccountType: Boolean
+        get() = accountTypeMetadataItem?.type == AccountTypeMetadataItem.AccountType.DAPP_DEFINITION
+}
 
 data class Resources(
     val fungibleResources: List<Resource.FungibleResource>,

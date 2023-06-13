@@ -6,7 +6,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import rdx.works.core.preferences.PreferencesManager
-import rdx.works.profile.data.utils.personaFactorSourceId
+import rdx.works.profile.data.utils.factorSourceId
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.deviceFactorSources
 import rdx.works.profile.domain.personasOnCurrentNetwork
@@ -21,7 +21,9 @@ class GetPersonasUseCase @Inject constructor(
             val deviceFactorSources = getProfileUseCase.deviceFactorSources.first()
             val backedUpFactorSourcesIDs = preferencesManager.getBackedUpFactorSourceIds().first()
             it.map { persona ->
-                val personaFactorSourceID = deviceFactorSources.firstOrNull { it.id == persona.personaFactorSourceId() }?.id
+                val personaFactorSourceID = deviceFactorSources.firstOrNull {
+                    it.id == persona.factorSourceId()
+                }?.id
                 val personaFactorSourceExistAndBackedUp =
                     personaFactorSourceID != null && backedUpFactorSourcesIDs.contains(personaFactorSourceID.value)
                 persona.toDomainModel(personaFactorSourceExistAndBackedUp)

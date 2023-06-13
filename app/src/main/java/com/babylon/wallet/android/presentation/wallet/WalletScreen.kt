@@ -207,6 +207,7 @@ private fun WalletAccountList(
                         onAccountClick(accountWithResources.account)
                     },
                 accountWithResources = accountWithResources,
+                accountTag = state.getTag(accountWithResources.account),
                 isLoadingResources = state.isLoadingResources,
                 isPromptVisible = state.isSecurityPromptVisible(accountWithResources.account),
                 onApplySecuritySettings = {
