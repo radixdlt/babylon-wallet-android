@@ -1,9 +1,7 @@
 package com.babylon.wallet.android.presentation.account
 
-import androidx.annotation.StringRes
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
-import com.babylon.wallet.android.R
 import com.babylon.wallet.android.domain.common.onError
 import com.babylon.wallet.android.domain.common.onValue
 import com.babylon.wallet.android.domain.model.AccountWithResources
@@ -144,11 +142,6 @@ data class AccountUiState(
 
             return usesNotBackedUpMnemonic && resources.hasXrd()
         }
-}
-
-enum class AssetTypeTab(@StringRes val stringId: Int) {
-    TOKEN_TAB(R.string.account_tokens),
-    NTF_TAB(R.string.account_nfts),
 }
 
 sealed interface SelectedResource {
