@@ -1,5 +1,6 @@
 package com.babylon.wallet.android.presentation.wallet
 
+import android.content.Context
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -12,6 +13,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
@@ -80,48 +82,17 @@ fun AccountCardView(
             textColor = RadixTheme.colors.white.copy(alpha = 0.8f)
         )
 
-        var accountTagText = ""
         accountTag?.let {
-            when (it) {
-                WalletUiState.AccountTag.LEDGER_BABYLON -> {
-                    accountTagText = StringBuilder()
-                        .append(" ")
-                        .append(stringResource(id = R.string.dot_separator))
-                        .append("   ")
-                        .append(stringResource(id = R.string.homePage_accountsTag_ledgerBabylon))
-                        .toString()
-                }
-                WalletUiState.AccountTag.LEDGER_LEGACY -> {
-                    accountTagText = StringBuilder()
-                        .append(" ")
-                        .append(stringResource(id = R.string.dot_separator))
-                        .append("   ")
-                        .append(stringResource(id = R.string.homePage_accountsTag_ledgerLegacy))
-                        .toString()
-                }
-                WalletUiState.AccountTag.LEGACY_SOFTWARE -> {
-                    accountTagText = StringBuilder()
-                        .append(" ")
-                        .append(stringResource(id = R.string.dot_separator))
-                        .append("   ")
-                        .append(stringResource(id = R.string.homePage_accountsTag_legacySoftware))
-                        .toString()
-                }
-                WalletUiState.AccountTag.DAPP_DEFINITION -> {
-                    accountTagText = StringBuilder()
-                        .append(" ")
-                        .append(stringResource(id = R.string.dot_separator))
-                        .append("   ")
-                        .append(stringResource(id = R.string.homePage_accountsTag_dAppDefinition))
-                        .toString()
-                }
+            val context = LocalContext.current
+            val tagLabel = remember(accountTag) {
+                accountTag.toLabel(context)
             }
             Text(
                 modifier = Modifier.constrainAs(legacyLabel) {
                     start.linkTo(addressLabel.end, margin = 8.dp)
                     bottom.linkTo(addressLabel.bottom)
                 },
-                text = accountTagText,
+                text = tagLabel,
                 style = RadixTheme.typography.body1Regular,
                 color = RadixTheme.colors.white
             )
@@ -172,6 +143,43 @@ fun AccountCardView(
                     text = stringResource(id = R.string.homePage_applySecuritySettings)
                 )
             }
+        }
+    }
+}
+
+private fun WalletUiState.AccountTag.toLabel(context: Context): String {
+    return when (this) {
+        WalletUiState.AccountTag.LEDGER_BABYLON -> {
+            StringBuilder()
+                .append(" ")
+                .append(context.resources.getString(R.string.dot_separator))
+                .append("   ")
+                .append(context.resources.getString(R.string.homePage_accountsTag_ledgerBabylon))
+                .toString()
+        }
+        WalletUiState.AccountTag.LEDGER_LEGACY -> {
+            StringBuilder()
+                .append(" ")
+                .append(context.resources.getString(R.string.dot_separator))
+                .append("   ")
+                .append(context.resources.getString(R.string.homePage_accountsTag_ledgerLegacy))
+                .toString()
+        }
+        WalletUiState.AccountTag.LEGACY_SOFTWARE -> {
+            StringBuilder()
+                .append(" ")
+                .append(context.resources.getString(R.string.dot_separator))
+                .append("   ")
+                .append(context.resources.getString(R.string.homePage_accountsTag_legacySoftware))
+                .toString()
+        }
+        WalletUiState.AccountTag.DAPP_DEFINITION -> {
+            StringBuilder()
+                .append(" ")
+                .append(context.resources.getString(R.string.dot_separator))
+                .append("   ")
+                .append(context.resources.getString(R.string.homePage_accountsTag_dAppDefinition))
+                .toString()
         }
     }
 }
