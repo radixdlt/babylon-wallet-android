@@ -12,8 +12,8 @@ import rdx.works.profile.data.model.factorsources.FactorSourceKind
 import rdx.works.profile.data.model.pernetwork.DerivationPath
 import rdx.works.profile.data.repository.ProfileRepository
 import rdx.works.profile.data.repository.profile
-import rdx.works.profile.data.utils.getNextDerivationPathForAccount
 import rdx.works.profile.data.utils.factorSourceId
+import rdx.works.profile.data.utils.getNextDerivationPathForAccount
 import rdx.works.profile.data.utils.unsecuredFactorSourceId
 import javax.inject.Inject
 
