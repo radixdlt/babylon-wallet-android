@@ -84,7 +84,7 @@ private fun SettingsContent(
             onBackClick = onBackClick,
             contentColor = RadixTheme.colors.gray1,
             titleIcon = {
-               Icon(
+                Icon(
                     painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_settings),
                     tint = RadixTheme.colors.gray1,
                     contentDescription = "settings gear"
