@@ -631,29 +631,31 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
 
     fun sendRequestResponse() {
         viewModelScope.launch {
-        val selectedPersona = state.value.selectedPersona?.persona
-        requireNotNull(selectedPersona)
-        if (request.isInternalRequest()) {
-            incomingRequestRepository.requestHandled(request.interactionId)
-        } else {
-            buildAuthorizedDappResponseUseCase(
-                request,
-                selectedPersona,
-                state.value.selectedAccountsOneTime.mapNotNull { getProfileUseCase.accountOnCurrentNetwork(it.address) },
-                state.value.selectedAccountsOngoing.mapNotNull { getProfileUseCase.accountOnCurrentNetwork(it.address) },
-                state.value.selectedOngoingDataFields,
-                state.value.selectedOnetimeDataFields
-            ).onSuccess { response ->
-                dAppMessenger.sendWalletInteractionAuthorizedSuccessResponse(dappId = request.dappId, response = response)
-                mutex.withLock {
-                    editedDapp?.let { dAppConnectionRepository.updateOrCreateAuthorizedDApp(it) }
-                }
-                sendEvent(Event.LoginFlowCompleted)
-                if (!request.isInternalRequest()) {
-                    appEventBus.sendEvent(AppEvent.Status.DappInteraction(
-                            requestId = request.interactionId,
-                            dAppName = state.value.dappWithMetadata?.name
-                        ))
+            val selectedPersona = state.value.selectedPersona?.persona
+            requireNotNull(selectedPersona)
+            if (request.isInternalRequest()) {
+                incomingRequestRepository.requestHandled(request.interactionId)
+            } else {
+                buildAuthorizedDappResponseUseCase(
+                    request,
+                    selectedPersona,
+                    state.value.selectedAccountsOneTime.mapNotNull { getProfileUseCase.accountOnCurrentNetwork(it.address) },
+                    state.value.selectedAccountsOngoing.mapNotNull { getProfileUseCase.accountOnCurrentNetwork(it.address) },
+                    state.value.selectedOngoingDataFields,
+                    state.value.selectedOnetimeDataFields
+                ).onSuccess { response ->
+                    dAppMessenger.sendWalletInteractionAuthorizedSuccessResponse(dappId = request.dappId, response = response)
+                    mutex.withLock {
+                        editedDapp?.let { dAppConnectionRepository.updateOrCreateAuthorizedDApp(it) }
+                    }
+                    sendEvent(Event.LoginFlowCompleted)
+                    if (!request.isInternalRequest()) {
+                        appEventBus.sendEvent(
+                            AppEvent.Status.DappInteraction(
+                                requestId = request.interactionId,
+                                dAppName = state.value.dappWithMetadata?.name
+                            )
+                        )
                     }
                 }.onFailure { throwable ->
                     if (throwable is DappRequestFailure) {
@@ -670,7 +672,7 @@ sealed interface Event : OneOffEvent {
     object RejectLogin : Event
     object RequestCompletionBiometricPrompt : Event
 
-    object LoginFlowCompleted: Event
+    object LoginFlowCompleted : Event
 
     data class DisplayPermission(
         val numberOfAccounts: Int,

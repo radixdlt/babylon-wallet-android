@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.presentation.ui.composables.status.dapp
+package com.babylon.wallet.android.presentation.status.dapp
 
 import androidx.annotation.VisibleForTesting
 import androidx.compose.ui.window.DialogProperties

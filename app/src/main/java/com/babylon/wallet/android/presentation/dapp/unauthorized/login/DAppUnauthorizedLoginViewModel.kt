@@ -190,10 +190,12 @@ class DAppUnauthorizedLoginViewModel @Inject constructor(
                 state.value.selectedOnetimeDataFields,
             )
             sendEvent(Event.LoginFlowCompleted())
-            appEventBus.sendEvent(AppEvent.Status.DappInteraction(
-                requestId = request.id,
-                dAppName = state.value.dappWithMetadata?.name
-            ))
+            appEventBus.sendEvent(
+                AppEvent.Status.DappInteraction(
+                    requestId = request.id,
+                    dAppName = state.value.dappWithMetadata?.name
+                )
+            )
         }
     }
 
@@ -207,7 +209,7 @@ sealed interface Event : OneOffEvent {
     object RequestCompletionBiometricPrompt : Event
     object RejectLogin : Event
 
-    object LoginFlowCompleted: Event
+    object LoginFlowCompleted : Event
 
     data class PersonaDataOnetime(val requiredFieldsEncoded: String) : Event
 }

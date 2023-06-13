@@ -14,10 +14,9 @@ import com.babylon.wallet.android.presentation.main.MAIN_ROUTE
 import com.babylon.wallet.android.presentation.main.MainEvent
 import com.babylon.wallet.android.presentation.main.MainViewModel
 import com.babylon.wallet.android.presentation.navigation.NavigationHost
+import com.babylon.wallet.android.presentation.status.dapp.dappInteractionDialog
+import com.babylon.wallet.android.presentation.status.transaction.transactionStatusDialog
 import com.babylon.wallet.android.presentation.transaction.transactionApproval
-import com.babylon.wallet.android.presentation.ui.composables.status.transaction.transactionStatusDialog
-import com.babylon.wallet.android.presentation.ui.composables.status.transaction.transactionStatusDialogShown
-import com.babylon.wallet.android.presentation.ui.composables.status.dapp.dappInteractionDialog
 import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
 import com.google.accompanist.navigation.animation.rememberAnimatedNavController
@@ -70,7 +69,6 @@ fun WalletApp(
     mainViewModel.observeP2PLinks.collectAsStateWithLifecycle(null)
 }
 
-
 @Composable
 fun HandleStatusEvents(navController: NavController, appEventBus: AppEventBus) {
     LaunchedEffect(Unit) {
@@ -96,7 +94,6 @@ private fun rememberAppEventBus(): AppEventBus {
 
     return entryPoint.appEventBus
 }
-
 
 @EntryPoint
 @InstallIn(SingletonComponent::class)

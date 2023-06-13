@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.presentation.ui.composables.status.transaction
+package com.babylon.wallet.android.presentation.status.transaction
 
 import androidx.annotation.StringRes
 import androidx.lifecycle.SavedStateHandle
@@ -121,7 +121,6 @@ class TransactionStatusDialogViewModel @Inject constructor(
 
         val transactionId: String
             get() = status.transactionId
-
     }
 
     sealed interface Event : OneOffEvent {
@@ -177,5 +176,3 @@ sealed interface TransactionStatus {
         }
     }
 }
-
-

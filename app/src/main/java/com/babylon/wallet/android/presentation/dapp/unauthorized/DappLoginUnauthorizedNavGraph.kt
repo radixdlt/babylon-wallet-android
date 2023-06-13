@@ -13,7 +13,6 @@ import com.babylon.wallet.android.presentation.dapp.unauthorized.login.ROUTE_DAP
 import com.babylon.wallet.android.presentation.dapp.unauthorized.login.dAppLoginUnauthorized
 import com.babylon.wallet.android.presentation.dapp.unauthorized.personaonetime.personaDataOnetimeUnauthorized
 import com.babylon.wallet.android.presentation.settings.personaedit.personaEditScreen
-import com.babylon.wallet.android.presentation.ui.composables.status.dapp.dappInteractionDialog
 import com.google.accompanist.navigation.animation.navigation
 
 @Suppress("LongMethod")

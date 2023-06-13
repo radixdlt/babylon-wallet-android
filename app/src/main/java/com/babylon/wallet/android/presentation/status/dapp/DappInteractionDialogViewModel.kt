@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.presentation.ui.composables.status.dapp
+package com.babylon.wallet.android.presentation.status.dapp
 
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
@@ -36,7 +36,7 @@ class DappInteractionDialogViewModel @Inject constructor(
     data class State(
         val requestId: String,
         val dAppName: String
-    ): UiState
+    ) : UiState
 
     sealed interface Event : OneOffEvent {
         object DismissDialog : Event

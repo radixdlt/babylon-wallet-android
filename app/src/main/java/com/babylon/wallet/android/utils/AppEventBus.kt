@@ -29,13 +29,13 @@ sealed interface AppEvent {
         val derivedPublicKeyHex: String
     ) : AppEvent
 
-    sealed class Status: AppEvent {
+    sealed class Status : AppEvent {
         abstract val requestId: String
 
         data class DappInteraction(
             override val requestId: String,
             val dAppName: String?
-        ): Status()
+        ) : Status()
 
         sealed class Transaction : Status() {
 

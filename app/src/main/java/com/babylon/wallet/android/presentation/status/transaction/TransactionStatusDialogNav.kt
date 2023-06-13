@@ -1,8 +1,7 @@
-package com.babylon.wallet.android.presentation.ui.composables.status.transaction
+package com.babylon.wallet.android.presentation.status.transaction
 
 import androidx.annotation.VisibleForTesting
 import androidx.compose.ui.window.DialogProperties
-import androidx.core.text.htmlEncode
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.SavedStateHandle
 import androidx.navigation.NavController
@@ -11,14 +10,16 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.dialog
 import androidx.navigation.navArgument
 import com.babylon.wallet.android.utils.AppEvent
-import timber.log.Timber
 
 @VisibleForTesting
 private const val ARG_STATUS = "arg_status"
+
 @VisibleForTesting
 private const val VALUE_STATUS_SUCCESS = "success"
+
 @VisibleForTesting
 private const val VALUE_STATUS_FAIL = "fail"
+
 @VisibleForTesting
 private const val VALUE_STATUS_IN_PROGRESS = "in_progress"
 
@@ -57,9 +58,9 @@ fun NavController.transactionStatusDialog(transactionEvent: AppEvent.Status.Tran
     val requestId = transactionEvent.requestId.ifBlank { error("Transaction id cannot be empty") }
     navigate(
         route = "$ROUTE/${transactionEvent.toType()}/$requestId" +
-                "?txId=${transactionEvent.transactionId}" +
-                "&isInternal=${transactionEvent.isInternal}" +
-                "&error=${errorMessageRes}"
+            "?txId=${transactionEvent.transactionId}" +
+            "&isInternal=${transactionEvent.isInternal}" +
+            "&error=$errorMessageRes"
     )
 }
 

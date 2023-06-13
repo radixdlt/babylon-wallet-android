@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.presentation.ui.composables.status.transaction
+package com.babylon.wallet.android.presentation.status.transaction
 
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.fadeIn
@@ -96,7 +96,11 @@ fun TransactionStatusDialog(
                     }
                 },
                 text = {
-                    Text(text = "Closing this does not cancel the transaction. You will not get any notifications regarding the status of this transaction")
+                    // TODO add this to localization
+                    Text(
+                        text = "Closing this does not cancel the transaction. You will not get any notifications regarding the status " +
+                            "of this transaction"
+                    )
                 },
                 confirmText = stringResource(id = R.string.common_ok)
             )
