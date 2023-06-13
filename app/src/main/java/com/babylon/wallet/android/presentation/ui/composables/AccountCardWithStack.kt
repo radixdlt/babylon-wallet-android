@@ -21,7 +21,7 @@ import com.babylon.wallet.android.designsystem.theme.AccountGradientList
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 
 @Composable
-fun CardStack(
+fun AccountCardWithStack(
     modifier: Modifier,
     appearanceId: Int = 0,
     accountName: String,
@@ -51,7 +51,7 @@ fun CardStack(
                 Text(
                     text = accountName,
                     textAlign = TextAlign.Center,
-                    style = RadixTheme.typography.body2Regular,
+                    style = RadixTheme.typography.body1Header,
                     color = Color.White
                 )
 
@@ -86,7 +86,7 @@ fun CardStack(
 @Preview(showBackground = true)
 @Composable
 fun CardStackPreview() {
-    CardStack(
+    AccountCardWithStack(
         modifier = Modifier,
         accountName = "My account",
         accountAddress = "d32d32"

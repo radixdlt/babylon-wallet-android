@@ -119,7 +119,7 @@ private fun NavGraphBuilder.settingsAll(navController: NavController) {
                     SettingsItem.TopLevelSettings.AppSettings -> {
                         navController.appSettingsScreen()
                     }
-                    SettingsItem.TopLevelSettings.ShowMnemonic -> {
+                    SettingsItem.TopLevelSettings.SeedPhrases -> {
                         navController.settingsShowMnemonic()
                     }
                     SettingsItem.TopLevelSettings.ImportFromLegacyWallet -> {
