@@ -45,7 +45,6 @@ import rdx.works.profile.derivation.model.KeyType
 import rdx.works.profile.olympiaimport.OlympiaAccountDetails
 import rdx.works.profile.olympiaimport.OlympiaAccountType
 import rdx.works.profile.olympiaimport.olympiaTestSeedPhrase
-import java.time.Instant
 
 @OptIn(ExperimentalCoroutinesApi::class)
 internal class MigrateOlympiaAccountsUseCaseTest {
@@ -143,7 +142,8 @@ internal class MigrateOlympiaAccountsUseCaseTest {
                 address = address,
                 publicKey = publicKey,
                 accountName = "Olympia $index",
-                derivationPath = derivationPath
+                derivationPath = derivationPath,
+                newBabylonAddress = "empty"
             )
         }
         return accounts
