@@ -50,7 +50,10 @@ interface EntityRepository {
         isRefreshing: Boolean = true
     ): Result<List<AccountWithResources>>
 
-    suspend fun getEntityOwnerKeyHashes(entityAddress: String, isRefreshing: Boolean = false): Result<OwnerKeyHashesMetadataItem?>
+    suspend fun getEntityOwnerKeyHashes(
+        entityAddress: String,
+        isRefreshing: Boolean = false
+    ): Result<OwnerKeyHashesMetadataItem?>
 }
 
 @Suppress("TooManyFunctions")
