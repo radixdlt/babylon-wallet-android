@@ -34,7 +34,7 @@ fun String.fromISO8601String(): LocalDateTime? {
     }
 }
 
-fun Instant.timestampFormatted(): String {
+fun Instant.ledgerLastUsedDateFormat(): String {
     val zoneId = ZoneId.systemDefault()
     val currentYear = Instant.now().atZone(zoneId).year
     val instantYear = atZone(zoneId).year

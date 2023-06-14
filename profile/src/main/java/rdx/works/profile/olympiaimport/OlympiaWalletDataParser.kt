@@ -50,7 +50,7 @@ class OlympiaWalletDataParser @Inject constructor(
                             .replace(Regex("[$HeaderSeparator$InnerSeparator$OuterSeparator]"), AccountNameForbiddenCharsReplacement)
                     } else {
                         ""
-                    }.ifEmpty { "Unnamed" }
+                    }.ifEmpty { "Unnamed Olympia account $index" }
                     val olympiaAddress = RadixEngineToolkit.deriveOlympiaAddressFromPublicKey(
                         DeriveOlympiaAddressFromPublicKeyRequest(OlympiaNetwork.Mainnet, publicKey)
                     ).getOrThrow().olympiaAccountAddress
