@@ -577,11 +577,8 @@ class TransactionApprovalViewModel @Inject constructor(
     }
 
     fun onBackClick() {
-        // TODO display dialog are we sure we want to reject transaction?
         viewModelScope.launch {
-            if (approvalJob != null) {
-                sendEvent(TransactionApprovalEvent.Dismiss)
-            } else {
+            if (approvalJob == null) {
                 if (!transactionWriteRequest.isInternal) {
                     dAppMessenger.sendWalletInteractionResponseFailure(
                         dappId = transactionWriteRequest.dappId,
