@@ -41,7 +41,9 @@ internal class OlympiaWalletExportFormatTest {
             assert(testVector.olympiaWallet.mnemonic.split(" ").size == parsedOlympiaAccountData!!.mnemonicWordCount)
             parsedOlympiaAccountData.accountData.forEach { olympiaAccountDetail ->
                 val correspondingTestVector = testVector.olympiaWallet.accounts[olympiaAccountDetail.index]
-                assert(olympiaAccountDetail.accountName == correspondingTestVector.name.orEmpty().ifEmpty { "Unnamed" })
+                assert(
+                    olympiaAccountDetail.accountName == correspondingTestVector.name.orEmpty()
+                        .ifEmpty { "Unnamed Olympia account ${olympiaAccountDetail.index}" })
                 val pubKeyUnwrapped = correspondingTestVector.pubKey.decodeBase64()?.hex()
                 assert(olympiaAccountDetail.publicKey == pubKeyUnwrapped)
             }

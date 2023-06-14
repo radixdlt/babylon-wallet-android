@@ -50,7 +50,7 @@ sealed interface SettingsItem {
                 AuthorizedDapps -> com.babylon.wallet.android.designsystem.R.drawable.ic_authorized_dapps
                 AppSettings -> com.babylon.wallet.android.designsystem.R.drawable.ic_app_settings
                 SeedPhrases -> com.babylon.wallet.android.designsystem.R.drawable.ic_seed_phrases
-                LedgerHardwareWallets -> com.babylon.wallet.android.designsystem.R.drawable.ic_hardware_ledger
+                LedgerHardwareWallets -> com.babylon.wallet.android.designsystem.R.drawable.ic_ledger_hardware_wallets
                 ImportFromLegacyWallet -> com.babylon.wallet.android.designsystem.R.drawable.ic_app_settings
                 is Backups -> com.babylon.wallet.android.designsystem.R.drawable.ic_backup
                 else -> null

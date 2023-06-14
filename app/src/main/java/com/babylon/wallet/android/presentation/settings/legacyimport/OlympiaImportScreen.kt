@@ -478,7 +478,7 @@ private fun AccountListPage(
                             condition = !item.alreadyImported,
                             modifier = Modifier.clip(RadixTheme.shapes.roundedRectSmall)
                         ),
-                    accountName = item.accountName ?: stringResource(id = R.string.importLegacyWallet_unnamedAccount, item.index),
+                    accountName = item.accountName,
                     accountType = item.type,
                     address = item.address,
                     newAddress = item.newBabylonAddress
