@@ -49,7 +49,7 @@ sealed interface SettingsItem {
                 Personas -> com.babylon.wallet.android.designsystem.R.drawable.ic_personas
                 AuthorizedDapps -> com.babylon.wallet.android.designsystem.R.drawable.ic_authorized_dapps
                 AppSettings -> com.babylon.wallet.android.designsystem.R.drawable.ic_app_settings
-                LedgerHardwareWallets -> com.babylon.wallet.android.designsystem.R.drawable.ic_app_settings
+                LedgerHardwareWallets -> com.babylon.wallet.android.designsystem.R.drawable.ic_hardware_ledger
                 ShowMnemonic -> com.babylon.wallet.android.designsystem.R.drawable.ic_app_settings
                 ImportFromLegacyWallet -> com.babylon.wallet.android.designsystem.R.drawable.ic_app_settings
                 is Backups -> com.babylon.wallet.android.designsystem.R.drawable.ic_backup

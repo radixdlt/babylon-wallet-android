@@ -1,5 +1,6 @@
 package com.babylon.wallet.android.presentation.ui.composables
 
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.material.Icon
@@ -29,7 +30,8 @@ fun RadixCenteredTopAppBar(
     contentColor: Color = RadixTheme.colors.gray1,
     actions: @Composable RowScope.() -> Unit = {},
     backIconType: BackIconType = BackIconType.Back,
-    containerColor: Color = RadixTheme.colors.defaultBackground
+    containerColor: Color = RadixTheme.colors.defaultBackground,
+    titleIcon: (@Composable () -> Unit)? = null
 ) {
     CenterAlignedTopAppBar(
         modifier = modifier,
@@ -60,13 +62,16 @@ fun RadixCenteredTopAppBar(
             }
         },
         title = {
-            Text(
-                text = title,
-                style = RadixTheme.typography.body1Header,
-                color = contentColor,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis
-            )
+            Row {
+                titleIcon?.invoke()
+                Text(
+                    text = title,
+                    style = RadixTheme.typography.body1Header,
+                    color = contentColor,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+            }
         },
         actions = actions,
         colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = containerColor)
