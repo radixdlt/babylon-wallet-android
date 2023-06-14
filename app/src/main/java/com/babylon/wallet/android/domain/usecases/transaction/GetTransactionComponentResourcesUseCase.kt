@@ -20,13 +20,14 @@ class GetTransactionComponentResourcesUseCase @Inject constructor(
     suspend fun invoke(
         analyzeManifestWithPreviewResponse: AnalyzeTransactionExecutionResponse,
     ): Result<List<AccountWithResources>> {
-
         val depositComponents = mutableListOf<String>()
         val withdrawComponents = mutableListOf<String>()
 
         analyzeManifestWithPreviewResponse.accountDeposits.forEach { accountDeposit ->
-            depositComponents.add((accountDeposit as? AccountDeposit.Predicted)?.componentAddress
-                ?: (accountDeposit as? AccountDeposit.Guaranteed)?.componentAddress.orEmpty())
+            depositComponents.add(
+                (accountDeposit as? AccountDeposit.Predicted)?.componentAddress
+                    ?: (accountDeposit as? AccountDeposit.Guaranteed)?.componentAddress.orEmpty()
+            )
         }
 
         analyzeManifestWithPreviewResponse.accountWithdraws.forEach { accountWithdraw ->
@@ -34,8 +35,7 @@ class GetTransactionComponentResourcesUseCase @Inject constructor(
         }
 
         val accounts = setOf(depositComponents, withdrawComponents).flatten().mapNotNull { componentAddress ->
-            getProfileUseCase
-                .accountOnCurrentNetwork(componentAddress)
+            getProfileUseCase.accountOnCurrentNetwork(componentAddress)
         }
 
         return entityRepository.getAccountsWithResources(accounts)

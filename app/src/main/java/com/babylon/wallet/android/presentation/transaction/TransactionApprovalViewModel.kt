@@ -19,8 +19,6 @@ import com.babylon.wallet.android.domain.common.value
 import com.babylon.wallet.android.domain.model.AccountWithResources
 import com.babylon.wallet.android.domain.model.DAppWithMetadataAndAssociatedResources
 import com.babylon.wallet.android.domain.model.MetadataConstants
-import com.babylon.wallet.android.domain.model.MetadataConstants.KEY_ICON
-import com.babylon.wallet.android.domain.model.MetadataConstants.KEY_SYMBOL
 import com.babylon.wallet.android.domain.model.Resource
 import com.babylon.wallet.android.domain.model.TransactionManifestData
 import com.babylon.wallet.android.domain.usecases.GetDAppWithMetadataAndAssociatedResourcesUseCase
@@ -46,8 +44,6 @@ import com.radixdlt.toolkit.models.crypto.PrivateKey
 import com.radixdlt.toolkit.models.request.AccountDeposit
 import com.radixdlt.toolkit.models.request.AnalyzeTransactionExecutionResponse
 import com.radixdlt.toolkit.models.request.ConvertManifestResponse
-import com.radixdlt.toolkit.models.request.MetadataEntry
-import com.radixdlt.toolkit.models.request.MetadataValue
 import com.radixdlt.toolkit.models.request.ResourceQuantifier
 import com.radixdlt.toolkit.models.transaction.ManifestInstructions
 import com.radixdlt.toolkit.models.transaction.TransactionManifest
@@ -226,7 +222,6 @@ class TransactionApprovalViewModel @Inject constructor(
         analyzeManifestWithPreviewResponse: AnalyzeTransactionExecutionResponse,
         accountsWithResources: List<AccountWithResources>
     ): List<TransactionAccountItemUiModel> {
-
         return analyzeManifestWithPreviewResponse.accountWithdraws.map { accountWithdraw ->
 
             val componentAddress = accountWithdraw.componentAddress
@@ -288,12 +283,11 @@ class TransactionApprovalViewModel @Inject constructor(
         }
     }
 
-
+    @Suppress("LongMethod", "CyclomaticComplexMethod")
     private fun processAccountDeposits(
         analyzeManifestWithPreviewResponse: AnalyzeTransactionExecutionResponse,
         accountsWithResources: List<AccountWithResources>
     ): List<TransactionAccountItemUiModel> {
-
         return analyzeManifestWithPreviewResponse.accountDeposits.mapIndexed { index, accountDeposit ->
 
             when (accountDeposit) {
@@ -377,7 +371,6 @@ class TransactionApprovalViewModel @Inject constructor(
                     )
                 }
                 is AccountDeposit.Guaranteed -> {
-
                     val componentAddress = accountDeposit.componentAddress
 
                     val accountWithResource = accountsWithResources.find {
