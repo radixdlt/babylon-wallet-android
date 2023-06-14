@@ -95,13 +95,10 @@ fun TransactionStatusDialog(
                     }
                 },
                 text = {
-                    // TODO add this to localization
-                    Text(
-                        text = "Closing this does not cancel the transaction. You will not get any notifications regarding the status " +
-                            "of this transaction"
-                    )
+                    Text(text = stringResource(id = R.string.transaction_status_dismiss_dialog_message))
                 },
-                confirmText = stringResource(id = R.string.common_ok)
+                confirmText = stringResource(id = R.string.common_ok),
+                dismissText = null
             )
         }
     }

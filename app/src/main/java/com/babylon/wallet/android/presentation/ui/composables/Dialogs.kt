@@ -113,12 +113,12 @@ fun BottomDialogDragHandle(
 
 @Composable
 fun BasicPromptAlertDialog(
+    modifier: Modifier = Modifier,
     finish: (accepted: Boolean) -> Unit,
     title: (@Composable () -> Unit)? = null,
     text: (@Composable () -> Unit)? = null,
-    modifier: Modifier = Modifier,
     confirmText: String = stringResource(id = R.string.common_confirm),
-    dismissText: String = stringResource(id = R.string.common_cancel),
+    dismissText: String? = stringResource(id = R.string.common_cancel),
     confirmTextColor: Color = RadixTheme.colors.blue2
 ) {
     AlertDialog(
@@ -129,8 +129,8 @@ fun BasicPromptAlertDialog(
         confirmButton = {
             RadixTextButton(text = confirmText, onClick = { finish(true) }, contentColor = confirmTextColor)
         },
-        dismissButton = {
-            RadixTextButton(text = dismissText, onClick = { finish(false) })
+        dismissButton = dismissText?.let {
+            { RadixTextButton(text = it, onClick = { finish(false) }) }
         },
         title = title,
         text = text
