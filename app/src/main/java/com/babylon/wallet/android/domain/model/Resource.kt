@@ -91,8 +91,7 @@ sealed class Resource {
         private val nameMetadataItem: NameMetadataItem? = null,
         private val descriptionMetadataItem: DescriptionMetadataItem? = null,
         private val iconMetadataItem: IconUrlMetadataItem? = null,
-        val items: List<Item>,
-        private val guaranteedQuantity: BigDecimal? = null
+        val items: List<Item>
     ) : Resource(), Comparable<NonFungibleResource> {
         val name: String
             get() = nameMetadataItem?.name.orEmpty()
