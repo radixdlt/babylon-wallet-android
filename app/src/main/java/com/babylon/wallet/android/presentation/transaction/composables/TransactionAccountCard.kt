@@ -96,7 +96,9 @@ fun TransactionAccountCard(
             TokenItemContent(
                 isXrdToken = fungibleResource.isXrd,
                 tokenUrl = fungibleResource.iconUrl.toString(),
-                tokenSymbol = fungibleResource.displayTitle,
+                tokenSymbol = fungibleResource.displayTitle.ifEmpty {
+                    stringResource(id = com.babylon.wallet.android.R.string.transactionReview_unknown)
+                },
                 tokenAmount = fungibleResource.amount?.toPlainString().orEmpty(),
                 guaranteedQuantity = fungibleResource.guaranteedQuantityToDisplay,
                 isTokenAmountVisible = fungibleResource.isTokenAmountVisible,
@@ -126,7 +128,7 @@ fun TransactionAccountCard(
 
                 TokenItemContent(
                     isXrdToken = false,
-                    tokenUrl = transactionAccountItemUiModel.iconUrl,
+                    tokenUrl = transactionAccountItemUiModel.iconUrl.orEmpty(),
                     tokenSymbol = transactionAccountItemUiModel.tokenSymbol,
                     tokenAmount = transactionAccountItemUiModel.tokenQuantity,
                     isTokenAmountVisible = true,

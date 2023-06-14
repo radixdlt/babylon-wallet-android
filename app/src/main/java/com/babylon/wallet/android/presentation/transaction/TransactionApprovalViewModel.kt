@@ -12,18 +12,21 @@ import com.babylon.wallet.android.data.transaction.TransactionClient
 import com.babylon.wallet.android.data.transaction.model.TransactionApprovalRequest
 import com.babylon.wallet.android.data.transaction.toPrettyString
 import com.babylon.wallet.android.di.coroutines.ApplicationScope
-import com.babylon.wallet.android.domain.common.Result
 import com.babylon.wallet.android.domain.common.onError
 import com.babylon.wallet.android.domain.common.onValue
 import com.babylon.wallet.android.domain.common.value
+import com.babylon.wallet.android.domain.model.AccountWithResources
 import com.babylon.wallet.android.domain.model.DAppWithMetadataAndAssociatedResources
 import com.babylon.wallet.android.domain.model.MetadataConstants
+import com.babylon.wallet.android.domain.model.MetadataConstants.KEY_ICON
+import com.babylon.wallet.android.domain.model.MetadataConstants.KEY_SYMBOL
 import com.babylon.wallet.android.domain.model.Resource
 import com.babylon.wallet.android.domain.model.TransactionManifestData
 import com.babylon.wallet.android.domain.usecases.GetDAppWithMetadataAndAssociatedResourcesUseCase
 import com.babylon.wallet.android.domain.usecases.transaction.GetTransactionComponentResourcesUseCase
 import com.babylon.wallet.android.domain.usecases.transaction.GetTransactionProofResourcesUseCase
 import com.babylon.wallet.android.domain.usecases.transaction.PollTransactionStatusUseCase
+import com.babylon.wallet.android.domain.usecases.transaction.ResourceRequest
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
@@ -35,11 +38,15 @@ import com.babylon.wallet.android.presentation.dapp.authorized.account.toUiModel
 import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
 import com.babylon.wallet.android.utils.DeviceSecurityHelper
+import com.babylon.wallet.android.utils.iconUrl
 import com.babylon.wallet.android.utils.toResourceRequest
+import com.babylon.wallet.android.utils.tokenSymbol
 import com.radixdlt.toolkit.models.crypto.PrivateKey
 import com.radixdlt.toolkit.models.request.AccountDeposit
 import com.radixdlt.toolkit.models.request.AnalyzeTransactionExecutionResponse
 import com.radixdlt.toolkit.models.request.ConvertManifestResponse
+import com.radixdlt.toolkit.models.request.MetadataEntry
+import com.radixdlt.toolkit.models.request.MetadataValue
 import com.radixdlt.toolkit.models.request.ResourceQuantifier
 import com.radixdlt.toolkit.models.transaction.ManifestInstructions
 import com.radixdlt.toolkit.models.transaction.TransactionManifest
@@ -49,10 +56,7 @@ import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.async
-import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -176,36 +180,32 @@ class TransactionApprovalViewModel @Inject constructor(
                             dAppWithResources
                         }
 
-                        val depositJobs = processAccountDeposits(analyzeManifestWithPreviewResponse)
-                        val withdrawJobs = processWithdrawJobs(analyzeManifestWithPreviewResponse)
+                        val accountsWithResources = getTransactionComponentResourcesUseCase.invoke(
+                            analyzeManifestWithPreviewResponse
+                        ).value().orEmpty()
 
-                        val depositResults = depositJobs.awaitAll()
-                        val withdrawResults = withdrawJobs.awaitAll()
+                        val withdrawTransactionAccountItems = processWithdrawJobs(
+                            analyzeManifestWithPreviewResponse,
+                            accountsWithResources
+                        ).toImmutableList()
 
-                        val withdrawingAccountsResults = withdrawResults
-                            .filterIsInstance<Result.Success<TransactionAccountItemUiModel>>()
-                            .map {
-                                it.data
-                            }.toPersistentList()
-
-                        val depositingAccountsResults = depositResults
-                            .filterIsInstance<Result.Success<TransactionAccountItemUiModel>>()
-                            .map {
-                                it.data
-                            }.toPersistentList()
+                        val depositTransactionAccountItems = processAccountDeposits(
+                            analyzeManifestWithPreviewResponse,
+                            accountsWithResources
+                        ).toImmutableList()
 
                         val proofs = getTransactionProofResourcesUseCase(
                             analyzeManifestWithPreviewResponse.accountProofResources
                         )
 
-                        val guaranteesAccounts = depositingAccountsResults.toGuaranteesAccountsUiModel()
+                        val guaranteesAccounts = depositTransactionAccountItems.toGuaranteesAccountsUiModel()
 
-                        depositingAccounts = depositingAccountsResults
+                        depositingAccounts = depositTransactionAccountItems
 
                         _state.update {
                             it.copy(
-                                withdrawingAccounts = withdrawingAccountsResults,
-                                depositingAccounts = depositingAccountsResults,
+                                withdrawingAccounts = withdrawTransactionAccountItems,
+                                depositingAccounts = depositTransactionAccountItems,
                                 guaranteesAccounts = guaranteesAccounts,
                                 presentingProofs = proofs.toPersistentList(),
                                 connectedDApps = connectedDApps.toPersistentList(),
@@ -220,90 +220,237 @@ class TransactionApprovalViewModel @Inject constructor(
         }
     }
 
-    private fun CoroutineScope.processWithdrawJobs(
-        analyzeManifestWithPreviewResponse: AnalyzeTransactionExecutionResponse
-    ): List<Deferred<Result<TransactionAccountItemUiModel>>> {
+    private fun processWithdrawJobs(
+        analyzeManifestWithPreviewResponse: AnalyzeTransactionExecutionResponse,
+        accountsWithResources: List<AccountWithResources>
+    ): List<TransactionAccountItemUiModel> {
+
         return analyzeManifestWithPreviewResponse.accountWithdraws.map { accountWithdraw ->
-            var amount = ""
-            var ids = emptySet<String>()
-            when (accountWithdraw.resourceQuantifier) {
-                is ResourceQuantifier.Amount -> {
-                    amount = (accountWithdraw.resourceQuantifier as ResourceQuantifier.Amount).amount
-                }
-                is ResourceQuantifier.Ids -> {
-                    ids = (accountWithdraw.resourceQuantifier as ResourceQuantifier.Ids).ids
-                }
+
+            val componentAddress = accountWithdraw.componentAddress
+
+            val accountWithResource = accountsWithResources.find {
+                it.account.address == componentAddress
             }
+
             val resourceRequest = accountWithdraw.resourceQuantifier.toResourceRequest(
                 newlyCreated = analyzeManifestWithPreviewResponse.newlyCreated
             )
-            async {
-                getTransactionComponentResourcesUseCase.invoke(
-                    componentAddress = accountWithdraw.componentAddress,
-                    resourceRequest = resourceRequest,
-                    amount = amount,
-                    ids = ids.toList(),
-                    includesGuarantees = false
-                )
+            val resourceAddress = (resourceRequest as? ResourceRequest.Existing)?.address.orEmpty()
+
+            var fungibleResource: Resource.FungibleResource? = null
+            var nonFungibleResourcesItems: List<Resource.NonFungibleResource.Item> = emptyList()
+
+            var amount = ""
+            when (val resourceQuantifier = accountWithdraw.resourceQuantifier) {
+                is ResourceQuantifier.Amount -> {
+                    // fungible
+                    amount = resourceQuantifier.amount
+                    val fungibleToken = accountWithResource?.resources?.fungibleResources?.find {
+                        it.resourceAddress == resourceAddress
+                    }
+                    fungibleResource = Resource.FungibleResource(
+                        resourceAddress = fungibleToken?.resourceAddress.orEmpty(),
+                        amount = amount.toBigDecimal(),
+                        nameMetadataItem = fungibleToken?.nameMetadataItem,
+                        symbolMetadataItem = fungibleToken?.symbolMetadataItem,
+                        descriptionMetadataItem = fungibleToken?.descriptionMetadataItem,
+                        iconUrlMetadataItem = fungibleToken?.iconUrlMetadataItem,
+                        guaranteedQuantity = fungibleToken?.guaranteedQuantity
+                    )
+                }
+                is ResourceQuantifier.Ids -> {
+                    // nonfungible
+                    val nonFungibleResource = accountWithResource?.resources?.nonFungibleResources?.find {
+                        it.resourceAddress == resourceAddress
+                    }
+                    nonFungibleResourcesItems = nonFungibleResource?.items?.filter {
+                        resourceQuantifier.ids.contains(it.localId.code)
+                    }.orEmpty()
+                }
             }
+
+            TransactionAccountItemUiModel(
+                address = accountWithResource?.account?.address.orEmpty(),
+                displayName = accountWithResource?.account?.displayName.orEmpty(),
+                appearanceID = accountWithResource?.account?.appearanceID ?: 0,
+                tokenQuantity = amount,
+                shouldPromptForGuarantees = false,
+                guaranteedQuantity = null,
+                instructionIndex = null,
+                resourceAddress = resourceAddress,
+                index = null,
+                fungibleResource = fungibleResource,
+                nonFungibleResourceItems = nonFungibleResourcesItems
+            )
         }
     }
 
-    private fun CoroutineScope.processAccountDeposits(
-        analyzeManifestWithPreviewResponse: AnalyzeTransactionExecutionResponse
-    ): List<Deferred<Result<TransactionAccountItemUiModel>>> {
+
+    private fun processAccountDeposits(
+        analyzeManifestWithPreviewResponse: AnalyzeTransactionExecutionResponse,
+        accountsWithResources: List<AccountWithResources>
+    ): List<TransactionAccountItemUiModel> {
+
         return analyzeManifestWithPreviewResponse.accountDeposits.mapIndexed { index, accountDeposit ->
+
             when (accountDeposit) {
                 is AccountDeposit.Predicted -> {
-                    var amount = ""
-                    var ids = emptySet<String>()
-                    when (accountDeposit.resourceQuantifier) {
-                        is ResourceQuantifier.Amount -> {
-                            amount = (accountDeposit.resourceQuantifier as ResourceQuantifier.Amount).amount
-                        }
-                        is ResourceQuantifier.Ids -> {
-                            ids = (accountDeposit.resourceQuantifier as ResourceQuantifier.Ids).ids
-                        }
+                    val componentAddress = accountDeposit.componentAddress
+
+                    val accountWithResource = accountsWithResources.find {
+                        it.account.address == componentAddress
                     }
+
                     val resourceRequest = accountDeposit.resourceQuantifier.toResourceRequest(
                         newlyCreated = analyzeManifestWithPreviewResponse.newlyCreated
                     )
-                    val instructionIndex = accountDeposit.instructionIndex.toInt()
-                    async {
-                        getTransactionComponentResourcesUseCase.invoke(
-                            componentAddress = accountDeposit.componentAddress,
-                            resourceRequest = resourceRequest,
-                            amount = amount,
-                            ids = ids.toList(),
-                            instructionIndex = instructionIndex,
-                            includesGuarantees = true,
-                            index = index
-                        )
+                    val createdEntity = resourceRequest is ResourceRequest.NewlyCreated
+                    val resourceAddress = (resourceRequest as? ResourceRequest.Existing)?.address.orEmpty()
+
+                    var fungibleResource: Resource.FungibleResource? = null
+                    var nonFungibleResourcesItems: List<Resource.NonFungibleResource.Item> = emptyList()
+
+                    var tokenSymbol: String? = null
+                    var iconUrl: String? = null
+                    var amount = ""
+                    if (!createdEntity) {
+                        when (accountDeposit.resourceQuantifier) {
+                            is ResourceQuantifier.Amount -> {
+                                amount = (accountDeposit.resourceQuantifier as ResourceQuantifier.Amount).amount
+                                val fungibleToken = accountWithResource?.resources?.fungibleResources?.find {
+                                    it.resourceAddress == resourceAddress
+                                }
+                                fungibleResource = Resource.FungibleResource(
+                                    resourceAddress = fungibleToken?.resourceAddress.orEmpty(),
+                                    amount = amount.toBigDecimal(),
+                                    nameMetadataItem = fungibleToken?.nameMetadataItem,
+                                    symbolMetadataItem = fungibleToken?.symbolMetadataItem,
+                                    descriptionMetadataItem = fungibleToken?.descriptionMetadataItem,
+                                    iconUrlMetadataItem = fungibleToken?.iconUrlMetadataItem,
+                                    guaranteedQuantity = amount.toBigDecimal()
+                                )
+                            }
+
+                            is ResourceQuantifier.Ids -> {
+                                val ids = (accountDeposit.resourceQuantifier as ResourceQuantifier.Ids).ids
+                                val nonFungibleResource = accountWithResource?.resources?.nonFungibleResources?.find {
+                                    it.resourceAddress == resourceAddress
+                                }
+                                nonFungibleResourcesItems = nonFungibleResource?.items?.filter {
+                                    ids.contains(it.localId.code)
+                                }.orEmpty()
+                            }
+                        }
+                    } else {
+                        (resourceRequest as ResourceRequest.NewlyCreated).apply {
+                            tokenSymbol = this.tokenSymbol()
+                            iconUrl = this.iconUrl()
+                        }
+                        amount = (accountDeposit.resourceQuantifier as ResourceQuantifier.Amount).amount
                     }
+
+                    // If its newlyCreatedEntity do not ask for guarantees
+                    val shouldPromptForGuarantees = !createdEntity
+
+                    // If its newlyCreatedEntity OR don't include guarantee, do not ask for guarantees
+                    val guaranteedAmount = if (createdEntity) null else amount
+
+                    val instructionIndex = accountDeposit.instructionIndex.toInt()
+
+                    TransactionAccountItemUiModel(
+                        address = accountWithResource?.account?.address.orEmpty(),
+                        displayName = accountWithResource?.account?.displayName.orEmpty(),
+                        appearanceID = accountWithResource?.account?.appearanceID ?: 0,
+                        tokenSymbol = tokenSymbol,
+                        tokenQuantity = amount,
+                        iconUrl = iconUrl,
+                        shouldPromptForGuarantees = shouldPromptForGuarantees,
+                        guaranteedQuantity = guaranteedAmount,
+                        instructionIndex = instructionIndex,
+                        resourceAddress = resourceAddress,
+                        index = index,
+                        fungibleResource = fungibleResource,
+                        nonFungibleResourceItems = nonFungibleResourcesItems
+                    )
                 }
                 is AccountDeposit.Guaranteed -> {
-                    var amount = ""
-                    var ids = emptySet<String>()
-                    when (accountDeposit.resourceQuantifier) {
-                        is ResourceQuantifier.Amount -> {
-                            amount = (accountDeposit.resourceQuantifier as ResourceQuantifier.Amount).amount
-                        }
-                        is ResourceQuantifier.Ids -> {
-                            ids = (accountDeposit.resourceQuantifier as ResourceQuantifier.Ids).ids
-                        }
+
+                    val componentAddress = accountDeposit.componentAddress
+
+                    val accountWithResource = accountsWithResources.find {
+                        it.account.address == componentAddress
                     }
+
                     val resourceRequest = accountDeposit.resourceQuantifier.toResourceRequest(
                         newlyCreated = analyzeManifestWithPreviewResponse.newlyCreated
                     )
-                    async {
-                        getTransactionComponentResourcesUseCase.invoke(
-                            componentAddress = accountDeposit.componentAddress,
-                            resourceRequest = resourceRequest,
-                            amount = amount,
-                            ids = ids.toList(),
-                            includesGuarantees = false
-                        )
+                    val createdEntity = resourceRequest is ResourceRequest.NewlyCreated
+                    val resourceAddress = (resourceRequest as? ResourceRequest.Existing)?.address.orEmpty()
+
+                    var fungibleResource: Resource.FungibleResource? = null
+                    var nonFungibleResourcesItems: List<Resource.NonFungibleResource.Item> = emptyList()
+
+                    var tokenSymbol: String? = null
+                    var iconUrl: String? = null
+                    var amount = ""
+                    if (!createdEntity) {
+                        when (accountDeposit.resourceQuantifier) {
+                            is ResourceQuantifier.Amount -> {
+                                amount = (accountDeposit.resourceQuantifier as ResourceQuantifier.Amount).amount
+                                val fungibleToken = accountWithResource?.resources?.fungibleResources?.find {
+                                    it.resourceAddress == resourceAddress
+                                }
+                                fungibleResource = Resource.FungibleResource(
+                                    resourceAddress = fungibleToken?.resourceAddress.orEmpty(),
+                                    amount = amount.toBigDecimal(),
+                                    nameMetadataItem = fungibleToken?.nameMetadataItem,
+                                    symbolMetadataItem = fungibleToken?.symbolMetadataItem,
+                                    descriptionMetadataItem = fungibleToken?.descriptionMetadataItem,
+                                    iconUrlMetadataItem = fungibleToken?.iconUrlMetadataItem,
+                                    guaranteedQuantity = fungibleToken?.guaranteedQuantity
+                                )
+                            }
+
+                            is ResourceQuantifier.Ids -> {
+                                val ids = (accountDeposit.resourceQuantifier as ResourceQuantifier.Ids).ids
+
+                                var nonFungibleResource: Resource.NonFungibleResource? = null
+                                accountsWithResources.forEach {
+                                    it.resources?.nonFungibleResources?.forEach { nftResource ->
+                                        if (nftResource.resourceAddress == resourceAddress) {
+                                            nonFungibleResource = nftResource
+                                        }
+                                    }
+                                }
+                                nonFungibleResourcesItems = nonFungibleResource?.items?.filter {
+                                    ids.contains(it.localId.code)
+                                }.orEmpty()
+                            }
+                        }
+                    } else {
+                        (resourceRequest as ResourceRequest.NewlyCreated).apply {
+                            tokenSymbol = this.tokenSymbol()
+                            iconUrl = this.iconUrl()
+                        }
+                        amount = (accountDeposit.resourceQuantifier as ResourceQuantifier.Amount).amount
                     }
+
+                    TransactionAccountItemUiModel(
+                        address = accountWithResource?.account?.address.orEmpty(),
+                        displayName = accountWithResource?.account?.displayName.orEmpty(),
+                        appearanceID = accountWithResource?.account?.appearanceID ?: 0,
+                        tokenSymbol = tokenSymbol,
+                        tokenQuantity = amount,
+                        iconUrl = iconUrl,
+                        shouldPromptForGuarantees = false,
+                        guaranteedQuantity = null,
+                        instructionIndex = null,
+                        resourceAddress = resourceAddress,
+                        index = null,
+                        fungibleResource = fungibleResource,
+                        nonFungibleResourceItems = nonFungibleResourcesItems
+                    )
                 }
             }
         }
@@ -609,9 +756,9 @@ data class TransactionAccountItemUiModel(
     val address: String,
     val displayName: String,
     val appearanceID: Int,
-    val tokenSymbol: String?,
+    val tokenSymbol: String? = null,
     val tokenQuantity: String,
-    val iconUrl: String,
+    val iconUrl: String? = null,
     val shouldPromptForGuarantees: Boolean,
     val guaranteedQuantity: String?,
     val guaranteedPercentAmount: String = "100",
@@ -663,7 +810,7 @@ fun List<TransactionAccountItemUiModel>.toGuaranteesAccountsUiModel(): Immutable
                     appearanceID = transactionAccountItemUiModel.appearanceID,
                     displayName = transactionAccountItemUiModel.displayName,
                     tokenSymbol = transactionAccountItemUiModel.tokenSymbol.orEmpty(),
-                    tokenIconUrl = transactionAccountItemUiModel.iconUrl,
+                    tokenIconUrl = transactionAccountItemUiModel.iconUrl.orEmpty(),
                     tokenEstimatedQuantity = transactionAccountItemUiModel.tokenQuantity,
                     tokenGuaranteedQuantity = transactionAccountItemUiModel.guaranteedQuantity.orEmpty(),
                     guaranteedPercentAmount = transactionAccountItemUiModel.guaranteedPercentAmount,

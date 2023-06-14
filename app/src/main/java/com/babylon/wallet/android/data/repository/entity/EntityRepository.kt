@@ -4,7 +4,6 @@ import android.net.Uri
 import androidx.core.net.toUri
 import com.babylon.wallet.android.data.gateway.apis.StateApi
 import com.babylon.wallet.android.data.gateway.extensions.asMetadataItems
-import com.babylon.wallet.android.data.gateway.extensions.asMetadataStringMap
 import com.babylon.wallet.android.data.gateway.generated.models.FungibleResourcesCollection
 import com.babylon.wallet.android.data.gateway.generated.models.FungibleResourcesCollectionItemVaultAggregated
 import com.babylon.wallet.android.data.gateway.generated.models.NonFungibleResourcesCollection
@@ -13,7 +12,6 @@ import com.babylon.wallet.android.data.gateway.generated.models.ResourceAggregat
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsOptIns
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsRequest
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponse
-import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponseItemDetailsType
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityFungiblesPageRequest
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityFungiblesPageResponse
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityNonFungibleIdsPageRequest
@@ -34,12 +32,9 @@ import com.babylon.wallet.android.domain.common.value
 import com.babylon.wallet.android.domain.model.AccountWithResources
 import com.babylon.wallet.android.domain.model.Resource
 import com.babylon.wallet.android.domain.model.Resources
-import com.babylon.wallet.android.domain.model.metadata.DescriptionMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.IconUrlMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.MetadataItem.Companion.consume
-import com.babylon.wallet.android.domain.model.metadata.NameMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.OwnerKeyHashesMetadataItem
-import com.babylon.wallet.android.domain.model.metadata.SymbolMetadataItem
 import rdx.works.profile.data.model.pernetwork.Network
 import java.io.IOException
 import java.math.BigDecimal
@@ -55,20 +50,6 @@ interface EntityRepository {
     ): Result<List<AccountWithResources>>
 
     suspend fun getEntityOwnerKeyHashes(entityAddress: String, isRefreshing: Boolean = false): Result<OwnerKeyHashesMetadataItem?>
-
-    suspend fun nonFungibleData(
-        ids: List<String>,
-        resourceAddress: String,
-        isRefreshing: Boolean = true
-    ): Result<List<Resource.NonFungibleResource.Item>>
-
-    suspend fun getResources(
-        addresses: List<String>,
-        ids: List<String>,
-        amount: String,
-        guaranteedAmount: String?,
-        isRefreshing: Boolean = true
-    ): Result<Pair<Resource.FungibleResource?, List<Resource.NonFungibleResource.Item>>>
 }
 
 @Suppress("TooManyFunctions")
@@ -76,70 +57,6 @@ class EntityRepositoryImpl @Inject constructor(
     private val stateApi: StateApi,
     private val cache: HttpCache
 ) : EntityRepository {
-
-    override suspend fun getResources(
-        addresses: List<String>,
-        ids: List<String>,
-        amount: String,
-        guaranteedAmount: String?,
-        isRefreshing: Boolean
-    ): Result<Pair<Resource.FungibleResource?, List<Resource.NonFungibleResource.Item>>> {
-        return stateApi.entityDetails(
-            StateEntityDetailsRequest(
-                addresses = addresses,
-                aggregationLevel = ResourceAggregationLevel.vault
-            )
-        ).execute(
-            cacheParameters = CacheParameters(
-                httpCache = cache,
-                timeoutDuration = if (isRefreshing) NO_CACHE else TimeoutDuration.ONE_MINUTE
-            ),
-            map = { stateEntityDetailsResponse ->
-                val fungibleResourceItem = stateEntityDetailsResponse.items.find {
-                    it.details?.type == StateEntityDetailsResponseItemDetailsType.fungibleResource
-                }
-                val nonFungibleResourceItem = stateEntityDetailsResponse.items.find {
-                    it.details?.type == StateEntityDetailsResponseItemDetailsType.nonFungibleResource
-                }
-
-                val fungibleResource = fungibleResourceItem?.metadata?.asMetadataStringMap()?.let { metadataMap ->
-                    Resource.FungibleResource(
-                        resourceAddress = fungibleResourceItem.address,
-                        amount = amount.toBigDecimal(),
-                        nameMetadataItem = metadataMap[ExplicitMetadataKey.NAME.key]?.let { NameMetadataItem(it) },
-                        symbolMetadataItem = metadataMap[ExplicitMetadataKey.SYMBOL.key]?.let {
-                            SymbolMetadataItem(
-                                it
-                            )
-                        },
-                        descriptionMetadataItem = metadataMap[ExplicitMetadataKey.DESCRIPTION.key]?.let {
-                            DescriptionMetadataItem(
-                                it
-                            )
-                        },
-                        iconUrlMetadataItem = metadataMap[ExplicitMetadataKey.ICON_URL.key]?.let {
-                            IconUrlMetadataItem(
-                                it.toUri()
-                            )
-                        },
-                        guaranteedQuantity = guaranteedAmount?.toBigDecimal()
-                    )
-                }
-
-                val nonFungibleResources = nonFungibleResourceItem?.let { nftItem ->
-                    nonFungibleData(
-                        ids = ids,
-                        resourceAddress = nftItem.address
-                    ).value()
-                }.orEmpty()
-
-                Pair(
-                    fungibleResource,
-                    nonFungibleResources
-                )
-            }
-        )
-    }
 
     override suspend fun getAccountsWithResources(
         accounts: List<Network.Account>,
@@ -423,38 +340,6 @@ class EntityRepositoryImpl @Inject constructor(
         val value = element.value
         value.contains("https")
     }?.value?.toUri()
-
-    override suspend fun nonFungibleData(
-        ids: List<String>,
-        resourceAddress: String,
-        isRefreshing: Boolean
-    ): Result<List<Resource.NonFungibleResource.Item>> {
-        val response = stateApi.nonFungibleData(
-            StateNonFungibleDataRequest(
-                resourceAddress = resourceAddress,
-                nonFungibleIds = ids
-            )
-        ).execute(
-            cacheParameters = CacheParameters(
-                httpCache = cache,
-                timeoutDuration = if (isRefreshing) NO_CACHE else TimeoutDuration.ONE_MINUTE
-            ),
-            map = {
-                it
-            }
-        )
-
-        return response.map { nonFungibleDataResponse ->
-            nonFungibleDataResponse.nonFungibleIds.map { nonFungibleItem ->
-                Resource.NonFungibleResource.Item(
-                    collectionAddress = resourceAddress,
-                    localId = Resource.NonFungibleResource.Item.ID.from(nonFungibleItem.nonFungibleId),
-                    iconMetadataItem = nonFungibleItem.nftImage()
-                        ?.let { imageUrl -> IconUrlMetadataItem(url = imageUrl) }
-                )
-            }
-        }
-    }
 
     private suspend fun nextFungiblesPage(
         accountAddress: String,
