@@ -3,7 +3,9 @@ package com.babylon.wallet.android.presentation.status.transaction
 import androidx.annotation.StringRes
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
+import com.babylon.wallet.android.data.dapp.DappMessenger
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
+import com.babylon.wallet.android.data.transaction.DappRequestException
 import com.babylon.wallet.android.domain.common.onError
 import com.babylon.wallet.android.domain.common.onValue
 import com.babylon.wallet.android.domain.usecases.transaction.PollTransactionStatusUseCase
@@ -26,6 +28,7 @@ import javax.inject.Inject
 class TransactionStatusDialogViewModel @Inject constructor(
     private val incomingRequestRepository: IncomingRequestRepository,
     private val pollTransactionStatusUseCase: PollTransactionStatusUseCase,
+    private val dAppMessenger: DappMessenger,
     private val appEventBus: AppEventBus,
     savedStateHandle: SavedStateHandle
 ) : StateViewModel<TransactionStatusDialogViewModel.State>(),
@@ -69,14 +72,26 @@ class TransactionStatusDialogViewModel @Inject constructor(
                     isInternal = status.isInternal
                 )
             )
-        }.onError {
+        }.onError { error ->
+            if (!status.isInternal) {
+                (error as? DappRequestException)?.let { exception ->
+                    val request = incomingRequestRepository.getTransactionWriteRequest(status.requestId)
+                    dAppMessenger.sendWalletInteractionResponseFailure(
+                        dappId = request.dappId,
+                        requestId = status.requestId,
+                        error = exception.failure.toWalletErrorType(),
+                        message = exception.failure.getDappMessage()
+                    )
+                }
+            }
+
             // Notify the system and this particular dialog that an error has occurred
             appEventBus.sendEvent(
                 AppEvent.Status.Transaction.Fail(
                     requestId = status.requestId,
                     transactionId = status.transactionId,
                     isInternal = status.isInternal,
-                    errorMessageRes = UiMessage.ErrorMessage(it).getUserFriendlyDescriptionRes()
+                    errorMessageRes = UiMessage.ErrorMessage(error).getUserFriendlyDescriptionRes()
                 )
             )
         }
@@ -93,7 +108,6 @@ class TransactionStatusDialogViewModel @Inject constructor(
     fun onDismissConfirmed() {
         _state.update { it.copy(isIgnoreTransactionModalShowing = false) }
         viewModelScope.launch {
-            incomingRequestRepository.requestHandled(state.value.status.requestId)
             sendEvent(Event.DismissDialog)
         }
     }

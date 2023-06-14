@@ -8,6 +8,7 @@ import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavType
 import androidx.navigation.navArgument
+import com.babylon.wallet.android.presentation.navigation.markAsHighPriority
 import com.google.accompanist.navigation.animation.composable
 
 @VisibleForTesting
@@ -29,6 +30,7 @@ fun NavController.transactionApproval(requestId: String) {
 fun NavGraphBuilder.transactionApprovalScreen(
     onBackClick: () -> Unit
 ) {
+    markAsHighPriority(ROUTE_TRANSACTION_APPROVAL)
     composable(
         route = ROUTE_TRANSACTION_APPROVAL,
         arguments = listOf(

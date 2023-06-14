@@ -81,6 +81,14 @@ class MainViewModel @Inject constructor(
         return MainUiState()
     }
 
+    fun onHighPriorityScreen() = viewModelScope.launch {
+        incomingRequestRepository.pauseIncomingRequests()
+    }
+
+    fun onLowPriorityScreen() = viewModelScope.launch {
+        incomingRequestRepository.resumeIncomingRequests()
+    }
+
     private suspend fun establishLinkConnection(connectionPassword: String) {
         val encryptionKey = parseEncryptionKeyFromConnectionPassword(
             connectionPassword = connectionPassword

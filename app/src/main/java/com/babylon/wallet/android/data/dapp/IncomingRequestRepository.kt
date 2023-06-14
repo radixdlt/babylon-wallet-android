@@ -17,6 +17,10 @@ interface IncomingRequestRepository {
 
     suspend fun requestHandled(requestId: String)
 
+    suspend fun pauseIncomingRequests()
+
+    suspend fun resumeIncomingRequests()
+
     fun getUnauthorizedRequest(requestId: String): IncomingRequest.UnauthorizedRequest
 
     fun getTransactionWriteRequest(requestId: String): IncomingRequest.TransactionRequest
@@ -37,9 +41,15 @@ class IncomingRequestRepositoryImpl @Inject constructor() : IncomingRequestRepos
 
     private val mutex = Mutex()
 
+    /**
+     * Flag that allows the queue to know if it is free to handle the latest
+     * incoming request from an **external** dApp. Internal requests always take priority.
+     */
+    private var isFreeToHandleRequests: Boolean = true
+
     override suspend fun add(incomingRequest: IncomingRequest) {
         mutex.withLock {
-            if (listOfIncomingRequests.isEmpty()) {
+            if (listOfIncomingRequests.isEmpty() && (isFreeToHandleRequests || incomingRequest.isInternal)) {
                 _currentRequestToHandle.emit(incomingRequest)
             }
             listOfIncomingRequests.putIfAbsent(incomingRequest.id, incomingRequest)
@@ -50,10 +60,23 @@ class IncomingRequestRepositoryImpl @Inject constructor() : IncomingRequestRepos
     override suspend fun requestHandled(requestId: String) {
         mutex.withLock {
             listOfIncomingRequests.remove(requestId)
-            listOfIncomingRequests.values.firstOrNull()?.let { nextRequest ->
-                _currentRequestToHandle.emit(nextRequest)
-            }
+            handleLatestRequest()
             Timber.d("🗂 request $requestId handled so size of list is now: ${listOfIncomingRequests.size}")
+        }
+    }
+
+    override suspend fun pauseIncomingRequests() {
+        if (isFreeToHandleRequests) {
+            isFreeToHandleRequests = false
+            Timber.d("🗂 Temporarily pausing incoming message queue")
+        }
+    }
+
+    override suspend fun resumeIncomingRequests() {
+        if (!isFreeToHandleRequests) {
+            isFreeToHandleRequests = true
+            Timber.d("🗂 Resuming incoming message queue")
+            handleLatestRequest()
         }
     }
 
@@ -86,4 +109,15 @@ class IncomingRequestRepositoryImpl @Inject constructor() : IncomingRequestRepos
     }
 
     override fun getAmountOfRequests() = listOfIncomingRequests.size
+
+    /**
+     * Handles the next **external** incoming request from a dApp
+     */
+    private suspend fun handleLatestRequest() {
+        if (isFreeToHandleRequests) {
+            listOfIncomingRequests.values.filterNot { it.isInternal }.firstOrNull()?.let { nextRequest ->
+                _currentRequestToHandle.emit(nextRequest)
+            }
+        }
+    }
 }

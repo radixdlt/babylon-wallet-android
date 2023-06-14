@@ -14,6 +14,7 @@ import com.babylon.wallet.android.presentation.main.MAIN_ROUTE
 import com.babylon.wallet.android.presentation.main.MainEvent
 import com.babylon.wallet.android.presentation.main.MainViewModel
 import com.babylon.wallet.android.presentation.navigation.NavigationHost
+import com.babylon.wallet.android.presentation.navigation.PriorityRoutes
 import com.babylon.wallet.android.presentation.status.dapp.dappInteractionDialog
 import com.babylon.wallet.android.presentation.status.transaction.transactionStatusDialog
 import com.babylon.wallet.android.presentation.transaction.transactionApproval
@@ -66,6 +67,11 @@ fun WalletApp(
     }
 
     HandleStatusEvents(navController = navController, appEventBus = appEventBus)
+    ObserveHighPriorityScreens(
+        navController = navController,
+        onLowPriorityScreen = mainViewModel::onLowPriorityScreen,
+        onHighPriorityScreen = mainViewModel::onHighPriorityScreen
+    )
     mainViewModel.observeP2PLinks.collectAsStateWithLifecycle(null)
 }
 
@@ -80,6 +86,23 @@ fun HandleStatusEvents(navController: NavController, appEventBus: AppEventBus) {
                 is AppEvent.Status.DappInteraction -> {
                     navController.dappInteractionDialog(event)
                 }
+            }
+        }
+    }
+}
+
+@Composable
+fun ObserveHighPriorityScreens(
+    navController: NavController,
+    onLowPriorityScreen: () -> Unit,
+    onHighPriorityScreen: () -> Unit
+) {
+    LaunchedEffect(Unit) {
+        navController.currentBackStackEntryFlow.collect { entry ->
+            if (PriorityRoutes.isHighPriority(entry = entry)) {
+                onHighPriorityScreen()
+            } else {
+                onLowPriorityScreen()
             }
         }
     }

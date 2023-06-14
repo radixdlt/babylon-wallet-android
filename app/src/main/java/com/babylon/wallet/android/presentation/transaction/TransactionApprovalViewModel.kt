@@ -571,6 +571,9 @@ class TransactionApprovalViewModel @Inject constructor(
                 )
             )
         }
+
+        approvalJob = null
+        incomingRequestRepository.requestHandled(args.requestId)
     }
 
     fun onBackClick() {
@@ -586,8 +589,8 @@ class TransactionApprovalViewModel @Inject constructor(
                         error = WalletErrorType.RejectedByUser
                     )
                 }
-                sendEvent(TransactionApprovalEvent.Dismiss)
                 incomingRequestRepository.requestHandled(args.requestId)
+                sendEvent(TransactionApprovalEvent.Dismiss)
             }
         }
     }

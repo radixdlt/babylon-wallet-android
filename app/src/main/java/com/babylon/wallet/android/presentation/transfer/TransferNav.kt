@@ -7,6 +7,7 @@ import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavType
 import androidx.navigation.navArgument
+import com.babylon.wallet.android.presentation.navigation.markAsHighPriority
 import com.google.accompanist.navigation.animation.composable
 import org.jetbrains.annotations.VisibleForTesting
 
@@ -28,6 +29,7 @@ fun NavController.transfer(accountId: String) {
 fun NavGraphBuilder.transferScreen(
     onBackClick: () -> Unit,
 ) {
+    markAsHighPriority(ROUTE_TRANSFER)
     composable(
         route = ROUTE_TRANSFER,
         arguments = listOf(
