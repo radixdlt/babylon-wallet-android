@@ -48,7 +48,16 @@ class TransactionStatusDialogViewModel @Inject constructor(
                     it.requestId == state.value.status.requestId
                 }.collect { event ->
                     val status = TransactionStatus.from(event)
-                    _state.update { it.copy(status = status) }
+                    _state.update {
+                        it.copy(
+                            status = status,
+                            isIgnoreTransactionModalShowing = if (status is TransactionStatus.Completing) {
+                                it.isIgnoreTransactionModalShowing
+                            } else {
+                                false
+                            }
+                        )
+                    }
 
                     if (status is TransactionStatus.Completing) {
                         pollTransactionStatus(status)
