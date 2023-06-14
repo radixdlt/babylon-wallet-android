@@ -383,6 +383,7 @@
   <string name="transaction_status_success_title">Success</string>
   <string name="transaction_status_success_text">Your transaction was successful</string>
   <string name="transaction_status_failure_title">Something went wrong</string>
+  <string name="transaction_status_dismiss_dialog_message">Dismissing this modal will not cancel this transaction, but you will not get any more notifications regarding the transaction\'s status.</string>
   <string name="addressAction_copyAddress">Copy Address</string>
   <string name="addressAction_copiedToClipboard">Copied to Clipboard</string>
   <string name="addressAction_copyNftId">Copy NFT ID</string>
