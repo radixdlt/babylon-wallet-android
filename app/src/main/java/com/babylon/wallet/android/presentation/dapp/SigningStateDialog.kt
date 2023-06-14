@@ -6,7 +6,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import com.babylon.wallet.android.data.transaction.SigningState
-import com.babylon.wallet.android.presentation.ui.composables.resultdialog.signing.SigningStatusBottomDialog
+import com.babylon.wallet.android.presentation.status.signing.SigningStatusBottomDialog
 
 @Composable
 fun SigningStateDialog(signingState: SigningState?) {

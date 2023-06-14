@@ -189,7 +189,7 @@ class DAppUnauthorizedLoginViewModel @Inject constructor(
                 state.value.selectedAccountsOneTime,
                 state.value.selectedOnetimeDataFields,
             )
-            sendEvent(Event.LoginFlowCompleted())
+            sendEvent(Event.LoginFlowCompleted)
             appEventBus.sendEvent(
                 AppEvent.Status.DappInteraction(
                     requestId = request.id,
