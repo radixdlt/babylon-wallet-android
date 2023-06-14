@@ -1,7 +1,7 @@
 package com.babylon.wallet.android.presentation.dapp.authorized.login
 
+import InitialAuthorizedLoginRoute
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
@@ -16,27 +16,49 @@ import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.presentation.common.FullscreenCircularProgressContent
-import com.babylon.wallet.android.presentation.dapp.authorized.DappAuthorizedLoginNavigationHost
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUiMessageHandler
-import com.google.accompanist.navigation.animation.rememberAnimatedNavController
 
-@OptIn(ExperimentalAnimationApi::class)
 @Composable
 fun DappAuthorizedLoginScreen(
     viewModel: DAppAuthorizedLoginViewModel,
     onBackClick: () -> Unit,
-    showSuccessDialog: (requestId: String, dAppName: String) -> Unit,
+    navigateToChooseAccount: (Int, Boolean, Boolean, Boolean) -> Unit,
+    navigateToPermissions: (Int, Boolean, Boolean, Boolean) -> Unit,
+    navigateToOneTimePersonaData: (String) -> Unit,
+    navigateToSelectPersona: (String) -> Unit,
+    navigateToOngoingPersonaData: (String, String) -> Unit,
     modifier: Modifier = Modifier
 ) {
     LaunchedEffect(Unit) {
-        viewModel.topLevelOneOffEvent.collect { event ->
+        viewModel.oneOffEvent.collect { event ->
             when (event) {
-                DAppAuthorizedLoginEvent.RejectLogin -> onBackClick()
+                Event.RejectLogin -> onBackClick()
                 else -> {}
             }
         }
     }
     val state by viewModel.state.collectAsStateWithLifecycle()
+    when (val route = state.initialAuthorizedLoginRoute) {
+        is InitialAuthorizedLoginRoute.ChooseAccount -> navigateToChooseAccount(
+            route.numberOfAccounts,
+            route.isExactAccountsCount,
+            route.oneTime,
+            route.showBack
+        )
+        is InitialAuthorizedLoginRoute.OneTimePersonaData -> navigateToOneTimePersonaData(route.requestedFieldsEncoded)
+        is InitialAuthorizedLoginRoute.OngoingPersonaData -> navigateToOngoingPersonaData(
+            route.personaAddress,
+            route.requestedFieldsEncoded
+        )
+        is InitialAuthorizedLoginRoute.Permission -> navigateToPermissions(
+            route.numberOfAccounts,
+            route.isExactAccountsCount,
+            route.oneTime,
+            route.showBack
+        )
+        is InitialAuthorizedLoginRoute.SelectPersona -> navigateToSelectPersona(route.reqId)
+        else -> {}
+    }
     Box(
         modifier = modifier
 //            .systemBarsPadding()
@@ -51,23 +73,6 @@ fun DappAuthorizedLoginScreen(
             modifier = Modifier.fillMaxSize()
         ) {
             FullscreenCircularProgressContent()
-        }
-        AnimatedVisibility(
-            visible = state.initialAuthorizedLoginRoute != null,
-            enter = fadeIn(),
-            exit = fadeOut(),
-            modifier = Modifier.fillMaxSize()
-        ) {
-            val navController = rememberAnimatedNavController()
-            state.initialAuthorizedLoginRoute?.let {
-                DappAuthorizedLoginNavigationHost(
-                    initialAuthorizedLoginRoute = it,
-                    navController = navController,
-                    finishDappLogin = onBackClick,
-                    showSuccessDialog = showSuccessDialog,
-                    sharedViewModel = viewModel
-                )
-            }
         }
         SnackbarUiMessageHandler(
             message = state.uiMessage,

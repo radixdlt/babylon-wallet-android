@@ -5,6 +5,7 @@ import com.babylon.wallet.android.data.manifest.convertManifestInstructionsToStr
 import com.babylon.wallet.android.data.repository.entity.EntityRepository
 import com.babylon.wallet.android.domain.common.onValue
 import com.babylon.wallet.android.domain.usecases.transaction.CollectSignersSignaturesUseCase
+import com.babylon.wallet.android.domain.usecases.transaction.GenerateAuthSigningFactorInstanceUseCase
 import com.babylon.wallet.android.domain.usecases.transaction.SignRequest
 import com.radixdlt.toolkit.builders.ManifestBuilder
 import com.radixdlt.toolkit.models.crypto.SignatureWithPublicKey
@@ -15,7 +16,6 @@ import rdx.works.profile.data.model.pernetwork.Entity
 import rdx.works.profile.data.model.pernetwork.FactorInstance
 import rdx.works.profile.data.model.pernetwork.SecurityState
 import rdx.works.profile.data.model.pernetwork.SigningPurpose
-import rdx.works.profile.domain.GenerateAuthSigningFactorInstanceUseCase
 import javax.inject.Inject
 
 class ROLAClient @Inject constructor(
@@ -24,8 +24,9 @@ class ROLAClient @Inject constructor(
     private val collectSignersSignaturesUseCase: CollectSignersSignaturesUseCase
 ) {
 
-    @Suppress("RedundantSuspendModifier")
-    suspend fun generateAuthSigningFactorInstance(entity: Entity): FactorInstance {
+    val signingState = collectSignersSignaturesUseCase.signingState
+
+    suspend fun generateAuthSigningFactorInstance(entity: Entity): Result<FactorInstance> {
         return generateAuthSigningFactorInstanceUseCase(entity)
     }
 

@@ -22,6 +22,8 @@ class BuildAuthorizedDappResponseUseCase @Inject constructor(
     private val rolaClient: ROLAClient
 ) {
 
+    val signingState = rolaClient.signingState
+
     @Suppress("LongParameterList", "ReturnCount")
     suspend operator fun invoke(
         request: MessageFromDataChannel.IncomingRequest.AuthorizedRequest,

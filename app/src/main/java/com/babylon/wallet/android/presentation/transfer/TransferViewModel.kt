@@ -6,9 +6,6 @@ import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.domain.model.Resource
 import com.babylon.wallet.android.domain.model.Resources
 import com.babylon.wallet.android.domain.usecases.GetAccountsWithResourcesUseCase
-import com.babylon.wallet.android.presentation.common.OneOffEvent
-import com.babylon.wallet.android.presentation.common.OneOffEventHandler
-import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
@@ -39,8 +36,8 @@ class TransferViewModel @Inject constructor(
     getProfileUseCase: GetProfileUseCase,
     getAccountsWithResourcesUseCase: GetAccountsWithResourcesUseCase,
     incomingRequestRepository: IncomingRequestRepository,
-    savedStateHandle: SavedStateHandle
-) : StateViewModel<TransferViewModel.State>(), OneOffEventHandler<TransferViewModel.Event> by OneOffEventHandlerImpl() {
+    savedStateHandle: SavedStateHandle,
+) : StateViewModel<TransferViewModel.State>() {
 
     internal val args = TransferArgs(savedStateHandle)
 
@@ -357,10 +354,6 @@ class TransferViewModel @Inject constructor(
             object None : Message
             data class Added(val message: String = "") : Message
         }
-    }
-
-    sealed interface Event : OneOffEvent {
-        object Dismiss : Event
     }
 }
 

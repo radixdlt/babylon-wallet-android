@@ -33,6 +33,7 @@ import com.babylon.wallet.android.domain.model.AccountWithResources
 import com.babylon.wallet.android.domain.model.Resource
 import com.babylon.wallet.android.domain.model.Resources
 import com.babylon.wallet.android.domain.model.metadata.IconUrlMetadataItem
+import com.babylon.wallet.android.domain.model.metadata.MetadataItem
 import com.babylon.wallet.android.domain.model.metadata.MetadataItem.Companion.consume
 import com.babylon.wallet.android.domain.model.metadata.OwnerKeyHashesMetadataItem
 import rdx.works.profile.data.model.pernetwork.Network
@@ -71,6 +72,7 @@ class EntityRepositoryImpl @Inject constructor(
 
         return listOfEntityDetailsResponsesResult.switchMap { entityDetailsResponses ->
 
+            val mapOfAccountsWithMetadata = buildMapOfAccountsWithMetadata(entityDetailsResponses)
             val mapOfAccountsWithFungibleResources = buildMapOfAccountsWithFungibles(entityDetailsResponses)
             val mapOfAccountsWithNonFungibleResources = buildMapOfAccountsWithNonFungibles(
                 entityDetailsResponses = entityDetailsResponses,
@@ -79,8 +81,10 @@ class EntityRepositoryImpl @Inject constructor(
 
             // build result list of accounts with resources
             val listOfAccountsWithResources = accounts.map { account ->
+                val metaDataItems = mapOfAccountsWithMetadata[account.address].orEmpty()
                 AccountWithResources(
                     account = account,
+                    accountTypeMetadataItem = metaDataItems.toMutableList().consume(),
                     resources = Resources(
                         fungibleResources = mapOfAccountsWithFungibleResources[account.address].orEmpty().sorted(),
                         nonFungibleResources = mapOfAccountsWithNonFungibleResources[account.address].orEmpty().sorted()
@@ -89,6 +93,24 @@ class EntityRepositoryImpl @Inject constructor(
             }
 
             Result.Success(listOfAccountsWithResources)
+        }
+    }
+
+    private fun buildMapOfAccountsWithMetadata(
+        entityDetailsResponses: List<StateEntityDetailsResponse>
+    ): Map<String, List<MetadataItem>> {
+        return entityDetailsResponses.map { entityDetailsResponse ->
+            entityDetailsResponse.items
+                .groupingBy { entityDetailsResponseItem ->
+                    entityDetailsResponseItem.address // this is account address
+                }
+                .foldTo(mutableMapOf(), listOf<MetadataItem>()) { _, entityItem ->
+                    entityItem.metadata.asMetadataItems()
+                }
+        }.flatMap { map ->
+            map.asSequence()
+        }.associate { map ->
+            map.key to map.value
         }
     }
 

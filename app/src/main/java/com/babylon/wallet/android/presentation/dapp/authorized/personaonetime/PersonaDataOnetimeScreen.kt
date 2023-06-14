@@ -1,5 +1,6 @@
 package com.babylon.wallet.android.presentation.dapp.authorized.personaonetime
 
+import InitialAuthorizedLoginRoute
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
@@ -28,6 +29,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
@@ -45,15 +47,16 @@ import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.domain.model.DAppWithMetadata
 import com.babylon.wallet.android.domain.model.metadata.NameMetadataItem
-import com.babylon.wallet.android.presentation.dapp.authorized.InitialAuthorizedLoginRoute
-import com.babylon.wallet.android.presentation.dapp.authorized.login.DAppAuthorizedLoginEvent
+import com.babylon.wallet.android.presentation.dapp.SigningStateDialog
 import com.babylon.wallet.android.presentation.dapp.authorized.login.DAppAuthorizedLoginViewModel
+import com.babylon.wallet.android.presentation.dapp.authorized.login.Event
 import com.babylon.wallet.android.presentation.dapp.authorized.selectpersona.PersonaUiModel
 import com.babylon.wallet.android.presentation.ui.composables.ImageSize
 import com.babylon.wallet.android.presentation.ui.composables.persona.PersonaDetailCard
 import com.babylon.wallet.android.presentation.ui.composables.rememberImageUrl
 import com.babylon.wallet.android.presentation.ui.modifier.applyIf
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
+import com.babylon.wallet.android.utils.biometricAuthenticate
 import com.babylon.wallet.android.utils.formattedSpans
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
@@ -66,14 +69,22 @@ fun PersonaDataOnetimeScreen(
     onEdit: (PersonaDataOnetimeEvent.OnEditPersona) -> Unit,
     onCreatePersona: (Boolean) -> Unit,
     onBackClick: () -> Unit,
-    onLoginFlowComplete: (DAppAuthorizedLoginEvent.LoginFlowCompleted) -> Unit
+    onLoginFlowComplete: (Event.LoginFlowCompleted) -> Unit
 ) {
+    val context = LocalContext.current
     val state by viewModel.state.collectAsStateWithLifecycle()
     val sharedState by sharedViewModel.state.collectAsStateWithLifecycle()
     LaunchedEffect(Unit) {
         sharedViewModel.oneOffEvent.collect { event ->
             when (event) {
-                is DAppAuthorizedLoginEvent.LoginFlowCompleted -> onLoginFlowComplete(event)
+                is Event.LoginFlowCompleted -> onLoginFlowComplete(event)
+                Event.RequestCompletionBiometricPrompt -> {
+                    context.biometricAuthenticate { authenticated ->
+                        if (authenticated) {
+                            sharedViewModel.sendRequestResponse()
+                        }
+                    }
+                }
                 else -> {}
             }
         }
@@ -114,6 +125,7 @@ fun PersonaDataOnetimeScreen(
         onEditClick = viewModel::onEditClick,
         continueButtonEnabled = state.continueButtonEnabled
     )
+    SigningStateDialog(sharedState.signingState)
 }
 
 @Composable

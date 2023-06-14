@@ -1,4 +1,4 @@
-@file:OptIn(ExperimentalMaterialApi::class)
+@file:OptIn(ExperimentalMaterialApi::class, ExperimentalMaterialApi::class)
 
 package com.babylon.wallet.android.presentation.transaction
 
@@ -42,6 +42,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
+import com.babylon.wallet.android.data.transaction.SigningState
 import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
 import com.babylon.wallet.android.designsystem.composable.RadixTextButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
@@ -65,6 +66,7 @@ import com.babylon.wallet.android.presentation.transaction.composables.WithdrawA
 import com.babylon.wallet.android.presentation.ui.composables.DefaultModalSheetLayout
 import com.babylon.wallet.android.presentation.ui.composables.NotSecureAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUiMessageHandler
+import com.babylon.wallet.android.presentation.ui.composables.resultdialog.signing.SigningStatusBottomDialog
 import com.babylon.wallet.android.utils.biometricAuthenticate
 import com.babylon.wallet.android.utils.findFragmentActivity
 import kotlinx.collections.immutable.ImmutableList
@@ -80,7 +82,7 @@ private const val PAYER_DIALOG_CLOSE_DELAY = 300L
 fun TransactionApprovalScreen(
     modifier: Modifier = Modifier,
     viewModel: TransactionApprovalViewModel,
-    onBackClick: () -> Unit
+    onDismiss: () -> Unit
 ) {
     val scope = rememberCoroutineScope()
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -97,13 +99,13 @@ fun TransactionApprovalScreen(
         }
     }
     TransactionPreviewContent(
-        modifier = modifier,
         onBackClick = viewModel::onBackClick,
         isLoading = state.isLoading,
         isSigning = state.isSigning,
         onApproveTransaction = viewModel::approveTransaction,
         error = state.error,
         onMessageShown = viewModel::onMessageShown,
+        modifier = modifier,
         isDeviceSecure = state.isDeviceSecure,
         canApprove = state.canApprove,
         transactionMessage = state.transactionMessage,
@@ -116,6 +118,8 @@ fun TransactionApprovalScreen(
         guaranteesAccounts = state.guaranteesAccounts,
         onGuaranteesApplyClick = viewModel::onGuaranteesApplyClick,
         onGuaranteesCloseClick = viewModel::onGuaranteesCloseClick,
+        promptForGuaranteesClick = viewModel::promptForGuaranteesClick,
+        onDAppClick = viewModel::onDAppClick,
         onGuaranteeValueChanged = viewModel::onGuaranteeValueChanged,
         bottomSheetViewMode = state.bottomSheetViewMode,
         onPayerSelected = viewModel::onPayerSelected,
@@ -126,17 +130,16 @@ fun TransactionApprovalScreen(
                 viewModel.onPayerConfirmed()
             }
         },
-        promptForGuaranteesClick = viewModel::promptForGuaranteesClick,
-        onDAppClick = viewModel::onDAppClick,
-        feePayerCandidates = state.feePayerCandidates,
         modalBottomSheetState = modalBottomSheetState,
-        resetBottomSheetMode = viewModel::resetBottomSheetMode
+        feePayerCandidates = state.feePayerCandidates,
+        resetBottomSheetMode = viewModel::resetBottomSheetMode,
+        signingState = state.signingState
     )
     LaunchedEffect(Unit) {
         viewModel.oneOffEvent.collect { event ->
             when (event) {
-                TransactionApprovalEvent.NavigateBack -> {
-                    onBackClick()
+                TransactionApprovalEvent.Dismiss -> {
+                    onDismiss()
                 }
                 TransactionApprovalEvent.SelectFeePayer -> {
                     scope.launch {
@@ -148,6 +151,7 @@ fun TransactionApprovalScreen(
     }
 }
 
+@Suppress("CyclomaticComplexMethod")
 @Composable
 @OptIn(ExperimentalMaterialApi::class)
 private fun TransactionPreviewContent(
@@ -179,8 +183,10 @@ private fun TransactionPreviewContent(
     modalBottomSheetState: ModalBottomSheetState,
     feePayerCandidates: ImmutableList<AccountItemUiModel>,
     resetBottomSheetMode: () -> Unit,
+    signingState: SigningState?
 ) {
     var showNotSecuredDialog by remember { mutableStateOf(false) }
+    var signingStateDismissed by remember { mutableStateOf(false) }
     var showRawManifest by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
     if (modalBottomSheetState.currentValue != ModalBottomSheetValue.Hidden) {
@@ -354,6 +360,11 @@ private fun TransactionPreviewContent(
             if (isLoading || isSigning) {
                 FullscreenCircularProgressContent(addOverlay = true, clickable = true)
             }
+            if (!signingStateDismissed && isSigning && signingState != null) {
+                SigningStatusBottomDialog(onDismissDialogClick = {
+                    signingStateDismissed = true
+                }, signingState = signingState)
+            }
             SnackbarUiMessageHandler(message = error) {
                 onMessageShown()
             }
@@ -519,32 +530,11 @@ fun TransactionPreviewContentPreview() {
                         guaranteedPercentAmount = "100"
                     )
                 ),
-                guaranteesAccounts = persistentListOf(
-                    TransactionAccountItemUiModel(
-                        address = "account_tdx_19jd32jd3928jd3892jd329",
-                        displayName = "My Savings Account",
-                        tokenSymbol = "XRD",
-                        tokenQuantity = "689.203",
-                        appearanceID = 1,
-                        iconUrl = "",
-                        shouldPromptForGuarantees = true,
-                        guaranteedQuantity = "689.203",
-                        guaranteedPercentAmount = "100"
-                    ),
-                    TransactionAccountItemUiModel(
-                        address = "account_tdx_19jd32jd3928jd3892jd39",
-                        displayName = "My second Savings Account",
-                        tokenSymbol = "XRD",
-                        tokenQuantity = "689.203",
-                        appearanceID = 1,
-                        iconUrl = "",
-                        shouldPromptForGuarantees = true,
-                        guaranteedQuantity = "689.203",
-                        guaranteedPercentAmount = "100"
-                    )
-                ).toGuaranteesAccountsUiModel(),
+                guaranteesAccounts = persistentListOf(),
                 onGuaranteesApplyClick = {},
                 onGuaranteesCloseClick = {},
+                promptForGuaranteesClick = {},
+                onDAppClick = {},
                 onGuaranteeValueChanged = {},
                 bottomSheetViewMode = BottomSheetMode.Guarantees,
                 onPayerSelected = {},
@@ -555,8 +545,7 @@ fun TransactionPreviewContentPreview() {
                 ),
                 feePayerCandidates = persistentListOf(),
                 resetBottomSheetMode = {},
-                onDAppClick = {},
-                promptForGuaranteesClick = {}
+                signingState = null
             )
         }
     }

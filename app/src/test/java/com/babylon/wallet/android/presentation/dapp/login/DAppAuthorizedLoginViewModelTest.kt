@@ -2,28 +2,29 @@
 
 package com.babylon.wallet.android.presentation.dapp.login
 
+import InitialAuthorizedLoginRoute
 import androidx.lifecycle.SavedStateHandle
 import app.cash.turbine.test
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.data.dapp.model.PersonaData
-import com.babylon.wallet.android.domain.usecases.BuildAuthorizedDappResponseUseCase
 import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
+import com.babylon.wallet.android.domain.usecases.BuildAuthorizedDappResponseUseCase
 import com.babylon.wallet.android.fakes.DAppConnectionRepositoryFake
-import com.babylon.wallet.android.fakes.DappMessengerFake
 import com.babylon.wallet.android.fakes.DAppRepositoryFake
+import com.babylon.wallet.android.fakes.DappMessengerFake
 import com.babylon.wallet.android.mockdata.profile
 import com.babylon.wallet.android.presentation.StateViewModelTest
-import com.babylon.wallet.android.presentation.dapp.authorized.InitialAuthorizedLoginRoute
 import com.babylon.wallet.android.presentation.dapp.authorized.account.AccountItemUiModel
 import com.babylon.wallet.android.presentation.dapp.authorized.login.ARG_INTERACTION_ID
-import com.babylon.wallet.android.presentation.dapp.authorized.login.DAppAuthorizedLoginEvent
 import com.babylon.wallet.android.presentation.dapp.authorized.login.DAppAuthorizedLoginViewModel
+import com.babylon.wallet.android.presentation.dapp.authorized.login.Event
 import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.spyk
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
@@ -176,6 +177,7 @@ class DAppAuthorizedLoginViewModelTest : StateViewModelTest<DAppAuthorizedLoginV
         super.setUp()
         every { savedStateHandle.get<String>(ARG_INTERACTION_ID) } returns "1"
         coEvery { getCurrentGatewayUseCase() } returns Radix.Gateway.nebunet
+        every { buildAuthorizedDappResponseUseCase.signingState } returns emptyFlow()
         coEvery { buildAuthorizedDappResponseUseCase.invoke(any(), any(), any(), any(), any(), any()) } returns Result.success(any())
         every { getProfileUseCase() } returns flowOf(
             profile(
@@ -213,12 +215,13 @@ class DAppAuthorizedLoginViewModelTest : StateViewModelTest<DAppAuthorizedLoginV
         vm.personaSelectionConfirmed()
         advanceUntilIdle()
         vm.oneOffEvent.test {
-            assert(expectMostRecentItem() is DAppAuthorizedLoginEvent.DisplayPermission)
+            assert(expectMostRecentItem() is Event.DisplayPermission)
         }
         vm.onAccountsSelected(listOf(AccountItemUiModel("random address", "account 1", 0)), false)
         advanceUntilIdle()
         vm.oneOffEvent.test {
-            assert(expectMostRecentItem() is DAppAuthorizedLoginEvent.LoginFlowCompleted)
+            val mostRecentItem = expectMostRecentItem()
+            assert(mostRecentItem is Event.RequestCompletionBiometricPrompt)
         }
     }
 

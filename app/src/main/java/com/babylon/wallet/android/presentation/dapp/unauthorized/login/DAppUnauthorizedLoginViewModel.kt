@@ -19,10 +19,10 @@ import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
+import com.babylon.wallet.android.presentation.dapp.InitialUnauthorizedLoginRoute
 import com.babylon.wallet.android.presentation.dapp.authorized.account.AccountItemUiModel
 import com.babylon.wallet.android.presentation.dapp.authorized.selectpersona.PersonaUiModel
 import com.babylon.wallet.android.presentation.dapp.authorized.selectpersona.toUiModel
-import com.babylon.wallet.android.presentation.dapp.unauthorized.InitialUnauthorizedLoginRoute
 import com.babylon.wallet.android.presentation.model.encodeToString
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
@@ -47,16 +47,13 @@ class DAppUnauthorizedLoginViewModel @Inject constructor(
     private val dAppRepository: DAppRepository,
     private val incomingRequestRepository: IncomingRequestRepository
 ) : StateViewModel<DAppUnauthorizedLoginUiState>(),
-    OneOffEventHandler<DAppUnauthorizedLoginEvent> by OneOffEventHandlerImpl() {
+    OneOffEventHandler<Event> by OneOffEventHandlerImpl() {
 
     private val args = DAppUnauthorizedLoginArgs(savedStateHandle)
 
     private val request = incomingRequestRepository.getUnauthorizedRequest(
         args.requestId
     )
-
-    private val topLevelOneOffEventHandler = OneOffEventHandlerImpl<DAppUnauthorizedLoginEvent>()
-    val topLevelOneOffEvent by topLevelOneOffEventHandler
 
     init {
         viewModelScope.launch {
@@ -125,7 +122,7 @@ class DAppUnauthorizedLoginViewModel @Inject constructor(
             failure.getDappMessage()
         )
         delay(2000)
-        topLevelOneOffEventHandler.sendEvent(DAppUnauthorizedLoginEvent.RejectLogin)
+        sendEvent(Event.RejectLogin)
         incomingRequestRepository.requestHandled(requestId = args.requestId)
     }
 
@@ -145,7 +142,7 @@ class DAppUnauthorizedLoginViewModel @Inject constructor(
                         selectedOnetimeDataFields = dataFields.toPersistentList()
                     )
                 }
-                sendRequestResponse()
+                sendEvent(Event.RequestCompletionBiometricPrompt)
             }
         }
     }
@@ -157,7 +154,7 @@ class DAppUnauthorizedLoginViewModel @Inject constructor(
                 args.requestId,
                 error = WalletErrorType.RejectedByUser
             )
-            topLevelOneOffEventHandler.sendEvent(DAppUnauthorizedLoginEvent.RejectLogin)
+            sendEvent(Event.RejectLogin)
             incomingRequestRepository.requestHandled(requestId = args.requestId)
         }
     }
@@ -171,29 +168,31 @@ class DAppUnauthorizedLoginViewModel @Inject constructor(
             _state.update { it.copy(selectedAccountsOneTime = onetimeAccounts.toPersistentList()) }
             if (request.oneTimePersonaDataRequestItem != null) {
                 sendEvent(
-                    DAppUnauthorizedLoginEvent.PersonaDataOnetime(
+                    Event.PersonaDataOnetime(
                         request.oneTimePersonaDataRequestItem.fields.map { it.toKind() }.encodeToString()
                     )
                 )
             } else {
-                sendRequestResponse()
+                sendEvent(Event.RequestCompletionBiometricPrompt)
             }
         }
     }
 
-    private suspend fun sendRequestResponse() {
-        dAppMessenger.sendWalletInteractionUnauthorizedSuccessResponse(
-            request.dappId,
-            args.requestId,
-            state.value.selectedAccountsOneTime,
-            state.value.selectedOnetimeDataFields,
-        )
-        sendEvent(
-            DAppUnauthorizedLoginEvent.LoginFlowCompleted(
-                requestId = request.id,
-                dAppName = state.value.dappWithMetadata?.name ?: "Unknown dApp"
+    fun sendRequestResponse() {
+        viewModelScope.launch {
+            dAppMessenger.sendWalletInteractionUnauthorizedSuccessResponse(
+                request.dappId,
+                args.requestId,
+                state.value.selectedAccountsOneTime,
+                state.value.selectedOnetimeDataFields,
             )
-        )
+            sendEvent(
+                Event.LoginFlowCompleted(
+                    requestId = request.id,
+                    dAppName = state.value.dappWithMetadata?.name ?: "Unknown dApp"
+                )
+            )
+        }
     }
 
     override fun initialState(): DAppUnauthorizedLoginUiState {
@@ -201,16 +200,17 @@ class DAppUnauthorizedLoginViewModel @Inject constructor(
     }
 }
 
-sealed interface DAppUnauthorizedLoginEvent : OneOffEvent {
+sealed interface Event : OneOffEvent {
 
-    object RejectLogin : DAppUnauthorizedLoginEvent
+    object RequestCompletionBiometricPrompt : Event
+    object RejectLogin : Event
 
     data class LoginFlowCompleted(
         val requestId: String,
         val dAppName: String
-    ) : DAppUnauthorizedLoginEvent
+    ) : Event
 
-    data class PersonaDataOnetime(val requiredFieldsEncoded: String) : DAppUnauthorizedLoginEvent
+    data class PersonaDataOnetime(val requiredFieldsEncoded: String) : Event
 }
 
 data class DAppUnauthorizedLoginUiState(

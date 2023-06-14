@@ -14,7 +14,8 @@ import com.google.accompanist.navigation.animation.composable
 @VisibleForTesting
 internal const val ARG_REQUEST_ID = "request_id"
 
-const val ROUTE_DAPP_LOGIN_UNAUTHORIZED = "dapp_login_unauthorized/{$ARG_REQUEST_ID}"
+const val ROUTE_DAPP_LOGIN_UNAUTHORIZED_GRAPH = "dapp_login_unauthorized/{$ARG_REQUEST_ID}"
+const val ROUTE_DAPP_LOGIN_UNAUTHORIZED_SCREEN = "dapp_login_unauthorized_screen/{$ARG_REQUEST_ID}"
 
 internal class DAppUnauthorizedLoginArgs(val requestId: String) {
     constructor(savedStateHandle: SavedStateHandle) : this(checkNotNull(savedStateHandle[ARG_REQUEST_ID]) as String)
@@ -28,11 +29,11 @@ fun NavController.dAppLoginUnauthorized(requestId: String) {
 @Suppress("LongParameterList")
 fun NavGraphBuilder.dAppLoginUnauthorized(
     navController: NavController,
-    onBackClick: () -> Unit,
-    showSuccessDialog: (requestId: String, dAppName: String) -> Unit
+    navigateToChooseAccount: (Int, Boolean) -> Unit,
+    navigateToOneTimePersonaData: (String) -> Unit
 ) {
     composable(
-        route = ROUTE_DAPP_LOGIN_UNAUTHORIZED,
+        route = ROUTE_DAPP_LOGIN_UNAUTHORIZED_SCREEN,
         arguments = listOf(
             navArgument(ARG_REQUEST_ID) {
                 type = NavType.StringType
@@ -40,13 +41,13 @@ fun NavGraphBuilder.dAppLoginUnauthorized(
         )
     ) { entry ->
         val parentEntry = remember(entry) {
-            navController.getBackStackEntry(ROUTE_DAPP_LOGIN_UNAUTHORIZED)
+            navController.getBackStackEntry(ROUTE_DAPP_LOGIN_UNAUTHORIZED_GRAPH)
         }
         val vm = hiltViewModel<DAppUnauthorizedLoginViewModel>(parentEntry)
         DappUnauthorizedLoginScreen(
             viewModel = vm,
-            onBackClick = onBackClick,
-            showSuccessDialog = showSuccessDialog
+            navigateToOneTimePersonaData = navigateToOneTimePersonaData,
+            navigateToChooseAccount = navigateToChooseAccount
         )
     }
 }

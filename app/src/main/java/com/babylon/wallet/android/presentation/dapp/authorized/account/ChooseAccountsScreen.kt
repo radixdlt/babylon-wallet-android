@@ -9,6 +9,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -16,9 +17,11 @@ import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.model.DAppWithMetadata
 import com.babylon.wallet.android.domain.model.metadata.NameMetadataItem
-import com.babylon.wallet.android.presentation.dapp.authorized.login.DAppAuthorizedLoginEvent
+import com.babylon.wallet.android.presentation.dapp.SigningStateDialog
 import com.babylon.wallet.android.presentation.dapp.authorized.login.DAppAuthorizedLoginViewModel
+import com.babylon.wallet.android.presentation.dapp.authorized.login.Event
 import com.babylon.wallet.android.presentation.ui.composables.ChooseAccountContent
+import com.babylon.wallet.android.utils.biometricAuthenticate
 import kotlinx.collections.immutable.persistentListOf
 
 @Composable
@@ -27,26 +30,34 @@ fun ChooseAccountsScreen(
     sharedViewModel: DAppAuthorizedLoginViewModel,
     dismissErrorDialog: () -> Unit,
     onAccountCreationClick: () -> Unit,
-    onChooseAccounts: (DAppAuthorizedLoginEvent.ChooseAccounts) -> Unit,
-    onLoginFlowComplete: (DAppAuthorizedLoginEvent.LoginFlowCompleted) -> Unit,
+    onChooseAccounts: (Event.ChooseAccounts) -> Unit,
+    onLoginFlowComplete: (Event.LoginFlowCompleted) -> Unit,
     onBackClick: () -> Boolean,
-    onPersonaOngoingData: (DAppAuthorizedLoginEvent.PersonaDataOngoing) -> Unit,
-    onPersonaDataOnetime: (DAppAuthorizedLoginEvent.PersonaDataOnetime) -> Unit
+    onPersonaOngoingData: (Event.PersonaDataOngoing) -> Unit,
+    onPersonaDataOnetime: (Event.PersonaDataOnetime) -> Unit
 ) {
+    val context = LocalContext.current
     LaunchedEffect(Unit) {
         sharedViewModel.oneOffEvent.collect { event ->
             when (event) {
-                is DAppAuthorizedLoginEvent.ChooseAccounts -> onChooseAccounts(event)
-                is DAppAuthorizedLoginEvent.LoginFlowCompleted -> onLoginFlowComplete(event)
-                is DAppAuthorizedLoginEvent.PersonaDataOngoing -> onPersonaOngoingData(event)
-                is DAppAuthorizedLoginEvent.PersonaDataOnetime -> onPersonaDataOnetime(event)
-                is DAppAuthorizedLoginEvent.RejectLogin -> onLoginFlowComplete(
-                    DAppAuthorizedLoginEvent.LoginFlowCompleted(
+                is Event.ChooseAccounts -> onChooseAccounts(event)
+                is Event.LoginFlowCompleted -> onLoginFlowComplete(event)
+                is Event.PersonaDataOngoing -> onPersonaOngoingData(event)
+                is Event.PersonaDataOnetime -> onPersonaDataOnetime(event)
+                is Event.RejectLogin -> onLoginFlowComplete(
+                    Event.LoginFlowCompleted(
                         requestId = "",
                         dAppName = "",
                         showSuccessDialog = false
                     )
                 )
+                Event.RequestCompletionBiometricPrompt -> {
+                    context.biometricAuthenticate { authenticated ->
+                        if (authenticated) {
+                            sharedViewModel.sendRequestResponse()
+                        }
+                    }
+                }
                 else -> {}
             }
         }
@@ -92,6 +103,7 @@ fun ChooseAccountsScreen(
             dismissErrorDialog = dismissErrorDialog
         )
     }
+    SigningStateDialog(sharedState.signingState)
 }
 
 @Composable

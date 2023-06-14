@@ -4,37 +4,29 @@ package com.babylon.wallet.android.presentation.transfer.assets
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.pager.HorizontalPager
-import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material3.Divider
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Tab
-import androidx.compose.material3.TabRow
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.zIndex
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
@@ -44,9 +36,11 @@ import com.babylon.wallet.android.presentation.transfer.TargetAccount
 import com.babylon.wallet.android.presentation.transfer.TransferViewModel.State.Sheet.ChooseAssets
 import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
+import com.babylon.wallet.android.presentation.ui.composables.resources.FungibleResourcesColumn
+import com.babylon.wallet.android.presentation.ui.composables.resources.NonFungibleResourcesColumn
+import com.babylon.wallet.android.presentation.ui.composables.resources.SelectableFungibleResourceItem
+import com.babylon.wallet.android.presentation.ui.composables.resources.SelectableNonFungibleResourceItem
 import com.babylon.wallet.android.presentation.ui.composables.sheets.SheetHeader
-import com.babylon.wallet.android.presentation.ui.composables.tabs.pagerTabIndicatorOffset
-import kotlinx.coroutines.launch
 
 @Composable
 fun ChooseAssetsSheet(
@@ -111,15 +105,22 @@ fun ChooseAssetsSheet(
         ) {
             val pagerState = rememberPagerState()
 
-            Spacer(modifier = Modifier.height(height = RadixTheme.dimensions.paddingDefault))
+            Spacer(modifier = Modifier.height(height = RadixTheme.dimensions.paddingLarge))
 
             ResourcesTabs(
-                selectedTab = state.selectedTab,
-                onTabSelected = onTabSelected,
+                selectedTab = when (state.selectedTab) {
+                    ChooseAssets.Tab.Tokens -> ResourceTab.Tokens
+                    ChooseAssets.Tab.NFTs -> ResourceTab.Nfts
+                },
+                onTabSelected = {
+                    val viewModelTab = when (it) {
+                        ResourceTab.Tokens -> ChooseAssets.Tab.Tokens
+                        ResourceTab.Nfts -> ChooseAssets.Tab.NFTs
+                    }
+                    onTabSelected(viewModelTab)
+                },
                 pagerState = pagerState
             )
-
-            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
 
             Box(modifier = Modifier.fillMaxSize()) {
                 HorizontalPager(
@@ -132,16 +133,45 @@ fun ChooseAssetsSheet(
                     }
 
                     when (tab) {
-                        ChooseAssets.Tab.Tokens -> FungibleAssetsChooser(
+                        ChooseAssets.Tab.Tokens -> FungibleResourcesColumn(
+                            modifier = Modifier.fillMaxSize(),
                             resources = state.resources,
-                            selectedAssets = state.targetAccount.assets,
-                            onAssetSelectionChanged = onAssetSelectionChanged
-                        )
-                        ChooseAssets.Tab.NFTs -> NonFungibleAssetsChooser(
+                            isXrdSticky = false
+                        ) { _, resource ->
+                            val isSelected = state.targetAccount.assets.any { it.address == resource.resourceAddress }
+                            SelectableFungibleResourceItem(
+                                modifier = Modifier
+                                    .height(85.dp)
+                                    .clickable {
+                                        val fungibleAsset = SpendingAsset.Fungible(resource = resource)
+                                        onAssetSelectionChanged(fungibleAsset, !isSelected)
+                                    },
+                                resource = resource,
+                                isSelected = isSelected,
+                                onCheckChanged = {
+                                    val fungibleAsset = SpendingAsset.Fungible(resource = resource)
+                                    onAssetSelectionChanged(fungibleAsset, it)
+                                }
+                            )
+                        }
+                        ChooseAssets.Tab.NFTs -> NonFungibleResourcesColumn(
                             resources = state.resources,
-                            selectedAssets = state.targetAccount.assets,
-                            onAssetSelectionChanged = onAssetSelectionChanged
-                        )
+                            modifier = Modifier.fillMaxSize(),
+                        ) { _, item ->
+                            val isSelected = state.targetAccount.assets.any { it.address == item.globalAddress }
+                            SelectableNonFungibleResourceItem(
+                                modifier = Modifier.clickable {
+                                    val nonFungibleAsset = SpendingAsset.NFT(item = item)
+                                    onAssetSelectionChanged(nonFungibleAsset, !isSelected)
+                                },
+                                item = item,
+                                isSelected = isSelected,
+                                onCheckChanged = {
+                                    val nonFungibleAsset = SpendingAsset.NFT(item = item)
+                                    onAssetSelectionChanged(nonFungibleAsset, it)
+                                }
+                            )
+                        }
                     }
                 }
 
@@ -154,69 +184,6 @@ fun ChooseAssetsSheet(
             }
         }
     }
-}
-
-@Composable
-private fun ResourcesTabs(
-    modifier: Modifier = Modifier,
-    pagerState: PagerState,
-    selectedTab: ChooseAssets.Tab,
-    onTabSelected: (ChooseAssets.Tab) -> Unit
-) {
-    val scope = rememberCoroutineScope()
-    LaunchedEffect(selectedTab) {
-        if (selectedTab.ordinal != pagerState.currentPage) {
-            scope.launch { pagerState.animateScrollToPage(page = selectedTab.ordinal) }
-        }
-    }
-
-    TabRow(
-        modifier = modifier.width(200.dp),
-        selectedTabIndex = pagerState.currentPage,
-        containerColor = Color.Transparent,
-        divider = {},
-        indicator = { tabPositions ->
-            Box(
-                modifier = Modifier
-                    .pagerTabIndicatorOffset(
-                        pagerState = pagerState,
-                        tabPositions = tabPositions,
-                    )
-                    .fillMaxHeight()
-                    .zIndex(-1f)
-                    .background(RadixTheme.colors.gray1, RadixTheme.shapes.circle)
-            )
-        }
-    ) {
-        ChooseAssets.Tab.values().forEach { tab ->
-            val isSelected = tab == selectedTab
-            Tab(
-                selected = isSelected,
-                onClick = {
-                    if (!isSelected) {
-                        onTabSelected(tab)
-                    }
-                },
-                selectedContentColor = RadixTheme.colors.white,
-                unselectedContentColor = RadixTheme.colors.gray1
-            ) {
-                Text(
-                    modifier = Modifier.padding(
-                        horizontal = RadixTheme.dimensions.paddingMedium,
-                        vertical = RadixTheme.dimensions.paddingSmall
-                    ),
-                    text = tab.name(),
-                    style = RadixTheme.typography.body1HighImportance,
-                )
-            }
-        }
-    }
-}
-
-@Composable
-fun ChooseAssets.Tab.name(): String = when (this) {
-    ChooseAssets.Tab.Tokens -> stringResource(id = R.string.account_tokens)
-    ChooseAssets.Tab.NFTs -> stringResource(id = R.string.account_nfts)
 }
 
 @Preview

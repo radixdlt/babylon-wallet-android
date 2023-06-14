@@ -1,6 +1,6 @@
 package com.babylon.wallet.android.domain.usecases.transaction
 
-import com.babylon.wallet.android.data.transaction.SigningEvent
+import com.babylon.wallet.android.data.transaction.SigningState
 import com.radixdlt.toolkit.models.crypto.SignatureWithPublicKey
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -19,8 +19,8 @@ class CollectSignersSignaturesUseCase @Inject constructor(
     private val getSigningEntitiesByFactorSourceUseCase: GetSigningEntitiesByFactorSourceUseCase,
 ) {
 
-    private val _signingEvent = MutableStateFlow<SigningEvent?>(null)
-    val signingEvent: Flow<SigningEvent?> = _signingEvent.asSharedFlow()
+    private val _signingState = MutableStateFlow<SigningState?>(null)
+    val signingState: Flow<SigningState?> = _signingState.asSharedFlow()
 
     suspend operator fun invoke(
         signers: List<Entity>,
@@ -32,6 +32,7 @@ class CollectSignersSignaturesUseCase @Inject constructor(
         signersPerFactorSource.forEach { (factorSource, signers) ->
             when (factorSource.kind) {
                 FactorSourceKind.DEVICE -> {
+                    _signingState.update { SigningState.Device.Pending(factorSource) }
                     val signatures = signWithDeviceFactorSourceUseCase(
                         deviceFactorSource = factorSource,
                         signers = signers,
@@ -39,19 +40,21 @@ class CollectSignersSignaturesUseCase @Inject constructor(
                         signingPurpose = signingPurpose
                     )
                     signaturesWithPublicKeys.addAll(signatures)
+                    _signingState.update { SigningState.Device.Success(factorSource) }
                 }
+
                 FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET -> {
-                    _signingEvent.update { SigningEvent.WithLedger(factorSource) }
+                    _signingState.update { SigningState.Ledger.Pending(factorSource) }
                     signWithLedgerFactorSourceUseCase(
                         ledgerFactorSource = factorSource,
                         signers = signers,
                         signRequest = signRequest,
                         signingPurpose = signingPurpose
                     ).onSuccess { signatures ->
-                        _signingEvent.update { SigningEvent.WithLedgerSucceeded(factorSource.id) }
+                        _signingState.update { SigningState.Ledger.Success(factorSource) }
                         signaturesWithPublicKeys.addAll(signatures)
                     }.onFailure {
-                        _signingEvent.update { SigningEvent.WithLedgerFailed(factorSource.id) }
+                        _signingState.update { SigningState.Ledger.Failure(factorSource) }
                         return Result.failure(it)
                     }
                 }

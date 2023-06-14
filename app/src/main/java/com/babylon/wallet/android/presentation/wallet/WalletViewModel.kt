@@ -4,6 +4,7 @@ import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.domain.common.onError
 import com.babylon.wallet.android.domain.common.onValue
 import com.babylon.wallet.android.domain.model.AccountWithResources
+import com.babylon.wallet.android.domain.usecases.GetAccountsForSecurityPromptUseCase
 import com.babylon.wallet.android.domain.usecases.GetAccountsWithResourcesUseCase
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
@@ -20,21 +21,24 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import rdx.works.core.preferences.PreferencesManager
 import rdx.works.profile.data.model.factorsources.FactorSource
+import rdx.works.profile.data.model.factorsources.FactorSourceKind
 import rdx.works.profile.data.model.pernetwork.Network
+import rdx.works.profile.data.utils.factorSourceId
+import rdx.works.profile.data.utils.isOlympiaAccount
 import rdx.works.profile.data.utils.unsecuredFactorSourceId
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.accountOnCurrentNetwork
 import rdx.works.profile.domain.accountsOnCurrentNetwork
 import rdx.works.profile.domain.backup.GetBackupStateUseCase
+import rdx.works.profile.domain.factorSources
 import javax.inject.Inject
 
 @HiltViewModel
 class WalletViewModel @Inject constructor(
     private val getAccountsWithResourcesUseCase: GetAccountsWithResourcesUseCase,
     private val getProfileUseCase: GetProfileUseCase,
-    private val preferencesManager: PreferencesManager,
+    private val getAccountsForSecurityPromptUseCase: GetAccountsForSecurityPromptUseCase,
     private val appEventBus: AppEventBus,
     getBackupStateUseCase: GetBackupStateUseCase
 ) : StateViewModel<WalletUiState>(), OneOffEventHandler<WalletEvent> by OneOffEventHandlerImpl() {
@@ -49,6 +53,7 @@ class WalletViewModel @Inject constructor(
 
     init {
         observeAccounts()
+        observeDeviceFactorSources()
         observePrompts()
         observeProfileBackupState(getBackupStateUseCase)
         observeGlobalAppEvents()
@@ -73,14 +78,21 @@ class WalletViewModel @Inject constructor(
         }
     }
 
+    private fun observeDeviceFactorSources() {
+        viewModelScope.launch {
+            getProfileUseCase.factorSources.collect { factorSourcesList ->
+                _state.update { state ->
+                    state.copy(factorSources = factorSourcesList)
+                }
+            }
+        }
+    }
+
     private fun observePrompts() {
         viewModelScope.launch {
-            preferencesManager
-                .getBackedUpFactorSourceIds()
-                .distinctUntilChanged()
-                .collect { backedUpFactorSourceIds ->
-                    _state.update { it.copy(backedUpFactorSourceIds = backedUpFactorSourceIds) }
-                }
+            getAccountsForSecurityPromptUseCase().collect { accounts ->
+                _state.update { it.copy(accountsNeedSecurityPrompt = accounts) }
+            }
         }
     }
 
@@ -133,7 +145,8 @@ data class WalletUiState(
     private val accountsWithResources: List<AccountWithResources>? = null,
     private val loading: Boolean = true,
     private val refreshing: Boolean = false,
-    private val backedUpFactorSourceIds: Set<String> = emptySet(),
+    private val accountsNeedSecurityPrompt: List<Network.Account> = emptyList(),
+    private val factorSources: List<FactorSource> = emptyList(),
     val isSettingsWarningVisible: Boolean = false,
     val error: UiMessage? = null,
 ) : UiState {
@@ -157,10 +170,40 @@ data class WalletUiState(
         get() = refreshing
 
     fun isSecurityPromptVisible(forAccount: Network.Account): Boolean {
-        val unsecuredFactorSourceId = forAccount.unsecuredFactorSourceId() ?: return false
+        val resourcesForAccount = accountsWithResources?.find {
+            it.account.address == forAccount.address
+        }?.resources ?: return false
 
-        return accountsWithResources?.find { it.account == forAccount }?.resources?.hasXrd() == true &&
-            backedUpFactorSourceIds.none { it == unsecuredFactorSourceId.value }
+        return accountsNeedSecurityPrompt.any {
+            it.address == forAccount.address && resourcesForAccount.hasXrd()
+        }
+    }
+
+    fun getTag(forAccount: Network.Account): AccountTag? {
+        return when {
+            !isDappDefinitionAccount(forAccount) && !isLegacyAccount(forAccount) && !isLedgerAccount(forAccount) -> null
+            isDappDefinitionAccount(forAccount) -> AccountTag.DAPP_DEFINITION
+            isLegacyAccount(forAccount) && isLedgerAccount(forAccount) -> AccountTag.LEDGER_LEGACY
+            isLegacyAccount(forAccount) && !isLedgerAccount(forAccount) -> AccountTag.LEGACY_SOFTWARE
+            !isLegacyAccount(forAccount) && isLedgerAccount(forAccount) -> AccountTag.LEDGER_BABYLON
+            else -> null
+        }
+    }
+
+    private fun isLegacyAccount(forAccount: Network.Account): Boolean = forAccount.isOlympiaAccount()
+
+    private fun isLedgerAccount(forAccount: Network.Account): Boolean {
+        val factorSource = factorSources.find {
+            it.id == forAccount.factorSourceId()
+        }?.kind
+
+        return factorSource == FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET
+    }
+
+    private fun isDappDefinitionAccount(forAccount: Network.Account): Boolean {
+        return accountResources.find { accountWithResources ->
+            accountWithResources.account.address == forAccount.address
+        }?.isDappDefinitionAccountType ?: false
     }
 
     fun loadingResources(accounts: List<Network.Account>, isRefreshing: Boolean): WalletUiState = copy(
@@ -185,4 +228,11 @@ data class WalletUiState(
         loading = false,
         refreshing = false
     )
+
+    enum class AccountTag {
+        LEDGER_BABYLON,
+        DAPP_DEFINITION,
+        LEDGER_LEGACY,
+        LEGACY_SOFTWARE
+    }
 }

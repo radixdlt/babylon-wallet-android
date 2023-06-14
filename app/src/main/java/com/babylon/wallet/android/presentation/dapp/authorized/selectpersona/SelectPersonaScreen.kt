@@ -29,6 +29,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
@@ -44,13 +45,15 @@ import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.model.DAppWithMetadata
 import com.babylon.wallet.android.domain.model.metadata.NameMetadataItem
 import com.babylon.wallet.android.presentation.common.FullscreenCircularProgressContent
-import com.babylon.wallet.android.presentation.dapp.authorized.login.DAppAuthorizedLoginEvent
+import com.babylon.wallet.android.presentation.dapp.SigningStateDialog
 import com.babylon.wallet.android.presentation.dapp.authorized.login.DAppAuthorizedLoginViewModel
+import com.babylon.wallet.android.presentation.dapp.authorized.login.Event
 import com.babylon.wallet.android.presentation.ui.composables.BottomPrimaryButton
 import com.babylon.wallet.android.presentation.ui.composables.ImageSize
 import com.babylon.wallet.android.presentation.ui.composables.PersonaCard
 import com.babylon.wallet.android.presentation.ui.composables.rememberImageUrl
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
+import com.babylon.wallet.android.utils.biometricAuthenticate
 import com.babylon.wallet.android.utils.formattedSpans
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
@@ -61,22 +64,30 @@ fun SelectPersonaScreen(
     viewModel: SelectPersonaViewModel,
     sharedViewModel: DAppAuthorizedLoginViewModel,
     onBackClick: () -> Unit,
-    onChooseAccounts: (DAppAuthorizedLoginEvent.ChooseAccounts) -> Unit,
-    onLoginFlowComplete: (DAppAuthorizedLoginEvent.LoginFlowCompleted) -> Unit,
+    onChooseAccounts: (Event.ChooseAccounts) -> Unit,
+    onLoginFlowComplete: (Event.LoginFlowCompleted) -> Unit,
     createNewPersona: (Boolean) -> Unit,
-    onDisplayPermission: (DAppAuthorizedLoginEvent.DisplayPermission) -> Unit,
-    onPersonaDataOngoing: (DAppAuthorizedLoginEvent.PersonaDataOngoing) -> Unit,
-    onPersonaDataOnetime: (DAppAuthorizedLoginEvent.PersonaDataOnetime) -> Unit
+    onDisplayPermission: (Event.DisplayPermission) -> Unit,
+    onPersonaDataOngoing: (Event.PersonaDataOngoing) -> Unit,
+    onPersonaDataOnetime: (Event.PersonaDataOnetime) -> Unit
 ) {
+    val context = LocalContext.current
     LaunchedEffect(Unit) {
         sharedViewModel.oneOffEvent.collect { event ->
             when (event) {
-                DAppAuthorizedLoginEvent.RejectLogin -> onBackClick()
-                is DAppAuthorizedLoginEvent.LoginFlowCompleted -> onLoginFlowComplete(event)
-                is DAppAuthorizedLoginEvent.ChooseAccounts -> onChooseAccounts(event)
-                is DAppAuthorizedLoginEvent.DisplayPermission -> onDisplayPermission(event)
-                is DAppAuthorizedLoginEvent.PersonaDataOngoing -> onPersonaDataOngoing(event)
-                is DAppAuthorizedLoginEvent.PersonaDataOnetime -> onPersonaDataOnetime(event)
+                Event.RejectLogin -> onBackClick()
+                is Event.LoginFlowCompleted -> onLoginFlowComplete(event)
+                is Event.ChooseAccounts -> onChooseAccounts(event)
+                is Event.DisplayPermission -> onDisplayPermission(event)
+                is Event.PersonaDataOngoing -> onPersonaDataOngoing(event)
+                is Event.PersonaDataOnetime -> onPersonaDataOnetime(event)
+                Event.RequestCompletionBiometricPrompt -> {
+                    context.biometricAuthenticate { authenticated ->
+                        if (authenticated) {
+                            sharedViewModel.sendRequestResponse()
+                        }
+                    }
+                }
             }
         }
     }
@@ -105,6 +116,7 @@ fun SelectPersonaScreen(
         createNewPersona = viewModel::onCreatePersona,
         isLoading = state.isLoading
     )
+    SigningStateDialog(sharedState.signingState)
 }
 
 @Composable
