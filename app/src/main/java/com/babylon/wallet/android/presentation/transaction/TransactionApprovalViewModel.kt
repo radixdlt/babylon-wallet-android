@@ -826,7 +826,6 @@ data class TransactionUiState(
     val guaranteesAccounts: ImmutableList<GuaranteesAccountItemUiModel> = persistentListOf(),
     val presentingProofs: ImmutableList<PresentingProofUiModel> = persistentListOf(),
     val connectedDApps: ImmutableList<DAppWithMetadataAndAssociatedResources> = persistentListOf(),
-    val guaranteePercent: BigDecimal = BigDecimal("100"),
     val bottomSheetViewMode: BottomSheetMode = BottomSheetMode.Guarantees,
     val feePayerCandidates: ImmutableList<AccountItemUiModel> = persistentListOf(),
     val bottomSheetMode: BottomSheetMode = BottomSheetMode.Guarantees,
