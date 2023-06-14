@@ -90,6 +90,7 @@ fun TransactionAccountCard(
 
         // Fungibles
         fungibleTokens.forEachIndexed { index, fungibleResource ->
+            val token = tokens[index]
             val lastItem = index == fungibleTokens.plus(nonFungibleTokens).size - 1
             val shape = if (lastItem) RadixTheme.shapes.roundedRectBottomMedium else RectangleShape
 
@@ -100,7 +101,7 @@ fun TransactionAccountCard(
                     stringResource(id = com.babylon.wallet.android.R.string.transactionReview_unknown)
                 },
                 tokenAmount = fungibleResource.amount?.toPlainString().orEmpty(),
-                guaranteedQuantity = fungibleResource.guaranteedQuantityToDisplay,
+                guaranteedQuantity = token.guaranteedAmount,
                 isTokenAmountVisible = fungibleResource.isTokenAmountVisible,
                 shape = shape
             )
@@ -130,7 +131,7 @@ fun TransactionAccountCard(
                     isXrdToken = false,
                     tokenUrl = transactionAccountItemUiModel.iconUrl.orEmpty(),
                     tokenSymbol = transactionAccountItemUiModel.tokenSymbol,
-                    tokenAmount = transactionAccountItemUiModel.tokenQuantity,
+                    tokenAmount = transactionAccountItemUiModel.tokenAmount,
                     isTokenAmountVisible = true,
                     shape = shape
                 )
@@ -264,11 +265,11 @@ fun TransactionAccountCardPreview() {
                     address = "account_tdx_19jd32jd3928jd3892jd329",
                     displayName = "My Savings Account",
                     tokenSymbol = "XRD",
-                    tokenQuantity = "689.203",
+                    tokenAmount = "689.203",
                     appearanceID = 1,
                     iconUrl = "",
                     shouldPromptForGuarantees = true,
-                    guaranteedQuantity = "689.203",
+                    guaranteedAmount = "689.203",
                     guaranteedPercentAmount = "100"
                 )
             ),

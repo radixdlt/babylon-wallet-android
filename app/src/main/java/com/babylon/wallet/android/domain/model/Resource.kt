@@ -20,8 +20,7 @@ sealed class Resource {
         val nameMetadataItem: NameMetadataItem? = null,
         val symbolMetadataItem: SymbolMetadataItem? = null,
         val descriptionMetadataItem: DescriptionMetadataItem? = null,
-        val iconUrlMetadataItem: IconUrlMetadataItem? = null,
-        val guaranteedQuantity: BigDecimal? = null
+        val iconUrlMetadataItem: IconUrlMetadataItem? = null
     ) : Resource(), Comparable<FungibleResource> {
         val name: String
             get() = nameMetadataItem?.name.orEmpty()
@@ -50,9 +49,6 @@ sealed class Resource {
 
         val isTokenAmountVisible: Boolean
             get() = true // Always amount is visible for fungible tokens on guarantees page
-
-        val guaranteedQuantityToDisplay: String?
-            get() = guaranteedQuantity?.toPlainString()
 
         @Suppress("CyclomaticComplexMethod")
         override fun compareTo(other: FungibleResource): Int {

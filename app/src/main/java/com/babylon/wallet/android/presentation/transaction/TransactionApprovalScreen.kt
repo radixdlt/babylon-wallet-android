@@ -498,11 +498,11 @@ fun TransactionPreviewContentPreview() {
                         address = "account_tdx_19jd32jd3928jd3892jd329",
                         displayName = "My Savings Account",
                         tokenSymbol = "XRD",
-                        tokenQuantity = "689.203",
+                        tokenAmount = "689.203",
                         appearanceID = 1,
                         iconUrl = "",
                         shouldPromptForGuarantees = false,
-                        guaranteedQuantity = "689.203",
+                        guaranteedAmount = "689.203",
                         guaranteedPercentAmount = "100"
                     )
                 ),
@@ -511,22 +511,22 @@ fun TransactionPreviewContentPreview() {
                         address = "account_tdx_19jd32jd3928jd3892jd329",
                         displayName = "My Savings Account",
                         tokenSymbol = "XRD",
-                        tokenQuantity = "689.203",
+                        tokenAmount = "689.203",
                         appearanceID = 1,
                         iconUrl = "",
                         shouldPromptForGuarantees = true,
-                        guaranteedQuantity = "689.203",
+                        guaranteedAmount = "689.203",
                         guaranteedPercentAmount = "100"
                     ),
                     TransactionAccountItemUiModel(
                         address = "account_tdx_19jd32jd3928jd3892jd39",
                         displayName = "My second Savings Account",
                         tokenSymbol = "XRD",
-                        tokenQuantity = "689.203",
+                        tokenAmount = "689.203",
                         appearanceID = 1,
                         iconUrl = "",
                         shouldPromptForGuarantees = true,
-                        guaranteedQuantity = "689.203",
+                        guaranteedAmount = "689.203",
                         guaranteedPercentAmount = "100"
                     )
                 ),

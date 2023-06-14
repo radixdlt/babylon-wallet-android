@@ -252,8 +252,7 @@ class TransactionApprovalViewModel @Inject constructor(
                         nameMetadataItem = fungibleToken?.nameMetadataItem,
                         symbolMetadataItem = fungibleToken?.symbolMetadataItem,
                         descriptionMetadataItem = fungibleToken?.descriptionMetadataItem,
-                        iconUrlMetadataItem = fungibleToken?.iconUrlMetadataItem,
-                        guaranteedQuantity = fungibleToken?.guaranteedQuantity
+                        iconUrlMetadataItem = fungibleToken?.iconUrlMetadataItem
                     )
                 }
                 is ResourceQuantifier.Ids -> {
@@ -271,9 +270,9 @@ class TransactionApprovalViewModel @Inject constructor(
                 address = accountWithResource?.account?.address.orEmpty(),
                 displayName = accountWithResource?.account?.displayName.orEmpty(),
                 appearanceID = accountWithResource?.account?.appearanceID ?: 0,
-                tokenQuantity = amount,
+                tokenAmount = amount,
                 shouldPromptForGuarantees = false,
-                guaranteedQuantity = null,
+                guaranteedAmount = null,
                 instructionIndex = null,
                 resourceAddress = resourceAddress,
                 index = null,
@@ -323,8 +322,7 @@ class TransactionApprovalViewModel @Inject constructor(
                                     nameMetadataItem = fungibleToken?.nameMetadataItem,
                                     symbolMetadataItem = fungibleToken?.symbolMetadataItem,
                                     descriptionMetadataItem = fungibleToken?.descriptionMetadataItem,
-                                    iconUrlMetadataItem = fungibleToken?.iconUrlMetadataItem,
-                                    guaranteedQuantity = amount.toBigDecimal()
+                                    iconUrlMetadataItem = fungibleToken?.iconUrlMetadataItem
                                 )
                             }
 
@@ -359,10 +357,10 @@ class TransactionApprovalViewModel @Inject constructor(
                         displayName = accountWithResource?.account?.displayName.orEmpty(),
                         appearanceID = accountWithResource?.account?.appearanceID ?: 0,
                         tokenSymbol = tokenSymbol,
-                        tokenQuantity = amount,
+                        tokenAmount = amount,
                         iconUrl = iconUrl,
                         shouldPromptForGuarantees = shouldPromptForGuarantees,
-                        guaranteedQuantity = guaranteedAmount,
+                        guaranteedAmount = guaranteedAmount,
                         instructionIndex = instructionIndex,
                         resourceAddress = resourceAddress,
                         index = index,
@@ -402,8 +400,7 @@ class TransactionApprovalViewModel @Inject constructor(
                                     nameMetadataItem = fungibleToken?.nameMetadataItem,
                                     symbolMetadataItem = fungibleToken?.symbolMetadataItem,
                                     descriptionMetadataItem = fungibleToken?.descriptionMetadataItem,
-                                    iconUrlMetadataItem = fungibleToken?.iconUrlMetadataItem,
-                                    guaranteedQuantity = fungibleToken?.guaranteedQuantity
+                                    iconUrlMetadataItem = fungibleToken?.iconUrlMetadataItem
                                 )
                             }
 
@@ -436,10 +433,10 @@ class TransactionApprovalViewModel @Inject constructor(
                         displayName = accountWithResource?.account?.displayName.orEmpty(),
                         appearanceID = accountWithResource?.account?.appearanceID ?: 0,
                         tokenSymbol = tokenSymbol,
-                        tokenQuantity = amount,
+                        tokenAmount = amount,
                         iconUrl = iconUrl,
                         shouldPromptForGuarantees = false,
-                        guaranteedQuantity = null,
+                        guaranteedAmount = null,
                         instructionIndex = null,
                         resourceAddress = resourceAddress,
                         index = null,
@@ -480,7 +477,7 @@ class TransactionApprovalViewModel @Inject constructor(
                     ).onSuccess { manifestJsonResponse ->
                         var manifestJson = manifestJsonResponse
                         _state.value.depositingAccounts.map { transactionAccountUiItem ->
-                            transactionAccountUiItem.guaranteedQuantity?.let { guaranteedAmount ->
+                            transactionAccountUiItem.guaranteedAmount?.let { guaranteedAmount ->
                                 manifestJson = manifestJson.addGuaranteeInstructionToManifest(
                                     address = transactionAccountUiItem.resourceAddress.orEmpty(),
                                     guaranteedAmount = guaranteedAmount,
@@ -674,7 +671,7 @@ class TransactionApprovalViewModel @Inject constructor(
         }
 
         val updatedGuaranteedQuantity = guaranteePercentBigDecimal.divide(BigDecimal("100")).multiply(
-            guaranteePair.second.tokenEstimatedQuantity.toBigDecimal().stripTrailingZeros()
+            guaranteePair.second.tokenEstimatedAmount.toBigDecimal().stripTrailingZeros()
         ).toPlainString()
 
         val currentDepositingAccounts =
@@ -694,8 +691,7 @@ class TransactionApprovalViewModel @Inject constructor(
                     nameMetadataItem = previewAccountUiModel.fungibleResource.nameMetadataItem,
                     symbolMetadataItem = previewAccountUiModel.fungibleResource.symbolMetadataItem,
                     descriptionMetadataItem = previewAccountUiModel.fungibleResource.descriptionMetadataItem,
-                    iconUrlMetadataItem = previewAccountUiModel.fungibleResource.iconUrlMetadataItem,
-                    guaranteedQuantity = updatedGuaranteedQuantity.toBigDecimal()
+                    iconUrlMetadataItem = previewAccountUiModel.fungibleResource.iconUrlMetadataItem
                 )
 
                 previewAccountUiModel.copy(
@@ -705,7 +701,7 @@ class TransactionApprovalViewModel @Inject constructor(
                     tokenSymbol = previewAccountUiModel.tokenSymbol,
                     iconUrl = previewAccountUiModel.iconUrl,
                     shouldPromptForGuarantees = previewAccountUiModel.shouldPromptForGuarantees,
-                    guaranteedQuantity = updatedGuaranteedQuantity,
+                    guaranteedAmount = updatedGuaranteedQuantity,
                     guaranteedPercentAmount = guaranteePercentString,
                     instructionIndex = previewAccountUiModel.instructionIndex,
                     resourceAddress = previewAccountUiModel.resourceAddress,
@@ -752,10 +748,10 @@ data class TransactionAccountItemUiModel(
     val displayName: String,
     val appearanceID: Int,
     val tokenSymbol: String? = null,
-    val tokenQuantity: String,
+    val tokenAmount: String,
     val iconUrl: String? = null,
     val shouldPromptForGuarantees: Boolean,
-    val guaranteedQuantity: String?,
+    val guaranteedAmount: String?,
     val guaranteedPercentAmount: String = "100",
     val instructionIndex: Int? = null, // Index that instruction will be inserted at in the manifest
     val resourceAddress: String? = null,
@@ -770,8 +766,8 @@ data class GuaranteesAccountItemUiModel(
     val displayName: String,
     val tokenSymbol: String,
     val tokenIconUrl: String,
-    val tokenEstimatedQuantity: String,
-    val tokenGuaranteedQuantity: String,
+    val tokenEstimatedAmount: String,
+    val tokenGuaranteedAmount: String,
     val guaranteedPercentAmount: String,
     val index: Int? = null
 ) {
@@ -794,8 +790,8 @@ fun List<TransactionAccountItemUiModel>.toGuaranteesAccountsUiModel(): Immutable
                     displayName = transactionAccountItemUiModel.displayName,
                     tokenSymbol = item.displayTitle,
                     tokenIconUrl = item.iconUrl.toString(),
-                    tokenEstimatedQuantity = item.amount?.toPlainString().orEmpty(),
-                    tokenGuaranteedQuantity = item.guaranteedQuantityToDisplay.orEmpty(),
+                    tokenEstimatedAmount = item.amount?.toPlainString().orEmpty(),
+                    tokenGuaranteedAmount = transactionAccountItemUiModel.guaranteedAmount.orEmpty(),
                     guaranteedPercentAmount = transactionAccountItemUiModel.guaranteedPercentAmount,
                     index = transactionAccountItemUiModel.index
                 )
@@ -806,8 +802,8 @@ fun List<TransactionAccountItemUiModel>.toGuaranteesAccountsUiModel(): Immutable
                     displayName = transactionAccountItemUiModel.displayName,
                     tokenSymbol = transactionAccountItemUiModel.tokenSymbol.orEmpty(),
                     tokenIconUrl = transactionAccountItemUiModel.iconUrl.orEmpty(),
-                    tokenEstimatedQuantity = transactionAccountItemUiModel.tokenQuantity,
-                    tokenGuaranteedQuantity = transactionAccountItemUiModel.guaranteedQuantity.orEmpty(),
+                    tokenEstimatedAmount = transactionAccountItemUiModel.tokenAmount,
+                    tokenGuaranteedAmount = transactionAccountItemUiModel.guaranteedAmount.orEmpty(),
                     guaranteedPercentAmount = transactionAccountItemUiModel.guaranteedPercentAmount,
                     index = transactionAccountItemUiModel.index
                 )
