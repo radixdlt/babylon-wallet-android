@@ -314,7 +314,7 @@ private fun TransactionPreviewContent(
                                     }
                                 },
                                 enabled = !state.isLoading && !state.isSigning && state.canApprove &&
-                                        state.bottomSheetViewMode != BottomSheetMode.FeePayerSelection,
+                                    state.bottomSheetViewMode != BottomSheetMode.FeePayerSelection,
                                 icon = {
                                     Icon(
                                         painter = painterResource(
