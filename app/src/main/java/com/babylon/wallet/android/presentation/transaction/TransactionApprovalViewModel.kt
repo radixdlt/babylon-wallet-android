@@ -49,9 +49,11 @@ import com.radixdlt.toolkit.models.transaction.ManifestInstructions
 import com.radixdlt.toolkit.models.transaction.TransactionManifest
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.ImmutableMap
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.collections.immutable.toPersistentList
+import kotlinx.collections.immutable.toPersistentMap
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.filterNotNull
@@ -246,13 +248,8 @@ class TransactionApprovalViewModel @Inject constructor(
                     val fungibleToken = accountWithResource?.resources?.fungibleResources?.find {
                         it.resourceAddress == resourceAddress
                     }
-                    fungibleResource = Resource.FungibleResource(
-                        resourceAddress = fungibleToken?.resourceAddress.orEmpty(),
-                        amount = amount.toBigDecimal(),
-                        nameMetadataItem = fungibleToken?.nameMetadataItem,
-                        symbolMetadataItem = fungibleToken?.symbolMetadataItem,
-                        descriptionMetadataItem = fungibleToken?.descriptionMetadataItem,
-                        iconUrlMetadataItem = fungibleToken?.iconUrlMetadataItem
+                    fungibleResource = fungibleToken?.copy(
+                        amount = amount.toBigDecimal()
                     )
                 }
                 is ResourceQuantifier.Ids -> {
@@ -316,13 +313,8 @@ class TransactionApprovalViewModel @Inject constructor(
                                 val fungibleToken = accountWithResource?.resources?.fungibleResources?.find {
                                     it.resourceAddress == resourceAddress
                                 }
-                                fungibleResource = Resource.FungibleResource(
-                                    resourceAddress = fungibleToken?.resourceAddress.orEmpty(),
-                                    amount = amount.toBigDecimal(),
-                                    nameMetadataItem = fungibleToken?.nameMetadataItem,
-                                    symbolMetadataItem = fungibleToken?.symbolMetadataItem,
-                                    descriptionMetadataItem = fungibleToken?.descriptionMetadataItem,
-                                    iconUrlMetadataItem = fungibleToken?.iconUrlMetadataItem
+                                fungibleResource = fungibleToken?.copy(
+                                    amount = amount.toBigDecimal()
                                 )
                             }
 
@@ -394,13 +386,8 @@ class TransactionApprovalViewModel @Inject constructor(
                                 val fungibleToken = accountWithResource?.resources?.fungibleResources?.find {
                                     it.resourceAddress == resourceAddress
                                 }
-                                fungibleResource = Resource.FungibleResource(
-                                    resourceAddress = fungibleToken?.resourceAddress.orEmpty(),
-                                    amount = amount.toBigDecimal(),
-                                    nameMetadataItem = fungibleToken?.nameMetadataItem,
-                                    symbolMetadataItem = fungibleToken?.symbolMetadataItem,
-                                    descriptionMetadataItem = fungibleToken?.descriptionMetadataItem,
-                                    iconUrlMetadataItem = fungibleToken?.iconUrlMetadataItem
+                                fungibleResource = fungibleToken?.copy(
+                                    amount = amount.toBigDecimal()
                                 )
                             }
 
@@ -686,12 +673,7 @@ class TransactionApprovalViewModel @Inject constructor(
                 previewAccountUiModel.index == guaranteePair.second.index
             ) {
                 val fungibleResource = previewAccountUiModel.fungibleResource?.copy(
-                    resourceAddress = previewAccountUiModel.fungibleResource.resourceAddress,
                     amount = previewAccountUiModel.fungibleResource.amount,
-                    nameMetadataItem = previewAccountUiModel.fungibleResource.nameMetadataItem,
-                    symbolMetadataItem = previewAccountUiModel.fungibleResource.symbolMetadataItem,
-                    descriptionMetadataItem = previewAccountUiModel.fungibleResource.descriptionMetadataItem,
-                    iconUrlMetadataItem = previewAccountUiModel.fungibleResource.iconUrlMetadataItem
                 )
 
                 previewAccountUiModel.copy(
@@ -830,7 +812,21 @@ data class TransactionUiState(
     val feePayerCandidates: ImmutableList<AccountItemUiModel> = persistentListOf(),
     val bottomSheetMode: BottomSheetMode = BottomSheetMode.Guarantees,
     val signingState: SigningState? = null
-) : UiState
+) : UiState {
+
+    val shouldPromptForGuarantees: Boolean
+        get() = depositingAccounts.any { it.shouldPromptForGuarantees }
+
+    val depositingAccountsMap: ImmutableMap<String, List<TransactionAccountItemUiModel>>
+        get() = depositingAccounts.groupBy {
+            it.address
+        }.toPersistentMap()
+
+    val withdrawingAccountsMap: ImmutableMap<String, List<TransactionAccountItemUiModel>>
+        get() = withdrawingAccounts.groupBy {
+            it.address
+        }.toPersistentMap()
+}
 
 sealed interface TransactionApprovalEvent : OneOffEvent {
     object Dismiss : TransactionApprovalEvent

@@ -100,28 +100,15 @@ fun TransactionApprovalScreen(
     }
     TransactionPreviewContent(
         onBackClick = viewModel::onBackClick,
-        isLoading = state.isLoading,
-        isSigning = state.isSigning,
+        state = state,
         onApproveTransaction = viewModel::approveTransaction,
-        error = state.error,
         onMessageShown = viewModel::onMessageShown,
         modifier = modifier,
-        isDeviceSecure = state.isDeviceSecure,
-        canApprove = state.canApprove,
-        transactionMessage = state.transactionMessage,
-        networkFee = state.networkFee,
-        rawManifestContent = state.manifestString,
-        presentingProofs = state.presentingProofs,
-        connectedDApps = state.connectedDApps,
-        withdrawingAccounts = state.withdrawingAccounts,
-        depositingAccounts = state.depositingAccounts,
-        guaranteesAccounts = state.guaranteesAccounts,
         onGuaranteesApplyClick = viewModel::onGuaranteesApplyClick,
         onGuaranteesCloseClick = viewModel::onGuaranteesCloseClick,
         promptForGuaranteesClick = viewModel::promptForGuaranteesClick,
         onDAppClick = viewModel::onDAppClick,
         onGuaranteeValueChanged = viewModel::onGuaranteeValueChanged,
-        bottomSheetViewMode = state.bottomSheetViewMode,
         onPayerSelected = viewModel::onPayerSelected,
         onPayerConfirmed = {
             scope.launch {
@@ -131,9 +118,7 @@ fun TransactionApprovalScreen(
             }
         },
         modalBottomSheetState = modalBottomSheetState,
-        feePayerCandidates = state.feePayerCandidates,
-        resetBottomSheetMode = viewModel::resetBottomSheetMode,
-        signingState = state.signingState
+        resetBottomSheetMode = viewModel::resetBottomSheetMode
     )
     LaunchedEffect(Unit) {
         viewModel.oneOffEvent.collect { event ->
@@ -156,34 +141,19 @@ fun TransactionApprovalScreen(
 @OptIn(ExperimentalMaterialApi::class)
 private fun TransactionPreviewContent(
     onBackClick: () -> Unit,
-    isLoading: Boolean,
-    isSigning: Boolean,
+    state: TransactionUiState,
     onApproveTransaction: () -> Unit,
-    error: UiMessage?,
     onMessageShown: () -> Unit,
     modifier: Modifier = Modifier,
-    isDeviceSecure: Boolean,
-    canApprove: Boolean,
-    transactionMessage: String,
-    networkFee: String,
-    rawManifestContent: String,
-    presentingProofs: ImmutableList<PresentingProofUiModel>,
-    connectedDApps: ImmutableList<DAppWithMetadataAndAssociatedResources>,
-    withdrawingAccounts: ImmutableList<TransactionAccountItemUiModel>,
-    depositingAccounts: ImmutableList<TransactionAccountItemUiModel>,
-    guaranteesAccounts: ImmutableList<GuaranteesAccountItemUiModel>,
     onGuaranteesApplyClick: () -> Unit,
     onGuaranteesCloseClick: () -> Unit,
     promptForGuaranteesClick: () -> Unit,
     onDAppClick: (DAppWithMetadataAndAssociatedResources) -> Unit,
     onGuaranteeValueChanged: (Pair<String, GuaranteesAccountItemUiModel>) -> Unit,
-    bottomSheetViewMode: BottomSheetMode,
     onPayerSelected: (AccountItemUiModel) -> Unit,
     onPayerConfirmed: () -> Unit,
     modalBottomSheetState: ModalBottomSheetState,
-    feePayerCandidates: ImmutableList<AccountItemUiModel>,
-    resetBottomSheetMode: () -> Unit,
-    signingState: SigningState?
+    resetBottomSheetMode: () -> Unit
 ) {
     var showNotSecuredDialog by remember { mutableStateOf(false) }
     var signingStateDismissed by remember { mutableStateOf(false) }
@@ -210,11 +180,11 @@ private fun TransactionPreviewContent(
         sheetState = modalBottomSheetState,
         sheetContent = {
             BottomSheetContent(
-                bottomSheetViewMode = bottomSheetViewMode,
-                feePayerCandidates = feePayerCandidates,
+                bottomSheetViewMode = state.bottomSheetViewMode,
+                feePayerCandidates = state.feePayerCandidates,
                 onPayerSelected = onPayerSelected,
                 onPayerConfirmed = onPayerConfirmed,
-                guaranteesAccounts = guaranteesAccounts,
+                guaranteesAccounts = state.guaranteesAccounts,
                 onGuaranteesCloseClick = {
                     scope.launch {
                         modalBottomSheetState.hide()
@@ -256,7 +226,7 @@ private fun TransactionPreviewContent(
                 TransactionPreviewHeader(
                     onBackClick = onBackClick,
                     onRawManifestClick = { showRawManifest = !showRawManifest },
-                    onBackEnabled = !isSigning
+                    onBackEnabled = !state.isSigning
                 )
                 Column(
                     modifier = Modifier
@@ -266,7 +236,7 @@ private fun TransactionPreviewContent(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingSmall)
                 ) {
-                    AnimatedVisibility(visible = !isLoading) {
+                    AnimatedVisibility(visible = !state.isLoading) {
                         Column(
                             modifier = Modifier
                                 .fillMaxSize(),
@@ -285,14 +255,16 @@ private fun TransactionPreviewContent(
                                 overflow = TextOverflow.Ellipsis,
                             )
 
-                            TransactionMessageContent(transactionMessage = transactionMessage)
+                            TransactionMessageContent(transactionMessage = state.transactionMessage)
 
-                            WithdrawAccountContent(withdrawAccounts = withdrawingAccounts)
+                            WithdrawAccountContent(
+                                withdrawAccountsMap = state.withdrawingAccountsMap
+                            )
 
                             StrokeLine(height = 40.dp)
 
                             ConnectedDAppsContent(
-                                connectedDApps = connectedDApps,
+                                connectedDApps = state.connectedDApps,
                                 onDAppClick = {
                                     onDAppClick(it)
                                     scope.launch {
@@ -304,7 +276,8 @@ private fun TransactionPreviewContent(
                             StrokeLine()
 
                             DepositAccountContent(
-                                depositAccounts = depositingAccounts,
+                                depositAccountsMap = state.depositingAccountsMap,
+                                shouldPromptForGuarantees = state.shouldPromptForGuarantees,
                                 promptForGuarantees = {
                                     promptForGuaranteesClick()
                                     scope.launch {
@@ -313,12 +286,12 @@ private fun TransactionPreviewContent(
                                 }
                             )
 
-                            PresentingProofsContent(presentingProofs = presentingProofs)
+                            PresentingProofsContent(presentingProofs = state.presentingProofs)
 
                             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
 
                             NetworkFeeContent(
-                                networkFee = networkFee,
+                                networkFee = state.networkFee,
                                 isNetworkCongested = false
                             )
 
@@ -330,7 +303,7 @@ private fun TransactionPreviewContent(
                                     .fillMaxWidth(),
                                 text = stringResource(id = R.string.transactionReview_approveButtonTitle),
                                 onClick = {
-                                    if (isDeviceSecure) {
+                                    if (state.isDeviceSecure) {
                                         context.findFragmentActivity()?.let { activity ->
                                             activity.biometricAuthenticate(true) { authenticatedSuccessfully ->
                                                 if (authenticatedSuccessfully) {
@@ -342,8 +315,8 @@ private fun TransactionPreviewContent(
                                         showNotSecuredDialog = true
                                     }
                                 },
-                                enabled = !isLoading && !isSigning && canApprove &&
-                                    bottomSheetViewMode != BottomSheetMode.FeePayerSelection,
+                                enabled = !state.isLoading && !state.isSigning && state.canApprove &&
+                                        state.bottomSheetViewMode != BottomSheetMode.FeePayerSelection,
                                 icon = {
                                     Icon(
                                         painter = painterResource(
@@ -357,15 +330,15 @@ private fun TransactionPreviewContent(
                     }
                 }
             }
-            if (isLoading || isSigning) {
+            if (state.isLoading || state.isSigning) {
                 FullscreenCircularProgressContent(addOverlay = true, clickable = true)
             }
-            if (!signingStateDismissed && isSigning && signingState != null) {
+            if (!signingStateDismissed && state.isSigning && state.signingState != null) {
                 SigningStatusBottomDialog(onDismissDialogClick = {
                     signingStateDismissed = true
-                }, signingState = signingState)
+                }, signingState = state.signingState)
             }
-            SnackbarUiMessageHandler(message = error) {
+            SnackbarUiMessageHandler(message = state.error) {
                 onMessageShown()
             }
         }
@@ -373,7 +346,7 @@ private fun TransactionPreviewContent(
 
     if (showRawManifest) {
         RawTransactionContent(
-            manifestContent = rawManifestContent,
+            manifestContent = state.manifestString,
             finish = {
                 showRawManifest = !showRawManifest
             }
@@ -476,76 +449,75 @@ fun TransactionPreviewContentPreview() {
         with(SampleDataProvider()) {
             TransactionPreviewContent(
                 onBackClick = {},
-                isLoading = false,
-                isSigning = false,
-                onApproveTransaction = {},
-                error = null,
-                onMessageShown = {},
-                isDeviceSecure = false,
-                canApprove = true,
-                transactionMessage = "Message",
-                networkFee = "0.1",
-                rawManifestContent = "",
-                presentingProofs = persistentListOf(
-                    PresentingProofUiModel("", "Proof"),
-                    PresentingProofUiModel("", "Proof")
-                ),
-                connectedDApps = persistentListOf(
-                    sampleDAppWithResources()
-                ),
-                withdrawingAccounts = persistentListOf(
-                    TransactionAccountItemUiModel(
-                        address = "account_tdx_19jd32jd3928jd3892jd329",
-                        displayName = "My Savings Account",
-                        tokenSymbol = "XRD",
-                        tokenAmount = "689.203",
-                        appearanceID = 1,
-                        iconUrl = "",
-                        shouldPromptForGuarantees = false,
-                        guaranteedAmount = "689.203",
-                        guaranteedPercentAmount = "100"
-                    )
-                ),
-                depositingAccounts = persistentListOf(
-                    TransactionAccountItemUiModel(
-                        address = "account_tdx_19jd32jd3928jd3892jd329",
-                        displayName = "My Savings Account",
-                        tokenSymbol = "XRD",
-                        tokenAmount = "689.203",
-                        appearanceID = 1,
-                        iconUrl = "",
-                        shouldPromptForGuarantees = true,
-                        guaranteedAmount = "689.203",
-                        guaranteedPercentAmount = "100"
+                state = TransactionUiState(
+                    isLoading = false,
+                    isSigning = false,
+                    error = null,
+                    isDeviceSecure = false,
+                    canApprove = true,
+                    transactionMessage = "Message",
+                    networkFee = "0.1",
+                    manifestString = "",
+                    presentingProofs = persistentListOf(
+                        PresentingProofUiModel("", "Proof"),
+                        PresentingProofUiModel("", "Proof")
                     ),
-                    TransactionAccountItemUiModel(
-                        address = "account_tdx_19jd32jd3928jd3892jd39",
-                        displayName = "My second Savings Account",
-                        tokenSymbol = "XRD",
-                        tokenAmount = "689.203",
-                        appearanceID = 1,
-                        iconUrl = "",
-                        shouldPromptForGuarantees = true,
-                        guaranteedAmount = "689.203",
-                        guaranteedPercentAmount = "100"
-                    )
+                    connectedDApps = persistentListOf(
+                        sampleDAppWithResources()
+                    ),
+                    withdrawingAccounts = persistentListOf(
+                        TransactionAccountItemUiModel(
+                            address = "account_tdx_19jd32jd3928jd3892jd329",
+                            displayName = "My Savings Account",
+                            tokenSymbol = "XRD",
+                            tokenAmount = "689.203",
+                            appearanceID = 1,
+                            iconUrl = "",
+                            shouldPromptForGuarantees = false,
+                            guaranteedAmount = "689.203",
+                            guaranteedPercentAmount = "100"
+                        )
+                    ),
+                    depositingAccounts = persistentListOf(
+                        TransactionAccountItemUiModel(
+                            address = "account_tdx_19jd32jd3928jd3892jd329",
+                            displayName = "My Savings Account",
+                            tokenSymbol = "XRD",
+                            tokenAmount = "689.203",
+                            appearanceID = 1,
+                            iconUrl = "",
+                            shouldPromptForGuarantees = true,
+                            guaranteedAmount = "689.203",
+                            guaranteedPercentAmount = "100"
+                        ),
+                        TransactionAccountItemUiModel(
+                            address = "account_tdx_19jd32jd3928jd3892jd39",
+                            displayName = "My second Savings Account",
+                            tokenSymbol = "XRD",
+                            tokenAmount = "689.203",
+                            appearanceID = 1,
+                            iconUrl = "",
+                            shouldPromptForGuarantees = true,
+                            guaranteedAmount = "689.203",
+                            guaranteedPercentAmount = "100"
+                        )
+                    ),
+                    guaranteesAccounts = persistentListOf(),
                 ),
-                guaranteesAccounts = persistentListOf(),
+                onApproveTransaction = {},
+                onMessageShown = {},
                 onGuaranteesApplyClick = {},
                 onGuaranteesCloseClick = {},
                 promptForGuaranteesClick = {},
                 onDAppClick = {},
                 onGuaranteeValueChanged = {},
-                bottomSheetViewMode = BottomSheetMode.Guarantees,
                 onPayerSelected = {},
                 onPayerConfirmed = {},
                 modalBottomSheetState = rememberModalBottomSheetState(
                     initialValue = ModalBottomSheetValue.Hidden,
                     skipHalfExpanded = true
                 ),
-                feePayerCandidates = persistentListOf(),
-                resetBottomSheetMode = {},
-                signingState = null
+                resetBottomSheetMode = {}
             )
         }
     }

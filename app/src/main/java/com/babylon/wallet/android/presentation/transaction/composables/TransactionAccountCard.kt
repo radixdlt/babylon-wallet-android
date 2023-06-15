@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Alignment.Companion.CenterVertically
 import androidx.compose.ui.Modifier
@@ -81,12 +82,13 @@ fun TransactionAccountCard(
             )
         }
 
-        val fungibleTokens = tokens.mapNotNull {
-            it.fungibleResource
+        val fungibleTokens = remember(tokens) {
+            tokens.mapNotNull { it.fungibleResource }
         }
-        val nonFungibleTokens = tokens.map {
-            it.nonFungibleResourceItems
-        }.flatten()
+
+        val nonFungibleTokens = remember(tokens) {
+            tokens.map { it.nonFungibleResourceItems }.flatten()
+        }
 
         // Fungibles
         fungibleTokens.forEachIndexed { index, fungibleResource ->
@@ -102,7 +104,7 @@ fun TransactionAccountCard(
                 },
                 tokenAmount = fungibleResource.amount?.toPlainString().orEmpty(),
                 guaranteedQuantity = token.guaranteedAmount,
-                isTokenAmountVisible = fungibleResource.isTokenAmountVisible,
+                isTokenAmountVisible = true,
                 shape = shape
             )
         }
@@ -116,7 +118,7 @@ fun TransactionAccountCard(
                 isXrdToken = false,
                 tokenUrl = nonFungibleResource.imageUrl.toString(),
                 tokenSymbol = nonFungibleResource.localId.displayable,
-                isTokenAmountVisible = nonFungibleResource.isTokenAmountVisible,
+                isTokenAmountVisible = false,
                 shape = shape
             )
         }

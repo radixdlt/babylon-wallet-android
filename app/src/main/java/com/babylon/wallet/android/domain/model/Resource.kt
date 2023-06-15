@@ -17,10 +17,10 @@ sealed class Resource {
     data class FungibleResource(
         override val resourceAddress: String,
         val amount: BigDecimal?,
-        val nameMetadataItem: NameMetadataItem? = null,
-        val symbolMetadataItem: SymbolMetadataItem? = null,
-        val descriptionMetadataItem: DescriptionMetadataItem? = null,
-        val iconUrlMetadataItem: IconUrlMetadataItem? = null
+        private val nameMetadataItem: NameMetadataItem? = null,
+        private val symbolMetadataItem: SymbolMetadataItem? = null,
+        private val descriptionMetadataItem: DescriptionMetadataItem? = null,
+        private val iconUrlMetadataItem: IconUrlMetadataItem? = null
     ) : Resource(), Comparable<FungibleResource> {
         val name: String
             get() = nameMetadataItem?.name.orEmpty()
@@ -46,9 +46,6 @@ sealed class Resource {
         val isXrd: Boolean = RadixEngineToolkit.knownEntityAddresses(
             KnownEntityAddressesRequest(networkId = Radix.Gateway.default.network.id.toUByte())
         ).getOrNull()?.xrdResourceAddress == resourceAddress
-
-        val isTokenAmountVisible: Boolean
-            get() = true // Always amount is visible for fungible tokens on guarantees page
 
         @Suppress("CyclomaticComplexMethod")
         override fun compareTo(other: FungibleResource): Int {
@@ -116,9 +113,6 @@ sealed class Resource {
 
             val imageUrl: Uri?
                 get() = iconMetadataItem?.url
-
-            val isTokenAmountVisible: Boolean
-                get() = false // No amount visible for NFT item
 
             override fun compareTo(other: Item): Int = when (localId) {
                 is ID.StringType -> (other.localId as? ID.StringType)?.compareTo(localId) ?: -1

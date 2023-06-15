@@ -18,16 +18,16 @@ import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.presentation.transaction.TransactionAccountItemUiModel
-import kotlinx.collections.immutable.ImmutableList
-import kotlinx.collections.immutable.persistentListOf
+import kotlinx.collections.immutable.ImmutableMap
+import kotlinx.collections.immutable.persistentMapOf
 import kotlinx.collections.immutable.toPersistentList
 
 @Composable
 fun WithdrawAccountContent(
-    withdrawAccounts: ImmutableList<TransactionAccountItemUiModel>,
+    withdrawAccountsMap: ImmutableMap<String, List<TransactionAccountItemUiModel>>,
     modifier: Modifier = Modifier
 ) {
-    if (withdrawAccounts.isNotEmpty()) {
+    if (withdrawAccountsMap.isNotEmpty()) {
         Text(
             modifier = Modifier
                 .padding(horizontal = RadixTheme.dimensions.paddingDefault),
@@ -46,11 +46,8 @@ fun WithdrawAccountContent(
                 )
                 .padding(RadixTheme.dimensions.paddingMedium)
         ) {
-            val withdrawAccountMap = withdrawAccounts.groupBy {
-                it.address
-            }
-            withdrawAccountMap.onEachIndexed { index, accountEntry ->
-                val lastItem = index == withdrawAccountMap.size - 1
+            withdrawAccountsMap.onEachIndexed { index, accountEntry ->
+                val lastItem = index == withdrawAccountsMap.size - 1
                 TransactionAccountCard(
                     appearanceId = accountEntry.value.first().appearanceID,
                     tokens = accountEntry.value.toPersistentList(),
@@ -74,18 +71,22 @@ fun WithdrawAccountContent(
 fun WithdrawAccountContentPreview() {
     RadixWalletTheme {
         WithdrawAccountContent(
-            persistentListOf(
-                TransactionAccountItemUiModel(
-                    address = "account_tdx_19jd32jd3928jd3892jd329",
-                    displayName = "My Savings Account",
-                    tokenSymbol = "XRD",
-                    tokenAmount = "689.203",
-                    appearanceID = 1,
-                    iconUrl = "",
-                    shouldPromptForGuarantees = true,
-                    guaranteedAmount = "689.203",
-                    guaranteedPercentAmount = "100"
-                )
+            persistentMapOf(
+                "account_tdx_19jd32jd3928jd3892jd329"
+                        to
+                        listOf(
+                            TransactionAccountItemUiModel(
+                                address = "account_tdx_19jd32jd3928jd3892jd329",
+                                displayName = "My Savings Account",
+                                tokenSymbol = "XRD",
+                                tokenAmount = "689.203",
+                                appearanceID = 1,
+                                iconUrl = "",
+                                shouldPromptForGuarantees = true,
+                                guaranteedAmount = "689.203",
+                                guaranteedPercentAmount = "100"
+                            )
+                        )
             )
         )
     }
