@@ -17,6 +17,7 @@ import kotlinx.coroutines.launch
 import rdx.works.core.preferences.PreferencesManager
 import rdx.works.profile.data.model.factorsources.FactorSource
 import rdx.works.profile.data.model.pernetwork.Network
+import rdx.works.profile.data.repository.MnemonicRepository
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.deviceFactorSourcesWithAccounts
 import javax.inject.Inject
@@ -24,6 +25,7 @@ import javax.inject.Inject
 @HiltViewModel
 class SeedPhrasesViewModel @Inject constructor(
     private val getProfileUseCase: GetProfileUseCase,
+    private val mnemonicRepository: MnemonicRepository,
     private val preferencesManager: PreferencesManager
 ) : StateViewModel<SeedPhrasesViewModel.SeedPhraseUiState>(),
     OneOffEventHandler<SeedPhrasesViewModel.Effect> by OneOffEventHandlerImpl() {
@@ -37,7 +39,13 @@ class SeedPhrasesViewModel @Inject constructor(
                 preferencesManager.getBackedUpFactorSourceIds()
             ) { factorSources, backedUpFactorSourceIds ->
                 factorSources.map { entry ->
-                    DeviceFactorSourceData(entry.key, entry.value.toPersistentList(), backedUpFactorSourceIds.contains(entry.key.value))
+                    val mnemonic = mnemonicRepository.readMnemonic(entry.key)
+                    val mnemonicState = when {
+                        mnemonic == null -> DeviceFactorSourceData.MnemonicState.NeedRecover
+                        backedUpFactorSourceIds.contains(entry.key.value) -> DeviceFactorSourceData.MnemonicState.BackedUp
+                        else -> DeviceFactorSourceData.MnemonicState.NotBackedUp
+                    }
+                    DeviceFactorSourceData(entry.key, entry.value.toPersistentList(), mnemonicState)
                 }
             }.collect { deviceFactorSources ->
                 _state.update { it.copy(deviceFactorSourcesWithAccounts = deviceFactorSources.toPersistentList()) }
@@ -45,9 +53,13 @@ class SeedPhrasesViewModel @Inject constructor(
         }
     }
 
-    fun onShowMnemonic(factorSourceID: FactorSource.ID) {
+    fun onSeedPhraseClick(item: DeviceFactorSourceData) {
         viewModelScope.launch {
-            sendEvent(Effect.OnRequestToShowMnemonic(factorSourceID))
+            if (item.mnemonicState == DeviceFactorSourceData.MnemonicState.NeedRecover) {
+                sendEvent(Effect.OnRequestToRecoverMnemonic(item.id))
+            } else {
+                sendEvent(Effect.OnRequestToShowMnemonic(item.id))
+            }
         }
     }
 
@@ -57,12 +69,16 @@ class SeedPhrasesViewModel @Inject constructor(
 
     sealed interface Effect : OneOffEvent {
         data class OnRequestToShowMnemonic(val factorSourceID: FactorSource.ID) : Effect
-        data class OnRequestToRecoverMnemonic(val accountAddress: String) : Effect
+        data class OnRequestToRecoverMnemonic(val factorSourceID: FactorSource.ID) : Effect
     }
 }
 
 data class DeviceFactorSourceData(
     val id: FactorSource.ID,
     val accounts: ImmutableList<Network.Account> = persistentListOf(),
-    val backedUp: Boolean = false
-)
+    val mnemonicState: MnemonicState = MnemonicState.NotBackedUp
+) {
+    enum class MnemonicState {
+        BackedUp, NotBackedUp, NeedRecover
+    }
+}

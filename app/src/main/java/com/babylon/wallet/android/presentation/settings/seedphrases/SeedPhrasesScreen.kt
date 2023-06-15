@@ -51,7 +51,7 @@ fun SeedPhrasesScreen(
     modifier: Modifier = Modifier,
     viewModel: SeedPhrasesViewModel,
     onBackClick: () -> Unit,
-    onNavigateToRecoverMnemonic: (String) -> Unit,
+    onNavigateToRecoverMnemonic: (FactorSource.ID) -> Unit,
     onNavigateToSeedPhrase: (FactorSource.ID) -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -62,7 +62,7 @@ fun SeedPhrasesScreen(
             .fillMaxSize()
             .background(RadixTheme.colors.defaultBackground),
         onBackClick = onBackClick,
-        onShowMnemonic = viewModel::onShowMnemonic,
+        onSeedPhraseClick = viewModel::onSeedPhraseClick,
     )
 
     val context = LocalContext.current
@@ -78,7 +78,11 @@ fun SeedPhrasesScreen(
                 }
 
                 is SeedPhrasesViewModel.Effect.OnRequestToRecoverMnemonic -> {
-                    onNavigateToRecoverMnemonic(it.accountAddress)
+                    context.biometricAuthenticate { authenticated ->
+                        if (authenticated) {
+                            onNavigateToRecoverMnemonic(it.factorSourceID)
+                        }
+                    }
                 }
             }
         }
@@ -89,7 +93,7 @@ fun SeedPhrasesScreen(
 private fun SeedPhraseContent(
     deviceFactorSourceData: PersistentList<DeviceFactorSourceData>,
     onBackClick: () -> Unit,
-    onShowMnemonic: (FactorSource.ID) -> Unit,
+    onSeedPhraseClick: (DeviceFactorSourceData) -> Unit,
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -129,12 +133,12 @@ private fun SeedPhraseContent(
                 SeedPhraseCard(
                     modifier = Modifier
                         .throttleClickable {
-                            onShowMnemonic(item.id)
+                            onSeedPhraseClick(item)
                         }
                         .padding(horizontal = RadixTheme.dimensions.paddingDefault, vertical = RadixTheme.dimensions.paddingMedium)
                         .fillMaxWidth(),
                     accounts = item.accounts,
-                    backedUp = item.backedUp
+                    mnemonicState = item.mnemonicState
                 )
                 if (index != deviceFactorSourceData.size - 1) {
                     Divider(
@@ -148,7 +152,11 @@ private fun SeedPhraseContent(
 }
 
 @Composable
-private fun SeedPhraseCard(modifier: Modifier, accounts: ImmutableList<Network.Account>, backedUp: Boolean) {
+private fun SeedPhraseCard(
+    modifier: Modifier,
+    accounts: ImmutableList<Network.Account>,
+    mnemonicState: DeviceFactorSourceData.MnemonicState
+) {
     Column(
         modifier = modifier,
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -195,11 +203,16 @@ private fun SeedPhraseCard(modifier: Modifier, accounts: ImmutableList<Network.A
                 tint = RadixTheme.colors.gray1
             )
         }
-        if (!backedUp) {
+        val securityPromptRes = when (mnemonicState) {
+            DeviceFactorSourceData.MnemonicState.NotBackedUp -> R.string.displayMnemonics_backUpWarning
+            DeviceFactorSourceData.MnemonicState.NeedRecover -> R.string.homePage_applySecuritySettings
+            else -> null
+        }
+        securityPromptRes?.let { promptRes ->
             ApplySecuritySettingsLabel(
                 modifier = Modifier.fillMaxWidth(),
                 onClick = null,
-                text = stringResource(id = R.string.displayMnemonics_backUpWarning),
+                text = stringResource(id = promptRes),
                 labelColor = RadixTheme.colors.gray4.copy(alpha = 0.6f),
                 contentColor = RadixTheme.colors.gray1
             )
@@ -241,7 +254,7 @@ fun AccountPreferencePreview() {
                     persistentListOf(SampleDataProvider().sampleAccount())
                 )
             ),
-            onShowMnemonic = {}
+            onSeedPhraseClick = {}
         )
     }
 }

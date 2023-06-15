@@ -18,7 +18,7 @@ fun NavController.settingsShowMnemonic() {
 @OptIn(ExperimentalAnimationApi::class)
 fun NavGraphBuilder.settingsShowMnemonic(
     onBackClick: () -> Unit,
-    onNavigateToRecoverMnemonic: (String) -> Unit,
+    onNavigateToRecoverMnemonic: (FactorSource.ID) -> Unit,
     onNavigateToSeedPhrase: (FactorSource.ID) -> Unit
 ) {
     composable(
