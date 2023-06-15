@@ -35,7 +35,7 @@ import com.babylon.wallet.android.presentation.settings.incompatibleprofile.Inco
 import com.babylon.wallet.android.presentation.settings.incompatibleprofile.ROUTE_INCOMPATIBLE_PROFILE
 import com.babylon.wallet.android.presentation.settings.personadetail.personaDetailScreen
 import com.babylon.wallet.android.presentation.settings.personaedit.personaEditScreen
-import com.babylon.wallet.android.presentation.settings.seedphrase.settingsShowMnemonic
+import com.babylon.wallet.android.presentation.settings.seedphrases.settingsShowMnemonic
 import com.babylon.wallet.android.presentation.settings.settingsNavGraph
 import com.babylon.wallet.android.presentation.transaction.transactionApprovalScreen
 import com.babylon.wallet.android.presentation.transactionstatus.transactionStatusDialog
@@ -93,8 +93,8 @@ fun NavigationHost(
             onNavigateToIncompatibleProfile = {
                 navController.navigate(ROUTE_INCOMPATIBLE_PROFILE)
             },
-            onNavigateToMnemonicBackup = { factorSourceID ->
-                navController.settingsShowMnemonic(factorSourceID.value)
+            onNavigateToMnemonicBackup = {
+                navController.settingsShowMnemonic()
             }
         )
         composable(
@@ -111,8 +111,8 @@ fun NavigationHost(
                 onBackClick = {
                     navController.navigateUp()
                 },
-                onNavigateToMnemonicBackup = { factorSourceID ->
-                    navController.settingsShowMnemonic(factorSourceID.value)
+                onNavigateToMnemonicBackup = {
+                    navController.settingsShowMnemonic()
                 },
                 onTransferClick = { accountId ->
                     navController.transfer(accountId = accountId)
@@ -179,8 +179,8 @@ fun NavigationHost(
             onPersonaClick = { personaAddress ->
                 navController.personaDetailScreen(personaAddress)
             },
-            onNavigateToMnemonicBackup = { factorSourceId ->
-                navController.settingsShowMnemonic(factorSourceId.value)
+            onNavigateToMnemonicBackup = {
+                navController.settingsShowMnemonic()
             }
         )
         personaDetailScreen(

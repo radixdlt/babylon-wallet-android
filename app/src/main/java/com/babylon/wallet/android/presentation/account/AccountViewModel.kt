@@ -22,7 +22,7 @@ import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.profile.data.model.factorsources.FactorSource
-import rdx.works.profile.data.utils.unsecuredFactorSourceId
+import rdx.works.profile.data.utils.factorSourceId
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.accountOnCurrentNetwork
 import javax.inject.Inject
@@ -116,7 +116,7 @@ class AccountViewModel @Inject constructor(
 
     fun onApplySecuritySettings() {
         viewModelScope.launch {
-            _state.value.accountWithResources?.account?.unsecuredFactorSourceId()?.let {
+            _state.value.accountWithResources?.account?.factorSourceId()?.let {
                 sendEvent(AccountEvent.NavigateToMnemonicBackup(it))
             }
         }

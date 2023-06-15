@@ -21,7 +21,8 @@ import com.babylon.wallet.android.presentation.settings.editgateway.SettingsEdit
 import com.babylon.wallet.android.presentation.settings.ledgerfactorsource.settingsLedgerFactorSourcesScreen
 import com.babylon.wallet.android.presentation.settings.legacyimport.settingsImportOlympiaAccounts
 import com.babylon.wallet.android.presentation.settings.personaedit.personaEditScreen
-import com.babylon.wallet.android.presentation.settings.seedphrase.settingsShowMnemonic
+import com.babylon.wallet.android.presentation.settings.seedphrases.reveal.revealSeedPhrase
+import com.babylon.wallet.android.presentation.settings.seedphrases.settingsShowMnemonic
 import com.google.accompanist.navigation.animation.composable
 import com.google.accompanist.navigation.animation.navigation
 
@@ -69,7 +70,8 @@ fun NavGraphBuilder.settingsNavGraph(
         settingsGatewayEdit(navController)
         settingsShowMnemonic(
             onBackClick = { navController.popBackStack() },
-            onNavigateToRecoverMnemonic = { navController.restoreMnemonic(it) }
+            onNavigateToRecoverMnemonic = { navController.restoreMnemonic(it) },
+            onNavigateToSeedPhrase = { navController.revealSeedPhrase(it.value) }
         )
         settingsImportOlympiaAccounts(
             onBackClick = {
@@ -86,6 +88,11 @@ fun NavGraphBuilder.settingsNavGraph(
         ) {
             navController.settingsConnectorScreen(scanQr = true)
         }
+        revealSeedPhrase(
+            onBackClick = {
+                navController.navigateUp()
+            }
+        )
     }
 }
 

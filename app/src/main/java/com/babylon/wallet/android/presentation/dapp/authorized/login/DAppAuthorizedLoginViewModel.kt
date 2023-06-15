@@ -120,9 +120,10 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
     private fun observeSigningState() {
         viewModelScope.launch {
             buildAuthorizedDappResponseUseCase.signingState.filterNotNull().collect { signingState ->
-                _state.update { state ->
-                    state.copy(signingState = signingState)
-                }
+                // TODO verify how we should show signing state in persona login flow
+//                _state.update { state ->
+//                    state.copy(signingState = signingState)
+//                }
             }
         }
     }

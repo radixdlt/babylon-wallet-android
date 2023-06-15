@@ -9,7 +9,7 @@ import rdx.works.profile.data.model.currentNetwork
 import rdx.works.profile.data.model.factorsources.FactorSourceKind
 import rdx.works.profile.data.repository.ProfileRepository
 import rdx.works.profile.data.repository.profile
-import rdx.works.profile.data.utils.unsecuredFactorSourceId
+import rdx.works.profile.data.utils.factorSourceId
 import javax.inject.Inject
 
 class GetAccountsForSecurityPromptUseCase @Inject constructor(
@@ -22,7 +22,7 @@ class GetAccountsForSecurityPromptUseCase @Inject constructor(
         preferencesManager.getBackedUpFactorSourceIds().distinctUntilChanged()
     ) { accounts, backedUpFactorSourceIds ->
         accounts.filter { account ->
-            val factorSourceId = account.unsecuredFactorSourceId() ?: return@filter false
+            val factorSourceId = account.factorSourceId()
 
             if (backedUpFactorSourceIds.contains(factorSourceId.value)) {
                 return@filter false

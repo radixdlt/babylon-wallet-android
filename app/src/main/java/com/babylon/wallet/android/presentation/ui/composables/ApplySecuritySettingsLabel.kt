@@ -18,22 +18,27 @@ import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.designsystem.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.Red1
+import com.babylon.wallet.android.presentation.ui.modifier.applyIf
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 
 @Composable
 fun ApplySecuritySettingsLabel(
-    onClick: () -> Unit,
+    onClick: (() -> Unit)?,
     modifier: Modifier = Modifier,
     text: String,
-    labelColor: Color = RadixTheme.colors.white.copy(alpha = 0.3f)
+    labelColor: Color = RadixTheme.colors.white.copy(alpha = 0.3f),
+    contentColor: Color = RadixTheme.colors.white
 ) {
     Row(
         modifier = modifier
             .background(labelColor, RadixTheme.shapes.roundedRectSmall)
             .clip(RadixTheme.shapes.roundedRectSmall)
-            .throttleClickable {
-                onClick()
-            }
+            .applyIf(
+                onClick != null,
+                modifier = Modifier.throttleClickable {
+                    onClick?.invoke()
+                }
+            )
             .padding(horizontal = RadixTheme.dimensions.paddingDefault, vertical = RadixTheme.dimensions.paddingSmall),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingSmall)
@@ -42,14 +47,14 @@ fun ApplySecuritySettingsLabel(
             modifier = Modifier.size(14.dp),
             painter = painterResource(id = R.drawable.ic_security),
             contentDescription = null,
-            tint = RadixTheme.colors.white
+            tint = contentColor
         )
         Text(
             text = text,
             style = RadixTheme.typography.body2HighImportance,
             maxLines = 1,
             modifier = Modifier.weight(1f),
-            color = RadixTheme.colors.white
+            color = contentColor
         )
         Badge(backgroundColor = Red1)
     }
