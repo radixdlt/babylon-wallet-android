@@ -143,7 +143,7 @@ fun NavigationHost(
                 navController.popBackStack(ROUTE_CREATE_ACCOUNT, false)
             },
             onAddP2PLink = {
-                navController.settingsConnectorScreen(scanQr = true)
+                navController.settingsConnectorScreen(scanQr = true, closeAfterLinked = true)
             }
         )
         createAccountConfirmationScreen(

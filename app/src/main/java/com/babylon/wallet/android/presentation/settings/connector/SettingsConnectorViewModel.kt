@@ -3,6 +3,9 @@ package com.babylon.wallet.android.presentation.settings.connector
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.dapp.PeerdroidClient
+import com.babylon.wallet.android.presentation.common.OneOffEvent
+import com.babylon.wallet.android.presentation.common.OneOffEventHandler
+import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.utils.parseEncryptionKeyFromConnectionPassword
@@ -29,7 +32,7 @@ class SettingsConnectorViewModel @Inject constructor(
     private val addP2PLinkUseCase: AddP2PLinkUseCase,
     private val deleteP2PLinkUseCase: DeleteP2PLinkUseCase,
     savedStateHandle: SavedStateHandle,
-) : StateViewModel<SettingsConnectorUiState>() {
+) : StateViewModel<SettingsConnectorUiState>(), OneOffEventHandler<Event> by OneOffEventHandlerImpl() {
 
     private var currentConnectionPassword: String = ""
 
@@ -80,6 +83,7 @@ class SettingsConnectorViewModel @Inject constructor(
                             connectorDisplayName = state.value.editedConnectorDisplayName
                         )
                     }
+
                     is Result.Error -> {
                         _state.update {
                             it.copy(isLoading = false)
@@ -139,8 +143,15 @@ class SettingsConnectorViewModel @Inject constructor(
                     buttonEnabled = false
                 )
             }
+            if (args.closeAfterLinked) {
+                sendEvent(Event.Close)
+            }
         }
     }
+}
+
+sealed interface Event : OneOffEvent {
+    object Close : Event
 }
 
 data class SettingsConnectorUiState(

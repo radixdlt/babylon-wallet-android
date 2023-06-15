@@ -54,12 +54,12 @@ fun LedgerListItem(
                 append(": " + ledgerFactorSource.addedOn.ledgerLastUsedDateFormat())
             }
             Text(
-                text = addedText,
+                text = usedText,
                 style = RadixTheme.typography.body2Regular,
                 color = RadixTheme.colors.gray2
             )
             Text(
-                text = usedText,
+                text = addedText,
                 style = RadixTheme.typography.body2Regular,
                 color = RadixTheme.colors.gray2
             )
