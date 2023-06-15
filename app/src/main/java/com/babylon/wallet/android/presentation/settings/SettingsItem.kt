@@ -14,7 +14,7 @@ sealed interface SettingsItem {
         object Gateways : TopLevelSettings
         object AuthorizedDapps : TopLevelSettings
         object AppSettings : TopLevelSettings
-        object ShowMnemonic : TopLevelSettings
+        object SeedPhrases : TopLevelSettings
         object LedgerHardwareWallets : TopLevelSettings
         object ImportFromLegacyWallet : TopLevelSettings
         object DeleteAll : TopLevelSettings
@@ -34,7 +34,7 @@ sealed interface SettingsItem {
                 Personas -> R.string.settings_personas
                 AuthorizedDapps -> R.string.settings_authorizedDapps
                 AppSettings -> R.string.settings_appSettings
-                ShowMnemonic -> R.string.importOlympiaAccounts_viewMnemonics
+                SeedPhrases -> R.string.displayMnemonics_seedPhrases
                 ImportFromLegacyWallet -> R.string.settings_importFromLegacyWallet
                 LedgerHardwareWallets -> R.string.settings_ledgerHardwareWallets
                 is Backups -> R.string.settings_backups
@@ -49,8 +49,8 @@ sealed interface SettingsItem {
                 Personas -> com.babylon.wallet.android.designsystem.R.drawable.ic_personas
                 AuthorizedDapps -> com.babylon.wallet.android.designsystem.R.drawable.ic_authorized_dapps
                 AppSettings -> com.babylon.wallet.android.designsystem.R.drawable.ic_app_settings
-                LedgerHardwareWallets -> com.babylon.wallet.android.designsystem.R.drawable.ic_hardware_ledger
-                ShowMnemonic -> com.babylon.wallet.android.designsystem.R.drawable.ic_app_settings
+                SeedPhrases -> com.babylon.wallet.android.designsystem.R.drawable.ic_seed_phrases
+                LedgerHardwareWallets -> com.babylon.wallet.android.designsystem.R.drawable.ic_ledger_hardware_wallets
                 ImportFromLegacyWallet -> com.babylon.wallet.android.designsystem.R.drawable.ic_app_settings
                 is Backups -> com.babylon.wallet.android.designsystem.R.drawable.ic_backup
                 else -> null

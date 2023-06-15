@@ -576,24 +576,42 @@
   <string name="ledgerHardwareDevices_linkConnectorAlert_message">To use a Ledger hardware wallet device, it must be connected to a computer running the Radix Connector browser extension.
 
 Install the Connector extension, open it to see the linking QR code, and tap continue.</string>
-  <string name="ledgerHardwareDevices_linkConnectorAlert_continue">Continue</string>
-  <string name="ledgerHardwareDevices_navigationTitleAllowSelection">Choose Device</string>
-  <string name="ledgerHardwareDevices_navigationTitleGeneral">Ledger Devices</string>
-  <string name="ledgerHardwareDevices_ledgerFactorSourceInfoCaption">What is a Ledger Factor Source</string>
-  <string name="ledgerHardwareDevices_addNewLedger">Add Ledger Device</string>
-  <string name="ledgerHardwareDevices_addedHeading">Added</string>
-  <string name="ledgerHardwareDevices_usedHeading">Last Used</string>
-  <string name="ledgerHardwareDevices_continueWithLedger">Continue</string>
-  <string name="ledgerHardwareDevices_subtitleNoLedgers">No Ledger devices have been added.</string>
-  <string name="ledgerHardwareDevices_subtitleSelectLedger">Choose a Ledger device to use</string>
-  <string name="ledgerHardwareDevices_subtitleAllLedgers">Here are all the Ledger devices you have added.</string>
-  <string name="ledgerHardwareDevices_subtitleFailure">Could not find Ledger devices</string>
-  <string name="displayMnemonics_cautionAlert_title">Use Caution</string>
-  <string name="displayMnemonics_cautionAlert_revealButtonLabel">Reveal Seed Phrase</string>
-  <string name="displayMnemonics_cautionAlert_message">A seed phrase provides full control of its Accounts. Do not view in a public area. Back up the seed phrase words securely. Screenshots are disabled.</string>
-  <string name="displayMnemonics_labelSeedPhraseKindOlympia">Legacy Seed Phrase</string>
-  <string name="displayMnemonics_labelSeedPhraseKind">Main Seed Phrase</string>
-  <string name="displayMnemonics_labelDateOlympia">Imported on</string>
-  <string name="displayMnemonics_labelDate">Generated on</string>
-  <string name="displayMnemonics_seedPhrases">Seed Phrases</string>
+    <string name="ledgerHardwareDevices_linkConnectorAlert_button">Link a Connector</string>
+    <string name="ledgerHardwareDevices_linkConnectorAlert_continue">Continue</string>
+    <string name="ledgerHardwareDevices_navigationTitleAllowSelection">Choose Device</string>
+    <string name="ledgerHardwareDevices_navigationTitleGeneral">Ledger Devices</string>
+    <string name="ledgerHardwareDevices_ledgerFactorSourceInfoCaption">What is a Ledger Factor Source</string>
+    <string name="ledgerHardwareDevices_addNewLedger">Add Ledger Device</string>
+    <string name="ledgerHardwareDevices_addedHeading">Added</string>
+    <string name="ledgerHardwareDevices_usedHeading">Last Used</string>
+    <string name="ledgerHardwareDevices_continueWithLedger">Continue</string>
+    <string name="ledgerHardwareDevices_subtitleNoLedgers">No Ledger devices have been added.</string>
+    <string name="ledgerHardwareDevices_subtitleSelectLedger">Choose a Ledger device to use</string>
+    <string name="ledgerHardwareDevices_subtitleAllLedgers">Here are all the Ledger devices you have added.</string>
+    <string name="ledgerHardwareDevices_subtitleFailure">Could not find Ledger devices</string>
+    <string name="displayMnemonics_cautionAlert_title">Use Caution</string>
+    <string name="displayMnemonics_cautionAlert_revealButtonLabel">Reveal Seed Phrase</string>
+    <string name="displayMnemonics_cautionAlert_message">A seed phrase provides full control of its Accounts. Do not view in a public area. Back up the seed phrase words securely. Screenshots are disabled.</string>
+    <string name="displayMnemonics_labelSeedPhraseKindOlympia">Legacy Seed Phrase</string>
+    <string name="displayMnemonics_labelSeedPhraseKind">Main Seed Phrase</string>
+    <string name="displayMnemonics_labelDateOlympia">Imported on</string>
+    <string name="displayMnemonics_labelDate">Generated on</string>
+    <string name="displayMnemonics_seedPhrases">Seed Phrases</string>
+
+
+    <string name="importLegacyWallet_scanQRCode_title">Import Legacy Olympia Accounts</string>
+    <string name="importLegacyWallet_accountsToImport_title">Import Accounts</string>
+    <string name="importLegacyWallet_accountsToImport_subtitle">The following accounts will be imported to your new wallet.</string>
+    <string name="importLegacyWallet_accountsToImport_emptyState">No accounts found to import.</string>
+    <string name="importLegacyWallet_accountsToImport_button">Import %d Accounts</string>
+    <string name="importLegacyWallet_accountsToImport_legacyAccount">Legacy Account</string>
+    <string name="importLegacyWallet_accountsToImport_ledgerAccount">Ledger (Legacy)</string>
+    <string name="importLegacyWallet_accountsToImport_newAddress">New Address</string>
+    <string name="importLegacyWallet_completion_title">Congratulations</string>
+    <string name="importLegacyWallet_completion_subtitle">You\'ve imported your accounts.</string>
+    <string name="importLegacyWallet_completion_footer">They will live on the Radix Network and you can access them anytime in your Wallet.</string>
+    <string name="importLegacyWallet_hardwareImport_title">%d of your Olympia accounts are controlled by Ledger hardware wallets.</string>
+    <string name="importLegacyWallet_hardwareImport_noLedgers">None</string>
+    <string name="importLegacyWallet_hardwareImport_subtitle">Currently known Ledgers:</string>
+    <string name="importLegacyWallet_hardwareImport_footer">%d more accounts are controlled by other devices. Connect a Ledger hardware wallet device and tap Continue.</string>
 </resources>

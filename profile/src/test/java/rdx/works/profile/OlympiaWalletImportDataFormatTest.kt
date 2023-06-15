@@ -1,11 +1,18 @@
+@file:OptIn(ExperimentalCoroutinesApi::class)
+
 package rdx.works.profile
 
-import kotlinx.serialization.decodeFromString
+import io.mockk.coEvery
+import io.mockk.mockk
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.test.runTest
 import kotlinx.serialization.json.Json
 import okio.ByteString.Companion.decodeBase64
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
+import rdx.works.profile.data.model.apppreferences.Radix
+import rdx.works.profile.domain.gateway.GetCurrentGatewayUseCase
 import rdx.works.profile.olympiaimport.OlympiaWalletDataParser
 import java.io.File
 
@@ -15,24 +22,28 @@ internal class OlympiaWalletExportFormatTest {
 
     private lateinit var testVectors: List<TestVector>
 
-    private val parser = OlympiaWalletDataParser()
+    private val getCurrentGatewayUseCase = mockk<GetCurrentGatewayUseCase>()
+
+    private val parser = OlympiaWalletDataParser(getCurrentGatewayUseCase)
 
     @Before
     fun setUp() {
+        coEvery { getCurrentGatewayUseCase() } returns Radix.Gateway("", Radix.Network.hammunet)
         val testVectorsContent = File("src/test/resources/raw/import_olympia_wallet_parse_test.json").readText()
         testVectors = json.decodeFromString(testVectorsContent)
     }
 
     @Test
-    fun `run tests for test vector`() {
-
+    fun `run tests for test vector`() = runTest {
         testVectors.forEach { testVector ->
             val parsedOlympiaAccountData = parser.parseOlympiaWalletAccountData(testVector.payloads)
             Assert.assertNotNull(parsedOlympiaAccountData)
             assert(testVector.olympiaWallet.mnemonic.split(" ").size == parsedOlympiaAccountData!!.mnemonicWordCount)
             parsedOlympiaAccountData.accountData.forEach { olympiaAccountDetail ->
                 val correspondingTestVector = testVector.olympiaWallet.accounts[olympiaAccountDetail.index]
-                assert(olympiaAccountDetail.accountName == correspondingTestVector.name.orEmpty())
+                assert(
+                    olympiaAccountDetail.accountName == correspondingTestVector.name.orEmpty()
+                        .ifEmpty { "Unnamed Olympia account ${olympiaAccountDetail.index}" })
                 val pubKeyUnwrapped = correspondingTestVector.pubKey.decodeBase64()?.hex()
                 assert(olympiaAccountDetail.publicKey == pubKeyUnwrapped)
             }
@@ -40,7 +51,7 @@ internal class OlympiaWalletExportFormatTest {
     }
 
     @Test
-    fun `incomplete payload parsing return null`() {
+    fun `incomplete payload parsing return null`() = runTest {
         val parsedData = parser.parseOlympiaWalletAccountData(testVectors[1].payloads.subList(0, 1))
         Assert.assertNull(parsedData)
     }

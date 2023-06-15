@@ -6,7 +6,6 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -44,30 +43,27 @@ fun TransactionStatusDialog(
     BottomSheetWrapper(
         onDismissRequest = dismissHandler
     ) {
-        BoxWithConstraints {
-            val heightModifier = modifier.height(maxHeight * 0.4f)
-            val dialogState = state.transactionStatus
-            AnimatedVisibility(visible = dialogState == TransactionStatus.Completing, enter = fadeIn(), exit = fadeOut()) {
-                CompletingBottomDialogContent(modifier = heightModifier)
-            }
-            AnimatedVisibility(visible = dialogState is TransactionStatus.Failed, enter = fadeIn(), exit = fadeOut()) {
-                dialogState as TransactionStatus.Failed
-                SomethingWentWrongDialog(
-                    modifier = heightModifier,
-                    onDismissRequest = dismissHandler,
-                    subtitle = dialogState.errorTextRes?.let { stringResource(id = it) }.orEmpty()
-                )
-            }
-            AnimatedVisibility(visible = state.transactionStatus == TransactionStatus.Success, enter = fadeIn(), exit = fadeOut()) {
-                TransactionStatusContent(modifier = heightModifier)
-            }
+        val dialogState = state.transactionStatus
+        AnimatedVisibility(visible = dialogState == TransactionStatus.Completing, enter = fadeIn(), exit = fadeOut()) {
+            CompletingBottomDialogContent(modifier = modifier)
+        }
+        AnimatedVisibility(visible = dialogState is TransactionStatus.Failed, enter = fadeIn(), exit = fadeOut()) {
+            dialogState as TransactionStatus.Failed
+            SomethingWentWrongDialog(
+                modifier = modifier,
+                onDismissRequest = dismissHandler,
+                subtitle = dialogState.errorTextRes?.let { stringResource(id = it) }.orEmpty()
+            )
+        }
+        AnimatedVisibility(visible = state.transactionStatus == TransactionStatus.Success, enter = fadeIn(), exit = fadeOut()) {
+            TransactionStatusContent(modifier = modifier)
         }
     }
 }
 
 @Composable
 private fun TransactionStatusContent(
-    modifier: Modifier
+    modifier: Modifier = Modifier
 ) {
     Column(
         modifier

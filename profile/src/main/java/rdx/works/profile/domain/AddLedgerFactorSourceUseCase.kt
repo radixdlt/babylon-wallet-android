@@ -18,14 +18,14 @@ class AddLedgerFactorSourceUseCase @Inject constructor(
         )
         val profile = dataSource.profile.first()
         val existingFactorSource = profile.factorSources.firstOrNull { it.id == id }
-        if (existingFactorSource != null) return LedgerAddResult.Exist(existingFactorSource.id)
+        if (existingFactorSource != null) return LedgerAddResult.Exist(existingFactorSource)
         val updatedProfile = profile.copy(factorSources = profile.factorSources + listOf(ledgerFactorSource))
         dataSource.saveProfile(updatedProfile)
-        return LedgerAddResult.Added(ledgerFactorSource.id)
+        return LedgerAddResult.Added(ledgerFactorSource)
     }
 }
 
-sealed class LedgerAddResult(open val id: FactorSource.ID) {
-    data class Added(override val id: FactorSource.ID) : LedgerAddResult(id)
-    data class Exist(override val id: FactorSource.ID) : LedgerAddResult(id)
+sealed class LedgerAddResult(open val ledgerDevice: FactorSource) {
+    data class Added(override val ledgerDevice: FactorSource) : LedgerAddResult(ledgerDevice)
+    data class Exist(override val ledgerDevice: FactorSource) : LedgerAddResult(ledgerDevice)
 }

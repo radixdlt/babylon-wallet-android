@@ -4,13 +4,14 @@ package com.babylon.wallet.android.presentation.settings.ledgerfactorsource
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
@@ -22,24 +23,29 @@ import androidx.compose.material3.Divider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
+import com.babylon.wallet.android.designsystem.composable.RadixSecondaryButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
+import com.babylon.wallet.android.domain.model.toProfileLedgerDeviceModel
+import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.model.AddLedgerSheetState
 import com.babylon.wallet.android.presentation.ui.composables.AddLedgerBottomSheet
-import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.DefaultModalSheetLayout
+import com.babylon.wallet.android.presentation.ui.composables.LedgerListItem
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
+import com.babylon.wallet.android.presentation.ui.composables.SnackbarUiMessageHandler
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.launch
@@ -57,15 +63,17 @@ fun LedgerFactorSourcesScreen(
         modifier = modifier
             .navigationBarsPadding()
             .fillMaxSize()
-            .background(RadixTheme.colors.defaultBackground),
+            .background(RadixTheme.colors.gray5),
         onBackClick = onBackClick,
         ledgerFactorSources = state.ledgerFactorSources,
-        hasP2pLinks = state.hasP2pLinks,
         onAddP2PLink = onAddP2PLink,
         onSendAddLedgerRequest = viewModel::onSendAddLedgerRequest,
         addLedgerSheetState = state.addLedgerSheetState,
         waitingForLedgerResponse = state.waitingForLedgerResponse,
-        onConfirmLedgerName = viewModel::onConfirmLedgerName
+        onConfirmLedgerName = viewModel::onConfirmLedgerName,
+        deviceModel = state.recentlyConnectedLedgerDevice?.model?.toProfileLedgerDeviceModel()?.description(),
+        uiMessage = state.uiMessage,
+        onMessageShown = viewModel::onMessageShown
     )
 }
 
@@ -75,16 +83,15 @@ private fun SettingsLinkConnectorContent(
     modifier: Modifier = Modifier,
     onBackClick: () -> Unit,
     ledgerFactorSources: ImmutableList<FactorSource>,
-    hasP2pLinks: Boolean,
     onAddP2PLink: () -> Unit,
     onSendAddLedgerRequest: () -> Unit,
     addLedgerSheetState: AddLedgerSheetState,
     waitingForLedgerResponse: Boolean,
-    onConfirmLedgerName: (String) -> Unit
+    onConfirmLedgerName: (String) -> Unit,
+    deviceModel: String?,
+    uiMessage: UiMessage?,
+    onMessageShown: () -> Unit
 ) {
-    var showNoP2pLinksDialog by remember {
-        mutableStateOf(false)
-    }
     val scope = rememberCoroutineScope()
     val bottomSheetState =
         rememberModalBottomSheetState(initialValue = ModalBottomSheetValue.Hidden, skipHalfExpanded = true)
@@ -100,71 +107,46 @@ private fun SettingsLinkConnectorContent(
             onBackClick()
         }
     }
-    DefaultModalSheetLayout(modifier = modifier, sheetState = bottomSheetState, sheetContent = {
-        AddLedgerBottomSheet(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(RadixTheme.dimensions.paddingDefault),
-            onSendAddLedgerRequest = onSendAddLedgerRequest,
-            addLedgerSheetState = addLedgerSheetState,
-            onConfirmLedgerName = {
-                onConfirmLedgerName(it)
-                closeSheetCallback()
-            },
-            waitingForLedgerResponse = waitingForLedgerResponse
-        )
-    }) {
-        Column(modifier = Modifier.fillMaxSize()) {
-            RadixCenteredTopAppBar(
-                title = stringResource(R.string.settings_ledgerHardwareWallets),
-                onBackClick = onBackClick,
-                contentColor = RadixTheme.colors.gray1
+    Box(modifier = modifier) {
+        DefaultModalSheetLayout(modifier = Modifier.fillMaxSize(), sheetState = bottomSheetState, sheetContent = {
+            AddLedgerBottomSheet(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(RadixTheme.dimensions.paddingDefault),
+                deviceModel = deviceModel,
+                onSendAddLedgerRequest = onSendAddLedgerRequest,
+                addLedgerSheetState = addLedgerSheetState,
+                onConfirmLedgerName = {
+                    onConfirmLedgerName(it)
+                    closeSheetCallback()
+                },
+                onSheetClose = { closeSheetCallback() },
+                waitingForLedgerResponse = waitingForLedgerResponse,
+                onAddP2PLink = onAddP2PLink
             )
-            Divider(color = RadixTheme.colors.gray5)
-            LedgerFactorSourcesDetails(
-                modifier = Modifier.fillMaxWidth(),
-                ledgerFactorSources = ledgerFactorSources,
-                onAddLedger = {
-                    if (hasP2pLinks) {
+        }) {
+            Column(modifier = Modifier.fillMaxSize()) {
+                RadixCenteredTopAppBar(
+                    title = stringResource(R.string.settings_ledgerHardwareWallets),
+                    onBackClick = onBackClick,
+                    contentColor = RadixTheme.colors.gray1,
+                    modifier = Modifier.background(RadixTheme.colors.defaultBackground)
+                )
+                Divider(color = RadixTheme.colors.gray5)
+                LedgerFactorSourcesDetails(
+                    modifier = Modifier.fillMaxWidth(),
+                    ledgerFactorSources = ledgerFactorSources,
+                    onAddLedger = {
                         scope.launch {
                             bottomSheetState.show()
                         }
-                    } else {
-                        showNoP2pLinksDialog = true
                     }
-                }
-            )
+                )
+            }
         }
-    }
-    if (showNoP2pLinksDialog) {
-        BasicPromptAlertDialog(
-            finish = {
-                if (it) {
-                    onAddP2PLink()
-                }
-                showNoP2pLinksDialog = false
-            },
-            title = {
-                Text(
-                    text = stringResource(
-                        id = R.string.ledgerHardwareDevices_linkConnectorAlert_title
-                    ),
-                    style = RadixTheme.typography.body2Header,
-                    color = RadixTheme.colors.gray1
-                )
-            },
-            text = {
-                Text(
-                    text = stringResource(
-                        id = R.string.ledgerHardwareDevices_linkConnectorAlert_message
-                    ),
-                    style = RadixTheme.typography.body2Regular,
-                    color = RadixTheme.colors.gray1
-                )
-            },
-            confirmText = stringResource(
-                id = R.string.ledgerHardwareDevices_linkConnectorAlert_continue
-            )
+        SnackbarUiMessageHandler(
+            message = uiMessage,
+            onMessageShown = onMessageShown
         )
     }
 }
@@ -176,75 +158,87 @@ private fun LedgerFactorSourcesDetails(
     onAddLedger: () -> Unit
 ) {
     Column(modifier, horizontalAlignment = Alignment.CenterHorizontally) {
+        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingMedium))
         Text(
             modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingDefault),
             text = stringResource(id = R.string.ledgerHardwareDevices_subtitleAllLedgers),
             style = RadixTheme.typography.body1HighImportance,
             color = RadixTheme.colors.gray2
         )
-        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
+        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXLarge))
         if (ledgerFactorSources.isNotEmpty()) {
             LedgerFactorSourcesListContent(
                 modifier = Modifier
                     .weight(1f)
                     .fillMaxWidth(),
-                ledgerFactorSources = ledgerFactorSources
+                ledgerFactorSources = ledgerFactorSources,
+                onAddLedger = onAddLedger
             )
         } else {
-            Spacer(modifier = Modifier.weight(1f))
+            Text(
+                modifier = Modifier
+                    .padding(horizontal = RadixTheme.dimensions.paddingDefault)
+                    .fillMaxWidth()
+                    .background(RadixTheme.colors.defaultBackground, RadixTheme.shapes.roundedRectSmall)
+                    .padding(RadixTheme.dimensions.paddingLarge),
+                text = stringResource(id = R.string.ledgerHardwareDevices_subtitleNoLedgers),
+                style = RadixTheme.typography.body1Header,
+                color = RadixTheme.colors.gray2,
+                overflow = TextOverflow.Ellipsis,
+                textAlign = TextAlign.Center
+            )
+            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
+            RadixPrimaryButton(
+                modifier = Modifier
+                    .fillMaxWidth(0.7f)
+                    .imePadding(),
+                onClick = onAddLedger,
+                text = stringResource(id = R.string.ledgerHardwareDevices_addNewLedger)
+            )
         }
-        RadixPrimaryButton(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(RadixTheme.dimensions.paddingMedium),
-            text = stringResource(id = R.string.ledgerHardwareDevices_addNewLedger),
-            onClick = onAddLedger,
-            throttleClicks = true
-        )
     }
 }
 
 @Composable
 private fun LedgerFactorSourcesListContent(
     modifier: Modifier = Modifier,
-    ledgerFactorSources: ImmutableList<FactorSource>
+    ledgerFactorSources: ImmutableList<FactorSource>,
+    onAddLedger: () -> Unit
 ) {
-    LazyColumn(modifier) {
+    LazyColumn(
+        modifier,
+        contentPadding = PaddingValues(horizontal = RadixTheme.dimensions.paddingDefault),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
         items(
             items = ledgerFactorSources,
             key = { factorSource: FactorSource ->
                 factorSource.id.value
             },
             itemContent = { item ->
-                FactorSourceListItem(
-                    factorSource = item
+                LedgerListItem(
+                    ledgerFactorSource = item,
+                    modifier = Modifier
+                        .shadow(elevation = 4.dp, shape = RadixTheme.shapes.roundedRectSmall)
+                        .fillMaxWidth()
+                        .background(RadixTheme.colors.defaultBackground, shape = RadixTheme.shapes.roundedRectSmall)
+                        .padding(RadixTheme.dimensions.paddingLarge),
+
                 )
+                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingMedium))
             }
         )
-    }
-}
-
-@Composable
-private fun FactorSourceListItem(
-    factorSource: FactorSource,
-    modifier: Modifier = Modifier,
-) {
-    Column(modifier = modifier) {
-        Row(
-            Modifier
-                .fillMaxWidth()
-                .padding(RadixTheme.dimensions.paddingDefault),
-            horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingSmall),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                modifier = Modifier.weight(1f),
-                text = "${factorSource.label} (${factorSource.description})",
-                style = RadixTheme.typography.body2Regular,
-                color = RadixTheme.colors.gray2
+        item {
+            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
+            RadixSecondaryButton(
+                modifier = Modifier
+                    .fillMaxWidth(0.7f)
+                    .padding(bottom = RadixTheme.dimensions.paddingMedium),
+                text = stringResource(id = R.string.ledgerHardwareDevices_addNewLedger),
+                onClick = onAddLedger,
+                throttleClicks = true
             )
         }
-        Divider(Modifier.fillMaxWidth(), color = RadixTheme.colors.gray4)
     }
 }
 
@@ -261,11 +255,13 @@ fun SettingsScreenLinkConnectorWithActiveConnectorPreview() {
                     name = "My Ledger",
                 )
             ),
-            hasP2pLinks = false,
             onAddP2PLink = {},
             onSendAddLedgerRequest = {},
             addLedgerSheetState = AddLedgerSheetState.Connect,
-            waitingForLedgerResponse = false
+            waitingForLedgerResponse = false,
+            onConfirmLedgerName = {},
+            deviceModel = null,
+            uiMessage = null
         ) {}
     }
 }

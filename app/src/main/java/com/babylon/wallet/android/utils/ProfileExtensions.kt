@@ -4,13 +4,6 @@ import com.babylon.wallet.android.data.dapp.model.AccountsRequestResponseItem
 import com.babylon.wallet.android.data.dapp.model.LedgerDeviceModel
 import rdx.works.profile.data.model.factorsources.FactorSource
 import rdx.works.profile.data.model.pernetwork.Network
-import java.time.ZoneId
-import java.time.format.DateTimeFormatter
-
-fun FactorSource.addedOnTimestampFormatted(): String {
-    val formatter = DateTimeFormatter.ofPattern(LAST_USED_PERSONA_DATE_FORMAT).withZone(ZoneId.systemDefault())
-    return formatter.format(lastUsedOn)
-}
 
 fun FactorSource.getLedgerDeviceModel(): LedgerDeviceModel? {
     return when (description) {

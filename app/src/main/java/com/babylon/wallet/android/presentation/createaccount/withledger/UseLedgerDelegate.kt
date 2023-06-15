@@ -11,36 +11,30 @@ import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.UUIDGenerator
 import rdx.works.profile.data.model.factorsources.FactorSource
 import rdx.works.profile.domain.AddLedgerFactorSourceUseCase
 import rdx.works.profile.domain.GetProfileUseCase
-import rdx.works.profile.domain.LedgerAddResult
 import rdx.works.profile.domain.factorSource
-import rdx.works.profile.domain.ledgerFactorSources
 import rdx.works.profile.domain.p2pLinks
 
-class CreateLedgerDelegate(
+class UseLedgerDelegate(
     private val getProfileUseCase: GetProfileUseCase,
     private val ledgerMessenger: LedgerMessenger,
     private val addLedgerFactorSourceUseCase: AddLedgerFactorSourceUseCase,
-    private val scope: CoroutineScope
-) : Stateful<CreateLedgerDelegate.CreateLedgerDelegateState>() {
+    private val scope: CoroutineScope,
+    private val onUseLedger: suspend (FactorSource) -> Unit
+) : Stateful<UseLedgerDelegate.UseLedgerDelegateState>() {
 
     init {
         scope.launch {
-            combine(getProfileUseCase.ledgerFactorSources, getProfileUseCase.p2pLinks) { factorSources, p2pLinks ->
-                factorSources to p2pLinks.isNotEmpty()
-            }.collect { factorSourcesToP2pLinksExist ->
+            getProfileUseCase.p2pLinks.collect { p2pLinks ->
                 _state.update { state ->
                     state.copy(
-                        ledgerFactorSources = factorSourcesToP2pLinksExist.first.toPersistentList(),
-                        hasP2pLinks = factorSourcesToP2pLinksExist.second,
-                        selectedFactorSourceID = state.selectedFactorSourceID ?: factorSourcesToP2pLinksExist.first.firstOrNull()?.id,
-                        addLedgerSheetState = if (factorSourcesToP2pLinksExist.second) {
+                        hasP2pLinks = p2pLinks.isNotEmpty(),
+                        addLedgerSheetState = if (p2pLinks.isNotEmpty()) {
                             AddLedgerSheetState.Connect
                         } else {
                             AddLedgerSheetState.LinkConnector
@@ -48,16 +42,6 @@ class CreateLedgerDelegate(
                     )
                 }
             }
-        }
-    }
-
-    fun onSkipLedgerName() {
-        addLedgerFactorSource()
-    }
-
-    fun onLedgerFactorSourceSelected(ledgerFactorSource: FactorSource) {
-        _state.update { state ->
-            state.copy(selectedFactorSourceID = ledgerFactorSource.id)
         }
     }
 
@@ -79,11 +63,11 @@ class CreateLedgerDelegate(
                     _state.update { state ->
                         state.copy(
                             addLedgerSheetState = AddLedgerSheetState.Connect,
-                            uiMessage = UiMessage.InfoMessage.LedgerAlreadyExist(existing.label),
-                            recentlyConnectedLedgerDevice = LedgerDeviceUiModel(response.deviceId, response.model, name = existing.label),
-                            waitingForLedgerResponse = false
+                            waitingForLedgerResponse = false,
+                            usedLedgerFactorSources = (state.usedLedgerFactorSources + existing).distinct().toPersistentList()
                         )
                     }
+                    onUseLedger(existing)
                 }
             }
             result.onFailure { error ->
@@ -95,22 +79,18 @@ class CreateLedgerDelegate(
     private fun addLedgerFactorSource() {
         scope.launch {
             state.value.recentlyConnectedLedgerDevice?.let { ledger ->
-                val ledgerAddResult = addLedgerFactorSourceUseCase(
+                val result = addLedgerFactorSourceUseCase(
                     id = FactorSource.ID(ledger.id),
                     model = ledger.model.toProfileLedgerDeviceModel(),
                     name = ledger.name
                 )
-                val message: UiMessage? = when (ledgerAddResult) {
-                    is LedgerAddResult.Exist -> UiMessage.InfoMessage.LedgerAlreadyExist(ledgerAddResult.ledgerDevice.label)
-                    else -> null
-                }
                 _state.update { state ->
                     state.copy(
-                        selectedFactorSourceID = ledgerAddResult.ledgerDevice.id,
                         addLedgerSheetState = AddLedgerSheetState.Connect,
-                        uiMessage = message
+                        usedLedgerFactorSources = (state.usedLedgerFactorSources + result.ledgerDevice).toPersistentList()
                     )
                 }
+                onUseLedger(result.ledgerDevice)
             }
         }
     }
@@ -122,10 +102,9 @@ class CreateLedgerDelegate(
         addLedgerFactorSource()
     }
 
-    data class CreateLedgerDelegateState(
+    data class UseLedgerDelegateState(
         val loading: Boolean = false,
-        val ledgerFactorSources: ImmutableList<FactorSource> = persistentListOf(),
-        val selectedFactorSourceID: FactorSource.ID? = null,
+        val usedLedgerFactorSources: ImmutableList<FactorSource> = persistentListOf(),
         val hasP2pLinks: Boolean = false,
         val addLedgerSheetState: AddLedgerSheetState = AddLedgerSheetState.Connect,
         val waitingForLedgerResponse: Boolean = false,
@@ -133,7 +112,7 @@ class CreateLedgerDelegate(
         val uiMessage: UiMessage? = null
     ) : UiState
 
-    override fun initialState(): CreateLedgerDelegateState {
-        return CreateLedgerDelegateState()
+    override fun initialState(): UseLedgerDelegateState {
+        return UseLedgerDelegateState()
     }
 }
