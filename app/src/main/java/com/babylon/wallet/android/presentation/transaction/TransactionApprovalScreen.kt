@@ -42,7 +42,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
-import com.babylon.wallet.android.data.transaction.SigningState
 import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
 import com.babylon.wallet.android.designsystem.composable.RadixTextButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
@@ -50,7 +49,6 @@ import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.domain.model.DAppWithMetadataAndAssociatedResources
 import com.babylon.wallet.android.presentation.common.FullscreenCircularProgressContent
-import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.dapp.authorized.account.AccountItemUiModel
 import com.babylon.wallet.android.presentation.settings.dappdetail.DAppDetailsSheetContent
 import com.babylon.wallet.android.presentation.transaction.composables.ConnectedDAppsContent

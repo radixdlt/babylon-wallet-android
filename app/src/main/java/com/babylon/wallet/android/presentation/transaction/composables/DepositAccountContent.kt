@@ -125,7 +125,7 @@ fun DepositAccountContentPreview() {
             depositAccountsMap =
             persistentMapOf(
                 "account_tdx_19jd32jd3928jd3892jd329"
-                        to
+                    to
                         listOf(
                             TransactionAccountItemUiModel(
                                 address = "account_tdx_19jd32jd3928jd3892jd329",
