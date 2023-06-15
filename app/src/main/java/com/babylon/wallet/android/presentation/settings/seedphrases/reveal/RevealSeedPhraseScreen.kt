@@ -72,7 +72,8 @@ fun RevealSeedPhraseScreen(
             .fillMaxSize()
             .background(RadixTheme.colors.defaultBackground),
         state.mnemonicWords,
-        state.passphrase
+        state.passphrase,
+        state.seedPhraseWordsPerLine
     )
     if (showWarningDialog) {
         BasicPromptAlertDialog(
@@ -128,7 +129,8 @@ private fun RevealSeedPhraseContent(
     onBackClick: () -> Unit,
     modifier: Modifier = Modifier,
     mnemonicWords: PersistentList<PersistentList<String>>,
-    passphrase: String
+    passphrase: String,
+    seedPhraseWordsPerLine: Int
 ) {
     Column(
         modifier = Modifier.background(RadixTheme.colors.defaultBackground),
@@ -156,7 +158,12 @@ private fun RevealSeedPhraseContent(
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
             }
             itemsIndexed(mnemonicWords) { outerIndex, wordsChunk ->
-                SeedPhraseRow(modifier = Modifier.fillMaxWidth(), wordsChunk = wordsChunk, outerIndex = outerIndex)
+                SeedPhraseRow(
+                    modifier = Modifier.fillMaxWidth(),
+                    wordsChunk = wordsChunk,
+                    seedPhraseWordsPerLine = seedPhraseWordsPerLine,
+                    outerIndex = outerIndex
+                )
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
             }
             if (passphrase.isNotEmpty()) {
@@ -173,8 +180,7 @@ private fun RevealSeedPhraseContent(
 }
 
 @Composable
-private fun SeedPhraseRow(wordsChunk: ImmutableList<String>, outerIndex: Int, modifier: Modifier = Modifier) {
-    val chunkSize = 3
+private fun SeedPhraseRow(wordsChunk: ImmutableList<String>, outerIndex: Int, seedPhraseWordsPerLine: Int, modifier: Modifier = Modifier) {
     Row(
         modifier,
         verticalAlignment = Alignment.CenterVertically,
@@ -183,7 +189,7 @@ private fun SeedPhraseRow(wordsChunk: ImmutableList<String>, outerIndex: Int, mo
         wordsChunk.forEachIndexed { index, word ->
             SingleWord(
                 modifier = Modifier.weight(1f),
-                label = stringResource(id = R.string.revealSeedPhrase_wordLabel, outerIndex * chunkSize + index + 1),
+                label = stringResource(id = R.string.revealSeedPhrase_wordLabel, outerIndex * seedPhraseWordsPerLine + index + 1),
                 word = word
             )
         }
@@ -223,7 +229,8 @@ fun RevealSeedPhrasePreview() {
                 persistentListOf("zoo", "zoo", "zoo"),
                 persistentListOf("zoo", "zoo", "zoo")
             ),
-            passphrase = "test phrase"
+            passphrase = "test phrase",
+            seedPhraseWordsPerLine = 3
         )
     }
 }

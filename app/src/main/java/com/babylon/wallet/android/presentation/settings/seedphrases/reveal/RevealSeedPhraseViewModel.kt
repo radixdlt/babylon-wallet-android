@@ -58,7 +58,8 @@ class RevealSeedPhraseViewModel @Inject constructor(
     data class State(
         val mnemonicWords: PersistentList<PersistentList<String>> = persistentListOf(),
         val passphrase: String = "",
-        val backedUp: Boolean = false
+        val backedUp: Boolean = false,
+        val seedPhraseWordsPerLine: Int = 3
     ) : UiState
 
     sealed interface Effect : OneOffEvent {
