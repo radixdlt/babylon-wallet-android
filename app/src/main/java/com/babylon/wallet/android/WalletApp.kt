@@ -3,8 +3,6 @@ package com.babylon.wallet.android
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.remember
-import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
@@ -19,13 +17,8 @@ import com.babylon.wallet.android.presentation.status.dapp.dappInteractionDialog
 import com.babylon.wallet.android.presentation.status.transaction.transactionStatusDialog
 import com.babylon.wallet.android.presentation.transaction.transactionApproval
 import com.babylon.wallet.android.utils.AppEvent
-import com.babylon.wallet.android.utils.AppEventBus
 import com.google.accompanist.navigation.animation.rememberAnimatedNavController
-import dagger.hilt.EntryPoint
-import dagger.hilt.EntryPoints
-import dagger.hilt.InstallIn
-import dagger.hilt.components.SingletonComponent
-import kotlinx.coroutines.flow.filterIsInstance
+import kotlinx.coroutines.flow.Flow
 
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
@@ -35,7 +28,6 @@ fun WalletApp(
     onCloseApp: () -> Unit
 ) {
     val navController = rememberAnimatedNavController()
-    val appEventBus = rememberAppEventBus()
     NavigationHost(
         startDestination = MAIN_ROUTE,
         navController = navController,
@@ -66,7 +58,10 @@ fun WalletApp(
         }
     }
 
-    HandleStatusEvents(navController = navController, appEventBus = appEventBus)
+    HandleStatusEvents(
+        navController = navController,
+        statusEvents = mainViewModel.statusEvents
+    )
     ObserveHighPriorityScreens(
         navController = navController,
         onLowPriorityScreen = mainViewModel::onLowPriorityScreen,
@@ -76,9 +71,9 @@ fun WalletApp(
 }
 
 @Composable
-fun HandleStatusEvents(navController: NavController, appEventBus: AppEventBus) {
+fun HandleStatusEvents(navController: NavController, statusEvents: Flow<AppEvent.Status>) {
     LaunchedEffect(Unit) {
-        appEventBus.events.filterIsInstance<AppEvent.Status>().collect { event ->
+        statusEvents.collect { event ->
             when (event) {
                 is AppEvent.Status.Transaction -> {
                     navController.transactionStatusDialog(event)
@@ -106,20 +101,4 @@ fun ObserveHighPriorityScreens(
             }
         }
     }
-}
-
-@Composable
-private fun rememberAppEventBus(): AppEventBus {
-    val context = LocalContext.current.applicationContext
-    val entryPoint = remember(context) {
-        EntryPoints.get(context, WalletEntryPoint::class.java)
-    }
-
-    return entryPoint.appEventBus
-}
-
-@EntryPoint
-@InstallIn(SingletonComponent::class)
-interface WalletEntryPoint {
-    val appEventBus: AppEventBus
 }

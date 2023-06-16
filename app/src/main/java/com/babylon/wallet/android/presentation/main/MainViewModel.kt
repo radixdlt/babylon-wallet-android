@@ -21,6 +21,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.WhileSubscribed
 import kotlinx.coroutines.flow.cancellable
+import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.shareIn
@@ -66,6 +67,10 @@ class MainViewModel @Inject constructor(
             viewModelScope,
             SharingStarted.WhileSubscribed(PEERDROID_STOP_TIMEOUT) // TODO https://radixdlt.atlassian.net/browse/ABW-1421
         )
+
+    val statusEvents = appEventBus
+        .events
+        .filterIsInstance<AppEvent.Status>()
 
     init {
         viewModelScope.launch {
