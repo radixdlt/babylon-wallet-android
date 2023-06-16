@@ -238,6 +238,14 @@
   <string name="importLegacyWallet_hardwareImport_noLedgers">None</string>
   <string name="importLegacyWallet_hardwareImport_subtitle">Currently known Ledgers:</string>
   <string name="importLegacyWallet_hardwareImport_footer">%d more accounts are controlled by other devices. Connect a Ledger hardware wallet device and tap Continue.</string>
+  <string name="importLegacyWallet_seedPhrase_title">Verify With Your Seed Phrase</string>
+  <string name="importLegacyWallet_seedPhrase_subtitle">To complete importing your accounts, please view your seed phrase in the Radix Desktop Wallet and enter the words here.</string>
+  <string name="importLegacyWallet_seedPhrase_warning">This is a one-time process to import your accounts. Never give your seed phrase to anyone for any reason.</string>
+  <string name="importLegacyWallet_seedPhrase_wordLabel">Word %d</string>
+  <string name="importLegacyWallet_seedPhrase_regularMode">Regular Mode</string>
+  <string name="importLegacyWallet_seedPhrase_advancedMode">Advanced Mode</string>
+  <string name="importLegacyWallet_seedPhrase_passphraseHint">Optional BIP39 Passphrase. This is not your wallet password, and the Radix Desktop Wallet did not use a BIP39 passphrase. This is only to support import from other wallets that may have used one.</string>
+  <string name="importLegacyWallet_seedPhrase_passphraseLabel">Passphrase</string>
   <string name="createAccount_completion_explanation">Your Account lives on the Radix Network and you can access it any time in your Radix Wallet.</string>
   <string name="createAccount_completion_subtitleFirst">You’ve created your first Account!</string>
   <string name="createAccount_completion_subtitleNotFirst">Your Account has been created.</string>
