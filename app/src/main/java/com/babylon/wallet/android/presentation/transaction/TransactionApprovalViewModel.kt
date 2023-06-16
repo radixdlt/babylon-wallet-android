@@ -63,6 +63,7 @@ import kotlinx.coroutines.launch
 import rdx.works.core.decodeHex
 import rdx.works.profile.domain.gateway.GetCurrentGatewayUseCase
 import timber.log.Timber
+import java.lang.Exception
 import java.math.BigDecimal
 import javax.inject.Inject
 
@@ -441,18 +442,9 @@ class TransactionApprovalViewModel @Inject constructor(
             _state.value.manifestData?.let { manifestData ->
                 val currentNetworkId = getCurrentGatewayUseCase().network.networkId().value
                 if (currentNetworkId != manifestData.networkId) {
-                    val failure = DappRequestFailure.WrongNetwork(currentNetworkId, manifestData.networkId)
-                    if (!transactionWriteRequest.isInternal) {
-                        dAppMessenger.sendWalletInteractionResponseFailure(
-                            dappId = transactionWriteRequest.dappId,
-                            requestId = args.requestId,
-                            error = failure.toWalletErrorType(),
-                            message = failure.getDappMessage()
-                        )
-                    }
-                    sendEvent(TransactionApprovalEvent.Dismiss)
-                    incomingRequestRepository.requestHandled(args.requestId)
                     approvalJob = null
+                    val failure = DappRequestFailure.WrongNetwork(currentNetworkId, manifestData.networkId)
+                    dismissTransaction(failure = failure)
                 } else {
                     _state.update { it.copy(isLoading = true) }
                     val txManifest = TransactionManifest(
@@ -573,22 +565,11 @@ class TransactionApprovalViewModel @Inject constructor(
         }
 
         approvalJob = null
-        incomingRequestRepository.requestHandled(args.requestId)
     }
 
     fun onBackClick() {
         viewModelScope.launch {
-            if (approvalJob == null) {
-                if (!transactionWriteRequest.isInternal) {
-                    dAppMessenger.sendWalletInteractionResponseFailure(
-                        dappId = transactionWriteRequest.dappId,
-                        requestId = args.requestId,
-                        error = WalletErrorType.RejectedByUser
-                    )
-                }
-                incomingRequestRepository.requestHandled(args.requestId)
-                sendEvent(TransactionApprovalEvent.Dismiss)
-            }
+            dismissTransaction(DappRequestFailure.RejectedByUser)
         }
     }
 
@@ -710,6 +691,23 @@ class TransactionApprovalViewModel @Inject constructor(
 
     fun onMessageShown() {
         _state.update { it.copy(error = null) }
+    }
+
+    private suspend fun dismissTransaction(failure: DappRequestFailure) {
+        if (approvalJob == null) {
+            if (!transactionWriteRequest.isInternal) {
+                dAppMessenger.sendWalletInteractionResponseFailure(
+                    dappId = transactionWriteRequest.dappId,
+                    requestId = args.requestId,
+                    error = failure.toWalletErrorType(),
+                    message = failure.getDappMessage()
+                )
+            }
+            sendEvent(TransactionApprovalEvent.Dismiss)
+            incomingRequestRepository.requestHandled(args.requestId)
+        } else {
+            Timber.d("Cannot dismiss transaction while is in progress")
+        }
     }
 }
 
