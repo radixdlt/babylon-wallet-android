@@ -104,8 +104,6 @@ class TransactionStatusDialogViewModel @Inject constructor(
                 )
             )
         }
-
-        incomingRequestRepository.requestHandled(status.requestId)
     }
 
     fun onDismiss() {

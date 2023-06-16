@@ -89,9 +89,13 @@ fun TransactionApprovalScreen(
         initialValue = ModalBottomSheetValue.Hidden,
         skipHalfExpanded = true
     )
-    BackHandler(enabled = modalBottomSheetState.isVisible) {
-        scope.launch {
-            modalBottomSheetState.hide()
+    BackHandler {
+        if (modalBottomSheetState.isVisible) {
+            scope.launch {
+                modalBottomSheetState.hide()
+            }
+        } else {
+            viewModel.onBackClick()
         }
     }
     TransactionPreviewContent(
