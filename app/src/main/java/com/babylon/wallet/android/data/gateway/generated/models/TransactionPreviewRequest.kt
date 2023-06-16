@@ -24,14 +24,13 @@ import kotlinx.serialization.SerialName
  * @param manifest A text-representation of a transaction manifest
  * @param startEpochInclusive An integer between `0` and `10^10`, marking the epoch at which the transaction starts being valid
  * @param endEpochExclusive An integer between `0` and `10^10`, marking the epoch at which the transaction is no longer valid
- * @param costUnitLimit An integer between `0` and `2^32 - 1`, giving the maximum number of cost units available for transaction execution
  * @param tipPercentage An integer between `0` and `255`, giving the validator tip as a percentage amount. A value of `1` corresponds to 1% of the fee.
  * @param nonce A decimal-string-encoded integer between `0` and `2^64 - 1`, used to ensure the transaction intent is unique.
  * @param signerPublicKeys A list of public keys to be used as transaction signers
  * @param flags 
  * @param blobsHex An array of hex-encoded blob data (optional)
  * @param notaryPublicKey 
- * @param notaryAsSignatory Whether the notary should count as a signatory (optional, default false)
+ * @param notaryIsSignatory Whether the notary should count as a signatory (optional, default false)
  */
 @Serializable
 
@@ -49,17 +48,13 @@ data class TransactionPreviewRequest (
     @SerialName(value = "end_epoch_exclusive")
     val endEpochExclusive: kotlin.Long,
 
-    /* An integer between `0` and `2^32 - 1`, giving the maximum number of cost units available for transaction execution */
-    @SerialName(value = "cost_unit_limit")
-    val costUnitLimit: kotlin.Long,
-
     /* An integer between `0` and `255`, giving the validator tip as a percentage amount. A value of `1` corresponds to 1% of the fee. */
     @SerialName(value = "tip_percentage")
     val tipPercentage: kotlin.Int,
 
     /* A decimal-string-encoded integer between `0` and `2^64 - 1`, used to ensure the transaction intent is unique. */
     @SerialName(value = "nonce")
-    val nonce: kotlin.String,
+    val nonce: kotlin.Long,
 
     /* A list of public keys to be used as transaction signers */
     @SerialName(value = "signer_public_keys")
@@ -76,8 +71,8 @@ data class TransactionPreviewRequest (
     val notaryPublicKey: PublicKey? = null,
 
     /* Whether the notary should count as a signatory (optional, default false) */
-    @SerialName(value = "notary_as_signatory")
-    val notaryAsSignatory: kotlin.Boolean? = null
+    @SerialName(value = "notary_is_signatory")
+    val notaryIsSignatory: kotlin.Boolean? = null
 
 )
 

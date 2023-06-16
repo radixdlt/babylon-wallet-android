@@ -27,6 +27,7 @@ import kotlinx.serialization.Contextual
  * @param receiptStateChanges 
  * @param receiptFeeSummary 
  * @param receiptEvents 
+ * @param affectedGlobalEntities 
  */
 @Serializable
 
@@ -42,7 +43,10 @@ data class TransactionCommittedDetailsOptIns (
     val receiptFeeSummary: kotlin.Boolean? = null,
 
     @SerialName(value = "receipt_events")
-    val receiptEvents: kotlin.Boolean? = null
+    val receiptEvents: kotlin.Boolean? = null,
+
+    @SerialName(value = "affected_global_entities")
+    val affectedGlobalEntities: kotlin.Boolean? = null
 
 )
 
