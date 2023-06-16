@@ -139,6 +139,7 @@ fun AddLedgerBottomSheet(
                             .fillMaxWidth()
                             .imePadding(),
                         text = stringResource(com.babylon.wallet.android.R.string.addLedger_nameLedger_continueButtonTitle),
+                        enabled = ledgerNameValue.trim().isNotEmpty(),
                         onClick = {
                             onConfirmLedgerName(ledgerNameValue)
                             ledgerNameValue = ""
