@@ -304,8 +304,6 @@ fun TransferContent(
 
                 items(state.targetAccounts.size) { index ->
                     val targetAccount = state.targetAccounts[index]
-
-                    val focusManager = LocalFocusManager.current
                     TargetAccountCard(
                         onChooseAccountClick = {
                             focusManager.clearFocus()
