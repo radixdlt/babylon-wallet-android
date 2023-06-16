@@ -104,6 +104,8 @@ class TransactionStatusDialogViewModel @Inject constructor(
                 )
             )
         }
+
+        incomingRequestRepository.requestHandled(status.requestId)
     }
 
     fun onDismiss() {
@@ -118,6 +120,7 @@ class TransactionStatusDialogViewModel @Inject constructor(
         _state.update { it.copy(isIgnoreTransactionModalShowing = false) }
         viewModelScope.launch {
             sendEvent(Event.DismissDialog)
+            incomingRequestRepository.requestHandled(state.value.status.requestId)
         }
     }
 
