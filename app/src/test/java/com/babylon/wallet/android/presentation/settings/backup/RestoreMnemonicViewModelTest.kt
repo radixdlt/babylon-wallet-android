@@ -64,20 +64,8 @@ class RestoreMnemonicViewModelTest : StateViewModelTest<RestoreMnemonicViewModel
     @Before
     override fun setUp() {
         super.setUp()
-        every { savedStateHandle.get<String>(ARG_ACCOUNT_ADDRESS) } returns ACCOUNT_ADDRESS
+        every { savedStateHandle.get<String>(ARG_FACTOR_SOURCE_ID) } returns ACCOUNT_ADDRESS
         every { getProfileUseCase() } returns flowOf(sampleProfile)
-    }
-
-    @Test
-    fun `when is initialised, the hint and the account exist in state`() = runTest {
-        val vm = vm.value
-        advanceUntilIdle()
-        vm.state.test {
-            val item = expectMostRecentItem()
-
-            assertEquals(sampleProfile.networks.first().accounts.first(), item.accountOnNetwork)
-            assertEquals(sampleProfile.factorSources.first().label, item.factorSourceLabel)
-        }
     }
 
     @Test

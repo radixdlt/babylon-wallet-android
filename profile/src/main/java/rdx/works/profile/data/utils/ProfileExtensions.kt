@@ -9,10 +9,6 @@ import rdx.works.profile.data.model.pernetwork.SecurityState
 import rdx.works.profile.derivation.model.KeyType
 import rdx.works.profile.derivation.model.NetworkId
 
-fun Network.Account.unsecuredFactorSourceId(): FactorSource.ID? {
-    return (securityState as? SecurityState.Unsecured)?.unsecuredEntityControl?.transactionSigning?.factorSourceId
-}
-
 fun Network.Account.isOlympiaAccount(): Boolean {
     return (securityState as? SecurityState.Unsecured)?.unsecuredEntityControl
         ?.transactionSigning?.publicKey?.curve == Slip10Curve.SECP_256K1

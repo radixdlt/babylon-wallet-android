@@ -12,15 +12,15 @@ import androidx.navigation.navArgument
 import com.google.accompanist.navigation.animation.composable
 
 @VisibleForTesting
-internal const val ARG_ACCOUNT_ADDRESS = "account_address"
-private const val ROUTE_RESTORE_MNEMONIC = "restore_mnemonic/{$ARG_ACCOUNT_ADDRESS}"
+internal const val ARG_FACTOR_SOURCE_ID = "factor_source_id"
+private const val ROUTE_RESTORE_MNEMONIC = "restore_mnemonic/{$ARG_FACTOR_SOURCE_ID}"
 
 internal class RestoreMnemonicArgs(savedStateHandle: SavedStateHandle) {
-    val accountAddress: String = checkNotNull(savedStateHandle[ARG_ACCOUNT_ADDRESS])
+    val factorSourceId: String = checkNotNull(savedStateHandle[ARG_FACTOR_SOURCE_ID])
 }
 
-fun NavController.restoreMnemonic(accountAddress: String) {
-    navigate(route = "restore_mnemonic/$accountAddress")
+fun NavController.restoreMnemonic(factorSourceId: String) {
+    navigate(route = "restore_mnemonic/$factorSourceId")
 }
 
 @OptIn(ExperimentalAnimationApi::class)
@@ -30,7 +30,7 @@ fun NavGraphBuilder.restoreMnemonicScreen(
     composable(
         route = ROUTE_RESTORE_MNEMONIC,
         arguments = listOf(
-            navArgument(ARG_ACCOUNT_ADDRESS) {
+            navArgument(ARG_FACTOR_SOURCE_ID) {
                 type = NavType.StringType
                 nullable = false
             }

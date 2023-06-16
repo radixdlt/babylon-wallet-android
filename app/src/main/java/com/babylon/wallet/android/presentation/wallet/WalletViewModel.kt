@@ -26,7 +26,6 @@ import rdx.works.profile.data.model.factorsources.FactorSourceKind
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.data.utils.factorSourceId
 import rdx.works.profile.data.utils.isOlympiaAccount
-import rdx.works.profile.data.utils.unsecuredFactorSourceId
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.accountOnCurrentNetwork
 import rdx.works.profile.domain.accountsOnCurrentNetwork
@@ -130,7 +129,7 @@ class WalletViewModel @Inject constructor(
 
     fun onApplyMnemonicBackup(account: Network.Account) {
         viewModelScope.launch {
-            getProfileUseCase.accountOnCurrentNetwork(account.address)?.unsecuredFactorSourceId()?.let {
+            getProfileUseCase.accountOnCurrentNetwork(account.address)?.factorSourceId()?.let {
                 sendEvent(WalletEvent.NavigateToMnemonicBackup(it))
             }
         }

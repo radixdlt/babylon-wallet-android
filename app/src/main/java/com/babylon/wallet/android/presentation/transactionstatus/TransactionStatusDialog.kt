@@ -1,8 +1,5 @@
 package com.babylon.wallet.android.presentation.transactionstatus
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -43,20 +40,14 @@ fun TransactionStatusDialog(
     BottomSheetWrapper(
         onDismissRequest = dismissHandler
     ) {
-        val dialogState = state.transactionStatus
-        AnimatedVisibility(visible = dialogState == TransactionStatus.Completing, enter = fadeIn(), exit = fadeOut()) {
-            CompletingBottomDialogContent(modifier = modifier)
-        }
-        AnimatedVisibility(visible = dialogState is TransactionStatus.Failed, enter = fadeIn(), exit = fadeOut()) {
-            dialogState as TransactionStatus.Failed
-            SomethingWentWrongDialog(
+        when (val dialogState = state.transactionStatus) {
+            TransactionStatus.Completing -> CompletingBottomDialogContent(modifier = modifier)
+            is TransactionStatus.Failed -> SomethingWentWrongDialog(
                 modifier = modifier,
                 onDismissRequest = dismissHandler,
                 subtitle = dialogState.errorTextRes?.let { stringResource(id = it) }.orEmpty()
             )
-        }
-        AnimatedVisibility(visible = state.transactionStatus == TransactionStatus.Success, enter = fadeIn(), exit = fadeOut()) {
-            TransactionStatusContent(modifier = modifier)
+            TransactionStatus.Success -> TransactionStatusContent(modifier = modifier)
         }
     }
 }

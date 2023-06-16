@@ -597,4 +597,17 @@ Install the Connector extension, open it to see the linking QR code, and tap con
     <string name="displayMnemonics_labelDateOlympia">Imported on</string>
     <string name="displayMnemonics_labelDate">Generated on</string>
     <string name="displayMnemonics_seedPhrases">Seed Phrases</string>
+
+  <string name="displayMnemonics_connectedAccountsLabel_one">Connected to %d account</string>
+  <string name="displayMnemonics_connectedAccountsLabel_many">Connected to %d accounts</string>
+  <string name="displayMnemonics_seedPhraseSecurityInfo">You are responsible for the security of your Seed Phrase</string>
+  <string name="displayMnemonics_backUpWarning">Back up this Seed Phrase</string>
+  <string name="revealSeedPhrase_title">Reveal Seed Phrase</string>
+  <string name="revealSeedPhrase_subtitle">For your safety, make sure no one is looking at your screen. Taking a screen shot has been disabled.</string>
+  <string name="revealSeedPhrase_wordLabel">Word %d</string>
+  <string name="revealSeedPhrase_passphrase">Passphrase</string>
+  <string name="revealSeedPhrase_warningDialog_title">Use Caution</string>
+  <string name="revealSeedPhrase_warningDialog_subtitle">Are you sure you have backed up your seed phrase?</string>
+  <string name="revealSeedPhrase_warningDialog_confirmButton">I have backed up this seed phrase</string>
+
 </resources>
