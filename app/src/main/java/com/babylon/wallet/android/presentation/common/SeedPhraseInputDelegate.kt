@@ -11,7 +11,6 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.mapWhen
-import timber.log.Timber
 
 class SeedPhraseInputDelegate(
     private val scope: CoroutineScope
@@ -20,7 +19,6 @@ class SeedPhraseInputDelegate(
     private var debounceJob: Job? = null
 
     fun setSeedPhraseSize(size: Int) {
-        Timber.d("Seed phrase: init")
         _state.update { state ->
             state.copy(
                 seedPhraseWords = (0 until size).map {
