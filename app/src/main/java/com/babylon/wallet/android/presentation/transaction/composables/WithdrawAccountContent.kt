@@ -51,7 +51,7 @@ fun WithdrawAccountContent(
                 TransactionAccountCard(
                     appearanceId = accountEntry.value.first().appearanceID,
                     tokens = accountEntry.value.toPersistentList(),
-                    address = accountEntry.value.first().address,
+                    address = accountEntry.value.first().accountAddress,
                     accountName = accountEntry.value.first().displayName
                 )
 
@@ -76,7 +76,7 @@ fun WithdrawAccountContentPreview() {
                     to
                         listOf(
                             TransactionAccountItemUiModel(
-                                address = "account_tdx_19jd32jd3928jd3892jd329",
+                                accountAddress = "account_tdx_19jd32jd3928jd3892jd329",
                                 displayName = "My Savings Account",
                                 tokenSymbol = "XRD",
                                 tokenAmount = "689.203",

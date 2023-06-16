@@ -465,7 +465,7 @@ fun TransactionPreviewContentPreview() {
                     ),
                     withdrawingAccounts = persistentListOf(
                         TransactionAccountItemUiModel(
-                            address = "account_tdx_19jd32jd3928jd3892jd329",
+                            accountAddress = "account_tdx_19jd32jd3928jd3892jd329",
                             displayName = "My Savings Account",
                             tokenSymbol = "XRD",
                             tokenAmount = "689.203",
@@ -478,7 +478,7 @@ fun TransactionPreviewContentPreview() {
                     ),
                     depositingAccounts = persistentListOf(
                         TransactionAccountItemUiModel(
-                            address = "account_tdx_19jd32jd3928jd3892jd329",
+                            accountAddress = "account_tdx_19jd32jd3928jd3892jd329",
                             displayName = "My Savings Account",
                             tokenSymbol = "XRD",
                             tokenAmount = "689.203",
@@ -489,7 +489,7 @@ fun TransactionPreviewContentPreview() {
                             guaranteedPercentAmount = "100"
                         ),
                         TransactionAccountItemUiModel(
-                            address = "account_tdx_19jd32jd3928jd3892jd39",
+                            accountAddress = "account_tdx_19jd32jd3928jd3892jd39",
                             displayName = "My second Savings Account",
                             tokenSymbol = "XRD",
                             tokenAmount = "689.203",

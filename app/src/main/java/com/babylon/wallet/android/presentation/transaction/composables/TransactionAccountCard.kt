@@ -264,7 +264,7 @@ fun TransactionAccountCardPreview() {
         TransactionAccountCard(
             tokens = persistentListOf(
                 TransactionAccountItemUiModel(
-                    address = "account_tdx_19jd32jd3928jd3892jd329",
+                    accountAddress = "account_tdx_19jd32jd3928jd3892jd329",
                     displayName = "My Savings Account",
                     tokenSymbol = "XRD",
                     tokenAmount = "689.203",

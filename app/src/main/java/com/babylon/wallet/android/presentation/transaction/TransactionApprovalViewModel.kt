@@ -264,7 +264,7 @@ class TransactionApprovalViewModel @Inject constructor(
             }
 
             TransactionAccountItemUiModel(
-                address = accountWithResource?.account?.address.orEmpty(),
+                accountAddress = accountWithResource?.account?.address.orEmpty(),
                 displayName = accountWithResource?.account?.displayName.orEmpty(),
                 appearanceID = accountWithResource?.account?.appearanceID ?: 0,
                 tokenAmount = amount,
@@ -345,7 +345,7 @@ class TransactionApprovalViewModel @Inject constructor(
                     val instructionIndex = accountDeposit.instructionIndex.toInt()
 
                     TransactionAccountItemUiModel(
-                        address = accountWithResource?.account?.address.orEmpty(),
+                        accountAddress = accountWithResource?.account?.address.orEmpty(),
                         displayName = accountWithResource?.account?.displayName.orEmpty(),
                         appearanceID = accountWithResource?.account?.appearanceID ?: 0,
                         tokenSymbol = tokenSymbol,
@@ -416,7 +416,7 @@ class TransactionApprovalViewModel @Inject constructor(
                     }
 
                     TransactionAccountItemUiModel(
-                        address = accountWithResource?.account?.address.orEmpty(),
+                        accountAddress = accountWithResource?.account?.address.orEmpty(),
                         displayName = accountWithResource?.account?.displayName.orEmpty(),
                         appearanceID = accountWithResource?.account?.appearanceID ?: 0,
                         tokenSymbol = tokenSymbol,
@@ -669,7 +669,7 @@ class TransactionApprovalViewModel @Inject constructor(
             }
 
         currentDepositingAccounts.map { previewAccountUiModel ->
-            if (previewAccountUiModel.address == guaranteePair.second.address &&
+            if (previewAccountUiModel.accountAddress == guaranteePair.second.address &&
                 previewAccountUiModel.index == guaranteePair.second.index
             ) {
                 val fungibleResource = previewAccountUiModel.fungibleResource?.copy(
@@ -677,7 +677,7 @@ class TransactionApprovalViewModel @Inject constructor(
                 )
 
                 previewAccountUiModel.copy(
-                    address = previewAccountUiModel.address,
+                    accountAddress = previewAccountUiModel.accountAddress,
                     displayName = previewAccountUiModel.displayName,
                     appearanceID = previewAccountUiModel.appearanceID,
                     tokenSymbol = previewAccountUiModel.tokenSymbol,
@@ -726,7 +726,7 @@ class TransactionApprovalViewModel @Inject constructor(
 }
 
 data class TransactionAccountItemUiModel(
-    val address: String,
+    val accountAddress: String,
     val displayName: String,
     val appearanceID: Int,
     val tokenSymbol: String? = null,
@@ -767,7 +767,7 @@ fun List<TransactionAccountItemUiModel>.toGuaranteesAccountsUiModel(): Immutable
             val fungibleItem = transactionAccountItemUiModel.fungibleResource
             fungibleItem?.let { item ->
                 GuaranteesAccountItemUiModel(
-                    address = transactionAccountItemUiModel.address,
+                    address = transactionAccountItemUiModel.accountAddress,
                     appearanceID = transactionAccountItemUiModel.appearanceID,
                     displayName = transactionAccountItemUiModel.displayName,
                     tokenSymbol = item.displayTitle,
@@ -779,7 +779,7 @@ fun List<TransactionAccountItemUiModel>.toGuaranteesAccountsUiModel(): Immutable
                 )
             } ?: run {
                 GuaranteesAccountItemUiModel(
-                    address = transactionAccountItemUiModel.address,
+                    address = transactionAccountItemUiModel.accountAddress,
                     appearanceID = transactionAccountItemUiModel.appearanceID,
                     displayName = transactionAccountItemUiModel.displayName,
                     tokenSymbol = transactionAccountItemUiModel.tokenSymbol.orEmpty(),
@@ -819,12 +819,12 @@ data class TransactionUiState(
 
     val depositingAccountsMap: ImmutableMap<String, List<TransactionAccountItemUiModel>>
         get() = depositingAccounts.groupBy {
-            it.address
+            it.accountAddress
         }.toPersistentMap()
 
     val withdrawingAccountsMap: ImmutableMap<String, List<TransactionAccountItemUiModel>>
         get() = withdrawingAccounts.groupBy {
-            it.address
+            it.accountAddress
         }.toPersistentMap()
 }
 
