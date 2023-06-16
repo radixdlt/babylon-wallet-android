@@ -105,7 +105,6 @@ fun CreateAccountConfirmationContent(
         )
         Spacer(Modifier.weight(0.6f))
         RadixPrimaryButton(
-            modifier = Modifier.fillMaxWidth(),
             text = stringResource(
                 id = when (requestSource) {
                     CreateAccountRequestSource.AccountsList -> R.string.createEntity_completion_destinationChooseAccounts
@@ -114,7 +113,8 @@ fun CreateAccountConfirmationContent(
                     CreateAccountRequestSource.Gateways -> R.string.createEntity_completion_destinationGateways
                 }
             ),
-            onClick = accountConfirmed
+            onClick = accountConfirmed,
+            modifier = Modifier.fillMaxWidth()
         )
     }
     BackHandler(enabled = true) { }

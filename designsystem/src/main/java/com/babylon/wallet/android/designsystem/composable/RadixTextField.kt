@@ -45,7 +45,8 @@ fun RadixTextField(
     singleLine: Boolean = false,
     onFocusChanged: ((FocusState) -> Unit)? = null,
     keyboardActions: KeyboardActions = KeyboardActions.Default,
-    keyboardOptions: KeyboardOptions = KeyboardOptions.Default
+    keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
+    errorFixedSize: Boolean = false
 ) {
     Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingXSmall)) {
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
@@ -101,7 +102,8 @@ fun RadixTextField(
                 singleLine = singleLine,
                 textStyle = RadixTheme.typography.body1Regular,
                 keyboardActions = keyboardActions,
-                keyboardOptions = keyboardOptions
+                keyboardOptions = keyboardOptions,
+
             )
             iconToTheRight?.let { icon ->
                 Box {
@@ -109,18 +111,20 @@ fun RadixTextField(
                 }
             }
         }
-        if (error != null) {
+        if (error != null || errorFixedSize) {
             Row(
                 horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingXSmall),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Icon(
-                    modifier = Modifier.size(14.dp),
-                    painter = painterResource(id = R.drawable.ic_warning_error),
-                    contentDescription = null,
-                    tint = RadixTheme.colors.red1
-                )
-                Text(text = error, style = RadixTheme.typography.body2Regular, color = RadixTheme.colors.red1)
+                if (error != null) {
+                    Icon(
+                        modifier = Modifier.size(14.dp),
+                        painter = painterResource(id = R.drawable.ic_warning_error),
+                        contentDescription = null,
+                        tint = RadixTheme.colors.red1
+                    )
+                }
+                Text(text = error.orEmpty(), style = RadixTheme.typography.body2Regular, color = RadixTheme.colors.red1)
             }
         } else {
             optionalHint?.let { hint ->

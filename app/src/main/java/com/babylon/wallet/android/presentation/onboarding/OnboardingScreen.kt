@@ -173,9 +173,9 @@ private fun OnboardingScreenContent(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 RadixPrimaryButton(
-                    modifier = Modifier.fillMaxWidth(),
                     text = stringResource(id = R.string.onboarding_newUser),
-                    onClick = onProceedClick
+                    onClick = onProceedClick,
+                    modifier = Modifier.fillMaxWidth()
                 )
                 RadixTextButton(
                     text = stringResource(id = R.string.onboarding_restoreFromBackup),

@@ -94,9 +94,9 @@ fun CreatePersonaConfirmationContent(
         )
         Spacer(Modifier.weight(0.6f))
         RadixPrimaryButton(
-            modifier = Modifier.fillMaxWidth(),
             text = stringResource(R.string.createEntity_completion_destinationChoosePersonas),
-            onClick = personaConfirmed
+            onClick = personaConfirmed,
+            modifier = Modifier.fillMaxWidth()
         )
     }
     BackHandler(enabled = true) { }

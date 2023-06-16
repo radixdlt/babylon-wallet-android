@@ -202,10 +202,7 @@ fun CreatePersonaContent(
             Spacer(modifier = Modifier.height(dimensions.paddingDefault))
             Divider(color = RadixTheme.colors.gray5)
             RadixPrimaryButton(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(dimensions.paddingDefault)
-                    .imePadding(),
+                text = stringResource(id = R.string.createPersona_saveAndContinueButtonTitle),
                 onClick = {
                     if (isDeviceSecure) {
                         context.findFragmentActivity()?.let { activity ->
@@ -219,8 +216,11 @@ fun CreatePersonaContent(
                         showNotSecuredDialog = true
                     }
                 },
-                enabled = continueButtonEnabled,
-                text = stringResource(id = R.string.createPersona_saveAndContinueButtonTitle)
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(dimensions.paddingDefault)
+                    .imePadding(),
+                enabled = continueButtonEnabled
             )
             if (showNotSecuredDialog) {
                 NotSecureAlertDialog(finish = {

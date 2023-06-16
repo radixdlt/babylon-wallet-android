@@ -101,13 +101,13 @@ fun GuaranteesSheet(
             item {
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
                 RadixPrimaryButton(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = RadixTheme.dimensions.paddingDefault),
                     text = stringResource(id = com.babylon.wallet.android.R.string.transactionReview_guarantees_applyButtonText),
                     onClick = {
                         onApplyClick()
                     },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = RadixTheme.dimensions.paddingDefault),
                     enabled = true
                 )
             }

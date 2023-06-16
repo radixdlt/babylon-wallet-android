@@ -135,15 +135,15 @@ fun AddLedgerBottomSheet(
                     )
                     Spacer(modifier = Modifier.weight(1f))
                     RadixPrimaryButton(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .imePadding(),
                         text = stringResource(com.babylon.wallet.android.R.string.addLedgerDevice_nameLedger_continueButtonTitle),
                         enabled = ledgerNameValue.trim().isNotEmpty(),
                         onClick = {
                             onConfirmLedgerName(ledgerNameValue)
                             ledgerNameValue = ""
-                        }
+                        },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .imePadding()
                     )
                 }
 

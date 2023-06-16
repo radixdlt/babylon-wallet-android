@@ -42,10 +42,12 @@ class RestoreMnemonicViewModelTest : StateViewModelTest<RestoreMnemonicViewModel
         networks = listOf(
             Network(
                 networkID = Radix.Gateway.default.network.id,
-                accounts = listOf(sampleDataProvider.sampleAccount(
-                    address = ACCOUNT_ADDRESS,
-                    factorSourceId = FactorSource.factorSourceId(mnemonicWithPassphrase = mnemonicWithPassphrase)
-                )),
+                accounts = listOf(
+                    sampleDataProvider.sampleAccount(
+                        address = ACCOUNT_ADDRESS,
+                        factorSourceId = FactorSource.factorSourceId(mnemonicWithPassphrase = mnemonicWithPassphrase)
+                    )
+                ),
                 personas = listOf(),
                 authorizedDapps = listOf()
             )
@@ -72,51 +74,92 @@ class RestoreMnemonicViewModelTest : StateViewModelTest<RestoreMnemonicViewModel
     @Test
     fun `when user types mnemonic, the words array is filled correctly`() = runTest {
         val vm = vm.value
-        vm.onMnemonicWordsTyped("zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo vote    ")
-        advanceUntilIdle()
+
+        (0 until SeedPhraseLength.TWENTY_FOUR.words).forEach {
+            vm.onWordChanged(it, "zoo")
+            advanceUntilIdle()
+        }
         vm.state.test {
             val item = expectMostRecentItem()
 
-            assertEquals("zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo vote ", item.wordsPhrase)
-            assertTrue(item.isSubmitButtonEnabled)
+            assertEquals(
+                "zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo",
+                item.wordsPhrase
+            )
+            assertTrue(item.seedPhraseValid)
         }
     }
 
     @Test
     fun `when words are typed, the button is enabled only on valid word counts`() = runTest {
-
-
         val vm = vm.value
         advanceUntilIdle()
         vm.state.test {
-            vm.onMnemonicWordsTyped("zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo vote")
-            assertTrue(expectMostRecentItem().isSubmitButtonEnabled)
-            vm.onMnemonicWordsTyped("zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo")
-            assertFalse(expectMostRecentItem().isSubmitButtonEnabled)
+            vm.onChangeSeedPhraseLength(SeedPhraseLength.TWENTY_FOUR)
+            (0 until SeedPhraseLength.TWENTY_FOUR.words).forEach {
+                vm.onWordChanged(it, "zoo")
+                advanceUntilIdle()
+            }
+            assertTrue(expectMostRecentItem().seedPhraseValid)
+            vm.onChangeSeedPhraseLength(SeedPhraseLength.TWENTY_FOUR)
+            (0 until SeedPhraseLength.TWENTY_FOUR.words - 1).forEach {
+                vm.onWordChanged(it, "zoo")
+                advanceUntilIdle()
+            }
+            assertFalse(expectMostRecentItem().seedPhraseValid)
 
             vm.onChangeSeedPhraseLength(SeedPhraseLength.TWELVE)
-            vm.onMnemonicWordsTyped("zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo")
-            assertTrue(expectMostRecentItem().isSubmitButtonEnabled)
-            vm.onMnemonicWordsTyped("zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo")
-            assertFalse(expectMostRecentItem().isSubmitButtonEnabled)
+            (0 until SeedPhraseLength.TWELVE.words).forEach {
+                vm.onWordChanged(it, "zoo")
+                advanceUntilIdle()
+            }
+            assertTrue(expectMostRecentItem().seedPhraseValid)
+            vm.onChangeSeedPhraseLength(SeedPhraseLength.FIFTEEN)
+            (0 until SeedPhraseLength.FIFTEEN.words - 1).forEach {
+                vm.onWordChanged(it, "zoo")
+                advanceUntilIdle()
+            }
+            assertFalse(expectMostRecentItem().seedPhraseValid)
 
             vm.onChangeSeedPhraseLength(SeedPhraseLength.FIFTEEN)
-            vm.onMnemonicWordsTyped("zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo")
-            assertTrue(expectMostRecentItem().isSubmitButtonEnabled)
-            vm.onMnemonicWordsTyped("zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo")
-            assertFalse(expectMostRecentItem().isSubmitButtonEnabled)
+            (0 until SeedPhraseLength.FIFTEEN.words).forEach {
+                vm.onWordChanged(it, "zoo")
+                advanceUntilIdle()
+            }
+            assertTrue(expectMostRecentItem().seedPhraseValid)
+            vm.onChangeSeedPhraseLength(SeedPhraseLength.FIFTEEN)
+            (0 until SeedPhraseLength.FIFTEEN.words - 1).forEach {
+                vm.onWordChanged(it, "zoo")
+                advanceUntilIdle()
+            }
+            assertFalse(expectMostRecentItem().seedPhraseValid)
 
             vm.onChangeSeedPhraseLength(SeedPhraseLength.EIGHTEEN)
-            vm.onMnemonicWordsTyped("zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo")
-            assertTrue(expectMostRecentItem().isSubmitButtonEnabled)
-            vm.onMnemonicWordsTyped("zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo")
-            assertFalse(expectMostRecentItem().isSubmitButtonEnabled)
+            (0 until SeedPhraseLength.EIGHTEEN.words).forEach {
+                vm.onWordChanged(it, "zoo")
+                advanceUntilIdle()
+            }
+            assertTrue(expectMostRecentItem().seedPhraseValid)
+            vm.onChangeSeedPhraseLength(SeedPhraseLength.EIGHTEEN)
+            (0 until SeedPhraseLength.EIGHTEEN.words - 1).forEach {
+                vm.onWordChanged(it, "zoo")
+                advanceUntilIdle()
+            }
+            assertFalse(expectMostRecentItem().seedPhraseValid)
 
             vm.onChangeSeedPhraseLength(SeedPhraseLength.TWENTY_ONE)
-            vm.onMnemonicWordsTyped("zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo")
-            assertTrue(expectMostRecentItem().isSubmitButtonEnabled)
-            vm.onMnemonicWordsTyped("zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo")
-            assertFalse(expectMostRecentItem().isSubmitButtonEnabled)
+            (0 until SeedPhraseLength.TWENTY_ONE.words).forEach {
+                vm.onWordChanged(it, "zoo")
+                advanceUntilIdle()
+            }
+            assertTrue(expectMostRecentItem().seedPhraseValid)
+            vm.onChangeSeedPhraseLength(SeedPhraseLength.TWENTY_ONE)
+            (0 until SeedPhraseLength.TWENTY_ONE.words - 1).forEach {
+                vm.onWordChanged(it, "zoo")
+                advanceUntilIdle()
+            }
+            assertFalse(expectMostRecentItem().seedPhraseValid)
+
         }
     }
 

@@ -327,12 +327,12 @@ private fun ConnectorNameInput(
         )
         Spacer(modifier = Modifier.size(RadixTheme.dimensions.paddingMedium))
         RadixPrimaryButton(
+            text = stringResource(id = R.string.linkedConnectors_nameNewConnector_saveLinkButtonTitle),
+            onClick = onLinkNewConnectorClick,
             modifier = Modifier
                 .fillMaxWidth()
                 .imePadding()
                 .padding(horizontal = RadixTheme.dimensions.paddingMedium),
-            text = stringResource(id = R.string.linkedConnectors_nameNewConnector_saveLinkButtonTitle),
-            onClick = onLinkNewConnectorClick,
             enabled = buttonEnabled
         )
     }

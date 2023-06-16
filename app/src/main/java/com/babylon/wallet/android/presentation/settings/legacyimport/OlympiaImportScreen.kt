@@ -9,6 +9,7 @@ package com.babylon.wallet.android.presentation.settings.legacyimport
 
 import android.Manifest
 import androidx.activity.compose.BackHandler
+import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -16,9 +17,11 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
@@ -28,12 +31,15 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.ModalBottomSheetValue
 import androidx.compose.material.rememberModalBottomSheetState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -44,8 +50,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -55,7 +64,6 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
 import com.babylon.wallet.android.designsystem.composable.RadixSecondaryButton
-import com.babylon.wallet.android.designsystem.composable.RadixTextField
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.designsystem.theme.getAccountGradientColorsFor
@@ -69,9 +77,12 @@ import com.babylon.wallet.android.presentation.ui.composables.AccountCardWithSta
 import com.babylon.wallet.android.presentation.ui.composables.AddLedgerBottomSheet
 import com.babylon.wallet.android.presentation.ui.composables.BackIconType
 import com.babylon.wallet.android.presentation.ui.composables.DefaultModalSheetLayout
+import com.babylon.wallet.android.presentation.ui.composables.InfoLink
 import com.babylon.wallet.android.presentation.ui.composables.LedgerListItem
 import com.babylon.wallet.android.presentation.ui.composables.NotSecureAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
+import com.babylon.wallet.android.presentation.ui.composables.SeedPhraseInputForm
+import com.babylon.wallet.android.presentation.ui.composables.SeedPhraseSuggestions
 import com.babylon.wallet.android.presentation.ui.composables.SimpleAccountCard
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUiMessageHandler
 import com.babylon.wallet.android.presentation.ui.modifier.applyIf
@@ -81,6 +92,7 @@ import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
+import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flow
@@ -110,9 +122,9 @@ fun OlympiaImportScreen(
         onImportAccounts = viewModel::onImportAccounts,
         onCloseScreen = onCloseScreen,
         importButtonEnabled = state.importButtonEnabled,
-        seedPhrase = state.seedPhrase,
+        seedPhraseWords = state.seedPhraseWords,
         bip39Passphrase = state.bip39Passphrase,
-        onSeedPhraseChanged = viewModel::onSeedPhraseChanged,
+        onWordChanged = viewModel::onWordChanged,
         onPassphraseChanged = viewModel::onPassphraseChanged,
         importSoftwareAccountsEnabled = state.importSoftwareAccountsEnabled,
         onImportSoftwareAccounts = viewModel::onImportSoftwareAccounts,
@@ -132,7 +144,8 @@ fun OlympiaImportScreen(
         addLedgerSheetState = state.addLedgerSheetState,
         onSendAddLedgerRequest = viewModel::onSendAddLedgerRequest,
         deviceModel = state.recentlyConnectedLedgerDevice?.model?.toProfileLedgerDeviceModel()?.value,
-        totalHardwareAccounts = state.totalHardwareAccounts
+        totalHardwareAccounts = state.totalHardwareAccounts,
+        wordAutocompleteCandidates = state.wordAutocompleteCandidates
     )
 }
 
@@ -148,9 +161,9 @@ private fun OlympiaImportContent(
     onImportAccounts: () -> Unit,
     onCloseScreen: () -> Unit,
     importButtonEnabled: Boolean,
-    seedPhrase: String,
+    seedPhraseWords: ImmutableList<SeedPhraseWord>,
     bip39Passphrase: String,
-    onSeedPhraseChanged: (String) -> Unit,
+    onWordChanged: (Int, String) -> Unit,
     onPassphraseChanged: (String) -> Unit,
     importSoftwareAccountsEnabled: Boolean,
     onImportSoftwareAccounts: () -> Unit,
@@ -170,16 +183,17 @@ private fun OlympiaImportContent(
     addLedgerSheetState: AddLedgerSheetState,
     onSendAddLedgerRequest: () -> Unit,
     deviceModel: String?,
-    totalHardwareAccounts: Int
+    totalHardwareAccounts: Int,
+    wordAutocompleteCandidates: ImmutableList<String>
 ) {
+    val focusManager = LocalFocusManager.current
     val cameraPermissionState = rememberPermissionState(permission = Manifest.permission.CAMERA)
     val pagerState = rememberPagerState()
     val scope = rememberCoroutineScope()
     var cameraVisible by remember {
         mutableStateOf(false)
     }
-    val bottomSheetState =
-        rememberModalBottomSheetState(initialValue = ModalBottomSheetValue.Hidden, skipHalfExpanded = true)
+    val bottomSheetState = rememberModalBottomSheetState(initialValue = ModalBottomSheetValue.Hidden, skipHalfExpanded = true)
     val closeSheetCallback = {
         scope.launch {
             bottomSheetState.hide()
@@ -231,8 +245,13 @@ private fun OlympiaImportContent(
                         showNotSecuredDialog = true
                     }
                 }
+
                 OlympiaImportEvent.UseLedger -> {
                     closeSheetCallback()
+                }
+
+                OlympiaImportEvent.MoveFocusToNextWord -> {
+                    focusManager.moveFocus(FocusDirection.Next)
                 }
             }
         }
@@ -246,27 +265,23 @@ private fun OlympiaImportContent(
         })
     }
     Box(modifier = modifier) {
-        DefaultModalSheetLayout(
-            modifier = Modifier.fillMaxSize(),
-            sheetState = bottomSheetState,
-            sheetContent = {
-                AddLedgerBottomSheet(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(RadixTheme.dimensions.paddingDefault),
-                    deviceModel = deviceModel,
-                    onSendAddLedgerRequest = onSendAddLedgerRequest,
-                    addLedgerSheetState = addLedgerSheetState,
-                    onConfirmLedgerName = {
-                        onConfirmLedgerName(it)
-                        closeSheetCallback()
-                    },
-                    onSheetClose = { closeSheetCallback() },
-                    waitingForLedgerResponse = waitingForLedgerResponse,
-                    onAddP2PLink = onAddP2PLink
-                )
-            }
-        ) {
+        DefaultModalSheetLayout(modifier = Modifier.fillMaxSize(), sheetState = bottomSheetState, sheetContent = {
+            AddLedgerBottomSheet(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(RadixTheme.dimensions.paddingDefault),
+                deviceModel = deviceModel,
+                onSendAddLedgerRequest = onSendAddLedgerRequest,
+                addLedgerSheetState = addLedgerSheetState,
+                onConfirmLedgerName = {
+                    onConfirmLedgerName(it)
+                    closeSheetCallback()
+                },
+                onSheetClose = { closeSheetCallback() },
+                waitingForLedgerResponse = waitingForLedgerResponse,
+                onAddP2PLink = onAddP2PLink
+            )
+        }) {
             Column(modifier = Modifier.fillMaxSize()) {
                 RadixCenteredTopAppBar(
                     title = stringResource(R.string.empty),
@@ -303,17 +318,16 @@ private fun OlympiaImportContent(
                         }
 
                         ImportPage.MnemonicInput -> {
-                            InputMnemonicPage(
-                                modifier = Modifier
-                                    .fillMaxSize()
-                                    .padding(RadixTheme.dimensions.paddingDefault),
-                                seedPhrase = seedPhrase,
+                            InputSeedPhrasePage(
+                                modifier = Modifier.fillMaxSize(),
+                                seedPhraseWords = seedPhraseWords,
                                 bip39Passphrase = bip39Passphrase,
-                                onSeedPhraseChanged = onSeedPhraseChanged,
+                                onWordChanged = onWordChanged,
                                 onPassphraseChanged = onPassphraseChanged,
                                 importSoftwareAccountsEnabled = importSoftwareAccountsEnabled,
                                 onImportSoftwareAccounts = onImportSoftwareAccounts,
-                                onMnemonicAlreadyImported = onMnemonicAlreadyImported
+                                onMnemonicAlreadyImported = onMnemonicAlreadyImported,
+                                wordAutocompleteCandidates = wordAutocompleteCandidates
                             )
                         }
 
@@ -486,11 +500,11 @@ private fun AccountListPage(
             }
         }
         RadixPrimaryButton(
+            text = stringResource(R.string.importLegacyWallet_accountsToImport_button, olympiaAccounts.size),
+            onClick = onImportAccounts,
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(RadixTheme.dimensions.paddingDefault),
-            text = stringResource(R.string.importLegacyWallet_accountsToImport_button, olympiaAccounts.size),
-            onClick = onImportAccounts,
             enabled = importButtonEnabled,
             throttleClicks = true
         )
@@ -557,12 +571,9 @@ private fun HardwareImportScreen(
                         contentPadding = PaddingValues(horizontal = RadixTheme.dimensions.paddingDefault),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        items(
-                            items = ledgerFactorSources,
-                            key = { item ->
-                                item.id.body.value
-                            },
-                            itemContent = { item ->
+                        items(items = ledgerFactorSources, key = { item ->
+                            item.id.body.value
+                        }, itemContent = { item ->
                                 LedgerListItem(
                                     ledgerFactorSource = item,
                                     modifier = Modifier
@@ -572,8 +583,7 @@ private fun HardwareImportScreen(
                                         .padding(RadixTheme.dimensions.paddingLarge),
                                 )
                                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingMedium))
-                            }
-                        )
+                            })
                         item {
                             AccountsLeftText(accountsLeft)
                         }
@@ -581,11 +591,11 @@ private fun HardwareImportScreen(
                 }
             }
             RadixPrimaryButton(
+                text = stringResource(id = R.string.ledgerHardwareDevices_continueWithLedger),
+                onClick = onUseLedger,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .imePadding(),
-                onClick = onUseLedger,
-                text = stringResource(id = R.string.ledgerHardwareDevices_continueWithLedger)
+                    .imePadding()
             )
         }
         if (waitingForLedgerResponse) {
@@ -670,55 +680,112 @@ private fun ImportCompletePage(
             }
         }
         RadixPrimaryButton(
-            modifier = Modifier
-                .fillMaxWidth(),
             text = stringResource(R.string.common_continue),
             onClick = onContinue,
+            modifier = Modifier.fillMaxWidth(),
             throttleClicks = true
         )
     }
 }
 
 @Composable
-private fun InputMnemonicPage(
+private fun InputSeedPhrasePage(
     modifier: Modifier = Modifier,
-    seedPhrase: String,
+    seedPhraseWords: ImmutableList<SeedPhraseWord>,
     bip39Passphrase: String,
-    onSeedPhraseChanged: (String) -> Unit,
+    onWordChanged: (Int, String) -> Unit,
     onPassphraseChanged: (String) -> Unit,
     importSoftwareAccountsEnabled: Boolean,
     onImportSoftwareAccounts: () -> Unit,
-    onMnemonicAlreadyImported: () -> Unit
+    onMnemonicAlreadyImported: () -> Unit,
+    wordAutocompleteCandidates: ImmutableList<String>
 ) {
-    Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingDefault)) {
-        RadixTextField(
-            modifier = Modifier.fillMaxWidth(),
-            onValueChanged = onSeedPhraseChanged,
-            value = seedPhrase,
-            leftLabel = stringResource(id = R.string.importOlympiaAccounts_seedPhrase),
-            hint = stringResource(id = R.string.importOlympiaAccounts_seedPhrase),
-        )
-        RadixTextField(
-            modifier = Modifier.fillMaxWidth(),
-            onValueChanged = onPassphraseChanged,
-            value = bip39Passphrase,
-            leftLabel = stringResource(id = R.string.importOlympiaAccounts_bip39passphrase),
-            hint = stringResource(id = R.string.importOlympiaAccounts_passphrase),
-        )
-        RadixPrimaryButton(
-            modifier = Modifier.fillMaxWidth(),
-            text = stringResource(R.string.importOlympiaAccounts_importLabel),
-            onClick = onImportSoftwareAccounts,
-            enabled = importSoftwareAccountsEnabled,
-            throttleClicks = true
-        )
-        RadixSecondaryButton(
-            modifier = Modifier.fillMaxWidth(),
-            text = stringResource(R.string.importOlympiaAccounts_alreadyImported),
-            onClick = onMnemonicAlreadyImported,
-            enabled = importSoftwareAccountsEnabled,
-            throttleClicks = true
-        )
+    var focusedWordIndex by remember {
+        mutableStateOf<Int?>(null)
+    }
+    val density = LocalDensity.current
+    val imeInsets = WindowInsets.ime
+    val kbVisible by remember {
+        derivedStateOf { imeInsets.getBottom(density) > 0 }
+    }
+    val stripHeight by animateDpAsState(
+        targetValue = if (wordAutocompleteCandidates.isNotEmpty() && kbVisible) {
+            candidatesStripHeight
+        } else {
+            0.dp
+        }
+    )
+    Box(modifier = modifier) {
+        Column(
+            modifier = Modifier
+                .imePadding()
+                .padding(bottom = stripHeight)
+                .verticalScroll(rememberScrollState())
+                .fillMaxSize()
+                .padding(RadixTheme.dimensions.paddingDefault),
+            verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingDefault)
+        ) {
+            Text(
+                text = stringResource(id = R.string.importLegacyWallet_seedPhrase_title),
+                style = RadixTheme.typography.title,
+                color = RadixTheme.colors.gray1,
+                textAlign = TextAlign.Center
+            )
+            Text(
+                text = stringResource(id = R.string.importLegacyWallet_seedPhrase_subtitle),
+                style = RadixTheme.typography.body1Regular,
+                color = RadixTheme.colors.gray1,
+                overflow = TextOverflow.Ellipsis,
+                textAlign = TextAlign.Center
+            )
+            InfoLink(
+                modifier = Modifier.fillMaxWidth(),
+                text = stringResource(R.string.importLegacyWallet_seedPhrase_warning),
+                contentColor = RadixTheme.colors.orange1,
+                iconRes = com.babylon.wallet.android.designsystem.R.drawable.ic_warning_error
+            )
+            SeedPhraseInputForm(
+                seedPhraseWords = seedPhraseWords,
+                onWordChanged = onWordChanged,
+                onPassphraseChanged = onPassphraseChanged,
+                bip39Passphrase = bip39Passphrase,
+                modifier = Modifier.fillMaxWidth(),
+                onFocusedWordIndexChanged = {
+                    focusedWordIndex = it
+                }
+            )
+            RadixPrimaryButton(
+                text = stringResource(R.string.importOlympiaAccounts_importLabel),
+                onClick = onImportSoftwareAccounts,
+                modifier = Modifier.fillMaxWidth(),
+                enabled = importSoftwareAccountsEnabled,
+                throttleClicks = true
+            )
+            RadixSecondaryButton(
+                modifier = Modifier.fillMaxWidth(),
+                text = stringResource(R.string.importOlympiaAccounts_alreadyImported),
+                onClick = onMnemonicAlreadyImported,
+                enabled = importSoftwareAccountsEnabled,
+                throttleClicks = true
+            )
+        }
+        if (wordAutocompleteCandidates.isNotEmpty() && kbVisible) {
+            SeedPhraseSuggestions(
+                wordAutocompleteCandidates = wordAutocompleteCandidates,
+                modifier = Modifier
+                    .imePadding()
+                    .align(Alignment.BottomCenter)
+                    .fillMaxWidth()
+                    .height(candidatesStripHeight)
+                    .padding(RadixTheme.dimensions.paddingSmall),
+                onCandidateClick = { candidate ->
+                    focusedWordIndex?.let {
+                        onWordChanged(it, candidate)
+                        focusedWordIndex = null
+                    }
+                }
+            )
+        }
     }
 }
 
@@ -735,9 +802,9 @@ fun SettingsScreenLinkConnectorWithoutActiveConnectorPreview() {
             onImportAccounts = {},
             onCloseScreen = {},
             importButtonEnabled = false,
-            seedPhrase = "test",
+            seedPhraseWords = (0 until 12).map { SeedPhraseWord(it) }.toPersistentList(),
             bip39Passphrase = "test",
-            onSeedPhraseChanged = {},
+            onWordChanged = { _, _ -> },
             onPassphraseChanged = {},
             importSoftwareAccountsEnabled = false,
             onImportSoftwareAccounts = {},
@@ -757,7 +824,27 @@ fun SettingsScreenLinkConnectorWithoutActiveConnectorPreview() {
             addLedgerSheetState = AddLedgerSheetState.Connect,
             onSendAddLedgerRequest = {},
             deviceModel = null,
-            totalHardwareAccounts = 2
+            totalHardwareAccounts = 2,
+            wordAutocompleteCandidates = persistentListOf()
         )
     }
 }
+
+@Preview(showBackground = true)
+@Composable
+fun InputSeedPhrasePagePreview() {
+    RadixWalletTheme {
+        InputSeedPhrasePage(
+            seedPhraseWords = (0 until 12).map { SeedPhraseWord(it) }.toPersistentList(),
+            bip39Passphrase = "test",
+            onWordChanged = { _, _ -> },
+            onPassphraseChanged = {},
+            importSoftwareAccountsEnabled = false,
+            onImportSoftwareAccounts = {},
+            onMnemonicAlreadyImported = {},
+            wordAutocompleteCandidates = persistentListOf()
+        )
+    }
+}
+
+private val candidatesStripHeight = 56.dp

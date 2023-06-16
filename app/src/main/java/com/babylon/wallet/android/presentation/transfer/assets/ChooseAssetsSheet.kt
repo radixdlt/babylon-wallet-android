@@ -75,15 +75,15 @@ fun ChooseAssetsSheet(
                 Divider(color = RadixTheme.colors.gray5)
 
                 RadixPrimaryButton(
-                    modifier = Modifier
-                        .padding(RadixTheme.dimensions.paddingDefault)
-                        .fillMaxWidth(),
                     text = when (val count = state.assetsSelectedCount) {
                         0 -> stringResource(id = R.string.assetTransfer_addAssets_buttonAssetsNone)
                         1 -> stringResource(id = R.string.assetTransfer_addAssets_buttonAssetsOne)
                         else -> stringResource(id = R.string.assetTransfer_addAssets_buttonAssets, count)
                     },
                     onClick = onChooseAssetsSubmitted,
+                    modifier = Modifier
+                        .padding(RadixTheme.dimensions.paddingDefault)
+                        .fillMaxWidth(),
                     enabled = state.isSubmitEnabled
                 )
             }

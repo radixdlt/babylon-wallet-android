@@ -115,13 +115,13 @@ private fun CreatePersonaInfoContent(
             )
             Spacer(Modifier.weight(1f))
             RadixPrimaryButton(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .imePadding(),
-                onClick = onContinueClick,
                 text = stringResource(
                     id = com.babylon.wallet.android.R.string.createPersona_introduction_continue
-                )
+                ),
+                onClick = onContinueClick,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .imePadding()
             )
         }
     }

@@ -205,12 +205,12 @@ private fun PersonaDataOngoingPermissionContent(
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSmall))
         Divider(color = RadixTheme.colors.gray5)
         RadixPrimaryButton(
+            text = stringResource(id = R.string.dAppRequest_personalDataPermission_continue),
+            onClick = onContinueClick,
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(RadixTheme.dimensions.paddingDefault),
-            onClick = onContinueClick,
-            enabled = continueButtonEnabled,
-            text = stringResource(id = R.string.dAppRequest_personalDataPermission_continue)
+            enabled = continueButtonEnabled
         )
     }
 }

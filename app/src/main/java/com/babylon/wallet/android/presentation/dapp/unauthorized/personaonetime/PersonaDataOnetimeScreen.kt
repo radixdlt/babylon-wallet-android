@@ -222,11 +222,11 @@ private fun PersonaDataOnetimeContent(
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSmall))
         Divider(color = RadixTheme.colors.gray5)
         RadixPrimaryButton(
+            text = stringResource(id = R.string.dAppRequest_personalDataOneTime_continue),
+            onClick = onContinueClick,
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(RadixTheme.dimensions.paddingDefault),
-            onClick = onContinueClick,
-            text = stringResource(id = R.string.dAppRequest_personalDataOneTime_continue),
             enabled = continueButtonEnabled
         )
     }

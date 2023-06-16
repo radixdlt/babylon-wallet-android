@@ -167,9 +167,9 @@ private fun LoginPermissionContent(
             )
             Spacer(modifier = Modifier.weight(0.5f))
             RadixPrimaryButton(
-                modifier = Modifier.fillMaxWidth(),
+                text = stringResource(id = R.string.dAppRequest_accountPermission_continue),
                 onClick = onContinueClick,
-                text = stringResource(id = R.string.dAppRequest_accountPermission_continue)
+                modifier = Modifier.fillMaxWidth()
             )
         }
     }
