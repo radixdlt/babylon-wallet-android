@@ -49,7 +49,7 @@ class IncomingRequestRepositoryImpl @Inject constructor() : IncomingRequestRepos
 
     override suspend fun add(incomingRequest: IncomingRequest) {
         mutex.withLock {
-            if (listOfIncomingRequests.isEmpty() && (isFreeToHandleRequests || incomingRequest.isInternal)) {
+            if (incomingRequest.isInternal || (listOfIncomingRequests.isEmpty() && isFreeToHandleRequests)) {
                 _currentRequestToHandle.emit(incomingRequest)
             }
             listOfIncomingRequests.putIfAbsent(incomingRequest.id, incomingRequest)
