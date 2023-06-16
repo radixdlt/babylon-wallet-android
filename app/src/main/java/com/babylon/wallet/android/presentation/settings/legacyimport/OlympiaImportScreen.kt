@@ -81,6 +81,7 @@ import com.babylon.wallet.android.presentation.ui.composables.InfoLink
 import com.babylon.wallet.android.presentation.ui.composables.LedgerListItem
 import com.babylon.wallet.android.presentation.ui.composables.NotSecureAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
+import com.babylon.wallet.android.presentation.ui.composables.SecureScreen
 import com.babylon.wallet.android.presentation.ui.composables.SeedPhraseInputForm
 import com.babylon.wallet.android.presentation.ui.composables.SeedPhraseSuggestions
 import com.babylon.wallet.android.presentation.ui.composables.SimpleAccountCard
@@ -715,6 +716,7 @@ private fun InputSeedPhrasePage(
             0.dp
         }
     )
+    SecureScreen()
     Box(modifier = modifier) {
         Column(
             modifier = Modifier

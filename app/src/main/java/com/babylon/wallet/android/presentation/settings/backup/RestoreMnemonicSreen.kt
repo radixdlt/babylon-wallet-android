@@ -43,6 +43,7 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.presentation.settings.legacyimport.SeedPhraseWord
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
+import com.babylon.wallet.android.presentation.ui.composables.SecureScreen
 import com.babylon.wallet.android.presentation.ui.composables.SeedPhraseInputForm
 import com.babylon.wallet.android.presentation.ui.composables.SeedPhraseSuggestions
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
@@ -58,6 +59,7 @@ fun RestoreMnemonicScreen(
 ) {
     val state by viewModel.state.collectAsState()
     val context = LocalContext.current
+    SecureScreen()
     RestoreMnemonicContent(
         modifier = modifier,
         state = state,

@@ -1,6 +1,5 @@
 package com.babylon.wallet.android.presentation.settings.seedphrases.reveal
 
-import android.view.WindowManager
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -19,7 +18,6 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material3.Divider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -27,7 +25,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -39,7 +36,7 @@ import com.babylon.wallet.android.presentation.ui.composables.BackIconType
 import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.InfoLink
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
-import com.babylon.wallet.android.utils.findFragmentActivity
+import com.babylon.wallet.android.presentation.ui.composables.SecureScreen
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.persistentListOf
@@ -107,19 +104,6 @@ fun RevealSeedPhraseScreen(
             when (it) {
                 RevealSeedPhraseViewModel.Effect.Close -> onBackClick()
             }
-        }
-    }
-}
-
-@Composable
-private fun SecureScreen() {
-    val context = LocalContext.current
-    DisposableEffect(Unit) {
-        val window = context.findFragmentActivity()?.window?.apply {
-            addFlags(WindowManager.LayoutParams.FLAG_SECURE)
-        }
-        onDispose {
-            window?.clearFlags(WindowManager.LayoutParams.FLAG_SECURE)
         }
     }
 }
