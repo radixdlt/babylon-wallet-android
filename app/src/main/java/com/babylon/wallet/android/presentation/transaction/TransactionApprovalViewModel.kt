@@ -100,14 +100,13 @@ class TransactionApprovalViewModel @Inject constructor(
     private lateinit var manifestToApprove: TransactionManifest
 
     init {
-        // TODO this messes up with transaction sheets
-//        viewModelScope.launch {
-//            transactionClient.signingState.filterNotNull().collect { signingState ->
-//                _state.update { state ->
-//                    state.copy(signingState = signingState)
-//                }
-//            }
-//        }
+        viewModelScope.launch {
+            transactionClient.signingState.filterNotNull().collect { signingState ->
+                _state.update { state ->
+                    state.copy(signingState = signingState)
+                }
+            }
+        }
         viewModelScope.launch {
             _state.update {
                 it.copy(
@@ -514,7 +513,7 @@ class TransactionApprovalViewModel @Inject constructor(
         transactionClient.signAndSubmitTransaction(request).onSuccess { txId ->
             _state.update { it.copy(isSigning = false) }
             appEventBus.sendEvent(
-                AppEvent.TransactionEvent.Sent(
+                AppEvent.Status.Transaction.InProgress(
                     requestId = args.requestId,
                     transactionId = txId,
                     isInternal = transactionWriteRequest.isInternal
