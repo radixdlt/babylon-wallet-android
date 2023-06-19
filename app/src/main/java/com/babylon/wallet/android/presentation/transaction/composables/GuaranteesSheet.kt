@@ -87,8 +87,8 @@ fun GuaranteesSheet(
                         tokenIconUrl = guaranteesAccount.tokenIconUrl,
                         isTokenXrd = guaranteesAccount.isXrd(),
                         tokenSymbol = guaranteesAccount.tokenSymbol,
-                        tokenEstimatedQuantity = guaranteesAccount.tokenEstimatedQuantity,
-                        tokenGuaranteedQuantity = guaranteesAccount.tokenGuaranteedQuantity,
+                        tokenEstimatedQuantity = guaranteesAccount.tokenEstimatedAmount,
+                        tokenGuaranteedQuantity = guaranteesAccount.tokenGuaranteedAmount,
                         modifier = Modifier.padding(top = RadixTheme.dimensions.paddingDefault),
                         accountName = guaranteesAccount.displayName,
                         guaranteePercentValue = guaranteesAccount.guaranteedPercentAmount,
@@ -129,8 +129,8 @@ fun GuaranteesSheetPreview() {
                     displayName = "My account 1",
                     tokenSymbol = "XRD",
                     tokenIconUrl = "",
-                    tokenEstimatedQuantity = "1000",
-                    tokenGuaranteedQuantity = "1000",
+                    tokenEstimatedAmount = "1000",
+                    tokenGuaranteedAmount = "1000",
                     guaranteedPercentAmount = "100"
                 ),
                 GuaranteesAccountItemUiModel(
@@ -139,8 +139,8 @@ fun GuaranteesSheetPreview() {
                     displayName = "My account 2",
                     tokenSymbol = "XRD",
                     tokenIconUrl = "",
-                    tokenEstimatedQuantity = "1000",
-                    tokenGuaranteedQuantity = "1000",
+                    tokenEstimatedAmount = "1000",
+                    tokenGuaranteedAmount = "1000",
                     guaranteedPercentAmount = "100"
                 ),
                 GuaranteesAccountItemUiModel(
@@ -149,8 +149,8 @@ fun GuaranteesSheetPreview() {
                     displayName = "My account 3",
                     tokenSymbol = "XRD",
                     tokenIconUrl = "",
-                    tokenEstimatedQuantity = "1000",
-                    tokenGuaranteedQuantity = "1000",
+                    tokenEstimatedAmount = "1000",
+                    tokenGuaranteedAmount = "1000",
                     guaranteedPercentAmount = "100"
                 )
             ),

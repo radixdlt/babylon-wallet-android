@@ -17,19 +17,17 @@ import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
-import com.babylon.wallet.android.presentation.model.TokenUiModel
-import com.babylon.wallet.android.presentation.transaction.PreviewAccountItemsUiModel
 import com.babylon.wallet.android.presentation.transaction.TransactionAccountItemUiModel
-import kotlinx.collections.immutable.ImmutableList
-import kotlinx.collections.immutable.persistentListOf
+import kotlinx.collections.immutable.ImmutableMap
+import kotlinx.collections.immutable.persistentMapOf
 import kotlinx.collections.immutable.toPersistentList
 
 @Composable
 fun WithdrawAccountContent(
-    previewAccounts: ImmutableList<PreviewAccountItemsUiModel>,
+    withdrawAccountsMap: ImmutableMap<String, List<TransactionAccountItemUiModel>>,
     modifier: Modifier = Modifier
 ) {
-    if (previewAccounts.isNotEmpty()) {
+    if (withdrawAccountsMap.isNotEmpty()) {
         Text(
             modifier = Modifier
                 .padding(horizontal = RadixTheme.dimensions.paddingDefault),
@@ -48,25 +46,13 @@ fun WithdrawAccountContent(
                 )
                 .padding(RadixTheme.dimensions.paddingMedium)
         ) {
-            previewAccounts.forEachIndexed { index, previewAccount ->
-                val lastItem = index == previewAccounts.lastIndex
-
-                val tokens = previewAccount.accounts.map { account ->
-                    TokenUiModel(
-                        iconUrl = account.iconUrl,
-                        symbol = account.tokenSymbol,
-                        tokenQuantity = account.tokenQuantityDecimal,
-                        resourceAddress = account.address,
-                        isTokenAmountVisible = account.isTokenAmountVisible,
-                        guaranteedQuantity = account.guaranteedQuantityDecimal
-                    )
-                }.toPersistentList()
-
+            withdrawAccountsMap.onEachIndexed { index, accountEntry ->
+                val lastItem = index == withdrawAccountsMap.size - 1
                 TransactionAccountCard(
-                    appearanceId = previewAccount.appearanceID,
-                    tokens = tokens,
-                    address = previewAccount.address,
-                    accountName = previewAccount.accountName
+                    appearanceId = accountEntry.value.first().appearanceID,
+                    tokens = accountEntry.value.toPersistentList(),
+                    address = accountEntry.value.first().accountAddress,
+                    accountName = accountEntry.value.first().displayName
                 )
 
                 if (!lastItem) {
@@ -85,25 +71,22 @@ fun WithdrawAccountContent(
 fun WithdrawAccountContentPreview() {
     RadixWalletTheme {
         WithdrawAccountContent(
-            persistentListOf(
-                PreviewAccountItemsUiModel(
-                    address = "account_tdx_19jd32jd3928jd3892jd329",
-                    accountName = "My main account",
-                    appearanceID = 1,
-                    accounts = listOf(
-                        TransactionAccountItemUiModel(
-                            "account_tdx_19jd32jd3928jd3892jd329",
-                            "My main account",
-                            "XRD",
-                            "1500.000",
-                            1,
-                            "",
-                            isTokenAmountVisible = true,
-                            shouldPromptForGuarantees = false,
-                            guaranteedQuantity = null
+            persistentMapOf(
+                "account_tdx_19jd32jd3928jd3892jd329"
+                    to
+                        listOf(
+                            TransactionAccountItemUiModel(
+                                accountAddress = "account_tdx_19jd32jd3928jd3892jd329",
+                                displayName = "My Savings Account",
+                                tokenSymbol = "XRD",
+                                tokenAmount = "689.203",
+                                appearanceID = 1,
+                                iconUrl = "",
+                                shouldPromptForGuarantees = true,
+                                guaranteedAmount = "689.203",
+                                guaranteedPercentAmount = "100"
+                            )
                         )
-                    )
-                )
             )
         )
     }

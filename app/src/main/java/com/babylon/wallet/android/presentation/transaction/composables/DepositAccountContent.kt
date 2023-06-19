@@ -26,20 +26,19 @@ import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixTextButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
-import com.babylon.wallet.android.presentation.model.TokenUiModel
-import com.babylon.wallet.android.presentation.transaction.PreviewAccountItemsUiModel
 import com.babylon.wallet.android.presentation.transaction.TransactionAccountItemUiModel
-import kotlinx.collections.immutable.ImmutableList
-import kotlinx.collections.immutable.persistentListOf
+import kotlinx.collections.immutable.ImmutableMap
+import kotlinx.collections.immutable.persistentMapOf
 import kotlinx.collections.immutable.toPersistentList
 
 @Composable
 fun DepositAccountContent(
-    previewAccounts: ImmutableList<PreviewAccountItemsUiModel>,
+    depositAccountsMap: ImmutableMap<String, List<TransactionAccountItemUiModel>>,
+    shouldPromptForGuarantees: Boolean,
     modifier: Modifier = Modifier,
     promptForGuarantees: () -> Unit
 ) {
-    if (previewAccounts.isNotEmpty()) {
+    if (depositAccountsMap.isNotEmpty()) {
         Row {
             Text(
                 modifier = Modifier
@@ -63,24 +62,13 @@ fun DepositAccountContent(
                 .padding(RadixTheme.dimensions.paddingMedium),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            previewAccounts.forEachIndexed { index, previewAccount ->
-                val lastItem = index == previewAccounts.lastIndex
-
-                val tokens = previewAccount.accounts.map { account ->
-                    TokenUiModel(
-                        iconUrl = account.iconUrl,
-                        symbol = account.tokenSymbol,
-                        tokenQuantity = account.tokenQuantityDecimal,
-                        resourceAddress = account.address,
-                        isTokenAmountVisible = account.isTokenAmountVisible,
-                        guaranteedQuantity = account.guaranteedQuantityDecimal
-                    )
-                }.toPersistentList()
+            depositAccountsMap.onEachIndexed { index, accountEntry ->
+                val lastItem = index == depositAccountsMap.size - 1
                 TransactionAccountCard(
-                    appearanceId = previewAccount.appearanceID,
-                    tokens = tokens,
-                    address = previewAccount.address,
-                    accountName = previewAccount.accountName
+                    appearanceId = accountEntry.value.first().appearanceID,
+                    tokens = accountEntry.value.toPersistentList(),
+                    address = accountEntry.value.first().accountAddress,
+                    accountName = accountEntry.value.first().displayName
                 )
 
                 if (!lastItem) {
@@ -89,10 +77,6 @@ fun DepositAccountContent(
                             .height(RadixTheme.dimensions.paddingMedium)
                     )
                 }
-            }
-
-            val shouldPromptForGuarantees = previewAccounts.any { previewAccount ->
-                previewAccount.accounts.any { it.shouldPromptForGuarantees }
             }
 
             if (shouldPromptForGuarantees) {
@@ -138,27 +122,25 @@ fun StrokeLine(
 fun DepositAccountContentPreview() {
     RadixWalletTheme {
         DepositAccountContent(
-            previewAccounts =
-            persistentListOf(
-                PreviewAccountItemsUiModel(
-                    address = "account_tdx_19jd32jd3928jd3892jd329",
-                    accountName = "My main account",
-                    appearanceID = 1,
-                    accounts = listOf(
-                        TransactionAccountItemUiModel(
-                            "account_tdx_19jd32jd3928jd3892jd329",
-                            "My main account",
-                            "XRD",
-                            "200",
-                            1,
-                            "",
-                            isTokenAmountVisible = true,
-                            shouldPromptForGuarantees = false,
-                            guaranteedQuantity = "200"
+            depositAccountsMap =
+            persistentMapOf(
+                "account_tdx_19jd32jd3928jd3892jd329"
+                    to
+                        listOf(
+                            TransactionAccountItemUiModel(
+                                accountAddress = "account_tdx_19jd32jd3928jd3892jd329",
+                                displayName = "My Savings Account",
+                                tokenSymbol = "XRD",
+                                tokenAmount = "689.203",
+                                appearanceID = 1,
+                                iconUrl = "",
+                                shouldPromptForGuarantees = true,
+                                guaranteedAmount = "689.203",
+                                guaranteedPercentAmount = "100"
+                            )
                         )
-                    )
-                )
             ),
+            shouldPromptForGuarantees = true,
             promptForGuarantees = {}
         )
     }

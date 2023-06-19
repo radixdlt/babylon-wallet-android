@@ -20,7 +20,7 @@ sealed class Resource {
         private val nameMetadataItem: NameMetadataItem? = null,
         private val symbolMetadataItem: SymbolMetadataItem? = null,
         private val descriptionMetadataItem: DescriptionMetadataItem? = null,
-        private val iconUrlMetadataItem: IconUrlMetadataItem? = null,
+        private val iconUrlMetadataItem: IconUrlMetadataItem? = null
     ) : Resource(), Comparable<FungibleResource> {
         val name: String
             get() = nameMetadataItem?.name.orEmpty()
