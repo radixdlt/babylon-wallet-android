@@ -278,7 +278,7 @@ class TransactionClient @Inject constructor(
                         endEpochExclusive = epoch.toULong() + TransactionConfig.EPOCH_WINDOW,
                         nonce = generateNonce(),
                         notaryPublicKey = notaryAndSigners.notaryPublicKey(),
-                        notaryAsSignatory = notaryAndSigners.notaryAsSignatory,
+                        notaryAsSignatory = notaryAndSigners.notaryIsSignatory,
                         costUnitLimit = COST_UNIT_LIMIT,
                         tipPercentage = TransactionConfig.TIP_PERCENTAGE
                     )
@@ -378,14 +378,18 @@ class TransactionClient @Inject constructor(
                 manifest = manifest.toStringWithoutBlobs(),
                 startEpochInclusive = startEpochInclusive,
                 endEpochExclusive = endEpochExclusive,
-                costUnitLimit = COST_UNIT_LIMIT.toLong(),
                 tipPercentage = 5,
-                nonce = generateNonce().toString(),
+                nonce = generateNonce().toLong(),
                 signerPublicKeys = listOf(),
-                flags = TransactionPreviewRequestFlags(true, true, true, true),
+                flags = TransactionPreviewRequestFlags(
+                    unlimitedLoan = true,
+                    assumeAllSignatureProofs = true,
+                    permitDuplicateIntentHash = true,
+                    permitInvalidHeaderEpoch = true
+                ),
                 blobsHex = blobs.map { it.toHexString() },
                 notaryPublicKey = notaryPublicKey,
-                notaryAsSignatory = notaryAndSigners.notaryAsSignatory
+                notaryIsSignatory = notaryAndSigners.notaryIsSignatory
             )
         )
         return when (val result = previewResult) {

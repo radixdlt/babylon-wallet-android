@@ -13,7 +13,7 @@ data class NotaryAndSigners(
     val signers: List<Entity>,
     val ephemeralNotaryPrivateKey: PrivateKey = PrivateKey.EddsaEd25519.newRandom()
 ) {
-    val notaryAsSignatory: Boolean
+    val notaryIsSignatory: Boolean
         get() = signers.isEmpty()
 
     fun notaryPrivateKeySLIP10(): SLIP10PrivateKey {
