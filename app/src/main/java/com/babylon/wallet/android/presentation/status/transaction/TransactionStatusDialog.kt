@@ -82,7 +82,8 @@ fun TransactionStatusDialog(
                 enter = fadeIn(),
                 exit = fadeOut()
             ) {
-                SuccessContent(transactionId = state.transactionId)
+                // Need to send the correct transaction id
+                SuccessContent(transactionAddress = "")
             }
         }
 
@@ -108,7 +109,7 @@ fun TransactionStatusDialog(
 @Composable
 private fun SuccessContent(
     modifier: Modifier = Modifier,
-    transactionId: String = ""
+    transactionAddress: String = ""
 ) {
     Column(
         modifier
@@ -136,9 +137,9 @@ private fun SuccessContent(
             color = RadixTheme.colors.gray1
         )
 
-        if (transactionId.isNotEmpty()) {
+        if (transactionAddress.isNotEmpty()) {
             ActionableAddressView(
-                address = transactionId,
+                address = transactionAddress,
                 textStyle = RadixTheme.typography.body1Regular,
                 textColor = RadixTheme.colors.gray1
             )
