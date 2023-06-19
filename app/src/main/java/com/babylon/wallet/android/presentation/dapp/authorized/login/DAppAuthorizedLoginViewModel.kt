@@ -114,7 +114,7 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
                 }
             }
             result.onError { error ->
-                _state.update { it.copy(uiMessage = UiMessage.ErrorMessage(error)) }
+                _state.update { it.copy(uiMessage = UiMessage.ErrorMessage.from(error)) }
             }
             setInitialDappLoginRoute()
         }
@@ -231,7 +231,7 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
 
     @Suppress("MagicNumber")
     private suspend fun handleRequestError(failure: DappRequestFailure) {
-        _state.update { it.copy(uiMessage = UiMessage.ErrorMessage(DappRequestException(failure))) }
+        _state.update { it.copy(uiMessage = UiMessage.ErrorMessage.from(DappRequestException(failure))) }
         dAppMessenger.sendWalletInteractionResponseFailure(
             request.dappId,
             args.interactionId,

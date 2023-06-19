@@ -109,7 +109,7 @@ class AccountPreferenceViewModel @Inject constructor(
                 _state.update {
                     it.copy(
                         isLoading = false,
-                        error = UiMessage.ErrorMessage(error = error)
+                        error = UiMessage.ErrorMessage.from(error = error)
                     )
                 }
             }

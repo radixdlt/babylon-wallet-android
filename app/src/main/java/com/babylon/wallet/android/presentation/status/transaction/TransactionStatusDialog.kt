@@ -27,6 +27,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
+import com.babylon.wallet.android.presentation.common.getMessage
 import com.babylon.wallet.android.presentation.ui.composables.ActionableAddressView
 import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.BottomSheetWrapper
@@ -72,7 +73,7 @@ fun TransactionStatusDialog(
             ) {
                 SomethingWentWrongDialogContent(
                     title = stringResource(id = R.string.common_somethingWentWrong),
-                    subtitle = state.failureError?.let { stringResource(id = it) }.orEmpty()
+                    subtitle = state.failureError?.getMessage()
                 )
             }
 

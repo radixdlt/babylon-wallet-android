@@ -13,6 +13,8 @@ import com.babylon.wallet.android.presentation.transaction.ROUTE_TRANSACTION_APP
 import com.babylon.wallet.android.presentation.transfer.ROUTE_TRANSFER
 import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.routeExist
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 
 @VisibleForTesting
 private const val ARG_STATUS = "arg_status"
@@ -36,7 +38,7 @@ private const val ARG_TX_ID = "arg_tx_id"
 private const val ARG_IS_INTERNAL = "arg_is_internal"
 
 @VisibleForTesting
-private const val ARG_ERROR_MESSAGE = "arg_error_message"
+private const val ARG_ERROR = "arg_error"
 
 @VisibleForTesting
 private const val ROUTE = "transaction_status_dialog"
@@ -52,8 +54,8 @@ fun NavController.transactionStatusDialog(transactionEvent: AppEvent.Status.Tran
     // New requests will be handled from the view model itself
     if (currentBackStackEntry?.destination?.route?.startsWith(ROUTE) == true) return
 
-    val errorMessageRes = if (transactionEvent is AppEvent.Status.Transaction.Fail) {
-        transactionEvent.errorMessageRes.toString()
+    val errorSerialized = if (transactionEvent is AppEvent.Status.Transaction.Fail) {
+        Json.encodeToString(transactionEvent.errorMessage)
     } else {
         null
     }
@@ -63,7 +65,7 @@ fun NavController.transactionStatusDialog(transactionEvent: AppEvent.Status.Tran
         route = "$ROUTE/${transactionEvent.toType()}/$requestId" +
             "?txId=${transactionEvent.transactionId}" +
             "&isInternal=${transactionEvent.isInternal}" +
-            "&error=$errorMessageRes"
+            "&error=$errorSerialized"
     ) {
         val popUpToRoute = if (this@transactionStatusDialog.routeExist(ROUTE_TRANSFER)) {
             ROUTE_TRANSFER
@@ -81,7 +83,7 @@ fun NavGraphBuilder.transactionStatusDialog(
     onClose: () -> Unit
 ) {
     dialog(
-        route = "$ROUTE/{$ARG_STATUS}/{$ARG_REQUEST_ID}?txId={$ARG_TX_ID}&isInternal={$ARG_IS_INTERNAL}&error={$ARG_ERROR_MESSAGE}",
+        route = "$ROUTE/{$ARG_STATUS}/{$ARG_REQUEST_ID}?txId={$ARG_TX_ID}&isInternal={$ARG_IS_INTERNAL}&error={$ARG_ERROR}",
         arguments = listOf(
             navArgument(ARG_STATUS) {
                 type = NavType.StringType
@@ -97,7 +99,7 @@ fun NavGraphBuilder.transactionStatusDialog(
                 type = NavType.BoolType
                 defaultValue = false
             },
-            navArgument(ARG_ERROR_MESSAGE) {
+            navArgument(ARG_ERROR) {
                 type = NavType.StringType
                 nullable = true
                 defaultValue = null
@@ -124,7 +126,7 @@ private fun SavedStateHandle.toStatus(): AppEvent.Status.Transaction {
             requestId = checkNotNull(get<String>(ARG_REQUEST_ID)),
             transactionId = checkNotNull(get<String>(ARG_TX_ID)),
             isInternal = checkNotNull(get<Boolean>(ARG_IS_INTERNAL)),
-            errorMessageRes = get<String>(ARG_ERROR_MESSAGE)?.toInt(),
+            errorMessage = get<String>(ARG_ERROR)?.let { Json.decodeFromString(it) },
         )
         VALUE_STATUS_SUCCESS -> AppEvent.Status.Transaction.Success(
             requestId = checkNotNull(get<String>(ARG_REQUEST_ID)),

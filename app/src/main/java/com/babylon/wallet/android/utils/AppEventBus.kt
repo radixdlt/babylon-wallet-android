@@ -1,6 +1,6 @@
 package com.babylon.wallet.android.utils
 
-import androidx.annotation.StringRes
+import com.babylon.wallet.android.presentation.common.UiMessage
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
@@ -58,7 +58,7 @@ sealed interface AppEvent {
                 override val requestId: String,
                 override val transactionId: String,
                 override val isInternal: Boolean,
-                @StringRes val errorMessageRes: Int?
+                val errorMessage: UiMessage.ErrorMessage?
             ) : Transaction()
         }
     }

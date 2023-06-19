@@ -4,7 +4,6 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.dapp.DappMessenger
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
-import com.babylon.wallet.android.data.dapp.model.WalletErrorType
 import com.babylon.wallet.android.data.manifest.addGuaranteeInstructionToManifest
 import com.babylon.wallet.android.data.transaction.DappRequestException
 import com.babylon.wallet.android.data.transaction.DappRequestFailure
@@ -57,13 +56,14 @@ import kotlinx.collections.immutable.toPersistentList
 import kotlinx.collections.immutable.toPersistentMap
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.decodeHex
 import rdx.works.profile.domain.gateway.GetCurrentGatewayUseCase
 import timber.log.Timber
-import java.lang.Exception
 import java.math.BigDecimal
 import javax.inject.Inject
 
@@ -130,7 +130,7 @@ class TransactionApprovalViewModel @Inject constructor(
                 _state.update {
                     it.copy(
                         isLoading = false,
-                        error = UiMessage.ErrorMessage(error)
+                        error = UiMessage.ErrorMessage.from(error)
                     )
                 }
             }.onSuccess { transactionPreviewResponse ->
@@ -138,7 +138,7 @@ class TransactionApprovalViewModel @Inject constructor(
                     _state.update {
                         it.copy(
                             isLoading = false,
-                            error = UiMessage.ErrorMessage(
+                            error = UiMessage.ErrorMessage.from(
                                 error = Throwable(transactionPreviewResponse.receipt.errorMessage)
                             )
                         )
@@ -162,7 +162,7 @@ class TransactionApprovalViewModel @Inject constructor(
                         _state.update {
                             it.copy(
                                 isLoading = false,
-                                error = UiMessage.ErrorMessage(error)
+                                error = UiMessage.ErrorMessage.from(error)
                             )
                         }
                     }
@@ -481,7 +481,7 @@ class TransactionApprovalViewModel @Inject constructor(
                             }
                             approvalJob = null
                         }.onFailure { t ->
-                            _state.update { it.copy(isLoading = false, error = UiMessage.ErrorMessage(error = t)) }
+                            _state.update { it.copy(isLoading = false, error = UiMessage.ErrorMessage.from(error = t)) }
                             (t as? DappRequestException)?.let { exception ->
                                 if (!transactionWriteRequest.isInternal) {
                                     dAppMessenger.sendWalletInteractionResponseFailure(
@@ -540,7 +540,7 @@ class TransactionApprovalViewModel @Inject constructor(
             _state.update {
                 it.copy(
                     isSigning = false,
-                    error = UiMessage.ErrorMessage(error = error)
+                    error = UiMessage.ErrorMessage.from(error = error)
                 )
             }
             val exception = error as? DappRequestException
@@ -560,7 +560,7 @@ class TransactionApprovalViewModel @Inject constructor(
                     requestId = args.requestId,
                     transactionId = "",
                     isInternal = transactionWriteRequest.isInternal,
-                    errorMessageRes = UiMessage.ErrorMessage(exception?.failure).getUserFriendlyDescriptionRes()
+                    errorMessage = UiMessage.ErrorMessage.from(exception?.failure)
                 )
             )
         }

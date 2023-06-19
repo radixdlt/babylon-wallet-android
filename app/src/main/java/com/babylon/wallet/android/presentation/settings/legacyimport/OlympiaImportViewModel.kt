@@ -326,7 +326,7 @@ class OlympiaImportViewModel @Inject constructor(
                 },
                 ledgerDevice = ledgerDevice
             ).onFailure { error ->
-                _state.update { it.copy(uiMessage = UiMessage.ErrorMessage(error), waitingForLedgerResponse = false) }
+                _state.update { it.copy(uiMessage = UiMessage.ErrorMessage.from(error), waitingForLedgerResponse = false) }
             }.onSuccess { r ->
                 processLedgerResponse(ledgerFactorSource, r)
             }

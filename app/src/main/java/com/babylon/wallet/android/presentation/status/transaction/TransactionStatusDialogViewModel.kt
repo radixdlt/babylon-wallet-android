@@ -1,6 +1,5 @@
 package com.babylon.wallet.android.presentation.status.transaction
 
-import androidx.annotation.StringRes
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.dapp.DappMessenger
@@ -100,7 +99,7 @@ class TransactionStatusDialogViewModel @Inject constructor(
                     requestId = status.requestId,
                     transactionId = status.transactionId,
                     isInternal = status.isInternal,
-                    errorMessageRes = UiMessage.ErrorMessage(error).getUserFriendlyDescriptionRes()
+                    errorMessage = UiMessage.ErrorMessage.from(error)
                 )
             )
         }
@@ -140,8 +139,8 @@ class TransactionStatusDialogViewModel @Inject constructor(
         val isFailed: Boolean
             get() = status is TransactionStatus.Failed
 
-        val failureError: Int?
-            get() = (status as? TransactionStatus.Failed)?.messageRes
+        val failureError: UiMessage.ErrorMessage?
+            get() = (status as? TransactionStatus.Failed)?.errorMessage
 
         val transactionId: String
             get() = status.transactionId
@@ -174,7 +173,7 @@ sealed interface TransactionStatus {
         override val requestId: String,
         override val transactionId: String,
         override val isInternal: Boolean,
-        @StringRes val messageRes: Int?
+        val errorMessage: UiMessage.ErrorMessage?
     ) : TransactionStatus
 
     companion object {
@@ -183,7 +182,7 @@ sealed interface TransactionStatus {
                 requestId = event.requestId,
                 transactionId = event.transactionId,
                 isInternal = event.isInternal,
-                messageRes = event.errorMessageRes
+                errorMessage = event.errorMessage
             )
 
             is AppEvent.Status.Transaction.InProgress -> Completing(

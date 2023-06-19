@@ -223,7 +223,7 @@ data class WalletUiState(
     )
 
     fun onResourcesError(error: Throwable?): WalletUiState = copy(
-        error = UiMessage.ErrorMessage(error),
+        error = UiMessage.ErrorMessage.from(error),
         loading = false,
         refreshing = false
     )

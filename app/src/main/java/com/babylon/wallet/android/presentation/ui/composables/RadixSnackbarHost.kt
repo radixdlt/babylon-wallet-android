@@ -16,6 +16,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.presentation.common.UiMessage
+import com.babylon.wallet.android.presentation.common.getMessage
 
 @Composable
 fun BoxScope.SnackbarUiMessageHandler(message: UiMessage?, modifier: Modifier = Modifier, onMessageShown: () -> Unit) {
@@ -39,9 +40,9 @@ fun SnackbarUIMessage(
     snackbarHostState: SnackbarHostState,
     onMessageShown: () -> Unit
 ) {
-    val messageToShow = message?.getUserFriendlyDescription() ?: message?.getErrorMessage()
+    val messageToShow = message?.getMessage()
     messageToShow?.let {
-        LaunchedEffect(messageToShow, message?.id) {
+        LaunchedEffect(messageToShow, message.id) {
             snackbarHostState.showSnackbar(message = messageToShow)
             onMessageShown()
         }
