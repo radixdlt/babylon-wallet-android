@@ -27,6 +27,10 @@ import androidx.compose.material.ModalBottomSheetLayout
 import androidx.compose.material.ModalBottomSheetState
 import androidx.compose.material.ModalBottomSheetValue
 import androidx.compose.material.Surface
+import androidx.compose.material.pullrefresh.PullRefreshIndicator
+import androidx.compose.material.pullrefresh.PullRefreshState
+import androidx.compose.material.pullrefresh.pullRefresh
+import androidx.compose.material.pullrefresh.rememberPullRefreshState
 import androidx.compose.material.rememberModalBottomSheetState
 import androidx.compose.material3.FabPosition
 import androidx.compose.material3.Scaffold
@@ -187,35 +191,50 @@ private fun AccountScreenContent(
             val scrollState = rememberScrollableHeaderViewScrollState()
 
             val detailsAlpha = if (scrollState.maxOffset == 0f) 1f else 1 - abs(scrollState.offset / scrollState.maxOffset)
-            ScrollableHeaderView(
-                modifier = modifier.padding(innerPadding),
-                state = scrollState,
-                header = {
-                    AccountDetailsContent(
-                        modifier = Modifier.alpha(detailsAlpha),
-                        state = state,
-                        onTransferClick = onTransferClick,
-                        onApplySecuritySettings = onApplySecuritySettings
-                    )
-                },
-                content = {
-                    AssetsContent(
-                        resources = state.accountWithResources?.resources,
-                        onFungibleTokenClick = {
-                            onFungibleResourceClicked(it)
-                            scope.launch {
-                                bottomSheetState.show()
+            val pullToRefreshState = rememberPullRefreshState(refreshing = state.isRefreshing, onRefresh = onRefresh)
+            Box(
+                modifier = Modifier
+                    .padding(innerPadding)
+                    .pullRefresh(state = pullToRefreshState)
+            ) {
+                ScrollableHeaderView(
+                    state = scrollState,
+                    header = {
+                        AccountDetailsContent(
+                            modifier = Modifier.alpha(detailsAlpha),
+                            state = state,
+                            onTransferClick = onTransferClick,
+                            onApplySecuritySettings = onApplySecuritySettings
+                        )
+                    },
+                    content = {
+                        AssetsContent(
+                            resources = state.accountWithResources?.resources,
+                            onFungibleTokenClick = {
+                                onFungibleResourceClicked(it)
+                                scope.launch {
+                                    bottomSheetState.show()
+                                }
+                            },
+                            onNonFungibleItemClick = { nftCollection, nftItem ->
+                                onNonFungibleItemClicked(nftCollection, nftItem)
+                                scope.launch {
+                                    bottomSheetState.show()
+                                }
                             }
-                        },
-                        onNonFungibleItemClick = { nftCollection, nftItem ->
-                            onNonFungibleItemClicked(nftCollection, nftItem)
-                            scope.launch {
-                                bottomSheetState.show()
-                            }
-                        }
-                    )
-                }
-            )
+                        )
+                    }
+                )
+
+                PullRefreshIndicator(
+                    modifier = Modifier.align(Alignment.TopCenter),
+                    refreshing = state.isRefreshing,
+                    state = pullToRefreshState,
+                    contentColor = RadixTheme.colors.gray1,
+                    backgroundColor = RadixTheme.colors.defaultBackground,
+                )
+            }
+
         }
     }
 }
