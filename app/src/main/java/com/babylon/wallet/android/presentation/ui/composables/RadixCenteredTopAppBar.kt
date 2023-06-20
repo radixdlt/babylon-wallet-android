@@ -1,5 +1,6 @@
 package com.babylon.wallet.android.presentation.ui.composables
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
@@ -66,10 +67,11 @@ fun RadixCenteredTopAppBar(
         },
         title = {
             Row(
-                verticalAlignment = Alignment.CenterVertically
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingXSmall)
             ) {
                 titleIcon?.invoke()
-                Spacer(modifier = Modifier.width(RadixTheme.dimensions.paddingXSmall))
+
                 Text(
                     text = title,
                     style = RadixTheme.typography.body1Header,
