@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
@@ -40,41 +41,54 @@ fun FungibleResourcesColumn(
         contentPadding = contentPadding,
         modifier = modifier,
     ) {
-        if (xrdItem != null) {
-            item {
-                FungibleResourceCard {
-                    item(index = 0, resource = xrdItem)
-                }
+        fungibleResources(
+            xrdItem = xrdItem,
+            restOfFungibles = restResources
+        ) { index, resource ->
+            item(index = index, resource = resource)
+        }
+    }
+}
+
+fun LazyListScope.fungibleResources(
+    xrdItem: Resource.FungibleResource?,
+    restOfFungibles: List<Resource.FungibleResource>,
+    item: @Composable (index: Int, resource: Resource.FungibleResource) -> Unit
+) {
+    if (xrdItem != null) {
+        item {
+            FungibleResourceCard {
+                item(index = 0, resource = xrdItem)
             }
         }
-
-        itemsIndexed(
-            items = restResources,
-            key = { _, item ->
-                item.resourceAddress
-            },
-            itemContent = { index, resource ->
-                val topPadding = if (index == 0) RadixTheme.dimensions.paddingDefault else 0.dp
-                FungibleResourceCard(
-                    modifier = Modifier.padding(top = topPadding),
-                    itemIndex = index,
-                    allItemsSize = restResources.size,
-                    bottomContent = if (index != restResources.lastIndex) {
-                        {
-                            Divider(
-                                modifier = Modifier.padding(horizontal = 20.dp),
-                                color = RadixTheme.colors.gray4
-                            )
-                        }
-                    } else {
-                        null
-                    }
-                ) {
-                    item(index = index, resource = resource)
-                }
-            }
-        )
     }
+
+    itemsIndexed(
+        items = restOfFungibles,
+        key = { _, resource ->
+            resource.resourceAddress
+        },
+        itemContent = { index, resource ->
+            val topPadding = if (index == 0) RadixTheme.dimensions.paddingDefault else 0.dp
+            FungibleResourceCard(
+                modifier = Modifier.padding(top = topPadding),
+                itemIndex = index,
+                allItemsSize = restOfFungibles.size,
+                bottomContent = if (index != restOfFungibles.lastIndex) {
+                    {
+                        Divider(
+                            modifier = Modifier.padding(horizontal = 20.dp),
+                            color = RadixTheme.colors.gray4
+                        )
+                    }
+                } else {
+                    null
+                }
+            ) {
+                item(index = index, resource = resource)
+            }
+        }
+    )
 }
 
 @Composable

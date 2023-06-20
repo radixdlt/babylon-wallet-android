@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
@@ -14,6 +15,7 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -42,50 +44,62 @@ fun NonFungibleResourcesColumn(
         modifier = modifier,
         contentPadding = contentPadding
     ) {
-        collections.forEachIndexed { collectionIndex, collection ->
-            val collapsed = collapsedState[collectionIndex]
+        nonFungibleResources(
+            collections = collections,
+            collapsedState = collapsedState,
+            nftItem = nftItem
+        )
+    }
+}
 
-            item(
-                key = collection.resourceAddress,
-                contentType = { "collection" }
-            ) {
-                NonFungibleResourceCollectionHeader(
-                    modifier = Modifier.padding(bottom = 1.dp),
-                    collection = collection,
-                    collapsed = collapsed,
-                    parentSectionClick = {
-                        collapsedState[collectionIndex] = !collapsed
-                    }
-                )
-            }
+fun LazyListScope.nonFungibleResources(
+    collections: List<Resource.NonFungibleResource>,
+    collapsedState: SnapshotStateList<Boolean>,
+    nftItem: @Composable (Resource.NonFungibleResource, Resource.NonFungibleResource.Item) -> Unit,
+) {
+    collections.forEachIndexed { collectionIndex, collection ->
+        val collapsed = collapsedState[collectionIndex]
 
-            items(
-                items = if (collapsed) emptyList() else collection.items,
-                key = { item -> item.globalAddress },
-                contentType = { "nft" }
-            ) { item ->
-                val bottomCorners by animateDpAsState(
-                    targetValue = if (collection.items.last().globalAddress == item.globalAddress) 12.dp else 0.dp
-                )
-                Card(
-                    modifier = Modifier
-                        .padding(vertical = 1.dp)
-                        .fillMaxWidth(),
-                    shape = RoundedCornerShape(0.dp, 0.dp, bottomCorners, bottomCorners),
-                    colors = CardDefaults.cardColors(
-                        containerColor = RadixTheme.colors.defaultBackground
-                    ),
-                    elevation = CardDefaults.cardElevation(
-                        defaultElevation = 4.dp
-                    )
-                ) {
-                    nftItem(collection, item)
+        item(
+            key = collection.resourceAddress,
+            contentType = { "collection" }
+        ) {
+            NonFungibleResourceCollectionHeader(
+                modifier = Modifier.padding(bottom = 1.dp),
+                collection = collection,
+                collapsed = collapsed,
+                parentSectionClick = {
+                    collapsedState[collectionIndex] = !collapsed
                 }
-            }
+            )
+        }
 
-            if (collectionIndex != collections.lastIndex) {
-                item { Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault)) }
+        items(
+            items = if (collapsed) emptyList() else collection.items,
+            key = { item -> item.globalAddress },
+            contentType = { "nft" }
+        ) { item ->
+            val bottomCorners by animateDpAsState(
+                targetValue = if (collection.items.last().globalAddress == item.globalAddress) 12.dp else 0.dp
+            )
+            Card(
+                modifier = Modifier
+                    .padding(vertical = 1.dp)
+                    .fillMaxWidth(),
+                shape = RoundedCornerShape(0.dp, 0.dp, bottomCorners, bottomCorners),
+                colors = CardDefaults.cardColors(
+                    containerColor = RadixTheme.colors.defaultBackground
+                ),
+                elevation = CardDefaults.cardElevation(
+                    defaultElevation = 4.dp
+                )
+            ) {
+                nftItem(collection, item)
             }
+        }
+
+        if (collectionIndex != collections.lastIndex) {
+            item { Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault)) }
         }
     }
 }

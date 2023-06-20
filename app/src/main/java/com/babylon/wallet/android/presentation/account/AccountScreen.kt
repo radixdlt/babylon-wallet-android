@@ -1,4 +1,7 @@
-@file:OptIn(ExperimentalFoundationApi::class, ExperimentalMaterialApi::class, ExperimentalMaterial3Api::class)
+@file:OptIn(
+    ExperimentalFoundationApi::class,
+    ExperimentalMaterialApi::class
+)
 
 package com.babylon.wallet.android.presentation.account
 
@@ -7,15 +10,14 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.pager.HorizontalPager
-import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.ExperimentalMaterialApi
@@ -26,7 +28,6 @@ import androidx.compose.material.ModalBottomSheetState
 import androidx.compose.material.ModalBottomSheetValue
 import androidx.compose.material.Surface
 import androidx.compose.material.rememberModalBottomSheetState
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FabPosition
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
@@ -36,6 +37,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -64,9 +66,9 @@ import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAp
 import com.babylon.wallet.android.presentation.ui.composables.ScrollableHeaderView
 import com.babylon.wallet.android.presentation.ui.composables.rememberScrollableHeaderViewScrollState
 import com.babylon.wallet.android.presentation.ui.composables.resources.FungibleResourceItem
-import com.babylon.wallet.android.presentation.ui.composables.resources.FungibleResourcesColumn
 import com.babylon.wallet.android.presentation.ui.composables.resources.NonFungibleResourceItem
-import com.babylon.wallet.android.presentation.ui.composables.resources.NonFungibleResourcesColumn
+import com.babylon.wallet.android.presentation.ui.composables.resources.fungibleResources
+import com.babylon.wallet.android.presentation.ui.composables.resources.nonFungibleResources
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import rdx.works.profile.data.model.factorsources.FactorSource
@@ -271,59 +273,65 @@ fun AssetsContent(
         shape = RadixTheme.shapes.roundedRectTopDefault,
         elevation = 8.dp
     ) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            val pagerState = rememberPagerState()
-            var selectedTab by remember { mutableStateOf(ResourceTab.Tokens) }
+        var selectedTab by remember { mutableStateOf(ResourceTab.Tokens) }
 
-            Spacer(modifier = Modifier.height(height = RadixTheme.dimensions.paddingLarge))
+        val xrdItem = resources?.xrd
+        val restOfFungibles = resources?.nonXrdFungibles.orEmpty()
 
-            ResourcesTabs(
-                pagerState = pagerState,
-                selectedTab = selectedTab,
-                onTabSelected = {
-                    selectedTab = it
-                }
+        val nonFungibleCollections = resources?.nonFungibleResources.orEmpty()
+        val collapsedState = remember(nonFungibleCollections) {
+            nonFungibleCollections.map { true }.toMutableStateList()
+        }
+        LazyColumn(
+            modifier = Modifier.fillMaxSize(),
+            contentPadding = PaddingValues(
+                horizontal = RadixTheme.dimensions.paddingDefault,
+                vertical = RadixTheme.dimensions.paddingLarge
             )
-
-            HorizontalPager(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f),
-                pageCount = ResourceTab.values().count(),
-                state = pagerState,
-                userScrollEnabled = false
-            ) { page ->
-                val tab = remember(page) {
-                    ResourceTab.values().find { it.ordinal == page } ?: ResourceTab.Tokens
+        ) {
+            item {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = RadixTheme.dimensions.paddingLarge),
+                    contentAlignment = Alignment.Center
+                ) {
+                    ResourcesTabs(
+                        selectedTab = selectedTab,
+                        onTabSelected = {
+                            selectedTab = it
+                        }
+                    )
                 }
-                when (tab) {
-                    ResourceTab.Tokens -> FungibleResourcesColumn(
-                        modifier = Modifier.fillMaxSize(),
-                        resources = resources
-                    ) { _, item ->
-                        FungibleResourceItem(
-                            modifier = Modifier
-                                .height(83.dp)
-                                .clickable {
-                                    onFungibleTokenClick(item)
-                                },
-                            resource = item
-                        )
-                    }
+            }
 
-                    ResourceTab.Nfts -> NonFungibleResourcesColumn(
-                        resources = resources,
-                        modifier = Modifier.fillMaxSize(),
-                    ) { collection, item ->
-                        NonFungibleResourceItem(
-                            modifier = Modifier
-                                .padding(RadixTheme.dimensions.paddingDefault)
-                                .clickable {
-                                    onNonFungibleItemClick(collection, item)
-                                },
-                            item = item
-                        )
-                    }
+            when (selectedTab) {
+                ResourceTab.Tokens -> fungibleResources(
+                    xrdItem = xrdItem,
+                    restOfFungibles = restOfFungibles
+                ) { _, item ->
+                    FungibleResourceItem(
+                        modifier = Modifier
+                            .height(83.dp)
+                            .clickable {
+                                onFungibleTokenClick(item)
+                            },
+                        resource = item
+                    )
+                }
+
+                ResourceTab.Nfts -> nonFungibleResources(
+                    collections = nonFungibleCollections,
+                    collapsedState = collapsedState,
+                ) { collection, item ->
+                    NonFungibleResourceItem(
+                        modifier = Modifier
+                            .padding(RadixTheme.dimensions.paddingDefault)
+                            .clickable {
+                                onNonFungibleItemClick(collection, item)
+                            },
+                        item = item
+                    )
                 }
             }
         }
