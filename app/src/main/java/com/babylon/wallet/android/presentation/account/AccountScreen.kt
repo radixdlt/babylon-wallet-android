@@ -20,6 +20,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
@@ -28,7 +29,6 @@ import androidx.compose.material.ModalBottomSheetState
 import androidx.compose.material.ModalBottomSheetValue
 import androidx.compose.material.Surface
 import androidx.compose.material.pullrefresh.PullRefreshIndicator
-import androidx.compose.material.pullrefresh.PullRefreshState
 import androidx.compose.material.pullrefresh.pullRefresh
 import androidx.compose.material.pullrefresh.rememberPullRefreshState
 import androidx.compose.material.rememberModalBottomSheetState
@@ -301,59 +301,72 @@ fun AssetsContent(
         val collapsedState = remember(nonFungibleCollections) {
             nonFungibleCollections.map { true }.toMutableStateList()
         }
-        LazyColumn(
-            modifier = Modifier.fillMaxSize(),
-            contentPadding = PaddingValues(
-                horizontal = RadixTheme.dimensions.paddingDefault,
-                vertical = RadixTheme.dimensions.paddingLarge
-            )
-        ) {
-            item {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(bottom = RadixTheme.dimensions.paddingLarge),
-                    contentAlignment = Alignment.Center
-                ) {
-                    ResourcesTabs(
-                        selectedTab = selectedTab,
-                        onTabSelected = {
-                            selectedTab = it
+
+        Box(modifier = Modifier.fillMaxSize()) {
+            LazyColumn(
+                modifier = Modifier.fillMaxSize(),
+                contentPadding = PaddingValues(
+                    horizontal = RadixTheme.dimensions.paddingDefault,
+                    vertical = RadixTheme.dimensions.paddingLarge
+                )
+            ) {
+                item {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(bottom = RadixTheme.dimensions.paddingLarge),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        ResourcesTabs(
+                            selectedTab = selectedTab,
+                            onTabSelected = {
+                                selectedTab = it
+                            }
+                        )
+                    }
+                }
+
+                if (resources != null) {
+                    when (selectedTab) {
+                        ResourceTab.Tokens -> fungibleResources(
+                            xrdItem = xrdItem,
+                            restOfFungibles = restOfFungibles
+                        ) { _, item ->
+                            FungibleResourceItem(
+                                modifier = Modifier
+                                    .height(83.dp)
+                                    .clickable {
+                                        onFungibleTokenClick(item)
+                                    },
+                                resource = item
+                            )
                         }
-                    )
+
+                        ResourceTab.Nfts -> nonFungibleResources(
+                            collections = nonFungibleCollections,
+                            collapsedState = collapsedState,
+                        ) { collection, item ->
+                            NonFungibleResourceItem(
+                                modifier = Modifier
+                                    .padding(RadixTheme.dimensions.paddingDefault)
+                                    .clickable {
+                                        onNonFungibleItemClick(collection, item)
+                                    },
+                                item = item
+                            )
+                        }
+                    }
                 }
             }
 
-            when (selectedTab) {
-                ResourceTab.Tokens -> fungibleResources(
-                    xrdItem = xrdItem,
-                    restOfFungibles = restOfFungibles
-                ) { _, item ->
-                    FungibleResourceItem(
-                        modifier = Modifier
-                            .height(83.dp)
-                            .clickable {
-                                onFungibleTokenClick(item)
-                            },
-                        resource = item
-                    )
-                }
-
-                ResourceTab.Nfts -> nonFungibleResources(
-                    collections = nonFungibleCollections,
-                    collapsedState = collapsedState,
-                ) { collection, item ->
-                    NonFungibleResourceItem(
-                        modifier = Modifier
-                            .padding(RadixTheme.dimensions.paddingDefault)
-                            .clickable {
-                                onNonFungibleItemClick(collection, item)
-                            },
-                        item = item
-                    )
-                }
+            if (resources == null) {
+                CircularProgressIndicator(
+                    modifier = Modifier.align(Alignment.Center),
+                    color = RadixTheme.colors.gray1
+                )
             }
         }
+
     }
 }
 

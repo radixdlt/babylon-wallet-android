@@ -42,19 +42,26 @@ fun AccountDetailsContent(
             textColor = RadixTheme.colors.white
         )
 
-        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXLarge))
-        RadixSecondaryButton(
-            text = stringResource(id = R.string.account_transfer),
-            onClick = { onTransferClick(accountAddress) },
-            containerColor = RadixTheme.colors.white.copy(alpha = 0.2f),
-            contentColor = RadixTheme.colors.white,
-            shape = RadixTheme.shapes.circle
+        AnimatedVisibility(
+            modifier = Modifier
+                .padding(top = RadixTheme.dimensions.paddingXLarge),
+            visible = state.isTransferEnabled,
+            enter = fadeIn(),
+            exit = fadeOut()
         ) {
-            Icon(
-                painter = painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_transfer),
-                tint = RadixTheme.colors.white,
-                contentDescription = null
-            )
+            RadixSecondaryButton(
+                text = stringResource(id = R.string.account_transfer),
+                onClick = { onTransferClick(accountAddress) },
+                containerColor = RadixTheme.colors.white.copy(alpha = 0.2f),
+                contentColor = RadixTheme.colors.white,
+                shape = RadixTheme.shapes.circle
+            ) {
+                Icon(
+                    painter = painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_transfer),
+                    tint = RadixTheme.colors.white,
+                    contentDescription = null
+                )
+            }
         }
 
         AnimatedVisibility(
