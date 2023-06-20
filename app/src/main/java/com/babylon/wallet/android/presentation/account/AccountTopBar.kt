@@ -1,5 +1,3 @@
-@file:OptIn(ExperimentalMaterial3Api::class)
-
 package com.babylon.wallet.android.presentation.account
 
 import androidx.compose.animation.AnimatedVisibility
@@ -11,7 +9,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.Icon
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -25,7 +22,7 @@ import com.babylon.wallet.android.presentation.ui.composables.ActionableAddressV
 import com.babylon.wallet.android.presentation.ui.composables.ApplySecuritySettingsLabel
 
 @Composable
-fun AccountCollapsibleContent(
+fun AccountDetailsContent(
     modifier: Modifier = Modifier,
     state: AccountUiState,
     onTransferClick: (String) -> Unit,
@@ -74,37 +71,7 @@ fun AccountCollapsibleContent(
                 text = stringResource(id = R.string.homePage_applySecuritySettings)
             )
         }
+
+        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
     }
-//    LargeTopAppBar(
-//        modifier = modifier,
-//        title = {
-//            Column(
-////                modifier = Modifier.fillMaxWidth(),
-//                horizontalAlignment = Alignment.CenterHorizontally
-//            ) {
-//
-//            }
-//        },
-//        navigationIcon = {
-//            IconButton(onClick = onBackClick) {
-//                Icon(
-//                    painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_arrow_back),
-//                    tint = RadixTheme.colors.white,
-//                    contentDescription = "navigate back"
-//                )
-//            }
-//        },
-//        actions = {
-//
-//        },
-//        windowInsets = WindowInsets(left = 0.dp),
-//        colors = TopAppBarDefaults.largeTopAppBarColors(
-//            containerColor = Color.Transparent,
-//            scrolledContainerColor = Color.Transparent,
-//            navigationIconContentColor = RadixTheme.colors.white,
-//            titleContentColor = RadixTheme.colors.white,
-//            actionIconContentColor = RadixTheme.colors.white
-//        ),
-//        scrollBehavior = scrollBehavior
-//    )
 }
