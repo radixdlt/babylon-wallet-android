@@ -135,8 +135,7 @@ fun ChooseAssetsSheet(
                     when (tab) {
                         ChooseAssets.Tab.Tokens -> FungibleResourcesColumn(
                             modifier = Modifier.fillMaxSize(),
-                            resources = state.resources,
-                            isXrdSticky = false
+                            resources = state.resources
                         ) { _, resource ->
                             val isSelected = state.targetAccount.assets.any { it.address == resource.resourceAddress }
                             SelectableFungibleResourceItem(

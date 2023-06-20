@@ -1,8 +1,5 @@
-@file:OptIn(ExperimentalFoundationApi::class)
-
 package com.babylon.wallet.android.presentation.ui.composables.resources
 
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.padding
@@ -28,7 +25,6 @@ import com.babylon.wallet.android.domain.model.Resources
 fun FungibleResourcesColumn(
     modifier: Modifier,
     resources: Resources?,
-    isXrdSticky: Boolean = true,
     contentPadding: PaddingValues = PaddingValues(
         start = RadixTheme.dimensions.paddingMedium,
         end = RadixTheme.dimensions.paddingMedium,
@@ -45,17 +41,9 @@ fun FungibleResourcesColumn(
         modifier = modifier,
     ) {
         if (xrdItem != null) {
-            if (isXrdSticky) {
-                stickyHeader {
-                    FungibleResourceCard {
-                        item(index = 0, resource = xrdItem)
-                    }
-                }
-            } else {
-                item {
-                    FungibleResourceCard {
-                        item(index = 0, resource = xrdItem)
-                    }
+            item {
+                FungibleResourceCard {
+                    item(index = 0, resource = xrdItem)
                 }
             }
         }

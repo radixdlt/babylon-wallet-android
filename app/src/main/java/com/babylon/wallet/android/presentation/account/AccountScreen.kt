@@ -1,4 +1,4 @@
-@file:OptIn(ExperimentalFoundationApi::class,)
+@file:OptIn(ExperimentalFoundationApi::class, ExperimentalMaterialApi::class, ExperimentalMaterial3Api::class)
 
 package com.babylon.wallet.android.presentation.account
 
@@ -10,14 +10,11 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.pager.HorizontalPager
@@ -28,9 +25,12 @@ import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.ModalBottomSheetLayout
+import androidx.compose.material.ModalBottomSheetState
 import androidx.compose.material.ModalBottomSheetValue
-import androidx.compose.material.Scaffold
 import androidx.compose.material.rememberModalBottomSheetState
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FabPosition
+import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -40,9 +40,10 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.rememberNestedScrollInteropConnection
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -60,20 +61,18 @@ import com.babylon.wallet.android.domain.model.Resource
 import com.babylon.wallet.android.domain.model.Resources
 import com.babylon.wallet.android.presentation.account.composable.FungibleTokenBottomSheetDetails
 import com.babylon.wallet.android.presentation.account.composable.NonFungibleTokenBottomSheetDetails
-import com.babylon.wallet.android.presentation.common.FullscreenCircularProgressContent
 import com.babylon.wallet.android.presentation.transfer.assets.ResourceTab
 import com.babylon.wallet.android.presentation.transfer.assets.ResourcesTabs
 import com.babylon.wallet.android.presentation.ui.composables.ActionableAddressView
 import com.babylon.wallet.android.presentation.ui.composables.ApplySecuritySettingsLabel
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
+import com.babylon.wallet.android.presentation.ui.composables.ScrollableHeaderView
 import com.babylon.wallet.android.presentation.ui.composables.WalletBalanceView
 import com.babylon.wallet.android.presentation.ui.composables.resources.FungibleResourceItem
 import com.babylon.wallet.android.presentation.ui.composables.resources.FungibleResourcesColumn
 import com.babylon.wallet.android.presentation.ui.composables.resources.NonFungibleResourceItem
 import com.babylon.wallet.android.presentation.ui.composables.resources.NonFungibleResourcesColumn
-import com.google.accompanist.swiperefresh.SwipeRefresh
-import com.google.accompanist.swiperefresh.SwipeRefreshIndicator
-import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import rdx.works.profile.data.model.factorsources.FactorSource
 
@@ -132,210 +131,134 @@ private fun AccountScreenContent(
         AccountGradientList[appearanceId % AccountGradientList.size]
     }
 
-    BoxWithConstraints(
-        modifier = modifier
-            .background(Brush.horizontalGradient(gradient))
-    ) {
-        val bottomSheetState =
-            rememberModalBottomSheetState(initialValue = ModalBottomSheetValue.Hidden, skipHalfExpanded = true)
-        val scope = rememberCoroutineScope()
-        val sheetHeight = maxHeight * 0.9f
-        BackHandler {
-            if (bottomSheetState.isVisible) {
-                scope.launch {
-                    bottomSheetState.hide()
-                }
-            } else {
-                onBackClick()
+    val bottomSheetState =
+        rememberModalBottomSheetState(initialValue = ModalBottomSheetValue.Hidden, skipHalfExpanded = true)
+    val scope = rememberCoroutineScope()
+//    val sheetHeight = maxHeight * 0.9f
+    BackHandler {
+        if (bottomSheetState.isVisible) {
+            scope.launch {
+                bottomSheetState.hide()
             }
+        } else {
+            onBackClick()
         }
-        ModalBottomSheetLayout(
-            sheetState = bottomSheetState,
-            sheetBackgroundColor = RadixTheme.colors.defaultBackground,
-            scrimColor = Color.Black.copy(alpha = 0.3f),
-            sheetShape = RadixTheme.shapes.roundedRectTopDefault,
-            sheetContent = {
-                Column(
-                    Modifier
-                        .fillMaxWidth()
-                        .height(sheetHeight)
-                        .verticalScroll(rememberScrollState()),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    when (state.selectedResource) {
-                        is SelectedResource.SelectedNonFungibleResource -> {
-                            NonFungibleTokenBottomSheetDetails(
-                                modifier = Modifier.fillMaxSize(),
-                                item = state.selectedResource.item,
-                                nonFungibleItem = state.selectedResource.nonFungible,
-                                onCloseClick = {
-                                    scope.launch {
-                                        bottomSheetState.hide()
-                                    }
-                                }
+    }
+
+    ModalBottomSheetLayout(
+        sheetState = bottomSheetState,
+        sheetBackgroundColor = RadixTheme.colors.defaultBackground,
+        scrimColor = Color.Black.copy(alpha = 0.3f),
+        sheetShape = RadixTheme.shapes.roundedRectTopDefault,
+        sheetContent = {
+            SheetContent(state, scope, bottomSheetState)
+        },
+    ) {
+        val scrollConnection = rememberNestedScrollInteropConnection()
+        Scaffold(
+            modifier = Modifier
+                .background(Brush.horizontalGradient(gradient))
+                .nestedScroll(scrollConnection),
+            topBar = {
+                RadixCenteredTopAppBar(
+                    title = state.accountWithResources?.account?.displayName.orEmpty(),
+                    onBackClick = onBackClick,
+                    actions = {
+                        IconButton(
+                            onClick = { onAccountPreferenceClick(state.accountWithResources?.account?.address.orEmpty()) }
+                        ) {
+                            Icon(
+                                painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_more_horiz),
+                                tint = RadixTheme.colors.white,
+                                contentDescription = "account settings"
                             )
                         }
-                        is SelectedResource.SelectedFungibleResource -> {
-                            FungibleTokenBottomSheetDetails(
-                                modifier = Modifier.fillMaxSize(),
-                                fungible = state.selectedResource.fungible,
-                                onCloseClick = {
-                                    scope.launch {
-                                        bottomSheetState.hide()
-                                    }
-                                }
-                            )
-                        }
-                        else -> {}
-                    }
+                    },
+                    containerColor = Color.Transparent,
+                    contentColor = RadixTheme.colors.white
+                )
+            },
+            containerColor = Color.Transparent,
+            floatingActionButton = {
+                if (state.isHistoryEnabled) {
+                    HistoryButton(
+                        modifier = Modifier.size(174.dp, 50.dp),
+                        onHistoryClick
+                    )
                 }
             },
-        ) {
-            Box(
-                modifier = Modifier.fillMaxSize()
-            ) {
-                Scaffold(
-                    modifier = Modifier
-//                        .systemBarsPadding()
-                        .navigationBarsPadding()
-                        .fillMaxSize(),
-                    topBar = {
-                        RadixCenteredTopAppBar(
-                            title = state.accountWithResources?.account?.displayName.orEmpty(),
-                            onBackClick = onBackClick,
-                            containerColor = Color.Transparent,
-                            contentColor = RadixTheme.colors.white,
-                            actions = {
-                                IconButton(
-                                    onClick = {
-                                        onAccountPreferenceClick(state.accountWithResources?.account?.address.orEmpty())
-                                    }
-                                ) {
-                                    Icon(
-                                        painterResource(
-                                            id = com.babylon.wallet.android.designsystem.R.drawable.ic_more_horiz
-                                        ),
-                                        tint = RadixTheme.colors.white,
-                                        contentDescription = "account settings"
-                                    )
-                                }
+            floatingActionButtonPosition = FabPosition.Center
+        ) { innerPadding ->
+            ScrollableHeaderView(
+                modifier = modifier.padding(innerPadding),
+                header = {
+                    AccountCollapsibleContent(
+                        state = state,
+                        onTransferClick = onTransferClick,
+                        onApplySecuritySettings = onApplySecuritySettings
+                    )
+                },
+                content = {
+                    AssetsContent(
+                        modifier = Modifier
+                            .background(RadixTheme.colors.gray5),
+                        resources = state.accountWithResources?.resources,
+                        onFungibleTokenClick = {
+                            onFungibleResourceClicked(it)
+                            scope.launch {
+                                bottomSheetState.show()
                             }
-                        )
-                    },
-                    backgroundColor = Color.Transparent
-                ) { innerPadding ->
-                    // TODO I can't make new swipe to refresh work with development preview banner,
-                    //  using accompanist for now
-                    val pullToRefreshState = rememberSwipeRefreshState(isRefreshing = state.isRefreshing)
-                    SwipeRefresh(
-                        modifier = Modifier.fillMaxSize(),
-                        state = pullToRefreshState,
-                        onRefresh = onRefresh,
-                        indicatorPadding = innerPadding,
-                        indicator = { s, dp ->
-                            SwipeRefreshIndicator(
-                                state = s,
-                                refreshTriggerDistance = dp,
-                                contentColor = RadixTheme.colors.gray1,
-                                backgroundColor = RadixTheme.colors.defaultBackground,
-                            )
                         },
-                        refreshTriggerDistance = 100.dp,
-                        content = {
-                            AccountContent(
-                                modifier = Modifier.fillMaxSize(),
-                                state = state,
-                                onTransferClick = onTransferClick,
-                                onFungibleResourceClicked = {
-                                    onFungibleResourceClicked(it)
-                                    scope.launch {
-                                        bottomSheetState.show()
-                                    }
-                                },
-                                onNonFungibleItemClicked = { nftCollection, nftItem ->
-                                    onNonFungibleItemClicked(nftCollection, nftItem)
-                                    scope.launch {
-                                        bottomSheetState.show()
-                                    }
-                                },
-                                onApplySecuritySettings = onApplySecuritySettings
-                            )
-//                        PullRefreshIndicator(
-//                            refreshing = isRefreshing,
-//                            state = pullRefreshState,
-//                            contentColor = RadixTheme.colors.gray1,
-//                            backgroundColor = RadixTheme.colors.defaultBackground,
-//                            modifier = Modifier.align(Alignment.TopCenter)
-//                        )
-                            if (state.isLoading) {
-                                FullscreenCircularProgressContent()
+                        onNonFungibleItemClick = { nftCollection, nftItem ->
+                            onNonFungibleItemClicked(nftCollection, nftItem)
+                            scope.launch {
+                                bottomSheetState.show()
                             }
                         }
                     )
                 }
-            }
-        }
-        AnimatedVisibility(modifier = Modifier.align(Alignment.BottomCenter), visible = false, enter = fadeIn()) {
-            HistoryButton(
-                modifier = Modifier
-                    .padding(bottom = RadixTheme.dimensions.paddingXXLarge)
-                    .size(174.dp, 50.dp),
-                onHistoryClick
             )
         }
     }
 }
 
 @Composable
-private fun HistoryButton(modifier: Modifier = Modifier, onHistoryClick: () -> Unit) {
-    RadixSecondaryButton(
-        text = stringResource(id = R.string.common_history),
-        onClick = onHistoryClick,
-        modifier = modifier,
-        containerColor = RadixTheme.colors.gray2,
-        contentColor = RadixTheme.colors.white,
-        shape = RadixTheme.shapes.circle
-    ) {
-        Icon(
-            painter = painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_watch_later),
-            tint = RadixTheme.colors.white,
-            contentDescription = null
-        )
-    }
-}
-
-@Composable
-private fun AccountContent(
-    modifier: Modifier = Modifier,
+private fun SheetContent(
     state: AccountUiState,
-    onTransferClick: (String) -> Unit,
-    onFungibleResourceClicked: (Resource.FungibleResource) -> Unit,
-    onNonFungibleItemClicked: (Resource.NonFungibleResource, Resource.NonFungibleResource.Item) -> Unit,
-    onApplySecuritySettings: () -> Unit
+    scope: CoroutineScope,
+    bottomSheetState: ModalBottomSheetState
 ) {
-    Column(
-        modifier = modifier,
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        AccountSummaryContent(
-            accountAddress = state.accountWithResources?.account?.address.orEmpty(),
-            showSecurityPrompt = state.isSecurityPromptVisible,
-            onTransferClick = onTransferClick,
-            onApplySecuritySettings = onApplySecuritySettings,
-        )
-        AssetsContent(
-            modifier = Modifier
-                .weight(1f)
-                .background(
-                    color = RadixTheme.colors.gray5,
-                    shape = RadixTheme.shapes.roundedRectTopDefault
-                )
-                .clip(RadixTheme.shapes.roundedRectTopDefault),
-            resources = state.accountWithResources?.resources,
-            isLoading = state.isLoading,
-            onFungibleTokenClick = onFungibleResourceClicked,
-            onNonFungibleItemClick = onNonFungibleItemClicked
-        )
+    when (val selected = state.selectedResource) {
+        is SelectedResource.SelectedNonFungibleResource -> {
+            NonFungibleTokenBottomSheetDetails(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .verticalScroll(rememberScrollState()),
+                item = selected.item,
+                nonFungibleItem = state.selectedResource.nonFungible,
+                onCloseClick = {
+                    scope.launch {
+                        bottomSheetState.hide()
+                    }
+                }
+            )
+        }
+
+        is SelectedResource.SelectedFungibleResource -> {
+            FungibleTokenBottomSheetDetails(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .verticalScroll(rememberScrollState()),
+                fungible = selected.fungible,
+                onCloseClick = {
+                    scope.launch {
+                        bottomSheetState.hide()
+                    }
+                }
+            )
+        }
+
+        else -> {}
     }
 }
 
@@ -405,7 +328,6 @@ private fun AccountSummaryContent(
 fun AssetsContent(
     modifier: Modifier = Modifier,
     resources: Resources?,
-    isLoading: Boolean,
     onFungibleTokenClick: (Resource.FungibleResource) -> Unit,
     onNonFungibleItemClick: (Resource.NonFungibleResource, Resource.NonFungibleResource.Item) -> Unit,
 ) {
@@ -434,42 +356,54 @@ fun AssetsContent(
             val tab = remember(page) {
                 ResourceTab.values().find { it.ordinal == page } ?: ResourceTab.Tokens
             }
-
-            AnimatedVisibility(
-                visible = !isLoading,
-                enter = fadeIn(),
-                content = {
-                    when (tab) {
-                        ResourceTab.Tokens -> FungibleResourcesColumn(
-                            modifier = Modifier.fillMaxSize(),
-                            resources = resources
-                        ) { _, item ->
-                            FungibleResourceItem(
-                                modifier = Modifier
-                                    .height(83.dp)
-                                    .clickable {
-                                        onFungibleTokenClick(item)
-                                    },
-                                resource = item
-                            )
-                        }
-                        ResourceTab.Nfts -> NonFungibleResourcesColumn(
-                            resources = resources,
-                            modifier = Modifier.fillMaxSize(),
-                        ) { collection, item ->
-                            NonFungibleResourceItem(
-                                modifier = Modifier
-                                    .padding(RadixTheme.dimensions.paddingDefault)
-                                    .clickable {
-                                        onNonFungibleItemClick(collection, item)
-                                    },
-                                item = item
-                            )
-                        }
-                    }
+            when (tab) {
+                ResourceTab.Tokens -> FungibleResourcesColumn(
+                    modifier = Modifier.fillMaxSize(),
+                    resources = resources
+                ) { _, item ->
+                    FungibleResourceItem(
+                        modifier = Modifier
+                            .height(83.dp)
+                            .clickable {
+                                onFungibleTokenClick(item)
+                            },
+                        resource = item
+                    )
                 }
-            )
+
+                ResourceTab.Nfts -> NonFungibleResourcesColumn(
+                    resources = resources,
+                    modifier = Modifier.fillMaxSize(),
+                ) { collection, item ->
+                    NonFungibleResourceItem(
+                        modifier = Modifier
+                            .padding(RadixTheme.dimensions.paddingDefault)
+                            .clickable {
+                                onNonFungibleItemClick(collection, item)
+                            },
+                        item = item
+                    )
+                }
+            }
         }
+    }
+}
+
+@Composable
+private fun HistoryButton(modifier: Modifier = Modifier, onHistoryClick: () -> Unit) {
+    RadixSecondaryButton(
+        text = stringResource(id = R.string.common_history),
+        onClick = onHistoryClick,
+        modifier = modifier,
+        containerColor = RadixTheme.colors.gray2,
+        contentColor = RadixTheme.colors.white,
+        shape = RadixTheme.shapes.circle
+    ) {
+        Icon(
+            painter = painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_watch_later),
+            tint = RadixTheme.colors.white,
+            contentDescription = null
+        )
     }
 }
 

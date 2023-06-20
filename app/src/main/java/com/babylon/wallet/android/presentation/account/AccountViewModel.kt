@@ -133,7 +133,7 @@ data class AccountUiState(
     val isLoading: Boolean = true,
     val isRefreshing: Boolean = false,
     val selectedResource: SelectedResource? = null,
-    val uiMessage: UiMessage? = null
+    val uiMessage: UiMessage? = null,
 ) : UiState {
 
     val isSecurityPromptVisible: Boolean
@@ -142,6 +142,8 @@ data class AccountUiState(
 
             return usesNotBackedUpMnemonic && resources.hasXrd()
         }
+
+    val isHistoryEnabled: Boolean = false
 }
 
 sealed interface SelectedResource {
