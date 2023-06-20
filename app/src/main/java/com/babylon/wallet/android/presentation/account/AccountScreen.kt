@@ -148,6 +148,7 @@ private fun AccountScreenContent(
     }
 
     ModalBottomSheetLayout(
+        modifier = modifier,
         sheetState = bottomSheetState,
         sheetBackgroundColor = RadixTheme.colors.defaultBackground,
         scrimColor = Color.Black.copy(alpha = 0.3f),
