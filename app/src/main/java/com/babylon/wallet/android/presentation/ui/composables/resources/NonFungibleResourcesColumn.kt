@@ -22,6 +22,8 @@ import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.domain.model.Resource
 import com.babylon.wallet.android.domain.model.Resources
+import com.babylon.wallet.android.presentation.account.composable.EmptyResourcesContent
+import com.babylon.wallet.android.presentation.transfer.assets.ResourceTab
 
 @Composable
 fun NonFungibleResourcesColumn(
@@ -57,49 +59,58 @@ fun LazyListScope.nonFungibleResources(
     collapsedState: SnapshotStateList<Boolean>,
     nftItem: @Composable (Resource.NonFungibleResource, Resource.NonFungibleResource.Item) -> Unit,
 ) {
-    collections.forEachIndexed { collectionIndex, collection ->
-        val collapsed = collapsedState[collectionIndex]
-
-        item(
-            key = collection.resourceAddress,
-            contentType = { "collection" }
-        ) {
-            NonFungibleResourceCollectionHeader(
-                modifier = Modifier.padding(bottom = 1.dp),
-                collection = collection,
-                collapsed = collapsed,
-                parentSectionClick = {
-                    collapsedState[collectionIndex] = !collapsed
-                }
+    if (collections.isEmpty()) {
+        item {
+            EmptyResourcesContent(
+                modifier = Modifier.fillMaxWidth(),
+                tab = ResourceTab.Nfts
             )
         }
+    } else {
+        collections.forEachIndexed { collectionIndex, collection ->
+            val collapsed = collapsedState[collectionIndex]
 
-        items(
-            items = if (collapsed) emptyList() else collection.items,
-            key = { item -> item.globalAddress },
-            contentType = { "nft" }
-        ) { item ->
-            val bottomCorners by animateDpAsState(
-                targetValue = if (collection.items.last().globalAddress == item.globalAddress) 12.dp else 0.dp
-            )
-            Card(
-                modifier = Modifier
-                    .padding(vertical = 1.dp)
-                    .fillMaxWidth(),
-                shape = RoundedCornerShape(0.dp, 0.dp, bottomCorners, bottomCorners),
-                colors = CardDefaults.cardColors(
-                    containerColor = RadixTheme.colors.defaultBackground
-                ),
-                elevation = CardDefaults.cardElevation(
-                    defaultElevation = 4.dp
-                )
+            item(
+                key = collection.resourceAddress,
+                contentType = { "collection" }
             ) {
-                nftItem(collection, item)
+                NonFungibleResourceCollectionHeader(
+                    modifier = Modifier.padding(bottom = 1.dp),
+                    collection = collection,
+                    collapsed = collapsed,
+                    parentSectionClick = {
+                        collapsedState[collectionIndex] = !collapsed
+                    }
+                )
             }
-        }
 
-        if (collectionIndex != collections.lastIndex) {
-            item { Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault)) }
+            items(
+                items = if (collapsed) emptyList() else collection.items,
+                key = { item -> item.globalAddress },
+                contentType = { "nft" }
+            ) { item ->
+                val bottomCorners by animateDpAsState(
+                    targetValue = if (collection.items.last().globalAddress == item.globalAddress) 12.dp else 0.dp
+                )
+                Card(
+                    modifier = Modifier
+                        .padding(vertical = 1.dp)
+                        .fillMaxWidth(),
+                    shape = RoundedCornerShape(0.dp, 0.dp, bottomCorners, bottomCorners),
+                    colors = CardDefaults.cardColors(
+                        containerColor = RadixTheme.colors.defaultBackground
+                    ),
+                    elevation = CardDefaults.cardElevation(
+                        defaultElevation = 4.dp
+                    )
+                ) {
+                    nftItem(collection, item)
+                }
+            }
+
+            if (collectionIndex != collections.lastIndex) {
+                item { Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault)) }
+            }
         }
     }
 }
