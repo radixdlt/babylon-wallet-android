@@ -183,7 +183,7 @@ private fun guaranteeInstruction(
     resourceAddress: String,
     guaranteedAmount: String
 ): Instruction {
-    return Instruction.AssertWorktopContainsByAmount(
+    return Instruction.AssertWorktopContains(
         resourceAddress = ManifestAstValue.Address(resourceAddress),
         amount = ManifestAstValue.Decimal(guaranteedAmount)
     )

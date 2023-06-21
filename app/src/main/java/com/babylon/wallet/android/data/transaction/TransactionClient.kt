@@ -401,7 +401,7 @@ class TransactionClient @Inject constructor(
     @Suppress("MagicNumber")
     private fun generateNonce(): ULong {
         val random = SecureRandom()
-        val nonceBytes = ByteArray(ULong.SIZE_BYTES)
+        val nonceBytes = ByteArray(32)
         random.nextBytes(nonceBytes)
         var nonce: ULong = 0u
         nonceBytes.forEachIndexed { index, byte ->

@@ -1,5 +1,8 @@
 package com.babylon.wallet.android.domain.common
 
+// Temporary solution until we replace our own Result to Kotlin's Result
+typealias KotlinResult<T> = kotlin.Result<T>
+
 sealed interface Result<out T> {
 
     data class Success<T>(val data: T) : Result<T>
@@ -40,4 +43,18 @@ suspend fun <T> Result<T>.onError(action: suspend (Throwable?) -> Unit) = apply 
     if (this is Result.Error) {
         action(this.exception)
     }
+}
+
+fun <T> KotlinResult<T>.asInternalResult(): Result<T> = fold(
+    onSuccess = { value ->
+        Result.Success(value)
+    },
+    onFailure = { error ->
+        Result.Error(error)
+    }
+)
+
+fun <T> Result<T>.asKotlinResult(): KotlinResult<T> = when (this) {
+    is Result.Success -> KotlinResult.success(value = data)
+    is Result.Error -> KotlinResult.failure(exception = exception ?: error(""))
 }
