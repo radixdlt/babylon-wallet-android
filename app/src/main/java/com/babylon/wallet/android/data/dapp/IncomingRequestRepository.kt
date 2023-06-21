@@ -156,8 +156,8 @@ class IncomingRequestRepositoryImpl @Inject constructor() : IncomingRequestRepos
     }
 
     private sealed interface QueueItem {
-        object HighPriorityScreen: QueueItem
+        object HighPriorityScreen : QueueItem
 
-        data class RequestItem(val incomingRequest: IncomingRequest): QueueItem
+        data class RequestItem(val incomingRequest: IncomingRequest) : QueueItem
     }
 }

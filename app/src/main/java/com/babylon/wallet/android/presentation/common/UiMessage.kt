@@ -22,15 +22,19 @@ sealed class UiMessage(val id: String = UUIDGenerator.uuid().toString()) {
         @Serializable
         @SerialName("invalid_mnemonic")
         object InvalidMnemonic : InfoMessage()
+
         @Serializable
         @SerialName("invalid_payload")
         object InvalidPayload : InfoMessage()
+
         @Serializable
         @SerialName("invalid_no_mnemonic_for_accounts")
         object NoMnemonicForAccounts : InfoMessage()
+
         @Serializable
         @SerialName("invalid_no_accounts_for_ledger")
         object NoAccountsForLedger : InfoMessage()
+
         @Serializable
         @SerialName("invalid_ledger_already_exist")
         data class LedgerAlreadyExist(val label: String) : InfoMessage()
@@ -64,7 +68,6 @@ sealed class UiMessage(val id: String = UUIDGenerator.uuid().toString()) {
             )
         }
     }
-
 }
 
 @Composable
