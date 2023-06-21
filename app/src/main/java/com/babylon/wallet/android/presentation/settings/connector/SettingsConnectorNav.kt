@@ -24,6 +24,7 @@ internal class SettingsConnectorScreenArgs(val scanQr: Boolean, val closeAfterLi
     )
 }
 
+// TODO https://github.com/radixdlt/babylon-wallet-android/pull/303#discussion_r1233727181
 fun NavController.settingsConnectorScreen(scanQr: Boolean = false, closeAfterLinked: Boolean = false) {
     navigate("settings_add_connector_route/$scanQr/$closeAfterLinked")
 }
