@@ -142,8 +142,9 @@ fun NavigationHost(
             goBackToCreateAccount = {
                 navController.popBackStack(ROUTE_CREATE_ACCOUNT, false)
             },
+            // TODO https://github.com/radixdlt/babylon-wallet-android/pull/303#discussion_r1233727181
             onAddP2PLink = {
-                navController.settingsConnectorScreen(scanQr = true)
+                navController.settingsConnectorScreen(scanQr = true, closeAfterLinked = true)
             }
         )
         createAccountConfirmationScreen(
