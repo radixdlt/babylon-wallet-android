@@ -9,6 +9,10 @@ import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetai
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponseNonFungibleResourceDetails
 import com.babylon.wallet.android.domain.model.behaviours.ResourceBehaviour
 
+/**
+ * The rules to determine behaviours was taken from here ->
+ * https://radixdlt.atlassian.net/wiki/spaces/AT/pages/3007840284/Proposal+for+Resource+Behavior+Summarization
+ */
 enum class AccessRule(val value: String) {
     DenyAll("DenyAll"),
     AllowAll("AllowAll"),
@@ -109,7 +113,7 @@ fun StateEntityDetailsResponseItemDetails.calculateResourceBehaviours(): List<Re
             toAccessRulesChain()?.performWithdrawAccessRuleSetToDefault() == true &&
                 toAccessRulesChain()?.performDepositAccessRuleSetToDefault() == true
             ) &&
-            toAccessRulesChain()?.changeDepositAccessRuleSetToNonDefaultExceptAllowAll() == true ||
+            toAccessRulesChain()?.changeDepositAccessRuleSetToNonDefaultExceptAllowAll() == true &&
             toAccessRulesChain()?.changeWithdrawAccessRuleSetToNonDefaultExceptAllowAll() == true
         ) {
             mutableList.add(ResourceBehaviour.FUTURE_MOVEMENT_WITHDRAW_DEPOSIT)
@@ -142,7 +146,7 @@ fun StateEntityDetailsResponseItemDetails.calculateResourceBehaviours(): List<Re
     }
 }
 
-fun AccessRulesChain.performMintAccessRule(): AccessRule? {
+private fun AccessRulesChain.performMintAccessRule(): AccessRule? {
     return this.method_auth.find { methodAuth ->
         methodAuth.method.name == ResourceRule.Mint.value
     }?.access_rule_reference?.access_rule?.type?.let { type ->
@@ -150,7 +154,7 @@ fun AccessRulesChain.performMintAccessRule(): AccessRule? {
     }
 }
 
-fun AccessRulesChain.performMintAccessRuleSetToNonDefault(): Boolean {
+private fun AccessRulesChain.performMintAccessRuleSetToNonDefault(): Boolean {
     return performMintAccessRule()?.let {
         it != AccessRule.DenyAll
     } ?: run {
@@ -158,7 +162,7 @@ fun AccessRulesChain.performMintAccessRuleSetToNonDefault(): Boolean {
     }
 }
 
-fun AccessRulesChain.changeMintAccessRule(): AccessRule? {
+private fun AccessRulesChain.changeMintAccessRule(): AccessRule? {
     return this.method_auth_mutability.find { methodAuth ->
         methodAuth.method.name == ResourceRule.Mint.value
     }?.access_rule_reference?.access_rule?.type?.let { type ->
@@ -166,13 +170,13 @@ fun AccessRulesChain.changeMintAccessRule(): AccessRule? {
     }
 }
 
-fun AccessRulesChain.changeMintAccessRuleSetToNonDefault(): Boolean {
+private fun AccessRulesChain.changeMintAccessRuleSetToNonDefault(): Boolean {
     return changeMintAccessRule()?.let {
         it != AccessRule.DenyAll
     } ?: false
 }
 
-fun AccessRulesChain.performBurnAccessRule(): AccessRule? {
+private fun AccessRulesChain.performBurnAccessRule(): AccessRule? {
     return this.method_auth.find { methodAuth ->
         methodAuth.method.name == ResourceRule.Burn.value
     }?.access_rule_reference?.access_rule?.type?.let { type ->
@@ -180,13 +184,13 @@ fun AccessRulesChain.performBurnAccessRule(): AccessRule? {
     }
 }
 
-fun AccessRulesChain.performBurnAccessRuleSetToNonDefault(): Boolean {
+private fun AccessRulesChain.performBurnAccessRuleSetToNonDefault(): Boolean {
     return performBurnAccessRule()?.let {
         it != AccessRule.DenyAll
     } ?: false
 }
 
-fun AccessRulesChain.changeBurnAccessRule(): AccessRule? {
+private fun AccessRulesChain.changeBurnAccessRule(): AccessRule? {
     return this.method_auth_mutability.find { methodAuth ->
         methodAuth.method.name == ResourceRule.Burn.value
     }?.access_rule_reference?.access_rule?.type?.let { type ->
@@ -194,13 +198,13 @@ fun AccessRulesChain.changeBurnAccessRule(): AccessRule? {
     }
 }
 
-fun AccessRulesChain.changeBurnAccessRuleSetToNonDefault(): Boolean {
+private fun AccessRulesChain.changeBurnAccessRuleSetToNonDefault(): Boolean {
     return changeBurnAccessRule()?.let {
         it != AccessRule.DenyAll
     } ?: false
 }
 
-fun AccessRulesChain.performWithdrawAccessRule(): AccessRule? {
+private fun AccessRulesChain.performWithdrawAccessRule(): AccessRule? {
     return this.method_auth.find { methodAuth ->
         methodAuth.method.name == ResourceRule.Withdraw.value
     }?.access_rule_reference?.access_rule?.type?.let { type ->
@@ -208,19 +212,19 @@ fun AccessRulesChain.performWithdrawAccessRule(): AccessRule? {
     }
 }
 
-fun AccessRulesChain.performWithdrawAccessRuleSetToNonDefault(): Boolean {
+private fun AccessRulesChain.performWithdrawAccessRuleSetToNonDefault(): Boolean {
     return performWithdrawAccessRule()?.let {
         it != AccessRule.AllowAll
     } ?: false
 }
 
-fun AccessRulesChain.performWithdrawAccessRuleSetToDefault(): Boolean {
+private fun AccessRulesChain.performWithdrawAccessRuleSetToDefault(): Boolean {
     return performWithdrawAccessRule()?.let {
         it == AccessRule.AllowAll
     } ?: false
 }
 
-fun AccessRulesChain.changeWithdrawAccessRule(): AccessRule? {
+private fun AccessRulesChain.changeWithdrawAccessRule(): AccessRule? {
     return this.method_auth_mutability.find { methodAuth ->
         methodAuth.method.name == ResourceRule.Withdraw.value
     }?.access_rule_reference?.access_rule?.type?.let { type ->
@@ -228,13 +232,7 @@ fun AccessRulesChain.changeWithdrawAccessRule(): AccessRule? {
     }
 }
 
-fun AccessRulesChain.changeWithdrawAccessRuleSetToNonDefault(): Boolean {
-    return changeWithdrawAccessRule()?.let {
-        it != AccessRule.DenyAll
-    } ?: false
-}
-
-fun AccessRulesChain.performDepositAccessRule(): AccessRule? {
+private fun AccessRulesChain.performDepositAccessRule(): AccessRule? {
     return this.method_auth.find { methodAuth ->
         methodAuth.method.name == ResourceRule.Deposit.value
     }?.access_rule_reference?.access_rule?.type?.let { type ->
@@ -242,19 +240,19 @@ fun AccessRulesChain.performDepositAccessRule(): AccessRule? {
     }
 }
 
-fun AccessRulesChain.performDepositAccessRuleSetToNonDefault(): Boolean {
+private fun AccessRulesChain.performDepositAccessRuleSetToNonDefault(): Boolean {
     return performDepositAccessRule()?.let {
         it != AccessRule.AllowAll
     } ?: false
 }
 
-fun AccessRulesChain.performDepositAccessRuleSetToDefault(): Boolean {
+private fun AccessRulesChain.performDepositAccessRuleSetToDefault(): Boolean {
     return performDepositAccessRule()?.let {
         it == AccessRule.AllowAll
     } ?: false
 }
 
-fun AccessRulesChain.changeDepositAccessRule(): AccessRule? {
+private fun AccessRulesChain.changeDepositAccessRule(): AccessRule? {
     return this.method_auth_mutability.find { methodAuth ->
         methodAuth.method.name == ResourceRule.Deposit.value
     }?.access_rule_reference?.access_rule?.type?.let { type ->
@@ -262,33 +260,33 @@ fun AccessRulesChain.changeDepositAccessRule(): AccessRule? {
     }
 }
 
-fun AccessRulesChain.changeDepositAccessRuleSetToAllowAll(): Boolean {
+private fun AccessRulesChain.changeDepositAccessRuleSetToAllowAll(): Boolean {
     return changeDepositAccessRule()?.let {
         it == AccessRule.AllowAll
     } ?: false
 }
 
-fun AccessRulesChain.changeWithdrawAccessRuleSetToAllowAll(): Boolean {
+private fun AccessRulesChain.changeWithdrawAccessRuleSetToAllowAll(): Boolean {
     return changeWithdrawAccessRule()?.let {
         it == AccessRule.AllowAll
     } ?: false
 }
 
-fun AccessRulesChain.changeDepositAccessRuleSetToNonDefaultExceptAllowAll(): Boolean {
+private fun AccessRulesChain.changeDepositAccessRuleSetToNonDefaultExceptAllowAll(): Boolean {
     return changeDepositAccessRule()?.let {
         it != AccessRule.DenyAll && // Non default
             it != AccessRule.AllowAll // Not AllowAll
     } ?: false
 }
 
-fun AccessRulesChain.changeWithdrawAccessRuleSetToNonDefaultExceptAllowAll(): Boolean {
+private fun AccessRulesChain.changeWithdrawAccessRuleSetToNonDefaultExceptAllowAll(): Boolean {
     return changeWithdrawAccessRule()?.let {
         it != AccessRule.DenyAll && // Non default
             it != AccessRule.AllowAll // Not AllowAll
     } ?: false
 }
 
-fun AccessRulesChain.performUpdateMetadataAccessRule(): AccessRule? {
+private fun AccessRulesChain.performUpdateMetadataAccessRule(): AccessRule? {
     return this.method_auth.find { methodAuth ->
         methodAuth.method.name == ResourceRule.UpdateMetadata.value
     }?.access_rule_reference?.access_rule?.type?.let { type ->
@@ -296,13 +294,13 @@ fun AccessRulesChain.performUpdateMetadataAccessRule(): AccessRule? {
     }
 }
 
-fun AccessRulesChain.performUpdateMetadataAccessRuleSetToNonDefault(): Boolean {
+private fun AccessRulesChain.performUpdateMetadataAccessRuleSetToNonDefault(): Boolean {
     return performUpdateMetadataAccessRule()?.let {
         it != AccessRule.DenyAll
     } ?: false
 }
 
-fun AccessRulesChain.changeUpdateMetadataAccessRule(): AccessRule? {
+private fun AccessRulesChain.changeUpdateMetadataAccessRule(): AccessRule? {
     return this.method_auth_mutability.find { methodAuth ->
         methodAuth.method.name == ResourceRule.UpdateMetadata.value
     }?.access_rule_reference?.access_rule?.type?.let { type ->
@@ -310,13 +308,13 @@ fun AccessRulesChain.changeUpdateMetadataAccessRule(): AccessRule? {
     }
 }
 
-fun AccessRulesChain.changeUpdateMetadataAccessRuleSetToNonDefault(): Boolean {
+private fun AccessRulesChain.changeUpdateMetadataAccessRuleSetToNonDefault(): Boolean {
     return changeUpdateMetadataAccessRule()?.let {
         it != AccessRule.DenyAll
     } ?: false
 }
 
-fun AccessRulesChain.performRecallAccessRule(): AccessRule? {
+private fun AccessRulesChain.performRecallAccessRule(): AccessRule? {
     return this.method_auth.find { methodAuth ->
         methodAuth.method.name == ResourceRule.Recall.value
     }?.access_rule_reference?.access_rule?.type?.let { type ->
@@ -324,13 +322,13 @@ fun AccessRulesChain.performRecallAccessRule(): AccessRule? {
     }
 }
 
-fun AccessRulesChain.performRecallAccessRuleSetToNonDefault(): Boolean {
+private fun AccessRulesChain.performRecallAccessRuleSetToNonDefault(): Boolean {
     return performRecallAccessRule()?.let {
         it != AccessRule.DenyAll
     } ?: false
 }
 
-fun AccessRulesChain.changeRecallAccessRule(): AccessRule? {
+private fun AccessRulesChain.changeRecallAccessRule(): AccessRule? {
     return this.method_auth_mutability.find { methodAuth ->
         methodAuth.method.name == ResourceRule.Recall.value
     }?.access_rule_reference?.access_rule?.type?.let { type ->
@@ -338,13 +336,13 @@ fun AccessRulesChain.changeRecallAccessRule(): AccessRule? {
     }
 }
 
-fun AccessRulesChain.changeRecallAccessRuleSetToNonDefault(): Boolean {
+private fun AccessRulesChain.changeRecallAccessRuleSetToNonDefault(): Boolean {
     return changeRecallAccessRule()?.let {
         it != AccessRule.DenyAll
     } ?: false
 }
 
-fun AccessRulesChain.performUpdateNonFungibleMetadataAccessRule(): AccessRule? {
+private fun AccessRulesChain.performUpdateNonFungibleMetadataAccessRule(): AccessRule? {
     return this.method_auth.find { methodAuth ->
         methodAuth.method.name == ResourceRule.UpdateNonFungibleData.value
     }?.access_rule_reference?.access_rule?.type?.let { type ->
@@ -352,13 +350,13 @@ fun AccessRulesChain.performUpdateNonFungibleMetadataAccessRule(): AccessRule? {
     }
 }
 
-fun AccessRulesChain.performUpdateNonFungibleMetadataAccessRuleSetToNonDefault(): Boolean {
+private fun AccessRulesChain.performUpdateNonFungibleMetadataAccessRuleSetToNonDefault(): Boolean {
     return performUpdateNonFungibleMetadataAccessRule()?.let {
         it != AccessRule.DenyAll
     } ?: false
 }
 
-fun AccessRulesChain.changeUpdateNonFungibleMetadataAccessRule(): AccessRule? {
+private fun AccessRulesChain.changeUpdateNonFungibleMetadataAccessRule(): AccessRule? {
     return this.method_auth_mutability.find { methodAuth ->
         methodAuth.method.name == ResourceRule.UpdateNonFungibleData.value
     }?.access_rule_reference?.access_rule?.type?.let { type ->
@@ -366,13 +364,13 @@ fun AccessRulesChain.changeUpdateNonFungibleMetadataAccessRule(): AccessRule? {
     }
 }
 
-fun AccessRulesChain.changeUpdateNonFungibleMetadataAccessRuleSetToNonDefault(): Boolean {
+private fun AccessRulesChain.changeUpdateNonFungibleMetadataAccessRuleSetToNonDefault(): Boolean {
     return changeUpdateNonFungibleMetadataAccessRule()?.let {
         it != AccessRule.DenyAll
     } ?: false
 }
 
-fun AccessRulesChain.isUsingDefaultRules(): Boolean =
+private fun AccessRulesChain.isUsingDefaultRules(): Boolean =
     performBurnAccessRule()?.value == AccessRule.DenyAll.value &&
         changeBurnAccessRule()?.value == AccessRule.DenyAll.value &&
         performMintAccessRule()?.value == AccessRule.DenyAll.value &&
