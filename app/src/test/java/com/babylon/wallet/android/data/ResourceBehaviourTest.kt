@@ -1257,4 +1257,370 @@ class ResourceBehaviourTest {
         // then
         Assert.assertEquals(expectedBehaviours, behaviours)
     }
+
+    @Test
+    fun `given resource is fungible and all rules are set to defaults, verify DEFAULT_RESOURCE behaviour`() {
+        // given
+        val expectedBehaviours = listOf(
+            ResourceBehaviour.DEFAULT_RESOURCE
+        )
+        val fungibleResource = StateEntityDetailsResponseFungibleResourceDetails(
+            type = StateEntityDetailsResponseItemDetailsType.fungibleResource,
+            accessRulesChain = AccessRulesChain(
+                method_auth = listOf(
+                    MethodAuth(
+                        access_rule_reference = AccessRuleReference(
+                            access_rule = AccessRule(
+                                type = "DenyAll"
+                            ),
+                            type = "Rule"
+                        ),
+                        method = Method(
+                            module = "Main",
+                            name = "mint"
+                        )
+                    ),
+                    MethodAuth(
+                        access_rule_reference = AccessRuleReference(
+                            access_rule = AccessRule(
+                                type = "DenyAll"
+                            ),
+                            type = "Rule"
+                        ),
+                        method = Method(
+                            module = "Main",
+                            name = "burn"
+                        )
+                    ),
+                    MethodAuth(
+                        access_rule_reference = AccessRuleReference(
+                            access_rule = AccessRule(
+                                type = "AllowAll"
+                            ),
+                            type = "Rule"
+                        ),
+                        method = Method(
+                            module = "Main",
+                            name = "deposit"
+                        )
+                    ),
+                    MethodAuth(
+                        access_rule_reference = AccessRuleReference(
+                            access_rule = AccessRule(
+                                type = "AllowAll"
+                            ),
+                            type = "Rule"
+                        ),
+                        method = Method(
+                            module = "Main",
+                            name = "withdraw"
+                        )
+                    ),
+                    MethodAuth(
+                        access_rule_reference = AccessRuleReference(
+                            access_rule = AccessRule(
+                                type = "DenyAll"
+                            ),
+                            type = "Rule"
+                        ),
+                        method = Method(
+                            module = "Main",
+                            name = "set"
+                        )
+                    ),
+                    MethodAuth(
+                        access_rule_reference = AccessRuleReference(
+                            access_rule = AccessRule(
+                                type = "DenyAll"
+                            ),
+                            type = "Rule"
+                        ),
+                        method = Method(
+                            module = "Main",
+                            name = "recall"
+                        )
+                    )
+                ),
+                method_auth_mutability = listOf(
+                    MethodAuthMutability(
+                        access_rule_reference = AccessRuleReference(
+                            access_rule = AccessRule(
+                                type = "DenyAll"
+                            ),
+                            type = "Rule"
+                        ),
+                        method = Method(
+                            module = "Main",
+                            name = "mint"
+                        )
+                    ),
+                    MethodAuthMutability(
+                        access_rule_reference = AccessRuleReference(
+                            access_rule = AccessRule(
+                                type = "DenyAll"
+                            ),
+                            type = "Rule"
+                        ),
+                        method = Method(
+                            module = "Main",
+                            name = "burn"
+                        )
+                    ),
+                    MethodAuthMutability(
+                        access_rule_reference = AccessRuleReference(
+                            access_rule = AccessRule(
+                                type = "DenyAll"
+                            ),
+                            type = "Rule"
+                        ),
+                        method = Method(
+                            module = "Main",
+                            name = "deposit"
+                        )
+                    ),
+                    MethodAuthMutability(
+                        access_rule_reference = AccessRuleReference(
+                            access_rule = AccessRule(
+                                type = "DenyAll"
+                            ),
+                            type = "Rule"
+                        ),
+                        method = Method(
+                            module = "Main",
+                            name = "withdraw"
+                        )
+                    ),
+                    MethodAuthMutability(
+                        access_rule_reference = AccessRuleReference(
+                            access_rule = AccessRule(
+                                type = "DenyAll"
+                            ),
+                            type = "Rule"
+                        ),
+                        method = Method(
+                            module = "Main",
+                            name = "set"
+                        )
+                    ),
+                    MethodAuthMutability(
+                        access_rule_reference = AccessRuleReference(
+                            access_rule = AccessRule(
+                                type = "DenyAll"
+                            ),
+                            type = "Rule"
+                        ),
+                        method = Method(
+                            module = "Main",
+                            name = "recall"
+                        )
+                    )
+                ),
+            ),
+            divisibility = 1,
+            totalSupply = "",
+            totalBurned = "",
+            totalMinted = ""
+        )
+
+        // when
+        val behaviours = fungibleResource.calculateResourceBehaviours()
+
+        // then
+        Assert.assertEquals(expectedBehaviours, behaviours)
+    }
+
+    @Test
+    fun `given resource is nft and all rules are set to defaults, verify DEFAULT_RESOURCE behaviour`() {
+        // given
+        val expectedBehaviours = listOf(
+            ResourceBehaviour.DEFAULT_RESOURCE
+        )
+        val fungibleResource = StateEntityDetailsResponseFungibleResourceDetails(
+            type = StateEntityDetailsResponseItemDetailsType.nonFungibleResource,
+            accessRulesChain = AccessRulesChain(
+                method_auth = listOf(
+                    MethodAuth(
+                        access_rule_reference = AccessRuleReference(
+                            access_rule = AccessRule(
+                                type = "DenyAll"
+                            ),
+                            type = "Rule"
+                        ),
+                        method = Method(
+                            module = "Main",
+                            name = "mint"
+                        )
+                    ),
+                    MethodAuth(
+                        access_rule_reference = AccessRuleReference(
+                            access_rule = AccessRule(
+                                type = "DenyAll"
+                            ),
+                            type = "Rule"
+                        ),
+                        method = Method(
+                            module = "Main",
+                            name = "burn"
+                        )
+                    ),
+                    MethodAuth(
+                        access_rule_reference = AccessRuleReference(
+                            access_rule = AccessRule(
+                                type = "AllowAll"
+                            ),
+                            type = "Rule"
+                        ),
+                        method = Method(
+                            module = "Main",
+                            name = "deposit"
+                        )
+                    ),
+                    MethodAuth(
+                        access_rule_reference = AccessRuleReference(
+                            access_rule = AccessRule(
+                                type = "AllowAll"
+                            ),
+                            type = "Rule"
+                        ),
+                        method = Method(
+                            module = "Main",
+                            name = "withdraw"
+                        )
+                    ),
+                    MethodAuth(
+                        access_rule_reference = AccessRuleReference(
+                            access_rule = AccessRule(
+                                type = "DenyAll"
+                            ),
+                            type = "Rule"
+                        ),
+                        method = Method(
+                            module = "Main",
+                            name = "set"
+                        )
+                    ),
+                    MethodAuth(
+                        access_rule_reference = AccessRuleReference(
+                            access_rule = AccessRule(
+                                type = "DenyAll"
+                            ),
+                            type = "Rule"
+                        ),
+                        method = Method(
+                            module = "Main",
+                            name = "recall"
+                        )
+                    ),
+                    MethodAuth(
+                        access_rule_reference = AccessRuleReference(
+                            access_rule = AccessRule(
+                                type = "DenyAll"
+                            ),
+                            type = "Rule"
+                        ),
+                        method = Method(
+                            module = "Main",
+                            name = "update_non_fungible_data"
+                        )
+                    )
+                ),
+                method_auth_mutability = listOf(
+                    MethodAuthMutability(
+                        access_rule_reference = AccessRuleReference(
+                            access_rule = AccessRule(
+                                type = "DenyAll"
+                            ),
+                            type = "Rule"
+                        ),
+                        method = Method(
+                            module = "Main",
+                            name = "mint"
+                        )
+                    ),
+                    MethodAuthMutability(
+                        access_rule_reference = AccessRuleReference(
+                            access_rule = AccessRule(
+                                type = "DenyAll"
+                            ),
+                            type = "Rule"
+                        ),
+                        method = Method(
+                            module = "Main",
+                            name = "burn"
+                        )
+                    ),
+                    MethodAuthMutability(
+                        access_rule_reference = AccessRuleReference(
+                            access_rule = AccessRule(
+                                type = "DenyAll"
+                            ),
+                            type = "Rule"
+                        ),
+                        method = Method(
+                            module = "Main",
+                            name = "deposit"
+                        )
+                    ),
+                    MethodAuthMutability(
+                        access_rule_reference = AccessRuleReference(
+                            access_rule = AccessRule(
+                                type = "DenyAll"
+                            ),
+                            type = "Rule"
+                        ),
+                        method = Method(
+                            module = "Main",
+                            name = "withdraw"
+                        )
+                    ),
+                    MethodAuthMutability(
+                        access_rule_reference = AccessRuleReference(
+                            access_rule = AccessRule(
+                                type = "DenyAll"
+                            ),
+                            type = "Rule"
+                        ),
+                        method = Method(
+                            module = "Main",
+                            name = "set"
+                        )
+                    ),
+                    MethodAuthMutability(
+                        access_rule_reference = AccessRuleReference(
+                            access_rule = AccessRule(
+                                type = "DenyAll"
+                            ),
+                            type = "Rule"
+                        ),
+                        method = Method(
+                            module = "Main",
+                            name = "recall"
+                        )
+                    ),
+                    MethodAuthMutability(
+                        access_rule_reference = AccessRuleReference(
+                            access_rule = AccessRule(
+                                type = "DenyAll"
+                            ),
+                            type = "Rule"
+                        ),
+                        method = Method(
+                            module = "Main",
+                            name = "update_non_fungible_data"
+                        )
+                    )
+                ),
+            ),
+            divisibility = 1,
+            totalSupply = "",
+            totalBurned = "",
+            totalMinted = ""
+        )
+
+        // when
+        val behaviours = fungibleResource.calculateResourceBehaviours()
+
+        // then
+        Assert.assertEquals(expectedBehaviours, behaviours)
+    }
 }

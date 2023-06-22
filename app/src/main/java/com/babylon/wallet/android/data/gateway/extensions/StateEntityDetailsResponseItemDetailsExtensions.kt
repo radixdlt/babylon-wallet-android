@@ -63,7 +63,7 @@ fun StateEntityDetailsResponseItemDetails.totalSupply(): String? {
 
 @Suppress("ComplexCondition", "TooManyFunctions", "LongMethod", "CyclomaticComplexMethod")
 fun StateEntityDetailsResponseItemDetails.calculateResourceBehaviours(): List<ResourceBehaviour> {
-    return if (toAccessRulesChain()?.isUsingDefaultRules() == true) {
+    return if (isUsingDefaultRules()) {
         listOf(ResourceBehaviour.DEFAULT_RESOURCE)
     } else {
         val mutableList = mutableListOf<ResourceBehaviour>()
@@ -370,18 +370,44 @@ private fun AccessRulesChain.changeUpdateNonFungibleMetadataAccessRuleSetToNonDe
     } ?: false
 }
 
-private fun AccessRulesChain.isUsingDefaultRules(): Boolean =
-    performBurnAccessRule()?.value == AccessRule.DenyAll.value &&
-        changeBurnAccessRule()?.value == AccessRule.DenyAll.value &&
-        performMintAccessRule()?.value == AccessRule.DenyAll.value &&
-        changeMintAccessRule()?.value == AccessRule.DenyAll.value &&
-        performDepositAccessRule()?.value == AccessRule.AllowAll.value &&
-        changeDepositAccessRule()?.value == AccessRule.DenyAll.value &&
-        performWithdrawAccessRule()?.value == AccessRule.AllowAll.value &&
-        changeWithdrawAccessRule()?.value == AccessRule.DenyAll.value &&
-        performUpdateMetadataAccessRule()?.value == AccessRule.DenyAll.value &&
-        changeUpdateMetadataAccessRule()?.value == AccessRule.DenyAll.value &&
-        performRecallAccessRule()?.value == AccessRule.DenyAll.value &&
-        changeRecallAccessRule()?.value == AccessRule.DenyAll.value &&
-        performUpdateNonFungibleMetadataAccessRule()?.value == AccessRule.DenyAll.value &&
-        changeUpdateNonFungibleMetadataAccessRule()?.value == AccessRule.DenyAll.value
+private fun StateEntityDetailsResponseItemDetails.isUsingDefaultRules(): Boolean  {
+    return when (val details = this) {
+        is StateEntityDetailsResponseFungibleResourceDetails -> {
+            val accessRulesChain = details.accessRulesChain
+            accessRulesChain.performBurnAccessRule()?.value == AccessRule.DenyAll.value &&
+                    accessRulesChain.changeBurnAccessRule()?.value == AccessRule.DenyAll.value &&
+                    accessRulesChain.performMintAccessRule()?.value == AccessRule.DenyAll.value &&
+                    accessRulesChain.changeMintAccessRule()?.value == AccessRule.DenyAll.value &&
+                    accessRulesChain.performDepositAccessRule()?.value == AccessRule.AllowAll.value &&
+                    accessRulesChain.changeDepositAccessRule()?.value == AccessRule.DenyAll.value &&
+                    accessRulesChain.performWithdrawAccessRule()?.value == AccessRule.AllowAll.value &&
+                    accessRulesChain.changeWithdrawAccessRule()?.value == AccessRule.DenyAll.value &&
+                    accessRulesChain.performUpdateMetadataAccessRule()?.value == AccessRule.DenyAll.value &&
+                    accessRulesChain.changeUpdateMetadataAccessRule()?.value == AccessRule.DenyAll.value &&
+                    accessRulesChain.performRecallAccessRule()?.value == AccessRule.DenyAll.value &&
+                    accessRulesChain.changeRecallAccessRule()?.value == AccessRule.DenyAll.value
+        }
+
+        is StateEntityDetailsResponseNonFungibleResourceDetails -> {
+            val accessRulesChain = details.accessRulesChain
+            accessRulesChain.performBurnAccessRule()?.value == AccessRule.DenyAll.value &&
+                    accessRulesChain.changeBurnAccessRule()?.value == AccessRule.DenyAll.value &&
+                    accessRulesChain.performMintAccessRule()?.value == AccessRule.DenyAll.value &&
+                    accessRulesChain.changeMintAccessRule()?.value == AccessRule.DenyAll.value &&
+                    accessRulesChain.performDepositAccessRule()?.value == AccessRule.AllowAll.value &&
+                    accessRulesChain.changeDepositAccessRule()?.value == AccessRule.DenyAll.value &&
+                    accessRulesChain.performWithdrawAccessRule()?.value == AccessRule.AllowAll.value &&
+                    accessRulesChain.changeWithdrawAccessRule()?.value == AccessRule.DenyAll.value &&
+                    accessRulesChain.performUpdateMetadataAccessRule()?.value == AccessRule.DenyAll.value &&
+                    accessRulesChain.changeUpdateMetadataAccessRule()?.value == AccessRule.DenyAll.value &&
+                    accessRulesChain.performRecallAccessRule()?.value == AccessRule.DenyAll.value &&
+                    accessRulesChain.changeRecallAccessRule()?.value == AccessRule.DenyAll.value &&
+                    accessRulesChain.performUpdateNonFungibleMetadataAccessRule()?.value == AccessRule.DenyAll.value &&
+                    accessRulesChain.changeUpdateNonFungibleMetadataAccessRule()?.value == AccessRule.DenyAll.value
+        }
+
+        else -> {
+            false
+        }
+    }
+}
