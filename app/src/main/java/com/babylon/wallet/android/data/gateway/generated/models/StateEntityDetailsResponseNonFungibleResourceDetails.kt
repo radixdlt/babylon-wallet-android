@@ -37,8 +37,8 @@ data class StateEntityDetailsResponseNonFungibleResourceDetails (
     @SerialName(value = "type")
     override val type: StateEntityDetailsResponseItemDetailsType,
 
-//    @Contextual @SerialName(value = "access_rules_chain")
-//    val accessRulesChain: kotlin.Any,
+    @SerialName(value = "access_rules_chain")
+    val accessRulesChain: AccessRulesChain,
 
 //    @Contextual @SerialName(value = "vault_access_rules_chain")
 //    val vaultAccessRulesChain: kotlin.Any,
@@ -46,17 +46,17 @@ data class StateEntityDetailsResponseNonFungibleResourceDetails (
     @Contextual @SerialName(value = "non_fungible_id_type")
     val nonFungibleIdType: NonFungibleIdType,
 
-//    /* String-encoded decimal representing the amount of a related fungible resource. */
-//    @SerialName(value = "total_supply")
-//    val totalSupply: kotlin.String,
-//
-//    /* String-encoded decimal representing the amount of a related fungible resource. */
-//    @SerialName(value = "total_minted")
-//    val totalMinted: kotlin.String,
-//
-//    /* String-encoded decimal representing the amount of a related fungible resource. */
-//    @SerialName(value = "total_burned")
-//    val totalBurned: kotlin.String
+    /* String-encoded decimal representing the amount of a related fungible resource. */
+    @SerialName(value = "total_supply")
+    val totalSupply: kotlin.String,
+
+    /* String-encoded decimal representing the amount of a related fungible resource. */
+    @SerialName(value = "total_minted")
+    val totalMinted: kotlin.String,
+
+    /* String-encoded decimal representing the amount of a related fungible resource. */
+    @SerialName(value = "total_burned")
+    val totalBurned: kotlin.String
 
 ) : StateEntityDetailsResponseItemDetails()
 

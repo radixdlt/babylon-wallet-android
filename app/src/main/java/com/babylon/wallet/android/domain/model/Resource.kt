@@ -1,10 +1,12 @@
 package com.babylon.wallet.android.domain.model
 
 import android.net.Uri
+import com.babylon.wallet.android.domain.model.behaviours.ResourceBehaviour
 import com.babylon.wallet.android.domain.model.metadata.DescriptionMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.IconUrlMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.NameMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.SymbolMetadataItem
+import com.babylon.wallet.android.domain.model.metadata.TagsMetadataItem
 import com.radixdlt.toolkit.RadixEngineToolkit
 import com.radixdlt.toolkit.models.request.KnownEntityAddressesRequest
 import rdx.works.profile.data.model.apppreferences.Radix
@@ -20,7 +22,10 @@ sealed class Resource {
         private val nameMetadataItem: NameMetadataItem? = null,
         private val symbolMetadataItem: SymbolMetadataItem? = null,
         private val descriptionMetadataItem: DescriptionMetadataItem? = null,
-        private val iconUrlMetadataItem: IconUrlMetadataItem? = null
+        private val iconUrlMetadataItem: IconUrlMetadataItem? = null,
+        private val tagsMetadataItem: TagsMetadataItem? = null,
+        private val behaviours: List<ResourceBehaviour> = emptyList(),
+        private val currentSupply: String? = null
     ) : Resource(), Comparable<FungibleResource> {
         val name: String
             get() = nameMetadataItem?.name.orEmpty()
@@ -33,6 +38,20 @@ sealed class Resource {
 
         val iconUrl: Uri?
             get() = iconUrlMetadataItem?.url
+
+        val tags: List<Tag>
+            get() = if (isXrd) {
+                tagsMetadataItem?.tags?.map { Tag(name = it, isXrd = false) }
+                    ?.plus(Tag.OfficialRadix).orEmpty()
+            } else {
+                tagsMetadataItem?.tags?.map { Tag(name = it, isXrd = false) }.orEmpty()
+            }
+
+        val resourceBehaviours: List<ResourceBehaviour>
+            get() = behaviours
+
+        val currentSupplyToDisplay: String?
+            get() = currentSupply
 
         val displayTitle: String
             get() = if (symbol.isNotBlank()) {
@@ -84,7 +103,10 @@ sealed class Resource {
         private val nameMetadataItem: NameMetadataItem? = null,
         private val descriptionMetadataItem: DescriptionMetadataItem? = null,
         private val iconMetadataItem: IconUrlMetadataItem? = null,
-        val items: List<Item>
+        private val tagsMetadataItem: TagsMetadataItem? = null,
+        private val behaviours: List<ResourceBehaviour> = emptyList(),
+        val items: List<Item>,
+        private val currentSupply: String? = null
     ) : Resource(), Comparable<NonFungibleResource> {
         val name: String
             get() = nameMetadataItem?.name.orEmpty()
@@ -94,6 +116,15 @@ sealed class Resource {
 
         val iconUrl: Uri?
             get() = iconMetadataItem?.url
+
+        val tags: List<Tag>
+            get() = tagsMetadataItem?.tags?.map { Tag(name = it, isXrd = false) }.orEmpty()
+
+        val resourceBehaviours: List<ResourceBehaviour>
+            get() = behaviours
+
+        val currentSupplyToDisplay: String?
+            get() = currentSupply
 
         override fun compareTo(other: NonFungibleResource): Int = when {
             nameMetadataItem == null && other.nameMetadataItem != null -> 1

@@ -167,6 +167,7 @@ private fun AccountScreenContent(
                             NonFungibleTokenBottomSheetDetails(
                                 modifier = Modifier.fillMaxSize(),
                                 item = state.selectedResource.item,
+                                nonFungibleItem = state.selectedResource.nonFungible,
                                 onCloseClick = {
                                     scope.launch {
                                         bottomSheetState.hide()

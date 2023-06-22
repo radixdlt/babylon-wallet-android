@@ -37,8 +37,8 @@ data class StateEntityDetailsResponseFungibleResourceDetails (
     @SerialName(value = "type")
     override val type: StateEntityDetailsResponseItemDetailsType,
 
-//    @Contextual @SerialName(value = "access_rules_chain")
-//    val accessRulesChain: kotlin.Any,
+    @SerialName(value = "access_rules_chain")
+    val accessRulesChain: AccessRulesChain,
 
 //    @Contextual @SerialName(value = "vault_access_rules_chain")
 //    val vaultAccessRulesChain: kotlin.Any,
@@ -47,16 +47,70 @@ data class StateEntityDetailsResponseFungibleResourceDetails (
     val divisibility: kotlin.Int,
 
     /* String-encoded decimal representing the amount of a related fungible resource. */
-//    @SerialName(value = "total_supply")
-//    val totalSupply: kotlin.String,
-//
-//    /* String-encoded decimal representing the amount of a related fungible resource. */
-//    @SerialName(value = "total_minted")
-//    val totalMinted: kotlin.String,
-//
-//    /* String-encoded decimal representing the amount of a related fungible resource. */
-//    @SerialName(value = "total_burned")
-//    val totalBurned: kotlin.String
+    @SerialName(value = "total_supply")
+    val totalSupply: kotlin.String,
+
+    /* String-encoded decimal representing the amount of a related fungible resource. */
+    @SerialName(value = "total_minted")
+    val totalMinted: kotlin.String,
+
+    /* String-encoded decimal representing the amount of a related fungible resource. */
+    @SerialName(value = "total_burned")
+    val totalBurned: kotlin.String
 
 ) : StateEntityDetailsResponseItemDetails()
+
+@Serializable
+data class AccessRulesChain(
+    @SerialName(value = "method_auth")
+    val method_auth: List<MethodAuth>,
+
+    @SerialName(value = "method_auth_mutability")
+    val method_auth_mutability: List<MethodAuthMutability>
+)
+
+@Serializable
+data class MethodAuth(
+    @SerialName(value = "access_rule_reference")
+    val access_rule_reference: AccessRuleReference,
+
+    @SerialName(value = "method")
+    val method: Method
+)
+
+@Serializable
+data class MethodAuthMutability(
+    @SerialName(value = "access_rule_reference")
+    val access_rule_reference: AccessRuleReference,
+
+    @SerialName(value = "method")
+    val method: Method
+)
+
+@Serializable
+data class AccessRule(
+    @SerialName(value = "type")
+    val type: String
+)
+
+@Serializable
+data class AccessRuleReference(
+    @SerialName(value = "access_rule")
+    val access_rule: AccessRule? = null,
+
+    @SerialName(value = "group_name")
+    val group_name: String? = null,
+
+    @SerialName(value = "type")
+    val type: String
+)
+
+@Serializable
+data class Method(
+    @SerialName(value = "module")
+    val module: String,
+
+    @SerialName(value = "name")
+    val name: String
+)
 

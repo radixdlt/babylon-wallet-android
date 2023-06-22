@@ -22,7 +22,13 @@ data class RadixShapes(
     val roundedRectDefault: CornerBasedShape = RoundedCornerShape(16.dp),
     val roundedRectTopMedium: CornerBasedShape = RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp),
     val roundedRectBottomMedium: CornerBasedShape = RoundedCornerShape(bottomEnd = 12.dp, bottomStart = 12.dp),
-    val roundedRectTopDefault: CornerBasedShape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp)
+    val roundedRectTopDefault: CornerBasedShape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp),
+    val roundedTag: CornerBasedShape = RoundedCornerShape(
+        topStart = 4.dp,
+        topEnd = 36.dp,
+        bottomStart = 4.dp,
+        bottomEnd = 36.dp
+    )
 )
 
 fun bubbleShape(

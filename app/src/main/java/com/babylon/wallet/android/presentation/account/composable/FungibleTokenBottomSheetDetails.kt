@@ -1,15 +1,21 @@
 package com.babylon.wallet.android.presentation.account.composable
 
 import android.graphics.drawable.ColorDrawable
+import androidx.annotation.DrawableRes
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.material3.Divider
 import androidx.compose.runtime.Composable
@@ -36,6 +42,7 @@ import com.babylon.wallet.android.presentation.ui.composables.rememberImageUrl
 import com.google.accompanist.drawablepainter.rememberDrawablePainter
 import rdx.works.core.displayableQuantity
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun FungibleTokenBottomSheetDetails(
     fungible: Resource.FungibleResource,
@@ -82,7 +89,7 @@ fun FungibleTokenBottomSheetDetails(
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
 
             if (fungible.description.isNotBlank()) {
-                Divider(Modifier.fillMaxWidth(), color = RadixTheme.colors.gray5)
+                Divider(Modifier.fillMaxWidth(), color = RadixTheme.colors.gray4)
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
                 Text(
                     text = fungible.description,
@@ -90,20 +97,107 @@ fun FungibleTokenBottomSheetDetails(
                     color = RadixTheme.colors.gray1
                 )
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
-                Divider(Modifier.fillMaxWidth(), color = RadixTheme.colors.gray5)
+                Divider(Modifier.fillMaxWidth(), color = RadixTheme.colors.gray4)
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
             }
             ResourceAddressRow(
                 modifier = Modifier.fillMaxWidth(),
                 address = fungible.resourceAddress
             )
+            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
+            if (fungible.displayTitle.isNotEmpty()) {
+                Row(
+                    modifier,
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(
+                        text = stringResource(id = R.string.assetDetails_name),
+                        style = RadixTheme.typography.body1Regular,
+                        color = RadixTheme.colors.gray2
+                    )
+
+                    Text(
+                        text = fungible.displayTitle,
+                        style = RadixTheme.typography.body1Regular,
+                        color = RadixTheme.colors.gray1
+                    )
+                }
+                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
+            }
+
+            fungible.currentSupplyToDisplay?.let { currentSupply ->
+                Row(
+                    modifier,
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(
+                        text = stringResource(id = R.string.assetDetails_currentSupply),
+                        style = RadixTheme.typography.body1Regular,
+                        color = RadixTheme.colors.gray2
+                    )
+
+                    Text(
+                        text = currentSupply,
+                        style = RadixTheme.typography.body1Regular,
+                        color = RadixTheme.colors.gray1
+                    )
+                }
+            }
+
+            if (fungible.resourceBehaviours.isNotEmpty()) {
+                Column {
+                    Text(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(
+                                top = RadixTheme.dimensions.paddingDefault,
+                                bottom = RadixTheme.dimensions.paddingSmall
+                            ),
+                        text = stringResource(id = R.string.assetDetails_behavior),
+                        style = RadixTheme.typography.body1Regular,
+                        color = RadixTheme.colors.gray2
+                    )
+                    fungible.resourceBehaviours.forEach { resourceBehaviour ->
+                        Behaviour(
+                            icon = resourceBehaviour.icon,
+                            title = stringResource(id = resourceBehaviour.title)
+                        )
+                    }
+                }
+            }
+
+            if (fungible.tags.isNotEmpty()) {
+                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
+                Text(
+                    modifier = Modifier.fillMaxWidth(),
+                    text = "Tags", // todo need to go to crowdin
+                    style = RadixTheme.typography.body1Regular,
+                    color = RadixTheme.colors.gray2
+                )
+                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
+                FlowRow(
+                    modifier = Modifier.fillMaxWidth(),
+                    content = {
+                        fungible.tags.forEach { tag ->
+                            Tag(
+                                name = tag.name,
+                                isXrd = tag.isXrd
+                            )
+                        }
+                    }
+                )
+                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
+            }
+
             Spacer(modifier = Modifier.height(100.dp))
         }
     }
 }
 
 @Composable
-private fun ResourceAddressRow(
+fun ResourceAddressRow(
     modifier: Modifier,
     address: String
 ) {
@@ -123,6 +217,77 @@ private fun ResourceAddressRow(
             textStyle = RadixTheme.typography.body1Regular,
             textColor = RadixTheme.colors.gray1,
             iconColor = RadixTheme.colors.gray2
+        )
+    }
+}
+
+@Composable
+fun Behaviour(
+    modifier: Modifier = Modifier,
+    @DrawableRes icon: Int,
+    title: String
+) {
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(vertical = RadixTheme.dimensions.paddingXSmall),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Image(
+            painter = painterResource(id = icon),
+            contentDescription = "behaviour image"
+        )
+
+        Text(
+            modifier = Modifier
+                .weight(1f)
+                .padding(horizontal = RadixTheme.dimensions.paddingDefault),
+            text = title,
+            style = RadixTheme.typography.body2Regular,
+            color = RadixTheme.colors.gray1,
+            maxLines = 2
+        )
+
+        Icon(
+            painter = painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_info_outline),
+            contentDescription = null,
+            tint = RadixTheme.colors.gray3
+        )
+    }
+}
+
+@Composable
+fun Tag(
+    modifier: Modifier = Modifier,
+    name: String,
+    isXrd: Boolean
+) {
+    Row(
+        modifier = modifier
+            .padding(RadixTheme.dimensions.paddingXSmall)
+            .border(
+                width = 1.dp,
+                color = RadixTheme.colors.gray4,
+                shape = RadixTheme.shapes.roundedTag
+            )
+            .padding(RadixTheme.dimensions.paddingSmall),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Icon(
+            painter = if (isXrd) {
+                painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_radix_tag)
+            } else {
+                painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_token_tag)
+            },
+            contentDescription = "tag image",
+            tint = RadixTheme.colors.gray2
+        )
+
+        Text(
+            modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingSmall),
+            text = name,
+            style = RadixTheme.typography.body2HighImportance,
+            color = RadixTheme.colors.gray2
         )
     }
 }
