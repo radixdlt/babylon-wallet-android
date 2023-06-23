@@ -10,7 +10,7 @@ class RestoreMnemonicUseCase @Inject constructor(
 ) {
 
     suspend operator fun invoke(
-        factorSourceId: FactorSource.ID,
+        factorSourceId: FactorSource.FactorSourceID.FromHash,
         mnemonicWithPassphrase: MnemonicWithPassphrase
     ) = mnemonicRepository.saveMnemonic(factorSourceId, mnemonicWithPassphrase)
 }
