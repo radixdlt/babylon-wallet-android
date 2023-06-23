@@ -11,7 +11,7 @@ import rdx.works.profile.data.model.ProfileSnapshot
 import rdx.works.profile.data.model.apppreferences.P2PLink
 import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.data.model.apppreferences.addP2PLink
-import rdx.works.profile.data.model.factorsources.FactorSource
+import rdx.works.profile.data.model.factorsources.DeviceFactorSource
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.data.model.pernetwork.Network.Account.Companion.initAccountWithDeviceFactorSource
 import rdx.works.profile.data.model.pernetwork.Network.Persona.Companion.init
@@ -19,6 +19,8 @@ import rdx.works.profile.data.model.pernetwork.SecurityState
 import rdx.works.profile.data.model.pernetwork.addAccount
 import rdx.works.profile.data.model.pernetwork.addPersona
 import rdx.works.profile.data.repository.createOrUpdateAuthorizedDapp
+import rdx.works.profile.data.utils.getNextAccountDerivationIndex
+import rdx.works.profile.data.utils.getNextIdentityDerivationIndex
 import java.io.File
 import java.time.Instant
 
@@ -35,7 +37,8 @@ class ProfileTest {
         val profile = Profile.init(
             mnemonicWithPassphrase = mnemonicWithPassphrase,
             id = "9958f568-8c9b-476a-beeb-017d1f843266",
-            creatingDevice = "Galaxy A53 5G (Samsung SM-A536B)",
+            deviceName = "Galaxy A53 5G (Samsung SM-A536B)",
+            deviceModel = "Samsung",
             creationDate = InstantGenerator()
         )
 
@@ -45,33 +48,33 @@ class ProfileTest {
         assertEquals(profile.networks.first().accounts.count(), 0)
         assertEquals(profile.networks.first().personas.count(), 0)
         assertEquals(
-            "Next derivation index for second account",
-            profile.factorSources.first().getNextAccountDerivationIndex(defaultNetwork.networkId()),
-            0
+            "Next derivation index for first account",
+            0,
+            (profile.factorSources.first() as DeviceFactorSource).nextDerivationIndicesPerNetwork.getNextAccountDerivationIndex(forNetworkId = defaultNetwork.networkId())
         )
 
         println("Profile generated $profile")
 
-        val factorSource = FactorSource.babylon(mnemonicWithPassphrase = mnemonicWithPassphrase)
         val firstAccount = initAccountWithDeviceFactorSource(
-            displayName = "Second",
+            displayName = "first account",
             mnemonicWithPassphrase = mnemonicWithPassphrase,
-            deviceFactorSource = factorSource,
+            deviceFactorSource = (profile.factorSources.first() as DeviceFactorSource),
             networkId = defaultNetwork.networkId(),
             appearanceID = 0
         )
 
         var updatedProfile = profile.addAccount(
             account = firstAccount,
-            withFactorSourceId = factorSource.id,
+            withFactorSourceId = (profile.factorSources.first() as DeviceFactorSource).id,
             onNetwork = defaultNetwork.networkId()
         )
 
+        println("Profile updated generated $updatedProfile")
         assertEquals(updatedProfile.networks.first().accounts.count(), 1)
         assertEquals(
-            "Next derivation index for third account",
-            updatedProfile.factorSources.first().getNextAccountDerivationIndex(defaultNetwork.networkId()),
-            1
+            "Next derivation index for second account",
+            1,
+            (updatedProfile.factorSources.first() as DeviceFactorSource).nextDerivationIndicesPerNetwork.getNextAccountDerivationIndex(forNetworkId = defaultNetwork.networkId()),
         )
 
         val firstPersona = init(
@@ -87,21 +90,21 @@ class ProfileTest {
                 )
             ),
             mnemonicWithPassphrase = mnemonicWithPassphrase,
-            factorSource = factorSource,
+            factorSource = (profile.factorSources.first() as DeviceFactorSource),
             networkId = defaultNetwork.networkId()
         )
 
         updatedProfile = updatedProfile.addPersona(
             persona = firstPersona,
-            withFactorSourceId = factorSource.id,
+            withFactorSourceId = (profile.factorSources.first() as DeviceFactorSource).id,
             onNetwork = defaultNetwork.networkId()
         )
 
         assertEquals(updatedProfile.networks.first().personas.count(), 1)
         assertEquals(
             "Next derivation index for second persona",
-            updatedProfile.factorSources.first().getNextIdentityDerivationIndex(defaultNetwork.networkId()),
-            1
+            1,
+            (updatedProfile.factorSources.first() as DeviceFactorSource).nextDerivationIndicesPerNetwork.getNextIdentityDerivationIndex(forNetworkId = defaultNetwork.networkId())
         )
 
         val p2pLink = P2PLink.init(
@@ -112,9 +115,9 @@ class ProfileTest {
             p2pLink = p2pLink
         )
 
-        assertEquals(updatedProfile.appPreferences.p2pLinks.count(), 1)
+        assertEquals(1, updatedProfile.appPreferences.p2pLinks.count())
 
-        Assert.assertTrue(profile.header.id.isNotBlank())
+        Assert.assertTrue(updatedProfile.header.id.isNotBlank())
     }
 
     @Test
@@ -134,12 +137,13 @@ class ProfileTest {
 
         var expected = Profile.init(
             mnemonicWithPassphrase = mnemonicWithPassphrase,
-            creatingDevice = "Galaxy A53 5G (Samsung SM-A536B)",
+            deviceName = "Galaxy A53 5G (Samsung SM-A536B)",
+            deviceModel = "Samsung",
             id = "9958f568-8c9b-476a-beeb-017d1f843266",
             creationDate = Instant.parse("2023-03-07T10:48:21Z"),
             gateway = gateway
         )
-        expected = expected.copy(factorSources = expected.factorSources + listOf(FactorSource.olympia(mnemonicWithPassphrase)))
+        expected = expected.copy(factorSources = expected.factorSources + listOf(DeviceFactorSource.olympia(mnemonicWithPassphrase)))
 
         val firstAccount = initAccountWithDeviceFactorSource(
             displayName = "First",
@@ -353,14 +357,14 @@ class ProfileTest {
 
         assertEquals(
             "The next id for creating an account in this factor source",
-            expected.factorSources.first().getNextAccountDerivationIndex(networkId),
-            actual.factorSources.first().getNextAccountDerivationIndex(networkId)
+            (expected.factorSources.first() as DeviceFactorSource).nextDerivationIndicesPerNetwork.getNextAccountDerivationIndex(networkId), //?.first()?.networkId,
+            (actual.factorSources.first() as DeviceFactorSource).nextDerivationIndicesPerNetwork.getNextAccountDerivationIndex(networkId) //?.first()?.networkId,
         )
 
         assertEquals(
             "The next id for creating an identity in this factor source",
-            expected.factorSources.first().getNextIdentityDerivationIndex(networkId),
-            actual.factorSources.first().getNextIdentityDerivationIndex(networkId)
+            (expected.factorSources.first() as DeviceFactorSource).nextDerivationIndicesPerNetwork.getNextIdentityDerivationIndex(networkId), //?.first()?.networkId, //.getNextAccountDerivationIndex(networkId),
+            (actual.factorSources.first() as DeviceFactorSource).nextDerivationIndicesPerNetwork.getNextIdentityDerivationIndex(networkId) //?.first()?.networkId, //.getNextAccountDerivationIndex(networkId)
         )
 
         // Per Network count

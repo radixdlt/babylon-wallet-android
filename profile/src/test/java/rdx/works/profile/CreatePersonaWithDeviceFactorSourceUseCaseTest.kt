@@ -22,6 +22,8 @@ import rdx.works.profile.data.model.apppreferences.Gateways
 import rdx.works.profile.data.model.apppreferences.P2PLink
 import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.data.model.apppreferences.Security
+import rdx.works.profile.data.model.factorsources.DeviceFactorSource
+import rdx.works.profile.data.model.factorsources.FactorSourceKind
 import rdx.works.profile.data.model.factorsources.FactorSource
 import rdx.works.profile.data.model.pernetwork.DerivationPath
 import rdx.works.profile.data.model.pernetwork.FactorInstance
@@ -32,7 +34,6 @@ import rdx.works.profile.data.repository.MnemonicRepository
 import rdx.works.profile.data.repository.ProfileRepository
 import rdx.works.profile.derivation.model.KeyType
 import rdx.works.profile.domain.persona.CreatePersonaWithDeviceFactorSourceUseCase
-import java.time.Instant
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class CreatePersonaWithDeviceFactorSourceUseCaseTest {
@@ -63,7 +64,7 @@ class CreatePersonaWithDeviceFactorSourceUseCaseTest {
             val profile = Profile(
                 header = Header.init(
                     id = "9958f568-8c9b-476a-beeb-017d1f843266",
-                    creatingDevice = "Galaxy A53 5G (Samsung SM-A536B)",
+                    deviceName = "Galaxy A53 5G (Samsung SM-A536B)",
                     creationDate = InstantGenerator(),
                     numberOfNetworks = 1,
                     numberOfAccounts = 1
@@ -80,7 +81,7 @@ class CreatePersonaWithDeviceFactorSourceUseCaseTest {
                     )
                 ),
                 factorSources = listOf(
-                    FactorSource.babylon(mnemonicWithPassphrase = mnemonicWithPassphrase)
+                    DeviceFactorSource.babylon(mnemonicWithPassphrase = mnemonicWithPassphrase)
                 ),
                 networks = listOf(
                     Network(
@@ -98,7 +99,10 @@ class CreatePersonaWithDeviceFactorSourceUseCaseTest {
                                                 accountIndex = 0,
                                                 keyType = KeyType.TRANSACTION_SIGNING
                                             ),
-                                            factorSourceId = FactorSource.ID("IDIDDIIDD"),
+                                            factorSourceId = FactorSource.FactorSourceID.FromHash(
+                                                kind = FactorSourceKind.DEVICE,
+                                                body = FactorSource.HexCoded32Bytes("IDIDDIIDD")
+                                            ),
                                             publicKey = FactorInstance.PublicKey.curve25519PublicKey("")
                                         )
                                     )

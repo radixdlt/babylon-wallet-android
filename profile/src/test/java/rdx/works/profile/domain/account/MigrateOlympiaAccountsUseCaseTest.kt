@@ -34,6 +34,8 @@ import rdx.works.profile.data.model.apppreferences.P2PLink
 import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.data.model.apppreferences.Security
 import rdx.works.profile.data.model.currentNetwork
+import rdx.works.profile.data.model.factorsources.DeviceFactorSource
+import rdx.works.profile.data.model.factorsources.FactorSourceKind
 import rdx.works.profile.data.model.factorsources.FactorSource
 import rdx.works.profile.data.model.pernetwork.DerivationPath
 import rdx.works.profile.data.model.pernetwork.FactorInstance
@@ -65,7 +67,7 @@ internal class MigrateOlympiaAccountsUseCaseTest {
         val profile = Profile(
             header = Header.init(
                 id = "9958f568-8c9b-476a-beeb-017d1f843266",
-                creatingDevice = "Galaxy A53 5G (Samsung SM-A536B)",
+                deviceName = "Galaxy A53 5G (Samsung SM-A536B)",
                 creationDate = InstantGenerator(),
                 numberOfNetworks = 1,
                 numberOfAccounts = 1
@@ -81,7 +83,7 @@ internal class MigrateOlympiaAccountsUseCaseTest {
                     )
                 )
             ),
-            factorSources = listOf(FactorSource.olympia(mnemonicWithPassphrase = olympiaMnemonic)),
+            factorSources = listOf(DeviceFactorSource.olympia(mnemonicWithPassphrase = olympiaMnemonic)),
             networks = listOf(
                 Network(
                     accounts = listOf(
@@ -98,7 +100,10 @@ internal class MigrateOlympiaAccountsUseCaseTest {
                                             accountIndex = 0,
                                             keyType = KeyType.TRANSACTION_SIGNING
                                         ),
-                                        factorSourceId = FactorSource.ID("IDIDDIIDD"),
+                                        factorSourceId = FactorSource.FactorSourceID.FromHash(
+                                            kind = FactorSourceKind.DEVICE,
+                                            body = FactorSource.HexCoded32Bytes("IDIDDIIDD")
+                                        ),
                                         publicKey = FactorInstance.PublicKey.curveSecp256k1PublicKey("")
                                     )
                                 )
@@ -119,7 +124,10 @@ internal class MigrateOlympiaAccountsUseCaseTest {
 
         val usecase = MigrateOlympiaAccountsUseCase(profileRepository, testDispatcher)
         val capturedProfile = slot<Profile>()
-        usecase(getOlympiaTestAccounts(), FactorSource.ID("1"))
+        usecase(getOlympiaTestAccounts(), FactorSource.FactorSourceID.FromHash(
+            kind = FactorSourceKind.DEVICE,
+            body = FactorSource.HexCoded32Bytes("1")
+        ))
         coVerify(exactly = 1) { profileRepository.saveProfile(capture(capturedProfile)) }
         assert(capturedProfile.captured.currentNetwork.accounts.size == 12)
     }
