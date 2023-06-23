@@ -29,7 +29,8 @@ class GenerateProfileUseCase @Inject constructor(
                 val profile = Profile.init(
                     mnemonicWithPassphrase = mnemonicWithPassphrase,
                     id = UUIDGenerator.uuid().toString(),
-                    creatingDevice = deviceInfoRepository.getDeviceInfo().displayName,
+                    deviceModel = deviceInfoRepository.getDeviceInfo().model,
+                    deviceName = deviceInfoRepository.getDeviceInfo().displayName,
                     creationDate = InstantGenerator()
                 )
 
