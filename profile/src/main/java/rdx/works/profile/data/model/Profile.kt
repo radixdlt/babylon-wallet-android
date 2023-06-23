@@ -5,10 +5,10 @@ import rdx.works.profile.data.model.apppreferences.Display
 import rdx.works.profile.data.model.apppreferences.Gateways
 import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.data.model.apppreferences.Security
+import rdx.works.profile.data.model.factorsources.DeviceFactorSource
 import rdx.works.profile.data.model.factorsources.FactorSource
-import rdx.works.profile.data.model.factorsources.FactorSourceKind
+import rdx.works.profile.data.model.factorsources.Slip10Curve
 import rdx.works.profile.data.model.factorsources.Slip10Curve.CURVE_25519
-import rdx.works.profile.data.model.factorsources.Slip10Curve.SECP_256K1
 import rdx.works.profile.data.model.pernetwork.Network
 import java.time.Instant
 
@@ -58,27 +58,33 @@ data class Profile(
      *
      * NOTE that this factor source will always be used when creating the first account.
      */
-    val babylonDeviceFactorSource: FactorSource
-        get() = factorSources.first {
-            it.kind == FactorSourceKind.DEVICE && it.parameters.supportedCurves.contains(CURVE_25519)
-        }
+    val babylonDeviceFactorSource: DeviceFactorSource
+        get() = factorSources
+            .filterIsInstance<DeviceFactorSource>()
+            .first {
+                it.common.cryptoParameters.supportedCurves.contains(CURVE_25519)
+            }
 
     val olympiaDeviceFactorSource: FactorSource
-        get() = factorSources.first {
-            it.kind == FactorSourceKind.DEVICE && it.parameters.supportedCurves.contains(SECP_256K1)
-        }
+        get() = factorSources
+            .filterIsInstance<DeviceFactorSource>()
+            .first {
+                it.common.cryptoParameters.supportedCurves.contains(Slip10Curve.SECP_256K1)
+            }
 
     companion object {
         fun init(
             mnemonicWithPassphrase: MnemonicWithPassphrase,
             id: String,
-            creatingDevice: String,
+            deviceModel: String,
+            deviceName: String,
             creationDate: Instant,
             gateway: Radix.Gateway = Radix.Gateway.default
         ): Profile {
-            val factorSource = FactorSource.babylon(
+            val factorSource = DeviceFactorSource.babylon(
                 mnemonicWithPassphrase = mnemonicWithPassphrase,
-                label = creatingDevice
+                model = deviceModel,
+                name = deviceName
             )
 
             val networks = listOf(
@@ -100,7 +106,7 @@ data class Profile(
             return Profile(
                 header = Header.init(
                     id = id,
-                    creatingDevice = creatingDevice,
+                    deviceName = deviceName,
                     creationDate = creationDate,
                     numberOfNetworks = networks.size
                 ),
