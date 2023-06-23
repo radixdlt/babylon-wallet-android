@@ -1,0 +1,60 @@
+package rdx.works.profile.data.model.factorsources
+
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
+import rdx.works.core.InstantGenerator
+import rdx.works.profile.data.model.MnemonicWithPassphrase
+
+data class OffDeviceMnemonicFactorSource(
+    override val id: FactorSource.FactorSourceID.FromHash,
+    override val common: FactorSource.Common,
+    @SerialName("bip39Parameters")
+    val bip39Parameters: Bip39Parameters,
+    @SerialName("hint")
+    val hint: Hint,
+) : FactorSource {
+
+    @Serializable
+    data class Bip39Parameters(
+        @SerialName("bip39PassphraseSpecified")
+        val bip39PassphraseSpecified: Boolean,
+        @SerialName("language")
+        val language: String,
+        @SerialName("wordCount")
+        val wordCount: Int
+    )
+
+    @Serializable
+    data class Hint(
+        @SerialName("label")
+        val label: String
+    )
+
+    companion object {
+
+        fun newSource(
+            mnemonicWithPassphrase: MnemonicWithPassphrase,
+            label: String = ""
+        ): OffDeviceMnemonicFactorSource {
+            return OffDeviceMnemonicFactorSource(
+                id = FactorSource.FactorSourceID.FromHash(
+                    kind = FactorSourceKind.OFF_DEVICE_MNEMONIC,
+                    body = FactorSource.HexCoded32Bytes(
+                        value = FactorSource.factorSourceId(mnemonicWithPassphrase = mnemonicWithPassphrase)
+                    )
+                ),
+                common = FactorSource.Common(
+                    cryptoParameters = FactorSource.Common.CryptoParameters.trustedEntity,
+                    addedOn = InstantGenerator(),
+                    lastUsedOn = InstantGenerator()
+                ),
+                bip39Parameters = Bip39Parameters(
+                    bip39PassphraseSpecified = mnemonicWithPassphrase.bip39Passphrase.isNotEmpty(),
+                    language = "", // TODO
+                    wordCount = 1, // TODO
+                ),
+                hint = Hint(label = label),
+            )
+        }
+    }
+}
