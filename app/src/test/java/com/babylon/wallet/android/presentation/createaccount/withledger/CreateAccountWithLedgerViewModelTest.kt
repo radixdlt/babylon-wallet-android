@@ -22,9 +22,10 @@ import org.junit.Before
 import org.junit.Test
 import rdx.works.profile.data.model.apppreferences.P2PLink
 import rdx.works.profile.data.model.factorsources.FactorSource
+import rdx.works.profile.data.model.factorsources.LedgerHardwareWalletFactorSource
 import rdx.works.profile.domain.AddLedgerFactorSourceUseCase
 import rdx.works.profile.domain.GetProfileUseCase
-import rdx.works.profile.domain.LedgerAddResult
+import rdx.works.profile.domain.AddLedgerFactorSourceResult
 
 @OptIn(ExperimentalCoroutinesApi::class)
 internal class CreateAccountWithLedgerViewModelTest : StateViewModelTest<CreateAccountWithLedgerViewModel>() {
@@ -53,11 +54,11 @@ internal class CreateAccountWithLedgerViewModelTest : StateViewModelTest<CreateA
                 any(),
                 any()
             )
-        } returns LedgerAddResult.Added(
-            FactorSource.ledger(
-                FactorSource.ID("2"),
-                FactorSource.LedgerHardwareWallet.DeviceModel.NanoS,
-                "ledger"
+        } returns AddLedgerFactorSourceResult.Added(
+            LedgerHardwareWalletFactorSource.newSource(
+                model = LedgerHardwareWalletFactorSource.DeviceModel.NANO_S,
+                name = "ledger",
+                deviceID = FactorSource.HexCoded32Bytes("2")
             )
         )
         coEvery { ledgerMessenger.sendDerivePublicKeyRequest(any(), any(), any()) } returns Result.success(
@@ -82,7 +83,7 @@ internal class CreateAccountWithLedgerViewModelTest : StateViewModelTest<CreateA
             val item = expectMostRecentItem()
             assert(item.ledgerFactorSources.size == 1)
             assert(!item.hasP2pLinks)
-            assert(item.ledgerFactorSources.first { it.selected }.data.id.value == "Ledger1")
+            assert(item.ledgerFactorSources.first { it.selected }.data.id.body.value == "Ledger1")
         }
     }
 
@@ -95,7 +96,7 @@ internal class CreateAccountWithLedgerViewModelTest : StateViewModelTest<CreateA
             val item = expectMostRecentItem()
             assert(item.ledgerFactorSources.size == 1)
             assert(!item.hasP2pLinks)
-            assert(item.ledgerFactorSources.first { it.selected }.data.id.value == "Ledger1")
+            assert(item.ledgerFactorSources.first { it.selected }.data.id.body.value == "Ledger1")
         }
     }
 
@@ -154,6 +155,6 @@ internal class CreateAccountWithLedgerViewModelTest : StateViewModelTest<CreateA
         coVerify(exactly = 1) { ledgerMessenger.sendDerivePublicKeyRequest(any(), any(), any()) }
         coVerify(exactly = 1) { eventBus.sendEvent(capture(event)) }
         assert(event.captured.derivedPublicKeyHex == "publicKeyHex")
-        assert(event.captured.factorSourceID.value == "Ledger1")
+        assert(event.captured.factorSourceID.body.value == "Ledger1")
     }
 }

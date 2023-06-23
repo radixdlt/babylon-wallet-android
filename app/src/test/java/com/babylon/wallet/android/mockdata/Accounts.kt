@@ -1,6 +1,7 @@
 package com.babylon.wallet.android.mockdata
 
 import rdx.works.profile.data.model.apppreferences.Radix
+import rdx.works.profile.data.model.factorsources.FactorSourceKind
 import rdx.works.profile.data.model.factorsources.FactorSource
 import rdx.works.profile.data.model.pernetwork.DerivationPath
 import rdx.works.profile.data.model.pernetwork.FactorInstance
@@ -26,7 +27,10 @@ fun account(
                     accountIndex = 0,
                     keyType = KeyType.TRANSACTION_SIGNING
                 ),
-                factorSourceId = FactorSource.ID("IDIDDIIDD"),
+                factorSourceId = FactorSource.FactorSourceID.FromHash(
+                    kind = FactorSourceKind.DEVICE,
+                    body = FactorSource.HexCoded32Bytes("IDIDDIIDD")
+                ),
                 publicKey = FactorInstance.PublicKey.curve25519PublicKey("")
             )
         )
