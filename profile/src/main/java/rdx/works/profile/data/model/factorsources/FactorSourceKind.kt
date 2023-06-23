@@ -14,6 +14,7 @@ enum class FactorSourceKind {
      * * Mine
      * * On device
      * * Hierarchical deterministic (Mnemonic)
+     * * Entity creating
      */
     @SerialName("device")
     DEVICE,
@@ -41,9 +42,10 @@ enum class FactorSourceKind {
      * * Off device
      * * Hardware (requires Browser Connector Extension to communicate with wallet)
      * * Hierarchical deterministic
+     * * Entity creating (accounts only)
      */
     @SerialName("ledgerHQHardwareWallet")
-    LEDGER_HQ_HARDWARE_WALLET;
+    LEDGER_HQ_HARDWARE_WALLET,
 
     /**
      * A user owned hardware wallet by vendor YubiCo, which the user has to produce (connect)
@@ -73,10 +75,10 @@ enum class FactorSourceKind {
      * Attributes:
      * * Mine
      * * Off Device
-     * * Hierarchical deterministic
+     * * Hierarchical deterministic (Mnemonic)
      */
-//    @SerialName("offDeviceMnemonic")
-//    OFF_DEVICE_MNEMONIC,
+    @SerialName("offDeviceMnemonic")
+    OFF_DEVICE_MNEMONIC,
 
     /**
      * A user known secret acting as input key material (*IKM*) for some
@@ -98,8 +100,8 @@ enum class FactorSourceKind {
      * * *NOT* mine
      * * Off Device
      */
-//    @SerialName("trustedContact")
-//    TRUSTED_CONTACT,
+    @SerialName("trustedContact")
+    TRUSTED_CONTACT;
 
     /**
      * Some entity the user knows and trust, e.g. a company,
@@ -115,13 +117,13 @@ enum class FactorSourceKind {
     val isHierarchicalDeterministic: Boolean
         get() = when (this) {
             DEVICE,
-            LEDGER_HQ_HARDWARE_WALLET -> true
-//            OFF_DEVICE_MNEMONIC,
+            LEDGER_HQ_HARDWARE_WALLET,
+            OFF_DEVICE_MNEMONIC -> true
 //            SECURITY_QUESTIONS,
 //            OFF_DEVICE_INPUT_KEY_MATERIAL_FOR_MNEMONIC -> true
 //            YUBIKEY,
 //            OFF_DEVICE_SINGLE_KEY,
-//            TRUSTED_CONTACT,
+            TRUSTED_CONTACT -> false
 //            TRUSTED_ENTERPRISE -> false
         }
 
@@ -132,9 +134,9 @@ enum class FactorSourceKind {
             LEDGER_HQ_HARDWARE_WALLET -> false
 //            YUBIKEY,
 //            OFF_DEVICE_SINGLE_KEY,
-//            OFF_DEVICE_MNEMONIC,
+            OFF_DEVICE_MNEMONIC -> false
 //            OFF_DEVICE_INPUT_KEY_MATERIAL_FOR_MNEMONIC,
-//            TRUSTED_CONTACT,
+            TRUSTED_CONTACT -> false
 //            TRUSTED_ENTERPRISE -> false
         }
 
@@ -145,9 +147,9 @@ enum class FactorSourceKind {
             LEDGER_HQ_HARDWARE_WALLET -> true
 //            YUBIKEY,
 //            OFF_DEVICE_SINGLE_KEY,
-//            OFF_DEVICE_MNEMONIC,
+            OFF_DEVICE_MNEMONIC -> true
 //            OFF_DEVICE_INPUT_KEY_MATERIAL_FOR_MNEMONIC -> true
-//            TRUSTED_CONTACT,
+            TRUSTED_CONTACT -> false
 //            TRUSTED_ENTERPRISE -> false
         }
 
@@ -162,9 +164,9 @@ enum class FactorSourceKind {
             DEVICE -> null
 //            SECURITY_QUESTIONS,
 //            OFF_DEVICE_SINGLE_KEY,
-//            OFF_DEVICE_MNEMONIC,
+            OFF_DEVICE_MNEMONIC -> null
 //            OFF_DEVICE_INPUT_KEY_MATERIAL_FOR_MNEMONIC,
-//            TRUSTED_CONTACT,
+            TRUSTED_CONTACT -> null
 //            TRUSTED_ENTERPRISE -> null
         }
 
