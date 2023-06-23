@@ -2,11 +2,11 @@ package com.babylon.wallet.android.utils
 
 import com.babylon.wallet.android.data.dapp.model.AccountsRequestResponseItem
 import com.babylon.wallet.android.data.dapp.model.LedgerDeviceModel
-import rdx.works.profile.data.model.factorsources.FactorSource
+import rdx.works.profile.data.model.factorsources.LedgerHardwareWalletFactorSource
 import rdx.works.profile.data.model.pernetwork.Network
 
-fun FactorSource.getLedgerDeviceModel(): LedgerDeviceModel? {
-    return when (description) {
+fun LedgerHardwareWalletFactorSource.getLedgerDeviceModel(): LedgerDeviceModel? {
+    return when (this.hint.model) {
         "nanoS" -> LedgerDeviceModel.NanoS
         "nanoS+" -> LedgerDeviceModel.NanoSPlus
         "nanoX" -> LedgerDeviceModel.NanoX
