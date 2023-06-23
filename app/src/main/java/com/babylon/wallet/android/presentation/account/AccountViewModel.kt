@@ -124,7 +124,7 @@ class AccountViewModel @Inject constructor(
 }
 
 internal sealed interface AccountEvent : OneOffEvent {
-    data class NavigateToMnemonicBackup(val factorSourceId: FactorSource.ID) : AccountEvent
+    data class NavigateToMnemonicBackup(val factorSourceId: FactorSource.FactorSourceID.FromHash) : AccountEvent
 }
 
 data class AccountUiState(
