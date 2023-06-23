@@ -12,6 +12,7 @@ import androidx.navigation.NavType
 import androidx.navigation.navArgument
 import com.babylon.wallet.android.presentation.createaccount.confirmation.ARG_REQUEST_SOURCE
 import com.babylon.wallet.android.presentation.createaccount.confirmation.CreateAccountRequestSource
+import com.babylon.wallet.android.presentation.navigation.markAsHighPriority
 import com.google.accompanist.navigation.animation.composable
 
 @VisibleForTesting
@@ -76,6 +77,7 @@ fun NavGraphBuilder.createAccountScreen(
     onCloseApp: () -> Unit,
     onAddLedgerDevice: () -> Unit
 ) {
+    markAsHighPriority(route = ROUTE_CREATE_ACCOUNT)
     composable(
         route = ROUTE_CREATE_ACCOUNT,
         arguments = listOf(

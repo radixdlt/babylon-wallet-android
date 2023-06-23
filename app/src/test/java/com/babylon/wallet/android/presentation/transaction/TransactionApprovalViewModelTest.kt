@@ -48,7 +48,6 @@ internal class TransactionApprovalViewModelTest : StateViewModelTest<Transaction
     private val getCurrentGatewayUseCase = mockk<GetCurrentGatewayUseCase>()
     private val getTransactionComponentResourcesUseCase = mockk<GetTransactionComponentResourcesUseCase>()
     private val getTransactionProofResourcesUseCase = mockk<GetTransactionProofResourcesUseCase>()
-    private val pollTransactionStatusUseCase = mockk<PollTransactionStatusUseCase>()
     private val getDAppWithAssociatedResourcesUseCase = mockk<GetDAppWithMetadataAndAssociatedResourcesUseCase>()
     private val incomingRequestRepository = IncomingRequestRepositoryImpl()
     private val dAppMessenger = mockk<DappMessenger>()
@@ -90,7 +89,6 @@ internal class TransactionApprovalViewModelTest : StateViewModelTest<Transaction
         coEvery { transactionClient.analyzeManifestWithPreviewContext(any(), any()) } returns Result.success(
             analyzeManifestResponse()
         )
-        coEvery { pollTransactionStatusUseCase(any()) } returns ResultInternal.Success("")
         coEvery {
             dAppMessenger.sendTransactionWriteResponseSuccess(
                 dappId = "dappId",
@@ -119,7 +117,6 @@ internal class TransactionApprovalViewModelTest : StateViewModelTest<Transaction
             getCurrentGatewayUseCase,
             deviceSecurityHelper,
             dAppMessenger,
-            pollTransactionStatusUseCase,
             getDAppWithAssociatedResourcesUseCase,
             TestScope(),
             appEventBus,
@@ -164,7 +161,7 @@ internal class TransactionApprovalViewModelTest : StateViewModelTest<Transaction
 
     @Test
     fun `transaction approval sign and submit error`() = runTest {
-        coEvery { pollTransactionStatusUseCase(any()) } returns ResultInternal.Error(
+        coEvery { transactionClient.signAndSubmitTransaction(any()) } returns Result.failure(
             DappRequestException(
                 DappRequestFailure.TransactionApprovalFailure.SubmitNotarizedTransaction
             )

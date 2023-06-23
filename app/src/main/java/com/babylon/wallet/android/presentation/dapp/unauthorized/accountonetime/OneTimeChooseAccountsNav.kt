@@ -41,7 +41,7 @@ fun NavGraphBuilder.chooseAccountsOneTime(
     exitRequestFlow: () -> Unit,
     dismissErrorDialog: () -> Unit,
     onAccountCreationClick: () -> Unit,
-    onLoginFlowComplete: (requestId: String, dAppName: String) -> Unit,
+    onLoginFlowComplete: () -> Unit,
     onPersonaOnetime: (String) -> Unit,
     navController: NavController
 ) {

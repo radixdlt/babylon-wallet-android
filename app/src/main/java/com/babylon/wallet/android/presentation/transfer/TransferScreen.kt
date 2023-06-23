@@ -61,7 +61,7 @@ import rdx.works.profile.data.model.pernetwork.Network
 fun TransferScreen(
     modifier: Modifier = Modifier,
     viewModel: TransferViewModel,
-    onBackClick: () -> Unit
+    onBackClick: () -> Unit,
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
 

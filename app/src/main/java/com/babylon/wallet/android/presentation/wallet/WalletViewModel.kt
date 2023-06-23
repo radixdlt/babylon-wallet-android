@@ -107,7 +107,7 @@ class WalletViewModel @Inject constructor(
     private fun observeGlobalAppEvents() {
         viewModelScope.launch {
             appEventBus.events.filter { event ->
-                event is AppEvent.GotFreeXrd || event is AppEvent.TransactionEvent.Successful
+                event is AppEvent.GotFreeXrd || event is AppEvent.Status.Transaction.Success
             }.collect {
                 loadResources(withRefresh = true)
             }
@@ -223,7 +223,7 @@ data class WalletUiState(
     )
 
     fun onResourcesError(error: Throwable?): WalletUiState = copy(
-        error = UiMessage.ErrorMessage(error),
+        error = UiMessage.ErrorMessage.from(error),
         loading = false,
         refreshing = false
     )

@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.presentation.ui.composables.resultdialog.signing
+package com.babylon.wallet.android.presentation.status.signing
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement

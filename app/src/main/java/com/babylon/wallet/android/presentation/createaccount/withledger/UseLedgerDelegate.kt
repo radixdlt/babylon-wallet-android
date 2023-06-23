@@ -71,7 +71,7 @@ class UseLedgerDelegate(
                 }
             }
             result.onFailure { error ->
-                _state.update { state -> state.copy(uiMessage = UiMessage.ErrorMessage(error), waitingForLedgerResponse = false) }
+                _state.update { state -> state.copy(uiMessage = UiMessage.ErrorMessage.from(error), waitingForLedgerResponse = false) }
             }
         }
     }

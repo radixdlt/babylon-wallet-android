@@ -68,6 +68,10 @@ class MainViewModel @Inject constructor(
             SharingStarted.WhileSubscribed(PEERDROID_STOP_TIMEOUT) // TODO https://radixdlt.atlassian.net/browse/ABW-1421
         )
 
+    val statusEvents = appEventBus
+        .events
+        .filterIsInstance<AppEvent.Status>()
+
     init {
         viewModelScope.launch {
             getProfileStateUseCase()
@@ -76,24 +80,18 @@ class MainViewModel @Inject constructor(
                 }
         }
         handleAllIncomingRequests()
-        observeGlobalAppEvents()
-    }
-
-    private fun observeGlobalAppEvents() {
-        viewModelScope.launch {
-            appEventBus.events.filterIsInstance<AppEvent.TransactionEvent>().collect { event ->
-                when (event) {
-                    is AppEvent.TransactionEvent.Sent -> {
-                        sendEvent(MainEvent.TransactionStatusEvent(event.requestId))
-                    }
-                    else -> {}
-                }
-            }
-        }
     }
 
     override fun initialState(): MainUiState {
         return MainUiState()
+    }
+
+    fun onHighPriorityScreen() = viewModelScope.launch {
+        incomingRequestRepository.pauseIncomingRequests()
+    }
+
+    fun onLowPriorityScreen() = viewModelScope.launch {
+        incomingRequestRepository.resumeIncomingRequests()
     }
 
     private suspend fun establishLinkConnection(connectionPassword: String) {
@@ -137,21 +135,22 @@ class MainViewModel @Inject constructor(
     private fun handleAllIncomingRequests() {
         viewModelScope.launch {
             incomingRequestRepository.currentRequestToHandle.collect { request ->
-                val mainEvent = if (request.metadata.isInternal) {
-                    MainEvent.IncomingRequestEvent(request)
+                if (request.metadata.isInternal) {
+                    sendEvent(MainEvent.IncomingRequestEvent(request))
                 } else {
                     delay(REQUEST_HANDLING_DELAY)
                     val dAppData = authorizeSpecifiedPersonaUseCase(request)
                     if (dAppData.isSuccess) {
-                        MainEvent.HandledUsePersonaAuthRequest(
-                            requestId = dAppData.getOrThrow().requestId,
-                            dAppName = dAppData.getOrThrow().name
+                        appEventBus.sendEvent(
+                            AppEvent.Status.DappInteraction(
+                                requestId = dAppData.getOrThrow().requestId,
+                                dAppName = dAppData.getOrThrow().name
+                            )
                         )
                     } else {
-                        MainEvent.IncomingRequestEvent(request)
+                        sendEvent(MainEvent.IncomingRequestEvent(request))
                     }
                 }
-                sendEvent(mainEvent)
             }
         }
     }
@@ -186,11 +185,6 @@ class MainViewModel @Inject constructor(
 sealed class MainEvent : OneOffEvent {
 
     data class IncomingRequestEvent(val request: IncomingRequest) : MainEvent()
-    data class TransactionStatusEvent(val requestId: String) : MainEvent()
-    data class HandledUsePersonaAuthRequest(
-        val requestId: String,
-        val dAppName: String
-    ) : MainEvent()
 }
 
 data class MainUiState(

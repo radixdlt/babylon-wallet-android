@@ -31,7 +31,7 @@ fun ChooseAccountsScreen(
     dismissErrorDialog: () -> Unit,
     onAccountCreationClick: () -> Unit,
     onChooseAccounts: (Event.ChooseAccounts) -> Unit,
-    onLoginFlowComplete: (Event.LoginFlowCompleted) -> Unit,
+    onLoginFlowComplete: () -> Unit,
     onBackClick: () -> Boolean,
     onPersonaOngoingData: (Event.PersonaDataOngoing) -> Unit,
     onPersonaDataOnetime: (Event.PersonaDataOnetime) -> Unit
@@ -41,16 +41,10 @@ fun ChooseAccountsScreen(
         sharedViewModel.oneOffEvent.collect { event ->
             when (event) {
                 is Event.ChooseAccounts -> onChooseAccounts(event)
-                is Event.LoginFlowCompleted -> onLoginFlowComplete(event)
+                is Event.LoginFlowCompleted -> onLoginFlowComplete()
                 is Event.PersonaDataOngoing -> onPersonaOngoingData(event)
                 is Event.PersonaDataOnetime -> onPersonaDataOnetime(event)
-                is Event.RejectLogin -> onLoginFlowComplete(
-                    Event.LoginFlowCompleted(
-                        requestId = "",
-                        dAppName = "",
-                        showSuccessDialog = false
-                    )
-                )
+                is Event.RejectLogin -> onLoginFlowComplete()
                 Event.RequestCompletionBiometricPrompt -> {
                     context.biometricAuthenticate { authenticated ->
                         if (authenticated) {

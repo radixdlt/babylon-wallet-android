@@ -43,7 +43,7 @@ fun NavGraphBuilder.personaDataOngoing(
     onEdit: (PersonaDataOngoingEvent.OnEditPersona) -> Unit,
     onBackClick: () -> Unit,
     navController: NavController,
-    onLoginFlowComplete: (Event.LoginFlowCompleted) -> Unit,
+    onLoginFlowComplete: () -> Unit,
     onPersonaDataOnetime: (Event.PersonaDataOnetime) -> Unit,
     onChooseAccounts: (Event.ChooseAccounts) -> Unit
 ) {

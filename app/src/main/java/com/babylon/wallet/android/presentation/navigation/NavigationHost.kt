@@ -37,11 +37,11 @@ import com.babylon.wallet.android.presentation.settings.personadetail.personaDet
 import com.babylon.wallet.android.presentation.settings.personaedit.personaEditScreen
 import com.babylon.wallet.android.presentation.settings.seedphrases.settingsShowMnemonic
 import com.babylon.wallet.android.presentation.settings.settingsNavGraph
+import com.babylon.wallet.android.presentation.status.dapp.dappInteractionDialog
+import com.babylon.wallet.android.presentation.status.transaction.transactionStatusDialog
 import com.babylon.wallet.android.presentation.transaction.transactionApprovalScreen
-import com.babylon.wallet.android.presentation.transactionstatus.transactionStatusDialog
 import com.babylon.wallet.android.presentation.transfer.transfer
 import com.babylon.wallet.android.presentation.transfer.transferScreen
-import com.babylon.wallet.android.presentation.ui.composables.resultdialog.success.successBottomDialog
 import com.google.accompanist.navigation.animation.AnimatedNavHost
 import com.google.accompanist.navigation.animation.composable
 import kotlinx.coroutines.flow.StateFlow
@@ -200,9 +200,11 @@ fun NavigationHost(
                 navController.popBackStack()
             }
         )
-        transferScreen {
-            navController.popBackStack()
-        }
+        transferScreen(
+            onBackClick = {
+                navController.popBackStack()
+            }
+        )
         accountPreferencesScreen {
             navController.popBackStack()
         }
@@ -234,13 +236,13 @@ fun NavigationHost(
                 navController.popBackStack(MAIN_ROUTE, false)
             })
         }
-        successBottomDialog(
+        dappInteractionDialog(
             onBackPress = {
                 navController.popBackStack()
             }
         )
         transactionStatusDialog(
-            onBackPress = {
+            onClose = {
                 navController.popBackStack()
             }
         )

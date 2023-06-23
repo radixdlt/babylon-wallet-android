@@ -52,7 +52,7 @@ class AccountViewModel @Inject constructor(
 
         viewModelScope.launch {
             appEventBus.events.filter { event ->
-                event is AppEvent.GotFreeXrd || event is AppEvent.TransactionEvent.Successful
+                event is AppEvent.GotFreeXrd || event is AppEvent.Status.Transaction.Success
             }.collect {
                 refresh()
             }
@@ -84,7 +84,7 @@ class AccountViewModel @Inject constructor(
             val result = getAccountsWithResourcesUseCase(listOf(account), isRefreshing)
             result.onError { e ->
                 _state.update { accountUiState ->
-                    accountUiState.copy(uiMessage = UiMessage.ErrorMessage(error = e), isLoading = false)
+                    accountUiState.copy(uiMessage = UiMessage.ErrorMessage.from(error = e), isLoading = false)
                 }
             }
             result.onValue { accountsWithResources ->

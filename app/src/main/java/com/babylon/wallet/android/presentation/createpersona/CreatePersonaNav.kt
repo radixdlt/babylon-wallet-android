@@ -7,6 +7,7 @@ import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
+import com.babylon.wallet.android.presentation.navigation.markAsHighPriority
 import com.babylon.wallet.android.presentation.settings.personadetail.ROUTE_PERSONA_DETAIL
 import com.babylon.wallet.android.presentation.settings.personas.PersonasScreen
 import com.google.accompanist.navigation.animation.composable
@@ -71,6 +72,7 @@ fun NavGraphBuilder.createPersonaScreen(
     onBackClick: () -> Unit,
     onContinueClick: (personaId: String) -> Unit
 ) {
+    markAsHighPriority(ROUTE_CREATE_PERSONA)
     composable(
         route = ROUTE_CREATE_PERSONA,
         arguments = listOf(),

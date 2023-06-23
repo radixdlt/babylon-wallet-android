@@ -8,10 +8,12 @@ import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavType
 import androidx.navigation.navArgument
+import com.babylon.wallet.android.presentation.navigation.markAsHighPriority
 import com.google.accompanist.navigation.animation.composable
 
 @VisibleForTesting
 internal const val ARG_PERSONA_ID = "arg_persona_id"
+private const val ROUTE = "persona_completion_route/{$ARG_PERSONA_ID}"
 
 internal class CreatePersonaConfirmationArgs(val personaId: String) {
     constructor(savedStateHandle: SavedStateHandle) : this(
@@ -27,8 +29,9 @@ fun NavController.createPersonaConfirmationScreen(personaId: String) {
 fun NavGraphBuilder.createPersonaConfirmationScreen(
     finishPersonaCreation: () -> Unit
 ) {
+    markAsHighPriority(ROUTE)
     composable(
-        route = "persona_completion_route/{$ARG_PERSONA_ID}",
+        route = ROUTE,
         arguments = listOf(
             navArgument(ARG_PERSONA_ID) { type = NavType.StringType },
         )

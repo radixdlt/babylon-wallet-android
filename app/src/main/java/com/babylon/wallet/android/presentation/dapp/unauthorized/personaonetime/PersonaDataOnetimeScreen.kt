@@ -67,7 +67,7 @@ fun PersonaDataOnetimeScreen(
     onEdit: (PersonaDataOnetimeEvent.OnEditPersona) -> Unit,
     onCreatePersona: (Boolean) -> Unit,
     onBackClick: () -> Unit,
-    onLoginFlowComplete: (requestId: String, dAppName: String) -> Unit,
+    onLoginFlowComplete: () -> Unit,
     onLoginFlowCancelled: () -> Unit,
 ) {
     val context = LocalContext.current
@@ -76,7 +76,7 @@ fun PersonaDataOnetimeScreen(
     LaunchedEffect(Unit) {
         sharedViewModel.oneOffEvent.collect { event ->
             when (event) {
-                is Event.LoginFlowCompleted -> onLoginFlowComplete(event.requestId, event.dAppName)
+                is Event.LoginFlowCompleted -> onLoginFlowComplete()
                 Event.RejectLogin -> onLoginFlowCancelled()
                 Event.RequestCompletionBiometricPrompt -> {
                     context.biometricAuthenticate { authenticated ->

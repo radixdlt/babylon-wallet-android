@@ -36,7 +36,7 @@ fun NavController.personaDataOnetimeUnauthorized(requiredFieldsEncoded: String) 
 fun NavGraphBuilder.personaDataOnetimeUnauthorized(
     onEdit: (PersonaDataOnetimeEvent.OnEditPersona) -> Unit,
     onBackClick: () -> Unit,
-    onLoginFlowComplete: (requestId: String, dAppName: String) -> Unit,
+    onLoginFlowComplete: () -> Unit,
     onCreatePersona: (Boolean) -> Unit,
     navController: NavController,
     onLoginFlowCancelled: () -> Unit

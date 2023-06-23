@@ -32,7 +32,7 @@ class PrepareManifestDelegate(
             Timber.d(request.transactionManifestData.instructions)
             incomingRequestRepository.add(request)
         }.onFailure { error ->
-            state.update { it.copy(error = UiMessage.ErrorMessage(error)) }
+            state.update { it.copy(error = UiMessage.ErrorMessage.from(error)) }
         }
     }
 
