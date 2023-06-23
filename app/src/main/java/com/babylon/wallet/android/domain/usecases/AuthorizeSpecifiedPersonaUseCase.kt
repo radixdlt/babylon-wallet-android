@@ -11,7 +11,7 @@ import com.babylon.wallet.android.domain.model.toProfileShareAccountsQuantifier
 import com.babylon.wallet.android.presentation.settings.legacyimport.Selectable
 import com.babylon.wallet.android.utils.toISO8601String
 import rdx.works.profile.data.model.pernetwork.Network
-import rdx.works.profile.data.model.pernetwork.filterFields
+import rdx.works.profile.data.utils.filterFields
 import rdx.works.profile.data.repository.DAppConnectionRepository
 import rdx.works.profile.data.repository.updateAuthorizedDappPersonas
 import rdx.works.profile.domain.GetProfileUseCase
