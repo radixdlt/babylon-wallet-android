@@ -29,14 +29,14 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.presentation.settings.legacyimport.Selectable
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import kotlinx.collections.immutable.ImmutableList
-import rdx.works.profile.data.model.factorsources.FactorSource
+import rdx.works.profile.data.model.factorsources.LedgerHardwareWalletFactorSource
 
 @Composable
 fun UseOrAddLedgerSection(
     modifier: Modifier,
-    ledgerFactorSources: ImmutableList<Selectable<FactorSource>>,
+    ledgerFactorSources: ImmutableList<Selectable<LedgerHardwareWalletFactorSource>>,
     onAddLedger: () -> Unit,
-    onLedgerFactorSourceSelected: (FactorSource) -> Unit,
+    onLedgerFactorSourceSelected: (LedgerHardwareWalletFactorSource) -> Unit,
 ) {
     Column(
         modifier = modifier,
@@ -95,20 +95,20 @@ fun UseOrAddLedgerSection(
                 items(
                     items = ledgerFactorSources,
                     key = { item ->
-                        item.data.id.value
+                        item.data.id.body.value
                     },
-                    itemContent = { item ->
+                    itemContent = { ledgerItem ->
                         LedgerListItem(
-                            ledgerFactorSource = item.data,
+                            ledgerFactorSource = ledgerItem.data,
                             modifier = Modifier
                                 .shadow(elevation = 4.dp, shape = RadixTheme.shapes.roundedRectSmall)
                                 .fillMaxWidth()
                                 .background(RadixTheme.colors.gray5, shape = RadixTheme.shapes.roundedRectSmall)
                                 .throttleClickable {
-                                    onLedgerFactorSourceSelected(item.data)
+                                    onLedgerFactorSourceSelected(ledgerItem.data)
                                 }
                                 .padding(RadixTheme.dimensions.paddingLarge),
-                            selected = item.selected,
+                            selected = ledgerItem.selected,
                             onLedgerSelected = onLedgerFactorSourceSelected
                         )
                         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingMedium))
