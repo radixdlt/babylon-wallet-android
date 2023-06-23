@@ -13,7 +13,7 @@ data class FactorInstance(
     val derivationPath: DerivationPath?,
 
     @SerialName("factorSourceID")
-    val factorSourceId: FactorSource.ID,
+    val factorSourceId: FactorSource.FactorSourceID.FromHash,
 
     @SerialName("publicKey")
     val publicKey: PublicKey
