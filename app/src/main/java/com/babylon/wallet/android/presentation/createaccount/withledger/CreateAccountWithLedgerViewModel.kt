@@ -23,10 +23,10 @@ import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.UUIDGenerator
-import rdx.works.profile.data.model.factorsources.FactorSource
+import rdx.works.profile.data.model.factorsources.LedgerHardwareWalletFactorSource
 import rdx.works.profile.domain.AddLedgerFactorSourceUseCase
 import rdx.works.profile.domain.GetProfileUseCase
-import rdx.works.profile.domain.nextDerivationPathForAccountOnCurrentNetwork
+import rdx.works.profile.domain.nextDerivationPathForAccountOnCurrentNetworkWithLedger
 import javax.inject.Inject
 
 @HiltViewModel
@@ -53,10 +53,10 @@ class CreateAccountWithLedgerViewModel @Inject constructor(
                     uiState.copy(
                         loading = delegateState.loading,
                         addLedgerSheetState = delegateState.addLedgerSheetState,
-                        ledgerFactorSources = delegateState.ledgerFactorSources.map {
+                        ledgerFactorSources = delegateState.ledgerFactorSources.map { ledgerFactorSource ->
                             Selectable(
-                                it,
-                                selected = it.id == selectedFactorSourceId
+                                data = ledgerFactorSource,
+                                selected = ledgerFactorSource.id == selectedFactorSourceId
                             )
                         }.toPersistentList(),
                         waitingForLedgerResponse = delegateState.waitingForLedgerResponse,
@@ -71,7 +71,7 @@ class CreateAccountWithLedgerViewModel @Inject constructor(
 
     override fun initialState(): CreateAccountWithLedgerState = CreateAccountWithLedgerState()
 
-    fun onLedgerFactorSourceSelected(ledgerFactorSource: FactorSource) {
+    fun onLedgerFactorSourceSelected(ledgerFactorSource: LedgerHardwareWalletFactorSource) {
         createLedgerDelegate.onLedgerFactorSourceSelected(ledgerFactorSource)
     }
 
@@ -87,12 +87,18 @@ class CreateAccountWithLedgerViewModel @Inject constructor(
         state.value.ledgerFactorSources.firstOrNull { it.selected }?.let { ledgerFactorSource ->
             viewModelScope.launch {
                 _state.update { it.copy(waitingForLedgerResponse = true) }
-                val derivationPath = getProfileUseCase.nextDerivationPathForAccountOnCurrentNetwork(ledgerFactorSource.data)
+                val derivationPath = getProfileUseCase.nextDerivationPathForAccountOnCurrentNetworkWithLedger(
+                    ledgerHardwareWalletFactorSource = ledgerFactorSource.data
+                )
                 val deviceModel = requireNotNull(ledgerFactorSource.data.getLedgerDeviceModel())
                 val result = ledgerMessenger.sendDerivePublicKeyRequest(
-                    UUIDGenerator.uuid().toString(),
-                    listOf(DerivePublicKeyRequest.KeyParameters(Curve.Curve25519, derivationPath.path)),
-                    DerivePublicKeyRequest.LedgerDevice(ledgerFactorSource.data.label, deviceModel, ledgerFactorSource.data.id.value)
+                    interactionId = UUIDGenerator.uuid().toString(),
+                    keyParameters = listOf(DerivePublicKeyRequest.KeyParameters(Curve.Curve25519, derivationPath.path)),
+                    ledgerDevice = DerivePublicKeyRequest.LedgerDevice(
+                        name = ledgerFactorSource.data.hint.name,
+                        model = deviceModel,
+                        id = ledgerFactorSource.data.id.body.value
+                    )
                 )
                 result.onSuccess { response ->
                     appEventBus.sendEvent(
@@ -118,7 +124,7 @@ class CreateAccountWithLedgerViewModel @Inject constructor(
 
     data class CreateAccountWithLedgerState(
         val loading: Boolean = false,
-        val ledgerFactorSources: ImmutableList<Selectable<FactorSource>> = persistentListOf(),
+        val ledgerFactorSources: ImmutableList<Selectable<LedgerHardwareWalletFactorSource>> = persistentListOf(),
         val hasP2pLinks: Boolean = false,
         val addLedgerSheetState: AddLedgerSheetState = AddLedgerSheetState.Connect,
         val waitingForLedgerResponse: Boolean = false,
