@@ -144,7 +144,7 @@ fun NonFungibleTokenBottomSheetDetails(
                     if (nonFungibleItem.name.isNotBlank()) {
                         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
                         Row(
-                            modifier,
+                            modifier = Modifier,
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.SpaceBetween
                         ) {
@@ -164,7 +164,7 @@ fun NonFungibleTokenBottomSheetDetails(
                     Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
                     nonFungibleItem.currentSupplyToDisplay?.let { currentSupply ->
                         Row(
-                            modifier,
+                            modifier = Modifier,
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.SpaceBetween
                         ) {

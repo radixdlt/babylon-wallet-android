@@ -50,7 +50,7 @@ fun FungibleTokenBottomSheetDetails(
     modifier: Modifier = Modifier,
 ) {
     Column(
-        modifier,
+        modifier = modifier,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         RadixCenteredTopAppBar(
@@ -107,7 +107,7 @@ fun FungibleTokenBottomSheetDetails(
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
             if (fungible.displayTitle.isNotEmpty()) {
                 Row(
-                    modifier,
+                    modifier = Modifier,
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
@@ -128,7 +128,7 @@ fun FungibleTokenBottomSheetDetails(
 
             fungible.currentSupplyToDisplay?.let { currentSupply ->
                 Row(
-                    modifier,
+                    modifier = Modifier,
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {

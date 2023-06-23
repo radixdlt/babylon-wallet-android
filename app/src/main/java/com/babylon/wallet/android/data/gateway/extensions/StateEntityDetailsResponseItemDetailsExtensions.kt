@@ -370,40 +370,41 @@ private fun AccessRulesChain.changeUpdateNonFungibleMetadataAccessRuleSetToNonDe
     } ?: false
 }
 
-private fun StateEntityDetailsResponseItemDetails.isUsingDefaultRules(): Boolean  {
+@Suppress("CyclomaticComplexMethod")
+private fun StateEntityDetailsResponseItemDetails.isUsingDefaultRules(): Boolean {
     return when (val details = this) {
         is StateEntityDetailsResponseFungibleResourceDetails -> {
             val accessRulesChain = details.accessRulesChain
             accessRulesChain.performBurnAccessRule()?.value == AccessRule.DenyAll.value &&
-                    accessRulesChain.changeBurnAccessRule()?.value == AccessRule.DenyAll.value &&
-                    accessRulesChain.performMintAccessRule()?.value == AccessRule.DenyAll.value &&
-                    accessRulesChain.changeMintAccessRule()?.value == AccessRule.DenyAll.value &&
-                    accessRulesChain.performDepositAccessRule()?.value == AccessRule.AllowAll.value &&
-                    accessRulesChain.changeDepositAccessRule()?.value == AccessRule.DenyAll.value &&
-                    accessRulesChain.performWithdrawAccessRule()?.value == AccessRule.AllowAll.value &&
-                    accessRulesChain.changeWithdrawAccessRule()?.value == AccessRule.DenyAll.value &&
-                    accessRulesChain.performUpdateMetadataAccessRule()?.value == AccessRule.DenyAll.value &&
-                    accessRulesChain.changeUpdateMetadataAccessRule()?.value == AccessRule.DenyAll.value &&
-                    accessRulesChain.performRecallAccessRule()?.value == AccessRule.DenyAll.value &&
-                    accessRulesChain.changeRecallAccessRule()?.value == AccessRule.DenyAll.value
+                accessRulesChain.changeBurnAccessRule()?.value == AccessRule.DenyAll.value &&
+                accessRulesChain.performMintAccessRule()?.value == AccessRule.DenyAll.value &&
+                accessRulesChain.changeMintAccessRule()?.value == AccessRule.DenyAll.value &&
+                accessRulesChain.performDepositAccessRule()?.value == AccessRule.AllowAll.value &&
+                accessRulesChain.changeDepositAccessRule()?.value == AccessRule.DenyAll.value &&
+                accessRulesChain.performWithdrawAccessRule()?.value == AccessRule.AllowAll.value &&
+                accessRulesChain.changeWithdrawAccessRule()?.value == AccessRule.DenyAll.value &&
+                accessRulesChain.performUpdateMetadataAccessRule()?.value == AccessRule.DenyAll.value &&
+                accessRulesChain.changeUpdateMetadataAccessRule()?.value == AccessRule.DenyAll.value &&
+                accessRulesChain.performRecallAccessRule()?.value == AccessRule.DenyAll.value &&
+                accessRulesChain.changeRecallAccessRule()?.value == AccessRule.DenyAll.value
         }
 
         is StateEntityDetailsResponseNonFungibleResourceDetails -> {
             val accessRulesChain = details.accessRulesChain
             accessRulesChain.performBurnAccessRule()?.value == AccessRule.DenyAll.value &&
-                    accessRulesChain.changeBurnAccessRule()?.value == AccessRule.DenyAll.value &&
-                    accessRulesChain.performMintAccessRule()?.value == AccessRule.DenyAll.value &&
-                    accessRulesChain.changeMintAccessRule()?.value == AccessRule.DenyAll.value &&
-                    accessRulesChain.performDepositAccessRule()?.value == AccessRule.AllowAll.value &&
-                    accessRulesChain.changeDepositAccessRule()?.value == AccessRule.DenyAll.value &&
-                    accessRulesChain.performWithdrawAccessRule()?.value == AccessRule.AllowAll.value &&
-                    accessRulesChain.changeWithdrawAccessRule()?.value == AccessRule.DenyAll.value &&
-                    accessRulesChain.performUpdateMetadataAccessRule()?.value == AccessRule.DenyAll.value &&
-                    accessRulesChain.changeUpdateMetadataAccessRule()?.value == AccessRule.DenyAll.value &&
-                    accessRulesChain.performRecallAccessRule()?.value == AccessRule.DenyAll.value &&
-                    accessRulesChain.changeRecallAccessRule()?.value == AccessRule.DenyAll.value &&
-                    accessRulesChain.performUpdateNonFungibleMetadataAccessRule()?.value == AccessRule.DenyAll.value &&
-                    accessRulesChain.changeUpdateNonFungibleMetadataAccessRule()?.value == AccessRule.DenyAll.value
+                accessRulesChain.changeBurnAccessRule()?.value == AccessRule.DenyAll.value &&
+                accessRulesChain.performMintAccessRule()?.value == AccessRule.DenyAll.value &&
+                accessRulesChain.changeMintAccessRule()?.value == AccessRule.DenyAll.value &&
+                accessRulesChain.performDepositAccessRule()?.value == AccessRule.AllowAll.value &&
+                accessRulesChain.changeDepositAccessRule()?.value == AccessRule.DenyAll.value &&
+                accessRulesChain.performWithdrawAccessRule()?.value == AccessRule.AllowAll.value &&
+                accessRulesChain.changeWithdrawAccessRule()?.value == AccessRule.DenyAll.value &&
+                accessRulesChain.performUpdateMetadataAccessRule()?.value == AccessRule.DenyAll.value &&
+                accessRulesChain.changeUpdateMetadataAccessRule()?.value == AccessRule.DenyAll.value &&
+                accessRulesChain.performRecallAccessRule()?.value == AccessRule.DenyAll.value &&
+                accessRulesChain.changeRecallAccessRule()?.value == AccessRule.DenyAll.value &&
+                accessRulesChain.performUpdateNonFungibleMetadataAccessRule()?.value == AccessRule.DenyAll.value &&
+                accessRulesChain.changeUpdateNonFungibleMetadataAccessRule()?.value == AccessRule.DenyAll.value
         }
 
         else -> {
