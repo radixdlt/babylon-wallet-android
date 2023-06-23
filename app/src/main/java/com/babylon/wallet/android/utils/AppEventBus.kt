@@ -24,7 +24,7 @@ sealed interface AppEvent {
     object GotFreeXrd : AppEvent
     object RestoredMnemonic : AppEvent
     data class DerivedAccountPublicKeyWithLedger(
-        val factorSourceID: FactorSource.ID,
+        val factorSourceID: FactorSource.FactorSourceID.FromHash,
         val derivationPath: DerivationPath,
         val derivedPublicKeyHex: String
     ) : AppEvent
