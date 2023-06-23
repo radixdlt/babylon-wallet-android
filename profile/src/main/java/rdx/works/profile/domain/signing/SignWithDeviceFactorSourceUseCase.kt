@@ -3,11 +3,11 @@ package rdx.works.profile.domain.signing
 import com.radixdlt.toolkit.models.crypto.SignatureWithPublicKey
 import kotlinx.coroutines.flow.first
 import rdx.works.profile.data.model.deriveExtendedKey
-import rdx.works.profile.data.model.factorsources.FactorSource
+import rdx.works.profile.data.model.factorsources.DeviceFactorSource
 import rdx.works.profile.data.model.pernetwork.Entity
 import rdx.works.profile.data.model.pernetwork.SecurityState
 import rdx.works.profile.data.model.pernetwork.SigningPurpose
-import rdx.works.profile.data.model.pernetwork.updateLastUsed
+import rdx.works.profile.data.utils.updateLastUsed
 import rdx.works.profile.data.repository.MnemonicRepository
 import rdx.works.profile.data.repository.ProfileRepository
 import rdx.works.profile.data.repository.profile
@@ -20,7 +20,7 @@ class SignWithDeviceFactorSourceUseCase @Inject constructor(
 ) {
 
     suspend operator fun invoke(
-        deviceFactorSource: FactorSource,
+        deviceFactorSource: DeviceFactorSource,
         signers: List<Entity>,
         dataToSign: ByteArray,
         signingPurpose: SigningPurpose = SigningPurpose.SignTransaction
