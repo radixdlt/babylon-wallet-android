@@ -11,9 +11,9 @@ import com.babylon.wallet.android.domain.model.toProfileShareAccountsQuantifier
 import com.babylon.wallet.android.presentation.settings.legacyimport.Selectable
 import com.babylon.wallet.android.utils.toISO8601String
 import rdx.works.profile.data.model.pernetwork.Network
-import rdx.works.profile.data.utils.filterFields
 import rdx.works.profile.data.repository.DAppConnectionRepository
 import rdx.works.profile.data.repository.updateAuthorizedDappPersonas
+import rdx.works.profile.data.utils.filterFields
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.accountOnCurrentNetwork
 import rdx.works.profile.domain.personaOnCurrentNetwork
@@ -41,7 +41,7 @@ class AuthorizeSpecifiedPersonaUseCase @Inject constructor(
     suspend operator fun invoke(incomingRequest: IncomingRequest): Result<DAppData> {
         var operationResult: Result<DAppData> = Result.failure(DappRequestFailure.InvalidRequest)
         (incomingRequest as? AuthorizedRequest)?.let { request ->
-            (request.authRequest as? AuthorizedRequest.AuthRequest.UsePersonaRequest)?.let { authRequest ->
+            (request.authRequest as? AuthorizedRequest.AuthRequest.UsePersonaRequest)?.let {
                 val authorizedDapp = dAppConnectionRepository.getAuthorizedDapp(
                     dAppDefinitionAddress = request.metadata.dAppDefinitionAddress
                 ) ?: return Result.failure(DappRequestFailure.InvalidRequest)

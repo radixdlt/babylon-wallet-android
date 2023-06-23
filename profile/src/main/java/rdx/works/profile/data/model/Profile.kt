@@ -73,6 +73,7 @@ data class Profile(
             }
 
     companion object {
+        @Suppress("LongParameterList")
         fun init(
             mnemonicWithPassphrase: MnemonicWithPassphrase,
             id: String,

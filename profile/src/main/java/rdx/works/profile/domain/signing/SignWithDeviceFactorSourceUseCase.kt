@@ -7,11 +7,11 @@ import rdx.works.profile.data.model.factorsources.DeviceFactorSource
 import rdx.works.profile.data.model.pernetwork.Entity
 import rdx.works.profile.data.model.pernetwork.SecurityState
 import rdx.works.profile.data.model.pernetwork.SigningPurpose
-import rdx.works.profile.data.utils.updateLastUsed
 import rdx.works.profile.data.repository.MnemonicRepository
 import rdx.works.profile.data.repository.ProfileRepository
 import rdx.works.profile.data.repository.profile
 import rdx.works.profile.data.utils.toEngineModel
+import rdx.works.profile.data.utils.updateLastUsed
 import javax.inject.Inject
 
 class SignWithDeviceFactorSourceUseCase @Inject constructor(

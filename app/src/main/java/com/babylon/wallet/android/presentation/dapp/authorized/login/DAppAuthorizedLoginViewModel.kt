@@ -42,12 +42,12 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.data.model.pernetwork.Network.AuthorizedDapp.AuthorizedPersonaSimple
-import rdx.works.profile.data.utils.filterFields
 import rdx.works.profile.data.repository.DAppConnectionRepository
 import rdx.works.profile.data.repository.addOrUpdateAuthorizedDappPersona
 import rdx.works.profile.data.repository.updateAuthorizedDappPersonaFields
 import rdx.works.profile.data.repository.updateAuthorizedDappPersonas
 import rdx.works.profile.data.repository.updateDappAuthorizedPersonaSharedAccounts
+import rdx.works.profile.data.utils.filterFields
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.accountOnCurrentNetwork
 import rdx.works.profile.domain.gateway.GetCurrentGatewayUseCase

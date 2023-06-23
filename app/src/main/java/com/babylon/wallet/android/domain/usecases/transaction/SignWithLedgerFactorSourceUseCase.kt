@@ -17,9 +17,9 @@ import rdx.works.profile.data.model.factorsources.Slip10Curve
 import rdx.works.profile.data.model.pernetwork.Entity
 import rdx.works.profile.data.model.pernetwork.SecurityState
 import rdx.works.profile.data.model.pernetwork.SigningPurpose
-import rdx.works.profile.data.utils.updateLastUsed
 import rdx.works.profile.data.repository.ProfileRepository
 import rdx.works.profile.data.repository.profile
+import rdx.works.profile.data.utils.updateLastUsed
 import javax.inject.Inject
 
 typealias SignatureProviderResult = Result<List<MessageFromDataChannel.LedgerResponse.SignatureOfSigner>>
