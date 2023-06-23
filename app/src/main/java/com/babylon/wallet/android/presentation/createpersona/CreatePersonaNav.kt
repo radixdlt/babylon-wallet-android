@@ -102,7 +102,7 @@ fun NavGraphBuilder.personasScreen(
     onBackClick: () -> Unit,
     createPersonaScreen: (Boolean) -> Unit,
     onPersonaClick: (String) -> Unit,
-    onNavigateToMnemonicBackup: (FactorSource.ID) -> Unit
+    onNavigateToMnemonicBackup: (FactorSource.FactorSourceID.FromHash) -> Unit
 ) {
     composable(
         route = ROUTE_PERSONAS,
