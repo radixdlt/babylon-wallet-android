@@ -18,7 +18,7 @@ import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.preferences.PreferencesManager
-import rdx.works.profile.data.model.factorsources.FactorSource
+import rdx.works.profile.data.model.factorsources.FactorSource.FactorSourceID
 import rdx.works.profile.data.utils.factorSourceId
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.personaOnCurrentNetwork
@@ -87,6 +87,6 @@ class PersonasViewModel @Inject constructor(
 
     sealed interface PersonasEvent : OneOffEvent {
         data class CreatePersona(val firstPersonaCreated: Boolean) : PersonasEvent
-        data class NavigateToMnemonicBackup(val factorSourceId: FactorSource.ID) : PersonasEvent
+        data class NavigateToMnemonicBackup(val factorSourceId: FactorSourceID.FromHash) : PersonasEvent
     }
 }
