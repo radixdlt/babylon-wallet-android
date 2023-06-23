@@ -116,7 +116,7 @@ fun FungibleTokenBottomSheetDetails(
                         style = RadixTheme.typography.body1Regular,
                         color = RadixTheme.colors.gray2
                     )
-
+                    Spacer(modifier = Modifier.weight(1f))
                     Text(
                         text = fungible.displayTitle,
                         style = RadixTheme.typography.body1Regular,
@@ -137,7 +137,7 @@ fun FungibleTokenBottomSheetDetails(
                         style = RadixTheme.typography.body1Regular,
                         color = RadixTheme.colors.gray2
                     )
-
+                    Spacer(modifier = Modifier.weight(1f))
                     Text(
                         text = currentSupply,
                         style = RadixTheme.typography.body1Regular,

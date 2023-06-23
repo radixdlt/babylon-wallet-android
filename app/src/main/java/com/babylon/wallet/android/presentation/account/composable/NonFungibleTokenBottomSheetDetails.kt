@@ -153,7 +153,7 @@ fun NonFungibleTokenBottomSheetDetails(
                                 style = RadixTheme.typography.body1Regular,
                                 color = RadixTheme.colors.gray2
                             )
-
+                            Spacer(modifier = Modifier.weight(1f))
                             Text(
                                 text = nonFungibleItem.name,
                                 style = RadixTheme.typography.body1Regular,
@@ -173,7 +173,7 @@ fun NonFungibleTokenBottomSheetDetails(
                                 style = RadixTheme.typography.body1Regular,
                                 color = RadixTheme.colors.gray2
                             )
-
+                            Spacer(modifier = Modifier.weight(1f))
                             Text(
                                 text = currentSupply,
                                 style = RadixTheme.typography.body1Regular,
