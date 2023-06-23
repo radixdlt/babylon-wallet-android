@@ -8,8 +8,10 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.update
+import rdx.works.profile.data.model.factorsources.DeviceFactorSource
 import rdx.works.core.decodeHex
 import rdx.works.profile.data.model.factorsources.FactorSourceKind
+import rdx.works.profile.data.model.factorsources.LedgerHardwareWalletFactorSource
 import rdx.works.profile.data.model.pernetwork.Entity
 import rdx.works.profile.data.model.pernetwork.SigningPurpose
 import rdx.works.profile.domain.signing.GetSigningEntitiesByFactorSourceUseCase
@@ -33,33 +35,31 @@ class CollectSignersSignaturesUseCase @Inject constructor(
         val signaturesWithPublicKeys = mutableListOf<SignatureWithPublicKey>()
         val signersPerFactorSource = getSigningEntitiesByFactorSourceUseCase(signers)
         signersPerFactorSource.forEach { (factorSource, signers) ->
-            when (factorSource.kind) {
-                FactorSourceKind.DEVICE -> {
-                    _signingState.update { SigningState.Device.Pending(factorSource) }
-                    val signatures = signWithDeviceFactorSourceUseCase(
-                        deviceFactorSource = factorSource,
-                        signers = signers,
-                        dataToSign = signRequest.hashedDataToSign,
-                        signingPurpose = signingPurpose
-                    )
+            if (factorSource.id.kind == FactorSourceKind.DEVICE) {
+                factorSource as DeviceFactorSource
+                _signingState.update { SigningState.Device.Pending(factorSource) }
+                val signatures = signWithDeviceFactorSourceUseCase(
+                    deviceFactorSource = factorSource,
+                    signers = signers,
+                    dataToSign = signRequest.hashedDataToSign,
+                    signingPurpose = signingPurpose
+                )
+                signaturesWithPublicKeys.addAll(signatures)
+                _signingState.update { SigningState.Device.Success(factorSource) }
+            } else if (factorSource.id.kind == FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET) {
+                factorSource as LedgerHardwareWalletFactorSource
+                _signingState.update { SigningState.Ledger.Pending(factorSource) }
+                signWithLedgerFactorSourceUseCase(
+                    ledgerFactorSource = factorSource,
+                    signers = signers,
+                    signRequest = signRequest,
+                    signingPurpose = signingPurpose
+                ).onSuccess { signatures ->
+                    _signingState.update { SigningState.Ledger.Success(factorSource) }
                     signaturesWithPublicKeys.addAll(signatures)
-                    _signingState.update { SigningState.Device.Success(factorSource) }
-                }
-
-                FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET -> {
-                    _signingState.update { SigningState.Ledger.Pending(factorSource) }
-                    signWithLedgerFactorSourceUseCase(
-                        ledgerFactorSource = factorSource,
-                        signers = signers,
-                        signRequest = signRequest,
-                        signingPurpose = signingPurpose
-                    ).onSuccess { signatures ->
-                        _signingState.update { SigningState.Ledger.Success(factorSource) }
-                        signaturesWithPublicKeys.addAll(signatures)
-                    }.onFailure {
-                        _signingState.update { SigningState.Ledger.Failure(factorSource) }
-                        return Result.failure(it)
-                    }
+                }.onFailure {
+                    _signingState.update { SigningState.Ledger.Failure(factorSource) }
+                    return Result.failure(it)
                 }
             }
         }
