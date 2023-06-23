@@ -4,7 +4,7 @@ import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.navigation.NavGraphBuilder
 import com.google.accompanist.navigation.animation.composable
 import kotlinx.coroutines.flow.StateFlow
-import rdx.works.profile.data.model.factorsources.FactorSource
+import rdx.works.profile.data.model.factorsources.FactorSource.FactorSourceID
 import rdx.works.profile.data.model.pernetwork.Network
 
 const val MAIN_ROUTE = "main"
@@ -15,7 +15,7 @@ fun NavGraphBuilder.main(
     mainUiState: StateFlow<MainUiState>,
     onMenuClick: () -> Unit,
     onAccountClick: (Network.Account) -> Unit,
-    onNavigateToMnemonicBackup: (FactorSource.ID) -> Unit,
+    onNavigateToMnemonicBackup: (FactorSourceID.FromHash) -> Unit,
     onAccountCreationClick: () -> Unit,
     onNavigateToCreateAccount: () -> Unit,
     onNavigateToOnBoarding: () -> Unit,
