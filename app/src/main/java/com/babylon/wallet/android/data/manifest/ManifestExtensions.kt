@@ -54,7 +54,7 @@ fun ManifestBuilder.addDepositBatchInstruction(
             componentAddress = ManifestAstValue.Address(
                 value = recipientComponentAddress
             ),
-            methodName = ManifestAstValue.String(MethodName.DepositBatch.stringValue),
+            methodName = ManifestAstValue.String(MethodName.TryDepositBatchOrAbort.stringValue),
             arguments = arrayOf(ManifestAstValue.Expression("ENTIRE_WORKTOP"))
         )
     )

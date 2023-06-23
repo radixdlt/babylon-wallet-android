@@ -11,7 +11,6 @@ import com.radixdlt.toolkit.builders.ManifestBuilder
 import com.radixdlt.toolkit.models.crypto.SignatureWithPublicKey
 import com.radixdlt.toolkit.models.transaction.TransactionManifest
 import rdx.works.core.compressedPublicKeyHash
-import rdx.works.core.decodeHex
 import rdx.works.profile.data.model.pernetwork.Entity
 import rdx.works.profile.data.model.pernetwork.FactorInstance
 import rdx.works.profile.data.model.pernetwork.SecurityState
@@ -60,11 +59,10 @@ class ROLAClient @Inject constructor(
         dAppDefinitionAddress: String,
         origin: String
     ): Result<SignatureWithPublicKey> {
-        val dataToSign = payloadToHash(challengeHex, dAppDefinitionAddress, origin)
         return collectSignersSignaturesUseCase(
             signers = listOf(entity),
             signRequest = SignRequest.SignAuthChallengeRequest(
-                data = dataToSign,
+                challengeHex = challengeHex,
                 origin = origin,
                 dAppDefinitionAddress = dAppDefinitionAddress
             ),
@@ -79,14 +77,4 @@ class ROLAClient @Inject constructor(
             }
         }
     }
-}
-
-fun payloadToHash(
-    challengeHex: String,
-    dAppDefinitionAddress: String,
-    origin: String
-): ByteArray {
-    require(dAppDefinitionAddress.length <= UByte.MAX_VALUE.toInt())
-    return challengeHex.decodeHex() + dAppDefinitionAddress.length.toUByte()
-        .toByte() + dAppDefinitionAddress.toByteArray() + origin.toByteArray()
 }

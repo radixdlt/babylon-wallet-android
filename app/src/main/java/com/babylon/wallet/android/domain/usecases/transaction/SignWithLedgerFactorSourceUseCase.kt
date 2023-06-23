@@ -49,7 +49,7 @@ class SignWithLedgerFactorSourceUseCase @Inject constructor(
                 signTransaction(
                     signers = signers,
                     ledgerFactorSource = ledgerFactorSource,
-                    dataToSign = signRequest.dataToSign,
+                    dataToSign = signRequest.hashedDataToSign,
                     signingPurpose = signingPurpose
                 )
             }
@@ -101,7 +101,7 @@ class SignWithLedgerFactorSourceUseCase @Inject constructor(
                     ledgerFactorSource.id.value
                 ),
                 signersDerivationPathToCurve = pathToCurve,
-                challengeHex = request.dataToSign.toHexString(),
+                challengeHex = request.challengeHex,
                 origin = request.origin,
                 dAppDefinitionAddress = request.dAppDefinitionAddress
             ).mapCatching { response ->

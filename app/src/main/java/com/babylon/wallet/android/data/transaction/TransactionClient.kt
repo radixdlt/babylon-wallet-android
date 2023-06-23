@@ -11,7 +11,6 @@ import com.babylon.wallet.android.data.gateway.generated.models.TransactionPrevi
 import com.babylon.wallet.android.data.manifest.addLockFeeInstructionToManifest
 import com.babylon.wallet.android.data.manifest.convertManifestInstructionsToString
 import com.babylon.wallet.android.data.repository.transaction.TransactionRepository
-import com.babylon.wallet.android.data.transaction.TransactionConfig.COST_UNIT_LIMIT
 import com.babylon.wallet.android.data.transaction.model.FeePayerSearchResult
 import com.babylon.wallet.android.data.transaction.model.TransactionApprovalRequest
 import com.babylon.wallet.android.domain.common.value
@@ -31,11 +30,11 @@ import com.radixdlt.toolkit.models.crypto.SignatureWithPublicKey
 import com.radixdlt.toolkit.models.request.AnalyzeTransactionExecutionRequest
 import com.radixdlt.toolkit.models.request.AnalyzeTransactionExecutionResponse
 import com.radixdlt.toolkit.models.request.CompileNotarizedTransactionRequest
-import com.radixdlt.toolkit.models.request.CompileTransactionIntentRequest
 import com.radixdlt.toolkit.models.request.ConvertManifestRequest
 import com.radixdlt.toolkit.models.request.ConvertManifestResponse
 import com.radixdlt.toolkit.models.request.DecompileNotarizedTransactionRequest
 import com.radixdlt.toolkit.models.request.ExtractAddressesFromManifestRequest
+import com.radixdlt.toolkit.models.request.HashTransactionIntentRequest
 import com.radixdlt.toolkit.models.transaction.ManifestInstructionsKind
 import com.radixdlt.toolkit.models.transaction.SignedTransactionIntent
 import com.radixdlt.toolkit.models.transaction.TransactionHeader
@@ -103,71 +102,69 @@ class TransactionClient @Inject constructor(
         val signers = getSigningEntities(networkId, manifestWithTransactionFee)
         val notaryAndSigners = NotaryAndSigners(signers, ephemeralNotaryPrivateKey)
         return buildTransactionHeader(networkId, notaryAndSigners).map { header ->
-            Timber.d("Transaction header: ${Json.encodeToString(header)}")
-            val compileTransactionIntentRequest = CompileTransactionIntentRequest(
-                header,
-                manifestWithTransactionFee
-            )
-            val txId = compileTransactionIntentRequest.transactionId().getOrNull() ?: return Result.failure(
+            // 1. Hash transaction
+            val transactionIntentHash = engine.hashTransactionIntent(
+                HashTransactionIntentRequest(
+                    header = header,
+                    manifest = manifestWithTransactionFee
+                )
+            ).getOrNull()?.hash ?: return Result.failure(
                 DappRequestException(
-                    DappRequestFailure.TransactionApprovalFailure.CompileTransactionIntent
+                    DappRequestFailure.TransactionApprovalFailure.SignCompiledTransactionIntent
                 )
             )
-            val compiledTransactionIntent = engine.compileTransactionIntent(
-                compileTransactionIntentRequest
-            ).getOrNull()?.compiledIntent ?: return Result.failure(
-                DappRequestException(
-                    DappRequestFailure.TransactionApprovalFailure.PrepareNotarizedTransaction
-                )
-            )
-            val signaturesResult = collectSignersSignaturesUseCase(
+
+            val signatures = collectSignersSignaturesUseCase(
                 signers = signers,
-                signRequest = SignRequest.SignTransactionRequest(compiledTransactionIntent)
-            )
-            if (signaturesResult.isFailure) {
-                return Result.failure(
-                    DappRequestException(
-                        DappRequestFailure.TransactionApprovalFailure.SignCompiledTransactionIntent
-                    )
+                signRequest = SignRequest.SignTransactionRequest(transactionIntentHash)
+            ).getOrNull()?.toTypedArray() ?: return Result.failure(
+                DappRequestException(
+                    DappRequestFailure.TransactionApprovalFailure.SignCompiledTransactionIntent
                 )
-            }
-            val signedTransactionIntent = SignedTransactionIntent(
+            )
+
+            val signedIntent = SignedTransactionIntent(
                 TransactionIntent(
                     header = header,
                     manifest = manifestWithTransactionFee
                 ),
-                intentSignatures = signaturesResult.getOrThrow().toTypedArray()
+                intentSignatures = signatures
             )
-            val signedCompiledTransactionIntent = signedTransactionIntent.compile().getOrNull() ?: return Result.failure(
-                DappRequestException(
-                    DappRequestFailure.TransactionApprovalFailure.PrepareNotarizedTransaction
-                )
-            )
-            val compiledNotarizedIntent =
-                engine.compileNotarizedTransaction(
-                    CompileNotarizedTransactionRequest(
-                        signedIntent = signedTransactionIntent,
-                        notarySignature = notaryAndSigners.signWithNotary(signedCompiledTransactionIntent)
-                    )
-                ).getOrElse { e ->
-                    return Result.failure(
-                        DappRequestException(
-                            DappRequestFailure.TransactionApprovalFailure.PrepareNotarizedTransaction,
-                            msg = e.message,
-                            e = e
-                        )
-                    )
-                }.compiledNotarizedIntent
-            val submitResult = submitTransactionUseCase(
-                txId.toHexString(),
-                compiledNotarizedIntent
-            )
-            if (submitResult.isFailure) {
+
+            // 2. Hash the signed intent
+            val signedIntentHash = engine.hashSignedTransactionIntent(
+                request = signedIntent
+            ).getOrElse { error ->
                 return Result.failure(
-                    submitResult.exceptionOrNull() ?: DappRequestFailure.TransactionApprovalFailure.SubmitNotarizedTransaction
+                    DappRequestException(
+                        DappRequestFailure.TransactionApprovalFailure.PrepareNotarizedTransaction,
+                        msg = error.message,
+                        e = error
+                    )
                 )
+            }.hash
+            val sig = notaryAndSigners.signWithNotary(hashedData = signedIntentHash)
+
+            // 3. Compile transaction
+            val notarizedTransactionHash = engine.compileNotarizedTransaction(
+                request = CompileNotarizedTransactionRequest(
+                    signedIntent = signedIntent,
+                    notarySignature = sig
+                )
+            ).getOrNull()?.compiledNotarizedIntent ?: return Result.failure(
+                DappRequestException(
+                    DappRequestFailure.TransactionApprovalFailure.SignCompiledTransactionIntent
+                )
+            )
+
+            submitTransactionUseCase(
+                transactionIntentHash.toHexString(),
+                notarizedTransactionHash.toHexString()
+            ).getOrElse { error ->
+                return Result.failure(error)
             }
-            submitResult.getOrThrow()
+        }.onFailure {
+            Timber.w(it)
         }
     }
 
@@ -272,14 +269,12 @@ class TransactionClient @Inject constructor(
             return try {
                 Result.success(
                     TransactionHeader(
-                        version = TransactionVersion.Default.value.toUByte(),
                         networkId = networkId.toUByte(),
                         startEpochInclusive = epoch.toULong(),
                         endEpochExclusive = epoch.toULong() + TransactionConfig.EPOCH_WINDOW,
                         nonce = generateNonce(),
                         notaryPublicKey = notaryAndSigners.notaryPublicKey(),
-                        notaryAsSignatory = notaryAndSigners.notaryIsSignatory,
-                        costUnitLimit = COST_UNIT_LIMIT,
+                        notaryIsSignatory = notaryAndSigners.notaryIsSignatory,
                         tipPercentage = TransactionConfig.TIP_PERCENTAGE
                     )
                 )
@@ -399,13 +394,12 @@ class TransactionClient @Inject constructor(
     }
 
     @Suppress("MagicNumber")
-    private fun generateNonce(): ULong {
-        val random = SecureRandom()
-        val nonceBytes = ByteArray(32)
-        random.nextBytes(nonceBytes)
-        var nonce: ULong = 0u
+    private fun generateNonce(): UInt {
+        val nonceBytes = ByteArray(UInt.SIZE_BYTES)
+        SecureRandom().nextBytes(nonceBytes)
+        var nonce: UInt = 0u
         nonceBytes.forEachIndexed { index, byte ->
-            nonce = nonce or (byte.toULong() shl 8 * index)
+            nonce = nonce or (byte.toUInt() shl 8 * index)
         }
         return nonce
     }

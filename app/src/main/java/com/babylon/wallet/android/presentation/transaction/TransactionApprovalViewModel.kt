@@ -150,7 +150,7 @@ class TransactionApprovalViewModel @Inject constructor(
                         transactionReceipt = transactionPreviewResponse.encodedReceipt.decodeHex()
                     )
 
-                    manifestPreview.exceptionOrNull().let { error ->
+                    manifestPreview.exceptionOrNull()?.let { error ->
                         Timber.e("Analyze manifest failed with error: $error")
                         _state.update {
                             it.copy(

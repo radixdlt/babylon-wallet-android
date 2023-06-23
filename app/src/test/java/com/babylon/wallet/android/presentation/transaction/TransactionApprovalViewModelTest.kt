@@ -211,7 +211,6 @@ internal class TransactionApprovalViewModelTest : StateViewModelTest<Transaction
                 emptyArray(),
                 emptyArray(),
                 emptyArray(),
-                emptyArray(),
                 emptyArray()
             ),
             emptyArray(),

@@ -11,7 +11,7 @@ import com.radixdlt.model.PrivateKey as SLIP10PrivateKey
 
 data class NotaryAndSigners(
     val signers: List<Entity>,
-    val ephemeralNotaryPrivateKey: PrivateKey = PrivateKey.EddsaEd25519.newRandom()
+    val ephemeralNotaryPrivateKey: PrivateKey
 ) {
     val notaryIsSignatory: Boolean
         get() = signers.isEmpty()
@@ -26,7 +26,7 @@ data class NotaryAndSigners(
             .toEnginePublicKeyModel()
     }
 
-    fun signWithNotary(data: ByteArray): Signature {
-        return ephemeralNotaryPrivateKey.signToSignature(data)
+    fun signWithNotary(hashedData: ByteArray): Signature {
+        return ephemeralNotaryPrivateKey.signToSignature(hashedData)
     }
 }
