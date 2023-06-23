@@ -9,11 +9,8 @@ import com.babylon.wallet.android.data.transaction.DappRequestFailure
 import com.babylon.wallet.android.data.transaction.TransactionClient
 import com.babylon.wallet.android.data.transaction.model.TransactionApprovalRequest
 import com.babylon.wallet.android.di.coroutines.IoDispatcher
-import com.babylon.wallet.android.domain.common.asInternalResult
 import com.babylon.wallet.android.domain.common.asKotlinResult
 import com.babylon.wallet.android.domain.common.onValue
-import com.babylon.wallet.android.domain.common.switchMap
-import com.babylon.wallet.android.domain.common.value
 import com.babylon.wallet.android.domain.usecases.transaction.PollTransactionStatusUseCase
 import com.radixdlt.toolkit.builders.ManifestBuilder
 import com.radixdlt.toolkit.models.transaction.TransactionManifest

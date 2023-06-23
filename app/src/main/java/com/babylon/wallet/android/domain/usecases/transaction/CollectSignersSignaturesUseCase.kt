@@ -77,7 +77,6 @@ sealed interface SignRequest {
 
         override val hashedDataToSign: ByteArray
             get() = compiledTransactionIntentHash
-
     }
 
     class SignAuthChallengeRequest(
