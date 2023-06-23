@@ -2,7 +2,6 @@ package rdx.works.profile.data.model
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import rdx.works.profile.data.model.ProfileSnapshot.Companion.MINIMUM
 import rdx.works.profile.data.model.apppreferences.AppPreferences
