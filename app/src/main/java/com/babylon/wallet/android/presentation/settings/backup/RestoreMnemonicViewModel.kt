@@ -29,6 +29,7 @@ import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.backup.RestoreMnemonicUseCase
 import javax.inject.Inject
 
+// TODO this will change in this PR: https://github.com/radixdlt/babylon-wallet-android/pull/304
 @HiltViewModel
 class RestoreMnemonicViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
@@ -51,7 +52,6 @@ class RestoreMnemonicViewModel @Inject constructor(
     init {
         viewModelScope.launch {
             val profile = getProfileUseCase().first()
-            // TODO maybe needs fix this
             val account = profile.currentNetwork.accounts.find { it.factorSourceId().body.value == args.factorSourceId }
             val factorSourceId = FactorSource.FactorSourceID.FromHash(
                 kind = FactorSourceKind.DEVICE,
