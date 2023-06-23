@@ -50,6 +50,7 @@ import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.launch
 import rdx.works.profile.data.model.factorsources.FactorSource
+import rdx.works.profile.data.model.factorsources.LedgerHardwareWalletFactorSource
 
 @Composable
 fun LedgerFactorSourcesScreen(
@@ -71,7 +72,7 @@ fun LedgerFactorSourcesScreen(
         addLedgerSheetState = state.addLedgerSheetState,
         waitingForLedgerResponse = state.waitingForLedgerResponse,
         onConfirmLedgerName = viewModel::onConfirmLedgerName,
-        deviceModel = state.recentlyConnectedLedgerDevice?.model?.toProfileLedgerDeviceModel()?.description(),
+        deviceModel = state.recentlyConnectedLedgerDevice?.model?.toProfileLedgerDeviceModel()?.value,
         uiMessage = state.uiMessage,
         onMessageShown = viewModel::onMessageShown
     )
@@ -82,7 +83,7 @@ fun LedgerFactorSourcesScreen(
 private fun SettingsLinkConnectorContent(
     modifier: Modifier = Modifier,
     onBackClick: () -> Unit,
-    ledgerFactorSources: ImmutableList<FactorSource>,
+    ledgerFactorSources: ImmutableList<LedgerHardwareWalletFactorSource>,
     onAddP2PLink: () -> Unit,
     onSendAddLedgerRequest: () -> Unit,
     addLedgerSheetState: AddLedgerSheetState,
@@ -154,7 +155,7 @@ private fun SettingsLinkConnectorContent(
 @Composable
 private fun LedgerFactorSourcesDetails(
     modifier: Modifier = Modifier,
-    ledgerFactorSources: ImmutableList<FactorSource>,
+    ledgerFactorSources: ImmutableList<LedgerHardwareWalletFactorSource>,
     onAddLedger: () -> Unit
 ) {
     Column(modifier, horizontalAlignment = Alignment.CenterHorizontally) {
@@ -202,7 +203,7 @@ private fun LedgerFactorSourcesDetails(
 @Composable
 private fun LedgerFactorSourcesListContent(
     modifier: Modifier = Modifier,
-    ledgerFactorSources: ImmutableList<FactorSource>,
+    ledgerFactorSources: ImmutableList<LedgerHardwareWalletFactorSource>,
     onAddLedger: () -> Unit
 ) {
     LazyColumn(
@@ -212,8 +213,8 @@ private fun LedgerFactorSourcesListContent(
     ) {
         items(
             items = ledgerFactorSources,
-            key = { factorSource: FactorSource ->
-                factorSource.id.value
+            key = { factorSource: LedgerHardwareWalletFactorSource ->
+                factorSource.id.body.value
             },
             itemContent = { item ->
                 LedgerListItem(
@@ -249,9 +250,9 @@ fun SettingsScreenLinkConnectorWithActiveConnectorPreview() {
         SettingsLinkConnectorContent(
             onBackClick = {},
             ledgerFactorSources = persistentListOf(
-                FactorSource.ledger(
-                    id = FactorSource.ID("1"),
-                    model = FactorSource.LedgerHardwareWallet.DeviceModel.NanoS,
+                LedgerHardwareWalletFactorSource.newSource(
+                    deviceID = FactorSource.HexCoded32Bytes("ledgerDeviceId"),
+                    model = LedgerHardwareWalletFactorSource.DeviceModel.NANO_S,
                     name = "My Ledger",
                 )
             ),
