@@ -357,14 +357,14 @@ class ProfileTest {
 
         assertEquals(
             "The next id for creating an account in this factor source",
-            (expected.factorSources.first() as DeviceFactorSource).nextDerivationIndicesPerNetwork.getNextAccountDerivationIndex(networkId), //?.first()?.networkId,
-            (actual.factorSources.first() as DeviceFactorSource).nextDerivationIndicesPerNetwork.getNextAccountDerivationIndex(networkId) //?.first()?.networkId,
+            (expected.factorSources.first() as DeviceFactorSource).nextDerivationIndicesPerNetwork.getNextAccountDerivationIndex(networkId),
+            (actual.factorSources.first() as DeviceFactorSource).nextDerivationIndicesPerNetwork.getNextAccountDerivationIndex(networkId)
         )
 
         assertEquals(
             "The next id for creating an identity in this factor source",
-            (expected.factorSources.first() as DeviceFactorSource).nextDerivationIndicesPerNetwork.getNextIdentityDerivationIndex(networkId), //?.first()?.networkId, //.getNextAccountDerivationIndex(networkId),
-            (actual.factorSources.first() as DeviceFactorSource).nextDerivationIndicesPerNetwork.getNextIdentityDerivationIndex(networkId) //?.first()?.networkId, //.getNextAccountDerivationIndex(networkId)
+            (expected.factorSources.first() as DeviceFactorSource).nextDerivationIndicesPerNetwork.getNextIdentityDerivationIndex(networkId),
+            (actual.factorSources.first() as DeviceFactorSource).nextDerivationIndicesPerNetwork.getNextIdentityDerivationIndex(networkId)
         )
 
         // Per Network count
