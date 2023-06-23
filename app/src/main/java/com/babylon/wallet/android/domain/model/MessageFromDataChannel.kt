@@ -1,7 +1,7 @@
 package com.babylon.wallet.android.domain.model
 
 import com.babylon.wallet.android.data.dapp.model.PersonaData
-import rdx.works.profile.data.model.factorsources.FactorSource
+import rdx.works.profile.data.model.factorsources.LedgerHardwareWalletFactorSource
 import rdx.works.profile.data.model.pernetwork.Network
 
 sealed interface MessageFromDataChannel {
@@ -207,10 +207,11 @@ fun MessageFromDataChannel.IncomingRequest.AccountsRequestItem.AccountNumberQuan
     }
 }
 
-fun MessageFromDataChannel.LedgerResponse.LedgerDeviceModel.toProfileLedgerDeviceModel(): FactorSource.LedgerHardwareWallet.DeviceModel {
+fun MessageFromDataChannel.LedgerResponse.LedgerDeviceModel.toProfileLedgerDeviceModel():
+    LedgerHardwareWalletFactorSource.DeviceModel {
     return when (this) {
-        MessageFromDataChannel.LedgerResponse.LedgerDeviceModel.NanoS -> FactorSource.LedgerHardwareWallet.DeviceModel.NanoS
-        MessageFromDataChannel.LedgerResponse.LedgerDeviceModel.NanoSPlus -> FactorSource.LedgerHardwareWallet.DeviceModel.NanoSPlus
-        MessageFromDataChannel.LedgerResponse.LedgerDeviceModel.NanoX -> FactorSource.LedgerHardwareWallet.DeviceModel.NanoX
+        MessageFromDataChannel.LedgerResponse.LedgerDeviceModel.NanoS -> LedgerHardwareWalletFactorSource.DeviceModel.NANO_S
+        MessageFromDataChannel.LedgerResponse.LedgerDeviceModel.NanoSPlus -> LedgerHardwareWalletFactorSource.DeviceModel.NANO_S_PLUS
+        MessageFromDataChannel.LedgerResponse.LedgerDeviceModel.NanoX -> LedgerHardwareWalletFactorSource.DeviceModel.NANO_X
     }
 }
