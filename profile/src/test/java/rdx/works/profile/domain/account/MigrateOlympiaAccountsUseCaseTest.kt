@@ -7,7 +7,7 @@ import com.radixdlt.crypto.getCompressedPublicKey
 import com.radixdlt.slip10.toKey
 import com.radixdlt.toolkit.RadixEngineToolkit
 import com.radixdlt.toolkit.models.crypto.PublicKey
-import com.radixdlt.toolkit.models.request.DeriveOlympiaAddressFromPublicKeyRequest
+import com.radixdlt.toolkit.models.request.DeriveOlympiaAddressFromPublicKeyInput
 import com.radixdlt.toolkit.models.request.OlympiaNetwork
 import io.mockk.Runs
 import io.mockk.coEvery
@@ -131,7 +131,7 @@ internal class MigrateOlympiaAccountsUseCaseTest {
             val derivationPath = DerivationPath.forLegacyOlympia(accountIndex = index)
             val publicKey = seed.toKey(derivationPath.path, EllipticCurveType.Secp256k1).keyPair.getCompressedPublicKey().toHexString()
             val address = RadixEngineToolkit.deriveOlympiaAddressFromPublicKey(
-                DeriveOlympiaAddressFromPublicKeyRequest(
+                DeriveOlympiaAddressFromPublicKeyInput(
                     OlympiaNetwork.Mainnet,
                     PublicKey.EcdsaSecp256k1(publicKey)
                 )

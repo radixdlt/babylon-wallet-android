@@ -1,6 +1,5 @@
 package rdx.works.profile
 
-import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import org.junit.Assert
 import org.junit.Assert.assertEquals
@@ -22,7 +21,6 @@ import rdx.works.profile.data.model.pernetwork.addPersona
 import rdx.works.profile.data.repository.createOrUpdateAuthorizedDapp
 import java.io.File
 import java.time.Instant
-import kotlin.test.Ignore
 
 class ProfileTest {
 
@@ -119,7 +117,6 @@ class ProfileTest {
         Assert.assertTrue(profile.header.id.isNotBlank())
     }
 
-    @Ignore("until we have the validated addresses from iOS")
     @Test
     fun `test against profile json vector`() {
         val profileTestVector = File("src/test/resources/raw/profile_snapshot.json").readText()
@@ -132,7 +129,7 @@ class ProfileTest {
             bip39Passphrase = ""
         )
 
-        val gateway = Radix.Gateway.nebunet
+        val gateway = Radix.Gateway.default
         val networkId = gateway.network.networkId()
 
         var expected = Profile.init(
@@ -244,7 +241,7 @@ class ProfileTest {
 
         val authorizedDapp = Network.AuthorizedDapp(
             networkID = networkId.value,
-            dAppDefinitionAddress = "account_tdx_b_1qlujhx6yh6tuctgw6nl68fr2dwg3y5k7h7mc6l04zsfsg7yeqh",
+            dAppDefinitionAddress = "account_tdx_21_ygudy0at0ttc2wmsxw2ejx4dqf3dwlr9rsusk287mmynxeas5p2mk",
             displayName = "RadiSwap",
             referencesToAuthorizedPersonas = listOf(
                 Network.AuthorizedDapp.AuthorizedPersonaSimple(
