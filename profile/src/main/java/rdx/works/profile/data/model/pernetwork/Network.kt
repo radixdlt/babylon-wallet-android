@@ -3,8 +3,8 @@ package rdx.works.profile.data.model.pernetwork
 import com.radixdlt.extensions.removeLeadingZero
 import com.radixdlt.toolkit.RadixEngineToolkit
 import com.radixdlt.toolkit.models.crypto.PublicKey
-import com.radixdlt.toolkit.models.request.DeriveVirtualAccountAddressRequest
-import com.radixdlt.toolkit.models.request.DeriveVirtualIdentityAddressRequest
+import com.radixdlt.toolkit.models.request.DeriveVirtualAccountAddressInput
+import com.radixdlt.toolkit.models.request.DeriveVirtualIdentityAddressInput
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import rdx.works.core.InstantGenerator
@@ -158,7 +158,7 @@ data class Network(
                 networkID: NetworkId,
                 publicKey: PublicKey
             ): String {
-                val request = DeriveVirtualAccountAddressRequest(networkID.value.toUByte(), publicKey)
+                val request = DeriveVirtualAccountAddressInput(networkID.value.toUByte(), publicKey)
                 // TODO handle error
                 val response = RadixEngineToolkit.deriveVirtualAccountAddress(request).getOrThrow()
                 return response.virtualAccountAddress
@@ -243,7 +243,7 @@ data class Network(
                 networkID: NetworkId,
                 publicKey: PublicKey
             ): String {
-                val request = DeriveVirtualIdentityAddressRequest(networkID.value.toUByte(), publicKey)
+                val request = DeriveVirtualIdentityAddressInput(networkID.value.toUByte(), publicKey)
                 // TODO handle error
                 val response = RadixEngineToolkit.deriveVirtualIdentityAddress(request).getOrThrow()
                 return response.virtualIdentityAddress

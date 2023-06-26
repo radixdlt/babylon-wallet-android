@@ -27,14 +27,14 @@ import com.radixdlt.toolkit.RadixEngineToolkit
 import com.radixdlt.toolkit.models.crypto.PrivateKey
 import com.radixdlt.toolkit.models.crypto.Signature
 import com.radixdlt.toolkit.models.crypto.SignatureWithPublicKey
-import com.radixdlt.toolkit.models.request.AnalyzeTransactionExecutionRequest
-import com.radixdlt.toolkit.models.request.AnalyzeTransactionExecutionResponse
-import com.radixdlt.toolkit.models.request.CompileNotarizedTransactionRequest
-import com.radixdlt.toolkit.models.request.ConvertManifestRequest
-import com.radixdlt.toolkit.models.request.ConvertManifestResponse
-import com.radixdlt.toolkit.models.request.DecompileNotarizedTransactionRequest
+import com.radixdlt.toolkit.models.request.AnalyzeTransactionExecutionInput
+import com.radixdlt.toolkit.models.request.AnalyzeTransactionExecutionOutput
+import com.radixdlt.toolkit.models.request.CompileNotarizedTransactionInput
+import com.radixdlt.toolkit.models.request.ConvertManifestInput
+import com.radixdlt.toolkit.models.request.ConvertManifestOutput
+import com.radixdlt.toolkit.models.request.DecompileNotarizedTransactionInput
 import com.radixdlt.toolkit.models.request.ExtractAddressesFromManifestRequest
-import com.radixdlt.toolkit.models.request.HashTransactionIntentRequest
+import com.radixdlt.toolkit.models.request.HashTransactionIntentInput
 import com.radixdlt.toolkit.models.transaction.ManifestInstructionsKind
 import com.radixdlt.toolkit.models.transaction.SignedTransactionIntent
 import com.radixdlt.toolkit.models.transaction.TransactionHeader
@@ -104,7 +104,7 @@ class TransactionClient @Inject constructor(
         return buildTransactionHeader(networkId, notaryAndSigners).map { header ->
             // 1. Hash transaction
             val transactionIntentHash = engine.hashTransactionIntent(
-                HashTransactionIntentRequest(
+                HashTransactionIntentInput(
                     header = header,
                     manifest = manifestWithTransactionFee
                 )
@@ -147,7 +147,7 @@ class TransactionClient @Inject constructor(
 
             // 3. Compile transaction
             val notarizedTransactionHash = engine.compileNotarizedTransaction(
-                request = CompileNotarizedTransactionRequest(
+                request = CompileNotarizedTransactionInput(
                     signedIntent = signedIntent,
                     notarySignature = sig
                 )
@@ -174,7 +174,7 @@ class TransactionClient @Inject constructor(
      */
     private fun printDebug(compiledNotarizedTransactionIntent: ByteArray) {
         val decompiled = engine.decompileNotarizedTransaction(
-            DecompileNotarizedTransactionRequest(
+            DecompileNotarizedTransactionInput(
                 ManifestInstructionsKind.Parsed,
                 compiledNotarizedTransactionIntent
             )
@@ -294,12 +294,12 @@ class TransactionClient @Inject constructor(
 
     suspend fun convertManifestInstructionsToJSON(
         manifest: TransactionManifest
-    ): Result<ConvertManifestResponse> {
+    ): Result<ConvertManifestOutput> {
         val networkId = getCurrentGatewayUseCase().network.networkId()
         return try {
             Result.success(
                 engine.convertManifest(
-                    ConvertManifestRequest(
+                    ConvertManifestInput(
                         networkId = networkId.value.toUByte(),
                         instructionsOutputKind = ManifestInstructionsKind.Parsed,
                         manifest = manifest
@@ -334,14 +334,16 @@ class TransactionClient @Inject constructor(
     suspend fun analyzeManifestWithPreviewContext(
         transactionManifest: TransactionManifest,
         transactionReceipt: ByteArray
-    ): Result<AnalyzeTransactionExecutionResponse> {
+    ): Result<AnalyzeTransactionExecutionOutput> {
         val networkId = getCurrentGatewayUseCase().network.networkId().value
+        val request = AnalyzeTransactionExecutionInput(
+            networkId = networkId.toUByte(),
+            manifest = transactionManifest,
+            transactionReceipt = transactionReceipt
+        )
+        Timber.tag("Bakos").d(Json.encodeToString(request))
         return engine.analyzeTransactionExecution(
-            AnalyzeTransactionExecutionRequest(
-                networkId = networkId.toUByte(),
-                manifest = transactionManifest,
-                transactionReceipt = transactionReceipt
-            )
+            request = request
         )
     }
 

@@ -6,7 +6,7 @@ import com.babylon.wallet.android.domain.model.metadata.IconUrlMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.NameMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.SymbolMetadataItem
 import com.radixdlt.toolkit.RadixEngineToolkit
-import com.radixdlt.toolkit.models.request.KnownEntityAddressesRequest
+import com.radixdlt.toolkit.models.request.KnownEntityAddressesInput
 import rdx.works.profile.data.model.apppreferences.Radix
 import java.math.BigDecimal
 import java.util.UUID
@@ -44,7 +44,7 @@ sealed class Resource {
             }
 
         val isXrd: Boolean = RadixEngineToolkit.knownEntityAddresses(
-            KnownEntityAddressesRequest(networkId = Radix.Gateway.default.network.id.toUByte())
+            KnownEntityAddressesInput(networkId = Radix.Gateway.default.network.id.toUByte())
         ).getOrNull()?.xrdResourceAddress == resourceAddress
 
         @Suppress("CyclomaticComplexMethod")

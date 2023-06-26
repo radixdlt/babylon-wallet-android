@@ -16,8 +16,8 @@ import com.radixdlt.toolkit.models.EnumDiscriminator
 import com.radixdlt.toolkit.models.Instruction
 import com.radixdlt.toolkit.models.ManifestAstValue
 import com.radixdlt.toolkit.models.ValueKind
-import com.radixdlt.toolkit.models.request.ConvertManifestRequest
-import com.radixdlt.toolkit.models.request.ConvertManifestResponse
+import com.radixdlt.toolkit.models.request.ConvertManifestInput
+import com.radixdlt.toolkit.models.request.ConvertManifestOutput
 import com.radixdlt.toolkit.models.transaction.ManifestInstructions
 import com.radixdlt.toolkit.models.transaction.ManifestInstructionsKind
 import com.radixdlt.toolkit.models.transaction.TransactionManifest
@@ -143,11 +143,11 @@ fun TransactionManifest.addGuaranteeInstructionToManifest(
 
 fun TransactionManifest.convertManifestInstructionsToString(
     networkId: Int
-): Result<ConvertManifestResponse> {
+): Result<ConvertManifestOutput> {
     return try {
         Result.success(
             RadixEngineToolkit.convertManifest(
-                ConvertManifestRequest(
+                ConvertManifestInput(
                     networkId = networkId.toUByte(),
                     instructionsOutputKind = ManifestInstructionsKind.String,
                     manifest = this
