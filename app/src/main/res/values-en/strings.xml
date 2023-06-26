@@ -187,176 +187,47 @@
   <string name="personas_subtitle">Here are all of your current Personas.</string>
   <string name="personas_whatIsPersona">What is a Persona?</string>
   <string name="personas_createNewPersona">Create a New Persona</string>
-  <string name="backup_disabledText">Back up is turned off</string>
-  <string name="backup_lastBackedUp">Last Backed up: %s</string>
-  <string name="backup_noLastBackUp">Not Backed up yet</string>
-  <string name="backup_openSystemBackupSettings">Open System Backup Settings</string>
-  <string name="backup_backupWalletData_title">Backup Wallet Data</string>
-  <string name="backup_backupWalletData_message">Warning: If disabled you might lose access to your Accounts and Personas.</string>
-  <string-array name="importLegacyWallet_title">
-    <item>Legacy Wallet Import</item>
-    <item>Legacy Wallet Import</item>
-  </string-array>
-  <string-array name="importLegacyWallet_scanQRCodeInstructions">
-    <item>Use the export feature of your Radix Olympia Desktop Wallet to choose the accounts to export and generate an export QR code.</item>
-    <item>Use the export feature of your Radix Olympia Desktop Wallet to choose the accounts to export and generate an export QR code.</item>
-  </string-array>
-  <string-array name="importLegacyWallet_scannedLabel">
-    <item>Scanned: %d/%d</item>
-    <item>Scanned: %d/%d</item>
-  </string-array>
-  <string-array name="importLegacyWallet_alreadyImportedLabel">
-    <item>Already imported</item>
-    <item>Already imported</item>
-  </string-array>
-  <string-array name="importLegacyWallet_selectAccountsToImport_accountType">
-    <item>Type</item>
-    <item>Type</item>
-  </string-array>
-  <string-array name="importLegacyWallet_selectAccountsToImport_derivationPath">
-    <item>Path</item>
-    <item>Path</item>
-  </string-array>
-  <string-array name="importLegacyWallet_selectAccountsToImport_deselectAll">
-    <item>Deselect all</item>
-    <item>Deselect all</item>
-  </string-array>
-  <string-array name="importLegacyWallet_selectAccountsToImport_importManyAccounts">
-    <item>Import %d accounts</item>
-    <item>Import %d accounts</item>
-  </string-array>
-  <string-array name="importLegacyWallet_selectAccountsToImport_importOneAcccount">
-    <item>Import 1 account</item>
-    <item>Import 1 account</item>
-  </string-array>
-  <string-array name="importLegacyWallet_selectAccountsToImport_importZeroAccounts">
-    <item>Import accounts</item>
-    <item>Import accounts</item>
-  </string-array>
-  <string-array name="importLegacyWallet_selectAccountsToImport_name">
-    <item>Name</item>
-    <item>Name</item>
-  </string-array>
-  <string-array name="importLegacyWallet_selectAccountsToImport_olympiaAddress">
-    <item>Olympia Address</item>
-    <item>Olympia Address</item>
-  </string-array>
-  <string-array name="importLegacyWallet_selectAccountsToImport_selectAllNonImported">
-    <item>Select all non imported</item>
-    <item>Select all non imported</item>
-  </string-array>
-  <string-array name="importLegacyWallet_selectAccountsToImport_unnamed">
-    <item>Unnamed</item>
-    <item>Unnamed</item>
-  </string-array>
-  <string-array name="importLegacyWallet_hardwareImport_skipButton">
-    <item>Skip remaining accounts</item>
-    <item>Skip remaining accounts</item>
-  </string-array>
-  <string-array name="importLegacyWallet_scanQRCode_title">
-    <item>Import Legacy Olympia Accounts</item>
-    <item>Import Legacy Olympia Accounts</item>
-  </string-array>
-  <string-array name="importLegacyWallet_accountsToImport_title">
-    <item>Import Accounts</item>
-    <item>Import Accounts</item>
-  </string-array>
-  <string-array name="importLegacyWallet_accountsToImport_subtitle">
-    <item>The following accounts will be imported to your new wallet.</item>
-    <item>The following accounts will be imported to your new wallet.</item>
-  </string-array>
-  <string-array name="importLegacyWallet_accountsToImport_emptyState">
-    <item>No accounts found to import.</item>
-    <item>No accounts found to import.</item>
-  </string-array>
-  <string-array name="importLegacyWallet_accountsToImport_button">
-    <item>Import %d Accounts</item>
-    <item>Import %d Accounts</item>
-  </string-array>
-  <string-array name="importLegacyWallet_accountsToImport_legacyAccount">
-    <item>Legacy Account</item>
-    <item>Legacy Account</item>
-  </string-array>
-  <string-array name="importLegacyWallet_accountsToImport_ledgerAccount">
-    <item>Ledger (Legacy)</item>
-    <item>Ledger (Legacy)</item>
-  </string-array>
-  <string-array name="importLegacyWallet_accountsToImport_newAddress">
-    <item>New Address</item>
-    <item>New Address</item>
-  </string-array>
-  <string-array name="importLegacyWallet_completion_title">
-    <item>Congratulations</item>
-    <item>Congratulations</item>
-  </string-array>
-  <string-array name="importLegacyWallet_completion_titleNoAccounts">
-    <item>No accounts imported.</item>
-    <item>No accounts imported.</item>
-  </string-array>
-  <string-array name="importLegacyWallet_completion_titleOneAccount">
-    <item>Imported 1 account.</item>
-    <item>Imported 1 account.</item>
-  </string-array>
-  <string-array name="importLegacyWallet_completion_titleManyAccounts">
-    <item>Imported #%d accounts.</item>
-    <item>Imported #%d accounts.</item>
-  </string-array>
-  <string-array name="importLegacyWallet_completion_subtitle">
-    <item>You\'ve imported your accounts.</item>
-    <item>You\'ve imported your accounts.</item>
-  </string-array>
-  <string-array name="importLegacyWallet_completion_footer">
-    <item>They will live on the Radix Network and you can access them anytime in your Wallet.</item>
-    <item>They will live on the Radix Network and you can access them anytime in your Wallet.</item>
-  </string-array>
-  <string-array name="importLegacyWallet_hardwareImport_title">
-    <item>%d of your Olympia accounts are controlled by Ledger hardware wallets.</item>
-    <item>%d of your Olympia accounts are controlled by Ledger hardware wallets.</item>
-  </string-array>
-  <string-array name="importLegacyWallet_hardwareImport_noLedgers">
-    <item>None</item>
-    <item>None</item>
-  </string-array>
-  <string-array name="importLegacyWallet_hardwareImport_subtitle">
-    <item>Currently known Ledgers:</item>
-    <item>Currently known Ledgers:</item>
-  </string-array>
-  <string-array name="importLegacyWallet_hardwareImport_footer">
-    <item>%d more accounts are controlled by other devices. Connect a Ledger hardware wallet device and tap Continue.</item>
-    <item>%d more accounts are controlled by other devices. Connect a Ledger hardware wallet device and tap Continue.</item>
-  </string-array>
-  <string-array name="importLegacyWallet_seedPhrase_title">
-    <item>Verify With Your Seed Phrase</item>
-    <item>Verify With Your Seed Phrase</item>
-  </string-array>
-  <string-array name="importLegacyWallet_seedPhrase_subtitle">
-    <item>To complete importing your accounts, please view your seed phrase in the Radix Desktop Wallet and enter the words here.</item>
-    <item>To complete importing your accounts, please view your seed phrase in the Radix Desktop Wallet and enter the words here.</item>
-  </string-array>
-  <string-array name="importLegacyWallet_seedPhrase_warning">
-    <item>This is a one-time process to import your accounts. Never give your seed phrase to anyone for any reason.</item>
-    <item>This is a one-time process to import your accounts. Never give your seed phrase to anyone for any reason.</item>
-  </string-array>
-  <string-array name="importLegacyWallet_seedPhrase_wordLabel">
-    <item>Word %d</item>
-    <item>Word %d</item>
-  </string-array>
-  <string-array name="importLegacyWallet_seedPhrase_regularMode">
-    <item>Regular Mode</item>
-    <item>Regular Mode</item>
-  </string-array>
-  <string-array name="importLegacyWallet_seedPhrase_advancedMode">
-    <item>Advanced Mode</item>
-    <item>Advanced Mode</item>
-  </string-array>
-  <string-array name="importLegacyWallet_seedPhrase_passphraseHint">
-    <item>Optional BIP39 Passphrase. This is not your wallet password, and the Radix Desktop Wallet did not use a BIP39 passphrase. This is only to support import from other wallets that may have used one.</item>
-    <item>Optional BIP39 Passphrase. This is not your wallet password, and the Radix Desktop Wallet did not use a BIP39 passphrase. This is only to support import from other wallets that may have used one.</item>
-  </string-array>
-  <string-array name="importLegacyWallet_seedPhrase_passphraseLabel">
-    <item>Passphrase</item>
-    <item>Passphrase</item>
-  </string-array>
+  <string name="importLegacyWallet_title">Legacy Wallet Import</string>
+  <string name="importLegacyWallet_scanQRCodeInstructions">Use the export feature of your Radix Olympia Desktop Wallet to choose the accounts to export and generate an export QR code.</string>
+  <string name="importLegacyWallet_scannedLabel">Scanned: %d/%d</string>
+  <string name="importLegacyWallet_alreadyImportedLabel">Already imported</string>
+  <string name="importLegacyWallet_selectAccountsToImport_accountType">Type</string>
+  <string name="importLegacyWallet_selectAccountsToImport_derivationPath">Path</string>
+  <string name="importLegacyWallet_selectAccountsToImport_deselectAll">Deselect all</string>
+  <string name="importLegacyWallet_selectAccountsToImport_importManyAccounts">Import %d accounts</string>
+  <string name="importLegacyWallet_selectAccountsToImport_importOneAcccount">Import 1 account</string>
+  <string name="importLegacyWallet_selectAccountsToImport_importZeroAccounts">Import accounts</string>
+  <string name="importLegacyWallet_selectAccountsToImport_name">Name</string>
+  <string name="importLegacyWallet_selectAccountsToImport_olympiaAddress">Olympia Address</string>
+  <string name="importLegacyWallet_selectAccountsToImport_selectAllNonImported">Select all non imported</string>
+  <string name="importLegacyWallet_selectAccountsToImport_unnamed">Unnamed</string>
+  <string name="importLegacyWallet_hardwareImport_skipButton">Skip remaining accounts</string>
+  <string name="importLegacyWallet_scanQRCode_title">Import Legacy Olympia Accounts</string>
+  <string name="importLegacyWallet_accountsToImport_title">Import Accounts</string>
+  <string name="importLegacyWallet_accountsToImport_subtitle">The following accounts will be imported to your new wallet.</string>
+  <string name="importLegacyWallet_accountsToImport_emptyState">No accounts found to import.</string>
+  <string name="importLegacyWallet_accountsToImport_button">Import %d Accounts</string>
+  <string name="importLegacyWallet_accountsToImport_legacyAccount">Legacy Account</string>
+  <string name="importLegacyWallet_accountsToImport_ledgerAccount">Ledger (Legacy)</string>
+  <string name="importLegacyWallet_accountsToImport_newAddress">New Address</string>
+  <string name="importLegacyWallet_completion_title">Congratulations</string>
+  <string name="importLegacyWallet_completion_titleNoAccounts">No accounts imported.</string>
+  <string name="importLegacyWallet_completion_titleOneAccount">Imported 1 account.</string>
+  <string name="importLegacyWallet_completion_titleManyAccounts">Imported #%d accounts.</string>
+  <string name="importLegacyWallet_completion_subtitle">You\'ve imported your accounts.</string>
+  <string name="importLegacyWallet_completion_footer">They will live on the Radix Network and you can access them anytime in your Wallet.</string>
+  <string name="importLegacyWallet_hardwareImport_title">%d of your Olympia accounts are controlled by Ledger hardware wallets.</string>
+  <string name="importLegacyWallet_hardwareImport_noLedgers">None</string>
+  <string name="importLegacyWallet_hardwareImport_subtitle">Currently known Ledgers:</string>
+  <string name="importLegacyWallet_hardwareImport_footer">%d more accounts are controlled by other devices. Connect a Ledger hardware wallet device and tap Continue.</string>
+  <string name="importLegacyWallet_seedPhrase_title">Verify With Your Seed Phrase</string>
+  <string name="importLegacyWallet_seedPhrase_subtitle">To complete importing your accounts, please view your seed phrase in the Radix Desktop Wallet and enter the words here.</string>
+  <string name="importLegacyWallet_seedPhrase_warning">This is a one-time process to import your accounts. Never give your seed phrase to anyone for any reason.</string>
+  <string name="importLegacyWallet_seedPhrase_wordLabel">Word %d</string>
+  <string name="importLegacyWallet_seedPhrase_regularMode">Regular Mode</string>
+  <string name="importLegacyWallet_seedPhrase_advancedMode">Advanced Mode</string>
+  <string name="importLegacyWallet_seedPhrase_passphraseHint">Optional BIP39 Passphrase. This is not your wallet password, and the Radix Desktop Wallet did not use a BIP39 passphrase. This is only to support import from other wallets that may have used one.</string>
+  <string name="importLegacyWallet_seedPhrase_passphraseLabel">Passphrase</string>
   <string name="createAccount_completion_explanation">Your Account lives on the Radix Network and you can access it any time in your Radix Wallet.</string>
   <string name="createAccount_completion_subtitleFirst">You’ve created your first Account!</string>
   <string name="createAccount_completion_subtitleNotFirst">Your Account has been created.</string>
@@ -599,17 +470,6 @@
   <string name="transactionSigning_preparingTransaction">Preparing transaction…</string>
   <string name="transactionSigning_signTransactionButtonTitle">Approve Transaction</string>
   <string name="transactionSigning_signingAndSubmittingTransaction">Submitting transaction…</string>
-  <string name="addLedger_alreadyAddedAlert_title">Ledger Already Added</string>
-  <string name="addLedger_alreadyAddedAlert_message">You have already added this Ledger as: %s</string>
-  <string name="addLedger_addDevice_title">Add Ledger Device</string>
-  <string name="addLedger_addDevice_body1">Let’s set up a Ledger hardware wallet device. You will be able to use it to create new Ledger-secured Accounts, or import Ledger-secured Accounts from the Radix Olympia Desktop Wallet.</string>
-  <string name="addLedger_addDevice_body2">Connect your Ledger to a computer running a linked Radix Connector browser extension, and make sure the Radix Babylon app is running on the Ledger device.</string>
-  <string name="addLedger_addDevice_continue">Continue</string>
-  <string name="addLedger_nameLedger_title">Name Your Ledger</string>
-  <string name="addLedger_nameLedger_body">Enter a label for this Ledger device</string>
-  <string name="addLedger_nameLedger_detectedType">Detected type: %s</string>
-  <string name="addLedger_nameLedger_namePlaceholder">Green Ledger Nano S+</string>
-  <string name="addLedger_nameLedger_continueButtonTitle">Save and Continue</string>
   <string name="importMnemonic_navigationTitle">Import Seed Phrase</string>
   <string name="importMnemonic_wordHeading">word #%d</string>
   <string name="importMnemonic_passphrase">Passphrase</string>
@@ -632,132 +492,30 @@
   <string name="importMnemonic_tempAndroid_heading">Recover Mnemonic</string>
   <string name="misc_remoteThumbnails_vectorImageFailure">Can\'t displays image of vector type</string>
   <string name="misc_remoteThumbnails_loadingFailure">Can\'t load image</string>
-  <string name="generalSettings_title">App Settings</string>
-  <string name="generalSettings_subtitle">Customize your Radix Wallet</string>
-  <string name="generalSettings_developerMode_title">Developer Mode</string>
-  <string name="generalSettings_developerMode_subtitle">Warning: Disables website validity checks</string>
-  <string name="generalSettings_profileSync_title">Sync Wallet Data to iCloud</string>
-  <string name="generalSettings_profileSync_subtitle">Warning: If disabled you might lose access to your Accounts and Personas.</string>
-  <string name="generalSettings_verboseLedgerMode_title">Verbose Ledger transaction signing</string>
-  <string name="generalSettings_verboseLedgerMode_subtitle">When signing with your Ledger hardware wallet, should all instructions be displayed?</string>
-  <string name="generalSettings_confirmCloudSyncDisableAlert_title">Disabling iCloud sync will delete the iCloud backup data, are you sure you want to disable iCloud sync?</string>
-  <string name="generalSettings_resetWallet_title">Reset Wallet</string>
-  <string name="generalSettings_resetWallet_subtitle">Clear all data in this Wallet</string>
-  <string name="generalSettings_resetWallet_buttonTitle">Reset</string>
-  <string name="generalSettings_resetWalletDialog_title">Reset Wallet?</string>
-  <string name="generalSettings_resetWalletDialog_resetButtonTitle">Reset Wallet</string>
-  <string name="generalSettings_resetWalletDialog_resetAndDeleteBackupButtonTitle">Reset and Delete iCloud Backup</string>
-  <string name="generalSettings_resetWalletDialog_message">WARNING. This will clear all contents of your Wallet. If you have no backup, you will lose access to your Accounts and Personas permanently.</string>
-  <string-array name="assetTransfer_transactionMessage">
-    <item>Message</item>
-    <item>Message</item>
-  </string-array>
-  <string-array name="assetTransfer_qrScanInstructions">
-    <item>Scan a QR code of a Radix Account address from another wallet or an exchange.</item>
-    <item>Scan a QR code of a Radix Account address from another wallet or an exchange.</item>
-  </string-array>
-  <string-array name="assetTransfer_sendTransferButton">
-    <item>Continue</item>
-    <item>Continue</item>
-  </string-array>
-  <string-array name="assetTransfer_accountList_externalAccountName">
-    <item>Account</item>
-    <item>Account</item>
-  </string-array>
-  <string-array name="assetTransfer_accountList_fromLabel">
-    <item>From</item>
-    <item>From</item>
-  </string-array>
-  <string-array name="assetTransfer_accountList_toLabel">
-    <item>To</item>
-    <item>To</item>
-  </string-array>
-  <string-array name="assetTransfer_accountList_addAccountButton">
-    <item>Add Account</item>
-    <item>Add Account</item>
-  </string-array>
-  <string-array name="assetTransfer_header_transfer">
-    <item>Transfer</item>
-    <item>Transfer</item>
-  </string-array>
-  <string-array name="assetTransfer_header_addMessageButton">
-    <item>Add Message</item>
-    <item>Add Message</item>
-  </string-array>
-  <string-array name="assetTransfer_chooseReceivingAccount_invalidAddressError">
-    <item>Invalid address</item>
-    <item>Invalid address</item>
-  </string-array>
-  <string-array name="assetTransfer_chooseReceivingAccount_alreadyAddedError">
-    <item>Account already added</item>
-    <item>Account already added</item>
-  </string-array>
-  <string-array name="assetTransfer_chooseReceivingAccount_navigationTitle">
-    <item>Choose Receiving Account</item>
-    <item>Choose Receiving Account</item>
-  </string-array>
-  <string-array name="assetTransfer_chooseReceivingAccount_enterManually">
-    <item>Enter or scan and Account address</item>
-    <item>Enter or scan and Account address</item>
-  </string-array>
-  <string-array name="assetTransfer_chooseReceivingAccount_chooseOwnAccount">
-    <item>Or: Choose one of your own Accounts</item>
-    <item>Or: Choose one of your own Accounts</item>
-  </string-array>
-  <string-array name="assetTransfer_chooseReceivingAccount_scanQRNavigationTitle">
-    <item>Scan Account QR Code</item>
-    <item>Scan Account QR Code</item>
-  </string-array>
-  <string-array name="assetTransfer_chooseReceivingAccount_addressFieldPlaceholder">
-    <item>Enter Radix Account address</item>
-    <item>Enter Radix Account address</item>
-  </string-array>
-  <string-array name="assetTransfer_addAssets_navigationTitle">
-    <item>Choose Asset(s) to Send</item>
-    <item>Choose Asset(s) to Send</item>
-  </string-array>
-  <string-array name="assetTransfer_addAssets_buttonAssetsNone">
-    <item>Select Assets</item>
-    <item>Select Assets</item>
-  </string-array>
-  <string-array name="assetTransfer_addAssets_buttonAssetsOne">
-    <item>Choose 1 Asset</item>
-    <item>Choose 1 Asset</item>
-  </string-array>
-  <string-array name="assetTransfer_addAssets_buttonAssets">
-    <item>Choose %d Assets</item>
-    <item>Choose %d Assets</item>
-  </string-array>
-  <string-array name="assetTransfer_fungibleResource_totalExceedsBalance">
-    <item>Total exceeds your current balance</item>
-    <item>Total exceeds your current balance</item>
-  </string-array>
-  <string-array name="assetTransfer_fungibleResource_balance">
-    <item>Balance: %s</item>
-    <item>Balance: %s</item>
-  </string-array>
-  <string-array name="assetTransfer_receivingAccount_chooseAccountButton">
-    <item>Choose Account</item>
-    <item>Choose Account</item>
-  </string-array>
-  <string-array name="assetTransfer_receivingAccount_addAssetsButton">
-    <item>Add Assets</item>
-    <item>Add Assets</item>
-  </string-array>
-  <string name="restoreFromBackup_navigationTitle">Wallet Data Backup</string>
-  <string name="restoreFromBackup_importBackupWallet">Import From Backup</string>
-  <string name="restoreFromBackup_cloudBackupWallet">Available backups:</string>
-  <string name="restoreFromBackup_useICloudBackup">Use iCloud Backup Data</string>
-  <string name="restoreFromBackup_noCloudBackup">No backups found in iCloud</string>
-  <string name="restoreFromBackup_thisDevice">This Device</string>
-  <string name="restoreFromBackup_creatingDevice">Backup created by: %s</string>
-  <string name="restoreFromBackup_creationDateLabel">Creation date: %s</string>
-  <string name="restoreFromBackup_lastUsedOnDeviceLabel">Last used on device: %s</string>
-  <string name="restoreFromBackup_lastModifedDateLabel">Last modified date: %s</string>
-  <string name="restoreFromBackup_numberOfNetworksLabel">Number of networks: %d</string>
-  <string name="restoreFromBackup_totalAccountsNumberLabel">Number of Accounts: %d</string>
-  <string name="restoreFromBackup_totalPersonasNumberLabel">Number of Personas: %d</string>
-  <string name="restoreFromBackup_incompatibleWalletDataLabel">Incompatible Wallet data</string>
+  <string name="assetTransfer_transactionMessage">Message</string>
+  <string name="assetTransfer_qrScanInstructions">Scan a QR code of a Radix Account address from another wallet or an exchange.</string>
+  <string name="assetTransfer_sendTransferButton">Continue</string>
+  <string name="assetTransfer_accountList_externalAccountName">Account</string>
+  <string name="assetTransfer_accountList_fromLabel">From</string>
+  <string name="assetTransfer_accountList_toLabel">To</string>
+  <string name="assetTransfer_accountList_addAccountButton">Add Account</string>
+  <string name="assetTransfer_header_transfer">Transfer</string>
+  <string name="assetTransfer_header_addMessageButton">Add Message</string>
+  <string name="assetTransfer_chooseReceivingAccount_invalidAddressError">Invalid address</string>
+  <string name="assetTransfer_chooseReceivingAccount_alreadyAddedError">Account already added</string>
+  <string name="assetTransfer_chooseReceivingAccount_navigationTitle">Choose Receiving Account</string>
+  <string name="assetTransfer_chooseReceivingAccount_enterManually">Enter or scan and Account address</string>
+  <string name="assetTransfer_chooseReceivingAccount_chooseOwnAccount">Or: Choose one of your own Accounts</string>
+  <string name="assetTransfer_chooseReceivingAccount_scanQRNavigationTitle">Scan Account QR Code</string>
+  <string name="assetTransfer_chooseReceivingAccount_addressFieldPlaceholder">Enter Radix Account address</string>
+  <string name="assetTransfer_addAssets_navigationTitle">Choose Asset(s) to Send</string>
+  <string name="assetTransfer_addAssets_buttonAssetsNone">Select Assets</string>
+  <string name="assetTransfer_addAssets_buttonAssetsOne">Choose 1 Asset</string>
+  <string name="assetTransfer_addAssets_buttonAssets">Choose %d Assets</string>
+  <string name="assetTransfer_fungibleResource_totalExceedsBalance">Total exceeds your current balance</string>
+  <string name="assetTransfer_fungibleResource_balance">Balance: %s</string>
+  <string name="assetTransfer_receivingAccount_chooseAccountButton">Choose Account</string>
+  <string name="assetTransfer_receivingAccount_addAssetsButton">Add Assets</string>
   <string name="importOlympiaLedgerAccounts_unverifiedAccountsLeft">#%d accounts left to import</string>
   <string name="importOlympiaLedgerAccounts_importLedgersAndAccounts">Imported ledgers and accounts</string>
   <string name="importOlympiaLedgerAccounts_accountCount">%s - #%d accounts</string>
@@ -771,66 +529,22 @@
   <string name="signing_signatureRequest_instructions">Review and sign the transaction on the Ledger device to continue.</string>
   <string name="signing_signatureSuccessful_title">Signed</string>
   <string name="signing_signatureSuccessful_body">Signature successful</string>
-  <string-array name="ledgerHardwareDevices_linkConnectorAlert_title">
-    <item>Link a Connector</item>
-    <item>Link a Connector</item>
-  </string-array>
-  <string-array name="ledgerHardwareDevices_linkConnectorAlert_message">
-    <item>To use a Ledger hardware wallet device, it must be connected to a computer running the Radix Connector browser extension.
+  <string name="ledgerHardwareDevices_linkConnectorAlert_title">Link a Connector</string>
+  <string name="ledgerHardwareDevices_linkConnectorAlert_message">To use a Ledger hardware wallet device, it must be connected to a computer running the Radix Connector browser extension.
 
-Install the Connector extension, open it to see the linking QR code, and tap continue.</item>
-    <item>To use a Ledger hardware wallet device, it must be connected to a computer running the Radix Connector browser extension.
-
-Install the Connector extension, open it to see the linking QR code, and tap continue.</item>
-  </string-array>
-  <string-array name="ledgerHardwareDevices_linkConnectorAlert_continue">
-    <item>Continue</item>
-    <item>Continue</item>
-  </string-array>
-  <string-array name="ledgerHardwareDevices_navigationTitleAllowSelection">
-    <item>Choose Device</item>
-    <item>Choose Device</item>
-  </string-array>
-  <string-array name="ledgerHardwareDevices_navigationTitleGeneral">
-    <item>Ledger Devices</item>
-    <item>Ledger Devices</item>
-  </string-array>
-  <string-array name="ledgerHardwareDevices_ledgerFactorSourceInfoCaption">
-    <item>What is a Ledger Factor Source</item>
-    <item>What is a Ledger Factor Source</item>
-  </string-array>
-  <string-array name="ledgerHardwareDevices_addNewLedger">
-    <item>Add Ledger Device</item>
-    <item>Add Ledger Device</item>
-  </string-array>
-  <string-array name="ledgerHardwareDevices_addedHeading">
-    <item>Added</item>
-    <item>Added</item>
-  </string-array>
-  <string-array name="ledgerHardwareDevices_usedHeading">
-    <item>Last Used</item>
-    <item>Last Used</item>
-  </string-array>
-  <string-array name="ledgerHardwareDevices_continueWithLedger">
-    <item>Continue</item>
-    <item>Continue</item>
-  </string-array>
-  <string-array name="ledgerHardwareDevices_subtitleNoLedgers">
-    <item>No Ledger devices have been added.</item>
-    <item>No Ledger devices have been added.</item>
-  </string-array>
-  <string-array name="ledgerHardwareDevices_subtitleSelectLedger">
-    <item>Choose a Ledger device to use</item>
-    <item>Choose a Ledger device to use</item>
-  </string-array>
-  <string-array name="ledgerHardwareDevices_subtitleAllLedgers">
-    <item>Here are all the Ledger devices you have added.</item>
-    <item>Here are all the Ledger devices you have added.</item>
-  </string-array>
-  <string-array name="ledgerHardwareDevices_subtitleFailure">
-    <item>Could not find Ledger devices</item>
-    <item>Could not find Ledger devices</item>
-  </string-array>
+Install the Connector extension, open it to see the linking QR code, and tap continue.</string>
+  <string name="ledgerHardwareDevices_linkConnectorAlert_continue">Continue</string>
+  <string name="ledgerHardwareDevices_navigationTitleAllowSelection">Choose Device</string>
+  <string name="ledgerHardwareDevices_navigationTitleGeneral">Ledger Devices</string>
+  <string name="ledgerHardwareDevices_ledgerFactorSourceInfoCaption">What is a Ledger Factor Source</string>
+  <string name="ledgerHardwareDevices_addNewLedger">Add Ledger Device</string>
+  <string name="ledgerHardwareDevices_addedHeading">Added</string>
+  <string name="ledgerHardwareDevices_usedHeading">Last Used</string>
+  <string name="ledgerHardwareDevices_continueWithLedger">Continue</string>
+  <string name="ledgerHardwareDevices_subtitleNoLedgers">No Ledger devices have been added.</string>
+  <string name="ledgerHardwareDevices_subtitleSelectLedger">Choose a Ledger device to use</string>
+  <string name="ledgerHardwareDevices_subtitleAllLedgers">Here are all the Ledger devices you have added.</string>
+  <string name="ledgerHardwareDevices_subtitleFailure">Could not find Ledger devices</string>
   <string name="displayMnemonics_cautionAlert_title">Use Caution</string>
   <string name="displayMnemonics_cautionAlert_revealButtonLabel">Reveal Seed Phrase</string>
   <string name="displayMnemonics_cautionAlert_message">A seed phrase provides full control of its Accounts. Do not view in a public area. Back up the seed phrase words securely. Screenshots are disabled.</string>
@@ -895,4 +609,26 @@ Install the Connector extension, open it to see the linking QR code, and tap con
   <string name="addLedgerDevice_nameLedger_detectedType">Detected type: %s</string>
   <string name="addLedgerDevice_nameLedger_namePlaceholder">Green Ledger Nano S+</string>
   <string name="addLedgerDevice_nameLedger_continueButtonTitle">Save and Continue</string>
+  <string name="androidProfileBackup_disabledText">Back up is turned off</string>
+  <string name="androidProfileBackup_lastBackedUp">Last Backed up: %s</string>
+  <string name="androidProfileBackup_noLastBackUp">Not Backed up yet</string>
+  <string name="androidProfileBackup_openSystemBackupSettings">Open System Backup Settings</string>
+  <string name="androidProfileBackup_backupWalletData_title">Backup Wallet Data</string>
+  <string name="androidProfileBackup_backupWalletData_message">Warning: If disabled you might lose access to your Accounts and Personas.</string>
+  <string name="iOSProfileBackup_profileSync_title">Sync Wallet Data to iCloud</string>
+  <string name="iOSProfileBackup_profileSync_subtitle">Warning: If disabled you might lose access to your Accounts and Personas.</string>
+  <string name="iOSProfileBackup_navigationTitle">Wallet Data Backup</string>
+  <string name="iOSProfileBackup_importBackupWallet">Import From Backup</string>
+  <string name="iOSProfileBackup_cloudBackupWallet">Available backups:</string>
+  <string name="iOSProfileBackup_useICloudBackup">Use iCloud Backup Data</string>
+  <string name="iOSProfileBackup_noCloudBackup">No backups found in iCloud</string>
+  <string name="iOSProfileBackup_thisDevice">This Device</string>
+  <string name="iOSProfileBackup_creatingDevice">Backup created by: %s</string>
+  <string name="iOSProfileBackup_creationDateLabel">Creation date: %s</string>
+  <string name="iOSProfileBackup_lastUsedOnDeviceLabel">Last used on device: %s</string>
+  <string name="iOSProfileBackup_lastModifedDateLabel">Last modified date: %s</string>
+  <string name="iOSProfileBackup_numberOfNetworksLabel">Number of networks: %d</string>
+  <string name="iOSProfileBackup_totalAccountsNumberLabel">Number of Accounts: %d</string>
+  <string name="iOSProfileBackup_totalPersonasNumberLabel">Number of Personas: %d</string>
+  <string name="iOSProfileBackup_incompatibleWalletDataLabel">Incompatible Wallet data</string>
 </resources>
