@@ -16,11 +16,10 @@ import com.babylon.wallet.android.domain.model.TransactionManifestData
 import com.babylon.wallet.android.domain.usecases.GetDAppWithMetadataAndAssociatedResourcesUseCase
 import com.babylon.wallet.android.domain.usecases.transaction.GetTransactionComponentResourcesUseCase
 import com.babylon.wallet.android.domain.usecases.transaction.GetTransactionProofResourcesUseCase
-import com.babylon.wallet.android.domain.usecases.transaction.PollTransactionStatusUseCase
 import com.babylon.wallet.android.presentation.StateViewModelTest
 import com.babylon.wallet.android.utils.AppEventBus
 import com.babylon.wallet.android.utils.DeviceSecurityHelper
-import com.radixdlt.toolkit.models.request.AnalyzeTransactionExecutionResponse
+import com.radixdlt.toolkit.models.request.AnalyzeTransactionExecutionOutput
 import com.radixdlt.toolkit.models.request.EncounteredAddresses
 import com.radixdlt.toolkit.models.request.EncounteredComponents
 import com.radixdlt.toolkit.models.request.NewlyCreated
@@ -203,7 +202,7 @@ internal class TransactionApprovalViewModelTest : StateViewModelTest<Transaction
         logs = emptyList()
     )
 
-    private fun analyzeManifestResponse() = AnalyzeTransactionExecutionResponse(
+    private fun analyzeManifestResponse() = AnalyzeTransactionExecutionOutput(
         encounteredAddresses = EncounteredAddresses(
             EncounteredComponents(
                 emptyArray(),
