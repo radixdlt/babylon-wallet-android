@@ -648,30 +648,102 @@
   <string name="generalSettings_resetWalletDialog_resetButtonTitle">Reset Wallet</string>
   <string name="generalSettings_resetWalletDialog_resetAndDeleteBackupButtonTitle">Reset and Delete iCloud Backup</string>
   <string name="generalSettings_resetWalletDialog_message">WARNING. This will clear all contents of your Wallet. If you have no backup, you will lose access to your Accounts and Personas permanently.</string>
-  <string name="assetTransfer_transactionMessage">Message</string>
-  <string name="assetTransfer_qrScanInstructions">Scan a QR code of a Radix Account address from another wallet or an exchange.</string>
-  <string name="assetTransfer_sendTransferButton">Continue</string>
-  <string name="assetTransfer_accountList_externalAccountName">Account</string>
-  <string name="assetTransfer_accountList_fromLabel">From</string>
-  <string name="assetTransfer_accountList_toLabel">To</string>
-  <string name="assetTransfer_accountList_addAccountButton">Add Account</string>
-  <string name="assetTransfer_header_transfer">Transfer</string>
-  <string name="assetTransfer_header_addMessageButton">Add Message</string>
-  <string name="assetTransfer_chooseReceivingAccount_invalidAddressError">Invalid address</string>
-  <string name="assetTransfer_chooseReceivingAccount_alreadyAddedError">Account already added</string>
-  <string name="assetTransfer_chooseReceivingAccount_navigationTitle">Choose Receiving Account</string>
-  <string name="assetTransfer_chooseReceivingAccount_enterManually">Enter or scan and Account address</string>
-  <string name="assetTransfer_chooseReceivingAccount_chooseOwnAccount">Or: Choose one of your own Accounts</string>
-  <string name="assetTransfer_chooseReceivingAccount_scanQRNavigationTitle">Scan Account QR Code</string>
-  <string name="assetTransfer_chooseReceivingAccount_addressFieldPlaceholder">Enter Radix Account address</string>
-  <string name="assetTransfer_addAssets_navigationTitle">Choose Asset(s) to Send</string>
-  <string name="assetTransfer_addAssets_buttonAssetsNone">Select Assets</string>
-  <string name="assetTransfer_addAssets_buttonAssetsOne">Choose 1 Asset</string>
-  <string name="assetTransfer_addAssets_buttonAssets">Choose %d Assets</string>
-  <string name="assetTransfer_fungibleResource_totalExceedsBalance">Total exceeds your current balance</string>
-  <string name="assetTransfer_fungibleResource_balance">Balance: %s</string>
-  <string name="assetTransfer_receivingAccount_chooseAccountButton">Choose Account</string>
-  <string name="assetTransfer_receivingAccount_addAssetsButton">Add Assets</string>
+  <string-array name="assetTransfer_transactionMessage">
+    <item>Message</item>
+    <item>Message</item>
+  </string-array>
+  <string-array name="assetTransfer_qrScanInstructions">
+    <item>Scan a QR code of a Radix Account address from another wallet or an exchange.</item>
+    <item>Scan a QR code of a Radix Account address from another wallet or an exchange.</item>
+  </string-array>
+  <string-array name="assetTransfer_sendTransferButton">
+    <item>Continue</item>
+    <item>Continue</item>
+  </string-array>
+  <string-array name="assetTransfer_accountList_externalAccountName">
+    <item>Account</item>
+    <item>Account</item>
+  </string-array>
+  <string-array name="assetTransfer_accountList_fromLabel">
+    <item>From</item>
+    <item>From</item>
+  </string-array>
+  <string-array name="assetTransfer_accountList_toLabel">
+    <item>To</item>
+    <item>To</item>
+  </string-array>
+  <string-array name="assetTransfer_accountList_addAccountButton">
+    <item>Add Account</item>
+    <item>Add Account</item>
+  </string-array>
+  <string-array name="assetTransfer_header_transfer">
+    <item>Transfer</item>
+    <item>Transfer</item>
+  </string-array>
+  <string-array name="assetTransfer_header_addMessageButton">
+    <item>Add Message</item>
+    <item>Add Message</item>
+  </string-array>
+  <string-array name="assetTransfer_chooseReceivingAccount_invalidAddressError">
+    <item>Invalid address</item>
+    <item>Invalid address</item>
+  </string-array>
+  <string-array name="assetTransfer_chooseReceivingAccount_alreadyAddedError">
+    <item>Account already added</item>
+    <item>Account already added</item>
+  </string-array>
+  <string-array name="assetTransfer_chooseReceivingAccount_navigationTitle">
+    <item>Choose Receiving Account</item>
+    <item>Choose Receiving Account</item>
+  </string-array>
+  <string-array name="assetTransfer_chooseReceivingAccount_enterManually">
+    <item>Enter or scan and Account address</item>
+    <item>Enter or scan and Account address</item>
+  </string-array>
+  <string-array name="assetTransfer_chooseReceivingAccount_chooseOwnAccount">
+    <item>Or: Choose one of your own Accounts</item>
+    <item>Or: Choose one of your own Accounts</item>
+  </string-array>
+  <string-array name="assetTransfer_chooseReceivingAccount_scanQRNavigationTitle">
+    <item>Scan Account QR Code</item>
+    <item>Scan Account QR Code</item>
+  </string-array>
+  <string-array name="assetTransfer_chooseReceivingAccount_addressFieldPlaceholder">
+    <item>Enter Radix Account address</item>
+    <item>Enter Radix Account address</item>
+  </string-array>
+  <string-array name="assetTransfer_addAssets_navigationTitle">
+    <item>Choose Asset(s) to Send</item>
+    <item>Choose Asset(s) to Send</item>
+  </string-array>
+  <string-array name="assetTransfer_addAssets_buttonAssetsNone">
+    <item>Select Assets</item>
+    <item>Select Assets</item>
+  </string-array>
+  <string-array name="assetTransfer_addAssets_buttonAssetsOne">
+    <item>Choose 1 Asset</item>
+    <item>Choose 1 Asset</item>
+  </string-array>
+  <string-array name="assetTransfer_addAssets_buttonAssets">
+    <item>Choose %d Assets</item>
+    <item>Choose %d Assets</item>
+  </string-array>
+  <string-array name="assetTransfer_fungibleResource_totalExceedsBalance">
+    <item>Total exceeds your current balance</item>
+    <item>Total exceeds your current balance</item>
+  </string-array>
+  <string-array name="assetTransfer_fungibleResource_balance">
+    <item>Balance: %s</item>
+    <item>Balance: %s</item>
+  </string-array>
+  <string-array name="assetTransfer_receivingAccount_chooseAccountButton">
+    <item>Choose Account</item>
+    <item>Choose Account</item>
+  </string-array>
+  <string-array name="assetTransfer_receivingAccount_addAssetsButton">
+    <item>Add Assets</item>
+    <item>Add Assets</item>
+  </string-array>
   <string name="restoreFromBackup_navigationTitle">Wallet Data Backup</string>
   <string name="restoreFromBackup_importBackupWallet">Import From Backup</string>
   <string name="restoreFromBackup_cloudBackupWallet">Available backups:</string>
@@ -812,4 +884,15 @@ Install the Connector extension, open it to see the linking QR code, and tap con
   <string name="appSettings_resetWalletDialog_resetButtonTitle">Reset Wallet</string>
   <string name="appSettings_resetWalletDialog_resetAndDeleteBackupButtonTitle">Reset and Delete iCloud Backup</string>
   <string name="appSettings_resetWalletDialog_message">WARNING. This will clear all contents of your Wallet. If you have no backup, you will lose access to your Accounts and Personas permanently.</string>
+  <string name="addLedgerDevice_alreadyAddedAlert_title">Ledger Already Added</string>
+  <string name="addLedgerDevice_alreadyAddedAlert_message">You have already added this Ledger as: %s</string>
+  <string name="addLedgerDevice_addDevice_title">Add Ledger Device</string>
+  <string name="addLedgerDevice_addDevice_body1">Let’s set up a Ledger hardware wallet device. You will be able to use it to create new Ledger-secured Accounts, or import Ledger-secured Accounts from the Radix Olympia Desktop Wallet.</string>
+  <string name="addLedgerDevice_addDevice_body2">Connect your Ledger to a computer running a linked Radix Connector browser extension, and make sure the Radix Babylon app is running on the Ledger device.</string>
+  <string name="addLedgerDevice_addDevice_continue">Continue</string>
+  <string name="addLedgerDevice_nameLedger_title">Name Your Ledger</string>
+  <string name="addLedgerDevice_nameLedger_body">Enter a label for this Ledger device</string>
+  <string name="addLedgerDevice_nameLedger_detectedType">Detected type: %s</string>
+  <string name="addLedgerDevice_nameLedger_namePlaceholder">Green Ledger Nano S+</string>
+  <string name="addLedgerDevice_nameLedger_continueButtonTitle">Save and Continue</string>
 </resources>
