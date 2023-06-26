@@ -175,7 +175,7 @@ fun NonFungibleTokenBottomSheetDetails(
                             )
                             Spacer(modifier = Modifier.weight(1f))
                             Text(
-                                text = currentSupply,
+                                text = currentSupply.toString(),
                                 style = RadixTheme.typography.body1Regular,
                                 color = RadixTheme.colors.gray1
                             )

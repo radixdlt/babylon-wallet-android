@@ -123,8 +123,8 @@ sealed class Resource {
         val resourceBehaviours: List<ResourceBehaviour>
             get() = behaviours
 
-        val currentSupplyToDisplay: String?
-            get() = currentSupply
+        val currentSupplyToDisplay: Int?
+            get() = currentSupply?.toIntOrNull()
 
         override fun compareTo(other: NonFungibleResource): Int = when {
             nameMetadataItem == null && other.nameMetadataItem != null -> 1
