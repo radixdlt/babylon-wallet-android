@@ -167,6 +167,7 @@ private fun AccountScreenContent(
             topBar = {
                 AccountTopBar(
                     state = state,
+                    lazyListState = lazyListState,
                     onBackClick = onBackClick,
                     onAccountPreferenceClick = onAccountPreferenceClick,
                     onTransferClick = onTransferClick,

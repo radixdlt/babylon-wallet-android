@@ -1,0 +1,91 @@
+{
+  ConstraintSets: {
+    start: {
+      titleGuideline: {
+        height: 1,
+        width: 'spread',
+        start: ['parent', 'start'],
+        end: ['parent', 'end'],
+        top: ['backButton', 'top'],
+        bottom: ['backButton', 'bottom'],
+        vBias: 0.65
+      },
+      backButton: {
+        start: ['parent', 'start'],
+        end: ['titleLabel', 'start'],
+        top: ['parent', 'top'],
+      },
+      titleLabel: {
+        start: ['backButton', 'end'],
+        end: ['moreButton', 'start'],
+        baseline: ['titleGuideline', 'top'],
+        width: 'spread',
+      },
+      moreButton: {
+        start: ['titleLabel', 'end'],
+        end: ['parent', 'end'],
+      },
+      accountAddressView: {
+        start: ['parent', 'start'],
+        end: ['parent', 'end'],
+        top: ['titleLabel', 'bottom'],
+      },
+      transferButton: {
+        start: ['parent', 'start'],
+        end: ['parent', 'end'],
+        top: ['accountAddressView', 'bottom'],
+      },
+      securityPrompt: {
+        width: 'spread',
+        start: ['parent', 'start', 24],
+        end: ['parent', 'end', 24],
+        bottom: ['transferButton', 'bottom', 24]
+      }
+    },
+    end: {
+      titleGuideline: {
+        height: 1,
+        width: 'spread',
+        start: ['parent', 'start'],
+        end: ['parent', 'end'],
+        top: ['backButton', 'top'],
+        bottom: ['backButton', 'bottom'],
+        vBias: 0.65
+      },
+      backButton: {
+        start: ['parent', 'start'],
+        end: ['titleLabel', 'start'],
+        top: ['parent', 'top'],
+      },
+      titleLabel: {
+        start: ['backButton', 'end'],
+        end: ['moreButton', 'start'],
+        baseline: ['titleGuideline', 'top'],
+        width: 'spread',
+      },
+      moreButton: {
+        start: ['titleLabel', 'end'],
+        end: ['parent', 'end'],
+      },
+      accountAddressView: {
+        start: ['parent', 'start'],
+        end: ['parent', 'end'],
+        top: ['parent', 'bottom'],
+        visibility: 'invisible' // Invisible + move outside of the layout (gone has a weird anim)
+      },
+      transferButton: {
+        start: ['parent', 'start'],
+        end: ['parent', 'end'],
+        top: ['accountAddressView', 'bottom'],
+        visibility: 'invisible'
+      },
+      securityPrompt: {
+        width: 'spread',
+        start: ['parent', 'start', 24],
+        end: ['parent', 'end', 24],
+        bottom: ['transferButton', 'bottom', 24],
+        visibility: 'invisible'
+      }
+    }
+  }
+}
