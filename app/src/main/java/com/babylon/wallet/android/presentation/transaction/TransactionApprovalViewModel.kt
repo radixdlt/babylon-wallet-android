@@ -175,7 +175,7 @@ class TransactionApprovalViewModel @Inject constructor(
                             dAppWithResources
                         }
 
-                        val accountsWithResources = getTransactionComponentResourcesUseCase.invoke(
+                        val accountsWithResources = getTransactionComponentResourcesUseCase(
                             analyzeManifestWithPreviewResponse
                         ).value().orEmpty()
 

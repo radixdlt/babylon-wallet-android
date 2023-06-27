@@ -17,7 +17,7 @@ class GetTransactionComponentResourcesUseCase @Inject constructor(
     private val getProfileUseCase: GetProfileUseCase,
     private val entityRepository: EntityRepository
 ) {
-    suspend fun invoke(
+    suspend operator fun invoke(
         analyzeManifestWithPreviewResponse: AnalyzeTransactionExecutionOutput,
     ): Result<List<AccountWithResources>> {
         val depositComponents = mutableListOf<String>()
