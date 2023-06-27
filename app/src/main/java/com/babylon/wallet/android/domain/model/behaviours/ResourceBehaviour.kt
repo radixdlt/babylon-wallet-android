@@ -2,7 +2,17 @@ package com.babylon.wallet.android.domain.model.behaviours
 
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import com.babylon.wallet.android.R
+
+@Composable
+fun ResourceBehaviour.name(): String = stringResource(id = title)
+
+@Composable
+fun ResourceBehaviour.icon(): Painter = painterResource(id = icon)
 
 enum class ResourceBehaviour(
     @StringRes val title: Int,

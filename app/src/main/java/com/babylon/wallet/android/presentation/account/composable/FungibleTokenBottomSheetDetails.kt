@@ -1,7 +1,6 @@
 package com.babylon.wallet.android.presentation.account.composable
 
 import android.graphics.drawable.ColorDrawable
-import androidx.annotation.DrawableRes
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -22,6 +21,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
@@ -34,6 +34,9 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.domain.model.Resource
+import com.babylon.wallet.android.domain.model.behaviours.icon
+import com.babylon.wallet.android.domain.model.behaviours.name
+import com.babylon.wallet.android.domain.model.name
 import com.babylon.wallet.android.presentation.ui.composables.ActionableAddressView
 import com.babylon.wallet.android.presentation.ui.composables.BackIconType
 import com.babylon.wallet.android.presentation.ui.composables.ImageSize
@@ -161,8 +164,8 @@ fun FungibleTokenBottomSheetDetails(
                     )
                     fungible.resourceBehaviours.forEach { resourceBehaviour ->
                         Behaviour(
-                            icon = resourceBehaviour.icon,
-                            title = stringResource(id = resourceBehaviour.title)
+                            icon = resourceBehaviour.icon(),
+                            name = resourceBehaviour.name()
                         )
                     }
                 }
@@ -182,8 +185,8 @@ fun FungibleTokenBottomSheetDetails(
                     content = {
                         fungible.tags.forEach { tag ->
                             Tag(
-                                name = tag.name,
-                                isXrd = tag.isXrd
+                                name = tag.name(),
+                                isXrd = tag is Resource.Tag.Official
                             )
                         }
                     }
@@ -224,8 +227,8 @@ fun ResourceAddressRow(
 @Composable
 fun Behaviour(
     modifier: Modifier = Modifier,
-    @DrawableRes icon: Int,
-    title: String
+    icon: Painter,
+    name: String
 ) {
     Row(
         modifier = modifier
@@ -234,7 +237,7 @@ fun Behaviour(
         verticalAlignment = Alignment.CenterVertically
     ) {
         Image(
-            painter = painterResource(id = icon),
+            painter = icon,
             contentDescription = "behaviour image"
         )
 
@@ -242,7 +245,7 @@ fun Behaviour(
             modifier = Modifier
                 .weight(1f)
                 .padding(horizontal = RadixTheme.dimensions.paddingDefault),
-            text = title,
+            text = name,
             style = RadixTheme.typography.body2Regular,
             color = RadixTheme.colors.gray1,
             maxLines = 2

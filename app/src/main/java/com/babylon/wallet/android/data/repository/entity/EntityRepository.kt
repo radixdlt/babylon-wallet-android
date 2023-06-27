@@ -83,13 +83,9 @@ class EntityRepositoryImpl @Inject constructor(
                     stateEntityDetailsResponseItem.allResourceAddresses
                 }.flatten()
             }.flatten()
-            val resourcesDetails = getStateEntityDetailsResponse(
-                addresses = resourceAddresses,
-                explicitMetadata = ExplicitMetadataKey.forAssets,
-                isRefreshing = false
-            ).value().orEmpty().map {
-                it.items
-            }.flatten()
+            val resourcesDetails = getDetailsForResources(
+                resourceAddresses = resourceAddresses
+            )
 
             val mapOfAccountsWithMetadata = buildMapOfAccountsWithMetadata(entityDetailsResponses)
             val mapOfAccountsWithFungibleResources = buildMapOfAccountsWithFungibles(entityDetailsResponses, resourcesDetails)
@@ -154,12 +150,12 @@ class EntityRepositoryImpl @Inject constructor(
                         emptyList()
                     }
                     fungibleResourcesItemsList.mapNotNull { fungibleResourcesItem ->
-                        val resourceDetails = resourcesDetails.find {
+                        val fungibleDetails = resourcesDetails.find {
                             it.address == fungibleResourcesItem.resourceAddress
                         }
 
-                        val resourceBehaviours = resourceDetails?.details?.calculateResourceBehaviours().orEmpty()
-                        val currentSupply = resourceDetails?.details?.totalSupply()
+                        val resourceBehaviours = fungibleDetails?.details?.calculateResourceBehaviours().orEmpty()
+                        val currentSupply = fungibleDetails?.details?.totalSupply()
 
                         val metaDataItems = fungibleResourcesItem.explicitMetadata?.asMetadataItems().orEmpty()
                         val amount = fungibleResourcesItem.vaults.items.first().amount.toBigDecimal()
@@ -206,12 +202,12 @@ class EntityRepositoryImpl @Inject constructor(
                         emptyList()
                     }
                     nonFungibleResourcesItemsList.mapNotNull { nonFungibleResourcesItem ->
-                        val resourceDetails = resourcesDetails.find {
+                        val nonFungibleDetails = resourcesDetails.find {
                             it.address == nonFungibleResourcesItem.resourceAddress
                         }
 
-                        val resourceBehaviours = resourceDetails?.details?.calculateResourceBehaviours().orEmpty()
-                        val currentSupply = resourceDetails?.details?.totalSupply()
+                        val resourceBehaviours = nonFungibleDetails?.details?.calculateResourceBehaviours().orEmpty()
+                        val currentSupply = nonFungibleDetails?.details?.totalSupply()
 
                         val metaDataItems = nonFungibleResourcesItem.explicitMetadata?.asMetadataItems().orEmpty()
                         val nfts = getNonFungibleResourceItemsForAccount(
@@ -443,7 +439,10 @@ class EntityRepositoryImpl @Inject constructor(
         )
     }
 
-    override suspend fun getEntityOwnerKeyHashes(entityAddress: String, isRefreshing: Boolean): Result<OwnerKeyHashesMetadataItem?> {
+    override suspend fun getEntityOwnerKeyHashes(
+        entityAddress: String,
+        isRefreshing: Boolean
+    ): Result<OwnerKeyHashesMetadataItem?> {
         return stateApi.entityDetails(
             StateEntityDetailsRequest(
                 addresses = listOf(entityAddress)
@@ -454,10 +453,21 @@ class EntityRepositoryImpl @Inject constructor(
                 timeoutDuration = if (isRefreshing) NO_CACHE else TimeoutDuration.FIVE_MINUTES
             ),
             map = { response ->
-                response.items.first().metadata.asMetadataItems().filterIsInstance<OwnerKeyHashesMetadataItem>().firstOrNull()
+                response.items.first().metadata.asMetadataItems().filterIsInstance<OwnerKeyHashesMetadataItem>()
+                    .firstOrNull()
             },
         )
     }
+
+    private suspend fun getDetailsForResources(
+        resourceAddresses: List<String>
+    ): List<StateEntityDetailsResponseItem> = getStateEntityDetailsResponse(
+        addresses = resourceAddresses,
+        explicitMetadata = ExplicitMetadataKey.forAssets,
+        isRefreshing = false
+    ).value().orEmpty().map {
+        it.items
+    }.flatten()
 
     companion object {
         const val CHUNK_SIZE_OF_ITEMS = 20

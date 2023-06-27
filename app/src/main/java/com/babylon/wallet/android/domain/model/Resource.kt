@@ -1,6 +1,7 @@
 package com.babylon.wallet.android.domain.model
 
 import android.net.Uri
+import androidx.compose.runtime.Composable
 import com.babylon.wallet.android.domain.model.behaviours.ResourceBehaviour
 import com.babylon.wallet.android.domain.model.metadata.DescriptionMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.IconUrlMetadataItem
@@ -12,6 +13,14 @@ import com.radixdlt.toolkit.models.request.KnownEntityAddressesRequest
 import rdx.works.profile.data.model.apppreferences.Radix
 import java.math.BigDecimal
 import java.util.UUID
+
+@Composable
+fun Resource.Tag.name(): String {
+    return when (this) {
+        is Resource.Tag.Official -> "Official Radix"
+        is Resource.Tag.Dynamic -> name
+    }
+}
 
 sealed class Resource {
     abstract val resourceAddress: String
@@ -41,10 +50,10 @@ sealed class Resource {
 
         val tags: List<Tag>
             get() = if (isXrd) {
-                tagsMetadataItem?.tags?.map { Tag(name = it, isXrd = false) }
-                    ?.plus(Tag.OfficialRadix).orEmpty()
+                tagsMetadataItem?.tags?.map { Tag.Dynamic(name = it) }
+                    ?.plus(Tag.Official).orEmpty()
             } else {
-                tagsMetadataItem?.tags?.map { Tag(name = it, isXrd = false) }.orEmpty()
+                tagsMetadataItem?.tags?.map { Tag.Dynamic(name = it) }.orEmpty()
             }
 
         val resourceBehaviours: List<ResourceBehaviour>
@@ -118,7 +127,7 @@ sealed class Resource {
             get() = iconMetadataItem?.url
 
         val tags: List<Tag>
-            get() = tagsMetadataItem?.tags?.map { Tag(name = it, isXrd = false) }.orEmpty()
+            get() = tagsMetadataItem?.tags?.map { Tag.Dynamic(name = it) }.orEmpty()
 
         val resourceBehaviours: List<ResourceBehaviour>
             get() = behaviours
@@ -240,5 +249,13 @@ sealed class Resource {
                 }
             }
         }
+    }
+
+    sealed interface Tag {
+        object Official : Tag
+
+        data class Dynamic(
+            val name: String
+        ) : Tag
     }
 }

@@ -15,8 +15,7 @@ import com.babylon.wallet.android.domain.model.behaviours.ResourceBehaviour
  */
 enum class AccessRule(val value: String) {
     DenyAll("DenyAll"),
-    AllowAll("AllowAll"),
-    Protected("Protected")
+    AllowAll("AllowAll")
 }
 
 enum class ResourceRule(val value: String) {
@@ -66,30 +65,29 @@ fun StateEntityDetailsResponseItemDetails.calculateResourceBehaviours(): List<Re
     return if (isUsingDefaultRules()) {
         listOf(ResourceBehaviour.DEFAULT_RESOURCE)
     } else {
+        val accessRulesChain = toAccessRulesChain()
         val mutableList = mutableListOf<ResourceBehaviour>()
 
-        if (toAccessRulesChain()?.performMintAccessRuleSetToNonDefault() == true &&
-            toAccessRulesChain()?.performBurnAccessRuleSetToNonDefault() == true
+        if (accessRulesChain?.performMintAccessRuleSetToNonDefault() == true && accessRulesChain.performBurnAccessRuleSetToNonDefault()
         ) {
             mutableList.add(ResourceBehaviour.PERFORM_MINT_BURN)
-        } else if (toAccessRulesChain()?.performMintAccessRuleSetToNonDefault() == true) {
+        } else if (accessRulesChain?.performMintAccessRuleSetToNonDefault() == true) {
             mutableList.add(ResourceBehaviour.PERFORM_MINT)
-        } else if (toAccessRulesChain()?.performBurnAccessRuleSetToNonDefault() == true) {
+        } else if (accessRulesChain?.performBurnAccessRuleSetToNonDefault() == true) {
             mutableList.add(ResourceBehaviour.PERFORM_BURN)
         }
 
-        if (toAccessRulesChain()?.changeMintAccessRuleSetToNonDefault() == true &&
-            toAccessRulesChain()?.changeBurnAccessRuleSetToNonDefault() == true
+        if (accessRulesChain?.changeMintAccessRuleSetToNonDefault() == true && accessRulesChain.changeBurnAccessRuleSetToNonDefault()
         ) {
             mutableList.add(ResourceBehaviour.CHANGE_MINT_BURN)
-        } else if (toAccessRulesChain()?.changeMintAccessRuleSetToNonDefault() == true) {
+        } else if (accessRulesChain?.changeMintAccessRuleSetToNonDefault() == true) {
             mutableList.add(ResourceBehaviour.CHANGE_MINT)
-        } else if (toAccessRulesChain()?.changeBurnAccessRuleSetToNonDefault() == true) {
+        } else if (accessRulesChain?.changeBurnAccessRuleSetToNonDefault() == true) {
             mutableList.add(ResourceBehaviour.CHANGE_BURN)
         }
 
-        if (toAccessRulesChain()?.performWithdrawAccessRuleSetToNonDefault() == true ||
-            toAccessRulesChain()?.performDepositAccessRuleSetToNonDefault() == true
+        if (accessRulesChain?.performWithdrawAccessRuleSetToNonDefault() == true ||
+            accessRulesChain?.performDepositAccessRuleSetToNonDefault() == true
         ) {
             mutableList.add(ResourceBehaviour.CANNOT_PERFORM_WITHDRAW_DEPOSIT)
         }
@@ -97,11 +95,11 @@ fun StateEntityDetailsResponseItemDetails.calculateResourceBehaviours(): List<Re
         // when both withdraw and deposit perform are set to defaults, but either withdraw or deposit for change
         // is set to not just a non default but specifically AllowAll (highly unusual, but it's possible)
         if ((
-            toAccessRulesChain()?.performWithdrawAccessRuleSetToDefault() == true &&
-                toAccessRulesChain()?.performDepositAccessRuleSetToDefault() == true
+            accessRulesChain?.performWithdrawAccessRuleSetToDefault() == true &&
+                accessRulesChain.performDepositAccessRuleSetToDefault()
             ) &&
-            toAccessRulesChain()?.changeWithdrawAccessRuleSetToAllowAll() == true ||
-            toAccessRulesChain()?.changeDepositAccessRuleSetToAllowAll() == true
+            accessRulesChain.changeWithdrawAccessRuleSetToAllowAll() ||
+            accessRulesChain?.changeDepositAccessRuleSetToAllowAll() == true
         ) {
             mutableList.add(ResourceBehaviour.CHANGE_WITHDRAW_DEPOSIT)
         }
@@ -109,35 +107,35 @@ fun StateEntityDetailsResponseItemDetails.calculateResourceBehaviours(): List<Re
         // when both withdraw and deposit perform are set to defaults,
         // but either withdraw or deposit change is set to non default (but neither set to AllowAll
         // since that would be covered in the one above)
-        if ((
-            toAccessRulesChain()?.performWithdrawAccessRuleSetToDefault() == true &&
-                toAccessRulesChain()?.performDepositAccessRuleSetToDefault() == true
-            ) &&
-            toAccessRulesChain()?.changeDepositAccessRuleSetToNonDefaultExceptAllowAll() == true &&
-            toAccessRulesChain()?.changeWithdrawAccessRuleSetToNonDefaultExceptAllowAll() == true
+        if (
+            (
+                accessRulesChain?.performWithdrawAccessRuleSetToDefault() == true &&
+                    accessRulesChain.performDepositAccessRuleSetToDefault()
+                ) && accessRulesChain.changeDepositAccessRuleSetToNonDefaultExceptAllowAll() &&
+            accessRulesChain.changeWithdrawAccessRuleSetToNonDefaultExceptAllowAll()
         ) {
             mutableList.add(ResourceBehaviour.FUTURE_MOVEMENT_WITHDRAW_DEPOSIT)
         }
 
-        if (toAccessRulesChain()?.performUpdateMetadataAccessRuleSetToNonDefault() == true) {
+        if (accessRulesChain?.performUpdateMetadataAccessRuleSetToNonDefault() == true) {
             mutableList.add(ResourceBehaviour.PERFORM_UPDATE_METADATA)
         }
-        if (toAccessRulesChain()?.changeUpdateMetadataAccessRuleSetToNonDefault() == true) {
+        if (accessRulesChain?.changeUpdateMetadataAccessRuleSetToNonDefault() == true) {
             mutableList.add(ResourceBehaviour.CHANGE_UPDATE_METADATA)
         }
 
-        if (toAccessRulesChain()?.performRecallAccessRuleSetToNonDefault() == true) {
+        if (accessRulesChain?.performRecallAccessRuleSetToNonDefault() == true) {
             mutableList.add(ResourceBehaviour.PERFORM_RECALL)
         }
-        if (toAccessRulesChain()?.changeRecallAccessRuleSetToNonDefault() == true) {
+        if (accessRulesChain?.changeRecallAccessRuleSetToNonDefault() == true) {
             mutableList.add(ResourceBehaviour.CHANGE_RECALL)
         }
 
         if (this.type == StateEntityDetailsResponseItemDetailsType.nonFungibleResource) {
-            if (toAccessRulesChain()?.performUpdateNonFungibleMetadataAccessRuleSetToNonDefault() == true) {
+            if (accessRulesChain?.performUpdateNonFungibleMetadataAccessRuleSetToNonDefault() == true) {
                 mutableList.add(ResourceBehaviour.PERFORM_UPDATE_NON_FUNGIBLE_DATA)
             }
-            if (toAccessRulesChain()?.changeUpdateNonFungibleMetadataAccessRuleSetToNonDefault() == true) {
+            if (accessRulesChain?.changeUpdateNonFungibleMetadataAccessRuleSetToNonDefault() == true) {
                 mutableList.add(ResourceBehaviour.CHANGE_UPDATE_NON_FUNGIBLE_DATA)
             }
         }
@@ -150,7 +148,7 @@ private fun AccessRulesChain.performMintAccessRule(): AccessRule? {
     return this.method_auth.find { methodAuth ->
         methodAuth.method.name == ResourceRule.Mint.value
     }?.access_rule_reference?.access_rule?.type?.let { type ->
-        AccessRule.valueOf(type)
+        AccessRule.values().find { it.value == type }
     }
 }
 
@@ -166,7 +164,7 @@ private fun AccessRulesChain.changeMintAccessRule(): AccessRule? {
     return this.method_auth_mutability.find { methodAuth ->
         methodAuth.method.name == ResourceRule.Mint.value
     }?.access_rule_reference?.access_rule?.type?.let { type ->
-        AccessRule.valueOf(type)
+        AccessRule.values().find { it.value == type }
     }
 }
 
@@ -180,7 +178,7 @@ private fun AccessRulesChain.performBurnAccessRule(): AccessRule? {
     return this.method_auth.find { methodAuth ->
         methodAuth.method.name == ResourceRule.Burn.value
     }?.access_rule_reference?.access_rule?.type?.let { type ->
-        AccessRule.valueOf(type)
+        AccessRule.values().find { it.value == type }
     }
 }
 
@@ -194,7 +192,7 @@ private fun AccessRulesChain.changeBurnAccessRule(): AccessRule? {
     return this.method_auth_mutability.find { methodAuth ->
         methodAuth.method.name == ResourceRule.Burn.value
     }?.access_rule_reference?.access_rule?.type?.let { type ->
-        AccessRule.valueOf(type)
+        AccessRule.values().find { it.value == type }
     }
 }
 
@@ -208,7 +206,7 @@ private fun AccessRulesChain.performWithdrawAccessRule(): AccessRule? {
     return this.method_auth.find { methodAuth ->
         methodAuth.method.name == ResourceRule.Withdraw.value
     }?.access_rule_reference?.access_rule?.type?.let { type ->
-        AccessRule.valueOf(type)
+        AccessRule.values().find { it.value == type }
     }
 }
 
@@ -228,7 +226,7 @@ private fun AccessRulesChain.changeWithdrawAccessRule(): AccessRule? {
     return this.method_auth_mutability.find { methodAuth ->
         methodAuth.method.name == ResourceRule.Withdraw.value
     }?.access_rule_reference?.access_rule?.type?.let { type ->
-        AccessRule.valueOf(type)
+        AccessRule.values().find { it.value == type }
     }
 }
 
@@ -236,7 +234,7 @@ private fun AccessRulesChain.performDepositAccessRule(): AccessRule? {
     return this.method_auth.find { methodAuth ->
         methodAuth.method.name == ResourceRule.Deposit.value
     }?.access_rule_reference?.access_rule?.type?.let { type ->
-        AccessRule.valueOf(type)
+        AccessRule.values().find { it.value == type }
     }
 }
 
@@ -256,7 +254,7 @@ private fun AccessRulesChain.changeDepositAccessRule(): AccessRule? {
     return this.method_auth_mutability.find { methodAuth ->
         methodAuth.method.name == ResourceRule.Deposit.value
     }?.access_rule_reference?.access_rule?.type?.let { type ->
-        AccessRule.valueOf(type)
+        AccessRule.values().find { it.value == type }
     }
 }
 
@@ -290,7 +288,7 @@ private fun AccessRulesChain.performUpdateMetadataAccessRule(): AccessRule? {
     return this.method_auth.find { methodAuth ->
         methodAuth.method.name == ResourceRule.UpdateMetadata.value
     }?.access_rule_reference?.access_rule?.type?.let { type ->
-        AccessRule.valueOf(type)
+        AccessRule.values().find { it.value == type }
     }
 }
 
@@ -304,7 +302,7 @@ private fun AccessRulesChain.changeUpdateMetadataAccessRule(): AccessRule? {
     return this.method_auth_mutability.find { methodAuth ->
         methodAuth.method.name == ResourceRule.UpdateMetadata.value
     }?.access_rule_reference?.access_rule?.type?.let { type ->
-        AccessRule.valueOf(type)
+        AccessRule.values().find { it.value == type }
     }
 }
 
@@ -318,7 +316,7 @@ private fun AccessRulesChain.performRecallAccessRule(): AccessRule? {
     return this.method_auth.find { methodAuth ->
         methodAuth.method.name == ResourceRule.Recall.value
     }?.access_rule_reference?.access_rule?.type?.let { type ->
-        AccessRule.valueOf(type)
+        AccessRule.values().find { it.value == type }
     }
 }
 
@@ -332,7 +330,7 @@ private fun AccessRulesChain.changeRecallAccessRule(): AccessRule? {
     return this.method_auth_mutability.find { methodAuth ->
         methodAuth.method.name == ResourceRule.Recall.value
     }?.access_rule_reference?.access_rule?.type?.let { type ->
-        AccessRule.valueOf(type)
+        AccessRule.values().find { it.value == type }
     }
 }
 
@@ -346,7 +344,7 @@ private fun AccessRulesChain.performUpdateNonFungibleMetadataAccessRule(): Acces
     return this.method_auth.find { methodAuth ->
         methodAuth.method.name == ResourceRule.UpdateNonFungibleData.value
     }?.access_rule_reference?.access_rule?.type?.let { type ->
-        AccessRule.valueOf(type)
+        AccessRule.values().find { it.value == type }
     }
 }
 
@@ -360,7 +358,7 @@ private fun AccessRulesChain.changeUpdateNonFungibleMetadataAccessRule(): Access
     return this.method_auth_mutability.find { methodAuth ->
         methodAuth.method.name == ResourceRule.UpdateNonFungibleData.value
     }?.access_rule_reference?.access_rule?.type?.let { type ->
-        AccessRule.valueOf(type)
+        AccessRule.values().find { it.value == type }
     }
 }
 
