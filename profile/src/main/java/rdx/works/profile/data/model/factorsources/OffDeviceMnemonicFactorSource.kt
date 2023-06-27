@@ -5,14 +5,16 @@ import kotlinx.serialization.Serializable
 import rdx.works.core.InstantGenerator
 import rdx.works.profile.data.model.MnemonicWithPassphrase
 
+@Serializable
+@SerialName("offDeviceMnemonic")
 data class OffDeviceMnemonicFactorSource(
-    override val id: FactorSource.FactorSourceID.FromHash,
-    override val common: FactorSource.Common,
+    override val id: FactorSourceID.FromHash,
+    override val common: Common,
     @SerialName("bip39Parameters")
     val bip39Parameters: Bip39Parameters,
     @SerialName("hint")
     val hint: Hint,
-) : FactorSource {
+) : FactorSource() {
 
     @Serializable
     data class Bip39Parameters(
@@ -37,14 +39,14 @@ data class OffDeviceMnemonicFactorSource(
             label: String = ""
         ): OffDeviceMnemonicFactorSource {
             return OffDeviceMnemonicFactorSource(
-                id = FactorSource.FactorSourceID.FromHash(
+                id = FactorSourceID.FromHash(
                     kind = FactorSourceKind.OFF_DEVICE_MNEMONIC,
-                    body = FactorSource.HexCoded32Bytes(
-                        value = FactorSource.factorSourceId(mnemonicWithPassphrase = mnemonicWithPassphrase)
+                    body = HexCoded32Bytes(
+                        value = factorSourceId(mnemonicWithPassphrase = mnemonicWithPassphrase)
                     )
                 ),
-                common = FactorSource.Common(
-                    cryptoParameters = FactorSource.Common.CryptoParameters.trustedEntity,
+                common = Common(
+                    cryptoParameters = Common.CryptoParameters.trustedEntity,
                     addedOn = InstantGenerator(),
                     lastUsedOn = InstantGenerator()
                 ),

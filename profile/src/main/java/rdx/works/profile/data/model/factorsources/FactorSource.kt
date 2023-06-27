@@ -10,19 +10,20 @@ import rdx.works.profile.data.utils.hashToFactorId
 import java.time.Instant
 
 @Serializable
-sealed interface FactorSource {
+sealed class FactorSource {
 
     @SerialName("id")
-    val id: FactorSourceID
+    abstract val id: FactorSourceID
 
     @SerialName("common")
-    val common: Common
+    abstract val common: Common
 
     @Serializable
     sealed class FactorSourceID {
         abstract val kind: FactorSourceKind
 
         @Serializable
+        @SerialName("fromHash")
         data class FromHash(
             @SerialName("kind")
             override val kind: FactorSourceKind,
@@ -31,6 +32,7 @@ sealed interface FactorSource {
         ) : FactorSourceID()
 
         @Serializable
+        @SerialName("fromAddress")
         data class FromAddress(
             @SerialName("kind")
             override val kind: FactorSourceKind,

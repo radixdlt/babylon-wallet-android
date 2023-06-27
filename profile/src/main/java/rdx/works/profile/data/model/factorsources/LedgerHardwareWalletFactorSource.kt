@@ -6,14 +6,15 @@ import rdx.works.core.InstantGenerator
 import rdx.works.profile.data.model.pernetwork.Network
 
 @Serializable
+@SerialName("ledgerHQHardwareWallet")
 data class LedgerHardwareWalletFactorSource(
-    override val id: FactorSource.FactorSourceID.FromHash,
-    override val common: FactorSource.Common,
+    override val id: FactorSourceID.FromHash,
+    override val common: Common,
     @SerialName("hint")
-    val hint: FactorSource.Hint,
+    val hint: Hint,
     @SerialName("nextDerivationIndicesPerNetwork")
     val nextDerivationIndicesPerNetwork: List<Network.NextDerivationIndices>? = null
-) : FactorSource {
+) : FactorSource() {
 
     enum class DeviceModel(val value: String) {
         NANO_S("nanoS"),
@@ -26,19 +27,19 @@ data class LedgerHardwareWalletFactorSource(
         fun newSource(
             model: DeviceModel,
             name: String,
-            deviceID: FactorSource.HexCoded32Bytes
+            deviceID: HexCoded32Bytes
         ): LedgerHardwareWalletFactorSource {
             return LedgerHardwareWalletFactorSource(
-                id = FactorSource.FactorSourceID.FromHash(
+                id = FactorSourceID.FromHash(
                     kind = FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET,
                     body = deviceID
                 ),
-                common = FactorSource.Common(
-                    cryptoParameters = FactorSource.Common.CryptoParameters.olympiaBackwardsCompatible,
+                common = Common(
+                    cryptoParameters = Common.CryptoParameters.olympiaBackwardsCompatible,
                     addedOn = InstantGenerator(),
                     lastUsedOn = InstantGenerator()
                 ),
-                hint = FactorSource.Hint(
+                hint = Hint(
                     name = name,
                     model = model.value
                 ),

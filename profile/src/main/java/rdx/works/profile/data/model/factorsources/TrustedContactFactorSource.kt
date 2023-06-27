@@ -4,12 +4,14 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import rdx.works.core.InstantGenerator
 
+@Serializable
+@SerialName("trustedContact")
 data class TrustedContactFactorSource(
-    override val id: FactorSource.FactorSourceID.FromAddress,
-    override val common: FactorSource.Common,
+    override val id: FactorSourceID.FromAddress,
+    override val common: Common,
     @SerialName("contact")
     val contact: Contact
-) : FactorSource {
+) : FactorSource() {
 
     @Serializable
     data class Contact(
@@ -22,17 +24,17 @@ data class TrustedContactFactorSource(
     companion object {
 
         fun newSource(
-            accountAddress: FactorSource.AccountAddress,
+            accountAddress: AccountAddress,
             emailAddress: String,
             name: String,
         ): TrustedContactFactorSource {
             return TrustedContactFactorSource(
-                id = FactorSource.FactorSourceID.FromAddress(
+                id = FactorSourceID.FromAddress(
                     kind = FactorSourceKind.TRUSTED_CONTACT,
                     body = accountAddress,
                 ),
-                common = FactorSource.Common(
-                    cryptoParameters = FactorSource.Common.CryptoParameters.babylon,
+                common = Common(
+                    cryptoParameters = Common.CryptoParameters.babylon,
                     addedOn = InstantGenerator(),
                     lastUsedOn = InstantGenerator()
                 ),

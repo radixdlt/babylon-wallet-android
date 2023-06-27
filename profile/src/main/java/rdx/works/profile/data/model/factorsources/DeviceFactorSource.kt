@@ -7,14 +7,15 @@ import rdx.works.profile.data.model.MnemonicWithPassphrase
 import rdx.works.profile.data.model.pernetwork.Network
 
 @Serializable
+@SerialName("device")
 data class DeviceFactorSource(
-    override val id: FactorSource.FactorSourceID.FromHash,
-    override val common: FactorSource.Common,
+    override val id: FactorSourceID.FromHash,
+    override val common: Common,
     @SerialName("hint")
-    val hint: FactorSource.Hint,
+    val hint: Hint,
     @SerialName("nextDerivationIndicesPerNetwork")
     val nextDerivationIndicesPerNetwork: List<Network.NextDerivationIndices>? = null
-) : FactorSource {
+) : FactorSource() {
 
     companion object {
 
@@ -46,22 +47,22 @@ data class DeviceFactorSource(
             name: String = "",
             isOlympiaCompatible: Boolean
         ) = DeviceFactorSource(
-            id = FactorSource.FactorSourceID.FromHash(
+            id = FactorSourceID.FromHash(
                 kind = FactorSourceKind.DEVICE,
-                body = FactorSource.HexCoded32Bytes(
-                    value = FactorSource.factorSourceId(mnemonicWithPassphrase = mnemonicWithPassphrase)
+                body = HexCoded32Bytes(
+                    value = factorSourceId(mnemonicWithPassphrase = mnemonicWithPassphrase)
                 ),
             ),
-            common = FactorSource.Common(
+            common = Common(
                 cryptoParameters = if (isOlympiaCompatible) {
-                    FactorSource.Common.CryptoParameters.olympiaBackwardsCompatible
+                    Common.CryptoParameters.olympiaBackwardsCompatible
                 } else {
-                    FactorSource.Common.CryptoParameters.babylon
+                    Common.CryptoParameters.babylon
                 },
                 addedOn = InstantGenerator(),
                 lastUsedOn = InstantGenerator()
             ),
-            hint = FactorSource.Hint(
+            hint = Hint(
                 model = model,
                 name = name
             ),
