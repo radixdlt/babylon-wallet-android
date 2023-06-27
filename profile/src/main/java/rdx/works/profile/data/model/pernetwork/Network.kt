@@ -395,7 +395,7 @@ data class Network(
 
 fun Profile.addAccount(
     account: Network.Account,
-    withFactorSourceId: FactorSource.FactorSourceID,
+    withFactorSourceId: FactorSource.FactorSourceID.FromHash,
     onNetwork: NetworkId
 ): Profile {
     val networkExist = this.networks.any { onNetwork.value == it.networkID }
@@ -565,7 +565,7 @@ fun Profile.updatePersona(
 
 fun Profile.addPersona(
     persona: Network.Persona,
-    withFactorSourceId: FactorSource.FactorSourceID,
+    withFactorSourceId: FactorSource.FactorSourceID.FromHash,
     onNetwork: NetworkId,
 ): Profile {
     val personaExists = this.networks.find {
