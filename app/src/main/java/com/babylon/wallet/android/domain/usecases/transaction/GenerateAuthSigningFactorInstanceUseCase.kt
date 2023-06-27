@@ -65,9 +65,8 @@ class GenerateAuthSigningFactorInstanceUseCase @Inject constructor(
                 )
             }
 
-            else -> {
-                Result.failure(Throwable("factor source is neither device nor ledger"))
-            }
+            FactorSourceKind.OFF_DEVICE_MNEMONIC -> Result.failure(Throwable("factor source is neither device nor ledger"))
+            FactorSourceKind.TRUSTED_CONTACT -> Result.failure(Throwable("factor source is neither device nor ledger"))
         }
     }
 

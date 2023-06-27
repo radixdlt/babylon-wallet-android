@@ -135,7 +135,7 @@ private fun SignatureRequestContent(
             color = RadixTheme.colors.gray1,
             textAlign = TextAlign.Center
         )
-        if (signingState?.usingLedger() == true) {
+        if (signingState?.usingLedger == true) {
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
             Row(
                 modifier = Modifier

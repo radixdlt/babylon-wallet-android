@@ -45,13 +45,13 @@ fun LedgerListItem(
                 withStyle(SpanStyle(fontWeight = FontWeight.Bold)) {
                     append(stringResource(id = R.string.ledgerHardwareDevices_usedHeading))
                 }
-                append(": " + ledgerFactorSource.common.lastUsedOn.ledgerLastUsedDateFormat())
+                append(": ${ledgerFactorSource.common.lastUsedOn.ledgerLastUsedDateFormat()}")
             }
             val addedText = buildAnnotatedString {
                 withStyle(SpanStyle(fontWeight = FontWeight.Bold)) {
                     append(stringResource(id = R.string.ledgerHardwareDevices_addedHeading))
                 }
-                append(": " + ledgerFactorSource.common.addedOn.ledgerLastUsedDateFormat())
+                append(": ${ledgerFactorSource.common.addedOn.ledgerLastUsedDateFormat()}")
             }
             Text(
                 text = usedText,

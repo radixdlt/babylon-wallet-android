@@ -34,7 +34,5 @@ sealed class SigningState(val factorSource: FactorSource) {
         override fun getLabel() = ledgerFactorSource.hint.name
     }
 
-    fun usingLedger(): Boolean {
-        return this is Ledger
-    }
+    val usingLedger: Boolean = this is Ledger
 }
