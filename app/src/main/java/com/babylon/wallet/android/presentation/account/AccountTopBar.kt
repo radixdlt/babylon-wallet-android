@@ -9,22 +9,31 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.Icon
+import androidx.compose.material.IconButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
+import androidx.constraintlayout.compose.ConstraintLayout
+import androidx.constraintlayout.compose.Dimension
+import androidx.constraintlayout.compose.MotionLayout
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixSecondaryButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.presentation.ui.composables.ActionableAddressView
 import com.babylon.wallet.android.presentation.ui.composables.ApplySecuritySettingsLabel
+import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 
 @Composable
-fun AccountDetailsContent(
+fun AccountTopBar(
     modifier: Modifier = Modifier,
     state: AccountUiState,
+    onBackClick: () -> Unit,
+    onAccountPreferenceClick: (String) -> Unit,
     onTransferClick: (String) -> Unit,
     onApplySecuritySettings: () -> Unit
 ) {
@@ -32,19 +41,50 @@ fun AccountDetailsContent(
         state.accountWithResources?.account?.address.orEmpty()
     }
 
-    Column(
+    ConstraintLayout(
         modifier = modifier.fillMaxWidth(),
-        horizontalAlignment = Alignment.CenterHorizontally
     ) {
+        val (topBar, accountAddressView, transferButton, securityPrompt) = createRefs()
+
+        RadixCenteredTopAppBar(
+            modifier = Modifier.constrainAs(topBar) {
+                start.linkTo(parent.start)
+                end.linkTo(parent.end)
+                top.linkTo(parent.top)
+                width = Dimension.fillToConstraints
+            },
+            title = state.accountWithResources?.account?.displayName.orEmpty(),
+            onBackClick = onBackClick,
+            actions = {
+                IconButton(
+                    onClick = { onAccountPreferenceClick(state.accountWithResources?.account?.address.orEmpty()) }
+                ) {
+                    Icon(
+                        painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_more_horiz),
+                        tint = RadixTheme.colors.white,
+                        contentDescription = "account settings"
+                    )
+                }
+            },
+            containerColor = Color.Transparent,
+            contentColor = RadixTheme.colors.white
+        )
+
         ActionableAddressView(
+            modifier = Modifier.constrainAs(accountAddressView) {
+                linkTo(parent.start, parent.end)
+                top.linkTo(topBar.bottom)
+            }.padding(bottom = RadixTheme.dimensions.paddingXLarge),
             address = accountAddress,
             textStyle = RadixTheme.typography.body2HighImportance,
             textColor = RadixTheme.colors.white
         )
 
         AnimatedVisibility(
-            modifier = Modifier
-                .padding(top = RadixTheme.dimensions.paddingXLarge),
+            modifier = Modifier.constrainAs(transferButton) {
+                linkTo(parent.start, parent.end)
+                top.linkTo(accountAddressView.bottom)
+            }.padding(bottom = 24.dp),
             visible = state.isTransferEnabled,
             enter = fadeIn(),
             exit = fadeOut()
@@ -65,9 +105,11 @@ fun AccountDetailsContent(
         }
 
         AnimatedVisibility(
-            modifier = Modifier
-                .padding(horizontal = RadixTheme.dimensions.paddingLarge)
-                .padding(top = RadixTheme.dimensions.paddingLarge),
+            modifier = Modifier.constrainAs(securityPrompt) {
+                linkTo(parent.start, parent.end, startMargin = 24.dp, endMargin = 24.dp)
+                linkTo(transferButton.bottom, parent.bottom, bottomMargin = 24.dp)
+                width = Dimension.fillToConstraints
+            },
             visible = state.isSecurityPromptVisible,
             enter = fadeIn(),
             exit = fadeOut()
@@ -78,7 +120,5 @@ fun AccountDetailsContent(
                 text = stringResource(id = R.string.homePage_applySecuritySettings)
             )
         }
-
-        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
     }
 }

@@ -18,6 +18,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.CircularProgressIndicator
@@ -133,8 +135,10 @@ private fun AccountScreenContent(
         AccountGradientList[appearanceId % AccountGradientList.size]
     }
 
-    val bottomSheetState =
-        rememberModalBottomSheetState(initialValue = ModalBottomSheetValue.Hidden, skipHalfExpanded = true)
+    val bottomSheetState = rememberModalBottomSheetState(
+        initialValue = ModalBottomSheetValue.Hidden,
+        skipHalfExpanded = true
+    )
     val scope = rememberCoroutineScope()
 //    val sheetHeight = maxHeight * 0.9f
     BackHandler {
@@ -157,25 +161,16 @@ private fun AccountScreenContent(
             SheetContent(state, scope, bottomSheetState)
         },
     ) {
+        val lazyListState = rememberLazyListState()
         Scaffold(
             modifier = Modifier.background(Brush.horizontalGradient(gradient)),
             topBar = {
-                RadixCenteredTopAppBar(
-                    title = state.accountWithResources?.account?.displayName.orEmpty(),
+                AccountTopBar(
+                    state = state,
                     onBackClick = onBackClick,
-                    actions = {
-                        IconButton(
-                            onClick = { onAccountPreferenceClick(state.accountWithResources?.account?.address.orEmpty()) }
-                        ) {
-                            Icon(
-                                painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_more_horiz),
-                                tint = RadixTheme.colors.white,
-                                contentDescription = "account settings"
-                            )
-                        }
-                    },
-                    containerColor = Color.Transparent,
-                    contentColor = RadixTheme.colors.white
+                    onAccountPreferenceClick = onAccountPreferenceClick,
+                    onTransferClick = onTransferClick,
+                    onApplySecuritySettings = onApplySecuritySettings
                 )
             },
             containerColor = Color.Transparent,
@@ -189,54 +184,33 @@ private fun AccountScreenContent(
             },
             floatingActionButtonPosition = FabPosition.Center
         ) { innerPadding ->
-            val scrollState = rememberScrollableHeaderViewScrollState()
-
-            val detailsAlpha = if (scrollState.maxOffset == 0f) 1f else 1 - abs(scrollState.offset / scrollState.maxOffset)
-            val pullToRefreshState = rememberPullRefreshState(refreshing = state.isRefreshing, onRefresh = onRefresh)
-            Box(
-                modifier = Modifier
-                    .padding(innerPadding)
-                    .pullRefresh(state = pullToRefreshState)
-            ) {
-                ScrollableHeaderView(
-                    state = scrollState,
-                    header = {
-                        AccountDetailsContent(
-                            modifier = Modifier.alpha(detailsAlpha),
-                            state = state,
-                            onTransferClick = onTransferClick,
-                            onApplySecuritySettings = onApplySecuritySettings
-                        )
-                    },
-                    content = {
-                        AssetsContent(
-                            resources = state.accountWithResources?.resources,
-                            onFungibleTokenClick = {
-                                onFungibleResourceClicked(it)
-                                scope.launch {
-                                    bottomSheetState.show()
-                                }
-                            },
-                            onNonFungibleItemClick = { nftCollection, nftItem ->
-                                onNonFungibleItemClicked(nftCollection, nftItem)
-                                scope.launch {
-                                    bottomSheetState.show()
-                                }
-                            }
-                        )
+            AssetsContent(
+                modifier = Modifier.padding(innerPadding),
+                resources = state.accountWithResources?.resources,
+                lazyListState = lazyListState,
+                onFungibleTokenClick = {
+                    onFungibleResourceClicked(it)
+                    scope.launch {
+                        bottomSheetState.show()
                     }
-                )
+                },
+                onNonFungibleItemClick = { nftCollection, nftItem ->
+                    onNonFungibleItemClicked(nftCollection, nftItem)
+                    scope.launch {
+                        bottomSheetState.show()
+                    }
+                }
+            )
 
-                PullRefreshIndicator(
-                    modifier = Modifier.align(Alignment.TopCenter),
-                    refreshing = state.isRefreshing,
-                    state = pullToRefreshState,
-                    contentColor = RadixTheme.colors.gray1,
-                    backgroundColor = RadixTheme.colors.defaultBackground,
-                )
-            }
-
+            val pullToRefreshState = rememberPullRefreshState(refreshing = state.isRefreshing, onRefresh = onRefresh)
         }
+//        PullRefreshIndicator(
+//            modifier = Modifier.align(Alignment.TopCenter),
+//            refreshing = state.isRefreshing,
+//            state = pullToRefreshState,
+//            contentColor = RadixTheme.colors.gray1,
+//            backgroundColor = RadixTheme.colors.defaultBackground,
+//        )
     }
 }
 
@@ -283,6 +257,7 @@ private fun SheetContent(
 @Composable
 fun AssetsContent(
     modifier: Modifier = Modifier,
+    lazyListState: LazyListState,
     resources: Resources?,
     onFungibleTokenClick: (Resource.FungibleResource) -> Unit,
     onNonFungibleItemClick: (Resource.NonFungibleResource, Resource.NonFungibleResource.Item) -> Unit,
@@ -306,6 +281,7 @@ fun AssetsContent(
         Box(modifier = Modifier.fillMaxSize()) {
             LazyColumn(
                 modifier = Modifier.fillMaxSize(),
+                state = lazyListState,
                 contentPadding = PaddingValues(
                     horizontal = RadixTheme.dimensions.paddingDefault,
                     vertical = RadixTheme.dimensions.paddingLarge

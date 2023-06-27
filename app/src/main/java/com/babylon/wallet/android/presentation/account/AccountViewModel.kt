@@ -140,11 +140,11 @@ data class AccountUiState(
         get() {
             val resources = accountWithResources?.resources ?: return false
 
-            return usesNotBackedUpMnemonic && resources.hasXrd()
+            return usesNotBackedUpMnemonic && resources.hasXrd() && !isLoading
         }
 
     val isTransferEnabled: Boolean
-        get() = accountWithResources?.resources?.isNotEmpty == true
+        get() = (accountWithResources?.resources?.isNotEmpty == true) && !isLoading
 
     val isHistoryEnabled: Boolean = false
 }
