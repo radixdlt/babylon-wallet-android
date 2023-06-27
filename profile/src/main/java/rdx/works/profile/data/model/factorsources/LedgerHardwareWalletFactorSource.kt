@@ -12,6 +12,7 @@ data class LedgerHardwareWalletFactorSource(
     override val common: Common,
     @SerialName("hint")
     val hint: Hint,
+    // TODO MFA remove (should not be able to create accounts using ledger when MFA)
     @SerialName("nextDerivationIndicesPerNetwork")
     val nextDerivationIndicesPerNetwork: List<Network.NextDerivationIndices>? = null
 ) : FactorSource() {
