@@ -1,7 +1,7 @@
 package rdx.works.profile.domain
 
 import com.radixdlt.toolkit.RadixEngineToolkit
-import com.radixdlt.toolkit.models.request.DecodeAddressInput
+import com.radixdlt.toolkit.models.method.DecodeAddressInput
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map

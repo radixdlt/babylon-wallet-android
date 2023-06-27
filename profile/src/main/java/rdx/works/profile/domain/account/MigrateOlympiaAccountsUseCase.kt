@@ -1,7 +1,7 @@
 package rdx.works.profile.domain.account
 
 import com.radixdlt.toolkit.RadixEngineToolkit
-import com.radixdlt.toolkit.models.request.DeriveBabylonAddressFromOlympiaAddressInput
+import com.radixdlt.toolkit.models.method.DeriveBabylonAddressFromOlympiaAddressInput
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext

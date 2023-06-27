@@ -16,8 +16,8 @@ import com.radixdlt.toolkit.models.EnumDiscriminator
 import com.radixdlt.toolkit.models.Instruction
 import com.radixdlt.toolkit.models.ManifestAstValue
 import com.radixdlt.toolkit.models.ValueKind
-import com.radixdlt.toolkit.models.request.ConvertManifestInput
-import com.radixdlt.toolkit.models.request.ConvertManifestOutput
+import com.radixdlt.toolkit.models.method.ConvertManifestInput
+import com.radixdlt.toolkit.models.method.ConvertManifestOutput
 import com.radixdlt.toolkit.models.transaction.ManifestInstructions
 import com.radixdlt.toolkit.models.transaction.ManifestInstructionsKind
 import com.radixdlt.toolkit.models.transaction.TransactionManifest

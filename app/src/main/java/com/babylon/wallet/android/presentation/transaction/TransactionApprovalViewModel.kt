@@ -37,10 +37,10 @@ import com.babylon.wallet.android.utils.iconUrl
 import com.babylon.wallet.android.utils.toResourceRequest
 import com.babylon.wallet.android.utils.tokenSymbol
 import com.radixdlt.toolkit.models.crypto.PrivateKey
-import com.radixdlt.toolkit.models.request.AccountDeposit
-import com.radixdlt.toolkit.models.request.AnalyzeTransactionExecutionOutput
-import com.radixdlt.toolkit.models.request.ConvertManifestOutput
-import com.radixdlt.toolkit.models.request.ResourceQuantifier
+import com.radixdlt.toolkit.models.method.AccountDeposit
+import com.radixdlt.toolkit.models.method.AnalyzeTransactionExecutionOutput
+import com.radixdlt.toolkit.models.method.ConvertManifestOutput
+import com.radixdlt.toolkit.models.method.ResourceQuantifier
 import com.radixdlt.toolkit.models.transaction.ManifestInstructions
 import com.radixdlt.toolkit.models.transaction.TransactionManifest
 import dagger.hilt.android.lifecycle.HiltViewModel

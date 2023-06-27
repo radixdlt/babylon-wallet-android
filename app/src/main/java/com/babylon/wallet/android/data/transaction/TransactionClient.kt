@@ -27,14 +27,14 @@ import com.radixdlt.toolkit.RadixEngineToolkit
 import com.radixdlt.toolkit.models.crypto.PrivateKey
 import com.radixdlt.toolkit.models.crypto.Signature
 import com.radixdlt.toolkit.models.crypto.SignatureWithPublicKey
-import com.radixdlt.toolkit.models.request.AnalyzeTransactionExecutionInput
-import com.radixdlt.toolkit.models.request.AnalyzeTransactionExecutionOutput
-import com.radixdlt.toolkit.models.request.CompileNotarizedTransactionInput
-import com.radixdlt.toolkit.models.request.ConvertManifestInput
-import com.radixdlt.toolkit.models.request.ConvertManifestOutput
-import com.radixdlt.toolkit.models.request.DecompileNotarizedTransactionInput
-import com.radixdlt.toolkit.models.request.ExtractAddressesFromManifestRequest
-import com.radixdlt.toolkit.models.request.HashTransactionIntentInput
+import com.radixdlt.toolkit.models.method.AnalyzeTransactionExecutionInput
+import com.radixdlt.toolkit.models.method.AnalyzeTransactionExecutionOutput
+import com.radixdlt.toolkit.models.method.CompileNotarizedTransactionInput
+import com.radixdlt.toolkit.models.method.ConvertManifestInput
+import com.radixdlt.toolkit.models.method.ConvertManifestOutput
+import com.radixdlt.toolkit.models.method.DecompileNotarizedTransactionInput
+import com.radixdlt.toolkit.models.method.ExtractAddressesFromManifestInput
+import com.radixdlt.toolkit.models.method.HashTransactionIntentInput
 import com.radixdlt.toolkit.models.transaction.ManifestInstructionsKind
 import com.radixdlt.toolkit.models.transaction.SignedTransactionIntent
 import com.radixdlt.toolkit.models.transaction.TransactionHeader
@@ -133,7 +133,7 @@ class TransactionClient @Inject constructor(
 
             // 2. Hash the signed intent
             val signedIntentHash = engine.hashSignedTransactionIntent(
-                request = signedIntent
+                input = signedIntent
             ).getOrElse { error ->
                 return Result.failure(
                     DappRequestException(
@@ -147,7 +147,7 @@ class TransactionClient @Inject constructor(
 
             // 3. Compile transaction
             val notarizedTransactionHash = engine.compileNotarizedTransaction(
-                request = CompileNotarizedTransactionInput(
+                input = CompileNotarizedTransactionInput(
                     signedIntent = signedIntent,
                     notarySignature = sig
                 )
@@ -197,7 +197,7 @@ class TransactionClient @Inject constructor(
     suspend fun findFeePayerInManifest(manifestJson: TransactionManifest): Result<FeePayerSearchResult> {
         val networkId = getCurrentGatewayUseCase().network.networkId().value
         val allAccounts = getProfileUseCase.accountsOnCurrentNetwork()
-        val result = engine.extractAddressesFromManifest(ExtractAddressesFromManifestRequest(networkId.toUByte(), manifestJson))
+        val result = engine.extractAddressesFromManifest(ExtractAddressesFromManifestInput(networkId.toUByte(), manifestJson))
         val searchedAccounts = mutableSetOf<Network.Account>()
         return if (result.isSuccess) {
             val analyzeManifestResponse = result.getOrThrow()
@@ -318,7 +318,7 @@ class TransactionClient @Inject constructor(
     }
 
     suspend fun getSigningEntities(networkId: Int, manifestJson: TransactionManifest): List<Entity> {
-        val result = engine.extractAddressesFromManifest(ExtractAddressesFromManifestRequest(networkId.toUByte(), manifestJson))
+        val result = engine.extractAddressesFromManifest(ExtractAddressesFromManifestInput(networkId.toUByte(), manifestJson))
         val allAccounts = getProfileUseCase.accountsOnCurrentNetwork()
         return result.getOrNull()?.let { analyzeManifestResponse ->
             val accountsNeededToSign = analyzeManifestResponse.accountsRequiringAuth.toSet()
@@ -336,14 +336,13 @@ class TransactionClient @Inject constructor(
         transactionReceipt: ByteArray
     ): Result<AnalyzeTransactionExecutionOutput> {
         val networkId = getCurrentGatewayUseCase().network.networkId().value
-        val request = AnalyzeTransactionExecutionInput(
+        val input = AnalyzeTransactionExecutionInput(
             networkId = networkId.toUByte(),
             manifest = transactionManifest,
             transactionReceipt = transactionReceipt
         )
-        Timber.tag("Bakos").d(Json.encodeToString(request))
         return engine.analyzeTransactionExecution(
-            request = request
+            input = input
         )
     }
 

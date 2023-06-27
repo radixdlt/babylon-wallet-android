@@ -3,8 +3,8 @@ package rdx.works.profile.data.model.pernetwork
 import com.radixdlt.extensions.removeLeadingZero
 import com.radixdlt.toolkit.RadixEngineToolkit
 import com.radixdlt.toolkit.models.crypto.PublicKey
-import com.radixdlt.toolkit.models.request.DeriveVirtualAccountAddressInput
-import com.radixdlt.toolkit.models.request.DeriveVirtualIdentityAddressInput
+import com.radixdlt.toolkit.models.method.DeriveVirtualAccountAddressInput
+import com.radixdlt.toolkit.models.method.DeriveVirtualIdentityAddressInput
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import rdx.works.core.InstantGenerator

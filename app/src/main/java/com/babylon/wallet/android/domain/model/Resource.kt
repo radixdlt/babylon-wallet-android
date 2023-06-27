@@ -6,7 +6,7 @@ import com.babylon.wallet.android.domain.model.metadata.IconUrlMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.NameMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.SymbolMetadataItem
 import com.radixdlt.toolkit.RadixEngineToolkit
-import com.radixdlt.toolkit.models.request.KnownEntityAddressesInput
+import com.radixdlt.toolkit.models.method.KnownEntityAddressesInput
 import rdx.works.profile.data.model.apppreferences.Radix
 import java.math.BigDecimal
 import java.util.UUID

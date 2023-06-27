@@ -1,7 +1,7 @@
 package rdx.works.core
 
 import com.radixdlt.toolkit.RadixEngineToolkit
-import com.radixdlt.toolkit.models.request.DecodeAddressInput
+import com.radixdlt.toolkit.models.method.DecodeAddressInput
 
 object AddressValidator {
     private const val MIN_ADDRESS_SIZE = 26

@@ -4,9 +4,9 @@ package rdx.works.profile.olympiaimport
 
 import com.radixdlt.toolkit.RadixEngineToolkit
 import com.radixdlt.toolkit.models.crypto.PublicKey
-import com.radixdlt.toolkit.models.request.DeriveBabylonAddressFromOlympiaAddressInput
-import com.radixdlt.toolkit.models.request.DeriveOlympiaAddressFromPublicKeyInput
-import com.radixdlt.toolkit.models.request.OlympiaNetwork
+import com.radixdlt.toolkit.models.method.DeriveBabylonAddressFromOlympiaAddressInput
+import com.radixdlt.toolkit.models.method.DeriveOlympiaAddressFromPublicKeyInput
+import com.radixdlt.toolkit.models.method.OlympiaNetwork
 import okio.ByteString.Companion.decodeBase64
 import rdx.works.core.blake2Hash
 import rdx.works.profile.data.model.pernetwork.DerivationPath

@@ -2,10 +2,10 @@ package com.babylon.wallet.android.utils
 
 import com.babylon.wallet.android.domain.model.MetadataConstants
 import com.babylon.wallet.android.domain.usecases.transaction.ResourceRequest
-import com.radixdlt.toolkit.models.request.MetadataValue
-import com.radixdlt.toolkit.models.request.NewlyCreated
-import com.radixdlt.toolkit.models.request.ResourceManagerSpecifier
-import com.radixdlt.toolkit.models.request.ResourceQuantifier
+import com.radixdlt.toolkit.models.method.MetadataValue
+import com.radixdlt.toolkit.models.method.NewlyCreated
+import com.radixdlt.toolkit.models.method.ResourceManagerSpecifier
+import com.radixdlt.toolkit.models.method.ResourceQuantifier
 
 fun ResourceQuantifier.toResourceRequest(newlyCreated: NewlyCreated): ResourceRequest {
     return when (this) {

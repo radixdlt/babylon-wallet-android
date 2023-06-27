@@ -19,10 +19,10 @@ import com.babylon.wallet.android.domain.usecases.transaction.GetTransactionProo
 import com.babylon.wallet.android.presentation.StateViewModelTest
 import com.babylon.wallet.android.utils.AppEventBus
 import com.babylon.wallet.android.utils.DeviceSecurityHelper
-import com.radixdlt.toolkit.models.request.AnalyzeTransactionExecutionOutput
-import com.radixdlt.toolkit.models.request.EncounteredAddresses
-import com.radixdlt.toolkit.models.request.EncounteredComponents
-import com.radixdlt.toolkit.models.request.NewlyCreated
+import com.radixdlt.toolkit.models.method.AnalyzeTransactionExecutionOutput
+import com.radixdlt.toolkit.models.method.EncounteredAddresses
+import com.radixdlt.toolkit.models.method.EncounteredComponents
+import com.radixdlt.toolkit.models.method.NewlyCreated
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every

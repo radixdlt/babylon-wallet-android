@@ -7,8 +7,8 @@ import com.radixdlt.crypto.getCompressedPublicKey
 import com.radixdlt.slip10.toKey
 import com.radixdlt.toolkit.RadixEngineToolkit
 import com.radixdlt.toolkit.models.crypto.PublicKey
-import com.radixdlt.toolkit.models.request.DeriveOlympiaAddressFromPublicKeyInput
-import com.radixdlt.toolkit.models.request.OlympiaNetwork
+import com.radixdlt.toolkit.models.method.DeriveOlympiaAddressFromPublicKeyInput
+import com.radixdlt.toolkit.models.method.OlympiaNetwork
 import io.mockk.Runs
 import io.mockk.coEvery
 import io.mockk.coVerify
