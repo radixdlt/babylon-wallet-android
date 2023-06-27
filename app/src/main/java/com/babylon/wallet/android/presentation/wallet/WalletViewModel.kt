@@ -130,9 +130,12 @@ class WalletViewModel @Inject constructor(
 
     fun onApplyMnemonicBackup(account: Network.Account) {
         viewModelScope.launch {
-            getProfileUseCase.accountOnCurrentNetwork(account.address)?.factorSourceId()?.let {
-                sendEvent(WalletEvent.NavigateToMnemonicBackup(it))
-            }
+            getProfileUseCase.accountOnCurrentNetwork(account.address)
+                ?.factorSourceId()
+                ?.let {
+                    it as FactorSourceID.FromHash
+                    sendEvent(WalletEvent.NavigateToMnemonicBackup(it))
+                }
         }
     }
 }

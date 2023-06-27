@@ -3,6 +3,7 @@ package com.babylon.wallet.android.domain.usecases
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import rdx.works.core.preferences.PreferencesManager
+import rdx.works.profile.data.model.factorsources.FactorSource.FactorSourceID
 import rdx.works.profile.data.model.factorsources.FactorSourceKind
 import rdx.works.profile.data.utils.factorSourceId
 import rdx.works.profile.domain.GetProfileUseCase
@@ -21,7 +22,7 @@ class GetAccountsForSecurityPromptUseCase @Inject constructor(
     ) { accounts, backedUpFactorSourceIds ->
 
         accounts.filter { account ->
-            val factorSourceId = account.factorSourceId()
+            val factorSourceId = account.factorSourceId() as FactorSourceID.FromHash
 
             if (backedUpFactorSourceIds.contains(factorSourceId.body.value)) {
                 return@filter false

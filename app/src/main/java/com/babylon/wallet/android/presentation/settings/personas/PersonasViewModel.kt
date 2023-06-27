@@ -29,7 +29,8 @@ class PersonasViewModel @Inject constructor(
     private val getPersonasUseCase: GetPersonasUseCase,
     private val getProfileUseCase: GetProfileUseCase,
     private val preferencesManager: PreferencesManager
-) : StateViewModel<PersonasViewModel.PersonasUiState>(), OneOffEventHandler<PersonasViewModel.PersonasEvent> by OneOffEventHandlerImpl() {
+) : StateViewModel<PersonasViewModel.PersonasUiState>(),
+    OneOffEventHandler<PersonasViewModel.PersonasEvent> by OneOffEventHandlerImpl() {
 
     private var personaAddressThatNeedBackup: String? = null
 
@@ -73,9 +74,12 @@ class PersonasViewModel @Inject constructor(
     fun onApplySecuritySettings() {
         viewModelScope.launch {
             personaAddressThatNeedBackup?.let { address ->
-                getProfileUseCase.personaOnCurrentNetwork(address)?.factorSourceId()?.let {
-                    sendEvent(PersonasEvent.NavigateToMnemonicBackup(it))
-                }
+                getProfileUseCase.personaOnCurrentNetwork(address)
+                    ?.factorSourceId()
+                    ?.let {
+                        it as FactorSourceID.FromHash
+                        sendEvent(PersonasEvent.NavigateToMnemonicBackup(it))
+                    }
             }
         }
     }

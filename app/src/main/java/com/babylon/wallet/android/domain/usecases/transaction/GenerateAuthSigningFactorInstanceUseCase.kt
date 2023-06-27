@@ -42,7 +42,7 @@ class GenerateAuthSigningFactorInstanceUseCase @Inject constructor(
                 val transactionSigning = securityState.unsecuredEntityControl.transactionSigning
                 val signingEntityDerivationPath = transactionSigning.derivationPath
                 requireNotNull(signingEntityDerivationPath)
-                factorSourceId = transactionSigning.factorSourceId
+                factorSourceId = transactionSigning.factorSourceId as FactorSourceID.FromHash
                 if (transactionSigning.publicKey.curve == Slip10Curve.CURVE_25519) {
                     DerivationPath.authSigningDerivationPathFromCap26Path(signingEntityDerivationPath)
                 } else {

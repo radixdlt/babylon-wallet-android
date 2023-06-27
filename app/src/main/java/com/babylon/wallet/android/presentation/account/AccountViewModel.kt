@@ -21,7 +21,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import rdx.works.profile.data.model.factorsources.FactorSource
+import rdx.works.profile.data.model.factorsources.FactorSource.FactorSourceID
 import rdx.works.profile.data.utils.factorSourceId
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.accountOnCurrentNetwork
@@ -110,21 +110,30 @@ class AccountViewModel @Inject constructor(
         item: Resource.NonFungibleResource.Item
     ) {
         _state.update { accountUiState ->
-            accountUiState.copy(selectedResource = SelectedResource.SelectedNonFungibleResource(nonFungibleResource, item))
+            accountUiState.copy(
+                selectedResource = SelectedResource.SelectedNonFungibleResource(
+                    nonFungible = nonFungibleResource,
+                    item = item
+                )
+            )
         }
     }
 
     fun onApplySecuritySettings() {
         viewModelScope.launch {
-            _state.value.accountWithResources?.account?.factorSourceId()?.let {
-                sendEvent(AccountEvent.NavigateToMnemonicBackup(it))
-            }
+            _state.value.accountWithResources
+                ?.account
+                ?.factorSourceId()
+                ?.let {
+                    it as FactorSourceID.FromHash
+                    sendEvent(AccountEvent.NavigateToMnemonicBackup(it))
+                }
         }
     }
 }
 
 internal sealed interface AccountEvent : OneOffEvent {
-    data class NavigateToMnemonicBackup(val factorSourceId: FactorSource.FactorSourceID.FromHash) : AccountEvent
+    data class NavigateToMnemonicBackup(val factorSourceId: FactorSourceID.FromHash) : AccountEvent
 }
 
 data class AccountUiState(

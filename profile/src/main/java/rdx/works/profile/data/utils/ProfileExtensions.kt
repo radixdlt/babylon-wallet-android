@@ -28,7 +28,7 @@ fun Network.Account.isOlympiaAccount(): Boolean {
         ?.transactionSigning?.publicKey?.curve == Slip10Curve.SECP_256K1
 }
 
-fun Entity.factorSourceId(): FactorSource.FactorSourceID.FromHash {
+fun Entity.factorSourceId(): FactorSource.FactorSourceID {
     return (this.securityState as SecurityState.Unsecured).unsecuredEntityControl.transactionSigning.factorSourceId
 }
 

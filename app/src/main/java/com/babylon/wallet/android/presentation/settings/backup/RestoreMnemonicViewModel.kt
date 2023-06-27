@@ -21,6 +21,7 @@ import rdx.works.profile.data.model.compressedPublicKey
 import rdx.works.profile.data.model.currentNetwork
 import rdx.works.profile.data.model.factorsources.DeviceFactorSource
 import rdx.works.profile.data.model.factorsources.FactorSource
+import rdx.works.profile.data.model.factorsources.FactorSource.FactorSourceID
 import rdx.works.profile.data.model.factorsources.FactorSourceKind
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.data.model.pernetwork.SecurityState
@@ -52,8 +53,12 @@ class RestoreMnemonicViewModel @Inject constructor(
     init {
         viewModelScope.launch {
             val profile = getProfileUseCase().first()
-            val account = profile.currentNetwork.accounts.find { it.factorSourceId().body.value == args.factorSourceId }
-            val factorSourceId = FactorSource.FactorSourceID.FromHash(
+            val account = profile.currentNetwork.accounts
+                .find {
+                    val factorSourceIDFromHash = it.factorSourceId() as FactorSourceID.FromHash
+                    factorSourceIDFromHash.body.value == args.factorSourceId
+                }
+            val factorSourceId = FactorSourceID.FromHash(
                 kind = FactorSourceKind.DEVICE,
                 body = FactorSource.HexCoded32Bytes(args.factorSourceId)
             )
@@ -95,8 +100,9 @@ class RestoreMnemonicViewModel @Inject constructor(
             bip39Passphrase = _state.value.passphrase
         )
 
+        val factorSourceIDFromHash = (factorInstance.factorSourceId as FactorSourceID.FromHash)
         val isFactorSourceIdValid = FactorSource.factorSourceId(mnemonicWithPassphrase = mnemonicWithPassphrase) ==
-            factorInstance.factorSourceId.body.value
+            factorSourceIDFromHash.body.value
 
         val isPublicKeyValid = mnemonicWithPassphrase.compressedPublicKey(derivationPath = derivationPath)
             .removeLeadingZero()
@@ -108,7 +114,7 @@ class RestoreMnemonicViewModel @Inject constructor(
         } else {
             viewModelScope.launch {
                 restoreMnemonicUseCase(
-                    factorSourceId = factorInstance.factorSourceId,
+                    factorSourceId = factorSourceIDFromHash,
                     mnemonicWithPassphrase = mnemonicWithPassphrase
                 )
                 appEventBus.sendEvent(AppEvent.RestoredMnemonic)
