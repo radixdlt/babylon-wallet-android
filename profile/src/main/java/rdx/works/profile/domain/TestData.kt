@@ -1,7 +1,6 @@
 package rdx.works.profile.domain
 
 import rdx.works.core.InstantGenerator
-import rdx.works.core.UUIDGenerator
 import rdx.works.profile.data.model.Header
 import rdx.works.profile.data.model.MnemonicWithPassphrase
 import rdx.works.profile.data.model.Profile
@@ -20,11 +19,13 @@ import rdx.works.profile.data.model.pernetwork.FactorInstance
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.data.model.pernetwork.SecurityState
 import rdx.works.profile.derivation.model.KeyType
+import java.util.Random
+
 
 object TestData {
 
     val ledgerFactorSource = LedgerHardwareWalletFactorSource.newSource(
-        deviceID = FactorSource.HexCoded32Bytes(UUIDGenerator.uuid().toString()),
+        deviceID = FactorSource.HexCoded32Bytes(generateRandomHexString32Bytes()),
         model = LedgerHardwareWalletFactorSource.DeviceModel.NANO_S,
         name = "Ledger1"
     )
@@ -169,5 +170,14 @@ object TestData {
                 )
             )
         )
+    }
+
+    private fun generateRandomHexString32Bytes(): String {
+        val randomService = Random()
+        val sb = StringBuilder()
+        while (sb.length < 63) {
+            sb.append(Integer.toHexString(randomService.nextInt()))
+        }
+        return sb.toString()
     }
 }
