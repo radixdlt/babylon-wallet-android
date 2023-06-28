@@ -24,9 +24,7 @@ class GetSigningEntitiesByFactorSourceUseCase @Inject constructor(
                 is SecurityState.Unsecured -> {
                     val factorSourceId = securityState.unsecuredEntityControl.transactionSigning.factorSourceId
                     val factorSource = requireNotNull(getProfileUseCase.factorSourceById(factorSourceId))
-                    if (factorSource.id.kind == FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET ||
-                        factorSource.id.kind == FactorSourceKind.DEVICE
-                    ) {
+                    if (factorSource.id.kind != FactorSourceKind.TRUSTED_CONTACT) { // trusted contact cannot sign!
                         if (result[factorSource] != null) {
                             result[factorSource] = result[factorSource].orEmpty() + listOf(signer)
                         } else {
