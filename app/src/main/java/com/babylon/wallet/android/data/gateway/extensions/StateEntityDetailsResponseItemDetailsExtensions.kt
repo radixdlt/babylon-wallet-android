@@ -104,16 +104,16 @@ fun StateEntityDetailsResponseItemDetails.calculateResourceBehaviours(): List<Re
             mutableList.add(ResourceBehaviour.CHANGE_WITHDRAW_DEPOSIT)
         }
 
-        // when both withdraw and deposit perform are set to defaults,
-        // but either withdraw or deposit change is set to non default (but neither set to AllowAll
-        // since that would be covered in the one above)
-        if (
-            (
-                accessRulesChain?.performWithdrawAccessRuleSetToDefault() == true &&
-                    accessRulesChain.performDepositAccessRuleSetToDefault()
-                ) && accessRulesChain.changeDepositAccessRuleSetToNonDefaultExceptAllowAll() &&
-            accessRulesChain.changeWithdrawAccessRuleSetToNonDefaultExceptAllowAll()
-        ) {
+        // 1. when both withdraw and deposit perform are set to defaults,
+        // 2. but either withdraw or deposit change is set to non default
+        // 3. (but neither set to AllowAll since that would be covered in the one above)
+        val bothPerformSetToDefault = accessRulesChain?.performWithdrawAccessRuleSetToDefault() == true &&
+            accessRulesChain.performDepositAccessRuleSetToDefault()
+        val eitherChangeSetToNonDefault = accessRulesChain?.changeDepositAccessRuleSetToNonDefault() == true ||
+            accessRulesChain?.changeWithdrawAccessRuleSetToNonDefault() == true
+        val neitherChangeSetToAllowAll = accessRulesChain?.changeDepositAccessRuleNotSetToAllowAll() == true &&
+            accessRulesChain.changeWithdrawAccessRuleNotSetToAllowAll()
+        if (bothPerformSetToDefault && eitherChangeSetToNonDefault && neitherChangeSetToAllowAll) {
             mutableList.add(ResourceBehaviour.FUTURE_MOVEMENT_WITHDRAW_DEPOSIT)
         }
 
@@ -270,18 +270,32 @@ private fun AccessRulesChain.changeWithdrawAccessRuleSetToAllowAll(): Boolean {
     } ?: false
 }
 
-private fun AccessRulesChain.changeDepositAccessRuleSetToNonDefaultExceptAllowAll(): Boolean {
-    return changeDepositAccessRule()?.let {
-        it != AccessRule.DenyAll && // Non default
-            it != AccessRule.AllowAll // Not AllowAll
-    } ?: false
+private fun AccessRulesChain.changeDepositAccessRuleSetToNonDefault(): Boolean {
+    return method_auth_mutability.find { methodAuth ->
+        methodAuth.method.name == ResourceRule.Deposit.value
+    }?.access_rule_reference?.access_rule?.type?.let { type ->
+        type != AccessRule.DenyAll.value
+    } ?: true
 }
 
-private fun AccessRulesChain.changeWithdrawAccessRuleSetToNonDefaultExceptAllowAll(): Boolean {
+private fun AccessRulesChain.changeWithdrawAccessRuleSetToNonDefault(): Boolean {
+    return method_auth_mutability.find { methodAuth ->
+        methodAuth.method.name == ResourceRule.Withdraw.value
+    }?.access_rule_reference?.access_rule?.type?.let { type ->
+        type != AccessRule.DenyAll.value
+    } ?: true
+}
+
+private fun AccessRulesChain.changeDepositAccessRuleNotSetToAllowAll(): Boolean {
+    return changeDepositAccessRule()?.let {
+        it != AccessRule.AllowAll // Not AllowAll
+    } ?: true
+}
+
+private fun AccessRulesChain.changeWithdrawAccessRuleNotSetToAllowAll(): Boolean {
     return changeWithdrawAccessRule()?.let {
-        it != AccessRule.DenyAll && // Non default
-            it != AccessRule.AllowAll // Not AllowAll
-    } ?: false
+        it != AccessRule.AllowAll // Not AllowAll
+    } ?: true
 }
 
 private fun AccessRulesChain.performUpdateMetadataAccessRule(): AccessRule? {
