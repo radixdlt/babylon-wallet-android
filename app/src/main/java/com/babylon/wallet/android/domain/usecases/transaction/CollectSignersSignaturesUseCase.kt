@@ -71,7 +71,7 @@ class CollectSignersSignaturesUseCase @Inject constructor(
                 }
 
                 FactorSourceKind.TRUSTED_CONTACT -> {
-                    throw IllegalStateException("trusted contact cannot sign")
+                    error("trusted contact cannot sign")
                 }
             }
         }

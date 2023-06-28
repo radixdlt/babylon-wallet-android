@@ -42,6 +42,7 @@ class GetSigningEntitiesByFactorSourceUseCase @Inject constructor(
     }
 }
 
+@Suppress("MagicNumber")
 fun FactorSourceKind.signingOrder(): Int {
     return when (this) {
         FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET -> 0
