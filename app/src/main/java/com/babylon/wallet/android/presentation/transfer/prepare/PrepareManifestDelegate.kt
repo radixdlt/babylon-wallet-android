@@ -169,7 +169,7 @@ class PrepareManifestDelegate(
         into: TargetAccount
     ) = Instruction.CallMethod(
         componentAddress = ManifestAstValue.Address(value = into.address),
-        methodName = ManifestAstValue.String(MethodName.Deposit.stringValue),
+        methodName = ManifestAstValue.String(MethodName.TryDepositOrAbort.stringValue),
         arguments = arrayOf(bucket)
     )
 }
