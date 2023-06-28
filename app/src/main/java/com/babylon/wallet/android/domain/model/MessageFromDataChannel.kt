@@ -1,6 +1,7 @@
 package com.babylon.wallet.android.domain.model
 
 import com.babylon.wallet.android.data.dapp.model.PersonaData
+import rdx.works.profile.data.model.factorsources.FactorSource
 import rdx.works.profile.data.model.factorsources.LedgerHardwareWalletFactorSource
 import rdx.works.profile.data.model.pernetwork.Network
 
@@ -164,7 +165,7 @@ sealed interface MessageFromDataChannel {
         data class GetDeviceInfoResponse(
             val interactionId: String,
             val model: LedgerDeviceModel,
-            val deviceId: String
+            val deviceId: FactorSource.HexCoded32Bytes
         ) : LedgerResponse(interactionId)
 
         data class DerivePublicKeyResponse(

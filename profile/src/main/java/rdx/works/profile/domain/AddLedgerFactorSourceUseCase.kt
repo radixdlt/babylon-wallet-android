@@ -14,21 +14,21 @@ class AddLedgerFactorSourceUseCase @Inject constructor(
 ) {
 
     suspend operator fun invoke(
-        ledgerId: String,
+        ledgerId: FactorSource.HexCoded32Bytes,
         model: LedgerHardwareWalletFactorSource.DeviceModel,
         name: String?
     ): AddLedgerFactorSourceResult {
         val ledgerFactorSource = LedgerHardwareWalletFactorSource.newSource(
-            deviceID = FactorSource.HexCoded32Bytes(value = ledgerId),
+            deviceID = ledgerId,
             model = model,
-            name = name.orEmpty() // it should not be empty
+            name = name.orEmpty() // it should not be null
         )
 
         val profile = profileRepository.profile.first()
         val existingLedgerFactorSource = getProfileUseCase.factorSourceById(
             FactorSource.FactorSourceID.FromHash(
                 kind = FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET,
-                body = FactorSource.HexCoded32Bytes(ledgerId)
+                body = ledgerId
             )
         )
 

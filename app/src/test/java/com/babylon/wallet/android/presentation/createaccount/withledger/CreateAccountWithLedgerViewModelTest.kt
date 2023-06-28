@@ -34,6 +34,9 @@ internal class CreateAccountWithLedgerViewModelTest : StateViewModelTest<CreateA
     private val addLedgerFactorSourceUseCase = mockk<AddLedgerFactorSourceUseCase>()
     private val eventBus = mockk<AppEventBus>()
 
+    private val firstDeviceId = "5f47ec336e9e7891bff04004c817201e73c097b6b1e1b3a26bc501e0010996f5"
+    private val secondDeviceId = "5f07ec336e9e7891bff04004c817201e73c097b6b1e1b3a26bc501e0010196f5"
+
     override fun initVM(): CreateAccountWithLedgerViewModel {
         return CreateAccountWithLedgerViewModel(getProfileUseCase, ledgerMessenger, addLedgerFactorSourceUseCase, eventBus)
     }
@@ -45,12 +48,14 @@ internal class CreateAccountWithLedgerViewModelTest : StateViewModelTest<CreateA
         coEvery { getProfileUseCase() } returns flowOf(profile())
         coEvery { ledgerMessenger.sendDeviceInfoRequest(any()) } returns Result.success(
             MessageFromDataChannel.LedgerResponse.GetDeviceInfoResponse(
-                "1", MessageFromDataChannel.LedgerResponse.LedgerDeviceModel.NanoS, "device1"
+                interactionId = "1",
+                model = MessageFromDataChannel.LedgerResponse.LedgerDeviceModel.NanoS,
+                deviceId = FactorSource.HexCoded32Bytes(firstDeviceId)
             )
         )
         coEvery {
             addLedgerFactorSourceUseCase(
-                any(),
+                FactorSource.HexCoded32Bytes(firstDeviceId),
                 any(),
                 any()
             )
@@ -58,7 +63,7 @@ internal class CreateAccountWithLedgerViewModelTest : StateViewModelTest<CreateA
             LedgerHardwareWalletFactorSource.newSource(
                 model = LedgerHardwareWalletFactorSource.DeviceModel.NANO_S,
                 name = "ledger",
-                deviceID = FactorSource.HexCoded32Bytes("5f07ec336e9e7891bff04004c817201e73c097b6b1e1b3a26bc501e0010196f5")
+                deviceID = FactorSource.HexCoded32Bytes(secondDeviceId)
             )
         )
         coEvery { ledgerMessenger.sendDerivePublicKeyRequest(any(), any(), any()) } returns Result.success(
@@ -83,7 +88,7 @@ internal class CreateAccountWithLedgerViewModelTest : StateViewModelTest<CreateA
             val item = expectMostRecentItem()
             assert(item.ledgerFactorSources.size == 1)
             assert(!item.hasP2pLinks)
-            assert(item.ledgerFactorSources.first { it.selected }.data.id.body.value == "Ledger1")
+            assert(item.ledgerFactorSources.first { it.selected }.data.id.body.value == secondDeviceId)
         }
     }
 
@@ -96,7 +101,7 @@ internal class CreateAccountWithLedgerViewModelTest : StateViewModelTest<CreateA
             val item = expectMostRecentItem()
             assert(item.ledgerFactorSources.size == 1)
             assert(!item.hasP2pLinks)
-            assert(item.ledgerFactorSources.first { it.selected }.data.id.body.value == "Ledger1")
+            assert(item.ledgerFactorSources.first { it.selected }.data.id.body.value == secondDeviceId)
         }
     }
 
@@ -139,9 +144,16 @@ internal class CreateAccountWithLedgerViewModelTest : StateViewModelTest<CreateA
         advanceUntilIdle()
         vm.state.test {
             val item = expectMostRecentItem()
+            println("item = $item")
             assert(item.addLedgerSheetState == AddLedgerSheetState.Connect)
         }
-        coVerify(exactly = 1) { addLedgerFactorSourceUseCase(any(), any(), captureNullable(ledgerName)) }
+        coVerify(exactly = 1) {
+            addLedgerFactorSourceUseCase(
+                ledgerId = FactorSource.HexCoded32Bytes(firstDeviceId),
+                model = any(),
+                name = captureNullable(ledgerName)
+            )
+        }
         assert(ledgerName.first() == null)
     }
 
@@ -155,6 +167,6 @@ internal class CreateAccountWithLedgerViewModelTest : StateViewModelTest<CreateA
         coVerify(exactly = 1) { ledgerMessenger.sendDerivePublicKeyRequest(any(), any(), any()) }
         coVerify(exactly = 1) { eventBus.sendEvent(capture(event)) }
         assert(event.captured.derivedPublicKeyHex == "publicKeyHex")
-        assert(event.captured.factorSourceID.body.value == "Ledger1")
+        assert(event.captured.factorSourceID.body.value == secondDeviceId)
     }
 }

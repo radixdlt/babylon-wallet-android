@@ -72,7 +72,7 @@ class CreateLedgerDelegate(
                 val existingLedgerFactorSource = getProfileUseCase.factorSourceById(
                     FactorSource.FactorSourceID.FromHash(
                         kind = FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET,
-                        body = FactorSource.HexCoded32Bytes(deviceInfoResponse.deviceId)
+                        body = deviceInfoResponse.deviceId
                     )
                 )
                 if (existingLedgerFactorSource == null) {

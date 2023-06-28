@@ -40,7 +40,7 @@ class SampleDataProvider {
         name: String = "my account",
         factorSourceId: FactorSource.FactorSourceID.FromHash = FactorSource.FactorSourceID.FromHash(
             kind = FactorSourceKind.DEVICE,
-            body = FactorSource.HexCoded32Bytes("IDIDDIIDD")
+            body = FactorSource.HexCoded32Bytes("5f07ec336e9e7891bff04004c817201e73c097b6b1e1b3a26bc205e0010196f5")
         )
     ): Network.Account {
         return Network.Account(
@@ -92,7 +92,7 @@ class SampleDataProvider {
                         ),
                         factorSourceId = FactorSource.FactorSourceID.FromHash(
                             kind = FactorSourceKind.DEVICE,
-                            body = FactorSource.HexCoded32Bytes("IDIDDIIDD")
+                            body = FactorSource.HexCoded32Bytes("5f07ec336e9e7891bff04004c817201e73c097b6b1e1b3a26bc205e0010196f5")
                         ),
                         publicKey = FactorInstance.PublicKey.curve25519PublicKey("")
                     )

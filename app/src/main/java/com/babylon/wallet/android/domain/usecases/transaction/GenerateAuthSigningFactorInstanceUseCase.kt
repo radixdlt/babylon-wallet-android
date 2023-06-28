@@ -3,8 +3,8 @@ package com.babylon.wallet.android.domain.usecases.transaction
 import com.babylon.wallet.android.data.dapp.LedgerMessenger
 import com.babylon.wallet.android.data.dapp.model.Curve
 import com.babylon.wallet.android.data.dapp.model.DerivePublicKeyRequest
+import com.babylon.wallet.android.data.dapp.model.LedgerDeviceModel.Companion.getLedgerDeviceModel
 import com.babylon.wallet.android.data.transaction.DappRequestFailure
-import com.babylon.wallet.android.utils.getLedgerDeviceModel
 import com.radixdlt.extensions.removeLeadingZero
 import kotlinx.coroutines.flow.first
 import rdx.works.core.UUIDGenerator

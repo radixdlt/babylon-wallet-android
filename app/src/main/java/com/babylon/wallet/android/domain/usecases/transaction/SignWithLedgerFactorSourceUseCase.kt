@@ -3,8 +3,8 @@ package com.babylon.wallet.android.domain.usecases.transaction
 import com.babylon.wallet.android.data.dapp.LedgerMessenger
 import com.babylon.wallet.android.data.dapp.model.DerivePublicKeyRequest
 import com.babylon.wallet.android.data.dapp.model.LedgerDeviceModel
+import com.babylon.wallet.android.data.dapp.model.LedgerDeviceModel.Companion.getLedgerDeviceModel
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
-import com.babylon.wallet.android.utils.getLedgerDeviceModel
 import com.radixdlt.toolkit.models.crypto.PublicKey
 import com.radixdlt.toolkit.models.crypto.Signature
 import com.radixdlt.toolkit.models.crypto.SignatureWithPublicKey
