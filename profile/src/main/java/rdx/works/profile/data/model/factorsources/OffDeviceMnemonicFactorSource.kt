@@ -52,8 +52,8 @@ data class OffDeviceMnemonicFactorSource(
                 ),
                 bip39Parameters = Bip39Parameters(
                     bip39PassphraseSpecified = mnemonicWithPassphrase.bip39Passphrase.isNotEmpty(),
-                    language = "", // TODO
-                    wordCount = 1, // TODO
+                    language = "", // TODO we must add enumerator in SLIP10
+                    wordCount = 1, // TODO we must add enumerator in SLIP10
                 ),
                 hint = Hint(label = label),
             )
