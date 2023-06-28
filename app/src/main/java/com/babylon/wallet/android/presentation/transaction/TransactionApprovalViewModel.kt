@@ -305,7 +305,10 @@ class TransactionApprovalViewModel @Inject constructor(
                         when (accountDeposit.resourceQuantifier) {
                             is ResourceQuantifier.Amount -> {
                                 amount = (accountDeposit.resourceQuantifier as ResourceQuantifier.Amount).amount
-                                val fungibleToken = accountWithResource?.resources?.fungibleResources?.find {
+                                // Search for fungible resource among all accounts
+                                val fungibleToken = accountsWithResources.mapNotNull { accountsWithResources ->
+                                    accountsWithResources.resources?.fungibleResources
+                                }.flatten().find {
                                     it.resourceAddress == resourceAddress
                                 }
                                 fungibleResource = fungibleToken?.copy(
@@ -378,7 +381,10 @@ class TransactionApprovalViewModel @Inject constructor(
                         when (accountDeposit.resourceQuantifier) {
                             is ResourceQuantifier.Amount -> {
                                 amount = (accountDeposit.resourceQuantifier as ResourceQuantifier.Amount).amount
-                                val fungibleToken = accountWithResource?.resources?.fungibleResources?.find {
+                                // Search for fungible resource among all accounts
+                                val fungibleToken = accountsWithResources.mapNotNull { accountsWithResources ->
+                                    accountsWithResources.resources?.fungibleResources
+                                }.flatten().find {
                                     it.resourceAddress == resourceAddress
                                 }
                                 fungibleResource = fungibleToken?.copy(
