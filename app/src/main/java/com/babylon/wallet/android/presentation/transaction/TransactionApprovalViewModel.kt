@@ -305,17 +305,11 @@ class TransactionApprovalViewModel @Inject constructor(
                         when (accountDeposit.resourceQuantifier) {
                             is ResourceQuantifier.Amount -> {
                                 amount = (accountDeposit.resourceQuantifier as ResourceQuantifier.Amount).amount
-                                val fungibleToken = accountWithResource?.resources?.fungibleResources?.find {
+                                // Search for fungible resource among all accounts
+                                val fungibleToken = accountsWithResources.mapNotNull { accountsWithResources ->
+                                    accountsWithResources.resources?.fungibleResources
+                                }.flatten().find {
                                     it.resourceAddress == resourceAddress
-                                } ?: run {
-                                    // When its null it means that depositing account is empty (no tokens) or simply
-                                    // does not contain token with this particular resourceAddress so we take it
-                                    // from the whole list
-                                    accountsWithResources.mapNotNull { accountsWithResources ->
-                                        accountsWithResources.resources?.fungibleResources
-                                    }.flatten().find {
-                                        it.resourceAddress == resourceAddress
-                                    }
                                 }
                                 fungibleResource = fungibleToken?.copy(
                                     amount = amount.toBigDecimal()
@@ -387,17 +381,11 @@ class TransactionApprovalViewModel @Inject constructor(
                         when (accountDeposit.resourceQuantifier) {
                             is ResourceQuantifier.Amount -> {
                                 amount = (accountDeposit.resourceQuantifier as ResourceQuantifier.Amount).amount
-                                val fungibleToken = accountWithResource?.resources?.fungibleResources?.find {
+                                // Search for fungible resource among all accounts
+                                val fungibleToken = accountsWithResources.mapNotNull { accountsWithResources ->
+                                    accountsWithResources.resources?.fungibleResources
+                                }.flatten().find {
                                     it.resourceAddress == resourceAddress
-                                } ?: run {
-                                    // When its null it means that depositing account is empty (no tokens) or simply
-                                    // does not contain token with this particular resourceAddress so we take it
-                                    // from the whole list
-                                    accountsWithResources.mapNotNull { accountsWithResources ->
-                                        accountsWithResources.resources?.fungibleResources
-                                    }.flatten().find {
-                                        it.resourceAddress == resourceAddress
-                                    }
                                 }
                                 fungibleResource = fungibleToken?.copy(
                                     amount = amount.toBigDecimal()
