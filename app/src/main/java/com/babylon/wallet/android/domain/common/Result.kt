@@ -45,15 +45,6 @@ suspend fun <T> Result<T>.onError(action: suspend (Throwable?) -> Unit) = apply 
     }
 }
 
-fun <T> KotlinResult<T>.asInternalResult(): Result<T> = fold(
-    onSuccess = { value ->
-        Result.Success(value)
-    },
-    onFailure = { error ->
-        Result.Error(error)
-    }
-)
-
 fun <T> Result<T>.asKotlinResult(): KotlinResult<T> = when (this) {
     is Result.Success -> KotlinResult.success(value = data)
     is Result.Error -> KotlinResult.failure(exception = exception ?: error(""))
