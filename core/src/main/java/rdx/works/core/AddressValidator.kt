@@ -1,7 +1,7 @@
 package rdx.works.core
 
 import com.radixdlt.toolkit.RadixEngineToolkit
-import com.radixdlt.toolkit.models.request.DecodeAddressRequest
+import com.radixdlt.toolkit.models.method.DecodeAddressInput
 
 object AddressValidator {
     private const val MIN_ADDRESS_SIZE = 26
@@ -11,6 +11,6 @@ object AddressValidator {
      * The address need to be at least 26 chars long, and should be validated against KET.
      */
     fun isValid(address: String): Boolean {
-        return address.length >= MIN_ADDRESS_SIZE && RadixEngineToolkit.decodeAddress(DecodeAddressRequest(address)).isSuccess
+        return address.length >= MIN_ADDRESS_SIZE && RadixEngineToolkit.decodeAddress(DecodeAddressInput(address)).isSuccess
     }
 }

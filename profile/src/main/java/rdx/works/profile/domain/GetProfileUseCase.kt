@@ -1,7 +1,7 @@
 package rdx.works.profile.domain
 
 import com.radixdlt.toolkit.RadixEngineToolkit
-import com.radixdlt.toolkit.models.request.DecodeAddressRequest
+import com.radixdlt.toolkit.models.method.DecodeAddressInput
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
@@ -66,7 +66,7 @@ suspend fun GetProfileUseCase.nextDerivationPathForAccountOnCurrentNetwork(
 @Suppress("MagicNumber")
 suspend fun GetProfileUseCase.currentNetworkAccountHashes(): Set<ByteArray> {
     return accountsOnCurrentNetwork().map {
-        val addressData = RadixEngineToolkit.decodeAddress(DecodeAddressRequest(it.address)).getOrThrow().data
+        val addressData = RadixEngineToolkit.decodeAddress(DecodeAddressInput(it.address)).getOrThrow().data
         // TODO change to addressData.drop(1) after RET update, to be consistent with iOS
         addressData.takeLast(26).toByteArray()
     }.toSet()

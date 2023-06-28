@@ -3,9 +3,9 @@ package com.babylon.wallet.android.domain.usecases.transaction
 import com.babylon.wallet.android.data.repository.entity.EntityRepository
 import com.babylon.wallet.android.domain.common.Result
 import com.babylon.wallet.android.domain.model.AccountWithResources
-import com.radixdlt.toolkit.models.request.AccountDeposit
-import com.radixdlt.toolkit.models.request.AnalyzeTransactionExecutionResponse
-import com.radixdlt.toolkit.models.request.MetadataKeyValue
+import com.radixdlt.toolkit.models.method.AccountDeposit
+import com.radixdlt.toolkit.models.method.AnalyzeTransactionExecutionOutput
+import com.radixdlt.toolkit.models.method.MetadataKeyValue
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.accountOnCurrentNetwork
 import javax.inject.Inject
@@ -17,8 +17,8 @@ class GetTransactionComponentResourcesUseCase @Inject constructor(
     private val getProfileUseCase: GetProfileUseCase,
     private val entityRepository: EntityRepository
 ) {
-    suspend fun invoke(
-        analyzeManifestWithPreviewResponse: AnalyzeTransactionExecutionResponse,
+    suspend operator fun invoke(
+        analyzeManifestWithPreviewResponse: AnalyzeTransactionExecutionOutput,
     ): Result<List<AccountWithResources>> {
         val depositComponents = mutableListOf<String>()
         val withdrawComponents = mutableListOf<String>()

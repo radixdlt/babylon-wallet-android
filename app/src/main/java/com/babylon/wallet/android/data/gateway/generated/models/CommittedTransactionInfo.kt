@@ -30,11 +30,11 @@ import kotlinx.serialization.Contextual
  * @param payloadHashHex Hex-encoded SHA-256 hash.
  * @param intentHashHex Hex-encoded SHA-256 hash.
  * @param feePaid String-encoded decimal representing the amount of a related fungible resource.
+ * @param affectedGlobalEntities 
  * @param confirmedAt 
  * @param errorMessage 
  * @param rawHex Hex-encoded binary blob.
  * @param receipt 
- * @param referencedGlobalEntities 
  * @param messageHex Hex-encoded binary blob.
  */
 @Serializable
@@ -68,6 +68,9 @@ data class CommittedTransactionInfo (
     @SerialName(value = "fee_paid")
     val feePaid: kotlin.String? = null,
 
+    @SerialName(value = "affected_global_entities")
+    val affectedGlobalEntities: kotlin.collections.List<kotlin.String>? = null,
+
     @Contextual @SerialName(value = "confirmed_at")
     val confirmedAt: java.time.OffsetDateTime? = null,
 
@@ -80,9 +83,6 @@ data class CommittedTransactionInfo (
 
     @SerialName(value = "receipt")
     val receipt: TransactionReceipt? = null,
-
-    @SerialName(value = "referenced_global_entities")
-    val referencedGlobalEntities: kotlin.collections.List<kotlin.String>? = null,
 
     /* Hex-encoded binary blob. */
     @SerialName(value = "message_hex")

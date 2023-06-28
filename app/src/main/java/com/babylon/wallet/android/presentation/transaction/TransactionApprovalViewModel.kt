@@ -37,10 +37,10 @@ import com.babylon.wallet.android.utils.iconUrl
 import com.babylon.wallet.android.utils.toResourceRequest
 import com.babylon.wallet.android.utils.tokenSymbol
 import com.radixdlt.toolkit.models.crypto.PrivateKey
-import com.radixdlt.toolkit.models.request.AccountDeposit
-import com.radixdlt.toolkit.models.request.AnalyzeTransactionExecutionResponse
-import com.radixdlt.toolkit.models.request.ConvertManifestResponse
-import com.radixdlt.toolkit.models.request.ResourceQuantifier
+import com.radixdlt.toolkit.models.method.AccountDeposit
+import com.radixdlt.toolkit.models.method.AnalyzeTransactionExecutionOutput
+import com.radixdlt.toolkit.models.method.ConvertManifestOutput
+import com.radixdlt.toolkit.models.method.ResourceQuantifier
 import com.radixdlt.toolkit.models.transaction.ManifestInstructions
 import com.radixdlt.toolkit.models.transaction.TransactionManifest
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -150,7 +150,7 @@ class TransactionApprovalViewModel @Inject constructor(
                         transactionReceipt = transactionPreviewResponse.encodedReceipt.decodeHex()
                     )
 
-                    manifestPreview.exceptionOrNull().let { error ->
+                    manifestPreview.exceptionOrNull()?.let { error ->
                         Timber.e("Analyze manifest failed with error: $error")
                         _state.update {
                             it.copy(
@@ -175,7 +175,7 @@ class TransactionApprovalViewModel @Inject constructor(
                             dAppWithResources
                         }
 
-                        val accountsWithResources = getTransactionComponentResourcesUseCase.invoke(
+                        val accountsWithResources = getTransactionComponentResourcesUseCase(
                             analyzeManifestWithPreviewResponse
                         ).value().orEmpty()
 
@@ -216,7 +216,7 @@ class TransactionApprovalViewModel @Inject constructor(
     }
 
     private fun processWithdrawJobs(
-        analyzeManifestWithPreviewResponse: AnalyzeTransactionExecutionResponse,
+        analyzeManifestWithPreviewResponse: AnalyzeTransactionExecutionOutput,
         accountsWithResources: List<AccountWithResources>
     ): List<TransactionAccountItemUiModel> {
         return analyzeManifestWithPreviewResponse.accountWithdraws.map { accountWithdraw ->
@@ -276,7 +276,7 @@ class TransactionApprovalViewModel @Inject constructor(
 
     @Suppress("LongMethod", "CyclomaticComplexMethod")
     private fun processAccountDeposits(
-        analyzeManifestWithPreviewResponse: AnalyzeTransactionExecutionResponse,
+        analyzeManifestWithPreviewResponse: AnalyzeTransactionExecutionOutput,
         accountsWithResources: List<AccountWithResources>
     ): List<TransactionAccountItemUiModel> {
         return analyzeManifestWithPreviewResponse.accountDeposits.mapIndexed { index, accountDeposit ->
@@ -496,7 +496,7 @@ class TransactionApprovalViewModel @Inject constructor(
     @Suppress("LongMethod")
     private suspend fun handleTransactionApprovalForFeePayer(
         feePayerAddress: String,
-        manifestJson: ConvertManifestResponse
+        manifestJson: ConvertManifestOutput
     ) {
         _state.update { it.copy(isSigning = true) }
         val request = TransactionApprovalRequest(

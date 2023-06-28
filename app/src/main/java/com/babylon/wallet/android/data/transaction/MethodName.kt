@@ -4,7 +4,7 @@ enum class MethodName(val stringValue: String) {
     LockFee("lock_fee"),
     Free("free"),
     Deposit("deposit"),
-    DepositBatch("deposit_batch"),
+    TryDepositBatchOrAbort("try_deposit_batch_or_abort"),
     LockContingentFee("lock_contingent_fee"),
     Withdraw("withdraw"),
     WithdrawNonFungibles("withdraw_non_fungibles"),
