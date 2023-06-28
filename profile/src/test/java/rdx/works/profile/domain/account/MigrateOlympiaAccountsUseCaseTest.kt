@@ -102,7 +102,7 @@ internal class MigrateOlympiaAccountsUseCaseTest {
                                         ),
                                         factorSourceId = FactorSource.FactorSourceID.FromHash(
                                             kind = FactorSourceKind.DEVICE,
-                                            body = FactorSource.HexCoded32Bytes("IDIDDIIDD")
+                                            body = FactorSource.HexCoded32Bytes("5f07ec336e9e7891bff04004c817201e73c097b6b1e1b3a26bc501e0010196f5")
                                         ),
                                         publicKey = FactorInstance.PublicKey.curveSecp256k1PublicKey("")
                                     )
@@ -126,7 +126,7 @@ internal class MigrateOlympiaAccountsUseCaseTest {
         val capturedProfile = slot<Profile>()
         usecase(getOlympiaTestAccounts(), FactorSource.FactorSourceID.FromHash(
             kind = FactorSourceKind.DEVICE,
-            body = FactorSource.HexCoded32Bytes("1")
+            body = FactorSource.HexCoded32Bytes("5f07ec336e9e7891bff04004c817201e73c097b6b1e1b3a26bc501e0010196f5")
         ))
         coVerify(exactly = 1) { profileRepository.saveProfile(capture(capturedProfile)) }
         assert(capturedProfile.captured.currentNetwork.accounts.size == 12)

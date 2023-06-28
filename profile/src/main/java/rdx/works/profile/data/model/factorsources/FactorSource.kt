@@ -2,6 +2,7 @@ package rdx.works.profile.data.model.factorsources
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import okio.ByteString.Companion.decodeHex
 import rdx.works.profile.data.model.MnemonicWithPassphrase
 import rdx.works.profile.data.model.compressedPublicKey
 import rdx.works.profile.data.model.pernetwork.DerivationPath
@@ -43,7 +44,16 @@ sealed class FactorSource {
 
     @Serializable
     @JvmInline
-    value class HexCoded32Bytes(val value: String)
+    value class HexCoded32Bytes(val value: String) {
+        init {
+            val byteArray = value.decodeHex().toByteArray()
+            require(byteArray.size == byteCount) { "value must be 32 bytes" }
+        }
+
+        companion object {
+            private const val byteCount = 32
+        }
+    }
 
     // TODO move it to the top of the profile
     @Serializable

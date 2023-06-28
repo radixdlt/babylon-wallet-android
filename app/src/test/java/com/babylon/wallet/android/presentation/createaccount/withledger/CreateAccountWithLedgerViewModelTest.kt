@@ -58,7 +58,7 @@ internal class CreateAccountWithLedgerViewModelTest : StateViewModelTest<CreateA
             LedgerHardwareWalletFactorSource.newSource(
                 model = LedgerHardwareWalletFactorSource.DeviceModel.NANO_S,
                 name = "ledger",
-                deviceID = FactorSource.HexCoded32Bytes("2")
+                deviceID = FactorSource.HexCoded32Bytes("5f07ec336e9e7891bff04004c817201e73c097b6b1e1b3a26bc501e0010196f5")
             )
         )
         coEvery { ledgerMessenger.sendDerivePublicKeyRequest(any(), any(), any()) } returns Result.success(
