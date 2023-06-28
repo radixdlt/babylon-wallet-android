@@ -73,7 +73,7 @@ class AccountViewModel @Inject constructor(
 
     fun refresh() {
         _state.update { state ->
-            state.copy(isRefreshing = true)
+            state.copy(refreshing = true)
         }
         loadAccountData(isRefreshing = true)
     }
@@ -84,15 +84,19 @@ class AccountViewModel @Inject constructor(
             val result = getAccountsWithResourcesUseCase(listOf(account), isRefreshing)
             result.onError { e ->
                 _state.update { accountUiState ->
-                    accountUiState.copy(uiMessage = UiMessage.ErrorMessage.from(error = e), isLoading = false)
+                    accountUiState.copy(
+                        uiMessage = UiMessage.ErrorMessage.from(error = e),
+                        isLoading = false,
+                        refreshing = false
+                    )
                 }
             }
             result.onValue { accountsWithResources ->
                 _state.update { accountUiState ->
                     accountUiState.copy(
                         accountWithResources = accountsWithResources.first(),
-                        isRefreshing = false,
-                        isLoading = false
+                        isLoading = false,
+                        refreshing = false
                     )
                 }
             }
@@ -131,7 +135,7 @@ data class AccountUiState(
     val accountWithResources: AccountWithResources? = null,
     private val usesNotBackedUpMnemonic: Boolean = false,
     val isLoading: Boolean = true,
-    val isRefreshing: Boolean = false,
+    private val refreshing: Boolean = false,
     val selectedResource: SelectedResource? = null,
     val uiMessage: UiMessage? = null,
 ) : UiState {
@@ -142,6 +146,9 @@ data class AccountUiState(
 
             return usesNotBackedUpMnemonic && resources.hasXrd() && !isLoading
         }
+
+    val isRefreshing: Boolean
+        get() = !isLoading && refreshing
 
     val isTransferEnabled: Boolean
         get() = (accountWithResources?.resources?.isNotEmpty == true) && !isLoading

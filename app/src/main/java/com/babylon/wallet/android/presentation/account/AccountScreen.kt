@@ -140,7 +140,6 @@ private fun AccountScreenContent(
         skipHalfExpanded = true
     )
     val scope = rememberCoroutineScope()
-//    val sheetHeight = maxHeight * 0.9f
     BackHandler {
         if (bottomSheetState.isVisible) {
             scope.launch {
