@@ -37,8 +37,8 @@ data class StateEntityDetailsResponseNonFungibleResourceDetails (
     @SerialName(value = "type")
     override val type: StateEntityDetailsResponseItemDetailsType,
 
-//    @Contextual @SerialName(value = "access_rules_chain")
-//    val accessRulesChain: kotlin.Any,
+    @SerialName(value = "access_rules_chain")
+    val accessRulesChain: AccessRulesChain,
 
 //    @Contextual @SerialName(value = "vault_access_rules_chain")
 //    val vaultAccessRulesChain: kotlin.Any,
