@@ -35,8 +35,7 @@ import kotlinx.serialization.SerialName
  * @param resourcePackage Bech32m-encoded human readable version of the address.
  * @param accountPackage Bech32m-encoded human readable version of the address.
  * @param identityPackage Bech32m-encoded human readable version of the address.
- * @param epochManagerPackage Bech32m-encoded human readable version of the address.
- * @param clockPackage Bech32m-encoded human readable version of the address.
+ * @param consensusManagerPackage Bech32m-encoded human readable version of the address.
  * @param accessControllerPackage Bech32m-encoded human readable version of the address.
  * @param transactionProcessorPackage Bech32m-encoded human readable version of the address.
  * @param metadataModulePackage Bech32m-encoded human readable version of the address.
@@ -44,8 +43,7 @@ import kotlinx.serialization.SerialName
  * @param accessRulesPackage Bech32m-encoded human readable version of the address.
  * @param genesisHelperPackage Bech32m-encoded human readable version of the address.
  * @param faucetPackage Bech32m-encoded human readable version of the address.
- * @param epochManager Bech32m-encoded human readable version of the address.
- * @param clock Bech32m-encoded human readable version of the address.
+ * @param consensusManager Bech32m-encoded human readable version of the address.
  * @param genesisHelper Bech32m-encoded human readable version of the address.
  * @param faucet Bech32m-encoded human readable version of the address.
  */
@@ -110,12 +108,8 @@ data class NetworkConfigurationResponseWellKnownAddresses (
     val identityPackage: kotlin.String,
 
     /* Bech32m-encoded human readable version of the address. */
-    @SerialName(value = "epoch_manager_package")
-    val epochManagerPackage: kotlin.String,
-
-    /* Bech32m-encoded human readable version of the address. */
-    @SerialName(value = "clock_package")
-    val clockPackage: kotlin.String,
+    @SerialName(value = "consensus_manager_package")
+    val consensusManagerPackage: kotlin.String,
 
     /* Bech32m-encoded human readable version of the address. */
     @SerialName(value = "access_controller_package")
@@ -146,12 +140,8 @@ data class NetworkConfigurationResponseWellKnownAddresses (
     val faucetPackage: kotlin.String,
 
     /* Bech32m-encoded human readable version of the address. */
-    @SerialName(value = "epoch_manager")
-    val epochManager: kotlin.String,
-
-    /* Bech32m-encoded human readable version of the address. */
-    @SerialName(value = "clock")
-    val clock: kotlin.String,
+    @SerialName(value = "consensus_manager")
+    val consensusManager: kotlin.String,
 
     /* Bech32m-encoded human readable version of the address. */
     @SerialName(value = "genesis_helper")

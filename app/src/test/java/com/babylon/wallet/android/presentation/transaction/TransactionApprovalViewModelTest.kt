@@ -16,14 +16,13 @@ import com.babylon.wallet.android.domain.model.TransactionManifestData
 import com.babylon.wallet.android.domain.usecases.GetDAppWithMetadataAndAssociatedResourcesUseCase
 import com.babylon.wallet.android.domain.usecases.transaction.GetTransactionComponentResourcesUseCase
 import com.babylon.wallet.android.domain.usecases.transaction.GetTransactionProofResourcesUseCase
-import com.babylon.wallet.android.domain.usecases.transaction.PollTransactionStatusUseCase
 import com.babylon.wallet.android.presentation.StateViewModelTest
 import com.babylon.wallet.android.utils.AppEventBus
 import com.babylon.wallet.android.utils.DeviceSecurityHelper
-import com.radixdlt.toolkit.models.request.AnalyzeTransactionExecutionResponse
-import com.radixdlt.toolkit.models.request.EncounteredAddresses
-import com.radixdlt.toolkit.models.request.EncounteredComponents
-import com.radixdlt.toolkit.models.request.NewlyCreated
+import com.radixdlt.toolkit.models.method.AnalyzeTransactionExecutionOutput
+import com.radixdlt.toolkit.models.method.EncounteredAddresses
+import com.radixdlt.toolkit.models.method.EncounteredComponents
+import com.radixdlt.toolkit.models.method.NewlyCreated
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
@@ -48,7 +47,6 @@ internal class TransactionApprovalViewModelTest : StateViewModelTest<Transaction
     private val getCurrentGatewayUseCase = mockk<GetCurrentGatewayUseCase>()
     private val getTransactionComponentResourcesUseCase = mockk<GetTransactionComponentResourcesUseCase>()
     private val getTransactionProofResourcesUseCase = mockk<GetTransactionProofResourcesUseCase>()
-    private val pollTransactionStatusUseCase = mockk<PollTransactionStatusUseCase>()
     private val getDAppWithAssociatedResourcesUseCase = mockk<GetDAppWithMetadataAndAssociatedResourcesUseCase>()
     private val incomingRequestRepository = IncomingRequestRepositoryImpl()
     private val dAppMessenger = mockk<DappMessenger>()
@@ -90,7 +88,6 @@ internal class TransactionApprovalViewModelTest : StateViewModelTest<Transaction
         coEvery { transactionClient.analyzeManifestWithPreviewContext(any(), any()) } returns Result.success(
             analyzeManifestResponse()
         )
-        coEvery { pollTransactionStatusUseCase(any()) } returns ResultInternal.Success("")
         coEvery {
             dAppMessenger.sendTransactionWriteResponseSuccess(
                 dappId = "dappId",
@@ -119,7 +116,6 @@ internal class TransactionApprovalViewModelTest : StateViewModelTest<Transaction
             getCurrentGatewayUseCase,
             deviceSecurityHelper,
             dAppMessenger,
-            pollTransactionStatusUseCase,
             getDAppWithAssociatedResourcesUseCase,
             TestScope(),
             appEventBus,
@@ -164,7 +160,7 @@ internal class TransactionApprovalViewModelTest : StateViewModelTest<Transaction
 
     @Test
     fun `transaction approval sign and submit error`() = runTest {
-        coEvery { pollTransactionStatusUseCase(any()) } returns ResultInternal.Error(
+        coEvery { transactionClient.signAndSubmitTransaction(any()) } returns Result.failure(
             DappRequestException(
                 DappRequestFailure.TransactionApprovalFailure.SubmitNotarizedTransaction
             )
@@ -206,10 +202,9 @@ internal class TransactionApprovalViewModelTest : StateViewModelTest<Transaction
         logs = emptyList()
     )
 
-    private fun analyzeManifestResponse() = AnalyzeTransactionExecutionResponse(
+    private fun analyzeManifestResponse() = AnalyzeTransactionExecutionOutput(
         encounteredAddresses = EncounteredAddresses(
             EncounteredComponents(
-                emptyArray(),
                 emptyArray(),
                 emptyArray(),
                 emptyArray(),

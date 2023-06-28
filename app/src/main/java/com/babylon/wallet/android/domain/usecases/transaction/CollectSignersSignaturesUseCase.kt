@@ -1,11 +1,14 @@
 package com.babylon.wallet.android.domain.usecases.transaction
 
 import com.babylon.wallet.android.data.transaction.SigningState
+import com.radixdlt.hex.extensions.toHexString
+import com.radixdlt.toolkit.hash
 import com.radixdlt.toolkit.models.crypto.SignatureWithPublicKey
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.update
+import rdx.works.core.decodeHex
 import rdx.works.profile.data.model.factorsources.FactorSourceKind
 import rdx.works.profile.data.model.pernetwork.Entity
 import rdx.works.profile.data.model.pernetwork.SigningPurpose
@@ -36,7 +39,7 @@ class CollectSignersSignaturesUseCase @Inject constructor(
                     val signatures = signWithDeviceFactorSourceUseCase(
                         deviceFactorSource = factorSource,
                         signers = signers,
-                        dataToSign = signRequest.dataToSign,
+                        dataToSign = signRequest.hashedDataToSign,
                         signingPurpose = signingPurpose
                     )
                     signaturesWithPublicKeys.addAll(signatures)
@@ -64,11 +67,35 @@ class CollectSignersSignaturesUseCase @Inject constructor(
     }
 }
 
-sealed class SignRequest(val dataToSign: ByteArray) {
-    data class SignTransactionRequest(val compiledTransactionIntent: ByteArray) : SignRequest(compiledTransactionIntent)
-    data class SignAuthChallengeRequest(
-        private val data: ByteArray,
+sealed interface SignRequest {
+
+    val hashedDataToSign: ByteArray
+
+    class SignTransactionRequest(
+        private val compiledTransactionIntentHash: ByteArray
+    ) : SignRequest {
+
+        override val hashedDataToSign: ByteArray
+            get() = compiledTransactionIntentHash
+    }
+
+    class SignAuthChallengeRequest(
+        val challengeHex: String,
         val origin: String,
         val dAppDefinitionAddress: String
-    ) : SignRequest(data)
+    ) : SignRequest {
+
+        private val payloadToSign: ByteArray
+            get() {
+                require(dAppDefinitionAddress.length <= UByte.MAX_VALUE.toInt())
+                return challengeHex.decodeHex() + dAppDefinitionAddress.length.toUByte()
+                    .toByte() + dAppDefinitionAddress.toByteArray() + origin.toByteArray()
+            }
+
+        val payloadHex: String
+            get() = payloadToSign.toHexString()
+
+        override val hashedDataToSign: ByteArray
+            get() = hash(payloadToSign)
+    }
 }

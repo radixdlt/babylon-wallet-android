@@ -41,7 +41,7 @@ class AssetsChooserDelegate(
                 updateSheetState {
                     it.copy(
                         resources = Resources.EMPTY,
-                        uiMessage = UiMessage.ErrorMessage(error)
+                        uiMessage = UiMessage.ErrorMessage.from(error)
                     )
                 }
             }

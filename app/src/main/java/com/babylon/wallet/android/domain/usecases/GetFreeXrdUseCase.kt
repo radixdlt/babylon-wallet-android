@@ -9,8 +9,8 @@ import com.babylon.wallet.android.data.transaction.DappRequestFailure
 import com.babylon.wallet.android.data.transaction.TransactionClient
 import com.babylon.wallet.android.data.transaction.model.TransactionApprovalRequest
 import com.babylon.wallet.android.di.coroutines.IoDispatcher
+import com.babylon.wallet.android.domain.common.asKotlinResult
 import com.babylon.wallet.android.domain.common.onValue
-import com.babylon.wallet.android.domain.common.value
 import com.babylon.wallet.android.domain.usecases.transaction.PollTransactionStatusUseCase
 import com.radixdlt.toolkit.builders.ManifestBuilder
 import com.radixdlt.toolkit.models.transaction.TransactionManifest
@@ -21,7 +21,6 @@ import kotlinx.coroutines.withContext
 import rdx.works.core.preferences.PreferencesManager
 import rdx.works.profile.domain.gateway.GetCurrentGatewayUseCase
 import javax.inject.Inject
-import kotlin.Result
 import com.babylon.wallet.android.domain.common.Result as ResultInternal
 
 @Suppress("LongParameterList")
@@ -40,31 +39,31 @@ class GetFreeXrdUseCase @Inject constructor(
         address: String
     ): Result<String> {
         return withContext(ioDispatcher) {
-            networkInfoRepository.getFaucetComponentAddress(getCurrentGatewayUseCase().url).value()?.let { faucetComponentAddress ->
-                val manifest = buildFaucetManifest(
-                    address = address,
-                    includeLockFeeInstruction = includeLockFeeInstruction,
-                    faucetComponentAddress = faucetComponentAddress
-                )
-                when (val epochResult = transactionRepository.getLedgerEpoch()) {
-                    is ResultInternal.Error -> Result.failure(
-                        exception = epochResult.exception ?: DappRequestFailure.TransactionApprovalFailure.PrepareNotarizedTransaction
+            networkInfoRepository.getFaucetComponentAddress(getCurrentGatewayUseCase().url).asKotlinResult().fold(
+                onSuccess = { faucetComponentAddress ->
+                    val manifest = buildFaucetManifest(
+                        address = address,
+                        includeLockFeeInstruction = includeLockFeeInstruction,
+                        faucetComponentAddress = faucetComponentAddress
                     )
-                    is ResultInternal.Success -> {
-                        val request = TransactionApprovalRequest(manifest = manifest, hasLockFee = true)
-                        val submitResult = transactionClient.signAndSubmitTransaction(request)
-                        submitResult.onSuccess { txId ->
-                            val transactionStatus = pollTransactionStatusUseCase(txId)
-                            transactionStatus.onValue {
-                                preferencesManager.updateEpoch(address, epochResult.data)
+                    when (val epochResult = transactionRepository.getLedgerEpoch()) {
+                        is ResultInternal.Error -> Result.failure(
+                            exception = epochResult.exception ?: DappRequestFailure.TransactionApprovalFailure.PrepareNotarizedTransaction
+                        )
+                        is ResultInternal.Success -> {
+                            val request = TransactionApprovalRequest(manifest = manifest, hasLockFee = true)
+                            transactionClient.signAndSubmitTransaction(request).onSuccess { txId ->
+                                pollTransactionStatusUseCase(txId).onValue {
+                                    preferencesManager.updateEpoch(address, epochResult.data)
+                                }
                             }
                         }
-                        submitResult
                     }
+                },
+                onFailure = {
+                    Result.failure(it)
                 }
-            } ?: run {
-                Result.failure(Throwable("Unable to fetch faucet address"))
-            }
+            )
         }
     }
 

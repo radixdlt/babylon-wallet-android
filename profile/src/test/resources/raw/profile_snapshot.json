@@ -12,7 +12,7 @@
     },
     "id": "9958f568-8c9b-476a-beeb-017d1f843266",
     "lastModified": "2023-03-07T10:48:21Z",
-    "snapshotVersion": 34,
+    "snapshotVersion": 35,
     "contentHint": {
       "numberOfAccountsOnAllNetworksInTotal": 3,
       "numberOfPersonasOnAllNetworksInTotal": 2,
@@ -25,15 +25,15 @@
       "isCurrencyAmountVisible": true
     },
     "gateways": {
-      "current": "https://betanet.radixdlt.com",
+      "current": "https://enkinet-gateway.radixdlt.com",
       "saved": [
         {
           "network": {
-            "displayDescription": "Betanet",
-            "id": 11,
-            "name": "nebunet"
+            "displayDescription": "Enkinet (Test Network)",
+            "id": 33,
+            "name": "enkinet"
           },
-          "url": "https://betanet.radixdlt.com"
+          "url": "https://enkinet-gateway.radixdlt.com"
         }
       ]
     },
@@ -74,7 +74,7 @@
           {
             "forAccount": 3,
             "forIdentity": 2,
-            "networkID": 11
+            "networkID": 33
           }
         ]
       }
@@ -102,16 +102,16 @@
     {
       "accounts": [
         {
-          "address": "account_tdx_b_1p9dkged3rpzy860ampt5jpmvv3yl4y6f5yppp4tnscdslvt9v3",
+          "address": "account_tdx_21_12ya9jylskaa6gdrfr8nvve3pfc6wyhyw7eg83fwlc7fv2w0eanumcd",
           "appearanceID": 0,
           "displayName": "First",
-          "networkID": 11,
+          "networkID": 33,
           "securityState": {
             "discriminator": "unsecured",
             "unsecuredEntityControl": {
               "authenticationSigning": {
                 "derivationPath": {
-                  "path": "m/44H/1022H/11H/525H/1678H/0H",
+                  "path": "m/44H/1022H/33H/525H/1678H/0H",
                   "scheme": "cap26"
                 },
                 "factorSourceID": "6facb00a836864511fdf8f181382209e64e83ad462288ea1bc7868f236fb8033",
@@ -122,12 +122,12 @@
               },
               "transactionSigning": {
                 "derivationPath": {
-                  "path": "m/44H/1022H/11H/525H/1460H/0H",
+                  "path": "m/44H/1022H/33H/525H/1460H/0H",
                   "scheme": "cap26"
                 },
                 "factorSourceID": "6facb00a836864511fdf8f181382209e64e83ad462288ea1bc7868f236fb8033",
                 "publicKey": {
-                  "compressedData": "7566e3e948d428112d6c40b597e7ea979b3516dfddc3aa5f51e1316303a09ad3",
+                  "compressedData": "d992d7ce1965d6cd460e0ca48c310f56dfbfde85fb56fd22cbedf4938bd36a23",
                   "curve": "curve25519"
                 }
               }
@@ -135,16 +135,16 @@
           }
         },
         {
-          "address": "account_tdx_b_1p95nal0nmrqyl5r4phcspg8ahwnamaduzdd3kaklw3vqeavrwa",
+          "address": "account_tdx_21_12xg7tf7aup8lrxkvug0vzatntzww0c6jnntyj6yd4eg5920kpxpzvt",
           "appearanceID": 1,
           "displayName": "Second",
-          "networkID": 11,
+          "networkID": 33,
           "securityState": {
             "discriminator": "unsecured",
             "unsecuredEntityControl": {
               "authenticationSigning": {
                 "derivationPath": {
-                  "path": "m/44H/1022H/11H/525H/1678H/1H",
+                  "path": "m/44H/1022H/33H/525H/1678H/1H",
                   "scheme": "cap26"
                 },
                 "factorSourceID": "6facb00a836864511fdf8f181382209e64e83ad462288ea1bc7868f236fb8033",
@@ -155,12 +155,12 @@
               },
               "transactionSigning": {
                 "derivationPath": {
-                  "path": "m/44H/1022H/11H/525H/1460H/1H",
+                  "path": "m/44H/1022H/33H/525H/1460H/1H",
                   "scheme": "cap26"
                 },
                 "factorSourceID": "6facb00a836864511fdf8f181382209e64e83ad462288ea1bc7868f236fb8033",
                 "publicKey": {
-                  "compressedData": "216810705185adf3b8076a60d8d05e9da696ca8e87c1124ea909d394b7433719",
+                  "compressedData": "daf0fe5b2fde6d1b0811c1096da58b593bc7afd9ae806751a5740b99aae6501c",
                   "curve": "curve25519"
                 }
               }
@@ -168,16 +168,16 @@
           }
         },
         {
-          "address": "account_tdx_b_1p8ahenyznrqy2w0tyg00r82rwuxys6z8kmrhh37c7maqpydx7p",
+          "address": "account_tdx_21_12yth59wfyl8e4axupym0c96g9heuf5j06lv2lgc2cuapzlmj6alzzn",
           "appearanceID": 2,
           "displayName": "Third",
-          "networkID": 11,
+          "networkID": 33,
           "securityState": {
             "discriminator": "unsecured",
             "unsecuredEntityControl": {
               "authenticationSigning": {
                 "derivationPath": {
-                  "path": "m/44H/1022H/11H/525H/1678H/2H",
+                  "path": "m/44H/1022H/33H/525H/1678H/2H",
                   "scheme": "cap26"
                 },
                 "factorSourceID": "6facb00a836864511fdf8f181382209e64e83ad462288ea1bc7868f236fb8033",
@@ -188,12 +188,12 @@
               },
               "transactionSigning": {
                 "derivationPath": {
-                  "path": "m/44H/1022H/11H/525H/1460H/2H",
+                  "path": "m/44H/1022H/33H/525H/1460H/2H",
                   "scheme": "cap26"
                 },
                 "factorSourceID": "6facb00a836864511fdf8f181382209e64e83ad462288ea1bc7868f236fb8033",
                 "publicKey": {
-                  "compressedData": "a82afd5c21188314e60b9045407b7dfad378ba5043bea33b86891f06d94fb1f3",
+                  "compressedData": "0e2dfaaff11aef66a7806d0fc09846b534b436476b3d3ab876d8824aa109dc4b",
                   "curve": "curve25519"
                 }
               }
@@ -203,17 +203,17 @@
       ],
       "authorizedDapps": [
         {
-          "dAppDefinitionAddress": "account_tdx_b_1qlujhx6yh6tuctgw6nl68fr2dwg3y5k7h7mc6l04zsfsg7yeqh",
+          "dAppDefinitionAddress": "account_tdx_21_ygudy0at0ttc2wmsxw2ejx4dqf3dwlr9rsusk287mmynxeas5p2mk",
           "displayName": "RadiSwap",
-          "networkID": 11,
+          "networkID": 33,
           "referencesToAuthorizedPersonas": [
             {
-              "identityAddress": "identity_tdx_b_1pjt9eddph3avjs32wswmk306wgpjelluedsg0hwv928qdunqu8",
+              "identityAddress": "identity_tdx_21_1225rkl8svrs5fdc8rcmc7dk8wy4n0dap8da6dn58hptv47w9hmha5p",
               "lastLogin": "2001-01-01T00:00:00Z",
               "sharedAccounts": {
                 "accountsReferencedByAddress": [
-                  "account_tdx_b_1p95nal0nmrqyl5r4phcspg8ahwnamaduzdd3kaklw3vqeavrwa",
-                  "account_tdx_b_1p8ahenyznrqy2w0tyg00r82rwuxys6z8kmrhh37c7maqpydx7p"
+                  "account_tdx_21_12xg7tf7aup8lrxkvug0vzatntzww0c6jnntyj6yd4eg5920kpxpzvt",
+                  "account_tdx_21_12yth59wfyl8e4axupym0c96g9heuf5j06lv2lgc2cuapzlmj6alzzn"
                 ],
                 "request": {
                   "quantifier": "exactly",
@@ -226,11 +226,11 @@
               ]
             },
             {
-              "identityAddress": "identity_tdx_b_1pshnjvztw6t2hz58jld5mvxvp6ppyjk6ctzu0xhg700scqkhdw",
+              "identityAddress": "identity_tdx_21_12tljxea3s0mse52jmpvsphr0haqs86sung8d3qlhr763nxttj59650",
               "lastLogin": "2001-01-01T00:00:00Z",
               "sharedAccounts": {
                 "accountsReferencedByAddress": [
-                  "account_tdx_b_1p95nal0nmrqyl5r4phcspg8ahwnamaduzdd3kaklw3vqeavrwa"
+                  "account_tdx_21_12xg7tf7aup8lrxkvug0vzatntzww0c6jnntyj6yd4eg5920kpxpzvt"
                 ],
                 "request": {
                   "quantifier": "atLeast",
@@ -245,10 +245,10 @@
           ]
         }
       ],
-      "networkID": 11,
+      "networkID": 33,
       "personas": [
         {
-          "address": "identity_tdx_b_1pjt9eddph3avjs32wswmk306wgpjelluedsg0hwv928qdunqu8",
+          "address": "identity_tdx_21_1225rkl8svrs5fdc8rcmc7dk8wy4n0dap8da6dn58hptv47w9hmha5p",
           "displayName": "Mrs Incognito",
           "fields": [
             {
@@ -260,13 +260,13 @@
               "value": "Incognitoson"
             }
           ],
-          "networkID": 11,
+          "networkID": 33,
           "securityState": {
             "discriminator": "unsecured",
             "unsecuredEntityControl": {
               "authenticationSigning": {
                 "derivationPath": {
-                  "path": "m/44H/1022H/11H/618H/1678H/0H",
+                  "path": "m/44H/1022H/33H/618H/1678H/0H",
                   "scheme": "cap26"
                 },
                 "factorSourceID": "6facb00a836864511fdf8f181382209e64e83ad462288ea1bc7868f236fb8033",
@@ -277,12 +277,12 @@
               },
               "transactionSigning": {
                 "derivationPath": {
-                  "path": "m/44H/1022H/11H/618H/1460H/0H",
+                  "path": "m/44H/1022H/33H/618H/1460H/0H",
                   "scheme": "cap26"
                 },
                 "factorSourceID": "6facb00a836864511fdf8f181382209e64e83ad462288ea1bc7868f236fb8033",
                 "publicKey": {
-                  "compressedData": "573c0dc84196cb4a7dc8ddff1e92a859c98635a64ef5fe0bcf5c7fe5a7dab3e4",
+                  "compressedData": "6372052faa5236121c97267eb800b16164b1082201d51106794e0e004928fb7e",
                   "curve": "curve25519"
                 }
               }
@@ -290,7 +290,7 @@
           }
         },
         {
-          "address": "identity_tdx_b_1pshnjvztw6t2hz58jld5mvxvp6ppyjk6ctzu0xhg700scqkhdw",
+          "address": "identity_tdx_21_12tljxea3s0mse52jmpvsphr0haqs86sung8d3qlhr763nxttj59650",
           "displayName": "Mrs Public",
           "fields": [
             {
@@ -302,13 +302,13 @@
               "value": "Publicson"
             }
           ],
-          "networkID": 11,
+          "networkID": 33,
           "securityState": {
             "discriminator": "unsecured",
             "unsecuredEntityControl": {
               "authenticationSigning": {
                 "derivationPath": {
-                  "path": "m/44H/1022H/11H/618H/1678H/1H",
+                  "path": "m/44H/1022H/33H/618H/1678H/1H",
                   "scheme": "cap26"
                 },
                 "factorSourceID": "6facb00a836864511fdf8f181382209e64e83ad462288ea1bc7868f236fb8033",
@@ -319,12 +319,12 @@
               },
               "transactionSigning": {
                 "derivationPath": {
-                  "path": "m/44H/1022H/11H/618H/1460H/1H",
+                  "path": "m/44H/1022H/33H/618H/1460H/1H",
                   "scheme": "cap26"
                 },
                 "factorSourceID": "6facb00a836864511fdf8f181382209e64e83ad462288ea1bc7868f236fb8033",
                 "publicKey": {
-                  "compressedData": "6b33fec79f1535ac566b3d840f753942af6447efbe5c50dc343f8ec2122af9b3",
+                  "compressedData": "016ee546e124c088d52541105f3a4e8469498a6942452fec2ab24e4f92b939df",
                   "curve": "curve25519"
                 }
               }

@@ -4,7 +4,6 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.dapp.DappMessenger
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
-import com.babylon.wallet.android.data.dapp.model.WalletErrorType
 import com.babylon.wallet.android.data.manifest.addGuaranteeInstructionToManifest
 import com.babylon.wallet.android.data.transaction.DappRequestException
 import com.babylon.wallet.android.data.transaction.DappRequestFailure
@@ -13,8 +12,6 @@ import com.babylon.wallet.android.data.transaction.TransactionClient
 import com.babylon.wallet.android.data.transaction.model.TransactionApprovalRequest
 import com.babylon.wallet.android.data.transaction.toPrettyString
 import com.babylon.wallet.android.di.coroutines.ApplicationScope
-import com.babylon.wallet.android.domain.common.onError
-import com.babylon.wallet.android.domain.common.onValue
 import com.babylon.wallet.android.domain.common.value
 import com.babylon.wallet.android.domain.model.AccountWithResources
 import com.babylon.wallet.android.domain.model.DAppWithMetadataAndAssociatedResources
@@ -24,7 +21,6 @@ import com.babylon.wallet.android.domain.model.TransactionManifestData
 import com.babylon.wallet.android.domain.usecases.GetDAppWithMetadataAndAssociatedResourcesUseCase
 import com.babylon.wallet.android.domain.usecases.transaction.GetTransactionComponentResourcesUseCase
 import com.babylon.wallet.android.domain.usecases.transaction.GetTransactionProofResourcesUseCase
-import com.babylon.wallet.android.domain.usecases.transaction.PollTransactionStatusUseCase
 import com.babylon.wallet.android.domain.usecases.transaction.ResourceRequest
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
@@ -41,10 +37,10 @@ import com.babylon.wallet.android.utils.iconUrl
 import com.babylon.wallet.android.utils.toResourceRequest
 import com.babylon.wallet.android.utils.tokenSymbol
 import com.radixdlt.toolkit.models.crypto.PrivateKey
-import com.radixdlt.toolkit.models.request.AccountDeposit
-import com.radixdlt.toolkit.models.request.AnalyzeTransactionExecutionResponse
-import com.radixdlt.toolkit.models.request.ConvertManifestResponse
-import com.radixdlt.toolkit.models.request.ResourceQuantifier
+import com.radixdlt.toolkit.models.method.AccountDeposit
+import com.radixdlt.toolkit.models.method.AnalyzeTransactionExecutionOutput
+import com.radixdlt.toolkit.models.method.ConvertManifestOutput
+import com.radixdlt.toolkit.models.method.ResourceQuantifier
 import com.radixdlt.toolkit.models.transaction.ManifestInstructions
 import com.radixdlt.toolkit.models.transaction.TransactionManifest
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -75,7 +71,6 @@ class TransactionApprovalViewModel @Inject constructor(
     private val getCurrentGatewayUseCase: GetCurrentGatewayUseCase,
     private val deviceSecurityHelper: DeviceSecurityHelper,
     private val dAppMessenger: DappMessenger,
-    private val pollTransactionStatusUseCase: PollTransactionStatusUseCase,
     private val dAppWithAssociatedResourcesUseCase: GetDAppWithMetadataAndAssociatedResourcesUseCase,
     @ApplicationScope private val appScope: CoroutineScope,
     private val appEventBus: AppEventBus,
@@ -128,7 +123,7 @@ class TransactionApprovalViewModel @Inject constructor(
                 _state.update {
                     it.copy(
                         isLoading = false,
-                        error = UiMessage.ErrorMessage(error)
+                        error = UiMessage.ErrorMessage.from(error)
                     )
                 }
             }.onSuccess { transactionPreviewResponse ->
@@ -136,7 +131,7 @@ class TransactionApprovalViewModel @Inject constructor(
                     _state.update {
                         it.copy(
                             isLoading = false,
-                            error = UiMessage.ErrorMessage(
+                            error = UiMessage.ErrorMessage.from(
                                 error = Throwable(transactionPreviewResponse.receipt.errorMessage)
                             )
                         )
@@ -155,12 +150,12 @@ class TransactionApprovalViewModel @Inject constructor(
                         transactionReceipt = transactionPreviewResponse.encodedReceipt.decodeHex()
                     )
 
-                    manifestPreview.exceptionOrNull().let { error ->
+                    manifestPreview.exceptionOrNull()?.let { error ->
                         Timber.e("Analyze manifest failed with error: $error")
                         _state.update {
                             it.copy(
                                 isLoading = false,
-                                error = UiMessage.ErrorMessage(error)
+                                error = UiMessage.ErrorMessage.from(error)
                             )
                         }
                     }
@@ -180,7 +175,7 @@ class TransactionApprovalViewModel @Inject constructor(
                             dAppWithResources
                         }
 
-                        val accountsWithResources = getTransactionComponentResourcesUseCase.invoke(
+                        val accountsWithResources = getTransactionComponentResourcesUseCase(
                             analyzeManifestWithPreviewResponse
                         ).value().orEmpty()
 
@@ -221,7 +216,7 @@ class TransactionApprovalViewModel @Inject constructor(
     }
 
     private fun processWithdrawJobs(
-        analyzeManifestWithPreviewResponse: AnalyzeTransactionExecutionResponse,
+        analyzeManifestWithPreviewResponse: AnalyzeTransactionExecutionOutput,
         accountsWithResources: List<AccountWithResources>
     ): List<TransactionAccountItemUiModel> {
         return analyzeManifestWithPreviewResponse.accountWithdraws.map { accountWithdraw ->
@@ -281,7 +276,7 @@ class TransactionApprovalViewModel @Inject constructor(
 
     @Suppress("LongMethod", "CyclomaticComplexMethod")
     private fun processAccountDeposits(
-        analyzeManifestWithPreviewResponse: AnalyzeTransactionExecutionResponse,
+        analyzeManifestWithPreviewResponse: AnalyzeTransactionExecutionOutput,
         accountsWithResources: List<AccountWithResources>
     ): List<TransactionAccountItemUiModel> {
         return analyzeManifestWithPreviewResponse.accountDeposits.mapIndexed { index, accountDeposit ->
@@ -310,7 +305,10 @@ class TransactionApprovalViewModel @Inject constructor(
                         when (accountDeposit.resourceQuantifier) {
                             is ResourceQuantifier.Amount -> {
                                 amount = (accountDeposit.resourceQuantifier as ResourceQuantifier.Amount).amount
-                                val fungibleToken = accountWithResource?.resources?.fungibleResources?.find {
+                                // Search for fungible resource among all accounts
+                                val fungibleToken = accountsWithResources.mapNotNull { accountsWithResources ->
+                                    accountsWithResources.resources?.fungibleResources
+                                }.flatten().find {
                                     it.resourceAddress == resourceAddress
                                 }
                                 fungibleResource = fungibleToken?.copy(
@@ -383,7 +381,10 @@ class TransactionApprovalViewModel @Inject constructor(
                         when (accountDeposit.resourceQuantifier) {
                             is ResourceQuantifier.Amount -> {
                                 amount = (accountDeposit.resourceQuantifier as ResourceQuantifier.Amount).amount
-                                val fungibleToken = accountWithResource?.resources?.fungibleResources?.find {
+                                // Search for fungible resource among all accounts
+                                val fungibleToken = accountsWithResources.mapNotNull { accountsWithResources ->
+                                    accountsWithResources.resources?.fungibleResources
+                                }.flatten().find {
                                     it.resourceAddress == resourceAddress
                                 }
                                 fungibleResource = fungibleToken?.copy(
@@ -441,18 +442,9 @@ class TransactionApprovalViewModel @Inject constructor(
             _state.value.manifestData?.let { manifestData ->
                 val currentNetworkId = getCurrentGatewayUseCase().network.networkId().value
                 if (currentNetworkId != manifestData.networkId) {
-                    val failure = DappRequestFailure.WrongNetwork(currentNetworkId, manifestData.networkId)
-                    if (!transactionWriteRequest.isInternal) {
-                        dAppMessenger.sendWalletInteractionResponseFailure(
-                            dappId = transactionWriteRequest.dappId,
-                            requestId = args.requestId,
-                            error = failure.toWalletErrorType(),
-                            message = failure.getDappMessage()
-                        )
-                    }
-                    sendEvent(TransactionApprovalEvent.Dismiss)
-                    incomingRequestRepository.requestHandled(args.requestId)
                     approvalJob = null
+                    val failure = DappRequestFailure.WrongNetwork(currentNetworkId, manifestData.networkId)
+                    dismissTransaction(failure = failure)
                 } else {
                     _state.update { it.copy(isLoading = true) }
                     val txManifest = TransactionManifest(
@@ -488,7 +480,7 @@ class TransactionApprovalViewModel @Inject constructor(
                             }
                             approvalJob = null
                         }.onFailure { t ->
-                            _state.update { it.copy(isLoading = false, error = UiMessage.ErrorMessage(error = t)) }
+                            _state.update { it.copy(isLoading = false, error = UiMessage.ErrorMessage.from(error = t)) }
                             (t as? DappRequestException)?.let { exception ->
                                 if (!transactionWriteRequest.isInternal) {
                                     dAppMessenger.sendWalletInteractionResponseFailure(
@@ -510,7 +502,7 @@ class TransactionApprovalViewModel @Inject constructor(
     @Suppress("LongMethod")
     private suspend fun handleTransactionApprovalForFeePayer(
         feePayerAddress: String,
-        manifestJson: ConvertManifestResponse
+        manifestJson: ConvertManifestOutput
     ) {
         _state.update { it.copy(isSigning = true) }
         val request = TransactionApprovalRequest(
@@ -520,7 +512,13 @@ class TransactionApprovalViewModel @Inject constructor(
         )
         transactionClient.signAndSubmitTransaction(request).onSuccess { txId ->
             _state.update { it.copy(isSigning = false) }
-            appEventBus.sendEvent(AppEvent.TransactionEvent.Sent(args.requestId))
+            appEventBus.sendEvent(
+                AppEvent.Status.Transaction.InProgress(
+                    requestId = args.requestId,
+                    transactionId = txId,
+                    isInternal = transactionWriteRequest.isInternal
+                )
+            )
             // Send confirmation to the dApp that tx was submitted before status polling
             if (!transactionWriteRequest.isInternal) {
                 dAppMessenger.sendTransactionWriteResponseSuccess(
@@ -529,41 +527,19 @@ class TransactionApprovalViewModel @Inject constructor(
                     txId = txId
                 )
             }
-            val transactionStatus = pollTransactionStatusUseCase(txId)
-            transactionStatus.onValue { _ ->
-                _state.update { it.copy(isSigning = false) }
-                appEventBus.sendEvent(AppEvent.TransactionEvent.Successful(args.requestId))
-            }
-            transactionStatus.onError { error ->
-                _state.update {
-                    it.copy(
-                        isSigning = false,
-                        error = UiMessage.ErrorMessage(error = error)
-                    )
-                }
-                val exception = error as? DappRequestException
-                if (exception != null) {
-                    if (!transactionWriteRequest.isInternal) {
-                        dAppMessenger.sendWalletInteractionResponseFailure(
-                            dappId = transactionWriteRequest.dappId,
-                            requestId = args.requestId,
-                            error = exception.failure.toWalletErrorType(),
-                            message = exception.failure.getDappMessage()
-                        )
-                    }
-                }
-                appEventBus.sendEvent(
-                    AppEvent.TransactionEvent.Failed(
-                        args.requestId,
-                        exception?.failure?.toDescriptionRes()
-                    )
+
+            appEventBus.sendEvent(
+                AppEvent.Status.Transaction.InProgress(
+                    requestId = args.requestId,
+                    transactionId = txId,
+                    isInternal = transactionWriteRequest.isInternal
                 )
-            }
+            )
         }.onFailure { error ->
             _state.update {
                 it.copy(
                     isSigning = false,
-                    error = UiMessage.ErrorMessage(error = error)
+                    error = UiMessage.ErrorMessage.from(error = error)
                 )
             }
             val exception = error as? DappRequestException
@@ -577,31 +553,23 @@ class TransactionApprovalViewModel @Inject constructor(
                     )
                 }
             }
+
             appEventBus.sendEvent(
-                AppEvent.TransactionEvent.Failed(
-                    args.requestId,
-                    exception?.failure?.toDescriptionRes()
+                AppEvent.Status.Transaction.Fail(
+                    requestId = args.requestId,
+                    transactionId = "",
+                    isInternal = transactionWriteRequest.isInternal,
+                    errorMessage = UiMessage.ErrorMessage.from(exception?.failure)
                 )
             )
         }
+
+        approvalJob = null
     }
 
     fun onBackClick() {
-        // TODO display dialog are we sure we want to reject transaction?
         viewModelScope.launch {
-            if (approvalJob != null) {
-                sendEvent(TransactionApprovalEvent.Dismiss)
-            } else {
-                if (!transactionWriteRequest.isInternal) {
-                    dAppMessenger.sendWalletInteractionResponseFailure(
-                        dappId = transactionWriteRequest.dappId,
-                        requestId = args.requestId,
-                        error = WalletErrorType.RejectedByUser
-                    )
-                }
-                sendEvent(TransactionApprovalEvent.Dismiss)
-                incomingRequestRepository.requestHandled(args.requestId)
-            }
+            dismissTransaction(DappRequestFailure.RejectedByUser)
         }
     }
 
@@ -723,6 +691,23 @@ class TransactionApprovalViewModel @Inject constructor(
 
     fun onMessageShown() {
         _state.update { it.copy(error = null) }
+    }
+
+    private suspend fun dismissTransaction(failure: DappRequestFailure) {
+        if (approvalJob == null) {
+            if (!transactionWriteRequest.isInternal) {
+                dAppMessenger.sendWalletInteractionResponseFailure(
+                    dappId = transactionWriteRequest.dappId,
+                    requestId = args.requestId,
+                    error = failure.toWalletErrorType(),
+                    message = failure.getDappMessage()
+                )
+            }
+            sendEvent(TransactionApprovalEvent.Dismiss)
+            incomingRequestRepository.requestHandled(args.requestId)
+        } else {
+            Timber.d("Cannot dismiss transaction while is in progress")
+        }
     }
 }
 

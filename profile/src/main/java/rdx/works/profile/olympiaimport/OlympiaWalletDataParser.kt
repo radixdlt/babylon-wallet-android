@@ -4,9 +4,9 @@ package rdx.works.profile.olympiaimport
 
 import com.radixdlt.toolkit.RadixEngineToolkit
 import com.radixdlt.toolkit.models.crypto.PublicKey
-import com.radixdlt.toolkit.models.request.DeriveBabylonAddressFromOlympiaAddressRequest
-import com.radixdlt.toolkit.models.request.DeriveOlympiaAddressFromPublicKeyRequest
-import com.radixdlt.toolkit.models.request.OlympiaNetwork
+import com.radixdlt.toolkit.models.method.DeriveBabylonAddressFromOlympiaAddressInput
+import com.radixdlt.toolkit.models.method.DeriveOlympiaAddressFromPublicKeyInput
+import com.radixdlt.toolkit.models.method.OlympiaNetwork
 import okio.ByteString.Companion.decodeBase64
 import rdx.works.core.blake2Hash
 import rdx.works.profile.data.model.pernetwork.DerivationPath
@@ -52,10 +52,10 @@ class OlympiaWalletDataParser @Inject constructor(
                         ""
                     }.ifEmpty { "Unnamed Olympia account $index" }
                     val olympiaAddress = RadixEngineToolkit.deriveOlympiaAddressFromPublicKey(
-                        DeriveOlympiaAddressFromPublicKeyRequest(OlympiaNetwork.Mainnet, publicKey)
+                        DeriveOlympiaAddressFromPublicKeyInput(OlympiaNetwork.Mainnet, publicKey)
                     ).getOrThrow().olympiaAccountAddress
                     val newBabylonAddress = RadixEngineToolkit.deriveBabylonAddressFromOlympiaAddress(
-                        DeriveBabylonAddressFromOlympiaAddressRequest(currentNetworkId, olympiaAddress)
+                        DeriveBabylonAddressFromOlympiaAddressInput(currentNetworkId, olympiaAddress)
                     ).getOrThrow().babylonAccountAddress
                     OlympiaAccountDetails(
                         index = index,

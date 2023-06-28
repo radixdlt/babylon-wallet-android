@@ -35,7 +35,7 @@ fun NavGraphBuilder.selectPersona(
     navController: NavController,
     onBackClick: () -> Unit,
     onChooseAccounts: (Event.ChooseAccounts) -> Unit,
-    onLoginFlowComplete: (Event.LoginFlowCompleted) -> Unit,
+    onLoginFlowComplete: () -> Unit,
     createNewPersona: (Boolean) -> Unit,
     onDisplayPermission: (Event.DisplayPermission) -> Unit,
     onPersonaDataOngoing: (Event.PersonaDataOngoing) -> Unit,

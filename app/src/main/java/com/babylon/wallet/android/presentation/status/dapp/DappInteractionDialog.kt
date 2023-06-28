@@ -1,5 +1,6 @@
-package com.babylon.wallet.android.presentation.ui.composables.resultdialog.success
+package com.babylon.wallet.android.presentation.status.dapp
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -9,46 +10,54 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
-import com.babylon.wallet.android.presentation.transactionstatus.TransactionStatusDialogViewModel
 import com.babylon.wallet.android.presentation.ui.composables.BottomSheetWrapper
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SuccessBottomDialog(
+fun DappInteractionDialog(
     modifier: Modifier = Modifier,
-    viewModel: TransactionStatusDialogViewModel,
-    isFromTransaction: Boolean,
-    dAppName: String,
+    viewModel: DappInteractionDialogViewModel,
     onBackPress: () -> Unit
 ) {
-    val dismissHandler = {
-        viewModel.incomingRequestHandled()
-        onBackPress()
+    val state by viewModel.state.collectAsStateWithLifecycle()
+
+    LaunchedEffect(Unit) {
+        viewModel.oneOffEvent.collect { event ->
+            when (event) {
+                DappInteractionDialogViewModel.Event.DismissDialog -> onBackPress()
+            }
+        }
     }
+
+    val dismissHandler = {
+        viewModel.onDismiss()
+    }
+    BackHandler(onBack = dismissHandler)
     BottomSheetWrapper(
         onDismissRequest = dismissHandler
     ) {
-        SuccessBottomDialogContent(
-            isFromTransaction = isFromTransaction,
-            dAppName = dAppName,
-            modifier = modifier
+        DappInteractionDialogContent(
+            modifier = modifier,
+            state = state
         )
     }
 }
 
 @Composable
-private fun SuccessBottomDialogContent(
+private fun DappInteractionDialogContent(
     modifier: Modifier = Modifier,
-    isFromTransaction: Boolean,
-    dAppName: String
+    state: DappInteractionDialogViewModel.State
 ) {
     Column(
         modifier
@@ -70,11 +79,7 @@ private fun SuccessBottomDialogContent(
             color = RadixTheme.colors.gray1
         )
         Text(
-            text = if (isFromTransaction) {
-                stringResource(R.string.transaction_status_success_text)
-            } else {
-                stringResource(id = R.string.dAppRequest_completion_subtitle, dAppName)
-            },
+            text = stringResource(id = R.string.dAppRequest_completion_subtitle, state.dAppName),
             style = RadixTheme.typography.body1Regular,
             color = RadixTheme.colors.gray1
         )
@@ -83,8 +88,8 @@ private fun SuccessBottomDialogContent(
 
 @Preview(showBackground = true)
 @Composable
-fun SuccessBottomDialogPreview() {
+fun DappInteractionDialogPreview() {
     RadixWalletTheme {
-        SuccessBottomDialogContent(isFromTransaction = false, dAppName = "dApp")
+        DappInteractionDialogContent(state = DappInteractionDialogViewModel.State(requestId = "abc", dAppName = "dApp"))
     }
 }

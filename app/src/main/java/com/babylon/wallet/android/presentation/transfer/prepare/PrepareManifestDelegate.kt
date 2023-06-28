@@ -32,7 +32,7 @@ class PrepareManifestDelegate(
             Timber.d(request.transactionManifestData.instructions)
             incomingRequestRepository.add(request)
         }.onFailure { error ->
-            state.update { it.copy(error = UiMessage.ErrorMessage(error)) }
+            state.update { it.copy(error = UiMessage.ErrorMessage.from(error)) }
         }
     }
 
@@ -134,7 +134,7 @@ class PrepareManifestDelegate(
         fungible: Resource.FungibleResource,
         amount: BigDecimal,
         bucket: ManifestAstValue.Bucket
-    ) = Instruction.TakeFromWorktopByAmount(
+    ) = Instruction.TakeFromWorktop(
         resourceAddress = ManifestAstValue.Address(value = fungible.resourceAddress),
         amount = ManifestAstValue.Decimal(amount),
         intoBucket = bucket
@@ -158,7 +158,7 @@ class PrepareManifestDelegate(
     private fun pourToBucket(
         nonFungible: Resource.NonFungibleResource.Item,
         bucket: ManifestAstValue.Bucket
-    ) = Instruction.TakeFromWorktopByIds(
+    ) = Instruction.TakeNonFungiblesFromWorktop(
         resourceAddress = ManifestAstValue.Address(nonFungible.collectionAddress),
         ids = setOf(nonFungible.toManifestLocalId()),
         intoBucket = bucket

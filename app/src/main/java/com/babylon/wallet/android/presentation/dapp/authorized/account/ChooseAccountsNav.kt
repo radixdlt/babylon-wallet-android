@@ -58,7 +58,7 @@ fun NavGraphBuilder.chooseAccounts(
     dismissErrorDialog: () -> Unit,
     onAccountCreationClick: () -> Unit,
     onChooseAccounts: (Event.ChooseAccounts) -> Unit,
-    onLoginFlowComplete: (Event.LoginFlowCompleted) -> Unit,
+    onLoginFlowComplete: () -> Unit,
     onBackClick: () -> Boolean,
     onPersonaOngoingData: (Event.PersonaDataOngoing) -> Unit,
     onPersonaDataOnetime: (Event.PersonaDataOnetime) -> Unit,

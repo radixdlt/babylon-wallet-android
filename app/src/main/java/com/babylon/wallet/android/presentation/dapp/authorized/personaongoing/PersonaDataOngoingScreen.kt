@@ -61,7 +61,7 @@ fun PersonaDataOngoingScreen(
     sharedViewModel: DAppAuthorizedLoginViewModel,
     onEdit: (PersonaDataOngoingEvent.OnEditPersona) -> Unit,
     onBackClick: () -> Unit,
-    onLoginFlowComplete: (Event.LoginFlowCompleted) -> Unit,
+    onLoginFlowComplete: () -> Unit,
     onChooseAccounts: (Event.ChooseAccounts) -> Unit,
     onPersonaDataOnetime: (Event.PersonaDataOnetime) -> Unit
 ) {
@@ -80,7 +80,7 @@ fun PersonaDataOngoingScreen(
     LaunchedEffect(Unit) {
         sharedViewModel.oneOffEvent.collect { event ->
             when (event) {
-                is Event.LoginFlowCompleted -> onLoginFlowComplete(event)
+                is Event.LoginFlowCompleted -> onLoginFlowComplete()
                 is Event.ChooseAccounts -> onChooseAccounts(event)
                 is Event.PersonaDataOnetime -> onPersonaDataOnetime(event)
                 Event.RequestCompletionBiometricPrompt -> {
@@ -90,7 +90,6 @@ fun PersonaDataOngoingScreen(
                         }
                     }
                 }
-
                 else -> {}
             }
         }

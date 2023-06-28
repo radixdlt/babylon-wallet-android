@@ -83,13 +83,13 @@ class PersonaDetailViewModel @Inject constructor(
         }
 
         viewModelScope.launch {
-            appEventBus.events.filterIsInstance<AppEvent.TransactionEvent>().filter { it.requestId == uploadAuthKeyRequestId }
+            appEventBus.events.filterIsInstance<AppEvent.Status.Transaction>().filter { it.requestId == uploadAuthKeyRequestId }
                 .collect { event ->
                     when (event) {
-                        is AppEvent.TransactionEvent.Failed -> {
+                        is AppEvent.Status.Transaction.Fail -> {
                             _state.update { it.copy(loading = false) }
                         }
-                        is AppEvent.TransactionEvent.Successful -> {
+                        is AppEvent.Status.Transaction.Success -> {
                             val persona = requireNotNull(state.value.persona)
                             val authSigningFactorInstance = requireNotNull(authSigningFactorInstance)
                             addAuthSigningFactorInstanceUseCase(persona, authSigningFactorInstance)

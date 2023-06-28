@@ -34,7 +34,6 @@ class TransferViewModelTest : StateViewModelTest<TransferViewModel>() {
     private val getProfileUseCase = mockk<GetProfileUseCase>()
     private val getAccountsWithResourcesUseCase = mockk<GetAccountsWithResourcesUseCase>()
     private val incomingRequestRepository = mockk<IncomingRequestRepository>()
-    private val appEventBus = mockk<AppEventBus>()
 
     private val fromAccount = account(
         address = "account_tdx_19jd32jd3928jd3892jd329",
@@ -67,7 +66,6 @@ class TransferViewModelTest : StateViewModelTest<TransferViewModel>() {
     @Before
     override fun setUp() = runTest {
         super.setUp()
-        every { appEventBus.events } returns emptyFlow()
         every { savedStateHandle.get<String>(ARG_ACCOUNT_ID) } returns fromAccount.address
         every { getProfileUseCase() } returns flowOf(profile(accounts = listOf(fromAccount) + otherAccounts))
     }
