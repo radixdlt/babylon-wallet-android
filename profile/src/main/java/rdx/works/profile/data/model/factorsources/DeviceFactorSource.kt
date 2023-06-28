@@ -5,6 +5,7 @@ import kotlinx.serialization.Serializable
 import rdx.works.core.InstantGenerator
 import rdx.works.profile.data.model.MnemonicWithPassphrase
 import rdx.works.profile.data.model.pernetwork.Network
+import java.time.Instant
 
 @Serializable
 @SerialName("device")
@@ -23,29 +24,34 @@ data class DeviceFactorSource(
             mnemonicWithPassphrase: MnemonicWithPassphrase,
             model: String = "",
             name: String = "",
+            createdAt: Instant = InstantGenerator()
         ) = device(
             mnemonicWithPassphrase = mnemonicWithPassphrase,
             model = model,
             name = name,
-            isOlympiaCompatible = false
+            isOlympiaCompatible = false,
+            createdAt = createdAt
         )
 
         fun olympia(
             mnemonicWithPassphrase: MnemonicWithPassphrase,
             model: String = "",
             name: String = "",
+            createdAt: Instant = InstantGenerator()
         ) = device(
             mnemonicWithPassphrase = mnemonicWithPassphrase,
             model = model,
             name = name,
-            isOlympiaCompatible = true
+            isOlympiaCompatible = true,
+            createdAt = createdAt
         )
 
         private fun device(
             mnemonicWithPassphrase: MnemonicWithPassphrase,
             model: String = "",
             name: String = "",
-            isOlympiaCompatible: Boolean
+            isOlympiaCompatible: Boolean,
+            createdAt: Instant
         ) = DeviceFactorSource(
             id = FactorSourceID.FromHash(
                 kind = FactorSourceKind.DEVICE,
@@ -59,8 +65,8 @@ data class DeviceFactorSource(
                 } else {
                     Common.CryptoParameters.babylon
                 },
-                addedOn = InstantGenerator(),
-                lastUsedOn = InstantGenerator()
+                addedOn = createdAt,
+                lastUsedOn = createdAt
             ),
             hint = Hint(
                 model = model,

@@ -10,7 +10,7 @@ import rdx.works.profile.data.model.serialisers.InstantSerializer
 import rdx.works.profile.data.utils.hashToFactorId
 import java.time.Instant
 
-@Serializable
+@Serializable(with = FactorSourceSerializer::class)
 sealed class FactorSource {
 
     @SerialName("id")
@@ -19,35 +19,41 @@ sealed class FactorSource {
     @SerialName("common")
     abstract val common: Common
 
-    @Serializable
+    @Serializable(with = FactorSourceIDSerializer::class)
     sealed class FactorSourceID {
+
+        @SerialName("kind")
         abstract val kind: FactorSourceKind
 
         @Serializable
-        @SerialName("fromHash")
+        @SerialName(fromHashSerialName)
         data class FromHash(
-            @SerialName("kind")
             override val kind: FactorSourceKind,
             @SerialName("body")
             val body: HexCoded32Bytes
         ) : FactorSourceID()
 
         @Serializable
-        @SerialName("fromAddress")
+        @SerialName(fromAddressSerialName)
         data class FromAddress(
-            @SerialName("kind")
             override val kind: FactorSourceKind,
             @SerialName("body")
             val body: AccountAddress
         ) : FactorSourceID()
+
+        companion object {
+            const val fromHashSerialName = "fromHash"
+            const val fromAddressSerialName = "fromAddress"
+        }
     }
 
+    // TODO move it to the domain layer
     @Serializable
     @JvmInline
     value class HexCoded32Bytes(val value: String) {
         init {
             val byteArray = value.decodeHex().toByteArray()
-            require(byteArray.size == byteCount) { "value must be 32 bytes" }
+            require(byteArray.size == byteCount) { "value must be 32 bytes but it is ${byteArray.size}" }
         }
 
         companion object {
@@ -55,7 +61,7 @@ sealed class FactorSource {
         }
     }
 
-    // TODO move it to the top of the profile
+    // TODO move it to the domain layer
     @Serializable
     @JvmInline
     value class AccountAddress(val value: String)

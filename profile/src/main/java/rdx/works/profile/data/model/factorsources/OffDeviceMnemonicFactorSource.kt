@@ -4,6 +4,7 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import rdx.works.core.InstantGenerator
 import rdx.works.profile.data.model.MnemonicWithPassphrase
+import java.time.Instant
 
 @Serializable
 @SerialName("offDeviceMnemonic")
@@ -36,7 +37,8 @@ data class OffDeviceMnemonicFactorSource(
 
         fun newSource(
             mnemonicWithPassphrase: MnemonicWithPassphrase,
-            label: String = ""
+            label: String = "",
+            createdAt: Instant = InstantGenerator()
         ): OffDeviceMnemonicFactorSource {
             return OffDeviceMnemonicFactorSource(
                 id = FactorSourceID.FromHash(
@@ -47,8 +49,8 @@ data class OffDeviceMnemonicFactorSource(
                 ),
                 common = Common(
                     cryptoParameters = Common.CryptoParameters.trustedEntity,
-                    addedOn = InstantGenerator(),
-                    lastUsedOn = InstantGenerator()
+                    addedOn = createdAt,
+                    lastUsedOn = createdAt
                 ),
                 bip39Parameters = Bip39Parameters(
                     bip39PassphraseSpecified = mnemonicWithPassphrase.bip39Passphrase.isNotEmpty(),

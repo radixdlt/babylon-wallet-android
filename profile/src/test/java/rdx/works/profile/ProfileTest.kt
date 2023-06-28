@@ -12,6 +12,11 @@ import rdx.works.profile.data.model.apppreferences.P2PLink
 import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.data.model.apppreferences.addP2PLink
 import rdx.works.profile.data.model.factorsources.DeviceFactorSource
+import rdx.works.profile.data.model.factorsources.FactorSource
+import rdx.works.profile.data.model.factorsources.FactorSource.Companion.factorSourceId
+import rdx.works.profile.data.model.factorsources.LedgerHardwareWalletFactorSource
+import rdx.works.profile.data.model.factorsources.OffDeviceMnemonicFactorSource
+import rdx.works.profile.data.model.factorsources.TrustedContactFactorSource
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.data.model.pernetwork.Network.Account.Companion.initAccountWithDeviceFactorSource
 import rdx.works.profile.data.model.pernetwork.Network.Persona.Companion.init
@@ -143,7 +148,28 @@ class ProfileTest {
             creationDate = Instant.parse("2023-03-07T10:48:21Z"),
             gateway = gateway
         )
-        expected = expected.copy(factorSources = expected.factorSources + listOf(DeviceFactorSource.olympia(mnemonicWithPassphrase)))
+        expected = expected.copy(
+            factorSources = expected.factorSources + listOf(
+                DeviceFactorSource.olympia(mnemonicWithPassphrase),
+                TrustedContactFactorSource.newSource(
+                    accountAddress = FactorSource.AccountAddress("account_tdx_c_1px0jul7a44s65568d32f82f0lkssjwx6f5t5e44yl6csqurxw3"),
+                    emailAddress = "hi@rdx.works",
+                    name = "My friend",
+                    createdAt = Instant.parse("2023-06-09T19:45:21Z")
+                ),
+                OffDeviceMnemonicFactorSource.newSource(
+                    mnemonicWithPassphrase = mnemonicWithPassphrase,
+                    label = "Zoo"
+                ),
+                LedgerHardwareWalletFactorSource.newSource(
+                    model = LedgerHardwareWalletFactorSource.DeviceModel.NANO_S_PLUS,
+                    name = "Orange",
+                    deviceID = FactorSource.HexCoded32Bytes(
+                        value = factorSourceId(mnemonicWithPassphrase = mnemonicWithPassphrase)
+                    )
+                )
+            )
+        )
 
         val firstAccount = initAccountWithDeviceFactorSource(
             displayName = "First",
@@ -347,6 +373,18 @@ class ProfileTest {
             "The factor sources count are the same",
             expected.factorSources.count(),
             actual.factorSources.count()
+        )
+
+        assertEquals(
+            "The first factor sources are devices and are the same",
+            (expected.factorSources.first() as DeviceFactorSource),
+            (actual.factorSources.first() as DeviceFactorSource),
+        )
+
+        assertEquals(
+            "The third factor sources are trusted contact sources and are the same",
+            (expected.factorSources[2] as TrustedContactFactorSource),
+            (actual.factorSources[2] as TrustedContactFactorSource),
         )
 
         assertEquals(

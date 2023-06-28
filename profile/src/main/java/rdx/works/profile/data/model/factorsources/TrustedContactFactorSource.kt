@@ -3,6 +3,7 @@ package rdx.works.profile.data.model.factorsources
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import rdx.works.core.InstantGenerator
+import java.time.Instant
 
 @Serializable
 @SerialName("trustedContact")
@@ -27,6 +28,7 @@ data class TrustedContactFactorSource(
             accountAddress: AccountAddress,
             emailAddress: String,
             name: String,
+            createdAt: Instant = InstantGenerator()
         ): TrustedContactFactorSource {
             return TrustedContactFactorSource(
                 id = FactorSourceID.FromAddress(
@@ -35,8 +37,8 @@ data class TrustedContactFactorSource(
                 ),
                 common = Common(
                     cryptoParameters = Common.CryptoParameters.babylon,
-                    addedOn = InstantGenerator(),
-                    lastUsedOn = InstantGenerator()
+                    addedOn = createdAt,
+                    lastUsedOn = createdAt
                 ),
                 contact = Contact(
                     email = emailAddress,

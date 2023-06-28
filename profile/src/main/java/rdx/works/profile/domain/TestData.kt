@@ -21,7 +21,6 @@ import rdx.works.profile.data.model.pernetwork.SecurityState
 import rdx.works.profile.derivation.model.KeyType
 import java.util.Random
 
-
 object TestData {
 
     val ledgerFactorSource = LedgerHardwareWalletFactorSource.newSource(
@@ -172,6 +171,7 @@ object TestData {
         )
     }
 
+    @Suppress("MagicNumber")
     private fun generateRandomHexString32Bytes(): String {
         val randomService = Random()
         val sb = StringBuilder()

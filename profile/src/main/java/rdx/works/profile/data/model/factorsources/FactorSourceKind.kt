@@ -16,7 +16,7 @@ enum class FactorSourceKind {
      * * Hierarchical deterministic (Mnemonic)
      * * Entity creating
      */
-    @SerialName("device")
+    @SerialName(deviceSerialName)
     DEVICE,
 
     /**
@@ -44,7 +44,7 @@ enum class FactorSourceKind {
      * * Hierarchical deterministic
      * * Entity creating (accounts only)
      */
-    @SerialName("ledgerHQHardwareWallet")
+    @SerialName(ledgerHQHardwareWalletSerialName)
     LEDGER_HQ_HARDWARE_WALLET,
 
     /**
@@ -55,7 +55,7 @@ enum class FactorSourceKind {
      * * Off Device
      * * Hierarchical deterministic (Mnemonic)
      */
-    @SerialName("offDeviceMnemonic")
+    @SerialName(offDeviceMnemonicSerialName)
     OFF_DEVICE_MNEMONIC,
 
     /**
@@ -66,6 +66,13 @@ enum class FactorSourceKind {
      * * *NOT* mine
      * * Off Device
      */
-    @SerialName("trustedContact")
+    @SerialName(trustedContactSerialName)
     TRUSTED_CONTACT;
+
+    companion object {
+        const val deviceSerialName = "device"
+        const val ledgerHQHardwareWalletSerialName = "ledgerHQHardwareWallet"
+        const val offDeviceMnemonicSerialName = "offDeviceMnemonic"
+        const val trustedContactSerialName = "trustedContact"
+    }
 }

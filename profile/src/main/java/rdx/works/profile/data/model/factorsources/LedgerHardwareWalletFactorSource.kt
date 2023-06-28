@@ -4,6 +4,7 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import rdx.works.core.InstantGenerator
 import rdx.works.profile.data.model.pernetwork.Network
+import java.time.Instant
 
 @Serializable
 @SerialName("ledgerHQHardwareWallet")
@@ -28,7 +29,8 @@ data class LedgerHardwareWalletFactorSource(
         fun newSource(
             model: DeviceModel,
             name: String,
-            deviceID: HexCoded32Bytes
+            deviceID: HexCoded32Bytes,
+            createdAt: Instant = InstantGenerator()
         ): LedgerHardwareWalletFactorSource {
             return LedgerHardwareWalletFactorSource(
                 id = FactorSourceID.FromHash(
@@ -37,8 +39,8 @@ data class LedgerHardwareWalletFactorSource(
                 ),
                 common = Common(
                     cryptoParameters = Common.CryptoParameters.olympiaBackwardsCompatible,
-                    addedOn = InstantGenerator(),
-                    lastUsedOn = InstantGenerator()
+                    addedOn = createdAt,
+                    lastUsedOn = createdAt
                 ),
                 hint = Hint(
                     name = name,

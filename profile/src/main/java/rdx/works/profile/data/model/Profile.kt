@@ -85,7 +85,8 @@ data class Profile(
             val factorSource = DeviceFactorSource.babylon(
                 mnemonicWithPassphrase = mnemonicWithPassphrase,
                 model = deviceModel,
-                name = deviceName
+                name = deviceName,
+                createdAt = creationDate
             )
 
             val networks = listOf(
