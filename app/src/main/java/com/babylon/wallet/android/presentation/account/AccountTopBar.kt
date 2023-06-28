@@ -80,7 +80,7 @@ fun AccountTopBar(
             modifier = Modifier
                 .layoutId("titleLabel")
                 .padding(bottom = RadixTheme.dimensions.paddingDefault),
-            text = state.accountWithResources?.account?.displayName.orEmpty()/*"Post grad and first home savings account"*/,
+            text = state.accountWithResources?.account?.displayName.orEmpty(),
             style = RadixTheme.typography.body1Header.copy(textAlign = TextAlign.Center),
             color = RadixTheme.colors.white,
             maxLines = 2,

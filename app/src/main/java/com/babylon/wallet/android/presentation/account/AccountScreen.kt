@@ -161,57 +161,66 @@ private fun AccountScreenContent(
             SheetContent(state, scope, bottomSheetState)
         },
     ) {
+        val pullToRefreshState = rememberPullRefreshState(
+            refreshing = state.isRefreshing,
+            onRefresh = onRefresh,
+            refreshingOffset = 116.dp
+        )
         val lazyListState = rememberLazyListState()
-        Scaffold(
-            modifier = Modifier.background(Brush.horizontalGradient(gradient)),
-            topBar = {
-                AccountTopBar(
-                    state = state,
-                    lazyListState = lazyListState,
-                    onBackClick = onBackClick,
-                    onAccountPreferenceClick = onAccountPreferenceClick,
-                    onTransferClick = onTransferClick,
-                    onApplySecuritySettings = onApplySecuritySettings
-                )
-            },
-            containerColor = Color.Transparent,
-            floatingActionButton = {
-                if (state.isHistoryEnabled) {
-                    HistoryButton(
-                        modifier = Modifier.size(174.dp, 50.dp),
-                        onHistoryClick
+        Box(
+            modifier = Modifier
+                .pullRefresh(pullToRefreshState)
+        ) {
+            Scaffold(
+                modifier = Modifier.background(Brush.horizontalGradient(gradient)),
+                topBar = {
+                    AccountTopBar(
+                        state = state,
+                        lazyListState = lazyListState,
+                        onBackClick = onBackClick,
+                        onAccountPreferenceClick = onAccountPreferenceClick,
+                        onTransferClick = onTransferClick,
+                        onApplySecuritySettings = onApplySecuritySettings
                     )
-                }
-            },
-            floatingActionButtonPosition = FabPosition.Center
-        ) { innerPadding ->
-            AssetsContent(
-                modifier = Modifier.padding(innerPadding),
-                resources = state.accountWithResources?.resources,
-                lazyListState = lazyListState,
-                onFungibleTokenClick = {
-                    onFungibleResourceClicked(it)
-                    scope.launch {
-                        bottomSheetState.show()
+                },
+                containerColor = Color.Transparent,
+                floatingActionButton = {
+                    if (state.isHistoryEnabled) {
+                        HistoryButton(
+                            modifier = Modifier.size(174.dp, 50.dp),
+                            onHistoryClick
+                        )
                     }
                 },
-                onNonFungibleItemClick = { nftCollection, nftItem ->
-                    onNonFungibleItemClicked(nftCollection, nftItem)
-                    scope.launch {
-                        bottomSheetState.show()
+                floatingActionButtonPosition = FabPosition.Center
+            ) { innerPadding ->
+                AssetsContent(
+                    modifier = Modifier.padding(innerPadding),
+                    resources = state.accountWithResources?.resources,
+                    lazyListState = lazyListState,
+                    onFungibleTokenClick = {
+                        onFungibleResourceClicked(it)
+                        scope.launch {
+                            bottomSheetState.show()
+                        }
+                    },
+                    onNonFungibleItemClick = { nftCollection, nftItem ->
+                        onNonFungibleItemClicked(nftCollection, nftItem)
+                        scope.launch {
+                            bottomSheetState.show()
+                        }
                     }
-                }
-            )
+                )
+            }
 
-            val pullToRefreshState = rememberPullRefreshState(refreshing = state.isRefreshing, onRefresh = onRefresh)
+            PullRefreshIndicator(
+                modifier = Modifier.align(Alignment.TopCenter),
+                refreshing = state.isRefreshing,
+                state = pullToRefreshState,
+                contentColor = RadixTheme.colors.gray1,
+                backgroundColor = RadixTheme.colors.defaultBackground,
+            )
         }
-//        PullRefreshIndicator(
-//            modifier = Modifier.align(Alignment.TopCenter),
-//            refreshing = state.isRefreshing,
-//            state = pullToRefreshState,
-//            contentColor = RadixTheme.colors.gray1,
-//            backgroundColor = RadixTheme.colors.defaultBackground,
-//        )
     }
 }
 
