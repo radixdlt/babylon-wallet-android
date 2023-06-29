@@ -111,7 +111,7 @@ fun AccountTopBar(
             AnimatedVisibility(
                 modifier = Modifier
                     .layoutId("transferButton")
-                    .padding(bottom = 24.dp),
+                    .padding(bottom = RadixTheme.dimensions.paddingLarge),
                 visible = state.isTransferEnabled,
                 enter = fadeIn(),
                 exit = fadeOut()
@@ -133,7 +133,8 @@ fun AccountTopBar(
 
             AnimatedVisibility(
                 modifier = Modifier
-                    .layoutId("securityPrompt"),
+                    .layoutId("securityPrompt")
+                    .padding(bottom = RadixTheme.dimensions.paddingLarge),
                 visible = state.isSecurityPromptVisible,
                 enter = fadeIn(),
                 exit = fadeOut()

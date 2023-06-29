@@ -39,7 +39,7 @@
         width: 'spread',
         start: ['parent', 'start', 24],
         end: ['parent', 'end', 24],
-        bottom: ['transferButton', 'bottom', 24]
+        top: ['transferButton', 'bottom']
       }
     },
     end: {
@@ -83,7 +83,7 @@
         width: 'spread',
         start: ['parent', 'start', 24],
         end: ['parent', 'end', 24],
-        bottom: ['transferButton', 'bottom', 24],
+        top: ['transferButton', 'bottom'],
         visibility: 'invisible'
       }
     }
