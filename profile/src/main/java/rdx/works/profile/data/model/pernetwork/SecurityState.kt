@@ -38,7 +38,7 @@ sealed class SecurityState {
         fun unsecured(
             publicKey: FactorInstance.PublicKey,
             derivationPath: DerivationPath,
-            factorSourceId: FactorSource.ID
+            factorSourceId: FactorSource.FactorSourceID.FromHash
         ): Unsecured = Unsecured(
             unsecuredEntityControl = UnsecuredEntityControl(
                 transactionSigning = FactorInstance(

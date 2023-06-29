@@ -21,6 +21,7 @@ import org.mockito.Mockito
 import org.mockito.kotlin.whenever
 import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.data.model.factorsources.FactorSource
+import rdx.works.profile.data.model.factorsources.FactorSourceKind
 import rdx.works.profile.data.model.pernetwork.DerivationPath
 import rdx.works.profile.data.model.pernetwork.FactorInstance
 import rdx.works.profile.data.model.pernetwork.Network
@@ -49,7 +50,10 @@ class CreatePersonaConfirmationViewModelTest : StateViewModelTest<CreatePersonaC
                         identityIndex = 0,
                         keyType = KeyType.TRANSACTION_SIGNING
                     ),
-                    factorSourceId = FactorSource.ID("IDIDDIIDD"),
+                    factorSourceId = FactorSource.FactorSourceID.FromHash(
+                        kind = FactorSourceKind.DEVICE,
+                        body = FactorSource.HexCoded32Bytes("5f07ec336e9e7891bff04004c817201e73c097b6b1e1b3a26bc501e0010196f5")
+                    ),
                     publicKey = FactorInstance.PublicKey.curve25519PublicKey("")
                 )
             )

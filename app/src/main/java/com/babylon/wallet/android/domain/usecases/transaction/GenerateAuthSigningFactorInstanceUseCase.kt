@@ -3,16 +3,18 @@ package com.babylon.wallet.android.domain.usecases.transaction
 import com.babylon.wallet.android.data.dapp.LedgerMessenger
 import com.babylon.wallet.android.data.dapp.model.Curve
 import com.babylon.wallet.android.data.dapp.model.DerivePublicKeyRequest
+import com.babylon.wallet.android.data.dapp.model.LedgerDeviceModel.Companion.getLedgerDeviceModel
 import com.babylon.wallet.android.data.transaction.DappRequestFailure
-import com.babylon.wallet.android.utils.getLedgerDeviceModel
 import com.radixdlt.extensions.removeLeadingZero
 import kotlinx.coroutines.flow.first
 import rdx.works.core.UUIDGenerator
 import rdx.works.core.toHexString
 import rdx.works.profile.data.model.compressedPublicKey
 import rdx.works.profile.data.model.currentNetwork
-import rdx.works.profile.data.model.factorsources.FactorSource
+import rdx.works.profile.data.model.factorsources.DeviceFactorSource
+import rdx.works.profile.data.model.factorsources.FactorSource.FactorSourceID
 import rdx.works.profile.data.model.factorsources.FactorSourceKind
+import rdx.works.profile.data.model.factorsources.LedgerHardwareWalletFactorSource
 import rdx.works.profile.data.model.factorsources.Slip10Curve
 import rdx.works.profile.data.model.pernetwork.DerivationPath
 import rdx.works.profile.data.model.pernetwork.Entity
@@ -21,7 +23,7 @@ import rdx.works.profile.data.model.pernetwork.SecurityState
 import rdx.works.profile.data.repository.MnemonicRepository
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.ProfileException
-import rdx.works.profile.domain.factorSource
+import rdx.works.profile.domain.factorSourceById
 import javax.inject.Inject
 
 class GenerateAuthSigningFactorInstanceUseCase @Inject constructor(
@@ -31,7 +33,7 @@ class GenerateAuthSigningFactorInstanceUseCase @Inject constructor(
 ) {
 
     suspend operator fun invoke(entity: Entity): Result<FactorInstance> {
-        val factorSourceId: FactorSource.ID
+        val factorSourceId: FactorSourceID.FromHash
         val authSigningDerivationPath = when (val securityState = entity.securityState) {
             is SecurityState.Unsecured -> {
                 if (securityState.unsecuredEntityControl.authenticationSigning != null) {
@@ -40,7 +42,7 @@ class GenerateAuthSigningFactorInstanceUseCase @Inject constructor(
                 val transactionSigning = securityState.unsecuredEntityControl.transactionSigning
                 val signingEntityDerivationPath = transactionSigning.derivationPath
                 requireNotNull(signingEntityDerivationPath)
-                factorSourceId = transactionSigning.factorSourceId
+                factorSourceId = transactionSigning.factorSourceId as FactorSourceID.FromHash
                 if (transactionSigning.publicKey.curve == Slip10Curve.CURVE_25519) {
                     DerivationPath.authSigningDerivationPathFromCap26Path(signingEntityDerivationPath)
                 } else {
@@ -50,40 +52,51 @@ class GenerateAuthSigningFactorInstanceUseCase @Inject constructor(
                 }
             }
         }
-        val factorSource = requireNotNull(getProfileUseCase.factorSource(factorSourceId))
-        return when (factorSource.kind) {
+        val factorSource = requireNotNull(getProfileUseCase.factorSourceById(factorSourceId))
+        return when (factorSource.id.kind) {
             FactorSourceKind.DEVICE -> {
-                createAuthSigningFactorInstanceForDevice(factorSource, authSigningDerivationPath)
+                createAuthSigningFactorInstanceForDevice(factorSource as DeviceFactorSource, authSigningDerivationPath)
             }
 
             FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET -> {
-                createAuthSigningFactorInstanceForLedger(factorSource, authSigningDerivationPath)
+                createAuthSigningFactorInstanceForLedger(
+                    factorSource as LedgerHardwareWalletFactorSource,
+                    authSigningDerivationPath
+                )
             }
+
+            FactorSourceKind.OFF_DEVICE_MNEMONIC -> Result.failure(Throwable("factor source is neither device nor ledger"))
+            FactorSourceKind.TRUSTED_CONTACT -> Result.failure(Throwable("factor source is neither device nor ledger"))
         }
     }
 
     private suspend fun createAuthSigningFactorInstanceForLedger(
-        factorSource: FactorSource,
+        ledgerHardwareWalletFactorSource: LedgerHardwareWalletFactorSource,
         authSigningDerivationPath: DerivationPath
     ): Result<FactorInstance> {
-        val deviceModel = requireNotNull(factorSource.getLedgerDeviceModel())
+        val deviceModel = requireNotNull(ledgerHardwareWalletFactorSource.getLedgerDeviceModel())
         val deriveResult = ledgerMessenger.sendDerivePublicKeyRequest(
-            UUIDGenerator.uuid().toString(),
-            listOf(DerivePublicKeyRequest.KeyParameters(Curve.Curve25519, authSigningDerivationPath.path)),
-            DerivePublicKeyRequest.LedgerDevice(
-                factorSource.label,
-                deviceModel,
-                factorSource.id.value
+            interactionId = UUIDGenerator.uuid().toString(),
+            keyParameters = listOf(
+                DerivePublicKeyRequest.KeyParameters(
+                    Curve.Curve25519,
+                    authSigningDerivationPath.path
+                )
+            ),
+            ledgerDevice = DerivePublicKeyRequest.LedgerDevice(
+                name = ledgerHardwareWalletFactorSource.hint.name,
+                model = deviceModel,
+                id = ledgerHardwareWalletFactorSource.id.body.value
             )
-        ).mapCatching {
-            it.publicKeysHex.first().publicKeyHex
+        ).mapCatching { derivePublicKeyResponse ->
+            derivePublicKeyResponse.publicKeysHex.first().publicKeyHex
         }
         return if (deriveResult.isSuccess) {
             Result.success(
                 FactorInstance(
-                    authSigningDerivationPath,
-                    factorSource.id,
-                    FactorInstance.PublicKey.curve25519PublicKey(deriveResult.getOrThrow())
+                    derivationPath = authSigningDerivationPath,
+                    factorSourceId = ledgerHardwareWalletFactorSource.id,
+                    publicKey = FactorInstance.PublicKey.curve25519PublicKey(deriveResult.getOrThrow())
                 )
             )
         } else {
@@ -92,10 +105,10 @@ class GenerateAuthSigningFactorInstanceUseCase @Inject constructor(
     }
 
     private suspend fun createAuthSigningFactorInstanceForDevice(
-        factorSource: FactorSource,
+        deviceFactorSource: DeviceFactorSource,
         authSigningDerivationPath: DerivationPath
     ): Result<FactorInstance> {
-        val mnemonic = mnemonicRepository.readMnemonic(factorSource.id)
+        val mnemonic = mnemonicRepository.readMnemonic(deviceFactorSource.id)
         requireNotNull(mnemonic)
         val authSigningPublicKey = mnemonic.compressedPublicKey(
             curve = Slip10Curve.CURVE_25519,
@@ -103,9 +116,9 @@ class GenerateAuthSigningFactorInstanceUseCase @Inject constructor(
         ).removeLeadingZero().toHexString()
         return Result.success(
             FactorInstance(
-                authSigningDerivationPath,
-                factorSource.id,
-                FactorInstance.PublicKey.curve25519PublicKey(authSigningPublicKey)
+                derivationPath = authSigningDerivationPath,
+                factorSourceId = deviceFactorSource.id,
+                publicKey = FactorInstance.PublicKey.curve25519PublicKey(authSigningPublicKey)
             )
         )
     }

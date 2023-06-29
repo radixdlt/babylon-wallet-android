@@ -26,7 +26,7 @@ class MigrateOlympiaAccountsUseCase @Inject constructor(
 ) {
     suspend operator fun invoke(
         olympiaAccounts: List<OlympiaAccountDetails>,
-        factorSourceId: FactorSource.ID
+        factorSourceId: FactorSource.FactorSourceID.FromHash
     ): List<Network.Account> {
         return withContext(defaultDispatcher) {
             val profile = profileRepository.profile.first()
@@ -56,8 +56,7 @@ class MigrateOlympiaAccountsUseCase @Inject constructor(
                 updatedProfile = updatedProfile.addAccount(
                     account = account,
                     withFactorSourceId = factorSourceId,
-                    onNetwork = networkId,
-                    shouldUpdateFactorSourceNextDerivationIndex = false
+                    onNetwork = networkId
                 )
             }
             profileRepository.saveProfile(updatedProfile)

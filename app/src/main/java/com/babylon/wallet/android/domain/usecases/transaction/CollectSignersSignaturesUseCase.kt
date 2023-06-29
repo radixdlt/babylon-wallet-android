@@ -9,7 +9,9 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.update
 import rdx.works.core.decodeHex
+import rdx.works.profile.data.model.factorsources.DeviceFactorSource
 import rdx.works.profile.data.model.factorsources.FactorSourceKind
+import rdx.works.profile.data.model.factorsources.LedgerHardwareWalletFactorSource
 import rdx.works.profile.data.model.pernetwork.Entity
 import rdx.works.profile.data.model.pernetwork.SigningPurpose
 import rdx.works.profile.domain.signing.GetSigningEntitiesByFactorSourceUseCase
@@ -33,8 +35,9 @@ class CollectSignersSignaturesUseCase @Inject constructor(
         val signaturesWithPublicKeys = mutableListOf<SignatureWithPublicKey>()
         val signersPerFactorSource = getSigningEntitiesByFactorSourceUseCase(signers)
         signersPerFactorSource.forEach { (factorSource, signers) ->
-            when (factorSource.kind) {
+            when (factorSource.id.kind) {
                 FactorSourceKind.DEVICE -> {
+                    factorSource as DeviceFactorSource
                     _signingState.update { SigningState.Device.Pending(factorSource) }
                     val signatures = signWithDeviceFactorSourceUseCase(
                         deviceFactorSource = factorSource,
@@ -47,6 +50,7 @@ class CollectSignersSignaturesUseCase @Inject constructor(
                 }
 
                 FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET -> {
+                    factorSource as LedgerHardwareWalletFactorSource
                     _signingState.update { SigningState.Ledger.Pending(factorSource) }
                     signWithLedgerFactorSourceUseCase(
                         ledgerFactorSource = factorSource,
@@ -60,6 +64,14 @@ class CollectSignersSignaturesUseCase @Inject constructor(
                         _signingState.update { SigningState.Ledger.Failure(factorSource) }
                         return Result.failure(it)
                     }
+                }
+
+                FactorSourceKind.OFF_DEVICE_MNEMONIC -> {
+                    // TODO when we have off device mnemonic
+                }
+
+                FactorSourceKind.TRUSTED_CONTACT -> {
+                    error("trusted contact cannot sign")
                 }
             }
         }

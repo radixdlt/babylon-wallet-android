@@ -44,6 +44,7 @@ import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.persistentListOf
 import rdx.works.profile.data.model.factorsources.FactorSource
+import rdx.works.profile.data.model.factorsources.FactorSourceKind
 import rdx.works.profile.data.model.pernetwork.Network
 
 @Composable
@@ -51,8 +52,8 @@ fun SeedPhrasesScreen(
     modifier: Modifier = Modifier,
     viewModel: SeedPhrasesViewModel,
     onBackClick: () -> Unit,
-    onNavigateToRecoverMnemonic: (FactorSource.ID) -> Unit,
-    onNavigateToSeedPhrase: (FactorSource.ID) -> Unit
+    onNavigateToRecoverMnemonic: (FactorSource.FactorSourceID.FromHash) -> Unit,
+    onNavigateToSeedPhrase: (FactorSource.FactorSourceID.FromHash) -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     SeedPhraseContent(
@@ -129,16 +130,16 @@ private fun SeedPhraseContent(
                     Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
                 }
             }
-            itemsIndexed(items = deviceFactorSourceData.toList()) { index, item ->
+            itemsIndexed(items = deviceFactorSourceData.toList()) { index, deviceFactorSourceItem ->
                 SeedPhraseCard(
                     modifier = Modifier
                         .throttleClickable {
-                            onSeedPhraseClick(item)
+                            onSeedPhraseClick(deviceFactorSourceItem)
                         }
                         .padding(horizontal = RadixTheme.dimensions.paddingDefault, vertical = RadixTheme.dimensions.paddingMedium)
                         .fillMaxWidth(),
-                    accounts = item.accounts,
-                    mnemonicState = item.mnemonicState
+                    accounts = deviceFactorSourceItem.accounts,
+                    mnemonicState = deviceFactorSourceItem.mnemonicState
                 )
                 if (index != deviceFactorSourceData.size - 1) {
                     Divider(
@@ -246,11 +247,17 @@ fun AccountPreferencePreview() {
             onBackClick = {},
             deviceFactorSourceData = persistentListOf(
                 DeviceFactorSourceData(
-                    FactorSource.ID("1"),
+                    FactorSource.FactorSourceID.FromHash(
+                        kind = FactorSourceKind.DEVICE,
+                        body = FactorSource.HexCoded32Bytes("5f07ec336e9e7891bff04004c817201e73c097b6b1e1b3a26bc205e0010196f5")
+                    ),
                     persistentListOf(SampleDataProvider().sampleAccount())
                 ),
                 DeviceFactorSourceData(
-                    FactorSource.ID("2"),
+                    FactorSource.FactorSourceID.FromHash(
+                        kind = FactorSourceKind.DEVICE,
+                        body = FactorSource.HexCoded32Bytes("5f07ec336e9e7891bff04004c817201e73c097b6b1e1b3a26bc501e0010196f5")
+                    ),
                     persistentListOf(SampleDataProvider().sampleAccount())
                 )
             ),

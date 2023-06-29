@@ -18,7 +18,6 @@ import rdx.works.profile.data.model.apppreferences.Security
 import rdx.works.profile.data.repository.ProfileRepository
 import rdx.works.profile.data.repository.profile
 import rdx.works.profile.domain.p2plink.AddP2PLinkUseCase
-import java.time.Instant
 import kotlin.test.Ignore
 
 class AddP2PLinkUseCaseTest {
@@ -36,7 +35,7 @@ class AddP2PLinkUseCaseTest {
         val initialProfile = Profile(
             header = Header.init(
                 id = "9958f568-8c9b-476a-beeb-017d1f843266",
-                creatingDevice = "Galaxy A53 5G (Samsung SM-A536B)",
+                deviceName = "Galaxy A53 5G (Samsung SM-A536B)",
                 creationDate = InstantGenerator(),
                 numberOfNetworks = 0
             ),

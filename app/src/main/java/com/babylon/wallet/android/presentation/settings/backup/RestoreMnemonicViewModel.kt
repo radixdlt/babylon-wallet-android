@@ -19,13 +19,18 @@ import rdx.works.core.toHexString
 import rdx.works.profile.data.model.MnemonicWithPassphrase
 import rdx.works.profile.data.model.compressedPublicKey
 import rdx.works.profile.data.model.currentNetwork
+import rdx.works.profile.data.model.factorsources.DeviceFactorSource
 import rdx.works.profile.data.model.factorsources.FactorSource
+import rdx.works.profile.data.model.factorsources.FactorSource.FactorSourceID
+import rdx.works.profile.data.model.factorsources.FactorSourceKind
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.data.model.pernetwork.SecurityState
+import rdx.works.profile.data.utils.factorSourceId
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.backup.RestoreMnemonicUseCase
 import javax.inject.Inject
 
+// TODO this will change in this PR: https://github.com/radixdlt/babylon-wallet-android/pull/304
 @HiltViewModel
 class RestoreMnemonicViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
@@ -48,13 +53,20 @@ class RestoreMnemonicViewModel @Inject constructor(
     init {
         viewModelScope.launch {
             val profile = getProfileUseCase().first()
-            val account = profile.currentNetwork.accounts.find { it.address == args.factorSourceId }
-            val factorSourceId = FactorSource.ID(args.factorSourceId)
-            val factorSource = profile.factorSources.find { it.id == factorSourceId }
+            val account = profile.currentNetwork.accounts
+                .find {
+                    val factorSourceIDFromHash = it.factorSourceId() as FactorSourceID.FromHash
+                    factorSourceIDFromHash.body.value == args.factorSourceId
+                }
+            val factorSourceId = FactorSourceID.FromHash(
+                kind = FactorSourceKind.DEVICE,
+                body = FactorSource.HexCoded32Bytes(args.factorSourceId)
+            )
+            val factorSource = profile.factorSources.find { it.id == factorSourceId } as DeviceFactorSource
             _state.update {
                 it.copy(
                     accountOnNetwork = account,
-                    factorSourceLabel = factorSource?.label.orEmpty()
+                    factorSourceLabel = factorSource.hint.name
                 )
             }
         }
@@ -88,8 +100,9 @@ class RestoreMnemonicViewModel @Inject constructor(
             bip39Passphrase = _state.value.passphrase
         )
 
+        val factorSourceIDFromHash = (factorInstance.factorSourceId as FactorSourceID.FromHash)
         val isFactorSourceIdValid = FactorSource.factorSourceId(mnemonicWithPassphrase = mnemonicWithPassphrase) ==
-            factorInstance.factorSourceId
+            factorSourceIDFromHash.body.value
 
         val isPublicKeyValid = mnemonicWithPassphrase.compressedPublicKey(derivationPath = derivationPath)
             .removeLeadingZero()
@@ -100,7 +113,10 @@ class RestoreMnemonicViewModel @Inject constructor(
             _state.update { it.copy(uiMessage = UiMessage.InfoMessage.InvalidMnemonic) }
         } else {
             viewModelScope.launch {
-                restoreMnemonicUseCase(factorSourceId = factorInstance.factorSourceId, mnemonicWithPassphrase = mnemonicWithPassphrase)
+                restoreMnemonicUseCase(
+                    factorSourceId = factorSourceIDFromHash,
+                    mnemonicWithPassphrase = mnemonicWithPassphrase
+                )
                 appEventBus.sendEvent(AppEvent.RestoredMnemonic)
                 sendEvent(Effect.FinishRestoration)
             }

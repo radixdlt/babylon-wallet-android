@@ -7,6 +7,7 @@ import kotlinx.coroutines.withContext
 import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.data.model.currentNetwork
 import rdx.works.profile.data.model.factorsources.FactorSource
+import rdx.works.profile.data.model.factorsources.LedgerHardwareWalletFactorSource
 import rdx.works.profile.data.model.pernetwork.DerivationPath
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.data.model.pernetwork.Network.Account.Companion.initAccountWithLedgerFactorSource
@@ -24,21 +25,24 @@ class CreateAccountWithLedgerFactorSourceUseCase @Inject constructor(
     suspend operator fun invoke(
         displayName: String,
         derivedPublicKeyHex: String,
-        factorSourceID: FactorSource.ID,
+        ledgerFactorSourceID: FactorSource.FactorSourceID.FromHash,
         derivationPath: DerivationPath,
         networkID: NetworkId? = null
     ): Network.Account {
         return withContext(defaultDispatcher) {
             val profile = profileRepository.profile.first()
 
-            val factorSource = profile.factorSources.first { it.id == factorSourceID }
+            val ledgerHardwareWalletFactorSource = profile.factorSources
+                .first {
+                    it.id == ledgerFactorSourceID
+                } as LedgerHardwareWalletFactorSource
             // Construct new account
             val networkId = networkID ?: profile.currentNetwork.knownNetworkId ?: Radix.Gateway.default.network.networkId()
             val totalAccountsOnNetwork = profile.currentNetwork.accounts.size
             val newAccount = initAccountWithLedgerFactorSource(
                 displayName = displayName,
                 derivedPublicKeyHex = derivedPublicKeyHex,
-                ledgerFactorSource = factorSource,
+                ledgerFactorSource = ledgerHardwareWalletFactorSource,
                 networkId = networkId,
                 derivationPath = derivationPath,
                 appearanceID = totalAccountsOnNetwork % AccountGradientList.count()
@@ -46,7 +50,7 @@ class CreateAccountWithLedgerFactorSourceUseCase @Inject constructor(
             // Add account to the profile
             val updatedProfile = profile.addAccount(
                 account = newAccount,
-                withFactorSourceId = factorSource.id,
+                withFactorSourceId = ledgerHardwareWalletFactorSource.id,
                 onNetwork = networkId
             )
             // Save updated profile

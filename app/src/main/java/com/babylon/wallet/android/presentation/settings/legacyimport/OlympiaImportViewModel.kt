@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.dapp.LedgerMessenger
 import com.babylon.wallet.android.data.dapp.model.Curve
 import com.babylon.wallet.android.data.dapp.model.DerivePublicKeyRequest
+import com.babylon.wallet.android.data.dapp.model.LedgerDeviceModel.Companion.getLedgerDeviceModel
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
@@ -19,7 +20,6 @@ import com.babylon.wallet.android.presentation.dapp.authorized.account.toUiModel
 import com.babylon.wallet.android.presentation.model.AddLedgerSheetState
 import com.babylon.wallet.android.presentation.model.LedgerDeviceUiModel
 import com.babylon.wallet.android.utils.DeviceSecurityHelper
-import com.babylon.wallet.android.utils.getLedgerDeviceModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.PersistentList
@@ -31,6 +31,8 @@ import kotlinx.coroutines.launch
 import rdx.works.core.UUIDGenerator
 import rdx.works.profile.data.model.MnemonicWithPassphrase
 import rdx.works.profile.data.model.factorsources.FactorSource
+import rdx.works.profile.data.model.factorsources.FactorSource.FactorSourceID
+import rdx.works.profile.data.model.factorsources.LedgerHardwareWalletFactorSource
 import rdx.works.profile.data.model.validatePublicKeysOf
 import rdx.works.profile.domain.AddLedgerFactorSourceUseCase
 import rdx.works.profile.domain.AddOlympiaFactorSourceUseCase
@@ -64,7 +66,7 @@ class OlympiaImportViewModel @Inject constructor(
     private val scannedData = mutableSetOf<String>()
     private var olympiaWalletData: OlympiaWalletData? = null
     private val initialPages = listOf(ImportPage.ScanQr, ImportPage.AccountList, ImportPage.ImportComplete)
-    private var existingFactorSourceId: FactorSource.ID? = null
+    private var existingFactorSourceId: FactorSourceID.FromHash? = null
     private val validatedHardwareAccounts = mutableMapOf<FactorSource, List<OlympiaAccountDetails>>()
 
     private val useLedgerDelegate = UseLedgerDelegate(
@@ -96,12 +98,12 @@ class OlympiaImportViewModel @Inject constructor(
     }
 
     private suspend fun processLedgerResponse(
-        ledgerFactorSource: FactorSource,
-        ledgerResponse: MessageFromDataChannel.LedgerResponse.DerivePublicKeyResponse
+        ledgerFactorSource: LedgerHardwareWalletFactorSource,
+        derivePublicKeyResponse: MessageFromDataChannel.LedgerResponse.DerivePublicKeyResponse
     ) {
         _state.update { it.copy(waitingForLedgerResponse = false) }
         val hardwareAccountsToMigrate = hardwareAccountsLeftToMigrate()
-        val derivedKeys = ledgerResponse.publicKeysHex.map { it.publicKeyHex }.toSet()
+        val derivedKeys = derivePublicKeyResponse.publicKeysHex.map { it.publicKeyHex }.toSet()
         val validatedAccounts = hardwareAccountsToMigrate.filter { derivedKeys.contains(it.publicKey) }
         if (validatedAccounts.isEmpty()) {
             _state.update { it.copy(uiMessage = UiMessage.InfoMessage.NoAccountsForLedger) }
@@ -279,11 +281,17 @@ class OlympiaImportViewModel @Inject constructor(
         }
         if (softwareAccountsToMigrate.isNotEmpty()) {
             val factorSourceID = existingFactorSourceId ?: addOlympiaFactorSourceUseCase(mnemonicWithPassphrase!!)
-            migrateOlympiaAccountsUseCase(softwareAccountsToMigrate, factorSourceID)
+            migrateOlympiaAccountsUseCase(
+                olympiaAccounts = softwareAccountsToMigrate,
+                factorSourceId = factorSourceID
+            )
         }
         if (validatedHardwareAccounts.isNotEmpty()) {
             validatedHardwareAccounts.entries.forEach { entry ->
-                migrateOlympiaAccountsUseCase(entry.value, entry.key.id)
+                migrateOlympiaAccountsUseCase(
+                    olympiaAccounts = entry.value,
+                    factorSourceId = entry.key.id as FactorSourceID.FromHash
+                )
             }
         }
         _state.update { state ->
@@ -307,7 +315,7 @@ class OlympiaImportViewModel @Inject constructor(
         useLedgerDelegate.onConfirmLedgerName(name)
     }
 
-    fun onUseLedger(ledgerFactorSource: FactorSource) {
+    private fun onUseLedger(ledgerFactorSource: LedgerHardwareWalletFactorSource) {
         updateHardwareAccountLeftToMigrateCount()
         viewModelScope.launch {
             _state.update { it.copy(waitingForLedgerResponse = true) }
@@ -315,9 +323,9 @@ class OlympiaImportViewModel @Inject constructor(
             val interactionId = UUIDGenerator.uuid().toString()
             val deviceModel = requireNotNull(ledgerFactorSource.getLedgerDeviceModel())
             val ledgerDevice = DerivePublicKeyRequest.LedgerDevice(
-                name = ledgerFactorSource.label,
+                name = ledgerFactorSource.hint.name,
                 model = deviceModel,
-                id = ledgerFactorSource.id.value
+                id = ledgerFactorSource.id.body.value
             )
             ledgerMessenger.sendDerivePublicKeyRequest(
                 interactionId = interactionId,
@@ -327,8 +335,8 @@ class OlympiaImportViewModel @Inject constructor(
                 ledgerDevice = ledgerDevice
             ).onFailure { error ->
                 _state.update { it.copy(uiMessage = UiMessage.ErrorMessage.from(error), waitingForLedgerResponse = false) }
-            }.onSuccess { r ->
-                processLedgerResponse(ledgerFactorSource, r)
+            }.onSuccess { derivePublicKeyResponse ->
+                processLedgerResponse(ledgerFactorSource, derivePublicKeyResponse)
             }
         }
     }
@@ -423,7 +431,7 @@ data class OlympiaImportUiState(
     val hardwareAccountsLeftToImport: Int = 0,
     val waitingForLedgerResponse: Boolean = false,
     val hasP2pLinks: Boolean = false,
-    val usedLedgerFactorSources: ImmutableList<FactorSource> = persistentListOf(),
+    val usedLedgerFactorSources: ImmutableList<LedgerHardwareWalletFactorSource> = persistentListOf(),
     val recentlyConnectedLedgerDevice: LedgerDeviceUiModel? = null,
     val addLedgerSheetState: AddLedgerSheetState = AddLedgerSheetState.Connect,
     val totalHardwareAccounts: Int = 0

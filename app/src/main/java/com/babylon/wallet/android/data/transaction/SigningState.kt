@@ -1,22 +1,40 @@
 package com.babylon.wallet.android.data.transaction
 
+import rdx.works.profile.data.model.factorsources.DeviceFactorSource
 import rdx.works.profile.data.model.factorsources.FactorSource
+import rdx.works.profile.data.model.factorsources.LedgerHardwareWalletFactorSource
 
 sealed class SigningState(val factorSource: FactorSource) {
 
-    sealed class Device(deviceFactorSource: FactorSource) : SigningState(deviceFactorSource) {
-        data class Pending(private val deviceFactorSource: FactorSource) : Device(deviceFactorSource)
-        data class Success(private val deviceFactorSource: FactorSource) : Device(deviceFactorSource)
-        data class Failure(private val deviceFactorSource: FactorSource) : Device(deviceFactorSource)
+    abstract val label: String
+
+    sealed class Device(private val deviceFactorSource: DeviceFactorSource) : SigningState(deviceFactorSource) {
+        data class Pending(private val deviceFactorSource: DeviceFactorSource) : Device(deviceFactorSource)
+        data class Success(private val deviceFactorSource: DeviceFactorSource) : Device(deviceFactorSource)
+        data class Failure(private val deviceFactorSource: DeviceFactorSource) : Device(deviceFactorSource)
+
+        override val label: String
+            get() = deviceFactorSource.hint.name
     }
 
-    sealed class Ledger(ledgerFactorSource: FactorSource) : SigningState(ledgerFactorSource) {
-        data class Pending(private val ledgerFactorSource: FactorSource) : Ledger(ledgerFactorSource)
-        data class Success(private val ledgerFactorSource: FactorSource) : Ledger(ledgerFactorSource)
-        data class Failure(private val ledgerFactorSource: FactorSource) : Ledger(ledgerFactorSource)
+    sealed class Ledger(
+        private val ledgerFactorSource: LedgerHardwareWalletFactorSource
+    ) : SigningState(ledgerFactorSource) {
+        data class Pending(
+            private val ledgerFactorSource: LedgerHardwareWalletFactorSource
+        ) : Ledger(ledgerFactorSource)
+
+        data class Success(
+            private val ledgerFactorSource: LedgerHardwareWalletFactorSource
+        ) : Ledger(ledgerFactorSource)
+
+        data class Failure(
+            private val ledgerFactorSource: LedgerHardwareWalletFactorSource
+        ) : Ledger(ledgerFactorSource)
+
+        override val label: String
+            get() = ledgerFactorSource.hint.name
     }
 
-    fun usingLedger(): Boolean {
-        return this is Ledger
-    }
+    val usingLedger: Boolean = this is Ledger
 }

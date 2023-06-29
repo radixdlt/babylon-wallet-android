@@ -20,14 +20,14 @@ import androidx.compose.ui.text.withStyle
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.utils.ledgerLastUsedDateFormat
-import rdx.works.profile.data.model.factorsources.FactorSource
+import rdx.works.profile.data.model.factorsources.LedgerHardwareWalletFactorSource
 
 @Composable
 fun LedgerListItem(
-    ledgerFactorSource: FactorSource,
+    ledgerFactorSource: LedgerHardwareWalletFactorSource,
     modifier: Modifier = Modifier,
     selected: Boolean? = null,
-    onLedgerSelected: ((FactorSource) -> Unit)? = null
+    onLedgerSelected: ((LedgerHardwareWalletFactorSource) -> Unit)? = null
 ) {
     Row(
         modifier = modifier,
@@ -36,7 +36,7 @@ fun LedgerListItem(
     ) {
         Column(modifier = Modifier.weight(1f)) {
             Text(
-                text = ledgerFactorSource.label,
+                text = ledgerFactorSource.hint.name,
                 style = RadixTheme.typography.secondaryHeader,
                 color = RadixTheme.colors.gray1
             )
@@ -45,13 +45,13 @@ fun LedgerListItem(
                 withStyle(SpanStyle(fontWeight = FontWeight.Bold)) {
                     append(stringResource(id = R.string.ledgerHardwareDevices_usedHeading))
                 }
-                append(": " + ledgerFactorSource.lastUsedOn.ledgerLastUsedDateFormat())
+                append(": ${ledgerFactorSource.common.lastUsedOn.ledgerLastUsedDateFormat()}")
             }
             val addedText = buildAnnotatedString {
                 withStyle(SpanStyle(fontWeight = FontWeight.Bold)) {
                     append(stringResource(id = R.string.ledgerHardwareDevices_addedHeading))
                 }
-                append(": " + ledgerFactorSource.addedOn.ledgerLastUsedDateFormat())
+                append(": ${ledgerFactorSource.common.addedOn.ledgerLastUsedDateFormat()}")
             }
             Text(
                 text = usedText,

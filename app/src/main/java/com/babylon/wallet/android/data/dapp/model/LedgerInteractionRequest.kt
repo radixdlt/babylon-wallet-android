@@ -2,6 +2,7 @@ package com.babylon.wallet.android.data.dapp.model
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import rdx.works.profile.data.model.factorsources.LedgerHardwareWalletFactorSource
 import rdx.works.profile.data.model.factorsources.Slip10Curve
 
 @Serializable
@@ -115,5 +116,16 @@ enum class LedgerDeviceModel {
     NanoSPlus,
 
     @SerialName("nanoX")
-    NanoX
+    NanoX;
+
+    companion object {
+        fun LedgerHardwareWalletFactorSource.getLedgerDeviceModel(): LedgerDeviceModel? {
+            return when (this.hint.model) {
+                LedgerHardwareWalletFactorSource.DeviceModel.NANO_S.value -> NanoS
+                LedgerHardwareWalletFactorSource.DeviceModel.NANO_S_PLUS.value -> NanoSPlus
+                LedgerHardwareWalletFactorSource.DeviceModel.NANO_X.value -> NanoX
+                else -> null
+            }
+        }
+    }
 }

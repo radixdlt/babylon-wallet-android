@@ -43,7 +43,7 @@ import com.babylon.wallet.android.presentation.ui.composables.UseOrAddLedgerSect
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.launch
-import rdx.works.profile.data.model.factorsources.FactorSource
+import rdx.works.profile.data.model.factorsources.LedgerHardwareWalletFactorSource
 
 @Composable
 fun CreateAccountWithLedgerScreen(
@@ -76,7 +76,7 @@ fun CreateAccountWithLedgerScreen(
             waitingForLedgerResponse = state.waitingForLedgerResponse,
             hasP2PLinks = state.hasP2pLinks,
             onAddP2PLink = onAddP2PLink,
-            deviceModel = state.recentlyConnectedLedgerDevice?.model?.toProfileLedgerDeviceModel()?.description(),
+            deviceModel = state.recentlyConnectedLedgerDevice?.model?.toProfileLedgerDeviceModel()?.value,
             uiMessage = state.uiMessage,
             onMessageShown = viewModel::onMessageShown
         )
@@ -87,8 +87,8 @@ fun CreateAccountWithLedgerScreen(
 fun CreateAccountWithLedgerContent(
     modifier: Modifier,
     onBackClick: () -> Unit,
-    ledgerFactorSources: ImmutableList<Selectable<FactorSource>>,
-    onLedgerFactorSourceSelected: (FactorSource) -> Unit,
+    ledgerFactorSources: ImmutableList<Selectable<LedgerHardwareWalletFactorSource>>,
+    onLedgerFactorSourceSelected: (LedgerHardwareWalletFactorSource) -> Unit,
     onSendAddLedgerRequest: () -> Unit,
     addLedgerSheetState: AddLedgerSheetState,
     onConfirmLedgerName: (String) -> Unit,

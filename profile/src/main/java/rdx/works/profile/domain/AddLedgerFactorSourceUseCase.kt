@@ -2,30 +2,53 @@ package rdx.works.profile.domain
 
 import kotlinx.coroutines.flow.first
 import rdx.works.profile.data.model.factorsources.FactorSource
+import rdx.works.profile.data.model.factorsources.FactorSourceKind
+import rdx.works.profile.data.model.factorsources.LedgerHardwareWalletFactorSource
 import rdx.works.profile.data.repository.ProfileRepository
 import rdx.works.profile.data.repository.profile
 import javax.inject.Inject
 
 class AddLedgerFactorSourceUseCase @Inject constructor(
-    private val dataSource: ProfileRepository
+    private val profileRepository: ProfileRepository,
+    private val getProfileUseCase: GetProfileUseCase
 ) {
 
-    suspend operator fun invoke(id: FactorSource.ID, model: FactorSource.LedgerHardwareWallet.DeviceModel, name: String?): LedgerAddResult {
-        val ledgerFactorSource = FactorSource.ledger(
-            id = id,
+    suspend operator fun invoke(
+        ledgerId: FactorSource.HexCoded32Bytes,
+        model: LedgerHardwareWalletFactorSource.DeviceModel,
+        name: String?
+    ): AddLedgerFactorSourceResult {
+        val ledgerFactorSource = LedgerHardwareWalletFactorSource.newSource(
+            deviceID = ledgerId,
             model = model,
-            name = name
+            name = name.orEmpty() // it should not be null
         )
-        val profile = dataSource.profile.first()
-        val existingFactorSource = profile.factorSources.firstOrNull { it.id == id }
-        if (existingFactorSource != null) return LedgerAddResult.Exist(existingFactorSource)
+
+        val profile = profileRepository.profile.first()
+        val existingLedgerFactorSource = getProfileUseCase.factorSourceById(
+            FactorSource.FactorSourceID.FromHash(
+                kind = FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET,
+                body = ledgerId
+            )
+        )
+
+        if (existingLedgerFactorSource != null) {
+            return AddLedgerFactorSourceResult.AlreadyExist(existingLedgerFactorSource as LedgerHardwareWalletFactorSource)
+        }
+
         val updatedProfile = profile.copy(factorSources = profile.factorSources + listOf(ledgerFactorSource))
-        dataSource.saveProfile(updatedProfile)
-        return LedgerAddResult.Added(ledgerFactorSource)
+        profileRepository.saveProfile(updatedProfile)
+        return AddLedgerFactorSourceResult.Added(ledgerFactorSource)
     }
 }
 
-sealed class LedgerAddResult(open val ledgerDevice: FactorSource) {
-    data class Added(override val ledgerDevice: FactorSource) : LedgerAddResult(ledgerDevice)
-    data class Exist(override val ledgerDevice: FactorSource) : LedgerAddResult(ledgerDevice)
+sealed class AddLedgerFactorSourceResult(open val ledgerFactorSource: LedgerHardwareWalletFactorSource) {
+
+    data class Added(
+        override val ledgerFactorSource: LedgerHardwareWalletFactorSource
+    ) : AddLedgerFactorSourceResult(ledgerFactorSource)
+
+    data class AlreadyExist(
+        override val ledgerFactorSource: LedgerHardwareWalletFactorSource
+    ) : AddLedgerFactorSourceResult(ledgerFactorSource)
 }

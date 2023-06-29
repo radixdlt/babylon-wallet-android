@@ -70,8 +70,8 @@ fun NavGraphBuilder.settingsNavGraph(
         settingsGatewayEdit(navController)
         settingsShowMnemonic(
             onBackClick = { navController.popBackStack() },
-            onNavigateToRecoverMnemonic = { navController.restoreMnemonic(it.value) },
-            onNavigateToSeedPhrase = { navController.revealSeedPhrase(it.value) }
+            onNavigateToRecoverMnemonic = { navController.restoreMnemonic(it.body.value) },
+            onNavigateToSeedPhrase = { navController.revealSeedPhrase(it.body.value) }
         )
         settingsImportOlympiaAccounts(
             onBackClick = {

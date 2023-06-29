@@ -83,7 +83,7 @@ fun AccountScreen(
     onAccountPreferenceClick: (String) -> Unit,
     modifier: Modifier = Modifier,
     onBackClick: () -> Unit,
-    onNavigateToMnemonicBackup: (FactorSource.ID) -> Unit,
+    onNavigateToMnemonicBackup: (FactorSource.FactorSourceID.FromHash) -> Unit,
     onTransferClick: (String) -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()

@@ -14,8 +14,9 @@ enum class FactorSourceKind {
      * * Mine
      * * On device
      * * Hierarchical deterministic (Mnemonic)
+     * * Entity creating
      */
-    @SerialName("device")
+    @SerialName(deviceSerialName)
     DEVICE,
 
     /**
@@ -41,31 +42,10 @@ enum class FactorSourceKind {
      * * Off device
      * * Hardware (requires Browser Connector Extension to communicate with wallet)
      * * Hierarchical deterministic
+     * * Entity creating (accounts only)
      */
-    @SerialName("ledgerHQHardwareWallet")
-    LEDGER_HQ_HARDWARE_WALLET;
-
-    /**
-     * A user owned hardware wallet by vendor YubiCo, which the user has to produce (connect)
-     * in order to use. Most common model might be YubiKey 5C NFC.
-     *
-     * Attributes:
-     * * Mine
-     * * Off device
-     * * Hardware (directly readable by wallet)
-     */
-//    @SerialName("yubiKey")
-//    YUBIKEY,
-
-    /**
-     * A user known single key which the user has to produce (input).
-     *
-     * Attributes:
-     * * Mine
-     * * Off Device
-     */
-//    @SerialName("offDeviceSingleKey")
-//    OFF_DEVICE_SINGLE_KEY,
+    @SerialName(ledgerHQHardwareWalletSerialName)
+    LEDGER_HQ_HARDWARE_WALLET,
 
     /**
      * A user known mnemonic which the user has to produce (input).
@@ -73,22 +53,10 @@ enum class FactorSourceKind {
      * Attributes:
      * * Mine
      * * Off Device
-     * * Hierarchical deterministic
+     * * Hierarchical deterministic (Mnemonic)
      */
-//    @SerialName("offDeviceMnemonic")
-//    OFF_DEVICE_MNEMONIC,
-
-    /**
-     * A user known secret acting as input key material (*IKM*) for some
-     * function which maps it to Entropy for a Mnemonic.
-     *
-     * Attributes:
-     * * Mine
-     * * Off Device
-     * * Hierarchical deterministic
-     */
-//    @SerialName("offDeviceInputKeyMaterialForMnemonic")
-//    OFF_DEVICE_INPUT_KEY_MATERIAL_FOR_MNEMONIC,
+    @SerialName(offDeviceMnemonicSerialName)
+    OFF_DEVICE_MNEMONIC,
 
     /**
      * Some individual the user knows and trust, e.g. a friend or family member,
@@ -98,86 +66,13 @@ enum class FactorSourceKind {
      * * *NOT* mine
      * * Off Device
      */
-//    @SerialName("trustedContact")
-//    TRUSTED_CONTACT,
+    @SerialName(trustedContactSerialName)
+    TRUSTED_CONTACT;
 
-    /**
-     * Some entity the user knows and trust, e.g. a company,
-     * typically used as a factor source for the recovery role.
-     *
-     * Attributes:
-     * * *Not* mine
-     * * Off Device
-     */
-//    @SerialName("trustedEnterprise")
-//    TRUSTED_ENTERPRISE;
-
-    val isHierarchicalDeterministic: Boolean
-        get() = when (this) {
-            DEVICE,
-            LEDGER_HQ_HARDWARE_WALLET -> true
-//            OFF_DEVICE_MNEMONIC,
-//            SECURITY_QUESTIONS,
-//            OFF_DEVICE_INPUT_KEY_MATERIAL_FOR_MNEMONIC -> true
-//            YUBIKEY,
-//            OFF_DEVICE_SINGLE_KEY,
-//            TRUSTED_CONTACT,
-//            TRUSTED_ENTERPRISE -> false
-        }
-
-    val isOnDevice: Boolean
-        get() = when (this) {
-            DEVICE -> true
-//            SECURITY_QUESTIONS -> true
-            LEDGER_HQ_HARDWARE_WALLET -> false
-//            YUBIKEY,
-//            OFF_DEVICE_SINGLE_KEY,
-//            OFF_DEVICE_MNEMONIC,
-//            OFF_DEVICE_INPUT_KEY_MATERIAL_FOR_MNEMONIC,
-//            TRUSTED_CONTACT,
-//            TRUSTED_ENTERPRISE -> false
-        }
-
-    val isMine: Boolean
-        get() = when (this) {
-            DEVICE,
-//            SECURITY_QUESTIONS,
-            LEDGER_HQ_HARDWARE_WALLET -> true
-//            YUBIKEY,
-//            OFF_DEVICE_SINGLE_KEY,
-//            OFF_DEVICE_MNEMONIC,
-//            OFF_DEVICE_INPUT_KEY_MATERIAL_FOR_MNEMONIC -> true
-//            TRUSTED_CONTACT,
-//            TRUSTED_ENTERPRISE -> false
-        }
-
-    /**
-     * Returns the kind of a hardware a factor source uses. If the factor source is not
-     * of hardware type, then it returns null.
-     */
-    val hardwareKind: HardwareKind?
-        get() = when (this) {
-            LEDGER_HQ_HARDWARE_WALLET -> HardwareKind.REQUIRES_BROWSER_CONNECTOR_EXTENSION
-//            YUBIKEY -> HardwareKind.DIRECT
-            DEVICE -> null
-//            SECURITY_QUESTIONS,
-//            OFF_DEVICE_SINGLE_KEY,
-//            OFF_DEVICE_MNEMONIC,
-//            OFF_DEVICE_INPUT_KEY_MATERIAL_FOR_MNEMONIC,
-//            TRUSTED_CONTACT,
-//            TRUSTED_ENTERPRISE -> null
-        }
-
-    enum class HardwareKind {
-        /**
-         * A hardware that can directly communicate with the wallet
-         */
-        DIRECT,
-
-        /**
-         * A hardware that requires a browser with the connector extension
-         * in order to connect
-         */
-        REQUIRES_BROWSER_CONNECTOR_EXTENSION
+    companion object {
+        const val deviceSerialName = "device"
+        const val ledgerHQHardwareWalletSerialName = "ledgerHQHardwareWallet"
+        const val offDeviceMnemonicSerialName = "offDeviceMnemonic"
+        const val trustedContactSerialName = "trustedContact"
     }
 }

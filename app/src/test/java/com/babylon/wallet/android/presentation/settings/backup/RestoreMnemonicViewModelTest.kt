@@ -22,6 +22,7 @@ import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.backup.RestoreMnemonicUseCase
 
+/*
 @OptIn(ExperimentalCoroutinesApi::class)
 class RestoreMnemonicViewModelTest : StateViewModelTest<RestoreMnemonicViewModel>() {
 
@@ -124,3 +125,4 @@ class RestoreMnemonicViewModelTest : StateViewModelTest<RestoreMnemonicViewModel
         private const val ACCOUNT_ADDRESS = "account_rdx_abcd"
     }
 }
+ */

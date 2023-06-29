@@ -18,7 +18,7 @@ import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.preferences.PreferencesManager
-import rdx.works.profile.data.model.factorsources.FactorSource
+import rdx.works.profile.data.model.factorsources.FactorSource.FactorSourceID
 import rdx.works.profile.data.utils.factorSourceId
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.personaOnCurrentNetwork
@@ -29,7 +29,8 @@ class PersonasViewModel @Inject constructor(
     private val getPersonasUseCase: GetPersonasUseCase,
     private val getProfileUseCase: GetProfileUseCase,
     private val preferencesManager: PreferencesManager
-) : StateViewModel<PersonasViewModel.PersonasUiState>(), OneOffEventHandler<PersonasViewModel.PersonasEvent> by OneOffEventHandlerImpl() {
+) : StateViewModel<PersonasViewModel.PersonasUiState>(),
+    OneOffEventHandler<PersonasViewModel.PersonasEvent> by OneOffEventHandlerImpl() {
 
     private var personaAddressThatNeedBackup: String? = null
 
@@ -73,9 +74,12 @@ class PersonasViewModel @Inject constructor(
     fun onApplySecuritySettings() {
         viewModelScope.launch {
             personaAddressThatNeedBackup?.let { address ->
-                getProfileUseCase.personaOnCurrentNetwork(address)?.factorSourceId()?.let {
-                    sendEvent(PersonasEvent.NavigateToMnemonicBackup(it))
-                }
+                getProfileUseCase.personaOnCurrentNetwork(address)
+                    ?.factorSourceId()
+                    ?.let {
+                        it as FactorSourceID.FromHash
+                        sendEvent(PersonasEvent.NavigateToMnemonicBackup(it))
+                    }
             }
         }
     }
@@ -87,6 +91,6 @@ class PersonasViewModel @Inject constructor(
 
     sealed interface PersonasEvent : OneOffEvent {
         data class CreatePersona(val firstPersonaCreated: Boolean) : PersonasEvent
-        data class NavigateToMnemonicBackup(val factorSourceId: FactorSource.ID) : PersonasEvent
+        data class NavigateToMnemonicBackup(val factorSourceId: FactorSourceID.FromHash) : PersonasEvent
     }
 }
