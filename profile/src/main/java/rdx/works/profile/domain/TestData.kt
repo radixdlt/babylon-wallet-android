@@ -176,7 +176,7 @@ object TestData {
         val random = Random()
         val sb = StringBuilder()
         while (sb.length < 63) {
-            sb.append(Integer.toHexString(random.nextInt(0x10) + 0x10))  // Generates a random number between 0x10 and 0x20
+            sb.append(Integer.toHexString(random.nextInt(0x10) + 0x10)) // Generates a random number between 0x10 and 0x20
         }
         return sb.toString()
     }
