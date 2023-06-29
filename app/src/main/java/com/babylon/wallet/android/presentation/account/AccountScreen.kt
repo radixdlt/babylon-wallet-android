@@ -25,7 +25,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.Icon
-import androidx.compose.material.IconButton
 import androidx.compose.material.ModalBottomSheetLayout
 import androidx.compose.material.ModalBottomSheetState
 import androidx.compose.material.ModalBottomSheetValue
@@ -68,9 +67,6 @@ import com.babylon.wallet.android.presentation.account.composable.FungibleTokenB
 import com.babylon.wallet.android.presentation.account.composable.NonFungibleTokenBottomSheetDetails
 import com.babylon.wallet.android.presentation.transfer.assets.ResourceTab
 import com.babylon.wallet.android.presentation.transfer.assets.ResourcesTabs
-import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
-import com.babylon.wallet.android.presentation.ui.composables.ScrollableHeaderView
-import com.babylon.wallet.android.presentation.ui.composables.rememberScrollableHeaderViewScrollState
 import com.babylon.wallet.android.presentation.ui.composables.resources.FungibleResourceItem
 import com.babylon.wallet.android.presentation.ui.composables.resources.NonFungibleResourceItem
 import com.babylon.wallet.android.presentation.ui.composables.resources.fungibleResources
@@ -78,7 +74,6 @@ import com.babylon.wallet.android.presentation.ui.composables.resources.nonFungi
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import rdx.works.profile.data.model.factorsources.FactorSource
-import kotlin.math.abs
 
 @Composable
 fun AccountScreen(
@@ -236,7 +231,7 @@ private fun SheetContent(
                     .fillMaxWidth()
                     .verticalScroll(rememberScrollState()),
                 item = selected.item,
-                nonFungibleItem = state.selectedResource.nonFungible,
+                nonFungibleItem = selected.nonFungible,
                 onCloseClick = {
                     scope.launch {
                         bottomSheetState.hide()
@@ -352,7 +347,6 @@ fun AssetsContent(
                 )
             }
         }
-
     }
 }
 
