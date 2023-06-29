@@ -18,8 +18,8 @@ fun NavController.settingsShowMnemonic() {
 @OptIn(ExperimentalAnimationApi::class)
 fun NavGraphBuilder.settingsShowMnemonic(
     onBackClick: () -> Unit,
-    onNavigateToRecoverMnemonic: (FactorSource.ID) -> Unit,
-    onNavigateToSeedPhrase: (FactorSource.ID) -> Unit
+    onNavigateToRecoverMnemonic: (FactorSource.FactorSourceID.FromHash) -> Unit,
+    onNavigateToSeedPhrase: (FactorSource.FactorSourceID.FromHash) -> Unit
 ) {
     composable(
         route = ROUTE_SETTINGS_SHOW_MNEMONIC,

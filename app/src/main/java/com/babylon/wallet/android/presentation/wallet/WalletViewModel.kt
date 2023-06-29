@@ -22,6 +22,7 @@ import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.profile.data.model.factorsources.FactorSource
+import rdx.works.profile.data.model.factorsources.FactorSource.FactorSourceID
 import rdx.works.profile.data.model.factorsources.FactorSourceKind
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.data.utils.factorSourceId
@@ -129,15 +130,18 @@ class WalletViewModel @Inject constructor(
 
     fun onApplyMnemonicBackup(account: Network.Account) {
         viewModelScope.launch {
-            getProfileUseCase.accountOnCurrentNetwork(account.address)?.factorSourceId()?.let {
-                sendEvent(WalletEvent.NavigateToMnemonicBackup(it))
-            }
+            getProfileUseCase.accountOnCurrentNetwork(account.address)
+                ?.factorSourceId()
+                ?.let {
+                    it as FactorSourceID.FromHash
+                    sendEvent(WalletEvent.NavigateToMnemonicBackup(it))
+                }
         }
     }
 }
 
 internal sealed interface WalletEvent : OneOffEvent {
-    data class NavigateToMnemonicBackup(val factorSourceId: FactorSource.ID) : WalletEvent
+    data class NavigateToMnemonicBackup(val factorSourceId: FactorSourceID.FromHash) : WalletEvent
 }
 
 data class WalletUiState(
@@ -194,7 +198,7 @@ data class WalletUiState(
     private fun isLedgerAccount(forAccount: Network.Account): Boolean {
         val factorSource = factorSources.find {
             it.id == forAccount.factorSourceId()
-        }?.kind
+        }?.id?.kind
 
         return factorSource == FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET
     }

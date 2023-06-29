@@ -2,11 +2,11 @@ package rdx.works.profile.data.repository
 
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
-import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import rdx.works.profile.data.model.MnemonicWithPassphrase
 import rdx.works.profile.data.model.factorsources.FactorSource
+import rdx.works.profile.data.model.factorsources.FactorSourceKind
 import rdx.works.profile.data.model.generate
 import rdx.works.profile.datastore.EncryptedPreferencesManager
 import rdx.works.profile.di.coroutines.DefaultDispatcher
@@ -21,8 +21,8 @@ class MnemonicRepository @Inject constructor(
      * We might have multiple OnDevice-HD-FactorSources, thus multiple mnemonics stored on the device.
      */
     @Suppress("SwallowedException")
-    suspend fun readMnemonic(key: FactorSource.ID): MnemonicWithPassphrase? {
-        val serialised = encryptedPreferencesManager.readMnemonic(key.value).orEmpty()
+    suspend fun readMnemonic(key: FactorSource.FactorSourceID.FromHash): MnemonicWithPassphrase? {
+        val serialised = encryptedPreferencesManager.readMnemonic(key.body.value).orEmpty()
         return try {
             Json.decodeFromString(serialised)
         } catch (exception: Exception) {
@@ -34,11 +34,11 @@ class MnemonicRepository @Inject constructor(
      * We save mnemonic under specific key which will be factorSourceId
      */
     suspend fun saveMnemonic(
-        key: FactorSource.ID,
+        key: FactorSource.FactorSourceID.FromHash,
         mnemonicWithPassphrase: MnemonicWithPassphrase
     ) {
         val serialised = Json.encodeToString(mnemonicWithPassphrase)
-        encryptedPreferencesManager.putString("mnemonic${key.value}", serialised)
+        encryptedPreferencesManager.putString("mnemonic${key.body.value}", serialised)
     }
 
     /**
@@ -53,12 +53,16 @@ class MnemonicRepository @Inject constructor(
      * 3. We passed a key and the mnemonic exists:
      *    We deserialize it properly and just return that back.
      */
-    suspend operator fun invoke(mnemonicKey: FactorSource.ID? = null): MnemonicWithPassphrase {
+    suspend operator fun invoke(mnemonicKey: FactorSource.FactorSourceID.FromHash? = null): MnemonicWithPassphrase {
         return mnemonicKey?.let { readMnemonic(key = it) } ?: withContext(defaultDispatcher) {
             val generated = MnemonicWithPassphrase.generate(entropyStrength = ENTROPY_STRENGTH)
 
             val key = FactorSource.factorSourceId(mnemonicWithPassphrase = generated)
-            saveMnemonic(key = key, mnemonicWithPassphrase = generated)
+            val fromHash = FactorSource.FactorSourceID.FromHash(
+                kind = FactorSourceKind.DEVICE,
+                body = FactorSource.HexCoded32Bytes(key)
+            )
+            saveMnemonic(key = fromHash, mnemonicWithPassphrase = generated)
             generated
         }
     }

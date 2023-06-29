@@ -36,6 +36,7 @@ import com.babylon.wallet.android.presentation.ui.composables.BottomSheetDialogW
 import com.babylon.wallet.android.presentation.ui.composables.SomethingWentWrongDialogContent
 import com.babylon.wallet.android.utils.formattedSpans
 import rdx.works.profile.data.model.factorsources.FactorSource
+import rdx.works.profile.data.model.factorsources.LedgerHardwareWalletFactorSource
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -134,7 +135,7 @@ private fun SignatureRequestContent(
             color = RadixTheme.colors.gray1,
             textAlign = TextAlign.Center
         )
-        if (signingState?.usingLedger() == true) {
+        if (signingState?.usingLedger == true) {
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
             Row(
                 modifier = Modifier
@@ -151,7 +152,7 @@ private fun SignatureRequestContent(
                     tint = RadixTheme.colors.gray3
                 )
                 Text(
-                    text = signingState.factorSource.label,
+                    text = signingState.label,
                     style = RadixTheme.typography.secondaryHeader,
                     color = RadixTheme.colors.gray1
                 )
@@ -210,10 +211,10 @@ fun SignatureRequestContentPreview() {
     RadixWalletTheme {
         SignatureRequestContent(
             signingState = SigningState.Ledger.Pending(
-                FactorSource.ledger(
-                    FactorSource.ID(""),
-                    FactorSource.LedgerHardwareWallet.DeviceModel.NanoS,
-                    "nanoS"
+                LedgerHardwareWalletFactorSource.newSource(
+                    model = LedgerHardwareWalletFactorSource.DeviceModel.NANO_S,
+                    name = "nanoS",
+                    deviceID = FactorSource.HexCoded32Bytes("5f07ec336e9e7891bff04004c817201e73c097b6b1e1b3a26bc501e0010196f5")
                 )
             )
         )

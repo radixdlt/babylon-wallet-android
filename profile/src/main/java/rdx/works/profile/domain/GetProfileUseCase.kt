@@ -7,8 +7,10 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapNotNull
 import rdx.works.profile.data.model.currentNetwork
+import rdx.works.profile.data.model.factorsources.DeviceFactorSource
 import rdx.works.profile.data.model.factorsources.FactorSource
 import rdx.works.profile.data.model.factorsources.FactorSourceKind
+import rdx.works.profile.data.model.factorsources.LedgerHardwareWalletFactorSource
 import rdx.works.profile.data.model.pernetwork.DerivationPath
 import rdx.works.profile.data.repository.ProfileRepository
 import rdx.works.profile.data.repository.profile
@@ -30,20 +32,20 @@ val GetProfileUseCase.factorSources
     get() = invoke().map { profile -> profile.factorSources }
 
 val GetProfileUseCase.deviceFactorSources
-    get() = invoke().map { profile -> profile.factorSources.filter { it.kind == FactorSourceKind.DEVICE } }
+    get() = invoke().map { profile -> profile.factorSources.filterIsInstance<DeviceFactorSource>() }
 
 val GetProfileUseCase.deviceFactorSourcesWithAccounts
     get() = invoke().map { profile ->
-        val deviceFactorSources = profile.factorSources.filter { it.kind == FactorSourceKind.DEVICE }
+        val deviceFactorSources = profile.factorSources.filter { it.id.kind == FactorSourceKind.DEVICE }
         val deviceFactorSourcesIds = deviceFactorSources.map { it.id }.toSet()
         profile.currentNetwork.accounts.filter { deviceFactorSourcesIds.contains(it.factorSourceId()) }.groupBy { it.factorSourceId() }
     }
 
 val GetProfileUseCase.ledgerFactorSources
-    get() = invoke().map { profile -> profile.factorSources.filter { it.kind == FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET } }
+    get() = invoke().map { profile -> profile.factorSources.filterIsInstance<LedgerHardwareWalletFactorSource>() }
 
-suspend fun GetProfileUseCase.factorSource(
-    id: FactorSource.ID
+suspend fun GetProfileUseCase.factorSourceById(
+    id: FactorSource.FactorSourceID
 ) = factorSources.first().firstOrNull { factorSource ->
     factorSource.id == id
 }
@@ -56,11 +58,11 @@ suspend fun GetProfileUseCase.accountOnCurrentNetwork(
     account.address == withAddress
 }
 
-suspend fun GetProfileUseCase.nextDerivationPathForAccountOnCurrentNetwork(
-    factorSource: FactorSource,
+suspend fun GetProfileUseCase.nextDerivationPathForAccountOnCurrentNetworkWithLedger(
+    ledgerHardwareWalletFactorSource: LedgerHardwareWalletFactorSource,
 ): DerivationPath {
     val currentNetwork = requireNotNull(invoke().first().currentNetwork.knownNetworkId)
-    return factorSource.getNextDerivationPathForAccount(currentNetwork)
+    return ledgerHardwareWalletFactorSource.getNextDerivationPathForAccount(currentNetwork)
 }
 
 @Suppress("MagicNumber")

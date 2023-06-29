@@ -4,6 +4,7 @@ import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel.LedgerResponse
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import rdx.works.profile.data.model.factorsources.FactorSource
 
 @Serializable
 sealed interface LedgerInteractionResponse : ConnectorExtensionInteraction
@@ -153,9 +154,9 @@ private fun SignChallengeResponse.toDomainModel() =
 private fun GetDeviceInfoResponse.toDomainModel() =
     if (success != null) {
         LedgerResponse.GetDeviceInfoResponse(
-            interactionId,
-            success.model?.toDomainModel() ?: LedgerResponse.LedgerDeviceModel.NanoS,
-            success.id
+            interactionId = interactionId,
+            model = success.model?.toDomainModel() ?: LedgerResponse.LedgerDeviceModel.NanoS,
+            deviceId = FactorSource.HexCoded32Bytes(success.id)
         )
     } else {
         LedgerResponse.LedgerErrorResponse(interactionId, error?.code ?: 0, error?.message.orEmpty())

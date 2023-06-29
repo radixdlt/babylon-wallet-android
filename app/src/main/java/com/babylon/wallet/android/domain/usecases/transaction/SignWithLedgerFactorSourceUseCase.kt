@@ -3,8 +3,8 @@ package com.babylon.wallet.android.domain.usecases.transaction
 import com.babylon.wallet.android.data.dapp.LedgerMessenger
 import com.babylon.wallet.android.data.dapp.model.DerivePublicKeyRequest
 import com.babylon.wallet.android.data.dapp.model.LedgerDeviceModel
+import com.babylon.wallet.android.data.dapp.model.LedgerDeviceModel.Companion.getLedgerDeviceModel
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
-import com.babylon.wallet.android.utils.getLedgerDeviceModel
 import com.radixdlt.toolkit.models.crypto.PublicKey
 import com.radixdlt.toolkit.models.crypto.Signature
 import com.radixdlt.toolkit.models.crypto.SignatureWithPublicKey
@@ -12,14 +12,14 @@ import kotlinx.coroutines.flow.first
 import rdx.works.core.UUIDGenerator
 import rdx.works.core.decodeHex
 import rdx.works.core.toHexString
-import rdx.works.profile.data.model.factorsources.FactorSource
+import rdx.works.profile.data.model.factorsources.LedgerHardwareWalletFactorSource
 import rdx.works.profile.data.model.factorsources.Slip10Curve
 import rdx.works.profile.data.model.pernetwork.Entity
 import rdx.works.profile.data.model.pernetwork.SecurityState
 import rdx.works.profile.data.model.pernetwork.SigningPurpose
-import rdx.works.profile.data.model.pernetwork.updateLastUsed
 import rdx.works.profile.data.repository.ProfileRepository
 import rdx.works.profile.data.repository.profile
+import rdx.works.profile.data.utils.updateLastUsed
 import javax.inject.Inject
 
 typealias SignatureProviderResult = Result<List<MessageFromDataChannel.LedgerResponse.SignatureOfSigner>>
@@ -30,7 +30,7 @@ class SignWithLedgerFactorSourceUseCase @Inject constructor(
     private val profileRepository: ProfileRepository
 ) {
     suspend operator fun invoke(
-        ledgerFactorSource: FactorSource,
+        ledgerFactorSource: LedgerHardwareWalletFactorSource,
         signers: List<Entity>,
         signRequest: SignRequest,
         signingPurpose: SigningPurpose = SigningPurpose.SignTransaction
@@ -58,7 +58,7 @@ class SignWithLedgerFactorSourceUseCase @Inject constructor(
 
     private suspend fun signTransaction(
         signers: List<Entity>,
-        ledgerFactorSource: FactorSource,
+        ledgerFactorSource: LedgerHardwareWalletFactorSource,
         dataToSign: ByteArray,
         signingPurpose: SigningPurpose
     ): Result<List<SignatureWithPublicKey>> {
@@ -72,9 +72,9 @@ class SignWithLedgerFactorSourceUseCase @Inject constructor(
                 signersDerivationPathToCurve = pathToCurve,
                 compiledTransactionIntent = dataToSign.toHexString(),
                 ledgerDevice = DerivePublicKeyRequest.LedgerDevice(
-                    ledgerFactorSource.label,
-                    deviceModel,
-                    ledgerFactorSource.id.value
+                    name = ledgerFactorSource.hint.name,
+                    model = deviceModel,
+                    id = ledgerFactorSource.id.body.value
                 )
             ).mapCatching { response ->
                 response.signatures
@@ -84,7 +84,7 @@ class SignWithLedgerFactorSourceUseCase @Inject constructor(
 
     private suspend fun signAuth(
         signers: List<Entity>,
-        ledgerFactorSource: FactorSource,
+        ledgerFactorSource: LedgerHardwareWalletFactorSource,
         request: SignRequest.SignAuthChallengeRequest,
         signingPurpose: SigningPurpose
     ): Result<List<SignatureWithPublicKey>> {
@@ -96,9 +96,9 @@ class SignWithLedgerFactorSourceUseCase @Inject constructor(
             ledgerMessenger.signChallengeRequest(
                 interactionId = UUIDGenerator.uuid().toString(),
                 ledgerDevice = DerivePublicKeyRequest.LedgerDevice(
-                    ledgerFactorSource.label,
-                    deviceModel,
-                    ledgerFactorSource.id.value
+                    name = ledgerFactorSource.hint.name,
+                    model = deviceModel,
+                    id = ledgerFactorSource.id.body.value
                 ),
                 signersDerivationPathToCurve = pathToCurve,
                 challengeHex = request.challengeHex,
@@ -112,7 +112,7 @@ class SignWithLedgerFactorSourceUseCase @Inject constructor(
 
     private suspend fun signCommon(
         signers: List<Entity>,
-        ledgerFactorSource: FactorSource,
+        ledgerFactorSource: LedgerHardwareWalletFactorSource,
         signingPurpose: SigningPurpose,
         signaturesProvider: SignatureProviderCall
     ): Result<List<SignatureWithPublicKey>> {

@@ -53,20 +53,30 @@ class CreateAccountViewModel @Inject constructor(
             }
         }
         viewModelScope.launch {
-            appEventBus.events.filterIsInstance<AppEvent.DerivedAccountPublicKeyWithLedger>().collect {
-                createLedgerAccount(it.factorSourceID, it.derivationPath, it.derivedPublicKeyHex)
-            }
+            appEventBus.events
+                .filterIsInstance<AppEvent.DerivedAccountPublicKeyWithLedger>()
+                .collect {
+                    createLedgerAccount(
+                        factorSourceID = it.factorSourceID,
+                        derivationPath = it.derivationPath,
+                        derivedPublicKeyHex = it.derivedPublicKeyHex
+                    )
+                }
         }
     }
 
-    private suspend fun createLedgerAccount(factorSourceID: FactorSource.ID, derivationPath: DerivationPath, derivedPublicKeyHex: String) {
+    private suspend fun createLedgerAccount(
+        factorSourceID: FactorSource.FactorSourceID.FromHash,
+        derivationPath: DerivationPath,
+        derivedPublicKeyHex: String
+    ) {
         viewModelScope.launch {
             handleAccountCreate { accountName, networkId ->
                 createAccountWithLedgerFactorSourceUseCase(
                     displayName = accountName,
                     networkID = networkId,
                     derivedPublicKeyHex = derivedPublicKeyHex,
-                    factorSourceID = factorSourceID,
+                    ledgerFactorSourceID = factorSourceID,
                     derivationPath = derivationPath
                 )
             }

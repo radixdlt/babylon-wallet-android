@@ -2,7 +2,6 @@ package rdx.works.profile.data.model
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import rdx.works.profile.data.model.ProfileSnapshot.Companion.MINIMUM
 import rdx.works.profile.data.model.apppreferences.AppPreferences
@@ -47,7 +46,7 @@ internal data class ProfileSnapshot(
         /**
          * The minimum accepted snapshot version format. Lower versions are currently discarded.
          */
-        const val MINIMUM = 35
+        const val MINIMUM = 37
 
         fun fromJson(serialised: String) = Json.decodeFromString<ProfileSnapshot>(serialised)
     }

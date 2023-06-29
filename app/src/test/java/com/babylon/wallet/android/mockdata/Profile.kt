@@ -11,9 +11,10 @@ import rdx.works.profile.data.model.apppreferences.Gateways
 import rdx.works.profile.data.model.apppreferences.P2PLink
 import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.data.model.apppreferences.Security
+import rdx.works.profile.data.model.factorsources.DeviceFactorSource
 import rdx.works.profile.data.model.factorsources.FactorSource
+import rdx.works.profile.data.model.factorsources.LedgerHardwareWalletFactorSource
 import rdx.works.profile.data.model.pernetwork.Network
-import java.time.Instant
 
 fun profile(
     accounts: List<Network.Account> = listOf(account("acc-1"), account("acc-2")),
@@ -23,7 +24,7 @@ fun profile(
 ) = Profile(
     header = Header.init(
         id = "9958f568-8c9b-476a-beeb-017d1f843266",
-        creatingDevice = "Galaxy A53 5G (Samsung SM-A536B)",
+        deviceName = "Galaxy A53 5G (Samsung SM-A536B)",
         creationDate = InstantGenerator(),
         numberOfNetworks = 1
     ),
@@ -34,15 +35,15 @@ fun profile(
         p2pLinks = emptyList()
     ),
     factorSources = listOf(
-        FactorSource.babylon(
+        DeviceFactorSource.babylon(
             mnemonicWithPassphrase = MnemonicWithPassphrase(
                 mnemonic = "zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo vote",
                 bip39Passphrase = ""
             )
         ),
-        FactorSource.ledger(
-            id = FactorSource.ID("Ledger1"),
-            model = FactorSource.LedgerHardwareWallet.DeviceModel.NanoS,
+        LedgerHardwareWalletFactorSource.newSource(
+            deviceID = FactorSource.HexCoded32Bytes("5f07ec336e9e7891bff04004c817201e73c097b6b1e1b3a26bc501e0010196f5"),
+            model = LedgerHardwareWalletFactorSource.DeviceModel.NANO_S,
             name = "My Ledger"
         )
     ),

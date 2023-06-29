@@ -49,7 +49,7 @@ import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
-import rdx.works.profile.data.model.factorsources.FactorSource
+import rdx.works.profile.data.model.factorsources.FactorSource.FactorSourceID
 import rdx.works.profile.data.model.pernetwork.Network
 
 @Composable
@@ -58,7 +58,7 @@ fun WalletScreen(
     viewModel: WalletViewModel,
     onMenuClick: () -> Unit,
     onAccountClick: (Network.Account) -> Unit = { },
-    onNavigateToMnemonicBackup: (FactorSource.ID) -> Unit,
+    onNavigateToMnemonicBackup: (FactorSourceID.FromHash) -> Unit,
     onAccountCreationClick: () -> Unit
 ) {
     val walletState by viewModel.state.collectAsStateWithLifecycle()
@@ -84,7 +84,7 @@ fun WalletScreen(
     }
 }
 
-@OptIn(ExperimentalMaterialApi::class)
+@OptIn(ExperimentalMaterialApi::class, ExperimentalMaterial3Api::class)
 @Composable
 private fun WalletContent(
     modifier: Modifier = Modifier,

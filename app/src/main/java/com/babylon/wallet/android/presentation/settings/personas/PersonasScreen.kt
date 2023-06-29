@@ -35,7 +35,7 @@ import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAp
 import com.babylon.wallet.android.presentation.ui.composables.StandardOneLineCard
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import kotlinx.collections.immutable.ImmutableList
-import rdx.works.profile.data.model.factorsources.FactorSource
+import rdx.works.profile.data.model.factorsources.FactorSource.FactorSourceID
 
 @Composable
 fun PersonasScreen(
@@ -44,7 +44,7 @@ fun PersonasScreen(
     onBackClick: () -> Unit,
     createNewPersona: (Boolean) -> Unit,
     onPersonaClick: (String) -> Unit,
-    onNavigateToMnemonicBackup: (FactorSource.ID) -> Unit
+    onNavigateToMnemonicBackup: (FactorSourceID.FromHash) -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
 

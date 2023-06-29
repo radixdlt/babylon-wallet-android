@@ -21,11 +21,11 @@ class GetPersonasUseCase @Inject constructor(
             val deviceFactorSources = getProfileUseCase.deviceFactorSources.first()
             val backedUpFactorSourcesIDs = preferencesManager.getBackedUpFactorSourceIds().first()
             it.map { persona ->
-                val personaFactorSourceID = deviceFactorSources.firstOrNull {
-                    it.id == persona.factorSourceId()
+                val personaFactorSourceID = deviceFactorSources.firstOrNull { deviceFactorSource ->
+                    deviceFactorSource.id == persona.factorSourceId()
                 }?.id
-                val personaFactorSourceExistAndBackedUp =
-                    personaFactorSourceID != null && backedUpFactorSourcesIDs.contains(personaFactorSourceID.value)
+                val personaFactorSourceExistAndBackedUp = personaFactorSourceID != null &&
+                    backedUpFactorSourcesIDs.contains(personaFactorSourceID.body.value)
                 persona.toDomainModel(personaFactorSourceExistAndBackedUp)
             }
         }

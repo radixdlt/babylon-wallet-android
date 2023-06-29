@@ -1,7 +1,6 @@
 package rdx.works.profile.domain
 
 import rdx.works.core.InstantGenerator
-import rdx.works.core.UUIDGenerator
 import rdx.works.profile.data.model.Header
 import rdx.works.profile.data.model.MnemonicWithPassphrase
 import rdx.works.profile.data.model.Profile
@@ -11,20 +10,22 @@ import rdx.works.profile.data.model.apppreferences.Gateways
 import rdx.works.profile.data.model.apppreferences.P2PLink
 import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.data.model.apppreferences.Security
+import rdx.works.profile.data.model.factorsources.DeviceFactorSource
 import rdx.works.profile.data.model.factorsources.FactorSource
+import rdx.works.profile.data.model.factorsources.FactorSourceKind
+import rdx.works.profile.data.model.factorsources.LedgerHardwareWalletFactorSource
 import rdx.works.profile.data.model.pernetwork.DerivationPath
 import rdx.works.profile.data.model.pernetwork.FactorInstance
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.data.model.pernetwork.SecurityState
 import rdx.works.profile.derivation.model.KeyType
+import java.util.Random
 
 object TestData {
 
-    val ledgerFactorSourceID = FactorSource.ID(UUIDGenerator.uuid().toString())
-
-    val ledgerFactorSource = FactorSource.ledger(
-        id = ledgerFactorSourceID,
-        model = FactorSource.LedgerHardwareWallet.DeviceModel.NanoS,
+    val ledgerFactorSource = LedgerHardwareWalletFactorSource.newSource(
+        deviceID = FactorSource.HexCoded32Bytes(generateRandomHexString32Bytes()),
+        model = LedgerHardwareWalletFactorSource.DeviceModel.NANO_S,
         name = "Ledger1"
     )
 
@@ -35,7 +36,7 @@ object TestData {
         return Profile(
             header = Header.init(
                 id = "9958f568-8c9b-476a-beeb-017d1f843266",
-                creatingDevice = "Galaxy A53 5G (Samsung SM-A536B)",
+                deviceName = "Galaxy A53 5G (Samsung SM-A536B)",
                 creationDate = InstantGenerator(),
                 numberOfNetworks = 2,
                 numberOfAccounts = 4
@@ -52,7 +53,7 @@ object TestData {
                 )
             ),
             factorSources = listOf(
-                FactorSource.babylon(mnemonicWithPassphrase = mnemonicWithPassphrase),
+                DeviceFactorSource.babylon(mnemonicWithPassphrase = mnemonicWithPassphrase),
                 ledgerFactorSource
             ),
             networks = listOf(
@@ -71,7 +72,12 @@ object TestData {
                                             accountIndex = 0,
                                             keyType = KeyType.TRANSACTION_SIGNING
                                         ),
-                                        factorSourceId = FactorSource.ID("IDIDDIIDD"),
+                                        factorSourceId = FactorSource.FactorSourceID.FromHash(
+                                            kind = FactorSourceKind.DEVICE,
+                                            body = FactorSource.HexCoded32Bytes(
+                                                "5f07ec336e9e7891bff04004c817201e73c097b6b1e1b3a26bc501e0010196f5"
+                                            )
+                                        ),
                                         publicKey = FactorInstance.PublicKey.curve25519PublicKey("")
                                     )
                                 )
@@ -90,7 +96,12 @@ object TestData {
                                             accountIndex = 0,
                                             keyType = KeyType.TRANSACTION_SIGNING
                                         ),
-                                        factorSourceId = FactorSource.ID("IDIDDIIDD"),
+                                        factorSourceId = FactorSource.FactorSourceID.FromHash(
+                                            kind = FactorSourceKind.DEVICE,
+                                            body = FactorSource.HexCoded32Bytes(
+                                                "5f07ec336e9e7891bff04004c817201e73c097b6b1e1b3a26bc501e0010196f5"
+                                            )
+                                        ),
                                         publicKey = FactorInstance.PublicKey.curve25519PublicKey("")
                                     )
                                 )
@@ -116,7 +127,12 @@ object TestData {
                                             accountIndex = 0,
                                             keyType = KeyType.TRANSACTION_SIGNING
                                         ),
-                                        factorSourceId = FactorSource.ID("IDIDDIIDD"),
+                                        factorSourceId = FactorSource.FactorSourceID.FromHash(
+                                            kind = FactorSourceKind.DEVICE,
+                                            body = FactorSource.HexCoded32Bytes(
+                                                "5f07ec336e9e7891bff04004c817201e73c097b6b1e1b3a26bc501e0010196f5"
+                                            )
+                                        ),
                                         publicKey = FactorInstance.PublicKey.curve25519PublicKey("")
                                     )
                                 )
@@ -135,7 +151,12 @@ object TestData {
                                             accountIndex = 0,
                                             keyType = KeyType.TRANSACTION_SIGNING
                                         ),
-                                        factorSourceId = FactorSource.ID("IDIDDIIDD"),
+                                        factorSourceId = FactorSource.FactorSourceID.FromHash(
+                                            kind = FactorSourceKind.DEVICE,
+                                            body = FactorSource.HexCoded32Bytes(
+                                                "5f07ec336e9e7891bff04004c817201e73c097b6b1e1b3a26bc501e0010196f5"
+                                            )
+                                        ),
                                         publicKey = FactorInstance.PublicKey.curve25519PublicKey("")
                                     )
                                 )
@@ -148,5 +169,15 @@ object TestData {
                 )
             )
         )
+    }
+
+    @Suppress("MagicNumber")
+    private fun generateRandomHexString32Bytes(): String {
+        val random = Random()
+        val sb = StringBuilder()
+        while (sb.length < 63) {
+            sb.append(Integer.toHexString(random.nextInt(0x10) + 0x10)) // Generates a random number between 0x10 and 0x20
+        }
+        return sb.toString()
     }
 }

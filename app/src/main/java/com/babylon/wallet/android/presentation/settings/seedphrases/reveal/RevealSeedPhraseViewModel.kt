@@ -15,6 +15,8 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.preferences.PreferencesManager
 import rdx.works.profile.data.model.factorsources.FactorSource
+import rdx.works.profile.data.model.factorsources.FactorSource.FactorSourceID
+import rdx.works.profile.data.model.factorsources.FactorSourceKind
 import rdx.works.profile.data.repository.MnemonicRepository
 import javax.inject.Inject
 
@@ -33,13 +35,21 @@ class RevealSeedPhraseViewModel @Inject constructor(
     init {
         viewModelScope.launch {
             preferencesManager.getBackedUpFactorSourceIds().collect { backedUpIds ->
-                mnemonicRepository.readMnemonic(FactorSource.ID(args.factorSourceId))?.let { mnemonic ->
+                mnemonicRepository.readMnemonic(
+                    FactorSourceID.FromHash(
+                        kind = FactorSourceKind.DEVICE,
+                        body = FactorSource.HexCoded32Bytes(args.factorSourceId)
+                    )
+                )?.let { mnemonicWithPassphrase ->
                     _state.update { state ->
                         state.copy(
-                            mnemonicWords = mnemonic.mnemonic.split(" ").chunked(mnemonicWordsChunkSize).map {
-                                it.toPersistentList()
-                            }.toPersistentList(),
-                            passphrase = mnemonic.bip39Passphrase,
+                            mnemonicWords = mnemonicWithPassphrase
+                                .mnemonic
+                                .split(" ").chunked(mnemonicWordsChunkSize)
+                                .map {
+                                    it.toPersistentList()
+                                }.toPersistentList(),
+                            passphrase = mnemonicWithPassphrase.bip39Passphrase,
                             backedUp = backedUpIds.contains(args.factorSourceId)
                         )
                     }

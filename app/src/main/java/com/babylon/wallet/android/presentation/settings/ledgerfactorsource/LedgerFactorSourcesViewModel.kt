@@ -14,7 +14,7 @@ import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import rdx.works.profile.data.model.factorsources.FactorSource
+import rdx.works.profile.data.model.factorsources.LedgerHardwareWalletFactorSource
 import rdx.works.profile.domain.AddLedgerFactorSourceUseCase
 import rdx.works.profile.domain.GetProfileUseCase
 import javax.inject.Inject
@@ -66,7 +66,7 @@ class LedgerFactorSourcesViewModel @Inject constructor(
 }
 
 data class LedgerFactorSourcesUiState(
-    val ledgerFactorSources: ImmutableList<FactorSource> = persistentListOf(),
+    val ledgerFactorSources: ImmutableList<LedgerHardwareWalletFactorSource> = persistentListOf(),
     val loading: Boolean = false,
     val hasP2pLinks: Boolean = false,
     val addLedgerSheetState: AddLedgerSheetState = AddLedgerSheetState.Connect,

@@ -85,7 +85,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.launch
-import rdx.works.profile.data.model.factorsources.FactorSource
+import rdx.works.profile.data.model.factorsources.LedgerHardwareWalletFactorSource
 import rdx.works.profile.olympiaimport.ChunkInfo
 import rdx.works.profile.olympiaimport.OlympiaAccountDetails
 
@@ -131,7 +131,7 @@ fun OlympiaImportScreen(
         ledgerFactorSources = state.usedLedgerFactorSources,
         addLedgerSheetState = state.addLedgerSheetState,
         onSendAddLedgerRequest = viewModel::onSendAddLedgerRequest,
-        deviceModel = state.recentlyConnectedLedgerDevice?.model?.toProfileLedgerDeviceModel()?.description(),
+        deviceModel = state.recentlyConnectedLedgerDevice?.model?.toProfileLedgerDeviceModel()?.value,
         totalHardwareAccounts = state.totalHardwareAccounts
     )
 }
@@ -166,7 +166,7 @@ private fun OlympiaImportContent(
     waitingForLedgerResponse: Boolean,
     onConfirmLedgerName: (String) -> Unit,
     onAddP2PLink: () -> Unit,
-    ledgerFactorSources: ImmutableList<FactorSource>,
+    ledgerFactorSources: ImmutableList<LedgerHardwareWalletFactorSource>,
     addLedgerSheetState: AddLedgerSheetState,
     onSendAddLedgerRequest: () -> Unit,
     deviceModel: String?,
@@ -503,7 +503,7 @@ private fun HardwareImportScreen(
     totalHardwareAccounts: Int,
     accountsLeft: Int,
     waitingForLedgerResponse: Boolean,
-    ledgerFactorSources: ImmutableList<FactorSource>,
+    ledgerFactorSources: ImmutableList<LedgerHardwareWalletFactorSource>,
     onUseLedger: () -> Unit
 ) {
     Box(modifier = modifier) {
@@ -560,7 +560,7 @@ private fun HardwareImportScreen(
                         items(
                             items = ledgerFactorSources,
                             key = { item ->
-                                item.id.value
+                                item.id.body.value
                             },
                             itemContent = { item ->
                                 LedgerListItem(

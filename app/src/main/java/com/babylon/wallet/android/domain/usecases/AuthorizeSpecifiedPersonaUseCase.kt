@@ -11,9 +11,9 @@ import com.babylon.wallet.android.domain.model.toProfileShareAccountsQuantifier
 import com.babylon.wallet.android.presentation.settings.legacyimport.Selectable
 import com.babylon.wallet.android.utils.toISO8601String
 import rdx.works.profile.data.model.pernetwork.Network
-import rdx.works.profile.data.model.pernetwork.filterFields
 import rdx.works.profile.data.repository.DAppConnectionRepository
 import rdx.works.profile.data.repository.updateAuthorizedDappPersonas
+import rdx.works.profile.data.utils.filterFields
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.accountOnCurrentNetwork
 import rdx.works.profile.domain.personaOnCurrentNetwork
@@ -41,14 +41,16 @@ class AuthorizeSpecifiedPersonaUseCase @Inject constructor(
     suspend operator fun invoke(incomingRequest: IncomingRequest): Result<DAppData> {
         var operationResult: Result<DAppData> = Result.failure(DappRequestFailure.InvalidRequest)
         (incomingRequest as? AuthorizedRequest)?.let { request ->
-            (request.authRequest as? AuthorizedRequest.AuthRequest.UsePersonaRequest)?.let { authRequest ->
+            (request.authRequest as? AuthorizedRequest.AuthRequest.UsePersonaRequest)?.let {
                 val authorizedDapp = dAppConnectionRepository.getAuthorizedDapp(
                     dAppDefinitionAddress = request.metadata.dAppDefinitionAddress
                 ) ?: return Result.failure(DappRequestFailure.InvalidRequest)
+
                 val authorizedPersonaSimple = authorizedDapp
                     .referencesToAuthorizedPersonas
-                    .firstOrNull {
-                        it.identityAddress == (request.authRequest as? AuthorizedRequest.AuthRequest.UsePersonaRequest)?.personaAddress
+                    .firstOrNull { authorizedPersonaSimple ->
+                        authorizedPersonaSimple.identityAddress ==
+                            (request.authRequest as? AuthorizedRequest.AuthRequest.UsePersonaRequest)?.personaAddress
                     } ?: return Result.failure(DappRequestException(DappRequestFailure.InvalidPersona))
 
                 val persona = getProfileUseCase.personaOnCurrentNetwork(
@@ -73,6 +75,7 @@ class AuthorizeSpecifiedPersonaUseCase @Inject constructor(
                                 DAppData(requestId = request.id, name = dAppName)
                             }
                         }
+
                         hasOngoingPersonaDataRequest -> {
                             selectedPersonaData = getAlreadyGrantedPersonaData(
                                 request = request,
@@ -126,6 +129,7 @@ class AuthorizeSpecifiedPersonaUseCase @Inject constructor(
                     )
                 }
             }
+
             else -> {
                 if (selectedAccounts.isNotEmpty()) {
                     operationResult = sendSuccessResponse(
@@ -172,7 +176,12 @@ class AuthorizeSpecifiedPersonaUseCase @Inject constructor(
             selectedPersonaData,
             emptyList()
         ).mapCatching { response ->
-            return when (dAppMessenger.sendWalletInteractionAuthorizedSuccessResponse(dappId = request.dappId, response = response)) {
+            return when (
+                dAppMessenger.sendWalletInteractionAuthorizedSuccessResponse(
+                    dappId = request.dappId,
+                    response = response
+                )
+            ) {
                 is ResultInternal.Success -> {
                     val updatedDapp = updateDappPersonaWithLastUsedTimestamp(authorizedDapp, persona.address)
                     dAppConnectionRepository.updateOrCreateAuthorizedDApp(updatedDapp)
@@ -180,6 +189,7 @@ class AuthorizeSpecifiedPersonaUseCase @Inject constructor(
                         authorizedDapp.displayName
                     )
                 }
+
                 else -> Result.failure(DappRequestFailure.InvalidRequest)
             }
         }

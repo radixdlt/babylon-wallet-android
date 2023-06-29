@@ -22,7 +22,9 @@ import rdx.works.profile.data.model.apppreferences.Display
 import rdx.works.profile.data.model.apppreferences.Gateways
 import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.data.model.apppreferences.Security
+import rdx.works.profile.data.model.factorsources.DeviceFactorSource
 import rdx.works.profile.data.model.factorsources.FactorSource
+import rdx.works.profile.data.model.factorsources.FactorSourceKind
 import rdx.works.profile.data.model.pernetwork.DerivationPath
 import rdx.works.profile.data.model.pernetwork.FactorInstance
 import rdx.works.profile.data.model.pernetwork.Network
@@ -36,7 +38,10 @@ class SampleDataProvider {
     fun sampleAccount(
         address: String = "fj3489fj348f",
         name: String = "my account",
-        factorSourceId: FactorSource.ID = FactorSource.ID("IDIDDIIDD")
+        factorSourceId: FactorSource.FactorSourceID.FromHash = FactorSource.FactorSourceID.FromHash(
+            kind = FactorSourceKind.DEVICE,
+            body = FactorSource.HexCoded32Bytes("5f07ec336e9e7891bff04004c817201e73c097b6b1e1b3a26bc205e0010196f5")
+        )
     ): Network.Account {
         return Network.Account(
             address = address,
@@ -85,7 +90,10 @@ class SampleDataProvider {
                             identityIndex = 0,
                             keyType = KeyType.TRANSACTION_SIGNING
                         ),
-                        factorSourceId = FactorSource.ID("IDIDDIIDD"),
+                        factorSourceId = FactorSource.FactorSourceID.FromHash(
+                            kind = FactorSourceKind.DEVICE,
+                            body = FactorSource.HexCoded32Bytes("5f07ec336e9e7891bff04004c817201e73c097b6b1e1b3a26bc205e0010196f5")
+                        ),
                         publicKey = FactorInstance.PublicKey.curve25519PublicKey("")
                     )
                 )
@@ -115,7 +123,7 @@ class SampleDataProvider {
         return Profile(
             header = Header.init(
                 id = "9958f568-8c9b-476a-beeb-017d1f843266",
-                creatingDevice = "Galaxy A53 5G (Samsung SM-A536B)",
+                deviceName = "Galaxy A53 5G (Samsung SM-A536B)",
                 creationDate = InstantGenerator(),
                 numberOfNetworks = 0
             ),
@@ -126,7 +134,7 @@ class SampleDataProvider {
                 p2pLinks = emptyList()
             ),
             factorSources = listOf(
-                FactorSource.babylon(mnemonicWithPassphrase = mnemonicWithPassphrase)
+                DeviceFactorSource.babylon(mnemonicWithPassphrase = mnemonicWithPassphrase)
             ),
             networks = emptyList()
         )
