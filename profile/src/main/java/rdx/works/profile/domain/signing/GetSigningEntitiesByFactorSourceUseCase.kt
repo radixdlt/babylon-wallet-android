@@ -42,11 +42,10 @@ class GetSigningEntitiesByFactorSourceUseCase @Inject constructor(
     }
 }
 
-@Suppress("MagicNumber")
 fun FactorSourceKind.signingOrder(): Int {
     return when (this) {
         FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET -> 0
-        FactorSourceKind.DEVICE -> 255 // DEVICE should always go last
+        FactorSourceKind.DEVICE -> Int.MAX_VALUE // DEVICE should always go last
         else -> 1 // it doesn't matter because we add only the ledger or device factor sources (see line 24)
     }
 }
