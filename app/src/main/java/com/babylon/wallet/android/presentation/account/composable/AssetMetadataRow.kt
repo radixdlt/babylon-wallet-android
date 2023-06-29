@@ -32,18 +32,3 @@ fun AssetMetadataRow(
         valueView()
     }
 }
-
-@Composable
-fun AssetMetadataRow(modifier: Modifier, key: String, value: String) {
-    AssetMetadataRow(
-        modifier = modifier,
-        key = key,
-    ) {
-        Text(
-            text = value,
-            style = RadixTheme.typography.body1Regular,
-            color = RadixTheme.colors.gray1,
-            textAlign = TextAlign.End
-        )
-    }
-}
