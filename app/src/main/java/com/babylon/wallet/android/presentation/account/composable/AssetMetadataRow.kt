@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.style.TextAlign
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import java.util.Locale
 
