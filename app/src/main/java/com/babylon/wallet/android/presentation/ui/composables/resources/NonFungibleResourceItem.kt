@@ -37,14 +37,18 @@ fun NonFungibleResourceItem(
         modifier = modifier,
         verticalArrangement = spacedBy(RadixTheme.dimensions.paddingDefault)
     ) {
-        if (item.imageUrl != null) {
+        val brokenImagePlaceholder = painterResource(id = R.drawable.img_nft_broken_image)
+        val placeholder = painterResource(id = R.drawable.img_placeholder)
+        val imageUrl = item.imageUrl
+
+        if (imageUrl != null) {
             val painter = rememberAsyncImagePainter(
                 model = rememberImageUrl(
-                    fromUrl = item.imageUrl.toString(),
+                    fromUrl = imageUrl.toString(),
                     size = ImageSize.LARGE
                 ),
-                placeholder = painterResource(id = R.drawable.img_placeholder),
-                error = painterResource(id = R.drawable.img_placeholder)
+                placeholder = placeholder,
+                error = brokenImagePlaceholder
             )
             Image(
                 painter = painter,
