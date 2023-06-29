@@ -152,7 +152,7 @@ private fun SignatureRequestContent(
                     tint = RadixTheme.colors.gray3
                 )
                 Text(
-                    text = signingState.getLabel(),
+                    text = signingState.label,
                     style = RadixTheme.typography.secondaryHeader,
                     color = RadixTheme.colors.gray1
                 )

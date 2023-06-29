@@ -121,9 +121,9 @@ enum class LedgerDeviceModel {
     companion object {
         fun LedgerHardwareWalletFactorSource.getLedgerDeviceModel(): LedgerDeviceModel? {
             return when (this.hint.model) {
-                "nanoS" -> NanoS
-                "nanoS+" -> NanoSPlus
-                "nanoX" -> NanoX
+                LedgerHardwareWalletFactorSource.DeviceModel.NANO_S.value -> NanoS
+                LedgerHardwareWalletFactorSource.DeviceModel.NANO_S_PLUS.value -> NanoSPlus
+                LedgerHardwareWalletFactorSource.DeviceModel.NANO_X.value -> NanoX
                 else -> null
             }
         }

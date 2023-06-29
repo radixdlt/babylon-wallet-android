@@ -6,14 +6,15 @@ import rdx.works.profile.data.model.factorsources.LedgerHardwareWalletFactorSour
 
 sealed class SigningState(val factorSource: FactorSource) {
 
-    abstract fun getLabel(): String
+    abstract val label: String
 
     sealed class Device(private val deviceFactorSource: DeviceFactorSource) : SigningState(deviceFactorSource) {
         data class Pending(private val deviceFactorSource: DeviceFactorSource) : Device(deviceFactorSource)
         data class Success(private val deviceFactorSource: DeviceFactorSource) : Device(deviceFactorSource)
         data class Failure(private val deviceFactorSource: DeviceFactorSource) : Device(deviceFactorSource)
 
-        override fun getLabel() = deviceFactorSource.hint.name
+        override val label: String
+            get() = deviceFactorSource.hint.name
     }
 
     sealed class Ledger(
@@ -31,7 +32,8 @@ sealed class SigningState(val factorSource: FactorSource) {
             private val ledgerFactorSource: LedgerHardwareWalletFactorSource
         ) : Ledger(ledgerFactorSource)
 
-        override fun getLabel() = ledgerFactorSource.hint.name
+        override val label: String
+            get() = ledgerFactorSource.hint.name
     }
 
     val usingLedger: Boolean = this is Ledger
