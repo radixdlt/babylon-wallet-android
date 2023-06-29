@@ -10,6 +10,7 @@ import com.babylon.wallet.android.domain.model.metadata.TagsMetadataItem
 import com.radixdlt.toolkit.RadixEngineToolkit
 import com.radixdlt.toolkit.models.method.KnownEntityAddressesInput
 import rdx.works.profile.data.model.apppreferences.Radix
+import rdx.works.profile.derivation.model.NetworkId
 import java.math.BigDecimal
 import java.util.UUID
 
@@ -62,9 +63,7 @@ sealed class Resource {
                 ""
             }
 
-        val isXrd: Boolean = RadixEngineToolkit.knownEntityAddresses(
-            KnownEntityAddressesInput(networkId = Radix.Gateway.default.network.id.toUByte())
-        ).getOrNull()?.xrdResourceAddress == resourceAddress
+        val isXrd: Boolean = officialXrdResourceAddress() == resourceAddress
 
         @Suppress("CyclomaticComplexMethod")
         override fun compareTo(other: FungibleResource): Int {
@@ -94,6 +93,14 @@ sealed class Resource {
             } else {
                 resourceAddress.compareTo(other.resourceAddress)
             }
+        }
+
+        companion object {
+            fun officialXrdResourceAddress(
+                onNetworkId: NetworkId = Radix.Gateway.default.network.networkId()
+            ) = RadixEngineToolkit.knownEntityAddresses(
+                KnownEntityAddressesInput(networkId = onNetworkId.value.toUByte())
+            ).getOrNull()?.xrdResourceAddress
         }
     }
 

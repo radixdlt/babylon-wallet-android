@@ -1,5 +1,6 @@
 package com.babylon.wallet.android.mockdata
 
+import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.data.model.factorsources.FactorSource
 import rdx.works.profile.data.model.pernetwork.DerivationPath
 import rdx.works.profile.data.model.pernetwork.FactorInstance
@@ -10,12 +11,13 @@ import rdx.works.profile.derivation.model.NetworkId
 
 fun account(
     name: String = "account-name",
-    address: String = "address-$name"
+    address: String = "address-$name",
+    networkId: NetworkId = Radix.Gateway.default.network.networkId()
 ) = Network.Account(
     address = address,
     appearanceID = 1,
     displayName = name,
-    networkID = 10,
+    networkID = networkId.value,
     securityState = SecurityState.Unsecured(
         unsecuredEntityControl = SecurityState.UnsecuredEntityControl(
             transactionSigning = FactorInstance(
