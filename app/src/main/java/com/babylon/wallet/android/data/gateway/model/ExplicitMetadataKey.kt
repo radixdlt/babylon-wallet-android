@@ -52,7 +52,7 @@ enum class ExplicitMetadataKey(val key: String) {
         )
         CLAIMED_WEBSITES -> ClaimedWebsiteMetadataItem(website = value.asString.orEmpty())
         CLAIMED_ENTITIES -> ClaimedEntitiesMetadataItem(entity = value.asString.orEmpty())
-        TAGS -> TagsMetadataItem(tags = listOf(value.asString.orEmpty()))
+        TAGS -> TagsMetadataItem(tags = value.asStringCollection.orEmpty())
         KEY_IMAGE_URL -> IconUrlMetadataItem(url = Uri.parse(value.asString.orEmpty()))
         INFO_URL -> InfoUrlMetadataItem(url = Uri.parse(value.asString.orEmpty()))
         ICON_URL -> IconUrlMetadataItem(url = Uri.parse(value.asString.orEmpty()))

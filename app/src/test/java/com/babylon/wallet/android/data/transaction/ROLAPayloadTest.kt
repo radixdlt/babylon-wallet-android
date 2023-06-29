@@ -1,6 +1,6 @@
 package com.babylon.wallet.android.data.transaction
 
-import kotlinx.serialization.decodeFromString
+import com.babylon.wallet.android.domain.usecases.transaction.SignRequest
 import kotlinx.serialization.json.Json
 import org.junit.Assert
 import org.junit.Before
@@ -22,11 +22,14 @@ internal class ROLAPayloadTest {
     @Test
     fun `run tests for test vector`() {
         testVectors.forEach { testVector ->
-            val payloadToHash = payloadToHash(testVector.challenge, testVector.dAppDefinitionAddress, testVector.origin)
-            val hexValue = payloadToHash.toHexString()
-            Assert.assertEquals(hexValue, testVector.payloadToHash)
-            val hashedPayload = payloadToHash.blake2Hash().toHexString()
-            Assert.assertEquals(hashedPayload, testVector.blakeHashOfPayload)
+            val signRequest = SignRequest.SignAuthChallengeRequest(
+                challengeHex = testVector.challenge,
+                dAppDefinitionAddress = testVector.dAppDefinitionAddress,
+                origin = testVector.origin
+            )
+
+            Assert.assertEquals(testVector.payloadToHash, signRequest.payloadHex)
+            Assert.assertEquals(testVector.blakeHashOfPayload, signRequest.hashedDataToSign.toHexString())
         }
     }
 

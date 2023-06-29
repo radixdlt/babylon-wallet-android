@@ -37,7 +37,7 @@ class RestoreMnemonicViewModel @Inject constructor(
     private val args = RestoreMnemonicArgs(savedStateHandle)
 
     override fun initialState(): State = State(
-        accountAddress = args.accountAddress,
+        accountAddress = args.factorSourceId,
         mnemonicWords = listOf(),
         passphrase = "",
         accountOnNetwork = null,
@@ -48,11 +48,9 @@ class RestoreMnemonicViewModel @Inject constructor(
     init {
         viewModelScope.launch {
             val profile = getProfileUseCase().first()
-            val account = profile.currentNetwork.accounts.find { it.address == args.accountAddress }
-            val factorSourceId = (account?.securityState as? SecurityState.Unsecured)
-                ?.unsecuredEntityControl?.transactionSigning?.factorSourceId
+            val account = profile.currentNetwork.accounts.find { it.address == args.factorSourceId }
+            val factorSourceId = FactorSource.ID(args.factorSourceId)
             val factorSource = profile.factorSources.find { it.id == factorSourceId }
-
             _state.update {
                 it.copy(
                     accountOnNetwork = account,

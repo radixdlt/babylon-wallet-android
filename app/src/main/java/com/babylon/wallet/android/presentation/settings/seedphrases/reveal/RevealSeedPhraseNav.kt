@@ -1,7 +1,9 @@
-package com.babylon.wallet.android.presentation.settings.seedphrase
+package com.babylon.wallet.android.presentation.settings.seedphrases.reveal
 
 import androidx.annotation.VisibleForTesting
 import androidx.compose.animation.AnimatedContentScope
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.SavedStateHandle
@@ -14,42 +16,45 @@ import com.google.accompanist.navigation.animation.composable
 @VisibleForTesting
 internal const val ARG_FACTOR_SOURCE_ID = "factor_source_id"
 
-const val ROUTE_SETTINGS_SHOW_MNEMONIC = "settings_show_mnemonic/{$ARG_FACTOR_SOURCE_ID}"
+const val ROUTE_REVEAL_SEED_PHRASE = "reveal_seed_phrase/{$ARG_FACTOR_SOURCE_ID}"
 
-internal class ShowMnemonicArgs(val factorSourceId: String?) {
+internal class RevealSeedPhraseArgs(val factorSourceId: String) {
     constructor(savedStateHandle: SavedStateHandle) : this(
-        savedStateHandle[ARG_FACTOR_SOURCE_ID]
+        checkNotNull(savedStateHandle[ARG_FACTOR_SOURCE_ID]) as String
     )
 }
 
-fun NavController.settingsShowMnemonic(factorSourceId: String? = null) {
-    navigate("settings_show_mnemonic/$factorSourceId")
+fun NavController.revealSeedPhrase(factorSourceId: String) {
+    navigate("reveal_seed_phrase/$factorSourceId")
 }
 
 @OptIn(ExperimentalAnimationApi::class)
-fun NavGraphBuilder.settingsShowMnemonic(
-    onBackClick: () -> Unit,
-    onNavigateToRecoverMnemonic: (String) -> Unit
+fun NavGraphBuilder.revealSeedPhrase(
+    onBackClick: () -> Unit
 ) {
     composable(
-        route = ROUTE_SETTINGS_SHOW_MNEMONIC,
+        route = ROUTE_REVEAL_SEED_PHRASE,
         enterTransition = {
             slideIntoContainer(AnimatedContentScope.SlideDirection.Left)
         },
         exitTransition = {
+            ExitTransition.None
+        },
+        popExitTransition = {
             slideOutOfContainer(AnimatedContentScope.SlideDirection.Right)
+        },
+        popEnterTransition = {
+            EnterTransition.None
         },
         arguments = listOf(
             navArgument(ARG_FACTOR_SOURCE_ID) {
                 type = NavType.StringType
-                nullable = true
             }
         )
     ) {
-        ShowMnemonicScreen(
+        RevealSeedPhraseScreen(
             viewModel = hiltViewModel(),
             onBackClick = onBackClick,
-            onNavigateToRecoverMnemonic = onNavigateToRecoverMnemonic
         )
     }
 }

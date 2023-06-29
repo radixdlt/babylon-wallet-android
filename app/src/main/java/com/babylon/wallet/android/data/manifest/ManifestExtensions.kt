@@ -16,8 +16,8 @@ import com.radixdlt.toolkit.models.EnumDiscriminator
 import com.radixdlt.toolkit.models.Instruction
 import com.radixdlt.toolkit.models.ManifestAstValue
 import com.radixdlt.toolkit.models.ValueKind
-import com.radixdlt.toolkit.models.request.ConvertManifestRequest
-import com.radixdlt.toolkit.models.request.ConvertManifestResponse
+import com.radixdlt.toolkit.models.method.ConvertManifestInput
+import com.radixdlt.toolkit.models.method.ConvertManifestOutput
 import com.radixdlt.toolkit.models.transaction.ManifestInstructions
 import com.radixdlt.toolkit.models.transaction.ManifestInstructionsKind
 import com.radixdlt.toolkit.models.transaction.TransactionManifest
@@ -54,7 +54,7 @@ fun ManifestBuilder.addDepositBatchInstruction(
             componentAddress = ManifestAstValue.Address(
                 value = recipientComponentAddress
             ),
-            methodName = ManifestAstValue.String(MethodName.DepositBatch.stringValue),
+            methodName = ManifestAstValue.String(MethodName.TryDepositBatchOrAbort.stringValue),
             arguments = arrayOf(ManifestAstValue.Expression("ENTIRE_WORKTOP"))
         )
     )
@@ -143,11 +143,11 @@ fun TransactionManifest.addGuaranteeInstructionToManifest(
 
 fun TransactionManifest.convertManifestInstructionsToString(
     networkId: Int
-): Result<ConvertManifestResponse> {
+): Result<ConvertManifestOutput> {
     return try {
         Result.success(
             RadixEngineToolkit.convertManifest(
-                ConvertManifestRequest(
+                ConvertManifestInput(
                     networkId = networkId.toUByte(),
                     instructionsOutputKind = ManifestInstructionsKind.String,
                     manifest = this
@@ -183,7 +183,7 @@ private fun guaranteeInstruction(
     resourceAddress: String,
     guaranteedAmount: String
 ): Instruction {
-    return Instruction.AssertWorktopContainsByAmount(
+    return Instruction.AssertWorktopContains(
         resourceAddress = ManifestAstValue.Address(resourceAddress),
         amount = ManifestAstValue.Decimal(guaranteedAmount)
     )

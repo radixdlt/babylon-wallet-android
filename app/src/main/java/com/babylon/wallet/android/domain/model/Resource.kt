@@ -1,13 +1,16 @@
 package com.babylon.wallet.android.domain.model
 
 import android.net.Uri
+import com.babylon.wallet.android.domain.model.behaviours.ResourceBehaviour
 import com.babylon.wallet.android.domain.model.metadata.DescriptionMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.IconUrlMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.NameMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.SymbolMetadataItem
+import com.babylon.wallet.android.domain.model.metadata.TagsMetadataItem
 import com.radixdlt.toolkit.RadixEngineToolkit
-import com.radixdlt.toolkit.models.request.KnownEntityAddressesRequest
+import com.radixdlt.toolkit.models.method.KnownEntityAddressesInput
 import rdx.works.profile.data.model.apppreferences.Radix
+import rdx.works.profile.derivation.model.NetworkId
 import java.math.BigDecimal
 import java.util.UUID
 
@@ -21,6 +24,9 @@ sealed class Resource {
         private val symbolMetadataItem: SymbolMetadataItem? = null,
         private val descriptionMetadataItem: DescriptionMetadataItem? = null,
         private val iconUrlMetadataItem: IconUrlMetadataItem? = null,
+        private val tagsMetadataItem: TagsMetadataItem? = null,
+        private val behaviours: List<ResourceBehaviour> = emptyList(),
+        private val currentSupply: String? = null
     ) : Resource(), Comparable<FungibleResource> {
         val name: String
             get() = nameMetadataItem?.name.orEmpty()
@@ -34,6 +40,20 @@ sealed class Resource {
         val iconUrl: Uri?
             get() = iconUrlMetadataItem?.url
 
+        val tags: List<Tag>
+            get() = if (isXrd) {
+                tagsMetadataItem?.tags?.map { Tag.Dynamic(name = it) }
+                    ?.plus(Tag.Official).orEmpty()
+            } else {
+                tagsMetadataItem?.tags?.map { Tag.Dynamic(name = it) }.orEmpty()
+            }
+
+        val resourceBehaviours: List<ResourceBehaviour>
+            get() = behaviours
+
+        val currentSupplyToDisplay: String?
+            get() = currentSupply
+
         val displayTitle: String
             get() = if (symbol.isNotBlank()) {
                 symbol
@@ -43,9 +63,7 @@ sealed class Resource {
                 ""
             }
 
-        val isXrd: Boolean = RadixEngineToolkit.knownEntityAddresses(
-            KnownEntityAddressesRequest(networkId = Radix.Gateway.default.network.id.toUByte())
-        ).getOrNull()?.xrdResourceAddress == resourceAddress
+        val isXrd: Boolean = officialXrdResourceAddress() == resourceAddress
 
         @Suppress("CyclomaticComplexMethod")
         override fun compareTo(other: FungibleResource): Int {
@@ -76,6 +94,14 @@ sealed class Resource {
                 resourceAddress.compareTo(other.resourceAddress)
             }
         }
+
+        companion object {
+            fun officialXrdResourceAddress(
+                onNetworkId: NetworkId = Radix.Gateway.default.network.networkId()
+            ) = RadixEngineToolkit.knownEntityAddresses(
+                KnownEntityAddressesInput(networkId = onNetworkId.value.toUByte())
+            ).getOrNull()?.xrdResourceAddress
+        }
     }
 
     data class NonFungibleResource(
@@ -84,7 +110,10 @@ sealed class Resource {
         private val nameMetadataItem: NameMetadataItem? = null,
         private val descriptionMetadataItem: DescriptionMetadataItem? = null,
         private val iconMetadataItem: IconUrlMetadataItem? = null,
-        val items: List<Item>
+        private val tagsMetadataItem: TagsMetadataItem? = null,
+        private val behaviours: List<ResourceBehaviour> = emptyList(),
+        val items: List<Item>,
+        private val currentSupply: String? = null
     ) : Resource(), Comparable<NonFungibleResource> {
         val name: String
             get() = nameMetadataItem?.name.orEmpty()
@@ -94,6 +123,15 @@ sealed class Resource {
 
         val iconUrl: Uri?
             get() = iconMetadataItem?.url
+
+        val tags: List<Tag>
+            get() = tagsMetadataItem?.tags?.map { Tag.Dynamic(name = it) }.orEmpty()
+
+        val resourceBehaviours: List<ResourceBehaviour>
+            get() = behaviours
+
+        val currentSupplyToDisplay: Int?
+            get() = currentSupply?.toIntOrNull()
 
         override fun compareTo(other: NonFungibleResource): Int = when {
             nameMetadataItem == null && other.nameMetadataItem != null -> 1
@@ -209,5 +247,13 @@ sealed class Resource {
                 }
             }
         }
+    }
+
+    sealed interface Tag {
+        object Official : Tag
+
+        data class Dynamic(
+            val name: String
+        ) : Tag
     }
 }

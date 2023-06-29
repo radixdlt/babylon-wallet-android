@@ -30,6 +30,8 @@ import com.babylon.wallet.android.presentation.dapp.authorized.account.toUiModel
 import com.babylon.wallet.android.presentation.dapp.authorized.selectpersona.PersonaUiModel
 import com.babylon.wallet.android.presentation.dapp.authorized.selectpersona.toUiModel
 import com.babylon.wallet.android.presentation.model.encodeToString
+import com.babylon.wallet.android.utils.AppEvent
+import com.babylon.wallet.android.utils.AppEventBus
 import com.babylon.wallet.android.utils.toISO8601String
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.delay
@@ -57,6 +59,7 @@ import javax.inject.Inject
 @Suppress("LongParameterList", "TooManyFunctions", "LongMethod", "LargeClass")
 class DAppAuthorizedLoginViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
+    private val appEventBus: AppEventBus,
     private val dAppMessenger: DappMessenger,
     private val dAppConnectionRepository: DAppConnectionRepository,
     private val getProfileUseCase: GetProfileUseCase,
@@ -111,7 +114,7 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
                 }
             }
             result.onError { error ->
-                _state.update { it.copy(uiMessage = UiMessage.ErrorMessage(error)) }
+                _state.update { it.copy(uiMessage = UiMessage.ErrorMessage.from(error)) }
             }
             setInitialDappLoginRoute()
         }
@@ -120,9 +123,10 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
     private fun observeSigningState() {
         viewModelScope.launch {
             buildAuthorizedDappResponseUseCase.signingState.filterNotNull().collect { signingState ->
-                _state.update { state ->
-                    state.copy(signingState = signingState)
-                }
+                // TODO verify how we should show signing state in persona login flow
+//                _state.update { state ->
+//                    state.copy(signingState = signingState)
+//                }
             }
         }
     }
@@ -227,7 +231,7 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
 
     @Suppress("MagicNumber")
     private suspend fun handleRequestError(failure: DappRequestFailure) {
-        _state.update { it.copy(uiMessage = UiMessage.ErrorMessage(DappRequestException(failure))) }
+        _state.update { it.copy(uiMessage = UiMessage.ErrorMessage.from(DappRequestException(failure))) }
         dAppMessenger.sendWalletInteractionResponseFailure(
             request.dappId,
             args.interactionId,
@@ -644,13 +648,15 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
                     mutex.withLock {
                         editedDapp?.let { dAppConnectionRepository.updateOrCreateAuthorizedDApp(it) }
                     }
-                    sendEvent(
-                        Event.LoginFlowCompleted(
-                            requestId = request.interactionId,
-                            dAppName = state.value.dappWithMetadata?.name.orEmpty(),
-                            showSuccessDialog = !request.isInternalRequest()
+                    sendEvent(Event.LoginFlowCompleted)
+                    if (!request.isInternalRequest()) {
+                        appEventBus.sendEvent(
+                            AppEvent.Status.DappInteraction(
+                                requestId = request.interactionId,
+                                dAppName = state.value.dappWithMetadata?.name
+                            )
                         )
-                    )
+                    }
                 }.onFailure { throwable ->
                     if (throwable is DappRequestFailure) {
                         handleRequestError(throwable)
@@ -666,11 +672,7 @@ sealed interface Event : OneOffEvent {
     object RejectLogin : Event
     object RequestCompletionBiometricPrompt : Event
 
-    data class LoginFlowCompleted(
-        val requestId: String,
-        val dAppName: String,
-        val showSuccessDialog: Boolean = true
-    ) : Event
+    object LoginFlowCompleted : Event
 
     data class DisplayPermission(
         val numberOfAccounts: Int,

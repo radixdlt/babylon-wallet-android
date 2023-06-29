@@ -8,6 +8,7 @@ import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavType
 import androidx.navigation.navArgument
+import com.babylon.wallet.android.presentation.navigation.markAsHighPriority
 import com.google.accompanist.navigation.animation.composable
 
 @VisibleForTesting
@@ -15,6 +16,8 @@ internal const val ARG_ACCOUNT_ID = "arg_account_id"
 
 @VisibleForTesting
 internal const val ARG_REQUEST_SOURCE = "arg_request_source"
+
+private const val ROUTE = "account_completion_route/{$ARG_REQUEST_SOURCE}/{$ARG_ACCOUNT_ID}"
 
 internal class CreateAccountConfirmationArgs(val accountId: String, val requestSource: CreateAccountRequestSource) {
     constructor(savedStateHandle: SavedStateHandle) : this(
@@ -36,8 +39,9 @@ fun NavGraphBuilder.createAccountConfirmationScreen(
     onNavigateToWallet: () -> Unit,
     onFinishAccountCreation: () -> Unit,
 ) {
+    markAsHighPriority(route = ROUTE)
     composable(
-        route = "account_completion_route/{$ARG_REQUEST_SOURCE}/{$ARG_ACCOUNT_ID}",
+        route = ROUTE,
         arguments = listOf(
             navArgument(ARG_REQUEST_SOURCE) {
                 type = NavType.EnumType(

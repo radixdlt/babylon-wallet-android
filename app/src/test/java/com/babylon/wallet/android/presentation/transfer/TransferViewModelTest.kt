@@ -34,7 +34,6 @@ class TransferViewModelTest : StateViewModelTest<TransferViewModel>() {
     private val getProfileUseCase = mockk<GetProfileUseCase>()
     private val getAccountsWithResourcesUseCase = mockk<GetAccountsWithResourcesUseCase>()
     private val incomingRequestRepository = mockk<IncomingRequestRepository>()
-    private val appEventBus = mockk<AppEventBus>()
 
     private val fromAccount = account(
         address = "account_tdx_19jd32jd3928jd3892jd329",
@@ -67,7 +66,6 @@ class TransferViewModelTest : StateViewModelTest<TransferViewModel>() {
     @Before
     override fun setUp() = runTest {
         super.setUp()
-        every { appEventBus.events } returns emptyFlow()
         every { savedStateHandle.get<String>(ARG_ACCOUNT_ID) } returns fromAccount.address
         every { getProfileUseCase() } returns flowOf(profile(accounts = listOf(fromAccount) + otherAccounts))
     }
@@ -103,14 +101,13 @@ class TransferViewModelTest : StateViewModelTest<TransferViewModel>() {
         }
     }
 
-    @Ignore("until we have the validated addresses from iOS")
     @Test
     fun `choosing an third party address from the accounts chooser`() = runTest {
         val viewModel = vm.value
         viewModel.state.test {
             assertFromAccountSet()
             assertOpenSheetForSkeleton(viewModel, viewModel.state.value.targetAccounts[0] as TargetAccount.Skeleton)
-            assertOtherAccountSubmitted(viewModel, "account_tdx_c_1pyq480rav9n99eq9hmrjdz8u9km05zx7u2kluh79dnpsr962km")
+            assertOtherAccountSubmitted(viewModel, "account_tdx_21_12ya9jylskaa6gdrfr8nvve3pfc6wyhyw7eg83fwlc7fv2w0eanumcd")
         }
     }
 

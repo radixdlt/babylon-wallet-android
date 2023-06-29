@@ -1,5 +1,6 @@
 package com.babylon.wallet.android.utils
 
+import com.babylon.wallet.android.presentation.common.UiMessage
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
@@ -28,9 +29,37 @@ sealed interface AppEvent {
         val derivedPublicKeyHex: String
     ) : AppEvent
 
-    sealed class TransactionEvent(val requestId: String) : AppEvent {
-        data class Sent(private val reqId: String) : TransactionEvent(reqId)
-        data class Successful(private val reqId: String) : TransactionEvent(reqId)
-        data class Failed(private val reqId: String, val errorTextRes: Int?) : TransactionEvent(reqId)
+    sealed class Status : AppEvent {
+        abstract val requestId: String
+
+        data class DappInteraction(
+            override val requestId: String,
+            val dAppName: String?
+        ) : Status()
+
+        sealed class Transaction : Status() {
+
+            abstract val transactionId: String
+            abstract val isInternal: Boolean
+
+            data class InProgress(
+                override val requestId: String,
+                override val transactionId: String,
+                override val isInternal: Boolean
+            ) : Transaction()
+
+            data class Success(
+                override val requestId: String,
+                override val transactionId: String,
+                override val isInternal: Boolean
+            ) : Transaction()
+
+            data class Fail(
+                override val requestId: String,
+                override val transactionId: String,
+                override val isInternal: Boolean,
+                val errorMessage: UiMessage.ErrorMessage?
+            ) : Transaction()
+        }
     }
 }

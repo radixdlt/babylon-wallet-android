@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -42,7 +43,7 @@ fun BottomSheetWrapper(
     modifier: Modifier = Modifier,
     onDismissRequest: () -> Unit,
     bottomSheetState: SheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
-    content: @Composable () -> Unit,
+    content: @Composable ColumnScope.() -> Unit,
 ) {
     // TODO update dependency when this issue is resolved
     // https://issuetracker.google.com/issues/268432129
@@ -74,7 +75,7 @@ fun BottomSheetDialogWrapper(
     modifier: Modifier = Modifier,
     onDismissRequest: () -> Unit,
     bottomSheetState: SheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
-    content: @Composable () -> Unit,
+    content: @Composable ColumnScope.() -> Unit,
 ) {
     Dialog(onDismissRequest = onDismissRequest) {
         BottomSheetWrapper(
@@ -112,12 +113,12 @@ fun BottomDialogDragHandle(
 
 @Composable
 fun BasicPromptAlertDialog(
+    modifier: Modifier = Modifier,
     finish: (accepted: Boolean) -> Unit,
     title: (@Composable () -> Unit)? = null,
     text: (@Composable () -> Unit)? = null,
-    modifier: Modifier = Modifier,
     confirmText: String = stringResource(id = R.string.common_confirm),
-    dismissText: String = stringResource(id = R.string.common_cancel),
+    dismissText: String? = stringResource(id = R.string.common_cancel),
     confirmTextColor: Color = RadixTheme.colors.blue2
 ) {
     AlertDialog(
@@ -128,8 +129,8 @@ fun BasicPromptAlertDialog(
         confirmButton = {
             RadixTextButton(text = confirmText, onClick = { finish(true) }, contentColor = confirmTextColor)
         },
-        dismissButton = {
-            RadixTextButton(text = dismissText, onClick = { finish(false) })
+        dismissButton = dismissText?.let {
+            { RadixTextButton(text = it, onClick = { finish(false) }) }
         },
         title = title,
         text = text
@@ -156,28 +157,11 @@ fun NotSecureAlertDialog(
         })
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun SomethingWentWrongDialog(
-    modifier: Modifier = Modifier,
-    onDismissRequest: () -> Unit,
-    subtitle: String,
-    title: String = stringResource(id = R.string.common_somethingWentWrong)
-) {
-    BottomSheetWrapper(onDismissRequest = onDismissRequest) {
-        SomethingWentWrongDialogContent(
-            title = title,
-            subtitle = subtitle,
-            modifier = modifier
-        )
-    }
-}
-
 @Composable
 fun SomethingWentWrongDialogContent(
     modifier: Modifier = Modifier,
     title: String,
-    subtitle: String
+    subtitle: String?
 ) {
     Column(
         modifier
@@ -202,11 +186,14 @@ fun SomethingWentWrongDialogContent(
             textAlign = TextAlign.Center,
             modifier = Modifier.align(alignment = Alignment.CenterHorizontally)
         )
-        Text(
-            text = subtitle,
-            style = RadixTheme.typography.body1Regular,
-            color = RadixTheme.colors.gray1
-        )
+
+        subtitle?.let {
+            Text(
+                text = it,
+                style = RadixTheme.typography.body1Regular,
+                color = RadixTheme.colors.gray1
+            )
+        }
     }
 }
 

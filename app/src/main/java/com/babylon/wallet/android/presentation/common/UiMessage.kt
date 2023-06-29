@@ -1,52 +1,74 @@
 package com.babylon.wallet.android.presentation.common
 
+import android.content.Context
+import androidx.annotation.StringRes
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.platform.LocalContext
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.data.transaction.DappRequestException
 import com.babylon.wallet.android.data.transaction.DappRequestFailure
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 import rdx.works.core.UUIDGenerator
 
+@Serializable
 sealed class UiMessage(val id: String = UUIDGenerator.uuid().toString()) {
+
+    abstract fun getMessage(context: Context): String
+
+    @Serializable
+    @SerialName("info_message")
     sealed class InfoMessage : UiMessage() {
+        @Serializable
+        @SerialName("invalid_mnemonic")
         object InvalidMnemonic : InfoMessage()
+
+        @Serializable
+        @SerialName("invalid_payload")
         object InvalidPayload : InfoMessage()
+
+        @Serializable
+        @SerialName("invalid_no_mnemonic_for_accounts")
         object NoMnemonicForAccounts : InfoMessage()
+
+        @Serializable
+        @SerialName("invalid_no_accounts_for_ledger")
         object NoAccountsForLedger : InfoMessage()
+
+        @Serializable
+        @SerialName("invalid_ledger_already_exist")
         data class LedgerAlreadyExist(val label: String) : InfoMessage()
 
-        @Composable
-        fun userFriendlyDescriptionRes(): String {
-            return when (this) {
-                InvalidMnemonic -> stringResource(R.string.importOlympiaAccounts_invalidMnemonic)
-                InvalidPayload -> stringResource(R.string.importOlympiaAccounts_invalidPayload)
-                NoMnemonicForAccounts -> stringResource(R.string.importOlympiaAccounts_noMnemonicFound)
-                NoAccountsForLedger -> stringResource(R.string.common_somethingWentWrong)
-                is LedgerAlreadyExist -> stringResource(id = R.string.addLedger_alreadyAddedAlert_message, label)
-            }
+        override fun getMessage(context: Context): String = when (this) {
+            InvalidMnemonic -> context.getString(R.string.importOlympiaAccounts_invalidMnemonic)
+            InvalidPayload -> context.getString(R.string.importOlympiaAccounts_invalidPayload)
+            NoMnemonicForAccounts -> context.getString(R.string.importOlympiaAccounts_noMnemonicFound)
+            NoAccountsForLedger -> context.getString(R.string.common_somethingWentWrong)
+            is LedgerAlreadyExist -> context.getString(R.string.addLedgerDevice_alreadyAddedAlert_message, label)
         }
     }
 
-    data class ErrorMessage(val error: Throwable? = null) : UiMessage()
+    @Serializable
+    @SerialName("error_message")
+    data class ErrorMessage(
+        @StringRes
+        private val userFriendlyDescription: Int?,
+        private val nonUserFriendlyDescription: String?
+    ) : UiMessage() {
 
-    @Composable
-    fun getUserFriendlyDescription(): String? {
-        return when (this) {
-            is ErrorMessage -> {
-                ((error as? DappRequestException)?.failure?.toDescriptionRes() ?: (error as? DappRequestFailure)?.toDescriptionRes())?.let {
-                    stringResource(id = it)
-                }
-            }
+        override fun getMessage(context: Context): String = userFriendlyDescription?.let {
+            context.getString(it)
+        } ?: nonUserFriendlyDescription.orEmpty()
 
-            is InfoMessage -> this.userFriendlyDescriptionRes()
-        }
-    }
-
-    fun getErrorMessage(): String? {
-        return if (this is ErrorMessage) {
-            error?.message
-        } else {
-            null
+        companion object {
+            fun from(error: Throwable?) = ErrorMessage(
+                userFriendlyDescription = (error as? DappRequestException)?.failure?.toDescriptionRes()
+                    ?: (error as? DappRequestFailure)?.toDescriptionRes(),
+                nonUserFriendlyDescription = error?.message
+            )
         }
     }
 }
+
+@Composable
+fun UiMessage.getMessage(): String = getMessage(context = LocalContext.current)

@@ -1041,6 +1041,10 @@ components:
           $ref: "#/components/schemas/HashHexString"
         fee_paid:
           $ref: "#/components/schemas/BigDecimal"
+        affected_global_entities:
+          type: array
+          items:
+            $ref: "#/components/schemas/Address"
         confirmed_at:
           nullable: true
           type: string
@@ -1052,10 +1056,6 @@ components:
           $ref: "#/components/schemas/HexString"
         receipt:
           $ref: "#/components/schemas/TransactionReceipt"
-        referenced_global_entities:
-          type: array
-          items:
-            type: string
         message_hex:
           $ref: "#/components/schemas/HexString"
 
@@ -1177,8 +1177,7 @@ components:
             - resource_package
             - account_package
             - identity_package
-            - epoch_manager_package
-            - clock_package
+            - consensus_manager_package
             - access_controller_package
             - transaction_processor_package
             - metadata_module_package
@@ -1186,8 +1185,7 @@ components:
             - access_rules_package
             - genesis_helper_package
             - faucet_package
-            - epoch_manager
-            - clock
+            - consensus_manager
             - genesis_helper
             - faucet
           properties:
@@ -1219,9 +1217,7 @@ components:
               $ref: "#/components/schemas/Address"
             identity_package:
               $ref: "#/components/schemas/Address"
-            epoch_manager_package:
-              $ref: "#/components/schemas/Address"
-            clock_package:
+            consensus_manager_package:
               $ref: "#/components/schemas/Address"
             access_controller_package:
               $ref: "#/components/schemas/Address"
@@ -1237,9 +1233,7 @@ components:
               $ref: "#/components/schemas/Address"
             faucet_package:
               $ref: "#/components/schemas/Address"
-            epoch_manager:
-              $ref: "#/components/schemas/Address"
-            clock:
+            consensus_manager:
               $ref: "#/components/schemas/Address"
             genesis_helper:
               $ref: "#/components/schemas/Address"
@@ -1297,7 +1291,6 @@ components:
         - manifest
         - start_epoch_inclusive
         - end_epoch_exclusive
-        - cost_unit_limit
         - tip_percentage
         - nonce
         - signer_public_keys
@@ -1326,15 +1319,9 @@ components:
         notary_public_key:
           $ref: "#/components/schemas/PublicKey"
           description: The notary public key to use (optional)
-        notary_as_signatory:
+        notary_is_signatory:
           type: boolean
           description: Whether the notary should count as a signatory (optional, default false)
-        cost_unit_limit:
-          type: integer
-          format: int64
-          minimum: 0
-          maximum: 4294967295
-          description: An integer between `0` and `2^32 - 1`, giving the maximum number of cost units available for transaction execution
         tip_percentage:
           type: integer
           format: int32
@@ -1342,7 +1329,9 @@ components:
           maximum: 255
           description: An integer between `0` and `255`, giving the validator tip as a percentage amount. A value of `1` corresponds to 1% of the fee.
         nonce:
-          type: string
+          type: integer
+          format: int64
+          minimum: 0
           description: A decimal-string-encoded integer between `0` and `2^64 - 1`, used to ensure the transaction intent is unique.
         signer_public_keys:
           type: array
@@ -1475,6 +1464,8 @@ components:
           type: boolean
         receipt_events:
           type: boolean
+        affected_global_entities:
+          type: boolean
     TransactionCommittedDetailsResponse:
       allOf:
         - $ref: "#/components/schemas/LedgerStateMixin"
@@ -1513,6 +1504,10 @@ components:
               items:
                 $ref: "#/components/schemas/Address"
             manifest_resources_filter:
+              type: array
+              items:
+                $ref: "#/components/schemas/Address"
+            affected_global_entities_filter:
               type: array
               items:
                 $ref: "#/components/schemas/Address"
@@ -1582,6 +1577,15 @@ components:
       example:
         addresses:
           - "<entity-address>"
+        aggregation_level: "Vault"
+        opt_ins:
+          ancestor_identities: true
+          component_royalty_vault_balance: true
+          package_royalty_vault_balance: true
+          non_fungible_include_nfids: true
+          explicit_metadata:
+            - name
+            - description
     StateEntityDetailsOptIns:
       type: object
       properties:

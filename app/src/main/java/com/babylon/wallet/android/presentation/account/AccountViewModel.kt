@@ -22,7 +22,7 @@ import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.profile.data.model.factorsources.FactorSource
-import rdx.works.profile.data.utils.unsecuredFactorSourceId
+import rdx.works.profile.data.utils.factorSourceId
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.accountOnCurrentNetwork
 import javax.inject.Inject
@@ -52,7 +52,7 @@ class AccountViewModel @Inject constructor(
 
         viewModelScope.launch {
             appEventBus.events.filter { event ->
-                event is AppEvent.GotFreeXrd || event is AppEvent.TransactionEvent.Successful
+                event is AppEvent.GotFreeXrd || event is AppEvent.Status.Transaction.Success
             }.collect {
                 refresh()
             }
@@ -84,7 +84,7 @@ class AccountViewModel @Inject constructor(
             val result = getAccountsWithResourcesUseCase(listOf(account), isRefreshing)
             result.onError { e ->
                 _state.update { accountUiState ->
-                    accountUiState.copy(uiMessage = UiMessage.ErrorMessage(error = e), isLoading = false)
+                    accountUiState.copy(uiMessage = UiMessage.ErrorMessage.from(error = e), isLoading = false)
                 }
             }
             result.onValue { accountsWithResources ->
@@ -116,7 +116,7 @@ class AccountViewModel @Inject constructor(
 
     fun onApplySecuritySettings() {
         viewModelScope.launch {
-            _state.value.accountWithResources?.account?.unsecuredFactorSourceId()?.let {
+            _state.value.accountWithResources?.account?.factorSourceId()?.let {
                 sendEvent(AccountEvent.NavigateToMnemonicBackup(it))
             }
         }

@@ -63,6 +63,13 @@ fun SettingsConnectorScreen(
     modifier: Modifier = Modifier,
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
+    LaunchedEffect(Unit) {
+        viewModel.oneOffEvent.collect { event ->
+            when (event) {
+                Event.Close -> onBackClick()
+            }
+        }
+    }
     SettingsLinkConnectorContent(
         modifier = modifier
             .navigationBarsPadding()

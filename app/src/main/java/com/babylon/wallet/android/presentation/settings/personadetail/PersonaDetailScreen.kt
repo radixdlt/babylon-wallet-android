@@ -225,7 +225,7 @@ private fun PersonaDetailList(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = dimensions.paddingDefault),
-                    text = stringResource(R.string.accountSettings_debug_createAndUploadAuthKey),
+                    text = "Create &amp; Upload Auth Key",
                     onClick = onCreateAndUploadAuthKey,
                     enabled = !loading,
                     throttleClicks = true

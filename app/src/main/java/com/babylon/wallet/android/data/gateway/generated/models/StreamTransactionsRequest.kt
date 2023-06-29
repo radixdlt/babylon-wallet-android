@@ -29,6 +29,7 @@ import kotlinx.serialization.SerialName
  * @param manifestAccountsWithdrawnFromFilter 
  * @param manifestAccountsDepositedIntoFilter 
  * @param manifestResourcesFilter 
+ * @param affectedGlobalEntitiesFilter 
  * @param eventsFilter 
  * @param order Configures the order of returned result set. Defaults to `desc`.
  * @param optIns 
@@ -63,6 +64,9 @@ data class StreamTransactionsRequest (
 
     @SerialName(value = "manifest_resources_filter")
     val manifestResourcesFilter: kotlin.collections.List<kotlin.String>? = null,
+
+    @SerialName(value = "affected_global_entities_filter")
+    val affectedGlobalEntitiesFilter: kotlin.collections.List<kotlin.String>? = null,
 
     @SerialName(value = "events_filter")
     val eventsFilter: kotlin.collections.List<StreamTransactionsRequestEventFilterItem>? = null,

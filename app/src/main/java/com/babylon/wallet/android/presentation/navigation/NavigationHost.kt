@@ -35,13 +35,13 @@ import com.babylon.wallet.android.presentation.settings.incompatibleprofile.Inco
 import com.babylon.wallet.android.presentation.settings.incompatibleprofile.ROUTE_INCOMPATIBLE_PROFILE
 import com.babylon.wallet.android.presentation.settings.personadetail.personaDetailScreen
 import com.babylon.wallet.android.presentation.settings.personaedit.personaEditScreen
-import com.babylon.wallet.android.presentation.settings.seedphrase.settingsShowMnemonic
+import com.babylon.wallet.android.presentation.settings.seedphrases.settingsShowMnemonic
 import com.babylon.wallet.android.presentation.settings.settingsNavGraph
+import com.babylon.wallet.android.presentation.status.dapp.dappInteractionDialog
+import com.babylon.wallet.android.presentation.status.transaction.transactionStatusDialog
 import com.babylon.wallet.android.presentation.transaction.transactionApprovalScreen
-import com.babylon.wallet.android.presentation.transactionstatus.transactionStatusDialog
 import com.babylon.wallet.android.presentation.transfer.transfer
 import com.babylon.wallet.android.presentation.transfer.transferScreen
-import com.babylon.wallet.android.presentation.ui.composables.resultdialog.success.successBottomDialog
 import com.google.accompanist.navigation.animation.AnimatedNavHost
 import com.google.accompanist.navigation.animation.composable
 import kotlinx.coroutines.flow.StateFlow
@@ -93,8 +93,8 @@ fun NavigationHost(
             onNavigateToIncompatibleProfile = {
                 navController.navigate(ROUTE_INCOMPATIBLE_PROFILE)
             },
-            onNavigateToMnemonicBackup = { factorSourceID ->
-                navController.settingsShowMnemonic(factorSourceID.value)
+            onNavigateToMnemonicBackup = {
+                navController.settingsShowMnemonic()
             }
         )
         composable(
@@ -111,8 +111,8 @@ fun NavigationHost(
                 onBackClick = {
                     navController.navigateUp()
                 },
-                onNavigateToMnemonicBackup = { factorSourceID ->
-                    navController.settingsShowMnemonic(factorSourceID.value)
+                onNavigateToMnemonicBackup = {
+                    navController.settingsShowMnemonic()
                 },
                 onTransferClick = { accountId ->
                     navController.transfer(accountId = accountId)
@@ -142,8 +142,9 @@ fun NavigationHost(
             goBackToCreateAccount = {
                 navController.popBackStack(ROUTE_CREATE_ACCOUNT, false)
             },
+            // TODO https://github.com/radixdlt/babylon-wallet-android/pull/303#discussion_r1233727181
             onAddP2PLink = {
-                navController.settingsConnectorScreen(scanQr = true)
+                navController.settingsConnectorScreen(scanQr = true, closeAfterLinked = true)
             }
         )
         createAccountConfirmationScreen(
@@ -179,8 +180,8 @@ fun NavigationHost(
             onPersonaClick = { personaAddress ->
                 navController.personaDetailScreen(personaAddress)
             },
-            onNavigateToMnemonicBackup = { factorSourceId ->
-                navController.settingsShowMnemonic(factorSourceId.value)
+            onNavigateToMnemonicBackup = {
+                navController.settingsShowMnemonic()
             }
         )
         personaDetailScreen(
@@ -199,9 +200,11 @@ fun NavigationHost(
                 navController.popBackStack()
             }
         )
-        transferScreen {
-            navController.popBackStack()
-        }
+        transferScreen(
+            onBackClick = {
+                navController.popBackStack()
+            }
+        )
         accountPreferencesScreen {
             navController.popBackStack()
         }
@@ -233,13 +236,13 @@ fun NavigationHost(
                 navController.popBackStack(MAIN_ROUTE, false)
             })
         }
-        successBottomDialog(
+        dappInteractionDialog(
             onBackPress = {
                 navController.popBackStack()
             }
         )
         transactionStatusDialog(
-            onBackPress = {
+            onClose = {
                 navController.popBackStack()
             }
         )

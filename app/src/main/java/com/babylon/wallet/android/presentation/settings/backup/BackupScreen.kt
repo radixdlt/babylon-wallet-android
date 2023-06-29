@@ -72,8 +72,8 @@ private fun BackupScreenContent(
 
         SwitchSettingsItem(
             modifier = Modifier.padding(all = RadixTheme.dimensions.paddingDefault),
-            titleRes = R.string.backup_backupWalletData_title,
-            subtitleRes = R.string.backup_backupWalletData_message,
+            titleRes = R.string.androidProfileBackup_backupWalletData_title,
+            subtitleRes = R.string.androidProfileBackup_backupWalletData_message,
             checked = state.backupState is BackupState.Open,
             onCheckedChange = onBackupCheckChanged
         )
@@ -104,7 +104,7 @@ private fun BackupScreenContent(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = RadixTheme.dimensions.paddingDefault),
-                text = stringResource(id = R.string.backup_openSystemBackupSettings),
+                text = stringResource(id = R.string.androidProfileBackup_openSystemBackupSettings),
                 onClick = onSystemBackupSettingsClick
             )
         }
@@ -113,14 +113,14 @@ private fun BackupScreenContent(
 
 @Composable
 fun backupMessage(state: BackupState) = when (state) {
-    is BackupState.Closed -> stringResource(id = R.string.backup_disabledText)
+    is BackupState.Closed -> stringResource(id = R.string.androidProfileBackup_disabledText)
     is BackupState.Open -> {
         val lastBackupRelativeTime = remember(state) { state.lastBackupTimeRelative }
 
         if (lastBackupRelativeTime != null) {
-            stringResource(id = R.string.backup_lastBackedUp, lastBackupRelativeTime)
+            stringResource(id = R.string.androidProfileBackup_lastBackedUp, lastBackupRelativeTime)
         } else {
-            stringResource(id = R.string.backup_noLastBackUp)
+            stringResource(id = R.string.androidProfileBackup_noLastBackUp)
         }
     }
 }

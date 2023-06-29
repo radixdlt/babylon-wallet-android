@@ -16,7 +16,6 @@ import com.babylon.wallet.android.presentation.dapp.authorized.personaonetime.pe
 import com.babylon.wallet.android.presentation.dapp.authorized.personaongoing.personaDataOngoing
 import com.babylon.wallet.android.presentation.dapp.authorized.selectpersona.selectPersona
 import com.babylon.wallet.android.presentation.settings.personaedit.personaEditScreen
-import com.babylon.wallet.android.presentation.ui.composables.resultdialog.success.successBottomDialog
 import com.google.accompanist.navigation.animation.navigation
 
 @Suppress("LongMethod")
@@ -61,9 +60,6 @@ fun NavGraphBuilder.dappLoginAuthorizedNavGraph(navController: NavController) {
             },
             onLoginFlowComplete = {
                 navController.popBackStack(ROUTE_DAPP_LOGIN_AUTHORIZED_GRAPH, true)
-                if (it.showSuccessDialog) {
-                    navController.successBottomDialog(false, it.requestId, it.dAppName)
-                }
             },
             createNewPersona = { isFirstPersonaCreated ->
                 if (isFirstPersonaCreated) {
@@ -114,9 +110,6 @@ fun NavGraphBuilder.dappLoginAuthorizedNavGraph(navController: NavController) {
             },
             onLoginFlowComplete = {
                 navController.popBackStack(ROUTE_DAPP_LOGIN_AUTHORIZED_GRAPH, true)
-                if (it.showSuccessDialog) {
-                    navController.successBottomDialog(false, it.requestId, it.dAppName)
-                }
             },
             navController = navController,
             onBackClick = {
@@ -139,9 +132,6 @@ fun NavGraphBuilder.dappLoginAuthorizedNavGraph(navController: NavController) {
             },
             onLoginFlowComplete = {
                 navController.popBackStack(ROUTE_DAPP_LOGIN_AUTHORIZED_GRAPH, true)
-                if (it.showSuccessDialog) {
-                    navController.successBottomDialog(false, it.requestId, it.dAppName)
-                }
             },
             onPersonaDataOnetime = {
                 navController.personaDataOnetimeAuthorized(it.requiredFieldsEncoded)
@@ -165,9 +155,6 @@ fun NavGraphBuilder.dappLoginAuthorizedNavGraph(navController: NavController) {
             },
             onLoginFlowComplete = {
                 navController.popBackStack(ROUTE_DAPP_LOGIN_AUTHORIZED_GRAPH, true)
-                if (it.showSuccessDialog) {
-                    navController.successBottomDialog(false, it.requestId, it.dAppName)
-                }
             },
             onCreatePersona = { isFirstPersonaCreated ->
                 if (isFirstPersonaCreated) {

@@ -5,7 +5,6 @@ import com.babylon.wallet.android.data.repository.transaction.TransactionReposit
 import com.babylon.wallet.android.data.transaction.DappRequestException
 import com.babylon.wallet.android.data.transaction.DappRequestFailure
 import javax.inject.Inject
-import rdx.works.core.toHexString as toHex
 
 class SubmitTransactionUseCase @Inject constructor(
     private val transactionRepository: TransactionRepository,
@@ -14,17 +13,17 @@ class SubmitTransactionUseCase @Inject constructor(
 
     suspend operator fun invoke(
         txID: String,
-        compiledNotarizedIntent: ByteArray
+        notarizedTransactionHex: String
     ): Result<String> {
-        return submitNotarizedTransaction(txID, compiledNotarizedIntent)
+        return submitNotarizedTransaction(txID, notarizedTransactionHex)
     }
 
     private suspend fun submitNotarizedTransaction(
         txID: String,
-        notarizedTransaction: ByteArray,
+        notarizedTransactionHex: String,
     ): Result<String> {
         val submitResult = transactionRepository.submitTransaction(
-            notarizedTransaction = notarizedTransaction.toHex()
+            notarizedTransaction = notarizedTransactionHex
         )
         return when (submitResult) {
             is com.babylon.wallet.android.domain.common.Result.Error -> {

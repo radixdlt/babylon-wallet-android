@@ -6,11 +6,16 @@ import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import coil.compose.AsyncImagePainter
 import coil.decode.SvgDecoder
 import coil.request.ImageRequest
 import com.babylon.wallet.android.BuildConfig
+import com.babylon.wallet.android.domain.model.Resource
+import com.babylon.wallet.android.domain.model.behaviours.ResourceBehaviour
 
 private const val IMAGE_RATIO = 16 / 9f
 
@@ -82,3 +87,17 @@ enum class ImageSize(val size: Int) {
         return "${size}x$size"
     }
 }
+
+@Composable
+fun Resource.Tag.name(): String {
+    return when (this) {
+        is Resource.Tag.Official -> "Official Radix"
+        is Resource.Tag.Dynamic -> name
+    }
+}
+
+@Composable
+fun ResourceBehaviour.name(): String = stringResource(id = title)
+
+@Composable
+fun ResourceBehaviour.icon(): Painter = painterResource(id = icon)

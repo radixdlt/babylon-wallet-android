@@ -24,6 +24,8 @@ import com.babylon.wallet.android.presentation.dapp.authorized.account.AccountIt
 import com.babylon.wallet.android.presentation.dapp.authorized.selectpersona.PersonaUiModel
 import com.babylon.wallet.android.presentation.dapp.authorized.selectpersona.toUiModel
 import com.babylon.wallet.android.presentation.model.encodeToString
+import com.babylon.wallet.android.utils.AppEvent
+import com.babylon.wallet.android.utils.AppEventBus
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
@@ -42,6 +44,7 @@ import javax.inject.Inject
 class DAppUnauthorizedLoginViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     private val dAppMessenger: DappMessenger,
+    private val appEventBus: AppEventBus,
     private val getProfileUseCase: GetProfileUseCase,
     private val getCurrentGatewayUseCase: GetCurrentGatewayUseCase,
     private val dAppRepository: DAppRepository,
@@ -81,7 +84,7 @@ class DAppUnauthorizedLoginViewModel @Inject constructor(
                 }
             }
             result.onError { error ->
-                _state.update { it.copy(uiMessage = UiMessage.ErrorMessage(error)) }
+                _state.update { it.copy(uiMessage = UiMessage.ErrorMessage.from(error)) }
             }
             setInitialDappLoginRoute()
         }
@@ -114,7 +117,7 @@ class DAppUnauthorizedLoginViewModel @Inject constructor(
 
     @Suppress("MagicNumber")
     private suspend fun handleRequestError(failure: DappRequestFailure) {
-        _state.update { it.copy(uiMessage = UiMessage.ErrorMessage(DappRequestException(failure))) }
+        _state.update { it.copy(uiMessage = UiMessage.ErrorMessage.from(DappRequestException(failure))) }
         dAppMessenger.sendWalletInteractionResponseFailure(
             request.dappId,
             args.requestId,
@@ -186,10 +189,11 @@ class DAppUnauthorizedLoginViewModel @Inject constructor(
                 state.value.selectedAccountsOneTime,
                 state.value.selectedOnetimeDataFields,
             )
-            sendEvent(
-                Event.LoginFlowCompleted(
+            sendEvent(Event.LoginFlowCompleted)
+            appEventBus.sendEvent(
+                AppEvent.Status.DappInteraction(
                     requestId = request.id,
-                    dAppName = state.value.dappWithMetadata?.name ?: "Unknown dApp"
+                    dAppName = state.value.dappWithMetadata?.name
                 )
             )
         }
@@ -205,10 +209,7 @@ sealed interface Event : OneOffEvent {
     object RequestCompletionBiometricPrompt : Event
     object RejectLogin : Event
 
-    data class LoginFlowCompleted(
-        val requestId: String,
-        val dAppName: String
-    ) : Event
+    object LoginFlowCompleted : Event
 
     data class PersonaDataOnetime(val requiredFieldsEncoded: String) : Event
 }

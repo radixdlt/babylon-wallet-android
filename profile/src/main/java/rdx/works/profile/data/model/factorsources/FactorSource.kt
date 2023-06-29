@@ -285,7 +285,7 @@ data class FactorSource(
             return FactorSource(
                 kind = FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET,
                 id = id,
-                label = name ?: "Unnamed",
+                label = name?.ifEmpty { "Unnamed ${model.description()}" } ?: "Unnamed ${model.description()}",
                 description = model.description(),
                 parameters = if (olympiaCompatible) olympia else babylon,
                 storage = Storage.EntityCreating(nextDerivationIndicesPerNetwork = listOf()),

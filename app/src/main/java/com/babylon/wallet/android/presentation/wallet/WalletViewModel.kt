@@ -26,7 +26,6 @@ import rdx.works.profile.data.model.factorsources.FactorSourceKind
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.data.utils.factorSourceId
 import rdx.works.profile.data.utils.isOlympiaAccount
-import rdx.works.profile.data.utils.unsecuredFactorSourceId
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.accountOnCurrentNetwork
 import rdx.works.profile.domain.accountsOnCurrentNetwork
@@ -108,7 +107,7 @@ class WalletViewModel @Inject constructor(
     private fun observeGlobalAppEvents() {
         viewModelScope.launch {
             appEventBus.events.filter { event ->
-                event is AppEvent.GotFreeXrd || event is AppEvent.TransactionEvent.Successful
+                event is AppEvent.GotFreeXrd || event is AppEvent.Status.Transaction.Success
             }.collect {
                 loadResources(withRefresh = true)
             }
@@ -130,7 +129,7 @@ class WalletViewModel @Inject constructor(
 
     fun onApplyMnemonicBackup(account: Network.Account) {
         viewModelScope.launch {
-            getProfileUseCase.accountOnCurrentNetwork(account.address)?.unsecuredFactorSourceId()?.let {
+            getProfileUseCase.accountOnCurrentNetwork(account.address)?.factorSourceId()?.let {
                 sendEvent(WalletEvent.NavigateToMnemonicBackup(it))
             }
         }
@@ -224,7 +223,7 @@ data class WalletUiState(
     )
 
     fun onResourcesError(error: Throwable?): WalletUiState = copy(
-        error = UiMessage.ErrorMessage(error),
+        error = UiMessage.ErrorMessage.from(error),
         loading = false,
         refreshing = false
     )

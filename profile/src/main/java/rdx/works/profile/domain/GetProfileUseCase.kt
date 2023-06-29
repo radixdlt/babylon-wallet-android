@@ -1,7 +1,7 @@
 package rdx.works.profile.domain
 
 import com.radixdlt.toolkit.RadixEngineToolkit
-import com.radixdlt.toolkit.models.request.DecodeAddressRequest
+import com.radixdlt.toolkit.models.method.DecodeAddressInput
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
@@ -14,7 +14,6 @@ import rdx.works.profile.data.repository.ProfileRepository
 import rdx.works.profile.data.repository.profile
 import rdx.works.profile.data.utils.factorSourceId
 import rdx.works.profile.data.utils.getNextDerivationPathForAccount
-import rdx.works.profile.data.utils.unsecuredFactorSourceId
 import javax.inject.Inject
 
 class GetProfileUseCase @Inject constructor(private val profileRepository: ProfileRepository) {
@@ -33,6 +32,13 @@ val GetProfileUseCase.factorSources
 val GetProfileUseCase.deviceFactorSources
     get() = invoke().map { profile -> profile.factorSources.filter { it.kind == FactorSourceKind.DEVICE } }
 
+val GetProfileUseCase.deviceFactorSourcesWithAccounts
+    get() = invoke().map { profile ->
+        val deviceFactorSources = profile.factorSources.filter { it.kind == FactorSourceKind.DEVICE }
+        val deviceFactorSourcesIds = deviceFactorSources.map { it.id }.toSet()
+        profile.currentNetwork.accounts.filter { deviceFactorSourcesIds.contains(it.factorSourceId()) }.groupBy { it.factorSourceId() }
+    }
+
 val GetProfileUseCase.ledgerFactorSources
     get() = invoke().map { profile -> profile.factorSources.filter { it.kind == FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET } }
 
@@ -50,13 +56,6 @@ suspend fun GetProfileUseCase.accountOnCurrentNetwork(
     account.address == withAddress
 }
 
-suspend fun GetProfileUseCase.accountFactorSourceIDOfDeviceKind(
-    accountAddress: String,
-): FactorSource.ID? {
-    val accountFactorSourceID = accountOnCurrentNetwork(accountAddress)?.unsecuredFactorSourceId()
-    return deviceFactorSources.first().firstOrNull { it.id == accountFactorSourceID && it.kind == FactorSourceKind.DEVICE }?.id
-}
-
 suspend fun GetProfileUseCase.nextDerivationPathForAccountOnCurrentNetwork(
     factorSource: FactorSource,
 ): DerivationPath {
@@ -64,17 +63,10 @@ suspend fun GetProfileUseCase.nextDerivationPathForAccountOnCurrentNetwork(
     return factorSource.getNextDerivationPathForAccount(currentNetwork)
 }
 
-suspend fun GetProfileUseCase.personaFactorSourceIDOfDeviceKind(
-    personaAddress: String,
-): FactorSource.ID? {
-    val accountFactorSourceID = personaOnCurrentNetwork(personaAddress)?.factorSourceId()
-    return deviceFactorSources.first().firstOrNull { it.id == accountFactorSourceID && it.kind == FactorSourceKind.DEVICE }?.id
-}
-
 @Suppress("MagicNumber")
 suspend fun GetProfileUseCase.currentNetworkAccountHashes(): Set<ByteArray> {
     return accountsOnCurrentNetwork().map {
-        val addressData = RadixEngineToolkit.decodeAddress(DecodeAddressRequest(it.address)).getOrThrow().data
+        val addressData = RadixEngineToolkit.decodeAddress(DecodeAddressInput(it.address)).getOrThrow().data
         // TODO change to addressData.drop(1) after RET update, to be consistent with iOS
         addressData.takeLast(26).toByteArray()
     }.toSet()
