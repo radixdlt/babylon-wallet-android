@@ -26,7 +26,7 @@ import com.babylon.wallet.android.designsystem.R
 import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
 import com.babylon.wallet.android.designsystem.composable.RadixSecondaryButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
-import com.babylon.wallet.android.presentation.settings.legacyimport.Selectable
+import com.babylon.wallet.android.domain.model.Selectable
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import kotlinx.collections.immutable.ImmutableList
 import rdx.works.profile.data.model.factorsources.LedgerHardwareWalletFactorSource
