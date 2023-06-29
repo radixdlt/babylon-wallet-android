@@ -48,7 +48,7 @@ fun Network.Persona.filterFields(with: List<Network.Persona.Field.ID>) =
     fields.filter { with.contains(it.id) }
 
 fun List<Network.NextDerivationIndices>?.getNextAccountDerivationIndex(forNetworkId: NetworkId): Int {
-    if (this == null) throw WasNotDeviceFactorSource() // TODO not sure about it
+    if (this == null) throw WasNotDeviceFactorSource()
 
     return this.find {
         it.networkId == forNetworkId.value
@@ -56,7 +56,7 @@ fun List<Network.NextDerivationIndices>?.getNextAccountDerivationIndex(forNetwor
 }
 
 fun List<Network.NextDerivationIndices>?.getNextIdentityDerivationIndex(forNetworkId: NetworkId): Int {
-    if (this == null) throw WasNotDeviceFactorSource() // TODO not sure about it
+    if (this == null) throw WasNotDeviceFactorSource()
 
     return this.find {
         it.networkId == forNetworkId.value
