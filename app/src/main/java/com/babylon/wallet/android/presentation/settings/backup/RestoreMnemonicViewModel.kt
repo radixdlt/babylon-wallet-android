@@ -22,7 +22,10 @@ import kotlinx.coroutines.launch
 import rdx.works.core.toHexString
 import rdx.works.profile.data.model.MnemonicWithPassphrase
 import rdx.works.profile.data.model.compressedPublicKey
+import rdx.works.profile.data.model.factorsources.DeviceFactorSource
 import rdx.works.profile.data.model.factorsources.FactorSource
+import rdx.works.profile.data.model.factorsources.FactorSource.FactorSourceID
+import rdx.works.profile.data.model.factorsources.FactorSourceKind
 import rdx.works.profile.data.model.pernetwork.SecurityState
 import rdx.works.profile.data.utils.factorSourceId
 import rdx.works.profile.domain.GetProfileUseCase
@@ -36,10 +39,11 @@ class RestoreMnemonicViewModel @Inject constructor(
     private val getProfileUseCase: GetProfileUseCase,
     private val restoreMnemonicUseCase: RestoreMnemonicUseCase,
     private val appEventBus: AppEventBus
-) : StateViewModel<RestoreMnemonicViewModel.State>(), OneOffEventHandler<RestoreMnemonicViewModel.Effect> by OneOffEventHandlerImpl() {
+) : StateViewModel<RestoreMnemonicViewModel.State>(),
+    OneOffEventHandler<RestoreMnemonicViewModel.Effect> by OneOffEventHandlerImpl() {
 
     private val args = RestoreMnemonicArgs(savedStateHandle)
-    private lateinit var factorSource: FactorSource
+    private lateinit var deviceFactorSource: DeviceFactorSource
 
     override fun initialState(): State = State(
         acceptedSeedPhraseLength = SeedPhraseLength.TWENTY_FOUR,
@@ -52,11 +56,15 @@ class RestoreMnemonicViewModel @Inject constructor(
         seedPhraseInputDelegate.setSeedPhraseSize(SeedPhraseLength.TWENTY_FOUR.words)
         viewModelScope.launch {
             val profile = getProfileUseCase().first()
-            val factorSourceId = FactorSource.ID(args.factorSourceId)
-            factorSource = checkNotNull(profile.factorSources.find { it.id == factorSourceId })
+            val factorSourceId = FactorSourceID.FromHash(
+                kind = FactorSourceKind.DEVICE,
+                body = FactorSource.HexCoded32Bytes(args.factorSourceId)
+            )
+            deviceFactorSource =
+                checkNotNull(profile.factorSources.find { it.id == factorSourceId }) as DeviceFactorSource
             _state.update {
                 it.copy(
-                    factorSourceLabel = factorSource.label
+                    factorSourceLabel = deviceFactorSource.hint.name
                 )
             }
         }
@@ -96,18 +104,20 @@ class RestoreMnemonicViewModel @Inject constructor(
     fun onRestore() {
         viewModelScope.launch {
             val accountOnNetwork = getProfileUseCase.accountsOnCurrentNetwork().firstOrNull {
-                it.factorSourceId() == factorSource.id
+                it.factorSourceId() == deviceFactorSource.id
             } ?: return@launch
             val factorInstance =
-                (accountOnNetwork.securityState as? SecurityState.Unsecured)?.unsecuredEntityControl?.transactionSigning ?: return@launch
+                (accountOnNetwork.securityState as? SecurityState.Unsecured)?.unsecuredEntityControl?.transactionSigning
+                    ?: return@launch
             val derivationPath = factorInstance.derivationPath ?: return@launch
             val mnemonicWithPassphrase = MnemonicWithPassphrase(
                 mnemonic = _state.value.wordsPhrase,
                 bip39Passphrase = _state.value.bip39Passphrase
             )
 
-            val factorSourceIDFromHash = (factorInstance.factorSourceId as FactorSourceID.FromHash)val isFactorSourceIdValid = FactorSource.factorSourceId(mnemonicWithPassphrase = mnemonicWithPassphrase) ==
-                factorSourceIDFromHash.body.value
+            val factorSourceIDFromHash = (factorInstance.factorSourceId as FactorSourceID.FromHash)
+            val isFactorSourceIdValid = FactorSource.factorSourceId(mnemonicWithPassphrase = mnemonicWithPassphrase) ==
+                    factorSourceIDFromHash.body.value
 
             val isPublicKeyValid = mnemonicWithPassphrase.compressedPublicKey(derivationPath = derivationPath)
                 .removeLeadingZero()
@@ -119,9 +129,9 @@ class RestoreMnemonicViewModel @Inject constructor(
             } else {
                 viewModelScope.launch {
                     restoreMnemonicUseCase(
-                    factorSourceId = factorSourceIDFromHash,
-                    mnemonicWithPassphrase = mnemonicWithPassphrase
-                )
+                        factorSourceId = factorSourceIDFromHash,
+                        mnemonicWithPassphrase = mnemonicWithPassphrase
+                    )
                     appEventBus.sendEvent(AppEvent.RestoredMnemonic)
                     sendEvent(Effect.FinishRestoration)
                 }
