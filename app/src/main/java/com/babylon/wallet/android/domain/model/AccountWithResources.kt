@@ -22,6 +22,9 @@ data class Resources(
     val xrd: Resource.FungibleResource? = fungibleResources.find { it.isXrd }
     val nonXrdFungibles: List<Resource.FungibleResource> = fungibleResources.filterNot { it.isXrd }
 
+    val isNotEmpty: Boolean
+        get() = fungibleResources.isNotEmpty() || nonFungibleResources.isNotEmpty()
+
     fun hasXrd(minimumBalance: Long = 1L): Boolean = xrd?.let {
         it.amount?.let { amount ->
             amount >= BigDecimal(minimumBalance)

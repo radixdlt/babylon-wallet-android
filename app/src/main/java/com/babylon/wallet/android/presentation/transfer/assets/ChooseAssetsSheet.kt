@@ -123,59 +123,59 @@ fun ChooseAssetsSheet(
             )
 
             Box(modifier = Modifier.fillMaxSize()) {
-                HorizontalPager(
-                    pageCount = ChooseAssets.Tab.values().size,
-                    state = pagerState,
-                    userScrollEnabled = false
-                ) { tabIndex ->
-                    val tab = remember(tabIndex) {
-                        ChooseAssets.Tab.values().find { it.ordinal == tabIndex } ?: ChooseAssets.Tab.Tokens
-                    }
+                if (state.resources != null) {
+                    HorizontalPager(
+                        pageCount = ChooseAssets.Tab.values().size,
+                        state = pagerState,
+                        userScrollEnabled = false
+                    ) { tabIndex ->
+                        val tab = remember(tabIndex) {
+                            ChooseAssets.Tab.values().find { it.ordinal == tabIndex } ?: ChooseAssets.Tab.Tokens
+                        }
 
-                    when (tab) {
-                        ChooseAssets.Tab.Tokens -> FungibleResourcesColumn(
-                            modifier = Modifier.fillMaxSize(),
-                            resources = state.resources,
-                            isXrdSticky = false
-                        ) { _, resource ->
-                            val isSelected = state.targetAccount.assets.any { it.address == resource.resourceAddress }
-                            SelectableFungibleResourceItem(
-                                modifier = Modifier
-                                    .height(85.dp)
-                                    .clickable {
+                        when (tab) {
+                            ChooseAssets.Tab.Tokens -> FungibleResourcesColumn(
+                                modifier = Modifier.fillMaxSize(),
+                                resources = state.resources
+                            ) { _, resource ->
+                                val isSelected = state.targetAccount.assets.any { it.address == resource.resourceAddress }
+                                SelectableFungibleResourceItem(
+                                    modifier = Modifier
+                                        .height(85.dp)
+                                        .clickable {
+                                            val fungibleAsset = SpendingAsset.Fungible(resource = resource)
+                                            onAssetSelectionChanged(fungibleAsset, !isSelected)
+                                        },
+                                    resource = resource,
+                                    isSelected = isSelected,
+                                    onCheckChanged = {
                                         val fungibleAsset = SpendingAsset.Fungible(resource = resource)
-                                        onAssetSelectionChanged(fungibleAsset, !isSelected)
+                                        onAssetSelectionChanged(fungibleAsset, it)
+                                    }
+                                )
+                            }
+
+                            ChooseAssets.Tab.NFTs -> NonFungibleResourcesColumn(
+                                resources = state.resources,
+                                modifier = Modifier.fillMaxSize(),
+                            ) { _, item ->
+                                val isSelected = state.targetAccount.assets.any { it.address == item.globalAddress }
+                                SelectableNonFungibleResourceItem(
+                                    modifier = Modifier.clickable {
+                                        val nonFungibleAsset = SpendingAsset.NFT(item = item)
+                                        onAssetSelectionChanged(nonFungibleAsset, !isSelected)
                                     },
-                                resource = resource,
-                                isSelected = isSelected,
-                                onCheckChanged = {
-                                    val fungibleAsset = SpendingAsset.Fungible(resource = resource)
-                                    onAssetSelectionChanged(fungibleAsset, it)
-                                }
-                            )
-                        }
-                        ChooseAssets.Tab.NFTs -> NonFungibleResourcesColumn(
-                            resources = state.resources,
-                            modifier = Modifier.fillMaxSize(),
-                        ) { _, item ->
-                            val isSelected = state.targetAccount.assets.any { it.address == item.globalAddress }
-                            SelectableNonFungibleResourceItem(
-                                modifier = Modifier.clickable {
-                                    val nonFungibleAsset = SpendingAsset.NFT(item = item)
-                                    onAssetSelectionChanged(nonFungibleAsset, !isSelected)
-                                },
-                                item = item,
-                                isSelected = isSelected,
-                                onCheckChanged = {
-                                    val nonFungibleAsset = SpendingAsset.NFT(item = item)
-                                    onAssetSelectionChanged(nonFungibleAsset, it)
-                                }
-                            )
+                                    item = item,
+                                    isSelected = isSelected,
+                                    onCheckChanged = {
+                                        val nonFungibleAsset = SpendingAsset.NFT(item = item)
+                                        onAssetSelectionChanged(nonFungibleAsset, it)
+                                    }
+                                )
+                            }
                         }
                     }
-                }
-
-                if (state.resources == null) {
+                } else {
                     CircularProgressIndicator(
                         modifier = Modifier.align(Alignment.Center),
                         color = RadixTheme.colors.gray1

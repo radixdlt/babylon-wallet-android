@@ -1,12 +1,11 @@
-@file:OptIn(ExperimentalFoundationApi::class)
-
 package com.babylon.wallet.android.presentation.ui.composables.resources
 
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
@@ -23,12 +22,13 @@ import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.domain.model.Resource
 import com.babylon.wallet.android.domain.model.Resources
+import com.babylon.wallet.android.presentation.account.composable.EmptyResourcesContent
+import com.babylon.wallet.android.presentation.transfer.assets.ResourceTab
 
 @Composable
 fun FungibleResourcesColumn(
     modifier: Modifier,
     resources: Resources?,
-    isXrdSticky: Boolean = true,
     contentPadding: PaddingValues = PaddingValues(
         start = RadixTheme.dimensions.paddingMedium,
         end = RadixTheme.dimensions.paddingMedium,
@@ -44,34 +44,48 @@ fun FungibleResourcesColumn(
         contentPadding = contentPadding,
         modifier = modifier,
     ) {
+        fungibleResources(
+            xrdItem = xrdItem,
+            restOfFungibles = restResources
+        ) { index, resource ->
+            item(index = index, resource = resource)
+        }
+    }
+}
+
+fun LazyListScope.fungibleResources(
+    xrdItem: Resource.FungibleResource?,
+    restOfFungibles: List<Resource.FungibleResource>,
+    item: @Composable (index: Int, resource: Resource.FungibleResource) -> Unit
+) {
+    if (xrdItem == null && restOfFungibles.isEmpty()) {
+        item {
+            EmptyResourcesContent(
+                modifier = Modifier.fillMaxWidth(),
+                tab = ResourceTab.Tokens
+            )
+        }
+    } else {
         if (xrdItem != null) {
-            if (isXrdSticky) {
-                stickyHeader {
-                    FungibleResourceCard {
-                        item(index = 0, resource = xrdItem)
-                    }
-                }
-            } else {
-                item {
-                    FungibleResourceCard {
-                        item(index = 0, resource = xrdItem)
-                    }
+            item {
+                FungibleResourceCard {
+                    item(index = 0, resource = xrdItem)
                 }
             }
         }
 
         itemsIndexed(
-            items = restResources,
-            key = { _, item ->
-                item.resourceAddress
+            items = restOfFungibles,
+            key = { _, resource ->
+                resource.resourceAddress
             },
             itemContent = { index, resource ->
                 val topPadding = if (index == 0) RadixTheme.dimensions.paddingDefault else 0.dp
                 FungibleResourceCard(
                     modifier = Modifier.padding(top = topPadding),
                     itemIndex = index,
-                    allItemsSize = restResources.size,
-                    bottomContent = if (index != restResources.lastIndex) {
+                    allItemsSize = restOfFungibles.size,
+                    bottomContent = if (index != restOfFungibles.lastIndex) {
                         {
                             Divider(
                                 modifier = Modifier.padding(horizontal = 20.dp),

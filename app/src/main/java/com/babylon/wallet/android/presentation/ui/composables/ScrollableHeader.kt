@@ -13,7 +13,7 @@ import kotlin.math.roundToInt
 
 @Composable
 fun ScrollableHeaderView(
-    modifier: Modifier,
+    modifier: Modifier = Modifier,
     header: @Composable () -> Unit,
     content: @Composable () -> Unit,
     state: ScrollableHeaderViewScrollState = rememberScrollableHeaderViewScrollState(),

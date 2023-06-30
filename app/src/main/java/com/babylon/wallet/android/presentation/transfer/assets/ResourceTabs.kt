@@ -11,9 +11,11 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
+import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -22,7 +24,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
-import com.babylon.wallet.android.presentation.ui.composables.tabs.pagerTabIndicatorOffset
 import kotlinx.coroutines.launch
 
 @Composable
@@ -39,18 +40,31 @@ fun ResourcesTabs(
         }
     }
 
+    ResourcesTabs(
+        modifier = modifier,
+        selectedTab = selectedTab,
+        onTabSelected = onTabSelected
+    )
+}
+
+@Composable
+fun ResourcesTabs(
+    modifier: Modifier = Modifier,
+    selectedTab: ResourceTab,
+    onTabSelected: (ResourceTab) -> Unit
+) {
+    val tabIndex = remember(selectedTab) {
+        ResourceTab.values().indexOf(selectedTab)
+    }
     TabRow(
         modifier = modifier.width(200.dp),
-        selectedTabIndex = pagerState.currentPage,
+        selectedTabIndex = tabIndex,
         containerColor = Color.Transparent,
         divider = {},
         indicator = { tabPositions ->
             Box(
                 modifier = Modifier
-                    .pagerTabIndicatorOffset(
-                        pagerState = pagerState,
-                        tabPositions = tabPositions,
-                    )
+                    .tabIndicatorOffset(tabPositions[tabIndex])
                     .fillMaxHeight()
                     .zIndex(-1f)
                     .background(RadixTheme.colors.gray1, RadixTheme.shapes.circle)
