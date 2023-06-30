@@ -81,7 +81,7 @@ fun AddLedgerBottomSheet(
                     )
                     Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
                     Text(
-                        text = stringResource(id = com.babylon.wallet.android.R.string.addLedger_addDevice_body1),
+                        text = stringResource(id = com.babylon.wallet.android.R.string.addLedgerDevice_addDevice_body1),
                         style = RadixTheme.typography.body1Regular,
                         color = RadixTheme.colors.gray1,
                         overflow = TextOverflow.Ellipsis,
@@ -89,7 +89,7 @@ fun AddLedgerBottomSheet(
                     )
                     Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
                     Text(
-                        text = stringResource(id = com.babylon.wallet.android.R.string.addLedger_addDevice_body2),
+                        text = stringResource(id = com.babylon.wallet.android.R.string.addLedgerDevice_addDevice_body2),
                         style = RadixTheme.typography.body1Regular,
                         color = RadixTheme.colors.gray1,
                         overflow = TextOverflow.Ellipsis,
@@ -99,20 +99,20 @@ fun AddLedgerBottomSheet(
                     RadixPrimaryButton(
                         modifier = Modifier.fillMaxWidth(),
                         onClick = onSendAddLedgerRequest,
-                        text = stringResource(id = com.babylon.wallet.android.R.string.addLedger_addDevice_continue)
+                        text = stringResource(id = com.babylon.wallet.android.R.string.addLedgerDevice_addDevice_continue)
                     )
                 }
 
                 AddLedgerSheetState.InputLedgerName -> {
                     Text(
-                        text = stringResource(id = com.babylon.wallet.android.R.string.addLedger_nameLedger_title),
+                        text = stringResource(id = com.babylon.wallet.android.R.string.addLedgerDevice_nameLedger_title),
                         style = RadixTheme.typography.title,
                         color = RadixTheme.colors.gray1,
                         overflow = TextOverflow.Ellipsis,
                         textAlign = TextAlign.Center
                     )
                     Text(
-                        text = stringResource(id = com.babylon.wallet.android.R.string.addLedger_nameLedger_body),
+                        text = stringResource(id = com.babylon.wallet.android.R.string.addLedgerDevice_nameLedger_body),
                         style = RadixTheme.typography.body1Regular,
                         color = RadixTheme.colors.gray1,
                         overflow = TextOverflow.Ellipsis,
@@ -120,7 +120,7 @@ fun AddLedgerBottomSheet(
                     )
                     deviceModel?.let { model ->
                         Text(
-                            text = stringResource(id = com.babylon.wallet.android.R.string.addLedger_nameLedger_detectedType, model),
+                            text = stringResource(id = com.babylon.wallet.android.R.string.addLedgerDevice_nameLedger_detectedType, model),
                             style = RadixTheme.typography.body1Header,
                             color = RadixTheme.colors.gray2,
                             overflow = TextOverflow.Ellipsis,
@@ -131,14 +131,14 @@ fun AddLedgerBottomSheet(
                         modifier = Modifier.fillMaxWidth(),
                         onValueChanged = { ledgerNameValue = it },
                         value = ledgerNameValue,
-                        hint = stringResource(id = com.babylon.wallet.android.R.string.addLedger_nameLedger_namePlaceholder)
+                        hint = stringResource(id = com.babylon.wallet.android.R.string.addLedgerDevice_nameLedger_namePlaceholder)
                     )
                     Spacer(modifier = Modifier.weight(1f))
                     RadixPrimaryButton(
                         modifier = Modifier
                             .fillMaxWidth()
                             .imePadding(),
-                        text = stringResource(com.babylon.wallet.android.R.string.addLedger_nameLedger_continueButtonTitle),
+                        text = stringResource(com.babylon.wallet.android.R.string.addLedgerDevice_nameLedger_continueButtonTitle),
                         enabled = ledgerNameValue.trim().isNotEmpty(),
                         onClick = {
                             onConfirmLedgerName(ledgerNameValue)

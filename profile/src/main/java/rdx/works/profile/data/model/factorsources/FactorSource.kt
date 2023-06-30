@@ -134,7 +134,6 @@ sealed class FactorSource {
     }
 
     companion object {
-
         fun factorSourceId(
             mnemonicWithPassphrase: MnemonicWithPassphrase,
             curve: Slip10Curve = Slip10Curve.CURVE_25519,

@@ -151,7 +151,7 @@ private fun RevealSeedPhraseContent(
             item {
                 InfoLink(
                     modifier = Modifier.fillMaxWidth(),
-                    text = stringResource(R.string.revealSeedPhrase_subtitle),
+                    text = stringResource(R.string.revealSeedPhrase_warning),
                     contentColor = RadixTheme.colors.orange1,
                     iconRes = com.babylon.wallet.android.designsystem.R.drawable.ic_warning_error
                 )

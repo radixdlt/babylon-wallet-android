@@ -44,7 +44,7 @@ sealed class UiMessage(val id: String = UUIDGenerator.uuid().toString()) {
             InvalidPayload -> context.getString(R.string.importOlympiaAccounts_invalidPayload)
             NoMnemonicForAccounts -> context.getString(R.string.importOlympiaAccounts_noMnemonicFound)
             NoAccountsForLedger -> context.getString(R.string.common_somethingWentWrong)
-            is LedgerAlreadyExist -> context.getString(R.string.addLedger_alreadyAddedAlert_message, label)
+            is LedgerAlreadyExist -> context.getString(R.string.addLedgerDevice_alreadyAddedAlert_message, label)
         }
     }
 
