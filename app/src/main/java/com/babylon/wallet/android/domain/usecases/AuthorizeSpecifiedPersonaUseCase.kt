@@ -7,8 +7,8 @@ import com.babylon.wallet.android.data.transaction.DappRequestFailure
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel.IncomingRequest
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel.IncomingRequest.AuthorizedRequest
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel.IncomingRequest.PersonaRequestItem
+import com.babylon.wallet.android.domain.model.Selectable
 import com.babylon.wallet.android.domain.model.toProfileShareAccountsQuantifier
-import com.babylon.wallet.android.presentation.settings.legacyimport.Selectable
 import com.babylon.wallet.android.utils.toISO8601String
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.data.repository.DAppConnectionRepository

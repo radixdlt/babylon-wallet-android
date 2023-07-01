@@ -5,7 +5,6 @@ import com.babylon.wallet.android.data.gateway.generated.infrastructure.Serializ
 import com.babylon.wallet.android.data.gateway.generated.models.ErrorResponse
 import com.babylon.wallet.android.data.repository.cache.CacheParameters
 import com.babylon.wallet.android.domain.common.Result
-import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json.Default.serializersModule
 import kotlinx.serialization.serializer
 import retrofit2.Call

@@ -391,7 +391,7 @@ fun DappDetails(
                         Text(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(RadixTheme.dimensions.paddingDefault),
+                                .padding(dimensions.paddingDefault),
                             text = stringResource(id = R.string.authorizedDapps_dAppDetails_tokens),
                             style = RadixTheme.typography.body1Regular,
                             color = RadixTheme.colors.gray2,
@@ -437,7 +437,7 @@ fun DappDetails(
                         Text(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(RadixTheme.dimensions.paddingDefault),
+                                .padding(dimensions.paddingDefault),
                             text = stringResource(id = R.string.authorizedDapps_dAppDetails_nfts),
                             style = RadixTheme.typography.body1Regular,
                             color = RadixTheme.colors.gray2,
