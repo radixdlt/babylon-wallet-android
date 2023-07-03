@@ -15,12 +15,15 @@ import java.io.File
 internal class ROLAPayloadTest {
 
     private lateinit var testVectors: List<TestVector>
+    private val json = Json {
+        prettyPrint = true
+    }
 
     @Before
     fun setUp() {
         val testVectorsFile = File("src/test/resources/raw/rola_challenge_payload_hash_vectors.json")
         if (testVectorsFile.exists()) {
-            testVectors = Json.decodeFromString(testVectorsFile.readText())
+            testVectors = json.decodeFromString(testVectorsFile.readText())
         } else {
             val origins = listOf("https://dashboard.rdx.works", "https://stella.swap", "https://rola.xrd")
             val accounts = listOf(
@@ -38,7 +41,7 @@ internal class ROLAPayloadTest {
                     }
                 }
             }
-            testVectorsFile.writeText(Json.encodeToString(testVectors))
+            testVectorsFile.writeText(json.encodeToString(testVectors))
         }
     }
 
