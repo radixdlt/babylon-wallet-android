@@ -406,6 +406,7 @@ class EntityRepositoryImpl @Inject constructor(
 
     // This is the hack to collect name. Didnt come up with better solution to disqinquish it for now,
     // it should not matter much as its temporary anyway
+    @Suppress("MagicNumber")
     private fun StateNonFungibleDetailsResponseItem.nftName(): String? = data.rawJson.fields.find { element ->
         val value = element.value
         value.length in 5..30 && !value.contains("https")
