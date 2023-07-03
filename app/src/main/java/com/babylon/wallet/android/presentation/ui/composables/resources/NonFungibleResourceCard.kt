@@ -188,17 +188,20 @@ fun CollapsableParentItemPreview() {
                     Resource.NonFungibleResource.Item(
                         collectionAddress = "resource_rdx_abcde",
                         localId = Resource.NonFungibleResource.Item.ID.from("#1#"),
-                        iconMetadataItem = null
+                        iconMetadataItem = null,
+                        nameMetadataItem = null
                     ),
                     Resource.NonFungibleResource.Item(
                         collectionAddress = "resource_rdx_abcde",
                         localId = Resource.NonFungibleResource.Item.ID.from("#2#"),
-                        iconMetadataItem = null
+                        iconMetadataItem = null,
+                        nameMetadataItem = null
                     ),
                     Resource.NonFungibleResource.Item(
                         collectionAddress = "resource_rdx_abcde",
                         localId = Resource.NonFungibleResource.Item.ID.from("#3#"),
-                        iconMetadataItem = null
+                        iconMetadataItem = null,
+                        nameMetadataItem = null
                     )
                 )
             ),
@@ -221,16 +224,19 @@ fun ExpandedParentItemPreview() {
                     Resource.NonFungibleResource.Item(
                         collectionAddress = "resource_rdx_abcde",
                         localId = Resource.NonFungibleResource.Item.ID.from("#1#"),
+                        nameMetadataItem = null,
                         iconMetadataItem = null
                     ),
                     Resource.NonFungibleResource.Item(
                         collectionAddress = "resource_rdx_abcde",
                         localId = Resource.NonFungibleResource.Item.ID.from("#2#"),
+                        nameMetadataItem = null,
                         iconMetadataItem = null
                     ),
                     Resource.NonFungibleResource.Item(
                         collectionAddress = "resource_rdx_abcde",
                         localId = Resource.NonFungibleResource.Item.ID.from("#3#"),
+                        nameMetadataItem = null,
                         iconMetadataItem = null
                     )
                 )
@@ -254,11 +260,13 @@ fun ExpandedParentItemPreviewWithTwo() {
                     Resource.NonFungibleResource.Item(
                         collectionAddress = "resource_rdx_abcde",
                         localId = Resource.NonFungibleResource.Item.ID.from("#1#"),
+                        nameMetadataItem = null,
                         iconMetadataItem = null
                     ),
                     Resource.NonFungibleResource.Item(
                         collectionAddress = "resource_rdx_abcde",
                         localId = Resource.NonFungibleResource.Item.ID.from("#2#"),
+                        nameMetadataItem = null,
                         iconMetadataItem = null
                     )
                 )
@@ -282,6 +290,7 @@ fun CollapsableParentItemWithLargeFontPreview() {
                     Resource.NonFungibleResource.Item(
                         collectionAddress = "resource_rdx_abcde",
                         localId = Resource.NonFungibleResource.Item.ID.from("#1#"),
+                        nameMetadataItem = null,
                         iconMetadataItem = null
                     )
                 )

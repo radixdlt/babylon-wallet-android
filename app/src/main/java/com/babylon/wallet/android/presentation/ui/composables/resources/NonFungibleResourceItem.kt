@@ -62,43 +62,21 @@ fun NonFungibleResourceItem(
             )
         }
 
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
+        item.nameMetadataItem?.name?.let { name ->
             Text(
-                text = stringResource(id = R.string.assetDetails_NFTDetails_id),
-                style = RadixTheme.typography.body1Regular,
-                color = RadixTheme.colors.gray2
-            )
-
-            Text(
-                text = item.localId.displayable,
-                style = RadixTheme.typography.body1HighImportance.copy(
-                    textAlign = TextAlign.End
-                ),
-                color = RadixTheme.colors.gray2
+                modifier = Modifier.fillMaxWidth(),
+                text = name,
+                style = RadixTheme.typography.body1HighImportance,
+                color = RadixTheme.colors.gray1
             )
         }
 
-//            Row(
-//                modifier = Modifier.fillMaxWidth(),
-//                horizontalArrangement = Arrangement.SpaceBetween
-//            ) {
-//                Text(
-//                    text = "Type",
-//                    style = RadixTheme.typography.body1Regular,
-//                    color = RadixTheme.colors.gray2
-//                )
-//
-//                Text(
-//                    text = "Devin Booker - Dunk",
-//                    style = RadixTheme.typography.body1HighImportance.copy(
-//                        textAlign = TextAlign.End
-//                    ),
-//                    color = RadixTheme.colors.gray1
-//                )
-//            }
+        Text(
+            modifier = Modifier.fillMaxWidth(),
+            text = item.localId.displayable,
+            style = RadixTheme.typography.body1HighImportance,
+            color = RadixTheme.colors.gray2
+        )
     }
 }
 

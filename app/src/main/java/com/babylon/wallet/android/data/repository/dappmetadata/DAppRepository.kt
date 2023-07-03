@@ -218,6 +218,7 @@ class DAppRepositoryImpl @Inject constructor(
                     localId = Resource.NonFungibleResource.Item.ID.from(
                         nonFungibleItem.ancestorIdentities?.globalAddress.orEmpty()
                     ),
+                    nameMetadataItem = null,
                     iconMetadataItem = metadataMap[ExplicitMetadataKey.ICON_URL.key]?.let {
                         IconUrlMetadataItem(it.toUri())
                     }
