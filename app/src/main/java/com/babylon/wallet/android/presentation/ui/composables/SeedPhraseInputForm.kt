@@ -29,13 +29,16 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
 import com.babylon.wallet.android.designsystem.composable.RadixTextButton
 import com.babylon.wallet.android.designsystem.composable.RadixTextField
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
+import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.presentation.settings.legacyimport.SeedPhraseWord
+import com.babylon.wallet.android.presentation.ui.MockUiProvider
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import kotlinx.collections.immutable.ImmutableList
 
@@ -146,7 +149,7 @@ private fun SeedPhraseWordInput(
             SeedPhraseWord.State.Valid -> {
                 {
                     Icon(
-                        modifier = Modifier.size(14.dp),
+                        modifier = Modifier.size(20.dp),
                         painter = painterResource(
                             id = com.babylon.wallet.android.designsystem.R.drawable.check_circle_outline
                         ),
@@ -160,7 +163,7 @@ private fun SeedPhraseWordInput(
                 {
                     Icon(
                         modifier = Modifier
-                            .size(14.dp)
+                            .size(20.dp)
                             .throttleClickable {
                                 onWordChanged(word.index, "")
                             },
@@ -184,4 +187,19 @@ private fun SeedPhraseWordInput(
         errorFixedSize = true,
         singleLine = true
     )
+}
+
+@Preview(showBackground = true)
+@Composable
+fun InputSeedPhrasePagePreview() {
+    RadixWalletTheme {
+        SeedPhraseInputForm(
+            seedPhraseWords = MockUiProvider.seedPhraseWords,
+            onWordChanged = { _, _ -> },
+            onPassphraseChanged = { },
+            bip39Passphrase = "",
+            onFocusedWordIndexChanged = { },
+            modifier = Modifier
+        )
+    }
 }

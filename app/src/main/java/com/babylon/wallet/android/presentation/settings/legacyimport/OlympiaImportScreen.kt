@@ -73,6 +73,7 @@ import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.dapp.authorized.account.AccountItemUiModel
 import com.babylon.wallet.android.presentation.model.AddLedgerSheetState
 import com.babylon.wallet.android.presentation.settings.connector.qrcode.CameraPreview
+import com.babylon.wallet.android.presentation.ui.MockUiProvider
 import com.babylon.wallet.android.presentation.ui.composables.AccountCardWithStack
 import com.babylon.wallet.android.presentation.ui.composables.AddLedgerBottomSheet
 import com.babylon.wallet.android.presentation.ui.composables.BackIconType
@@ -837,7 +838,7 @@ fun SettingsScreenLinkConnectorWithoutActiveConnectorPreview() {
 fun InputSeedPhrasePagePreview() {
     RadixWalletTheme {
         InputSeedPhrasePage(
-            seedPhraseWords = (0 until 12).map { SeedPhraseWord(it) }.toPersistentList(),
+            seedPhraseWords = MockUiProvider.seedPhraseWords,
             bip39Passphrase = "test",
             onWordChanged = { _, _ -> },
             onPassphraseChanged = {},
