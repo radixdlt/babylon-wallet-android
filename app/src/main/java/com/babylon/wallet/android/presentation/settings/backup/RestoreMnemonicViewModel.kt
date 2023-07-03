@@ -117,7 +117,7 @@ class RestoreMnemonicViewModel @Inject constructor(
 
             val factorSourceIDFromHash = (factorInstance.factorSourceId as FactorSourceID.FromHash)
             val isFactorSourceIdValid = FactorSource.factorSourceId(mnemonicWithPassphrase = mnemonicWithPassphrase) ==
-                    factorSourceIDFromHash.body.value
+                factorSourceIDFromHash.body.value
 
             val isPublicKeyValid = mnemonicWithPassphrase.compressedPublicKey(derivationPath = derivationPath)
                 .removeLeadingZero()
