@@ -1,12 +1,10 @@
 package com.babylon.wallet.android.data
 
 import com.babylon.wallet.android.data.gateway.extensions.calculateResourceBehaviours
-import com.babylon.wallet.android.data.gateway.generated.models.AccessRule
-import com.babylon.wallet.android.data.gateway.generated.models.AccessRuleReference
 import com.babylon.wallet.android.data.gateway.generated.models.AccessRulesChain
-import com.babylon.wallet.android.data.gateway.generated.models.Method
-import com.babylon.wallet.android.data.gateway.generated.models.MethodAuth
-import com.babylon.wallet.android.data.gateway.generated.models.MethodAuthMutability
+import com.babylon.wallet.android.data.gateway.generated.models.AccessChainRules
+import com.babylon.wallet.android.data.gateway.generated.models.Key
+import com.babylon.wallet.android.data.gateway.generated.models.Rule
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponseFungibleResourceDetails
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponseItemDetailsType
 import com.babylon.wallet.android.domain.model.behaviours.ResourceBehaviour
@@ -22,31 +20,25 @@ class ResourceBehaviourTest {
         val fungibleResource = StateEntityDetailsResponseFungibleResourceDetails(
             type = StateEntityDetailsResponseItemDetailsType.nonFungibleResource,
             accessRulesChain = AccessRulesChain(
-                method_auth = listOf(
-                    MethodAuth(
-                        access_rule_reference = AccessRuleReference(
-                            access_rule = AccessRule(
-                                type = "DenyAll"
-                            ),
-                            type = "Rule"
-                        ),
-                        method = Method(
+                rules = listOf(
+                    AccessChainRules(
+                        key = Key(
                             module = "Main",
                             name = "update_non_fungible_data"
+                        ),
+                        rule = Rule(
+                            type = "DenyAll"
                         )
                     )
                 ),
-                method_auth_mutability = listOf(
-                    MethodAuthMutability(
-                        access_rule_reference = AccessRuleReference(
-                            access_rule = AccessRule(
-                                type = "DenyAll"
-                            ),
-                            type = "Rule"
-                        ),
-                        method = Method(
+                mutability = listOf(
+                    AccessChainRules(
+                        key = Key(
                             module = "Main",
                             name = "update_non_fungible_data"
+                        ),
+                        rule = Rule(
+                            type = "DenyAll"
                         )
                     )
                 ),
@@ -73,31 +65,25 @@ class ResourceBehaviourTest {
         val fungibleResource = StateEntityDetailsResponseFungibleResourceDetails(
             type = StateEntityDetailsResponseItemDetailsType.nonFungibleResource,
             accessRulesChain = AccessRulesChain(
-                method_auth = listOf(
-                    MethodAuth(
-                        access_rule_reference = AccessRuleReference(
-                            access_rule = AccessRule(
-                                type = "DenyAll"
-                            ),
-                            type = "Rule"
-                        ),
-                        method = Method(
+                rules = listOf(
+                    AccessChainRules(
+                        key = Key(
                             module = "Main",
                             name = "update_non_fungible_data"
+                        ),
+                        rule = Rule(
+                            type = "DenyAll"
                         )
                     )
                 ),
-                method_auth_mutability = listOf(
-                    MethodAuthMutability(
-                        access_rule_reference = AccessRuleReference(
-                            access_rule = AccessRule(
-                                type = "AllowAll"
-                            ),
-                            type = "Rule"
-                        ),
-                        method = Method(
+                mutability = listOf(
+                    AccessChainRules(
+                        key = Key(
                             module = "Main",
                             name = "update_non_fungible_data"
+                        ),
+                        rule = Rule(
+                            type = "AllowAll"
                         )
                     )
                 ),
@@ -124,31 +110,25 @@ class ResourceBehaviourTest {
         val fungibleResource = StateEntityDetailsResponseFungibleResourceDetails(
             type = StateEntityDetailsResponseItemDetailsType.nonFungibleResource,
             accessRulesChain = AccessRulesChain(
-                method_auth = listOf(
-                    MethodAuth(
-                        access_rule_reference = AccessRuleReference(
-                            access_rule = AccessRule(
-                                type = "AllowAll"
-                            ),
-                            type = "Rule"
-                        ),
-                        method = Method(
+                rules = listOf(
+                    AccessChainRules(
+                        key = Key(
                             module = "Main",
                             name = "update_non_fungible_data"
+                        ),
+                        rule = Rule(
+                            type = "AllowAll"
                         )
                     )
                 ),
-                method_auth_mutability = listOf(
-                    MethodAuthMutability(
-                        access_rule_reference = AccessRuleReference(
-                            access_rule = AccessRule(
-                                type = "DenyAll"
-                            ),
-                            type = "Rule"
-                        ),
-                        method = Method(
+                mutability = listOf(
+                    AccessChainRules(
+                        key = Key(
                             module = "Main",
                             name = "update_non_fungible_data"
+                        ),
+                        rule = Rule(
+                            type = "DenyAll"
                         )
                     )
                 ),
@@ -176,31 +156,25 @@ class ResourceBehaviourTest {
         val fungibleResource = StateEntityDetailsResponseFungibleResourceDetails(
             type = StateEntityDetailsResponseItemDetailsType.nonFungibleResource,
             accessRulesChain = AccessRulesChain(
-                method_auth = listOf(
-                    MethodAuth(
-                        access_rule_reference = AccessRuleReference(
-                            access_rule = AccessRule(
-                                type = "AllowAll"
-                            ),
-                            type = "Rule"
-                        ),
-                        method = Method(
+                rules = listOf(
+                    AccessChainRules(
+                        key = Key(
                             module = "Main",
                             name = "update_non_fungible_data"
+                        ),
+                        rule = Rule(
+                            type = "AllowAll"
                         )
                     )
                 ),
-                method_auth_mutability = listOf(
-                    MethodAuthMutability(
-                        access_rule_reference = AccessRuleReference(
-                            access_rule = AccessRule(
-                                type = "AllowAll"
-                            ),
-                            type = "Rule"
-                        ),
-                        method = Method(
+                mutability = listOf(
+                    AccessChainRules(
+                        key = Key(
                             module = "Main",
                             name = "update_non_fungible_data"
+                        ),
+                        rule = Rule(
+                            type = "AllowAll"
                         )
                     )
                 ),
@@ -225,31 +199,25 @@ class ResourceBehaviourTest {
         val fungibleResource = StateEntityDetailsResponseFungibleResourceDetails(
             type = StateEntityDetailsResponseItemDetailsType.fungibleResource,
             accessRulesChain = AccessRulesChain(
-                method_auth = listOf(
-                    MethodAuth(
-                        access_rule_reference = AccessRuleReference(
-                            access_rule = AccessRule(
-                                type = "AllowAll"
-                            ),
-                            type = "Rule"
-                        ),
-                        method = Method(
+                rules = listOf(
+                    AccessChainRules(
+                        key = Key(
                             module = "Main",
                             name = "update_non_fungible_data"
+                        ),
+                        rule = Rule(
+                            type = "AllowAll"
                         )
                     )
                 ),
-                method_auth_mutability = listOf(
-                    MethodAuthMutability(
-                        access_rule_reference = AccessRuleReference(
-                            access_rule = AccessRule(
-                                type = "AllowAll"
-                            ),
-                            type = "Rule"
-                        ),
-                        method = Method(
+                mutability = listOf(
+                    AccessChainRules(
+                        key = Key(
                             module = "Main",
                             name = "update_non_fungible_data"
+                        ),
+                        rule = Rule(
+                            type = "AllowAll"
                         )
                     )
                 ),
@@ -276,31 +244,25 @@ class ResourceBehaviourTest {
         val fungibleResource = StateEntityDetailsResponseFungibleResourceDetails(
             type = StateEntityDetailsResponseItemDetailsType.fungibleResource,
             accessRulesChain = AccessRulesChain(
-                method_auth = listOf(
-                    MethodAuth(
-                        access_rule_reference = AccessRuleReference(
-                            access_rule = AccessRule(
-                                type = "AllowAll"
-                            ),
-                            type = "Rule"
-                        ),
-                        method = Method(
+                rules = listOf(
+                    AccessChainRules(
+                        key = Key(
                             module = "Main",
                             name = "recall"
+                        ),
+                        rule = Rule(
+                            type = "AllowAll"
                         )
                     )
                 ),
-                method_auth_mutability = listOf(
-                    MethodAuthMutability(
-                        access_rule_reference = AccessRuleReference(
-                            access_rule = AccessRule(
-                                type = "DenyAll"
-                            ),
-                            type = "Rule"
-                        ),
-                        method = Method(
+                mutability = listOf(
+                    AccessChainRules(
+                        key = Key(
                             module = "Main",
                             name = "recall"
+                        ),
+                        rule = Rule(
+                            type = "DenyAll"
                         )
                     )
                 ),
@@ -327,31 +289,25 @@ class ResourceBehaviourTest {
         val fungibleResource = StateEntityDetailsResponseFungibleResourceDetails(
             type = StateEntityDetailsResponseItemDetailsType.fungibleResource,
             accessRulesChain = AccessRulesChain(
-                method_auth = listOf(
-                    MethodAuth(
-                        access_rule_reference = AccessRuleReference(
-                            access_rule = AccessRule(
-                                type = "DenyAll"
-                            ),
-                            type = "Rule"
-                        ),
-                        method = Method(
+                rules = listOf(
+                    AccessChainRules(
+                        key = Key(
                             module = "Main",
                             name = "recall"
+                        ),
+                        rule = Rule(
+                            type = "DenyAll"
                         )
                     )
                 ),
-                method_auth_mutability = listOf(
-                    MethodAuthMutability(
-                        access_rule_reference = AccessRuleReference(
-                            access_rule = AccessRule(
-                                type = "AllowAll"
-                            ),
-                            type = "Rule"
-                        ),
-                        method = Method(
+                mutability = listOf(
+                    AccessChainRules(
+                        key = Key(
                             module = "Main",
                             name = "recall"
+                        ),
+                        rule = Rule(
+                            type = "AllowAll"
                         )
                     )
                 ),
@@ -379,31 +335,25 @@ class ResourceBehaviourTest {
         val fungibleResource = StateEntityDetailsResponseFungibleResourceDetails(
             type = StateEntityDetailsResponseItemDetailsType.fungibleResource,
             accessRulesChain = AccessRulesChain(
-                method_auth = listOf(
-                    MethodAuth(
-                        access_rule_reference = AccessRuleReference(
-                            access_rule = AccessRule(
-                                type = "AllowAll"
-                            ),
-                            type = "Rule"
-                        ),
-                        method = Method(
+                rules = listOf(
+                    AccessChainRules(
+                        key = Key(
                             module = "Main",
                             name = "recall"
+                        ),
+                        rule = Rule(
+                            type = "AllowAll"
                         )
                     )
                 ),
-                method_auth_mutability = listOf(
-                    MethodAuthMutability(
-                        access_rule_reference = AccessRuleReference(
-                            access_rule = AccessRule(
-                                type = "AllowAll"
-                            ),
-                            type = "Rule"
-                        ),
-                        method = Method(
+                mutability = listOf(
+                    AccessChainRules(
+                        key = Key(
                             module = "Main",
                             name = "recall"
+                        ),
+                        rule = Rule(
+                            type = "AllowAll"
                         )
                     )
                 ),
@@ -430,31 +380,25 @@ class ResourceBehaviourTest {
         val fungibleResource = StateEntityDetailsResponseFungibleResourceDetails(
             type = StateEntityDetailsResponseItemDetailsType.fungibleResource,
             accessRulesChain = AccessRulesChain(
-                method_auth = listOf(
-                    MethodAuth(
-                        access_rule_reference = AccessRuleReference(
-                            access_rule = AccessRule(
-                                type = "AllowAll"
-                            ),
-                            type = "Rule"
-                        ),
-                        method = Method(
+                rules = listOf(
+                    AccessChainRules(
+                        key = Key(
                             module = "Main",
                             name = "set"
+                        ),
+                        rule = Rule(
+                            type = "AllowAll"
                         )
                     )
                 ),
-                method_auth_mutability = listOf(
-                    MethodAuthMutability(
-                        access_rule_reference = AccessRuleReference(
-                            access_rule = AccessRule(
-                                type = "DenyAll"
-                            ),
-                            type = "Rule"
-                        ),
-                        method = Method(
+                mutability = listOf(
+                    AccessChainRules(
+                        key = Key(
                             module = "Main",
                             name = "set"
+                        ),
+                        rule = Rule(
+                            type = "DenyAll"
                         )
                     )
                 ),
@@ -481,31 +425,25 @@ class ResourceBehaviourTest {
         val fungibleResource = StateEntityDetailsResponseFungibleResourceDetails(
             type = StateEntityDetailsResponseItemDetailsType.fungibleResource,
             accessRulesChain = AccessRulesChain(
-                method_auth = listOf(
-                    MethodAuth(
-                        access_rule_reference = AccessRuleReference(
-                            access_rule = AccessRule(
-                                type = "DenyAll"
-                            ),
-                            type = "Rule"
-                        ),
-                        method = Method(
+                rules = listOf(
+                    AccessChainRules(
+                        key = Key(
                             module = "Main",
                             name = "set"
+                        ),
+                        rule = Rule(
+                            type = "DenyAll"
                         )
                     )
                 ),
-                method_auth_mutability = listOf(
-                    MethodAuthMutability(
-                        access_rule_reference = AccessRuleReference(
-                            access_rule = AccessRule(
-                                type = "AllowAll"
-                            ),
-                            type = "Rule"
-                        ),
-                        method = Method(
+                mutability = listOf(
+                    AccessChainRules(
+                        key = Key(
                             module = "Main",
                             name = "set"
+                        ),
+                        rule = Rule(
+                            type = "AllowAll"
                         )
                     )
                 ),
@@ -533,31 +471,25 @@ class ResourceBehaviourTest {
         val fungibleResource = StateEntityDetailsResponseFungibleResourceDetails(
             type = StateEntityDetailsResponseItemDetailsType.fungibleResource,
             accessRulesChain = AccessRulesChain(
-                method_auth = listOf(
-                    MethodAuth(
-                        access_rule_reference = AccessRuleReference(
-                            access_rule = AccessRule(
-                                type = "AllowAll"
-                            ),
-                            type = "Rule"
-                        ),
-                        method = Method(
+                rules = listOf(
+                    AccessChainRules(
+                        key = Key(
                             module = "Main",
                             name = "set"
+                        ),
+                        rule = Rule(
+                            type = "AllowAll"
                         )
                     )
                 ),
-                method_auth_mutability = listOf(
-                    MethodAuthMutability(
-                        access_rule_reference = AccessRuleReference(
-                            access_rule = AccessRule(
-                                type = "AllowAll"
-                            ),
-                            type = "Rule"
-                        ),
-                        method = Method(
+                mutability = listOf(
+                    AccessChainRules(
+                        key = Key(
                             module = "Main",
                             name = "set"
+                        ),
+                        rule = Rule(
+                            type = "AllowAll"
                         )
                     )
                 ),
@@ -584,31 +516,25 @@ class ResourceBehaviourTest {
         val fungibleResource = StateEntityDetailsResponseFungibleResourceDetails(
             type = StateEntityDetailsResponseItemDetailsType.fungibleResource,
             accessRulesChain = AccessRulesChain(
-                method_auth = listOf(
-                    MethodAuth(
-                        access_rule_reference = AccessRuleReference(
-                            access_rule = AccessRule(
-                                type = "AllowAll"
-                            ),
-                            type = "Rule"
-                        ),
-                        method = Method(
+                rules = listOf(
+                    AccessChainRules(
+                        key = Key(
                             module = "Main",
                             name = "mint"
+                        ),
+                        rule = Rule(
+                            type = "AllowAll"
                         )
                     )
                 ),
-                method_auth_mutability = listOf(
-                    MethodAuthMutability(
-                        access_rule_reference = AccessRuleReference(
-                            access_rule = AccessRule(
-                                type = "DenyAll"
-                            ),
-                            type = "Rule"
-                        ),
-                        method = Method(
+                mutability = listOf(
+                    AccessChainRules(
+                        key = Key(
                             module = "Main",
                             name = "mint"
+                        ),
+                        rule = Rule(
+                            type = "DenyAll"
                         )
                     )
                 ),
@@ -635,31 +561,25 @@ class ResourceBehaviourTest {
         val fungibleResource = StateEntityDetailsResponseFungibleResourceDetails(
             type = StateEntityDetailsResponseItemDetailsType.fungibleResource,
             accessRulesChain = AccessRulesChain(
-                method_auth = listOf(
-                    MethodAuth(
-                        access_rule_reference = AccessRuleReference(
-                            access_rule = AccessRule(
-                                type = "DenyAll"
-                            ),
-                            type = "Rule"
-                        ),
-                        method = Method(
+                rules = listOf(
+                    AccessChainRules(
+                        key = Key(
                             module = "Main",
                             name = "mint"
+                        ),
+                        rule = Rule(
+                            type = "DenyAll"
                         )
                     )
                 ),
-                method_auth_mutability = listOf(
-                    MethodAuthMutability(
-                        access_rule_reference = AccessRuleReference(
-                            access_rule = AccessRule(
-                                type = "AllowAll"
-                            ),
-                            type = "Rule"
-                        ),
-                        method = Method(
+                mutability = listOf(
+                    AccessChainRules(
+                        key = Key(
                             module = "Main",
                             name = "mint"
+                        ),
+                        rule = Rule(
+                            type = "AllowAll"
                         )
                     )
                 ),
@@ -687,31 +607,25 @@ class ResourceBehaviourTest {
         val fungibleResource = StateEntityDetailsResponseFungibleResourceDetails(
             type = StateEntityDetailsResponseItemDetailsType.fungibleResource,
             accessRulesChain = AccessRulesChain(
-                method_auth = listOf(
-                    MethodAuth(
-                        access_rule_reference = AccessRuleReference(
-                            access_rule = AccessRule(
-                                type = "AllowAll"
-                            ),
-                            type = "Rule"
-                        ),
-                        method = Method(
+                rules = listOf(
+                    AccessChainRules(
+                        key = Key(
                             module = "Main",
                             name = "mint"
+                        ),
+                        rule = Rule(
+                            type = "AllowAll"
                         )
                     )
                 ),
-                method_auth_mutability = listOf(
-                    MethodAuthMutability(
-                        access_rule_reference = AccessRuleReference(
-                            access_rule = AccessRule(
-                                type = "AllowAll"
-                            ),
-                            type = "Rule"
-                        ),
-                        method = Method(
+                mutability = listOf(
+                    AccessChainRules(
+                        key = Key(
                             module = "Main",
                             name = "mint"
+                        ),
+                        rule = Rule(
+                            type = "AllowAll"
                         )
                     )
                 ),
@@ -738,31 +652,25 @@ class ResourceBehaviourTest {
         val fungibleResource = StateEntityDetailsResponseFungibleResourceDetails(
             type = StateEntityDetailsResponseItemDetailsType.fungibleResource,
             accessRulesChain = AccessRulesChain(
-                method_auth = listOf(
-                    MethodAuth(
-                        access_rule_reference = AccessRuleReference(
-                            access_rule = AccessRule(
-                                type = "AllowAll"
-                            ),
-                            type = "Rule"
-                        ),
-                        method = Method(
+                rules = listOf(
+                    AccessChainRules(
+                        key = Key(
                             module = "Main",
                             name = "burn"
+                        ),
+                        rule = Rule(
+                            type = "AllowAll"
                         )
                     )
                 ),
-                method_auth_mutability = listOf(
-                    MethodAuthMutability(
-                        access_rule_reference = AccessRuleReference(
-                            access_rule = AccessRule(
-                                type = "DenyAll"
-                            ),
-                            type = "Rule"
-                        ),
-                        method = Method(
+                mutability = listOf(
+                    AccessChainRules(
+                        key = Key(
                             module = "Main",
                             name = "burn"
+                        ),
+                        rule = Rule(
+                            type = "DenyAll"
                         )
                     )
                 ),
@@ -789,31 +697,25 @@ class ResourceBehaviourTest {
         val fungibleResource = StateEntityDetailsResponseFungibleResourceDetails(
             type = StateEntityDetailsResponseItemDetailsType.fungibleResource,
             accessRulesChain = AccessRulesChain(
-                method_auth = listOf(
-                    MethodAuth(
-                        access_rule_reference = AccessRuleReference(
-                            access_rule = AccessRule(
-                                type = "DenyAll"
-                            ),
-                            type = "Rule"
-                        ),
-                        method = Method(
+                rules = listOf(
+                    AccessChainRules(
+                        key = Key(
                             module = "Main",
                             name = "burn"
+                        ),
+                        rule = Rule(
+                            type = "DenyAll"
                         )
                     )
                 ),
-                method_auth_mutability = listOf(
-                    MethodAuthMutability(
-                        access_rule_reference = AccessRuleReference(
-                            access_rule = AccessRule(
-                                type = "AllowAll"
-                            ),
-                            type = "Rule"
-                        ),
-                        method = Method(
+                mutability = listOf(
+                    AccessChainRules(
+                        key = Key(
                             module = "Main",
                             name = "burn"
+                        ),
+                        rule = Rule(
+                            type = "AllowAll"
                         )
                     )
                 ),
@@ -841,31 +743,25 @@ class ResourceBehaviourTest {
         val fungibleResource = StateEntityDetailsResponseFungibleResourceDetails(
             type = StateEntityDetailsResponseItemDetailsType.fungibleResource,
             accessRulesChain = AccessRulesChain(
-                method_auth = listOf(
-                    MethodAuth(
-                        access_rule_reference = AccessRuleReference(
-                            access_rule = AccessRule(
-                                type = "AllowAll"
-                            ),
-                            type = "Rule"
-                        ),
-                        method = Method(
+                rules = listOf(
+                    AccessChainRules(
+                        key = Key(
                             module = "Main",
                             name = "burn"
+                        ),
+                        rule = Rule(
+                            type = "AllowAll"
                         )
                     )
                 ),
-                method_auth_mutability = listOf(
-                    MethodAuthMutability(
-                        access_rule_reference = AccessRuleReference(
-                            access_rule = AccessRule(
-                                type = "AllowAll"
-                            ),
-                            type = "Rule"
-                        ),
-                        method = Method(
+                mutability = listOf(
+                    AccessChainRules(
+                        key = Key(
                             module = "Main",
                             name = "burn"
+                        ),
+                        rule = Rule(
+                            type = "AllowAll"
                         )
                     )
                 ),
@@ -892,55 +788,43 @@ class ResourceBehaviourTest {
         val fungibleResource = StateEntityDetailsResponseFungibleResourceDetails(
             type = StateEntityDetailsResponseItemDetailsType.fungibleResource,
             accessRulesChain = AccessRulesChain(
-                method_auth = listOf(
-                    MethodAuth(
-                        access_rule_reference = AccessRuleReference(
-                            access_rule = AccessRule(
-                                type = "AllowAll"
-                            ),
-                            type = "Rule"
-                        ),
-                        method = Method(
+                rules = listOf(
+                    AccessChainRules(
+                        key = Key(
                             module = "Main",
                             name = "burn"
+                        ),
+                        rule = Rule(
+                            type = "AllowAll"
                         )
                     ),
-                    MethodAuth(
-                        access_rule_reference = AccessRuleReference(
-                            access_rule = AccessRule(
-                                type = "AllowAll"
-                            ),
-                            type = "Rule"
-                        ),
-                        method = Method(
+                    AccessChainRules(
+                        key = Key(
                             module = "Main",
                             name = "mint"
+                        ),
+                        rule = Rule(
+                            type = "AllowAll"
                         )
                     )
                 ),
-                method_auth_mutability = listOf(
-                    MethodAuthMutability(
-                        access_rule_reference = AccessRuleReference(
-                            access_rule = AccessRule(
-                                type = "DenyAll"
-                            ),
-                            type = "Rule"
-                        ),
-                        method = Method(
+                mutability = listOf(
+                    AccessChainRules(
+                        key = Key(
                             module = "Main",
                             name = "burn"
+                        ),
+                        rule = Rule(
+                            type = "DenyAll"
                         )
                     ),
-                    MethodAuthMutability(
-                        access_rule_reference = AccessRuleReference(
-                            access_rule = AccessRule(
-                                type = "DenyAll"
-                            ),
-                            type = "Rule"
-                        ),
-                        method = Method(
+                    AccessChainRules(
+                        key = Key(
                             module = "Main",
                             name = "mint"
+                        ),
+                        rule = Rule(
+                            type = "DenyAll"
                         )
                     )
                 ),
@@ -967,55 +851,43 @@ class ResourceBehaviourTest {
         val fungibleResource = StateEntityDetailsResponseFungibleResourceDetails(
             type = StateEntityDetailsResponseItemDetailsType.fungibleResource,
             accessRulesChain = AccessRulesChain(
-                method_auth = listOf(
-                    MethodAuth(
-                        access_rule_reference = AccessRuleReference(
-                            access_rule = AccessRule(
-                                type = "DenyAll"
-                            ),
-                            type = "Rule"
-                        ),
-                        method = Method(
+                rules = listOf(
+                    AccessChainRules(
+                        key = Key(
                             module = "Main",
                             name = "burn"
+                        ),
+                        rule = Rule(
+                            type = "DenyAll"
                         )
                     ),
-                    MethodAuth(
-                        access_rule_reference = AccessRuleReference(
-                            access_rule = AccessRule(
-                                type = "DenyAll"
-                            ),
-                            type = "Rule"
-                        ),
-                        method = Method(
+                    AccessChainRules(
+                        key = Key(
                             module = "Main",
                             name = "mint"
+                        ),
+                        rule = Rule(
+                            type = "DenyAll"
                         )
                     )
                 ),
-                method_auth_mutability = listOf(
-                    MethodAuthMutability(
-                        access_rule_reference = AccessRuleReference(
-                            access_rule = AccessRule(
-                                type = "AllowAll"
-                            ),
-                            type = "Rule"
-                        ),
-                        method = Method(
+                mutability = listOf(
+                    AccessChainRules(
+                        key = Key(
                             module = "Main",
                             name = "burn"
+                        ),
+                        rule = Rule(
+                            type = "AllowAll"
                         )
                     ),
-                    MethodAuthMutability(
-                        access_rule_reference = AccessRuleReference(
-                            access_rule = AccessRule(
-                                type = "AllowAll"
-                            ),
-                            type = "Rule"
-                        ),
-                        method = Method(
+                    AccessChainRules(
+                        key = Key(
                             module = "Main",
                             name = "mint"
+                        ),
+                        rule = Rule(
+                            type = "AllowAll"
                         )
                     )
                 ),
@@ -1042,55 +914,43 @@ class ResourceBehaviourTest {
         val fungibleResource = StateEntityDetailsResponseFungibleResourceDetails(
             type = StateEntityDetailsResponseItemDetailsType.fungibleResource,
             accessRulesChain = AccessRulesChain(
-                method_auth = listOf(
-                    MethodAuth(
-                        access_rule_reference = AccessRuleReference(
-                            access_rule = AccessRule(
-                                type = "DenyAll"
-                            ),
-                            type = "Rule"
-                        ),
-                        method = Method(
+                rules = listOf(
+                    AccessChainRules(
+                        key = Key(
                             module = "Main",
                             name = "deposit"
+                        ),
+                        rule = Rule(
+                            type = "DenyAll"
                         )
                     ),
-                    MethodAuth(
-                        access_rule_reference = AccessRuleReference(
-                            access_rule = AccessRule(
-                                type = "DenyAll"
-                            ),
-                            type = "Rule"
-                        ),
-                        method = Method(
+                    AccessChainRules(
+                        key = Key(
                             module = "Main",
                             name = "withdraw"
+                        ),
+                        rule = Rule(
+                            type = "DenyAll"
                         )
                     )
                 ),
-                method_auth_mutability = listOf(
-                    MethodAuthMutability(
-                        access_rule_reference = AccessRuleReference(
-                            access_rule = AccessRule(
-                                type = "DenyAll"
-                            ),
-                            type = "Rule"
-                        ),
-                        method = Method(
+                mutability = listOf(
+                    AccessChainRules(
+                        key = Key(
                             module = "Main",
                             name = "deposit"
+                        ),
+                        rule = Rule(
+                            type = "DenyAll"
                         )
                     ),
-                    MethodAuthMutability(
-                        access_rule_reference = AccessRuleReference(
-                            access_rule = AccessRule(
-                                type = "DenyAll"
-                            ),
-                            type = "Rule"
-                        ),
-                        method = Method(
+                    AccessChainRules(
+                        key = Key(
                             module = "Main",
                             name = "withdraw"
+                        ),
+                        rule = Rule(
+                            type = "DenyAll"
                         )
                     )
                 ),
@@ -1117,55 +977,43 @@ class ResourceBehaviourTest {
         val fungibleResource = StateEntityDetailsResponseFungibleResourceDetails(
             type = StateEntityDetailsResponseItemDetailsType.fungibleResource,
             accessRulesChain = AccessRulesChain(
-                method_auth = listOf(
-                    MethodAuth(
-                        access_rule_reference = AccessRuleReference(
-                            access_rule = AccessRule(
-                                type = "AllowAll"
-                            ),
-                            type = "Rule"
-                        ),
-                        method = Method(
+                rules = listOf(
+                    AccessChainRules(
+                        key = Key(
                             module = "Main",
                             name = "deposit"
+                        ),
+                        rule = Rule(
+                            type = "AllowAll"
                         )
                     ),
-                    MethodAuth(
-                        access_rule_reference = AccessRuleReference(
-                            access_rule = AccessRule(
-                                type = "AllowAll"
-                            ),
-                            type = "Rule"
-                        ),
-                        method = Method(
+                    AccessChainRules(
+                        key = Key(
                             module = "Main",
                             name = "withdraw"
+                        ),
+                        rule = Rule(
+                            type = "AllowAll"
                         )
                     )
                 ),
-                method_auth_mutability = listOf(
-                    MethodAuthMutability(
-                        access_rule_reference = AccessRuleReference(
-                            access_rule = AccessRule(
-                                type = "DenyAll"
-                            ),
-                            type = "Rule"
-                        ),
-                        method = Method(
+                mutability = listOf(
+                    AccessChainRules(
+                        key = Key(
                             module = "Main",
                             name = "deposit"
+                        ),
+                        rule = Rule(
+                            type = "DenyAll"
                         )
                     ),
-                    MethodAuthMutability(
-                        access_rule_reference = AccessRuleReference(
-                            access_rule = AccessRule(
-                                type = "AllowAll"
-                            ),
-                            type = "Rule"
-                        ),
-                        method = Method(
+                    AccessChainRules(
+                        key = Key(
                             module = "Main",
                             name = "withdraw"
+                        ),
+                        rule = Rule(
+                            type = "AllowAll"
                         )
                     )
                 ),
@@ -1192,55 +1040,43 @@ class ResourceBehaviourTest {
         val fungibleResource = StateEntityDetailsResponseFungibleResourceDetails(
             type = StateEntityDetailsResponseItemDetailsType.fungibleResource,
             accessRulesChain = AccessRulesChain(
-                method_auth = listOf(
-                    MethodAuth(
-                        access_rule_reference = AccessRuleReference(
-                            access_rule = AccessRule(
-                                type = "AllowAll"
-                            ),
-                            type = "Rule"
-                        ),
-                        method = Method(
+                rules = listOf(
+                    AccessChainRules(
+                        key = Key(
                             module = "Main",
                             name = "deposit"
+                        ),
+                        rule = Rule(
+                            type = "AllowAll"
                         )
                     ),
-                    MethodAuth(
-                        access_rule_reference = AccessRuleReference(
-                            access_rule = AccessRule(
-                                type = "AllowAll"
-                            ),
-                            type = "Rule"
-                        ),
-                        method = Method(
+                    AccessChainRules(
+                        key = Key(
                             module = "Main",
                             name = "withdraw"
+                        ),
+                        rule = Rule(
+                            type = "AllowAll"
                         )
                     )
                 ),
-                method_auth_mutability = listOf(
-                    MethodAuthMutability(
-                        access_rule_reference = AccessRuleReference(
-                            access_rule = AccessRule(
-                                type = "Protected"
-                            ),
-                            type = "Rule"
-                        ),
-                        method = Method(
+                mutability = listOf(
+                    AccessChainRules(
+                        key = Key(
                             module = "Main",
                             name = "deposit"
+                        ),
+                        rule = Rule(
+                            type = "Protected"
                         )
                     ),
-                    MethodAuthMutability(
-                        access_rule_reference = AccessRuleReference(
-                            access_rule = AccessRule(
-                                type = "Protected"
-                            ),
-                            type = "Rule"
-                        ),
-                        method = Method(
+                    AccessChainRules(
+                        key = Key(
                             module = "Main",
                             name = "withdraw"
+                        ),
+                        rule = Rule(
+                            type = "Protected"
                         )
                     )
                 ),
@@ -1267,151 +1103,115 @@ class ResourceBehaviourTest {
         val fungibleResource = StateEntityDetailsResponseFungibleResourceDetails(
             type = StateEntityDetailsResponseItemDetailsType.fungibleResource,
             accessRulesChain = AccessRulesChain(
-                method_auth = listOf(
-                    MethodAuth(
-                        access_rule_reference = AccessRuleReference(
-                            access_rule = AccessRule(
-                                type = "DenyAll"
-                            ),
-                            type = "Rule"
-                        ),
-                        method = Method(
+                rules = listOf(
+                    AccessChainRules(
+                        key = Key(
                             module = "Main",
                             name = "mint"
+                        ),
+                        rule = Rule(
+                            type = "DenyAll"
                         )
                     ),
-                    MethodAuth(
-                        access_rule_reference = AccessRuleReference(
-                            access_rule = AccessRule(
-                                type = "DenyAll"
-                            ),
-                            type = "Rule"
-                        ),
-                        method = Method(
+                    AccessChainRules(
+                        key = Key(
                             module = "Main",
                             name = "burn"
+                        ),
+                        rule = Rule(
+                            type = "DenyAll"
                         )
                     ),
-                    MethodAuth(
-                        access_rule_reference = AccessRuleReference(
-                            access_rule = AccessRule(
-                                type = "AllowAll"
-                            ),
-                            type = "Rule"
-                        ),
-                        method = Method(
+                    AccessChainRules(
+                        key = Key(
                             module = "Main",
                             name = "deposit"
+                        ),
+                        rule = Rule(
+                            type = "AllowAll"
                         )
                     ),
-                    MethodAuth(
-                        access_rule_reference = AccessRuleReference(
-                            access_rule = AccessRule(
-                                type = "AllowAll"
-                            ),
-                            type = "Rule"
-                        ),
-                        method = Method(
+                    AccessChainRules(
+                        key = Key(
                             module = "Main",
                             name = "withdraw"
+                        ),
+                        rule = Rule(
+                            type = "AllowAll"
                         )
                     ),
-                    MethodAuth(
-                        access_rule_reference = AccessRuleReference(
-                            access_rule = AccessRule(
-                                type = "DenyAll"
-                            ),
-                            type = "Rule"
-                        ),
-                        method = Method(
+                    AccessChainRules(
+                        key = Key(
                             module = "Main",
                             name = "set"
+                        ),
+                        rule = Rule(
+                            type = "DenyAll"
                         )
                     ),
-                    MethodAuth(
-                        access_rule_reference = AccessRuleReference(
-                            access_rule = AccessRule(
-                                type = "DenyAll"
-                            ),
-                            type = "Rule"
-                        ),
-                        method = Method(
+                    AccessChainRules(
+                        key = Key(
                             module = "Main",
                             name = "recall"
+                        ),
+                        rule = Rule(
+                            type = "DenyAll"
                         )
                     )
                 ),
-                method_auth_mutability = listOf(
-                    MethodAuthMutability(
-                        access_rule_reference = AccessRuleReference(
-                            access_rule = AccessRule(
-                                type = "DenyAll"
-                            ),
-                            type = "Rule"
-                        ),
-                        method = Method(
+                mutability = listOf(
+                    AccessChainRules(
+                        key = Key(
                             module = "Main",
                             name = "mint"
+                        ),
+                        rule = Rule(
+                            type = "DenyAll"
                         )
                     ),
-                    MethodAuthMutability(
-                        access_rule_reference = AccessRuleReference(
-                            access_rule = AccessRule(
-                                type = "DenyAll"
-                            ),
-                            type = "Rule"
-                        ),
-                        method = Method(
+                    AccessChainRules(
+                        key = Key(
                             module = "Main",
                             name = "burn"
+                        ),
+                        rule = Rule(
+                            type = "DenyAll"
                         )
                     ),
-                    MethodAuthMutability(
-                        access_rule_reference = AccessRuleReference(
-                            access_rule = AccessRule(
-                                type = "DenyAll"
-                            ),
-                            type = "Rule"
-                        ),
-                        method = Method(
+                    AccessChainRules(
+                        key = Key(
                             module = "Main",
                             name = "deposit"
+                        ),
+                        rule = Rule(
+                            type = "DenyAll"
                         )
                     ),
-                    MethodAuthMutability(
-                        access_rule_reference = AccessRuleReference(
-                            access_rule = AccessRule(
-                                type = "DenyAll"
-                            ),
-                            type = "Rule"
-                        ),
-                        method = Method(
+                    AccessChainRules(
+                        key = Key(
                             module = "Main",
                             name = "withdraw"
+                        ),
+                        rule = Rule(
+                            type = "DenyAll"
                         )
                     ),
-                    MethodAuthMutability(
-                        access_rule_reference = AccessRuleReference(
-                            access_rule = AccessRule(
-                                type = "DenyAll"
-                            ),
-                            type = "Rule"
-                        ),
-                        method = Method(
+                    AccessChainRules(
+                        key = Key(
                             module = "Main",
                             name = "set"
+                        ),
+                        rule = Rule(
+                            type = "DenyAll"
                         )
                     ),
-                    MethodAuthMutability(
-                        access_rule_reference = AccessRuleReference(
-                            access_rule = AccessRule(
-                                type = "DenyAll"
-                            ),
-                            type = "Rule"
-                        ),
-                        method = Method(
+                    AccessChainRules(
+                        key = Key(
                             module = "Main",
                             name = "recall"
+                        ),
+                        rule = Rule(
+                            type = "DenyAll"
                         )
                     )
                 ),
@@ -1438,175 +1238,133 @@ class ResourceBehaviourTest {
         val fungibleResource = StateEntityDetailsResponseFungibleResourceDetails(
             type = StateEntityDetailsResponseItemDetailsType.nonFungibleResource,
             accessRulesChain = AccessRulesChain(
-                method_auth = listOf(
-                    MethodAuth(
-                        access_rule_reference = AccessRuleReference(
-                            access_rule = AccessRule(
-                                type = "DenyAll"
-                            ),
-                            type = "Rule"
-                        ),
-                        method = Method(
+                rules = listOf(
+                    AccessChainRules(
+                        key = Key(
                             module = "Main",
                             name = "mint"
+                        ),
+                        rule = Rule(
+                            type = "DenyAll"
                         )
                     ),
-                    MethodAuth(
-                        access_rule_reference = AccessRuleReference(
-                            access_rule = AccessRule(
-                                type = "DenyAll"
-                            ),
-                            type = "Rule"
-                        ),
-                        method = Method(
+                    AccessChainRules(
+                        key = Key(
                             module = "Main",
                             name = "burn"
+                        ),
+                        rule = Rule(
+                            type = "DenyAll"
                         )
                     ),
-                    MethodAuth(
-                        access_rule_reference = AccessRuleReference(
-                            access_rule = AccessRule(
-                                type = "AllowAll"
-                            ),
-                            type = "Rule"
-                        ),
-                        method = Method(
+                    AccessChainRules(
+                        key = Key(
                             module = "Main",
                             name = "deposit"
+                        ),
+                        rule = Rule(
+                            type = "AllowAll"
                         )
                     ),
-                    MethodAuth(
-                        access_rule_reference = AccessRuleReference(
-                            access_rule = AccessRule(
-                                type = "AllowAll"
-                            ),
-                            type = "Rule"
-                        ),
-                        method = Method(
+                    AccessChainRules(
+                        key = Key(
                             module = "Main",
                             name = "withdraw"
+                        ),
+                        rule = Rule(
+                            type = "AllowAll"
                         )
                     ),
-                    MethodAuth(
-                        access_rule_reference = AccessRuleReference(
-                            access_rule = AccessRule(
-                                type = "DenyAll"
-                            ),
-                            type = "Rule"
-                        ),
-                        method = Method(
+                    AccessChainRules(
+                        key = Key(
                             module = "Main",
                             name = "set"
+                        ),
+                        rule = Rule(
+                            type = "DenyAll"
                         )
                     ),
-                    MethodAuth(
-                        access_rule_reference = AccessRuleReference(
-                            access_rule = AccessRule(
-                                type = "DenyAll"
-                            ),
-                            type = "Rule"
-                        ),
-                        method = Method(
+                    AccessChainRules(
+                        key = Key(
                             module = "Main",
                             name = "recall"
+                        ),
+                        rule = Rule(
+                            type = "DenyAll"
                         )
                     ),
-                    MethodAuth(
-                        access_rule_reference = AccessRuleReference(
-                            access_rule = AccessRule(
-                                type = "DenyAll"
-                            ),
-                            type = "Rule"
-                        ),
-                        method = Method(
+                    AccessChainRules(
+                        key = Key(
                             module = "Main",
                             name = "update_non_fungible_data"
+                        ),
+                        rule = Rule(
+                            type = "DenyAll"
                         )
                     )
                 ),
-                method_auth_mutability = listOf(
-                    MethodAuthMutability(
-                        access_rule_reference = AccessRuleReference(
-                            access_rule = AccessRule(
-                                type = "DenyAll"
-                            ),
-                            type = "Rule"
-                        ),
-                        method = Method(
+                mutability = listOf(
+                    AccessChainRules(
+                        key = Key(
                             module = "Main",
                             name = "mint"
+                        ),
+                        rule = Rule(
+                            type = "DenyAll"
                         )
                     ),
-                    MethodAuthMutability(
-                        access_rule_reference = AccessRuleReference(
-                            access_rule = AccessRule(
-                                type = "DenyAll"
-                            ),
-                            type = "Rule"
-                        ),
-                        method = Method(
+                    AccessChainRules(
+                        key = Key(
                             module = "Main",
                             name = "burn"
+                        ),
+                        rule = Rule(
+                            type = "DenyAll"
                         )
                     ),
-                    MethodAuthMutability(
-                        access_rule_reference = AccessRuleReference(
-                            access_rule = AccessRule(
-                                type = "DenyAll"
-                            ),
-                            type = "Rule"
-                        ),
-                        method = Method(
+                    AccessChainRules(
+                        key = Key(
                             module = "Main",
                             name = "deposit"
+                        ),
+                        rule = Rule(
+                            type = "DenyAll"
                         )
                     ),
-                    MethodAuthMutability(
-                        access_rule_reference = AccessRuleReference(
-                            access_rule = AccessRule(
-                                type = "DenyAll"
-                            ),
-                            type = "Rule"
-                        ),
-                        method = Method(
+                    AccessChainRules(
+                        key = Key(
                             module = "Main",
                             name = "withdraw"
+                        ),
+                        rule = Rule(
+                            type = "DenyAll"
                         )
                     ),
-                    MethodAuthMutability(
-                        access_rule_reference = AccessRuleReference(
-                            access_rule = AccessRule(
-                                type = "DenyAll"
-                            ),
-                            type = "Rule"
-                        ),
-                        method = Method(
+                    AccessChainRules(
+                        key = Key(
                             module = "Main",
                             name = "set"
+                        ),
+                        rule = Rule(
+                            type = "DenyAll"
                         )
                     ),
-                    MethodAuthMutability(
-                        access_rule_reference = AccessRuleReference(
-                            access_rule = AccessRule(
-                                type = "DenyAll"
-                            ),
-                            type = "Rule"
-                        ),
-                        method = Method(
+                    AccessChainRules(
+                        key = Key(
                             module = "Main",
                             name = "recall"
+                        ),
+                        rule = Rule(
+                            type = "DenyAll"
                         )
                     ),
-                    MethodAuthMutability(
-                        access_rule_reference = AccessRuleReference(
-                            access_rule = AccessRule(
-                                type = "DenyAll"
-                            ),
-                            type = "Rule"
-                        ),
-                        method = Method(
+                    AccessChainRules(
+                        key = Key(
                             module = "Main",
                             name = "update_non_fungible_data"
+                        ),
+                        rule = Rule(
+                            type = "DenyAll"
                         )
                     )
                 ),
