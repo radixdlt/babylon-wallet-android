@@ -26,20 +26,38 @@ object MockUiProvider {
         ),
         SeedPhraseWord(
             index = 3,
-            value = "value3",
-            state = SeedPhraseWord.State.Valid,
+            value = "",
+            state = SeedPhraseWord.State.Empty,
             lastWord = false
         ),
         SeedPhraseWord(
-            index = 0,
-            value = "value4",
-            state = SeedPhraseWord.State.Valid,
+            index = 4,
+            value = "",
+            state = SeedPhraseWord.State.Empty,
             lastWord = false
         ),
         SeedPhraseWord(
-            index = 0,
-            value = "value5",
-            state = SeedPhraseWord.State.Valid,
+            index = 5,
+            value = "",
+            state = SeedPhraseWord.State.Empty,
+            lastWord = true
+        ),
+        SeedPhraseWord(
+            index = 6,
+            value = "",
+            state = SeedPhraseWord.State.Empty,
+            lastWord = false
+        ),
+        SeedPhraseWord(
+            index = 7,
+            value = "",
+            state = SeedPhraseWord.State.Empty,
+            lastWord = false
+        ),
+        SeedPhraseWord(
+            index = 8,
+            value = "",
+            state = SeedPhraseWord.State.Empty,
             lastWord = true
         )
     )

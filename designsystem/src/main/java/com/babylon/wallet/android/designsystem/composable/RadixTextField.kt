@@ -180,3 +180,28 @@ fun RadixTextErrorField() {
         )
     }
 }
+
+@Preview(showBackground = true)
+@Composable
+fun RadixTextFieldWithIcon() {
+    RadixWalletTheme {
+        RadixTextField(
+            modifier = Modifier.fillMaxWidth(),
+            onValueChanged = { },
+            value = "casino",
+            leftLabel = "Word ",
+            trailingIcon = {
+                Icon(
+                    modifier = Modifier.size(20.dp),
+                    painter = painterResource(
+                        id = R.drawable.check_circle_outline
+                    ),
+                    contentDescription = null,
+                    tint = Color.Unspecified
+                )
+            },
+            errorFixedSize = true,
+            singleLine = true
+        )
+    }
+}
