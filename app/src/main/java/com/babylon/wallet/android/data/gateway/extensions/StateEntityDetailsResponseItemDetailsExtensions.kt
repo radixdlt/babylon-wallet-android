@@ -145,9 +145,9 @@ fun StateEntityDetailsResponseItemDetails.calculateResourceBehaviours(): List<Re
 }
 
 private fun AccessRulesChain.performMintAccessRule(): AccessRule? {
-    return this.method_auth.find { methodAuth ->
-        methodAuth.method.name == ResourceRule.Mint.value
-    }?.access_rule_reference?.access_rule?.type?.let { type ->
+    return this.rules.find { rule ->
+        rule.key.name == ResourceRule.Mint.value
+    }?.rule?.type?.let { type ->
         AccessRule.values().find { it.value == type }
     }
 }
@@ -161,9 +161,9 @@ private fun AccessRulesChain.performMintAccessRuleSetToNonDefault(): Boolean {
 }
 
 private fun AccessRulesChain.changeMintAccessRule(): AccessRule? {
-    return this.method_auth_mutability.find { methodAuth ->
-        methodAuth.method.name == ResourceRule.Mint.value
-    }?.access_rule_reference?.access_rule?.type?.let { type ->
+    return this.mutability.find { rule ->
+        rule.key.name == ResourceRule.Mint.value
+    }?.rule?.type?.let { type ->
         AccessRule.values().find { it.value == type }
     }
 }
@@ -175,9 +175,9 @@ private fun AccessRulesChain.changeMintAccessRuleSetToNonDefault(): Boolean {
 }
 
 private fun AccessRulesChain.performBurnAccessRule(): AccessRule? {
-    return this.method_auth.find { methodAuth ->
-        methodAuth.method.name == ResourceRule.Burn.value
-    }?.access_rule_reference?.access_rule?.type?.let { type ->
+    return this.rules.find { rule ->
+        rule.key.name == ResourceRule.Burn.value
+    }?.rule?.type?.let { type ->
         AccessRule.values().find { it.value == type }
     }
 }
@@ -189,9 +189,9 @@ private fun AccessRulesChain.performBurnAccessRuleSetToNonDefault(): Boolean {
 }
 
 private fun AccessRulesChain.changeBurnAccessRule(): AccessRule? {
-    return this.method_auth_mutability.find { methodAuth ->
-        methodAuth.method.name == ResourceRule.Burn.value
-    }?.access_rule_reference?.access_rule?.type?.let { type ->
+    return this.mutability.find { rule ->
+        rule.key.name == ResourceRule.Burn.value
+    }?.rule?.type?.let { type ->
         AccessRule.values().find { it.value == type }
     }
 }
@@ -203,9 +203,9 @@ private fun AccessRulesChain.changeBurnAccessRuleSetToNonDefault(): Boolean {
 }
 
 private fun AccessRulesChain.performWithdrawAccessRule(): AccessRule? {
-    return this.method_auth.find { methodAuth ->
-        methodAuth.method.name == ResourceRule.Withdraw.value
-    }?.access_rule_reference?.access_rule?.type?.let { type ->
+    return this.rules.find { rule ->
+        rule.key.name == ResourceRule.Withdraw.value
+    }?.rule?.type?.let { type ->
         AccessRule.values().find { it.value == type }
     }
 }
@@ -223,17 +223,17 @@ private fun AccessRulesChain.performWithdrawAccessRuleSetToDefault(): Boolean {
 }
 
 private fun AccessRulesChain.changeWithdrawAccessRule(): AccessRule? {
-    return this.method_auth_mutability.find { methodAuth ->
-        methodAuth.method.name == ResourceRule.Withdraw.value
-    }?.access_rule_reference?.access_rule?.type?.let { type ->
+    return this.mutability.find { rule ->
+        rule.key.name == ResourceRule.Withdraw.value
+    }?.rule?.type?.let { type ->
         AccessRule.values().find { it.value == type }
     }
 }
 
 private fun AccessRulesChain.performDepositAccessRule(): AccessRule? {
-    return this.method_auth.find { methodAuth ->
-        methodAuth.method.name == ResourceRule.Deposit.value
-    }?.access_rule_reference?.access_rule?.type?.let { type ->
+    return this.rules.find { rule ->
+        rule.key.name == ResourceRule.Deposit.value
+    }?.rule?.type?.let { type ->
         AccessRule.values().find { it.value == type }
     }
 }
@@ -251,9 +251,9 @@ private fun AccessRulesChain.performDepositAccessRuleSetToDefault(): Boolean {
 }
 
 private fun AccessRulesChain.changeDepositAccessRule(): AccessRule? {
-    return this.method_auth_mutability.find { methodAuth ->
-        methodAuth.method.name == ResourceRule.Deposit.value
-    }?.access_rule_reference?.access_rule?.type?.let { type ->
+    return this.mutability.find { rule ->
+        rule.key.name == ResourceRule.Deposit.value
+    }?.rule?.type?.let { type ->
         AccessRule.values().find { it.value == type }
     }
 }
@@ -271,17 +271,17 @@ private fun AccessRulesChain.changeWithdrawAccessRuleSetToAllowAll(): Boolean {
 }
 
 private fun AccessRulesChain.changeDepositAccessRuleSetToNonDefault(): Boolean {
-    return method_auth_mutability.find { methodAuth ->
-        methodAuth.method.name == ResourceRule.Deposit.value
-    }?.access_rule_reference?.access_rule?.type?.let { type ->
+    return this.mutability.find { rule ->
+        rule.key.name == ResourceRule.Deposit.value
+    }?.rule?.type?.let { type ->
         type != AccessRule.DenyAll.value
     } ?: true
 }
 
 private fun AccessRulesChain.changeWithdrawAccessRuleSetToNonDefault(): Boolean {
-    return method_auth_mutability.find { methodAuth ->
-        methodAuth.method.name == ResourceRule.Withdraw.value
-    }?.access_rule_reference?.access_rule?.type?.let { type ->
+    return this.mutability.find { rule ->
+        rule.key.name == ResourceRule.Withdraw.value
+    }?.rule?.type?.let { type ->
         type != AccessRule.DenyAll.value
     } ?: true
 }
@@ -299,9 +299,9 @@ private fun AccessRulesChain.changeWithdrawAccessRuleNotSetToAllowAll(): Boolean
 }
 
 private fun AccessRulesChain.performUpdateMetadataAccessRule(): AccessRule? {
-    return this.method_auth.find { methodAuth ->
-        methodAuth.method.name == ResourceRule.UpdateMetadata.value
-    }?.access_rule_reference?.access_rule?.type?.let { type ->
+    return this.rules.find { rule ->
+        rule.key.name == ResourceRule.UpdateMetadata.value
+    }?.rule?.type?.let { type ->
         AccessRule.values().find { it.value == type }
     }
 }
@@ -313,9 +313,9 @@ private fun AccessRulesChain.performUpdateMetadataAccessRuleSetToNonDefault(): B
 }
 
 private fun AccessRulesChain.changeUpdateMetadataAccessRule(): AccessRule? {
-    return this.method_auth_mutability.find { methodAuth ->
-        methodAuth.method.name == ResourceRule.UpdateMetadata.value
-    }?.access_rule_reference?.access_rule?.type?.let { type ->
+    return this.mutability.find { rule ->
+        rule.key.name == ResourceRule.UpdateMetadata.value
+    }?.rule?.type?.let { type ->
         AccessRule.values().find { it.value == type }
     }
 }
@@ -327,9 +327,9 @@ private fun AccessRulesChain.changeUpdateMetadataAccessRuleSetToNonDefault(): Bo
 }
 
 private fun AccessRulesChain.performRecallAccessRule(): AccessRule? {
-    return this.method_auth.find { methodAuth ->
-        methodAuth.method.name == ResourceRule.Recall.value
-    }?.access_rule_reference?.access_rule?.type?.let { type ->
+    return this.rules.find { rule ->
+        rule.key.name == ResourceRule.Recall.value
+    }?.rule?.type?.let { type ->
         AccessRule.values().find { it.value == type }
     }
 }
@@ -341,9 +341,9 @@ private fun AccessRulesChain.performRecallAccessRuleSetToNonDefault(): Boolean {
 }
 
 private fun AccessRulesChain.changeRecallAccessRule(): AccessRule? {
-    return this.method_auth_mutability.find { methodAuth ->
-        methodAuth.method.name == ResourceRule.Recall.value
-    }?.access_rule_reference?.access_rule?.type?.let { type ->
+    return this.mutability.find { rule ->
+        rule.key.name == ResourceRule.Recall.value
+    }?.rule?.type?.let { type ->
         AccessRule.values().find { it.value == type }
     }
 }
@@ -355,9 +355,9 @@ private fun AccessRulesChain.changeRecallAccessRuleSetToNonDefault(): Boolean {
 }
 
 private fun AccessRulesChain.performUpdateNonFungibleMetadataAccessRule(): AccessRule? {
-    return this.method_auth.find { methodAuth ->
-        methodAuth.method.name == ResourceRule.UpdateNonFungibleData.value
-    }?.access_rule_reference?.access_rule?.type?.let { type ->
+    return this.rules.find { rule ->
+        rule.key.name == ResourceRule.UpdateNonFungibleData.value
+    }?.rule?.type?.let { type ->
         AccessRule.values().find { it.value == type }
     }
 }
@@ -369,9 +369,9 @@ private fun AccessRulesChain.performUpdateNonFungibleMetadataAccessRuleSetToNonD
 }
 
 private fun AccessRulesChain.changeUpdateNonFungibleMetadataAccessRule(): AccessRule? {
-    return this.method_auth_mutability.find { methodAuth ->
-        methodAuth.method.name == ResourceRule.UpdateNonFungibleData.value
-    }?.access_rule_reference?.access_rule?.type?.let { type ->
+    return this.mutability.find { rule ->
+        rule.key.name == ResourceRule.UpdateNonFungibleData.value
+    }?.rule?.type?.let { type ->
         AccessRule.values().find { it.value == type }
     }
 }
