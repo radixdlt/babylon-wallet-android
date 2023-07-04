@@ -21,7 +21,7 @@ import com.radixdlt.toolkit.models.method.ConvertManifestOutput
 import com.radixdlt.toolkit.models.transaction.ManifestInstructions
 import com.radixdlt.toolkit.models.transaction.ManifestInstructionsKind
 import com.radixdlt.toolkit.models.transaction.TransactionManifest
-import rdx.works.core.decodeHex
+import rdx.works.core.compressedPublicKeyHashBytes
 import rdx.works.profile.data.model.factorsources.Slip10Curve
 import rdx.works.profile.data.model.pernetwork.FactorInstance
 import java.math.BigDecimal
@@ -62,17 +62,12 @@ fun ManifestBuilder.addDepositBatchInstruction(
 
 fun ManifestBuilder.addSetMetadataInstructionForOwnerKeys(
     entityAddress: String,
-    ownerKeys: List<FactorInstance.PublicKey>
+    ownerKeysHashes: List<FactorInstance.PublicKey>
 ): ManifestBuilder {
-    val keysAsEngineValues: Array<ManifestAstValue> = ownerKeys.map { key ->
+    val keyHashesAdsEngineValues: Array<ManifestAstValue> = ownerKeysHashes.map { key ->
         ManifestAstValue.Enum(
-            variant = publicKeyDiscriminator,
-            fields = arrayOf(
-                ManifestAstValue.Enum(
-                    variant = key.curveKindScryptoDiscriminator(),
-                    fields = arrayOf(ManifestAstValue.Bytes(key.compressedData.decodeHex()))
-                )
-            )
+            variant = key.curveKindScryptoDiscriminator(),
+            fields = arrayOf(ManifestAstValue.Bytes(key.compressedData.compressedPublicKeyHashBytes()))
         )
     }.toTypedArray()
     return addInstruction(
@@ -82,8 +77,8 @@ fun ManifestBuilder.addSetMetadataInstructionForOwnerKeys(
             ),
             key = ManifestAstValue.String(ExplicitMetadataKey.OWNER_KEYS.key),
             value = ManifestAstValue.Enum(
-                variant = metadataEntryDiscriminator,
-                fields = arrayOf(ManifestAstValue.Array(ValueKind.Enum, keysAsEngineValues))
+                variant = publicKeyHashArrayDiscriminator,
+                fields = arrayOf(ManifestAstValue.Array(ValueKind.Enum, keyHashesAdsEngineValues))
             )
         )
     )
@@ -110,6 +105,7 @@ fun TransactionManifest.addLockFeeInstructionToManifest(
                     instructions = arrayOf(lockFeeInstruction(addressToLockFee)) + instructions.instructions
                 )
         }
+
         is ManifestInstructions.StringInstructions -> {}
     }
     return copy(updatedInstructions, blobs)
@@ -136,6 +132,7 @@ fun TransactionManifest.addGuaranteeInstructionToManifest(
                 instructions = updatedInstructions.toTypedArray()
             )
         }
+
         is ManifestInstructions.StringInstructions -> {}
     }
     return copy(updatedManifestInstructions, blobs)
@@ -196,8 +193,7 @@ fun FactorInstance.PublicKey.curveKindScryptoDiscriminator(): EnumDiscriminator.
     }
 }
 
-private val publicKeyDiscriminator = EnumDiscriminator.U8(0x09u)
-private val metadataEntryDiscriminator = EnumDiscriminator.U8(0x01u)
+private val publicKeyHashArrayDiscriminator = EnumDiscriminator.U8(143u)
 
 fun TransactionManifest.getStringInstructions(): String? {
     return when (val instructions = this.instructions) {

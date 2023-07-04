@@ -38,17 +38,17 @@ class ROLAClient @Inject constructor(
             is SecurityState.Unsecured -> state.unsecuredEntityControl.transactionSigning.publicKey
         }
         entityRepository.getEntityOwnerKeyHashes(entity.address, true).onValue { ownerKeys ->
-            val publicKeys = mutableListOf<FactorInstance.PublicKey>()
+            val publicKeyHashes = mutableListOf<FactorInstance.PublicKey>()
             val ownerKeysHashes = ownerKeys?.toPublicKeyHashes().orEmpty()
             val authSigningKeyHash = authSigningFactorInstance.publicKey.compressedData.compressedPublicKeyHash()
             val transactionSigningKeyHash = transactionSigningKey.compressedData.compressedPublicKeyHash()
             if (!ownerKeysHashes.contains(authSigningKeyHash)) {
-                publicKeys.add(authSigningFactorInstance.publicKey)
+                publicKeyHashes.add(authSigningFactorInstance.publicKey)
             }
             if (!ownerKeysHashes.contains(transactionSigningKeyHash)) {
-                publicKeys.add(transactionSigningKey)
+                publicKeyHashes.add(transactionSigningKey)
             }
-            resultManifest = ManifestBuilder().addSetMetadataInstructionForOwnerKeys(entity.address, publicKeys).build()
+            resultManifest = ManifestBuilder().addSetMetadataInstructionForOwnerKeys(entity.address, publicKeyHashes).build()
         }
         return resultManifest?.convertManifestInstructionsToString(entity.networkID)?.getOrNull()
     }

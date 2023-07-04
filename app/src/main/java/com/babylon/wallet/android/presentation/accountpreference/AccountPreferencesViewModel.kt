@@ -141,6 +141,7 @@ class AccountPreferenceViewModel @Inject constructor(
                             requestMetadata = MessageFromDataChannel.IncomingRequest.RequestMetadata.internal(account.networkID)
                         )
                         incomingRequestRepository.add(internalMessage)
+                        _state.update { it.copy(isLoading = false) }
                     }
                 }.onFailure {
                     _state.update { state ->
