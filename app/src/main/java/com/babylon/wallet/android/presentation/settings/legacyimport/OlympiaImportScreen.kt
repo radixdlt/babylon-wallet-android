@@ -710,8 +710,9 @@ private fun InputSeedPhrasePage(
     val kbVisible by remember {
         derivedStateOf { imeInsets.getBottom(density) > 0 }
     }
+    val isSeedPhraseSuggestionsVisible = wordAutocompleteCandidates.isNotEmpty() && kbVisible
     val stripHeight by animateDpAsState(
-        targetValue = if (wordAutocompleteCandidates.isNotEmpty() && kbVisible) {
+        targetValue = if (isSeedPhraseSuggestionsVisible) {
             candidatesStripHeight
         } else {
             0.dp
@@ -773,7 +774,7 @@ private fun InputSeedPhrasePage(
                 )
             }
         }
-        if (wordAutocompleteCandidates.isNotEmpty() && kbVisible) {
+        if (isSeedPhraseSuggestionsVisible) {
             SeedPhraseSuggestions(
                 wordAutocompleteCandidates = wordAutocompleteCandidates,
                 modifier = Modifier
