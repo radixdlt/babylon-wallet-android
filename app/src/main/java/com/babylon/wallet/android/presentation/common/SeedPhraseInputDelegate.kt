@@ -106,14 +106,3 @@ class SeedPhraseInputDelegate(
         return State()
     }
 }
-
-data class SeedPhraseWord(
-    val index: Int,
-    val value: String = "",
-    val state: State = State.Empty,
-    val lastWord: Boolean = false
-) {
-    enum class State {
-        Valid, Invalid, Empty, HasValue
-    }
-}
