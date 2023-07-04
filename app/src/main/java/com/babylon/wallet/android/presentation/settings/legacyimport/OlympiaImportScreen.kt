@@ -764,13 +764,14 @@ private fun InputSeedPhrasePage(
                 enabled = importSoftwareAccountsEnabled,
                 throttleClicks = true
             )
-            RadixSecondaryButton(
-                modifier = Modifier.fillMaxWidth(),
-                text = stringResource(R.string.importOlympiaAccounts_alreadyImported),
-                onClick = onMnemonicAlreadyImported,
-                enabled = importSoftwareAccountsEnabled,
-                throttleClicks = true
-            )
+            if (importSoftwareAccountsEnabled) {
+                RadixSecondaryButton(
+                    modifier = Modifier.fillMaxWidth(),
+                    text = stringResource(R.string.importOlympiaAccounts_alreadyImported),
+                    onClick = onMnemonicAlreadyImported,
+                    throttleClicks = true
+                )
+            }
         }
         if (wordAutocompleteCandidates.isNotEmpty() && kbVisible) {
             SeedPhraseSuggestions(
