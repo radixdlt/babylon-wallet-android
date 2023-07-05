@@ -191,6 +191,7 @@ class ResourceTests {
     ) = Item(
         collectionAddress = collectionAddress,
         localId = Item.ID.from(localId),
+        nameMetadataItem = null,
         iconMetadataItem = null
     )
 }

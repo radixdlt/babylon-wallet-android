@@ -376,6 +376,7 @@ fun SpendingAssetItemsPreview() {
                     Resource.NonFungibleResource.Item(
                         collectionAddress = "resource_rdx_abcd",
                         localId = Resource.NonFungibleResource.Item.ID.from("<dbooker_dunk_39>"),
+                        nameMetadataItem = NameMetadataItem(name = "Local item with ID 39"),
                         iconMetadataItem = IconUrlMetadataItem(
                             url = Uri.parse(
                                 "https://c4.wallpaperflare.com/wallpaper/817/534/563/ave-bosque-fantasia-fenix-wallpaper-preview.jpg"
@@ -396,6 +397,7 @@ fun SpendingAssetItemsPreview() {
                     Resource.NonFungibleResource.Item(
                         collectionAddress = "resource_rdx_abcd",
                         localId = Resource.NonFungibleResource.Item.ID.from("<dbooker_dunk_39>"),
+                        nameMetadataItem = NameMetadataItem(name = "Local item with ID 39"),
                         iconMetadataItem = IconUrlMetadataItem(
                             url = Uri.parse(
                                 "https://c4.wallpaperflare.com/wallpaper/817/534/563/ave-bosque-fantasia-fenix-wallpaper-preview.jpg"

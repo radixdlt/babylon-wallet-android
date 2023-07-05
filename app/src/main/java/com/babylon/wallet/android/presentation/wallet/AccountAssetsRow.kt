@@ -279,6 +279,7 @@ fun AssetsContentRowPreview() {
                         Resource.NonFungibleResource.Item(
                             collectionAddress = "resource_address1",
                             localId = Resource.NonFungibleResource.Item.ID.from("<f1_$it>"),
+                            nameMetadataItem = null,
                             iconMetadataItem = null
                         )
                     }
@@ -291,6 +292,7 @@ fun AssetsContentRowPreview() {
                         Resource.NonFungibleResource.Item(
                             collectionAddress = "resource_address2",
                             localId = Resource.NonFungibleResource.Item.ID.from("<nba_$it>"),
+                            nameMetadataItem = null,
                             iconMetadataItem = null
                         )
                     }

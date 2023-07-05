@@ -2,7 +2,6 @@ package com.babylon.wallet.android.presentation.ui.composables.resources
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Arrangement.spacedBy
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -18,8 +17,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.style.TextAlign
 import coil.compose.rememberAsyncImagePainter
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
@@ -62,43 +59,21 @@ fun NonFungibleResourceItem(
             )
         }
 
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
+        item.nameMetadataItem?.name?.let { name ->
             Text(
-                text = stringResource(id = R.string.assetDetails_NFTDetails_id),
-                style = RadixTheme.typography.body1Regular,
-                color = RadixTheme.colors.gray2
-            )
-
-            Text(
-                text = item.localId.displayable,
-                style = RadixTheme.typography.body1HighImportance.copy(
-                    textAlign = TextAlign.End
-                ),
-                color = RadixTheme.colors.gray2
+                modifier = Modifier.fillMaxWidth(),
+                text = name,
+                style = RadixTheme.typography.body1HighImportance,
+                color = RadixTheme.colors.gray1
             )
         }
 
-//            Row(
-//                modifier = Modifier.fillMaxWidth(),
-//                horizontalArrangement = Arrangement.SpaceBetween
-//            ) {
-//                Text(
-//                    text = "Type",
-//                    style = RadixTheme.typography.body1Regular,
-//                    color = RadixTheme.colors.gray2
-//                )
-//
-//                Text(
-//                    text = "Devin Booker - Dunk",
-//                    style = RadixTheme.typography.body1HighImportance.copy(
-//                        textAlign = TextAlign.End
-//                    ),
-//                    color = RadixTheme.colors.gray1
-//                )
-//            }
+        Text(
+            modifier = Modifier.fillMaxWidth(),
+            text = item.localId.displayable,
+            style = RadixTheme.typography.body1HighImportance,
+            color = RadixTheme.colors.gray2
+        )
     }
 }
 

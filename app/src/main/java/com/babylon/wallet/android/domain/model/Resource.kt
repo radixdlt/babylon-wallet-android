@@ -143,6 +143,7 @@ sealed class Resource {
         data class Item(
             val collectionAddress: String,
             val localId: ID,
+            val nameMetadataItem: NameMetadataItem?,
             val iconMetadataItem: IconUrlMetadataItem?
         ) : Comparable<Item> {
 
