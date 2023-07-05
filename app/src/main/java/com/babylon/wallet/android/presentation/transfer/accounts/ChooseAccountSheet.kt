@@ -130,11 +130,11 @@ fun ChooseAccountSheet(
         bottomBar = {
             if (state.mode == ChooseAccounts.Mode.Chooser) {
                 RadixPrimaryButton(
+                    text = stringResource(id = R.string.common_choose),
+                    onClick = onChooseAccountSubmitted,
                     modifier = Modifier
                         .padding(RadixTheme.dimensions.paddingDefault)
                         .fillMaxWidth(),
-                    text = stringResource(id = R.string.common_choose),
-                    onClick = onChooseAccountSubmitted,
                     enabled = state.isChooseButtonEnabled
                 )
             }

@@ -180,9 +180,7 @@ fun CreateAccountContent(
             }
             Spacer(Modifier.weight(1f))
             RadixPrimaryButton(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .imePadding(),
+                text = stringResource(id = R.string.createAccount_nameNewAccount_continue),
                 onClick = {
                     when {
                         useLedgerSelected -> onAccountCreateClick()
@@ -194,8 +192,10 @@ fun CreateAccountContent(
                         else -> showNotSecuredDialog = true
                     }
                 },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .imePadding(),
                 enabled = buttonEnabled,
-                text = stringResource(id = R.string.createAccount_nameNewAccount_continue),
                 throttleClicks = true
             )
         }

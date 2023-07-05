@@ -28,11 +28,11 @@ import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 
 @Composable
 fun RadixPrimaryButton(
-    modifier: Modifier,
     text: String,
     onClick: () -> Unit,
+    modifier: Modifier = Modifier,
     enabled: Boolean = true,
-    icon: (@Composable () -> Unit)? = null,
+    icon: @Composable (() -> Unit)? = null,
     isLoading: Boolean = false,
     throttleClicks: Boolean = true
 ) {
@@ -85,7 +85,7 @@ fun RadixPrimaryButton(
 @Composable
 fun RadixPrimaryButtonPreview() {
     RadixWalletTheme {
-        RadixPrimaryButton(modifier = Modifier.size(200.dp, 50.dp), text = "Primary button", onClick = {})
+        RadixPrimaryButton(text = "Primary button", onClick = {}, modifier = Modifier.size(200.dp, 50.dp))
     }
 }
 
@@ -93,7 +93,7 @@ fun RadixPrimaryButtonPreview() {
 @Composable
 fun RadixPrimaryButtonWithIconPreview() {
     RadixWalletTheme {
-        RadixPrimaryButton(modifier = Modifier.size(200.dp, 50.dp), text = "Primary button", onClick = {}, icon = {
+        RadixPrimaryButton(text = "Primary button", onClick = {}, modifier = Modifier.size(200.dp, 50.dp), icon = {
             Icon(painter = painterResource(id = R.drawable.ic_search), contentDescription = "")
         })
     }
@@ -104,9 +104,9 @@ fun RadixPrimaryButtonWithIconPreview() {
 fun RadixPrimaryButtonDisabledPreview() {
     RadixWalletTheme {
         RadixPrimaryButton(
-            modifier = Modifier.size(200.dp, 50.dp),
             text = "Primary button",
             onClick = {},
+            modifier = Modifier.size(200.dp, 50.dp),
             enabled = false
         )
     }

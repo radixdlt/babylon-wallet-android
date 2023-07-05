@@ -299,8 +299,6 @@ private fun TransactionPreviewContent(
 
                             val context = LocalContext.current
                             RadixPrimaryButton(
-                                modifier = Modifier
-                                    .fillMaxWidth(),
                                 text = stringResource(id = R.string.transactionReview_approveButtonTitle),
                                 onClick = {
                                     if (state.isDeviceSecure) {
@@ -315,6 +313,8 @@ private fun TransactionPreviewContent(
                                         showNotSecuredDialog = true
                                     }
                                 },
+                                modifier = Modifier
+                                    .fillMaxWidth(),
                                 enabled = !state.isLoading && !state.isSigning && state.canApprove &&
                                     state.bottomSheetViewMode != BottomSheetMode.FeePayerSelection,
                                 icon = {

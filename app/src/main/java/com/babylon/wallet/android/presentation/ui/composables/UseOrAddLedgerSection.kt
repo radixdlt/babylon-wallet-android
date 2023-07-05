@@ -78,11 +78,11 @@ fun UseOrAddLedgerSection(
             )
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
             RadixPrimaryButton(
+                text = stringResource(id = com.babylon.wallet.android.R.string.ledgerHardwareDevices_addNewLedger),
+                onClick = onAddLedger,
                 modifier = Modifier
                     .fillMaxWidth(0.7f)
-                    .imePadding(),
-                onClick = onAddLedger,
-                text = stringResource(id = com.babylon.wallet.android.R.string.ledgerHardwareDevices_addNewLedger)
+                    .imePadding()
             )
         } else {
             LazyColumn(

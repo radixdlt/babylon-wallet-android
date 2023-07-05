@@ -48,11 +48,11 @@ fun LinkConnectorSection(modifier: Modifier, onAddP2PLink: () -> Unit) {
         )
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
         RadixPrimaryButton(
+            text = stringResource(id = com.babylon.wallet.android.R.string.ledgerHardwareDevices_linkConnectorAlert_continue),
+            onClick = onAddP2PLink,
             modifier = Modifier
                 .fillMaxWidth()
-                .imePadding(),
-            onClick = onAddP2PLink,
-            text = stringResource(id = com.babylon.wallet.android.R.string.ledgerHardwareDevices_linkConnectorAlert_continue)
+                .imePadding()
         )
     }
 }

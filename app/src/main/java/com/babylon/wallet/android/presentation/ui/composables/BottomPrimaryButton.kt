@@ -24,12 +24,12 @@ fun BottomPrimaryButton(
         Divider(color = RadixTheme.colors.gray5)
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
         RadixPrimaryButton(
+            text = text,
+            onClick = onClick,
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(buttonPadding),
-            onClick = onClick,
-            enabled = enabled,
-            text = text
+            enabled = enabled
         )
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
     }

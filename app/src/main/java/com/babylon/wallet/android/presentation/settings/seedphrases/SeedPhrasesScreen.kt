@@ -232,9 +232,6 @@ private fun SeedPhraseCard(
                     ),
                 account = account
             )
-            if (index != accounts.size - 1) {
-                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSmall))
-            }
         }
     }
 }

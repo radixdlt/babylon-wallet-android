@@ -97,13 +97,13 @@ fun PersonaDetailCard(
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSmall))
         if (missingFields.isNotEmpty()) {
             RadixPrimaryButton(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(RadixTheme.dimensions.paddingDefault),
+                text = stringResource(id = R.string.dAppRequest_personalDataBox_edit),
                 onClick = {
                     onEditClick(persona.persona.address)
                 },
-                text = stringResource(id = R.string.dAppRequest_personalDataBox_edit)
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(RadixTheme.dimensions.paddingDefault)
             )
         } else {
             RadixSecondaryButton(

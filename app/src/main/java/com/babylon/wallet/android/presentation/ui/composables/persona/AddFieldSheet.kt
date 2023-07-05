@@ -85,12 +85,12 @@ fun AddFieldSheet(
         }
         Divider(color = RadixTheme.colors.gray5)
         RadixPrimaryButton(
+            text = stringResource(id = R.string.editPersona_addAField_add),
+            onClick = onAddFields,
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(dimensions.paddingDefault),
             enabled = anyFieldSelected,
-            text = stringResource(id = R.string.editPersona_addAField_add),
-            onClick = onAddFields,
         )
     }
 }
