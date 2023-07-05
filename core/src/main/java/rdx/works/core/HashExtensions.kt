@@ -10,3 +10,6 @@ fun ByteArray.toHexString(): String = joinToString(separator = "") { eachByte ->
 
 @Suppress("MagicNumber")
 fun String.compressedPublicKeyHash(): String = decodeHex().blake2Hash().takeLast(29).toHexString()
+
+@Suppress("MagicNumber")
+fun String.compressedPublicKeyHashBytes(): ByteArray = decodeHex().blake2Hash().takeLast(29).toByteArray()
