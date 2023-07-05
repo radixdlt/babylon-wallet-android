@@ -111,7 +111,7 @@ sealed interface SignRequest {
             get() = hash(payloadToSign)
 
         companion object {
-            const val ROLA_PAYLOAD_PREFIX = 0x54
+            const val ROLA_PAYLOAD_PREFIX = 0x52
         }
     }
 }
