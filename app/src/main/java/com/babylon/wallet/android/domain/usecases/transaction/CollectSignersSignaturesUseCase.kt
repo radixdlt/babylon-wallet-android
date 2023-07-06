@@ -39,14 +39,10 @@ class CollectSignersSignaturesUseCase @Inject constructor(
                 FactorSourceKind.DEVICE -> {
                     factorSource as DeviceFactorSource
                     _signingState.update { SigningState.Device.Pending(factorSource) }
-                    val dataToSign = when (signRequest) {
-                        is SignRequest.SignAuthChallengeRequest -> signRequest.hashedDataToSign
-                        is SignRequest.SignTransactionRequest -> signRequest.hashedDataToSign
-                    }
                     val signatures = signWithDeviceFactorSourceUseCase(
                         deviceFactorSource = factorSource,
                         signers = signers,
-                        dataToSign = dataToSign,
+                        dataToSign = signRequest.hashedDataToSign,
                         signingPurpose = signingPurpose
                     )
                     signaturesWithPublicKeys.addAll(signatures)
