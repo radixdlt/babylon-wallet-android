@@ -161,7 +161,7 @@ private fun SeedPhraseCard(
     Column(
         modifier = modifier,
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingMedium)
+        verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingSmall)
     ) {
         Row(
             Modifier.fillMaxWidth(),
@@ -205,11 +205,12 @@ private fun SeedPhraseCard(
             )
         }
         val securityPromptRes = when (mnemonicState) {
-            DeviceFactorSourceData.MnemonicState.NotBackedUp -> R.string.displayMnemonics_backUpWarning
+            DeviceFactorSourceData.MnemonicState.NotBackedUp -> R.string.seedPhrases_message
             DeviceFactorSourceData.MnemonicState.NeedRecover -> R.string.homePage_applySecuritySettings
             else -> null
         }
         securityPromptRes?.let { promptRes ->
+            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXSmall))
             ApplySecuritySettingsLabel(
                 modifier = Modifier.fillMaxWidth(),
                 onClick = null,
@@ -218,6 +219,7 @@ private fun SeedPhraseCard(
                 contentColor = RadixTheme.colors.gray1
             )
         }
+        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXSmall))
         accounts.forEachIndexed { index, account ->
             SimpleAccountCard(
                 Modifier
@@ -248,7 +250,11 @@ fun AccountPreferencePreview() {
                         kind = FactorSourceKind.DEVICE,
                         body = FactorSource.HexCoded32Bytes("5f07ec336e9e7891bff04004c817201e73c097b6b1e1b3a26bc205e0010196f5")
                     ),
-                    persistentListOf(SampleDataProvider().sampleAccount())
+                    persistentListOf(
+                        SampleDataProvider().sampleAccount(),
+                        SampleDataProvider().sampleAccount(),
+                        SampleDataProvider().sampleAccount()
+                    )
                 ),
                 DeviceFactorSourceData(
                     FactorSource.FactorSourceID.FromHash(
