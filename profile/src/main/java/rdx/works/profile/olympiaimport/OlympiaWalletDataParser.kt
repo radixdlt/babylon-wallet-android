@@ -8,7 +8,7 @@ import com.radixdlt.toolkit.models.method.DeriveBabylonAddressFromOlympiaAddress
 import com.radixdlt.toolkit.models.method.DeriveOlympiaAddressFromPublicKeyInput
 import com.radixdlt.toolkit.models.method.OlympiaNetwork
 import okio.ByteString.Companion.decodeBase64
-import rdx.works.core.blake2Hash
+import rdx.works.core.compressedPublicKeyHashBytes
 import rdx.works.profile.data.model.pernetwork.DerivationPath
 import rdx.works.profile.domain.gateway.GetCurrentGatewayUseCase
 import timber.log.Timber
@@ -43,7 +43,7 @@ class OlympiaWalletDataParser @Inject constructor(
                     val type = requireNotNull(OlympiaAccountType.from(singleAccountDataChunks[0]))
                     val publicKeyHex = requireNotNull(singleAccountDataChunks[1].decodeBase64()?.hex())
                     val publicKey = PublicKey.EcdsaSecp256k1(publicKeyHex)
-                    val publicKeyHash = publicKey.toByteArray().blake2Hash().takeLast(29).toByteArray()
+                    val publicKeyHash = publicKeyHex.compressedPublicKeyHashBytes()
                     val index = requireNotNull(singleAccountDataChunks[2].toInt())
                     val name = if (singleAccountDataChunks.size == 4) {
                         singleAccountDataChunks[3].replace(EndOfAccountName, "")

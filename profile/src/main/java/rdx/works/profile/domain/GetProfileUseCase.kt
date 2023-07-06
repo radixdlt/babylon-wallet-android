@@ -69,6 +69,7 @@ suspend fun GetProfileUseCase.nextDerivationPathForAccountOnCurrentNetworkWithLe
 suspend fun GetProfileUseCase.currentNetworkAccountHashes(): Set<ByteArray> {
     return accountsOnCurrentNetwork().map {
         val addressData = RadixEngineToolkit.decodeAddress(DecodeAddressInput(it.address)).getOrThrow().data
+        //last 29 bytes of addressData are hash of public key of this account
         addressData.takeLast(29).toByteArray()
     }.toSet()
 }
