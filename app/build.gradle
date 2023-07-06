@@ -192,7 +192,7 @@ dependencies {
     implementation libs.kotlinxSerialization
 
     //Kotlin toolkit
-    implementation libs.ket
+    implementation libs.ret
     implementation libs.slip10
 
     //Retrofit & OkHttp

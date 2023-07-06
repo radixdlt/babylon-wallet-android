@@ -29,7 +29,7 @@ android {
 }
 
 dependencies {
-    implementation libs.ket
+    implementation libs.ret
     implementation libs.slip10
     implementation libs.ktorCore
     implementation libs.zxing

@@ -55,7 +55,7 @@ dependencies {
     implementation libs.timber
 
     implementation libs.slip10
-    implementation libs.ket
+    implementation libs.ret
 
     testImplementation libs.junit
     testImplementation libs.kotlinTestJunit
