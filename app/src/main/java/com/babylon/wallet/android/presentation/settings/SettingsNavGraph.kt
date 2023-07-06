@@ -108,9 +108,6 @@ private fun NavGraphBuilder.settingsAll(navController: NavController) {
             },
             onSettingClick = { item ->
                 when (item) {
-                    SettingsItem.TopLevelSettings.Connection -> {
-                        navController.settingsConnectorScreen(scanQr = true)
-                    }
                     SettingsItem.TopLevelSettings.Gateways -> {
                         navController.navigate(Screen.SettingsEditGatewayApiDestination.route)
                     }
@@ -143,6 +140,9 @@ private fun NavGraphBuilder.settingsAll(navController: NavController) {
             },
             onProfileDeleted = {
                 navController.popBackStack(MAIN_ROUTE, false)
+            },
+            onConnectionPasswordDecoded = { connectionPassword ->
+                navController.settingsConnectorScreen(connectionPassword = connectionPassword)
             }
         )
     }

@@ -12,32 +12,57 @@ import androidx.navigation.navArgument
 import com.google.accompanist.navigation.animation.composable
 
 @VisibleForTesting
+internal const val ARG_CONNECTION_PASSWORD = "arg_connection_password"
+
+@VisibleForTesting
 internal const val ARG_SCAN_QR = "arg_request_source"
 
 @VisibleForTesting
 internal const val ARG_CLOSE_AFTER_LINKED = "arg_close_after_linked"
 
-internal class SettingsConnectorScreenArgs(val scanQr: Boolean, val closeAfterLinked: Boolean = false) {
+internal class SettingsConnectorScreenArgs(
+    val scanQr: Boolean,
+    val closeAfterLinked: Boolean = false,
+    val connectionPassword: String? = null
+) {
     constructor(savedStateHandle: SavedStateHandle) : this(
         checkNotNull(savedStateHandle[ARG_SCAN_QR]) as Boolean,
-        checkNotNull(savedStateHandle[ARG_CLOSE_AFTER_LINKED]) as Boolean
+        checkNotNull(savedStateHandle[ARG_CLOSE_AFTER_LINKED]) as Boolean,
+        savedStateHandle.get<String>(ARG_CONNECTION_PASSWORD)
     )
 }
 
 // TODO https://github.com/radixdlt/babylon-wallet-android/pull/303#discussion_r1233727181
-fun NavController.settingsConnectorScreen(scanQr: Boolean = false, closeAfterLinked: Boolean = false) {
-    navigate("settings_add_connector_route/$scanQr/$closeAfterLinked")
+fun NavController.settingsConnectorScreen(
+    scanQr: Boolean = false,
+    closeAfterLinked: Boolean = false,
+    connectionPassword: String? = null
+) {
+    var route = "settings_add_connector_route?$ARG_SCAN_QR=$scanQr&$ARG_CLOSE_AFTER_LINKED=$closeAfterLinked"
+    connectionPassword?.let {
+        route += "&$ARG_CONNECTION_PASSWORD=$it"
+    }
+    navigate(route)
 }
+
+const val ROUTE = "settings_add_connector_route" +
+    "?$ARG_SCAN_QR={$ARG_SCAN_QR}" +
+    "&$ARG_CLOSE_AFTER_LINKED={$ARG_CLOSE_AFTER_LINKED}" +
+    "&$ARG_CONNECTION_PASSWORD={$ARG_CONNECTION_PASSWORD}"
 
 @OptIn(ExperimentalAnimationApi::class)
 fun NavGraphBuilder.settingsConnectorScreen(
     onBackClick: () -> Unit
 ) {
     composable(
-        route = "settings_add_connector_route/{$ARG_SCAN_QR}/{$ARG_CLOSE_AFTER_LINKED}",
+        route = ROUTE,
         arguments = listOf(
             navArgument(ARG_SCAN_QR) { type = NavType.BoolType },
             navArgument(ARG_CLOSE_AFTER_LINKED) { type = NavType.BoolType },
+            navArgument(ARG_CONNECTION_PASSWORD) {
+                type = NavType.StringType
+                nullable = true
+            }
         ),
         enterTransition = {
             slideIntoContainer(AnimatedContentScope.SlideDirection.Left)

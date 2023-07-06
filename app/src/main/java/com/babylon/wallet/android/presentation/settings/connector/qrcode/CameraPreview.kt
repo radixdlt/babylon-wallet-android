@@ -55,11 +55,9 @@ private fun BarcodePreviewView(
                 }
                 val cameraProvider: ProcessCameraProvider = cameraProviderFuture.get()
 
-                val barcodeAnalyser = QrcodeAnalyser { qrCodes ->
-                    qrCodes.forEach { barcode ->
-                        barcode.rawValue?.let { barcodeValue ->
-                            onQrCodeDetected(barcodeValue)
-                        }
+                val barcodeAnalyser = QrcodeAnalyser { qrCode ->
+                    qrCode.rawValue?.let {
+                        onQrCodeDetected(it)
                     }
                 }
                 val imageAnalysis: ImageAnalysis = ImageAnalysis.Builder()

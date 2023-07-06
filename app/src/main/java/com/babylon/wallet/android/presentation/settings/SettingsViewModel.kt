@@ -88,10 +88,17 @@ class SettingsViewModel @Inject constructor(
             sendEvent(SettingsEvent.ProfileDeleted)
         }
     }
+
+    fun onConnectionPasswordDecoded(connectionPassword: String) {
+        viewModelScope.launch {
+            sendEvent(SettingsEvent.ConnectionPasswordDecoded(connectionPassword))
+        }
+    }
 }
 
 internal sealed interface SettingsEvent : OneOffEvent {
     object ProfileDeleted : SettingsEvent
+    data class ConnectionPasswordDecoded(val connectionPassword: String) : SettingsEvent
 }
 
 data class SettingsUiState(

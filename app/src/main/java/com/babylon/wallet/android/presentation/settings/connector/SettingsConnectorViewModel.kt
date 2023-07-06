@@ -34,12 +34,14 @@ class SettingsConnectorViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
 ) : StateViewModel<SettingsConnectorUiState>(), OneOffEventHandler<Event> by OneOffEventHandlerImpl() {
 
-    private var currentConnectionPassword: String = ""
-
     private val args = SettingsConnectorScreenArgs(savedStateHandle)
 
+    private var currentConnectionPassword: String = args.connectionPassword.orEmpty()
+
     override fun initialState(): SettingsConnectorUiState = SettingsConnectorUiState(
-        mode = if (args.scanQr) {
+        mode = if (currentConnectionPassword.isNotEmpty()) {
+            SettingsConnectorMode.LinkConnector
+        } else if (args.scanQr) {
             SettingsConnectorMode.ScanQr
         } else {
             SettingsConnectorMode.ShowDetails
@@ -120,10 +122,6 @@ class SettingsConnectorViewModel @Inject constructor(
 
     fun cancelQrScan() {
         _state.update { it.copy(mode = SettingsConnectorMode.ShowDetails) }
-    }
-
-    fun linkConnector() {
-        _state.update { it.copy(mode = SettingsConnectorMode.ScanQr) }
     }
 
     private fun saveConnectionPassword(

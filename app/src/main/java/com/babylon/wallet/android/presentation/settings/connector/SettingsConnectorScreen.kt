@@ -20,6 +20,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.ModalBottomSheetValue
+import androidx.compose.material.rememberModalBottomSheetState
 import androidx.compose.material3.Divider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -29,12 +32,14 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
@@ -44,8 +49,11 @@ import com.babylon.wallet.android.designsystem.composable.RadixTextField
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.presentation.common.FullscreenCircularProgressContent
+import com.babylon.wallet.android.presentation.settings.ScanQRSheet
 import com.babylon.wallet.android.presentation.settings.connector.qrcode.CameraPreview
+import com.babylon.wallet.android.presentation.ui.composables.BackIconType
 import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDialog
+import com.babylon.wallet.android.presentation.ui.composables.DefaultModalSheetLayout
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.PermissionState
@@ -55,6 +63,7 @@ import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.launch
 
 @Composable
 fun SettingsConnectorScreen(
@@ -85,13 +94,12 @@ fun SettingsConnectorScreen(
         onDeleteConnectorClick = viewModel::onDeleteConnectorClick,
         onConnectionPasswordDecoded = viewModel::onConnectionPasswordDecoded,
         settingsMode = state.mode,
-        onLinkConnector = viewModel::linkConnector,
         cancelQrScan = viewModel::cancelQrScan,
         triggerCameraPermissionPrompt = state.triggerCameraPermissionPrompt
     )
 }
 
-@OptIn(ExperimentalPermissionsApi::class)
+@OptIn(ExperimentalPermissionsApi::class, ExperimentalMaterialApi::class)
 @Composable
 private fun SettingsLinkConnectorContent(
     activeConnectors: ImmutableList<ActiveConnectorUiModel>,
@@ -105,7 +113,6 @@ private fun SettingsLinkConnectorContent(
     onConnectionPasswordDecoded: (String) -> Unit,
     onDeleteConnectorClick: (String) -> Unit,
     settingsMode: SettingsConnectorMode,
-    onLinkConnector: () -> Unit,
     cancelQrScan: () -> Unit,
     triggerCameraPermissionPrompt: Boolean,
 ) {
@@ -128,75 +135,115 @@ private fun SettingsLinkConnectorContent(
             }
     }
 
-    Column(modifier = modifier) {
-        RadixCenteredTopAppBar(
-            title = if (settingsMode == SettingsConnectorMode.ShowDetails) {
-                stringResource(R.string.linkedConnectors_title)
+    val bottomSheetState =
+        rememberModalBottomSheetState(initialValue = ModalBottomSheetValue.Hidden, skipHalfExpanded = true)
+    val scope = rememberCoroutineScope()
+
+    DefaultModalSheetLayout(
+        modifier = modifier,
+        sheetState = bottomSheetState,
+        wrapContent = true,
+        enableImePadding = true,
+        sheetContent = {
+            if (cameraPermissionState.status.isGranted) {
+                ScanQRSheet(
+                    modifier = Modifier
+                        .background(color = RadixTheme.colors.white),
+                    onAddressDecoded = {
+                        onConnectionPasswordDecoded(it)
+                        scope.launch {
+                            bottomSheetState.hide()
+                        }
+                    },
+                    onCloseClick = {
+                        scope.launch {
+                            bottomSheetState.hide()
+                        }
+                    }
+                )
+            }
+        }
+    ) {
+        Column(modifier = Modifier) {
+            if (settingsMode == SettingsConnectorMode.LinkConnector) {
+                RadixCenteredTopAppBar(
+                    title = "",
+                    onBackClick = backHandler,
+                    contentColor = RadixTheme.colors.gray1,
+                    backIconType = BackIconType.Close
+                )
             } else {
-                stringResource(R.string.linkedConnectors_newConnection_title)
-            },
-            onBackClick = backHandler,
-            contentColor = RadixTheme.colors.gray1
-        )
-        Divider(color = RadixTheme.colors.gray5)
-        Box(modifier = Modifier.fillMaxSize()) {
-            when (settingsMode) {
-                SettingsConnectorMode.LinkConnector -> {
-                    ConnectorNameInput(
-                        onLinkNewConnectorClick = onLinkNewConnectorClick,
-                        connectorDisplayName = connectorDisplayName,
-                        buttonEnabled = buttonEnabled,
-                        onConnectorDisplayNameChanged = onConnectorDisplayNameChanged,
-                    )
-                }
-                SettingsConnectorMode.ShowDetails -> {
-                    ActiveConnectorDetails(
-                        activeConnectors = activeConnectors,
-                        onLinkConnector = onLinkConnector,
-                        cameraPermissionState = cameraPermissionState,
-                        onDeleteConnectorClick = { connectionPasswordToDelete = it },
-                        isLoading = isLoading,
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                }
-                SettingsConnectorMode.ScanQr -> {
-                    if (cameraPermissionState.status.isGranted) {
-                        CameraPreview(
-                            modifier = Modifier.fillMaxSize()
-                        ) {
-                            onConnectionPasswordDecoded(it)
+                RadixCenteredTopAppBar(
+                    title = stringResource(R.string.linkedConnectors_title),
+                    onBackClick = backHandler,
+                    contentColor = RadixTheme.colors.gray1
+                )
+                Divider(color = RadixTheme.colors.gray5)
+            }
+
+            Box(modifier = Modifier.fillMaxSize()) {
+                when (settingsMode) {
+                    SettingsConnectorMode.LinkConnector -> {
+                        ConnectorNameInput(
+                            onLinkNewConnectorClick = onLinkNewConnectorClick,
+                            connectorDisplayName = connectorDisplayName,
+                            buttonEnabled = buttonEnabled,
+                            onConnectorDisplayNameChanged = onConnectorDisplayNameChanged,
+                        )
+                    }
+                    SettingsConnectorMode.ShowDetails -> {
+                        ActiveConnectorDetails(
+                            activeConnectors = activeConnectors,
+                            onLinkConnector = {
+                                scope.launch {
+                                    bottomSheetState.show()
+                                }
+                            },
+                            cameraPermissionState = cameraPermissionState,
+                            onDeleteConnectorClick = { connectionPasswordToDelete = it },
+                            isLoading = isLoading,
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                    }
+                    SettingsConnectorMode.ScanQr -> {
+                        if (cameraPermissionState.status.isGranted) {
+                            CameraPreview(
+                                modifier = Modifier.fillMaxSize()
+                            ) {
+                                onConnectionPasswordDecoded(it)
+                            }
                         }
                     }
                 }
-            }
-            if (isLoading) {
-                FullscreenCircularProgressContent()
-            }
-            if (connectionPasswordToDelete != null) {
-                @Suppress("UnsafeCallOnNullableType")
-                BasicPromptAlertDialog(
-                    finish = {
-                        if (it) {
-                            onDeleteConnectorClick(connectionPasswordToDelete!!)
-                        }
-                        connectionPasswordToDelete = null
-                    },
-                    title = {
-                        Text(
-                            text = stringResource(id = R.string.linkedConnectors_removeConnectionAlert_title),
-                            style = RadixTheme.typography.body2Header,
-                            color = RadixTheme.colors.gray1
-                        )
-                    },
-                    text = {
-                        Text(
-                            text = stringResource(id = R.string.linkedConnectors_removeConnectionAlert_message),
-                            style = RadixTheme.typography.body2Regular,
-                            color = RadixTheme.colors.gray1
-                        )
-                    },
-                    confirmText = stringResource(id = R.string.common_remove)
-                )
+                if (isLoading) {
+                    FullscreenCircularProgressContent()
+                }
+                if (connectionPasswordToDelete != null) {
+                    @Suppress("UnsafeCallOnNullableType")
+                    BasicPromptAlertDialog(
+                        finish = {
+                            if (it) {
+                                onDeleteConnectorClick(connectionPasswordToDelete!!)
+                            }
+                            connectionPasswordToDelete = null
+                        },
+                        title = {
+                            Text(
+                                text = stringResource(id = R.string.linkedConnectors_removeConnectionAlert_title),
+                                style = RadixTheme.typography.body2Header,
+                                color = RadixTheme.colors.gray1
+                            )
+                        },
+                        text = {
+                            Text(
+                                text = stringResource(id = R.string.linkedConnectors_removeConnectionAlert_message),
+                                style = RadixTheme.typography.body2Regular,
+                                color = RadixTheme.colors.gray1
+                            )
+                        },
+                        confirmText = stringResource(id = R.string.common_remove)
+                    )
+                }
             }
         }
     }
@@ -314,25 +361,49 @@ private fun ConnectorNameInput(
     buttonEnabled: Boolean,
     onConnectorDisplayNameChanged: (String) -> Unit,
 ) {
-    Column(modifier = modifier) {
+    Column(
+        modifier = modifier
+            .padding(horizontal = RadixTheme.dimensions.paddingDefault)
+    ) {
+        Text(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = RadixTheme.dimensions.paddingLarge),
+            text = stringResource(id = R.string.linkedConnectors_nameNewConnector_title),
+            style = RadixTheme.typography.title,
+            color = RadixTheme.colors.gray1,
+            textAlign = TextAlign.Center
+        )
+
+        Text(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(RadixTheme.dimensions.paddingLarge),
+            text = "What would you like to call this Connector?", // todo Crowdin
+            style = RadixTheme.typography.body1Regular,
+            color = RadixTheme.colors.gray1,
+            textAlign = TextAlign.Center
+        )
         RadixTextField(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = RadixTheme.dimensions.paddingMedium),
             onValueChanged = onConnectorDisplayNameChanged,
             value = connectorDisplayName,
-            hint = stringResource(R.string.linkedConnectors_nameNewConnector_textFieldPlaceholder),
-            optionalHint = stringResource(id = R.string.linkedConnectors_nameNewConnector_textFieldHint),
+            hint = "",
+            // todo replace in Crowdin stringResource(id = R.string.linkedConnectors_nameNewConnector_textFieldHint),
+            optionalHint = "Name this connector e.g. ‘Chrome on MacBook Pro’",
             singleLine = true
         )
         Spacer(modifier = Modifier.size(RadixTheme.dimensions.paddingMedium))
         RadixPrimaryButton(
-            text = stringResource(id = R.string.linkedConnectors_nameNewConnector_saveLinkButtonTitle),
+            text = "Continue",
+            // todo replace in Crowdin stringResource(id = R.string.linkedConnectors_nameNewConnector_saveLinkButtonTitle),
             onClick = onLinkNewConnectorClick,
             modifier = Modifier
                 .fillMaxWidth()
                 .imePadding()
-                .padding(horizontal = RadixTheme.dimensions.paddingMedium),
+                .padding(RadixTheme.dimensions.paddingMedium),
             enabled = buttonEnabled
         )
     }
@@ -354,7 +425,6 @@ fun SettingsScreenLinkConnectorWithoutActiveConnectorPreview() {
             onConnectionPasswordDecoded = {},
             onDeleteConnectorClick = {},
             settingsMode = SettingsConnectorMode.ShowDetails,
-            onLinkConnector = {},
             cancelQrScan = {},
             triggerCameraPermissionPrompt = false
         )
@@ -383,7 +453,6 @@ fun SettingsScreenLinkConnectorWithActiveConnectorPreview() {
             onConnectionPasswordDecoded = {},
             onDeleteConnectorClick = {},
             settingsMode = SettingsConnectorMode.ShowDetails,
-            onLinkConnector = {},
             cancelQrScan = {},
             triggerCameraPermissionPrompt = false
         )
