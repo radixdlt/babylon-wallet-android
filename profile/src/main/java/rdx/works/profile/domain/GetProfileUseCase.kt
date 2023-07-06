@@ -66,7 +66,6 @@ suspend fun GetProfileUseCase.nextDerivationPathForAccountOnCurrentNetworkWithLe
     return ledgerHardwareWalletFactorSource.getNextDerivationPathForAccount(currentNetwork)
 }
 
-@Suppress("MagicNumber")
 suspend fun GetProfileUseCase.currentNetworkAccountHashes(): Set<ByteArray> {
     return accountsOnCurrentNetwork().map {
         val addressData = RadixEngineToolkit.decodeAddress(DecodeAddressInput(it.address)).getOrThrow().data
