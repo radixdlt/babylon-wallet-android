@@ -69,8 +69,7 @@ suspend fun GetProfileUseCase.nextDerivationPathForAccountOnCurrentNetworkWithLe
 suspend fun GetProfileUseCase.currentNetworkAccountHashes(): Set<ByteArray> {
     return accountsOnCurrentNetwork().map {
         val addressData = RadixEngineToolkit.decodeAddress(DecodeAddressInput(it.address)).getOrThrow().data
-        // TODO change to addressData.drop(1) after RET update, to be consistent with iOS
-        addressData.takeLast(26).toByteArray()
+        addressData.takeLast(29).toByteArray()
     }.toSet()
 }
 

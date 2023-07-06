@@ -39,10 +39,14 @@ class CollectSignersSignaturesUseCase @Inject constructor(
                 FactorSourceKind.DEVICE -> {
                     factorSource as DeviceFactorSource
                     _signingState.update { SigningState.Device.Pending(factorSource) }
+                    val dataToSign = when (signRequest) {
+                        is SignRequest.SignAuthChallengeRequest -> signRequest.dataToSign
+                        is SignRequest.SignTransactionRequest -> hash(signRequest.dataToSign)
+                    }
                     val signatures = signWithDeviceFactorSourceUseCase(
                         deviceFactorSource = factorSource,
                         signers = signers,
-                        dataToSign = signRequest.hashedDataToSign,
+                        dataToSign = dataToSign,
                         signingPurpose = signingPurpose
                     )
                     signaturesWithPublicKeys.addAll(signatures)
@@ -81,15 +85,11 @@ class CollectSignersSignaturesUseCase @Inject constructor(
 
 sealed interface SignRequest {
 
-    val hashedDataToSign: ByteArray
+    val dataToSign: ByteArray
 
     class SignTransactionRequest(
-        private val compiledTransactionIntentHash: ByteArray
-    ) : SignRequest {
-
-        override val hashedDataToSign: ByteArray
-            get() = compiledTransactionIntentHash
-    }
+        override val dataToSign: ByteArray
+    ) : SignRequest
 
     class SignAuthChallengeRequest(
         val challengeHex: String,
@@ -97,7 +97,7 @@ sealed interface SignRequest {
         val dAppDefinitionAddress: String
     ) : SignRequest {
 
-        private val payloadToSign: ByteArray
+        override val dataToSign: ByteArray
             get() {
                 require(dAppDefinitionAddress.length <= UByte.MAX_VALUE.toInt())
                 return byteArrayOf(ROLA_PAYLOAD_PREFIX.toByte()) + challengeHex.decodeHex() + dAppDefinitionAddress.length.toUByte()
@@ -105,10 +105,7 @@ sealed interface SignRequest {
             }
 
         val payloadHex: String
-            get() = payloadToSign.toHexString()
-
-        override val hashedDataToSign: ByteArray
-            get() = hash(payloadToSign)
+            get() = dataToSign.toHexString()
 
         companion object {
             const val ROLA_PAYLOAD_PREFIX = 0x52

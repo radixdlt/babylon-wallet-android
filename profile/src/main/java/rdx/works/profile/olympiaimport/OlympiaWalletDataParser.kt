@@ -43,7 +43,7 @@ class OlympiaWalletDataParser @Inject constructor(
                     val type = requireNotNull(OlympiaAccountType.from(singleAccountDataChunks[0]))
                     val publicKeyHex = requireNotNull(singleAccountDataChunks[1].decodeBase64()?.hex())
                     val publicKey = PublicKey.EcdsaSecp256k1(publicKeyHex)
-                    val publicKeyHash = publicKey.toByteArray().blake2Hash().takeLast(26).toByteArray()
+                    val publicKeyHash = publicKey.toByteArray().blake2Hash().takeLast(29).toByteArray()
                     val index = requireNotNull(singleAccountDataChunks[2].toInt())
                     val name = if (singleAccountDataChunks.size == 4) {
                         singleAccountDataChunks[3].replace(EndOfAccountName, "")
