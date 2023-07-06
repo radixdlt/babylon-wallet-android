@@ -2,7 +2,6 @@ package com.babylon.wallet.android.domain.usecases.transaction
 
 import com.babylon.wallet.android.data.transaction.SigningState
 import com.radixdlt.hex.extensions.toHexString
-import com.radixdlt.toolkit.hash
 import com.radixdlt.toolkit.models.crypto.SignatureWithPublicKey
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -41,7 +40,7 @@ class CollectSignersSignaturesUseCase @Inject constructor(
                     _signingState.update { SigningState.Device.Pending(factorSource) }
                     val dataToSign = when (signRequest) {
                         is SignRequest.SignAuthChallengeRequest -> signRequest.dataToSign
-                        is SignRequest.SignTransactionRequest -> hash(signRequest.dataToSign)
+                        is SignRequest.SignTransactionRequest -> signRequest.hashedDataToSign
                     }
                     val signatures = signWithDeviceFactorSourceUseCase(
                         deviceFactorSource = factorSource,
@@ -88,7 +87,8 @@ sealed interface SignRequest {
     val dataToSign: ByteArray
 
     class SignTransactionRequest(
-        override val dataToSign: ByteArray
+        override val dataToSign: ByteArray,
+        val hashedDataToSign: ByteArray
     ) : SignRequest
 
     class SignAuthChallengeRequest(

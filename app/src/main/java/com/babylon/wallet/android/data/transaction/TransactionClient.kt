@@ -103,7 +103,7 @@ class TransactionClient @Inject constructor(
         val signers = getSigningEntities(networkId, manifestWithTransactionFee)
         val notaryAndSigners = NotaryAndSigners(signers, ephemeralNotaryPrivateKey)
         return buildTransactionHeader(networkId, notaryAndSigners).map { header ->
-            val txId = engine.hashTransactionIntent(
+            val txIntentHash = engine.hashTransactionIntent(
                 HashTransactionIntentInput(
                     header = header,
                     manifest = manifestWithTransactionFee
@@ -113,12 +113,11 @@ class TransactionClient @Inject constructor(
                     DappRequestFailure.TransactionApprovalFailure.SignCompiledTransactionIntent
                 )
             )
-            val compileTransactionIntentRequest = CompileTransactionIntentInput(
-                header,
-                manifestWithTransactionFee
-            )
             val compiledTransactionIntent = engine.compileTransactionIntent(
-                compileTransactionIntentRequest
+                input = CompileTransactionIntentInput(
+                    header,
+                    manifestWithTransactionFee
+                )
             ).getOrNull()?.compiledIntent ?: return Result.failure(
                 DappRequestException(
                     DappRequestFailure.TransactionApprovalFailure.PrepareNotarizedTransaction
@@ -126,7 +125,7 @@ class TransactionClient @Inject constructor(
             )
             val signatures = collectSignersSignaturesUseCase(
                 signers = signers,
-                signRequest = SignRequest.SignTransactionRequest(compiledTransactionIntent)
+                signRequest = SignRequest.SignTransactionRequest(compiledTransactionIntent, txIntentHash)
             ).getOrNull()?.toTypedArray() ?: return Result.failure(
                 DappRequestException(
                     DappRequestFailure.TransactionApprovalFailure.SignCompiledTransactionIntent
@@ -169,7 +168,7 @@ class TransactionClient @Inject constructor(
                 }.compiledNotarizedIntent
 
             val submittedTxId = submitTransactionUseCase(
-                txId.toHexString(),
+                txIntentHash.toHexString(),
                 compiledNotarizedIntent.toHexString()
             ).getOrElse { error ->
                 return Result.failure(
