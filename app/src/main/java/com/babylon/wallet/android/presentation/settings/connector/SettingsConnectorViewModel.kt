@@ -159,7 +159,7 @@ data class SettingsConnectorUiState(
     val buttonEnabled: Boolean = false,
     val isScanningQr: Boolean = false,
     val mode: SettingsConnectorMode = SettingsConnectorMode.ShowDetails,
-    val triggerCameraPermissionPrompt: Boolean = false,
+    val triggerCameraPermissionPrompt: Boolean = false
 ) : UiState
 
 data class ActiveConnectorUiModel(

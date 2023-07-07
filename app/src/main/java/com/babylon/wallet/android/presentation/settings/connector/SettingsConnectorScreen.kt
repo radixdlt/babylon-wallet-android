@@ -145,7 +145,9 @@ private fun SettingsLinkConnectorContent(
         wrapContent = true,
         enableImePadding = true,
         sheetContent = {
-            if (cameraPermissionState.status.isGranted) {
+            // Since we have two Camera views in the same Composable (bottom sheet and full screen) this was causing
+            // the fullscreen to be dark for some reason
+            if (settingsMode != SettingsConnectorMode.ScanQr && cameraPermissionState.status.isGranted) {
                 ScanQRSheet(
                     modifier = Modifier
                         .background(color = RadixTheme.colors.white),
