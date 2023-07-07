@@ -7,31 +7,31 @@ import com.radixdlt.crypto.getCompressedPublicKey
 import com.radixdlt.extensions.removeLeadingZero
 import com.radixdlt.model.ECKeyPair
 import com.radixdlt.model.PrivateKey
-import com.radixdlt.toolkit.models.crypto.PublicKey
-import com.radixdlt.toolkit.models.crypto.PrivateKey as EnginePrivateKey
-import com.radixdlt.toolkit.models.crypto.PublicKey as EnginePublicKey
+import rdx.works.core.toUByteList
+import com.radixdlt.model.PrivateKey as EnginePrivateKey
+import org.radixdlt.ret.PublicKey as EnginePublicKey
 
 fun ECKeyPair.toEnginePublicKeyModel(): EnginePublicKey {
     return when (this.publicKey.curveType) {
         EllipticCurveType.Secp256k1 -> {
             // Required size 33 bytes
-            PublicKey.EcdsaSecp256k1.fromByteArray(getCompressedPublicKey())
+            EnginePublicKey.EcdsaSecp256k1(getCompressedPublicKey().toUByteList()) // TODO RET
         }
         EllipticCurveType.Ed25519 -> {
             // Required size 32 bytes
-            val compressedKey = getCompressedPublicKey()
-            PublicKey.EddsaEd25519.fromByteArray(compressedKey.removeLeadingZero())
+            EnginePublicKey.EddsaEd25519(getCompressedPublicKey().removeLeadingZero().toUByteList())
         }
         EllipticCurveType.P256 -> throw Exception("Curve EllipticCurveType.P256 not supported")
     }
 }
 
+
 fun PrivateKey.toEngineModel(): EnginePrivateKey {
     return when (this.curveType) {
-        EllipticCurveType.Secp256k1 -> com.radixdlt.toolkit.models.crypto.PrivateKey.EcdsaSecp256k1.newFromPrivateKeyBytes(
+        EllipticCurveType.Secp256k1 -> EnginePrivateKey.EcdsaSecp256k1.newFromPrivateKeyBytes( // TODO RET
             this.keyByteArray()
         )
-        EllipticCurveType.Ed25519 -> com.radixdlt.toolkit.models.crypto.PrivateKey.EddsaEd25519.newFromPrivateKeyBytes(this.keyByteArray())
+        EllipticCurveType.Ed25519 -> EnginePrivateKey.EddsaEd25519.newFromPrivateKeyBytes(this.keyByteArray())
         EllipticCurveType.P256 -> throw Exception("Curve EllipticCurveType.P256 not supported")
     }
 }

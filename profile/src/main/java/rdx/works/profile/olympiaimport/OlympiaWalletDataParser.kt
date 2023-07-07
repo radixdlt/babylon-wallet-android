@@ -2,12 +2,15 @@
 
 package rdx.works.profile.olympiaimport
 
-import com.radixdlt.toolkit.RadixEngineToolkit
-import com.radixdlt.toolkit.models.crypto.PublicKey
-import com.radixdlt.toolkit.models.method.DeriveBabylonAddressFromOlympiaAddressInput
-import com.radixdlt.toolkit.models.method.DeriveOlympiaAddressFromPublicKeyInput
-import com.radixdlt.toolkit.models.method.OlympiaNetwork
 import okio.ByteString.Companion.decodeBase64
+import org.radixdlt.ret.Address
+import org.radixdlt.ret.OlympiaNetwork
+import org.radixdlt.ret.PublicKey
+import org.radixdlt.ret.deriveOlympiaAccountAddressFromPublicKey
+import rdx.works.core.blake2Hash
+import rdx.works.core.decodeHex
+import rdx.works.core.toByteArray
+import rdx.works.core.toUByteList
 import rdx.works.core.compressedPublicKeyHashBytes
 import rdx.works.profile.data.model.pernetwork.DerivationPath
 import rdx.works.profile.domain.gateway.GetCurrentGatewayUseCase
@@ -42,7 +45,7 @@ class OlympiaWalletDataParser @Inject constructor(
                     val singleAccountDataChunks = singleAccountData.split(InnerSeparator)
                     val type = requireNotNull(OlympiaAccountType.from(singleAccountDataChunks[0]))
                     val publicKeyHex = requireNotNull(singleAccountDataChunks[1].decodeBase64()?.hex())
-                    val publicKey = PublicKey.EcdsaSecp256k1(publicKeyHex)
+                    val publicKey = PublicKey.EcdsaSecp256k1(publicKeyHex.decodeHex().toUByteList())
                     val publicKeyHash = publicKeyHex.compressedPublicKeyHashBytes()
                     val index = requireNotNull(singleAccountDataChunks[2].toInt())
                     val name = if (singleAccountDataChunks.size == 4) {
@@ -51,16 +54,20 @@ class OlympiaWalletDataParser @Inject constructor(
                     } else {
                         ""
                     }.ifEmpty { "Unnamed Olympia account $index" }
-                    val olympiaAddress = RadixEngineToolkit.deriveOlympiaAddressFromPublicKey(
-                        DeriveOlympiaAddressFromPublicKeyInput(OlympiaNetwork.Mainnet, publicKey)
-                    ).getOrThrow().olympiaAccountAddress
-                    val newBabylonAddress = RadixEngineToolkit.deriveBabylonAddressFromOlympiaAddress(
-                        DeriveBabylonAddressFromOlympiaAddressInput(currentNetworkId, olympiaAddress)
-                    ).getOrThrow().babylonAccountAddress
+
+                    val olympiaAddress = deriveOlympiaAccountAddressFromPublicKey(
+                        publicKey = publicKey,
+                        olympiaNetwork = OlympiaNetwork.MAINNET
+                    )
+                    val newBabylonAddress = Address.virtualAccountAddressFromOlympiaAddress(
+                        olympiaAccountAddress = olympiaAddress,
+                        networkId = currentNetworkId
+                    ).addressString()
+
                     OlympiaAccountDetails(
                         index = index,
                         type = type,
-                        address = olympiaAddress,
+                        address = olympiaAddress.asStr(),
                         publicKey = publicKeyHex,
                         accountName = name,
                         derivationPath = DerivationPath.forLegacyOlympia(accountIndex = index),

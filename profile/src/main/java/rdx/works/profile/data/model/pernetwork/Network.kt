@@ -1,14 +1,15 @@
 package rdx.works.profile.data.model.pernetwork
 
 import com.radixdlt.extensions.removeLeadingZero
-import com.radixdlt.toolkit.RadixEngineToolkit
-import com.radixdlt.toolkit.models.crypto.PublicKey
-import com.radixdlt.toolkit.models.method.DeriveVirtualAccountAddressInput
-import com.radixdlt.toolkit.models.method.DeriveVirtualIdentityAddressInput
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import org.radixdlt.ret.PublicKey
+import org.radixdlt.ret.deriveVirtualAccountAddressFromPublicKey
+import org.radixdlt.ret.deriveVirtualIdentityAddressFromPublicKey
+import rdx.works.core.decodeHex
 import rdx.works.core.mapWhen
 import rdx.works.core.toHexString
+import rdx.works.core.toUByteList
 import rdx.works.profile.data.model.MnemonicWithPassphrase
 import rdx.works.profile.data.model.Profile
 import rdx.works.profile.data.model.compressedPublicKey
@@ -115,7 +116,7 @@ data class Network(
                     mnemonicWithPassphrase.compressedPublicKey(derivationPath = derivationPath).removeLeadingZero()
                 val address = deriveAccountAddress(
                     networkID = networkId,
-                    publicKey = PublicKey.EddsaEd25519(compressedPublicKey)
+                    publicKey = PublicKey.EddsaEd25519(compressedPublicKey.toUByteList())
                 )
 
                 val unsecuredSecurityState = SecurityState.unsecured(
@@ -154,7 +155,7 @@ data class Network(
 
                 val address = deriveAccountAddress(
                     networkID = networkId,
-                    publicKey = PublicKey.EddsaEd25519(derivedPublicKeyHex)
+                    publicKey = PublicKey.EddsaEd25519(derivedPublicKeyHex.decodeHex().toUByteList()) // TODO RET
                 )
 
                 val unsecuredSecurityState = SecurityState.unsecured(
@@ -176,10 +177,8 @@ data class Network(
                 networkID: NetworkId,
                 publicKey: PublicKey
             ): String {
-                val request = DeriveVirtualAccountAddressInput(networkID.value.toUByte(), publicKey)
-                // TODO handle error
-                val response = RadixEngineToolkit.deriveVirtualAccountAddress(request).getOrThrow()
-                return response.virtualAccountAddress
+                val response = deriveVirtualAccountAddressFromPublicKey(publicKey, networkID.value.toUByte())
+                return response.addressString()
             }
         }
     }
@@ -241,7 +240,7 @@ data class Network(
 
                 val address = deriveIdentityAddress(
                     networkID = networkId,
-                    publicKey = PublicKey.EddsaEd25519(compressedPublicKey)
+                    publicKey = PublicKey.EddsaEd25519(compressedPublicKey.toUByteList())
                 )
 
                 val unsecuredSecurityState = SecurityState.unsecured(
@@ -263,10 +262,7 @@ data class Network(
                 networkID: NetworkId,
                 publicKey: PublicKey
             ): String {
-                val request = DeriveVirtualIdentityAddressInput(networkID.value.toUByte(), publicKey)
-                // TODO handle error
-                val response = RadixEngineToolkit.deriveVirtualIdentityAddress(request).getOrThrow()
-                return response.virtualIdentityAddress
+                return deriveVirtualIdentityAddressFromPublicKey(publicKey, networkID.value.toUByte()).addressString()
             }
         }
 

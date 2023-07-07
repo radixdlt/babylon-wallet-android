@@ -33,6 +33,7 @@ dependencies {
     implementation libs.slip10
     implementation libs.ktorCore
     implementation libs.zxing
+    implementation libs.kotlinxSerialization
 
     // Datastore
     implementation libs.datastorePreferences

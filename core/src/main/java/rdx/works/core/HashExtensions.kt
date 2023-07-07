@@ -1,8 +1,15 @@
 package rdx.works.core
 
 import com.radixdlt.hex.extensions.toHexString
+import org.radixdlt.ret.hash
 
-fun ByteArray.blake2Hash(): ByteArray = com.radixdlt.toolkit.hash(data = this)
+@OptIn(ExperimentalUnsignedTypes::class)
+fun ByteArray.toUByteList() = toUByteArray().toTypedArray().toList()
+
+@OptIn(ExperimentalUnsignedTypes::class)
+fun List<UByte>.toByteArray() = toUByteArray().toByteArray()
+
+fun ByteArray.blake2Hash(): ByteArray = hash(data = toUByteList()).bytes().toByteArray()
 
 fun String.blake2Hash(): ByteArray = toByteArray().blake2Hash()
 
