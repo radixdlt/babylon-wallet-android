@@ -138,6 +138,9 @@ private fun SettingsLinkConnectorContent(
     val bottomSheetState =
         rememberModalBottomSheetState(initialValue = ModalBottomSheetValue.Hidden, skipHalfExpanded = true)
     val scope = rememberCoroutineScope()
+    var isCameraVisible by remember {
+        mutableStateOf(settingsMode == SettingsConnectorMode.ScanQr)
+    }
 
     DefaultModalSheetLayout(
         modifier = modifier,
@@ -151,6 +154,7 @@ private fun SettingsLinkConnectorContent(
                 ScanQRSheet(
                     modifier = Modifier
                         .background(color = RadixTheme.colors.white),
+                    isVisible = isCameraVisible,
                     onAddressDecoded = {
                         onConnectionPasswordDecoded(it)
                         scope.launch {
@@ -158,6 +162,7 @@ private fun SettingsLinkConnectorContent(
                         }
                     },
                     onCloseClick = {
+                        isCameraVisible = false
                         scope.launch {
                             bottomSheetState.hide()
                         }
@@ -197,6 +202,7 @@ private fun SettingsLinkConnectorContent(
                         ActiveConnectorDetails(
                             activeConnectors = activeConnectors,
                             onLinkConnector = {
+                                isCameraVisible = true
                                 scope.launch {
                                     bottomSheetState.show()
                                 }

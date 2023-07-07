@@ -23,7 +23,10 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Alignment.Companion.CenterVertically
 import androidx.compose.ui.Modifier
@@ -94,12 +97,15 @@ private fun SettingsContent(
     appSettings: ImmutableList<SettingsItem.TopLevelSettings>,
     onSettingClick: (SettingsItem.TopLevelSettings) -> Unit,
     onConnectionPasswordDecoded: (String) -> Unit,
-    modifier: Modifier = Modifier,
+    modifier: Modifier = Modifier
 ) {
     val bottomSheetState =
         rememberModalBottomSheetState(initialValue = ModalBottomSheetValue.Hidden, skipHalfExpanded = true)
     val scope = rememberCoroutineScope()
     val cameraPermissionState = rememberPermissionState(permission = Manifest.permission.CAMERA)
+    var isCameraVisible by remember {
+        mutableStateOf(false)
+    }
 
     DefaultModalSheetLayout(
         modifier = modifier,
@@ -111,6 +117,7 @@ private fun SettingsContent(
                 ScanQRSheet(
                     modifier = Modifier
                         .background(color = RadixTheme.colors.white),
+                    isVisible = isCameraVisible,
                     onAddressDecoded = {
                         onConnectionPasswordDecoded(it)
                         scope.launch {
@@ -118,6 +125,7 @@ private fun SettingsContent(
                         }
                     },
                     onCloseClick = {
+                        isCameraVisible = false
                         scope.launch {
                             bottomSheetState.hide()
                         }
@@ -153,12 +161,12 @@ private fun SettingsContent(
                                         .fillMaxWidth()
                                         .background(RadixTheme.colors.gray5)
                                         .padding(RadixTheme.dimensions.paddingDefault),
-                                    onSettingClick = {
+                                    onLinkToConnectorClick = {
+                                        isCameraVisible = true
                                         scope.launch {
                                             bottomSheetState.show()
                                         }
-                                    },
-                                    settingsItem = settingsItem
+                                    }
                                 )
                             }
                         }
@@ -303,8 +311,7 @@ private fun BackupSettingsItem(
 
 @Composable
 private fun ConnectionSettingItem(
-    onSettingClick: (SettingsItem.TopLevelSettings) -> Unit,
-    settingsItem: SettingsItem.TopLevelSettings,
+    onLinkToConnectorClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Column(
@@ -334,7 +341,7 @@ private fun ConnectionSettingItem(
                 .padding(horizontal = RadixTheme.dimensions.paddingDefault),
             text = stringResource(R.string.settings_linkToConnectorHeader_linkToConnector),
             onClick = {
-                onSettingClick(settingsItem)
+                onLinkToConnectorClick()
             },
             containerColor = RadixTheme.colors.gray3,
             contentColor = RadixTheme.colors.gray1,
@@ -353,6 +360,7 @@ private fun ConnectionSettingItem(
 @Composable
 fun ScanQRSheet(
     modifier: Modifier = Modifier,
+    isVisible: Boolean,
     onAddressDecoded: (String) -> Unit,
     onCloseClick: () -> Unit
 ) {
@@ -391,10 +399,12 @@ fun ScanQRSheet(
                     vertical = RadixTheme.dimensions.paddingDefault
                 )
                 .imePadding()
-                .clip(RadixTheme.shapes.roundedRectMedium)
-        ) {
-            onAddressDecoded(it)
-        }
+                .clip(RadixTheme.shapes.roundedRectMedium),
+            isVisible = isVisible,
+            onQrCodeDetected = {
+                onAddressDecoded(it)
+            }
+        )
     }
 }
 
