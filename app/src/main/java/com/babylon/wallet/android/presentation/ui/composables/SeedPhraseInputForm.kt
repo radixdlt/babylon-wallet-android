@@ -88,8 +88,8 @@ fun SeedPhraseInputForm(
                     .padding(vertical = RadixTheme.dimensions.paddingMedium),
                 onValueChanged = onPassphraseChanged,
                 value = bip39Passphrase,
-                leftLabel = stringResource(id = R.string.importLegacyWallet_seedPhrase_passphraseLabel),
-                optionalHint = stringResource(id = R.string.importLegacyWallet_seedPhrase_passphraseHint)
+                leftLabel = stringResource(id = R.string.importMnemonic_passphrase),
+                optionalHint = stringResource(id = R.string.importMnemonic_passphraseHint)
             )
         }
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
@@ -97,9 +97,9 @@ fun SeedPhraseInputForm(
             modifier = Modifier.fillMaxWidth(),
             text = stringResource(
                 id = if (advancedMode) {
-                    R.string.importLegacyWallet_seedPhrase_regularMode
+                    R.string.importMnemonic_regularModeButton
                 } else {
-                    R.string.importLegacyWallet_seedPhrase_advancedMode
+                    R.string.importMnemonic_advancedModeButton
                 }
             ),
             onClick = {
@@ -144,7 +144,7 @@ private fun SeedPhraseWordInput(
             onWordChanged(word.index, it)
         },
         value = word.value,
-        leftLabel = stringResource(id = R.string.importLegacyWallet_seedPhrase_wordLabel, word.index + 1),
+        leftLabel = stringResource(id = R.string.importMnemonic_wordHeading, word.index + 1),
         trailingIcon = when (word.state) {
             SeedPhraseWord.State.Valid -> {
                 {

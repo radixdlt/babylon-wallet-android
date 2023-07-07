@@ -403,7 +403,7 @@ private fun ScanQrPage(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
-                    text = stringResource(id = R.string.importLegacyWallet_scanQRCode_title),
+                    text = stringResource(id = R.string.importOlympiaAccounts_scanQR_title),
                     style = RadixTheme.typography.title,
                     color = RadixTheme.colors.gray1,
                     textAlign = TextAlign.Center
@@ -411,7 +411,7 @@ private fun ScanQrPage(
                 qrChunkInfo?.let { chunkInfo ->
                     Text(
                         text = stringResource(
-                            id = R.string.importOlympiaAccounts_scannedProgress,
+                            id = R.string.importOlympiaAccounts_scanQR_scannedLabel,
                             chunkInfo.scanned,
                             chunkInfo.total
                         ),
@@ -420,7 +420,7 @@ private fun ScanQrPage(
                     )
                 }
                 Text(
-                    text = stringResource(id = R.string.importLegacyWallet_scanQRCodeInstructions),
+                    text = stringResource(id = R.string.importOlympiaAccounts_scanQR_instructions),
                     style = RadixTheme.typography.body1Regular,
                     color = RadixTheme.colors.gray1,
                     overflow = TextOverflow.Ellipsis,
@@ -450,7 +450,7 @@ private fun AccountListPage(
     Column(modifier = modifier, horizontalAlignment = Alignment.CenterHorizontally) {
         Text(
             modifier = Modifier.padding(RadixTheme.dimensions.paddingDefault),
-            text = stringResource(id = R.string.importLegacyWallet_accountsToImport_title),
+            text = stringResource(id = R.string.importOlympiaAccounts_accountsToImport_title),
             style = RadixTheme.typography.title,
             color = RadixTheme.colors.gray1
         )
@@ -465,7 +465,7 @@ private fun AccountListPage(
             item {
                 Text(
                     modifier = Modifier.padding(RadixTheme.dimensions.paddingSmall),
-                    text = stringResource(id = R.string.importLegacyWallet_accountsToImport_subtitle),
+                    text = stringResource(id = R.string.importOlympiaAccounts_accountsToImport_subtitle),
                     textAlign = TextAlign.Center,
                     style = RadixTheme.typography.body1Regular,
                     color = RadixTheme.colors.gray1
@@ -475,7 +475,7 @@ private fun AccountListPage(
                 item {
                     Text(
                         modifier = Modifier.padding(RadixTheme.dimensions.paddingSmall),
-                        text = stringResource(id = R.string.importLegacyWallet_accountsToImport_emptyState),
+                        text = "No accounts found to import.", // TODO will be removed
                         textAlign = TextAlign.Center,
                         style = RadixTheme.typography.body1Regular,
                         color = RadixTheme.colors.gray1
@@ -502,7 +502,7 @@ private fun AccountListPage(
             }
         }
         RadixPrimaryButton(
-            text = stringResource(R.string.importLegacyWallet_accountsToImport_button, olympiaAccounts.size),
+            text = stringResource(R.string.importOlympiaAccounts_accountsToImport_buttonManyAccounts, olympiaAccounts.size),
             onClick = onImportAccounts,
             modifier = Modifier
                 .fillMaxWidth()
@@ -536,7 +536,7 @@ private fun HardwareImportScreen(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
-                    text = stringResource(id = R.string.importLegacyWallet_hardwareImport_title, totalHardwareAccounts),
+                    text = stringResource(id = R.string.importOlympiaLedgerAccounts_subtitle, totalHardwareAccounts),
                     style = RadixTheme.typography.header,
                     color = RadixTheme.colors.gray1,
                     overflow = TextOverflow.Ellipsis,
@@ -544,7 +544,7 @@ private fun HardwareImportScreen(
                 )
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
                 Text(
-                    text = stringResource(id = R.string.importLegacyWallet_hardwareImport_subtitle),
+                    text = stringResource(id = R.string.importOlympiaLedgerAccounts_listHeading),
                     style = RadixTheme.typography.body1Header,
                     color = RadixTheme.colors.gray1,
                     overflow = TextOverflow.Ellipsis,
@@ -557,7 +557,7 @@ private fun HardwareImportScreen(
                             .fillMaxWidth()
                             .background(RadixTheme.colors.gray5, RadixTheme.shapes.roundedRectSmall)
                             .padding(RadixTheme.dimensions.paddingLarge),
-                        text = stringResource(id = R.string.importLegacyWallet_hardwareImport_noLedgers),
+                        text = stringResource(id = R.string.importOlympiaLedgerAccounts_knownLedgersNone),
                         style = RadixTheme.typography.body1Header,
                         color = RadixTheme.colors.gray2,
                         overflow = TextOverflow.Ellipsis,
@@ -610,7 +610,7 @@ private fun HardwareImportScreen(
 private fun AccountsLeftText(accountsLeft: Int, modifier: Modifier = Modifier) {
     Text(
         modifier = modifier,
-        text = stringResource(id = R.string.importLegacyWallet_hardwareImport_footer, accountsLeft),
+        text = stringResource(id = R.string.importOlympiaLedgerAccounts_otherDeviceAccounts, accountsLeft),
         style = RadixTheme.typography.body1Regular,
         color = RadixTheme.colors.gray1,
         overflow = TextOverflow.Ellipsis,
@@ -627,7 +627,7 @@ private fun ImportCompletePage(
     Column(modifier = modifier, horizontalAlignment = Alignment.CenterHorizontally) {
         Text(
             modifier = Modifier.padding(RadixTheme.dimensions.paddingDefault),
-            text = stringResource(id = R.string.importLegacyWallet_completion_title),
+            text = stringResource(id = R.string.importOlympiaAccounts_completion_title),
             maxLines = 1,
             style = RadixTheme.typography.title,
             color = RadixTheme.colors.gray1
@@ -643,7 +643,7 @@ private fun ImportCompletePage(
             item {
                 Text(
                     modifier = Modifier.padding(RadixTheme.dimensions.paddingSmall),
-                    text = stringResource(id = R.string.importLegacyWallet_completion_subtitle),
+                    text = stringResource(id = R.string.importOlympiaAccounts_completion_subtitleMultiple),
                     textAlign = TextAlign.Start,
                     style = RadixTheme.typography.body1Regular,
                     color = RadixTheme.colors.gray1
@@ -674,7 +674,7 @@ private fun ImportCompletePage(
             item {
                 Text(
                     modifier = Modifier.padding(RadixTheme.dimensions.paddingSmall),
-                    text = stringResource(id = R.string.importLegacyWallet_completion_footer),
+                    text = stringResource(id = R.string.importOlympiaAccounts_completion_explanation),
                     textAlign = TextAlign.Center,
                     style = RadixTheme.typography.body1Regular,
                     color = RadixTheme.colors.gray1
@@ -730,13 +730,13 @@ private fun InputSeedPhrasePage(
             verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingDefault)
         ) {
             Text(
-                text = stringResource(id = R.string.importLegacyWallet_seedPhrase_title),
+                text = stringResource(id = R.string.importOlympiaAccounts_verifySeedPhrase_title),
                 style = RadixTheme.typography.title,
                 color = RadixTheme.colors.gray1,
                 textAlign = TextAlign.Center
             )
             Text(
-                text = stringResource(id = R.string.importLegacyWallet_seedPhrase_subtitle),
+                text = stringResource(id = R.string.importOlympiaAccounts_verifySeedPhrase_subtitle),
                 style = RadixTheme.typography.body1Regular,
                 color = RadixTheme.colors.gray1,
                 overflow = TextOverflow.Ellipsis,
@@ -744,7 +744,7 @@ private fun InputSeedPhrasePage(
             )
             InfoLink(
                 modifier = Modifier.fillMaxWidth(),
-                text = stringResource(R.string.importLegacyWallet_seedPhrase_warning),
+                text = stringResource(R.string.importOlympiaAccounts_verifySeedPhrase_warning),
                 contentColor = RadixTheme.colors.orange1,
                 iconRes = com.babylon.wallet.android.designsystem.R.drawable.ic_warning_error
             )
