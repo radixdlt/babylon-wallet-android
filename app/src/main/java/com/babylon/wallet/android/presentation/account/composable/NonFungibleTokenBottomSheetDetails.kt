@@ -92,6 +92,26 @@ fun NonFungibleTokenBottomSheetDetails(
                     textColor = RadixTheme.colors.gray1
                 )
             }
+            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
+            item.nameMetadataItem?.name?.let { name ->
+                Row(
+                    modifier = Modifier,
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(
+                        text = stringResource(id = R.string.assetDetails_name),
+                        style = RadixTheme.typography.body1Regular,
+                        color = RadixTheme.colors.gray2
+                    )
+                    Spacer(modifier = Modifier.weight(1f))
+                    Text(
+                        text = name,
+                        style = RadixTheme.typography.body1Regular,
+                        color = RadixTheme.colors.gray1
+                    )
+                }
+            }
         }
         Spacer(modifier = Modifier.weight(1f))
         if (nonFungibleItem != null) {

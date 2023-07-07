@@ -45,7 +45,7 @@ class RevealSeedPhraseViewModel @Inject constructor(
                         state.copy(
                             mnemonicWords = mnemonicWithPassphrase
                                 .mnemonic
-                                .split(" ").chunked(mnemonicWordsChunkSize)
+                                .split(" ").chunked(state.seedPhraseWordsPerLine)
                                 .map {
                                     it.toPersistentList()
                                 }.toPersistentList(),
@@ -74,9 +74,5 @@ class RevealSeedPhraseViewModel @Inject constructor(
 
     sealed interface Effect : OneOffEvent {
         object Close : Effect
-    }
-
-    companion object {
-        private const val mnemonicWordsChunkSize = 3
     }
 }

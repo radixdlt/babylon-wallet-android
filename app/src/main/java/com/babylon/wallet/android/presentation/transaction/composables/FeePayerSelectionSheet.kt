@@ -107,11 +107,11 @@ fun FeePayerSelectionSheet(
             }
         }
         RadixPrimaryButton(
+            text = stringResource(id = R.string.transactionReview_selectFeePayer_confirmButton),
+            onClick = onPayerConfirmed,
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = RadixTheme.dimensions.paddingDefault),
-            text = stringResource(id = R.string.transactionReview_selectFeePayer_confirmButton),
-            onClick = onPayerConfirmed,
             enabled = true
         )
     }

@@ -154,7 +154,6 @@ dependencies {
     implementation libs.lifecycelRuntimeCompose
     implementation libs.composeUi
     implementation libs.composeRuntime
-    implementation libs.composeUiTooling
     // Foundation (Border, Background, Box, Image, Scroll, shapes, animations, etc.)
     implementation libs.composeFoundation
     implementation libs.composeConstraintLayout
@@ -231,10 +230,20 @@ dependencies {
     androidTestImplementation libs.espresso
     androidTestImplementation libs.composeUiTestJunit
 
+    implementation libs.composeUiToolingPreview
     debugImplementation libs.composeUiTooling
     debugImplementation libs.composeUiTestManifest
 }
 
+jacoco {
+    toolVersion = "0.8.10"
+}
+
+tasks.withType(Test.class).configureEach {
+    jacoco {
+        excludes = ["*"]
+    }
+}
 /**
  * Copies the english translation file to the default location.
  * This is needed since Crowdin cannot create pull requests

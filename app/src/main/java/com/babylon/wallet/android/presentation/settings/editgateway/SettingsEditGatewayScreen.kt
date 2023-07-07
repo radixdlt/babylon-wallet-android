@@ -281,11 +281,11 @@ private fun AddGatewaySheet(
         )
         Spacer(modifier = Modifier.height(40.dp))
         RadixPrimaryButton(
-            modifier = Modifier.fillMaxWidth(),
             text = stringResource(R.string.gateways_addNewGateway_addGatewayButtonTitle),
             onClick = {
                 onAddGateway()
             },
+            modifier = Modifier.fillMaxWidth(),
             enabled = newUrlValid,
             isLoading = addingGateway
         )

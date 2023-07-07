@@ -62,35 +62,56 @@ data class StateEntityDetailsResponseFungibleResourceDetails (
 
 @Serializable
 data class AccessRulesChain(
-    @SerialName(value = "method_auth")
-    val method_auth: List<MethodAuth>,
+    @SerialName(value = "rules")
+    val rules: List<AccessChainRules>,
 
-    @SerialName(value = "method_auth_mutability")
-    val method_auth_mutability: List<MethodAuthMutability>
+    @SerialName(value = "mutability")
+    val mutability: List<AccessChainRules>
 )
 
 @Serializable
-data class MethodAuth(
-    @SerialName(value = "access_rule_reference")
-    val access_rule_reference: AccessRuleReference,
+data class AccessChainRules(
+    @SerialName(value = "key")
+    val key: Key,
 
-    @SerialName(value = "method")
-    val method: Method
+    @SerialName(value = "rule")
+    val rule: Rule
 )
 
 @Serializable
-data class MethodAuthMutability(
-    @SerialName(value = "access_rule_reference")
-    val access_rule_reference: AccessRuleReference,
+data class Key(
+    @SerialName(value = "module")
+    val module: String,
 
-    @SerialName(value = "method")
-    val method: Method
+    @SerialName(value = "name")
+    val name: String
+)
+
+@Serializable
+data class Rule(
+    @SerialName(value = "access_rule")
+    val accessRule: AccessRule? = null,
+
+    @SerialName(value = "type")
+    val type: String
 )
 
 @Serializable
 data class AccessRule(
+    @SerialName(value = "key")
+    val key: Key? = null,
+
     @SerialName(value = "type")
     val type: String
+)
+
+@Serializable
+data class Mutability(
+    @SerialName(value = "access_rule_reference")
+    val access_rule_reference: AccessRuleReference,
+
+    @SerialName(value = "method")
+    val method: Method
 )
 
 @Serializable

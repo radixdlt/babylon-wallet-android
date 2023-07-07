@@ -100,7 +100,7 @@ sealed interface SignRequest {
         private val payloadToSign: ByteArray
             get() {
                 require(dAppDefinitionAddress.length <= UByte.MAX_VALUE.toInt())
-                return challengeHex.decodeHex() + dAppDefinitionAddress.length.toUByte()
+                return byteArrayOf(ROLA_PAYLOAD_PREFIX.toByte()) + challengeHex.decodeHex() + dAppDefinitionAddress.length.toUByte()
                     .toByte() + dAppDefinitionAddress.toByteArray() + origin.toByteArray()
             }
 
@@ -109,5 +109,9 @@ sealed interface SignRequest {
 
         override val hashedDataToSign: ByteArray
             get() = hash(payloadToSign)
+
+        companion object {
+            const val ROLA_PAYLOAD_PREFIX = 0x52
+        }
     }
 }

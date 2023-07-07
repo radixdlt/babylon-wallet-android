@@ -175,11 +175,11 @@ fun CreateAccountWithLedgerContent(
                             onLedgerFactorSourceSelected = onLedgerFactorSourceSelected
                         )
                         RadixPrimaryButton(
+                            text = stringResource(id = com.babylon.wallet.android.R.string.ledgerHardwareDevices_continueWithLedger),
+                            onClick = onUseLedger,
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .imePadding(),
-                            onClick = onUseLedger,
-                            text = stringResource(id = com.babylon.wallet.android.R.string.ledgerHardwareDevices_continueWithLedger),
                             enabled = ledgerFactorSources.any { it.selected }
                         )
                     }

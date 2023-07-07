@@ -39,6 +39,7 @@ import com.babylon.wallet.android.domain.model.Resources
 import com.babylon.wallet.android.domain.model.metadata.IconUrlMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.MetadataItem
 import com.babylon.wallet.android.domain.model.metadata.MetadataItem.Companion.consume
+import com.babylon.wallet.android.domain.model.metadata.NameMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.OwnerKeyHashesMetadataItem
 import rdx.works.profile.data.model.pernetwork.Network
 import java.io.IOException
@@ -386,6 +387,8 @@ class EntityRepositoryImpl @Inject constructor(
                             Resource.NonFungibleResource.Item(
                                 collectionAddress = resourceAddress,
                                 localId = Resource.NonFungibleResource.Item.ID.from(stateNonFungibleDetailsResponseItem.nonFungibleId),
+                                nameMetadataItem = stateNonFungibleDetailsResponseItem.nftName()
+                                    ?.let { name -> NameMetadataItem(name = name) },
                                 iconMetadataItem = stateNonFungibleDetailsResponseItem.nftImage()
                                     ?.let { imageUrl -> IconUrlMetadataItem(url = imageUrl) }
                             )
@@ -400,6 +403,14 @@ class EntityRepositoryImpl @Inject constructor(
         val value = element.value
         value.contains("https")
     }?.value?.toUri()
+
+    // This is the hack to collect name. Didnt come up with better solution to disqinquish it for now,
+    // it should not matter much as its temporary anyway
+    @Suppress("MagicNumber")
+    private fun StateNonFungibleDetailsResponseItem.nftName(): String? = data.rawJson.fields.find { element ->
+        val value = element.value
+        value.length in 5..30 && !value.contains("https")
+    }?.value
 
     private suspend fun nextFungiblesPage(
         accountAddress: String,

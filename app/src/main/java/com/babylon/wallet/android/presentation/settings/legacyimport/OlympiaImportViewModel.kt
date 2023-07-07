@@ -11,6 +11,7 @@ import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
+import com.babylon.wallet.android.presentation.common.SeedPhraseInputDelegate
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
@@ -46,7 +47,7 @@ import rdx.works.profile.olympiaimport.OlympiaAccountDetails
 import rdx.works.profile.olympiaimport.OlympiaAccountType
 import rdx.works.profile.olympiaimport.OlympiaWalletData
 import rdx.works.profile.olympiaimport.OlympiaWalletDataParser
-import rdx.works.profile.olympiaimport.olympiaTestSeedPhrase
+import timber.log.Timber
 import javax.inject.Inject
 
 @Suppress("TooManyFunctions")
@@ -68,6 +69,8 @@ class OlympiaImportViewModel @Inject constructor(
     private val initialPages = listOf(ImportPage.ScanQr, ImportPage.AccountList, ImportPage.ImportComplete)
     private var existingFactorSourceId: FactorSourceID.FromHash? = null
     private val validatedHardwareAccounts = mutableMapOf<FactorSource, List<OlympiaAccountDetails>>()
+
+    private val seedPhraseInputDelegate = SeedPhraseInputDelegate(viewModelScope)
 
     private val useLedgerDelegate = UseLedgerDelegate(
         getProfileUseCase = getProfileUseCase,
@@ -91,6 +94,18 @@ class OlympiaImportViewModel @Inject constructor(
                         recentlyConnectedLedgerDevice = delegateState.recentlyConnectedLedgerDevice,
                         hasP2pLinks = delegateState.hasP2pLinks,
                         uiMessage = delegateState.uiMessage
+                    )
+                }
+            }
+        }
+        viewModelScope.launch {
+            seedPhraseInputDelegate.state.collect { delegateState ->
+                _state.update { uiState ->
+                    uiState.copy(
+                        importSoftwareAccountsEnabled = delegateState.seedPhraseValid,
+                        bip39Passphrase = delegateState.bip39Passphrase,
+                        seedPhraseWords = delegateState.seedPhraseWords,
+                        wordAutocompleteCandidates = delegateState.wordAutocompleteCandidates
                     )
                 }
             }
@@ -141,6 +156,7 @@ class OlympiaImportViewModel @Inject constructor(
             )
             olympiaWalletData?.let { data ->
                 this@OlympiaImportViewModel.olympiaWalletData = data
+                seedPhraseInputDelegate.setSeedPhraseSize(data.mnemonicWordCount)
                 val allImported = data.accountData.all { it.alreadyImported }
                 val nextPage = if (allImported) ImportPage.ImportComplete else ImportPage.AccountList
                 _state.update { state ->
@@ -217,26 +233,15 @@ class OlympiaImportViewModel @Inject constructor(
         return (pages + listOf(ImportPage.ImportComplete)).toPersistentList()
     }
 
-    fun onSeedPhraseChanged(value: String) {
-        _state.update { state ->
-            state.copy(seedPhrase = value)
+    fun onWordChanged(index: Int, value: String) {
+        Timber.d("Seed phrase: $index $value")
+        seedPhraseInputDelegate.onWordChanged(index, value) {
+            sendEvent(OlympiaImportEvent.MoveFocusToNextWord)
         }
-        validateMnemonic()
     }
 
     fun onPassphraseChanged(value: String) {
-        _state.update { state ->
-            state.copy(bip39Passphrase = value)
-        }
-        validateMnemonic()
-    }
-
-    private fun validateMnemonic() {
-        _state.update { state ->
-            val seedPhrase = _state.value.seedPhrase
-            val words = seedPhrase.split(" ")
-            state.copy(importSoftwareAccountsEnabled = olympiaWalletData?.mnemonicWordCount == words.size)
-        }
+        seedPhraseInputDelegate.onPassphraseChanged(value)
     }
 
     fun onImportAccounts() {
@@ -255,7 +260,8 @@ class OlympiaImportViewModel @Inject constructor(
     fun onImportSoftwareAccounts() {
         viewModelScope.launch {
             val softwareAccountsToMigrate = softwareAccountsToMigrate()
-            mnemonicWithPassphrase = MnemonicWithPassphrase(_state.value.seedPhrase, _state.value.bip39Passphrase)
+            mnemonicWithPassphrase =
+                MnemonicWithPassphrase(_state.value.seedPhraseWords.joinToString(" ") { it.value }, _state.value.bip39Passphrase)
             val accountsValid =
                 existingFactorSourceId != null || mnemonicWithPassphrase?.validatePublicKeysOf(softwareAccountsToMigrate) == true
             if (accountsValid) {
@@ -373,10 +379,9 @@ class OlympiaImportViewModel @Inject constructor(
         return hardwareAccountsToMigrate
     }
 
-    // TODO mnemonic added for ease of testing
     override fun initialState(): OlympiaImportUiState {
         return OlympiaImportUiState(
-            seedPhrase = olympiaTestSeedPhrase,
+            seedPhraseWords = persistentListOf(),
             pages = initialPages.toPersistentList(),
             isDeviceSecure = deviceSecurityHelper.isDeviceSecure()
         )
@@ -408,10 +413,22 @@ fun List<ImportPage>.previousPage(currentPage: ImportPage): ImportPage? {
 }
 
 sealed interface OlympiaImportEvent : OneOffEvent {
+    object MoveFocusToNextWord : OlympiaImportEvent
     data class NextPage(val page: ImportPage) : OlympiaImportEvent
     data class PreviousPage(val page: ImportPage?) : OlympiaImportEvent
     object UseLedger : OlympiaImportEvent
     object BiometricPrompt : OlympiaImportEvent
+}
+
+data class SeedPhraseWord(
+    val index: Int,
+    val value: String = "",
+    val state: State = State.Empty,
+    val lastWord: Boolean = false
+) {
+    enum class State {
+        Valid, Invalid, Empty, HasValue
+    }
 }
 
 data class OlympiaImportUiState(
@@ -421,7 +438,6 @@ data class OlympiaImportUiState(
     val importButtonEnabled: Boolean = false,
     val importSoftwareAccountsEnabled: Boolean = true,
     val olympiaAccounts: ImmutableList<OlympiaAccountDetails> = persistentListOf(),
-    val seedPhrase: String = "",
     val bip39Passphrase: String = "",
     val uiMessage: UiMessage? = null,
     val migratedAccounts: ImmutableList<AccountItemUiModel> = persistentListOf(),
@@ -434,5 +450,7 @@ data class OlympiaImportUiState(
     val usedLedgerFactorSources: ImmutableList<LedgerHardwareWalletFactorSource> = persistentListOf(),
     val recentlyConnectedLedgerDevice: LedgerDeviceUiModel? = null,
     val addLedgerSheetState: AddLedgerSheetState = AddLedgerSheetState.Connect,
-    val totalHardwareAccounts: Int = 0
+    val totalHardwareAccounts: Int = 0,
+    val seedPhraseWords: ImmutableList<SeedPhraseWord> = persistentListOf(),
+    val wordAutocompleteCandidates: ImmutableList<String> = persistentListOf()
 ) : UiState

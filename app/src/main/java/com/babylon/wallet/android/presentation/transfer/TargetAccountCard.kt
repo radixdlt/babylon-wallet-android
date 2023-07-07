@@ -231,6 +231,7 @@ fun TargetAccountCardPreview() {
                             item = Resource.NonFungibleResource.Item(
                                 collectionAddress = "resource_rdx_abcde",
                                 localId = Resource.NonFungibleResource.Item.ID.from("<local_id>"),
+                                nameMetadataItem = null,
                                 iconMetadataItem = null
                             )
                         )

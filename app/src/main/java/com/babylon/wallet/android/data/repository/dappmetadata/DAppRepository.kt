@@ -24,6 +24,7 @@ import com.babylon.wallet.android.di.buildApi
 import com.babylon.wallet.android.di.coroutines.IoDispatcher
 import com.babylon.wallet.android.domain.common.Result
 import com.babylon.wallet.android.domain.common.map
+import com.babylon.wallet.android.domain.common.mapIfNotEmpty
 import com.babylon.wallet.android.domain.common.switchMap
 import com.babylon.wallet.android.domain.common.value
 import com.babylon.wallet.android.domain.model.DAppResources
@@ -87,9 +88,11 @@ class DAppRepositoryImpl @Inject constructor(
                     !gatewayMetadata.isDappDefinition -> {
                         Result.Error(DappRequestException(DappRequestFailure.DappVerificationFailure.WrongAccountType))
                     }
+
                     !gatewayMetadata.isRelatedWith(origin) -> {
                         Result.Error(DappRequestException(DappRequestFailure.DappVerificationFailure.UnknownWebsite))
                     }
+
                     else -> wellKnownFileMetadata(origin)
                 }
             }.switchMap { wellKnownFileDAppDefinitions ->
@@ -113,7 +116,7 @@ class DAppRepositoryImpl @Inject constructor(
         definitionAddresses = listOf(definitionAddress),
         explicitMetadata = explicitMetadata,
         needMostRecentData = needMostRecentData
-    ).map { dAppWithMetadataItems ->
+    ).mapIfNotEmpty { dAppWithMetadataItems ->
         dAppWithMetadataItems.first()
     }
 
@@ -218,6 +221,7 @@ class DAppRepositoryImpl @Inject constructor(
                     localId = Resource.NonFungibleResource.Item.ID.from(
                         nonFungibleItem.ancestorIdentities?.globalAddress.orEmpty()
                     ),
+                    nameMetadataItem = null,
                     iconMetadataItem = metadataMap[ExplicitMetadataKey.ICON_URL.key]?.let {
                         IconUrlMetadataItem(it.toUri())
                     }
