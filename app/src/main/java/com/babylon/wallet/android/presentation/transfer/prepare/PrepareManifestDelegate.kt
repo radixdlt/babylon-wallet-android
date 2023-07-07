@@ -2,19 +2,16 @@ package com.babylon.wallet.android.presentation.transfer.prepare
 
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.data.manifest.toTransactionRequest
-import com.babylon.wallet.android.data.transaction.MethodName
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.babylon.wallet.android.domain.model.Resource
-import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.transfer.SpendingAsset
 import com.babylon.wallet.android.presentation.transfer.TargetAccount
 import com.babylon.wallet.android.presentation.transfer.TransferViewModel
-import com.radixdlt.toolkit.builders.ManifestBuilder
-import com.radixdlt.toolkit.models.Instruction
-import com.radixdlt.toolkit.models.ManifestAstValue
-import com.radixdlt.toolkit.models.ValueKind
+import com.radixdlt.ret.Instruction
+import com.radixdlt.ret.ManifestValue
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
+import rdx.works.core.manifest.ManifestBuilder
 import rdx.works.profile.data.model.pernetwork.Network
 import timber.log.Timber
 import java.math.BigDecimal
@@ -26,20 +23,17 @@ class PrepareManifestDelegate(
 
     suspend fun onSubmit() {
         val fromAccount = state.value.fromAccount ?: return
-        prepareRequest(fromAccount, state.value).onSuccess { request ->
-            state.update { it.copy(transferRequestId = request.requestId) }
-            Timber.d("Manifest for ${request.requestId} prepared:")
-            Timber.d(request.transactionManifestData.instructions)
-            incomingRequestRepository.add(request)
-        }.onFailure { error ->
-            state.update { it.copy(error = UiMessage.ErrorMessage.from(error)) }
-        }
+        val request = prepareRequest(fromAccount, state.value)
+        state.update { it.copy(transferRequestId = request.requestId) }
+        Timber.d("Manifest for ${request.requestId} prepared:")
+        Timber.d(request.transactionManifestData.instructions)
+        incomingRequestRepository.add(request)
     }
 
     private fun prepareRequest(
         fromAccount: Network.Account,
         currentState: TransferViewModel.State
-    ): Result<MessageFromDataChannel.IncomingRequest.TransactionRequest> {
+    ): MessageFromDataChannel.IncomingRequest.TransactionRequest {
         val manifest = ManifestBuilder()
             .attachInstructionsForFungibles(
                 fromAccount = fromAccount,
@@ -49,7 +43,7 @@ class PrepareManifestDelegate(
                 fromAccount = fromAccount,
                 targetAccounts = currentState.targetAccounts
             )
-            .build()
+            .build(fromAccount.networkID)
 
         return manifest.toTransactionRequest(
             networkId = fromAccount.networkID,
@@ -72,7 +66,7 @@ class PrepareManifestDelegate(
             }.forEach { targetAccount ->
                 val spendingFungibleAsset = targetAccount.assets.find { it.address == resource.resourceAddress } as? SpendingAsset.Fungible
                 if (spendingFungibleAsset != null) {
-                    val bucket = ManifestAstValue.Bucket(value = "${targetAccount.address}_${resource.resourceAddress}")
+                    val bucket = ManifestValue.BucketValue(value = "${targetAccount.address}_${resource.resourceAddress}")
 
                     // First fill in a bucket from worktop with the correct amount
                     addInstruction(pourToBucket(fungible = resource, amount = spendingFungibleAsset.amountDecimal, bucket = bucket))

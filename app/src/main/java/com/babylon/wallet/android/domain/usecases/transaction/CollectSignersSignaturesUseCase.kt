@@ -2,13 +2,15 @@ package com.babylon.wallet.android.domain.usecases.transaction
 
 import com.babylon.wallet.android.data.transaction.SigningState
 import com.radixdlt.hex.extensions.toHexString
-import com.radixdlt.toolkit.hash
-import com.radixdlt.toolkit.models.crypto.SignatureWithPublicKey
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.update
+import com.radixdlt.ret.SignatureWithPublicKey
+import com.radixdlt.ret.hash
 import rdx.works.core.decodeHex
+import rdx.works.core.toByteArray
+import rdx.works.core.toUByteList
 import rdx.works.profile.data.model.factorsources.DeviceFactorSource
 import rdx.works.profile.data.model.factorsources.FactorSourceKind
 import rdx.works.profile.data.model.factorsources.LedgerHardwareWalletFactorSource
@@ -106,7 +108,7 @@ sealed interface SignRequest {
             get() = dataToSign.toHexString()
 
         override val hashedDataToSign: ByteArray
-            get() = hash(dataToSign)
+            get() = hash(dataToSign.toUByteList()).bytes().toByteArray()
 
         companion object {
             const val ROLA_PAYLOAD_PREFIX = 0x52

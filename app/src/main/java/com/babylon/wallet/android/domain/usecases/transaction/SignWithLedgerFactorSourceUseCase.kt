@@ -5,13 +5,12 @@ import com.babylon.wallet.android.data.dapp.model.DerivePublicKeyRequest
 import com.babylon.wallet.android.data.dapp.model.LedgerDeviceModel
 import com.babylon.wallet.android.data.dapp.model.LedgerDeviceModel.Companion.getLedgerDeviceModel
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
-import com.radixdlt.toolkit.models.crypto.PublicKey
-import com.radixdlt.toolkit.models.crypto.Signature
-import com.radixdlt.toolkit.models.crypto.SignatureWithPublicKey
+import com.radixdlt.ret.SignatureWithPublicKey
 import kotlinx.coroutines.flow.first
 import rdx.works.core.UUIDGenerator
 import rdx.works.core.decodeHex
 import rdx.works.core.toHexString
+import rdx.works.core.toUByteList
 import rdx.works.profile.data.model.factorsources.LedgerHardwareWalletFactorSource
 import rdx.works.profile.data.model.factorsources.Slip10Curve
 import rdx.works.profile.data.model.pernetwork.Entity
@@ -137,14 +136,14 @@ class SignWithLedgerFactorSourceUseCase @Inject constructor(
             val ledgerSignatures = signaturesResult.getOrThrow().map { signatureOfSigner ->
                 when (signatureOfSigner.derivedPublicKey.curve) {
                     MessageFromDataChannel.LedgerResponse.DerivedPublicKey.Curve.Curve25519 -> {
-                        SignatureWithPublicKey.EddsaEd25519(
-                            signature = Signature.EddsaEd25519(signatureOfSigner.signature.decodeHex()),
-                            publicKey = PublicKey.EddsaEd25519(signatureOfSigner.derivedPublicKey.publicKeyHex)
+                        SignatureWithPublicKey.EddsaEd25519( // TODO RET
+                            signature = signatureOfSigner.signature.decodeHex().toUByteList(),
+                            publicKey = signatureOfSigner.derivedPublicKey.publicKeyHex.decodeHex().toUByteList()
                         )
                     }
                     MessageFromDataChannel.LedgerResponse.DerivedPublicKey.Curve.Secp256k1 -> {
                         SignatureWithPublicKey.EcdsaSecp256k1(
-                            signature = Signature.EcdsaSecp256k1(signatureOfSigner.signature.decodeHex())
+                            signature = signatureOfSigner.signature.decodeHex().toUByteList()
                         )
                     }
                 }

@@ -9,8 +9,8 @@ import com.babylon.wallet.android.data.gateway.generated.models.TransactionPrevi
 import com.babylon.wallet.android.data.gateway.generated.models.TransactionReceipt
 import com.babylon.wallet.android.data.transaction.DappRequestException
 import com.babylon.wallet.android.data.transaction.DappRequestFailure
-import com.babylon.wallet.android.data.transaction.model.FeePayerSearchResult
 import com.babylon.wallet.android.data.transaction.TransactionClient
+import com.babylon.wallet.android.data.transaction.model.FeePayerSearchResult
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.babylon.wallet.android.domain.model.TransactionManifestData
 import com.babylon.wallet.android.domain.usecases.GetDAppWithMetadataAndAssociatedResourcesUseCase
@@ -19,10 +19,6 @@ import com.babylon.wallet.android.domain.usecases.transaction.GetTransactionProo
 import com.babylon.wallet.android.presentation.StateViewModelTest
 import com.babylon.wallet.android.utils.AppEventBus
 import com.babylon.wallet.android.utils.DeviceSecurityHelper
-import com.radixdlt.toolkit.models.method.AnalyzeTransactionExecutionOutput
-import com.radixdlt.toolkit.models.method.EncounteredAddresses
-import com.radixdlt.toolkit.models.method.EncounteredComponents
-import com.radixdlt.toolkit.models.method.NewlyCreated
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
@@ -66,7 +62,6 @@ internal class TransactionApprovalViewModelTest : StateViewModelTest<Transaction
             false
         )
     )
-    private val sampleManifest = sampleDataProvider.sampleManifest()
 
     @Before
     override fun setUp() = runTest {
@@ -78,15 +73,10 @@ internal class TransactionApprovalViewModelTest : StateViewModelTest<Transaction
             PresentingProofUiModel("", "")
         )
         coEvery { transactionClient.signAndSubmitTransaction(any()) } returns Result.success(sampleTxId)
-        coEvery { transactionClient.manifestInStringFormat(any()) } returns Result.success(sampleManifest)
         coEvery { transactionClient.findFeePayerInManifest(any()) } returns Result.success(FeePayerSearchResult("feePayer"))
         coEvery { transactionClient.signingState } returns emptyFlow()
-        coEvery { transactionClient.convertManifestInstructionsToJSON(any()) } returns Result.success(sampleManifest)
         coEvery { transactionClient.getTransactionPreview(any(), any(), any()) } returns Result.success(
             previewResponse()
-        )
-        coEvery { transactionClient.analyzeManifestWithPreviewContext(any(), any()) } returns Result.success(
-            analyzeManifestResponse()
         )
         coEvery {
             dAppMessenger.sendTransactionWriteResponseSuccess(
@@ -202,25 +192,25 @@ internal class TransactionApprovalViewModelTest : StateViewModelTest<Transaction
         logs = emptyList()
     )
 
-    private fun analyzeManifestResponse() = AnalyzeTransactionExecutionOutput(
-        encounteredAddresses = EncounteredAddresses(
-            EncounteredComponents(
-                emptyArray(),
-                emptyArray(),
-                emptyArray(),
-                emptyArray(),
-                emptyArray(),
-                emptyArray()
-            ),
-            emptyArray(),
-            emptyArray()
-        ),
-        accountsRequiringAuth = emptyArray(),
-        accountProofResources = emptyArray(),
-        accountWithdraws = emptyArray(),
-        accountDeposits = emptyArray(),
-        newlyCreated = NewlyCreated(
-            resources = emptyArray()
-        )
-    )
+//    private fun analyzeManifestResponse() = AnalyzeTransactionExecutionOutput(
+//        encounteredAddresses = EncounteredAddresses(
+//            EncounteredComponents(
+//                emptyArray(),
+//                emptyArray(),
+//                emptyArray(),
+//                emptyArray(),
+//                emptyArray(),
+//                emptyArray()
+//            ),
+//            emptyArray(),
+//            emptyArray()
+//        ),
+//        accountsRequiringAuth = emptyArray(),
+//        accountProofResources = emptyArray(),
+//        accountWithdraws = emptyArray(),
+//        accountDeposits = emptyArray(),
+//        newlyCreated = NewlyCreated(
+//            resources = emptyArray()
+//        )
+//    )
 }

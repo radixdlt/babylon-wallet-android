@@ -7,19 +7,21 @@ import com.babylon.wallet.android.data.repository.networkinfo.NetworkInfoReposit
 import com.babylon.wallet.android.data.repository.transaction.TransactionRepository
 import com.babylon.wallet.android.data.transaction.DappRequestFailure
 import com.babylon.wallet.android.data.transaction.TransactionClient
+import com.babylon.wallet.android.data.transaction.TransactionConfig
 import com.babylon.wallet.android.data.transaction.model.TransactionApprovalRequest
 import com.babylon.wallet.android.di.coroutines.IoDispatcher
 import com.babylon.wallet.android.domain.common.asKotlinResult
 import com.babylon.wallet.android.domain.common.onValue
 import com.babylon.wallet.android.domain.usecases.transaction.PollTransactionStatusUseCase
-import com.radixdlt.toolkit.builders.ManifestBuilder
-import com.radixdlt.toolkit.models.transaction.TransactionManifest
+import com.radixdlt.ret.TransactionManifest
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
+import rdx.works.core.manifest.ManifestBuilder
 import rdx.works.core.preferences.PreferencesManager
 import rdx.works.profile.domain.gateway.GetCurrentGatewayUseCase
+import java.math.BigDecimal
 import javax.inject.Inject
 import com.babylon.wallet.android.domain.common.Result as ResultInternal
 
@@ -39,17 +41,26 @@ class GetFreeXrdUseCase @Inject constructor(
         address: String
     ): Result<String> {
         return withContext(ioDispatcher) {
-            networkInfoRepository.getFaucetComponentAddress(getCurrentGatewayUseCase().url).asKotlinResult().fold(
+            val gateway = getCurrentGatewayUseCase()
+            networkInfoRepository.getFaucetComponentAddress(gateway.url).asKotlinResult().fold(
                 onSuccess = { faucetComponentAddress ->
-                    val manifest = buildFaucetManifest(
-                        address = address,
-                        includeLockFeeInstruction = includeLockFeeInstruction,
-                        faucetComponentAddress = faucetComponentAddress
-                    )
+                    val manifest = ManifestBuilder()
+                        .apply {
+                            if (includeLockFeeInstruction) {
+                                addLockFeeInstruction(
+                                    addressToLockFee = faucetComponentAddress,
+                                    fee = BigDecimal.valueOf(TransactionConfig.DEFAULT_LOCK_FEE)
+                                )
+                            }
+                        }
+                        .addFreeXrdInstruction(faucetComponentAddress)
+                        .addDepositBatchInstruction(address)
+                        .build(gateway.network.id)
                     when (val epochResult = transactionRepository.getLedgerEpoch()) {
                         is ResultInternal.Error -> Result.failure(
                             exception = epochResult.exception ?: DappRequestFailure.TransactionApprovalFailure.PrepareNotarizedTransaction
                         )
+
                         is ResultInternal.Success -> {
                             val request = TransactionApprovalRequest(manifest = manifest, hasLockFee = true)
                             transactionClient.signAndSubmitTransaction(request).onSuccess { txId ->
@@ -65,23 +76,6 @@ class GetFreeXrdUseCase @Inject constructor(
                 }
             )
         }
-    }
-
-    private fun buildFaucetManifest(
-        faucetComponentAddress: String,
-        address: String,
-        includeLockFeeInstruction: Boolean
-    ): TransactionManifest {
-        val manifestBuilder = ManifestBuilder()
-        if (includeLockFeeInstruction) {
-            manifestBuilder.addLockFeeInstruction(
-                addressToLockFee = faucetComponentAddress
-            )
-        }
-        manifestBuilder.addFreeXrdInstruction(faucetComponentAddress)
-        manifestBuilder.addDepositBatchInstruction(address)
-
-        return manifestBuilder.build()
     }
 
     fun isAllowedToUseFaucet(address: String): Flow<Boolean> {

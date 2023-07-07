@@ -1,7 +1,7 @@
 package com.babylon.wallet.android.data.transaction.model
 
-import com.radixdlt.toolkit.models.crypto.PrivateKey
-import com.radixdlt.toolkit.models.transaction.TransactionManifest
+import com.radixdlt.ret.TransactionManifest
+import rdx.works.core.crypto.PrivateKey
 
 data class TransactionApprovalRequest(
     val manifest: TransactionManifest,

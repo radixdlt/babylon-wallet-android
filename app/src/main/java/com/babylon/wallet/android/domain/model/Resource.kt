@@ -7,8 +7,7 @@ import com.babylon.wallet.android.domain.model.metadata.IconUrlMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.NameMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.SymbolMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.TagsMetadataItem
-import com.radixdlt.toolkit.RadixEngineToolkit
-import com.radixdlt.toolkit.models.method.KnownEntityAddressesInput
+import com.radixdlt.ret.utilsKnownAddresses
 import rdx.works.core.displayableQuantity
 import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.derivation.model.NetworkId
@@ -99,9 +98,7 @@ sealed class Resource {
         companion object {
             fun officialXrdResourceAddress(
                 onNetworkId: NetworkId = Radix.Gateway.default.network.networkId()
-            ) = RadixEngineToolkit.knownEntityAddresses(
-                KnownEntityAddressesInput(networkId = onNetworkId.value.toUByte())
-            ).getOrNull()?.xrdResourceAddress
+            ) = utilsKnownAddresses(networkId = onNetworkId.value.toUByte()).resourceAddresses.xrd.addressString()
         }
     }
 

@@ -10,10 +10,9 @@ import com.babylon.wallet.android.domain.model.Resource
 import com.babylon.wallet.android.domain.model.Resources
 import com.babylon.wallet.android.domain.model.metadata.NameMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.SymbolMetadataItem
-import com.radixdlt.toolkit.builders.ManifestBuilder
-import com.radixdlt.toolkit.models.ManifestAstValue
-import com.radixdlt.toolkit.models.transaction.TransactionManifest
+import com.radixdlt.ret.TransactionManifest
 import rdx.works.core.InstantGenerator
+import rdx.works.core.manifest.ManifestBuilder
 import rdx.works.profile.data.model.Header
 import rdx.works.profile.data.model.MnemonicWithPassphrase
 import rdx.works.profile.data.model.Profile
@@ -182,19 +181,5 @@ class SampleDataProvider {
                 nonFungibleResources = emptyList()
             )
         )
-    }
-
-    fun sampleManifest(): TransactionManifest {
-        return ManifestBuilder()
-            .callMethod(
-                ManifestAstValue.Address("component_tdx_b_1qftacppvmr9ezmekxqpq58en0nk954x0a7jv2zz0hc7qdxyth4"),
-                "free",
-            )
-            .callMethod(
-                ManifestAstValue.Address("account_tdx_b_1qdcgrj7mz09cz3htn0y7qtcze7tq59s76p2h98puqtpst7jh4u"),
-                "deposit_batch",
-                ManifestAstValue.Expression("ENTIRE_WORKTOP")
-            )
-            .build()
     }
 }
