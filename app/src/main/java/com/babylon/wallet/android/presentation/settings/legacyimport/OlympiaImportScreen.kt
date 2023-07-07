@@ -420,7 +420,7 @@ private fun ScanQrPage(
                     )
                 }
                 Text(
-                    text = stringResource(id = R.string.importLegacyWallet_scanQRCodeInstructions),
+                    text = stringResource(id = R.string.importOlympiaAccounts_scanQR_instructions),
                     style = RadixTheme.typography.body1Regular,
                     color = RadixTheme.colors.gray1,
                     overflow = TextOverflow.Ellipsis,
@@ -475,7 +475,7 @@ private fun AccountListPage(
                 item {
                     Text(
                         modifier = Modifier.padding(RadixTheme.dimensions.paddingSmall),
-                        text = stringResource(id = R.string.importLegacyWallet_accountsToImport_emptyState),
+                        text = "No accounts found to import.",  // TODO will be removed
                         textAlign = TextAlign.Center,
                         style = RadixTheme.typography.body1Regular,
                         color = RadixTheme.colors.gray1
@@ -730,13 +730,13 @@ private fun InputSeedPhrasePage(
             verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingDefault)
         ) {
             Text(
-                text = stringResource(id = R.string.importLegacyWallet_seedPhrase_title),
+                text = stringResource(id = R.string.importOlympiaAccounts_verifySeedPhrase_title),
                 style = RadixTheme.typography.title,
                 color = RadixTheme.colors.gray1,
                 textAlign = TextAlign.Center
             )
             Text(
-                text = stringResource(id = R.string.importLegacyWallet_seedPhrase_subtitle),
+                text = stringResource(id = R.string.importOlympiaAccounts_verifySeedPhrase_subtitle),
                 style = RadixTheme.typography.body1Regular,
                 color = RadixTheme.colors.gray1,
                 overflow = TextOverflow.Ellipsis,
@@ -744,7 +744,7 @@ private fun InputSeedPhrasePage(
             )
             InfoLink(
                 modifier = Modifier.fillMaxWidth(),
-                text = stringResource(R.string.importLegacyWallet_seedPhrase_warning),
+                text = stringResource(R.string.importOlympiaAccounts_verifySeedPhrase_warning),
                 contentColor = RadixTheme.colors.orange1,
                 iconRes = com.babylon.wallet.android.designsystem.R.drawable.ic_warning_error
             )
