@@ -116,7 +116,7 @@ private fun SeedPhraseContent(
                 GrayBackgroundWrapper {
                     Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingMedium))
                     Text(
-                        text = stringResource(id = R.string.displayMnemonics_cautionAlert_message),
+                        text = stringResource(id = R.string.seedPhrases_message),
                         style = RadixTheme.typography.body1HighImportance,
                         color = RadixTheme.colors.gray2
                     )
