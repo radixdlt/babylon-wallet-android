@@ -1,6 +1,6 @@
 package rdx.works.core
 
-import org.radixdlt.ret.Address
+import com.radixdlt.ret.Address
 
 object AddressValidator {
     private const val MIN_ADDRESS_SIZE = 26

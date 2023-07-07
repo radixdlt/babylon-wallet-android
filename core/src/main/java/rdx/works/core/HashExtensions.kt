@@ -1,7 +1,7 @@
 package rdx.works.core
 
 import com.radixdlt.hex.extensions.toHexString
-import org.radixdlt.ret.hash
+import com.radixdlt.ret.hash
 
 @OptIn(ExperimentalUnsignedTypes::class)
 fun ByteArray.toUByteList() = toUByteArray().toTypedArray().toList()
