@@ -1,7 +1,7 @@
 package rdx.works.profile.domain.signing
 
+import com.radixdlt.ret.SignatureWithPublicKey
 import kotlinx.coroutines.flow.first
-import org.radixdlt.ret.SignatureWithPublicKey
 import rdx.works.profile.data.model.deriveExtendedKey
 import rdx.works.profile.data.model.factorsources.DeviceFactorSource
 import rdx.works.profile.data.model.pernetwork.Entity

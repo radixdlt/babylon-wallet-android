@@ -4,11 +4,10 @@ import com.radixdlt.bip39.model.MnemonicWords
 import com.radixdlt.bip39.toSeed
 import com.radixdlt.crypto.ec.EllipticCurveType
 import com.radixdlt.crypto.getCompressedPublicKey
+import com.radixdlt.ret.OlympiaNetwork
+import com.radixdlt.ret.PublicKey
+import com.radixdlt.ret.deriveOlympiaAccountAddressFromPublicKey
 import com.radixdlt.slip10.toKey
-import com.radixdlt.toolkit.RadixEngineToolkit
-import com.radixdlt.toolkit.models.crypto.PublicKey
-import com.radixdlt.toolkit.models.method.DeriveOlympiaAddressFromPublicKeyInput
-import com.radixdlt.toolkit.models.method.OlympiaNetwork
 import io.mockk.Runs
 import io.mockk.coEvery
 import io.mockk.coVerify
@@ -23,6 +22,7 @@ import kotlinx.coroutines.test.runTest
 import org.junit.Test
 import rdx.works.core.InstantGenerator
 import rdx.works.core.toHexString
+import rdx.works.core.toUByteList
 import rdx.works.profile.data.model.Header
 import rdx.works.profile.data.model.MnemonicWithPassphrase
 import rdx.works.profile.data.model.Profile
@@ -137,18 +137,16 @@ internal class MigrateOlympiaAccountsUseCaseTest {
         val seed = words.toSeed(passphrase = "")
         val accounts = (0..10).map { index ->
             val derivationPath = DerivationPath.forLegacyOlympia(accountIndex = index)
-            val publicKey = seed.toKey(derivationPath.path, EllipticCurveType.Secp256k1).keyPair.getCompressedPublicKey().toHexString()
-            val address = RadixEngineToolkit.deriveOlympiaAddressFromPublicKey(
-                DeriveOlympiaAddressFromPublicKeyInput(
-                    OlympiaNetwork.Mainnet,
-                    PublicKey.EcdsaSecp256k1(publicKey)
-                )
-            ).getOrThrow().olympiaAccountAddress
+            val publicKey = seed.toKey(derivationPath.path, EllipticCurveType.Secp256k1).keyPair.getCompressedPublicKey()
+            val address = deriveOlympiaAccountAddressFromPublicKey(
+                PublicKey.EcdsaSecp256k1(publicKey.toUByteList()),
+                OlympiaNetwork.MAINNET
+            )
             OlympiaAccountDetails(
                 index = index,
                 type = if (index % 2 == 0) OlympiaAccountType.Software else OlympiaAccountType.Hardware,
-                address = address,
-                publicKey = publicKey,
+                address = address.asStr(),
+                publicKey = publicKey.toHexString(),
                 accountName = "Olympia $index",
                 derivationPath = derivationPath,
                 newBabylonAddress = "empty"

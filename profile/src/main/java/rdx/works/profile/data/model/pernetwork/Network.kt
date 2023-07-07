@@ -1,11 +1,11 @@
 package rdx.works.profile.data.model.pernetwork
 
 import com.radixdlt.extensions.removeLeadingZero
+import com.radixdlt.ret.PublicKey
+import com.radixdlt.ret.deriveVirtualAccountAddressFromPublicKey
+import com.radixdlt.ret.deriveVirtualIdentityAddressFromPublicKey
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import org.radixdlt.ret.PublicKey
-import org.radixdlt.ret.deriveVirtualAccountAddressFromPublicKey
-import org.radixdlt.ret.deriveVirtualIdentityAddressFromPublicKey
 import rdx.works.core.decodeHex
 import rdx.works.core.mapWhen
 import rdx.works.core.toHexString

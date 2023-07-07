@@ -2,11 +2,11 @@
 
 package rdx.works.profile.olympiaimport
 
+import com.radixdlt.ret.Address
+import com.radixdlt.ret.OlympiaNetwork
+import com.radixdlt.ret.PublicKey
+import com.radixdlt.ret.deriveOlympiaAccountAddressFromPublicKey
 import okio.ByteString.Companion.decodeBase64
-import org.radixdlt.ret.Address
-import org.radixdlt.ret.OlympiaNetwork
-import org.radixdlt.ret.PublicKey
-import org.radixdlt.ret.deriveOlympiaAccountAddressFromPublicKey
 import rdx.works.core.blake2Hash
 import rdx.works.core.decodeHex
 import rdx.works.core.toByteArray

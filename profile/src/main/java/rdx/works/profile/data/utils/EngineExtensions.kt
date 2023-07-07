@@ -8,8 +8,8 @@ import com.radixdlt.extensions.removeLeadingZero
 import com.radixdlt.model.ECKeyPair
 import com.radixdlt.model.PrivateKey
 import rdx.works.core.toUByteList
-import com.radixdlt.model.PrivateKey as EnginePrivateKey
-import org.radixdlt.ret.PublicKey as EnginePublicKey
+import com.radixdlt.ret.PublicKey as EnginePublicKey
+import rdx.works.core.crypto.PrivateKey as EnginePrivateKey
 
 fun ECKeyPair.toEnginePublicKeyModel(): EnginePublicKey {
     return when (this.publicKey.curveType) {
@@ -25,10 +25,9 @@ fun ECKeyPair.toEnginePublicKeyModel(): EnginePublicKey {
     }
 }
 
-
 fun PrivateKey.toEngineModel(): EnginePrivateKey {
     return when (this.curveType) {
-        EllipticCurveType.Secp256k1 -> EnginePrivateKey.EcdsaSecp256k1.newFromPrivateKeyBytes( // TODO RET
+        EllipticCurveType.Secp256k1 -> EnginePrivateKey.EcdsaSecp256k1.newFromPrivateKeyBytes(
             this.keyByteArray()
         )
         EllipticCurveType.Ed25519 -> EnginePrivateKey.EddsaEd25519.newFromPrivateKeyBytes(this.keyByteArray())

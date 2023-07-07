@@ -1,10 +1,10 @@
 package rdx.works.profile.domain.account
 
+import com.radixdlt.ret.Address
+import com.radixdlt.ret.OlympiaAddress
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
-import org.radixdlt.ret.Address
-import org.radixdlt.ret.OlympiaAddress
 import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.data.model.currentNetwork
 import rdx.works.profile.data.model.factorsources.FactorSource
