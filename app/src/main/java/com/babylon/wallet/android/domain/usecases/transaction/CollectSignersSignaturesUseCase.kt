@@ -81,15 +81,13 @@ class CollectSignersSignaturesUseCase @Inject constructor(
 
 sealed interface SignRequest {
 
+    val dataToSign: ByteArray
     val hashedDataToSign: ByteArray
 
     class SignTransactionRequest(
-        private val compiledTransactionIntentHash: ByteArray
-    ) : SignRequest {
-
+        override val dataToSign: ByteArray,
         override val hashedDataToSign: ByteArray
-            get() = compiledTransactionIntentHash
-    }
+    ) : SignRequest
 
     class SignAuthChallengeRequest(
         val challengeHex: String,
@@ -97,7 +95,7 @@ sealed interface SignRequest {
         val dAppDefinitionAddress: String
     ) : SignRequest {
 
-        private val payloadToSign: ByteArray
+        override val dataToSign: ByteArray
             get() {
                 require(dAppDefinitionAddress.length <= UByte.MAX_VALUE.toInt())
                 return byteArrayOf(ROLA_PAYLOAD_PREFIX.toByte()) + challengeHex.decodeHex() + dAppDefinitionAddress.length.toUByte()
@@ -105,10 +103,10 @@ sealed interface SignRequest {
             }
 
         val payloadHex: String
-            get() = payloadToSign.toHexString()
+            get() = dataToSign.toHexString()
 
         override val hashedDataToSign: ByteArray
-            get() = hash(payloadToSign)
+            get() = hash(dataToSign)
 
         companion object {
             const val ROLA_PAYLOAD_PREFIX = 0x52

@@ -24,8 +24,13 @@ fun String.truncatedHash(): String {
 fun String.formattedSpans(
     boldStyle: SpanStyle
 ): AnnotatedString {
-    val asteriskRegex = "(?<!\\*)\\*(?!\\*).*?(?<!\\*)\\*(?!\\*)".toRegex()
-    val annotatedWords = asteriskRegex.findAll(input = this).map { it.value }.toList()
+    val singleAsteriskRegex = "(?<!\\*)\\*(?!\\*).*?(?<!\\*)\\*(?!\\*)".toRegex()
+    val doubleAsteriskRegex = "(?<!\\*\\*)\\*\\*(?!\\*\\*).*?(?<!\\*\\*)\\*\\*(?!\\*\\*)".toRegex()
+    val annotatedWords = doubleAsteriskRegex.findAll(input = this).map {
+        it.value
+    }.toList() + singleAsteriskRegex.findAll(input = this).map {
+        it.value
+    }.toList()
     return buildAnnotatedString {
         var startIndex = 0
         val inputText = this@formattedSpans
@@ -34,7 +39,7 @@ fun String.formattedSpans(
             append(inputText.substring(startIndex, indexOfThisWord))
 
             startIndex = indexOfThisWord + word.length
-            val strippedFromAnnotations = word.removeSurrounding("*")
+            val strippedFromAnnotations = word.removeSurrounding("**").removeSurrounding("*")
             withStyle(boldStyle) {
                 append(strippedFromAnnotations)
             }

@@ -49,7 +49,7 @@ class SignWithLedgerFactorSourceUseCase @Inject constructor(
                 signTransaction(
                     signers = signers,
                     ledgerFactorSource = ledgerFactorSource,
-                    dataToSign = signRequest.hashedDataToSign,
+                    dataToSign = signRequest.dataToSign,
                     signingPurpose = signingPurpose
                 )
             }

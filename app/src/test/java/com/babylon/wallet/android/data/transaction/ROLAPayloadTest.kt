@@ -56,7 +56,7 @@ internal class ROLAPayloadTest {
             )
 
             Assert.assertEquals(testVector.payloadToHash, signRequest.payloadHex)
-            Assert.assertEquals(testVector.blakeHashOfPayload, signRequest.hashedDataToSign.toHexString())
+            Assert.assertEquals(testVector.blakeHashOfPayload, signRequest.dataToSign.blake2Hash().toHexString())
         }
     }
 

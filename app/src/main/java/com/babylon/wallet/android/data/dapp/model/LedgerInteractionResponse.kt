@@ -83,7 +83,7 @@ data class SignChallengeResponse(
 @Serializable
 data class Error(
     @SerialName("code")
-    val code: Int,
+    val code: Int? = null,
     @SerialName("message")
     val message: String
 )
