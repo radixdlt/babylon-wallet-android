@@ -475,7 +475,7 @@ private fun AccountListPage(
                 item {
                     Text(
                         modifier = Modifier.padding(RadixTheme.dimensions.paddingSmall),
-                        text = "No accounts found to import.",  // TODO will be removed
+                        text = "No accounts found to import.", // TODO will be removed
                         textAlign = TextAlign.Center,
                         style = RadixTheme.typography.body1Regular,
                         color = RadixTheme.colors.gray1
