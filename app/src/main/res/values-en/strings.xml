@@ -492,6 +492,9 @@
   <string name="importOlympiaLedgerAccounts_knownLedgersNone">None</string>
   <string name="importOlympiaLedgerAccounts_otherDeviceAccounts">%d more accounts are controlled by other devices. Connect a Ledger hardware wallet device and tap Continue.</string>
   <string name="importOlympiaLedgerAccounts_continueButtonTitle">Continue</string>
+  <string name="importOlympiaLedgerAccounts_unverifiedAccountsLeft">#%d accounts left to import</string>
+  <string name="importOlympiaLedgerAccounts_importLedgersAndAccounts">Imported ledgers and accounts</string>
+  <string name="importOlympiaLedgerAccounts_accountCount">%s - #%d accounts</string>
   <string name="signing_withDeviceFactorSource_signTransaction">Sign transaction with phone</string>
   <string name="signing_withDeviceFactorSource_idLabel">Factor Source ID: %s</string>
   <string name="signing_useLedgerLabel_Ledger">Ledger</string>
