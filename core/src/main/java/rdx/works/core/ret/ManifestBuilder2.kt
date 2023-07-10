@@ -4,7 +4,6 @@ import com.radixdlt.ret.Address
 import com.radixdlt.ret.Decimal
 import com.radixdlt.ret.Instructions
 import com.radixdlt.ret.ManifestBucket
-import com.radixdlt.ret.ManifestValue
 import com.radixdlt.ret.NonFungibleGlobalId
 import com.radixdlt.ret.NonFungibleLocalId
 import com.radixdlt.ret.TransactionManifest
@@ -12,16 +11,18 @@ import rdx.works.core.toByteArray
 import rdx.works.core.toUByteList
 
 class ManifestBuilder2 {
-    private var instructions = StringBuilder()
+    private var instructions = mutableListOf<String>()
     private var blobs: MutableList<ByteArray> = mutableListOf()
     private var latestBucketIndex: UInt = 0u
 
     fun withdraw(
+        instructionIndex: Int = instructions.size,
         fromAccount: Address,
         fungible: Address,
         amount: Decimal
     ) = apply {
-        instructions.appendLine(
+        instructions.add(
+            index = instructionIndex,
             """
             CALL_METHOD
                  Address("${fromAccount.addressString()}")
@@ -34,10 +35,12 @@ class ManifestBuilder2 {
     }
 
     fun withdraw(
+        instructionIndex: Int = instructions.size,
         fromAccount: Address,
         nonFungible: NonFungibleGlobalId
     ) = apply {
-        instructions.appendLine(
+        instructions.add(
+            index = instructionIndex,
             """
             CALL_METHOD
                  Address("${fromAccount.addressString()}")
@@ -50,11 +53,13 @@ class ManifestBuilder2 {
     }
 
     fun takeFromWorktop(
+        instructionIndex: Int = instructions.size,
         fungible: Address,
         amount: Decimal,
         intoBucket: ManifestBucket
     ) = apply {
-        instructions.appendLine(
+        instructions.add(
+            index = instructionIndex,
             """
             TAKE_FROM_WORKTOP
                 Address("${fungible.addressString()}")
@@ -66,10 +71,12 @@ class ManifestBuilder2 {
     }
 
     fun takeFromWorktop(
+        instructionIndex: Int = instructions.size,
         nonFungible: NonFungibleGlobalId,
         intoBucket: ManifestBucket
     ) = apply {
-        instructions.appendLine(
+        instructions.add(
+            index = instructionIndex,
             """
             TAKE_NON_FUNGIBLES_FROM_WORKTOP
                 Address("${nonFungible.resourceAddress().addressString()}")
@@ -81,10 +88,12 @@ class ManifestBuilder2 {
     }
 
     fun deposit(
+        instructionIndex: Int = instructions.size,
         toAccount: Address,
         fromBucket: ManifestBucket
     ) = apply {
-        instructions.appendLine(
+        instructions.add(
+            index = instructionIndex,
             """
             CALL_METHOD
                 Address("${toAccount.addressString()}")
@@ -98,7 +107,7 @@ class ManifestBuilder2 {
     fun build(networkId: Int) = with(blobs.map { it.toUByteList() }) {
         TransactionManifest(
             instructions = Instructions.fromString(
-                string = instructions.toString(),
+                string = instructions.joinToString(separator = "\n"),
                 blobs = this,
                 networkId = networkId.toUByte()
             ),
