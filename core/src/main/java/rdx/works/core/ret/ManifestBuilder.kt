@@ -1,5 +1,6 @@
 package rdx.works.core.ret
 
+import android.util.Log
 import com.radixdlt.ret.Address
 import com.radixdlt.ret.Decimal
 import com.radixdlt.ret.Instructions
@@ -30,7 +31,6 @@ class ManifestBuilder {
                 "${ManifestMethod.Withdraw.value}"
                 Address("${fungible.addressString()}")
                 Decimal("${amount.asStr()}")
-            ;
             """.trimIndent()
         )
     }
@@ -48,7 +48,6 @@ class ManifestBuilder {
                 "${ManifestMethod.WithdrawNonFungibles.value}"
                 Address("${nonFungible.resourceAddress().addressString()}")
                 Array<NonFungibleLocalId>(NonFungibleLocalId("${nonFungible.localId().asStr()}"))
-            ;
             """.trimIndent()
         )
     }
@@ -66,7 +65,6 @@ class ManifestBuilder {
                 Address("${fungible.addressString()}")
                 Decimal("${amount.asStr()}")
                 Bucket("${intoBucket.value}")
-            ;   
             """.trimIndent()
         )
     }
@@ -83,7 +81,6 @@ class ManifestBuilder {
                 Address("${nonFungible.resourceAddress().addressString()}")
                 Array<NonFungibleLocalId>(NonFungibleLocalId("${nonFungible.localId().asStr()}"))
                 Bucket("${intoBucket.value}")
-            ;   
             """.trimIndent()
         )
     }
@@ -100,7 +97,6 @@ class ManifestBuilder {
                 Address("${toAddress.addressString()}")
                 "${ManifestMethod.TryDepositOrAbort.value}"
                 Bucket("${fromBucket.value}")
-            ;   
             """.trimIndent()
         )
     }
@@ -116,7 +112,6 @@ class ManifestBuilder {
                 Address("${toAddress.addressString()}")
                 "${ManifestMethod.TryDepositBatchOrAbort.value}"
                 Expression("${ManifestExpression.ENTIRE_WORKTOP}")
-            ;   
             """.trimIndent()
         )
     }
@@ -131,7 +126,6 @@ class ManifestBuilder {
             CALL_METHOD
                 Address("${faucetAddress.addressString()}")
                 "${ManifestMethod.Free.value}"
-            ;   
             """.trimIndent()
         )
     }
@@ -146,22 +140,25 @@ class ManifestBuilder {
             """
             CALL_METHOD
                 Address("${fromAddress.addressString()}")
-                "${ManifestMethod.LockFee.value}",
-                "Decimal("${fee.asStr()}")"
-            ;   
+                "${ManifestMethod.LockFee.value}"
+                Decimal("${fee.asStr()}")
             """.trimIndent()
         )
     }
 
     fun build(networkId: Int) = with(blobs.map { it.toUByteList() }) {
+        val instructionsStr = instructions.joinToString(separator = ";\n", postfix = ";")
+        Log.d("Bakos", instructionsStr)
         TransactionManifest(
             instructions = Instructions.fromString(
-                string = instructions.joinToString(separator = "\n"),
+                string = instructionsStr,
                 blobs = this,
                 networkId = networkId.toUByte()
             ),
             blobs = this
         )
+    }.apply {
+        Log.d("Bakos", instructions().asStr())
     }
 
     fun newBucket() = ManifestBucket(value = latestBucketIndex + 1u).also {

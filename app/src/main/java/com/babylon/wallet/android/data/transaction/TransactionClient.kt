@@ -69,20 +69,20 @@ class TransactionClient @Inject constructor(
     }
 
     private suspend fun signAndSubmitTransaction(
-        jsonTransactionManifest: TransactionManifest,
+        manifest: TransactionManifest,
         ephemeralNotaryPrivateKey: PrivateKey,
         networkId: Int,
         feePayerAddress: String?,
     ): Result<String> {
         val manifestWithTransactionFee = if (feePayerAddress == null) {
-            jsonTransactionManifest
+            manifest
         } else {
-            jsonTransactionManifest.addLockFeeInstructionToManifest(
+            manifest.addLockFeeInstructionToManifest(
                 addressToLockFee = feePayerAddress,
                 fee = TransactionConfig.DEFAULT_LOCK_FEE.toBigDecimal()
             )
         }
-        Timber.d("Approving: \n${Json.encodeToString(manifestWithTransactionFee)}")
+
         val signers = getSigningEntities(manifestWithTransactionFee)
         val notaryAndSigners = NotaryAndSigners(signers, ephemeralNotaryPrivateKey)
         return buildTransactionHeader(networkId, notaryAndSigners).map { header ->
