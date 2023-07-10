@@ -1,195 +1,221 @@
-#name: "App releases"
-#
-#on:
-#  push:
-#    branches:
-#      - "main"
-#  release:
-#    types:
-#      - "published"
-#  workflow_dispatch:
-#    inputs:
-#      flavor:
-#        description: "Which flavor do you want to build and distribute?"
-#        required: true
-#        type: choice
-#        options:
-#          - "alpha"
-#        default: "alpha"
-#      release_notes:
-#        description: "(Optional) Release notes for version you want to distribute (not needed for Alpha flavor)"
-#        required: false
-#        default: ''
-#      groups:
-#        description: "(Optional) Name of the group you want to notify about new version"
-#        required: false
-#        default: 'alpha-devs'
-#        type: choice
-#        options:
-#          - "alpha-devs"
-#          - "internal"
-#          - "no"
-#
-#jobs:
-#
-#  alpha_firebase_releases:
-#    name: "Publish to firebase"
-#    runs-on: ubuntu-latest
-#    steps:
-#      - uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8
-#        with:
-#          token: ${{ secrets.RADIX_BOT_PAT }}
-#
-#      - name: Dump context
-#        uses: crazy-max/ghaction-dump-context@516dbb0c760f39b4cdd750ae095f1688780f68f4
-#
-#      - name: Download Ruby (action)
-#        uses: ruby/setup-ruby@c7079efafd956afb5d823e8999c2506e1053aefa
-#        with:
-#          ruby-version: '3.1.2'
-#          bundler-cache: true
-#
-#      - uses: actions/setup-java@v3
-#        with:
-#          distribution: 'zulu' # See 'Supported distributions' for available options
-#          java-version: '17'
-#
-#      - name: Decode Service account credentials
-#        uses: timheuer/base64-to-file@48657ba25c726c2e3dcf02efa3639fff9b3d587e
-#        id: firebase_keystore
-#        with:
-#          fileName: "service_account.json"
-#          encodedString: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS_BASE_64 }}
-#
-#      - name: Decode keystore credentials
-#        uses: timheuer/base64-to-file@48657ba25c726c2e3dcf02efa3639fff9b3d587e
-#        id: keystore_file
-#        with:
-#          fileName: "debugPreview.jks"
-#          encodedString: ${{ secrets.RADIX_DEBUG_PREVIEW_KEYSTORE_FILE_BASE_64 }}
-#
-#      - name: Distribute Alpha flavor
-#        if: >
-#          ( github.ref == 'refs/heads/main' && github.event_name == 'push' ) ||
-#          ( github.event.inputs.flavor == 'alpha' && github.event_name == 'workflow_dispatch' )
-#        run: |
-#          export GROUPS=${GROUPS:-"alpha-devs"}
-#          if [ "$GROUPS" == "no" ]; then
-#            GROUPS=''
-#          fi
-#          git config user.name $GIT_USER
-#          git config user.email $GIT_USER
-#          bundle exec fastlane alpha
-#          echo "### Alpha flavor distributed! :rocket:" >> $GITHUB_STEP_SUMMARY
-#        env:
-#          FIREBASE_APP_ID: ${{ secrets.FIREBASE_ALPHA_APP_ID }}
-#          GOOGLE_APPLICATION_CREDENTIALS: ${{ steps.firebase_keystore.outputs.filePath }}
-#          RELEASE_NOTES: ${{ github.event.inputs.release_notes }}
-#          GROUPS: ${{ github.event.inputs.groups }}
-#          SLACK_URL: ${{ secrets.SLACK_URL }}
-#          GIT_USER: ${{ secrets.RADIX_BOT_USERNAME }}
-#          GPR_USER: ${{ secrets.GPR_USER }}
-#          GPR_TOKEN: ${{ secrets.GPR_TOKEN }}
-#          RADIX_DEBUG_PREVIEW_KEYSTORE_FILE: ${{ steps.keystore_file.outputs.filePath }}
-#          RADIX_ANDROID_KEYSTORE_PASSWORD: ${{ secrets.RADIX_ANDROID_KEYSTORE_PASSWORD }}
-#          RADIX_ANDROID_KEYSTORE_PRIVATE_KEY_PASSWORD: ${{ secrets.RADIX_ANDROID_KEYSTORE_PRIVATE_KEY_PASSWORD }}
-#          RADIX_ANDROID_KEYSTORE_ALIAS: ${{ secrets.RADIX_ANDROID_KEYSTORE_ALIAS }}
-#
-#      - name: Distribute Preview flavor
-#        if: ( github.event_name == 'release' && github.event.release.prerelease )
-#        run: |
-#          git config user.name $GIT_USER
-#          git config user.email $GIT_USER
-#          bundle exec fastlane preview
-#          echo "### Preview flavor distributed! :rocket:" >> $GITHUB_STEP_SUMMARY
-#        env:
-#          FIREBASE_APP_ID: ${{ secrets.FIREBASE_PREVIEW_APP_ID }}
-#          GOOGLE_APPLICATION_CREDENTIALS: ${{ steps.firebase_keystore.outputs.filePath }}
-#          RELEASE_NOTES: ${{ github.event.inputs.release_notes }}
-#          GROUPS: "internal"
-#          SLACK_URL: ${{ secrets.SLACK_URL }}
-#          GIT_USER: ${{ secrets.RADIX_BOT_USERNAME }}
-#          GPR_USER: ${{ secrets.GPR_USER }}
-#          GPR_TOKEN: ${{ secrets.GPR_TOKEN }}
-#          RADIX_DEBUG_PREVIEW_KEYSTORE_FILE: ${{ steps.keystore_file.outputs.filePath }}
-#          RADIX_ANDROID_KEYSTORE_PASSWORD: ${{ secrets.RADIX_ANDROID_KEYSTORE_PASSWORD }}
-#          RADIX_ANDROID_KEYSTORE_PRIVATE_KEY_PASSWORD: ${{ secrets.RADIX_ANDROID_KEYSTORE_PRIVATE_KEY_PASSWORD }}
-#          RADIX_ANDROID_KEYSTORE_ALIAS: ${{ secrets.RADIX_ANDROID_KEYSTORE_ALIAS }}
-#          RELEASE_BRANCH: ${{ github.event.release.target_commitish }}
-#
-#
-#  playstore_releases:
-#    name: "Publish to playstore"
-#    runs-on: ubuntu-latest
-#    if: >
-#      ( github.event_name == 'release' && !github.event.release.prerelease )
-#    steps:
-#      - uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8
-#        with:
-#          token: ${{ secrets.RADIX_BOT_PAT }}
-#
-#      - name: Dump context
-#        uses: crazy-max/ghaction-dump-context@516dbb0c760f39b4cdd750ae095f1688780f68f4
-#
-#      - name: Download Ruby (action)
-#        uses: ruby/setup-ruby@c7079efafd956afb5d823e8999c2506e1053aefa
-#        with:
-#          ruby-version: '3.1.2'
-#          bundler-cache: true
-#
-#      - name: Decode keystore credentials
-#        uses: timheuer/base64-to-file@48657ba25c726c2e3dcf02efa3639fff9b3d587e
-#        id: google_play_keystore
-#        with:
-#          fileName: "playstore_preview_upload_key.jks"
-#          encodedString: ${{ secrets.GOOGLE_PLAY_PREVIEW_KEYSTORE_FILE_BASE_64 }}
-#
-#      - name: Decode Service account credentials
-#        uses: timheuer/base64-to-file@48657ba25c726c2e3dcf02efa3639fff9b3d587e
-#        id: google_play_service_account_json
-#        with:
-#          fileName: "service_account.json"
-#          encodedString: ${{ secrets.GOOGLE_PLAY_PREVIEW_DEPLOYER_JSON_BASE_64 }}
-#
-#      - name: set commit branch for release
-#        if: github.event_name == 'release'
-#        run: |
-#          echo "RELEASE_BRANCH=${{ github.event.release.target_commitish }}" >> $GITHUB_ENV
-#
-#      - name: Distribute Google Play flavor
-#        run: |
-#          git config user.name $GIT_USER
-#          git config user.email $GIT_USER
-#          bundle exec fastlane release_to_google_play
-#          echo "### Distribute Google Play flavor distributed! :rocket:" >> $GITHUB_STEP_SUMMARY
-#        env:
-#          SLACK_URL: ${{ secrets.SLACK_URL }}
-#          GIT_USER: ${{ secrets.RADIX_BOT_USERNAME }}
-#          GPR_USER: ${{ secrets.GPR_USER }}
-#          GPR_TOKEN: ${{ secrets.GPR_TOKEN }}
-#          RADIX_DEBUG_PREVIEW_KEYSTORE_FILE: ${{ steps.google_play_keystore.outputs.filePath }}
-#          RADIX_ANDROID_KEYSTORE_PASSWORD: ${{ secrets.GOOGLE_PLAY_KEYSTORE_PASSWORD }}
-#          RADIX_ANDROID_KEYSTORE_PRIVATE_KEY_PASSWORD: ${{ secrets.GOOGLE_PLAY_KEYSTORE_PASSWORD }}
-#          RADIX_ANDROID_KEYSTORE_ALIAS: "upload"
-#          RELEASE_BRANCH: ${{ env.RELEASE_BRANCH }}
-#          GOOGLE_PLAY_PREVIEW_DEPLOYER_JSON_FILE: ${{ steps.google_play_service_account_json.outputs.filePath }}
-#
-#  snyk_online_monitor:
-#    runs-on: ubuntu-latest
-#    needs:
-#      - playstore_releases
-#    steps:
-#      - uses: actions/checkout@755da8c3cf115ac066823e79a1e1788f8940201b
-#      - uses: timheuer/base64-to-file@48657ba25c726c2e3dcf02efa3639fff9b3d587e
-#        id: keystore_file
-#        with:
-#          fileName: "debugPreview.jks"
-#          encodedString: ${{ secrets.RADIX_DEBUG_PREVIEW_KEYSTORE_FILE_BASE_64 }}
-#      - name: Enable Snyk online monitoring to check for vulnerabilities
-#        uses: snyk/actions/gradle-jdk17@b98d498629f1c368650224d6d212bf7dfa89e4bf # v0.4.0
-#        with:
-#          args: --all-projects --org=${{ secrets.SNYK_ORG_ID }}
-#          command: monitor
-#        env:
-#          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-#          RADIX_DEBUG_PREVIEW_KEYSTORE_FILE: ${{ steps.keystore_file.outputs.filePath }}
+name: "App releases"
+
+on:
+  push:
+    branches:
+      - "main"
+  release:
+    types:
+      - "published"
+  workflow_dispatch:
+    inputs:
+      flavor:
+        description: "Which flavor do you want to build and distribute?"
+        required: true
+        type: choice
+        options:
+          - "alpha"
+        default: "alpha"
+      release_notes:
+        description: "(Optional) Release notes for version you want to distribute (not needed for Alpha flavor)"
+        required: false
+        default: ''
+      groups:
+        description: "(Optional) Name of the group you want to notify about new version"
+        required: false
+        default: 'alpha-devs'
+        type: choice
+        options:
+          - "alpha-devs"
+          - "internal"
+          - "no"
+
+jobs:
+
+  alpha_firebase_releases:
+    name: "Publish to firebase"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8
+        with:
+          token: ${{ secrets.RADIX_BOT_PAT }}
+
+      - name: Dump context
+        uses: crazy-max/ghaction-dump-context@516dbb0c760f39b4cdd750ae095f1688780f68f4
+
+      - name: Download Ruby (action)
+        uses: ruby/setup-ruby@c7079efafd956afb5d823e8999c2506e1053aefa
+        with:
+          ruby-version: '3.1.2'
+          bundler-cache: true
+
+      - uses: actions/setup-java@v3
+        with:
+          distribution: 'zulu' # See 'Supported distributions' for available options
+          java-version: '17'
+
+      - name: Decode Service account credentials
+        uses: timheuer/base64-to-file@48657ba25c726c2e3dcf02efa3639fff9b3d587e
+        id: firebase_keystore
+        with:
+          fileName: "service_account.json"
+          encodedString: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS_BASE_64 }}
+
+      - name: Decode keystore credentials
+        uses: timheuer/base64-to-file@48657ba25c726c2e3dcf02efa3639fff9b3d587e
+        id: keystore_file
+        with:
+          fileName: "debugPreview.jks"
+          encodedString: ${{ secrets.RADIX_DEBUG_PREVIEW_KEYSTORE_FILE_BASE_64 }}
+
+      - name: Distribute Alpha flavor
+        if: >
+          ( github.ref == 'refs/heads/main' && github.event_name == 'push' ) ||
+          ( github.event.inputs.flavor == 'alpha' && github.event_name == 'workflow_dispatch' )
+        run: |
+          export GROUPS=${GROUPS:-"alpha-devs"}
+          if [ "$GROUPS" == "no" ]; then
+            GROUPS=''
+          fi
+          git config user.name $GIT_USER
+          git config user.email $GIT_USER
+          bundle exec fastlane alpha
+          echo "### Alpha flavor distributed! :rocket:" >> $GITHUB_STEP_SUMMARY
+        env:
+          FIREBASE_APP_ID: ${{ secrets.FIREBASE_ALPHA_APP_ID }}
+          GOOGLE_APPLICATION_CREDENTIALS: ${{ steps.firebase_keystore.outputs.filePath }}
+          RELEASE_NOTES: ${{ github.event.inputs.release_notes }}
+          GROUPS: ${{ github.event.inputs.groups }}
+          SLACK_URL: ${{ secrets.SLACK_URL }}
+          GIT_USER: ${{ secrets.RADIX_BOT_USERNAME }}
+          GPR_USER: ${{ secrets.GPR_USER }}
+          GPR_TOKEN: ${{ secrets.GPR_TOKEN }}
+          RADIX_DEBUG_PREVIEW_KEYSTORE_FILE: ${{ steps.keystore_file.outputs.filePath }}
+          RADIX_ANDROID_KEYSTORE_PASSWORD: ${{ secrets.RADIX_ANDROID_KEYSTORE_PASSWORD }}
+          RADIX_ANDROID_KEYSTORE_PRIVATE_KEY_PASSWORD: ${{ secrets.RADIX_ANDROID_KEYSTORE_PRIVATE_KEY_PASSWORD }}
+          RADIX_ANDROID_KEYSTORE_ALIAS: ${{ secrets.RADIX_ANDROID_KEYSTORE_ALIAS }}
+
+      - name: Distribute Preview flavor
+        if: ( github.event_name == 'release' && github.event.release.prerelease )
+        run: |
+          git config user.name $GIT_USER
+          git config user.email $GIT_USER
+          bundle exec fastlane preview
+          echo "### Preview flavor distributed! :rocket:" >> $GITHUB_STEP_SUMMARY
+        env:
+          FIREBASE_APP_ID: ${{ secrets.FIREBASE_PREVIEW_APP_ID }}
+          GOOGLE_APPLICATION_CREDENTIALS: ${{ steps.firebase_keystore.outputs.filePath }}
+          RELEASE_NOTES: ${{ github.event.inputs.release_notes }}
+          GROUPS: "internal"
+          SLACK_URL: ${{ secrets.SLACK_URL }}
+          GIT_USER: ${{ secrets.RADIX_BOT_USERNAME }}
+          GPR_USER: ${{ secrets.GPR_USER }}
+          GPR_TOKEN: ${{ secrets.GPR_TOKEN }}
+          RADIX_DEBUG_PREVIEW_KEYSTORE_FILE: ${{ steps.keystore_file.outputs.filePath }}
+          RADIX_ANDROID_KEYSTORE_PASSWORD: ${{ secrets.RADIX_ANDROID_KEYSTORE_PASSWORD }}
+          RADIX_ANDROID_KEYSTORE_PRIVATE_KEY_PASSWORD: ${{ secrets.RADIX_ANDROID_KEYSTORE_PRIVATE_KEY_PASSWORD }}
+          RADIX_ANDROID_KEYSTORE_ALIAS: ${{ secrets.RADIX_ANDROID_KEYSTORE_ALIAS }}
+          RELEASE_BRANCH: ${{ github.event.release.target_commitish }}
+
+
+  playstore_releases:
+    name: "Publish to playstore"
+    runs-on: ubuntu-latest
+    if: >
+      ( github.event_name == 'release' && !github.event.release.prerelease )
+    steps:
+      - uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8
+        with:
+          token: ${{ secrets.RADIX_BOT_PAT }}
+
+      - name: Dump context
+        uses: crazy-max/ghaction-dump-context@516dbb0c760f39b4cdd750ae095f1688780f68f4
+
+      - name: Download Ruby (action)
+        uses: ruby/setup-ruby@c7079efafd956afb5d823e8999c2506e1053aefa
+        with:
+          ruby-version: '3.1.2'
+          bundler-cache: true
+
+      - name: Decode keystore credentials
+        uses: timheuer/base64-to-file@48657ba25c726c2e3dcf02efa3639fff9b3d587e
+        id: google_play_keystore
+        with:
+          fileName: "playstore_preview_upload_key.jks"
+          encodedString: ${{ secrets.GOOGLE_PLAY_PREVIEW_KEYSTORE_FILE_BASE_64 }}
+
+      - name: Decode Service account credentials
+        uses: timheuer/base64-to-file@48657ba25c726c2e3dcf02efa3639fff9b3d587e
+        id: google_play_service_account_json
+        with:
+          fileName: "service_account.json"
+          encodedString: ${{ secrets.GOOGLE_PLAY_PREVIEW_DEPLOYER_JSON_BASE_64 }}
+
+      - name: set commit branch for release
+        if: github.event_name == 'release'
+        run: |        
+          echo "RELEASE_BRANCH=${{ github.event.release.target_commitish }}" >> $GITHUB_ENV
+
+      - name: Distribute Google Play flavor
+        run: |
+          git config user.name $GIT_USER
+          git config user.email $GIT_USER
+          bundle exec fastlane release_to_google_play
+          echo "### Distribute Google Play flavor distributed! :rocket:" >> $GITHUB_STEP_SUMMARY
+        env:
+          SLACK_URL: ${{ secrets.SLACK_URL }}
+          GIT_USER: ${{ secrets.RADIX_BOT_USERNAME }}
+          GPR_USER: ${{ secrets.GPR_USER }}
+          GPR_TOKEN: ${{ secrets.GPR_TOKEN }}
+          RADIX_DEBUG_PREVIEW_KEYSTORE_FILE: ${{ steps.google_play_keystore.outputs.filePath }}
+          RADIX_ANDROID_KEYSTORE_PASSWORD: ${{ secrets.GOOGLE_PLAY_KEYSTORE_PASSWORD }}
+          RADIX_ANDROID_KEYSTORE_PRIVATE_KEY_PASSWORD: ${{ secrets.GOOGLE_PLAY_KEYSTORE_PASSWORD }}
+          RADIX_ANDROID_KEYSTORE_ALIAS: "upload"
+          RELEASE_BRANCH: ${{ env.RELEASE_BRANCH }}
+          GOOGLE_PLAY_PREVIEW_DEPLOYER_JSON_FILE: ${{ steps.google_play_service_account_json.outputs.filePath }}
+
+  publish_sbom:
+    runs-on: ubuntu-latest
+    if: ( github.event_name == 'release' && github.event.release.prerelease )
+    steps:
+      - uses: actions/checkout@755da8c3cf115ac066823e79a1e1788f8940201b
+      - uses: timheuer/base64-to-file@48657ba25c726c2e3dcf02efa3639fff9b3d587e
+        id: keystore_file
+        with:
+          fileName: "debugPreview.jks"
+          encodedString: ${{ secrets.RADIX_DEBUG_PREVIEW_KEYSTORE_FILE_BASE_64 }}
+      - name: Generate SBOM
+        uses: snyk/actions/gradle-jdk17@b98d498629f1c368650224d6d212bf7dfa89e4bf # v0.4.0
+        with:
+          args: --all-projects --org=${{ secrets.SNYK_ORG_ID }} --format=cyclonedx1.4+json --json-file-output sbom.json
+          command: sbom
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+          RADIX_DEBUG_PREVIEW_KEYSTORE_FILE: ${{ steps.keystore_file.outputs.filePath }}
+      - name: Upload SBOM
+        uses: svenstaro/upload-release-action@2b9d2847a97b04d02ad5c3df2d3a27baa97ce689 # v2.6.1
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: sbom.json
+          tag: ${{ github.ref }}
+          overwrite: true
+
+  snyk_online_monitor:
+    runs-on: ubuntu-latest
+    needs:
+      - playstore_releases
+    steps:
+      - uses: actions/checkout@755da8c3cf115ac066823e79a1e1788f8940201b
+      - uses: timheuer/base64-to-file@48657ba25c726c2e3dcf02efa3639fff9b3d587e
+        id: keystore_file
+        with:
+          fileName: "debugPreview.jks"
+          encodedString: ${{ secrets.RADIX_DEBUG_PREVIEW_KEYSTORE_FILE_BASE_64 }}
+      - name: Enable Snyk online monitoring to check for vulnerabilities
+        uses: snyk/actions/gradle-jdk17@b98d498629f1c368650224d6d212bf7dfa89e4bf # v0.4.0
+        with:
+          args: --all-projects --org=${{ secrets.SNYK_ORG_ID }}
+          command: monitor
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+          RADIX_DEBUG_PREVIEW_KEYSTORE_FILE: ${{ steps.keystore_file.outputs.filePath }}
