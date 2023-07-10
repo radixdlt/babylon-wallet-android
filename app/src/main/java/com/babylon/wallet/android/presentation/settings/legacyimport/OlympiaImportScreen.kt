@@ -69,6 +69,7 @@ import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.designsystem.theme.getAccountGradientColorsFor
 import com.babylon.wallet.android.domain.model.toProfileLedgerDeviceModel
 import com.babylon.wallet.android.presentation.common.FullscreenCircularProgressContent
+import com.babylon.wallet.android.presentation.common.SeedPhraseInputDelegate
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.dapp.authorized.account.AccountItemUiModel
 import com.babylon.wallet.android.presentation.model.AddLedgerSheetState
@@ -163,7 +164,7 @@ private fun OlympiaImportContent(
     onImportAccounts: () -> Unit,
     onCloseScreen: () -> Unit,
     importButtonEnabled: Boolean,
-    seedPhraseWords: ImmutableList<SeedPhraseWord>,
+    seedPhraseWords: ImmutableList<SeedPhraseInputDelegate.SeedPhraseWord>,
     bip39Passphrase: String,
     onWordChanged: (Int, String) -> Unit,
     onPassphraseChanged: (String) -> Unit,
@@ -696,7 +697,7 @@ private fun ImportCompletePage(
 @Composable
 private fun InputSeedPhrasePage(
     modifier: Modifier = Modifier,
-    seedPhraseWords: ImmutableList<SeedPhraseWord>,
+    seedPhraseWords: ImmutableList<SeedPhraseInputDelegate.SeedPhraseWord>,
     bip39Passphrase: String,
     onWordChanged: (Int, String) -> Unit,
     onPassphraseChanged: (String) -> Unit,

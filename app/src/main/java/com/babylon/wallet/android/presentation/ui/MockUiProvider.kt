@@ -1,6 +1,6 @@
 package com.babylon.wallet.android.presentation.ui
 
-import com.babylon.wallet.android.presentation.settings.legacyimport.SeedPhraseWord
+import com.babylon.wallet.android.presentation.common.SeedPhraseInputDelegate.SeedPhraseWord
 import kotlinx.collections.immutable.persistentListOf
 
 object MockUiProvider {
