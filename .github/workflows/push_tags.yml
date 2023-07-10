@@ -1,8 +1,8 @@
 name: "Publish SBOM"
 on:
-  push:
-    tags:
-      - '*'
+  release:
+    types:
+      - "published"
 
 jobs:
   publish_sbom:
