@@ -7,7 +7,9 @@ import com.babylon.wallet.android.domain.model.metadata.IconUrlMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.NameMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.SymbolMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.TagsMetadataItem
+import com.radixdlt.ret.NonFungibleLocalId
 import com.radixdlt.ret.utilsKnownAddresses
+import rdx.works.core.toUByteList
 import rdx.works.core.displayableQuantity
 import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.derivation.model.NetworkId
@@ -164,6 +166,8 @@ sealed class Resource {
 
                 abstract val displayable: String
 
+                abstract fun toRetId(): NonFungibleLocalId
+
                 val code: String
                     get() = "$prefix$displayable$suffix"
 
@@ -175,6 +179,8 @@ sealed class Resource {
 
                     override val displayable: String
                         get() = id
+
+                    override fun toRetId(): NonFungibleLocalId = NonFungibleLocalId.Str(id)
 
                     override fun compareTo(other: StringType): Int = other.id.compareTo(id)
                 }
@@ -188,6 +194,8 @@ sealed class Resource {
                     override val displayable: String
                         get() = id.toString()
 
+                    override fun toRetId(): NonFungibleLocalId = NonFungibleLocalId.Integer(id)
+
                     override fun compareTo(other: IntegerType): Int = other.id.compareTo(id)
                 }
 
@@ -199,6 +207,8 @@ sealed class Resource {
                     override val displayable: String
                         get() = id
 
+                    override fun toRetId(): NonFungibleLocalId = NonFungibleLocalId.Bytes(id.toByteArray().toUByteList())
+
                     override fun compareTo(other: BytesType): Int = other.id.compareTo(id)
                 }
 
@@ -209,6 +219,8 @@ sealed class Resource {
                     override val suffix: String = UUID_SUFFIX
                     override val displayable: String
                         get() = id.toString()
+
+                    override fun toRetId(): NonFungibleLocalId = NonFungibleLocalId.Uuid(id.toString())
 
                     override fun compareTo(other: UUIDType): Int = other.id.compareTo(id)
                 }

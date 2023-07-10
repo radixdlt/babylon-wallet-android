@@ -7,11 +7,14 @@ import com.babylon.wallet.android.domain.model.Resource
 import com.babylon.wallet.android.presentation.transfer.SpendingAsset
 import com.babylon.wallet.android.presentation.transfer.TargetAccount
 import com.babylon.wallet.android.presentation.transfer.TransferViewModel
+import com.radixdlt.ret.Address
+import com.radixdlt.ret.Decimal
 import com.radixdlt.ret.Instruction
 import com.radixdlt.ret.ManifestValue
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
-import rdx.works.core.manifest.ManifestBuilder
+import rdx.works.core.ret.ManifestBuilder
+import rdx.works.core.ret.ManifestMethod
 import rdx.works.profile.data.model.pernetwork.Network
 import timber.log.Timber
 import java.math.BigDecimal
@@ -66,13 +69,11 @@ class PrepareManifestDelegate(
             }.forEach { targetAccount ->
                 val spendingFungibleAsset = targetAccount.assets.find { it.address == resource.resourceAddress } as? SpendingAsset.Fungible
                 if (spendingFungibleAsset != null) {
-                    val bucket = ManifestValue.BucketValue(value = "${targetAccount.address}_${resource.resourceAddress}")
+                    // First take the correct amount from worktop
+                    addInstruction(takeFromWorktop(fungible = resource, amount = spendingFungibleAsset.amountDecimal))
 
-                    // First fill in a bucket from worktop with the correct amount
-                    addInstruction(pourToBucket(fungible = resource, amount = spendingFungibleAsset.amountDecimal, bucket = bucket))
-
-                    // Then deposit that bucket
-                    addInstruction(deposit(bucket = bucket, into = targetAccount))
+                    // Then deposit into the target account
+                    addInstruction(deposit(into = targetAccount))
                 }
             }
         }
@@ -85,11 +86,9 @@ class PrepareManifestDelegate(
         targetAccounts.forEach { targetAccount ->
             val nonFungibleSpendingAssets = targetAccount.assets.filterIsInstance<SpendingAsset.NFT>()
             nonFungibleSpendingAssets.forEach { nft ->
-                val bucket = ManifestAstValue.Bucket(value = "${targetAccount.address}_${nft.address}")
-
                 addInstruction(withdraw(fromAccount = fromAccount, nonFungible = nft.item))
-                addInstruction(pourToBucket(nonFungible = nft.item, bucket = bucket))
-                addInstruction(deposit(bucket = bucket, into = targetAccount))
+                addInstruction(takeNonFungiblesFromWorktop(nonFungible = nft.item))
+                addInstruction(deposit(into = targetAccount))
             }
         }
     }
@@ -116,58 +115,50 @@ class PrepareManifestDelegate(
         fungible: Resource.FungibleResource,
         amount: BigDecimal
     ) = Instruction.CallMethod(
-        componentAddress = ManifestAstValue.Address(value = fromAccount.address),
-        methodName = ManifestAstValue.String(MethodName.Withdraw.stringValue),
-        arguments = arrayOf(
-            ManifestAstValue.Address(fungible.resourceAddress),
-            ManifestAstValue.Decimal(amount)
+        address = Address(fromAccount.address),
+        methodName = ManifestMethod.Withdraw.value,
+        args = ManifestValue.TupleValue(
+            fields = listOf(
+                ManifestValue.AddressValue(value = Address(fungible.resourceAddress)),
+                ManifestValue.DecimalValue(value = Decimal(amount.toPlainString()))
+            )
         )
     )
 
-    private fun pourToBucket(
+    private fun takeFromWorktop(
         fungible: Resource.FungibleResource,
-        amount: BigDecimal,
-        bucket: ManifestAstValue.Bucket
+        amount: BigDecimal
     ) = Instruction.TakeFromWorktop(
-        resourceAddress = ManifestAstValue.Address(value = fungible.resourceAddress),
-        amount = ManifestAstValue.Decimal(amount),
-        intoBucket = bucket
+        resourceAddress = Address(fungible.resourceAddress),
+        amount = Decimal(amount.toPlainString())
     )
 
     private fun withdraw(
         fromAccount: Network.Account,
         nonFungible: Resource.NonFungibleResource.Item,
     ) = Instruction.CallMethod(
-        componentAddress = ManifestAstValue.Address(value = fromAccount.address),
-        methodName = ManifestAstValue.String(MethodName.WithdrawNonFungibles.stringValue),
-        arguments = arrayOf(
-            ManifestAstValue.Address(nonFungible.collectionAddress),
-            ManifestAstValue.Array(
-                elementKind = ValueKind.NonFungibleLocalId,
-                elements = arrayOf(nonFungible.toManifestLocalId())
+        address = Address(fromAccount.address),
+        methodName = ManifestMethod.WithdrawNonFungibles.value,
+        args = ManifestValue.TupleValue(
+            fields = listOf(
+                ManifestValue.AddressValue(Address(nonFungible.collectionAddress)),
+                ManifestValue.NonFungibleLocalIdValue(nonFungible.localId.toRetId()),
             )
         )
     )
 
-    private fun pourToBucket(
+    private fun takeNonFungiblesFromWorktop(
         nonFungible: Resource.NonFungibleResource.Item,
-        bucket: ManifestAstValue.Bucket
     ) = Instruction.TakeNonFungiblesFromWorktop(
-        resourceAddress = ManifestAstValue.Address(nonFungible.collectionAddress),
-        ids = setOf(nonFungible.toManifestLocalId()),
-        intoBucket = bucket
+        resourceAddress = Address(nonFungible.collectionAddress),
+        ids = listOf(nonFungible.localId.toRetId())
     )
 
     private fun deposit(
-        bucket: ManifestAstValue.Bucket,
         into: TargetAccount
     ) = Instruction.CallMethod(
-        componentAddress = ManifestAstValue.Address(value = into.address),
-        methodName = ManifestAstValue.String(MethodName.TryDepositOrAbort.stringValue),
-        arguments = arrayOf(bucket)
+        address = Address(into.address),
+        methodName = ManifestMethod.TryDepositOrAbort.value,
+        args = ManifestValue.TupleValue(fields = listOf())
     )
-}
-
-private fun Resource.NonFungibleResource.Item.toManifestLocalId(): ManifestAstValue.NonFungibleLocalId {
-    return ManifestAstValue.NonFungibleLocalId(localId.code)
 }

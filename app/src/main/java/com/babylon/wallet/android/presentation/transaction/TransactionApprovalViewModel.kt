@@ -10,10 +10,8 @@ import com.babylon.wallet.android.data.transaction.DappRequestFailure
 import com.babylon.wallet.android.data.transaction.SigningState
 import com.babylon.wallet.android.data.transaction.TransactionClient
 import com.babylon.wallet.android.data.transaction.model.TransactionApprovalRequest
-import com.babylon.wallet.android.data.transaction.toPrettyString
 import com.babylon.wallet.android.di.coroutines.ApplicationScope
 import com.babylon.wallet.android.domain.common.value
-import com.babylon.wallet.android.domain.model.AccountWithResources
 import com.babylon.wallet.android.domain.model.DAppWithMetadataAndAssociatedResources
 import com.babylon.wallet.android.domain.model.MetadataConstants
 import com.babylon.wallet.android.domain.model.Resource
@@ -21,7 +19,6 @@ import com.babylon.wallet.android.domain.model.TransactionManifestData
 import com.babylon.wallet.android.domain.usecases.GetDAppWithMetadataAndAssociatedResourcesUseCase
 import com.babylon.wallet.android.domain.usecases.transaction.GetTransactionComponentResourcesUseCase
 import com.babylon.wallet.android.domain.usecases.transaction.GetTransactionProofResourcesUseCase
-import com.babylon.wallet.android.domain.usecases.transaction.ResourceRequest
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
@@ -33,9 +30,7 @@ import com.babylon.wallet.android.presentation.dapp.authorized.account.toUiModel
 import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
 import com.babylon.wallet.android.utils.DeviceSecurityHelper
-import com.babylon.wallet.android.utils.iconUrl
-import com.babylon.wallet.android.utils.toResourceRequest
-import com.babylon.wallet.android.utils.tokenSymbol
+import com.radixdlt.ret.TransactionManifest
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.ImmutableMap
@@ -48,7 +43,6 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import com.radixdlt.ret.TransactionManifest
 import rdx.works.core.crypto.PrivateKey
 import rdx.works.core.decodeHex
 import rdx.works.core.toByteArray
@@ -143,51 +137,51 @@ class TransactionApprovalViewModel @Inject constructor(
                         )
                     }.onSuccess { analysis ->
                         Timber.d("Manifest : $analysis")
-                        val componentAccountsAddresses = analyzeManifestWithPreviewResponse.encounteredAddresses
-                            .componentAddresses.userApplications
-
-                        val encounteredAddressesResults = componentAccountsAddresses.map {
-                            dAppWithAssociatedResourcesUseCase.invoke(
-                                definitionAddress = it,
-                                needMostRecentData = false
-                            ).value()
-                        }
-                        val connectedDApps = encounteredAddressesResults.mapNotNull { dAppWithResources ->
-                            dAppWithResources
-                        }
-
-                        val accountsWithResources = getTransactionComponentResourcesUseCase(analysis).value().orEmpty()
-
-                        val withdrawTransactionAccountItems = processWithdrawJobs(
-                            analyzeManifestWithPreviewResponse,
-                            accountsWithResources
-                        ).toImmutableList()
-
-                        val depositTransactionAccountItems = processAccountDeposits(
-                            analyzeManifestWithPreviewResponse,
-                            accountsWithResources
-                        ).toImmutableList()
-
-                        val proofs = getTransactionProofResourcesUseCase(
-                            analyzeManifestWithPreviewResponse.accountProofResources
-                        )
-
-                        val guaranteesAccounts = depositTransactionAccountItems.toGuaranteesAccountsUiModel()
-
-                        depositingAccounts = depositTransactionAccountItems
-
-                        _state.update {
-                            it.copy(
-                                withdrawingAccounts = withdrawTransactionAccountItems,
-                                depositingAccounts = depositTransactionAccountItems,
-                                guaranteesAccounts = guaranteesAccounts,
-                                presentingProofs = proofs.toPersistentList(),
-                                connectedDApps = connectedDApps.toPersistentList(),
-                                manifestString = manifest.toPrettyString(),
-                                canApprove = true,
-                                isLoading = false
-                            )
-                        }
+//                        val componentAccountsAddresses = analyzeManifestWithPreviewResponse.encounteredAddresses
+//                            .componentAddresses.userApplications
+//
+//                        val encounteredAddressesResults = componentAccountsAddresses.map {
+//                            dAppWithAssociatedResourcesUseCase.invoke(
+//                                definitionAddress = it,
+//                                needMostRecentData = false
+//                            ).value()
+//                        }
+//                        val connectedDApps = encounteredAddressesResults.mapNotNull { dAppWithResources ->
+//                            dAppWithResources
+//                        }
+//
+//                        val accountsWithResources = getTransactionComponentResourcesUseCase(analysis).value().orEmpty()
+//
+//                        val withdrawTransactionAccountItems = processWithdrawJobs(
+//                            analyzeManifestWithPreviewResponse,
+//                            accountsWithResources
+//                        ).toImmutableList()
+//
+//                        val depositTransactionAccountItems = processAccountDeposits(
+//                            analyzeManifestWithPreviewResponse,
+//                            accountsWithResources
+//                        ).toImmutableList()
+//
+//                        val proofs = getTransactionProofResourcesUseCase(
+//                            analyzeManifestWithPreviewResponse.accountProofResources
+//                        )
+//
+//                        val guaranteesAccounts = depositTransactionAccountItems.toGuaranteesAccountsUiModel()
+//
+//                        depositingAccounts = depositTransactionAccountItems
+//
+//                        _state.update {
+//                            it.copy(
+//                                withdrawingAccounts = withdrawTransactionAccountItems,
+//                                depositingAccounts = depositTransactionAccountItems,
+//                                guaranteesAccounts = guaranteesAccounts,
+//                                presentingProofs = proofs.toPersistentList(),
+//                                connectedDApps = connectedDApps.toPersistentList(),
+//                                manifestString = manifest.toPrettyString(),
+//                                canApprove = true,
+//                                isLoading = false
+//                            )
+//                        }
                     }.onFailure { error ->
                         Timber.e("Analyze manifest failed with error: $error")
                         _state.update {
@@ -202,226 +196,226 @@ class TransactionApprovalViewModel @Inject constructor(
         }
     }
 
-    private fun processWithdrawJobs(
-        analyzeManifestWithPreviewResponse: AnalyzeTransactionExecutionOutput,
-        accountsWithResources: List<AccountWithResources>
-    ): List<TransactionAccountItemUiModel> {
-        return analyzeManifestWithPreviewResponse.accountWithdraws.map { accountWithdraw ->
-
-            val componentAddress = accountWithdraw.componentAddress
-
-            val accountWithResource = accountsWithResources.find {
-                it.account.address == componentAddress
-            }
-
-            val resourceRequest = accountWithdraw.resourceQuantifier.toResourceRequest(
-                newlyCreated = analyzeManifestWithPreviewResponse.newlyCreated
-            )
-            val resourceAddress = (resourceRequest as? ResourceRequest.Existing)?.address.orEmpty()
-
-            var fungibleResource: Resource.FungibleResource? = null
-            var nonFungibleResourcesItems: List<Resource.NonFungibleResource.Item> = emptyList()
-
-            var amount = ""
-            when (val resourceQuantifier = accountWithdraw.resourceQuantifier) {
-                is ResourceQuantifier.Amount -> {
-                    // fungible
-                    amount = resourceQuantifier.amount
-                    val fungibleToken = accountWithResource?.resources?.fungibleResources?.find {
-                        it.resourceAddress == resourceAddress
-                    }
-                    fungibleResource = fungibleToken?.copy(
-                        amount = amount.toBigDecimal()
-                    )
-                }
-                is ResourceQuantifier.Ids -> {
-                    // nonfungible
-                    val nonFungibleResource = accountWithResource?.resources?.nonFungibleResources?.find {
-                        it.resourceAddress == resourceAddress
-                    }
-                    nonFungibleResourcesItems = nonFungibleResource?.items?.filter {
-                        resourceQuantifier.ids.contains(it.localId.code)
-                    }.orEmpty()
-                }
-            }
-
-            TransactionAccountItemUiModel(
-                accountAddress = accountWithResource?.account?.address.orEmpty(),
-                displayName = accountWithResource?.account?.displayName.orEmpty(),
-                appearanceID = accountWithResource?.account?.appearanceID ?: 0,
-                tokenAmount = amount,
-                shouldPromptForGuarantees = false,
-                guaranteedAmount = null,
-                instructionIndex = null,
-                resourceAddress = resourceAddress,
-                index = null,
-                fungibleResource = fungibleResource,
-                nonFungibleResourceItems = nonFungibleResourcesItems
-            )
-        }
-    }
-
-    @Suppress("LongMethod", "CyclomaticComplexMethod")
-    private fun processAccountDeposits(
-        analyzeManifestWithPreviewResponse: AnalyzeTransactionExecutionOutput,
-        accountsWithResources: List<AccountWithResources>
-    ): List<TransactionAccountItemUiModel> {
-        return analyzeManifestWithPreviewResponse.accountDeposits.mapIndexed { index, accountDeposit ->
-
-            when (accountDeposit) {
-                is AccountDeposit.Predicted -> {
-                    val componentAddress = accountDeposit.componentAddress
-
-                    val accountWithResource = accountsWithResources.find {
-                        it.account.address == componentAddress
-                    }
-
-                    val resourceRequest = accountDeposit.resourceQuantifier.toResourceRequest(
-                        newlyCreated = analyzeManifestWithPreviewResponse.newlyCreated
-                    )
-                    val createdEntity = resourceRequest is ResourceRequest.NewlyCreated
-                    val resourceAddress = (resourceRequest as? ResourceRequest.Existing)?.address.orEmpty()
-
-                    var fungibleResource: Resource.FungibleResource? = null
-                    var nonFungibleResourcesItems: List<Resource.NonFungibleResource.Item> = emptyList()
-
-                    var tokenSymbol: String? = null
-                    var iconUrl: String? = null
-                    var amount = ""
-                    if (!createdEntity) {
-                        when (accountDeposit.resourceQuantifier) {
-                            is ResourceQuantifier.Amount -> {
-                                amount = (accountDeposit.resourceQuantifier as ResourceQuantifier.Amount).amount
-                                // Search for fungible resource among all accounts
-                                val fungibleToken = accountsWithResources.mapNotNull { accountsWithResources ->
-                                    accountsWithResources.resources?.fungibleResources
-                                }.flatten().find {
-                                    it.resourceAddress == resourceAddress
-                                }
-                                fungibleResource = fungibleToken?.copy(
-                                    amount = amount.toBigDecimal()
-                                )
-                            }
-
-                            is ResourceQuantifier.Ids -> {
-                                val ids = (accountDeposit.resourceQuantifier as ResourceQuantifier.Ids).ids
-                                val nonFungibleResource = accountWithResource?.resources?.nonFungibleResources?.find {
-                                    it.resourceAddress == resourceAddress
-                                }
-                                nonFungibleResourcesItems = nonFungibleResource?.items?.filter {
-                                    ids.contains(it.localId.code)
-                                }.orEmpty()
-                            }
-                        }
-                    } else {
-                        (resourceRequest as ResourceRequest.NewlyCreated).apply {
-                            tokenSymbol = this.tokenSymbol()
-                            iconUrl = this.iconUrl()
-                        }
-                        amount = (accountDeposit.resourceQuantifier as ResourceQuantifier.Amount).amount
-                    }
-
-                    // If its newlyCreatedEntity do not ask for guarantees
-                    val shouldPromptForGuarantees = !createdEntity
-
-                    // If its newlyCreatedEntity OR don't include guarantee, do not ask for guarantees
-                    val guaranteedAmount = if (createdEntity) null else amount
-
-                    val instructionIndex = accountDeposit.instructionIndex.toInt()
-
-                    TransactionAccountItemUiModel(
-                        accountAddress = accountWithResource?.account?.address.orEmpty(),
-                        displayName = accountWithResource?.account?.displayName.orEmpty(),
-                        appearanceID = accountWithResource?.account?.appearanceID ?: 0,
-                        tokenSymbol = tokenSymbol,
-                        tokenAmount = amount,
-                        iconUrl = iconUrl,
-                        shouldPromptForGuarantees = shouldPromptForGuarantees,
-                        guaranteedAmount = guaranteedAmount,
-                        instructionIndex = instructionIndex,
-                        resourceAddress = resourceAddress,
-                        index = index,
-                        fungibleResource = fungibleResource,
-                        nonFungibleResourceItems = nonFungibleResourcesItems
-                    )
-                }
-                is AccountDeposit.Guaranteed -> {
-                    val componentAddress = accountDeposit.componentAddress
-
-                    val accountWithResource = accountsWithResources.find {
-                        it.account.address == componentAddress
-                    }
-
-                    val resourceRequest = accountDeposit.resourceQuantifier.toResourceRequest(
-                        newlyCreated = analyzeManifestWithPreviewResponse.newlyCreated
-                    )
-                    val createdEntity = resourceRequest is ResourceRequest.NewlyCreated
-                    val resourceAddress = (resourceRequest as? ResourceRequest.Existing)?.address.orEmpty()
-
-                    var fungibleResource: Resource.FungibleResource? = null
-                    var nonFungibleResourcesItems: List<Resource.NonFungibleResource.Item> = emptyList()
-
-                    var tokenSymbol: String? = null
-                    var iconUrl: String? = null
-                    var amount = ""
-                    if (!createdEntity) {
-                        when (accountDeposit.resourceQuantifier) {
-                            is ResourceQuantifier.Amount -> {
-                                amount = (accountDeposit.resourceQuantifier as ResourceQuantifier.Amount).amount
-                                // Search for fungible resource among all accounts
-                                val fungibleToken = accountsWithResources.mapNotNull { accountsWithResources ->
-                                    accountsWithResources.resources?.fungibleResources
-                                }.flatten().find {
-                                    it.resourceAddress == resourceAddress
-                                }
-                                fungibleResource = fungibleToken?.copy(
-                                    amount = amount.toBigDecimal()
-                                )
-                            }
-
-                            is ResourceQuantifier.Ids -> {
-                                val ids = (accountDeposit.resourceQuantifier as ResourceQuantifier.Ids).ids
-
-                                var nonFungibleResource: Resource.NonFungibleResource? = null
-                                accountsWithResources.forEach {
-                                    it.resources?.nonFungibleResources?.forEach { nftResource ->
-                                        if (nftResource.resourceAddress == resourceAddress) {
-                                            nonFungibleResource = nftResource
-                                        }
-                                    }
-                                }
-                                nonFungibleResourcesItems = nonFungibleResource?.items?.filter {
-                                    ids.contains(it.localId.code)
-                                }.orEmpty()
-                            }
-                        }
-                    } else {
-                        (resourceRequest as ResourceRequest.NewlyCreated).apply {
-                            tokenSymbol = this.tokenSymbol()
-                            iconUrl = this.iconUrl()
-                        }
-                        amount = (accountDeposit.resourceQuantifier as ResourceQuantifier.Amount).amount
-                    }
-
-                    TransactionAccountItemUiModel(
-                        accountAddress = accountWithResource?.account?.address.orEmpty(),
-                        displayName = accountWithResource?.account?.displayName.orEmpty(),
-                        appearanceID = accountWithResource?.account?.appearanceID ?: 0,
-                        tokenSymbol = tokenSymbol,
-                        tokenAmount = amount,
-                        iconUrl = iconUrl,
-                        shouldPromptForGuarantees = false,
-                        guaranteedAmount = null,
-                        instructionIndex = null,
-                        resourceAddress = resourceAddress,
-                        index = null,
-                        fungibleResource = fungibleResource,
-                        nonFungibleResourceItems = nonFungibleResourcesItems
-                    )
-                }
-            }
-        }
-    }
+//    private fun processWithdrawJobs(
+//        analyzeManifestWithPreviewResponse: AnalyzeTransactionExecutionOutput,
+//        accountsWithResources: List<AccountWithResources>
+//    ): List<TransactionAccountItemUiModel> {
+//        return analyzeManifestWithPreviewResponse.accountWithdraws.map { accountWithdraw ->
+//
+//            val componentAddress = accountWithdraw.componentAddress
+//
+//            val accountWithResource = accountsWithResources.find {
+//                it.account.address == componentAddress
+//            }
+//
+//            val resourceRequest = accountWithdraw.resourceQuantifier.toResourceRequest(
+//                newlyCreated = analyzeManifestWithPreviewResponse.newlyCreated
+//            )
+//            val resourceAddress = (resourceRequest as? ResourceRequest.Existing)?.address.orEmpty()
+//
+//            var fungibleResource: Resource.FungibleResource? = null
+//            var nonFungibleResourcesItems: List<Resource.NonFungibleResource.Item> = emptyList()
+//
+//            var amount = ""
+//            when (val resourceQuantifier = accountWithdraw.resourceQuantifier) {
+//                is ResourceQuantifier.Amount -> {
+//                    // fungible
+//                    amount = resourceQuantifier.amount
+//                    val fungibleToken = accountWithResource?.resources?.fungibleResources?.find {
+//                        it.resourceAddress == resourceAddress
+//                    }
+//                    fungibleResource = fungibleToken?.copy(
+//                        amount = amount.toBigDecimal()
+//                    )
+//                }
+//                is ResourceQuantifier.Ids -> {
+//                    // nonfungible
+//                    val nonFungibleResource = accountWithResource?.resources?.nonFungibleResources?.find {
+//                        it.resourceAddress == resourceAddress
+//                    }
+//                    nonFungibleResourcesItems = nonFungibleResource?.items?.filter {
+//                        resourceQuantifier.ids.contains(it.localId.code)
+//                    }.orEmpty()
+//                }
+//            }
+//
+//            TransactionAccountItemUiModel(
+//                accountAddress = accountWithResource?.account?.address.orEmpty(),
+//                displayName = accountWithResource?.account?.displayName.orEmpty(),
+//                appearanceID = accountWithResource?.account?.appearanceID ?: 0,
+//                tokenAmount = amount,
+//                shouldPromptForGuarantees = false,
+//                guaranteedAmount = null,
+//                instructionIndex = null,
+//                resourceAddress = resourceAddress,
+//                index = null,
+//                fungibleResource = fungibleResource,
+//                nonFungibleResourceItems = nonFungibleResourcesItems
+//            )
+//        }
+//    }
+//
+//    @Suppress("LongMethod", "CyclomaticComplexMethod")
+//    private fun processAccountDeposits(
+//        analyzeManifestWithPreviewResponse: AnalyzeTransactionExecutionOutput,
+//        accountsWithResources: List<AccountWithResources>
+//    ): List<TransactionAccountItemUiModel> {
+//        return analyzeManifestWithPreviewResponse.accountDeposits.mapIndexed { index, accountDeposit ->
+//
+//            when (accountDeposit) {
+//                is AccountDeposit.Predicted -> {
+//                    val componentAddress = accountDeposit.componentAddress
+//
+//                    val accountWithResource = accountsWithResources.find {
+//                        it.account.address == componentAddress
+//                    }
+//
+//                    val resourceRequest = accountDeposit.resourceQuantifier.toResourceRequest(
+//                        newlyCreated = analyzeManifestWithPreviewResponse.newlyCreated
+//                    )
+//                    val createdEntity = resourceRequest is ResourceRequest.NewlyCreated
+//                    val resourceAddress = (resourceRequest as? ResourceRequest.Existing)?.address.orEmpty()
+//
+//                    var fungibleResource: Resource.FungibleResource? = null
+//                    var nonFungibleResourcesItems: List<Resource.NonFungibleResource.Item> = emptyList()
+//
+//                    var tokenSymbol: String? = null
+//                    var iconUrl: String? = null
+//                    var amount = ""
+//                    if (!createdEntity) {
+//                        when (accountDeposit.resourceQuantifier) {
+//                            is ResourceQuantifier.Amount -> {
+//                                amount = (accountDeposit.resourceQuantifier as ResourceQuantifier.Amount).amount
+//                                // Search for fungible resource among all accounts
+//                                val fungibleToken = accountsWithResources.mapNotNull { accountsWithResources ->
+//                                    accountsWithResources.resources?.fungibleResources
+//                                }.flatten().find {
+//                                    it.resourceAddress == resourceAddress
+//                                }
+//                                fungibleResource = fungibleToken?.copy(
+//                                    amount = amount.toBigDecimal()
+//                                )
+//                            }
+//
+//                            is ResourceQuantifier.Ids -> {
+//                                val ids = (accountDeposit.resourceQuantifier as ResourceQuantifier.Ids).ids
+//                                val nonFungibleResource = accountWithResource?.resources?.nonFungibleResources?.find {
+//                                    it.resourceAddress == resourceAddress
+//                                }
+//                                nonFungibleResourcesItems = nonFungibleResource?.items?.filter {
+//                                    ids.contains(it.localId.code)
+//                                }.orEmpty()
+//                            }
+//                        }
+//                    } else {
+//                        (resourceRequest as ResourceRequest.NewlyCreated).apply {
+//                            tokenSymbol = this.tokenSymbol()
+//                            iconUrl = this.iconUrl()
+//                        }
+//                        amount = (accountDeposit.resourceQuantifier as ResourceQuantifier.Amount).amount
+//                    }
+//
+//                    // If its newlyCreatedEntity do not ask for guarantees
+//                    val shouldPromptForGuarantees = !createdEntity
+//
+//                    // If its newlyCreatedEntity OR don't include guarantee, do not ask for guarantees
+//                    val guaranteedAmount = if (createdEntity) null else amount
+//
+//                    val instructionIndex = accountDeposit.instructionIndex.toInt()
+//
+//                    TransactionAccountItemUiModel(
+//                        accountAddress = accountWithResource?.account?.address.orEmpty(),
+//                        displayName = accountWithResource?.account?.displayName.orEmpty(),
+//                        appearanceID = accountWithResource?.account?.appearanceID ?: 0,
+//                        tokenSymbol = tokenSymbol,
+//                        tokenAmount = amount,
+//                        iconUrl = iconUrl,
+//                        shouldPromptForGuarantees = shouldPromptForGuarantees,
+//                        guaranteedAmount = guaranteedAmount,
+//                        instructionIndex = instructionIndex,
+//                        resourceAddress = resourceAddress,
+//                        index = index,
+//                        fungibleResource = fungibleResource,
+//                        nonFungibleResourceItems = nonFungibleResourcesItems
+//                    )
+//                }
+//                is AccountDeposit.Guaranteed -> {
+//                    val componentAddress = accountDeposit.componentAddress
+//
+//                    val accountWithResource = accountsWithResources.find {
+//                        it.account.address == componentAddress
+//                    }
+//
+//                    val resourceRequest = accountDeposit.resourceQuantifier.toResourceRequest(
+//                        newlyCreated = analyzeManifestWithPreviewResponse.newlyCreated
+//                    )
+//                    val createdEntity = resourceRequest is ResourceRequest.NewlyCreated
+//                    val resourceAddress = (resourceRequest as? ResourceRequest.Existing)?.address.orEmpty()
+//
+//                    var fungibleResource: Resource.FungibleResource? = null
+//                    var nonFungibleResourcesItems: List<Resource.NonFungibleResource.Item> = emptyList()
+//
+//                    var tokenSymbol: String? = null
+//                    var iconUrl: String? = null
+//                    var amount = ""
+//                    if (!createdEntity) {
+//                        when (accountDeposit.resourceQuantifier) {
+//                            is ResourceQuantifier.Amount -> {
+//                                amount = (accountDeposit.resourceQuantifier as ResourceQuantifier.Amount).amount
+//                                // Search for fungible resource among all accounts
+//                                val fungibleToken = accountsWithResources.mapNotNull { accountsWithResources ->
+//                                    accountsWithResources.resources?.fungibleResources
+//                                }.flatten().find {
+//                                    it.resourceAddress == resourceAddress
+//                                }
+//                                fungibleResource = fungibleToken?.copy(
+//                                    amount = amount.toBigDecimal()
+//                                )
+//                            }
+//
+//                            is ResourceQuantifier.Ids -> {
+//                                val ids = (accountDeposit.resourceQuantifier as ResourceQuantifier.Ids).ids
+//
+//                                var nonFungibleResource: Resource.NonFungibleResource? = null
+//                                accountsWithResources.forEach {
+//                                    it.resources?.nonFungibleResources?.forEach { nftResource ->
+//                                        if (nftResource.resourceAddress == resourceAddress) {
+//                                            nonFungibleResource = nftResource
+//                                        }
+//                                    }
+//                                }
+//                                nonFungibleResourcesItems = nonFungibleResource?.items?.filter {
+//                                    ids.contains(it.localId.code)
+//                                }.orEmpty()
+//                            }
+//                        }
+//                    } else {
+//                        (resourceRequest as ResourceRequest.NewlyCreated).apply {
+//                            tokenSymbol = this.tokenSymbol()
+//                            iconUrl = this.iconUrl()
+//                        }
+//                        amount = (accountDeposit.resourceQuantifier as ResourceQuantifier.Amount).amount
+//                    }
+//
+//                    TransactionAccountItemUiModel(
+//                        accountAddress = accountWithResource?.account?.address.orEmpty(),
+//                        displayName = accountWithResource?.account?.displayName.orEmpty(),
+//                        appearanceID = accountWithResource?.account?.appearanceID ?: 0,
+//                        tokenSymbol = tokenSymbol,
+//                        tokenAmount = amount,
+//                        iconUrl = iconUrl,
+//                        shouldPromptForGuarantees = false,
+//                        guaranteedAmount = null,
+//                        instructionIndex = null,
+//                        resourceAddress = resourceAddress,
+//                        index = null,
+//                        fungibleResource = fungibleResource,
+//                        nonFungibleResourceItems = nonFungibleResourcesItems
+//                    )
+//                }
+//            }
+//        }
+//    }
 
     @Suppress("LongMethod")
     fun approveTransaction() {

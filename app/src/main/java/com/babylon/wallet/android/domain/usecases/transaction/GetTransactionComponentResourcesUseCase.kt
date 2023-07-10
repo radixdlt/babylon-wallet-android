@@ -23,26 +23,26 @@ class GetTransactionComponentResourcesUseCase @Inject constructor(
 
         executionAnalysis.transactionType
 
-        analyzeManifestWithPreviewResponse.accountDeposits.forEach { accountDeposit ->
-            depositComponents.add(
-                (accountDeposit as? AccountDeposit.Predicted)?.componentAddress
-                    ?: (accountDeposit as? AccountDeposit.Guaranteed)?.componentAddress.orEmpty()
-            )
-        }
+//        analyzeManifestWithPreviewResponse.accountDeposits.forEach { accountDeposit ->
+//            depositComponents.add(
+//                (accountDeposit as? AccountDeposit.Predicted)?.componentAddress
+//                    ?: (accountDeposit as? AccountDeposit.Guaranteed)?.componentAddress.orEmpty()
+//            )
+//        }
+//
+//        analyzeManifestWithPreviewResponse.accountWithdraws.forEach { accountWithdraw ->
+//            withdrawComponents.add(accountWithdraw.componentAddress)
+//        }
+//
+//        val accounts = setOf(depositComponents, withdrawComponents).flatten().mapNotNull { componentAddress ->
+//            getProfileUseCase.accountOnCurrentNetwork(componentAddress)
+//        }
 
-        analyzeManifestWithPreviewResponse.accountWithdraws.forEach { accountWithdraw ->
-            withdrawComponents.add(accountWithdraw.componentAddress)
-        }
-
-        val accounts = setOf(depositComponents, withdrawComponents).flatten().mapNotNull { componentAddress ->
-            getProfileUseCase.accountOnCurrentNetwork(componentAddress)
-        }
-
-        return entityRepository.getAccountsWithResources(accounts)
+        return entityRepository.getAccountsWithResources(listOf())
     }
 }
 
-sealed interface ResourceRequest {
-    data class Existing(val address: String) : ResourceRequest
-    data class NewlyCreated(val metadata: Array<MetadataKeyValue>) : ResourceRequest
-}
+//sealed interface ResourceRequest {
+//    data class Existing(val address: String) : ResourceRequest
+//    data class NewlyCreated(val metadata: Array<MetadataKeyValue>) : ResourceRequest
+//}

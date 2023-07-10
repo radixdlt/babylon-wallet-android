@@ -6,7 +6,6 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapNotNull
 import rdx.works.core.PUBLIC_KEY_HASH_LENGTH
-import org.radixdlt.ret.Address
 import rdx.works.core.toByteArray
 import rdx.works.profile.data.model.currentNetwork
 import rdx.works.profile.data.model.factorsources.DeviceFactorSource

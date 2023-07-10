@@ -1,4 +1,4 @@
-package rdx.works.core.manifest
+package rdx.works.core.ret
 
 import com.radixdlt.ret.Instruction
 import com.radixdlt.ret.Instructions

@@ -2,28 +2,18 @@
 
 package com.babylon.wallet.android.data.transaction
 
-import com.radixdlt.toolkit.models.transaction.ManifestInstructions
-import com.radixdlt.toolkit.models.transaction.TransactionManifest
+import com.radixdlt.ret.TransactionManifest
 
 fun TransactionManifest.toPrettyString(): String {
-    if (instructions is ManifestInstructions.ParsedInstructions) return ""
     val blobSeparator = "\n"
     val blobPreamble = "BLOBS\n"
     val blobLabel = "BLOB\n"
-    val instructionsSeparator = "\n\n"
-    val instructionsArgumentSeparator = "\n\t"
 
-    val instructionsFormatted = (instructions as ManifestInstructions.StringInstructions).let { stringInstructions ->
-        stringInstructions.instructions.trim().removeSuffix(";").split(";").map { "${it.trim()};" }
-            .joinToString(separator = instructionsSeparator) { instruction ->
-                instruction.split(" ").filter { it.isNotEmpty() }
-                    .joinToString(separator = instructionsArgumentSeparator)
-            }
-    }
+    val instructionsFormatted = instructions().asStr()
 
-    val blobsByByteCount = blobs?.mapIndexed { index, bytes ->
+    val blobsByByteCount = blobs().mapIndexed { index, bytes ->
         "$blobLabel[$index]: #${bytes.size} bytes"
-    }?.joinToString(blobSeparator).orEmpty()
+    }.joinToString(blobSeparator)
 
     val blobsString = if (blobsByByteCount.isNotEmpty()) {
         listOf(blobPreamble, blobsByByteCount).joinToString(separator = blobSeparator)
@@ -34,23 +24,4 @@ fun TransactionManifest.toPrettyString(): String {
     return "$instructionsFormatted$blobsString"
 }
 
-fun TransactionManifest.toStringWithoutBlobs(): String {
-    if (instructions is ManifestInstructions.ParsedInstructions) return ""
-    return (instructions as ManifestInstructions.StringInstructions).instructions.trim()
-}
-
-fun TransactionManifest.readInstructions(): String {
-    if (instructions is ManifestInstructions.ParsedInstructions) return ""
-    val instructionsSeparator = "\n\n"
-    val instructionsArgumentSeparator = "\n\t"
-
-    val instructionsFormatted = (instructions as ManifestInstructions.StringInstructions).let { stringInstructions ->
-        stringInstructions.instructions.trim().removeSuffix(";").split(";").map { "${it.trim()};" }
-            .joinToString(separator = instructionsSeparator) { instruction ->
-                instruction.split(" ").filter { it.isNotEmpty() }
-                    .joinToString(separator = instructionsArgumentSeparator)
-            }
-    }
-
-    return instructionsFormatted
-}
+fun TransactionManifest.toStringWithoutBlobs(): String = instructions().asStr()

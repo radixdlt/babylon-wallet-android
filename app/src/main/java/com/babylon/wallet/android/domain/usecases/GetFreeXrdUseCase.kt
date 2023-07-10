@@ -13,12 +13,11 @@ import com.babylon.wallet.android.di.coroutines.IoDispatcher
 import com.babylon.wallet.android.domain.common.asKotlinResult
 import com.babylon.wallet.android.domain.common.onValue
 import com.babylon.wallet.android.domain.usecases.transaction.PollTransactionStatusUseCase
-import com.radixdlt.ret.TransactionManifest
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
-import rdx.works.core.manifest.ManifestBuilder
+import rdx.works.core.ret.ManifestBuilder
 import rdx.works.core.preferences.PreferencesManager
 import rdx.works.profile.domain.gateway.GetCurrentGatewayUseCase
 import java.math.BigDecimal
