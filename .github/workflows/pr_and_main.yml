@@ -21,7 +21,7 @@ jobs:
       - name: Run Snyk to check for deps vulnerabilities
         uses: snyk/actions/gradle-jdk17@b98d498629f1c368650224d6d212bf7dfa89e4bf # v0.4.0
         with:
-          args: --all-projects --org=${{ secrets.SNYK_ORG_ID }} --severity-threshold=high -d --exclude=build.gradle
+          args: --all-projects --org=${{ secrets.SNYK_ORG_ID }} --severity-threshold=high -d --exclude=./build.gradle
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
 
