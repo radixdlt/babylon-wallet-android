@@ -14,7 +14,7 @@ import com.babylon.wallet.android.data.transaction.model.FeePayerSearchResult
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.babylon.wallet.android.domain.model.TransactionManifestData
 import com.babylon.wallet.android.domain.usecases.GetDAppWithMetadataAndAssociatedResourcesUseCase
-import com.babylon.wallet.android.domain.usecases.transaction.GetTransactionComponentResourcesUseCase
+import com.babylon.wallet.android.domain.usecases.transaction.GetTransactionResourcesFromAnalysis
 import com.babylon.wallet.android.domain.usecases.transaction.GetTransactionProofResourcesUseCase
 import com.babylon.wallet.android.presentation.StateViewModelTest
 import com.babylon.wallet.android.utils.AppEventBus
@@ -41,7 +41,7 @@ internal class TransactionApprovalViewModelTest : StateViewModelTest<Transaction
 
     private val transactionClient = mockk<TransactionClient>()
     private val getCurrentGatewayUseCase = mockk<GetCurrentGatewayUseCase>()
-    private val getTransactionComponentResourcesUseCase = mockk<GetTransactionComponentResourcesUseCase>()
+    private val getTransactionComponentResourcesUseCase = mockk<GetTransactionResourcesFromAnalysis>()
     private val getTransactionProofResourcesUseCase = mockk<GetTransactionProofResourcesUseCase>()
     private val getDAppWithAssociatedResourcesUseCase = mockk<GetDAppWithMetadataAndAssociatedResourcesUseCase>()
     private val incomingRequestRepository = IncomingRequestRepositoryImpl()
@@ -75,7 +75,7 @@ internal class TransactionApprovalViewModelTest : StateViewModelTest<Transaction
         coEvery { transactionClient.signAndSubmitTransaction(any()) } returns Result.success(sampleTxId)
         coEvery { transactionClient.findFeePayerInManifest(any()) } returns Result.success(FeePayerSearchResult("feePayer"))
         coEvery { transactionClient.signingState } returns emptyFlow()
-        coEvery { transactionClient.getTransactionPreview(any(), any(), any()) } returns Result.success(
+        coEvery { transactionClient.getTransactionPreview(any(), any()) } returns Result.success(
             previewResponse()
         )
         coEvery {

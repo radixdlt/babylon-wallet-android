@@ -17,7 +17,7 @@ import com.babylon.wallet.android.domain.model.MetadataConstants
 import com.babylon.wallet.android.domain.model.Resource
 import com.babylon.wallet.android.domain.model.TransactionManifestData
 import com.babylon.wallet.android.domain.usecases.GetDAppWithMetadataAndAssociatedResourcesUseCase
-import com.babylon.wallet.android.domain.usecases.transaction.GetTransactionComponentResourcesUseCase
+import com.babylon.wallet.android.domain.usecases.transaction.GetTransactionResourcesFromAnalysis
 import com.babylon.wallet.android.domain.usecases.transaction.GetTransactionProofResourcesUseCase
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
@@ -45,7 +45,6 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.crypto.PrivateKey
 import rdx.works.core.decodeHex
-import rdx.works.core.toByteArray
 import rdx.works.core.toUByteList
 import rdx.works.profile.domain.gateway.GetCurrentGatewayUseCase
 import timber.log.Timber
@@ -56,7 +55,7 @@ import javax.inject.Inject
 @HiltViewModel
 class TransactionApprovalViewModel @Inject constructor(
     private val transactionClient: TransactionClient,
-    private val getTransactionComponentResourcesUseCase: GetTransactionComponentResourcesUseCase,
+    private val getTransactionComponentResourcesUseCase: GetTransactionResourcesFromAnalysis,
     private val getTransactionProofResourcesUseCase: GetTransactionProofResourcesUseCase,
     private val incomingRequestRepository: IncomingRequestRepository,
     private val getCurrentGatewayUseCase: GetCurrentGatewayUseCase,
@@ -103,7 +102,6 @@ class TransactionApprovalViewModel @Inject constructor(
             val transactionPreview = transactionClient.getTransactionPreview(
                 manifest = manifest,
                 ephemeralNotaryPrivateKey = ephemeralNotaryPrivateKey,
-                blobs = manifest.blobs().map { it.toByteArray() }
             )
             transactionPreview.onFailure { error ->
                 _state.update {

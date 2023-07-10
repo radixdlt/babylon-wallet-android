@@ -80,10 +80,12 @@ private const val PAYER_DIALOG_CLOSE_DELAY = 300L
 fun TransactionApprovalScreen(
     modifier: Modifier = Modifier,
     viewModel: TransactionApprovalViewModel,
+    viewModel2: TransactionApprovalViewModel2,
     onDismiss: () -> Unit
 ) {
     val scope = rememberCoroutineScope()
     val state by viewModel.state.collectAsStateWithLifecycle()
+    val state2 by viewModel2.state.collectAsStateWithLifecycle()
 
     val modalBottomSheetState = rememberModalBottomSheetState(
         initialValue = ModalBottomSheetValue.Hidden,

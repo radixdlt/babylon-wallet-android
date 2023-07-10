@@ -28,7 +28,7 @@ class PrepareManifestDelegate(
         state.update { it.copy(transferRequestId = request.requestId) }
         Timber.d("Manifest for ${request.requestId} prepared:")
         Timber.d(request.transactionManifestData.instructions)
-//        incomingRequestRepository.add(request)
+        incomingRequestRepository.add(request)
     }
 
     private fun prepareRequest(

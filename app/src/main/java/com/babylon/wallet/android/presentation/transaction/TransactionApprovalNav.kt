@@ -39,6 +39,7 @@ fun NavGraphBuilder.transactionApprovalScreen(
     ) {
         TransactionApprovalScreen(
             viewModel = hiltViewModel(),
+            viewModel2 = hiltViewModel(),
             onDismiss = onBackClick
         )
     }

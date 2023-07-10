@@ -12,7 +12,9 @@ import com.babylon.wallet.android.data.manifest.addLockFeeInstructionToManifest
 import com.babylon.wallet.android.data.repository.transaction.TransactionRepository
 import com.babylon.wallet.android.data.transaction.model.FeePayerSearchResult
 import com.babylon.wallet.android.data.transaction.model.TransactionApprovalRequest
+import com.babylon.wallet.android.domain.common.asKotlinResult
 import com.babylon.wallet.android.domain.common.value
+import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.babylon.wallet.android.domain.model.findAccountWithEnoughXRDBalance
 import com.babylon.wallet.android.domain.usecases.GetAccountsWithResourcesUseCase
 import com.babylon.wallet.android.domain.usecases.transaction.CollectSignersSignaturesUseCase
@@ -30,8 +32,6 @@ import com.radixdlt.ret.SignatureWithPublicKey
 import com.radixdlt.ret.SignedIntent
 import com.radixdlt.ret.TransactionHeader
 import com.radixdlt.ret.TransactionManifest
-import kotlinx.serialization.encodeToString
-import kotlinx.serialization.json.Json
 import rdx.works.core.crypto.PrivateKey
 import rdx.works.core.toByteArray
 import rdx.works.core.toUByteList
@@ -301,28 +301,26 @@ class TransactionClient @Inject constructor(
     suspend fun getTransactionPreview(
         manifest: TransactionManifest,
         ephemeralNotaryPrivateKey: PrivateKey,
-        blobs: List<ByteArray>
     ): Result<TransactionPreviewResponse> {
-        var startEpochInclusive = 0L
-        var endEpochExclusive = 0L
-        val epochResult = transactionRepository.getLedgerEpoch()
-        if (epochResult is ResultInternal.Success) {
-            val epoch = epochResult.data
-            startEpochInclusive = epoch
-            endEpochExclusive = epoch + 1L
+        val (startEpochInclusive, endEpochExclusive) = with(transactionRepository.getLedgerEpoch()) {
+            val epoch = this.value() ?: return@with (0L to 0L)
+
+            (epoch to epoch + 1L)
         }
 
-        val signingEntities = getSigningEntities(manifest)
-        val notaryAndSigners = NotaryAndSigners(signingEntities, ephemeralNotaryPrivateKey)
+        val notaryAndSigners = NotaryAndSigners(
+            signers = getSigningEntities(manifest),
+            ephemeralNotaryPrivateKey = ephemeralNotaryPrivateKey
+        )
         val notaryPrivateKey = notaryAndSigners.notaryPrivateKeySLIP10()
         val notaryPublicKey: PublicKey = PublicKeyEddsaEd25519(
             keyType = PublicKeyType.eddsaEd25519,
             keyHex = notaryPrivateKey.toECKeyPair().getCompressedPublicKey().removeLeadingZero().toHexString()
         )
-        val previewResult = transactionRepository.getTransactionPreview(
+        return transactionRepository.getTransactionPreview(
             // TODO things like tipPercentage might change later on
             TransactionPreviewRequest(
-                manifest = manifest.toStringWithoutBlobs(),
+                manifest = manifest.instructions().asStr(),
                 startEpochInclusive = startEpochInclusive,
                 endEpochExclusive = endEpochExclusive,
                 tipPercentage = 5,
@@ -334,15 +332,20 @@ class TransactionClient @Inject constructor(
                     permitDuplicateIntentHash = true,
                     permitInvalidHeaderEpoch = true
                 ),
-                blobsHex = blobs.map { it.toHexString() },
+                blobsHex = manifest.blobs().map { it.toByteArray().toHexString() },
                 notaryPublicKey = notaryPublicKey,
                 notaryIsSignatory = notaryAndSigners.notaryIsSignatory
             )
+        ).asKotlinResult().fold(
+            onSuccess = { preview ->
+                if (preview.receipt.isFailed) {
+                    Result.failure(Throwable(preview.receipt.errorMessage))
+                } else {
+                    Result.success(preview)
+                }
+            },
+            onFailure = { Result.failure(it) }
         )
-        return when (val result = previewResult) {
-            is ResultInternal.Error -> Result.failure(result.exception ?: DappRequestFailure.InvalidRequest)
-            is ResultInternal.Success -> Result.success(result.data)
-        }
     }
 
     @Suppress("MagicNumber")
