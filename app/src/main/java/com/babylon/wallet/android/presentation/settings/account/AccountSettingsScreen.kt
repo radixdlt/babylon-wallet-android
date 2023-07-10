@@ -1,4 +1,8 @@
+<<<<<<<< HEAD:app/src/main/java/com/babylon/wallet/android/presentation/account/accountpreference/AccountPreferencesScreen.kt
 package com.babylon.wallet.android.presentation.account.accountpreference
+========
+package com.babylon.wallet.android.presentation.settings.account
+>>>>>>>> 6c886c7c9 (third party deposits UI):app/src/main/java/com/babylon/wallet/android/presentation/settings/account/AccountSettingsScreen.kt
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
@@ -9,7 +13,12 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+<<<<<<<< HEAD:app/src/main/java/com/babylon/wallet/android/presentation/account/accountpreference/AccountPreferencesScreen.kt
 import androidx.compose.foundation.layout.statusBars
+========
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.material.Divider
+>>>>>>>> 6c886c7c9 (third party deposits UI):app/src/main/java/com/babylon/wallet/android/presentation/settings/account/AccountSettingsScreen.kt
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.ModalBottomSheetLayout
 import androidx.compose.material.ModalBottomSheetValue
@@ -36,18 +45,23 @@ import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.status.signing.SigningStatusBottomDialog
 import com.babylon.wallet.android.presentation.ui.composables.AccountQRCodeView
 import com.babylon.wallet.android.presentation.ui.composables.BottomDialogDragHandle
+import com.babylon.wallet.android.presentation.ui.composables.DefaultSettingsItem
+import com.babylon.wallet.android.presentation.ui.composables.NotSecureAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
 import com.babylon.wallet.android.utils.biometricAuthenticate
+import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
-fun AccountPreferenceScreen(
-    viewModel: AccountPreferenceViewModel,
+fun AccountSettingsScreen(
+    viewModel: AccountSettingsViewModel,
     onBackClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onSettingClick: (AccountSettingItem, String) -> Unit
 ) {
     val context = LocalContext.current
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -80,7 +94,7 @@ fun AccountPreferenceScreen(
         sheetBackgroundColor = RadixTheme.colors.defaultBackground,
         sheetShape = RadixTheme.shapes.roundedRectTopDefault
     ) {
-        AccountPreferenceContent(
+        AccountSettingsContent(
             onBackClick = onBackClick,
             onGetFreeXrdClick = viewModel::onGetFreeXrdClick,
             onShowQRCodeClick = {
@@ -98,6 +112,10 @@ fun AccountPreferenceScreen(
                         viewModel.onCreateAndUploadAuthKey()
                     }
                 }
+            },
+            settingsSections = state.settingsSections,
+            onSettingClick = {
+                onSettingClick(it, state.accountAddress)
             }
         )
         state.interactionState?.let {
@@ -111,7 +129,7 @@ fun AccountPreferenceScreen(
 }
 
 @Composable
-private fun AccountPreferenceContent(
+private fun AccountSettingsContent(
     onBackClick: () -> Unit,
     onGetFreeXrdClick: () -> Unit,
     onShowQRCodeClick: () -> Unit,
@@ -123,6 +141,8 @@ private fun AccountPreferenceContent(
     modifier: Modifier = Modifier,
     hasAuthKey: Boolean,
     onCreateAndUploadAuthKey: () -> Unit,
+    settingsSections: ImmutableList<AccountSettingsSection>,
+    onSettingClick: (AccountSettingItem) -> Unit
 ) {
     val snackBarHostState = remember { SnackbarHostState() }
     SnackbarUIMessage(
@@ -132,6 +152,7 @@ private fun AccountPreferenceContent(
     )
     Scaffold(
         modifier = modifier,
+<<<<<<<< HEAD:app/src/main/java/com/babylon/wallet/android/presentation/account/accountpreference/AccountPreferencesScreen.kt
         topBar = {
             RadixCenteredTopAppBar(
                 title = stringResource(R.string.accountSettings_title),
@@ -186,6 +207,114 @@ private fun AccountPreferenceContent(
                     enabled = !isAuthSigningLoading,
                     throttleClicks = true
                 )
+========
+        horizontalAlignment = Alignment.Start
+    ) {
+        RadixCenteredTopAppBar(
+            title = stringResource(R.string.accountSettings_title),
+            onBackClick = onBackClick,
+            containerColor = RadixTheme.colors.defaultBackground
+        )
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .weight(1f)
+        ) {
+            val context = LocalContext.current
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(RadixTheme.colors.gray5)
+            ) {
+                settingsSections.forEach { section ->
+                    item {
+                        Text(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(RadixTheme.dimensions.paddingDefault),
+                            text = stringResource(id = section.titleRes()),
+                            style = RadixTheme.typography.body1HighImportance,
+                            color = RadixTheme.colors.gray2
+                        )
+                    }
+                    val lastSettingsItem = section.settingsItems.last()
+                    section.settingsItems.forEach { settingsItem ->
+                        item {
+                            DefaultSettingsItem(
+                                onClick = {
+                                    onSettingClick(settingsItem)
+                                },
+                                icon = settingsItem.getIcon(),
+                                title = stringResource(id = settingsItem.titleRes()),
+                                subtitle = stringResource(id = settingsItem.subtitleRes())
+                            )
+                            if (lastSettingsItem != settingsItem) {
+                                Divider(
+                                    modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingDefault),
+                                    color = RadixTheme.colors.gray5
+                                )
+                            }
+                        }
+                    }
+                }
+                item {
+                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
+                    RadixSecondaryButton(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = RadixTheme.dimensions.paddingDefault),
+                        text = stringResource(R.string.accountSettings_getXrdTestTokens),
+                        onClick = {
+                            if (isDeviceSecure) {
+                                context.biometricAuthenticate { authenticatedSuccessfully ->
+                                    if (authenticatedSuccessfully) {
+                                        onGetFreeXrdClick()
+                                    }
+                                }
+                            } else {
+                                showNotSecuredDialog = true
+                            }
+                        },
+                        enabled = !loading && canUseFaucet
+                    )
+                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSmall))
+                }
+                if (!hasAuthKey) {
+                    item {
+                        RadixSecondaryButton(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = RadixTheme.dimensions.paddingDefault),
+                            text = "Create &amp; Upload Auth Key",
+                            onClick = onCreateAndUploadAuthKey,
+                            enabled = !loading,
+                            throttleClicks = true
+                        )
+                        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSmall))
+                    }
+                }
+                item {
+                    RadixSecondaryButton(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = RadixTheme.dimensions.paddingDefault),
+                        text = stringResource(R.string.addressAction_showAccountQR),
+                        onClick = onShowQRCodeClick,
+                        enabled = !loading
+                    )
+                }
+
+                if (loading) {
+                    item {
+                        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXSmall))
+                        Text(
+                            text = stringResource(R.string.accountSettings_loadingPrompt),
+                            style = RadixTheme.typography.body2Regular,
+                            color = RadixTheme.colors.gray1,
+                        )
+                    }
+                }
+>>>>>>>> 6c886c7c9 (third party deposits UI):app/src/main/java/com/babylon/wallet/android/presentation/settings/account/AccountSettingsScreen.kt
             }
             RadixSecondaryButton(
                 modifier = Modifier.fillMaxWidth(),
@@ -199,9 +328,9 @@ private fun AccountPreferenceContent(
 
 @Preview(showBackground = true)
 @Composable
-fun AccountPreferencePreview() {
+fun AccountSettingsPreview() {
     RadixWalletTheme {
-        AccountPreferenceContent(
+        AccountSettingsContent(
             onBackClick = {},
             onGetFreeXrdClick = {},
             onShowQRCodeClick = {},
@@ -211,7 +340,13 @@ fun AccountPreferencePreview() {
             onMessageShown = {},
             error = null,
             hasAuthKey = false,
-            onCreateAndUploadAuthKey = {}
+            onCreateAndUploadAuthKey = {},
+            settingsSections = persistentListOf(
+                AccountSettingsSection.AccountSection(
+                    listOf(AccountSettingItem.ThirdPartyDeposits)
+                )
+            ),
+            onSettingClick = {}
         )
     }
 }

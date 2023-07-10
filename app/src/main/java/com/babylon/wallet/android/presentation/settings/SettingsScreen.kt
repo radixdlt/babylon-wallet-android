@@ -36,6 +36,9 @@ import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixSecondaryButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
+import com.babylon.wallet.android.presentation.settings.backup.backupMessage
+import com.babylon.wallet.android.presentation.ui.composables.DefaultSettingsItem
+import com.babylon.wallet.android.presentation.ui.composables.NotBackedUpWarning
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import kotlinx.collections.immutable.ImmutableList
@@ -128,10 +131,11 @@ private fun SettingsContent(
                         else -> {
                             item {
                                 DefaultSettingsItem(
-                                    settingsItem = settingsItem,
                                     onClick = {
                                         onSettingClick(settingsItem)
-                                    }
+                                    },
+                                    icon = settingsItem.getIcon(),
+                                    title = stringResource(id = settingsItem.descriptionRes())
                                 )
                             }
                             item {
@@ -156,39 +160,6 @@ private fun SettingsContent(
                 }
             }
         }
-    }
-}
-
-@Composable
-private fun DefaultSettingsItem(
-    settingsItem: SettingsItem.TopLevelSettings,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    Row(
-        modifier = modifier
-            .fillMaxWidth()
-            .height(72.dp)
-            .background(RadixTheme.colors.defaultBackground)
-            .throttleClickable(onClick = onClick)
-            .padding(horizontal = RadixTheme.dimensions.paddingDefault),
-        verticalAlignment = CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingMedium)
-    ) {
-        settingsItem.getIcon()?.let {
-            Icon(painter = painterResource(id = it), contentDescription = null)
-        }
-        Text(
-            text = stringResource(id = settingsItem.descriptionRes()),
-            style = RadixTheme.typography.body2Header,
-            color = RadixTheme.colors.gray1
-        )
-        Spacer(modifier = Modifier.weight(1f))
-        Icon(
-            painter = painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_chevron_right),
-            contentDescription = null,
-            tint = RadixTheme.colors.gray1
-        )
     }
 }
 

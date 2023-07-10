@@ -17,6 +17,16 @@ import com.babylon.wallet.android.presentation.account.createaccount.confirmatio
 import com.babylon.wallet.android.presentation.account.createaccount.confirmation.createAccountConfirmationScreen
 import com.babylon.wallet.android.presentation.account.createaccount.createAccountScreen
 import com.babylon.wallet.android.presentation.account.createaccount.withledger.createAccountWithLedger
+import com.babylon.wallet.android.presentation.createaccount.ROUTE_CREATE_ACCOUNT
+import com.babylon.wallet.android.presentation.createaccount.confirmation.CreateAccountRequestSource
+import com.babylon.wallet.android.presentation.createaccount.confirmation.createAccountConfirmationScreen
+import com.babylon.wallet.android.presentation.createaccount.createAccountScreen
+import com.babylon.wallet.android.presentation.createaccount.withledger.createAccountWithLedger
+import com.babylon.wallet.android.presentation.createpersona.createPersonaConfirmationScreen
+import com.babylon.wallet.android.presentation.createpersona.createPersonaScreen
+import com.babylon.wallet.android.presentation.createpersona.personaInfoScreen
+import com.babylon.wallet.android.presentation.createpersona.personasScreen
+import com.babylon.wallet.android.presentation.createpersona.popPersonaCreation
 import com.babylon.wallet.android.presentation.dapp.authorized.dappLoginAuthorizedNavGraph
 import com.babylon.wallet.android.presentation.dapp.completion.ChooseAccountsCompletionScreen
 import com.babylon.wallet.android.presentation.dapp.unauthorized.dappLoginUnauthorizedNavGraph
@@ -41,6 +51,16 @@ import com.babylon.wallet.android.presentation.settings.personas.createpersona.p
 import com.babylon.wallet.android.presentation.settings.personas.createpersona.popPersonaCreation
 import com.babylon.wallet.android.presentation.settings.personas.personadetail.personaDetailScreen
 import com.babylon.wallet.android.presentation.settings.personas.personaedit.personaEditScreen
+import com.babylon.wallet.android.presentation.settings.account.AccountSettingItem
+import com.babylon.wallet.android.presentation.settings.account.accountSettings
+import com.babylon.wallet.android.presentation.settings.account.thirdpartydeposits.accountThirdPartyDeposits
+import com.babylon.wallet.android.presentation.settings.backup.restoreMnemonicScreen
+import com.babylon.wallet.android.presentation.settings.connector.settingsConnectorScreen
+import com.babylon.wallet.android.presentation.settings.incompatibleprofile.IncompatibleProfileContent
+import com.babylon.wallet.android.presentation.settings.incompatibleprofile.ROUTE_INCOMPATIBLE_PROFILE
+import com.babylon.wallet.android.presentation.settings.personadetail.personaDetailScreen
+import com.babylon.wallet.android.presentation.settings.personaedit.personaEditScreen
+import com.babylon.wallet.android.presentation.settings.seedphrases.seedPhrases
 import com.babylon.wallet.android.presentation.settings.settingsNavGraph
 import com.babylon.wallet.android.presentation.status.dapp.dappInteractionDialog
 import com.babylon.wallet.android.presentation.status.transaction.transactionStatusDialog
@@ -149,7 +169,7 @@ fun NavigationHost(
             AccountScreen(
                 viewModel = hiltViewModel(),
                 onAccountPreferenceClick = { address ->
-                    navController.accountPreferences(address = address)
+                    navController.accountSettings(address = address)
                 },
                 onBackClick = {
                     navController.navigateUp()
@@ -241,9 +261,20 @@ fun NavigationHost(
                 navController.popBackStack()
             }
         )
-        accountPreferencesScreen {
-            navController.popBackStack()
-        }
+        accountSettings(
+            onBackClick = {
+                navController.popBackStack()
+            },
+            onSettingClick = { item, accountAddress ->
+                when (item) {
+                    AccountSettingItem.ThirdPartyDeposits -> {
+                        navController.accountThirdPartyDeposits(accountAddress)
+                    }
+
+                    else -> {}
+                }
+            }
+        )
         dappLoginAuthorizedNavGraph(navController = navController)
         dappLoginUnauthorizedNavGraph(navController = navController)
         settingsNavGraph(navController)

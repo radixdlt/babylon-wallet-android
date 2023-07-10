@@ -1,4 +1,8 @@
+<<<<<<<< HEAD:app/src/main/java/com/babylon/wallet/android/presentation/account/accountpreference/AccountPreferencesViewModel.kt
 package com.babylon.wallet.android.presentation.account.accountpreference
+========
+package com.babylon.wallet.android.presentation.settings.account
+>>>>>>>> 6c886c7c9 (third party deposits UI):app/src/main/java/com/babylon/wallet/android/presentation/settings/account/AccountSettingsViewModel.kt
 
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
@@ -15,6 +19,8 @@ import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.filter
@@ -34,7 +40,7 @@ import javax.inject.Inject
 
 @Suppress("LongParameterList")
 @HiltViewModel
-class AccountPreferenceViewModel @Inject constructor(
+class AccountSettingsViewModel @Inject constructor(
     private val getFreeXrdUseCase: GetFreeXrdUseCase,
     private val getProfileUseCase: GetProfileUseCase,
     private val rolaClient: ROLAClient,
@@ -45,7 +51,7 @@ class AccountPreferenceViewModel @Inject constructor(
     private val appEventBus: AppEventBus
 ) : StateViewModel<AccountPreferenceUiState>() {
 
-    private val args = AccountPreferencesArgs(savedStateHandle)
+    private val args = AccountSettingsArgs(savedStateHandle)
     private var authSigningFactorInstance: FactorInstance? = null
     private var uploadAuthKeyRequestId: String? = null
     private var job: Job? = null
@@ -164,6 +170,7 @@ class AccountPreferenceViewModel @Inject constructor(
 }
 
 data class AccountPreferenceUiState(
+    val settingsSections: ImmutableList<AccountSettingsSection> = defaultSettings,
     val account: Network.Account? = null,
     val accountAddress: String,
     val faucetState: FaucetState = FaucetState.Unavailable,
@@ -172,4 +179,8 @@ data class AccountPreferenceUiState(
     val error: UiMessage? = null,
     val hasAuthKey: Boolean = false,
     val interactionState: InteractionState? = null
-) : UiState
+) : UiState {
+    companion object {
+        val defaultSettings = persistentListOf(AccountSettingsSection.AccountSection(listOf(AccountSettingItem.ThirdPartyDeposits)))
+    }
+}

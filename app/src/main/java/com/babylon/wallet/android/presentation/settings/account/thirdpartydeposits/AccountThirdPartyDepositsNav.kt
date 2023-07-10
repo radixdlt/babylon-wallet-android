@@ -1,7 +1,8 @@
-package com.babylon.wallet.android.presentation.account.accountpreference
+package com.babylon.wallet.android.presentation.settings.account.thirdpartydeposits
 
 import androidx.annotation.VisibleForTesting
 import androidx.compose.animation.AnimatedContentScope
+import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.SavedStateHandle
@@ -14,33 +15,38 @@ import com.google.accompanist.navigation.animation.composable
 @VisibleForTesting
 internal const val ARG_ADDRESS = "arg_address"
 
-internal class AccountPreferencesArgs(val address: String) {
+internal class AccountThirdPartyDepositsArgs(val address: String) {
     constructor(savedStateHandle: SavedStateHandle) : this(checkNotNull(savedStateHandle[ARG_ADDRESS]) as String)
 }
 
-fun NavController.accountPreferences(address: String) {
-    navigate("account_preference_route/$address") {
-        launchSingleTop = true
-    }
+fun NavController.accountThirdPartyDeposits(address: String) {
+    navigate("account_third_party_deposits_route/$address")
 }
 
 @OptIn(ExperimentalAnimationApi::class)
-fun NavGraphBuilder.accountPreferencesScreen(onBackClick: () -> Unit) {
+fun NavGraphBuilder.accountThirdPartyDeposits(onBackClick: () -> Unit, onAssetSpecificRulesClick: (String) -> Unit) {
     composable(
-        route = "account_preference_route/{$ARG_ADDRESS}",
+        route = "account_third_party_deposits_route/{$ARG_ADDRESS}",
         arguments = listOf(
             navArgument(ARG_ADDRESS) { type = NavType.StringType }
         ),
         enterTransition = {
-            slideIntoContainer(AnimatedContentScope.SlideDirection.Up)
+            slideIntoContainer(AnimatedContentScope.SlideDirection.Left)
         },
         exitTransition = {
-            slideOutOfContainer(AnimatedContentScope.SlideDirection.Down)
+            null
+        },
+        popExitTransition = {
+            slideOutOfContainer(AnimatedContentScope.SlideDirection.Right)
+        },
+        popEnterTransition = {
+            EnterTransition.None
         }
     ) {
-        AccountPreferenceScreen(
+        AccountThirdPartyDepositsScreen(
             viewModel = hiltViewModel(),
-            onBackClick = onBackClick
+            onBackClick = onBackClick,
+            onAssetSpecificRulesClick = onAssetSpecificRulesClick
         )
     }
 }
