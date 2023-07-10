@@ -101,7 +101,7 @@ class AccountPreferenceViewModel @Inject constructor(
     fun onGetFreeXrdClick() {
         appScope.launch {
             _state.update { it.copy(isLoading = true) }
-            getFreeXrdUseCase(true, args.address).onSuccess { _ ->
+            getFreeXrdUseCase(address = args.address).onSuccess { _ ->
                 _state.update { it.copy(isLoading = false, gotFreeXrd = true) }
                 appEventBus.sendEvent(AppEvent.GotFreeXrd)
             }.onFailure { error ->

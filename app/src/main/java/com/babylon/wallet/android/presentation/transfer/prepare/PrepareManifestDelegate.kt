@@ -9,12 +9,10 @@ import com.babylon.wallet.android.presentation.transfer.TargetAccount
 import com.babylon.wallet.android.presentation.transfer.TransferViewModel
 import com.radixdlt.ret.Address
 import com.radixdlt.ret.Decimal
-import com.radixdlt.ret.ManifestBucket
 import com.radixdlt.ret.NonFungibleGlobalId
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
 import rdx.works.core.ret.ManifestBuilder
-import rdx.works.core.ret.ManifestBuilder2
 import rdx.works.profile.data.model.pernetwork.Network
 import timber.log.Timber
 import java.math.BigDecimal
@@ -37,7 +35,7 @@ class PrepareManifestDelegate(
         fromAccount: Network.Account,
         currentState: TransferViewModel.State
     ): MessageFromDataChannel.IncomingRequest.TransactionRequest {
-        val manifest = ManifestBuilder2()
+        val manifest = ManifestBuilder()
             .attachInstructionsForFungibles(
                 fromAccount = fromAccount,
                 targetAccounts = currentState.targetAccounts
@@ -55,14 +53,14 @@ class PrepareManifestDelegate(
     }
 
     @Suppress("NestedBlockDepth")
-    private fun ManifestBuilder2.attachInstructionsForFungibles(
+    private fun ManifestBuilder.attachInstructionsForFungibles(
         fromAccount: Network.Account,
         targetAccounts: List<TargetAccount>
     ) = apply {
         state.value.withdrawingFungibles().forEach { (resource, amount) ->
             // Withdraw the total amount for each fungible
             withdraw(
-                fromAccount = Address(fromAccount.address),
+                fromAddress = Address(fromAccount.address),
                 fungible = Address(resource.resourceAddress),
                 amount = Decimal(amount.toPlainString())
             )
@@ -84,7 +82,7 @@ class PrepareManifestDelegate(
 
                     // Then deposit the bucket into the target account
                     deposit(
-                        toAccount = Address(targetAccount.address),
+                        toAddress = Address(targetAccount.address),
                         fromBucket = bucket
                     )
                 }
@@ -92,7 +90,7 @@ class PrepareManifestDelegate(
         }
     }
 
-    private fun ManifestBuilder2.attachInstructionsForNFTs(
+    private fun ManifestBuilder.attachInstructionsForNFTs(
         fromAccount: Network.Account,
         targetAccounts: List<TargetAccount>
     ) = apply {
@@ -106,7 +104,7 @@ class PrepareManifestDelegate(
                     nonFungibleLocalId = nft.item.localId.toRetId()
                 )
                 withdraw(
-                    fromAccount = Address(fromAccount.address),
+                    fromAddress = Address(fromAccount.address),
                     nonFungible = globalId
                 )
                 takeFromWorktop(
@@ -114,7 +112,7 @@ class PrepareManifestDelegate(
                     intoBucket = bucket
                 )
                 deposit(
-                    toAccount = Address(targetAccount.address),
+                    toAddress = Address(targetAccount.address),
                     fromBucket = bucket
                 )
             }

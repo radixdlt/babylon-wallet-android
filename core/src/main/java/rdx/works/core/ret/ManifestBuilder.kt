@@ -1,89 +1,182 @@
 package rdx.works.core.ret
 
-import com.radixdlt.ret.Instruction
+import com.radixdlt.ret.Address
+import com.radixdlt.ret.Decimal
 import com.radixdlt.ret.Instructions
-import com.radixdlt.ret.ManifestValue
-import com.radixdlt.ret.ManifestValueKind
+import com.radixdlt.ret.ManifestBucket
+import com.radixdlt.ret.ManifestExpression
+import com.radixdlt.ret.NonFungibleGlobalId
+import com.radixdlt.ret.NonFungibleLocalId
 import com.radixdlt.ret.TransactionManifest
+import rdx.works.core.toByteArray
 import rdx.works.core.toUByteList
 
-/**
- * A [TransactionManifest] builder.
- *
- * This class implements the builder pattern and allows building of [TransactionManifest]s through
- * builder syntax. In addition to that, this class is meant to provide an abstraction layer to the
- * creation of manifests, thus allowing for simpler interfaces and APIs for developers.
- *
- * Each [Instruction] can have one or more [ManifestBuilder] for it. As an example, this class
- * provides the [withdrawFromAccount] function which does not have an instruction for itself.
- * Instead, it calls the "`withdraw`" method through the [Instruction.CallMethod] instruction on the
- * account component to perform the withdrawal of tokens.
- *
- * Note: the current strategy for function overloading is to provide function overloads in the
- * following two cases:
- * 1. If the instruction requires a [ManifestAstValue.String], we provide an overload that makes them also
- *    accept a [kotlin.String].
- * 2. If the instruction accepts a variable number of arguments, we provide an overload that uses
- *    kotlin's `vararg` keyword.
- */
 class ManifestBuilder {
-    var instructions: MutableList<Instruction> = mutableListOf()
-    var blobs: MutableList<ByteArray> = mutableListOf()
+    private var instructions = mutableListOf<String>()
+    private var blobs: MutableList<ByteArray> = mutableListOf()
+    private var latestBucketIndex: UInt = 0u
 
-    /**
-     * Adds a raw instruction to the builder's instruction.
-     *
-     * @param instruction The instruction to add to the builder instructions.
-     * @return A [ManifestBuilder] with the updated state. This allows for the chaining builder
-     *   pattern.
-     */
-    fun addInstruction(instruction: Instruction): ManifestBuilder {
-        this.instructions.add(instruction)
-        return this
-    }
-
-    /**
-     * Adds an [Instruction.CallMethod] instruction to the set of instructions.
-     *
-     * With the given arguments, this method adds an [Instruction.CallMethod] instruction to the
-     * manifest's vector of instructions.
-     *
-     * @param componentAddress The address of the component that the method exists on.
-     * @param methodName The name of the method to call.
-     * @param arguments An optional array of arguments to call the method with.
-     * @return A [ManifestBuilder] with the updated state. This allows for the chaining builder
-     */
-    fun callMethod(
-        componentAddress: ManifestValue.AddressValue,
-        methodName: ManifestValue.StringValue,
-        arguments: ManifestValue.ArrayValue? = null
-    ): ManifestBuilder {
-        return this.addInstruction(
-            Instruction.CallMethod(
-                address = componentAddress.value,
-                methodName = methodName.value,
-                args = arguments ?: ManifestValue.ArrayValue(
-                    elementValueKind = ManifestValueKind.BOOL_VALUE,
-                    elements = emptyList()
-                )
-            )
+    fun withdraw(
+        instructionIndex: Int = instructions.size,
+        fromAddress: Address,
+        fungible: Address,
+        amount: Decimal
+    ) = apply {
+        instructions.add(
+            index = instructionIndex,
+            """
+            CALL_METHOD
+                 Address("${fromAddress.addressString()}")
+                "${ManifestMethod.Withdraw.value}"
+                Address("${fungible.addressString()}")
+                Decimal("${amount.asStr()}")
+            ;
+            """.trimIndent()
         )
     }
 
-    /**
-     * Builds the final [TransactionManifest].
-     *
-     * This is the final method in the [ManifestBuilder] which builds the [TransactionManifest].
-     *
-     * @return The built transaction manifest
-     */
-    fun build(networkId: Int): TransactionManifest {
-        return TransactionManifest(
-            instructions = Instructions.fromInstructions(
-                instructions = instructions,
+    fun withdraw(
+        instructionIndex: Int = instructions.size,
+        fromAddress: Address,
+        nonFungible: NonFungibleGlobalId
+    ) = apply {
+        instructions.add(
+            index = instructionIndex,
+            """
+            CALL_METHOD
+                 Address("${fromAddress.addressString()}")
+                "${ManifestMethod.WithdrawNonFungibles.value}"
+                Address("${nonFungible.resourceAddress().addressString()}")
+                Array<NonFungibleLocalId>(NonFungibleLocalId("${nonFungible.localId().asStr()}"))
+            ;
+            """.trimIndent()
+        )
+    }
+
+    fun takeFromWorktop(
+        instructionIndex: Int = instructions.size,
+        fungible: Address,
+        amount: Decimal,
+        intoBucket: ManifestBucket
+    ) = apply {
+        instructions.add(
+            index = instructionIndex,
+            """
+            TAKE_FROM_WORKTOP
+                Address("${fungible.addressString()}")
+                Decimal("${amount.asStr()}")
+                Bucket("${intoBucket.value}")
+            ;   
+            """.trimIndent()
+        )
+    }
+
+    fun takeFromWorktop(
+        instructionIndex: Int = instructions.size,
+        nonFungible: NonFungibleGlobalId,
+        intoBucket: ManifestBucket
+    ) = apply {
+        instructions.add(
+            index = instructionIndex,
+            """
+            TAKE_NON_FUNGIBLES_FROM_WORKTOP
+                Address("${nonFungible.resourceAddress().addressString()}")
+                Array<NonFungibleLocalId>(NonFungibleLocalId("${nonFungible.localId().asStr()}"))
+                Bucket("${intoBucket.value}")
+            ;   
+            """.trimIndent()
+        )
+    }
+
+    fun deposit(
+        instructionIndex: Int = instructions.size,
+        toAddress: Address,
+        fromBucket: ManifestBucket
+    ) = apply {
+        instructions.add(
+            index = instructionIndex,
+            """
+            CALL_METHOD
+                Address("${toAddress.addressString()}")
+                "${ManifestMethod.TryDepositOrAbort.value}"
+                Bucket("${fromBucket.value}")
+            ;   
+            """.trimIndent()
+        )
+    }
+
+    fun depositBatch(
+        instructionIndex: Int = instructions.size,
+        toAddress: Address,
+    ) = apply {
+        instructions.add(
+            index = instructionIndex,
+            """
+            CALL_METHOD
+                Address("${toAddress.addressString()}")
+                "${ManifestMethod.TryDepositBatchOrAbort.value}"
+                Expression("${ManifestExpression.ENTIRE_WORKTOP}")
+            ;   
+            """.trimIndent()
+        )
+    }
+
+    fun freeXrd(
+        instructionIndex: Int = instructions.size,
+        faucetAddress: Address
+    ) = apply {
+        instructions.add(
+            index = instructionIndex,
+            """
+            CALL_METHOD
+                Address("${faucetAddress.addressString()}")
+                "${ManifestMethod.Free.value}"
+            ;   
+            """.trimIndent()
+        )
+    }
+
+    fun lockFee(
+        instructionIndex: Int = instructions.size,
+        fromAddress: Address,
+        fee: Decimal
+    ) = apply {
+        instructions.add(
+            index = instructionIndex,
+            """
+            CALL_METHOD
+                Address("${fromAddress.addressString()}")
+                "${ManifestMethod.LockFee.value}",
+                "Decimal("${fee.asStr()}")"
+            ;   
+            """.trimIndent()
+        )
+    }
+
+    fun build(networkId: Int) = with(blobs.map { it.toUByteList() }) {
+        TransactionManifest(
+            instructions = Instructions.fromString(
+                string = instructions.joinToString(separator = "\n"),
+                blobs = this,
                 networkId = networkId.toUByte()
             ),
-            blobs = blobs.map { it.toUByteList() }
+            blobs = this
         )
     }
+
+    fun newBucket() = ManifestBucket(value = latestBucketIndex + 1u).also {
+        latestBucketIndex += 1u
+    }
+
+    companion object {
+
+    }
+
+}
+
+fun NonFungibleLocalId.asStr() = when (this) {
+    is NonFungibleLocalId.Bytes -> "[${value.toByteArray()}]"
+    is NonFungibleLocalId.Integer -> "#$value#"
+    is NonFungibleLocalId.Str -> "<$value>"
+    is NonFungibleLocalId.Uuid -> "{$value}"
 }
