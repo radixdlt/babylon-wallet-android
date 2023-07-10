@@ -21,7 +21,7 @@ jobs:
       - name: Run Snyk to check for deps vulnerabilities
         uses: snyk/actions/gradle-jdk17@b98d498629f1c368650224d6d212bf7dfa89e4bf # v0.4.0
         with:
-          args: --all-projects --org=${{ secrets.SNYK_ORG_ID }} --severity-threshold=high
+          args: --org=${{ secrets.SNYK_ORG_ID }} --severity-threshold=high
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
 
@@ -32,7 +32,7 @@ jobs:
       - name: Run Snyk to check for code vulnerabilities
         uses: snyk/actions/gradle-jdk17@master
         with:
-          args: --all-projects  --org=${{ secrets.SNYK_ORG_ID }} --severity-threshold=high
+          args: --org=${{ secrets.SNYK_ORG_ID }} --severity-threshold=high
           command: code test
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
@@ -44,7 +44,7 @@ jobs:
       - name: Enable Snyk active monitoring to check for vulnerabilities
         uses: snyk/actions/gradle-jdk17@master
         with:
-          args: --all-projects --org=${{ secrets.SNYK_ORG_ID }} --severity-threshold=high
+          args: --org=${{ secrets.SNYK_ORG_ID }} --severity-threshold=high
           command: monitor
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
