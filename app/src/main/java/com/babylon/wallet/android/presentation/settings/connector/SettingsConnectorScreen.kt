@@ -17,7 +17,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Divider
@@ -33,8 +32,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
@@ -45,6 +46,7 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.presentation.common.FullscreenCircularProgressContent
 import com.babylon.wallet.android.presentation.settings.connector.qrcode.CameraPreview
+import com.babylon.wallet.android.presentation.ui.composables.BackIconType
 import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
@@ -87,7 +89,8 @@ fun SettingsConnectorScreen(
         settingsMode = state.mode,
         onLinkConnector = viewModel::linkConnector,
         cancelQrScan = viewModel::cancelQrScan,
-        triggerCameraPermissionPrompt = state.triggerCameraPermissionPrompt
+        triggerCameraPermissionPrompt = state.triggerCameraPermissionPrompt,
+        dismiss = state.dismiss
     )
 }
 
@@ -108,9 +111,10 @@ private fun SettingsLinkConnectorContent(
     onLinkConnector: () -> Unit,
     cancelQrScan: () -> Unit,
     triggerCameraPermissionPrompt: Boolean,
+    dismiss: Boolean
 ) {
     val backHandler = {
-        if (settingsMode == SettingsConnectorMode.ScanQr) {
+        if (settingsMode == SettingsConnectorMode.ScanQr && !dismiss) {
             cancelQrScan()
         } else {
             onBackClick()
@@ -130,15 +134,21 @@ private fun SettingsLinkConnectorContent(
 
     Column(modifier = modifier) {
         RadixCenteredTopAppBar(
-            title = if (settingsMode == SettingsConnectorMode.ShowDetails) {
+            title =
+            if (settingsMode == SettingsConnectorMode.ShowDetails) {
                 stringResource(R.string.linkedConnectors_title)
             } else {
-                stringResource(R.string.linkedConnectors_newConnection_title)
+                ""
             },
             onBackClick = backHandler,
-            contentColor = RadixTheme.colors.gray1
+            contentColor = RadixTheme.colors.gray1,
+            backIconType = if (dismiss) BackIconType.Close else BackIconType.Back
         )
-        Divider(color = RadixTheme.colors.gray5)
+
+        if (settingsMode == SettingsConnectorMode.ShowDetails) {
+            Divider(color = RadixTheme.colors.gray5)
+        }
+
         Box(modifier = Modifier.fillMaxSize()) {
             when (settingsMode) {
                 SettingsConnectorMode.LinkConnector -> {
@@ -161,10 +171,42 @@ private fun SettingsLinkConnectorContent(
                 }
                 SettingsConnectorMode.ScanQr -> {
                     if (cameraPermissionState.status.isGranted) {
-                        CameraPreview(
-                            modifier = Modifier.fillMaxSize()
+                        Column(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalAlignment = Alignment.CenterHorizontally
                         ) {
-                            onConnectionPasswordDecoded(it)
+                            Text(
+                                modifier = Modifier
+                                    .padding(horizontal = RadixTheme.dimensions.paddingDefault),
+                                text = stringResource(id = R.string.linkedConnectors_linkNewConnector),
+                                style = RadixTheme.typography.title,
+                                color = RadixTheme.colors.gray1
+                            )
+
+                            Text(
+                                modifier = Modifier
+                                    .padding(RadixTheme.dimensions.paddingLarge),
+                                text = stringResource(id = R.string.linkedConnectors_newConnection_subtitle),
+                                style = RadixTheme.typography.body1Regular,
+                                color = RadixTheme.colors.gray1,
+                                textAlign = TextAlign.Center
+                            )
+
+                            CameraPreview(
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .fillMaxWidth()
+                                    .padding(
+                                        horizontal = RadixTheme.dimensions.paddingLarge,
+                                        vertical = RadixTheme.dimensions.paddingDefault
+                                    )
+                                    .imePadding()
+                                    .clip(RadixTheme.shapes.roundedRectMedium),
+                                isVisible = true,
+                                onQrCodeDetected = {
+                                    onConnectionPasswordDecoded(it)
+                                }
+                            )
                         }
                     }
                 }
@@ -314,25 +356,55 @@ private fun ConnectorNameInput(
     buttonEnabled: Boolean,
     onConnectorDisplayNameChanged: (String) -> Unit,
 ) {
-    Column(modifier = modifier) {
+    Column(
+        modifier = modifier
+            .padding(horizontal = RadixTheme.dimensions.paddingDefault)
+    ) {
+        Text(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(
+                    bottom = RadixTheme.dimensions.paddingDefault
+                ),
+            text = stringResource(id = R.string.linkedConnectors_nameNewConnector_title),
+            style = RadixTheme.typography.title,
+            color = RadixTheme.colors.gray1,
+            textAlign = TextAlign.Center
+        )
+
+        Text(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(
+                    start = RadixTheme.dimensions.paddingLarge,
+                    end = RadixTheme.dimensions.paddingLarge,
+                    bottom = RadixTheme.dimensions.paddingLarge
+                ),
+            text = "What would you like to call this Connector?", // todo Crowdin
+            style = RadixTheme.typography.body1Regular,
+            color = RadixTheme.colors.gray1,
+            textAlign = TextAlign.Center
+        )
         RadixTextField(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = RadixTheme.dimensions.paddingMedium),
             onValueChanged = onConnectorDisplayNameChanged,
             value = connectorDisplayName,
-            hint = stringResource(R.string.linkedConnectors_nameNewConnector_textFieldPlaceholder),
-            optionalHint = stringResource(id = R.string.linkedConnectors_nameNewConnector_textFieldHint),
+            hint = "",
+            // todo replace in Crowdin stringResource(id = R.string.linkedConnectors_nameNewConnector_textFieldHint),
+            optionalHint = "Name this connector e.g. ‘Chrome on MacBook Pro’",
             singleLine = true
         )
-        Spacer(modifier = Modifier.size(RadixTheme.dimensions.paddingMedium))
+        Spacer(modifier = Modifier.weight(1f))
         RadixPrimaryButton(
-            text = stringResource(id = R.string.linkedConnectors_nameNewConnector_saveLinkButtonTitle),
+            text = "Continue",
+            // todo replace in Crowdin stringResource(id = R.string.linkedConnectors_nameNewConnector_saveLinkButtonTitle),
             onClick = onLinkNewConnectorClick,
             modifier = Modifier
                 .fillMaxWidth()
                 .imePadding()
-                .padding(horizontal = RadixTheme.dimensions.paddingMedium),
+                .padding(RadixTheme.dimensions.paddingMedium),
             enabled = buttonEnabled
         )
     }
@@ -356,7 +428,8 @@ fun SettingsScreenLinkConnectorWithoutActiveConnectorPreview() {
             settingsMode = SettingsConnectorMode.ShowDetails,
             onLinkConnector = {},
             cancelQrScan = {},
-            triggerCameraPermissionPrompt = false
+            triggerCameraPermissionPrompt = false,
+            dismiss = false
         )
     }
 }
@@ -385,7 +458,8 @@ fun SettingsScreenLinkConnectorWithActiveConnectorPreview() {
             settingsMode = SettingsConnectorMode.ShowDetails,
             onLinkConnector = {},
             cancelQrScan = {},
-            triggerCameraPermissionPrompt = false
+            triggerCameraPermissionPrompt = false,
+            dismiss = false
         )
     }
 }

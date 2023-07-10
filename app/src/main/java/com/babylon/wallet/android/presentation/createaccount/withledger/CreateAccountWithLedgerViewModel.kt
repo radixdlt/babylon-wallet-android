@@ -118,6 +118,14 @@ class CreateAccountWithLedgerViewModel @Inject constructor(
         createLedgerDelegate.onConfirmLedgerName(name)
     }
 
+    fun onAddLedgerClick() {
+        _state.update { it.copy(addLedgerMode = true) }
+    }
+
+    fun onAddLedgerCloseClick() {
+        _state.update { it.copy(addLedgerMode = false) }
+    }
+
     fun onMessageShown() {
         _state.update { it.copy(uiMessage = null) }
     }
@@ -126,6 +134,7 @@ class CreateAccountWithLedgerViewModel @Inject constructor(
         val loading: Boolean = false,
         val ledgerFactorSources: ImmutableList<Selectable<LedgerHardwareWalletFactorSource>> = persistentListOf(),
         val hasP2pLinks: Boolean = false,
+        val addLedgerMode: Boolean = false,
         val addLedgerSheetState: AddLedgerSheetState = AddLedgerSheetState.Connect,
         val waitingForLedgerResponse: Boolean = false,
         val recentlyConnectedLedgerDevice: LedgerDeviceUiModel? = null,
