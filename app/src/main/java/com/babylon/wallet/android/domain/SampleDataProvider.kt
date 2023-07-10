@@ -25,6 +25,7 @@ import rdx.works.profile.data.model.apppreferences.Security
 import rdx.works.profile.data.model.factorsources.DeviceFactorSource
 import rdx.works.profile.data.model.factorsources.FactorSource
 import rdx.works.profile.data.model.factorsources.FactorSourceKind
+import rdx.works.profile.data.model.factorsources.LedgerHardwareWalletFactorSource
 import rdx.works.profile.data.model.pernetwork.DerivationPath
 import rdx.works.profile.data.model.pernetwork.FactorInstance
 import rdx.works.profile.data.model.pernetwork.Network
@@ -34,6 +35,19 @@ import rdx.works.profile.derivation.model.NetworkId
 import java.math.BigDecimal
 
 class SampleDataProvider {
+
+    val ledgerFactorSourcesSample = listOf(
+        LedgerHardwareWalletFactorSource.newSource(
+            deviceID = FactorSource.HexCoded32Bytes("5f07ec336e9e7891bff04004c817201e73c097b6b1e1b3a26bc205e0010196f5"),
+            model = LedgerHardwareWalletFactorSource.DeviceModel.NANO_S,
+            name = "Nano S",
+        ),
+        LedgerHardwareWalletFactorSource.newSource(
+            deviceID = FactorSource.HexCoded32Bytes("5f07ec336e9e7891bff00404c817201e73c097b6b1e1b3a26bc205e0010196f5"),
+            model = LedgerHardwareWalletFactorSource.DeviceModel.NANO_X,
+            name = "Nano X",
+        )
+    )
 
     fun sampleAccount(
         address: String = "fj3489fj348f",

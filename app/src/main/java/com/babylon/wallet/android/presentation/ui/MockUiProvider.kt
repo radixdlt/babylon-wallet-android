@@ -2,6 +2,10 @@ package com.babylon.wallet.android.presentation.ui
 
 import com.babylon.wallet.android.presentation.common.SeedPhraseInputDelegate.SeedPhraseWord
 import kotlinx.collections.immutable.persistentListOf
+import rdx.works.profile.data.model.factorsources.DerivationPathScheme
+import rdx.works.profile.data.model.pernetwork.DerivationPath
+import rdx.works.profile.olympiaimport.OlympiaAccountDetails
+import rdx.works.profile.olympiaimport.OlympiaAccountType
 
 object MockUiProvider {
 
@@ -60,5 +64,36 @@ object MockUiProvider {
             state = SeedPhraseWord.State.Empty,
             lastWord = true
         )
+    )
+
+    val olympiaAccountsList = listOf(
+        OlympiaAccountDetails(
+            index = 0,
+            type = OlympiaAccountType.Software,
+            address = "account_address_1",
+            publicKey = "publicKey1",
+            accountName = "account one",
+            derivationPath = DerivationPath(path = "path", scheme = DerivationPathScheme.BIP_44_OLYMPIA),
+            newBabylonAddress = "babylon_account_address_1"
+        ),
+
+        OlympiaAccountDetails(
+            index = 1,
+            type = OlympiaAccountType.Hardware,
+            address = "account_address_2",
+            publicKey = "publicKey2",
+            accountName = "account two",
+            derivationPath = DerivationPath(path = "path", scheme = DerivationPathScheme.BIP_44_OLYMPIA),
+            newBabylonAddress = "babylon_account_address_2"
+        ),
+        OlympiaAccountDetails(
+            index = 2,
+            type = OlympiaAccountType.Hardware,
+            address = "account_address_3",
+            publicKey = "publicKey3",
+            accountName = "account three",
+            derivationPath = DerivationPath(path = "path", scheme = DerivationPathScheme.BIP_44_OLYMPIA),
+            newBabylonAddress = "babylon_account_address_3"
+        ),
     )
 }
