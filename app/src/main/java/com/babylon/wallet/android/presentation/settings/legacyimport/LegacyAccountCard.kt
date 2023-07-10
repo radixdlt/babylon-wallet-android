@@ -41,8 +41,8 @@ fun LegacyAccountCard(
         Text(
             text = stringResource(
                 id = when (accountType) {
-                    OlympiaAccountType.Hardware -> R.string.importOlympiaAccounts_accountsToImport_ledgerAccount
-                    OlympiaAccountType.Software -> R.string.importOlympiaAccounts_accountsToImport_legacyAccount
+                    OlympiaAccountType.Hardware -> R.string.importLegacyWallet_accountsToImport_ledgerAccount
+                    OlympiaAccountType.Software -> R.string.importLegacyWallet_accountsToImport_legacyAccount
                 }
             ),
             textAlign = TextAlign.Start,
@@ -51,7 +51,7 @@ fun LegacyAccountCard(
         )
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
         Text(
-            text = stringResource(id = R.string.importOlympiaAccounts_accountsToImport_olympiaAddressLabel),
+            text = stringResource(id = R.string.importLegacyWallet_selectAccountsToImport_olympiaAddress),
             textAlign = TextAlign.Start,
             maxLines = 1,
             style = RadixTheme.typography.secondaryHeader,
@@ -65,7 +65,7 @@ fun LegacyAccountCard(
         )
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
         Text(
-            text = stringResource(id = R.string.importOlympiaAccounts_accountsToImport_newAddressLabel),
+            text = stringResource(id = R.string.importLegacyWallet_accountsToImport_newAddress),
             textAlign = TextAlign.Start,
             maxLines = 1,
             style = RadixTheme.typography.secondaryHeader,
