@@ -39,8 +39,6 @@ jobs:
 
   snyk-monitor:
     runs-on: ubuntu-latest
-    needs:
-      - playstore_releases
     steps:
       - uses: actions/checkout@755da8c3cf115ac066823e79a1e1788f8940201b
       - name: Enable Snyk active monitoring to check for vulnerabilities
