@@ -21,7 +21,7 @@ jobs:
       - name: Run Snyk to check for deps vulnerabilities
         uses: snyk/actions/gradle-jdk17@b98d498629f1c368650224d6d212bf7dfa89e4bf # v0.4.0
         with:
-          args: --org=${{ secrets.SNYK_ORG_ID }} --severity-threshold=high
+          args: --all-projects --org=${{ secrets.SNYK_ORG_ID }} --severity-threshold=high
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
 
@@ -32,10 +32,27 @@ jobs:
       - name: Run Snyk to check for code vulnerabilities
         uses: snyk/actions/gradle-jdk17@b98d498629f1c368650224d6d212bf7dfa89e4bf # v0.4.0
         with:
-          args: --org=${{ secrets.SNYK_ORG_ID }} --severity-threshold=high
+          args: --all-projects  --org=${{ secrets.SNYK_ORG_ID }} --severity-threshold=high
           command: code test
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+
+  snyk-sbom:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@755da8c3cf115ac066823e79a1e1788f8940201b
+      - name: Snyk SBOM
+        uses: snyk/actions/gradle-jdk17@b98d498629f1c368650224d6d212bf7dfa89e4b
+        with:
+          args: --all-projects --format=cyclonedx1.4+json --json-file-output sbom.json
+          command: sbom
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+      - name: Upload SBOM artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: sbom
+          path: sbom.json
 #
 #  lint:
 #    name: "Lint"
