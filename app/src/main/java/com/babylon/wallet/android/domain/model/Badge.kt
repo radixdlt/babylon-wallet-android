@@ -6,8 +6,8 @@ import com.babylon.wallet.android.domain.model.metadata.NameMetadataItem
 
 data class Badge(
     val address: String,
-    val nameMetadataItem: NameMetadataItem? = null,
-    val iconMetadataItem: IconUrlMetadataItem? = null
+    private val nameMetadataItem: NameMetadataItem? = null,
+    private val iconMetadataItem: IconUrlMetadataItem? = null
 ) {
 
     val name: String?

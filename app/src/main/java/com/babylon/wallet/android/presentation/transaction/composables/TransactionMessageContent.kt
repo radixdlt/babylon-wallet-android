@@ -26,44 +26,40 @@ fun TransactionMessageContent(
     transactionMessage: String,
     modifier: Modifier = Modifier
 ) {
-    if (transactionMessage.isNotEmpty()) {
-        val density = LocalDensity.current
+    val density = LocalDensity.current
 
-        val bubbleShape = remember {
-            bubbleShape(
-                density = density
-            )
-        }
-
-        Text(
-            modifier = Modifier
-                .padding(RadixTheme.dimensions.paddingDefault),
-            text = stringResource(id = R.string.transactionReview_messageHeading).uppercase(),
-            style = RadixTheme.typography.body1Link,
-            color = RadixTheme.colors.gray2,
-            overflow = TextOverflow.Ellipsis,
+    val bubbleShape = remember {
+        bubbleShape(
+            density = density
         )
-        Column(
-            modifier = modifier
-                .fillMaxWidth()
-                .shadow(6.dp, bubbleShape)
-                .background(
-                    color = Color.White,
-                    shape = bubbleShape
-                )
-                .padding(
-                    vertical = RadixTheme.dimensions.paddingMedium,
-                    horizontal = RadixTheme.dimensions.paddingDefault
-                )
-        ) {
-            Text(
-                text = transactionMessage,
-                style = RadixTheme.typography.body1Regular,
-                color = RadixTheme.colors.gray1,
-            )
-        }
+    }
 
-        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
+    Text(
+        modifier = Modifier
+            .padding(RadixTheme.dimensions.paddingDefault),
+        text = stringResource(id = R.string.transactionReview_messageHeading).uppercase(),
+        style = RadixTheme.typography.body1Link,
+        color = RadixTheme.colors.gray2,
+        overflow = TextOverflow.Ellipsis,
+    )
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .shadow(6.dp, bubbleShape)
+            .background(
+                color = Color.White,
+                shape = bubbleShape
+            )
+            .padding(
+                vertical = RadixTheme.dimensions.paddingMedium,
+                horizontal = RadixTheme.dimensions.paddingDefault
+            )
+    ) {
+        Text(
+            text = transactionMessage,
+            style = RadixTheme.typography.body1Regular,
+            color = RadixTheme.colors.gray1,
+        )
     }
 }
 

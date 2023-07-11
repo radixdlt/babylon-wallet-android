@@ -18,11 +18,12 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
+import com.babylon.wallet.android.presentation.transaction.TransactionFees
+import java.math.BigDecimal
 
 @Composable
 fun NetworkFeeContent(
-    networkFee: String,
-    isNetworkCongested: Boolean,
+    fees: TransactionFees,
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -53,13 +54,13 @@ fun NetworkFeeContent(
             )
             Spacer(modifier = Modifier.weight(1f))
             Text(
-                text = stringResource(id = R.string.transactionReview_xrdAmount, networkFee),
+                text = stringResource(id = R.string.transactionReview_xrdAmount, fees.networkFee.toPlainString()),
                 style = RadixTheme.typography.body1Link,
                 color = RadixTheme.colors.gray1
             )
         }
 
-        if (isNetworkCongested) {
+        if (fees.isNetworkCongested) {
             Text(
                 modifier = Modifier
                     .padding(
@@ -83,7 +84,8 @@ fun NetworkFeeContent(
 @Composable
 fun NetworkFeeContentPreview() {
     NetworkFeeContent(
-        networkFee = "0.1",
-        isNetworkCongested = false
+        fees = TransactionFees(
+            networkFee = BigDecimal.TEN
+        )
     )
 }

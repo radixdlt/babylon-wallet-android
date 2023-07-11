@@ -1,6 +1,7 @@
 package com.babylon.wallet.android.presentation.transaction.composables
 
 import android.graphics.drawable.ColorDrawable
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -27,6 +28,7 @@ import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
+import com.babylon.wallet.android.domain.model.Badge
 import com.babylon.wallet.android.presentation.transaction.PresentingProofUiModel
 import com.babylon.wallet.android.presentation.ui.composables.ImageSize
 import com.babylon.wallet.android.presentation.ui.composables.rememberImageUrl
@@ -36,95 +38,79 @@ import kotlinx.collections.immutable.persistentListOf
 
 @Composable
 fun PresentingProofsContent(
-    presentingProofs: ImmutableList<PresentingProofUiModel>,
+    badges: ImmutableList<Badge>,
     modifier: Modifier = Modifier
 ) {
-    if (presentingProofs.isEmpty()) return
-
-    Column(
-        modifier = modifier
-            .padding(top = RadixTheme.dimensions.paddingLarge)
-    ) {
-        Divider(
-            modifier = Modifier.fillMaxWidth(),
-            thickness = 1.dp,
-            color = RadixTheme.colors.gray4
-        )
-        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
-
-        Row(
-            modifier = Modifier
-                .padding(horizontal = RadixTheme.dimensions.paddingDefault)
-        ) {
-            Text(
-                text = stringResource(id = R.string.transactionReview_presentingHeading).uppercase(),
-                style = RadixTheme.typography.body1Link,
-                color = RadixTheme.colors.gray2,
-                overflow = TextOverflow.Ellipsis,
+    if (badges.isNotEmpty()) {
+        Column(modifier = modifier) {
+            Divider(
+                modifier = Modifier.fillMaxWidth(),
+                thickness = 1.dp,
+                color = RadixTheme.colors.gray4
             )
-            Spacer(modifier = Modifier.width(RadixTheme.dimensions.paddingXSmall))
-            Icon(
-                painter = painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_info_outline),
-                contentDescription = null,
-                tint = RadixTheme.colors.gray3
-            )
-        }
+            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
 
-        Column(
-            modifier = Modifier
-                .padding(vertical = RadixTheme.dimensions.paddingMedium)
-        ) {
-            presentingProofs.forEachIndexed { index, presentingProof ->
-                val lastItem = index == presentingProofs.size - 1
-                Row(
-                    modifier = Modifier
-                        .padding(RadixTheme.dimensions.paddingMedium),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingMedium)
-                ) {
-                    val placeholder =
-                        rememberDrawablePainter(drawable = ColorDrawable(RadixTheme.colors.gray3.toArgb()))
-                    AsyncImage(
-                        model = rememberImageUrl(fromUrl = presentingProof.iconUrl, size = ImageSize.SMALL),
-                        placeholder = placeholder,
-                        fallback = placeholder,
-                        error = placeholder,
-                        contentDescription = null,
-                        contentScale = ContentScale.Crop,
+            Row(
+                modifier = Modifier
+                    .padding(horizontal = RadixTheme.dimensions.paddingDefault)
+            ) {
+                Text(
+                    text = stringResource(id = R.string.transactionReview_presentingHeading).uppercase(),
+                    style = RadixTheme.typography.body1Link,
+                    color = RadixTheme.colors.gray2,
+                    overflow = TextOverflow.Ellipsis,
+                )
+                Spacer(modifier = Modifier.width(RadixTheme.dimensions.paddingXSmall))
+                Icon(
+                    painter = painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_info_outline),
+                    contentDescription = null,
+                    tint = RadixTheme.colors.gray3
+                )
+            }
+
+            Column(
+                modifier = Modifier
+                    .padding(vertical = RadixTheme.dimensions.paddingMedium)
+            ) {
+                badges.forEachIndexed { index, badge ->
+                    val lastItem = index == badges.lastIndex
+                    Row(
                         modifier = Modifier
-                            .size(44.dp)
-                            .clip(RadixTheme.shapes.circle)
-                    )
-                    Text(
-                        text = presentingProof.title,
-                        style = RadixTheme.typography.body1HighImportance,
-                        color = RadixTheme.colors.gray1
-                    )
-                    Spacer(modifier = Modifier.weight(1f))
-                }
-                if (!lastItem) {
-                    Divider(
-                        modifier = Modifier
-                            .padding(horizontal = RadixTheme.dimensions.paddingDefault)
-                            .fillMaxWidth(),
-                        thickness = 1.dp,
-                        color = RadixTheme.colors.gray4
-                    )
+                            .padding(RadixTheme.dimensions.paddingMedium),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingMedium)
+                    ) {
+                        val placeholder =
+                            rememberDrawablePainter(drawable = ColorDrawable(RadixTheme.colors.gray3.toArgb()))
+                        AsyncImage(
+                            model = rememberImageUrl(fromUrl = badge.icon.toString(), size = ImageSize.SMALL),
+                            placeholder = placeholder,
+                            fallback = placeholder,
+                            error = placeholder,
+                            contentDescription = null,
+                            contentScale = ContentScale.Crop,
+                            modifier = Modifier
+                                .size(44.dp)
+                                .clip(RadixTheme.shapes.circle)
+                        )
+                        Text(
+                            text = badge.name.orEmpty(),
+                            style = RadixTheme.typography.body1HighImportance,
+                            color = RadixTheme.colors.gray1
+                        )
+                        Spacer(modifier = Modifier.weight(1f))
+                    }
+                    if (!lastItem) {
+                        Divider(
+                            modifier = Modifier
+                                .padding(horizontal = RadixTheme.dimensions.paddingDefault)
+                                .fillMaxWidth(),
+                            thickness = 1.dp,
+                            color = RadixTheme.colors.gray4
+                        )
+                    }
                 }
             }
         }
     }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun PresentingProofsContentPreview() {
-    PresentingProofsContent(
-        persistentListOf(
-            PresentingProofUiModel(
-                "",
-                "Presenting Proof"
-            )
-        )
-    )
 }

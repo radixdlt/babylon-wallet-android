@@ -2,6 +2,7 @@ package com.babylon.wallet.android.presentation.transaction.analysis
 
 import com.babylon.wallet.android.data.gateway.generated.models.TransactionPreviewResponse
 import com.babylon.wallet.android.data.transaction.TransactionClient
+import com.babylon.wallet.android.data.transaction.TransactionConfig
 import com.babylon.wallet.android.domain.common.value
 import com.babylon.wallet.android.domain.model.Transferable
 import com.babylon.wallet.android.domain.usecases.GetAccountsWithResourcesUseCase
@@ -11,6 +12,7 @@ import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.transaction.AccountWithTransferableResources
 import com.babylon.wallet.android.presentation.transaction.PreviewType
 import com.babylon.wallet.android.presentation.transaction.TransactionApprovalViewModel2.State
+import com.babylon.wallet.android.presentation.transaction.TransactionFees
 import com.radixdlt.ret.TransactionManifest
 import com.radixdlt.ret.TransactionType
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -43,7 +45,13 @@ class TransactionAnalysisDelegate(
                 is TransactionType.Transfer -> resolve(type)
             }
 
-            state.update { it.copy(previewType = previewType) }
+            state.update {
+                it.copy(
+                    fees = TransactionFees(networkFee = TransactionConfig.NETWORK_FEE.toBigDecimal()),
+                    isLoading = false,
+                    previewType = previewType
+                )
+            }
         }.onFailure { error ->
             state.update {
                 it.copy(

@@ -3,6 +3,7 @@ package com.babylon.wallet.android.presentation.transaction.composables
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -26,23 +27,24 @@ import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixTextButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
+import com.babylon.wallet.android.presentation.transaction.AccountWithTransferableResources
 import com.babylon.wallet.android.presentation.transaction.TransactionAccountItemUiModel
 import kotlinx.collections.immutable.ImmutableMap
 import kotlinx.collections.immutable.persistentMapOf
-import kotlinx.collections.immutable.toPersistentList
 
 @Composable
-fun DepositAccountContent(
-    depositAccountsMap: ImmutableMap<String, List<TransactionAccountItemUiModel>>,
-    shouldPromptForGuarantees: Boolean,
+fun ColumnScope.DepositAccountContent(
     modifier: Modifier = Modifier,
+    to: List<AccountWithTransferableResources>,
+    shouldPromptForGuarantees: Boolean,
     promptForGuarantees: () -> Unit
 ) {
-    if (depositAccountsMap.isNotEmpty()) {
-        Row {
+    if (to.isNotEmpty()) {
+        Row(verticalAlignment = Alignment.Bottom) {
             Text(
                 modifier = Modifier
-                    .padding(horizontal = RadixTheme.dimensions.paddingDefault),
+                    .padding(horizontal = RadixTheme.dimensions.paddingDefault)
+                    .padding(bottom = RadixTheme.dimensions.paddingSmall),
                 text = stringResource(id = R.string.transactionReview_depositsHeading).uppercase(),
                 style = RadixTheme.typography.body1Link,
                 color = RadixTheme.colors.gray2,
@@ -53,7 +55,6 @@ fun DepositAccountContent(
 
         Column(
             modifier = modifier
-                .padding(vertical = RadixTheme.dimensions.paddingSmall)
                 .shadow(6.dp, RadixTheme.shapes.roundedRectDefault)
                 .background(
                     color = Color.White,
@@ -62,20 +63,14 @@ fun DepositAccountContent(
                 .padding(RadixTheme.dimensions.paddingMedium),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            depositAccountsMap.onEachIndexed { index, accountEntry ->
-                val lastItem = index == depositAccountsMap.size - 1
+            to.onEachIndexed { index, accountEntry ->
+                val lastItem = index == to.size - 1
                 TransactionAccountCard(
-                    appearanceId = accountEntry.value.first().appearanceID,
-                    tokens = accountEntry.value.toPersistentList(),
-                    address = accountEntry.value.first().accountAddress,
-                    accountName = accountEntry.value.first().displayName
+                    account = accountEntry
                 )
 
                 if (!lastItem) {
-                    Spacer(
-                        modifier = Modifier
-                            .height(RadixTheme.dimensions.paddingMedium)
-                    )
+                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingMedium))
                 }
             }
 
@@ -113,35 +108,6 @@ fun StrokeLine(
             end = Offset(width - 150f, lineHeight),
             strokeWidth = strokeWidth,
             pathEffect = pathEffect
-        )
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun DepositAccountContentPreview() {
-    RadixWalletTheme {
-        DepositAccountContent(
-            depositAccountsMap =
-            persistentMapOf(
-                "account_tdx_19jd32jd3928jd3892jd329"
-                    to
-                        listOf(
-                            TransactionAccountItemUiModel(
-                                accountAddress = "account_tdx_19jd32jd3928jd3892jd329",
-                                displayName = "My Savings Account",
-                                tokenSymbol = "XRD",
-                                tokenAmount = "689.203",
-                                appearanceID = 1,
-                                iconUrl = "",
-                                shouldPromptForGuarantees = true,
-                                guaranteedAmount = "689.203",
-                                guaranteedPercentAmount = "100"
-                            )
-                        )
-            ),
-            shouldPromptForGuarantees = true,
-            promptForGuarantees = {}
         )
     }
 }

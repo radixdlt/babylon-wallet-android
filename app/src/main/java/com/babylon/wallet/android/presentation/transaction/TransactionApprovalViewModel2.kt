@@ -62,7 +62,6 @@ class TransactionApprovalViewModel2 @Inject constructor(
 
     override fun initialState(): State = State(
         request = incomingRequestRepository.getTransactionWriteRequest(args.requestId),
-        ephemeralNotaryPrivateKey = PrivateKey.EddsaEd25519.newRandom(),
         isLoading = true,
         previewType = PreviewType.NonConforming,
         isDeviceSecure = deviceSecurityHelper.isDeviceSecure()
@@ -123,14 +122,28 @@ class TransactionApprovalViewModel2 @Inject constructor(
 
     data class State(
         val request: MessageFromDataChannel.IncomingRequest.TransactionRequest,
-        val ephemeralNotaryPrivateKey: PrivateKey,
         val isDeviceSecure: Boolean,
         val isLoading: Boolean,
+        val isSigning: Boolean = false,
         val previewType: PreviewType,
+        val fees: TransactionFees = TransactionFees(),
         val error: UiMessage? = null,
+        val ephemeralNotaryPrivateKey: PrivateKey = PrivateKey.EddsaEd25519.newRandom(),
         val networkFee: BigDecimal = TransactionConfig.NETWORK_FEE.toBigDecimal(),
         val signingState: SigningState? = null
-    ): UiState
+    ): UiState {
+
+        val message: String?
+            get() {
+                val message = request.transactionManifestData.message
+                return if (!message.isNullOrBlank()) {
+                    message
+                } else {
+                    null
+                }
+            }
+
+    }
 
     sealed interface Event: OneOffEvent {
         object Dismiss : Event
@@ -149,16 +162,28 @@ sealed interface PreviewType {
 }
 
 sealed interface AccountWithTransferableResources {
+
+    val address: String
+    val resources: List<Transferable>
+
     data class Owned(
         val account: Network.Account,
-        val resources: List<Transferable>
-    ): AccountWithTransferableResources
+        override val resources: List<Transferable>
+    ): AccountWithTransferableResources {
+        override val address: String
+            get() = account.address
+    }
 
     data class Other(
-        val address: String,
-        val resources: List<Transferable>
+        override val address: String,
+        override val resources: List<Transferable>
     ): AccountWithTransferableResources
 }
+
+data class TransactionFees(
+    val networkFee: BigDecimal = BigDecimal.ZERO,
+    val isNetworkCongested: Boolean = false
+)
 
 
 
