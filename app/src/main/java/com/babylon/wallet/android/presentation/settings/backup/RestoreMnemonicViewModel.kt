@@ -9,7 +9,6 @@ import com.babylon.wallet.android.presentation.common.SeedPhraseInputDelegate
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
-import com.babylon.wallet.android.presentation.settings.legacyimport.SeedPhraseWord
 import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
 import com.radixdlt.extensions.removeLeadingZero
@@ -142,7 +141,7 @@ class RestoreMnemonicViewModel @Inject constructor(
     data class State(
         val seedPhraseValid: Boolean = false,
         val bip39Passphrase: String = "",
-        val seedPhraseWords: ImmutableList<SeedPhraseWord> = persistentListOf(),
+        val seedPhraseWords: ImmutableList<SeedPhraseInputDelegate.SeedPhraseWord> = persistentListOf(),
         val wordAutocompleteCandidates: ImmutableList<String> = persistentListOf(),
         val factorSourceLabel: String,
         val acceptedSeedPhraseLength: SeedPhraseLength,

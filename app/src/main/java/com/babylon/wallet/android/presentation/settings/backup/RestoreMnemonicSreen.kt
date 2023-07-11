@@ -40,7 +40,7 @@ import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
-import com.babylon.wallet.android.presentation.settings.legacyimport.SeedPhraseWord
+import com.babylon.wallet.android.presentation.common.SeedPhraseInputDelegate
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
 import com.babylon.wallet.android.presentation.ui.composables.SecureScreen
@@ -103,7 +103,7 @@ private fun RestoreMnemonicContent(
     onChangeSeedPhraseLength: (SeedPhraseLength) -> Unit,
     onPassphraseChanged: (String) -> Unit,
     onRestore: () -> Unit,
-    seedPhraseWords: ImmutableList<SeedPhraseWord>,
+    seedPhraseWords: ImmutableList<SeedPhraseInputDelegate.SeedPhraseWord>,
     bip39Passphrase: String,
     wordAutocompleteCandidates: ImmutableList<String>
 ) {

@@ -19,6 +19,9 @@ internal class ROLAPayloadTest {
         prettyPrint = true
     }
 
+    /**
+     * make sure our code generates identical test vectors to iOS, see @see ROLAClientTests.omit_test_generate_rola_payload_hash_vectors
+     */
     @Before
     fun setUp() {
         val testVectorsFile = File("src/test/resources/raw/rola_challenge_payload_hash_vectors.json")
@@ -27,9 +30,9 @@ internal class ROLAPayloadTest {
         } else {
             val origins = listOf("https://dashboard.rdx.works", "https://stella.swap", "https://rola.xrd")
             val accounts = listOf(
-                "account_tdx_b_1p9dkged3rpzy860ampt5jpmvv3yl4y6f5yppp4tnscdslvt9v3",
-                "account_tdx_b_1p8ahenyznrqy2w0tyg00r82rwuxys6z8kmrhh37c7maqpydx7p",
-                "account_tdx_b_1p95nal0nmrqyl5r4phcspg8ahwnamaduzdd3kaklw3vqeavrwa"
+                "account_sim1cyvgx33089ukm2pl97pv4max0x40ruvfy4lt60yvya744cve475w0q",
+                "account_sim1cyzfj6p254jy6lhr237s7pcp8qqz6c8ahq9mn6nkdjxxxat5syrgz9",
+                "account_sim168gge5mvjmkc7q4suyt3yddgk0c7yd5z6g662z4yc548cumw8nztch"
             )
             testVectors = origins.flatMap { origin ->
                 accounts.flatMap { accountAddress ->

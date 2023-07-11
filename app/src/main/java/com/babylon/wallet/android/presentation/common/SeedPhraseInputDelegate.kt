@@ -1,6 +1,5 @@
 package com.babylon.wallet.android.presentation.common
 
-import com.babylon.wallet.android.presentation.settings.legacyimport.SeedPhraseWord
 import com.radixdlt.bip39.wordlists.WORDLIST_ENGLISH
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
@@ -92,6 +91,17 @@ class SeedPhraseInputDelegate(
     private fun validateMnemonic() {
         _state.update { state ->
             state.copy(seedPhraseValid = _state.value.seedPhraseWords.all { it.state == SeedPhraseWord.State.Valid })
+        }
+    }
+
+    data class SeedPhraseWord(
+        val index: Int,
+        val value: String = "",
+        val state: State = State.Empty,
+        val lastWord: Boolean = false
+    ) {
+        enum class State {
+            Valid, Invalid, Empty, HasValue
         }
     }
 

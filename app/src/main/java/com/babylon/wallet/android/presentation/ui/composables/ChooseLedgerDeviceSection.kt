@@ -21,14 +21,18 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.designsystem.R
 import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
 import com.babylon.wallet.android.designsystem.composable.RadixSecondaryButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
+import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
+import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.domain.model.Selectable
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.toImmutableList
 import rdx.works.profile.data.model.factorsources.LedgerHardwareWalletFactorSource
 
 @Composable
@@ -122,7 +126,7 @@ fun ChooseLedgerDeviceSection(
                     Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSmall))
                     RadixSecondaryButton(
                         modifier = Modifier
-                            .fillMaxWidth(0.7f)
+                            .fillMaxWidth(0.5f)
                             .imePadding(),
                         onClick = onAddLedger,
                         text = stringResource(id = com.babylon.wallet.android.R.string.ledgerHardwareDevices_addNewLedger)
@@ -130,5 +134,22 @@ fun ChooseLedgerDeviceSection(
                 }
             }
         }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun FullscreenCircularProgressContentPreview() {
+    RadixWalletTheme {
+        ChooseLedgerDeviceSection(
+            modifier = Modifier,
+            ledgerFactorSources = SampleDataProvider()
+                .ledgerFactorSourcesSample
+                .map {
+                    Selectable(it)
+                }.toImmutableList(),
+            onAddLedger = {},
+            onLedgerFactorSourceSelected = {}
+        )
     }
 }
