@@ -9,10 +9,10 @@ import com.babylon.wallet.android.data.transaction.SigningState
 import com.babylon.wallet.android.data.transaction.TransactionClient
 import com.babylon.wallet.android.data.transaction.TransactionConfig
 import com.babylon.wallet.android.di.coroutines.ApplicationScope
-import com.babylon.wallet.android.domain.model.AccountWithTransferableResources
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
+import com.babylon.wallet.android.domain.model.Transferable
+import com.babylon.wallet.android.domain.usecases.GetAccountsWithResourcesUseCase
 import com.babylon.wallet.android.domain.usecases.GetDAppWithMetadataAndAssociatedResourcesUseCase
-import com.babylon.wallet.android.domain.usecases.transaction.GetTransactionResourcesFromAnalysis
 import com.babylon.wallet.android.domain.usecases.transaction.GetTransactionProofResourcesUseCase
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
@@ -32,6 +32,8 @@ import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.crypto.PrivateKey
+import rdx.works.profile.data.model.pernetwork.Network
+import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.gateway.GetCurrentGatewayUseCase
 import timber.log.Timber
 import java.math.BigDecimal
@@ -41,7 +43,8 @@ import javax.inject.Inject
 @HiltViewModel
 class TransactionApprovalViewModel2 @Inject constructor(
     private val transactionClient: TransactionClient,
-    private val getTransactionResourcesFromAnalysis: GetTransactionResourcesFromAnalysis,
+    private val getAccountsWithResourcesUseCase: GetAccountsWithResourcesUseCase,
+    private val getProfileUseCase: GetProfileUseCase,
     private val getTransactionProofResourcesUseCase: GetTransactionProofResourcesUseCase,
     private val incomingRequestRepository: IncomingRequestRepository,
     private val getCurrentGatewayUseCase: GetCurrentGatewayUseCase,
@@ -68,7 +71,8 @@ class TransactionApprovalViewModel2 @Inject constructor(
 
     private val analysis: TransactionAnalysisDelegate = TransactionAnalysisDelegate(
         state = _state,
-        getTransactionResourcesFromAnalysis = getTransactionResourcesFromAnalysis,
+        getProfileUseCase = getProfileUseCase,
+        getAccountsWithResourcesUseCase = getAccountsWithResourcesUseCase,
         transactionClient = transactionClient
     )
 
@@ -134,10 +138,22 @@ class TransactionApprovalViewModel2 @Inject constructor(
 sealed interface PreviewType {
     object NonConforming: PreviewType
 
-    data class Transfer(
+    data class Transaction(
         val from: List<AccountWithTransferableResources>,
         val to: List<AccountWithTransferableResources>
     ): PreviewType
+}
+
+sealed interface AccountWithTransferableResources {
+    data class Owned(
+        val account: Network.Account,
+        val resources: List<Transferable>
+    ): AccountWithTransferableResources
+
+    data class Other(
+        val address: String,
+        val resources: List<Transferable>
+    ): AccountWithTransferableResources
 }
 
 

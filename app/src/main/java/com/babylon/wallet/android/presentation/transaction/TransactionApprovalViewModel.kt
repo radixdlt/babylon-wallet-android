@@ -17,7 +17,6 @@ import com.babylon.wallet.android.domain.model.MetadataConstants
 import com.babylon.wallet.android.domain.model.Resource
 import com.babylon.wallet.android.domain.model.TransactionManifestData
 import com.babylon.wallet.android.domain.usecases.GetDAppWithMetadataAndAssociatedResourcesUseCase
-import com.babylon.wallet.android.domain.usecases.transaction.GetTransactionResourcesFromAnalysis
 import com.babylon.wallet.android.domain.usecases.transaction.GetTransactionProofResourcesUseCase
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
@@ -55,7 +54,6 @@ import javax.inject.Inject
 @HiltViewModel
 class TransactionApprovalViewModel @Inject constructor(
     private val transactionClient: TransactionClient,
-    private val getTransactionComponentResourcesUseCase: GetTransactionResourcesFromAnalysis,
     private val getTransactionProofResourcesUseCase: GetTransactionProofResourcesUseCase,
     private val incomingRequestRepository: IncomingRequestRepository,
     private val getCurrentGatewayUseCase: GetCurrentGatewayUseCase,
