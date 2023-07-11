@@ -138,11 +138,11 @@ private fun SettingsLinkConnectorContent(
             if (settingsMode == SettingsConnectorMode.ShowDetails) {
                 stringResource(R.string.linkedConnectors_title)
             } else {
-                ""
+                stringResource(id = R.string.empty)
             },
             onBackClick = backHandler,
             contentColor = RadixTheme.colors.gray1,
-            backIconType = if (dismiss) BackIconType.Close else BackIconType.Back
+            backIconType = BackIconType.Back
         )
 
         if (settingsMode == SettingsConnectorMode.ShowDetails) {

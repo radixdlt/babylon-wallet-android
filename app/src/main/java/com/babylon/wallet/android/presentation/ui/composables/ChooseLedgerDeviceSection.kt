@@ -32,7 +32,7 @@ import kotlinx.collections.immutable.ImmutableList
 import rdx.works.profile.data.model.factorsources.LedgerHardwareWalletFactorSource
 
 @Composable
-fun UseOrAddLedgerSection(
+fun ChooseLedgerDeviceSection(
     modifier: Modifier,
     ledgerFactorSources: ImmutableList<Selectable<LedgerHardwareWalletFactorSource>>,
     onAddLedger: () -> Unit,

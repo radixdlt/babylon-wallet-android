@@ -61,7 +61,11 @@ class CreateAccountWithLedgerViewModel @Inject constructor(
                         }.toPersistentList(),
                         waitingForLedgerResponse = delegateState.waitingForLedgerResponse,
                         recentlyConnectedLedgerDevice = delegateState.recentlyConnectedLedgerDevice,
-                        hasP2pLinks = delegateState.hasP2pLinks,
+                        mode = if (delegateState.hasP2pLinks) {
+                            CreateAccountWithLedgerMode.ChooseLedger
+                        } else {
+                            CreateAccountWithLedgerMode.LinkConnector
+                        },
                         uiMessage = delegateState.uiMessage
                     )
                 }
@@ -119,11 +123,11 @@ class CreateAccountWithLedgerViewModel @Inject constructor(
     }
 
     fun onAddLedgerClick() {
-        _state.update { it.copy(addLedgerMode = true) }
+        _state.update { it.copy(mode = CreateAccountWithLedgerMode.AddLedger) }
     }
 
     fun onAddLedgerCloseClick() {
-        _state.update { it.copy(addLedgerMode = false) }
+        _state.update { it.copy(mode = CreateAccountWithLedgerMode.ChooseLedger) }
     }
 
     fun onMessageShown() {
@@ -133,13 +137,16 @@ class CreateAccountWithLedgerViewModel @Inject constructor(
     data class CreateAccountWithLedgerState(
         val loading: Boolean = false,
         val ledgerFactorSources: ImmutableList<Selectable<LedgerHardwareWalletFactorSource>> = persistentListOf(),
-        val hasP2pLinks: Boolean = false,
-        val addLedgerMode: Boolean = false,
+        val mode: CreateAccountWithLedgerMode = CreateAccountWithLedgerMode.ChooseLedger,
         val addLedgerSheetState: AddLedgerSheetState = AddLedgerSheetState.Connect,
         val waitingForLedgerResponse: Boolean = false,
         val recentlyConnectedLedgerDevice: LedgerDeviceUiModel? = null,
         val uiMessage: UiMessage? = null
     ) : UiState
+}
+
+enum class CreateAccountWithLedgerMode {
+    LinkConnector, ChooseLedger, AddLedger
 }
 
 internal sealed interface CreateAccountWithLedgerEvent : OneOffEvent {
