@@ -14,7 +14,7 @@ import com.babylon.wallet.android.data.transaction.model.FeePayerSearchResult
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.babylon.wallet.android.domain.model.TransactionManifestData
 import com.babylon.wallet.android.domain.usecases.GetDAppWithMetadataAndAssociatedResourcesUseCase
-import com.babylon.wallet.android.domain.usecases.transaction.GetTransactionProofResourcesUseCase
+import com.babylon.wallet.android.domain.usecases.transaction.GetTransactionBadgesUseCase
 import com.babylon.wallet.android.presentation.StateViewModelTest
 import com.babylon.wallet.android.utils.AppEventBus
 import com.babylon.wallet.android.utils.DeviceSecurityHelper
@@ -41,7 +41,7 @@ internal class TransactionApprovalViewModelTest : StateViewModelTest<Transaction
     private val transactionClient = mockk<TransactionClient>()
     private val getCurrentGatewayUseCase = mockk<GetCurrentGatewayUseCase>()
     private val getTransactionComponentResourcesUseCase = mockk<GetTransactionResourcesFromAnalysis>()
-    private val getTransactionProofResourcesUseCase = mockk<GetTransactionProofResourcesUseCase>()
+    private val getTransactionBadgesUseCase = mockk<GetTransactionBadgesUseCase>()
     private val getDAppWithAssociatedResourcesUseCase = mockk<GetDAppWithMetadataAndAssociatedResourcesUseCase>()
     private val incomingRequestRepository = IncomingRequestRepositoryImpl()
     private val dAppMessenger = mockk<DappMessenger>()
@@ -68,7 +68,7 @@ internal class TransactionApprovalViewModelTest : StateViewModelTest<Transaction
         every { deviceSecurityHelper.isDeviceSecure() } returns true
         every { savedStateHandle.get<String>(ARG_TRANSACTION_REQUEST_ID) } returns sampleRequestId
         coEvery { getCurrentGatewayUseCase() } returns Radix.Gateway.nebunet
-        coEvery { getTransactionProofResourcesUseCase.invoke(any()) } returns listOf(
+        coEvery { getTransactionBadgesUseCase.invoke(any()) } returns listOf(
             PresentingProofUiModel("", "")
         )
         coEvery { transactionClient.signAndSubmitTransaction(any()) } returns Result.success(sampleTxId)
@@ -100,7 +100,7 @@ internal class TransactionApprovalViewModelTest : StateViewModelTest<Transaction
         return TransactionApprovalViewModel(
             transactionClient,
             getTransactionComponentResourcesUseCase,
-            getTransactionProofResourcesUseCase,
+            getTransactionBadgesUseCase,
             incomingRequestRepository,
             getCurrentGatewayUseCase,
             deviceSecurityHelper,

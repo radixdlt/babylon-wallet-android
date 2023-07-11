@@ -9,11 +9,12 @@ import com.babylon.wallet.android.data.transaction.SigningState
 import com.babylon.wallet.android.data.transaction.TransactionClient
 import com.babylon.wallet.android.data.transaction.TransactionConfig
 import com.babylon.wallet.android.di.coroutines.ApplicationScope
+import com.babylon.wallet.android.domain.model.Badge
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.babylon.wallet.android.domain.model.Transferable
 import com.babylon.wallet.android.domain.usecases.GetAccountsWithResourcesUseCase
 import com.babylon.wallet.android.domain.usecases.GetDAppWithMetadataAndAssociatedResourcesUseCase
-import com.babylon.wallet.android.domain.usecases.transaction.GetTransactionProofResourcesUseCase
+import com.babylon.wallet.android.domain.usecases.transaction.GetTransactionBadgesUseCase
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
@@ -43,14 +44,14 @@ import javax.inject.Inject
 @HiltViewModel
 class TransactionApprovalViewModel2 @Inject constructor(
     private val transactionClient: TransactionClient,
-    private val getAccountsWithResourcesUseCase: GetAccountsWithResourcesUseCase,
-    private val getProfileUseCase: GetProfileUseCase,
-    private val getTransactionProofResourcesUseCase: GetTransactionProofResourcesUseCase,
+    getAccountsWithResourcesUseCase: GetAccountsWithResourcesUseCase,
+    getProfileUseCase: GetProfileUseCase,
+    getTransactionBadgesUseCase: GetTransactionBadgesUseCase,
+    getDAppWithMetadataAndAssociatedResourcesUseCase: GetDAppWithMetadataAndAssociatedResourcesUseCase,
     private val incomingRequestRepository: IncomingRequestRepository,
     private val getCurrentGatewayUseCase: GetCurrentGatewayUseCase,
     private val deviceSecurityHelper: DeviceSecurityHelper,
     private val dAppMessenger: DappMessenger,
-    private val dAppWithAssociatedResourcesUseCase: GetDAppWithMetadataAndAssociatedResourcesUseCase,
     @ApplicationScope private val appScope: CoroutineScope,
     private val appEventBus: AppEventBus,
     savedStateHandle: SavedStateHandle,
@@ -73,6 +74,8 @@ class TransactionApprovalViewModel2 @Inject constructor(
         state = _state,
         getProfileUseCase = getProfileUseCase,
         getAccountsWithResourcesUseCase = getAccountsWithResourcesUseCase,
+        getTransactionBadgesUseCase = getTransactionBadgesUseCase,
+        getDAppWithMetadataAndAssociatedResourcesUseCase = getDAppWithMetadataAndAssociatedResourcesUseCase,
         transactionClient = transactionClient
     )
 
@@ -140,7 +143,8 @@ sealed interface PreviewType {
 
     data class Transaction(
         val from: List<AccountWithTransferableResources>,
-        val to: List<AccountWithTransferableResources>
+        val to: List<AccountWithTransferableResources>,
+        val badges: List<Badge> = emptyList()
     ): PreviewType
 }
 

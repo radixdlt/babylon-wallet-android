@@ -5,6 +5,8 @@ import com.babylon.wallet.android.data.transaction.TransactionClient
 import com.babylon.wallet.android.domain.common.value
 import com.babylon.wallet.android.domain.model.Transferable
 import com.babylon.wallet.android.domain.usecases.GetAccountsWithResourcesUseCase
+import com.babylon.wallet.android.domain.usecases.GetDAppWithMetadataAndAssociatedResourcesUseCase
+import com.babylon.wallet.android.domain.usecases.transaction.GetTransactionBadgesUseCase
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.transaction.AccountWithTransferableResources
 import com.babylon.wallet.android.presentation.transaction.PreviewType
@@ -14,6 +16,7 @@ import com.radixdlt.ret.TransactionType
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
 import rdx.works.core.decodeHex
+import rdx.works.core.then
 import rdx.works.core.toUByteList
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.accountsOnCurrentNetwork
@@ -23,16 +26,24 @@ class TransactionAnalysisDelegate(
     private val state: MutableStateFlow<State>,
     private val getProfileUseCase: GetProfileUseCase,
     private val getAccountsWithResourcesUseCase: GetAccountsWithResourcesUseCase,
+    private val getTransactionBadgesUseCase: GetTransactionBadgesUseCase,
+    private val getDAppWithMetadataAndAssociatedResourcesUseCase: GetDAppWithMetadataAndAssociatedResourcesUseCase,
     private val transactionClient: TransactionClient
 ) {
 
     suspend fun analyse() {
         val manifest = state.value.request.transactionManifestData.toTransactionManifest()
-        getTransactionPreview(manifest = manifest).onSuccess {
-            analyzeExecution(
-                manifest = manifest,
-                preview = it
-            )
+        getTransactionPreview(manifest = manifest).then { preview ->
+            analyzeExecution(manifest = manifest, preview = preview)
+        }.onSuccess { analysis ->
+            val previewType = when (val type = analysis.transactionType) {
+                is TransactionType.NonConforming -> PreviewType.NonConforming
+                is TransactionType.GeneralTransaction -> resolve(type)
+                is TransactionType.SimpleTransfer -> resolve(type)
+                is TransactionType.Transfer -> resolve(type)
+            }
+
+            state.update { it.copy(previewType = previewType) }
         }.onFailure { error ->
             state.update {
                 it.copy(
@@ -54,29 +65,73 @@ class TransactionAnalysisDelegate(
         }
     }
 
-    private suspend fun analyzeExecution(
+    private fun analyzeExecution(
         manifest: TransactionManifest,
         preview: TransactionPreviewResponse
     ) = runCatching {
         manifest.analyzeExecution(transactionReceipt = preview.encodedReceipt.decodeHex().toUByteList())
-    }.onSuccess { analysis ->
-        val previewType = when (val type = analysis.transactionType) {
-            is TransactionType.NonConforming -> PreviewType.NonConforming
-            is TransactionType.GeneralTransaction -> PreviewType.NonConforming
-            is TransactionType.SimpleTransfer -> resolve(type)
-            is TransactionType.Transfer -> resolve(type)
-        }
-
-        state.update { it.copy(previewType = previewType) }
-    }.onFailure { error ->
-        state.update {
-            it.copy(
-                isLoading = false,
-                error = UiMessage.ErrorMessage.from(error)
-            )
-        }
     }
 
+    // Generic transaction resolver
+    private suspend fun resolve(
+        transfer: TransactionType.GeneralTransaction
+    ): PreviewType {
+        val badges = getTransactionBadgesUseCase(accountProofs = transfer.accountProofs)
+//        val dApps = getDAppWithMetadataAndAssociatedResourcesUseCase(addresses = transfer.addressesInManifest.values.flatten())
+
+        val allAccounts = getProfileUseCase.accountsOnCurrentNetwork().filter {
+            it.address in transfer.accountWithdraws.keys || it.address in transfer.accountDeposits.keys
+        }
+        val allResources = getAccountsWithResourcesUseCase(accounts = allAccounts, isRefreshing = false).value().orEmpty().mapNotNull {
+            it.resources
+        }
+
+        val fromAccounts = transfer.accountWithdraws.map { withdrawEntry ->
+            val transferables = withdrawEntry.value.map {
+                Transferable.Withdrawing(transferable = it.toTransferableResource(allResources, transfer.metadataOfNewlyCreatedEntities))
+            }
+
+            val ownedAccount = allAccounts.find { it.address == withdrawEntry.key }
+            if (ownedAccount != null) {
+                AccountWithTransferableResources.Owned(
+                    account = ownedAccount,
+                    resources = transferables
+                )
+            } else {
+                AccountWithTransferableResources.Other(
+                    address = withdrawEntry.key,
+                    resources = transferables
+                )
+            }
+        }
+
+        val toAccounts = transfer.accountDeposits.map { depositEntry ->
+            val transferables = depositEntry.value.map {
+                it.toDepositingTransferableResource(allResources, transfer.metadataOfNewlyCreatedEntities)
+            }
+
+            val ownedAccount = allAccounts.find { it.address == depositEntry.key }
+            if (ownedAccount != null) {
+                AccountWithTransferableResources.Owned(
+                    account = ownedAccount,
+                    resources = transferables
+                )
+            } else {
+                AccountWithTransferableResources.Other(
+                    address = depositEntry.key,
+                    resources = transferables
+                )
+            }
+        }
+
+        return PreviewType.Transaction(
+            from = fromAccounts,
+            to = toAccounts,
+            badges = badges
+        )
+    }
+
+    // Simple transfer resolver
     private suspend fun resolve(
         transfer: TransactionType.SimpleTransfer
     ): PreviewType {
@@ -88,23 +143,36 @@ class TransactionAnalysisDelegate(
         }
 
         val transferableResource = transfer.transferred.toTransferableResource(allResources = allResources)
-        val fromAccount = allAccounts.find { it.address == transfer.from.addressString() }?.let {
+        val ownedFromAccount = allAccounts.find { it.address == transfer.from.addressString() }
+        val fromAccount = if (ownedFromAccount != null) {
             AccountWithTransferableResources.Owned(
-                account = it,
+                account = ownedFromAccount,
                 resources = listOf(Transferable.Withdrawing(transferableResource))
             )
-        } ?: AccountWithTransferableResources.Other(address = transfer.from.addressString(), resources = listOf())
+        } else {
+            AccountWithTransferableResources.Other(
+                address = transfer.from.addressString(),
+                resources = listOf(Transferable.Withdrawing(transferableResource))
+            )
+        }
 
-        val toAccount = allAccounts.find { it.address == transfer.to.addressString() }?.let {
+        val ownedToAccount = allAccounts.find { it.address == transfer.to.addressString() }
+        val toAccount = if (ownedToAccount != null) {
             AccountWithTransferableResources.Owned(
-                account = it,
+                account = ownedToAccount,
                 resources = listOf(Transferable.Depositing(transferableResource))
             )
-        } ?: AccountWithTransferableResources.Other(address = transfer.to.addressString(), resources = listOf())
+        } else {
+            AccountWithTransferableResources.Other(
+                address = transfer.to.addressString(),
+                resources = listOf(Transferable.Depositing(transferableResource))
+            )
+        }
 
         return PreviewType.Transaction(from = listOf(fromAccount), to = listOf(toAccount))
     }
 
+    // Transfer resolver
     private suspend fun resolve(
         transfer: TransactionType.Transfer
     ): PreviewType {
@@ -115,10 +183,10 @@ class TransactionAnalysisDelegate(
             it.resources
         }
 
-        val to = transfer.transfers.entries.map { transfer ->
-            val accountOnNetwork = allAccounts.find { it.address == transfer.key }
+        val to = transfer.transfers.entries.map { transferEntry ->
+            val accountOnNetwork = allAccounts.find { it.address == transferEntry.key }
 
-            val resources = transfer.value.map { transferringEntry ->
+            val resources = transferEntry.value.map { transferringEntry ->
                 transferringEntry.value.toTransferableResource(transferringEntry.key, allResources)
             }
 
@@ -128,7 +196,7 @@ class TransactionAnalysisDelegate(
                     resources = resources.map { Transferable.Depositing(it) }
                 )
             } ?: AccountWithTransferableResources.Other(
-                address = transfer.key,
+                address = transferEntry.key,
                 resources = resources.map { Transferable.Depositing(it) }
             )
         }
@@ -140,6 +208,7 @@ class TransactionAnalysisDelegate(
                     address = depositingAccount.address,
                     resources = depositingAccount.resources.map { Transferable.Withdrawing(it.transferable) }
                 )
+
                 is AccountWithTransferableResources.Owned -> AccountWithTransferableResources.Owned(
                     account = depositingAccount.account,
                     resources = depositingAccount.resources.map { Transferable.Withdrawing(it.transferable) }
