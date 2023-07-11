@@ -44,7 +44,8 @@ class SettingsConnectorViewModel @Inject constructor(
         } else {
             SettingsConnectorMode.ShowDetails
         },
-        triggerCameraPermissionPrompt = args.scanQr
+        triggerCameraPermissionPrompt = args.scanQr,
+        dismiss = args.dismiss
     )
 
     init {
@@ -123,7 +124,12 @@ class SettingsConnectorViewModel @Inject constructor(
     }
 
     fun linkConnector() {
-        _state.update { it.copy(mode = SettingsConnectorMode.ScanQr) }
+        _state.update {
+            it.copy(
+                mode = SettingsConnectorMode.ScanQr,
+                dismiss = false
+            )
+        }
     }
 
     private fun saveConnectionPassword(
@@ -162,6 +168,7 @@ data class SettingsConnectorUiState(
     val isScanningQr: Boolean = false,
     val mode: SettingsConnectorMode = SettingsConnectorMode.ShowDetails,
     val triggerCameraPermissionPrompt: Boolean = false,
+    val dismiss: Boolean = false
 ) : UiState
 
 data class ActiveConnectorUiModel(

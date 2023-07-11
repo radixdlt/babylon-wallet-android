@@ -1,5 +1,3 @@
-@file:OptIn(ExperimentalMaterialApi::class)
-
 package com.babylon.wallet.android.presentation.createaccount.withledger
 
 import androidx.activity.compose.BackHandler
@@ -12,15 +10,11 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.ExperimentalMaterialApi
-import androidx.compose.material.ModalBottomSheetValue
-import androidx.compose.material.rememberModalBottomSheetState
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -35,14 +29,12 @@ import com.babylon.wallet.android.domain.model.toProfileLedgerDeviceModel
 import com.babylon.wallet.android.presentation.common.FullscreenCircularProgressContent
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.model.AddLedgerSheetState
-import com.babylon.wallet.android.presentation.ui.composables.AddLedgerBottomSheet
-import com.babylon.wallet.android.presentation.ui.composables.DefaultModalSheetLayout
+import com.babylon.wallet.android.presentation.ui.composables.AddLedgerContent
+import com.babylon.wallet.android.presentation.ui.composables.ChooseLedgerDeviceSection
 import com.babylon.wallet.android.presentation.ui.composables.LinkConnectorSection
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUiMessageHandler
-import com.babylon.wallet.android.presentation.ui.composables.UseOrAddLedgerSection
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
-import kotlinx.coroutines.launch
 import rdx.works.profile.data.model.factorsources.LedgerHardwareWalletFactorSource
 
 @Composable
@@ -72,9 +64,11 @@ fun CreateAccountWithLedgerScreen(
             onSendAddLedgerRequest = viewModel::onSendAddLedgerRequest,
             addLedgerSheetState = state.addLedgerSheetState,
             onConfirmLedgerName = viewModel::onConfirmLedgerName,
+            onAddLedgerClick = viewModel::onAddLedgerClick,
+            onAddLedgerCloseClick = viewModel::onAddLedgerCloseClick,
             onUseLedger = viewModel::onUseLedger,
             waitingForLedgerResponse = state.waitingForLedgerResponse,
-            hasP2PLinks = state.hasP2pLinks,
+            mode = state.mode,
             onAddP2PLink = onAddP2PLink,
             deviceModel = state.recentlyConnectedLedgerDevice?.model?.toProfileLedgerDeviceModel()?.value,
             uiMessage = state.uiMessage,
@@ -92,28 +86,18 @@ fun CreateAccountWithLedgerContent(
     onSendAddLedgerRequest: () -> Unit,
     addLedgerSheetState: AddLedgerSheetState,
     onConfirmLedgerName: (String) -> Unit,
+    onAddLedgerClick: () -> Unit,
+    onAddLedgerCloseClick: () -> Unit,
     onUseLedger: () -> Unit,
     waitingForLedgerResponse: Boolean,
-    hasP2PLinks: Boolean,
+    mode: CreateAccountWithLedgerMode,
     onAddP2PLink: () -> Unit,
     deviceModel: String?,
     uiMessage: UiMessage?,
     onMessageShown: () -> Unit
 ) {
-    val scope = rememberCoroutineScope()
-    val bottomSheetState =
-        rememberModalBottomSheetState(initialValue = ModalBottomSheetValue.Hidden, skipHalfExpanded = true)
-    val closeSheetCallback = {
-        scope.launch {
-            bottomSheetState.hide()
-        }
-    }
     BackHandler {
-        if (bottomSheetState.isVisible) {
-            closeSheetCallback()
-        } else {
-            onBackClick()
-        }
+        onBackClick()
     }
     Box(
         modifier = modifier
@@ -121,73 +105,81 @@ fun CreateAccountWithLedgerContent(
             .background(RadixTheme.colors.defaultBackground)
             .fillMaxSize()
     ) {
-        DefaultModalSheetLayout(
-            modifier = Modifier.fillMaxSize(),
-            sheetState = bottomSheetState,
-            sheetContent = {
-                AddLedgerBottomSheet(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(RadixTheme.dimensions.paddingDefault),
-                    deviceModel = deviceModel,
-                    onSendAddLedgerRequest = onSendAddLedgerRequest,
-                    addLedgerSheetState = addLedgerSheetState,
-                    onConfirmLedgerName = {
-                        onConfirmLedgerName(it)
-                        closeSheetCallback()
-                    },
-                    onSheetClose = { closeSheetCallback() },
-                    waitingForLedgerResponse = waitingForLedgerResponse,
-                    onAddP2PLink = onAddP2PLink
-                )
-            }
+        val contentModifier = Modifier
+            .fillMaxSize()
+            .padding(
+                horizontal = RadixTheme.dimensions.paddingLarge,
+                vertical = RadixTheme.dimensions.paddingDefault
+            )
+        Column(
+            modifier = Modifier.fillMaxSize()
         ) {
-            Box(modifier = Modifier.fillMaxSize()) {
-                val contentModifier = Modifier
-                    .fillMaxSize()
-                    .padding(
-                        horizontal = RadixTheme.dimensions.paddingLarge,
-                        vertical = RadixTheme.dimensions.paddingDefault
-                    )
-                Column(
-                    modifier = Modifier.fillMaxSize()
+            if (mode != CreateAccountWithLedgerMode.AddLedger) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(
+                            start = RadixTheme.dimensions.paddingDefault,
+                            top = RadixTheme.dimensions.paddingDefault
+                        )
                 ) {
-                    Row(modifier = Modifier.fillMaxWidth()) {
-                        IconButton(onClick = onBackClick) {
+                    IconButton(onClick = onBackClick) {
+                        Icon(
+                            painterResource(id = R.drawable.ic_close),
+                            tint = RadixTheme.colors.gray1,
+                            contentDescription = "navigate back"
+                        )
+                    }
+                }
+            }
+            when (mode) {
+                CreateAccountWithLedgerMode.LinkConnector -> {
+                    LinkConnectorSection(contentModifier, onAddP2PLink)
+                }
+                CreateAccountWithLedgerMode.ChooseLedger -> {
+                    ChooseLedgerDeviceSection(
+                        modifier = contentModifier.weight(1f),
+                        ledgerFactorSources = ledgerFactorSources,
+                        onAddLedger = onAddLedgerClick,
+                        onLedgerFactorSourceSelected = onLedgerFactorSourceSelected
+                    )
+                    RadixPrimaryButton(
+                        text = stringResource(id = com.babylon.wallet.android.R.string.ledgerHardwareDevices_continueWithLedger),
+                        onClick = onUseLedger,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(RadixTheme.dimensions.paddingLarge)
+                            .imePadding(),
+                        enabled = ledgerFactorSources.any { it.selected }
+                    )
+                }
+                CreateAccountWithLedgerMode.AddLedger -> {
+                    AddLedgerContent(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(RadixTheme.dimensions.paddingDefault),
+                        deviceModel = deviceModel,
+                        onSendAddLedgerRequest = onSendAddLedgerRequest,
+                        addLedgerSheetState = addLedgerSheetState,
+                        onConfirmLedgerName = {
+                            onConfirmLedgerName(it)
+                        },
+                        upIcon = {
                             Icon(
                                 painterResource(id = R.drawable.ic_arrow_back),
                                 tint = RadixTheme.colors.gray1,
                                 contentDescription = "navigate back"
                             )
-                        }
-                    }
-                    if (!hasP2PLinks) {
-                        LinkConnectorSection(contentModifier, onAddP2PLink)
-                    } else {
-                        UseOrAddLedgerSection(
-                            modifier = contentModifier.weight(1f),
-                            ledgerFactorSources = ledgerFactorSources,
-                            onAddLedger = {
-                                scope.launch {
-                                    bottomSheetState.show()
-                                }
-                            },
-                            onLedgerFactorSourceSelected = onLedgerFactorSourceSelected
-                        )
-                        RadixPrimaryButton(
-                            text = stringResource(id = com.babylon.wallet.android.R.string.ledgerHardwareDevices_continueWithLedger),
-                            onClick = onUseLedger,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .imePadding(),
-                            enabled = ledgerFactorSources.any { it.selected }
-                        )
-                    }
-                }
-                if (waitingForLedgerResponse) {
-                    FullscreenCircularProgressContent()
+                        },
+                        onClose = onAddLedgerCloseClick,
+                        waitingForLedgerResponse = waitingForLedgerResponse,
+                        onAddP2PLink = onAddP2PLink
+                    )
                 }
             }
+        }
+        if (waitingForLedgerResponse) {
+            FullscreenCircularProgressContent()
         }
         SnackbarUiMessageHandler(
             message = uiMessage,
@@ -208,9 +200,11 @@ fun CreateAccountWithLedgerContentPreview() {
             onSendAddLedgerRequest = {},
             addLedgerSheetState = AddLedgerSheetState.Connect,
             onConfirmLedgerName = {},
+            onAddLedgerClick = {},
+            onAddLedgerCloseClick = {},
             onUseLedger = {},
             waitingForLedgerResponse = false,
-            hasP2PLinks = false,
+            mode = CreateAccountWithLedgerMode.ChooseLedger,
             onAddP2PLink = {},
             deviceModel = null,
             uiMessage = null,

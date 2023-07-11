@@ -36,6 +36,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.ModalBottomSheetValue
 import androidx.compose.material.rememberModalBottomSheetState
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -55,6 +56,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -77,7 +79,7 @@ import com.babylon.wallet.android.presentation.model.AddLedgerSheetState
 import com.babylon.wallet.android.presentation.settings.connector.qrcode.CameraPreview
 import com.babylon.wallet.android.presentation.ui.MockUiProvider.seedPhraseWords
 import com.babylon.wallet.android.presentation.ui.composables.AccountCardWithStack
-import com.babylon.wallet.android.presentation.ui.composables.AddLedgerBottomSheet
+import com.babylon.wallet.android.presentation.ui.composables.AddLedgerContent
 import com.babylon.wallet.android.presentation.ui.composables.BackIconType
 import com.babylon.wallet.android.presentation.ui.composables.DefaultModalSheetLayout
 import com.babylon.wallet.android.presentation.ui.composables.InfoLink
@@ -207,8 +209,12 @@ private fun OlympiaImportContent(
     BackHandler {
         when {
             bottomSheetState.isVisible -> closeSheetCallback()
-            currentPage == ImportPage.ImportComplete || currentPage == ImportPage.ScanQr -> onCloseScreen()
-            else -> onBackClick()
+            currentPage == ImportPage.ImportComplete || currentPage == ImportPage.ScanQr -> {
+                onCloseScreen()
+            }
+            else -> {
+                onBackClick()
+            }
         }
     }
     LaunchedEffect(Unit) {
@@ -269,7 +275,7 @@ private fun OlympiaImportContent(
     }
     Box(modifier = modifier) {
         DefaultModalSheetLayout(modifier = Modifier.fillMaxSize(), sheetState = bottomSheetState, sheetContent = {
-            AddLedgerBottomSheet(
+            AddLedgerContent(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(RadixTheme.dimensions.paddingDefault),
@@ -280,7 +286,14 @@ private fun OlympiaImportContent(
                     onConfirmLedgerName(it)
                     closeSheetCallback()
                 },
-                onSheetClose = { closeSheetCallback() },
+                upIcon = {
+                    Icon(
+                        painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_close),
+                        tint = RadixTheme.colors.gray1,
+                        contentDescription = "navigate back"
+                    )
+                },
+                onClose = { closeSheetCallback() },
                 waitingForLedgerResponse = waitingForLedgerResponse,
                 onAddP2PLink = onAddP2PLink
             )
@@ -288,9 +301,9 @@ private fun OlympiaImportContent(
             Column(modifier = Modifier.fillMaxSize()) {
                 RadixCenteredTopAppBar(
                     title = stringResource(R.string.empty),
-                    onBackClick = onBackClick,
+                    onBackClick = if (currentPage == ImportPage.ImportComplete) onCloseScreen else onBackClick,
                     contentColor = RadixTheme.colors.gray1,
-                    backIconType = if (currentPage == ImportPage.ImportComplete) BackIconType.None else BackIconType.Back
+                    backIconType = if (currentPage == ImportPage.ImportComplete) BackIconType.Close else BackIconType.Back
                 )
                 HorizontalPager(
                     modifier = Modifier
@@ -399,7 +412,10 @@ private fun ScanQrPage(
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(RadixTheme.dimensions.paddingDefault),
+                    .padding(
+                        horizontal = RadixTheme.dimensions.paddingLarge,
+                        vertical = RadixTheme.dimensions.paddingDefault
+                    ),
                 verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingDefault),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
@@ -421,6 +437,7 @@ private fun ScanQrPage(
                     )
                 }
                 Text(
+                    modifier = Modifier.padding(RadixTheme.dimensions.paddingDefault),
                     text = stringResource(id = R.string.importOlympiaAccounts_scanQR_instructions),
                     style = RadixTheme.typography.body1Regular,
                     color = RadixTheme.colors.gray1,
@@ -686,7 +703,7 @@ private fun ImportCompletePage(
             }
         }
         RadixPrimaryButton(
-            text = stringResource(R.string.common_continue),
+            text = stringResource(R.string.importOlympiaAccounts_completion_accountListButtonTitle),
             onClick = onContinue,
             modifier = Modifier.fillMaxWidth(),
             throttleClicks = true
