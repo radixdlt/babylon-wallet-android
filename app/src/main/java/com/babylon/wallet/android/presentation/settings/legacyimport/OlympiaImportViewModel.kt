@@ -420,17 +420,6 @@ sealed interface OlympiaImportEvent : OneOffEvent {
     object BiometricPrompt : OlympiaImportEvent
 }
 
-data class SeedPhraseWord(
-    val index: Int,
-    val value: String = "",
-    val state: State = State.Empty,
-    val lastWord: Boolean = false
-) {
-    enum class State {
-        Valid, Invalid, Empty, HasValue
-    }
-}
-
 data class OlympiaImportUiState(
     val isLoading: Boolean = false,
     val pages: ImmutableList<ImportPage> = persistentListOf(),
@@ -451,6 +440,6 @@ data class OlympiaImportUiState(
     val recentlyConnectedLedgerDevice: LedgerDeviceUiModel? = null,
     val addLedgerSheetState: AddLedgerSheetState = AddLedgerSheetState.Connect,
     val totalHardwareAccounts: Int = 0,
-    val seedPhraseWords: ImmutableList<SeedPhraseWord> = persistentListOf(),
+    val seedPhraseWords: ImmutableList<SeedPhraseInputDelegate.SeedPhraseWord> = persistentListOf(),
     val wordAutocompleteCandidates: ImmutableList<String> = persistentListOf()
 ) : UiState

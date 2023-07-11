@@ -1,4 +1,4 @@
-@file:Suppress("CyclomaticComplexMethod")
+@file:Suppress("CyclomaticComplexMethod", "TooManyFunctions")
 @file:OptIn(
     ExperimentalPermissionsApi::class,
     ExperimentalMaterialApi::class,
@@ -67,13 +67,15 @@ import com.babylon.wallet.android.designsystem.composable.RadixSecondaryButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.designsystem.theme.getAccountGradientColorsFor
+import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.domain.model.toProfileLedgerDeviceModel
 import com.babylon.wallet.android.presentation.common.FullscreenCircularProgressContent
+import com.babylon.wallet.android.presentation.common.SeedPhraseInputDelegate
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.dapp.authorized.account.AccountItemUiModel
 import com.babylon.wallet.android.presentation.model.AddLedgerSheetState
 import com.babylon.wallet.android.presentation.settings.connector.qrcode.CameraPreview
-import com.babylon.wallet.android.presentation.ui.MockUiProvider
+import com.babylon.wallet.android.presentation.ui.MockUiProvider.seedPhraseWords
 import com.babylon.wallet.android.presentation.ui.composables.AccountCardWithStack
 import com.babylon.wallet.android.presentation.ui.composables.AddLedgerBottomSheet
 import com.babylon.wallet.android.presentation.ui.composables.BackIconType
@@ -97,7 +99,6 @@ import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.launch
 import rdx.works.profile.data.model.factorsources.LedgerHardwareWalletFactorSource
 import rdx.works.profile.olympiaimport.ChunkInfo
@@ -163,7 +164,7 @@ private fun OlympiaImportContent(
     onImportAccounts: () -> Unit,
     onCloseScreen: () -> Unit,
     importButtonEnabled: Boolean,
-    seedPhraseWords: ImmutableList<SeedPhraseWord>,
+    seedPhraseWords: ImmutableList<SeedPhraseInputDelegate.SeedPhraseWord>,
     bip39Passphrase: String,
     onWordChanged: (Int, String) -> Unit,
     onPassphraseChanged: (String) -> Unit,
@@ -502,7 +503,10 @@ private fun AccountListPage(
             }
         }
         RadixPrimaryButton(
-            text = stringResource(R.string.importOlympiaAccounts_accountsToImport_buttonManyAccounts, olympiaAccounts.size),
+            text = stringResource(
+                R.string.importOlympiaAccounts_accountsToImport_buttonManyAccounts,
+                olympiaAccounts.size
+            ),
             onClick = onImportAccounts,
             modifier = Modifier
                 .fillMaxWidth()
@@ -693,7 +697,7 @@ private fun ImportCompletePage(
 @Composable
 private fun InputSeedPhrasePage(
     modifier: Modifier = Modifier,
-    seedPhraseWords: ImmutableList<SeedPhraseWord>,
+    seedPhraseWords: ImmutableList<SeedPhraseInputDelegate.SeedPhraseWord>,
     bip39Passphrase: String,
     onWordChanged: (Int, String) -> Unit,
     onPassphraseChanged: (String) -> Unit,
@@ -796,41 +800,45 @@ private fun InputSeedPhrasePage(
 
 @Preview(showBackground = true)
 @Composable
-fun SettingsScreenLinkConnectorWithoutActiveConnectorPreview() {
+fun HardwareImportNoVerifiedLedgersPreview() {
     RadixWalletTheme {
-        OlympiaImportContent(
-            onBackClick = {},
-            onQrCodeScanned = {},
-            pages = persistentListOf(ImportPage.ScanQr),
-            oneOffEvent = flow {},
-            legacyAccountDetails = persistentListOf(),
-            onImportAccounts = {},
-            onCloseScreen = {},
-            importButtonEnabled = false,
-            seedPhraseWords = (0 until 12).map { SeedPhraseWord(it) }.toPersistentList(),
-            bip39Passphrase = "test",
-            onWordChanged = { _, _ -> },
-            onPassphraseChanged = {},
-            importSoftwareAccountsEnabled = false,
-            onImportSoftwareAccounts = {},
-            uiMessage = null,
-            onMessageShown = {},
-            migratedAccounts = persistentListOf(),
-            onContinue = {},
-            currentPage = ImportPage.ScanQr,
-            qrChunkInfo = null,
-            onMnemonicAlreadyImported = {},
-            isDeviceSecure = true,
+        HardwareImportScreen(
+            modifier = Modifier,
+            totalHardwareAccounts = 5,
             accountsLeft = 5,
             waitingForLedgerResponse = false,
-            onConfirmLedgerName = {},
-            onAddP2PLink = {},
             ledgerFactorSources = persistentListOf(),
-            addLedgerSheetState = AddLedgerSheetState.Connect,
-            onSendAddLedgerRequest = {},
-            deviceModel = null,
-            totalHardwareAccounts = 2,
-            wordAutocompleteCandidates = persistentListOf()
+            onUseLedger = {}
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun HardwareImportWithVerifiedLedgersPreview() {
+    RadixWalletTheme {
+        HardwareImportScreen(
+            modifier = Modifier,
+            totalHardwareAccounts = 5,
+            accountsLeft = 3,
+            waitingForLedgerResponse = false,
+            ledgerFactorSources = SampleDataProvider().ledgerFactorSourcesSample.toPersistentList(),
+            onUseLedger = {}
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun HardwareImportNoAccountsLeftPreview() {
+    RadixWalletTheme {
+        HardwareImportScreen(
+            modifier = Modifier,
+            totalHardwareAccounts = 5,
+            accountsLeft = 0,
+            waitingForLedgerResponse = true,
+            ledgerFactorSources = SampleDataProvider().ledgerFactorSourcesSample.toPersistentList(),
+            onUseLedger = {}
         )
     }
 }
@@ -840,7 +848,7 @@ fun SettingsScreenLinkConnectorWithoutActiveConnectorPreview() {
 fun InputSeedPhrasePagePreview() {
     RadixWalletTheme {
         InputSeedPhrasePage(
-            seedPhraseWords = MockUiProvider.seedPhraseWords,
+            seedPhraseWords = seedPhraseWords,
             bip39Passphrase = "test",
             onWordChanged = { _, _ -> },
             onPassphraseChanged = {},

@@ -37,7 +37,7 @@ import com.babylon.wallet.android.designsystem.composable.RadixTextButton
 import com.babylon.wallet.android.designsystem.composable.RadixTextField
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
-import com.babylon.wallet.android.presentation.settings.legacyimport.SeedPhraseWord
+import com.babylon.wallet.android.presentation.common.SeedPhraseInputDelegate.SeedPhraseWord
 import com.babylon.wallet.android.presentation.ui.MockUiProvider
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import kotlinx.collections.immutable.ImmutableList
