@@ -202,7 +202,7 @@ class TransactionClient @Inject constructor(
                 ).also {
                     val withdrawnFromCandidate = findFeePayerWithFundsWithin(it)
                     if (withdrawnFromCandidate != null) {
-                        return Result.success(FeePayerSearchResult(withdrawnFromCandidate))
+                        return Result.success(FeePayerSearchResult(feePayerAddressFromManifest = withdrawnFromCandidate))
                     }
                 }
             )
@@ -213,7 +213,7 @@ class TransactionClient @Inject constructor(
                 ).also {
                     val requiringAuthCandidate = findFeePayerWithFundsWithin(it)
                     if (requiringAuthCandidate != null) {
-                        return Result.success(FeePayerSearchResult(requiringAuthCandidate))
+                        return Result.success(FeePayerSearchResult(feePayerAddressFromManifest = requiringAuthCandidate))
                     }
                 }
             )
@@ -224,7 +224,7 @@ class TransactionClient @Inject constructor(
                 ).also {
                     val depositedIntoCandidate = findFeePayerWithFundsWithin(it)
                     if (depositedIntoCandidate != null) {
-                        return Result.success(FeePayerSearchResult(depositedIntoCandidate))
+                        return Result.success(FeePayerSearchResult(feePayerAddressFromManifest = depositedIntoCandidate))
                     }
                 }
             )

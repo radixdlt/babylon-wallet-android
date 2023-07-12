@@ -39,9 +39,7 @@ fun FeePayerSelectionSheet(
     onPayerSelected: (Network.Account) -> Unit,
     onPayerConfirmed: () -> Unit
 ) {
-    Column(
-        modifier = modifier.imePadding()
-    ) {
+    Column(modifier = modifier) {
         BottomDialogDragHandle(
             modifier = Modifier
                 .fillMaxWidth()
@@ -111,8 +109,8 @@ fun FeePayerSelectionSheet(
             onClick = onPayerConfirmed,
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = RadixTheme.dimensions.paddingDefault),
-            enabled = true
+                .padding(RadixTheme.dimensions.paddingDefault),
+            enabled = sheet.isSubmitEnabled
         )
     }
 }

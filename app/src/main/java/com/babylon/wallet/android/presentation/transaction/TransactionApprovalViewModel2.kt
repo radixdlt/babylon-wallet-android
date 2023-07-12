@@ -54,10 +54,10 @@ class TransactionApprovalViewModel2 @Inject constructor(
     getDAppWithMetadataAndAssociatedResourcesUseCase: GetDAppWithMetadataAndAssociatedResourcesUseCase,
     getCurrentGatewayUseCase: GetCurrentGatewayUseCase,
     dAppMessenger: DappMessenger,
+    appEventBus: AppEventBus,
     private val incomingRequestRepository: IncomingRequestRepository,
     private val deviceSecurityHelper: DeviceSecurityHelper,
     @ApplicationScope private val appScope: CoroutineScope,
-    private val appEventBus: AppEventBus,
     savedStateHandle: SavedStateHandle,
 ) : StateViewModel<State>(),
     OneOffEventHandler<Event> by OneOffEventHandlerImpl() {
@@ -274,7 +274,12 @@ class TransactionApprovalViewModel2 @Inject constructor(
                 val candidates: List<Network.Account>,
                 val selectedCandidate: Network.Account? = null,
                 val pendingManifest: TransactionManifest
-            ): Sheet()
+            ): Sheet() {
+
+                val isSubmitEnabled: Boolean
+                    get() = selectedCandidate != null
+
+            }
         }
     }
 

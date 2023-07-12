@@ -8,8 +8,11 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.ime
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -23,7 +26,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -56,14 +58,10 @@ import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
 import com.babylon.wallet.android.utils.biometricAuthenticate
 import com.babylon.wallet.android.utils.findFragmentActivity
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.data.model.pernetwork.Network
 
-private const val PAYER_DIALOG_CLOSE_DELAY = 300L
-
-@OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun TransactionApprovalScreen(
     modifier: Modifier = Modifier,
@@ -135,11 +133,17 @@ private fun TransactionPreviewContent(
     SyncSheetState(
         bottomSheetState = modalBottomSheetState,
         isSheetVisible = state.isSheetVisible,
-        onSheetClosed = onBackClick
+        onSheetClosed = {
+            if (state.isSheetVisible) {
+                onBackClick()
+            }
+        }
     )
 
     DefaultModalSheetLayout(
-        modifier = modifier.fillMaxSize(),
+        modifier = modifier
+            .navigationBarsPadding()
+            .fillMaxSize(),
         sheetState = modalBottomSheetState,
         sheetContent = {
             BottomSheetContent(
@@ -179,6 +183,7 @@ private fun TransactionPreviewContent(
                     hostState = snackBarHostState
                 )
             },
+            contentWindowInsets = WindowInsets.ime,
             containerColor = RadixTheme.colors.gray5
         ) { padding ->
             Box(modifier = Modifier.padding(padding)) {
