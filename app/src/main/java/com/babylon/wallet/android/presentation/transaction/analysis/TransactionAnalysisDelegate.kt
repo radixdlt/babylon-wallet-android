@@ -5,6 +5,7 @@ import com.babylon.wallet.android.data.transaction.TransactionClient
 import com.babylon.wallet.android.data.transaction.TransactionConfig
 import com.babylon.wallet.android.domain.common.value
 import com.babylon.wallet.android.domain.model.Transferable
+import com.babylon.wallet.android.domain.model.TransferableResource
 import com.babylon.wallet.android.domain.usecases.GetAccountsWithResourcesUseCase
 import com.babylon.wallet.android.domain.usecases.GetDAppWithMetadataAndAssociatedResourcesUseCase
 import com.babylon.wallet.android.domain.usecases.transaction.GetTransactionBadgesUseCase
@@ -209,23 +210,48 @@ class TransactionAnalysisDelegate(
             )
         }
 
-        // Withdrawing the same items as we deposit (so we copy the result, but converting it to Withdrawing type)
-        val from = to.map { depositingAccount ->
-            when (depositingAccount) {
-                is AccountWithTransferableResources.Other -> AccountWithTransferableResources.Other(
-                    address = depositingAccount.address,
-                    resources = depositingAccount.resources.map { Transferable.Withdrawing(it.transferable) }
-                )
+        // Taking the accumulated values of fungibles and non fungibles and add them to one from account
+        val fromAccount = allAccounts.find { it.address == transfer.from.addressString() }
+        val allTransferringResources = to.map { depositing ->
+            depositing.resources.map { it.transferable }
+        }.flatten().groupBy { it.resourceAddress }
 
-                is AccountWithTransferableResources.Owned -> AccountWithTransferableResources.Owned(
-                    account = depositingAccount.account,
-                    resources = depositingAccount.resources.map { Transferable.Withdrawing(it.transferable) }
-                )
+        val withdrawingResources = allTransferringResources.mapNotNull { entry ->
+            val fungibleTransferrables = entry.value.filterIsInstance<TransferableResource.Amount>()
+            val nonFungibleTransferrables = entry.value.filterIsInstance<TransferableResource.NFTs>()
+
+            if (fungibleTransferrables.isNotEmpty()){
+                val transferrable = fungibleTransferrables.reduce { transferable, value ->
+                    transferable.copy(amount = transferable.amount + value.amount)
+                }
+                Transferable.Withdrawing(transferrable)
+            } else if (nonFungibleTransferrables.isNotEmpty()) {
+                val nonFungibleTransferrable = nonFungibleTransferrables.reduce { nonFungibleTransferrable, value ->
+                    nonFungibleTransferrable.copy(collection = nonFungibleTransferrable.collection.copy(
+                        amount = nonFungibleTransferrable.collection.amount + value.collection.amount,
+                        items = nonFungibleTransferrable.collection.items + value.collection.items
+                    ))
+                }
+                Transferable.Withdrawing(nonFungibleTransferrable)
+            } else {
+                null
             }
         }
 
+        val from = if (fromAccount == null) {
+            AccountWithTransferableResources.Other(
+                address = transfer.from.addressString(),
+                resources = withdrawingResources
+            )
+        } else {
+            AccountWithTransferableResources.Owned(
+                account = fromAccount,
+                resources = withdrawingResources
+            )
+        }
+
         return PreviewType.Transaction(
-            from = from,
+            from = listOf(from),
             to = to
         )
     }

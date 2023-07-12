@@ -27,11 +27,11 @@ import com.babylon.wallet.android.presentation.dapp.authorized.account.AccountIt
 import com.babylon.wallet.android.presentation.transaction.TransactionApprovalViewModel2.Event
 import com.babylon.wallet.android.presentation.transaction.TransactionApprovalViewModel2.State
 import com.babylon.wallet.android.presentation.transaction.analysis.TransactionAnalysisDelegate
+import com.babylon.wallet.android.presentation.transaction.submit.TransactionSubmitDelegate
 import com.babylon.wallet.android.utils.AppEventBus
 import com.babylon.wallet.android.utils.DeviceSecurityHelper
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -39,7 +39,6 @@ import rdx.works.core.crypto.PrivateKey
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.gateway.GetCurrentGatewayUseCase
-import timber.log.Timber
 import java.math.BigDecimal
 import javax.inject.Inject
 
@@ -51,10 +50,10 @@ class TransactionApprovalViewModel2 @Inject constructor(
     getProfileUseCase: GetProfileUseCase,
     getTransactionBadgesUseCase: GetTransactionBadgesUseCase,
     getDAppWithMetadataAndAssociatedResourcesUseCase: GetDAppWithMetadataAndAssociatedResourcesUseCase,
+    getCurrentGatewayUseCase: GetCurrentGatewayUseCase,
+    dAppMessenger: DappMessenger,
     private val incomingRequestRepository: IncomingRequestRepository,
-    private val getCurrentGatewayUseCase: GetCurrentGatewayUseCase,
     private val deviceSecurityHelper: DeviceSecurityHelper,
-    private val dAppMessenger: DappMessenger,
     @ApplicationScope private val appScope: CoroutineScope,
     private val appEventBus: AppEventBus,
     savedStateHandle: SavedStateHandle,
@@ -70,8 +69,6 @@ class TransactionApprovalViewModel2 @Inject constructor(
         isDeviceSecure = deviceSecurityHelper.isDeviceSecure()
     )
 
-    private var approvalJob: Job? = null
-
     private val analysis: TransactionAnalysisDelegate = TransactionAnalysisDelegate(
         state = _state,
         getProfileUseCase = getProfileUseCase,
@@ -79,6 +76,19 @@ class TransactionApprovalViewModel2 @Inject constructor(
         getTransactionBadgesUseCase = getTransactionBadgesUseCase,
         getDAppWithMetadataAndAssociatedResourcesUseCase = getDAppWithMetadataAndAssociatedResourcesUseCase,
         transactionClient = transactionClient
+    )
+
+    private val submit: TransactionSubmitDelegate = TransactionSubmitDelegate(
+        state = _state,
+        transactionClient = transactionClient,
+        dAppMessenger = dAppMessenger,
+        incomingRequestRepository = incomingRequestRepository,
+        getCurrentGatewayUseCase = getCurrentGatewayUseCase,
+        appScope = appScope,
+        appEventBus = appEventBus,
+        onSendScreenEvent = {
+            viewModelScope.launch { sendEvent(it)  }
+        }
     )
 
     init {
@@ -97,7 +107,7 @@ class TransactionApprovalViewModel2 @Inject constructor(
 
     fun onBackClick() {
         viewModelScope.launch {
-            dismissTransaction(DappRequestFailure.RejectedByUser)
+            submit.onDismiss(DappRequestFailure.RejectedByUser)
         }
     }
 
@@ -110,7 +120,7 @@ class TransactionApprovalViewModel2 @Inject constructor(
     }
 
     fun approveTransaction() {
-
+        submit.onSubmit()
     }
 
     fun onGuaranteesApplyClick() {
@@ -229,28 +239,11 @@ class TransactionApprovalViewModel2 @Inject constructor(
 //        }
     }
 
-    private suspend fun dismissTransaction(failure: DappRequestFailure) {
-        if (approvalJob == null) {
-            val request = state.value.request
-            if (!request.isInternal) {
-                dAppMessenger.sendWalletInteractionResponseFailure(
-                    dappId = request.dappId,
-                    requestId = args.requestId,
-                    error = failure.toWalletErrorType(),
-                    message = failure.getDappMessage()
-                )
-            }
-            sendEvent(Event.Dismiss)
-            incomingRequestRepository.requestHandled(args.requestId)
-        } else {
-            Timber.d("Cannot dismiss transaction while is in progress")
-        }
-    }
-
     data class State(
         val request: MessageFromDataChannel.IncomingRequest.TransactionRequest,
         val isDeviceSecure: Boolean,
         val isLoading: Boolean,
+        val isSubmitting: Boolean = false,
         val isSigning: Boolean = false,
         val isRawManifestVisible: Boolean = false,
         val previewType: PreviewType,
