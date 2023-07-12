@@ -26,6 +26,7 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
@@ -141,9 +142,12 @@ fun FungibleTokenBottomSheetDetails(
                     )
                     Spacer(modifier = Modifier.weight(1f))
                     Text(
+                        modifier = Modifier
+                            .padding(start = RadixTheme.dimensions.paddingDefault),
                         text = currentSupply,
                         style = RadixTheme.typography.body1Regular,
-                        color = RadixTheme.colors.gray1
+                        color = RadixTheme.colors.gray1,
+                        textAlign = TextAlign.End
                     )
                 }
             }
