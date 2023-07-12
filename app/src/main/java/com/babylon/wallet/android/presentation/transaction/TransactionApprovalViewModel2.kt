@@ -10,6 +10,7 @@ import com.babylon.wallet.android.data.transaction.TransactionClient
 import com.babylon.wallet.android.data.transaction.TransactionConfig
 import com.babylon.wallet.android.di.coroutines.ApplicationScope
 import com.babylon.wallet.android.domain.model.Badge
+import com.babylon.wallet.android.domain.model.DAppWithMetadataAndAssociatedResources
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.babylon.wallet.android.domain.model.Transferable
 import com.babylon.wallet.android.domain.usecases.GetAccountsWithResourcesUseCase
@@ -21,6 +22,7 @@ import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
+import com.babylon.wallet.android.presentation.dapp.authorized.account.AccountItemUiModel
 import com.babylon.wallet.android.presentation.transaction.TransactionApprovalViewModel2.Event
 import com.babylon.wallet.android.presentation.transaction.TransactionApprovalViewModel2.State
 import com.babylon.wallet.android.presentation.transaction.analysis.TransactionAnalysisDelegate
@@ -100,6 +102,126 @@ class TransactionApprovalViewModel2 @Inject constructor(
 
     fun onMessageShown() {
         _state.update { it.copy(error = null) }
+    }
+
+    fun approveTransaction() {
+
+    }
+
+    fun onGuaranteesApplyClick() {
+//        _state.update {
+//            it.copy(
+//                depositingAccounts = depositingAccounts
+//            )
+//        }
+    }
+
+    fun onGuaranteesCloseClick() {
+        // Reset local depositing accounts to initial values
+//        depositingAccounts = _state.value.depositingAccounts
+//        _state.update {
+//            it.copy(
+//                guaranteesAccounts = depositingAccounts.toGuaranteesAccountsUiModel()
+//            )
+//        }
+    }
+
+    fun resetBottomSheetMode() {
+//        _state.update {
+//            it.copy(bottomSheetViewMode = BottomSheetMode.Guarantees)
+//        }
+    }
+
+    fun onPayerConfirmed() {
+//        appScope.launch {
+//            val selectedPayer = state.value.feePayerCandidates.first()
+//            handleTransactionApprovalForFeePayer(selectedPayer.address, manifestToApprove)
+//        }
+    }
+
+    fun onPayerSelected(accountItemUiModel: AccountItemUiModel) {
+//        _state.update { state ->
+//            state.copy(
+//                feePayerCandidates = state.feePayerCandidates.map {
+//                    it.copy(isSelected = it.address == accountItemUiModel.address)
+//                }.toPersistentList()
+//            )
+//        }
+    }
+
+    fun onGuaranteeValueChanged(guaranteePair: Pair<String, GuaranteesAccountItemUiModel>) {
+//        val guaranteePercentString = guaranteePair.first.trim()
+//        val guaranteePercentBigDecimal = try {
+//            guaranteePercentString.toBigDecimal()
+//        } catch (e: NumberFormatException) {
+//            BigDecimal.ZERO
+//        }
+//
+//        if (guaranteePercentBigDecimal > BigDecimal("100") || guaranteePercentBigDecimal < BigDecimal.ZERO) {
+//            return
+//        }
+//
+//        val updatedGuaranteedQuantity = guaranteePercentBigDecimal.divide(BigDecimal("100")).multiply(
+//            guaranteePair.second.tokenEstimatedAmount.toBigDecimal().stripTrailingZeros()
+//        ).toPlainString()
+//
+//        val currentDepositingAccounts =
+//            if (depositingAccounts.isEmpty()) {
+//                _state.value.depositingAccounts
+//            } else {
+//                depositingAccounts
+//            }
+//
+//        currentDepositingAccounts.map { previewAccountUiModel ->
+//            if (previewAccountUiModel.accountAddress == guaranteePair.second.address &&
+//                previewAccountUiModel.index == guaranteePair.second.index
+//            ) {
+//                val fungibleResource = previewAccountUiModel.fungibleResource?.copy(
+//                    amount = previewAccountUiModel.fungibleResource.amount,
+//                )
+//
+//                previewAccountUiModel.copy(
+//                    accountAddress = previewAccountUiModel.accountAddress,
+//                    displayName = previewAccountUiModel.displayName,
+//                    appearanceID = previewAccountUiModel.appearanceID,
+//                    tokenSymbol = previewAccountUiModel.tokenSymbol,
+//                    iconUrl = previewAccountUiModel.iconUrl,
+//                    shouldPromptForGuarantees = previewAccountUiModel.shouldPromptForGuarantees,
+//                    guaranteedAmount = updatedGuaranteedQuantity,
+//                    guaranteedPercentAmount = guaranteePercentString,
+//                    instructionIndex = previewAccountUiModel.instructionIndex,
+//                    resourceAddress = previewAccountUiModel.resourceAddress,
+//                    index = previewAccountUiModel.index,
+//                    fungibleResource = fungibleResource,
+//                    nonFungibleResourceItems = previewAccountUiModel.nonFungibleResourceItems
+//                )
+//            } else {
+//                previewAccountUiModel
+//            }
+//        }.toImmutableList().apply {
+//            depositingAccounts = this
+//            _state.update {
+//                it.copy(
+//                    guaranteesAccounts = toGuaranteesAccountsUiModel()
+//                )
+//            }
+//        }
+    }
+
+    fun promptForGuaranteesClick() {
+//        _state.update {
+//            it.copy(
+//                bottomSheetViewMode = BottomSheetMode.Guarantees
+//            )
+//        }
+    }
+
+    fun onDAppClick(dApp: DAppWithMetadataAndAssociatedResources) {
+//        _state.update {
+//            it.copy(
+//                bottomSheetViewMode = BottomSheetMode.DApp(dApp)
+//            )
+//        }
     }
 
     private suspend fun dismissTransaction(failure: DappRequestFailure) {

@@ -257,8 +257,6 @@ sealed class Resource {
                     }
                 }
             }
-
-            companion object {}
         }
     }
 

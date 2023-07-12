@@ -9,13 +9,10 @@ import com.babylon.wallet.android.domain.model.Transferable
 import com.babylon.wallet.android.domain.model.TransferableResource
 import com.babylon.wallet.android.domain.model.metadata.DescriptionMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.IconUrlMetadataItem
-import com.babylon.wallet.android.domain.model.metadata.MetadataItem
 import com.babylon.wallet.android.domain.model.metadata.NameMetadataItem
-import com.babylon.wallet.android.domain.model.metadata.StringMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.SymbolMetadataItem
 import com.radixdlt.ret.Address
 import com.radixdlt.ret.MetadataValue
-import com.radixdlt.ret.NonFungibleLocalId
 import com.radixdlt.ret.ResourceSpecifier
 import com.radixdlt.ret.Source
 import rdx.works.core.ret.asStr
@@ -38,14 +35,18 @@ fun RETResources.toTransferableResource(resourceAddress: String, allResources: L
             )
         )
         is RETResourcesIds -> {
-            val collectionItems = allNFTCollections.find { it.resourceAddress == resourceAddress }?.items.orEmpty()
+            val collection = allNFTCollections.find { it.resourceAddress == resourceAddress }
             TransferableResource.NFTs(
-                items = ids.map { id ->
-                    collectionItems.find { it.localId == id } ?: Resource.NonFungibleResource.Item(
-                        collectionAddress = resourceAddress,
-                        localId = Resource.NonFungibleResource.Item.ID.from(id.asStr())
-                    )
-                }
+                collection = collection ?: Resource.NonFungibleResource(
+                    resourceAddress = resourceAddress,
+                    amount = ids.size.toLong(),
+                    items = ids.map { id ->
+                        Resource.NonFungibleResource.Item(
+                            collectionAddress = resourceAddress,
+                            localId = Resource.NonFungibleResource.Item.ID.from(id.asStr())
+                        )
+                    }
+                )
             )
         }
     }
@@ -86,17 +87,31 @@ fun ResourceSpecifier.toTransferableResource(
             )
         )
         is ResourceSpecifier.Ids -> {
-            val collectionItems = allNFTCollections.find { it.resourceAddress == resourceAddress.addressString() }?.items.orEmpty()
+            val collection = allNFTCollections.find { it.resourceAddress == resourceAddress.addressString() }
+            val metadata = newlyCreated[resourceAddress.addressString()]
+            val items = ids.map { id ->
+                collection?.items?.find {
+                    it.localId == id
+                } ?: Resource.NonFungibleResource.Item(
+                    collectionAddress = this.resourceAddress.addressString(),
+                    localId = Resource.NonFungibleResource.Item.ID.from(id.asStr())
+                )
+            }
             TransferableResource.NFTs(
-                items = ids.map { id ->
-                    collectionItems.find {
-                        it.localId == id
-                    } ?: Resource.NonFungibleResource.Item.from(
-                        collectionAddress = this.resourceAddress,
-                        localId = id,
-                        metadata = newlyCreated[resourceAddress.addressString()]
-                    )
-                }
+                collection = collection?.copy(
+                    amount = ids.size.toLong(),
+                    items = items
+                ) ?: Resource.NonFungibleResource(
+                    resourceAddress = resourceAddress.addressString(),
+                    amount = ids.size.toLong(),
+                    nameMetadataItem = metadata?.get(ExplicitMetadataKey.NAME.key)?.let { it as? MetadataValue.StringValue }?.let {
+                        NameMetadataItem(name = it.value)
+                    },
+                    iconMetadataItem = metadata?.get(ExplicitMetadataKey.ICON_URL.key)?.let { it as? MetadataValue.StringValue }?.let {
+                        IconUrlMetadataItem(url = Uri.parse(it.value))
+                    },
+                    items = items
+                )
             )
         }
     }
@@ -118,21 +133,6 @@ private fun Resource.FungibleResource.Companion.from(
         DescriptionMetadataItem(description = it.value)
     },
     iconUrlMetadataItem = metadata?.get(ExplicitMetadataKey.ICON_URL.key)?.let { it as? MetadataValue.StringValue }?.let {
-        IconUrlMetadataItem(url = Uri.parse(it.value))
-    }
-)
-
-private fun Resource.NonFungibleResource.Item.Companion.from(
-    collectionAddress: Address,
-    localId: NonFungibleLocalId,
-    metadata: Map<String, MetadataValue>?
-): Resource.NonFungibleResource.Item = Resource.NonFungibleResource.Item(
-    collectionAddress = collectionAddress.addressString(),
-    localId = Resource.NonFungibleResource.Item.ID.from(localId.asStr()),
-    nameMetadataItem = metadata?.get(ExplicitMetadataKey.NAME.key)?.let { it as? MetadataValue.StringValue }?.let {
-        NameMetadataItem(name = it.value)
-    },
-    iconMetadataItem = metadata?.get(ExplicitMetadataKey.ICON_URL.key)?.let { it as? MetadataValue.StringValue }?.let {
         IconUrlMetadataItem(url = Uri.parse(it.value))
     }
 )

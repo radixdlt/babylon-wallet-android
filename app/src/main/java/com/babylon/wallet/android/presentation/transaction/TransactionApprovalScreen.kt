@@ -68,12 +68,11 @@ private const val PAYER_DIALOG_CLOSE_DELAY = 300L
 @Composable
 fun TransactionApprovalScreen(
     modifier: Modifier = Modifier,
-    viewModel: TransactionApprovalViewModel,
-    viewModel2: TransactionApprovalViewModel2,
+    viewModel: TransactionApprovalViewModel2,
     onDismiss: () -> Unit
 ) {
     val scope = rememberCoroutineScope()
-    val state by viewModel2.state.collectAsStateWithLifecycle()
+    val state by viewModel.state.collectAsStateWithLifecycle()
 
     val modalBottomSheetState = rememberModalBottomSheetState(
         initialValue = ModalBottomSheetValue.Hidden,
@@ -113,11 +112,11 @@ fun TransactionApprovalScreen(
     LaunchedEffect(Unit) {
         viewModel.oneOffEvent.collect { event ->
             when (event) {
-                TransactionApprovalEvent.Dismiss -> {
+                TransactionApprovalViewModel2.Event.Dismiss -> {
                     onDismiss()
                 }
 
-                TransactionApprovalEvent.SelectFeePayer -> {
+                TransactionApprovalViewModel2.Event.SelectFeePayer -> {
                     scope.launch {
                         modalBottomSheetState.show()
                     }

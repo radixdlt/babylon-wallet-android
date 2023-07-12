@@ -89,25 +89,19 @@ fun TransactionAccountCard(
             )
         }
 
-        val fungibles = remember(account.resources) {
+        val amountTransferables = remember(account.resources) {
             account.resources.filter { it.transferable is TransferableResource.Amount }
         }
 
-        val nftItems = remember(account.resources) {
-            account.resources.asSequence()
-                .filterIsInstance<TransferableResource.NFTs>()
-                .map { it.items }
-                .flatten()
-                .toList()
+        val nftTransferables = remember(account.resources) {
+            account.resources.filter { it.transferable is TransferableResource.NFTs }
         }
 
-        val allItemsSize = fungibles.size + nftItems.size
-
         // Fungibles
-        fungibles.forEachIndexed { index, fungible ->
-            val lastItem = index == allItemsSize - 1
+        amountTransferables.forEachIndexed { index, amountTransferable ->
+            val lastItem = index == amountTransferables.size + nftTransferables.size - 1
             val shape = if (lastItem) RadixTheme.shapes.roundedRectBottomMedium else RectangleShape
-            val transferableAmount = fungible.transferable as TransferableResource.Amount
+            val transferableAmount = amountTransferable.transferable as TransferableResource.Amount
 
             TokenItemContent(
                 isXrdToken = transferableAmount.resource.isXrd,
@@ -122,14 +116,15 @@ fun TransactionAccountCard(
         }
 
         // Non fungibles
-        nftItems.forEachIndexed { index, nftItem ->
-            val lastItem = index == allItemsSize - 1
+        nftTransferables.forEachIndexed { index, nftTransferable ->
+            val lastItem = index == nftTransferables.lastIndex
             val shape = if (lastItem) RadixTheme.shapes.roundedRectBottomMedium else RectangleShape
+            val transferableNft = nftTransferable.transferable as TransferableResource.NFTs
 
             TokenItemContent(
                 isXrdToken = false,
-                tokenUrl = nftItem.imageUrl.toString(),
-                tokenSymbol = nftItem.localId.displayable,
+                tokenUrl = transferableNft.collection.iconUrl.toString(),
+                tokenSymbol = transferableNft.collection.name,
                 isTokenAmountVisible = false,
                 shape = shape
             )

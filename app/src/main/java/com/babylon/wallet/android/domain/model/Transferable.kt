@@ -34,8 +34,8 @@ sealed interface TransferableResource {
             get() = resource.resourceAddress
     }
 
-    data class NFTs(val items: List<Resource.NonFungibleResource.Item>): TransferableResource {
+    data class NFTs(val collection: Resource.NonFungibleResource): TransferableResource {
         override val resourceAddress: String
-            get() = items.firstOrNull()?.collectionAddress.orEmpty()
+            get() = collection.resourceAddress
     }
 }
