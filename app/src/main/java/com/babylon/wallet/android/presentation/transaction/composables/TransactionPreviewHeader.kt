@@ -2,7 +2,13 @@
 
 package com.babylon.wallet.android.presentation.transaction.composables
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.IconButton
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -29,12 +35,13 @@ fun TransactionPreviewHeader(
     onBackEnabled: Boolean,
     scrollBehavior: TopAppBarScrollBehavior
 ) {
+    val collapsed = scrollBehavior.state.collapsedFraction >= 0.5f
     LargeTopAppBar(
         modifier = modifier,
         title = {
             Text(
                 text = stringResource(R.string.transactionReview_title),
-                style = RadixTheme.typography.title,
+                style = if (!collapsed) RadixTheme.typography.title else RadixTheme.typography.body1Header,
                 color = RadixTheme.colors.gray1,
             )
         },
@@ -71,6 +78,10 @@ fun TransactionPreviewHeader(
                 )
             }
         },
+        colors = TopAppBarDefaults.largeTopAppBarColors(
+            containerColor = RadixTheme.colors.defaultBackground,
+            scrolledContainerColor = RadixTheme.colors.defaultBackground
+        ),
         scrollBehavior = scrollBehavior
     )
 }

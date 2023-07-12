@@ -210,7 +210,6 @@ private fun TransactionPreviewContent(
         Scaffold(
             modifier = Modifier
                 .fillMaxSize()
-                .navigationBarsPadding()
                 .nestedScroll(scrollBehavior.nestedScrollConnection),
             topBar = {
                 TransactionPreviewHeader(
