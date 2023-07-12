@@ -3,12 +3,15 @@
 package com.babylon.wallet.android.presentation.transaction
 
 import androidx.activity.compose.BackHandler
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -17,6 +20,7 @@ import androidx.compose.material.ModalBottomSheetState
 import androidx.compose.material.ModalBottomSheetValue
 import androidx.compose.material.rememberModalBottomSheetState
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
@@ -33,12 +37,15 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.data.transaction.TransactionVersion
+import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
 import com.babylon.wallet.android.designsystem.composable.RadixTextButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
@@ -50,12 +57,15 @@ import com.babylon.wallet.android.presentation.dapp.authorized.account.AccountIt
 import com.babylon.wallet.android.presentation.settings.dappdetail.DAppDetailsSheetContent
 import com.babylon.wallet.android.presentation.transaction.composables.FeePayerSelectionSheet
 import com.babylon.wallet.android.presentation.transaction.composables.GuaranteesSheet
+import com.babylon.wallet.android.presentation.transaction.composables.RawManifestView
 import com.babylon.wallet.android.presentation.transaction.composables.TransactionPreviewHeader
 import com.babylon.wallet.android.presentation.transaction.composables.TransactionPreviewTypeContent
 import com.babylon.wallet.android.presentation.ui.composables.DefaultModalSheetLayout
 import com.babylon.wallet.android.presentation.ui.composables.NotSecureAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
+import com.babylon.wallet.android.utils.biometricAuthenticate
+import com.babylon.wallet.android.utils.findFragmentActivity
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.delay
@@ -91,6 +101,7 @@ fun TransactionApprovalScreen(
         onBackClick = viewModel::onBackClick,
         state = state,
         onApproveTransaction = viewModel::approveTransaction,
+        onRawManifestToggle = viewModel::onRawManifestToggle,
         onMessageShown = viewModel::onMessageShown,
         modifier = modifier,
         onGuaranteesApplyClick = viewModel::onGuaranteesApplyClick,
@@ -134,6 +145,7 @@ private fun TransactionPreviewContent(
     onBackClick: () -> Unit,
     state: TransactionApprovalViewModel2.State,
     onApproveTransaction: () -> Unit,
+    onRawManifestToggle: () -> Unit,
     onMessageShown: () -> Unit,
     onGuaranteesApplyClick: () -> Unit,
     onGuaranteesCloseClick: () -> Unit,
@@ -214,7 +226,7 @@ private fun TransactionPreviewContent(
             topBar = {
                 TransactionPreviewHeader(
                     onBackClick = onBackClick,
-                    onRawManifestClick = { showRawManifest = !showRawManifest },
+                    onRawManifestClick = onRawManifestToggle,
                     onBackEnabled = !state.isSigning,
                     scrollBehavior = scrollBehavior
                 )
@@ -225,26 +237,106 @@ private fun TransactionPreviewContent(
                     hostState = snackBarHostState
                 )
             },
-            containerColor = RadixTheme.colors.defaultBackground
+            containerColor = RadixTheme.colors.gray5
         ) { padding ->
             Box(modifier = Modifier.padding(padding)) {
                 if (state.isLoading) {
                     FullscreenCircularProgressContent()
                 } else {
-                    when (state.previewType) {
-                        is PreviewType.NonConforming -> TODO()
-                        is PreviewType.Transaction -> {
-                            TransactionPreviewTypeContent(
-                                modifier = Modifier.verticalScroll(rememberScrollState()),
+                    AnimatedVisibility(
+                        visible = state.isRawManifestVisible,
+                        enter = fadeIn(),
+                        exit = fadeOut()
+                    ) {
+                        Column(
+                            modifier = Modifier.verticalScroll(rememberScrollState())
+                        ) {
+                            RawManifestView(
+                                modifier = Modifier.padding(RadixTheme.dimensions.paddingDefault),
+                                manifest = state.rawManifest
+                            )
+
+                            ApproveButton(
                                 state = state,
-                                preview = state.previewType,
                                 onApproveTransaction = onApproveTransaction
                             )
                         }
                     }
+
+                    AnimatedVisibility(
+                        visible = !state.isRawManifestVisible,
+                        enter = fadeIn(),
+                        exit = fadeOut()
+                    ) {
+                        Column(
+                            modifier = Modifier.verticalScroll(rememberScrollState())
+                        ) {
+                            when (state.previewType) {
+                                is PreviewType.NonConforming -> TODO()
+                                is PreviewType.Transaction -> {
+                                    TransactionPreviewTypeContent(
+                                        state = state,
+                                        preview = state.previewType
+                                    )
+                                }
+                            }
+
+                            ApproveButton(
+                                state = state,
+                                onApproveTransaction = onApproveTransaction
+                            )
+                        }
+
+                    }
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun ApproveButton(
+    state: TransactionApprovalViewModel2.State,
+    onApproveTransaction: () -> Unit
+) {
+    var showNotSecuredDialog by remember { mutableStateOf(false) }
+    val context = LocalContext.current
+    RadixPrimaryButton(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(RadixTheme.dimensions.paddingDefault),
+        text = stringResource(id = R.string.transactionReview_approveButtonTitle),
+        onClick = {
+            if (state.isDeviceSecure) {
+                context.findFragmentActivity()?.let { activity ->
+                    activity.biometricAuthenticate(true) { authenticatedSuccessfully ->
+                        if (authenticatedSuccessfully) {
+                            onApproveTransaction()
+                        }
+                    }
+                }
+            } else {
+                showNotSecuredDialog = true
+            }
+        },
+        enabled = !state.isSigning /*&& state.canApprove && state.bottomSheetViewMode != BottomSheetMode.FeePayerSelection*/,
+        icon = {
+            Icon(
+                painter = painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_lock),
+                contentDescription = ""
+            )
+        }
+    )
+
+    if (showNotSecuredDialog) {
+        NotSecureAlertDialog(
+            finish = { accepted ->
+                showNotSecuredDialog = false
+                if (accepted) {
+                    onApproveTransaction()
+                }
+            }
+        )
     }
 }
 
@@ -294,42 +386,6 @@ private fun BottomSheetContent(
     }
 }
 
-@Composable
-private fun RawTransactionContent(
-    manifestContent: String,
-    finish: () -> Unit,
-) {
-    Dialog(onDismissRequest = finish) {
-        Column(
-            modifier = Modifier
-                .background(
-                    RadixTheme.colors.defaultBackground,
-                    shape = RadixTheme.shapes.roundedRectSmall
-                )
-                .clip(RadixTheme.shapes.roundedRectSmall),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Column(
-                modifier = Modifier
-                    .padding(RadixTheme.dimensions.paddingDefault)
-                    .verticalScroll(rememberScrollState())
-                    .weight(weight = 1f, fill = false)
-            ) {
-                Text(
-                    text = manifestContent,
-                    style = RadixTheme.typography.body2Header,
-                    color = RadixTheme.colors.gray1
-                )
-            }
-
-            RadixTextButton(
-                text = stringResource(id = R.string.common_ok),
-                onClick = finish
-            )
-        }
-    }
-}
-
 @Preview(showBackground = true)
 @Composable
 fun TransactionPreviewContentPreview() {
@@ -353,6 +409,7 @@ fun TransactionPreviewContentPreview() {
                 previewType = PreviewType.NonConforming
             ),
             onApproveTransaction = {},
+            onRawManifestToggle = {},
             onMessageShown = {},
             onGuaranteesApplyClick = {},
             onGuaranteesCloseClick = {},

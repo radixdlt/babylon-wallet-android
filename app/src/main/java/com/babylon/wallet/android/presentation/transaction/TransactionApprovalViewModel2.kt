@@ -104,6 +104,10 @@ class TransactionApprovalViewModel2 @Inject constructor(
         _state.update { it.copy(error = null) }
     }
 
+    fun onRawManifestToggle() {
+        _state.update { it.copy(isRawManifestVisible = !it.isRawManifestVisible) }
+    }
+
     fun approveTransaction() {
 
     }
@@ -247,6 +251,7 @@ class TransactionApprovalViewModel2 @Inject constructor(
         val isDeviceSecure: Boolean,
         val isLoading: Boolean,
         val isSigning: Boolean = false,
+        val isRawManifestVisible: Boolean = false,
         val previewType: PreviewType,
         val fees: TransactionFees = TransactionFees(),
         val error: UiMessage? = null,
@@ -254,6 +259,8 @@ class TransactionApprovalViewModel2 @Inject constructor(
         val networkFee: BigDecimal = TransactionConfig.NETWORK_FEE.toBigDecimal(),
         val signingState: SigningState? = null
     ): UiState {
+
+        val rawManifest: String = request.transactionManifestData.instructions
 
         val message: String?
             get() {
