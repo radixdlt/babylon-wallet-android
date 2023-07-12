@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.SheetState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -17,26 +18,25 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.data.transaction.TransactionConfig
 import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
-import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.designsystem.theme.getAccountGradientColorsFor
 import com.babylon.wallet.android.presentation.dapp.authorized.account.AccountItemUiModel
 import com.babylon.wallet.android.presentation.dapp.authorized.account.AccountSelectionCard
+import com.babylon.wallet.android.presentation.transaction.TransactionApprovalViewModel2
 import com.babylon.wallet.android.presentation.ui.composables.BottomDialogDragHandle
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import kotlinx.collections.immutable.ImmutableList
-import kotlinx.collections.immutable.persistentListOf
+import rdx.works.profile.data.model.pernetwork.Network
 
 @Composable
 fun FeePayerSelectionSheet(
     modifier: Modifier = Modifier,
-    accounts: ImmutableList<AccountItemUiModel>,
+    sheet: TransactionApprovalViewModel2.State.Sheet.FeePayerChooser,
     onClose: () -> Unit,
-    onPayerSelected: (AccountItemUiModel) -> Unit,
+    onPayerSelected: (Network.Account) -> Unit,
     onPayerConfirmed: () -> Unit
 ) {
     Column(
@@ -81,8 +81,8 @@ fun FeePayerSelectionSheet(
                 )
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
             }
-            items(accounts) { account ->
-                val gradientColor = getAccountGradientColorsFor(account.appearanceID)
+            items(sheet.candidates) { candidate ->
+                val gradientColor = getAccountGradientColorsFor(candidate.appearanceID)
                 AccountSelectionCard(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -93,14 +93,14 @@ fun FeePayerSelectionSheet(
                         )
                         .clip(RadixTheme.shapes.roundedRectSmall)
                         .throttleClickable {
-                            onPayerSelected(account)
+                            onPayerSelected(candidate)
                         },
-                    accountName = account.displayName.orEmpty(),
-                    address = account.address,
-                    checked = account.isSelected,
+                    accountName = candidate.displayName,
+                    address = candidate.address,
+                    checked = candidate.address == sheet.selectedCandidate?.address,
                     isSingleChoice = true,
                     radioButtonClicked = {
-                        onPayerSelected(account)
+                        onPayerSelected(candidate)
                     }
                 )
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
@@ -113,51 +113,6 @@ fun FeePayerSelectionSheet(
                 .fillMaxWidth()
                 .padding(horizontal = RadixTheme.dimensions.paddingDefault),
             enabled = true
-        )
-    }
-}
-
-@Preview("default")
-@Preview(showBackground = true)
-@Composable
-fun FeePayerSelectionSheetPreview() {
-    RadixWalletTheme {
-        GuaranteesSheet(
-            guaranteesAccounts = persistentListOf(
-//                GuaranteesAccountItemUiModel(
-//                    address = "f43f43f4334",
-//                    appearanceID = 1,
-//                    displayName = "My account 1",
-//                    tokenSymbol = "XRD",
-//                    tokenIconUrl = "",
-//                    tokenEstimatedAmount = "1000",
-//                    tokenGuaranteedAmount = "1000",
-//                    guaranteedPercentAmount = "100"
-//                ),
-//                GuaranteesAccountItemUiModel(
-//                    address = "f43f43f4334",
-//                    appearanceID = 1,
-//                    displayName = "My account 2",
-//                    tokenSymbol = "XRD",
-//                    tokenIconUrl = "",
-//                    tokenEstimatedAmount = "1000",
-//                    tokenGuaranteedAmount = "1000",
-//                    guaranteedPercentAmount = "100"
-//                ),
-//                GuaranteesAccountItemUiModel(
-//                    address = "f43f43f4334",
-//                    appearanceID = 1,
-//                    displayName = "My account 3",
-//                    tokenSymbol = "XRD",
-//                    tokenIconUrl = "",
-//                    tokenEstimatedAmount = "1000",
-//                    tokenGuaranteedAmount = "1000",
-//                    guaranteedPercentAmount = "100"
-//                )
-            ),
-            onClose = {},
-            onApplyClick = {},
-            onGuaranteeValueChanged = {}
         )
     }
 }

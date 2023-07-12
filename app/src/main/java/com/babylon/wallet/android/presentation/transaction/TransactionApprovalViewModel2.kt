@@ -28,8 +28,10 @@ import com.babylon.wallet.android.presentation.transaction.TransactionApprovalVi
 import com.babylon.wallet.android.presentation.transaction.TransactionApprovalViewModel2.State
 import com.babylon.wallet.android.presentation.transaction.analysis.TransactionAnalysisDelegate
 import com.babylon.wallet.android.presentation.transaction.submit.TransactionSubmitDelegate
+import com.babylon.wallet.android.presentation.transfer.TransferViewModel
 import com.babylon.wallet.android.utils.AppEventBus
 import com.babylon.wallet.android.utils.DeviceSecurityHelper
+import com.radixdlt.ret.TransactionManifest
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.filterNotNull
@@ -106,8 +108,12 @@ class TransactionApprovalViewModel2 @Inject constructor(
     }
 
     fun onBackClick() {
-        viewModelScope.launch {
-            submit.onDismiss(DappRequestFailure.RejectedByUser)
+        if (state.value.sheetState != State.Sheet.None) {
+            _state.update { it.copy(sheetState = State.Sheet.None) }
+        } else {
+            viewModelScope.launch {
+                submit.onDismiss(DappRequestFailure.RejectedByUser)
+            }
         }
     }
 
@@ -147,21 +153,12 @@ class TransactionApprovalViewModel2 @Inject constructor(
 //        }
     }
 
-    fun onPayerConfirmed() {
-//        appScope.launch {
-//            val selectedPayer = state.value.feePayerCandidates.first()
-//            handleTransactionApprovalForFeePayer(selectedPayer.address, manifestToApprove)
-//        }
+    fun onPayerSelected(account: Network.Account) {
+        submit.onFeePayerSelected(account)
     }
 
-    fun onPayerSelected(accountItemUiModel: AccountItemUiModel) {
-//        _state.update { state ->
-//            state.copy(
-//                feePayerCandidates = state.feePayerCandidates.map {
-//                    it.copy(isSelected = it.address == accountItemUiModel.address)
-//                }.toPersistentList()
-//            )
-//        }
+    fun onPayerConfirmed() {
+        submit.onFeePayerConfirmed()
     }
 
     fun onGuaranteeValueChanged(guaranteePair: Pair<String, GuaranteesAccountItemUiModel>) {
@@ -248,6 +245,7 @@ class TransactionApprovalViewModel2 @Inject constructor(
         val isRawManifestVisible: Boolean = false,
         val previewType: PreviewType,
         val fees: TransactionFees = TransactionFees(),
+        val sheetState: Sheet = Sheet.None,
         val error: UiMessage? = null,
         val ephemeralNotaryPrivateKey: PrivateKey = PrivateKey.EddsaEd25519.newRandom(),
         val networkFee: BigDecimal = TransactionConfig.NETWORK_FEE.toBigDecimal(),
@@ -255,6 +253,9 @@ class TransactionApprovalViewModel2 @Inject constructor(
     ): UiState {
 
         val rawManifest: String = request.transactionManifestData.toTransactionManifest().toPrettyString()
+
+        val isSheetVisible: Boolean
+            get() = sheetState != Sheet.None
 
         val message: String?
             get() {
@@ -266,11 +267,19 @@ class TransactionApprovalViewModel2 @Inject constructor(
                 }
             }
 
+        sealed class Sheet {
+            object None: Sheet()
+
+            data class FeePayerChooser(
+                val candidates: List<Network.Account>,
+                val selectedCandidate: Network.Account? = null,
+                val pendingManifest: TransactionManifest
+            ): Sheet()
+        }
     }
 
     sealed interface Event: OneOffEvent {
         object Dismiss : Event
-        object SelectFeePayer : Event
     }
 }
 
@@ -307,6 +316,5 @@ data class TransactionFees(
     val networkFee: BigDecimal = BigDecimal.ZERO,
     val isNetworkCongested: Boolean = false
 )
-
 
 

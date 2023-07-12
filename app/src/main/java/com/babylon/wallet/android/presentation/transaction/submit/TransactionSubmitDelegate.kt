@@ -19,6 +19,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.domain.gateway.GetCurrentGatewayUseCase
 import timber.log.Timber
 
@@ -60,21 +61,22 @@ class TransactionSubmitDelegate(
             transactionClient.findFeePayerInManifest(manifest)
                 .onSuccess { feePayerResult ->
                     state.update { it.copy(isSubmitting = false) }
-                    if (feePayerResult.feePayerExistsInManifest) {
+                    if (feePayerResult.feePayerAddressFromManifest != null) {
                         signAndSubmit(
                             transactionRequest = transactionRequest,
-                            feePayerSearchResult = feePayerResult,
+                            feePayerAddress = feePayerResult.feePayerAddressFromManifest,
                             manifest = manifest
                         )
                     } else {
-                        // TODO Adjust fee payers
-//                        state.update { state ->
-//                            state.copy(
-//                                feePayerCandidates = feePayerResult.candidates.map { it.toUiModel() }.toPersistentList(),
-//                                bottomSheetViewMode = BottomSheetMode.FeePayerSelection
-//                            )
-//                        }
-                        onSendScreenEvent(Event.SelectFeePayer)
+                        state.update { state ->
+                            state.copy(
+                                isSubmitting = false,
+                                sheetState = State.Sheet.FeePayerChooser(
+                                    candidates = feePayerResult.candidates,
+                                    pendingManifest = manifest
+                                )
+                            )
+                        }
                     }
                     approvalJob = null
                 }
@@ -94,6 +96,25 @@ class TransactionSubmitDelegate(
 
                     approvalJob = null
                 }
+        }
+    }
+
+    fun onFeePayerSelected(account: Network.Account) {
+        val feePayerSheet = state.value.sheetState as? State.Sheet.FeePayerChooser ?: return
+        state.update {
+            it.copy(
+                sheetState = feePayerSheet.copy(selectedCandidate = account)
+            )
+        }
+    }
+
+    fun onFeePayerConfirmed() {
+        val feePayerSheet = state.value.sheetState as? State.Sheet.FeePayerChooser ?: return
+        val selectedCandidate = feePayerSheet.selectedCandidate ?: return
+
+        approvalJob = appScope.launch {
+            state.update { it.copy(sheetState = State.Sheet.None) }
+            signAndSubmit(state.value.request, selectedCandidate.address, feePayerSheet.pendingManifest)
         }
     }
 
@@ -118,14 +139,19 @@ class TransactionSubmitDelegate(
     @Suppress("LongMethod")
     private suspend fun signAndSubmit(
         transactionRequest: MessageFromDataChannel.IncomingRequest.TransactionRequest,
-        feePayerSearchResult: FeePayerSearchResult,
+        feePayerAddress: String,
         manifest: TransactionManifest
     ) {
-        state.update { it.copy(isSigning = true) }
+        state.update {
+            it.copy(
+                isSubmitting = true,
+                isSigning = true
+            )
+        }
         val request = TransactionApprovalRequest(
             manifest = manifest,
             ephemeralNotaryPrivateKey = state.value.ephemeralNotaryPrivateKey,
-            feePayerAddress = feePayerSearchResult.feePayerAddressFromManifest
+            feePayerAddress = feePayerAddress
         )
         transactionClient.signAndSubmitTransaction(request).onSuccess { txId ->
             state.update {

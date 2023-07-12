@@ -4,10 +4,8 @@ package com.babylon.wallet.android.presentation.transaction
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -23,7 +21,6 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -33,30 +30,23 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.data.transaction.TransactionVersion
 import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
-import com.babylon.wallet.android.designsystem.composable.RadixTextButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.model.DAppWithMetadataAndAssociatedResources
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.babylon.wallet.android.domain.model.TransactionManifestData
 import com.babylon.wallet.android.presentation.common.FullscreenCircularProgressContent
-import com.babylon.wallet.android.presentation.dapp.authorized.account.AccountItemUiModel
-import com.babylon.wallet.android.presentation.settings.dappdetail.DAppDetailsSheetContent
 import com.babylon.wallet.android.presentation.transaction.composables.FeePayerSelectionSheet
-import com.babylon.wallet.android.presentation.transaction.composables.GuaranteesSheet
 import com.babylon.wallet.android.presentation.transaction.composables.RawManifestView
 import com.babylon.wallet.android.presentation.transaction.composables.TransactionPreviewHeader
 import com.babylon.wallet.android.presentation.transaction.composables.TransactionPreviewTypeContent
@@ -66,11 +56,10 @@ import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
 import com.babylon.wallet.android.utils.biometricAuthenticate
 import com.babylon.wallet.android.utils.findFragmentActivity
-import kotlinx.collections.immutable.ImmutableList
-import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import rdx.works.profile.data.model.apppreferences.Radix
+import rdx.works.profile.data.model.pernetwork.Network
 
 private const val PAYER_DIALOG_CLOSE_DELAY = 300L
 
@@ -81,22 +70,8 @@ fun TransactionApprovalScreen(
     viewModel: TransactionApprovalViewModel2,
     onDismiss: () -> Unit
 ) {
-    val scope = rememberCoroutineScope()
     val state by viewModel.state.collectAsStateWithLifecycle()
 
-    val modalBottomSheetState = rememberModalBottomSheetState(
-        initialValue = ModalBottomSheetValue.Hidden,
-        skipHalfExpanded = true
-    )
-    BackHandler {
-        if (modalBottomSheetState.isVisible) {
-            scope.launch {
-                modalBottomSheetState.hide()
-            }
-        } else {
-            viewModel.onBackClick()
-        }
-    }
     TransactionPreviewContent(
         onBackClick = viewModel::onBackClick,
         state = state,
@@ -110,14 +85,7 @@ fun TransactionApprovalScreen(
         onDAppClick = viewModel::onDAppClick,
         onGuaranteeValueChanged = viewModel::onGuaranteeValueChanged,
         onPayerSelected = viewModel::onPayerSelected,
-        onPayerConfirmed = {
-            scope.launch {
-                modalBottomSheetState.hide()
-                delay(PAYER_DIALOG_CLOSE_DELAY)
-                viewModel.onPayerConfirmed()
-            }
-        },
-        modalBottomSheetState = modalBottomSheetState,
+        onPayerConfirmed =  viewModel::onPayerConfirmed,
         resetBottomSheetMode = viewModel::resetBottomSheetMode
     )
     LaunchedEffect(Unit) {
@@ -125,12 +93,6 @@ fun TransactionApprovalScreen(
             when (event) {
                 TransactionApprovalViewModel2.Event.Dismiss -> {
                     onDismiss()
-                }
-
-                TransactionApprovalViewModel2.Event.SelectFeePayer -> {
-                    scope.launch {
-                        modalBottomSheetState.show()
-                    }
                 }
             }
         }
@@ -152,70 +114,50 @@ private fun TransactionPreviewContent(
     promptForGuaranteesClick: () -> Unit,
     onDAppClick: (DAppWithMetadataAndAssociatedResources) -> Unit,
     onGuaranteeValueChanged: (Pair<String, GuaranteesAccountItemUiModel>) -> Unit,
-    onPayerSelected: (AccountItemUiModel) -> Unit,
+    onPayerSelected: (Network.Account) -> Unit,
     onPayerConfirmed: () -> Unit,
-    modalBottomSheetState: ModalBottomSheetState,
     resetBottomSheetMode: () -> Unit
 ) {
-    var signingStateDismissed by remember { mutableStateOf(false) }
-    var showRawManifest by remember { mutableStateOf(false) }
-    val scope = rememberCoroutineScope()
-    if (modalBottomSheetState.currentValue != ModalBottomSheetValue.Hidden) {
-        DisposableEffect(Unit) {
-            onDispose {
-                resetBottomSheetMode()
-            }
-        }
-    }
-    BackHandler(enabled = modalBottomSheetState.isVisible) {
-        scope.launch {
-            modalBottomSheetState.hide()
-        }
-    }
-
+    val modalBottomSheetState = rememberModalBottomSheetState(
+        initialValue = ModalBottomSheetValue.Hidden,
+        skipHalfExpanded = true
+    )
     val snackBarHostState = remember { SnackbarHostState() }
+
     SnackbarUIMessage(
         message = state.error,
         snackbarHostState = snackBarHostState,
         onMessageShown = onMessageShown
     )
 
+    BackHandler(onBack = onBackClick)
+
+    SyncSheetState(
+        bottomSheetState = modalBottomSheetState,
+        isSheetVisible = state.isSheetVisible,
+        onSheetClosed = onBackClick
+    )
+
     DefaultModalSheetLayout(
         modifier = modifier.fillMaxSize(),
         sheetState = modalBottomSheetState,
         sheetContent = {
-//            BottomSheetContent(
-//                bottomSheetViewMode = state.bottomSheetViewMode,
-//                feePayerCandidates = state.feePayerCandidates,
-//                onPayerSelected = onPayerSelected,
-//                onPayerConfirmed = onPayerConfirmed,
-//                guaranteesAccounts = state.guaranteesAccounts,
-//                onGuaranteesCloseClick = {
-//                    scope.launch {
-//                        modalBottomSheetState.hide()
-//                    }
-//                    onGuaranteesCloseClick()
-//                },
-//                onGuaranteesApplyClick = {
-//                    scope.launch {
-//                        modalBottomSheetState.hide()
-//                    }
-//                    onGuaranteesApplyClick()
-//                },
-//                onGuaranteeValueChanged = {
-//                    onGuaranteeValueChanged(it)
-//                },
-//                onCloseFeePayerSheet = {
-//                    scope.launch {
-//                        modalBottomSheetState.hide()
-//                    }
-//                },
-//                onCloseDAppSheet = {
-//                    scope.launch {
-//                        modalBottomSheetState.hide()
-//                    }
-//                }
-//            )
+            BottomSheetContent(
+                sheetState = state.sheetState,
+                onPayerSelected = onPayerSelected,
+                onPayerConfirmed = onPayerConfirmed,
+                onGuaranteesCloseClick = {
+                    onGuaranteesCloseClick()
+                },
+                onGuaranteesApplyClick = {
+                    onGuaranteesApplyClick()
+                },
+                onGuaranteeValueChanged = {
+                    onGuaranteeValueChanged(it)
+                },
+                onCloseFeePayerSheet = onBackClick,
+                onCloseDAppSheet = onBackClick,
+            )
         }
     ) {
         val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
@@ -342,46 +284,68 @@ private fun ApproveButton(
 
 @Composable
 private fun BottomSheetContent(
-    bottomSheetViewMode: BottomSheetMode,
-    feePayerCandidates: ImmutableList<AccountItemUiModel>,
-    onPayerSelected: (AccountItemUiModel) -> Unit,
+    sheetState: TransactionApprovalViewModel2.State.Sheet,
+    onPayerSelected: (Network.Account) -> Unit,
     onPayerConfirmed: () -> Unit,
-    guaranteesAccounts: ImmutableList<GuaranteesAccountItemUiModel>,
     onGuaranteesCloseClick: () -> Unit,
     onGuaranteesApplyClick: () -> Unit,
     onGuaranteeValueChanged: (Pair<String, GuaranteesAccountItemUiModel>) -> Unit,
     onCloseFeePayerSheet: () -> Unit,
     onCloseDAppSheet: () -> Unit
 ) {
-    when (bottomSheetViewMode) {
-        BottomSheetMode.FeePayerSelection -> {
+    when (sheetState) {
+//        BottomSheetMode.Guarantees -> {
+//            GuaranteesSheet(
+//                modifier = Modifier.fillMaxWidth(),
+//                guaranteesAccounts = guaranteesAccounts,
+//                onClose = onGuaranteesCloseClick,
+//                onApplyClick = onGuaranteesApplyClick,
+//                onGuaranteeValueChanged = onGuaranteeValueChanged
+//            )
+//        }
+
+//        is BottomSheetMode.DApp -> {
+//            DAppDetailsSheetContent(
+//                onBackClick = onCloseDAppSheet,
+//                dappName = bottomSheetViewMode.dApp.dAppWithMetadata.name.orEmpty(),
+//                dappWithMetadata = bottomSheetViewMode.dApp.dAppWithMetadata,
+//                associatedFungibleTokens = bottomSheetViewMode.dApp.fungibleResources.toPersistentList(),
+//                associatedNonFungibleTokens = bottomSheetViewMode.dApp.nonFungibleResources.toPersistentList()
+//            )
+//        }
+
+        is TransactionApprovalViewModel2.State.Sheet.FeePayerChooser -> {
             FeePayerSelectionSheet(
                 modifier = Modifier.fillMaxWidth(),
-                accounts = feePayerCandidates,
+                sheet = sheetState,
                 onClose = onCloseFeePayerSheet,
                 onPayerSelected = onPayerSelected,
                 onPayerConfirmed = onPayerConfirmed
             )
         }
+        is TransactionApprovalViewModel2.State.Sheet.None -> {}
+    }
+}
 
-        BottomSheetMode.Guarantees -> {
-            GuaranteesSheet(
-                modifier = Modifier.fillMaxWidth(),
-                guaranteesAccounts = guaranteesAccounts,
-                onClose = onGuaranteesCloseClick,
-                onApplyClick = onGuaranteesApplyClick,
-                onGuaranteeValueChanged = onGuaranteeValueChanged
-            )
+@Composable
+private fun SyncSheetState(
+    bottomSheetState: ModalBottomSheetState,
+    isSheetVisible: Boolean,
+    onSheetClosed: () -> Unit,
+) {
+    val scope = rememberCoroutineScope()
+
+    LaunchedEffect(isSheetVisible) {
+        if (isSheetVisible) {
+            scope.launch { bottomSheetState.show() }
+        } else {
+            scope.launch { bottomSheetState.hide() }
         }
+    }
 
-        is BottomSheetMode.DApp -> {
-            DAppDetailsSheetContent(
-                onBackClick = onCloseDAppSheet,
-                dappName = bottomSheetViewMode.dApp.dAppWithMetadata.name.orEmpty(),
-                dappWithMetadata = bottomSheetViewMode.dApp.dAppWithMetadata,
-                associatedFungibleTokens = bottomSheetViewMode.dApp.fungibleResources.toPersistentList(),
-                associatedNonFungibleTokens = bottomSheetViewMode.dApp.nonFungibleResources.toPersistentList()
-            )
+    LaunchedEffect(bottomSheetState.isVisible) {
+        if (!bottomSheetState.isVisible) {
+            onSheetClosed()
         }
     }
 }
@@ -418,10 +382,6 @@ fun TransactionPreviewContentPreview() {
             onGuaranteeValueChanged = {},
             onPayerSelected = {},
             onPayerConfirmed = {},
-            modalBottomSheetState = rememberModalBottomSheetState(
-                initialValue = ModalBottomSheetValue.Hidden,
-                skipHalfExpanded = true
-            ),
             resetBottomSheetMode = {}
         )
     }
