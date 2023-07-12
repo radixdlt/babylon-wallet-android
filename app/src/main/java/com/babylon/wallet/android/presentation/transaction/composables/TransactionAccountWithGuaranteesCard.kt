@@ -18,10 +18,14 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
@@ -35,28 +39,28 @@ import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.babylon.wallet.android.designsystem.R
 import com.babylon.wallet.android.designsystem.composable.RadixTextField
-import com.babylon.wallet.android.designsystem.theme.AccountGradientList
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
+import com.babylon.wallet.android.designsystem.theme.getAccountGradientColorsFor
+import com.babylon.wallet.android.domain.SampleDataProvider
+import com.babylon.wallet.android.domain.model.TransferableResource
+import com.babylon.wallet.android.presentation.transaction.AccountWithPredictedGuarantee
+import com.babylon.wallet.android.presentation.transaction.AccountWithPredictedGuarantee.Other
+import com.babylon.wallet.android.presentation.transaction.AccountWithPredictedGuarantee.Owned
 import com.babylon.wallet.android.presentation.ui.composables.ActionableAddressView
 import com.babylon.wallet.android.presentation.ui.composables.ImageSize
 import com.babylon.wallet.android.presentation.ui.composables.rememberImageUrl
 import com.google.accompanist.drawablepainter.rememberDrawablePainter
+import rdx.works.core.displayableQuantity
 import java.math.BigDecimal
 
 @Composable
 fun TransactionAccountWithGuaranteesCard(
-    tokenAddress: String,
-    isTokenXrd: Boolean,
-    tokenIconUrl: String,
-    tokenSymbol: String?,
-    tokenEstimatedQuantity: String,
-    tokenGuaranteedQuantity: String,
     modifier: Modifier = Modifier,
-    appearanceId: Int,
-    accountName: String,
-    guaranteePercentValue: String,
-    onGuaranteeValueChanged: (String) -> Unit
+    accountWithGuarantee: AccountWithPredictedGuarantee,
+    onGuaranteePercentChanged: (String) -> Unit,
+    onGuaranteePercentIncreased: () -> Unit,
+    onGuaranteePercentDecreased: () -> Unit,
 ) {
     Column(
         modifier = modifier
@@ -66,22 +70,32 @@ fun TransactionAccountWithGuaranteesCard(
             modifier = Modifier
                 .fillMaxWidth()
                 .background(
-                    brush = Brush.linearGradient(AccountGradientList[appearanceId]),
+                    brush = when (accountWithGuarantee) {
+                        is Other -> SolidColor(RadixTheme.colors.gray2)
+                        is Owned -> Brush.linearGradient(getAccountGradientColorsFor(accountWithGuarantee.account.appearanceID))
+                    },
                     shape = RadixTheme.shapes.roundedRectTopMedium
                 )
                 .padding(RadixTheme.dimensions.paddingMedium),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = accountName,
+                text = when (accountWithGuarantee) {
+                    is Other -> stringResource(
+                        id = com.babylon.wallet.android.R.string.transactionReview_externalAccountName
+                    )
+
+                    is Owned -> accountWithGuarantee.account.displayName
+                },
                 style = RadixTheme.typography.body1Header,
                 maxLines = 1,
                 modifier = Modifier.weight(1f, false),
                 color = RadixTheme.colors.white
             )
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSmall))
+
             ActionableAddressView(
-                address = tokenAddress,
+                address = accountWithGuarantee.address,
                 textStyle = RadixTheme.typography.body1Regular,
                 textColor = RadixTheme.colors.white,
                 iconColor = RadixTheme.colors.white
@@ -104,7 +118,8 @@ fun TransactionAccountWithGuaranteesCard(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingMedium)
             ) {
-                val placeholder = if (isTokenXrd) {
+                val transferrable = accountWithGuarantee.transferableAmount
+                val placeholder = if (transferrable.resource.isXrd) {
                     painterResource(id = R.drawable.ic_xrd_token)
                 } else {
                     rememberDrawablePainter(drawable = ColorDrawable(RadixTheme.colors.gray3.toArgb()))
@@ -115,7 +130,7 @@ fun TransactionAccountWithGuaranteesCard(
                         .background(RadixTheme.colors.gray3, shape = RadixTheme.shapes.circle)
                 ) {
                     AsyncImage(
-                        model = rememberImageUrl(fromUrl = tokenIconUrl, size = ImageSize.LARGE),
+                        model = rememberImageUrl(fromUrl = transferrable.resource.iconUrl.toString(), size = ImageSize.LARGE),
                         placeholder = placeholder,
                         fallback = placeholder,
                         error = placeholder,
@@ -127,9 +142,8 @@ fun TransactionAccountWithGuaranteesCard(
                     )
                 }
                 Text(
-                    modifier = Modifier
-                        .weight(1f),
-                    text = tokenSymbol.orEmpty(),
+                    modifier = Modifier.weight(1f),
+                    text = transferrable.resource.displayTitle,
                     style = RadixTheme.typography.body2HighImportance,
                     color = RadixTheme.colors.gray1,
                     maxLines = 1,
@@ -145,7 +159,7 @@ fun TransactionAccountWithGuaranteesCard(
                         Text(
                             modifier = Modifier.padding(end = RadixTheme.dimensions.paddingSmall),
                             text = stringResource(id = com.babylon.wallet.android.R.string.transactionReview_estimated),
-                            style = RadixTheme.typography.body2Link,
+                            style = RadixTheme.typography.body2HighImportance,
                             color = RadixTheme.colors.gray1,
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis,
@@ -153,7 +167,7 @@ fun TransactionAccountWithGuaranteesCard(
                         )
                         Text(
                             modifier = Modifier,
-                            text = tokenEstimatedQuantity,
+                            text = accountWithGuarantee.transferableAmount.amount.displayableQuantity(),
                             style = RadixTheme.typography.secondaryHeader,
                             color = RadixTheme.colors.gray1,
                             maxLines = 1,
@@ -173,7 +187,7 @@ fun TransactionAccountWithGuaranteesCard(
                         )
                         Text(
                             modifier = Modifier,
-                            text = tokenGuaranteedQuantity,
+                            text = accountWithGuarantee.guaranteedAmount.displayableQuantity(),
                             style = RadixTheme.typography.body2HighImportance,
                             color = RadixTheme.colors.gray2,
                             maxLines = 1,
@@ -203,12 +217,7 @@ fun TransactionAccountWithGuaranteesCard(
 
                 IconButton(
                     modifier = Modifier.weight(0.7f),
-                    onClick = {
-                        val guaranteePercentDecimal = guaranteePercentValue.toBigDecimal()
-                        onGuaranteeValueChanged(
-                            guaranteePercentDecimal.minus(BigDecimal("0.1")).toString()
-                        )
-                    }
+                    onClick = onGuaranteePercentDecreased
                 ) {
                     Icon(
                         painterResource(
@@ -221,8 +230,10 @@ fun TransactionAccountWithGuaranteesCard(
 
                 RadixTextField(
                     modifier = Modifier.weight(1.1f),
-                    onValueChanged = onGuaranteeValueChanged,
-                    value = guaranteePercentValue,
+                    onValueChanged = { value ->
+                        onGuaranteePercentChanged(value)
+                    },
+                    value = accountWithGuarantee.guaranteeAmountString,
                     singleLine = true,
                     keyboardOptions = KeyboardOptions(
                         imeAction = ImeAction.None,
@@ -232,12 +243,7 @@ fun TransactionAccountWithGuaranteesCard(
 
                 IconButton(
                     modifier = Modifier.weight(0.7f),
-                    onClick = {
-                        val guaranteePercentDecimal = guaranteePercentValue.toBigDecimal()
-                        onGuaranteeValueChanged(
-                            guaranteePercentDecimal.plus(BigDecimal("0.1")).toString()
-                        )
-                    }
+                    onClick = onGuaranteePercentIncreased
                 ) {
                     Icon(
                         painterResource(
@@ -260,18 +266,30 @@ fun TransactionAccountWithGuaranteesCard(
 @Composable
 fun TransactionAccountWithGuaranteesCardPreview() {
     RadixWalletTheme {
+        val state: MutableState<AccountWithPredictedGuarantee> = remember {
+            mutableStateOf(
+                Owned(
+                    account = SampleDataProvider().sampleAccount(),
+                    transferableAmount = TransferableResource.Amount(
+                        amount = BigDecimal.TEN,
+                        resource = SampleDataProvider().sampleFungibleResources()[0]
+                    ),
+                    instructionIndex = 1L,
+                    guaranteeAmountString = "100"
+                )
+            )
+        }
         TransactionAccountWithGuaranteesCard(
-            tokenAddress = "d3d3nd32dko3dko3",
-            isTokenXrd = true,
-            tokenIconUrl = "",
-            tokenSymbol = "XRD",
-            tokenEstimatedQuantity = "689.203",
-            tokenGuaranteedQuantity = "689.203",
-            modifier = Modifier,
-            appearanceId = 0,
-            accountName = "My main account",
-            guaranteePercentValue = "100",
-            onGuaranteeValueChanged = {}
+            accountWithGuarantee = state.value,
+            onGuaranteePercentChanged = { value ->
+                state.value = state.value.change(value)
+            },
+            onGuaranteePercentDecreased = {
+                state.value = state.value.decrease()
+            },
+            onGuaranteePercentIncreased = {
+                state.value = state.value.increase()
+            }
         )
     }
 }

@@ -27,8 +27,11 @@ import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixTextButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
+import com.babylon.wallet.android.domain.model.Transferable
+import com.babylon.wallet.android.domain.model.TransferableResource
 import com.babylon.wallet.android.presentation.transaction.AccountWithTransferableResources
 import com.babylon.wallet.android.presentation.transaction.TransactionAccountItemUiModel
+import com.babylon.wallet.android.presentation.transaction.hasCustomizableGuarantees
 import kotlinx.collections.immutable.ImmutableMap
 import kotlinx.collections.immutable.persistentMapOf
 
@@ -36,7 +39,6 @@ import kotlinx.collections.immutable.persistentMapOf
 fun ColumnScope.DepositAccountContent(
     modifier: Modifier = Modifier,
     to: List<AccountWithTransferableResources>,
-    shouldPromptForGuarantees: Boolean,
     promptForGuarantees: () -> Unit
 ) {
     if (to.isNotEmpty()) {
@@ -74,7 +76,7 @@ fun ColumnScope.DepositAccountContent(
                 }
             }
 
-            if (shouldPromptForGuarantees) {
+            if (to.hasCustomizableGuarantees()) {
                 RadixTextButton(
                     modifier = Modifier
                         .padding(top = RadixTheme.dimensions.paddingXSmall),

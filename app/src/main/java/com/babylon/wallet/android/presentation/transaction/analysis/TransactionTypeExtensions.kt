@@ -37,7 +37,7 @@ fun RETResources.toTransferableResource(resourceAddress: String, allResources: L
         is RETResourcesIds -> {
             val collection = allNFTCollections.find { it.resourceAddress == resourceAddress }
             TransferableResource.NFTs(
-                collection = collection ?: Resource.NonFungibleResource(
+                resource = collection ?: Resource.NonFungibleResource(
                     resourceAddress = resourceAddress,
                     amount = ids.size.toLong(),
                     items = ids.map { id ->
@@ -64,7 +64,9 @@ fun Source.toDepositingTransferableResource(
         )
         is Source.Predicted -> Transferable.Depositing(
             transferable = value.toTransferableResource(allResources, newlyCreated),
-            guaranteeType = GuaranteeType.Predicted(instructionIndex = instructionIndex.toLong())
+            guaranteeType = GuaranteeType.Predicted(
+                instructionIndex = instructionIndex.toLong()
+            )
         )
     }
 }
@@ -98,7 +100,7 @@ fun ResourceSpecifier.toTransferableResource(
                 )
             }
             TransferableResource.NFTs(
-                collection = collection?.copy(
+                resource = collection?.copy(
                     amount = ids.size.toLong(),
                     items = items
                 ) ?: Resource.NonFungibleResource(

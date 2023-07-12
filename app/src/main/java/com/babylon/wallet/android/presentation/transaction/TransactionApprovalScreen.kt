@@ -1,4 +1,4 @@
-@file:OptIn(ExperimentalMaterialApi::class, ExperimentalMaterialApi::class)
+@file:OptIn(ExperimentalMaterialApi::class, ExperimentalMaterialApi::class, ExperimentalMaterialApi::class)
 
 package com.babylon.wallet.android.presentation.transaction
 
@@ -48,7 +48,9 @@ import com.babylon.wallet.android.domain.model.DAppWithMetadataAndAssociatedReso
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.babylon.wallet.android.domain.model.TransactionManifestData
 import com.babylon.wallet.android.presentation.common.FullscreenCircularProgressContent
+import com.babylon.wallet.android.presentation.transaction.TransactionApprovalViewModel2.State
 import com.babylon.wallet.android.presentation.transaction.composables.FeePayerSelectionSheet
+import com.babylon.wallet.android.presentation.transaction.composables.GuaranteesSheet
 import com.babylon.wallet.android.presentation.transaction.composables.RawManifestView
 import com.babylon.wallet.android.presentation.transaction.composables.TransactionPreviewHeader
 import com.babylon.wallet.android.presentation.transaction.composables.TransactionPreviewTypeContent
@@ -77,14 +79,15 @@ fun TransactionApprovalScreen(
         onRawManifestToggle = viewModel::onRawManifestToggle,
         onMessageShown = viewModel::onMessageShown,
         modifier = modifier,
+        promptForGuaranteesClick = viewModel::promptForGuaranteesClick,
         onGuaranteesApplyClick = viewModel::onGuaranteesApplyClick,
         onGuaranteesCloseClick = viewModel::onGuaranteesCloseClick,
-        promptForGuaranteesClick = viewModel::promptForGuaranteesClick,
+        onGuaranteeValueChanged = viewModel::onGuaranteeValueChange,
+        onGuaranteeValueIncreased = viewModel::onGuaranteeValueIncreased,
+        onGuaranteeValueDecreased = viewModel::onGuaranteeValueDecreased,
         onDAppClick = viewModel::onDAppClick,
-        onGuaranteeValueChanged = viewModel::onGuaranteeValueChanged,
         onPayerSelected = viewModel::onPayerSelected,
-        onPayerConfirmed =  viewModel::onPayerConfirmed,
-        resetBottomSheetMode = viewModel::resetBottomSheetMode
+        onPayerConfirmed =  viewModel::onPayerConfirmed
     )
     LaunchedEffect(Unit) {
         viewModel.oneOffEvent.collect { event ->
@@ -103,18 +106,19 @@ fun TransactionApprovalScreen(
 private fun TransactionPreviewContent(
     modifier: Modifier = Modifier,
     onBackClick: () -> Unit,
-    state: TransactionApprovalViewModel2.State,
+    state: State,
     onApproveTransaction: () -> Unit,
     onRawManifestToggle: () -> Unit,
     onMessageShown: () -> Unit,
+    promptForGuaranteesClick: () -> Unit,
     onGuaranteesApplyClick: () -> Unit,
     onGuaranteesCloseClick: () -> Unit,
-    promptForGuaranteesClick: () -> Unit,
+    onGuaranteeValueChanged: (AccountWithPredictedGuarantee, String) -> Unit,
+    onGuaranteeValueIncreased: (AccountWithPredictedGuarantee) -> Unit,
+    onGuaranteeValueDecreased: (AccountWithPredictedGuarantee) -> Unit,
     onDAppClick: (DAppWithMetadataAndAssociatedResources) -> Unit,
-    onGuaranteeValueChanged: (Pair<String, GuaranteesAccountItemUiModel>) -> Unit,
     onPayerSelected: (Network.Account) -> Unit,
-    onPayerConfirmed: () -> Unit,
-    resetBottomSheetMode: () -> Unit
+    onPayerConfirmed: () -> Unit
 ) {
     val modalBottomSheetState = rememberModalBottomSheetState(
         initialValue = ModalBottomSheetValue.Hidden,
@@ -150,15 +154,11 @@ private fun TransactionPreviewContent(
                 sheetState = state.sheetState,
                 onPayerSelected = onPayerSelected,
                 onPayerConfirmed = onPayerConfirmed,
-                onGuaranteesCloseClick = {
-                    onGuaranteesCloseClick()
-                },
-                onGuaranteesApplyClick = {
-                    onGuaranteesApplyClick()
-                },
-                onGuaranteeValueChanged = {
-                    onGuaranteeValueChanged(it)
-                },
+                onGuaranteesCloseClick = onGuaranteesCloseClick,
+                onGuaranteesApplyClick = onGuaranteesApplyClick,
+                onGuaranteeValueChanged = onGuaranteeValueChanged,
+                onGuaranteeValueIncreased = onGuaranteeValueIncreased,
+                onGuaranteeValueDecreased = onGuaranteeValueDecreased,
                 onCloseFeePayerSheet = onBackClick,
                 onCloseDAppSheet = onBackClick,
             )
@@ -243,7 +243,7 @@ private fun TransactionPreviewContent(
 
 @Composable
 private fun ApproveButton(
-    state: TransactionApprovalViewModel2.State,
+    state: State,
     onApproveTransaction: () -> Unit
 ) {
     var showNotSecuredDialog by remember { mutableStateOf(false) }
@@ -289,25 +289,29 @@ private fun ApproveButton(
 
 @Composable
 private fun BottomSheetContent(
-    sheetState: TransactionApprovalViewModel2.State.Sheet,
+    sheetState: State.Sheet,
     onPayerSelected: (Network.Account) -> Unit,
     onPayerConfirmed: () -> Unit,
     onGuaranteesCloseClick: () -> Unit,
     onGuaranteesApplyClick: () -> Unit,
-    onGuaranteeValueChanged: (Pair<String, GuaranteesAccountItemUiModel>) -> Unit,
+    onGuaranteeValueChanged: (AccountWithPredictedGuarantee, String) -> Unit,
+    onGuaranteeValueIncreased: (AccountWithPredictedGuarantee) -> Unit,
+    onGuaranteeValueDecreased: (AccountWithPredictedGuarantee) -> Unit,
     onCloseFeePayerSheet: () -> Unit,
     onCloseDAppSheet: () -> Unit
 ) {
     when (sheetState) {
-//        BottomSheetMode.Guarantees -> {
-//            GuaranteesSheet(
-//                modifier = Modifier.fillMaxWidth(),
-//                guaranteesAccounts = guaranteesAccounts,
-//                onClose = onGuaranteesCloseClick,
-//                onApplyClick = onGuaranteesApplyClick,
-//                onGuaranteeValueChanged = onGuaranteeValueChanged
-//            )
-//        }
+        is State.Sheet.CustomizeGuarantees -> {
+            GuaranteesSheet(
+                modifier = Modifier.fillMaxWidth(),
+                state = sheetState,
+                onClose = onGuaranteesCloseClick,
+                onApplyClick = onGuaranteesApplyClick,
+                onGuaranteeValueChanged = onGuaranteeValueChanged,
+                onGuaranteeValueIncreased = onGuaranteeValueIncreased,
+                onGuaranteeValueDecreased = onGuaranteeValueDecreased
+            )
+        }
 
 //        is BottomSheetMode.DApp -> {
 //            DAppDetailsSheetContent(
@@ -319,7 +323,7 @@ private fun BottomSheetContent(
 //            )
 //        }
 
-        is TransactionApprovalViewModel2.State.Sheet.FeePayerChooser -> {
+        is State.Sheet.FeePayerChooser -> {
             FeePayerSelectionSheet(
                 modifier = Modifier.fillMaxWidth(),
                 sheet = sheetState,
@@ -328,7 +332,7 @@ private fun BottomSheetContent(
                 onPayerConfirmed = onPayerConfirmed
             )
         }
-        is TransactionApprovalViewModel2.State.Sheet.None -> {}
+        is State.Sheet.None -> {}
     }
 }
 
@@ -361,7 +365,7 @@ fun TransactionPreviewContentPreview() {
     RadixWalletTheme {
         TransactionPreviewContent(
             onBackClick = {},
-            state = TransactionApprovalViewModel2.State(
+            state = State(
                 request = MessageFromDataChannel.IncomingRequest.TransactionRequest(
                     dappId = "",
                     requestId = "",
@@ -384,10 +388,11 @@ fun TransactionPreviewContentPreview() {
             onGuaranteesCloseClick = {},
             promptForGuaranteesClick = {},
             onDAppClick = {},
-            onGuaranteeValueChanged = {},
+            onGuaranteeValueChanged = { _, _ -> },
+            onGuaranteeValueIncreased = {},
+            onGuaranteeValueDecreased = {},
             onPayerSelected = {},
-            onPayerConfirmed = {},
-            resetBottomSheetMode = {}
+            onPayerConfirmed = {}
         )
     }
 }

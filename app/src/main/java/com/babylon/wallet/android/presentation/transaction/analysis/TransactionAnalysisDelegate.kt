@@ -227,9 +227,9 @@ class TransactionAnalysisDelegate(
                 Transferable.Withdrawing(transferrable)
             } else if (nonFungibleTransferrables.isNotEmpty()) {
                 val nonFungibleTransferrable = nonFungibleTransferrables.reduce { nonFungibleTransferrable, value ->
-                    nonFungibleTransferrable.copy(collection = nonFungibleTransferrable.collection.copy(
-                        amount = nonFungibleTransferrable.collection.amount + value.collection.amount,
-                        items = nonFungibleTransferrable.collection.items + value.collection.items
+                    nonFungibleTransferrable.copy(resource = nonFungibleTransferrable.resource.copy(
+                        amount = nonFungibleTransferrable.resource.amount + value.resource.amount,
+                        items = nonFungibleTransferrable.resource.items + value.resource.items
                     ))
                 }
                 Transferable.Withdrawing(nonFungibleTransferrable)

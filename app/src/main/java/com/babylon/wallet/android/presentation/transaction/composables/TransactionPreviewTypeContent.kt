@@ -43,7 +43,6 @@ fun ColumnScope.TransactionPreviewTypeContent(
             DepositAccountContent(
                 modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingDefault),
                 to = preview.to,
-                shouldPromptForGuarantees = false,
                 promptForGuarantees = {
 
                 }

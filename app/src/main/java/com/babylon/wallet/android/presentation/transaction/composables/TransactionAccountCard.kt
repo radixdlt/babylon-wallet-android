@@ -33,9 +33,9 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.babylon.wallet.android.designsystem.R
-import com.babylon.wallet.android.designsystem.theme.AccountGradientList
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
+import com.babylon.wallet.android.designsystem.theme.getAccountGradientColorsFor
 import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.domain.model.Transferable
 import com.babylon.wallet.android.domain.model.TransferableResource
@@ -46,6 +46,7 @@ import com.babylon.wallet.android.presentation.ui.composables.ActionableAddressV
 import com.babylon.wallet.android.presentation.ui.composables.ImageSize
 import com.babylon.wallet.android.presentation.ui.composables.rememberImageUrl
 import com.google.accompanist.drawablepainter.rememberDrawablePainter
+import rdx.works.core.displayableQuantity
 
 @Composable
 fun TransactionAccountCard(
@@ -63,7 +64,7 @@ fun TransactionAccountCard(
                 .background(
                     brush = when (account) {
                         is Other -> SolidColor(RadixTheme.colors.gray2)
-                        is Owned -> Brush.linearGradient(AccountGradientList[account.account.appearanceID % AccountGradientList.size])
+                        is Owned -> Brush.linearGradient(getAccountGradientColorsFor(account.account.appearanceID))
                     },
                     shape = RadixTheme.shapes.roundedRectTopMedium
                 )
@@ -111,6 +112,7 @@ fun TransactionAccountCard(
                 },
                 tokenAmount = transferableAmount.amount.toPlainString(),
                 isTokenAmountVisible = true,
+                guaranteedQuantity = amountTransferable.guaranteedAmount?.displayableQuantity(),
                 shape = shape
             )
         }
@@ -123,8 +125,8 @@ fun TransactionAccountCard(
 
             TokenItemContent(
                 isXrdToken = false,
-                tokenUrl = transferableNft.collection.iconUrl.toString(),
-                tokenSymbol = transferableNft.collection.name,
+                tokenUrl = transferableNft.resource.iconUrl.toString(),
+                tokenSymbol = transferableNft.resource.name,
                 isTokenAmountVisible = false,
                 shape = shape
             )

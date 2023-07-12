@@ -12,8 +12,10 @@ import com.babylon.wallet.android.data.transaction.TransactionConfig
 import com.babylon.wallet.android.di.coroutines.ApplicationScope
 import com.babylon.wallet.android.domain.model.Badge
 import com.babylon.wallet.android.domain.model.DAppWithMetadataAndAssociatedResources
+import com.babylon.wallet.android.domain.model.GuaranteeType
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.babylon.wallet.android.domain.model.Transferable
+import com.babylon.wallet.android.domain.model.TransferableResource
 import com.babylon.wallet.android.domain.usecases.GetAccountsWithResourcesUseCase
 import com.babylon.wallet.android.domain.usecases.GetDAppWithMetadataAndAssociatedResourcesUseCase
 import com.babylon.wallet.android.domain.usecases.transaction.GetTransactionBadgesUseCase
@@ -23,12 +25,10 @@ import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
-import com.babylon.wallet.android.presentation.dapp.authorized.account.AccountItemUiModel
 import com.babylon.wallet.android.presentation.transaction.TransactionApprovalViewModel2.Event
 import com.babylon.wallet.android.presentation.transaction.TransactionApprovalViewModel2.State
 import com.babylon.wallet.android.presentation.transaction.analysis.TransactionAnalysisDelegate
 import com.babylon.wallet.android.presentation.transaction.submit.TransactionSubmitDelegate
-import com.babylon.wallet.android.presentation.transfer.TransferViewModel
 import com.babylon.wallet.android.utils.AppEventBus
 import com.babylon.wallet.android.utils.DeviceSecurityHelper
 import com.radixdlt.ret.TransactionManifest
@@ -129,28 +129,37 @@ class TransactionApprovalViewModel2 @Inject constructor(
         submit.onSubmit()
     }
 
+    fun promptForGuaranteesClick() {
+//        _state.update {
+//            it.copy(
+//                bottomSheetViewMode = BottomSheetMode.Guarantees
+//            )
+//        }
+    }
+
+    fun onGuaranteeValueChange(account: AccountWithPredictedGuarantee, value: String) {
+
+    }
+
+    fun onGuaranteeValueIncreased(account: AccountWithPredictedGuarantee) {
+
+    }
+
+    fun onGuaranteeValueDecreased(account: AccountWithPredictedGuarantee) {
+
+    }
+
     fun onGuaranteesApplyClick() {
 //        _state.update {
 //            it.copy(
 //                depositingAccounts = depositingAccounts
 //            )
 //        }
+        _state.update { it.copy(sheetState = State.Sheet.None) }
     }
 
     fun onGuaranteesCloseClick() {
-        // Reset local depositing accounts to initial values
-//        depositingAccounts = _state.value.depositingAccounts
-//        _state.update {
-//            it.copy(
-//                guaranteesAccounts = depositingAccounts.toGuaranteesAccountsUiModel()
-//            )
-//        }
-    }
-
-    fun resetBottomSheetMode() {
-//        _state.update {
-//            it.copy(bottomSheetViewMode = BottomSheetMode.Guarantees)
-//        }
+        _state.update { it.copy(sheetState = State.Sheet.None) }
     }
 
     fun onPayerSelected(account: Network.Account) {
@@ -159,73 +168,6 @@ class TransactionApprovalViewModel2 @Inject constructor(
 
     fun onPayerConfirmed() {
         submit.onFeePayerConfirmed()
-    }
-
-    fun onGuaranteeValueChanged(guaranteePair: Pair<String, GuaranteesAccountItemUiModel>) {
-//        val guaranteePercentString = guaranteePair.first.trim()
-//        val guaranteePercentBigDecimal = try {
-//            guaranteePercentString.toBigDecimal()
-//        } catch (e: NumberFormatException) {
-//            BigDecimal.ZERO
-//        }
-//
-//        if (guaranteePercentBigDecimal > BigDecimal("100") || guaranteePercentBigDecimal < BigDecimal.ZERO) {
-//            return
-//        }
-//
-//        val updatedGuaranteedQuantity = guaranteePercentBigDecimal.divide(BigDecimal("100")).multiply(
-//            guaranteePair.second.tokenEstimatedAmount.toBigDecimal().stripTrailingZeros()
-//        ).toPlainString()
-//
-//        val currentDepositingAccounts =
-//            if (depositingAccounts.isEmpty()) {
-//                _state.value.depositingAccounts
-//            } else {
-//                depositingAccounts
-//            }
-//
-//        currentDepositingAccounts.map { previewAccountUiModel ->
-//            if (previewAccountUiModel.accountAddress == guaranteePair.second.address &&
-//                previewAccountUiModel.index == guaranteePair.second.index
-//            ) {
-//                val fungibleResource = previewAccountUiModel.fungibleResource?.copy(
-//                    amount = previewAccountUiModel.fungibleResource.amount,
-//                )
-//
-//                previewAccountUiModel.copy(
-//                    accountAddress = previewAccountUiModel.accountAddress,
-//                    displayName = previewAccountUiModel.displayName,
-//                    appearanceID = previewAccountUiModel.appearanceID,
-//                    tokenSymbol = previewAccountUiModel.tokenSymbol,
-//                    iconUrl = previewAccountUiModel.iconUrl,
-//                    shouldPromptForGuarantees = previewAccountUiModel.shouldPromptForGuarantees,
-//                    guaranteedAmount = updatedGuaranteedQuantity,
-//                    guaranteedPercentAmount = guaranteePercentString,
-//                    instructionIndex = previewAccountUiModel.instructionIndex,
-//                    resourceAddress = previewAccountUiModel.resourceAddress,
-//                    index = previewAccountUiModel.index,
-//                    fungibleResource = fungibleResource,
-//                    nonFungibleResourceItems = previewAccountUiModel.nonFungibleResourceItems
-//                )
-//            } else {
-//                previewAccountUiModel
-//            }
-//        }.toImmutableList().apply {
-//            depositingAccounts = this
-//            _state.update {
-//                it.copy(
-//                    guaranteesAccounts = toGuaranteesAccountsUiModel()
-//                )
-//            }
-//        }
-    }
-
-    fun promptForGuaranteesClick() {
-//        _state.update {
-//            it.copy(
-//                bottomSheetViewMode = BottomSheetMode.Guarantees
-//            )
-//        }
     }
 
     fun onDAppClick(dApp: DAppWithMetadataAndAssociatedResources) {
@@ -280,6 +222,10 @@ class TransactionApprovalViewModel2 @Inject constructor(
                     get() = selectedCandidate != null
 
             }
+
+            data class CustomizeGuarantees(
+                val accountsWithPredictedGuarantees: List<AccountWithPredictedGuarantee>
+            ): Sheet()
         }
     }
 
@@ -296,6 +242,65 @@ sealed interface PreviewType {
         val to: List<AccountWithTransferableResources>,
         val badges: List<Badge> = emptyList()
     ): PreviewType
+}
+
+sealed interface AccountWithPredictedGuarantee {
+
+    val address: String
+    val transferableAmount: TransferableResource.Amount
+    val instructionIndex: Long
+    val guaranteeAmountString: String
+
+    val guaranteeOffsetDecimal: Float
+        get() = (guaranteeAmountString.toFloatOrNull() ?: 0f) / 100f
+
+    val guaranteedAmount: BigDecimal
+        get() = transferableAmount.amount * guaranteeOffsetDecimal.toBigDecimal()
+
+    fun increase(): AccountWithPredictedGuarantee {
+        val newOffset = (guaranteeOffsetDecimal + 0.001f).coerceAtMost(1f) * 100f
+        return when (this) {
+            is Other -> copy(guaranteeAmountString = newOffset.toString())
+            is Owned -> copy(guaranteeAmountString = newOffset.toString())
+        }
+    }
+
+    fun decrease(): AccountWithPredictedGuarantee {
+        val newOffset = (guaranteeOffsetDecimal - 0.001f).coerceAtLeast(0f) * 100f
+        return when (this) {
+            is Other -> copy(guaranteeAmountString = newOffset.toString())
+            is Owned -> copy(guaranteeAmountString = newOffset.toString())
+        }
+    }
+
+    fun change(amount: String): AccountWithPredictedGuarantee {
+        val value = amount.toFloatOrNull() ?: 0
+        return if (value in 0..100) {
+            when (this) {
+                is Other -> copy(guaranteeAmountString = amount)
+                is Owned -> copy(guaranteeAmountString = amount)
+            }
+        } else {
+            this
+        }
+    }
+
+    data class Owned(
+        val account: Network.Account,
+        override val transferableAmount: TransferableResource.Amount,
+        override val instructionIndex: Long,
+        override val guaranteeAmountString: String
+    ): AccountWithPredictedGuarantee {
+        override val address: String
+            get() = account.address
+    }
+
+    data class Other(
+        override val address: String,
+        override val transferableAmount: TransferableResource.Amount,
+        override val instructionIndex : Long,
+        override val guaranteeAmountString: String
+    ): AccountWithPredictedGuarantee
 }
 
 sealed interface AccountWithTransferableResources {
@@ -315,6 +320,12 @@ sealed interface AccountWithTransferableResources {
         override val address: String,
         override val resources: List<Transferable>
     ): AccountWithTransferableResources
+}
+
+fun List<AccountWithTransferableResources>.hasCustomizableGuarantees() = any { accountWithTransferableResources ->
+    accountWithTransferableResources.resources.any {
+        (it as? Transferable.Depositing)?.guaranteeType is GuaranteeType.Predicted
+    }
 }
 
 data class TransactionFees(
