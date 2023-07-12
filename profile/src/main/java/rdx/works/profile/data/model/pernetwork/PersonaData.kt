@@ -16,234 +16,263 @@ import java.time.Instant
 data class PersonaData(
 
     @SerialName("name")
-    val name: IdentifiedEntry<Name>? = null,
+    val name: IdentifiedEntry<PersonaDataField.Name>? = null,
 
     @SerialName("dateOfBirth")
-    val dateOfBirth: IdentifiedEntry<@Contextual Instant>? = null,
+    val dateOfBirth: IdentifiedEntry<PersonaDataField.DateOfBirth>? = null,
 
     @SerialName("companyName")
-    val companyName: IdentifiedEntry<String>? = null,
+    val companyName: IdentifiedEntry<PersonaDataField.CompanyName>? = null,
 
     @SerialName("emailAddresses")
-    val emailAddresses: List<IdentifiedEntry<String>> = emptyList(),
+    val emailAddresses: List<IdentifiedEntry<PersonaDataField.Email>> = emptyList(),
 
     @SerialName("phoneNumbers")
-    val phoneNumbers: List<IdentifiedEntry<String>> = emptyList(),
+    val phoneNumbers: List<IdentifiedEntry<PersonaDataField.PhoneNumber>> = emptyList(),
 
     @SerialName("urls")
-    val urls: List<IdentifiedEntry<String>> = emptyList(),
+    val urls: List<IdentifiedEntry<PersonaDataField.Url>> = emptyList(),
 
     @SerialName("postalAddresses")
-    val postalAddresses: List<IdentifiedEntry<PostalAddress>> = emptyList(),
+    val postalAddresses: List<IdentifiedEntry<PersonaDataField.PostalAddress>> = emptyList(),
 
     @SerialName("creditCards")
-    val creditCards: List<IdentifiedEntry<CreditCard>> = emptyList()
+    val creditCards: List<IdentifiedEntry<PersonaDataField.CreditCard>> = emptyList()
 
 ) {
 
-    fun allFieldIds(): List<PersonaDataEntryID> {
-        return phoneNumbers.map { it.id } +
-                emailAddresses.map { it.id } +
-                urls.map { it.id } + postalAddresses.map { it.id } +
-                creditCards.map { it.id } + listOfNotNull(
-            name?.id,
-            dateOfBirth?.id,
-            companyName?.id
-        )
-    }
+    val allFields: List<IdentifiedEntry<out PersonaDataField>>
+        get() = listOfNotNull(
+            name,
+            dateOfBirth,
+            companyName
+        ) + phoneNumbers + emailAddresses + urls + postalAddresses + creditCards
 
-    @Serializable
-    data class Name(
 
-        @SerialName("variant")
-        val variant: Variant,
+    val allFieldIds: List<PersonaDataEntryID>
+        get() = allFields.map { it.id }
 
-        @SerialName("given")
-        val given: String,
-
-        @SerialName("family")
-        val family: String,
-
-        @SerialName("middle")
-        val middle: String? = null
-
-    ) {
-        @Serializable
-        enum class Variant {
-            @SerialName("western")
-            Western,
-
-            @SerialName("eastern")
-            Eastern
+    fun <T : PersonaDataField> getDataField(id: PersonaDataEntryID): IdentifiedEntry<out PersonaDataField>? {
+        return allFields.firstOrNull {
+            it.id == id
         }
     }
 
-    @Serializable(PostalAddressSerializer::class)
-    data class PostalAddress(
-        @SerialName("fields")
-        val fields: List<Field> = emptyList()
-    ) {
+    sealed interface PersonaDataField {
 
-        val countryOrRegion: Field.CountryOrRegion?
-            get() = fields.filterIsInstance<Field.CountryOrRegion>().firstOrNull()
+        @JvmInline
+        @Serializable
+        value class CompanyName(val companyName: String) : PersonaDataField
+
+        @JvmInline
+        @Serializable
+        value class DateOfBirth(val dateOfBirth: @Contextual Instant) : PersonaDataField
+
+        @JvmInline
+        @Serializable
+        value class Url(val value: String) : PersonaDataField
+
+        @JvmInline
+        @Serializable
+        value class PhoneNumber(val value: String) : PersonaDataField
+
+        @JvmInline
+        @Serializable
+        value class Email(val value: String) : PersonaDataField
 
         @Serializable
-        @JsonClassDiscriminator("discriminator")
-        sealed interface Field {
+        data class Name(
 
-            @Serializable
-            @SerialName("countryOrRegion")
-            data class CountryOrRegion(val value: rdx.works.profile.data.model.pernetwork.CountryOrRegion) : Field
+            @SerialName("variant")
+            val variant: Variant,
 
-            @Serializable
-            @SerialName("streetLine0")
-            data class StreetLine0(val value: String) : Field
+            @SerialName("given")
+            val given: String,
 
-            @Serializable
-            @SerialName("streetLine1")
-            data class StreetLine1(val value: String) : Field
+            @SerialName("family")
+            val family: String,
 
-            @Serializable
-            @SerialName("postalCode")
-            data class PostalCode(val value: String) : Field
+            @SerialName("middle")
+            val middle: String? = null
 
+        ) : PersonaDataField {
             @Serializable
-            @SerialName("postcode")
-            data class Postcode(val value: String) : Field
+            enum class Variant {
+                @SerialName("western")
+                Western,
 
-            /// US
-            @Serializable
-            @SerialName("zip")
-            data class Zip(val value: String) : Field
-
-            @Serializable
-            @SerialName("city")
-            data class City(val value: String) : Field
-
-            @Serializable
-            @SerialName("state")
-            data class State(val value: String) : Field
-
-            /// Australia
-            @Serializable
-            @SerialName("suburb")
-            data class Suburb(val value: String) : Field
-
-            /// Brazil
-            @Serializable
-            @SerialName("neighbourhood")
-            data class Neighbourhood(val value: String) : Field
-
-            /// Canada
-            @Serializable
-            @SerialName("province")
-            data class Province(val value: String) : Field
-
-            /// Egypt
-            @Serializable
-            @SerialName("governorate")
-            data class Governorate(val value: String) : Field
-
-            /// Hong Kong
-            @Serializable
-            @SerialName("district")
-            data class District(val value: String) : Field
-
-            /// Hong Kong, Somalia
-            @Serializable
-            @SerialName("region")
-            data class Region(val value: String) : Field
-
-            /// United Arab Emirates
-            @SerialName("area")
-            @Serializable
-            data class Area(val value: String) : Field
-
-            /// Carribean Netherlands
-            @SerialName("islandName")
-            @Serializable
-            data class IslandName(val value: String) : Field
-
-            /// China
-            @Serializable
-            @SerialName("prefectureLevelCity")
-            data class PrefectureLevelCity(val value: String) : Field
-
-            /// Russia
-            @Serializable
-            @SerialName("subjectOfTheFederation")
-            data class SubjectOfTheFederation(val value: String) : Field
-
-            @Serializable
-            @SerialName("county")
-            data class County(val value: String) : Field
-
-            /// Japan
-            @Serializable
-            @SerialName("prefecture")
-            data class Prefecture(val value: String) : Field
-
-            /// Japan
-            @Serializable
-            @SerialName("countySlashCity")
-            data class CountySlashCity(val value: String) : Field
-
-            /// Japan
-            @Serializable
-            @SerialName("furtherDivisionsLine0")
-            data class FurtherDivisionsLine0(val value: String) : Field
-
-            /// Japan
-            @Serializable
-            @SerialName("furtherDivisionsLine1")
-            data class FurtherDivisionsLine1(val value: String) : Field
-
-            /// Taiwan
-            @Serializable
-            @SerialName("townshipSlashDistrict")
-            data class TownshipSlashDistrict(val value: String) : Field
-
-            /// Colombia
-            @Serializable
-            @SerialName("department")
-            data class Department(val value: String) : Field
-
-            /// UK
-            @Serializable
-            @SerialName("townSlashCity")
-            data class TownSlashCity(val value: String) : Field
-
-            /// Jordan
-            @Serializable
-            @SerialName("postalDistrict")
-            data class PostalDistrict(val value: String) : Field
-
-            /// Philippines
-            @Serializable
-            @SerialName("districtSlashSubdivision")
-            data class DistrictSlashSubdivision(val value: String) : Field
+                @SerialName("eastern")
+                Eastern
+            }
         }
 
-    }
+        @Serializable(PostalAddressSerializer::class)
+        data class PostalAddress(
+            @SerialName("fields")
+            val fields: List<Field> = emptyList()
+        ) : PersonaDataField {
 
-    @Serializable
-    data class CreditCard(
-        @SerialName("expiry")
-        val expiry: Expiry,
-        @SerialName("holder")
-        val holder: String,
-        @SerialName("number")
-        val number: String,
-        @SerialName("cvc")
-        val cvc: Int,
-    ) {
+            val countryOrRegion: Field.CountryOrRegion?
+                get() = fields.filterIsInstance<Field.CountryOrRegion>().firstOrNull()
+
+            @Serializable
+            @JsonClassDiscriminator("discriminator")
+            sealed interface Field {
+
+                @Serializable
+                @SerialName("countryOrRegion")
+                data class CountryOrRegion(val value: rdx.works.profile.data.model.pernetwork.CountryOrRegion) : Field
+
+                @Serializable
+                @SerialName("streetLine0")
+                data class StreetLine0(val value: String) : Field
+
+                @Serializable
+                @SerialName("streetLine1")
+                data class StreetLine1(val value: String) : Field
+
+                @Serializable
+                @SerialName("postalCode")
+                data class PostalCode(val value: String) : Field
+
+                @Serializable
+                @SerialName("postcode")
+                data class Postcode(val value: String) : Field
+
+                /// US
+                @Serializable
+                @SerialName("zip")
+                data class Zip(val value: String) : Field
+
+                @Serializable
+                @SerialName("city")
+                data class City(val value: String) : Field
+
+                @Serializable
+                @SerialName("state")
+                data class State(val value: String) : Field
+
+                /// Australia
+                @Serializable
+                @SerialName("suburb")
+                data class Suburb(val value: String) : Field
+
+                /// Brazil
+                @Serializable
+                @SerialName("neighbourhood")
+                data class Neighbourhood(val value: String) : Field
+
+                /// Canada
+                @Serializable
+                @SerialName("province")
+                data class Province(val value: String) : Field
+
+                /// Egypt
+                @Serializable
+                @SerialName("governorate")
+                data class Governorate(val value: String) : Field
+
+                /// Hong Kong
+                @Serializable
+                @SerialName("district")
+                data class District(val value: String) : Field
+
+                /// Hong Kong, Somalia
+                @Serializable
+                @SerialName("region")
+                data class Region(val value: String) : Field
+
+                /// United Arab Emirates
+                @SerialName("area")
+                @Serializable
+                data class Area(val value: String) : Field
+
+                /// Carribean Netherlands
+                @SerialName("islandName")
+                @Serializable
+                data class IslandName(val value: String) : Field
+
+                /// China
+                @Serializable
+                @SerialName("prefectureLevelCity")
+                data class PrefectureLevelCity(val value: String) : Field
+
+                /// Russia
+                @Serializable
+                @SerialName("subjectOfTheFederation")
+                data class SubjectOfTheFederation(val value: String) : Field
+
+                @Serializable
+                @SerialName("county")
+                data class County(val value: String) : Field
+
+                /// Japan
+                @Serializable
+                @SerialName("prefecture")
+                data class Prefecture(val value: String) : Field
+
+                /// Japan
+                @Serializable
+                @SerialName("countySlashCity")
+                data class CountySlashCity(val value: String) : Field
+
+                /// Japan
+                @Serializable
+                @SerialName("furtherDivisionsLine0")
+                data class FurtherDivisionsLine0(val value: String) : Field
+
+                /// Japan
+                @Serializable
+                @SerialName("furtherDivisionsLine1")
+                data class FurtherDivisionsLine1(val value: String) : Field
+
+                /// Taiwan
+                @Serializable
+                @SerialName("townshipSlashDistrict")
+                data class TownshipSlashDistrict(val value: String) : Field
+
+                /// Colombia
+                @Serializable
+                @SerialName("department")
+                data class Department(val value: String) : Field
+
+                /// UK
+                @Serializable
+                @SerialName("townSlashCity")
+                data class TownSlashCity(val value: String) : Field
+
+                /// Jordan
+                @Serializable
+                @SerialName("postalDistrict")
+                data class PostalDistrict(val value: String) : Field
+
+                /// Philippines
+                @Serializable
+                @SerialName("districtSlashSubdivision")
+                data class DistrictSlashSubdivision(val value: String) : Field
+            }
+
+        }
+
         @Serializable
-        data class Expiry(
-            @SerialName("year")
-            val year: Int,
-            @SerialName("month")
-            val month: Int,
-        )
+        data class CreditCard(
+            @SerialName("expiry")
+            val expiry: Expiry,
+            @SerialName("holder")
+            val holder: String,
+            @SerialName("number")
+            val number: String,
+            @SerialName("cvc")
+            val cvc: Int,
+        ) : PersonaDataField {
+            @Serializable
+            data class Expiry(
+                @SerialName("year")
+                val year: Int,
+                @SerialName("month")
+                val month: Int,
+            )
+        }
     }
 }
 
@@ -267,17 +296,17 @@ data class IdentifiedEntry<T>(
 
 typealias PersonaDataEntryID = String
 
-object PostalAddressSerializer : KSerializer<PersonaData.PostalAddress> {
+object PostalAddressSerializer : KSerializer<PersonaData.PersonaDataField.PostalAddress> {
 
-    private val delegateSerializer = ListSerializer(PersonaData.PostalAddress.Field.serializer())
+    private val delegateSerializer = ListSerializer(PersonaData.PersonaDataField.PostalAddress.Field.serializer())
     override val descriptor: SerialDescriptor
         get() = delegateSerializer.descriptor
 
-    override fun deserialize(decoder: Decoder): PersonaData.PostalAddress {
-        return PersonaData.PostalAddress(decoder.decodeSerializableValue(delegateSerializer))
+    override fun deserialize(decoder: Decoder): PersonaData.PersonaDataField.PostalAddress {
+        return PersonaData.PersonaDataField.PostalAddress(decoder.decodeSerializableValue(delegateSerializer))
     }
 
-    override fun serialize(encoder: Encoder, value: PersonaData.PostalAddress) {
+    override fun serialize(encoder: Encoder, value: PersonaData.PersonaDataField.PostalAddress) {
         encoder.encodeSerializableValue(delegateSerializer, value.fields)
     }
 

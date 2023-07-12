@@ -40,7 +40,7 @@ class PersonaEditableImpl : PersonaEditable {
         //TODO persona data
 //        val shouldValidateInput = requiredFieldIDS.isNotEmpty()
 //        val existingPersonaFields =
-//            persona?.fields?.map {
+//            persona?.personaData?.allFieldIds()?.map {
 //                PersonaFieldKindWrapper(
 //                    id = it.id,
 //                    value = it.value,

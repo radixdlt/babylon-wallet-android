@@ -237,8 +237,8 @@ class ProfileTest {
             networkId = networkId,
             personaData = PersonaData(
                 name = IdentifiedEntry.init(
-                    PersonaData.Name(
-                        variant = PersonaData.Name.Variant.Western,
+                    PersonaData.PersonaDataField.Name(
+                        variant = PersonaData.PersonaDataField.Name.Variant.Western,
                         given = "Maria",
                         family = "Publicson"
                     ),
@@ -658,58 +658,58 @@ class ProfileTest {
     fun satoshiPersona(): PersonaData {
         return PersonaData(
             name = IdentifiedEntry.init(
-                PersonaData.Name(
-                    variant = PersonaData.Name.Variant.Eastern,
+                PersonaData.PersonaDataField.Name(
+                    variant = PersonaData.PersonaDataField.Name.Variant.Eastern,
                     given = "Satoshi",
                     family = "Nakamoto",
                     middle = "Creator of Bitcoin"
                 ),
                 "0"
             ),
-            dateOfBirth = IdentifiedEntry.init(Instant.parse("2009-01-03T12:00:00Z"), "1"),
-            companyName = IdentifiedEntry.init("Bitcoin", "2"),
+            dateOfBirth = IdentifiedEntry.init(PersonaData.PersonaDataField.DateOfBirth(Instant.parse("2009-01-03T12:00:00Z")), "1"),
+            companyName = IdentifiedEntry.init(PersonaData.PersonaDataField.CompanyName("Bitcoin"), "2"),
             emailAddresses = listOf(
-                IdentifiedEntry.init("satoshi@nakamoto.bitcoin", "3"),
-                IdentifiedEntry.init("be.your@own.bank", "4")
+                IdentifiedEntry.init(PersonaData.PersonaDataField.Email("satoshi@nakamoto.bitcoin"), "3"),
+                IdentifiedEntry.init(PersonaData.PersonaDataField.Email("be.your@own.bank"), "4")
             ),
             phoneNumbers = listOf(
-                IdentifiedEntry.init("21000000", "5"),
-                IdentifiedEntry.init("123456789", "6")
+                IdentifiedEntry.init(PersonaData.PersonaDataField.PhoneNumber("21000000"), "5"),
+                IdentifiedEntry.init(PersonaData.PersonaDataField.PhoneNumber("123456789"), "6")
             ),
             urls = listOf(
-                IdentifiedEntry.init("bitcoin.org", "7"),
-                IdentifiedEntry.init("https://github.com/bitcoin-core/secp256k1", "8"),
+                IdentifiedEntry.init(PersonaData.PersonaDataField.Url("bitcoin.org"), "7"),
+                IdentifiedEntry.init(PersonaData.PersonaDataField.Url("https://github.com/bitcoin-core/secp256k1"), "8"),
             ),
             postalAddresses = listOf(
                 IdentifiedEntry.init(
-                    PersonaData.PostalAddress(
+                    PersonaData.PersonaDataField.PostalAddress(
                         listOf(
-                            PersonaData.PostalAddress.Field.PostalCode("21 000 000"),
-                            PersonaData.PostalAddress.Field.Prefecture("SHA256"),
-                            PersonaData.PostalAddress.Field.CountySlashCity("HashTown"),
-                            PersonaData.PostalAddress.Field.FurtherDivisionsLine0("Sound money street"),
-                            PersonaData.PostalAddress.Field.FurtherDivisionsLine1(""),
-                            PersonaData.PostalAddress.Field.CountryOrRegion(CountryOrRegion.Japan)
+                            PersonaData.PersonaDataField.PostalAddress.Field.PostalCode("21 000 000"),
+                            PersonaData.PersonaDataField.PostalAddress.Field.Prefecture("SHA256"),
+                            PersonaData.PersonaDataField.PostalAddress.Field.CountySlashCity("HashTown"),
+                            PersonaData.PersonaDataField.PostalAddress.Field.FurtherDivisionsLine0("Sound money street"),
+                            PersonaData.PersonaDataField.PostalAddress.Field.FurtherDivisionsLine1(""),
+                            PersonaData.PersonaDataField.PostalAddress.Field.CountryOrRegion(CountryOrRegion.Japan)
                         )
                     ), "9"
                 ),
                 IdentifiedEntry.init(
-                    PersonaData.PostalAddress(
+                    PersonaData.PersonaDataField.PostalAddress(
                         listOf(
-                            PersonaData.PostalAddress.Field.StreetLine0("Copthall House"),
-                            PersonaData.PostalAddress.Field.StreetLine1("King Street"),
-                            PersonaData.PostalAddress.Field.TownSlashCity("Newcastle-under-Lyme"),
-                            PersonaData.PostalAddress.Field.County("Newcastle"),
-                            PersonaData.PostalAddress.Field.Postcode("ST5 1UE"),
-                            PersonaData.PostalAddress.Field.CountryOrRegion(CountryOrRegion.UnitedKingdom)
+                            PersonaData.PersonaDataField.PostalAddress.Field.StreetLine0("Copthall House"),
+                            PersonaData.PersonaDataField.PostalAddress.Field.StreetLine1("King Street"),
+                            PersonaData.PersonaDataField.PostalAddress.Field.TownSlashCity("Newcastle-under-Lyme"),
+                            PersonaData.PersonaDataField.PostalAddress.Field.County("Newcastle"),
+                            PersonaData.PersonaDataField.PostalAddress.Field.Postcode("ST5 1UE"),
+                            PersonaData.PersonaDataField.PostalAddress.Field.CountryOrRegion(CountryOrRegion.UnitedKingdom)
                         )
                     ), "10"
                 )
             ),
             creditCards = listOf(
                 IdentifiedEntry.init(
-                    PersonaData.CreditCard(
-                        expiry = PersonaData.CreditCard.Expiry(2142, 12),
+                    PersonaData.PersonaDataField.CreditCard(
+                        expiry = PersonaData.PersonaDataField.CreditCard.Expiry(2142, 12),
                         holder = "Satoshi Nakamoto",
                         number = "0000 0000 2100 0000",
                         cvc = 512
