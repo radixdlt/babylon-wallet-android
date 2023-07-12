@@ -2,18 +2,22 @@ package rdx.works.profile.data.model.apppreferences
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import rdx.works.profile.data.model.factorsources.LedgerHardwareWalletFactorSource
 
 @Serializable
 class Display private constructor(
     @SerialName("fiatCurrencyPriceTarget")
     val fiatCurrencyPriceTarget: String,
     @SerialName("isCurrencyAmountVisible")
-    val isCurrencyAmountVisible: Boolean
+    val isCurrencyAmountVisible: Boolean,
+    @SerialName("ledgerHQHardwareWalletSigningDisplayMode")
+    val ledgerHQHardwareWalletSigningDisplayMode: LedgerHardwareWalletFactorSource.SigningDisplayMode
 ) {
     companion object {
         val default = Display(
             fiatCurrencyPriceTarget = "usd",
-            isCurrencyAmountVisible = true
+            isCurrencyAmountVisible = true,
+            ledgerHQHardwareWalletSigningDisplayMode = LedgerHardwareWalletFactorSource.SigningDisplayMode.Verbose
         )
     }
 }

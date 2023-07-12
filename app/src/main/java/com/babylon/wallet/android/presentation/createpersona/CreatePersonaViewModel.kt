@@ -17,7 +17,6 @@ import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.preferences.PreferencesManager
-import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.domain.persona.CreatePersonaWithDeviceFactorSourceUseCase
 import javax.inject.Inject
 
@@ -53,26 +52,27 @@ class CreatePersonaViewModel @Inject constructor(
 
     fun onPersonaCreateClick() {
         _state.update { it.copy(loading = true) }
-        viewModelScope.launch {
-            val fields = _state.value.currentFields.map {
-                Network.Persona.Field.init(id = it.id, value = it.value.trim())
-            }
-            val persona = createPersonaWithDeviceFactorSourceUseCase(
-                displayName = _state.value.personaDisplayName.value,
-                fields = fields
-            )
-
-            val personaId = persona.address
-
-            _state.update { it.copy(loading = true) }
-            preferencesManager.markFirstPersonaCreated()
-
-            sendEvent(
-                CreatePersonaEvent.Complete(
-                    personaId = personaId
-                )
-            )
-        }
+        //TODO persona data
+//        viewModelScope.launch {
+//            val fields = _state.value.currentFields.map {
+//                Network.Persona.Field.init(id = it.id, value = it.value.trim())
+//            }
+//            val persona = createPersonaWithDeviceFactorSourceUseCase(
+//                displayName = _state.value.personaDisplayName.value,
+//                fields = fields
+//            )
+//
+//            val personaId = persona.address
+//
+//            _state.update { it.copy(loading = true) }
+//            preferencesManager.markFirstPersonaCreated()
+//
+//            sendEvent(
+//                CreatePersonaEvent.Complete(
+//                    personaId = personaId
+//                )
+//            )
+//        }
     }
 
     data class CreatePersonaUiState(

@@ -70,7 +70,6 @@ import com.babylon.wallet.android.presentation.account.composable.NonFungibleTok
 import com.babylon.wallet.android.presentation.common.FullscreenCircularProgressContent
 import com.babylon.wallet.android.presentation.dapp.authorized.account.AccountItemUiModel
 import com.babylon.wallet.android.presentation.dapp.authorized.selectpersona.PersonaUiModel
-import com.babylon.wallet.android.presentation.model.toDisplayResource
 import com.babylon.wallet.android.presentation.ui.composables.ActionableAddressView
 import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.DefaultModalSheetLayout
@@ -688,33 +687,34 @@ private fun PersonaDetailList(
                 modifier = Modifier.padding(horizontal = dimensions.paddingDefault)
             )
         }
-        if (persona.persona.fields.isNotEmpty()) {
-            item {
-                Spacer(modifier = Modifier.height(dimensions.paddingDefault))
-                Text(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = dimensions.paddingDefault),
-                    text = stringResource(
-                        R.string.authorizedDapps_personaDetails_personalDataSharingDescription,
-                        dappName
-                    ),
-                    style = RadixTheme.typography.body1HighImportance,
-                    color = RadixTheme.colors.gray2
-                )
-                Spacer(modifier = Modifier.height(dimensions.paddingLarge))
-            }
-            items(persona.persona.fields) { field ->
-                PersonaPropertyRow(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = dimensions.paddingDefault),
-                    label = stringResource(id = field.id.toDisplayResource()),
-                    value = field.value
-                )
-                Spacer(modifier = Modifier.height(dimensions.paddingLarge))
-            }
-        }
+        //TODO persona data
+//        if (persona.persona.fields.isNotEmpty()) {
+//            item {
+//                Spacer(modifier = Modifier.height(dimensions.paddingDefault))
+//                Text(
+//                    modifier = Modifier
+//                        .fillMaxWidth()
+//                        .padding(horizontal = dimensions.paddingDefault),
+//                    text = stringResource(
+//                        R.string.authorizedDapps_personaDetails_personalDataSharingDescription,
+//                        dappName
+//                    ),
+//                    style = RadixTheme.typography.body1HighImportance,
+//                    color = RadixTheme.colors.gray2
+//                )
+//                Spacer(modifier = Modifier.height(dimensions.paddingLarge))
+//            }
+//            items(persona.persona.fields) { field ->
+//                PersonaPropertyRow(
+//                    modifier = Modifier
+//                        .fillMaxWidth()
+//                        .padding(horizontal = dimensions.paddingDefault),
+//                    label = stringResource(id = field.id.toDisplayResource()),
+//                    value = field.value
+//                )
+//                Spacer(modifier = Modifier.height(dimensions.paddingLarge))
+//            }
+//        }
         item {
             Spacer(modifier = Modifier.height(dimensions.paddingSmall))
             RadixSecondaryButton(

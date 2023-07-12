@@ -26,18 +26,21 @@ object FactorSourceSerializer : KSerializer<FactorSource> {
                     device = value
                 )
             }
+
             is LedgerHardwareWalletFactorSource -> {
                 FactorSourceSurrogate(
                     discriminator = FactorSourceKind.ledgerHQHardwareWalletSerialName,
                     ledgerHQHardwareWallet = value
                 )
             }
+
             is OffDeviceMnemonicFactorSource -> {
                 FactorSourceSurrogate(
                     discriminator = FactorSourceKind.offDeviceMnemonicSerialName,
                     offDeviceMnemonic = value
                 )
             }
+
             is TrustedContactFactorSource -> {
                 FactorSourceSurrogate(
                     discriminator = FactorSourceKind.trustedContactSerialName,
@@ -54,15 +57,19 @@ object FactorSourceSerializer : KSerializer<FactorSource> {
             FactorSourceKind.deviceSerialName -> {
                 surrogate.device!!
             }
+
             FactorSourceKind.ledgerHQHardwareWalletSerialName -> {
                 surrogate.ledgerHQHardwareWallet!!
             }
+
             FactorSourceKind.offDeviceMnemonicSerialName -> {
                 surrogate.offDeviceMnemonic!!
             }
+
             FactorSourceKind.trustedContactSerialName -> {
                 surrogate.trustedContact!!
             }
+
             else -> {
                 error("not supported FactorSource discriminator")
             }
@@ -88,6 +95,7 @@ object FactorSourceIDSerializer : KSerializer<FactorSource.FactorSourceID> {
                     fromHash = value
                 )
             }
+
             is FactorSource.FactorSourceID.FromAddress -> {
                 FactorSourceIDSurrogate(
                     discriminator = FactorSource.FactorSourceID.fromAddressSerialName,
@@ -104,9 +112,11 @@ object FactorSourceIDSerializer : KSerializer<FactorSource.FactorSourceID> {
             FactorSource.FactorSourceID.fromHashSerialName -> {
                 surrogate.fromHash!!
             }
+
             FactorSource.FactorSourceID.fromAddressSerialName -> {
                 surrogate.fromAddress!!
             }
+
             else -> {
                 error("not supported FactorSourceID discriminator")
             }

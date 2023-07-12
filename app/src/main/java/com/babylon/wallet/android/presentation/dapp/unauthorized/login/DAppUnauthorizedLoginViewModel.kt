@@ -5,7 +5,6 @@ import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.dapp.DappMessenger
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.data.dapp.model.WalletErrorType
-import com.babylon.wallet.android.data.dapp.model.toKind
 import com.babylon.wallet.android.data.repository.dappmetadata.DAppRepository
 import com.babylon.wallet.android.data.transaction.DappRequestException
 import com.babylon.wallet.android.data.transaction.DappRequestFailure
@@ -23,7 +22,6 @@ import com.babylon.wallet.android.presentation.dapp.InitialUnauthorizedLoginRout
 import com.babylon.wallet.android.presentation.dapp.authorized.account.AccountItemUiModel
 import com.babylon.wallet.android.presentation.dapp.authorized.selectpersona.PersonaUiModel
 import com.babylon.wallet.android.presentation.dapp.authorized.selectpersona.toUiModel
-import com.babylon.wallet.android.presentation.model.encodeToString
 import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -34,9 +32,9 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.profile.data.model.pernetwork.Network
+import rdx.works.profile.data.model.pernetwork.PersonaDataEntryID
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.gateway.GetCurrentGatewayUseCase
-import rdx.works.profile.domain.personaOnCurrentNetwork
 import javax.inject.Inject
 
 @HiltViewModel
@@ -105,9 +103,10 @@ class DAppUnauthorizedLoginViewModel @Inject constructor(
             request.oneTimePersonaDataRequestItem != null -> {
                 _state.update { state ->
                     state.copy(
-                        initialUnauthorizedLoginRoute = InitialUnauthorizedLoginRoute.OnetimePersonaData(
-                            request.oneTimePersonaDataRequestItem.fields.map { it.toKind() }.encodeToString()
-                        )
+                        //TODO persona data
+//                        initialUnauthorizedLoginRoute = InitialUnauthorizedLoginRoute.OnetimePersonaData(
+//                            request.oneTimePersonaDataRequestItem.fields.map { it.toKind() }.encodeToString()
+//                        )
                     )
                 }
             }
@@ -136,17 +135,18 @@ class DAppUnauthorizedLoginViewModel @Inject constructor(
     fun onGrantedPersonaDataOnetime() {
         val selectedPersona = checkNotNull(state.value.selectedPersona)
         viewModelScope.launch {
-            val requiredFields = checkNotNull(request.oneTimePersonaDataRequestItem?.fields?.map { it.toKind() })
-            getProfileUseCase.personaOnCurrentNetwork(selectedPersona.persona.address)?.let { updatedPersona ->
-                val dataFields = updatedPersona.fields.filter { requiredFields.contains(it.id) }
-                _state.update {
-                    it.copy(
-                        selectedPersona = updatedPersona.toUiModel(),
-                        selectedOnetimeDataFields = dataFields.toPersistentList()
-                    )
-                }
-                sendEvent(Event.RequestCompletionBiometricPrompt)
-            }
+            //TODO persona data
+//            val requiredFields = checkNotNull(request.oneTimePersonaDataRequestItem?.fields?.map { it.toKind() })
+//            getProfileUseCase.personaOnCurrentNetwork(selectedPersona.persona.address)?.let { updatedPersona ->
+//                val dataFields = updatedPersona.fields.filter { requiredFields.contains(it.id) }
+//                _state.update {
+//                    it.copy(
+//                        selectedPersona = updatedPersona.toUiModel(),
+//                        selectedOnetimeDataFields = dataFields.toPersistentList()
+//                    )
+//                }
+//                sendEvent(Event.RequestCompletionBiometricPrompt)
+//            }
         }
     }
 
@@ -170,11 +170,12 @@ class DAppUnauthorizedLoginViewModel @Inject constructor(
         viewModelScope.launch {
             _state.update { it.copy(selectedAccountsOneTime = onetimeAccounts.toPersistentList()) }
             if (request.oneTimePersonaDataRequestItem != null) {
-                sendEvent(
-                    Event.PersonaDataOnetime(
-                        request.oneTimePersonaDataRequestItem.fields.map { it.toKind() }.encodeToString()
-                    )
-                )
+                //TODO persona data
+//                sendEvent(
+//                    Event.PersonaDataOnetime(
+//                        request.oneTimePersonaDataRequestItem.fields.map { it.toKind() }.encodeToString()
+//                    )
+//                )
             } else {
                 sendEvent(Event.RequestCompletionBiometricPrompt)
             }
@@ -218,7 +219,7 @@ data class DAppUnauthorizedLoginUiState(
     val dappWithMetadata: DAppWithMetadata? = null,
     val uiMessage: UiMessage? = null,
     val initialUnauthorizedLoginRoute: InitialUnauthorizedLoginRoute? = null,
-    val selectedOnetimeDataFields: ImmutableList<Network.Persona.Field> = persistentListOf(),
+    val selectedOnetimeDataFields: ImmutableList<PersonaDataEntryID> = persistentListOf(),
     val selectedAccountsOneTime: ImmutableList<AccountItemUiModel> = persistentListOf(),
     val selectedPersona: PersonaUiModel? = null
 ) : UiState

@@ -201,8 +201,8 @@ data class Network(
         @SerialName("displayName")
         val displayName: String,
 
-        @SerialName("fields")
-        val fields: List<Field>,
+        @SerialName("personaData")
+        val personaData: PersonaData,
 
         /**
          * The ID of the network that has been used to generate the accounts, to which personas
@@ -222,10 +222,10 @@ data class Network(
             @Suppress("LongParameterList") // TODO refine this later on
             fun init(
                 displayName: String,
-                fields: List<Field>,
                 mnemonicWithPassphrase: MnemonicWithPassphrase,
                 factorSource: DeviceFactorSource,
-                networkId: NetworkId
+                networkId: NetworkId,
+                personaData: PersonaData = PersonaData()
             ): Persona {
                 val index =
                     factorSource.nextDerivationIndicesPerNetwork.getNextIdentityDerivationIndex(forNetworkId = networkId)
@@ -253,9 +253,9 @@ data class Network(
                 return Persona(
                     address = address,
                     displayName = displayName,
-                    fields = fields,
                     networkID = networkId.value,
-                    securityState = unsecuredSecurityState
+                    securityState = unsecuredSecurityState,
+                    personaData = personaData
                 )
             }
 
@@ -267,43 +267,6 @@ data class Network(
                 // TODO handle error
                 val response = RadixEngineToolkit.deriveVirtualIdentityAddress(request).getOrThrow()
                 return response.virtualIdentityAddress
-            }
-        }
-
-        @Serializable
-        data class Field(
-            @SerialName("id")
-            val id: ID,
-
-            @SerialName("value")
-            val value: String
-        ) {
-
-            @Serializable
-            enum class ID {
-                @SerialName("givenName")
-                GivenName,
-
-                @SerialName("familyName")
-                FamilyName,
-
-                @SerialName("emailAddress")
-                EmailAddress,
-
-                @SerialName("phoneNumber")
-                PhoneNumber
-            }
-
-            companion object {
-                fun init(
-                    id: ID,
-                    value: String
-                ): Field {
-                    return Field(
-                        id = id,
-                        value = value
-                    )
-                }
             }
         }
     }
@@ -324,6 +287,10 @@ data class Network(
         val referencesToAuthorizedPersonas: List<AuthorizedPersonaSimple>
     ) {
 
+        fun hasAuthorizedPersona(personaAddress: String): Boolean {
+            return referencesToAuthorizedPersonas.any { it.identityAddress == personaAddress }
+        }
+
         @Serializable
         data class AuthorizedPersonaSimple(
             /**
@@ -332,12 +299,6 @@ data class Network(
             @SerialName("identityAddress")
             val identityAddress: String,
 
-            /**
-             * List of "ongoing personaData" (identified by OnNetwork.Persona.Field.ID) user has given Dapp access to.
-             */
-            @SerialName("sharedFieldIDs")
-            val fieldIDs: List<Persona.Field.ID>,
-
             @SerialName("lastLogin")
             val lastLogin: String,
 
@@ -345,41 +306,58 @@ data class Network(
              * List of shared accounts that user given the dApp access to.
              */
             @SerialName("sharedAccounts")
-            val sharedAccounts: SharedAccounts
+            val sharedAccounts: Shared<String>,
+
+            @SerialName("sharedPersonaData")
+            val sharedPersonaData: SharedPersonaData
+        )
+
+        @Serializable
+        data class SharedPersonaData(
+            @SerialName("name")
+            val name: PersonaDataEntryID? = null,
+
+            @SerialName("dateOfBirth")
+            val dateOfBirth: PersonaDataEntryID? = null,
+
+            @SerialName("companyName")
+            val companyName: PersonaDataEntryID? = null,
+
+            @SerialName("emailAddresses")
+            val emailAddresses: Shared<PersonaDataEntryID>? = null,
+
+            @SerialName("phoneNumbers")
+            val phoneNumbers: Shared<PersonaDataEntryID>? = null,
+
+            @SerialName("urls")
+            val urls: Shared<PersonaDataEntryID>? = null,
+
+            @SerialName("postalAddresses")
+            val postalAddresses: Shared<PersonaDataEntryID>? = null,
+
+            @SerialName("creditCards")
+            val creditCards: Shared<PersonaDataEntryID>? = null
         ) {
+            fun alreadyGrantedIds(): List<PersonaDataEntryID> {
+                return emailAddresses?.ids.orEmpty() + postalAddresses?.ids.orEmpty() + listOfNotNull(name)
+            }
 
-            @Serializable
-            data class SharedAccounts(
-                @SerialName("accountsReferencedByAddress")
-                val accountsReferencedByAddress: List<String>,
-
-                @SerialName("request")
-                val request: NumberOfAccounts
-            ) {
-
-                @Serializable
-                data class NumberOfAccounts(
-                    @SerialName("quantifier")
-                    val quantifier: Quantifier,
-
-                    @SerialName("quantity")
-                    val quantity: Int
-                ) {
-
-                    enum class Quantifier {
-                        @SerialName("exactly")
-                        Exactly,
-
-                        @SerialName("atLeast")
-                        AtLeast
-                    }
+            companion object {
+                fun init(personaData: PersonaData, request: RequestedNumber): SharedPersonaData {
+                    return SharedPersonaData(
+                        name = personaData.name?.id,
+                        dateOfBirth = personaData.dateOfBirth?.id,
+                        companyName = personaData.companyName?.id,
+                        emailAddresses = Shared(personaData.emailAddresses.map { it.id }, request),
+                        phoneNumbers = Shared(personaData.phoneNumbers.map { it.id }, request),
+                        urls = Shared(personaData.urls.map { it.id }, request),
+                        postalAddresses = Shared(personaData.postalAddresses.map { it.id }, request),
+                        creditCards = Shared(personaData.creditCards.map { it.id }, request)
+                    )
                 }
             }
         }
 
-        fun hasAuthorizedPersona(personaAddress: String): Boolean {
-            return referencesToAuthorizedPersonas.any { it.identityAddress == personaAddress }
-        }
     }
 
     @Serializable
@@ -392,6 +370,33 @@ data class Network(
         val forIdentity: Int
     )
 }
+
+@Serializable
+data class RequestedNumber(
+    @SerialName("quantifier")
+    val quantifier: Quantifier,
+
+    @SerialName("quantity")
+    val quantity: Int
+) {
+
+    enum class Quantifier {
+        @SerialName("exactly")
+        Exactly,
+
+        @SerialName("atLeast")
+        AtLeast
+    }
+}
+
+@Serializable
+data class Shared<T>(
+    @SerialName("ids")
+    val ids: List<T>,
+
+    @SerialName("request")
+    val request: RequestedNumber
+)
 
 fun Profile.addAccount(
     account: Network.Account,
@@ -630,4 +635,23 @@ fun List<Network.NextDerivationIndices>.incrementPersonaIndex(forNetworkId: Netw
     }
 
     return mutatedList
+}
+
+fun Network.AuthorizedDapp.AuthorizedPersonaSimple.ensurePersonaDataExist(existingFieldIds: List<PersonaDataEntryID>): Network.AuthorizedDapp.AuthorizedPersonaSimple {
+    return copy(
+        sharedPersonaData = sharedPersonaData.copy(
+            name = if (existingFieldIds.contains(sharedPersonaData.name)) sharedPersonaData.name else null,
+            dateOfBirth = if (existingFieldIds.contains(sharedPersonaData.dateOfBirth)) sharedPersonaData.dateOfBirth else null,
+            companyName = if (existingFieldIds.contains(sharedPersonaData.companyName)) sharedPersonaData.companyName else null,
+            emailAddresses = sharedPersonaData.emailAddresses?.removeNonExisting(existingFieldIds),
+            phoneNumbers = sharedPersonaData.phoneNumbers?.removeNonExisting(existingFieldIds),
+            urls = sharedPersonaData.urls?.removeNonExisting(existingFieldIds),
+            postalAddresses = sharedPersonaData.postalAddresses?.removeNonExisting(existingFieldIds),
+            creditCards = sharedPersonaData.creditCards?.removeNonExisting(existingFieldIds),
+        )
+    )
+}
+
+fun <T> Shared<T>.removeNonExisting(existingIds: List<T>): Shared<T> {
+    return copy(ids = ids.filter { existingIds.contains(it) })
 }

@@ -18,6 +18,12 @@ data class LedgerHardwareWalletFactorSource(
     val nextDerivationIndicesPerNetwork: List<Network.NextDerivationIndices>? = null
 ) : FactorSource() {
 
+    @Serializable
+    enum class SigningDisplayMode {
+        @SerialName("verbose") Verbose,
+        @SerialName("summary") Summary
+    }
+
     enum class DeviceModel(val value: String) {
         NANO_S("nanoS"),
         NANO_S_PLUS("nanoS+"),
