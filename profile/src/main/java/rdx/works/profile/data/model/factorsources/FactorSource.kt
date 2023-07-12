@@ -110,7 +110,7 @@ sealed class FactorSource {
 
             val supportsOlympia: Boolean
                 get() = supportedCurves.contains(Slip10Curve.SECP_256K1) &&
-                    supportedDerivationPathSchemes.contains(DerivationPathScheme.BIP_44_OLYMPIA)
+                        supportedDerivationPathSchemes.contains(DerivationPathScheme.BIP_44_OLYMPIA)
 
             companion object {
                 val babylon = CryptoParameters(
