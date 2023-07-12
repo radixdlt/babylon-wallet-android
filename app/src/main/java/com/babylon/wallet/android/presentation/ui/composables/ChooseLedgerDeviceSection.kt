@@ -54,8 +54,10 @@ fun ChooseLedgerDeviceSection(
         )
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
         Text(
-            text = "Choose Ledger Device",
-            // todo stringResource(id = com.babylon.wallet.android.R.string.ledgerHardwareDevices_navigationTitleAllowSelection),
+            text = if (ledgerFactorSources.isEmpty())
+                stringResource(id = com.babylon.wallet.android.R.string.ledgerHardwareDevices_navigationTitleNoSelection)
+            else
+                stringResource(id = com.babylon.wallet.android.R.string.ledgerHardwareDevices_navigationTitleAllowSelection),
             style = RadixTheme.typography.title,
             color = RadixTheme.colors.gray1,
             overflow = TextOverflow.Ellipsis,
@@ -63,8 +65,11 @@ fun ChooseLedgerDeviceSection(
         )
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
         Text(
-            text = "Choose an existing Ledger or add a new one",
-            // todo stringResource(id = com.babylon.wallet.android.R.string.ledgerHardwareDevices_subtitleSelectLedger),
+            text = if (ledgerFactorSources.isEmpty()) {
+                stringResource(id = com.babylon.wallet.android.R.string.ledgerHardwareDevices_subtitleSelectLedgerExisting)
+            } else {
+                stringResource(id = com.babylon.wallet.android.R.string.ledgerHardwareDevices_subtitleSelectLedger)
+            },
             style = RadixTheme.typography.body1Header,
             color = RadixTheme.colors.gray1,
             overflow = TextOverflow.Ellipsis,
@@ -77,8 +82,7 @@ fun ChooseLedgerDeviceSection(
                     .fillMaxWidth()
                     .background(RadixTheme.colors.gray5, RadixTheme.shapes.roundedRectSmall)
                     .padding(RadixTheme.dimensions.paddingLarge),
-                text = "No Ledger devices currently added to your Radix Wallet",
-                // todo stringResource(id = com.babylon.wallet.android.R.string.ledgerHardwareDevices_subtitleNoLedgers),
+                text = stringResource(id = com.babylon.wallet.android.R.string.ledgerHardwareDevices_subtitleNoLedgers),
                 style = RadixTheme.typography.body1Header,
                 color = RadixTheme.colors.gray2,
                 overflow = TextOverflow.Ellipsis,

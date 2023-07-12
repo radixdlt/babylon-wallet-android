@@ -230,8 +230,7 @@ private fun UseLedgerSwitch(useLedgerSelected: Boolean, onUseLedgerSelectionChan
                 color = RadixTheme.colors.gray1
             )
             Text(
-                text = "You will be asked to sign transactions with the Ledger device you select", // todo
-                // stringResource(id = R.string.createEntity_nameNewEntity_ledgerSubtitle),
+                text = stringResource(id = R.string.createEntity_nameNewEntity_ledgerSubtitle),
                 style = RadixTheme.typography.body2Regular,
                 color = RadixTheme.colors.gray2
             )

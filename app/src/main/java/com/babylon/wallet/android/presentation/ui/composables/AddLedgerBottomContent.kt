@@ -112,8 +112,7 @@ fun AddLedgerContent(
                     Text(
                         modifier = Modifier
                             .padding(horizontal = RadixTheme.dimensions.paddingLarge),
-                        text = "What would you like to call this Ledger device?",
-                        // todo stringResource(id = com.babylon.wallet.android.R.string.addLedgerDevice_nameLedger_body),
+                        text = stringResource(id = com.babylon.wallet.android.R.string.addLedgerDevice_nameLedger_subtitle),
                         style = RadixTheme.typography.body1Regular,
                         color = RadixTheme.colors.gray1,
                         overflow = TextOverflow.Ellipsis,
@@ -140,7 +139,7 @@ fun AddLedgerContent(
                     Text(
                         modifier = Modifier
                             .padding(horizontal = RadixTheme.dimensions.paddingSmall),
-                        text = "This will be displayed when you’re prompted to sign with this ledger",
+                        text = stringResource(id = com.babylon.wallet.android.R.string.addLedgerDevice_nameLedger_fieldHint),
                         style = RadixTheme.typography.body2Regular,
                         color = RadixTheme.colors.gray2,
                         overflow = TextOverflow.Ellipsis

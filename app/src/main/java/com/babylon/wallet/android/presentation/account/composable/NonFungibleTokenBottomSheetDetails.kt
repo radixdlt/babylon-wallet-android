@@ -229,7 +229,7 @@ fun NonFungibleTokenBottomSheetDetails(
                         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
                         Text(
                             modifier = Modifier.fillMaxWidth(),
-                            text = "Tags",
+                            text = stringResource(id = R.string.assetDetails_tags),
                             style = RadixTheme.typography.body1Regular,
                             color = RadixTheme.colors.gray2
                         )

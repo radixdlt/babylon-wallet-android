@@ -174,7 +174,7 @@ fun FungibleTokenBottomSheetDetails(
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
                 Text(
                     modifier = Modifier.fillMaxWidth(),
-                    text = "Tags", // todo need to go to crowdin
+                    text = stringResource(id = R.string.assetDetails_tags),
                     style = RadixTheme.typography.body1Regular,
                     color = RadixTheme.colors.gray2
                 )
