@@ -83,3 +83,23 @@ fun TransactionManifest.toTransactionRequest(
     ),
     requestMetadata = MessageFromDataChannel.IncomingRequest.RequestMetadata.internal(networkId)
 )
+
+fun TransactionManifest.toPrettyString(): String {
+    val blobSeparator = "\n"
+    val blobPreamble = "BLOBS\n"
+    val blobLabel = "BLOB\n"
+
+    val instructionsFormatted = instructions().asStr()
+
+    val blobsByByteCount = blobs().mapIndexed { index, bytes ->
+        "$blobLabel[$index]: #${bytes.size} bytes"
+    }.joinToString(blobSeparator)
+
+    val blobsString = if (blobsByByteCount.isNotEmpty()) {
+        listOf(blobPreamble, blobsByByteCount).joinToString(separator = blobSeparator)
+    } else {
+        ""
+    }
+
+    return "$instructionsFormatted$blobsString"
+}

@@ -4,6 +4,7 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.dapp.DappMessenger
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
+import com.babylon.wallet.android.data.manifest.toPrettyString
 import com.babylon.wallet.android.data.transaction.DappRequestFailure
 import com.babylon.wallet.android.data.transaction.SigningState
 import com.babylon.wallet.android.data.transaction.TransactionClient
@@ -260,7 +261,7 @@ class TransactionApprovalViewModel2 @Inject constructor(
         val signingState: SigningState? = null
     ): UiState {
 
-        val rawManifest: String = request.transactionManifestData.instructions
+        val rawManifest: String = request.transactionManifestData.toTransactionManifest().toPrettyString()
 
         val message: String?
             get() {

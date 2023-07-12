@@ -272,7 +272,7 @@ private fun TransactionPreviewContent(
                             modifier = Modifier.verticalScroll(rememberScrollState())
                         ) {
                             when (state.previewType) {
-                                is PreviewType.NonConforming -> TODO()
+                                is PreviewType.NonConforming -> {}
                                 is PreviewType.Transaction -> {
                                     TransactionPreviewTypeContent(
                                         state = state,
