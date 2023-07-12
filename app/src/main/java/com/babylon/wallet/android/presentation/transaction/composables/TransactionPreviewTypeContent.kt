@@ -15,10 +15,11 @@ import com.babylon.wallet.android.presentation.transaction.TransactionApprovalVi
 import kotlinx.collections.immutable.toPersistentList
 
 @Composable
-fun ColumnScope.TransactionPreviewTypeContent(
+fun TransactionPreviewTypeContent(
     modifier: Modifier = Modifier,
     state: TransactionApprovalViewModel2.State,
-    preview: PreviewType.Transaction
+    preview: PreviewType.Transaction,
+    onPromptForGuarantees: () -> Unit
 ) {
     Column(
         modifier = modifier.fillMaxSize()
@@ -43,9 +44,7 @@ fun ColumnScope.TransactionPreviewTypeContent(
             DepositAccountContent(
                 modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingDefault),
                 to = preview.to,
-                promptForGuarantees = {
-
-                }
+                promptForGuarantees = onPromptForGuarantees
             )
 
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))

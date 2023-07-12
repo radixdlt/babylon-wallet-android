@@ -36,7 +36,7 @@ import kotlinx.collections.immutable.ImmutableMap
 import kotlinx.collections.immutable.persistentMapOf
 
 @Composable
-fun ColumnScope.DepositAccountContent(
+fun DepositAccountContent(
     modifier: Modifier = Modifier,
     to: List<AccountWithTransferableResources>,
     promptForGuarantees: () -> Unit

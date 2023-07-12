@@ -1,5 +1,6 @@
 package com.babylon.wallet.android.presentation.transaction
 
+import androidx.annotation.FloatRange
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.dapp.DappMessenger
@@ -12,7 +13,6 @@ import com.babylon.wallet.android.data.transaction.TransactionConfig
 import com.babylon.wallet.android.di.coroutines.ApplicationScope
 import com.babylon.wallet.android.domain.model.Badge
 import com.babylon.wallet.android.domain.model.DAppWithMetadataAndAssociatedResources
-import com.babylon.wallet.android.domain.model.GuaranteeType
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.babylon.wallet.android.domain.model.Transferable
 import com.babylon.wallet.android.domain.model.TransferableResource
@@ -28,6 +28,7 @@ import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.presentation.transaction.TransactionApprovalViewModel2.Event
 import com.babylon.wallet.android.presentation.transaction.TransactionApprovalViewModel2.State
 import com.babylon.wallet.android.presentation.transaction.analysis.TransactionAnalysisDelegate
+import com.babylon.wallet.android.presentation.transaction.guarantees.TransactionGuaranteesDelegate
 import com.babylon.wallet.android.presentation.transaction.submit.TransactionSubmitDelegate
 import com.babylon.wallet.android.utils.AppEventBus
 import com.babylon.wallet.android.utils.DeviceSecurityHelper
@@ -38,6 +39,7 @@ import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.crypto.PrivateKey
+import rdx.works.core.mapWhen
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.gateway.GetCurrentGatewayUseCase
@@ -78,6 +80,10 @@ class TransactionApprovalViewModel2 @Inject constructor(
         getTransactionBadgesUseCase = getTransactionBadgesUseCase,
         getDAppWithMetadataAndAssociatedResourcesUseCase = getDAppWithMetadataAndAssociatedResourcesUseCase,
         transactionClient = transactionClient
+    )
+
+    private val guarantees: TransactionGuaranteesDelegate = TransactionGuaranteesDelegate(
+        state = _state
     )
 
     private val submit: TransactionSubmitDelegate = TransactionSubmitDelegate(
@@ -129,46 +135,24 @@ class TransactionApprovalViewModel2 @Inject constructor(
         submit.onSubmit()
     }
 
-    fun promptForGuaranteesClick() {
-//        _state.update {
-//            it.copy(
-//                bottomSheetViewMode = BottomSheetMode.Guarantees
-//            )
-//        }
-    }
+    fun promptForGuaranteesClick() = guarantees.onEdit()
 
-    fun onGuaranteeValueChange(account: AccountWithPredictedGuarantee, value: String) {
+    fun onGuaranteeValueChange(account: AccountWithPredictedGuarantee, value: String) = guarantees.onValueChange(
+        account = account,
+        value = value
+    )
 
-    }
+    fun onGuaranteeValueIncreased(account: AccountWithPredictedGuarantee) = guarantees.onValueIncreased(account)
 
-    fun onGuaranteeValueIncreased(account: AccountWithPredictedGuarantee) {
+    fun onGuaranteeValueDecreased(account: AccountWithPredictedGuarantee) = guarantees.onValueDecreased(account)
 
-    }
+    fun onGuaranteesApplyClick() = guarantees.onApply()
 
-    fun onGuaranteeValueDecreased(account: AccountWithPredictedGuarantee) {
+    fun onGuaranteesCloseClick() = guarantees.onClose()
 
-    }
+    fun onPayerSelected(account: Network.Account) = submit.onFeePayerSelected(account)
 
-    fun onGuaranteesApplyClick() {
-//        _state.update {
-//            it.copy(
-//                depositingAccounts = depositingAccounts
-//            )
-//        }
-        _state.update { it.copy(sheetState = State.Sheet.None) }
-    }
-
-    fun onGuaranteesCloseClick() {
-        _state.update { it.copy(sheetState = State.Sheet.None) }
-    }
-
-    fun onPayerSelected(account: Network.Account) {
-        submit.onFeePayerSelected(account)
-    }
-
-    fun onPayerConfirmed() {
-        submit.onFeePayerConfirmed()
-    }
+    fun onPayerConfirmed() = submit.onFeePayerConfirmed()
 
     fun onDAppClick(dApp: DAppWithMetadataAndAssociatedResources) {
 //        _state.update {
@@ -252,6 +236,7 @@ sealed interface AccountWithPredictedGuarantee {
     val guaranteeAmountString: String
 
     val guaranteeOffsetDecimal: Float
+        @FloatRange(from = 0.0, to = 1.0)
         get() = (guaranteeAmountString.toFloatOrNull() ?: 0f) / 100f
 
     val guaranteedAmount: BigDecimal
@@ -320,6 +305,37 @@ sealed interface AccountWithTransferableResources {
         override val address: String,
         override val resources: List<Transferable>
     ): AccountWithTransferableResources
+
+    fun updateFromGuarantees(
+        accountsWithPredictedGuarantees: List<AccountWithPredictedGuarantee>
+    ): AccountWithTransferableResources {
+        val resourcesWithGuaranteesForAccount = accountsWithPredictedGuarantees.filter {
+            it.address == address
+        }
+
+        val resources = resources.mapWhen(
+            predicate = { depositing ->
+                resourcesWithGuaranteesForAccount.any {
+                    it.address == address && it.transferableAmount.resourceAddress == depositing.transferable.resourceAddress
+                }
+            },
+            mutation = { depositing ->
+                val accountWithGuarantee = resourcesWithGuaranteesForAccount.find {
+                    it.transferableAmount.resourceAddress == depositing.transferable.resourceAddress
+                }
+
+                if (accountWithGuarantee != null) {
+                    depositing.updateGuarantee(accountWithGuarantee.guaranteeOffsetDecimal)
+                } else {
+                    depositing
+                }
+            }
+        )
+        return when (this) {
+            is Other -> copy(resources = resources)
+            is Owned -> copy(resources = resources)
+        }
+    }
 }
 
 fun List<AccountWithTransferableResources>.hasCustomizableGuarantees() = any { accountWithTransferableResources ->

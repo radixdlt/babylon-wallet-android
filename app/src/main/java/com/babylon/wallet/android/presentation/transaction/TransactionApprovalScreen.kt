@@ -79,7 +79,7 @@ fun TransactionApprovalScreen(
         onRawManifestToggle = viewModel::onRawManifestToggle,
         onMessageShown = viewModel::onMessageShown,
         modifier = modifier,
-        promptForGuaranteesClick = viewModel::promptForGuaranteesClick,
+        promptForGuarantees = viewModel::promptForGuaranteesClick,
         onGuaranteesApplyClick = viewModel::onGuaranteesApplyClick,
         onGuaranteesCloseClick = viewModel::onGuaranteesCloseClick,
         onGuaranteeValueChanged = viewModel::onGuaranteeValueChange,
@@ -110,7 +110,7 @@ private fun TransactionPreviewContent(
     onApproveTransaction: () -> Unit,
     onRawManifestToggle: () -> Unit,
     onMessageShown: () -> Unit,
-    promptForGuaranteesClick: () -> Unit,
+    promptForGuarantees: () -> Unit,
     onGuaranteesApplyClick: () -> Unit,
     onGuaranteesCloseClick: () -> Unit,
     onGuaranteeValueChanged: (AccountWithPredictedGuarantee, String) -> Unit,
@@ -223,7 +223,8 @@ private fun TransactionPreviewContent(
                                 is PreviewType.Transaction -> {
                                     TransactionPreviewTypeContent(
                                         state = state,
-                                        preview = state.previewType
+                                        preview = state.previewType,
+                                        onPromptForGuarantees = promptForGuarantees
                                     )
                                 }
                             }
@@ -386,7 +387,7 @@ fun TransactionPreviewContentPreview() {
             onMessageShown = {},
             onGuaranteesApplyClick = {},
             onGuaranteesCloseClick = {},
-            promptForGuaranteesClick = {},
+            promptForGuarantees = {},
             onDAppClick = {},
             onGuaranteeValueChanged = { _, _ -> },
             onGuaranteeValueIncreased = {},

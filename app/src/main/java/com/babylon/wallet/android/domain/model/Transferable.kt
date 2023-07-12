@@ -35,6 +35,20 @@ sealed interface Transferable {
     data class Withdrawing(
         override val transferable: TransferableResource
     ): Transferable
+
+    fun updateGuarantee(
+        @FloatRange(from = 0.0, to = 1.0)
+        guaranteePercent: Float
+    ): Transferable {
+        return when (this) {
+            is Depositing -> {
+                val predicted = (guaranteeType as? GuaranteeType.Predicted) ?: return this
+
+                copy(guaranteeType = predicted.copy(guaranteePercent = guaranteePercent))
+            }
+            is Withdrawing -> this
+        }
+    }
 }
 
 sealed interface GuaranteeType {
