@@ -8,7 +8,6 @@ import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.presentation.dapp.authorized.selectpersona.PersonaUiModel
-import com.babylon.wallet.android.presentation.model.encodeToString
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -44,7 +43,8 @@ class PersonaDataOngoingViewModel @Inject constructor(
 
     fun onEditClick(personaAddress: String) {
         viewModelScope.launch {
-            sendEvent(PersonaDataOngoingEvent.OnEditPersona(personaAddress, args.requiredFields.toList().encodeToString()))
+            //TODO persona data
+//            sendEvent(PersonaDataOngoingEvent.OnEditPersona(personaAddress, args.requiredFields.toList().encodeToString()))
         }
     }
 }

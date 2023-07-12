@@ -67,17 +67,18 @@ class PersonaEditViewModel @Inject constructor(
     }
 
     fun onSave() {
-        viewModelScope.launch {
-            state.value.persona?.let { persona ->
-                val fields = state.value.currentFields.map {
-                    Network.Persona.Field.init(id = it.id, value = it.value.trim())
-                }
-                val updatedPersona =
-                    persona.copy(displayName = state.value.personaDisplayName.value.trim(), fields = fields)
-                updatePersonaUseCase(updatedPersona)
-                sendEvent(PersonaEditEvent.PersonaSaved)
-            }
-        }
+        //TODO persona data
+//        viewModelScope.launch {
+//            state.value.persona?.let { persona ->
+//                val fields = state.value.currentFields.map {
+//                    Network.Persona.Field.init(id = it.id, value = it.value.trim())
+//                }
+//                val updatedPersona =
+//                    persona.copy(displayName = state.value.personaDisplayName.value.trim(), fields = fields)
+//                updatePersonaUseCase(updatedPersona)
+//                sendEvent(PersonaEditEvent.PersonaSaved)
+//            }
+//        }
     }
 }
 

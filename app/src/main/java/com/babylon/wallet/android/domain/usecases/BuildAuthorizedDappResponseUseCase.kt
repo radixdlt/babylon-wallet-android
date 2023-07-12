@@ -10,12 +10,12 @@ import com.babylon.wallet.android.data.dapp.model.Persona
 import com.babylon.wallet.android.data.dapp.model.WalletAuthorizedRequestResponseItems
 import com.babylon.wallet.android.data.dapp.model.WalletInteractionResponse
 import com.babylon.wallet.android.data.dapp.model.WalletInteractionSuccessResponse
-import com.babylon.wallet.android.data.dapp.model.toDataModel
 import com.babylon.wallet.android.data.dapp.model.toProof
 import com.babylon.wallet.android.data.transaction.DappRequestFailure
 import com.babylon.wallet.android.data.transaction.ROLAClient
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import rdx.works.profile.data.model.pernetwork.Network
+import rdx.works.profile.data.model.pernetwork.PersonaDataEntryID
 import javax.inject.Inject
 
 class BuildAuthorizedDappResponseUseCase @Inject constructor(
@@ -30,8 +30,8 @@ class BuildAuthorizedDappResponseUseCase @Inject constructor(
         selectedPersona: Network.Persona,
         oneTimeAccounts: List<Network.Account>,
         ongoingAccounts: List<Network.Account>,
-        ongoingDataFields: List<Network.Persona.Field>,
-        onetimeDataFields: List<Network.Persona.Field>
+        ongoingDataFields: List<PersonaDataEntryID>,
+        onetimeDataFields: List<PersonaDataEntryID>
     ): Result<WalletInteractionResponse> {
         val authResponse: Result<AuthRequestResponseItem> = buildAuthResponseItem(request, selectedPersona)
         if (authResponse.isSuccess) {
@@ -52,8 +52,9 @@ class BuildAuthorizedDappResponseUseCase @Inject constructor(
                         auth = authResponse.getOrThrow(),
                         oneTimeAccounts = oneTimeAccountsResponseItem.getOrNull(),
                         ongoingAccounts = ongoingAccountsResponseItem.getOrNull(),
-                        ongoingPersonaData = ongoingDataFields.toDataModel(),
-                        oneTimePersonaData = onetimeDataFields.toDataModel()
+                        //TODO persona data
+//                        ongoingPersonaData = ongoingDataFields.toDataModel(),
+//                        oneTimePersonaData = onetimeDataFields.toDataModel()
                     )
                 )
             )

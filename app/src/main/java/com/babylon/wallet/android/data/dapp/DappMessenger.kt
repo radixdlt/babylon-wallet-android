@@ -9,13 +9,11 @@ import com.babylon.wallet.android.data.dapp.model.WalletInteractionSuccessRespon
 import com.babylon.wallet.android.data.dapp.model.WalletTransactionResponseItems
 import com.babylon.wallet.android.data.dapp.model.WalletTransactionResponseItems.SendTransactionResponseItem
 import com.babylon.wallet.android.data.dapp.model.WalletUnauthorizedRequestResponseItems
-import com.babylon.wallet.android.data.dapp.model.toDataModel
 import com.babylon.wallet.android.domain.common.Result
 import com.babylon.wallet.android.presentation.dapp.authorized.account.AccountItemUiModel
-import com.babylon.wallet.android.presentation.dapp.authorized.account.toDataModel
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
-import rdx.works.profile.data.model.pernetwork.Network
+import rdx.works.profile.data.model.pernetwork.PersonaDataEntryID
 import timber.log.Timber
 import javax.inject.Inject
 
@@ -31,7 +29,7 @@ interface DappMessenger {
         dappId: String,
         requestId: String,
         oneTimeAccounts: List<AccountItemUiModel> = emptyList(),
-        onetimeDataFields: List<Network.Persona.Field> = emptyList()
+        onetimeDataFields: List<PersonaDataEntryID> = emptyList()
     ): Result<Unit>
 
     suspend fun sendWalletInteractionResponseFailure(
@@ -61,13 +59,13 @@ class DappMessengerImpl @Inject constructor(
         dappId: String,
         requestId: String,
         oneTimeAccounts: List<AccountItemUiModel>,
-        onetimeDataFields: List<Network.Persona.Field>
+        onetimeDataFields: List<PersonaDataEntryID>
     ): Result<Unit> {
         val walletResponse: WalletInteractionResponse = WalletInteractionSuccessResponse(
             interactionId = requestId,
             items = WalletUnauthorizedRequestResponseItems(
-                oneTimeAccounts = oneTimeAccounts.toDataModel(),
-                oneTimePersonaData = onetimeDataFields.toDataModel()
+//                oneTimeAccounts = oneTimeAccounts.toDataModel(),
+//                oneTimePersonaData = onetimeDataFields.toDataModel()
             )
         )
         val json = Json.encodeToString(walletResponse)

@@ -54,7 +54,6 @@ import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.presentation.common.FullscreenCircularProgressContent
 import com.babylon.wallet.android.presentation.model.PersonaDisplayNameFieldWrapper
 import com.babylon.wallet.android.presentation.model.PersonaFieldKindWrapper
-import com.babylon.wallet.android.presentation.model.toDisplayResource
 import com.babylon.wallet.android.presentation.ui.composables.DefaultModalSheetLayout
 import com.babylon.wallet.android.presentation.ui.composables.InfoLink
 import com.babylon.wallet.android.presentation.ui.composables.NotSecureAlertDialog
@@ -67,7 +66,7 @@ import com.google.accompanist.drawablepainter.rememberDrawablePainter
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.launch
-import rdx.works.profile.data.model.pernetwork.Network
+import rdx.works.profile.data.model.pernetwork.PersonaDataEntryID
 
 @Composable
 fun CreatePersonaScreen(
@@ -126,11 +125,11 @@ fun CreatePersonaContent(
     fieldsToAdd: ImmutableList<PersonaFieldKindWrapper>,
     currentFields: ImmutableList<PersonaFieldKindWrapper>,
     anyFieldSelected: Boolean,
-    onSelectionChanged: (Network.Persona.Field.ID, Boolean) -> Unit,
+    onSelectionChanged: (PersonaDataEntryID, Boolean) -> Unit,
     onAddFields: () -> Unit,
-    onDeleteField: (Network.Persona.Field.ID) -> Unit,
-    onValueChanged: (Network.Persona.Field.ID, String) -> Unit,
-    onFieldFocusChanged: (Network.Persona.Field.ID, Boolean) -> Unit,
+    onDeleteField: (PersonaDataEntryID) -> Unit,
+    onValueChanged: (PersonaDataEntryID, String) -> Unit,
+    onFieldFocusChanged: (PersonaDataEntryID, Boolean) -> Unit,
     onPersonaDisplayNameFocusChanged: (Boolean) -> Unit
 ) {
     val keyboardController = LocalSoftwareKeyboardController.current
@@ -240,13 +239,13 @@ private fun CreatePersonaContentList(
     onPersonaNameChange: (String) -> Unit,
     personaName: PersonaDisplayNameFieldWrapper,
     currentFields: ImmutableList<PersonaFieldKindWrapper>,
-    onValueChanged: (Network.Persona.Field.ID, String) -> Unit,
-    onDeleteField: (Network.Persona.Field.ID) -> Unit,
+    onValueChanged: (PersonaDataEntryID, String) -> Unit,
+    onDeleteField: (PersonaDataEntryID) -> Unit,
     addButtonEnabled: Boolean,
     modifier: Modifier = Modifier,
     onAddFieldClick: () -> Unit,
     onEditAvatar: () -> Unit,
-    onFieldFocusChanged: (Network.Persona.Field.ID, Boolean) -> Unit,
+    onFieldFocusChanged: (PersonaDataEntryID, Boolean) -> Unit,
     onPersonaDisplayNameFocusChanged: (Boolean) -> Unit
 ) {
     LazyColumn(
@@ -317,7 +316,8 @@ private fun CreatePersonaContentList(
                 modifier = Modifier
                     .fillMaxWidth()
                     .animateItemPlacement(),
-                label = stringResource(id = field.id.toDisplayResource()),
+//                label = stringResource(id = field.id.toDisplayResource()),
+                label = "", //TODO persona data
                 value = field.value,
                 onValueChanged = {
                     onValueChanged(field.id, it)

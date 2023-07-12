@@ -22,6 +22,7 @@ import rdx.works.profile.data.model.ProfileSnapshot
 import rdx.works.profile.data.model.ProfileSnapshotRelaxed
 import rdx.works.profile.data.model.ProfileState
 import rdx.works.profile.datastore.EncryptedPreferencesManager
+import rdx.works.profile.di.ProfileSerializer
 import rdx.works.profile.di.coroutines.ApplicationScope
 import rdx.works.profile.di.coroutines.IoDispatcher
 import javax.inject.Inject
@@ -63,6 +64,7 @@ class ProfileRepositoryImpl @Inject constructor(
     private val preferencesManager: PreferencesManager,
     private val relaxedJson: Json,
     private val backupManager: BackupManager,
+    @ProfileSerializer private val profileSnapshotJson: Json,
     @IoDispatcher private val ioDispatcher: CoroutineDispatcher,
     @ApplicationScope applicationScope: CoroutineScope
 ) : ProfileRepository {
@@ -102,7 +104,7 @@ class ProfileRepositoryImpl @Inject constructor(
             header = profile.header.copy(lastModified = InstantGenerator())
         )
         withContext(ioDispatcher) {
-            val profileContent = Json.encodeToString(profileToSave.snapshot())
+            val profileContent = profileSnapshotJson.encodeToString(profileToSave.snapshot())
             // Store profile
             encryptedPreferencesManager.putProfileSnapshot(profileContent)
             // Remove any previous restored profile from backup restoration
@@ -136,7 +138,7 @@ class ProfileRepositoryImpl @Inject constructor(
         val serialisedSnapshot = encryptedPreferencesManager.encryptedProfile.firstOrNull() ?: return null
 
         val isBackupEnabled = try {
-            val snapshot = ProfileSnapshot.fromJson(serialisedSnapshot)
+            val snapshot = profileSnapshotJson.decodeFromString<ProfileSnapshot>(serialisedSnapshot)
             snapshot.toProfile().appPreferences.security.isCloudProfileSyncEnabled
         } catch (exception: Exception) {
             false
@@ -177,7 +179,7 @@ class ProfileRepositoryImpl @Inject constructor(
         }
 
         return if (snapshotRelaxed.isValid) {
-            val snapshot = ProfileSnapshot.fromJson(snapshotSerialised)
+            val snapshot = profileSnapshotJson.decodeFromString<ProfileSnapshot>(snapshotSerialised)
             ProfileState.Restored(snapshot.toProfile())
         } else {
             ProfileState.Incompatible

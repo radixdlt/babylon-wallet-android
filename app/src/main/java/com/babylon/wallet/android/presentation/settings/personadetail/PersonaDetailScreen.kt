@@ -42,7 +42,6 @@ import com.babylon.wallet.android.domain.model.DAppWithMetadata
 import com.babylon.wallet.android.domain.model.DAppWithMetadataAndAssociatedResources
 import com.babylon.wallet.android.domain.model.Resource
 import com.babylon.wallet.android.presentation.common.FullscreenCircularProgressContent
-import com.babylon.wallet.android.presentation.model.toDisplayResource
 import com.babylon.wallet.android.presentation.settings.dappdetail.DAppDetailsSheetContent
 import com.babylon.wallet.android.presentation.ui.composables.DefaultModalSheetLayout
 import com.babylon.wallet.android.presentation.ui.composables.GrayBackgroundWrapper
@@ -209,16 +208,17 @@ private fun PersonaDetailList(
                 modifier = Modifier.padding(dimensions.paddingDefault)
             )
         }
-        items(persona.fields) { field ->
-            PersonaPropertyRow(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = dimensions.paddingDefault),
-                label = stringResource(id = field.id.toDisplayResource()),
-                value = field.value
-            )
-            Spacer(modifier = Modifier.height(dimensions.paddingLarge))
-        }
+        //TODO persona data
+//        items(persona.fields) { field ->
+//            PersonaPropertyRow(
+//                modifier = Modifier
+//                    .fillMaxWidth()
+//                    .padding(horizontal = dimensions.paddingDefault),
+//                label = stringResource(id = field.id.toDisplayResource()),
+//                value = field.value
+//            )
+//            Spacer(modifier = Modifier.height(dimensions.paddingLarge))
+//        }
         item {
             RadixSecondaryButton(
                 text = stringResource(id = R.string.authorizedDapps_personaDetails_editPersona),

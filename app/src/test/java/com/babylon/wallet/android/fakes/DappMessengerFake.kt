@@ -5,7 +5,7 @@ import com.babylon.wallet.android.data.dapp.model.WalletErrorType
 import com.babylon.wallet.android.data.dapp.model.WalletInteractionResponse
 import com.babylon.wallet.android.domain.common.Result
 import com.babylon.wallet.android.presentation.dapp.authorized.account.AccountItemUiModel
-import rdx.works.profile.data.model.pernetwork.Network
+import rdx.works.profile.data.model.pernetwork.PersonaDataEntryID
 
 class DappMessengerFake : DappMessenger {
 
@@ -13,7 +13,7 @@ class DappMessengerFake : DappMessenger {
         dappId: String,
         requestId: String,
         onetimeAccounts: List<AccountItemUiModel>,
-        onetimeDataFields: List<Network.Persona.Field>
+        onetimeDataFields: List<PersonaDataEntryID>
     ): Result<Unit> {
         return Result.Success(Unit)
     }

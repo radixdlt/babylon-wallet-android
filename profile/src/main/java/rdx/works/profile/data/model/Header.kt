@@ -1,5 +1,6 @@
 package rdx.works.profile.data.model
 
+import kotlinx.serialization.Contextual
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import rdx.works.profile.data.model.Header.Companion.equals
@@ -26,8 +27,8 @@ data class Header(
     /**
      * When the profile was last updated, by modifications from the user
      */
-    @Serializable(with = InstantSerializer::class)
     @SerialName("lastModified")
+    @Contextual
     val lastModified: Instant,
 
     /**

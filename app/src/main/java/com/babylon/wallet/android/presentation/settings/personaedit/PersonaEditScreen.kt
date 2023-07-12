@@ -45,7 +45,6 @@ import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.presentation.common.FullscreenCircularProgressContent
 import com.babylon.wallet.android.presentation.model.PersonaDisplayNameFieldWrapper
 import com.babylon.wallet.android.presentation.model.PersonaFieldKindWrapper
-import com.babylon.wallet.android.presentation.model.toDisplayResource
 import com.babylon.wallet.android.presentation.ui.composables.BackIconType
 import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.BottomPrimaryButton
@@ -59,6 +58,7 @@ import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.launch
 import rdx.works.profile.data.model.pernetwork.Network
+import rdx.works.profile.data.model.pernetwork.PersonaDataEntryID
 
 @Composable
 fun PersonaEditScreen(
@@ -111,14 +111,14 @@ private fun PersonaEditContent(
     editedFields: ImmutableList<PersonaFieldKindWrapper>,
     fieldsToAdd: ImmutableList<PersonaFieldKindWrapper>,
     onAddFields: () -> Unit,
-    onSelectionChanged: (Network.Persona.Field.ID, Boolean) -> Unit,
-    onDeleteField: (Network.Persona.Field.ID) -> Unit,
-    onValueChanged: (Network.Persona.Field.ID, String) -> Unit,
+    onSelectionChanged: (PersonaDataEntryID, Boolean) -> Unit,
+    onDeleteField: (PersonaDataEntryID) -> Unit,
+    onValueChanged: (PersonaDataEntryID, String) -> Unit,
     onDisplayNameChanged: (String) -> Unit,
     addButtonEnabled: Boolean,
     personaDisplayName: PersonaDisplayNameFieldWrapper,
     saveButtonEnabled: Boolean,
-    onFieldFocusChanged: (Network.Persona.Field.ID, Boolean) -> Unit,
+    onFieldFocusChanged: (PersonaDataEntryID, Boolean) -> Unit,
     onPersonaDisplayNameFocusChanged: (Boolean) -> Unit,
     dappContextEdit: Boolean,
     wasEdited: Boolean
@@ -253,12 +253,12 @@ private fun PersonaDetailList(
     onEditAvatar: () -> Unit,
     onAddField: () -> Unit,
     editedFields: ImmutableList<PersonaFieldKindWrapper>,
-    onDeleteField: (Network.Persona.Field.ID) -> Unit,
-    onValueChanged: (Network.Persona.Field.ID, String) -> Unit,
+    onDeleteField: (PersonaDataEntryID) -> Unit,
+    onValueChanged: (PersonaDataEntryID, String) -> Unit,
     onDisplayNameChanged: (String) -> Unit,
     personaDisplayName: PersonaDisplayNameFieldWrapper,
     addButtonEnabled: Boolean,
-    onFieldFocusChanged: (Network.Persona.Field.ID, Boolean) -> Unit,
+    onFieldFocusChanged: (PersonaDataEntryID, Boolean) -> Unit,
     onPersonaDisplayNameFocusChanged: (Boolean) -> Unit,
     dappContextEdit: Boolean
 ) {
@@ -324,7 +324,8 @@ private fun PersonaDetailList(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = dimensions.paddingDefault),
-                label = stringResource(id = field.id.toDisplayResource()),
+//                label = stringResource(id = field.id.toDisplayResource()),
+                label = "", //TODO persona data
                 value = field.value,
                 onValueChanged = {
                     onValueChanged(field.id, it)

@@ -11,16 +11,17 @@ import androidx.navigation.NavType
 import androidx.navigation.navArgument
 import com.babylon.wallet.android.presentation.dapp.authorized.login.DAppAuthorizedLoginViewModel
 import com.babylon.wallet.android.presentation.dapp.authorized.login.ROUTE_DAPP_LOGIN_AUTHORIZED_GRAPH
-import com.babylon.wallet.android.presentation.model.decodePersonaDataKinds
 import com.google.accompanist.navigation.animation.composable
-import rdx.works.profile.data.model.pernetwork.Network
+import rdx.works.profile.data.model.pernetwork.PersonaDataEntryID
 
 @VisibleForTesting
 internal const val ARG_REQUIRED_FIELDS = "required_fields"
 
-internal class PersonaDataOnetimeArgs(val requiredFields: Array<Network.Persona.Field.ID>) {
+internal class PersonaDataOnetimeArgs(val requiredFields: Array<PersonaDataEntryID>) {
     constructor(savedStateHandle: SavedStateHandle) : this(
-        (checkNotNull(savedStateHandle[ARG_REQUIRED_FIELDS]) as String).decodePersonaDataKinds().toTypedArray()
+        //TODO persona data
+//        (checkNotNull(savedStateHandle[ARG_REQUIRED_FIELDS]) as String).decodePersonaDataKinds().toTypedArray()
+        emptyArray()
     )
 }
 

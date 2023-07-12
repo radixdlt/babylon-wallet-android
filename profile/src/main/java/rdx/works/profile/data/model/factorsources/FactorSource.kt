@@ -91,7 +91,10 @@ sealed class FactorSource {
          */
         @Serializable(with = InstantSerializer::class)
         @SerialName("lastUsedOn")
-        var lastUsedOn: Instant
+        var lastUsedOn: Instant,
+
+        @SerialName("flags")
+        var flags: List<FactorSourceFlag> = emptyList()
     ) {
 
         @Serializable
@@ -107,7 +110,7 @@ sealed class FactorSource {
 
             val supportsOlympia: Boolean
                 get() = supportedCurves.contains(Slip10Curve.SECP_256K1) &&
-                    supportedDerivationPathSchemes.contains(DerivationPathScheme.BIP_44_OLYMPIA)
+                        supportedDerivationPathSchemes.contains(DerivationPathScheme.BIP_44_OLYMPIA)
 
             companion object {
                 val babylon = CryptoParameters(

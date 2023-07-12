@@ -10,6 +10,7 @@ import rdx.works.profile.data.model.factorsources.WasNotDeviceFactorSource
 import rdx.works.profile.data.model.pernetwork.DerivationPath
 import rdx.works.profile.data.model.pernetwork.Entity
 import rdx.works.profile.data.model.pernetwork.Network
+import rdx.works.profile.data.model.pernetwork.PersonaDataEntryID
 import rdx.works.profile.data.model.pernetwork.SecurityState
 import rdx.works.profile.derivation.model.KeyType
 import rdx.works.profile.derivation.model.NetworkId
@@ -44,8 +45,8 @@ fun Entity.networkId() {
     this.networkID
 }
 
-fun Network.Persona.filterFields(with: List<Network.Persona.Field.ID>) =
-    fields.filter { with.contains(it.id) }
+fun Network.Persona.filterFields(with: List<PersonaDataEntryID>) =
+    personaData.allFieldIds().filter { with.contains(it) }
 
 fun List<Network.NextDerivationIndices>?.getNextAccountDerivationIndex(forNetworkId: NetworkId): Int {
     if (this == null) throw WasNotDeviceFactorSource()

@@ -8,6 +8,10 @@ import rdx.works.core.mapWhen
 import rdx.works.profile.data.model.Profile
 import rdx.works.profile.data.model.currentGateway
 import rdx.works.profile.data.model.pernetwork.Network
+import rdx.works.profile.data.model.pernetwork.PersonaDataEntryID
+import rdx.works.profile.data.model.pernetwork.RequestedNumber
+import rdx.works.profile.data.model.pernetwork.Shared
+import rdx.works.profile.data.model.pernetwork.ensurePersonaDataExist
 import timber.log.Timber
 import javax.inject.Inject
 
@@ -28,19 +32,19 @@ interface DAppConnectionRepository {
         dAppDefinitionAddress: String,
         personaAddress: String,
         numberOfAccounts: Int,
-        quantifier: Network.AuthorizedDapp.AuthorizedPersonaSimple.SharedAccounts.NumberOfAccounts.Quantifier
+        quantifier: RequestedNumber.Quantifier
     ): List<String>
 
     suspend fun dAppAuthorizedPersonaHasAllDataFields(
         dAppDefinitionAddress: String,
         personaAddress: String,
-        fieldIds: List<Network.Persona.Field.ID>
+        fieldIds: List<PersonaDataEntryID>
     ): Boolean
 
     suspend fun updateDappAuthorizedPersonaSharedAccounts(
         dAppDefinitionAddress: String,
         personaAddress: String,
-        sharedAccounts: Network.AuthorizedDapp.AuthorizedPersonaSimple.SharedAccounts
+        sharedAccounts: Shared<String>
     ): Network.AuthorizedDapp
 
     suspend fun deletePersonaForDapp(
@@ -53,7 +57,7 @@ interface DAppConnectionRepository {
     fun getAuthorizedDappFlow(dAppDefinitionAddress: String): Flow<Network.AuthorizedDapp?>
     suspend fun deleteAuthorizedDapp(dAppDefinitionAddress: String)
 
-    suspend fun ensureAuthorizedPersonasFieldsExist(personaAddress: String, existingFieldIds: List<Network.Persona.Field.ID>)
+    suspend fun ensureAuthorizedPersonasFieldsExist(personaAddress: String, existingFieldIds: List<PersonaDataEntryID>)
 }
 
 @Suppress("TooManyFunctions")
@@ -106,7 +110,7 @@ class DAppConnectionRepositoryImpl @Inject constructor(
         dAppDefinitionAddress: String,
         personaAddress: String,
         numberOfAccounts: Int,
-        quantifier: Network.AuthorizedDapp.AuthorizedPersonaSimple.SharedAccounts.NumberOfAccounts.Quantifier
+        quantifier: RequestedNumber.Quantifier
     ): List<String> {
         val sharedAccounts = getAuthorizedDapp(
             dAppDefinitionAddress
@@ -114,7 +118,7 @@ class DAppConnectionRepositoryImpl @Inject constructor(
             it.identityAddress == personaAddress
         }?.sharedAccounts
         return if (quantifier == sharedAccounts?.request?.quantifier && numberOfAccounts == sharedAccounts.request.quantity) {
-            sharedAccounts.accountsReferencedByAddress
+            sharedAccounts.ids
         } else {
             emptyList()
         }
@@ -123,20 +127,20 @@ class DAppConnectionRepositoryImpl @Inject constructor(
     override suspend fun dAppAuthorizedPersonaHasAllDataFields(
         dAppDefinitionAddress: String,
         personaAddress: String,
-        fieldIds: List<Network.Persona.Field.ID>
+        dataIds: List<PersonaDataEntryID>
     ): Boolean {
         val alreadyGrantedIds = getAuthorizedDapp(
             dAppDefinitionAddress
         )?.referencesToAuthorizedPersonas?.firstOrNull {
             it.identityAddress == personaAddress
-        }?.fieldIDs?.toSet().orEmpty()
-        return alreadyGrantedIds.containsAll(fieldIds)
+        }?.sharedPersonaData?.alreadyGrantedIds().orEmpty()
+        return alreadyGrantedIds.containsAll(dataIds)
     }
 
     override suspend fun updateDappAuthorizedPersonaSharedAccounts(
         dAppDefinitionAddress: String,
         personaAddress: String,
-        sharedAccounts: Network.AuthorizedDapp.AuthorizedPersonaSimple.SharedAccounts
+        sharedAccounts: Shared<String>
     ): Network.AuthorizedDapp {
         val dapp = getAuthorizedDapp(dAppDefinitionAddress)
         val persona = dapp?.referencesToAuthorizedPersonas?.firstOrNull {
@@ -165,13 +169,13 @@ class DAppConnectionRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun ensureAuthorizedPersonasFieldsExist(personaAddress: String, existingFieldIds: List<Network.Persona.Field.ID>) {
+    override suspend fun ensureAuthorizedPersonasFieldsExist(personaAddress: String, existingFieldIds: List<PersonaDataEntryID>) {
         getAuthorizedDappsByPersona(personaAddress).firstOrNull()?.forEach { dapp ->
             val updatedDapp = dapp.copy(
                 referencesToAuthorizedPersonas = dapp.referencesToAuthorizedPersonas.mapWhen(
                     predicate = { it.identityAddress == personaAddress }
                 ) { authorizedPersona ->
-                    authorizedPersona.copy(fieldIDs = authorizedPersona.fieldIDs.filter { existingFieldIds.contains(it) })
+                    authorizedPersona.ensurePersonaDataExist(existingFieldIds)
                 }
             )
             updateOrCreateAuthorizedDApp(updatedDapp)
@@ -269,13 +273,15 @@ fun Network.AuthorizedDapp.updateAuthorizedDappPersonas(
 
 fun Network.AuthorizedDapp.updateAuthorizedDappPersonaFields(
     personaAddress: String,
-    allExistingFieldIds: List<Network.Persona.Field.ID>,
-    requestedFieldIds: List<Network.Persona.Field.ID>
+    allExistingFieldIds: List<PersonaDataEntryID>,
+    requestedFieldIds: List<PersonaDataEntryID>
 ): Network.AuthorizedDapp {
     val updatedAuthPersonas = referencesToAuthorizedPersonas.mapWhen(predicate = {
         it.identityAddress == personaAddress
     }) { persona ->
-        persona.copy(fieldIDs = (persona.fieldIDs.filter { allExistingFieldIds.contains(it) } + requestedFieldIds).distinct())
+        //TODO persona data
+        persona
+//        persona.copy(fieldIDs = (persona.fieldIDs.filter { allExistingFieldIds.contains(it) } + requestedFieldIds).distinct())
     }
     return copy(
         networkID = networkID,
@@ -303,15 +309,15 @@ fun Network.AuthorizedDapp.addOrUpdateAuthorizedDappPersona(
             listOf(
                 Network.AuthorizedDapp.AuthorizedPersonaSimple(
                     identityAddress = persona.address,
-                    fieldIDs = emptyList(),
                     lastLogin = lastUsed,
-                    sharedAccounts = Network.AuthorizedDapp.AuthorizedPersonaSimple.SharedAccounts(
+                    sharedAccounts = Shared(
                         emptyList(),
-                        request = Network.AuthorizedDapp.AuthorizedPersonaSimple.SharedAccounts.NumberOfAccounts(
-                            Network.AuthorizedDapp.AuthorizedPersonaSimple.SharedAccounts.NumberOfAccounts.Quantifier.Exactly,
+                        request = RequestedNumber(
+                            RequestedNumber.Quantifier.Exactly,
                             0
                         )
-                    )
+                    ),
+                    sharedPersonaData = Network.AuthorizedDapp.SharedPersonaData()
                 )
             ) + referencesToAuthorizedPersonas
             ).distinctBy { it.identityAddress }
@@ -333,7 +339,7 @@ fun Network.AuthorizedDapp.getExistingAuthorizedPersona(
 
 fun Network.AuthorizedDapp.updateDappAuthorizedPersonaSharedAccounts(
     personaAddress: String,
-    sharedAccounts: Network.AuthorizedDapp.AuthorizedPersonaSimple.SharedAccounts
+    sharedAccounts: Shared<String>
 ): Network.AuthorizedDapp {
     val persona = referencesToAuthorizedPersonas.firstOrNull {
         it.identityAddress == personaAddress
@@ -354,15 +360,15 @@ private fun Network.validateAuthorizedPersonas(authorizedDapp: Network.Authorize
         val persona = personas.first {
             it.address == personaNeedle.identityAddress
         }
-        val fieldIDNeedles = personaNeedle.fieldIDs.toSet()
-        val fieldIDHaystack = persona.fields.map { it.id }.toSet()
+        val fieldIDNeedles = personaNeedle.sharedPersonaData.alreadyGrantedIds().toSet()
+        val fieldIDHaystack = persona.personaData.allFieldIds().toSet()
 
         require(fieldIDHaystack.containsAll(fieldIDNeedles))
     }
 
 // Validate that all Accounts are known
     val accountAddressNeedles = authorizedDapp.referencesToAuthorizedPersonas.flatMap {
-        it.sharedAccounts.accountsReferencedByAddress
+        it.sharedAccounts.ids
     }.toSet()
 
     val accountAddressHaystack = accounts.map { it.address }.toSet()

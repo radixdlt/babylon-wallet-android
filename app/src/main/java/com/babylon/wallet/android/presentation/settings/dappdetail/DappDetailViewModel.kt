@@ -15,9 +15,7 @@ import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.presentation.dapp.authorized.account.AccountItemUiModel
-import com.babylon.wallet.android.presentation.dapp.authorized.account.toUiModel
 import com.babylon.wallet.android.presentation.dapp.authorized.selectpersona.PersonaUiModel
-import com.babylon.wallet.android.presentation.model.encodeToString
 import com.babylon.wallet.android.presentation.model.toQuantifierUsedInRequest
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
@@ -29,7 +27,6 @@ import rdx.works.core.UUIDGenerator
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.data.repository.DAppConnectionRepository
 import rdx.works.profile.domain.GetProfileUseCase
-import rdx.works.profile.domain.accountOnCurrentNetwork
 import rdx.works.profile.domain.personaOnCurrentNetwork
 import javax.inject.Inject
 
@@ -124,22 +121,23 @@ class DappDetailViewModel @Inject constructor(
     }
 
     private suspend fun updateSelectedPersonaData(persona: Network.Persona) {
-        val personaSimple =
-            authorizedDapp.referencesToAuthorizedPersonas.firstOrNull { it.identityAddress == persona.address }
-        val sharedAccounts = personaSimple?.sharedAccounts?.accountsReferencedByAddress?.mapNotNull {
-            getProfileUseCase.accountOnCurrentNetwork(it)?.toUiModel()
-        }.orEmpty()
-        val requiredFieldIds = personaSimple?.fieldIDs.orEmpty()
-        val requiredFieldKinds = persona.fields.filter { requiredFieldIds.contains(it.id) }.map {
-            it.id
-        }
-        val selectedPersona = PersonaUiModel(persona, requiredFieldIDs = requiredFieldKinds)
-        _state.update {
-            it.copy(
-                sharedPersonaAccounts = sharedAccounts.toPersistentList(),
-                selectedSheetState = SelectedSheetState.SelectedPersona(selectedPersona)
-            )
-        }
+        //TODO persona data
+//        val personaSimple =
+//            authorizedDapp.referencesToAuthorizedPersonas.firstOrNull { it.identityAddress == persona.address }
+//        val sharedAccounts = personaSimple?.sharedAccounts?.accountsReferencedByAddress?.mapNotNull {
+//            getProfileUseCase.accountOnCurrentNetwork(it)?.toUiModel()
+//        }.orEmpty()
+//        val requiredFieldIds = personaSimple?.fieldIDs.orEmpty()
+//        val requiredFieldKinds = persona.fields.filter { requiredFieldIds.contains(it.id) }.map {
+//            it.id
+//        }
+//        val selectedPersona = PersonaUiModel(persona, requiredFieldIDs = requiredFieldKinds)
+//        _state.update {
+//            it.copy(
+//                sharedPersonaAccounts = sharedAccounts.toPersistentList(),
+//                selectedSheetState = SelectedSheetState.SelectedPersona(selectedPersona)
+//            )
+//        }
     }
 
     fun onPersonaDetailsClosed() {
@@ -168,13 +166,14 @@ class DappDetailViewModel @Inject constructor(
 
     fun onEditPersona() {
         viewModelScope.launch {
-            if (_state.value.selectedSheetState is SelectedSheetState.SelectedPersona) {
-                (_state.value.selectedSheetState as SelectedSheetState.SelectedPersona).persona?.let { persona ->
-                    sendEvent(
-                        DappDetailEvent.EditPersona(persona.persona.address, persona.requiredFieldIDs.encodeToString())
-                    )
-                }
-            }
+            //TODO persona data
+//            if (_state.value.selectedSheetState is SelectedSheetState.SelectedPersona) {
+//                (_state.value.selectedSheetState as SelectedSheetState.SelectedPersona).persona?.let { persona ->
+//                    sendEvent(
+//                        DappDetailEvent.EditPersona(persona.persona.address, persona.requiredFieldIDs.encodeToString())
+//                    )
+//                }
+//            }
         }
     }
 

@@ -1,6 +1,7 @@
 package rdx.works.profile
 
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.modules.SerializersModule
 import org.junit.Assert
 import org.junit.Assert.assertEquals
 import org.junit.Test
@@ -17,12 +18,18 @@ import rdx.works.profile.data.model.factorsources.FactorSource.Companion.factorS
 import rdx.works.profile.data.model.factorsources.LedgerHardwareWalletFactorSource
 import rdx.works.profile.data.model.factorsources.OffDeviceMnemonicFactorSource
 import rdx.works.profile.data.model.factorsources.TrustedContactFactorSource
+import rdx.works.profile.data.model.pernetwork.CountryOrRegion
+import rdx.works.profile.data.model.pernetwork.IdentifiedEntry
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.data.model.pernetwork.Network.Account.Companion.initAccountWithDeviceFactorSource
 import rdx.works.profile.data.model.pernetwork.Network.Persona.Companion.init
+import rdx.works.profile.data.model.pernetwork.PersonaData
+import rdx.works.profile.data.model.pernetwork.RequestedNumber
 import rdx.works.profile.data.model.pernetwork.SecurityState
+import rdx.works.profile.data.model.pernetwork.Shared
 import rdx.works.profile.data.model.pernetwork.addAccount
 import rdx.works.profile.data.model.pernetwork.addPersona
+import rdx.works.profile.data.model.serialisers.InstantSerializer
 import rdx.works.profile.data.repository.createOrUpdateAuthorizedDapp
 import rdx.works.profile.data.utils.getNextAccountDerivationIndex
 import rdx.works.profile.data.utils.getNextIdentityDerivationIndex
@@ -30,6 +37,12 @@ import java.io.File
 import java.time.Instant
 
 class ProfileTest {
+
+    private val json = Json {
+        serializersModule = SerializersModule {
+            contextual(Instant::class, InstantSerializer)
+        }
+    }
 
     @Test
     fun `test profile generation`() {
@@ -41,7 +54,7 @@ class ProfileTest {
 
         val profile = Profile.init(
             mnemonicWithPassphrase = mnemonicWithPassphrase,
-            id = "9958f568-8c9b-476a-beeb-017d1f843266",
+            id = "BABE1442-3C98-41FF-AFB0-D0F5829B020D",
             deviceName = "Galaxy A53 5G (Samsung SM-A536B)",
             deviceModel = "Samsung",
             creationDate = InstantGenerator()
@@ -79,21 +92,13 @@ class ProfileTest {
         assertEquals(
             "Next derivation index for second account",
             1,
-            (updatedProfile.factorSources.first() as DeviceFactorSource).nextDerivationIndicesPerNetwork.getNextAccountDerivationIndex(forNetworkId = defaultNetwork.networkId()),
+            (updatedProfile.factorSources.first() as DeviceFactorSource).nextDerivationIndicesPerNetwork.getNextAccountDerivationIndex(
+                forNetworkId = defaultNetwork.networkId()
+            ),
         )
 
         val firstPersona = init(
             displayName = "First",
-            fields = listOf(
-                Network.Persona.Field.init(
-                    id = Network.Persona.Field.ID.GivenName,
-                    value = "Alice"
-                ),
-                Network.Persona.Field.init(
-                    id = Network.Persona.Field.ID.FamilyName,
-                    value = "Anderson"
-                )
-            ),
             mnemonicWithPassphrase = mnemonicWithPassphrase,
             factorSource = (profile.factorSources.first() as DeviceFactorSource),
             networkId = defaultNetwork.networkId()
@@ -109,7 +114,9 @@ class ProfileTest {
         assertEquals(
             "Next derivation index for second persona",
             1,
-            (updatedProfile.factorSources.first() as DeviceFactorSource).nextDerivationIndicesPerNetwork.getNextIdentityDerivationIndex(forNetworkId = defaultNetwork.networkId())
+            (updatedProfile.factorSources.first() as DeviceFactorSource).nextDerivationIndicesPerNetwork.getNextIdentityDerivationIndex(
+                forNetworkId = defaultNetwork.networkId()
+            )
         )
 
         val p2pLink = P2PLink.init(
@@ -129,7 +136,7 @@ class ProfileTest {
     fun `test against profile json vector`() {
         val profileTestVector = File("src/test/resources/raw/profile_snapshot.json").readText()
 
-        val actual = Json.decodeFromString<ProfileSnapshot>(profileTestVector).toProfile()
+        val actual = json.decodeFromString<ProfileSnapshot>(profileTestVector).toProfile()
 
         val mnemonicWithPassphrase = MnemonicWithPassphrase(
             mnemonic = "bright club bacon dinner achieve pull grid save ramp cereal blush woman humble limb repeat video " +
@@ -142,20 +149,20 @@ class ProfileTest {
 
         var expected = Profile.init(
             mnemonicWithPassphrase = mnemonicWithPassphrase,
-            deviceName = "Galaxy A53 5G (Samsung SM-A536B)",
-            deviceModel = "Samsung",
-            id = "9958f568-8c9b-476a-beeb-017d1f843266",
-            creationDate = Instant.parse("2023-03-07T10:48:21Z"),
+            deviceName = "unit test",
+            deviceModel = "computer",
+            id = "BABE1442-3C98-41FF-AFB0-D0F5829B020D",
+            creationDate = Instant.EPOCH,
             gateway = gateway
         )
         expected = expected.copy(
             factorSources = expected.factorSources + listOf(
                 DeviceFactorSource.olympia(mnemonicWithPassphrase),
                 TrustedContactFactorSource.newSource(
-                    accountAddress = FactorSource.AccountAddress("account_tdx_c_1px0jul7a44s65568d32f82f0lkssjwx6f5t5e44yl6csqurxw3"),
+                    accountAddress = FactorSource.AccountAddress("account_rdx1283u6e8r2jnz4a3jwv0hnrqfr5aq50yc9ts523sd96hzfjxqqcs89q"),
                     emailAddress = "hi@rdx.works",
                     name = "My friend",
-                    createdAt = Instant.parse("2023-06-09T19:45:21Z")
+                    createdAt = Instant.EPOCH
                 ),
                 OffDeviceMnemonicFactorSource.newSource(
                     mnemonicWithPassphrase = mnemonicWithPassphrase,
@@ -211,20 +218,11 @@ class ProfileTest {
         )
 
         val firstPersona = init(
-            displayName = "Mrs Incognito",
-            fields = listOf(
-                Network.Persona.Field.init(
-                    id = Network.Persona.Field.ID.GivenName,
-                    value = "Jane"
-                ),
-                Network.Persona.Field.init(
-                    id = Network.Persona.Field.ID.FamilyName,
-                    value = "Incognitoson"
-                )
-            ),
+            displayName = "Satoshi",
             mnemonicWithPassphrase = mnemonicWithPassphrase,
             factorSource = expected.babylonDeviceFactorSource,
-            networkId = networkId
+            networkId = networkId,
+            personaData = satoshiPersona()
         )
         expected = expected.addPersona(
             persona = firstPersona,
@@ -234,19 +232,19 @@ class ProfileTest {
 
         val secondPersona = init(
             displayName = "Mrs Public",
-            fields = listOf(
-                Network.Persona.Field.init(
-                    id = Network.Persona.Field.ID.GivenName,
-                    value = "Maria"
-                ),
-                Network.Persona.Field.init(
-                    id = Network.Persona.Field.ID.FamilyName,
-                    value = "Publicson"
-                )
-            ),
             mnemonicWithPassphrase = mnemonicWithPassphrase,
             factorSource = expected.babylonDeviceFactorSource,
-            networkId = networkId
+            networkId = networkId,
+            personaData = PersonaData(
+                name = IdentifiedEntry.init(
+                    PersonaData.Name(
+                        variant = PersonaData.Name.Variant.Western,
+                        given = "Maria",
+                        family = "Publicson"
+                    ),
+                    id = "0"
+                )
+            )
         )
         expected = expected.addPersona(
             persona = secondPersona,
@@ -269,47 +267,47 @@ class ProfileTest {
             )
         )
 
+        val firstRequest = RequestedNumber(
+            RequestedNumber.Quantifier.AtLeast,
+            1
+        )
         val authorizedDapp = Network.AuthorizedDapp(
             networkID = networkId.value,
-            dAppDefinitionAddress = "account_tdx_21_ygudy0at0ttc2wmsxw2ejx4dqf3dwlr9rsusk287mmynxeas5p2mk",
+            dAppDefinitionAddress = "account_sim1cyvgx33089ukm2pl97pv4max0x40ruvfy4lt60yvya744cve475w0q",
             displayName = "RadiSwap",
             referencesToAuthorizedPersonas = listOf(
                 Network.AuthorizedDapp.AuthorizedPersonaSimple(
                     identityAddress = firstPersona.address,
-                    fieldIDs = listOf(
-                        Network.Persona.Field.ID.GivenName,
-                        Network.Persona.Field.ID.FamilyName
-                    ),
                     sharedAccounts =
-                    Network.AuthorizedDapp.AuthorizedPersonaSimple.SharedAccounts(
-                        accountsReferencedByAddress = listOf(
+                    Shared(
+                        ids = listOf(
                             secondAccount.address,
                             thirdAccount.address
                         ),
-                        request = Network.AuthorizedDapp.AuthorizedPersonaSimple.SharedAccounts.NumberOfAccounts(
-                            Network.AuthorizedDapp.AuthorizedPersonaSimple.SharedAccounts.NumberOfAccounts.Quantifier.Exactly,
+                        request = RequestedNumber(
+                            RequestedNumber.Quantifier.Exactly,
                             2
                         )
                     ),
-                    lastLogin = "some date"
+                    lastLogin = Instant.EPOCH.toString(),
+                    sharedPersonaData = Network.AuthorizedDapp.SharedPersonaData.init(firstPersona.personaData, firstRequest)
                 ),
                 Network.AuthorizedDapp.AuthorizedPersonaSimple(
                     identityAddress = secondPersona.address,
-                    fieldIDs = listOf(
-                        Network.Persona.Field.ID.GivenName,
-                        Network.Persona.Field.ID.FamilyName
+                    sharedPersonaData = Network.AuthorizedDapp.SharedPersonaData(
+                        name = secondPersona.personaData.name?.id
                     ),
                     sharedAccounts =
-                    Network.AuthorizedDapp.AuthorizedPersonaSimple.SharedAccounts(
-                        accountsReferencedByAddress = listOf(
+                    Shared(
+                        ids = listOf(
                             secondAccount.address
                         ),
-                        request = Network.AuthorizedDapp.AuthorizedPersonaSimple.SharedAccounts.NumberOfAccounts(
-                            Network.AuthorizedDapp.AuthorizedPersonaSimple.SharedAccounts.NumberOfAccounts.Quantifier.AtLeast,
+                        request = RequestedNumber(
+                            RequestedNumber.Quantifier.AtLeast,
                             1
                         )
                     ),
-                    lastLogin = "some date"
+                    lastLogin = Instant.EPOCH.toString(),
                 )
             )
         )
@@ -458,8 +456,8 @@ class ProfileTest {
 
         assertEquals(
             "The first dApps' references to the first authorised persona field ids is the same",
-            expected.networks.first().authorizedDapps.first().referencesToAuthorizedPersonas.first().fieldIDs,
-            actual.networks.first().authorizedDapps.first().referencesToAuthorizedPersonas.first().fieldIDs
+            expected.networks.first().authorizedDapps.first().referencesToAuthorizedPersonas.first().sharedPersonaData,
+            actual.networks.first().authorizedDapps.first().referencesToAuthorizedPersonas.first().sharedPersonaData
         )
 
         assertEquals(
@@ -473,25 +471,25 @@ class ProfileTest {
         assertEquals(
             "The first dApps' references to the first authorised persona shared accounts referenced by address count is the same",
             expected.networks.first().authorizedDapps.first()
-                .referencesToAuthorizedPersonas.first().sharedAccounts.accountsReferencedByAddress.size,
+                .referencesToAuthorizedPersonas.first().sharedAccounts.ids.size,
             actual.networks.first().authorizedDapps.first()
-                .referencesToAuthorizedPersonas.first().sharedAccounts.accountsReferencedByAddress.size
+                .referencesToAuthorizedPersonas.first().sharedAccounts.ids.size
         )
 
         assertEquals(
             "The first dApps' references to the first authorised persona shared accounts referenced by address first element is the same",
             expected.networks.first().authorizedDapps.first()
-                .referencesToAuthorizedPersonas.first().sharedAccounts.accountsReferencedByAddress.elementAt(0),
+                .referencesToAuthorizedPersonas.first().sharedAccounts.ids.elementAt(0),
             actual.networks.first().authorizedDapps.first()
-                .referencesToAuthorizedPersonas.first().sharedAccounts.accountsReferencedByAddress.elementAt(0)
+                .referencesToAuthorizedPersonas.first().sharedAccounts.ids.elementAt(0)
         )
 
         assertEquals(
             "The first dApps' references to the first authorised persona shared accounts referenced by address second element is the same",
             expected.networks.first().authorizedDapps.first()
-                .referencesToAuthorizedPersonas.first().sharedAccounts.accountsReferencedByAddress.elementAt(1),
+                .referencesToAuthorizedPersonas.first().sharedAccounts.ids.elementAt(1),
             actual.networks.first().authorizedDapps.first()
-                .referencesToAuthorizedPersonas.first().sharedAccounts.accountsReferencedByAddress.elementAt(1)
+                .referencesToAuthorizedPersonas.first().sharedAccounts.ids.elementAt(1)
         )
 
         assertEquals(
@@ -505,9 +503,9 @@ class ProfileTest {
         assertEquals(
             "The first dApps' references to the first authorised dApp first reference to authorised persona field ids is the same",
             expected.networks.first().authorizedDapps.first().referencesToAuthorizedPersonas
-                .elementAt(1).fieldIDs,
+                .elementAt(1).sharedPersonaData,
             actual.networks.first().authorizedDapps.first().referencesToAuthorizedPersonas
-                .elementAt(1).fieldIDs
+                .elementAt(1).sharedPersonaData
         )
 
         assertEquals(
@@ -521,17 +519,17 @@ class ProfileTest {
         assertEquals(
             "The first dApps' references to the first authorised dApp first reference to authorised persona shared accounts reference by address are the same",
             expected.networks.first().authorizedDapps.first()
-                .referencesToAuthorizedPersonas.elementAt(1).sharedAccounts.accountsReferencedByAddress.size,
+                .referencesToAuthorizedPersonas.elementAt(1).sharedAccounts.ids.size,
             actual.networks.first().authorizedDapps.first()
-                .referencesToAuthorizedPersonas.elementAt(1).sharedAccounts.accountsReferencedByAddress.size
+                .referencesToAuthorizedPersonas.elementAt(1).sharedAccounts.ids.size
         )
 
         assertEquals(
             "The first dApps' references to the first authorised dApp first reference to authorised persona first shared account reference by address is the same",
             expected.networks.first().authorizedDapps.first()
-                .referencesToAuthorizedPersonas.elementAt(1).sharedAccounts.accountsReferencedByAddress.elementAt(0),
+                .referencesToAuthorizedPersonas.elementAt(1).sharedAccounts.ids.elementAt(0),
             actual.networks.first().authorizedDapps.first()
-                .referencesToAuthorizedPersonas.elementAt(1).sharedAccounts.accountsReferencedByAddress.elementAt(0)
+                .referencesToAuthorizedPersonas.elementAt(1).sharedAccounts.ids.elementAt(0)
         )
 
 
@@ -602,25 +600,26 @@ class ProfileTest {
 
             assertEquals(
                 "The persona[$personaIndex] first field kind is the same",
-                expected.networks.first().personas[personaIndex].fields[0].id,
-                actual.networks.first().personas[personaIndex].fields[0].id
+                expected.networks.first().personas[personaIndex].personaData.name?.id,
+                actual.networks.first().personas[personaIndex].personaData.name?.id
             )
-            assertEquals(
-                "The persona[$personaIndex] first field value is the same",
-                expected.networks.first().personas[personaIndex].fields[0].value,
-                actual.networks.first().personas[personaIndex].fields[0].value
-            )
-
-            assertEquals(
-                "The persona[$personaIndex] second field kind is the same",
-                expected.networks.first().personas[personaIndex].fields[1].id,
-                actual.networks.first().personas[personaIndex].fields[1].id
-            )
-            assertEquals(
-                "The persona[$personaIndex] second field value is the same",
-                expected.networks.first().personas[personaIndex].fields[1].value,
-                actual.networks.first().personas[personaIndex].fields[1].value
-            )
+            //TODO persona data update test
+//            assertEquals(
+//                "The persona[$personaIndex] first field value is the same",
+//                expected.networks.first().personas[personaIndex].fields[0].value,
+//                actual.networks.first().personas[personaIndex].fields[0].value
+//            )
+//
+//            assertEquals(
+//                "The persona[$personaIndex] second field kind is the same",
+//                expected.networks.first().personas[personaIndex].fields[1].id,
+//                actual.networks.first().personas[personaIndex].fields[1].id
+//            )
+//            assertEquals(
+//                "The persona[$personaIndex] second field value is the same",
+//                expected.networks.first().personas[personaIndex].fields[1].value,
+//                actual.networks.first().personas[personaIndex].fields[1].value
+//            )
 
             assertEquals(
                 "The persona[$personaIndex] factor source id is the same",
@@ -652,6 +651,71 @@ class ProfileTest {
             "Profile header is the same",
             expected.header,
             actual.header
+        )
+    }
+
+
+    fun satoshiPersona(): PersonaData {
+        return PersonaData(
+            name = IdentifiedEntry.init(
+                PersonaData.Name(
+                    variant = PersonaData.Name.Variant.Eastern,
+                    given = "Satoshi",
+                    family = "Nakamoto",
+                    middle = "Creator of Bitcoin"
+                ),
+                "0"
+            ),
+            dateOfBirth = IdentifiedEntry.init(Instant.parse("2009-01-03T12:00:00Z"), "1"),
+            companyName = IdentifiedEntry.init("Bitcoin", "2"),
+            emailAddresses = listOf(
+                IdentifiedEntry.init("satoshi@nakamoto.bitcoin", "3"),
+                IdentifiedEntry.init("be.your@own.bank", "4")
+            ),
+            phoneNumbers = listOf(
+                IdentifiedEntry.init("21000000", "5"),
+                IdentifiedEntry.init("123456789", "6")
+            ),
+            urls = listOf(
+                IdentifiedEntry.init("bitcoin.org", "7"),
+                IdentifiedEntry.init("https://github.com/bitcoin-core/secp256k1", "8"),
+            ),
+            postalAddresses = listOf(
+                IdentifiedEntry.init(
+                    PersonaData.PostalAddress(
+                        listOf(
+                            PersonaData.PostalAddress.Field.PostalCode("21 000 000"),
+                            PersonaData.PostalAddress.Field.Prefecture("SHA256"),
+                            PersonaData.PostalAddress.Field.CountySlashCity("HashTown"),
+                            PersonaData.PostalAddress.Field.FurtherDivisionsLine0("Sound money street"),
+                            PersonaData.PostalAddress.Field.FurtherDivisionsLine1(""),
+                            PersonaData.PostalAddress.Field.CountryOrRegion(CountryOrRegion.Japan)
+                        )
+                    ), "9"
+                ),
+                IdentifiedEntry.init(
+                    PersonaData.PostalAddress(
+                        listOf(
+                            PersonaData.PostalAddress.Field.StreetLine0("Copthall House"),
+                            PersonaData.PostalAddress.Field.StreetLine1("King Street"),
+                            PersonaData.PostalAddress.Field.TownSlashCity("Newcastle-under-Lyme"),
+                            PersonaData.PostalAddress.Field.County("Newcastle"),
+                            PersonaData.PostalAddress.Field.Postcode("ST5 1UE"),
+                            PersonaData.PostalAddress.Field.CountryOrRegion(CountryOrRegion.UnitedKingdom)
+                        )
+                    ), "10"
+                )
+            ),
+            creditCards = listOf(
+                IdentifiedEntry.init(
+                    PersonaData.CreditCard(
+                        expiry = PersonaData.CreditCard.Expiry(2142, 12),
+                        holder = "Satoshi Nakamoto",
+                        number = "0000 0000 2100 0000",
+                        cvc = 512
+                    ), "11"
+                )
+            )
         )
     }
 }
