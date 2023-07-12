@@ -30,7 +30,7 @@ fun WithdrawAccountContent(
         Text(
             modifier = Modifier
                 .padding(top = RadixTheme.dimensions.paddingDefault)
-                .padding(horizontal = RadixTheme.dimensions.paddingDefault),
+                .padding(horizontal = RadixTheme.dimensions.paddingXLarge),
             text = stringResource(id = R.string.transactionReview_withdrawalsHeading).uppercase(),
             style = RadixTheme.typography.body1Link,
             color = RadixTheme.colors.gray2,

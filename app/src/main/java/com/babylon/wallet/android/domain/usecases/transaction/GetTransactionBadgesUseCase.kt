@@ -1,12 +1,10 @@
 package com.babylon.wallet.android.domain.usecases.transaction
 
 import com.babylon.wallet.android.data.repository.dappmetadata.DAppRepository
-import com.babylon.wallet.android.domain.common.onValue
 import com.babylon.wallet.android.domain.common.value
 import com.babylon.wallet.android.domain.model.Badge
 import com.babylon.wallet.android.domain.model.metadata.IconUrlMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.NameMetadataItem
-import com.babylon.wallet.android.presentation.transaction.PresentingProofUiModel
 import com.radixdlt.ret.Address
 import javax.inject.Inject
 

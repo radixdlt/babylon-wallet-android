@@ -43,7 +43,7 @@ fun ColumnScope.DepositAccountContent(
         Row(verticalAlignment = Alignment.Bottom) {
             Text(
                 modifier = Modifier
-                    .padding(horizontal = RadixTheme.dimensions.paddingDefault)
+                    .padding(horizontal = RadixTheme.dimensions.paddingXLarge)
                     .padding(bottom = RadixTheme.dimensions.paddingSmall),
                 text = stringResource(id = R.string.transactionReview_depositsHeading).uppercase(),
                 style = RadixTheme.typography.body1Link,

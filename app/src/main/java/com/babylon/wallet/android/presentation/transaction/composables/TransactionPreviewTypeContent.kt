@@ -73,9 +73,9 @@ fun TransactionPreviewTypeContent(
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
         }
 
-        PresentingProofsContent(badges = preview.badges.toPersistentList())
-
-        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
+        PresentingProofsContent(
+            badges = preview.badges.toPersistentList()
+        )
 
         NetworkFeeContent(fees = state.fees)
 

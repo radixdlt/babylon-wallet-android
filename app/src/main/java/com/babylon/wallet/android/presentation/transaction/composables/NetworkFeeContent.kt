@@ -27,7 +27,7 @@ fun NetworkFeeContent(
     modifier: Modifier = Modifier
 ) {
     Column(
-        modifier = modifier
+        modifier = modifier.padding(horizontal = RadixTheme.dimensions.paddingDefault)
     ) {
         Divider(
             modifier = Modifier.fillMaxWidth(),
