@@ -98,21 +98,21 @@ fun CreateAccountConfirmationContent(
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingMedium))
         Text(
             modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingXLarge),
-            text = stringResource(id = R.string.createAccount_completion_explanation),
+            text = "Your Account lives on the Radix Network and you can access it any time in your Wallet.",
+            // todo stringResource(id = R.string.createAccount_completion_explanation),
             textAlign = TextAlign.Center,
             style = RadixTheme.typography.body2Regular,
             color = RadixTheme.colors.gray1
         )
         Spacer(Modifier.weight(0.6f))
         RadixPrimaryButton(
-            text = stringResource(
-                id = when (requestSource) {
-                    CreateAccountRequestSource.AccountsList -> R.string.createEntity_completion_destinationChooseAccounts
-                    CreateAccountRequestSource.ChooseAccount -> R.string.createEntity_completion_destinationChooseAccounts
-                    CreateAccountRequestSource.FirstTime -> R.string.createEntity_completion_destinationHome
-                    CreateAccountRequestSource.Gateways -> R.string.createEntity_completion_destinationGateways
-                }
-            ),
+            text = when (requestSource) {
+                // todo createEntity_completion_destinationAccountsList
+                CreateAccountRequestSource.AccountsList -> "Continue to Homepage"
+                CreateAccountRequestSource.ChooseAccount -> stringResource(R.string.createEntity_completion_destinationChooseAccounts)
+                CreateAccountRequestSource.FirstTime -> stringResource(R.string.createEntity_completion_destinationHome)
+                CreateAccountRequestSource.Gateways -> stringResource(R.string.createEntity_completion_destinationGateways)
+            },
             onClick = accountConfirmed,
             modifier = Modifier.fillMaxWidth()
         )

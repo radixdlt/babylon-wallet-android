@@ -123,7 +123,14 @@ fun CreateAccountContent(
         val context = LocalContext.current
 
         if (cancelable) {
-            IconButton(onClick = onBackClick) {
+            IconButton(
+                modifier = Modifier
+                    .padding(
+                        start = RadixTheme.dimensions.paddingDefault,
+                        top = RadixTheme.dimensions.paddingDefault
+                    ),
+                onClick = onBackClick
+            ) {
                 Icon(
                     painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_close),
                     tint = RadixTheme.colors.gray1,
@@ -150,34 +157,32 @@ fun CreateAccountContent(
                 style = RadixTheme.typography.title,
                 color = RadixTheme.colors.gray1
             )
-            Spacer(modifier = Modifier.height(40.dp))
+            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
             Text(
                 text = stringResource(id = R.string.createAccount_nameNewAccount_subtitle),
                 style = RadixTheme.typography.body1Regular,
                 color = RadixTheme.colors.gray1
             )
+            Text(
+                text = stringResource(id = R.string.createEntity_nameNewEntity_explanation),
+                style = RadixTheme.typography.body1Regular,
+                color = RadixTheme.colors.gray2
+            )
             Spacer(modifier = Modifier.height(30.dp))
+            RadixTextField(
+                modifier = Modifier.fillMaxWidth(),
+                onValueChanged = onAccountNameChange,
+                value = accountName,
+                hint = stringResource(id = R.string.createAccount_nameNewAccount_placeholder),
+                hintColor = RadixTheme.colors.gray2,
+                singleLine = true
+            )
+            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
             UseLedgerSwitch(
                 useLedgerSelected = useLedgerSelected,
                 onUseLedgerSelectionChanged = onUseLedgerSelectionChanged,
                 modifier = Modifier.fillMaxWidth()
             )
-            Spacer(modifier = Modifier.height(30.dp))
-            Column(modifier = Modifier.fillMaxWidth()) {
-                RadixTextField(
-                    modifier = Modifier.fillMaxWidth(),
-                    onValueChanged = onAccountNameChange,
-                    value = accountName,
-                    hint = stringResource(id = R.string.createAccount_nameNewAccount_placeholder),
-                    singleLine = true
-                )
-                Text(
-                    text = stringResource(id = R.string.createEntity_nameNewEntity_explanation),
-                    style = RadixTheme.typography.body2Regular,
-                    color = RadixTheme.colors.gray2
-                )
-                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
-            }
             Spacer(Modifier.weight(1f))
             RadixPrimaryButton(
                 text = stringResource(id = R.string.createAccount_nameNewAccount_continue),
@@ -221,13 +226,14 @@ private fun UseLedgerSwitch(useLedgerSelected: Boolean, onUseLedgerSelectionChan
         Column(modifier = Modifier.weight(1f)) {
             Text(
                 text = stringResource(id = R.string.createEntity_nameNewEntity_ledgerTitle),
-                style = RadixTheme.typography.body1Header,
+                style = RadixTheme.typography.body1HighImportance,
                 color = RadixTheme.colors.gray1
             )
             Text(
-                text = stringResource(id = R.string.createEntity_nameNewEntity_ledgerSubtitle),
-                style = RadixTheme.typography.body1Regular,
-                color = RadixTheme.colors.gray1
+                text = "You will be asked to sign transactions with the Ledger device you select", // todo
+                // stringResource(id = R.string.createEntity_nameNewEntity_ledgerSubtitle),
+                style = RadixTheme.typography.body2Regular,
+                color = RadixTheme.colors.gray2
             )
         }
         RadixSwitch(checked = useLedgerSelected, onCheckedChange = onUseLedgerSelectionChanged)

@@ -36,14 +36,15 @@ import kotlinx.collections.immutable.toImmutableList
 import rdx.works.profile.data.model.factorsources.LedgerHardwareWalletFactorSource
 
 @Composable
-fun UseOrAddLedgerSection(
+fun ChooseLedgerDeviceSection(
     modifier: Modifier,
     ledgerFactorSources: ImmutableList<Selectable<LedgerHardwareWalletFactorSource>>,
     onAddLedger: () -> Unit,
     onLedgerFactorSourceSelected: (LedgerHardwareWalletFactorSource) -> Unit,
 ) {
     Column(
-        modifier = modifier,
+        modifier = modifier
+            .padding(horizontal = RadixTheme.dimensions.paddingDefault),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Icon(
@@ -53,7 +54,8 @@ fun UseOrAddLedgerSection(
         )
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
         Text(
-            text = stringResource(id = com.babylon.wallet.android.R.string.ledgerHardwareDevices_navigationTitleAllowSelection),
+            text = "Choose Ledger Device",
+            // todo stringResource(id = com.babylon.wallet.android.R.string.ledgerHardwareDevices_navigationTitleAllowSelection),
             style = RadixTheme.typography.title,
             color = RadixTheme.colors.gray1,
             overflow = TextOverflow.Ellipsis,
@@ -61,7 +63,8 @@ fun UseOrAddLedgerSection(
         )
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
         Text(
-            text = stringResource(id = com.babylon.wallet.android.R.string.ledgerHardwareDevices_subtitleSelectLedger),
+            text = "Choose an existing Ledger or add a new one",
+            // todo stringResource(id = com.babylon.wallet.android.R.string.ledgerHardwareDevices_subtitleSelectLedger),
             style = RadixTheme.typography.body1Header,
             color = RadixTheme.colors.gray1,
             overflow = TextOverflow.Ellipsis,
@@ -74,7 +77,8 @@ fun UseOrAddLedgerSection(
                     .fillMaxWidth()
                     .background(RadixTheme.colors.gray5, RadixTheme.shapes.roundedRectSmall)
                     .padding(RadixTheme.dimensions.paddingLarge),
-                text = stringResource(id = com.babylon.wallet.android.R.string.ledgerHardwareDevices_subtitleNoLedgers),
+                text = "No Ledger devices currently added to your Radix Wallet",
+                // todo stringResource(id = com.babylon.wallet.android.R.string.ledgerHardwareDevices_subtitleNoLedgers),
                 style = RadixTheme.typography.body1Header,
                 color = RadixTheme.colors.gray2,
                 overflow = TextOverflow.Ellipsis,
@@ -137,7 +141,7 @@ fun UseOrAddLedgerSection(
 @Composable
 fun FullscreenCircularProgressContentPreview() {
     RadixWalletTheme {
-        UseOrAddLedgerSection(
+        ChooseLedgerDeviceSection(
             modifier = Modifier,
             ledgerFactorSources = SampleDataProvider()
                 .ledgerFactorSourcesSample

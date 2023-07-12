@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Icon
@@ -34,13 +35,14 @@ import com.babylon.wallet.android.presentation.common.FullscreenCircularProgress
 import com.babylon.wallet.android.presentation.model.AddLedgerSheetState
 
 @Composable
-fun AddLedgerBottomSheet(
+fun AddLedgerContent(
     modifier: Modifier,
     deviceModel: String?,
     onSendAddLedgerRequest: () -> Unit,
     addLedgerSheetState: AddLedgerSheetState,
     onConfirmLedgerName: (String) -> Unit,
-    onSheetClose: () -> Unit,
+    upIcon: (@Composable () -> Unit)? = null,
+    onClose: () -> Unit,
     waitingForLedgerResponse: Boolean,
     onAddP2PLink: () -> Unit
 ) {
@@ -56,12 +58,8 @@ fun AddLedgerBottomSheet(
                 mutableStateOf("")
             }
             Row(Modifier.fillMaxWidth()) {
-                IconButton(onClick = onSheetClose) {
-                    Icon(
-                        painterResource(id = R.drawable.ic_close),
-                        tint = RadixTheme.colors.gray1,
-                        contentDescription = "navigate back"
-                    )
+                IconButton(onClick = onClose) {
+                    upIcon?.invoke()
                 }
             }
             when (addLedgerSheetState) {
@@ -112,7 +110,10 @@ fun AddLedgerBottomSheet(
                         textAlign = TextAlign.Center
                     )
                     Text(
-                        text = stringResource(id = com.babylon.wallet.android.R.string.addLedgerDevice_nameLedger_body),
+                        modifier = Modifier
+                            .padding(horizontal = RadixTheme.dimensions.paddingLarge),
+                        text = "What would you like to call this Ledger device?",
+                        // todo stringResource(id = com.babylon.wallet.android.R.string.addLedgerDevice_nameLedger_body),
                         style = RadixTheme.typography.body1Regular,
                         color = RadixTheme.colors.gray1,
                         overflow = TextOverflow.Ellipsis,
@@ -120,6 +121,8 @@ fun AddLedgerBottomSheet(
                     )
                     deviceModel?.let { model ->
                         Text(
+                            modifier = Modifier
+                                .padding(vertical = RadixTheme.dimensions.paddingLarge),
                             text = stringResource(id = com.babylon.wallet.android.R.string.addLedgerDevice_nameLedger_detectedType, model),
                             style = RadixTheme.typography.body1Header,
                             color = RadixTheme.colors.gray2,
@@ -131,7 +134,16 @@ fun AddLedgerBottomSheet(
                         modifier = Modifier.fillMaxWidth(),
                         onValueChanged = { ledgerNameValue = it },
                         value = ledgerNameValue,
-                        hint = stringResource(id = com.babylon.wallet.android.R.string.addLedgerDevice_nameLedger_namePlaceholder)
+                        hint = stringResource(id = com.babylon.wallet.android.R.string.addLedgerDevice_nameLedger_namePlaceholder),
+                        hintColor = RadixTheme.colors.gray2
+                    )
+                    Text(
+                        modifier = Modifier
+                            .padding(horizontal = RadixTheme.dimensions.paddingSmall),
+                        text = "This will be displayed when you’re prompted to sign with this ledger",
+                        style = RadixTheme.typography.body2Regular,
+                        color = RadixTheme.colors.gray2,
+                        overflow = TextOverflow.Ellipsis
                     )
                     Spacer(modifier = Modifier.weight(1f))
                     RadixPrimaryButton(

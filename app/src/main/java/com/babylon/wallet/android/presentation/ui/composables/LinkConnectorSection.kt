@@ -40,7 +40,9 @@ fun LinkConnectorSection(modifier: Modifier, onAddP2PLink: () -> Unit) {
         )
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
         Text(
-            text = stringResource(id = com.babylon.wallet.android.R.string.ledgerHardwareDevices_linkConnectorAlert_message),
+            text = "To use a Ledger hardware wallet device, it must be connected to a computer running the " +
+                "Radix Connector browser extension.",
+            // todo stringResource(id = com.babylon.wallet.android.R.string.ledgerHardwareDevices_linkConnectorAlert_message),
             style = RadixTheme.typography.body1Regular,
             color = RadixTheme.colors.gray1,
             overflow = TextOverflow.Ellipsis,
@@ -48,7 +50,7 @@ fun LinkConnectorSection(modifier: Modifier, onAddP2PLink: () -> Unit) {
         )
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
         RadixPrimaryButton(
-            text = stringResource(id = com.babylon.wallet.android.R.string.ledgerHardwareDevices_linkConnectorAlert_continue),
+            text = stringResource(id = com.babylon.wallet.android.R.string.ledgerHardwareDevices_linkConnectorAlert_title),
             onClick = onAddP2PLink,
             modifier = Modifier
                 .fillMaxWidth()
