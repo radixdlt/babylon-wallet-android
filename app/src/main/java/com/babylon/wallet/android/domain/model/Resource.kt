@@ -9,6 +9,7 @@ import com.babylon.wallet.android.domain.model.metadata.SymbolMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.TagsMetadataItem
 import com.radixdlt.toolkit.RadixEngineToolkit
 import com.radixdlt.toolkit.models.method.KnownEntityAddressesInput
+import rdx.works.core.displayableQuantity
 import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.derivation.model.NetworkId
 import java.math.BigDecimal
@@ -26,7 +27,7 @@ sealed class Resource {
         private val iconUrlMetadataItem: IconUrlMetadataItem? = null,
         private val tagsMetadataItem: TagsMetadataItem? = null,
         private val behaviours: List<ResourceBehaviour> = emptyList(),
-        private val currentSupply: String? = null
+        private val currentSupply: BigDecimal? = null
     ) : Resource(), Comparable<FungibleResource> {
         val name: String
             get() = nameMetadataItem?.name.orEmpty()
@@ -52,7 +53,7 @@ sealed class Resource {
             get() = behaviours
 
         val currentSupplyToDisplay: String?
-            get() = currentSupply
+            get() = currentSupply?.displayableQuantity()
 
         val displayTitle: String
             get() = if (symbol.isNotBlank()) {
@@ -113,7 +114,7 @@ sealed class Resource {
         private val tagsMetadataItem: TagsMetadataItem? = null,
         private val behaviours: List<ResourceBehaviour> = emptyList(),
         val items: List<Item>,
-        private val currentSupply: String? = null
+        private val currentSupply: BigDecimal? = null
     ) : Resource(), Comparable<NonFungibleResource> {
         val name: String
             get() = nameMetadataItem?.name.orEmpty()
@@ -131,7 +132,7 @@ sealed class Resource {
             get() = behaviours
 
         val currentSupplyToDisplay: Int?
-            get() = currentSupply?.toIntOrNull()
+            get() = currentSupply?.displayableQuantity()?.toIntOrNull()
 
         override fun compareTo(other: NonFungibleResource): Int = when {
             nameMetadataItem == null && other.nameMetadataItem != null -> 1

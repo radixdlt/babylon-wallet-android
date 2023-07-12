@@ -156,7 +156,7 @@ class EntityRepositoryImpl @Inject constructor(
                         }
 
                         val resourceBehaviours = fungibleDetails?.details?.calculateResourceBehaviours().orEmpty()
-                        val currentSupply = fungibleDetails?.details?.totalSupply()
+                        val currentSupply = fungibleDetails?.details?.totalSupply()?.toBigDecimal()
 
                         val metaDataItems = fungibleResourcesItem.explicitMetadata?.asMetadataItems().orEmpty()
                         val amount = fungibleResourcesItem.vaults.items.first().amount.toBigDecimal()
@@ -208,7 +208,7 @@ class EntityRepositoryImpl @Inject constructor(
                         }
 
                         val resourceBehaviours = nonFungibleDetails?.details?.calculateResourceBehaviours().orEmpty()
-                        val currentSupply = nonFungibleDetails?.details?.totalSupply()
+                        val currentSupply = nonFungibleDetails?.details?.totalSupply()?.toBigDecimal()
 
                         val metaDataItems = nonFungibleResourcesItem.explicitMetadata?.asMetadataItems().orEmpty()
                         val nfts = getNonFungibleResourceItemsForAccount(
