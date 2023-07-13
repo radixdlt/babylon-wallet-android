@@ -5,10 +5,14 @@ import com.babylon.wallet.android.domain.common.value
 import com.babylon.wallet.android.domain.usecases.transaction.CollectSignersSignaturesUseCase
 import com.babylon.wallet.android.domain.usecases.transaction.GenerateAuthSigningFactorInstanceUseCase
 import com.babylon.wallet.android.domain.usecases.transaction.SignRequest
+import com.radixdlt.ret.Address
+import com.radixdlt.ret.ManifestValue
 import com.radixdlt.ret.SignatureWithPublicKey
 import com.radixdlt.ret.TransactionManifest
 import rdx.works.core.compressedPublicKeyHash
+import rdx.works.core.compressedPublicKeyHashBytes
 import rdx.works.core.ret.ManifestBuilder
+import rdx.works.profile.data.model.factorsources.Slip10Curve
 import rdx.works.profile.data.model.pernetwork.Entity
 import rdx.works.profile.data.model.pernetwork.FactorInstance
 import rdx.works.profile.data.model.pernetwork.SecurityState
@@ -50,38 +54,22 @@ class ROLAClient @Inject constructor(
             .build(entity.networkID)
     }
 
-    // TODO RET
-    fun ManifestBuilder.addSetMetadataInstructionForOwnerKeys(
+    private fun ManifestBuilder.addSetMetadataInstructionForOwnerKeys(
         entityAddress: String,
         ownerKeysHashes: List<FactorInstance.PublicKey>
-    ): ManifestBuilder {
-//        val keyHashesAdsEngineValues: Array<ManifestAstValue> = ownerKeysHashes.map { key ->
-//            ManifestAstValue.Enum(
-//                variant = key.curveKindScryptoDiscriminator(),
-//                fields = arrayOf(ManifestAstValue.Bytes(key.compressedData.compressedPublicKeyHashBytes()))
-//            )
-//        }.toTypedArray()
-//        return addInstruction(
-//            Instruction.SetMetadata(
-//                entityAddress = ManifestAstValue.Address(
-//                    value = entityAddress
-//                ),
-//                key = ManifestAstValue.String(ExplicitMetadataKey.OWNER_KEYS.key),
-//                value = ManifestAstValue.Enum(
-//                    variant = EnumDiscriminator.U8(143u),
-//                    fields = arrayOf(ManifestAstValue.Array(ValueKind.Enum, keyHashesAdsEngineValues))
-//                )
-//            )
-//        )
-        return this
-    }
+    ): ManifestBuilder = setOwnerKeys(
+        address = Address(entityAddress),
+        keys = ownerKeysHashes.map { key ->
+            val publicKeyType = when (key.curve) {
+                Slip10Curve.SECP_256K1 -> ManifestValue.U8Value(0x00u)
+                Slip10Curve.CURVE_25519 -> ManifestValue.U8Value(0x01u)
+            }
 
-//    fun FactorInstance.PublicKey.curveKindScryptoDiscriminator(): EnumDiscriminator.U8 {
-//        return when (curve) {
-//            Slip10Curve.SECP_256K1 -> EnumDiscriminator.U8(0x00u)
-//            Slip10Curve.CURVE_25519 -> EnumDiscriminator.U8(0x01u)
-//        }
-//    }
+            val bytes = key.compressedData.compressedPublicKeyHashBytes()
+
+            publicKeyType to bytes
+        }
+    )
 
     suspend fun signAuthChallenge(
         entity: Entity,

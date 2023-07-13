@@ -1,15 +1,16 @@
 package rdx.works.core.ret
 
-import android.util.Log
 import com.radixdlt.ret.Address
 import com.radixdlt.ret.Decimal
 import com.radixdlt.ret.Instructions
 import com.radixdlt.ret.ManifestBucket
 import com.radixdlt.ret.ManifestExpression
+import com.radixdlt.ret.ManifestValue
 import com.radixdlt.ret.NonFungibleGlobalId
 import com.radixdlt.ret.NonFungibleLocalId
 import com.radixdlt.ret.TransactionManifest
 import rdx.works.core.toByteArray
+import rdx.works.core.toHexString
 import rdx.works.core.toUByteList
 
 class ManifestBuilder {
@@ -146,9 +147,28 @@ class ManifestBuilder {
         )
     }
 
+    fun setOwnerKeys(
+        instructionIndex: Int = instructions.size,
+        address: Address,
+        keys: List<Pair<ManifestValue.U8Value, ByteArray>>
+    ) = apply {
+        instructions.add(
+            index = instructionIndex,
+            """
+            SET_METADATA
+                Address("${address.addressString()}")
+                "owner_keys"
+                Enum<${ManifestValue.U8Value(143u).value}>(
+                    Array<Enum>(
+                        ${keys.map { "Enum<${it.first.value}>(Bytes(${it.second.toHexString()}))" }}
+                    ) 
+                )
+            """.trimIndent()
+        )
+    }
+
     fun build(networkId: Int) = with(blobs.map { it.toUByteList() }) {
         val instructionsStr = instructions.joinToString(separator = ";\n", postfix = ";")
-        Log.d("Bakos", instructionsStr)
         TransactionManifest(
             instructions = Instructions.fromString(
                 string = instructionsStr,
@@ -157,18 +177,11 @@ class ManifestBuilder {
             ),
             blobs = this
         )
-    }.apply {
-        Log.d("Bakos", instructions().asStr())
     }
 
     fun newBucket() = ManifestBucket(value = latestBucketIndex + 1u).also {
         latestBucketIndex += 1u
     }
-
-    companion object {
-
-    }
-
 }
 
 fun NonFungibleLocalId.asStr() = when (this) {
