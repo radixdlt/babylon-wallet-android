@@ -361,7 +361,7 @@ private fun Network.validateAuthorizedPersonas(authorizedDapp: Network.Authorize
             it.address == personaNeedle.identityAddress
         }
         val fieldIDNeedles = personaNeedle.sharedPersonaData.alreadyGrantedIds().toSet()
-        val fieldIDHaystack = persona.personaData.allFieldIds().toSet()
+        val fieldIDHaystack = persona.personaData.allFieldIds.toSet()
 
         require(fieldIDHaystack.containsAll(fieldIDNeedles))
     }
