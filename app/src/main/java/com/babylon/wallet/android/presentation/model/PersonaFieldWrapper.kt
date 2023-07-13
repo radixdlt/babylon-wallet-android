@@ -15,7 +15,7 @@ data class PersonaFieldWrapper(
     val id: PersonaDataEntryID = UUIDGenerator.uuid().toString(),
 ) {
     fun isPhoneNumber(): Boolean {
-        return value.kind == PersonaData.PersonaDataField.Kind.PhoneNUmber
+        return value.kind == PersonaData.PersonaDataField.Kind.PhoneNumber
     }
 }
 

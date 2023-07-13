@@ -3,6 +3,7 @@ package com.babylon.wallet.android.presentation.dapp.authorized.selectpersona
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import rdx.works.profile.data.model.pernetwork.Network
+import rdx.works.profile.data.model.pernetwork.PersonaData
 import rdx.works.profile.data.model.pernetwork.PersonaDataEntryID
 
 data class PersonaUiModel(
@@ -11,7 +12,7 @@ data class PersonaUiModel(
     val pinned: Boolean = false,
     val lastUsedOn: String? = null,
     val lastUsedOnTimestamp: Long = 0,
-    val requiredFieldIDs: List<PersonaDataEntryID> = emptyList()
+    val requiredFieldKinds: List<PersonaData.PersonaDataField.Kind> = emptyList()
 ) {
     fun missingFieldKinds(): ImmutableList<PersonaDataEntryID> {
         // TODO persona data
