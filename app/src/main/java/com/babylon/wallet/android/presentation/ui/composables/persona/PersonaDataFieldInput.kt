@@ -84,7 +84,7 @@ fun PersonaDataFieldInput(
                 label = label,
                 value = field.value,
                 onValueChanged = {
-                    onValueChanged(field)
+                    onValueChanged(PersonaData.PersonaDataField.PhoneNumber(it))
                 },
                 onDeleteField = onDeleteField,
                 required = required,
