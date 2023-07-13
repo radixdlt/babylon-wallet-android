@@ -103,8 +103,8 @@ data class PersonaData(
             @SerialName("family")
             val family: String,
 
-            @SerialName("middle")
-            val middle: String? = null
+            @SerialName("nickname")
+            val nickname: String? = null
 
         ) : PersonaDataField {
             @Serializable
@@ -292,6 +292,8 @@ data class PersonaData(
                     get() = listOf(Name)
                 val supportedKindsMultipleValues: List<Kind>
                     get() = listOf(EmailAddress, PhoneNumber)
+                val supportedKinds: List<Kind>
+                    get() = listOf(Name, EmailAddress, PhoneNumber)
             }
         }
     }

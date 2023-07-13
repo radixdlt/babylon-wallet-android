@@ -69,7 +69,7 @@ fun AddFieldSheet(
                     style = RadixTheme.typography.body1HighImportance,
                     color = RadixTheme.colors.gray2
                 )
-                Spacer(modifier = Modifier.height(dimensions.paddingSmall))
+                Spacer(modifier = Modifier.height(dimensions.paddingDefault))
             }
             items(fieldsToAdd, key = { it.id }) { field ->
                 SelectableFieldItem(
@@ -82,6 +82,12 @@ fun AddFieldSheet(
                         }
                         .fillMaxWidth()
                         .padding(horizontal = dimensions.paddingDefault)
+                )
+                Divider(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = dimensions.paddingDefault),
+                    color = RadixTheme.colors.gray4
                 )
             }
         }

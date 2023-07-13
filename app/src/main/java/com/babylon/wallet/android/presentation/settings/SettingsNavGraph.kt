@@ -111,33 +111,43 @@ private fun NavGraphBuilder.settingsAll(navController: NavController) {
                     SettingsItem.TopLevelSettings.Connection -> {
                         navController.settingsConnectorScreen(scanQr = true)
                     }
+
                     SettingsItem.TopLevelSettings.Gateways -> {
                         navController.navigate(Screen.SettingsEditGatewayApiDestination.route)
                     }
+
                     SettingsItem.TopLevelSettings.Personas -> {
                         navController.personaScreen()
                     }
+
                     SettingsItem.TopLevelSettings.LinkedConnector -> {
                         navController.settingsConnectorScreen()
                     }
+
                     SettingsItem.TopLevelSettings.AuthorizedDapps -> {
                         navController.authorizedDAppsScreen()
                     }
+
                     SettingsItem.TopLevelSettings.AppSettings -> {
                         navController.appSettingsScreen()
                     }
+
                     SettingsItem.TopLevelSettings.SeedPhrases -> {
                         navController.settingsShowMnemonic()
                     }
+
                     SettingsItem.TopLevelSettings.ImportFromLegacyWallet -> {
                         navController.settingsImportOlympiaAccounts()
                     }
+
                     is SettingsItem.TopLevelSettings.Backups -> {
                         navController.backupScreen()
                     }
+
                     SettingsItem.TopLevelSettings.LedgerHardwareWallets -> {
                         navController.settingsLedgerFactorSourcesScreen()
                     }
+
                     else -> {}
                 }
             },

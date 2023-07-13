@@ -214,7 +214,7 @@ sealed interface Event : OneOffEvent {
 
     object LoginFlowCompleted : Event
 
-    data class PersonaDataOnetime(val requiredFieldsEncoded: String) : Event
+    data class PersonaDataOnetime(val request: MessageFromDataChannel.IncomingRequest.PersonaRequestItem) : Event
 }
 
 data class DAppUnauthorizedLoginUiState(

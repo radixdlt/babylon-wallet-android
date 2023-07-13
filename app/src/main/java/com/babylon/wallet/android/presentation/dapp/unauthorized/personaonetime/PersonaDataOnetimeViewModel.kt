@@ -45,7 +45,7 @@ class PersonaDataOnetimeViewModel @Inject constructor(
                             val existingPersona = existingPersonas.firstOrNull { it.persona.address == persona.address }
                             PersonaUiModel(
                                 persona,
-                                requiredFieldKinds = args.requiredFields.toList(),
+                                requestItem = args.request,
                                 selected = existingPersona?.selected ?: false
                             )
                         }.toImmutableList()

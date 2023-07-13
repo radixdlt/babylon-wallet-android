@@ -72,11 +72,12 @@ fun NavGraphBuilder.dappLoginAuthorizedNavGraph(navController: NavController) {
                 navController.loginPermission(event.numberOfAccounts, event.isExactAccountsCount, event.oneTime)
             },
             onPersonaDataOngoing = {
-                navController.personaDataOngoing(it.personaAddress, it.requiredFieldsEncoded)
+                navController.personaDataOngoing(it.personaAddress, it.request)
+            },
+            onPersonaDataOnetime = {
+                navController.personaDataOnetimeAuthorized(it.request)
             }
-        ) {
-            navController.personaDataOnetimeAuthorized(it.requiredFieldsEncoded)
-        }
+        )
         loginPermission(
             onChooseAccounts = { event ->
                 navController.chooseAccounts(
@@ -116,10 +117,10 @@ fun NavGraphBuilder.dappLoginAuthorizedNavGraph(navController: NavController) {
                 navController.popBackStack()
             },
             onPersonaOngoingData = {
-                navController.personaDataOngoing(it.personaAddress, it.requiredFieldsEncoded)
+                navController.personaDataOngoing(it.personaAddress, it.request)
             },
             onPersonaDataOnetime = {
-                navController.personaDataOnetimeAuthorized(it.requiredFieldsEncoded)
+                navController.personaDataOnetimeAuthorized(it.request)
             }
         )
         personaDataOngoing(
@@ -134,7 +135,7 @@ fun NavGraphBuilder.dappLoginAuthorizedNavGraph(navController: NavController) {
                 navController.popBackStack(ROUTE_DAPP_LOGIN_AUTHORIZED_GRAPH, true)
             },
             onPersonaDataOnetime = {
-                navController.personaDataOnetimeAuthorized(it.requiredFieldsEncoded)
+                navController.personaDataOnetimeAuthorized(it.request)
             },
             onChooseAccounts = { event ->
                 navController.chooseAccounts(

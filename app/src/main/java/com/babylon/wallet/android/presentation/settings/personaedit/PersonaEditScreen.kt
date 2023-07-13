@@ -137,9 +137,11 @@ private fun PersonaEditContent(
                     bottomSheetState.hide()
                 }
             }
+
             wasEdited -> {
                 showCancelPrompt = true
             }
+
             else -> onBackClick()
         }
     }
@@ -345,7 +347,12 @@ private fun PersonaDetailList(
                     null
                 },
             )
-            Spacer(modifier = Modifier.height(dimensions.paddingLarge))
+            Divider(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = dimensions.paddingDefault, vertical = dimensions.paddingLarge),
+                color = RadixTheme.colors.gray4
+            )
         }
         item {
             Spacer(modifier = Modifier.height(dimensions.paddingSmall))

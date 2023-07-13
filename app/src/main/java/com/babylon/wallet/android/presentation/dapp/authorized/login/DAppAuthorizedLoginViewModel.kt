@@ -690,10 +690,10 @@ sealed interface Event : OneOffEvent {
 
     data class PersonaDataOngoing(
         val personaAddress: String,
-        val requiredFieldsEncoded: String
+        val request: MessageFromDataChannel.IncomingRequest.PersonaRequestItem
     ) : Event
 
-    data class PersonaDataOnetime(val requiredFieldsEncoded: String) : Event
+    data class PersonaDataOnetime(val request: MessageFromDataChannel.IncomingRequest.PersonaRequestItem) : Event
 
     data class ChooseAccounts(
         val numberOfAccounts: Int,

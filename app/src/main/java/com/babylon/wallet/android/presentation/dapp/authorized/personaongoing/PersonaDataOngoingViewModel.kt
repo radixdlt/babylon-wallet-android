@@ -30,7 +30,7 @@ class PersonaDataOngoingViewModel @Inject constructor(
     init {
         viewModelScope.launch {
             getProfileUseCase.personaOnCurrentNetworkFlow(args.personaId).collect { persona ->
-                val uiModel = PersonaUiModel(persona, requiredFieldKinds = args.requiredFields.toList())
+                val uiModel = PersonaUiModel(persona, requestItem = args.request)
                 _state.update {
                     it.copy(
                         persona = uiModel,

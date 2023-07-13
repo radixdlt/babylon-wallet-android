@@ -6,6 +6,7 @@ plugins {
     id "org.sonarqube" version "3.0"
     id "jacoco"
     id 'kotlinx-serialization'
+    id 'kotlin-parcelize'
 }
 
 apply from: "$rootDir/config/jacoco.gradle"

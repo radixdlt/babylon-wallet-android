@@ -632,10 +632,11 @@
   <string name="importLegacyWallet_seedPhrase_passphraseHint">Optional BIP39 Passphrase. This is not your wallet password, and the Radix Desktop Wallet did not use a BIP39 passphrase. This is only to support import from other wallets that may have used one.</string>
   <string name="importLegacyWallet_seedPhrase_passphraseLabel">Passphrase</string>
 
-  <string name="authorizedDapps_personaDetails_name">Name</string>
-  <string name="authorizedDapps_personaDetails_nameGiven">Given</string>
-  <string name="authorizedDapps_personaDetails_nameFamily">Family</string>
-  <string name="authorizedDapps_personaDetails_nameMiddle">Middle</string>
-  <string name="authorizedDapps_personaDetails_nameVariantEastern">eastern</string>
-  <string name="authorizedDapps_personaDetails_nameVariantWestern">western</string>
+  <string name="authorizedDapps_personaDetails_fullName">Full Name</string>
+  <string name="authorizedDapps_personaDetails_nameVariant">Name Order</string>
+  <string name="authorizedDapps_personaDetails_givenName">Given Name(s)</string>
+  <string name="authorizedDapps_personaDetails_nameFamily">Family Name</string>
+  <string name="authorizedDapps_personaDetails_nickname">Nickname</string>
+  <string name="authorizedDapps_personaDetails_nameVariantEastern">Eastern style (family name first)</string>
+  <string name="authorizedDapps_personaDetails_nameVariantWestern">Western style (given name(s) first)</string>
 </resources>
