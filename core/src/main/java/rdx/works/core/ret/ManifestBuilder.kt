@@ -158,9 +158,9 @@ class ManifestBuilder {
             SET_METADATA
                 Address("${address.addressString()}")
                 "owner_keys"
-                Enum<${ManifestValue.U8Value(143u).value}>(
+                Enum<${ManifestValue.U8Value(143u).value}u8>(
                     Array<Enum>(
-                        ${keys.map { "Enum<${it.first.value}>(Bytes(${it.second.toHexString()}))" }}
+                        ${keys.joinToString(separator = ",") { "Enum<${it.first.value}u8>(Bytes(\"${it.second.toHexString()}\"))" }}
                     ) 
                 )
             """.trimIndent()
