@@ -259,8 +259,8 @@ sealed interface AccountWithPredictedGuarantee {
     }
 
     fun change(amount: String): AccountWithPredictedGuarantee {
-        val value = amount.toFloatOrNull() ?: 0
-        return if (value in 0..100) {
+        val value = amount.toFloatOrNull() ?: 0f
+        return if (value in 0f..100f) {
             when (this) {
                 is Other -> copy(guaranteeAmountString = amount)
                 is Owned -> copy(guaranteeAmountString = amount)
