@@ -100,7 +100,7 @@ fun TransactionAccountCard(
 
         // Fungibles
         amountTransferables.forEachIndexed { index, amountTransferable ->
-            val lastItem = index == amountTransferables.size + nftTransferables.size - 1
+            val lastItem = if (nftTransferables.isEmpty()) index == amountTransferables.lastIndex else false
             val shape = if (lastItem) RadixTheme.shapes.roundedRectBottomMedium else RectangleShape
             val transferableAmount = amountTransferable.transferable as TransferableResource.Amount
 
@@ -117,19 +117,34 @@ fun TransactionAccountCard(
             )
         }
 
-        // Non fungibles
-        nftTransferables.forEachIndexed { index, nftTransferable ->
-            val lastItem = index == nftTransferables.lastIndex
-            val shape = if (lastItem) RadixTheme.shapes.roundedRectBottomMedium else RectangleShape
-            val transferableNft = nftTransferable.transferable as TransferableResource.NFTs
 
-            TokenItemContent(
-                isXrdToken = false,
-                tokenUrl = transferableNft.resource.iconUrl.toString(),
-                tokenSymbol = transferableNft.resource.name,
-                isTokenAmountVisible = false,
-                shape = shape
-            )
+        // Non fungibles
+        nftTransferables.forEachIndexed { collectionIndex, nftTransferable ->
+            val nft = nftTransferable.transferable as TransferableResource.NFTs
+            if (nft.isNewlyCreated) {
+                // In this case show only the collection of the newly created nfts.
+                val lastItem = collectionIndex == nftTransferables.lastIndex
+                TokenItemContent(
+                    isXrdToken = false,
+                    tokenUrl = nft.resource.iconUrl.toString(),
+                    tokenSymbol = nft.resource.name,
+                    isTokenAmountVisible = true,
+                    tokenAmount = nft.resource.items.size.toString(),
+                    shape = if (lastItem) RadixTheme.shapes.roundedRectBottomMedium else RectangleShape
+                )
+            } else {
+                // Show each nft item
+                nft.resource.items.forEachIndexed { itemIndex, item ->
+                    val lastItem = itemIndex == nft.resource.items.lastIndex && collectionIndex ==  nftTransferables.lastIndex
+                    TokenItemContent(
+                        isXrdToken = false,
+                        tokenUrl = item.imageUrl.toString(),
+                        tokenSymbol = item.localId.displayable,
+                        isTokenAmountVisible = false,
+                        shape = if (lastItem) RadixTheme.shapes.roundedRectBottomMedium else RectangleShape
+                    )
+                }
+            }
         }
     }
 }
