@@ -9,6 +9,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
+import com.babylon.wallet.android.domain.model.DAppWithMetadataAndAssociatedResources
 import com.babylon.wallet.android.presentation.transaction.PreviewType
 import com.babylon.wallet.android.presentation.transaction.TransactionApprovalViewModel
 import kotlinx.collections.immutable.toPersistentList
@@ -18,7 +19,8 @@ fun TransactionPreviewTypeContent(
     modifier: Modifier = Modifier,
     state: TransactionApprovalViewModel.State,
     preview: PreviewType.Transaction,
-    onPromptForGuarantees: () -> Unit
+    onPromptForGuarantees: () -> Unit,
+    onDappClick: (DAppWithMetadataAndAssociatedResources) -> Unit
 ) {
     Column(
         modifier = modifier.fillMaxSize()
@@ -39,6 +41,11 @@ fun TransactionPreviewTypeContent(
             )
 
             StrokeLine(height = 40.dp)
+
+            ConnectedDAppsContent(
+                connectedDApps = preview.dApps.toPersistentList(),
+                onDAppClick = onDappClick
+            )
 
             DepositAccountContent(
                 modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingDefault),

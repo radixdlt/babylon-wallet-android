@@ -48,6 +48,7 @@ import com.babylon.wallet.android.domain.model.DAppWithMetadataAndAssociatedReso
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.babylon.wallet.android.domain.model.TransactionManifestData
 import com.babylon.wallet.android.presentation.common.FullscreenCircularProgressContent
+import com.babylon.wallet.android.presentation.settings.dappdetail.DAppDetailsSheetContent
 import com.babylon.wallet.android.presentation.transaction.TransactionApprovalViewModel.State
 import com.babylon.wallet.android.presentation.transaction.composables.FeePayerSelectionSheet
 import com.babylon.wallet.android.presentation.transaction.composables.GuaranteesSheet
@@ -224,7 +225,8 @@ private fun TransactionPreviewContent(
                                     TransactionPreviewTypeContent(
                                         state = state,
                                         preview = state.previewType,
-                                        onPromptForGuarantees = promptForGuarantees
+                                        onPromptForGuarantees = promptForGuarantees,
+                                        onDappClick = onDAppClick
                                     )
                                 }
                             }
@@ -314,15 +316,12 @@ private fun BottomSheetContent(
             )
         }
 
-//        is BottomSheetMode.DApp -> {
-//            DAppDetailsSheetContent(
-//                onBackClick = onCloseDAppSheet,
-//                dappName = bottomSheetViewMode.dApp.dAppWithMetadata.name.orEmpty(),
-//                dappWithMetadata = bottomSheetViewMode.dApp.dAppWithMetadata,
-//                associatedFungibleTokens = bottomSheetViewMode.dApp.fungibleResources.toPersistentList(),
-//                associatedNonFungibleTokens = bottomSheetViewMode.dApp.nonFungibleResources.toPersistentList()
-//            )
-//        }
+        is State.Sheet.Dapp -> {
+            DAppDetailsSheetContent(
+                onBackClick = onCloseDAppSheet,
+                dApp = sheetState.dApp
+            )
+        }
 
         is State.Sheet.FeePayerChooser -> {
             FeePayerSelectionSheet(

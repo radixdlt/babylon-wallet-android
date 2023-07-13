@@ -155,11 +155,9 @@ class TransactionApprovalViewModel @Inject constructor(
     fun onPayerConfirmed() = submit.onFeePayerConfirmed()
 
     fun onDAppClick(dApp: DAppWithMetadataAndAssociatedResources) {
-//        _state.update {
-//            it.copy(
-//                bottomSheetViewMode = BottomSheetMode.DApp(dApp)
-//            )
-//        }
+        _state.update {
+            it.copy(sheetState = State.Sheet.Dapp(dApp))
+        }
     }
 
     data class State(
@@ -209,6 +207,10 @@ class TransactionApprovalViewModel @Inject constructor(
 
             data class CustomizeGuarantees(
                 val accountsWithPredictedGuarantees: List<AccountWithPredictedGuarantee>
+            ): Sheet()
+
+            data class Dapp(
+                val dApp: DAppWithMetadataAndAssociatedResources
             ): Sheet()
         }
     }
