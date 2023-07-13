@@ -7,52 +7,11 @@ import com.babylon.wallet.android.domain.common.switchMap
 import com.babylon.wallet.android.domain.common.value
 import com.babylon.wallet.android.domain.model.DAppWithMetadataAndAssociatedResources
 import com.babylon.wallet.android.domain.model.metadata.ClaimedWebsiteMetadataItem
-import com.radixdlt.ret.Address
 import javax.inject.Inject
 
 class GetDAppWithMetadataAndAssociatedResourcesUseCase @Inject constructor(
     private val dAppRepository: DAppRepository,
 ) {
-
-    suspend operator fun invoke(
-        addresses: List<Address>
-    ): List<DAppWithMetadataAndAssociatedResources> = addresses.mapNotNull { address ->
-        val dAppMetadata = dAppRepository.getDAppMetadata(
-            definitionAddress = address.addressString(),
-            needMostRecentData = false
-        ).value() ?: return@mapNotNull null
-
-        if (dAppMetadata.definitionAddresses.isNotEmpty()) {
-            dAppMetadata
-        } else {
-            null
-        }
-    }.map { dAppMetadata ->
-        // If well known file verification fails, we dont want claimed websites
-        val isWebsiteAuthentic = dAppMetadata.claimedWebsite?.let { website ->
-            dAppRepository.verifyDapp(
-                origin = website,
-                dAppDefinitionAddress = dAppMetadata.dAppAddress
-            ).value() == true
-        } ?: false
-
-        dAppMetadata.copy(
-            claimedWebsiteItem = if (isWebsiteAuthentic) {
-                dAppMetadata.claimedWebsite?.let { website ->
-                    ClaimedWebsiteMetadataItem(website = website)
-                }
-            } else {
-                null
-            }
-        )
-    }.mapNotNull { dAppWithMetadata ->
-        dAppRepository.getDAppResources(dAppMetadata = dAppWithMetadata).map { resources ->
-            DAppWithMetadataAndAssociatedResources(
-                dAppWithMetadata = dAppWithMetadata,
-                resources = resources
-            )
-        }.value()
-    }
 
     suspend operator fun invoke(
         definitionAddress: String,

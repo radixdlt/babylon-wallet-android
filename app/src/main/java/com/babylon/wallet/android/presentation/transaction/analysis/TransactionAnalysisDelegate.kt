@@ -16,8 +16,12 @@ import com.babylon.wallet.android.presentation.transaction.AccountWithTransferab
 import com.babylon.wallet.android.presentation.transaction.PreviewType
 import com.babylon.wallet.android.presentation.transaction.TransactionApprovalViewModel2.State
 import com.babylon.wallet.android.presentation.transaction.TransactionFees
+import com.radixdlt.ret.EntityType
 import com.radixdlt.ret.TransactionManifest
 import com.radixdlt.ret.TransactionType
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
 import rdx.works.core.decodeHex
@@ -88,7 +92,19 @@ class TransactionAnalysisDelegate(
         transfer: TransactionType.GeneralTransaction
     ): PreviewType {
         val badges = getTransactionBadgesUseCase(accountProofs = transfer.accountProofs)
-//        val dApps = getDAppWithMetadataAndAssociatedResourcesUseCase(addresses = transfer.addressesInManifest.values.flatten())
+        val dApps = coroutineScope {
+            transfer.addressesInManifest[EntityType.GLOBAL_GENERIC_COMPONENT].orEmpty()
+                .map { address ->
+                    async {
+                        getDAppWithMetadataAndAssociatedResourcesUseCase(
+                            definitionAddress = address.addressString(),
+                            needMostRecentData = true
+                        )
+                    }
+                }
+                .awaitAll()
+                .mapNotNull { it.value() }
+        }
 
         val allAccounts = getProfileUseCase.accountsOnCurrentNetwork().filter {
             it.address in transfer.accountWithdraws.keys || it.address in transfer.accountDeposits.keys
@@ -138,7 +154,8 @@ class TransactionAnalysisDelegate(
         return PreviewType.Transaction(
             from = fromAccounts,
             to = toAccounts,
-            badges = badges
+            badges = badges,
+            dApps = dApps
         )
     }
 
@@ -222,17 +239,19 @@ class TransactionAnalysisDelegate(
             val fungibleTransferrables = entry.value.filterIsInstance<TransferableResource.Amount>()
             val nonFungibleTransferrables = entry.value.filterIsInstance<TransferableResource.NFTs>()
 
-            if (fungibleTransferrables.isNotEmpty()){
+            if (fungibleTransferrables.isNotEmpty()) {
                 val transferrable = fungibleTransferrables.reduce { transferable, value ->
                     transferable.copy(amount = transferable.amount + value.amount)
                 }
                 Transferable.Withdrawing(transferrable)
             } else if (nonFungibleTransferrables.isNotEmpty()) {
                 val nonFungibleTransferrable = nonFungibleTransferrables.reduce { nonFungibleTransferrable, value ->
-                    nonFungibleTransferrable.copy(resource = nonFungibleTransferrable.resource.copy(
-                        amount = nonFungibleTransferrable.resource.amount + value.resource.amount,
-                        items = nonFungibleTransferrable.resource.items + value.resource.items
-                    ))
+                    nonFungibleTransferrable.copy(
+                        resource = nonFungibleTransferrable.resource.copy(
+                            amount = nonFungibleTransferrable.resource.amount + value.resource.amount,
+                            items = nonFungibleTransferrable.resource.items + value.resource.items
+                        )
+                    )
                 }
                 Transferable.Withdrawing(nonFungibleTransferrable)
             } else {

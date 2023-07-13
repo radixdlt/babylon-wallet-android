@@ -224,7 +224,8 @@ sealed interface PreviewType {
     data class Transaction(
         val from: List<AccountWithTransferableResources>,
         val to: List<AccountWithTransferableResources>,
-        val badges: List<Badge> = emptyList()
+        val badges: List<Badge> = emptyList(),
+        val dApps: List<DAppWithMetadataAndAssociatedResources> = emptyList()
     ): PreviewType
 }
 
