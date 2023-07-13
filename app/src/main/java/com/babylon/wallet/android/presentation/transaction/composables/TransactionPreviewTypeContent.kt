@@ -59,9 +59,5 @@ fun TransactionPreviewTypeContent(
         PresentingProofsContent(
             badges = preview.badges.toPersistentList()
         )
-
-        NetworkFeeContent(fees = state.fees)
     }
-
-
 }

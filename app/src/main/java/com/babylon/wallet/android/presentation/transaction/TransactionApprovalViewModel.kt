@@ -176,6 +176,12 @@ class TransactionApprovalViewModel @Inject constructor(
         val signingState: SigningState? = null
     ): UiState {
 
+        val isBackEnabled: Boolean
+            get() = !isSigning
+
+        val isRawManifestToggleVisible: Boolean
+            get() = previewType is PreviewType.Transaction
+
         val rawManifest: String = request.transactionManifestData.toTransactionManifest().toPrettyString()
 
         val isSheetVisible: Boolean

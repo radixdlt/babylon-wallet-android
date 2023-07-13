@@ -52,6 +52,7 @@ import com.babylon.wallet.android.presentation.settings.dappdetail.DAppDetailsSh
 import com.babylon.wallet.android.presentation.transaction.TransactionApprovalViewModel.State
 import com.babylon.wallet.android.presentation.transaction.composables.FeePayerSelectionSheet
 import com.babylon.wallet.android.presentation.transaction.composables.GuaranteesSheet
+import com.babylon.wallet.android.presentation.transaction.composables.NetworkFeeContent
 import com.babylon.wallet.android.presentation.transaction.composables.RawManifestView
 import com.babylon.wallet.android.presentation.transaction.composables.TransactionPreviewHeader
 import com.babylon.wallet.android.presentation.transaction.composables.TransactionPreviewTypeContent
@@ -173,8 +174,8 @@ private fun TransactionPreviewContent(
             topBar = {
                 TransactionPreviewHeader(
                     onBackClick = onBackClick,
+                    state = state,
                     onRawManifestClick = onRawManifestToggle,
-                    onBackEnabled = !state.isSigning,
                     scrollBehavior = scrollBehavior
                 )
             },
@@ -203,7 +204,7 @@ private fun TransactionPreviewContent(
                                 modifier = Modifier.padding(RadixTheme.dimensions.paddingDefault),
                                 manifest = state.rawManifest
                             )
-
+                            NetworkFeeContent(fees = state.fees)
                             ApproveButton(
                                 state = state,
                                 onApproveTransaction = onApproveTransaction
@@ -230,7 +231,7 @@ private fun TransactionPreviewContent(
                                     )
                                 }
                             }
-
+                            NetworkFeeContent(fees = state.fees)
                             ApproveButton(
                                 state = state,
                                 onApproveTransaction = onApproveTransaction
@@ -269,7 +270,7 @@ private fun ApproveButton(
                 showNotSecuredDialog = true
             }
         },
-        enabled = !state.isSigning /*&& state.canApprove && state.bottomSheetViewMode != BottomSheetMode.FeePayerSelection*/,
+        enabled = !state.isSigning /*&& state.canApprove && */,
         icon = {
             Icon(
                 painter = painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_lock),

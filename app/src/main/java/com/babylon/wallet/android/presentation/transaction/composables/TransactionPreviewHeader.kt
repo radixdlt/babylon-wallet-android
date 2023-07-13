@@ -2,13 +2,7 @@
 
 package com.babylon.wallet.android.presentation.transaction.composables
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.IconButton
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -24,15 +18,21 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import com.babylon.wallet.android.R
+import com.babylon.wallet.android.data.transaction.TransactionVersion
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
+import com.babylon.wallet.android.domain.model.MessageFromDataChannel
+import com.babylon.wallet.android.domain.model.TransactionManifestData
+import com.babylon.wallet.android.presentation.transaction.PreviewType
+import com.babylon.wallet.android.presentation.transaction.TransactionApprovalViewModel.State
+import rdx.works.profile.data.model.apppreferences.Radix
 
 @Composable
 fun TransactionPreviewHeader(
     modifier: Modifier = Modifier,
+    state: State,
     onBackClick: () -> Unit,
     onRawManifestClick: () -> Unit,
-    onBackEnabled: Boolean,
     scrollBehavior: TopAppBarScrollBehavior
 ) {
     val collapsed = scrollBehavior.state.collapsedFraction >= 0.5f
@@ -48,7 +48,7 @@ fun TransactionPreviewHeader(
         navigationIcon = {
             IconButton(
                 onClick = onBackClick,
-                enabled = onBackEnabled
+                enabled = state.isBackEnabled
             ) {
                 Icon(
                     painterResource(
@@ -60,22 +60,24 @@ fun TransactionPreviewHeader(
             }
         },
         actions = {
-            IconButton(
-                modifier = Modifier
-                    .padding(end = RadixTheme.dimensions.paddingDefault)
-                    .background(
-                        color = RadixTheme.colors.gray4,
-                        shape = RadixTheme.shapes.roundedRectSmall
-                    ),
-                onClick = onRawManifestClick
-            ) {
-                Icon(
-                    painterResource(
-                        id = com.babylon.wallet.android.designsystem.R.drawable.ic_manifest_expand
-                    ),
-                    tint = Color.Unspecified,
-                    contentDescription = "manifest expand"
-                )
+            if (state.isRawManifestToggleVisible) {
+                IconButton(
+                    modifier = Modifier
+                        .padding(end = RadixTheme.dimensions.paddingDefault)
+                        .background(
+                            color = RadixTheme.colors.gray4,
+                            shape = RadixTheme.shapes.roundedRectSmall
+                        ),
+                    onClick = onRawManifestClick
+                ) {
+                    Icon(
+                        painterResource(
+                            id = com.babylon.wallet.android.designsystem.R.drawable.ic_manifest_expand
+                        ),
+                        tint = Color.Unspecified,
+                        contentDescription = "manifest expand"
+                    )
+                }
             }
         },
         colors = TopAppBarDefaults.largeTopAppBarColors(
@@ -92,8 +94,23 @@ fun TransactionPreviewHeaderPreview() {
     RadixWalletTheme {
         TransactionPreviewHeader(
             onBackClick = {},
+            state = State(
+                request = MessageFromDataChannel.IncomingRequest.TransactionRequest(
+                    dappId = "",
+                    requestId = "",
+                    transactionManifestData = TransactionManifestData(
+                        instructions = "",
+                        version = TransactionVersion.Default.value,
+                        networkId = Radix.Gateway.default.network.id,
+                        message = "Hello"
+                    ),
+                    requestMetadata = MessageFromDataChannel.IncomingRequest.RequestMetadata.internal(Radix.Gateway.default.network.id)
+                ),
+                isDeviceSecure = true,
+                isLoading = false,
+                previewType = PreviewType.NonConforming
+            ),
             onRawManifestClick = {},
-            onBackEnabled = true,
             scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
         )
     }
