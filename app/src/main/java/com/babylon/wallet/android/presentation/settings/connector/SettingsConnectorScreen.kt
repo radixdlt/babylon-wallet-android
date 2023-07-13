@@ -380,7 +380,7 @@ private fun ConnectorNameInput(
                     end = RadixTheme.dimensions.paddingLarge,
                     bottom = RadixTheme.dimensions.paddingLarge
                 ),
-            text = "What would you like to call this Connector?", // todo Crowdin
+            text = stringResource(id = R.string.linkedConnectors_nameNewConnector_subtitle),
             style = RadixTheme.typography.body1Regular,
             color = RadixTheme.colors.gray1,
             textAlign = TextAlign.Center
@@ -392,14 +392,12 @@ private fun ConnectorNameInput(
             onValueChanged = onConnectorDisplayNameChanged,
             value = connectorDisplayName,
             hint = "",
-            // todo replace in Crowdin stringResource(id = R.string.linkedConnectors_nameNewConnector_textFieldHint),
-            optionalHint = "Name this connector e.g. ‘Chrome on MacBook Pro’",
+            optionalHint = stringResource(id = R.string.linkedConnectors_nameNewConnector_textFieldHint),
             singleLine = true
         )
         Spacer(modifier = Modifier.weight(1f))
         RadixPrimaryButton(
-            text = "Continue",
-            // todo replace in Crowdin stringResource(id = R.string.linkedConnectors_nameNewConnector_saveLinkButtonTitle),
+            text = stringResource(id = R.string.linkedConnectors_nameNewConnector_saveLinkButtonTitle),
             onClick = onLinkNewConnectorClick,
             modifier = Modifier
                 .fillMaxWidth()

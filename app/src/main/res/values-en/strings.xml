@@ -23,6 +23,7 @@
   <string name="assetDetails_currentSupply">Current Supply</string>
   <string name="assetDetails_supplyUnkown">Unknown</string>
   <string name="assetDetails_behavior">Behavior</string>
+  <string name="assetDetails_tags">Tags</string>
   <string name="assetDetails_associatedDapps">Associated dApps</string>
   <string name="assetDetails_tokenDetails_noTokens">You have no Tokens</string>
   <string name="assetDetails_tokenDetails_whatAreTokens">What are Tokens?</string>
@@ -116,9 +117,10 @@
   <string name="linkedConnectors_newConnection_subtitle">Scan the QR code shown in the Radix Connector browser extension</string>
   <string name="linkedConnectors_newConnection_linking">Linking…</string>
   <string name="linkedConnectors_nameNewConnector_title">Name New Connector</string>
+  <string name="linkedConnectors_nameNewConnector_subtitle">What would you like to call this Connector?</string>
   <string name="linkedConnectors_nameNewConnector_textFieldPlaceholder">e.g. Chrome on Personal Laptop</string>
-  <string name="linkedConnectors_nameNewConnector_textFieldHint">Give a name to this Radix Connector</string>
-  <string name="linkedConnectors_nameNewConnector_saveLinkButtonTitle">Save Link and Continue</string>
+  <string name="linkedConnectors_nameNewConnector_textFieldHint">Name this connector e.g. ‘Chrome on MacBook Pro’</string>
+  <string name="linkedConnectors_nameNewConnector_saveLinkButtonTitle">Continue</string>
   <string name="linkedConnectors_removeConnectionAlert_title">Remove Connection</string>
   <string name="linkedConnectors_removeConnectionAlert_message">You will no longer be able to connect your wallet to this device and browser combination.</string>
   <string name="linkedConnectors_removeConnectionAlert_removeButtonTitle">Remove</string>
@@ -207,9 +209,9 @@
   <string name="createEntity_completion_title">Congratulations</string>
   <string name="createEntity_ledger_createAccount">Create Ledger Account</string>
   <string name="createEntity_ledger_createPersona">Create Ledger Persona</string>
-  <string name="createEntity_nameNewEntity_explanation">This can be changed any time</string>
+  <string name="createEntity_nameNewEntity_explanation">Your Account lives on the Radix Network and you can access it any time in your Wallet.</string>
   <string name="createEntity_nameNewEntity_ledgerTitle">Create with Ledger Hardware Wallet</string>
-  <string name="createEntity_nameNewEntity_ledgerSubtitle">Transactions will be signed using a Ledger device</string>
+  <string name="createEntity_nameNewEntity_ledgerSubtitle">You will be asked to sign transactions with the Ledger device you select</string>
   <string name="createPersona_emptyDisplayName">Empty display name</string>
   <string name="createPersona_completion_subtitleFirst">You’ve created your first Persona!</string>
   <string name="createPersona_completion_subtitleNotFirst">Your Persona has been created.</string>
@@ -507,19 +509,19 @@
   <string name="signing_signatureSuccessful_title">Signed</string>
   <string name="signing_signatureSuccessful_body">Signature successful</string>
   <string name="ledgerHardwareDevices_linkConnectorAlert_title">Link a Connector</string>
-  <string name="ledgerHardwareDevices_linkConnectorAlert_message">To use a Ledger hardware wallet device, it must be connected to a computer running the Radix Connector browser extension.
-
-Install the Connector extension, open it to see the linking QR code, and tap continue.</string>
+  <string name="ledgerHardwareDevices_linkConnectorAlert_message">To use a Ledger hardware wallet device, it must be connected to a computer running the Radix Connector browser extension.</string>
   <string name="ledgerHardwareDevices_linkConnectorAlert_continue">Continue</string>
-  <string name="ledgerHardwareDevices_navigationTitleAllowSelection">Choose Device</string>
+  <string name="ledgerHardwareDevices_navigationTitleAllowSelection">Choose Ledger</string>
+  <string name="ledgerHardwareDevices_navigationTitleNoSelection">Choose Ledger Device</string>
   <string name="ledgerHardwareDevices_navigationTitleGeneral">Ledger Devices</string>
   <string name="ledgerHardwareDevices_ledgerFactorSourceInfoCaption">What is a Ledger Factor Source</string>
   <string name="ledgerHardwareDevices_addNewLedger">Add Ledger Device</string>
   <string name="ledgerHardwareDevices_addedHeading">Added</string>
   <string name="ledgerHardwareDevices_usedHeading">Last Used</string>
   <string name="ledgerHardwareDevices_continueWithLedger">Continue</string>
-  <string name="ledgerHardwareDevices_subtitleNoLedgers">No Ledger devices have been added.</string>
+  <string name="ledgerHardwareDevices_subtitleNoLedgers">No Ledger devices currently added to your Radix Wallet</string>
   <string name="ledgerHardwareDevices_subtitleSelectLedger">Choose a Ledger device to use</string>
+  <string name="ledgerHardwareDevices_subtitleSelectLedgerExisting">Choose an existing Ledger or add a new one</string>
   <string name="ledgerHardwareDevices_subtitleAllLedgers">Here are all the Ledger devices you have added.</string>
   <string name="ledgerHardwareDevices_subtitleFailure">Could not find Ledger devices</string>
   <string name="displayMnemonics_cautionAlert_title">Use Caution</string>
@@ -564,7 +566,8 @@ Install the Connector extension, open it to see the linking QR code, and tap con
   <string name="addLedgerDevice_addDevice_body2">Connect your Ledger to a computer running a linked Radix Connector browser extension, and make sure the Radix Babylon app is running on the Ledger device.</string>
   <string name="addLedgerDevice_addDevice_continue">Continue</string>
   <string name="addLedgerDevice_nameLedger_title">Name Your Ledger</string>
-  <string name="addLedgerDevice_nameLedger_body">Enter a label for this Ledger device</string>
+  <string name="addLedgerDevice_nameLedger_subtitle">What would you like to call this Ledger device?</string>
+  <string name="addLedgerDevice_nameLedger_fieldHint">This will be displayed when you’re prompted to sign with this ledger</string>
   <string name="addLedgerDevice_nameLedger_detectedType">Detected type: %s</string>
   <string name="addLedgerDevice_nameLedger_namePlaceholder">Green Ledger Nano S+</string>
   <string name="addLedgerDevice_nameLedger_continueButtonTitle">Save and Continue</string>
