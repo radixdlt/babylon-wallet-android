@@ -37,6 +37,7 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.designsystem.theme.getAccountGradientColorsFor
 import com.babylon.wallet.android.domain.SampleDataProvider
+import com.babylon.wallet.android.domain.model.GuaranteeAssertion
 import com.babylon.wallet.android.domain.model.Transferable
 import com.babylon.wallet.android.domain.model.TransferableResource
 import com.babylon.wallet.android.presentation.transaction.AccountWithTransferableResources
@@ -103,6 +104,7 @@ fun TransactionAccountCard(
             val lastItem = if (nftTransferables.isEmpty()) index == amountTransferables.lastIndex else false
             val shape = if (lastItem) RadixTheme.shapes.roundedRectBottomMedium else RectangleShape
             val transferableAmount = amountTransferable.transferable as TransferableResource.Amount
+            val amountGuaranteeAssertion = amountTransferable.guaranteeAssertion as? GuaranteeAssertion.ForAmount
 
             TokenItemContent(
                 isXrdToken = transferableAmount.resource.isXrd,
@@ -112,7 +114,7 @@ fun TransactionAccountCard(
                 },
                 tokenAmount = transferableAmount.amount.toPlainString(),
                 isTokenAmountVisible = true,
-                guaranteedQuantity = amountTransferable.guaranteeAmount?.first?.displayableQuantity(),
+                guaranteedQuantity = amountGuaranteeAssertion?.amount?.displayableQuantity(),
                 shape = shape
             )
         }

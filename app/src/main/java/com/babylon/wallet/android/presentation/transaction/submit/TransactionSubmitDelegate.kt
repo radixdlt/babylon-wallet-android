@@ -7,6 +7,7 @@ import com.babylon.wallet.android.data.transaction.DappRequestException
 import com.babylon.wallet.android.data.transaction.DappRequestFailure
 import com.babylon.wallet.android.data.transaction.TransactionClient
 import com.babylon.wallet.android.data.transaction.model.TransactionApprovalRequest
+import com.babylon.wallet.android.domain.model.GuaranteeAssertion
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.transaction.PreviewType
@@ -222,13 +223,18 @@ class TransactionSubmitDelegate(
         var manifest = this
         if (previewType is PreviewType.Transaction) {
             previewType.to.map { it.resources }.flatten().forEach { depositing ->
-                val guaranteedAmount = depositing.guaranteeAmount
-                if (guaranteedAmount != null) {
-                    manifest = manifest.addGuaranteeInstructionToManifest(
-                        address = depositing.transferable.resourceAddress,
-                        guaranteedAmount = guaranteedAmount.first.toPlainString(),
-                        index = guaranteedAmount.second.toInt()
-                    )
+                when (val assertion = depositing.guaranteeAssertion) {
+                    is GuaranteeAssertion.ForAmount -> {
+                        manifest = manifest.addGuaranteeInstructionToManifest(
+                            address = depositing.transferable.resourceAddress,
+                            guaranteedAmount = assertion.amount.toPlainString(),
+                            index = assertion.instructionIndex.toInt()
+                        )
+                    }
+                    is GuaranteeAssertion.ForNFT -> {
+                        // TODO RET ask Matt if needs to be implemented
+                    }
+                    null -> {}
                 }
             }
         }
