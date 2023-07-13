@@ -14,7 +14,7 @@ fun PersonaData.PersonaDataField.Kind.toDisplayResource(): Int {
     return when (this) {
         PersonaData.PersonaDataField.Kind.Name -> R.string.authorizedDapps_personaDetails_name
         PersonaData.PersonaDataField.Kind.EmailAddress -> R.string.authorizedDapps_personaDetails_emailAddress
-        PersonaData.PersonaDataField.Kind.PhoneNUmber -> R.string.authorizedDapps_personaDetails_phoneNumber
+        PersonaData.PersonaDataField.Kind.PhoneNumber -> R.string.authorizedDapps_personaDetails_phoneNumber
         else -> R.string.empty
     }
 }
@@ -62,7 +62,7 @@ fun PersonaData.PersonaDataField.Kind.empty(): PersonaData.PersonaDataField {
         )
 
         PersonaData.PersonaDataField.Kind.EmailAddress -> PersonaData.PersonaDataField.Email("")
-        PersonaData.PersonaDataField.Kind.PhoneNUmber -> PersonaData.PersonaDataField.PhoneNumber("")
+        PersonaData.PersonaDataField.Kind.PhoneNumber -> PersonaData.PersonaDataField.PhoneNumber("")
         else -> throw RuntimeException("Field $this not supported")
     }
 }

@@ -13,7 +13,7 @@ import com.babylon.wallet.android.presentation.dapp.authorized.login.DAppAuthori
 import com.babylon.wallet.android.presentation.dapp.authorized.login.Event
 import com.babylon.wallet.android.presentation.dapp.authorized.login.ROUTE_DAPP_LOGIN_AUTHORIZED_GRAPH
 import com.google.accompanist.navigation.animation.composable
-import rdx.works.profile.data.model.pernetwork.PersonaDataEntryID
+import rdx.works.profile.data.model.pernetwork.PersonaData
 
 @VisibleForTesting
 internal const val ARG_PERSONA_ID = "persona_id"
@@ -21,7 +21,7 @@ internal const val ARG_PERSONA_ID = "persona_id"
 @VisibleForTesting
 internal const val ARG_REQUIRED_FIELDS = "required_fields"
 
-internal class PersonaDataOngoingPermissionArgs(val personaId: String, val requiredFields: Array<PersonaDataEntryID>) {
+internal class PersonaDataOngoingPermissionArgs(val personaId: String, val requiredFields: Array<PersonaData.PersonaDataField.Kind>) {
     constructor(savedStateHandle: SavedStateHandle) : this(
         checkNotNull(savedStateHandle[ARG_PERSONA_ID]) as String,
         // TODO persona data

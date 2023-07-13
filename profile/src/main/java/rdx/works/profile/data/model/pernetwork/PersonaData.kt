@@ -66,7 +66,7 @@ data class PersonaData(
                 is CreditCard -> Kind.CreditCard
                 is DateOfBirth -> Kind.DateOfBirth
                 is Name -> Kind.Name
-                is PhoneNumber -> Kind.PhoneNUmber
+                is PhoneNumber -> Kind.PhoneNumber
                 is PostalAddress -> Kind.PostalAddress
                 is Url -> Kind.Url
             }
@@ -285,11 +285,13 @@ data class PersonaData(
         }
 
         enum class Kind {
-            Name, DateOfBirth, CompanyName, EmailAddress, Url, PhoneNUmber, PostalAddress, CreditCard;
+            Name, DateOfBirth, CompanyName, EmailAddress, Url, PhoneNumber, PostalAddress, CreditCard;
 
             companion object {
-                val supportedKinds: List<Kind>
-                    get() = listOf(Name, EmailAddress, PhoneNUmber)
+                val supportedKindsSingleValue: List<Kind>
+                    get() = listOf(Name)
+                val supportedKindsMultipleValues: List<Kind>
+                    get() = listOf(EmailAddress, PhoneNumber)
             }
         }
     }
