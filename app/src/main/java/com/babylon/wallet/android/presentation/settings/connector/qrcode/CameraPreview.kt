@@ -58,7 +58,7 @@ private fun BarcodePreviewView(
                 val barcodeAnalyser = QrcodeAnalyser { qrCodes ->
                     qrCodes.forEach { barcode ->
                         barcode.rawValue?.let { barcodeValue ->
-                            onQrCodeDetected(barcodeValue)
+                            onQrCodeDetected(barcodeValue.replace("radix:", ""))
                         }
                     }
                 }
