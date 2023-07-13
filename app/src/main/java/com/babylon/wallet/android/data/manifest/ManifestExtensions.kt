@@ -10,8 +10,10 @@ import com.radixdlt.ret.Instruction
 import com.radixdlt.ret.Instructions
 import com.radixdlt.ret.ManifestValue
 import com.radixdlt.ret.ManifestValueKind
+import com.radixdlt.ret.TransactionHeader
 import com.radixdlt.ret.TransactionManifest
 import rdx.works.core.ret.ManifestMethod
+import java.lang.StringBuilder
 import java.math.BigDecimal
 import java.util.UUID
 
@@ -52,10 +54,9 @@ private fun lockFeeInstruction(
     return Instruction.CallMethod(
         address = Address(addressToLockFee),
         methodName = ManifestMethod.LockFee.value,
-        args = ManifestValue.ArrayValue(
-            elementValueKind = ManifestValueKind.DECIMAL_VALUE,
-            elements = listOf(ManifestValue.DecimalValue(Decimal(fee.toPlainString())))
-        )
+        args = ManifestValue.TupleValue(fields = listOf(
+            ManifestValue.DecimalValue(Decimal(fee.toPlainString()))
+        ))
     )
 }
 
@@ -83,6 +84,15 @@ fun TransactionManifest.toTransactionRequest(
     ),
     requestMetadata = MessageFromDataChannel.IncomingRequest.RequestMetadata.internal(networkId)
 )
+
+fun TransactionHeader.toPrettyString(): String = StringBuilder()
+    .appendLine("[Start Epoch]         => $startEpochInclusive")
+    .appendLine("[End Epoch]           => $endEpochExclusive")
+    .appendLine("[Network id]          => $networkId")
+    .appendLine("[Nonce]               => $nonce")
+    .appendLine("[Notary is signatory] => $notaryIsSignatory")
+    .appendLine("[Tip %]               => $tipPercentage")
+    .toString()
 
 fun TransactionManifest.toPrettyString(): String {
     val blobSeparator = "\n"

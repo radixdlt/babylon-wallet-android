@@ -9,12 +9,13 @@ import com.babylon.wallet.android.data.gateway.generated.models.TransactionPrevi
 import com.babylon.wallet.android.data.gateway.generated.models.TransactionPreviewRequestFlags
 import com.babylon.wallet.android.data.gateway.generated.models.TransactionPreviewResponse
 import com.babylon.wallet.android.data.manifest.addLockFeeInstructionToManifest
+import com.babylon.wallet.android.data.manifest.toPrettyString
 import com.babylon.wallet.android.data.repository.transaction.TransactionRepository
+import com.babylon.wallet.android.data.transaction.DappRequestFailure.TransactionApprovalFailure.*
 import com.babylon.wallet.android.data.transaction.model.FeePayerSearchResult
 import com.babylon.wallet.android.data.transaction.model.TransactionApprovalRequest
 import com.babylon.wallet.android.domain.common.asKotlinResult
 import com.babylon.wallet.android.domain.common.value
-import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.babylon.wallet.android.domain.model.findAccountWithEnoughXRDBalance
 import com.babylon.wallet.android.domain.usecases.GetAccountsWithResourcesUseCase
 import com.babylon.wallet.android.domain.usecases.transaction.CollectSignersSignaturesUseCase
@@ -33,6 +34,7 @@ import com.radixdlt.ret.SignedIntent
 import com.radixdlt.ret.TransactionHeader
 import com.radixdlt.ret.TransactionManifest
 import rdx.works.core.crypto.PrivateKey
+import rdx.works.core.then
 import rdx.works.core.toByteArray
 import rdx.works.core.toUByteList
 import rdx.works.profile.data.model.pernetwork.Entity
@@ -57,6 +59,8 @@ class TransactionClient @Inject constructor(
     private val submitTransactionUseCase: SubmitTransactionUseCase
 ) {
     val signingState = collectSignersSignaturesUseCase.signingState
+
+    private val logger = Timber.tag("TransactionClient")
 
     suspend fun signAndSubmitTransaction(request: TransactionApprovalRequest): Result<String> {
         val networkId = getCurrentGatewayUseCase().network.networkId().value
@@ -85,74 +89,69 @@ class TransactionClient @Inject constructor(
 
         val signers = getSigningEntities(manifestWithTransactionFee)
         val notaryAndSigners = NotaryAndSigners(signers, ephemeralNotaryPrivateKey)
-        return buildTransactionHeader(networkId, notaryAndSigners).map { header ->
+        return buildTransactionHeader(networkId, notaryAndSigners).then { header ->
             val transactionIntent = kotlin.runCatching {
                 Intent(
                     header = header,
                     manifest = manifestWithTransactionFee
                 )
-            }.getOrNull() ?: return Result.failure(
-                DappRequestException(DappRequestFailure.TransactionApprovalFailure.SignCompiledTransactionIntent)
-            )
+            }.getOrElse {
+                return Result.failure(DappRequestException(SignCompiledTransactionIntent))
+            }
 
             val transactionIntentHash = runCatching {
-                transactionIntent.intentHash().bytes().toByteArray()
-            }.getOrNull() ?: return Result.failure(
-                DappRequestException(
-                    DappRequestFailure.TransactionApprovalFailure.SignCompiledTransactionIntent
-                )
-            )
+                transactionIntent.intentHash()
+            }.getOrElse {
+                return Result.failure(DappRequestException(SignCompiledTransactionIntent))
+            }
 
             val compiledTransactionIntent = runCatching {
-                transactionIntent.compile().toByteArray()
-            }.getOrNull() ?: return Result.failure(
-                DappRequestException(
-                    DappRequestFailure.TransactionApprovalFailure.PrepareNotarizedTransaction
-                )
-            )
+                transactionIntent.compile()
+            }.getOrElse {
+                return Result.failure(DappRequestException(PrepareNotarizedTransaction))
+            }
 
             val signatures = collectSignersSignaturesUseCase(
                 signers = signers,
-                signRequest = SignRequest.SignTransactionRequest(compiledTransactionIntent, transactionIntentHash)
-            ).getOrNull() ?: return Result.failure(
-                DappRequestException(
-                    DappRequestFailure.TransactionApprovalFailure.SignCompiledTransactionIntent
+                signRequest = SignRequest.SignTransactionRequest(
+                    dataToSign = compiledTransactionIntent.toByteArray(),
+                    hashedDataToSign = transactionIntentHash.bytes().toByteArray()
                 )
-            )
+            ).getOrElse {
+                return Result.failure(DappRequestException(SignCompiledTransactionIntent))
+            }
 
             val signedTransactionIntent = runCatching {
                 SignedIntent(
                     intent = transactionIntent,
                     intentSignatures = signatures
                 )
-            }.getOrNull() ?: return Result.failure(
-                DappRequestException(
-                    DappRequestFailure.TransactionApprovalFailure.SignCompiledTransactionIntent
-                )
-            )
+            }.getOrElse {
+                return Result.failure(DappRequestException(SignCompiledTransactionIntent))
+            }
 
             val signedIntentHash = runCatching {
-                signedTransactionIntent.signedIntentHash().bytes().toByteArray()
+                signedTransactionIntent.signedIntentHash()
             }.getOrElse { error ->
                 return Result.failure(
                     DappRequestException(
-                        DappRequestFailure.TransactionApprovalFailure.PrepareNotarizedTransaction,
+                        PrepareNotarizedTransaction,
                         msg = error.message,
                         e = error
                     )
                 )
             }
 
-            val notarySignature = notaryAndSigners.signWithNotary(hashedData = signedIntentHash)
+            val notarySignature = notaryAndSigners.signWithNotary(hashedData = signedIntentHash.bytes().toByteArray())
             val compiledNotarizedIntent = runCatching {
                 NotarizedTransaction(
                     signedIntent = signedTransactionIntent,
                     notarySignature = notarySignature
-                ).compile().toByteArray()
+                ).compile()
             }.getOrElse { e ->
                 return Result.failure(
                     DappRequestException(
-                        DappRequestFailure.TransactionApprovalFailure.PrepareNotarizedTransaction,
+                        PrepareNotarizedTransaction,
                         msg = e.message,
                         e = e
                     )
@@ -160,13 +159,11 @@ class TransactionClient @Inject constructor(
             }
 
             submitTransactionUseCase(
-                transactionIntentHash.toHexString(),
-                compiledNotarizedIntent.toHexString()
-            ).getOrElse { error ->
-                return Result.failure(error)
-            }
+                transactionIntentHash.bytes().toByteArray().toHexString(),
+                compiledNotarizedIntent.toByteArray().toHexString()
+            )
         }.onFailure {
-            Timber.w(it)
+            logger.w(it)
         }
     }
 
@@ -174,21 +171,24 @@ class TransactionClient @Inject constructor(
     /**
      * this might be handy in case of further signing changes
      */
-    private fun printDebug(compiledNotarizedTransactionIntent: ByteArray) {
-        val decompiled = NotarizedTransaction.decompile(compiledNotarizedTransaction = compiledNotarizedTransactionIntent.toUByteList())
+    private fun printDebug(compiledNotarizedTransactionIntent: List<UByte>) {
+        val decompiled = NotarizedTransaction.decompile(compiledNotarizedTransaction = compiledNotarizedTransactionIntent)
         val signedIntent = decompiled.signedIntent()
         val signatures = signedIntent.intentSignatures().map { it as SignatureWithPublicKey.EddsaEd25519 }
         val intent = signedIntent.intent()
 
-        Timber.d("Debug Transaction")
-        Timber.d("Transaction Intent: $intent")
-        Timber.d("Signatures --------")
+        logger.d("================= Transaction")
+        logger.d("== Header:")
+        logger.d(intent.header().toPrettyString())
+        logger.d("== Manifest:")
+        logger.d(intent.manifest().toPrettyString())
+        logger.d("== Signatures:")
         signatures.forEach { signature ->
-            Timber.d("Public key: ${signature.publicKey}, signature: ${signature.signature}")
+            logger.d("Public key: ${signature.publicKey}, signature: ${signature.signature}")
         }
-        Timber.d("Notary Signature: ${(decompiled.notarySignature() as Signature.EddsaEd25519)}")
-        Timber.d("Compiled tx intent: ${intent.compile()}")
-        Timber.d("Compiled Notarized tx intent: ${compiledNotarizedTransactionIntent.toHexString()}")
+        logger.d("Notary Signature: ${(decompiled.notarySignature() as Signature.EddsaEd25519)}")
+        logger.d("== Compiled tx intent: ${intent.compile()}")
+        logger.d("== Compiled Notarized tx intent: ${compiledNotarizedTransactionIntent.toByteArray().toHexString()}")
     }
 
     suspend fun findFeePayerInManifest(manifest: TransactionManifest): Result<FeePayerSearchResult> {
@@ -231,7 +231,7 @@ class TransactionClient @Inject constructor(
         }
         val candidatesWithinOwnAccounts = findFeePayerCandidatesWithinOwnedAccounts(allAccounts.minus(searchedAccounts))
         return if (candidatesWithinOwnAccounts.isEmpty()) {
-            Result.failure(DappRequestFailure.TransactionApprovalFailure.FailedToFindAccountWithEnoughFundsToLockFee)
+            Result.failure(FailedToFindAccountWithEnoughFundsToLockFee)
         } else {
             Result.success(FeePayerSearchResult(candidates = candidatesWithinOwnAccounts))
         }
@@ -276,7 +276,7 @@ class TransactionClient @Inject constructor(
             } catch (e: Exception) {
                 Result.failure(
                     DappRequestException(
-                        DappRequestFailure.TransactionApprovalFailure.BuildTransactionHeader,
+                        BuildTransactionHeader,
                         e.message,
                         e
                     )
