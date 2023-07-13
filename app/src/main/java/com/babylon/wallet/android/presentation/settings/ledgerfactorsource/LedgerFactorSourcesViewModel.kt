@@ -60,9 +60,22 @@ class LedgerFactorSourcesViewModel @Inject constructor(
     fun onConfirmLedgerName(name: String) {
         createLedgerDelegate.onConfirmLedgerName(name)
     }
+
     fun onMessageShown() {
         _state.update { it.copy(uiMessage = null) }
     }
+
+    fun onAddLedgerClick() {
+        _state.update { it.copy(mode = LedgerFactorSourcesMode.AddLedger) }
+    }
+
+    fun onCloseAddLedgerClick() {
+        _state.update { it.copy(mode = LedgerFactorSourcesMode.Details) }
+    }
+}
+
+enum class LedgerFactorSourcesMode {
+    Details, AddLedger
 }
 
 data class LedgerFactorSourcesUiState(
@@ -72,5 +85,6 @@ data class LedgerFactorSourcesUiState(
     val addLedgerSheetState: AddLedgerSheetState = AddLedgerSheetState.Connect,
     val waitingForLedgerResponse: Boolean = false,
     val recentlyConnectedLedgerDevice: LedgerDeviceUiModel? = null,
+    val mode: LedgerFactorSourcesMode = LedgerFactorSourcesMode.Details,
     val uiMessage: UiMessage? = null
 ) : UiState

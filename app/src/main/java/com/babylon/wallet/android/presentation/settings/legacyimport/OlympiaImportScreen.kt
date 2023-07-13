@@ -36,7 +36,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.ModalBottomSheetValue
 import androidx.compose.material.rememberModalBottomSheetState
-import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -56,7 +55,6 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFocusManager
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -286,13 +284,7 @@ private fun OlympiaImportContent(
                     onConfirmLedgerName(it)
                     closeSheetCallback()
                 },
-                upIcon = {
-                    Icon(
-                        painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_close),
-                        tint = RadixTheme.colors.gray1,
-                        contentDescription = "navigate back"
-                    )
-                },
+                backIconType = BackIconType.Back,
                 onClose = { closeSheetCallback() },
                 waitingForLedgerResponse = waitingForLedgerResponse,
                 onAddP2PLink = onAddP2PLink
