@@ -10,12 +10,15 @@ sealed interface Transferable {
      * Will exist only for
      * 1. depositing trasnferrables
      * 2. with guarantee type Predicted
-     * 3. and TransferableResource.Amount
+     * 3. is not newly created
+     * 4. and is TransferableResource.Amount
      */
     val guaranteeAmount: Pair<BigDecimal, Long>?
         get() {
             return when (this) {
                 is Depositing -> {
+                    if (transferable.isNewlyCreated) return null
+
                     val predicted = guaranteeType as? GuaranteeType.Predicted ?: return null
 
                     when (val transferable = transferable) {
@@ -67,11 +70,16 @@ sealed interface TransferableResource {
     val resource: Resource
     val resourceAddress: String
         get() = resource.resourceAddress
+    val isNewlyCreated: Boolean
 
     data class Amount(
         val amount: BigDecimal,
-        override val resource: Resource.FungibleResource
+        override val resource: Resource.FungibleResource,
+        override val isNewlyCreated: Boolean
     ): TransferableResource
 
-    data class NFTs(override val resource: Resource.NonFungibleResource): TransferableResource
+    data class NFTs(
+        override val resource: Resource.NonFungibleResource,
+        override val isNewlyCreated: Boolean
+    ): TransferableResource
 }

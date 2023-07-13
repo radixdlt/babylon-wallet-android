@@ -272,7 +272,8 @@ fun TransactionAccountWithGuaranteesCardPreview() {
                     account = SampleDataProvider().sampleAccount(),
                     transferableAmount = TransferableResource.Amount(
                         amount = BigDecimal.TEN,
-                        resource = SampleDataProvider().sampleFungibleResources()[0]
+                        resource = SampleDataProvider().sampleFungibleResources()[0],
+                        isNewlyCreated = false
                     ),
                     instructionIndex = 1L,
                     guaranteeAmountString = "100"

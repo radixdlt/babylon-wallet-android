@@ -260,7 +260,8 @@ fun TransactionAccountCardPreview() {
                     Transferable.Withdrawing(
                         transferable = TransferableResource.Amount(
                             amount = "689.203".toBigDecimal(),
-                            resource = it
+                            resource = it,
+                            isNewlyCreated = false
                         )
                     )
                 }

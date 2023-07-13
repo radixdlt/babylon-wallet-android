@@ -32,7 +32,8 @@ fun RETResources.toTransferableResource(resourceAddress: String, allResources: L
             resource = allFungibles.find { it.resourceAddress == resourceAddress } ?: Resource.FungibleResource(
                 resourceAddress = resourceAddress,
                 amount = BigDecimal.ZERO
-            )
+            ),
+            isNewlyCreated = false
         )
         is RETResourcesIds -> {
             val collection = allNFTCollections.find { it.resourceAddress == resourceAddress }
@@ -46,7 +47,8 @@ fun RETResources.toTransferableResource(resourceAddress: String, allResources: L
                             localId = Resource.NonFungibleResource.Item.ID.from(id.asStr())
                         )
                     }
-                )
+                ),
+                isNewlyCreated = false
             )
         }
     }
@@ -86,7 +88,8 @@ fun ResourceSpecifier.toTransferableResource(
             } ?: Resource.FungibleResource.from(
                 resourceAddress = resourceAddress,
                 metadata = newlyCreated[resourceAddress.addressString()]
-            )
+            ),
+            isNewlyCreated = newlyCreated[resourceAddress.addressString()] != null
         )
         is ResourceSpecifier.Ids -> {
             val collection = allNFTCollections.find { it.resourceAddress == resourceAddress.addressString() }
@@ -113,7 +116,8 @@ fun ResourceSpecifier.toTransferableResource(
                         IconUrlMetadataItem(url = Uri.parse(it.value))
                     },
                     items = items
-                )
+                ),
+                isNewlyCreated = newlyCreated[resourceAddress.addressString()] != null
             )
         }
     }
