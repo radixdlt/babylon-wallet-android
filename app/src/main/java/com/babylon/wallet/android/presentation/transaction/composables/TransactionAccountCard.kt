@@ -112,7 +112,7 @@ fun TransactionAccountCard(
                 },
                 tokenAmount = transferableAmount.amount.toPlainString(),
                 isTokenAmountVisible = true,
-                guaranteedQuantity = amountTransferable.guaranteedAmount?.displayableQuantity(),
+                guaranteedQuantity = amountTransferable.guaranteeAmount?.first?.displayableQuantity(),
                 shape = shape
             )
         }

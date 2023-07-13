@@ -12,14 +12,16 @@ sealed interface Transferable {
      * 2. with guarantee type Predicted
      * 3. and TransferableResource.Amount
      */
-    val guaranteedAmount: BigDecimal?
+    val guaranteeAmount: Pair<BigDecimal, Long>?
         get() {
             return when (this) {
                 is Depositing -> {
                     val predicted = guaranteeType as? GuaranteeType.Predicted ?: return null
 
                     when (val transferable = transferable) {
-                        is TransferableResource.Amount -> transferable.amount * predicted.guaranteePercent.toBigDecimal()
+                        is TransferableResource.Amount -> {
+                            transferable.amount * predicted.guaranteePercent.toBigDecimal() to predicted.instructionIndex
+                        }
                         is TransferableResource.NFTs -> null
                     }
                 }

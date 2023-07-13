@@ -339,7 +339,7 @@ sealed interface AccountWithTransferableResources {
 }
 
 fun List<AccountWithTransferableResources>.hasCustomizableGuarantees() = any { accountWithTransferableResources ->
-    accountWithTransferableResources.resources.any { it.guaranteedAmount != null }
+    accountWithTransferableResources.resources.any { it.guaranteeAmount != null }
 }
 
 data class TransactionFees(

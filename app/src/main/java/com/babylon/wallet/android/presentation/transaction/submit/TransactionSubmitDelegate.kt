@@ -2,13 +2,14 @@ package com.babylon.wallet.android.presentation.transaction.submit
 
 import com.babylon.wallet.android.data.dapp.DappMessenger
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
+import com.babylon.wallet.android.data.manifest.addGuaranteeInstructionToManifest
 import com.babylon.wallet.android.data.transaction.DappRequestException
 import com.babylon.wallet.android.data.transaction.DappRequestFailure
 import com.babylon.wallet.android.data.transaction.TransactionClient
-import com.babylon.wallet.android.data.transaction.model.FeePayerSearchResult
 import com.babylon.wallet.android.data.transaction.model.TransactionApprovalRequest
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.babylon.wallet.android.presentation.common.UiMessage
+import com.babylon.wallet.android.presentation.transaction.PreviewType
 import com.babylon.wallet.android.presentation.transaction.TransactionApprovalViewModel2.Event
 import com.babylon.wallet.android.presentation.transaction.TransactionApprovalViewModel2.State
 import com.babylon.wallet.android.utils.AppEvent
@@ -37,9 +38,9 @@ class TransactionSubmitDelegate(
 
     fun onSubmit() {
         approvalJob = appScope.launch {
-            val transactionRequest = state.value.request
+            val currentState = state.value
             val currentNetworkId = getCurrentGatewayUseCase().network.networkId().value
-            val manifestNetworkId = transactionRequest.transactionManifestData.networkId
+            val manifestNetworkId = currentState.request.transactionManifestData.networkId
 
             if (currentNetworkId != manifestNetworkId) {
                 approvalJob = null
@@ -50,20 +51,16 @@ class TransactionSubmitDelegate(
 
             state.update { it.copy(isSubmitting = true) }
 
-            var manifest = transactionRequest.transactionManifestData.toTransactionManifest()
-            // TODO Adjust guarantees
-//            manifest = manifest.addGuaranteeInstructionToManifest(
-//                address = transactionAccountUiItem.resourceAddress.orEmpty(),
-//                guaranteedAmount = guaranteedAmount,
-//                index = transactionAccountUiItem.instructionIndex ?: 0
-//            )
+            val manifest = currentState.request.transactionManifestData
+                .toTransactionManifest()
+                .attachGuarantees(currentState.previewType)
 
             transactionClient.findFeePayerInManifest(manifest)
                 .onSuccess { feePayerResult ->
                     state.update { it.copy(isSubmitting = false) }
                     if (feePayerResult.feePayerAddressFromManifest != null) {
                         signAndSubmit(
-                            transactionRequest = transactionRequest,
+                            transactionRequest = currentState.request,
                             feePayerAddress = feePayerResult.feePayerAddressFromManifest,
                             manifest = manifest
                         )
@@ -85,10 +82,10 @@ class TransactionSubmitDelegate(
                         it.copy(isSubmitting = false, error = UiMessage.ErrorMessage.from(error = error))
                     }
 
-                    if (error is DappRequestException && !transactionRequest.isInternal) {
+                    if (error is DappRequestException && !currentState.request.isInternal) {
                         dAppMessenger.sendWalletInteractionResponseFailure(
-                            dappId = transactionRequest.dappId,
-                            requestId = transactionRequest.requestId,
+                            dappId = currentState.request.dappId,
+                            requestId = currentState.request.requestId,
                             error = error.failure.toWalletErrorType(),
                             message = error.failure.getDappMessage()
                         )
@@ -216,4 +213,21 @@ class TransactionSubmitDelegate(
         approvalJob = null
     }
 
+    private fun TransactionManifest.attachGuarantees(previewType: PreviewType): TransactionManifest {
+        var manifest = this
+        if (previewType is PreviewType.Transaction) {
+            previewType.to.map { it.resources }.flatten().forEach { depositing ->
+                val guaranteedAmount = depositing.guaranteeAmount
+                if (guaranteedAmount != null) {
+                    manifest = manifest.addGuaranteeInstructionToManifest(
+                        address = depositing.transferable.resourceAddress,
+                        guaranteedAmount = guaranteedAmount.first.toPlainString(),
+                        index = guaranteedAmount.second.toInt()
+                    )
+                }
+            }
+        }
+
+        return manifest
+    }
 }
