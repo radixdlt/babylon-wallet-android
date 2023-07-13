@@ -128,6 +128,13 @@ class TransactionSubmitDelegate(
             }
             onSendScreenEvent(Event.Dismiss)
             incomingRequestRepository.requestHandled(request.id)
+        } else if (state.value.signingState != null) {
+            approvalJob?.cancel()
+            approvalJob = null
+            transactionClient.cancelSigning()
+            state.update {
+                it.copy(isSubmitting = false)
+            }
         } else {
             Timber.d("Cannot dismiss transaction while is in progress")
         }
@@ -142,7 +149,6 @@ class TransactionSubmitDelegate(
         state.update {
             it.copy(
                 isSubmitting = true,
-                isSigning = true
             )
         }
         val request = TransactionApprovalRequest(
@@ -153,7 +159,6 @@ class TransactionSubmitDelegate(
         transactionClient.signAndSubmitTransaction(request).onSuccess { txId ->
             state.update {
                 it.copy(
-                    isSigning = false,
                     isSubmitting = false
                 )
             }
@@ -183,7 +188,6 @@ class TransactionSubmitDelegate(
         }.onFailure { error ->
             state.update {
                 it.copy(
-                    isSigning = false,
                     isSubmitting = false,
                     error = UiMessage.ErrorMessage.from(error = error)
                 )
@@ -209,8 +213,6 @@ class TransactionSubmitDelegate(
                 )
             )
         }
-
-        approvalJob = null
     }
 
     private fun TransactionManifest.attachGuarantees(previewType: PreviewType): TransactionManifest {

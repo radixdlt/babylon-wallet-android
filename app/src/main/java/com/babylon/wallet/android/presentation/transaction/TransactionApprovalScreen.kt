@@ -49,6 +49,7 @@ import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.babylon.wallet.android.domain.model.TransactionManifestData
 import com.babylon.wallet.android.presentation.common.FullscreenCircularProgressContent
 import com.babylon.wallet.android.presentation.settings.dappdetail.DAppDetailsSheetContent
+import com.babylon.wallet.android.presentation.status.signing.SigningStatusBottomDialog
 import com.babylon.wallet.android.presentation.transaction.TransactionApprovalViewModel.State
 import com.babylon.wallet.android.presentation.transaction.composables.FeePayerSelectionSheet
 import com.babylon.wallet.android.presentation.transaction.composables.GuaranteesSheet
@@ -91,6 +92,14 @@ fun TransactionApprovalScreen(
         onPayerSelected = viewModel::onPayerSelected,
         onPayerConfirmed =  viewModel::onPayerConfirmed
     )
+
+    state.signingState?.let {
+        SigningStatusBottomDialog(
+            onDismissDialogClick = viewModel::onBackClick,
+            signingState = it
+        )
+    }
+
     LaunchedEffect(Unit) {
         viewModel.oneOffEvent.collect { event ->
             when (event) {
@@ -270,7 +279,7 @@ private fun ApproveButton(
                 showNotSecuredDialog = true
             }
         },
-        enabled = !state.isSigning /*&& state.canApprove && */,
+        enabled = !state.isSubmitting,
         icon = {
             Icon(
                 painter = painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_lock),

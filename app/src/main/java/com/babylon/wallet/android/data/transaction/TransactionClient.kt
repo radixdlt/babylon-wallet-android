@@ -36,7 +36,6 @@ import com.radixdlt.ret.TransactionManifest
 import rdx.works.core.crypto.PrivateKey
 import rdx.works.core.then
 import rdx.works.core.toByteArray
-import rdx.works.core.toUByteList
 import rdx.works.profile.data.model.pernetwork.Entity
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.domain.GetProfileUseCase
@@ -70,6 +69,10 @@ class TransactionClient @Inject constructor(
             networkId,
             request.feePayerAddress
         )
+    }
+
+    fun cancelSigning() {
+        collectSignersSignaturesUseCase.cancel()
     }
 
     private suspend fun signAndSubmitTransaction(

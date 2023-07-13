@@ -40,7 +40,7 @@ class CollectSignersSignaturesUseCase @Inject constructor(
             when (factorSource.id.kind) {
                 FactorSourceKind.DEVICE -> {
                     factorSource as DeviceFactorSource
-                    _signingState.update { SigningState.Device.Pending(factorSource) }
+                    //_signingState.update { SigningState.Device.Pending(factorSource) }
                     val signatures = signWithDeviceFactorSourceUseCase(
                         deviceFactorSource = factorSource,
                         signers = signers,
@@ -48,7 +48,7 @@ class CollectSignersSignaturesUseCase @Inject constructor(
                         signingPurpose = signingPurpose
                     )
                     signaturesWithPublicKeys.addAll(signatures)
-                    _signingState.update { SigningState.Device.Success(factorSource) }
+                    //_signingState.update { SigningState.Device.Success(factorSource) }
                 }
 
                 FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET -> {
@@ -78,6 +78,10 @@ class CollectSignersSignaturesUseCase @Inject constructor(
             }
         }
         return Result.success(signaturesWithPublicKeys)
+    }
+
+    fun cancel() {
+        _signingState.update { null }
     }
 }
 

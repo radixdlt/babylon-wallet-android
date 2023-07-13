@@ -101,7 +101,7 @@ class TransactionApprovalViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            transactionClient.signingState.filterNotNull().collect { signingState ->
+            transactionClient.signingState.collect { signingState ->
                 _state.update { state ->
                     state.copy(signingState = signingState)
                 }
@@ -165,7 +165,6 @@ class TransactionApprovalViewModel @Inject constructor(
         val isDeviceSecure: Boolean,
         val isLoading: Boolean,
         val isSubmitting: Boolean = false,
-        val isSigning: Boolean = false,
         val isRawManifestVisible: Boolean = false,
         val previewType: PreviewType,
         val fees: TransactionFees = TransactionFees(),
@@ -175,9 +174,6 @@ class TransactionApprovalViewModel @Inject constructor(
         val networkFee: BigDecimal = TransactionConfig.NETWORK_FEE.toBigDecimal(),
         val signingState: SigningState? = null
     ): UiState {
-
-        val isBackEnabled: Boolean
-            get() = !isSigning
 
         val isRawManifestToggleVisible: Boolean
             get() = previewType is PreviewType.Transaction

@@ -70,8 +70,7 @@ fun TransactionPreviewHeader(
         },
         navigationIcon = {
             IconButton(
-                onClick = onBackClick,
-                enabled = state.isBackEnabled
+                onClick = onBackClick
             ) {
                 Icon(
                     painterResource(

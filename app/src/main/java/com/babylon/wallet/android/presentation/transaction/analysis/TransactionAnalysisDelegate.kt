@@ -52,6 +52,7 @@ class TransactionAnalysisDelegate(
 
             state.update {
                 it.copy(
+                    isRawManifestVisible = previewType == PreviewType.NonConforming,
                     fees = TransactionFees(networkFee = TransactionConfig.NETWORK_FEE.toBigDecimal()),
                     isLoading = false,
                     previewType = previewType
