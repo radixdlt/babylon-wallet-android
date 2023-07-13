@@ -181,8 +181,7 @@ class PersonaEditableImpl : PersonaEditable {
         existingFieldKinds: Set<PersonaData.PersonaDataField.Kind>
     ): PersistentList<PersonaFieldWrapper> {
         val requiredFieldKinds = personaEditState.value.requiredFieldKinds
-        val supportedKindsMultipleValues = PersonaData.PersonaDataField.Kind.supportedKindsMultipleValues
-        return ((PersonaData.PersonaDataField.Kind.supportedKindsSingleValue.toSet() - existingFieldKinds) + supportedKindsMultipleValues)
+        return (PersonaData.PersonaDataField.Kind.supportedKinds.toSet() - existingFieldKinds)
             .sortedBy { it.ordinal }.map { PersonaFieldWrapper(required = requiredFieldKinds.contains(it), value = it.empty()) }
             .toPersistentList()
     }

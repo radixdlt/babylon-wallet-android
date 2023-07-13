@@ -1,5 +1,8 @@
 package com.babylon.wallet.android.domain.model
 
+import android.os.Parcelable
+import kotlinx.parcelize.Parcelize
+import kotlinx.serialization.Serializable
 import rdx.works.profile.data.model.factorsources.FactorSource
 import rdx.works.profile.data.model.factorsources.LedgerHardwareWalletFactorSource
 import rdx.works.profile.data.model.pernetwork.RequestedNumber
@@ -117,12 +120,14 @@ sealed interface MessageFromDataChannel {
             }
         }
 
+        @Serializable
+        @Parcelize
         data class PersonaRequestItem(
             val isRequestingName: Boolean,
             val numberOfRequestedEmailAddresses: NumberOfValues?,
             val numberOfRequestedPhoneNumbers: NumberOfValues?,
             val isOngoing: Boolean
-        ) {
+        ) : Parcelable {
             fun isValid(): Boolean {
                 return isRequestingName || numberOfRequestedPhoneNumbers != null || numberOfRequestedEmailAddresses != null
             }
@@ -133,10 +138,12 @@ sealed interface MessageFromDataChannel {
             val personaData: Boolean
         )
 
+        @Parcelize
+        @Serializable
         data class NumberOfValues(
             val quantity: Int,
             val quantifier: Quantifier
-        ) {
+        ) : Parcelable {
 
             fun exactly(): Boolean {
                 return quantifier == Quantifier.Exactly

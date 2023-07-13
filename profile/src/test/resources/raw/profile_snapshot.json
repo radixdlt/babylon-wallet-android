@@ -489,7 +489,7 @@
               "value" : {
                 "family" : "Nakamoto",
                 "given" : "Satoshi",
-                "middle" : "Creator of Bitcoin",
+                "nickname" : "Creator of Bitcoin",
                 "variant" : "eastern"
               }
             },

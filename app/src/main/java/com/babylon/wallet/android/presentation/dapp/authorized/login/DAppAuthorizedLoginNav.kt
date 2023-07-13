@@ -9,6 +9,7 @@ import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavType
 import androidx.navigation.navArgument
+import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.google.accompanist.navigation.animation.composable
 
 @VisibleForTesting
@@ -32,9 +33,9 @@ fun NavGraphBuilder.dAppLoginAuthorized(
     onBackClick: () -> Unit,
     navigateToChooseAccount: (Int, Boolean, Boolean, Boolean) -> Unit,
     navigateToPermissions: (Int, Boolean, Boolean, Boolean) -> Unit,
-    navigateToOneTimePersonaData: (String) -> Unit,
+    navigateToOneTimePersonaData: (MessageFromDataChannel.IncomingRequest.PersonaRequestItem) -> Unit,
     navigateToSelectPersona: (String) -> Unit,
-    navigateToOngoingPersonaData: (String, String) -> Unit,
+    navigateToOngoingPersonaData: (String, MessageFromDataChannel.IncomingRequest.PersonaRequestItem) -> Unit,
 ) {
     composable(
         route = ROUTE_DAPP_LOGIN_AUTHORIZED_SCREEN,

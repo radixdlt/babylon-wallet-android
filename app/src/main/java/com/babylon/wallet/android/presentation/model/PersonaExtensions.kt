@@ -12,7 +12,7 @@ import rdx.works.profile.data.model.pernetwork.RequestedNumber
 @StringRes
 fun PersonaData.PersonaDataField.Kind.toDisplayResource(): Int {
     return when (this) {
-        PersonaData.PersonaDataField.Kind.Name -> R.string.authorizedDapps_personaDetails_name
+        PersonaData.PersonaDataField.Kind.Name -> R.string.authorizedDapps_personaDetails_fullName
         PersonaData.PersonaDataField.Kind.EmailAddress -> R.string.authorizedDapps_personaDetails_emailAddress
         PersonaData.PersonaDataField.Kind.PhoneNumber -> R.string.authorizedDapps_personaDetails_phoneNumber
         else -> R.string.empty
@@ -66,3 +66,10 @@ fun PersonaData.PersonaDataField.Kind.empty(): PersonaData.PersonaDataField {
         else -> throw RuntimeException("Field $this not supported")
     }
 }
+
+val PersonaData.PersonaDataField.Name.fullName: String
+    get() = if (variant == PersonaData.PersonaDataField.Name.Variant.Eastern) {
+        listOfNotNull(family, given, nickname).filter { it.isNotEmpty() }.joinToString(" ")
+    } else {
+        listOfNotNull(given, nickname, family).filter { it.isNotEmpty() }.joinToString(" ")
+    }

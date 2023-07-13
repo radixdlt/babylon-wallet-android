@@ -199,10 +199,9 @@ private fun PersonaDetailList(
                 label = stringResource(id = R.string.authorizedDapps_personaDetails_personaLabelHeading),
                 value = persona.displayName
             )
-            Divider(
-                modifier = Modifier.padding(dimensions.paddingDefault)
-            )
+            Divider(modifier = Modifier.padding(dimensions.paddingDefault), color = RadixTheme.colors.gray4)
         }
+        val lastItem = persona.personaData.allFields.last()
         items(persona.personaData.allFields) { field ->
             PersonaDataFieldRow(
                 modifier = Modifier
@@ -210,10 +209,19 @@ private fun PersonaDetailList(
                     .padding(horizontal = dimensions.paddingDefault),
                 field = field.value
             )
-            Spacer(modifier = Modifier.height(dimensions.paddingLarge))
+            if (field != lastItem) {
+                Divider(
+                    modifier = Modifier.padding(horizontal = dimensions.paddingDefault, vertical = dimensions.paddingLarge),
+                    color = RadixTheme.colors.gray4
+                )
+            }
         }
         item {
+            Spacer(modifier = Modifier.height(dimensions.paddingLarge))
             RadixSecondaryButton(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = dimensions.paddingXLarge),
                 text = stringResource(id = R.string.authorizedDapps_personaDetails_editPersona),
                 onClick = { onEditPersona(persona.address) },
                 throttleClicks = true
@@ -223,7 +231,7 @@ private fun PersonaDetailList(
                 RadixSecondaryButton(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = dimensions.paddingDefault),
+                        .padding(horizontal = dimensions.paddingXLarge),
                     text = "Create &amp; Upload Auth Key",
                     onClick = onCreateAndUploadAuthKey,
                     enabled = !loading,
