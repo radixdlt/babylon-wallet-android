@@ -46,7 +46,7 @@ fun Entity.networkId() {
 }
 
 fun Network.Persona.filterFields(with: List<PersonaDataEntryID>) =
-    personaData.allFieldIds().filter { with.contains(it) }
+    personaData.allFieldIds.filter { with.contains(it) }
 
 fun List<Network.NextDerivationIndices>?.getNextAccountDerivationIndex(forNetworkId: NetworkId): Int {
     if (this == null) throw WasNotDeviceFactorSource()
