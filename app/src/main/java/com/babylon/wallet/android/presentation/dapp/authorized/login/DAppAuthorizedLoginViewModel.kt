@@ -182,18 +182,18 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
                     _state.update {
                         it.copy(
                             initialAuthorizedLoginRoute = InitialAuthorizedLoginRoute.Permission(
-                                ongoingAccountsRequestItem.numberOfAccounts,
-                                isExactAccountsCount = ongoingAccountsRequestItem.quantifier.exactly()
+                                ongoingAccountsRequestItem.numberOfValues.quantity,
+                                isExactAccountsCount = ongoingAccountsRequestItem.numberOfValues.exactly()
                             )
                         )
                     }
                 }
 
                 ongoingPersonaDataRequestItem != null &&
-                        ongoingPersonaDataRequestItem.isValid() && (!requestedDataAlreadyGranted || resetPersonaData) -> {
+                    ongoingPersonaDataRequestItem.isValid() && (!requestedDataAlreadyGranted || resetPersonaData) -> {
                     _state.update { state ->
                         state.copy(
-                            //TODO persona data
+                            // TODO persona data
 //                            initialAuthorizedLoginRoute = InitialAuthorizedLoginRoute.OngoingPersonaData(
 //                                authRequest.personaAddress,
 //                                ongoingPersonaDataRequestItem.fields.map { it.toKind() }.encodeToString()
@@ -206,8 +206,8 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
                     _state.update {
                         it.copy(
                             initialAuthorizedLoginRoute = InitialAuthorizedLoginRoute.ChooseAccount(
-                                oneTimeAccountsRequestItem.numberOfAccounts,
-                                isExactAccountsCount = oneTimeAccountsRequestItem.quantifier.exactly(),
+                                oneTimeAccountsRequestItem.numberOfValues.quantity,
+                                isExactAccountsCount = oneTimeAccountsRequestItem.numberOfValues.exactly(),
                                 oneTime = true
                             )
                         )
@@ -217,7 +217,7 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
                 oneTimePersonaDataRequestItem != null && oneTimePersonaDataRequestItem.isValid() -> {
                     _state.update { state ->
                         state.copy(
-                            //TODO persona data
+                            // TODO persona data
 //                            initialAuthorizedLoginRoute = InitialAuthorizedLoginRoute.OneTimePersonaData(
 //                                oneTimePersonaDataRequestItem.fields.map { it.toKind() }.encodeToString()
 //                            )
@@ -294,8 +294,8 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
     private suspend fun handleOneTimeAccountRequestItem(
         oneTimeAccountsRequestItem: AccountsRequestItem
     ) {
-        val numberOfAccounts = oneTimeAccountsRequestItem.numberOfAccounts
-        val isExactAccountsCount = oneTimeAccountsRequestItem.quantifier.exactly()
+        val numberOfAccounts = oneTimeAccountsRequestItem.numberOfValues.quantity
+        val isExactAccountsCount = oneTimeAccountsRequestItem.numberOfValues.exactly()
         sendEvent(
             Event.ChooseAccounts(
                 numberOfAccounts,
@@ -307,7 +307,7 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
 
     fun onGrantedPersonaDataOngoing() {
         viewModelScope.launch {
-            //TODO persona data
+            // TODO persona data
 //            val requiredFields =
 //                checkNotNull(request.ongoingPersonaDataRequestItem?.fields?.map { it.toKind() })
 //            val selectedPersona = checkNotNull(state.value.selectedPersona)
@@ -335,7 +335,7 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
 
     fun onGrantedPersonaDataOnetime(persona: Network.Persona) {
         viewModelScope.launch {
-            //TODO persona data
+            // TODO persona data
 //            val requiredFields =
 //                checkNotNull(request.oneTimePersonaDataRequestItem?.fields?.map { it.toKind() })
 //            val requiredDataFields = persona.fields.filter { requiredFields.contains(it.id) }
@@ -358,8 +358,8 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
                 dAppConnectionRepository.dAppAuthorizedPersonaAccountAddresses(
                     dapp.dAppDefinitionAddress,
                     personaAddress,
-                    accountsRequestItem.numberOfAccounts,
-                    accountsRequestItem.quantifier.toProfileShareAccountsQuantifier()
+                    accountsRequestItem.numberOfValues.quantity,
+                    accountsRequestItem.numberOfValues.toProfileShareAccountsQuantifier()
                 )
             potentialOngoingAddresses.isNotEmpty()
         } ?: false
@@ -372,7 +372,7 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
         val dapp = requireNotNull(editedDapp)
         val dataAccessAlreadyGranted = personaDataAccessAlreadyGranted(requestItem, personaAddress)
         if (request.resetRequestItem?.personaData == true || !dataAccessAlreadyGranted) {
-            //TODO persona data
+            // TODO persona data
 //            sendEvent(
 //                Event.PersonaDataOngoing(
 //                    personaAddress,
@@ -380,7 +380,7 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
 //                )
 //            )
         } else {
-            //TODO persona data
+            // TODO persona data
 //            val dataFields = getProfileUseCase.personaOnCurrentNetwork(personaAddress)
 //                ?.filterFields(requestItem.fields.map { it.toKind() }).orEmpty()
 //            _state.update { it.copy(selectedOngoingDataFields = dataFields) }
@@ -418,7 +418,7 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
         requestItem: MessageFromDataChannel.IncomingRequest.PersonaRequestItem?,
         personaAddress: String
     ): Boolean {
-        //TODO persona data
+        // TODO persona data
 //        if (requestItem == null) return false
 //        val dapp = requireNotNull(editedDapp)
 //        val requestedFieldsCount = requestItem.fields.size
@@ -436,7 +436,7 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
 
     private fun handleOneTimePersonaDataRequestItem(oneTimePersonaRequestItem: MessageFromDataChannel.IncomingRequest.PersonaRequestItem) {
         viewModelScope.launch {
-            //TODO persona data
+            // TODO persona data
 //            sendEvent(
 //                Event.PersonaDataOnetime(
 //                    oneTimePersonaRequestItem.fields.map { it.toKind() }.encodeToString()
@@ -450,14 +450,14 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
         personaAddress: String
     ) {
         val dapp = requireNotNull(editedDapp)
-        val numberOfAccounts = ongoingAccountsRequestItem.numberOfAccounts
-        val isExactAccountsCount = ongoingAccountsRequestItem.quantifier.exactly()
+        val numberOfAccounts = ongoingAccountsRequestItem.numberOfValues.quantity
+        val isExactAccountsCount = ongoingAccountsRequestItem.numberOfValues.exactly()
         val potentialOngoingAddresses =
             dAppConnectionRepository.dAppAuthorizedPersonaAccountAddresses(
                 dapp.dAppDefinitionAddress,
                 personaAddress,
                 numberOfAccounts,
-                ongoingAccountsRequestItem.quantifier.toProfileShareAccountsQuantifier()
+                ongoingAccountsRequestItem.numberOfValues.toProfileShareAccountsQuantifier()
             )
         if (request.resetRequestItem?.accounts == true || potentialOngoingAddresses.isEmpty()) {
             sendEvent(
@@ -590,8 +590,8 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
                         Shared(
                             selectedAccounts.map { it.address },
                             RequestedNumber(
-                                handledRequest.quantifier.toProfileShareAccountsQuantifier(),
-                                handledRequest.numberOfAccounts
+                                handledRequest.numberOfValues.toProfileShareAccountsQuantifier(),
+                                handledRequest.numberOfValues.quantity
                             )
                         )
                     )

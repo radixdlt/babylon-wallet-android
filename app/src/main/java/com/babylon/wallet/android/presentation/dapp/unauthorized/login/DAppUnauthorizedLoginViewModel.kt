@@ -11,7 +11,7 @@ import com.babylon.wallet.android.data.transaction.DappRequestFailure
 import com.babylon.wallet.android.domain.common.onError
 import com.babylon.wallet.android.domain.common.onValue
 import com.babylon.wallet.android.domain.model.DAppWithMetadata
-import com.babylon.wallet.android.domain.model.MessageFromDataChannel.IncomingRequest.AccountsRequestItem
+import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
@@ -94,22 +94,24 @@ class DAppUnauthorizedLoginViewModel @Inject constructor(
                 _state.update {
                     it.copy(
                         initialUnauthorizedLoginRoute = InitialUnauthorizedLoginRoute.ChooseAccount(
-                            request.oneTimeAccountsRequestItem.numberOfAccounts,
-                            request.oneTimeAccountsRequestItem.quantifier == AccountsRequestItem.AccountNumberQuantifier.Exactly
+                            request.oneTimeAccountsRequestItem.numberOfValues.quantity,
+                            request.oneTimeAccountsRequestItem.numberOfValues.quantifier == MessageFromDataChannel.IncomingRequest.NumberOfValues.Quantifier.Exactly
                         )
                     )
                 }
             }
+
             request.oneTimePersonaDataRequestItem != null -> {
                 _state.update { state ->
                     state.copy(
-                        //TODO persona data
+                        // TODO persona data
 //                        initialUnauthorizedLoginRoute = InitialUnauthorizedLoginRoute.OnetimePersonaData(
 //                            request.oneTimePersonaDataRequestItem.fields.map { it.toKind() }.encodeToString()
 //                        )
                     )
                 }
             }
+
             else -> onRejectRequest()
         }
     }
@@ -135,7 +137,7 @@ class DAppUnauthorizedLoginViewModel @Inject constructor(
     fun onGrantedPersonaDataOnetime() {
         val selectedPersona = checkNotNull(state.value.selectedPersona)
         viewModelScope.launch {
-            //TODO persona data
+            // TODO persona data
 //            val requiredFields = checkNotNull(request.oneTimePersonaDataRequestItem?.fields?.map { it.toKind() })
 //            getProfileUseCase.personaOnCurrentNetwork(selectedPersona.persona.address)?.let { updatedPersona ->
 //                val dataFields = updatedPersona.fields.filter { requiredFields.contains(it.id) }
@@ -170,7 +172,7 @@ class DAppUnauthorizedLoginViewModel @Inject constructor(
         viewModelScope.launch {
             _state.update { it.copy(selectedAccountsOneTime = onetimeAccounts.toPersistentList()) }
             if (request.oneTimePersonaDataRequestItem != null) {
-                //TODO persona data
+                // TODO persona data
 //                sendEvent(
 //                    Event.PersonaDataOnetime(
 //                        request.oneTimePersonaDataRequestItem.fields.map { it.toKind() }.encodeToString()

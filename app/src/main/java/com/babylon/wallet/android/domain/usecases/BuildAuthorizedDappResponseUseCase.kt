@@ -52,7 +52,7 @@ class BuildAuthorizedDappResponseUseCase @Inject constructor(
                         auth = authResponse.getOrThrow(),
                         oneTimeAccounts = oneTimeAccountsResponseItem.getOrNull(),
                         ongoingAccounts = ongoingAccountsResponseItem.getOrNull(),
-                        //TODO persona data
+                        // TODO persona data
 //                        ongoingPersonaData = ongoingDataFields.toDataModel(),
 //                        oneTimePersonaData = onetimeDataFields.toDataModel()
                     )

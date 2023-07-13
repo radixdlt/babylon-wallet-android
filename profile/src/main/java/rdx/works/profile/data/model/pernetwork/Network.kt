@@ -353,7 +353,6 @@ data class Network(
                 }
             }
         }
-
     }
 
     @Serializable

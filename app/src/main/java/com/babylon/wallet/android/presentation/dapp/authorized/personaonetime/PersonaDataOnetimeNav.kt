@@ -19,7 +19,7 @@ internal const val ARG_REQUIRED_FIELDS = "required_fields"
 
 internal class PersonaDataOnetimeArgs(val requiredFields: Array<PersonaDataEntryID>) {
     constructor(savedStateHandle: SavedStateHandle) : this(
-        //TODO persona data
+        // TODO persona data
 //        (checkNotNull(savedStateHandle[ARG_REQUIRED_FIELDS]) as String).decodePersonaDataKinds().toTypedArray()
         emptyArray()
     )

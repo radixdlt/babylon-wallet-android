@@ -44,7 +44,8 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme.dimensions
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.presentation.common.FullscreenCircularProgressContent
 import com.babylon.wallet.android.presentation.model.PersonaDisplayNameFieldWrapper
-import com.babylon.wallet.android.presentation.model.PersonaFieldKindWrapper
+import com.babylon.wallet.android.presentation.model.PersonaFieldWrapper
+import com.babylon.wallet.android.presentation.model.toDisplayResource
 import com.babylon.wallet.android.presentation.ui.composables.BackIconType
 import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.BottomPrimaryButton
@@ -53,11 +54,12 @@ import com.babylon.wallet.android.presentation.ui.composables.PersonaRoundedAvat
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.UnderlineTextButton
 import com.babylon.wallet.android.presentation.ui.composables.persona.AddFieldSheet
-import com.babylon.wallet.android.presentation.ui.composables.persona.PersonaPropertyInput
+import com.babylon.wallet.android.presentation.ui.composables.persona.PersonaDataFieldInput
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.launch
 import rdx.works.profile.data.model.pernetwork.Network
+import rdx.works.profile.data.model.pernetwork.PersonaData
 import rdx.works.profile.data.model.pernetwork.PersonaDataEntryID
 
 @Composable
@@ -108,12 +110,12 @@ private fun PersonaEditContent(
     persona: Network.Persona?,
     onSave: () -> Unit,
     onEditAvatar: () -> Unit,
-    editedFields: ImmutableList<PersonaFieldKindWrapper>,
-    fieldsToAdd: ImmutableList<PersonaFieldKindWrapper>,
+    editedFields: ImmutableList<PersonaFieldWrapper>,
+    fieldsToAdd: ImmutableList<PersonaFieldWrapper>,
     onAddFields: () -> Unit,
     onSelectionChanged: (PersonaDataEntryID, Boolean) -> Unit,
     onDeleteField: (PersonaDataEntryID) -> Unit,
-    onValueChanged: (PersonaDataEntryID, String) -> Unit,
+    onValueChanged: (PersonaDataEntryID, PersonaData.PersonaDataField) -> Unit,
     onDisplayNameChanged: (String) -> Unit,
     addButtonEnabled: Boolean,
     personaDisplayName: PersonaDisplayNameFieldWrapper,
@@ -252,9 +254,9 @@ private fun PersonaDetailList(
     modifier: Modifier = Modifier,
     onEditAvatar: () -> Unit,
     onAddField: () -> Unit,
-    editedFields: ImmutableList<PersonaFieldKindWrapper>,
+    editedFields: ImmutableList<PersonaFieldWrapper>,
     onDeleteField: (PersonaDataEntryID) -> Unit,
-    onValueChanged: (PersonaDataEntryID, String) -> Unit,
+    onValueChanged: (PersonaDataEntryID, PersonaData.PersonaDataField) -> Unit,
     onDisplayNameChanged: (String) -> Unit,
     personaDisplayName: PersonaDisplayNameFieldWrapper,
     addButtonEnabled: Boolean,
@@ -320,29 +322,28 @@ private fun PersonaDetailList(
             } else {
                 stringResource(id = R.string.createPersona_requiredField)
             }
-            PersonaPropertyInput(
+            PersonaDataFieldInput(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = dimensions.paddingDefault),
-//                label = stringResource(id = field.id.toDisplayResource()),
-                label = "", //TODO persona data
-                value = field.value,
+                label = stringResource(id = field.value.kind.toDisplayResource()),
+                field = field.value,
                 onValueChanged = {
                     onValueChanged(field.id, it)
-                },
-                onFocusChanged = {
-                    onFieldFocusChanged(field.id, it.hasFocus)
                 },
                 onDeleteField = {
                     onDeleteField(field.id)
                 },
+                onFocusChanged = {
+                    onFieldFocusChanged(field.id, it.hasFocus)
+                },
                 required = field.required,
+                phoneInput = field.isPhoneNumber(),
                 error = if (field.shouldDisplayValidationError && field.valid == false) {
                     validationError
                 } else {
                     null
                 },
-                phoneInput = field.isPhoneNumber()
             )
             Spacer(modifier = Modifier.height(dimensions.paddingLarge))
         }

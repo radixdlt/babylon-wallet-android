@@ -48,7 +48,6 @@ data class PersonaData(
             companyName
         ) + phoneNumbers + emailAddresses + urls + postalAddresses + creditCards
 
-
     val allFieldIds: List<PersonaDataEntryID>
         get() = allFields.map { it.id }
 
@@ -59,6 +58,18 @@ data class PersonaData(
     }
 
     sealed interface PersonaDataField {
+
+        val kind: Kind
+            get() = when (this) {
+                is Email -> Kind.EmailAddress
+                is CompanyName -> Kind.CompanyName
+                is CreditCard -> Kind.CreditCard
+                is DateOfBirth -> Kind.DateOfBirth
+                is Name -> Kind.Name
+                is PhoneNumber -> Kind.PhoneNUmber
+                is PostalAddress -> Kind.PostalAddress
+                is Url -> Kind.Url
+            }
 
         @JvmInline
         @Serializable
@@ -139,7 +150,7 @@ data class PersonaData(
                 @SerialName("postcode")
                 data class Postcode(val value: String) : Field
 
-                /// US
+                // / US
                 @Serializable
                 @SerialName("zip")
                 data class Zip(val value: String) : Field
@@ -152,52 +163,52 @@ data class PersonaData(
                 @SerialName("state")
                 data class State(val value: String) : Field
 
-                /// Australia
+                // / Australia
                 @Serializable
                 @SerialName("suburb")
                 data class Suburb(val value: String) : Field
 
-                /// Brazil
+                // / Brazil
                 @Serializable
                 @SerialName("neighbourhood")
                 data class Neighbourhood(val value: String) : Field
 
-                /// Canada
+                // / Canada
                 @Serializable
                 @SerialName("province")
                 data class Province(val value: String) : Field
 
-                /// Egypt
+                // / Egypt
                 @Serializable
                 @SerialName("governorate")
                 data class Governorate(val value: String) : Field
 
-                /// Hong Kong
+                // / Hong Kong
                 @Serializable
                 @SerialName("district")
                 data class District(val value: String) : Field
 
-                /// Hong Kong, Somalia
+                // / Hong Kong, Somalia
                 @Serializable
                 @SerialName("region")
                 data class Region(val value: String) : Field
 
-                /// United Arab Emirates
+                // / United Arab Emirates
                 @SerialName("area")
                 @Serializable
                 data class Area(val value: String) : Field
 
-                /// Carribean Netherlands
+                // / Carribean Netherlands
                 @SerialName("islandName")
                 @Serializable
                 data class IslandName(val value: String) : Field
 
-                /// China
+                // / China
                 @Serializable
                 @SerialName("prefectureLevelCity")
                 data class PrefectureLevelCity(val value: String) : Field
 
-                /// Russia
+                // / Russia
                 @Serializable
                 @SerialName("subjectOfTheFederation")
                 data class SubjectOfTheFederation(val value: String) : Field
@@ -206,52 +217,51 @@ data class PersonaData(
                 @SerialName("county")
                 data class County(val value: String) : Field
 
-                /// Japan
+                // / Japan
                 @Serializable
                 @SerialName("prefecture")
                 data class Prefecture(val value: String) : Field
 
-                /// Japan
+                // / Japan
                 @Serializable
                 @SerialName("countySlashCity")
                 data class CountySlashCity(val value: String) : Field
 
-                /// Japan
+                // / Japan
                 @Serializable
                 @SerialName("furtherDivisionsLine0")
                 data class FurtherDivisionsLine0(val value: String) : Field
 
-                /// Japan
+                // / Japan
                 @Serializable
                 @SerialName("furtherDivisionsLine1")
                 data class FurtherDivisionsLine1(val value: String) : Field
 
-                /// Taiwan
+                // / Taiwan
                 @Serializable
                 @SerialName("townshipSlashDistrict")
                 data class TownshipSlashDistrict(val value: String) : Field
 
-                /// Colombia
+                // / Colombia
                 @Serializable
                 @SerialName("department")
                 data class Department(val value: String) : Field
 
-                /// UK
+                // / UK
                 @Serializable
                 @SerialName("townSlashCity")
                 data class TownSlashCity(val value: String) : Field
 
-                /// Jordan
+                // / Jordan
                 @Serializable
                 @SerialName("postalDistrict")
                 data class PostalDistrict(val value: String) : Field
 
-                /// Philippines
+                // / Philippines
                 @Serializable
                 @SerialName("districtSlashSubdivision")
                 data class DistrictSlashSubdivision(val value: String) : Field
             }
-
         }
 
         @Serializable
@@ -272,6 +282,15 @@ data class PersonaData(
                 @SerialName("month")
                 val month: Int,
             )
+        }
+
+        enum class Kind {
+            Name, DateOfBirth, CompanyName, EmailAddress, Url, PhoneNUmber, PostalAddress, CreditCard;
+
+            companion object {
+                val supportedKinds: List<Kind>
+                    get() = listOf(Name, EmailAddress, PhoneNUmber)
+            }
         }
     }
 }
@@ -309,5 +328,4 @@ object PostalAddressSerializer : KSerializer<PersonaData.PersonaDataField.Postal
     override fun serialize(encoder: Encoder, value: PersonaData.PersonaDataField.PostalAddress) {
         encoder.encodeSerializableValue(delegateSerializer, value.fields)
     }
-
 }

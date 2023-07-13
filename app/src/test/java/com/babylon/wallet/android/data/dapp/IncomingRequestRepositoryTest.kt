@@ -28,7 +28,7 @@ class IncomingRequestRepositoryTest {
         ongoingAccountsRequestItem = MessageFromDataChannel.IncomingRequest.AccountsRequestItem(
             isOngoing = true,
             numberOfAccounts = 1,
-            quantifier = MessageFromDataChannel.IncomingRequest.AccountsRequestItem.AccountNumberQuantifier.Exactly,
+            numberOfValues = MessageFromDataChannel.IncomingRequest.NumberOfValues.Exactly,
             challenge = null
         )
     )

@@ -129,7 +129,7 @@ private fun RequiredInformationInfo(
         withStyle(SpanStyle(fontWeight = FontWeight.SemiBold)) {
             append("$text ")
         }
-        //TODO persona data
+        // TODO persona data
 //        append(requiredFields.map { stringResource(id = it.toDisplayResource()) }.joinToString())
     }
     Row(

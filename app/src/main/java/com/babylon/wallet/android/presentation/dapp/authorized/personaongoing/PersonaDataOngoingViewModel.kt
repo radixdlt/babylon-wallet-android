@@ -43,7 +43,7 @@ class PersonaDataOngoingViewModel @Inject constructor(
 
     fun onEditClick(personaAddress: String) {
         viewModelScope.launch {
-            //TODO persona data
+            // TODO persona data
 //            sendEvent(PersonaDataOngoingEvent.OnEditPersona(personaAddress, args.requiredFields.toList().encodeToString()))
         }
     }

@@ -121,7 +121,7 @@ class DappDetailViewModel @Inject constructor(
     }
 
     private suspend fun updateSelectedPersonaData(persona: Network.Persona) {
-        //TODO persona data
+        // TODO persona data
 //        val personaSimple =
 //            authorizedDapp.referencesToAuthorizedPersonas.firstOrNull { it.identityAddress == persona.address }
 //        val sharedAccounts = personaSimple?.sharedAccounts?.accountsReferencedByAddress?.mapNotNull {
@@ -166,7 +166,7 @@ class DappDetailViewModel @Inject constructor(
 
     fun onEditPersona() {
         viewModelScope.launch {
-            //TODO persona data
+            // TODO persona data
 //            if (_state.value.selectedSheetState is SelectedSheetState.SelectedPersona) {
 //                (_state.value.selectedSheetState as SelectedSheetState.SelectedPersona).persona?.let { persona ->
 //                    sendEvent(
@@ -200,8 +200,10 @@ class DappDetailViewModel @Inject constructor(
                         ),
                         ongoingAccountsRequestItem = MessageFromDataChannel.IncomingRequest.AccountsRequestItem(
                             isOngoing = true,
-                            numberOfAccounts = sharedAccounts.request.quantity,
-                            quantifier = sharedAccounts.request.quantifier.toQuantifierUsedInRequest(),
+                            numberOfValues = MessageFromDataChannel.IncomingRequest.NumberOfValues(
+                                quantity = sharedAccounts.request.quantity,
+                                quantifier = sharedAccounts.request.quantifier.toQuantifierUsedInRequest()
+                            ),
                             challenge = null
                         ),
                         resetRequestItem = MessageFromDataChannel.IncomingRequest.ResetRequestItem(accounts = true, personaData = false)

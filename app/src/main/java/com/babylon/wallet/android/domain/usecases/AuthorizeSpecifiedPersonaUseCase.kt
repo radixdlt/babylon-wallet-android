@@ -199,7 +199,7 @@ class AuthorizeSpecifiedPersonaUseCase @Inject constructor(
         authorizedDapp: Network.AuthorizedDapp,
         authorizedPersonaSimple: Network.AuthorizedDapp.AuthorizedPersonaSimple
     ): List<PersonaDataEntryID> {
-        //TODO persona data
+        // TODO persona data
 //        var result: List<PersonaDataEntryID> = emptyList()
 //        val handledRequest = checkNotNull(request.ongoingPersonaDataRequestItem)
 //        if (personaDataAccessAlreadyGranted(authorizedDapp, handledRequest, authorizedPersonaSimple.identityAddress)) {
@@ -222,8 +222,8 @@ class AuthorizeSpecifiedPersonaUseCase @Inject constructor(
             val potentialOngoingAddresses = dAppConnectionRepository.dAppAuthorizedPersonaAccountAddresses(
                 authorizedDapp.dAppDefinitionAddress,
                 authorizedPersonaSimple.identityAddress,
-                handledRequest.numberOfAccounts,
-                handledRequest.quantifier.toProfileShareAccountsQuantifier()
+                handledRequest.numberOfValues.quantity,
+                handledRequest.numberOfValues.toProfileShareAccountsQuantifier()
             )
             if (potentialOngoingAddresses.isNotEmpty()) {
                 result = potentialOngoingAddresses.mapNotNull { address ->
@@ -239,8 +239,8 @@ class AuthorizeSpecifiedPersonaUseCase @Inject constructor(
         requestItem: PersonaRequestItem,
         personaAddress: String
     ): Boolean {
-        //TODO persona data
-        val requestedFieldsCount = requestItem.fields.size
+        // TODO persona data
+//        val requestedFieldsCount = requestItem.fields.size
 //        val requestedFieldKinds = requestItem.fields.map { it.toKind() }
 //        val personaFields = getProfileUseCase.personaOnCurrentNetwork(personaAddress)?.fields.orEmpty()
 //        val requestedFieldsIds = personaFields.filter { requestedFieldKinds.contains(it.id) }.map { it.id }

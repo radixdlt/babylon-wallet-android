@@ -45,7 +45,7 @@ internal class SelectPersonaViewModelTest : StateViewModelTest<SelectPersonaView
         oneTimeAccountsRequestItem = null,
         ongoingAccountsRequestItem = MessageFromDataChannel.IncomingRequest.AccountsRequestItem(
             true, 1,
-            MessageFromDataChannel.IncomingRequest.AccountsRequestItem.AccountNumberQuantifier.AtLeast,
+            MessageFromDataChannel.IncomingRequest.NumberOfValues.AtLeast,
             null
         )
     )

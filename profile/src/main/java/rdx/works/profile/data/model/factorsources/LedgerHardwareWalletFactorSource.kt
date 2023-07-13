@@ -20,8 +20,11 @@ data class LedgerHardwareWalletFactorSource(
 
     @Serializable
     enum class SigningDisplayMode {
-        @SerialName("verbose") Verbose,
-        @SerialName("summary") Summary
+        @SerialName("verbose")
+        Verbose,
+
+        @SerialName("summary")
+        Summary
     }
 
     enum class DeviceModel(val value: String) {

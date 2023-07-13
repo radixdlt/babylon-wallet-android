@@ -14,14 +14,14 @@ data class PersonaUiModel(
     val requiredFieldIDs: List<PersonaDataEntryID> = emptyList()
 ) {
     fun missingFieldKinds(): ImmutableList<PersonaDataEntryID> {
-        //TODO persona data
+        // TODO persona data
 //        return requiredFieldIDs.minus(persona.fields.map { it.id }.toSet()).sortedBy { it.ordinal }.toPersistentList()
         return persistentListOf()
     }
 
     fun personalInfoFormatted(): String {
         return buildString {
-            //TODO persona data
+            // TODO persona data
 //            val fields = persona.fields.filter { requiredFieldIDs.contains(it.id) }
 //            val givenName = fields.firstOrNull { it.id == Network.Persona.Field.ID.GivenName }?.value
 //            val familyName = fields.firstOrNull { it.id == Network.Persona.Field.ID.FamilyName }?.value

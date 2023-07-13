@@ -26,18 +26,21 @@ import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixTheme.dimensions
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
-import com.babylon.wallet.android.presentation.model.PersonaFieldKindWrapper
+import com.babylon.wallet.android.presentation.model.PersonaFieldWrapper
+import com.babylon.wallet.android.presentation.model.empty
+import com.babylon.wallet.android.presentation.model.toDisplayResource
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
+import rdx.works.profile.data.model.pernetwork.PersonaData
 import rdx.works.profile.data.model.pernetwork.PersonaDataEntryID
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun AddFieldSheet(
     onBackClick: () -> Unit,
-    fieldsToAdd: ImmutableList<PersonaFieldKindWrapper>,
+    fieldsToAdd: ImmutableList<PersonaFieldWrapper>,
     onAddFields: () -> Unit,
     onSelectionChanged: (PersonaDataEntryID, Boolean) -> Unit,
     modifier: Modifier = Modifier,
@@ -97,7 +100,7 @@ fun AddFieldSheet(
 @Composable
 private fun SelectableFieldItem(
     onSelectionChanged: (PersonaDataEntryID, Boolean) -> Unit,
-    field: PersonaFieldKindWrapper,
+    field: PersonaFieldWrapper,
     modifier: Modifier = Modifier
 ) {
     Row(
@@ -106,9 +109,7 @@ private fun SelectableFieldItem(
     ) {
         Text(
             modifier = Modifier.weight(1f),
-            text = "",
-            //TODO persona data
-//            text = stringResource(id = field.id.toDisplayResource()),
+            text = stringResource(id = field.value.kind.toDisplayResource()),
             style = RadixTheme.typography.body1HighImportance,
             color = RadixTheme.colors.gray1,
             maxLines = 1,
@@ -136,7 +137,7 @@ fun CreateAccountContentPreview() {
             onBackClick = {},
             onAddFields = {},
             onSelectionChanged = { _, _ -> },
-            fieldsToAdd = persistentListOf(PersonaFieldKindWrapper("")),
+            fieldsToAdd = persistentListOf(PersonaFieldWrapper(value = PersonaData.PersonaDataField.Kind.Name.empty())),
             anyFieldSelected = false
         )
     }
