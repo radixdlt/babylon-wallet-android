@@ -37,6 +37,9 @@ class TransactionSubmitDelegate(
     private var approvalJob: Job? = null
 
     fun onSubmit() {
+        // Do not re-submit while submission is in progress
+        if (approvalJob != null) return
+
         approvalJob = appScope.launch {
             val currentState = state.value
             val currentNetworkId = getCurrentGatewayUseCase().network.networkId().value

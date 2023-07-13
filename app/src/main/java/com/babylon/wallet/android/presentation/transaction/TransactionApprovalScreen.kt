@@ -279,7 +279,7 @@ private fun ApproveButton(
                 showNotSecuredDialog = true
             }
         },
-        enabled = !state.isSubmitting,
+        isLoading = state.isSubmitting,
         icon = {
             Icon(
                 painter = painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_lock),
