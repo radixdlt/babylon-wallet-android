@@ -10,8 +10,8 @@ import com.babylon.wallet.android.data.transaction.model.TransactionApprovalRequ
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.transaction.PreviewType
-import com.babylon.wallet.android.presentation.transaction.TransactionApprovalViewModel2.Event
-import com.babylon.wallet.android.presentation.transaction.TransactionApprovalViewModel2.State
+import com.babylon.wallet.android.presentation.transaction.TransactionApprovalViewModel.Event
+import com.babylon.wallet.android.presentation.transaction.TransactionApprovalViewModel.State
 import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
 import com.radixdlt.ret.TransactionManifest

@@ -48,7 +48,7 @@ import com.babylon.wallet.android.domain.model.DAppWithMetadataAndAssociatedReso
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.babylon.wallet.android.domain.model.TransactionManifestData
 import com.babylon.wallet.android.presentation.common.FullscreenCircularProgressContent
-import com.babylon.wallet.android.presentation.transaction.TransactionApprovalViewModel2.State
+import com.babylon.wallet.android.presentation.transaction.TransactionApprovalViewModel.State
 import com.babylon.wallet.android.presentation.transaction.composables.FeePayerSelectionSheet
 import com.babylon.wallet.android.presentation.transaction.composables.GuaranteesSheet
 import com.babylon.wallet.android.presentation.transaction.composables.RawManifestView
@@ -67,7 +67,7 @@ import rdx.works.profile.data.model.pernetwork.Network
 @Composable
 fun TransactionApprovalScreen(
     modifier: Modifier = Modifier,
-    viewModel: TransactionApprovalViewModel2,
+    viewModel: TransactionApprovalViewModel,
     onDismiss: () -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -92,7 +92,7 @@ fun TransactionApprovalScreen(
     LaunchedEffect(Unit) {
         viewModel.oneOffEvent.collect { event ->
             when (event) {
-                TransactionApprovalViewModel2.Event.Dismiss -> {
+                TransactionApprovalViewModel.Event.Dismiss -> {
                     onDismiss()
                 }
             }

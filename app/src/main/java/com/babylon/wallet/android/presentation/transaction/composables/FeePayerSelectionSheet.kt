@@ -5,11 +5,9 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.SheetState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -23,18 +21,16 @@ import com.babylon.wallet.android.data.transaction.TransactionConfig
 import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.getAccountGradientColorsFor
-import com.babylon.wallet.android.presentation.dapp.authorized.account.AccountItemUiModel
 import com.babylon.wallet.android.presentation.dapp.authorized.account.AccountSelectionCard
-import com.babylon.wallet.android.presentation.transaction.TransactionApprovalViewModel2
+import com.babylon.wallet.android.presentation.transaction.TransactionApprovalViewModel
 import com.babylon.wallet.android.presentation.ui.composables.BottomDialogDragHandle
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
-import kotlinx.collections.immutable.ImmutableList
 import rdx.works.profile.data.model.pernetwork.Network
 
 @Composable
 fun FeePayerSelectionSheet(
     modifier: Modifier = Modifier,
-    sheet: TransactionApprovalViewModel2.State.Sheet.FeePayerChooser,
+    sheet: TransactionApprovalViewModel.State.Sheet.FeePayerChooser,
     onClose: () -> Unit,
     onPayerSelected: (Network.Account) -> Unit,
     onPayerConfirmed: () -> Unit

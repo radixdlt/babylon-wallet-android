@@ -1,51 +1,48 @@
 package com.babylon.wallet.android.presentation.transaction
 
+import androidx.annotation.FloatRange
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.dapp.DappMessenger
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
-import com.babylon.wallet.android.data.manifest.addGuaranteeInstructionToManifest
-import com.babylon.wallet.android.data.transaction.DappRequestException
+import com.babylon.wallet.android.data.manifest.toPrettyString
 import com.babylon.wallet.android.data.transaction.DappRequestFailure
 import com.babylon.wallet.android.data.transaction.SigningState
 import com.babylon.wallet.android.data.transaction.TransactionClient
-import com.babylon.wallet.android.data.transaction.model.TransactionApprovalRequest
+import com.babylon.wallet.android.data.transaction.TransactionConfig
 import com.babylon.wallet.android.di.coroutines.ApplicationScope
-import com.babylon.wallet.android.domain.common.value
+import com.babylon.wallet.android.domain.model.Badge
 import com.babylon.wallet.android.domain.model.DAppWithMetadataAndAssociatedResources
-import com.babylon.wallet.android.domain.model.MetadataConstants
-import com.babylon.wallet.android.domain.model.Resource
-import com.babylon.wallet.android.domain.model.TransactionManifestData
+import com.babylon.wallet.android.domain.model.MessageFromDataChannel
+import com.babylon.wallet.android.domain.model.Transferable
+import com.babylon.wallet.android.domain.model.TransferableResource
+import com.babylon.wallet.android.domain.usecases.GetAccountsWithResourcesUseCase
 import com.babylon.wallet.android.domain.usecases.GetDAppWithMetadataAndAssociatedResourcesUseCase
+import com.babylon.wallet.android.domain.usecases.transaction.GetTransactionBadgesUseCase
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
-import com.babylon.wallet.android.presentation.dapp.authorized.account.AccountItemUiModel
-import com.babylon.wallet.android.presentation.dapp.authorized.account.toUiModel
-import com.babylon.wallet.android.utils.AppEvent
+import com.babylon.wallet.android.presentation.transaction.TransactionApprovalViewModel.Event
+import com.babylon.wallet.android.presentation.transaction.TransactionApprovalViewModel.State
+import com.babylon.wallet.android.presentation.transaction.analysis.TransactionAnalysisDelegate
+import com.babylon.wallet.android.presentation.transaction.guarantees.TransactionGuaranteesDelegate
+import com.babylon.wallet.android.presentation.transaction.submit.TransactionSubmitDelegate
 import com.babylon.wallet.android.utils.AppEventBus
 import com.babylon.wallet.android.utils.DeviceSecurityHelper
 import com.radixdlt.ret.TransactionManifest
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.collections.immutable.ImmutableList
-import kotlinx.collections.immutable.ImmutableMap
-import kotlinx.collections.immutable.persistentListOf
-import kotlinx.collections.immutable.toImmutableList
-import kotlinx.collections.immutable.toPersistentList
-import kotlinx.collections.immutable.toPersistentMap
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.crypto.PrivateKey
-import rdx.works.core.decodeHex
-import rdx.works.core.toUByteList
+import rdx.works.core.mapWhen
+import rdx.works.profile.data.model.pernetwork.Network
+import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.gateway.GetCurrentGatewayUseCase
-import timber.log.Timber
 import java.math.BigDecimal
 import javax.inject.Inject
 
@@ -53,30 +50,54 @@ import javax.inject.Inject
 @HiltViewModel
 class TransactionApprovalViewModel @Inject constructor(
     private val transactionClient: TransactionClient,
+    getAccountsWithResourcesUseCase: GetAccountsWithResourcesUseCase,
+    getProfileUseCase: GetProfileUseCase,
+    getTransactionBadgesUseCase: GetTransactionBadgesUseCase,
+    getDAppWithMetadataAndAssociatedResourcesUseCase: GetDAppWithMetadataAndAssociatedResourcesUseCase,
+    getCurrentGatewayUseCase: GetCurrentGatewayUseCase,
+    dAppMessenger: DappMessenger,
+    appEventBus: AppEventBus,
     private val incomingRequestRepository: IncomingRequestRepository,
-    private val getCurrentGatewayUseCase: GetCurrentGatewayUseCase,
     private val deviceSecurityHelper: DeviceSecurityHelper,
-    private val dAppMessenger: DappMessenger,
     @ApplicationScope private val appScope: CoroutineScope,
-    private val appEventBus: AppEventBus,
     savedStateHandle: SavedStateHandle,
-) : StateViewModel<TransactionUiState>(),
-    OneOffEventHandler<TransactionApprovalEvent> by OneOffEventHandlerImpl() {
+) : StateViewModel<State>(),
+    OneOffEventHandler<Event> by OneOffEventHandlerImpl() {
 
     private val args = TransactionApprovalArgs(savedStateHandle)
-    private val transactionWriteRequest =
-        incomingRequestRepository.getTransactionWriteRequest(args.requestId)
 
-    private val ephemeralNotaryPrivateKey: PrivateKey = PrivateKey.EddsaEd25519.newRandom()
+    override fun initialState(): State = State(
+        request = incomingRequestRepository.getTransactionWriteRequest(args.requestId),
+        isLoading = true,
+        previewType = PreviewType.NonConforming,
+        isDeviceSecure = deviceSecurityHelper.isDeviceSecure()
+    )
 
-    override fun initialState(): TransactionUiState =
-        TransactionUiState(isDeviceSecure = deviceSecurityHelper.isDeviceSecure())
+    private val analysis: TransactionAnalysisDelegate = TransactionAnalysisDelegate(
+        state = _state,
+        getProfileUseCase = getProfileUseCase,
+        getAccountsWithResourcesUseCase = getAccountsWithResourcesUseCase,
+        getTransactionBadgesUseCase = getTransactionBadgesUseCase,
+        getDAppWithMetadataAndAssociatedResourcesUseCase = getDAppWithMetadataAndAssociatedResourcesUseCase,
+        transactionClient = transactionClient
+    )
 
-    private var approvalJob: Job? = null
+    private val guarantees: TransactionGuaranteesDelegate = TransactionGuaranteesDelegate(
+        state = _state
+    )
 
-    private var depositingAccounts: ImmutableList<TransactionAccountItemUiModel> = persistentListOf()
-
-    private lateinit var manifestToApprove: TransactionManifest
+    private val submit: TransactionSubmitDelegate = TransactionSubmitDelegate(
+        state = _state,
+        transactionClient = transactionClient,
+        dAppMessenger = dAppMessenger,
+        incomingRequestRepository = incomingRequestRepository,
+        getCurrentGatewayUseCase = getCurrentGatewayUseCase,
+        appScope = appScope,
+        appEventBus = appEventBus,
+        onSendScreenEvent = {
+            viewModelScope.launch { sendEvent(it)  }
+        }
+    )
 
     init {
         viewModelScope.launch {
@@ -86,252 +107,19 @@ class TransactionApprovalViewModel @Inject constructor(
                 }
             }
         }
-    }
 
-    @Suppress("LongMethod")
-    fun approveTransaction() {
-        approvalJob = appScope.launch {
-            _state.value.manifestData?.let { manifestData ->
-                val currentNetworkId = getCurrentGatewayUseCase().network.networkId().value
-                if (currentNetworkId != manifestData.networkId) {
-                    approvalJob = null
-                    val failure = DappRequestFailure.WrongNetwork(currentNetworkId, manifestData.networkId)
-                    dismissTransaction(failure = failure)
-                } else {
-                    _state.update { it.copy(isLoading = true) }
-
-                    var manifest = manifestData.toTransactionManifest()
-
-                    _state.value.depositingAccounts.map { transactionAccountUiItem ->
-                        transactionAccountUiItem.guaranteedAmount?.let { guaranteedAmount ->
-                            manifest = manifest.addGuaranteeInstructionToManifest(
-                                address = transactionAccountUiItem.resourceAddress.orEmpty(),
-                                guaranteedAmount = guaranteedAmount,
-                                index = transactionAccountUiItem.instructionIndex ?: 0
-                            )
-                        }
-                    }
-
-                    transactionClient.findFeePayerInManifest(manifest).onSuccess { feePayerResult ->
-                        _state.update { it.copy(isLoading = false) }
-                        if (feePayerResult.feePayerAddressFromManifest != null) {
-                            handleTransactionApprovalForFeePayer(feePayerResult.feePayerAddressFromManifest, manifest)
-                        } else {
-                            _state.update { state ->
-                                state.copy(
-                                    feePayerCandidates = feePayerResult.candidates.map { it.toUiModel() }.toPersistentList(),
-                                    bottomSheetViewMode = BottomSheetMode.FeePayerSelection
-                                )
-                            }
-                            sendEvent(TransactionApprovalEvent.SelectFeePayer)
-                        }
-                        approvalJob = null
-                    }.onFailure { t ->
-                        _state.update { it.copy(isLoading = false, error = UiMessage.ErrorMessage.from(error = t)) }
-                        (t as? DappRequestException)?.let { exception ->
-                            if (!transactionWriteRequest.isInternal) {
-                                dAppMessenger.sendWalletInteractionResponseFailure(
-                                    dappId = transactionWriteRequest.dappId,
-                                    requestId = args.requestId,
-                                    error = exception.failure.toWalletErrorType(),
-                                    message = exception.failure.getDappMessage()
-                                )
-                            }
-                        }
-                        approvalJob = null
-                    }
-                }
-            }
+        viewModelScope.launch {
+            analysis.analyse()
         }
-    }
-
-    @Suppress("LongMethod")
-    private suspend fun handleTransactionApprovalForFeePayer(
-        feePayerAddress: String,
-        manifest: TransactionManifest
-    ) {
-        _state.update { it.copy(isSigning = true) }
-        val request = TransactionApprovalRequest(
-            manifest,
-            ephemeralNotaryPrivateKey = ephemeralNotaryPrivateKey,
-            feePayerAddress = feePayerAddress
-        )
-        transactionClient.signAndSubmitTransaction(request).onSuccess { txId ->
-            _state.update { it.copy(isSigning = false) }
-            appEventBus.sendEvent(
-                AppEvent.Status.Transaction.InProgress(
-                    requestId = args.requestId,
-                    transactionId = txId,
-                    isInternal = transactionWriteRequest.isInternal
-                )
-            )
-            // Send confirmation to the dApp that tx was submitted before status polling
-            if (!transactionWriteRequest.isInternal) {
-                dAppMessenger.sendTransactionWriteResponseSuccess(
-                    dappId = transactionWriteRequest.dappId,
-                    requestId = args.requestId,
-                    txId = txId
-                )
-            }
-
-            appEventBus.sendEvent(
-                AppEvent.Status.Transaction.InProgress(
-                    requestId = args.requestId,
-                    transactionId = txId,
-                    isInternal = transactionWriteRequest.isInternal
-                )
-            )
-        }.onFailure { error ->
-            _state.update {
-                it.copy(
-                    isSigning = false,
-                    error = UiMessage.ErrorMessage.from(error = error)
-                )
-            }
-            val exception = error as? DappRequestException
-            if (exception != null) {
-                if (!transactionWriteRequest.isInternal) {
-                    dAppMessenger.sendWalletInteractionResponseFailure(
-                        dappId = transactionWriteRequest.dappId,
-                        requestId = args.requestId,
-                        error = exception.failure.toWalletErrorType(),
-                        message = exception.failure.getDappMessage()
-                    )
-                }
-            }
-
-            appEventBus.sendEvent(
-                AppEvent.Status.Transaction.Fail(
-                    requestId = args.requestId,
-                    transactionId = "",
-                    isInternal = transactionWriteRequest.isInternal,
-                    errorMessage = UiMessage.ErrorMessage.from(exception?.failure)
-                )
-            )
-        }
-
-        approvalJob = null
     }
 
     fun onBackClick() {
-        viewModelScope.launch {
-            dismissTransaction(DappRequestFailure.RejectedByUser)
-        }
-    }
-
-    fun onGuaranteesApplyClick() {
-        _state.update {
-            it.copy(
-                depositingAccounts = depositingAccounts
-            )
-        }
-    }
-
-    fun onGuaranteesCloseClick() {
-        // Reset local depositing accounts to initial values
-        depositingAccounts = _state.value.depositingAccounts
-        _state.update {
-            it.copy(
-                guaranteesAccounts = depositingAccounts.toGuaranteesAccountsUiModel()
-            )
-        }
-    }
-
-    fun resetBottomSheetMode() {
-        _state.update {
-            it.copy(bottomSheetViewMode = BottomSheetMode.Guarantees)
-        }
-    }
-
-    fun onPayerConfirmed() {
-        appScope.launch {
-            val selectedPayer = state.value.feePayerCandidates.first()
-            handleTransactionApprovalForFeePayer(selectedPayer.address, manifestToApprove)
-        }
-    }
-
-    fun onPayerSelected(accountItemUiModel: AccountItemUiModel) {
-        _state.update { state ->
-            state.copy(
-                feePayerCandidates = state.feePayerCandidates.map {
-                    it.copy(isSelected = it.address == accountItemUiModel.address)
-                }.toPersistentList()
-            )
-        }
-    }
-
-    fun onGuaranteeValueChanged(guaranteePair: Pair<String, GuaranteesAccountItemUiModel>) {
-        val guaranteePercentString = guaranteePair.first.trim()
-        val guaranteePercentBigDecimal = try {
-            guaranteePercentString.toBigDecimal()
-        } catch (e: NumberFormatException) {
-            BigDecimal.ZERO
-        }
-
-        if (guaranteePercentBigDecimal > BigDecimal("100") || guaranteePercentBigDecimal < BigDecimal.ZERO) {
-            return
-        }
-
-        val updatedGuaranteedQuantity = guaranteePercentBigDecimal.divide(BigDecimal("100")).multiply(
-            guaranteePair.second.tokenEstimatedAmount.toBigDecimal().stripTrailingZeros()
-        ).toPlainString()
-
-        val currentDepositingAccounts =
-            if (depositingAccounts.isEmpty()) {
-                _state.value.depositingAccounts
-            } else {
-                depositingAccounts
+        if (state.value.sheetState != State.Sheet.None) {
+            _state.update { it.copy(sheetState = State.Sheet.None) }
+        } else {
+            viewModelScope.launch {
+                submit.onDismiss(DappRequestFailure.RejectedByUser)
             }
-
-        currentDepositingAccounts.map { previewAccountUiModel ->
-            if (previewAccountUiModel.accountAddress == guaranteePair.second.address &&
-                previewAccountUiModel.index == guaranteePair.second.index
-            ) {
-                val fungibleResource = previewAccountUiModel.fungibleResource?.copy(
-                    amount = previewAccountUiModel.fungibleResource.amount,
-                )
-
-                previewAccountUiModel.copy(
-                    accountAddress = previewAccountUiModel.accountAddress,
-                    displayName = previewAccountUiModel.displayName,
-                    appearanceID = previewAccountUiModel.appearanceID,
-                    tokenSymbol = previewAccountUiModel.tokenSymbol,
-                    iconUrl = previewAccountUiModel.iconUrl,
-                    shouldPromptForGuarantees = previewAccountUiModel.shouldPromptForGuarantees,
-                    guaranteedAmount = updatedGuaranteedQuantity,
-                    guaranteedPercentAmount = guaranteePercentString,
-                    instructionIndex = previewAccountUiModel.instructionIndex,
-                    resourceAddress = previewAccountUiModel.resourceAddress,
-                    index = previewAccountUiModel.index,
-                    fungibleResource = fungibleResource,
-                    nonFungibleResourceItems = previewAccountUiModel.nonFungibleResourceItems
-                )
-            } else {
-                previewAccountUiModel
-            }
-        }.toImmutableList().apply {
-            depositingAccounts = this
-            _state.update {
-                it.copy(
-                    guaranteesAccounts = toGuaranteesAccountsUiModel()
-                )
-            }
-        }
-    }
-
-    fun promptForGuaranteesClick() {
-        _state.update {
-            it.copy(
-                bottomSheetViewMode = BottomSheetMode.Guarantees
-            )
-        }
-    }
-
-    fun onDAppClick(dApp: DAppWithMetadataAndAssociatedResources) {
-        _state.update {
-            it.copy(
-                bottomSheetViewMode = BottomSheetMode.DApp(dApp)
-            )
         }
     }
 
@@ -339,136 +127,225 @@ class TransactionApprovalViewModel @Inject constructor(
         _state.update { it.copy(error = null) }
     }
 
-    private suspend fun dismissTransaction(failure: DappRequestFailure) {
-        if (approvalJob == null) {
-            if (!transactionWriteRequest.isInternal) {
-                dAppMessenger.sendWalletInteractionResponseFailure(
-                    dappId = transactionWriteRequest.dappId,
-                    requestId = args.requestId,
-                    error = failure.toWalletErrorType(),
-                    message = failure.getDappMessage()
-                )
+    fun onRawManifestToggle() {
+        _state.update { it.copy(isRawManifestVisible = !it.isRawManifestVisible) }
+    }
+
+    fun approveTransaction() {
+        submit.onSubmit()
+    }
+
+    fun promptForGuaranteesClick() = guarantees.onEdit()
+
+    fun onGuaranteeValueChange(account: AccountWithPredictedGuarantee, value: String) = guarantees.onValueChange(
+        account = account,
+        value = value
+    )
+
+    fun onGuaranteeValueIncreased(account: AccountWithPredictedGuarantee) = guarantees.onValueIncreased(account)
+
+    fun onGuaranteeValueDecreased(account: AccountWithPredictedGuarantee) = guarantees.onValueDecreased(account)
+
+    fun onGuaranteesApplyClick() = guarantees.onApply()
+
+    fun onGuaranteesCloseClick() = guarantees.onClose()
+
+    fun onPayerSelected(account: Network.Account) = submit.onFeePayerSelected(account)
+
+    fun onPayerConfirmed() = submit.onFeePayerConfirmed()
+
+    fun onDAppClick(dApp: DAppWithMetadataAndAssociatedResources) {
+//        _state.update {
+//            it.copy(
+//                bottomSheetViewMode = BottomSheetMode.DApp(dApp)
+//            )
+//        }
+    }
+
+    data class State(
+        val request: MessageFromDataChannel.IncomingRequest.TransactionRequest,
+        val isDeviceSecure: Boolean,
+        val isLoading: Boolean,
+        val isSubmitting: Boolean = false,
+        val isSigning: Boolean = false,
+        val isRawManifestVisible: Boolean = false,
+        val previewType: PreviewType,
+        val fees: TransactionFees = TransactionFees(),
+        val sheetState: Sheet = Sheet.None,
+        val error: UiMessage? = null,
+        val ephemeralNotaryPrivateKey: PrivateKey = PrivateKey.EddsaEd25519.newRandom(),
+        val networkFee: BigDecimal = TransactionConfig.NETWORK_FEE.toBigDecimal(),
+        val signingState: SigningState? = null
+    ): UiState {
+
+        val rawManifest: String = request.transactionManifestData.toTransactionManifest().toPrettyString()
+
+        val isSheetVisible: Boolean
+            get() = sheetState != Sheet.None
+
+        val message: String?
+            get() {
+                val message = request.transactionManifestData.message
+                return if (!message.isNullOrBlank()) {
+                    message
+                } else {
+                    null
+                }
             }
-            sendEvent(TransactionApprovalEvent.Dismiss)
-            incomingRequestRepository.requestHandled(args.requestId)
+
+        sealed class Sheet {
+            object None: Sheet()
+
+            data class FeePayerChooser(
+                val candidates: List<Network.Account>,
+                val selectedCandidate: Network.Account? = null,
+                val pendingManifest: TransactionManifest
+            ): Sheet() {
+
+                val isSubmitEnabled: Boolean
+                    get() = selectedCandidate != null
+
+            }
+
+            data class CustomizeGuarantees(
+                val accountsWithPredictedGuarantees: List<AccountWithPredictedGuarantee>
+            ): Sheet()
+        }
+    }
+
+    sealed interface Event: OneOffEvent {
+        object Dismiss : Event
+    }
+}
+
+sealed interface PreviewType {
+    object NonConforming: PreviewType
+
+    data class Transaction(
+        val from: List<AccountWithTransferableResources>,
+        val to: List<AccountWithTransferableResources>,
+        val badges: List<Badge> = emptyList(),
+        val dApps: List<DAppWithMetadataAndAssociatedResources> = emptyList()
+    ): PreviewType
+}
+
+sealed interface AccountWithPredictedGuarantee {
+
+    val address: String
+    val transferableAmount: TransferableResource.Amount
+    val instructionIndex: Long
+    val guaranteeAmountString: String
+
+    val guaranteeOffsetDecimal: Float
+        @FloatRange(from = 0.0, to = 1.0)
+        get() = (guaranteeAmountString.toFloatOrNull() ?: 0f) / 100f
+
+    val guaranteedAmount: BigDecimal
+        get() = transferableAmount.amount * guaranteeOffsetDecimal.toBigDecimal()
+
+    fun increase(): AccountWithPredictedGuarantee {
+        val newOffset = (guaranteeOffsetDecimal + 0.001f).coerceAtMost(1f) * 100f
+        return when (this) {
+            is Other -> copy(guaranteeAmountString = newOffset.toString())
+            is Owned -> copy(guaranteeAmountString = newOffset.toString())
+        }
+    }
+
+    fun decrease(): AccountWithPredictedGuarantee {
+        val newOffset = (guaranteeOffsetDecimal - 0.001f).coerceAtLeast(0f) * 100f
+        return when (this) {
+            is Other -> copy(guaranteeAmountString = newOffset.toString())
+            is Owned -> copy(guaranteeAmountString = newOffset.toString())
+        }
+    }
+
+    fun change(amount: String): AccountWithPredictedGuarantee {
+        val value = amount.toFloatOrNull() ?: 0f
+        return if (value in 0f..100f) {
+            when (this) {
+                is Other -> copy(guaranteeAmountString = amount)
+                is Owned -> copy(guaranteeAmountString = amount)
+            }
         } else {
-            Timber.d("Cannot dismiss transaction while is in progress")
+            this
+        }
+    }
+
+    data class Owned(
+        val account: Network.Account,
+        override val transferableAmount: TransferableResource.Amount,
+        override val instructionIndex: Long,
+        override val guaranteeAmountString: String
+    ): AccountWithPredictedGuarantee {
+        override val address: String
+            get() = account.address
+    }
+
+    data class Other(
+        override val address: String,
+        override val transferableAmount: TransferableResource.Amount,
+        override val instructionIndex : Long,
+        override val guaranteeAmountString: String
+    ): AccountWithPredictedGuarantee
+}
+
+sealed interface AccountWithTransferableResources {
+
+    val address: String
+    val resources: List<Transferable>
+
+    data class Owned(
+        val account: Network.Account,
+        override val resources: List<Transferable>
+    ): AccountWithTransferableResources {
+        override val address: String
+            get() = account.address
+    }
+
+    data class Other(
+        override val address: String,
+        override val resources: List<Transferable>
+    ): AccountWithTransferableResources
+
+    fun updateFromGuarantees(
+        accountsWithPredictedGuarantees: List<AccountWithPredictedGuarantee>
+    ): AccountWithTransferableResources {
+        val resourcesWithGuaranteesForAccount = accountsWithPredictedGuarantees.filter {
+            it.address == address
+        }
+
+        val resources = resources.mapWhen(
+            predicate = { depositing ->
+                resourcesWithGuaranteesForAccount.any {
+                    it.address == address && it.transferableAmount.resourceAddress == depositing.transferable.resourceAddress
+                }
+            },
+            mutation = { depositing ->
+                val accountWithGuarantee = resourcesWithGuaranteesForAccount.find {
+                    it.transferableAmount.resourceAddress == depositing.transferable.resourceAddress
+                }
+
+                if (accountWithGuarantee != null) {
+                    depositing.updateGuarantee(accountWithGuarantee.guaranteeOffsetDecimal)
+                } else {
+                    depositing
+                }
+            }
+        )
+        return when (this) {
+            is Other -> copy(resources = resources)
+            is Owned -> copy(resources = resources)
         }
     }
 }
 
-data class TransactionAccountItemUiModel(
-    val accountAddress: String,
-    val displayName: String,
-    val appearanceID: Int,
-    val tokenSymbol: String? = null,
-    val tokenAmount: String,
-    val iconUrl: String? = null,
-    val shouldPromptForGuarantees: Boolean,
-    val guaranteedAmount: String?,
-    val guaranteedPercentAmount: String = "100",
-    val instructionIndex: Int? = null, // Index that instruction will be inserted at in the manifest
-    val resourceAddress: String? = null,
-    val index: Int? = null, // Unique to identify which item state we are changing as addresses might be the same for,
-    val fungibleResource: Resource.FungibleResource? = null,
-    val nonFungibleResourceItems: List<Resource.NonFungibleResource.Item> = emptyList()
+fun List<AccountWithTransferableResources>.hasCustomizableGuarantees() = any { accountWithTransferableResources ->
+    accountWithTransferableResources.resources.any { it.guaranteeAmount != null }
+}
+
+data class TransactionFees(
+    val networkFee: BigDecimal = BigDecimal.ZERO,
+    val isNetworkCongested: Boolean = false
 )
 
-data class GuaranteesAccountItemUiModel(
-    val address: String,
-    val appearanceID: Int,
-    val displayName: String,
-    val tokenSymbol: String,
-    val tokenIconUrl: String,
-    val tokenEstimatedAmount: String,
-    val tokenGuaranteedAmount: String,
-    val guaranteedPercentAmount: String,
-    val index: Int? = null
-) {
-    fun isXrd(): Boolean = tokenSymbol == MetadataConstants.SYMBOL_XRD
-}
 
-data class PresentingProofUiModel(
-    val iconUrl: String,
-    val title: String
-)
-
-fun List<TransactionAccountItemUiModel>.toGuaranteesAccountsUiModel(): ImmutableList<GuaranteesAccountItemUiModel> {
-    return filter { it.shouldPromptForGuarantees }
-        .map { transactionAccountItemUiModel ->
-            val fungibleItem = transactionAccountItemUiModel.fungibleResource
-            fungibleItem?.let { item ->
-                GuaranteesAccountItemUiModel(
-                    address = transactionAccountItemUiModel.accountAddress,
-                    appearanceID = transactionAccountItemUiModel.appearanceID,
-                    displayName = transactionAccountItemUiModel.displayName,
-                    tokenSymbol = item.displayTitle,
-                    tokenIconUrl = item.iconUrl.toString(),
-                    tokenEstimatedAmount = item.amount?.toPlainString().orEmpty(),
-                    tokenGuaranteedAmount = transactionAccountItemUiModel.guaranteedAmount.orEmpty(),
-                    guaranteedPercentAmount = transactionAccountItemUiModel.guaranteedPercentAmount,
-                    index = transactionAccountItemUiModel.index
-                )
-            } ?: run {
-                GuaranteesAccountItemUiModel(
-                    address = transactionAccountItemUiModel.accountAddress,
-                    appearanceID = transactionAccountItemUiModel.appearanceID,
-                    displayName = transactionAccountItemUiModel.displayName,
-                    tokenSymbol = transactionAccountItemUiModel.tokenSymbol.orEmpty(),
-                    tokenIconUrl = transactionAccountItemUiModel.iconUrl.orEmpty(),
-                    tokenEstimatedAmount = transactionAccountItemUiModel.tokenAmount,
-                    tokenGuaranteedAmount = transactionAccountItemUiModel.guaranteedAmount.orEmpty(),
-                    guaranteedPercentAmount = transactionAccountItemUiModel.guaranteedPercentAmount,
-                    index = transactionAccountItemUiModel.index
-                )
-            }
-        }.toPersistentList()
-}
-
-data class TransactionUiState(
-    val manifestData: TransactionManifestData? = null,
-    val manifestString: String = "",
-    val isLoading: Boolean = true,
-    val isSigning: Boolean = false,
-    val isDeviceSecure: Boolean = false,
-    val error: UiMessage? = null,
-    val canApprove: Boolean = false,
-    val networkFee: String = "",
-    val transactionMessage: String = "",
-    val withdrawingAccounts: ImmutableList<TransactionAccountItemUiModel> = persistentListOf(),
-    val depositingAccounts: ImmutableList<TransactionAccountItemUiModel> = persistentListOf(),
-    val guaranteesAccounts: ImmutableList<GuaranteesAccountItemUiModel> = persistentListOf(),
-    val presentingProofs: ImmutableList<PresentingProofUiModel> = persistentListOf(),
-    val connectedDApps: ImmutableList<DAppWithMetadataAndAssociatedResources> = persistentListOf(),
-    val bottomSheetViewMode: BottomSheetMode = BottomSheetMode.Guarantees,
-    val feePayerCandidates: ImmutableList<AccountItemUiModel> = persistentListOf(),
-    val bottomSheetMode: BottomSheetMode = BottomSheetMode.Guarantees,
-    val signingState: SigningState? = null
-) : UiState {
-
-    val shouldPromptForGuarantees: Boolean
-        get() = depositingAccounts.any { it.shouldPromptForGuarantees }
-
-    val depositingAccountsMap: ImmutableMap<String, List<TransactionAccountItemUiModel>>
-        get() = depositingAccounts.groupBy {
-            it.accountAddress
-        }.toPersistentMap()
-
-    val withdrawingAccountsMap: ImmutableMap<String, List<TransactionAccountItemUiModel>>
-        get() = withdrawingAccounts.groupBy {
-            it.accountAddress
-        }.toPersistentMap()
-}
-
-sealed interface TransactionApprovalEvent : OneOffEvent {
-    object Dismiss : TransactionApprovalEvent
-    object SelectFeePayer : TransactionApprovalEvent
-}
-
-sealed interface BottomSheetMode {
-    object Guarantees : BottomSheetMode
-    object FeePayerSelection : BottomSheetMode
-    data class DApp(
-        val dApp: DAppWithMetadataAndAssociatedResources
-    ) : BottomSheetMode
-}

@@ -1,7 +1,6 @@
 package com.babylon.wallet.android.presentation.transaction.composables
 
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
@@ -11,13 +10,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.presentation.transaction.PreviewType
-import com.babylon.wallet.android.presentation.transaction.TransactionApprovalViewModel2
+import com.babylon.wallet.android.presentation.transaction.TransactionApprovalViewModel
 import kotlinx.collections.immutable.toPersistentList
 
 @Composable
 fun TransactionPreviewTypeContent(
     modifier: Modifier = Modifier,
-    state: TransactionApprovalViewModel2.State,
+    state: TransactionApprovalViewModel.State,
     preview: PreviewType.Transaction,
     onPromptForGuarantees: () -> Unit
 ) {
