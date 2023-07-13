@@ -491,11 +491,7 @@
   <string name="importOlympiaLedgerAccounts_title">Verify With Ledger Device</string>
   <string name="importOlympiaLedgerAccounts_subtitle">You are attempting to import one or more Olympia accounts that must be verified with a Ledger hardware wallet device.</string>
   <string name="importOlympiaLedgerAccounts_listHeading">Already verified Ledger devices:</string>
-  <string name="importOlympiaLedgerAccounts_knownLedgersNone">None</string>
-  <string name="importOlympiaLedgerAccounts_otherDeviceAccounts">%d more accounts are controlled by other devices. Connect a Ledger hardware wallet device and tap Continue.</string>
   <string name="importOlympiaLedgerAccounts_continueButtonTitle">Continue</string>
-  <string name="importOlympiaLedgerAccounts_unverifiedAccountsLeft">#%d accounts left to import</string>
-  <string name="importOlympiaLedgerAccounts_importLedgersAndAccounts">Imported ledgers and accounts</string>
   <string name="importOlympiaLedgerAccounts_accountCount">Accounts remaining to verify: %d</string>
   <string name="importOlympiaLedgerAccounts_instruction">Connect your next Ledger device, launch the Radix Babylon app on it, and tap Continue here.</string>
   <string name="signing_withDeviceFactorSource_signTransaction">Sign transaction with phone</string>
