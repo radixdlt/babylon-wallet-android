@@ -357,7 +357,6 @@ data class Network(
                 }
             }
         }
-
     }
 
     @Serializable

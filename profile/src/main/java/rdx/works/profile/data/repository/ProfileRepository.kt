@@ -23,6 +23,7 @@ import rdx.works.profile.data.model.ProfileSnapshotRelaxed
 import rdx.works.profile.data.model.ProfileState
 import rdx.works.profile.datastore.EncryptedPreferencesManager
 import rdx.works.profile.di.ProfileSerializer
+import rdx.works.profile.di.RelaxedSerializer
 import rdx.works.profile.di.coroutines.ApplicationScope
 import rdx.works.profile.di.coroutines.IoDispatcher
 import javax.inject.Inject
@@ -62,7 +63,7 @@ val ProfileRepository.profile: Flow<Profile>
 class ProfileRepositoryImpl @Inject constructor(
     private val encryptedPreferencesManager: EncryptedPreferencesManager,
     private val preferencesManager: PreferencesManager,
-    private val relaxedJson: Json,
+    @RelaxedSerializer private val relaxedJson: Json,
     private val backupManager: BackupManager,
     @ProfileSerializer private val profileSnapshotJson: Json,
     @IoDispatcher private val ioDispatcher: CoroutineDispatcher,

@@ -64,7 +64,7 @@ class PersonaDataOnetimeViewModel @Inject constructor(
 
     fun onEditClick(personaAddress: String) {
         viewModelScope.launch {
-            //TODO persona data
+            // TODO persona data
 //            sendEvent(PersonaDataOnetimeEvent.OnEditPersona(personaAddress, args.requiredFields.toList().encodeToString()))
         }
     }

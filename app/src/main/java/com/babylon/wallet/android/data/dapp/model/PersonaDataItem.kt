@@ -6,38 +6,44 @@ import kotlinx.serialization.Serializable
 
 // REQUEST
 @Serializable
-data class PersonaDataRequestItem( // REQUEST
-    @SerialName("fields") val fields: List<PersonaData.PersonaDataField>
+data class PersonaDataRequestItem(
+    // REQUEST
+    @SerialName("isRequestingName") val isRequestingName: Boolean? = null,
+    @SerialName("numberOfRequestedEmailAddresses") val numberOfRequestedEmailAddresses: NumberOfValues? = null,
+    @SerialName("numberOfRequestedPhoneNumbers") val numberOfRequestedPhoneNumbers: NumberOfValues? = null,
 )
-
-fun PersonaDataRequestItem.toDomainModel(isOngoing: Boolean = false): MessageFromDataChannel.IncomingRequest.PersonaRequestItem? {
-    if (fields.isEmpty()) return null
-    return MessageFromDataChannel.IncomingRequest.PersonaRequestItem(fields, isOngoing = isOngoing)
-}
 
 // RESPONSE
 @Serializable
 data class PersonaDataRequestResponseItem( // RESPONSE
-    @SerialName("fields") val fields: List<PersonaData>
+    @SerialName("name") val name: PersonaDataName? = null,
+    @SerialName("emailAddresses") val emailAddresses: List<String> = emptyList(),
+    @SerialName("phoneNumbers") val phoneNumbers: List<String> = emptyList()
 )
 
 @Serializable
-data class PersonaData(
-    @SerialName("field") val field: PersonaDataField,
-    @SerialName("value") val value: String,
+data class PersonaDataName(
+    @SerialName("variant") val variant: Variant,
+    @SerialName("family") val family: String,
+    @SerialName("given") val given: String,
+    @SerialName("middle") val middle: String? = null,
 ) {
     @Serializable
-    enum class PersonaDataField {
-        @SerialName("givenName")
-        GivenName,
+    enum class Variant {
+        @SerialName("eastern")
+        Eastern,
 
-        @SerialName("familyName")
-        FamilyName,
-
-        @SerialName("emailAddress")
-        EmailAddress,
-
-        @SerialName("phoneNumber")
-        PhoneNumber
+        @SerialName("western")
+        Western
     }
+}
+
+fun PersonaDataRequestItem.toDomainModel(isOngoing: Boolean = false): MessageFromDataChannel.IncomingRequest.PersonaRequestItem? {
+    if (isRequestingName == null && numberOfRequestedPhoneNumbers == null && numberOfRequestedEmailAddresses == null) return null
+    return MessageFromDataChannel.IncomingRequest.PersonaRequestItem(
+        isRequestingName = isRequestingName == true,
+        numberOfRequestedEmailAddresses = numberOfRequestedEmailAddresses?.toDomainModel(),
+        numberOfRequestedPhoneNumbers = numberOfRequestedPhoneNumbers?.toDomainModel(),
+        isOngoing = isOngoing
+    )
 }

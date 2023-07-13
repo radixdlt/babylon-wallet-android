@@ -1,6 +1,5 @@
 package com.babylon.wallet.android.domain.model
 
-import com.babylon.wallet.android.data.dapp.model.PersonaData
 import rdx.works.profile.data.model.factorsources.FactorSource
 import rdx.works.profile.data.model.factorsources.LedgerHardwareWalletFactorSource
 import rdx.works.profile.data.model.pernetwork.RequestedNumber
@@ -39,7 +38,7 @@ sealed interface MessageFromDataChannel {
                 return dappId.isEmpty()
             }
 
-            fun isUsePersonaAuth(): Boolean {
+            private fun isUsePersonaAuth(): Boolean {
                 return authRequest is AuthRequest.UsePersonaRequest
             }
 
@@ -109,29 +108,23 @@ sealed interface MessageFromDataChannel {
 
         data class AccountsRequestItem(
             val isOngoing: Boolean,
-            val numberOfAccounts: Int,
-            val quantifier: AccountNumberQuantifier,
+            val numberOfValues: NumberOfValues,
             val challenge: String?
         ) {
-            enum class AccountNumberQuantifier {
-                Exactly, AtLeast;
-
-                fun exactly(): Boolean {
-                    return this == Exactly
-                }
-            }
 
             fun isValidRequestItem(): Boolean {
-                return numberOfAccounts >= 0
+                return numberOfValues.quantity >= 0
             }
         }
 
         data class PersonaRequestItem(
-            val fields: List<PersonaData.PersonaDataField>,
+            val isRequestingName: Boolean,
+            val numberOfRequestedEmailAddresses: NumberOfValues?,
+            val numberOfRequestedPhoneNumbers: NumberOfValues?,
             val isOngoing: Boolean
         ) {
             fun isValid(): Boolean {
-                return fields.isNotEmpty()
+                return isRequestingName || numberOfRequestedPhoneNumbers != null || numberOfRequestedEmailAddresses != null
             }
         }
 
@@ -139,6 +132,20 @@ sealed interface MessageFromDataChannel {
             val accounts: Boolean,
             val personaData: Boolean
         )
+
+        data class NumberOfValues(
+            val quantity: Int,
+            val quantifier: Quantifier
+        ) {
+
+            fun exactly(): Boolean {
+                return quantifier == Quantifier.Exactly
+            }
+
+            enum class Quantifier {
+                Exactly, AtLeast
+            }
+        }
     }
 
     sealed class LedgerResponse(val id: String) : MessageFromDataChannel {
@@ -195,14 +202,14 @@ sealed interface MessageFromDataChannel {
     object Error : MessageFromDataChannel
 }
 
-fun MessageFromDataChannel.IncomingRequest.AccountsRequestItem.AccountNumberQuantifier.toProfileShareAccountsQuantifier():
+fun MessageFromDataChannel.IncomingRequest.NumberOfValues.toProfileShareAccountsQuantifier():
     RequestedNumber.Quantifier {
-    return when (this) {
-        MessageFromDataChannel.IncomingRequest.AccountsRequestItem.AccountNumberQuantifier.Exactly -> {
+    return when (this.quantifier) {
+        MessageFromDataChannel.IncomingRequest.NumberOfValues.Quantifier.Exactly -> {
             RequestedNumber.Quantifier.Exactly
         }
 
-        MessageFromDataChannel.IncomingRequest.AccountsRequestItem.AccountNumberQuantifier.AtLeast -> {
+        MessageFromDataChannel.IncomingRequest.NumberOfValues.Quantifier.AtLeast -> {
             RequestedNumber.Quantifier.AtLeast
         }
     }

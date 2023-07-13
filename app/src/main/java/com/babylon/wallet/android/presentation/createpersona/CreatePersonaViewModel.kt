@@ -9,7 +9,8 @@ import com.babylon.wallet.android.presentation.common.PersonaEditableImpl
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.presentation.model.PersonaDisplayNameFieldWrapper
-import com.babylon.wallet.android.presentation.model.PersonaFieldKindWrapper
+import com.babylon.wallet.android.presentation.model.PersonaFieldWrapper
+import com.babylon.wallet.android.presentation.model.toPersonaData
 import com.babylon.wallet.android.utils.DeviceSecurityHelper
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
@@ -52,33 +53,30 @@ class CreatePersonaViewModel @Inject constructor(
 
     fun onPersonaCreateClick() {
         _state.update { it.copy(loading = true) }
-        //TODO persona data
-//        viewModelScope.launch {
-//            val fields = _state.value.currentFields.map {
-//                Network.Persona.Field.init(id = it.id, value = it.value.trim())
-//            }
-//            val persona = createPersonaWithDeviceFactorSourceUseCase(
-//                displayName = _state.value.personaDisplayName.value,
-//                fields = fields
-//            )
-//
-//            val personaId = persona.address
-//
-//            _state.update { it.copy(loading = true) }
-//            preferencesManager.markFirstPersonaCreated()
-//
-//            sendEvent(
-//                CreatePersonaEvent.Complete(
-//                    personaId = personaId
-//                )
-//            )
-//        }
+        viewModelScope.launch {
+            val personaData = _state.value.currentFields.toPersonaData()
+            val persona = createPersonaWithDeviceFactorSourceUseCase(
+                displayName = _state.value.personaDisplayName.value,
+                personaData = personaData
+            )
+
+            val personaId = persona.address
+
+            _state.update { it.copy(loading = true) }
+            preferencesManager.markFirstPersonaCreated()
+
+            sendEvent(
+                CreatePersonaEvent.Complete(
+                    personaId = personaId
+                )
+            )
+        }
     }
 
     data class CreatePersonaUiState(
         val loading: Boolean = false,
-        val currentFields: ImmutableList<PersonaFieldKindWrapper> = persistentListOf(),
-        val fieldsToAdd: ImmutableList<PersonaFieldKindWrapper> = persistentListOf(),
+        val currentFields: ImmutableList<PersonaFieldWrapper> = persistentListOf(),
+        val fieldsToAdd: ImmutableList<PersonaFieldWrapper> = persistentListOf(),
         val personaDisplayName: PersonaDisplayNameFieldWrapper = PersonaDisplayNameFieldWrapper(),
         val continueButtonEnabled: Boolean = false,
         val anyFieldSelected: Boolean = false,

@@ -10,8 +10,9 @@ import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavType
 import androidx.navigation.navArgument
+import com.babylon.wallet.android.presentation.model.decodePersonaDataKinds
 import com.google.accompanist.navigation.animation.composable
-import rdx.works.profile.data.model.pernetwork.PersonaDataEntryID
+import rdx.works.profile.data.model.pernetwork.PersonaData
 
 @VisibleForTesting
 internal const val ARG_PERSONA_ADDRESS = "persona_address"
@@ -21,12 +22,13 @@ internal const val ARG_REQUIRED_FIELDS = "required_fields"
 
 const val ROUTE_EDIT_PERSONA = "persona_edit/{$ARG_PERSONA_ADDRESS}?$ARG_REQUIRED_FIELDS={$ARG_REQUIRED_FIELDS}"
 
-internal class PersonaEditScreenArgs(val personaAddress: String, val requiredFields: Array<PersonaDataEntryID> = emptyArray()) {
+internal class PersonaEditScreenArgs(
+    val personaAddress: String,
+    val requiredFields: Array<PersonaData.PersonaDataField.Kind> = emptyArray()
+) {
     constructor(savedStateHandle: SavedStateHandle) : this(
         checkNotNull(savedStateHandle[ARG_PERSONA_ADDRESS]) as String,
-        //TODO persona data
-//        savedStateHandle.get<String>(ARG_REQUIRED_FIELDS)?.decodePersonaDataKinds().orEmpty().toTypedArray()
-    emptyArray()
+        savedStateHandle.get<String>(ARG_REQUIRED_FIELDS)?.decodePersonaDataKinds().orEmpty().toTypedArray()
     )
 }
 
