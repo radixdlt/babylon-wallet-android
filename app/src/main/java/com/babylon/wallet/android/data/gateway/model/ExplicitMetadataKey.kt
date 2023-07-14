@@ -28,7 +28,6 @@ enum class ExplicitMetadataKey(val key: String) {
     NAME("name"),
     DOMAIN("domain"),
     DAPP_DEFINITION("dapp_definition"),
-    DAPP_DEFINITIONS("dapp_definitions"),
     RELATED_WEBSITES("related_websites"),
     CLAIMED_WEBSITES("claimed_websites"),
     CLAIMED_ENTITIES("claimed_entities"),
@@ -47,7 +46,6 @@ enum class ExplicitMetadataKey(val key: String) {
         NAME -> NameMetadataItem(name = value.asString.orEmpty())
         DOMAIN -> DomainMetadataItem(domain = Uri.parse(value.asString.orEmpty()))
         DAPP_DEFINITION -> DAppDefinitionsMetadataItem(addresses = listOf(value.asString.orEmpty()))
-        DAPP_DEFINITIONS -> DAppDefinitionsMetadataItem(addresses = value.asStringCollection.orEmpty())
         RELATED_WEBSITES -> RelatedWebsiteMetadataItem(website = value.asString.orEmpty())
         ACCOUNT_TYPE -> AccountTypeMetadataItem(
             type = (AccountType.values().find { it.asString == value.asString } ?: DAPP_DEFINITION) as AccountType
@@ -85,7 +83,6 @@ enum class ExplicitMetadataKey(val key: String) {
                 DESCRIPTION,
                 ACCOUNT_TYPE,
                 DAPP_DEFINITION,
-                DAPP_DEFINITIONS,
                 RELATED_WEBSITES,
                 ICON_URL
             )
