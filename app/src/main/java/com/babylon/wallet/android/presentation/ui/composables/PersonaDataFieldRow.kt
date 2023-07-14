@@ -2,6 +2,7 @@ package com.babylon.wallet.android.presentation.ui.composables
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -22,11 +23,11 @@ fun PersonaDataFieldRow(modifier: Modifier, field: PersonaData.PersonaDataField)
         }
 
         is PersonaData.PersonaDataField.Name -> {
-            PersonaDataNameField(
+            PersonaDataStringField(
                 modifier = modifier,
                 label = stringResource(id = field.kind.toDisplayResource()),
-                fullName = field.fullName,
-                nickname = field.nickname
+                value = field.fullName,
+                singleLine = false
             )
         }
 
@@ -39,7 +40,7 @@ fun PersonaDataFieldRow(modifier: Modifier, field: PersonaData.PersonaDataField)
 }
 
 @Composable
-fun PersonaDataStringField(modifier: Modifier, label: String, value: String) {
+fun PersonaDataStringField(modifier: Modifier, label: String, value: String, singleLine: Boolean = true) {
     Column(modifier = modifier) {
         Text(
             text = label,
@@ -48,42 +49,12 @@ fun PersonaDataStringField(modifier: Modifier, label: String, value: String) {
         )
         Spacer(modifier = Modifier.height(dimensions.paddingSmall))
         Text(
+            modifier = Modifier.fillMaxWidth(),
             text = value,
             style = RadixTheme.typography.body1HighImportance,
             color = RadixTheme.colors.gray1,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis
+            overflow = TextOverflow.Ellipsis,
+            maxLines = if (singleLine) 1 else Int.MAX_VALUE
         )
     }
 }
-
-@Composable
-fun PersonaDataNameField(modifier: Modifier, label: String, fullName: String, nickname: String) {
-    Column(modifier = modifier) {
-        Text(
-            text = label,
-            style = RadixTheme.typography.body1Regular,
-            color = RadixTheme.colors.gray2
-        )
-        Spacer(modifier = Modifier.height(dimensions.paddingSmall))
-        Text(
-            text = fullName,
-            style = RadixTheme.typography.body1HighImportance,
-            color = RadixTheme.colors.gray1,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis
-        )
-        if (nickname.isNotEmpty()) {
-            Text(
-                text = nickname,
-                style = RadixTheme.typography.body1HighImportance,
-                color = RadixTheme.colors.gray1,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis
-            )
-        }
-    }
-}
-
-
-
