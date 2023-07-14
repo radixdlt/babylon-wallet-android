@@ -45,7 +45,7 @@ import com.babylon.wallet.android.presentation.settings.dappdetail.DAppDetailsSh
 import com.babylon.wallet.android.presentation.ui.composables.DefaultModalSheetLayout
 import com.babylon.wallet.android.presentation.ui.composables.GrayBackgroundWrapper
 import com.babylon.wallet.android.presentation.ui.composables.PersonaDataFieldRow
-import com.babylon.wallet.android.presentation.ui.composables.PersonaDataFieldString
+import com.babylon.wallet.android.presentation.ui.composables.PersonaDataStringField
 import com.babylon.wallet.android.presentation.ui.composables.PersonaRoundedAvatar
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.StandardOneLineCard
@@ -192,7 +192,7 @@ private fun PersonaDetailList(
             )
         }
         item {
-            PersonaDataFieldString(
+            PersonaDataStringField(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = dimensions.paddingDefault),

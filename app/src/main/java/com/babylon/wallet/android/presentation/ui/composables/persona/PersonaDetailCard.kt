@@ -28,15 +28,16 @@ import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
 import com.babylon.wallet.android.designsystem.composable.RadixSecondaryButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.presentation.dapp.authorized.selectpersona.PersonaUiModel
+import com.babylon.wallet.android.presentation.model.toDisplayResource
 import com.babylon.wallet.android.presentation.ui.composables.PersonaRoundedAvatar
 import kotlinx.collections.immutable.ImmutableList
 import rdx.works.profile.data.model.pernetwork.Network
-import rdx.works.profile.data.model.pernetwork.PersonaDataEntryID
+import rdx.works.profile.data.model.pernetwork.PersonaData
 
 @Composable
 fun PersonaDetailCard(
     persona: PersonaUiModel,
-    missingFields: ImmutableList<PersonaDataEntryID>,
+    missingFields: ImmutableList<PersonaData.PersonaDataField.Kind>,
     onEditClick: (String) -> Unit,
     modifier: Modifier = Modifier,
     onSelectPersona: ((Network.Persona) -> Unit)? = null
@@ -121,7 +122,7 @@ fun PersonaDetailCard(
 
 @Composable
 private fun RequiredInformationInfo(
-    requiredFields: ImmutableList<PersonaDataEntryID>,
+    requiredFields: ImmutableList<PersonaData.PersonaDataField.Kind>,
     modifier: Modifier = Modifier
 ) {
     val text = stringResource(id = R.string.dAppRequest_personalDataBox_requiredInformation)
@@ -129,8 +130,7 @@ private fun RequiredInformationInfo(
         withStyle(SpanStyle(fontWeight = FontWeight.SemiBold)) {
             append("$text ")
         }
-        // TODO persona data
-//        append(requiredFields.map { stringResource(id = it.toDisplayResource()) }.joinToString())
+        append(requiredFields.map { stringResource(id = it.toDisplayResource()) }.joinToString())
     }
     Row(
         modifier = modifier,
