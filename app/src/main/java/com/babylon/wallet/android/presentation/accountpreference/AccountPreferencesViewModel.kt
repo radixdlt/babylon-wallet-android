@@ -3,7 +3,7 @@ package com.babylon.wallet.android.presentation.accountpreference
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
-import com.babylon.wallet.android.data.manifest.toTransactionRequest
+import com.babylon.wallet.android.data.manifest.prepareInternalTransactionRequest
 import com.babylon.wallet.android.data.transaction.ROLAClient
 import com.babylon.wallet.android.di.coroutines.ApplicationScope
 import com.babylon.wallet.android.domain.usecases.GetFreeXrdUseCase
@@ -129,7 +129,7 @@ class AccountPreferenceViewModel @Inject constructor(
                     Timber.d("Approving: \n$manifest")
                     uploadAuthKeyRequestId = UUIDGenerator.uuid().toString()
                     incomingRequestRepository.add(
-                        manifest.toTransactionRequest(
+                        manifest.prepareInternalTransactionRequest(
                             networkId = account.networkID,
                             requestId = uploadAuthKeyRequestId
                         )

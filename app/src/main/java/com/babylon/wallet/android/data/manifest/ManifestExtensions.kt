@@ -72,11 +72,13 @@ private fun guaranteeInstruction(
     )
 }
 
-fun TransactionManifest.toTransactionRequest(
+fun TransactionManifest.prepareInternalTransactionRequest(
     networkId: Int,
     requestId: String = UUID.randomUUID().toString(),
     message: String? = null
 ) = MessageFromDataChannel.IncomingRequest.TransactionRequest(
+    // Since we mock this request as a dApp request from the wallet app, the dApp's id is empty. Should never be invoked as we always
+    // check if a request is not internal before sending message to the dApp
     dappId = "",
     requestId = requestId,
     transactionManifestData = TransactionManifestData.from(

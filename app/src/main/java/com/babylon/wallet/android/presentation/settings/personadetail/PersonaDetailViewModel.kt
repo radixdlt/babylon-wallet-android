@@ -3,7 +3,7 @@ package com.babylon.wallet.android.presentation.settings.personadetail
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
-import com.babylon.wallet.android.data.manifest.toTransactionRequest
+import com.babylon.wallet.android.data.manifest.prepareInternalTransactionRequest
 import com.babylon.wallet.android.data.transaction.ROLAClient
 import com.babylon.wallet.android.domain.common.value
 import com.babylon.wallet.android.domain.model.DAppWithMetadata
@@ -121,7 +121,7 @@ class PersonaDetailViewModel @Inject constructor(
                     val manifest = rolaClient.createAuthKeyManifestWithStringInstructions(persona, authSigningFactorInstance)
                     uploadAuthKeyRequestId = UUIDGenerator.uuid().toString()
                     incomingRequestRepository.add(
-                        manifest.toTransactionRequest(
+                        manifest.prepareInternalTransactionRequest(
                             networkId = persona.networkID,
                             requestId = uploadAuthKeyRequestId
                         )

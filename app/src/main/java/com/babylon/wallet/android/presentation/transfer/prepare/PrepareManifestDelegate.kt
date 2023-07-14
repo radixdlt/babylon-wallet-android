@@ -1,7 +1,7 @@
 package com.babylon.wallet.android.presentation.transfer.prepare
 
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
-import com.babylon.wallet.android.data.manifest.toTransactionRequest
+import com.babylon.wallet.android.data.manifest.prepareInternalTransactionRequest
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.babylon.wallet.android.domain.model.Resource
 import com.babylon.wallet.android.presentation.transfer.SpendingAsset
@@ -46,7 +46,7 @@ class PrepareManifestDelegate(
             )
             .build(fromAccount.networkID)
 
-        return manifest.toTransactionRequest(
+        return manifest.prepareInternalTransactionRequest(
             networkId = fromAccount.networkID,
             message = currentState.submittedMessage,
         )
