@@ -58,6 +58,7 @@ fun PrivateKey.toEngineModel(): rdx.works.core.ret.crypto.PrivateKey {
  *   actual message and not a hash of the message.
  * @return The public key associated with the signature
  */
+@Suppress("MagicNumber")
 fun SignatureWithPublicKey.EcdsaSecp256k1.publicKey(message: ByteArray): PublicKey.EcdsaSecp256k1 {
     // Extracting the v, r, and s parameters from the 65-byte long signature.
     val signatureBytes: ByteArray = signature.toByteArray()

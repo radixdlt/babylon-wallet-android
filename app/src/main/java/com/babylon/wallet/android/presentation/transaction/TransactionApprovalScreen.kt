@@ -62,7 +62,6 @@ import com.babylon.wallet.android.presentation.ui.composables.NotSecureAlertDial
 import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
 import com.babylon.wallet.android.utils.biometricAuthenticate
-import com.babylon.wallet.android.utils.findFragmentActivity
 import kotlinx.coroutines.launch
 import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.data.model.pernetwork.Network
