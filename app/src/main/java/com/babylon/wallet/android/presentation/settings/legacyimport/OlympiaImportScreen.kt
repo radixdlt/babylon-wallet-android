@@ -293,9 +293,7 @@ private fun OlympiaImportContent(
                 backIconType = BackIconType.Back,
                 onClose = { closeSheetCallback() },
                 waitingForLedgerResponse = waitingForLedgerResponse,
-                onAddP2PLink = {
-                    onAddP2PLink()
-                }
+                onAddP2PLink = onAddP2PLink
             )
         }) {
             Column(modifier = Modifier.fillMaxSize()) {
