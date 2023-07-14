@@ -45,7 +45,7 @@ internal class CreateAccountWithLedgerFactorSourceUseCaseTest {
             val ledgerFactorSource = TestData.ledgerFactorSource
             val account = createAccountWithLedgerFactorSourceUseCase(
                 displayName = accountName,
-                derivedPublicKeyHex = "007229e3b98ffa35a4ce28b891ff0a9f95c9d959eff58d0e61015fab3a3b2d18f9",
+                derivedPublicKeyHex = "7229e3b98ffa35a4ce28b891ff0a9f95c9d959eff58d0e61015fab3a3b2d18f9",
                 TestData.ledgerFactorSource.id,
                 ledgerFactorSource.getNextDerivationPathForAccount(network.network.networkId())
             )
