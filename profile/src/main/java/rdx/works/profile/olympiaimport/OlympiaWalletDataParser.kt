@@ -7,11 +7,9 @@ import com.radixdlt.ret.OlympiaNetwork
 import com.radixdlt.ret.PublicKey
 import com.radixdlt.ret.deriveOlympiaAccountAddressFromPublicKey
 import okio.ByteString.Companion.decodeBase64
-import rdx.works.core.blake2Hash
-import rdx.works.core.decodeHex
-import rdx.works.core.toByteArray
-import rdx.works.core.toUByteList
 import rdx.works.core.compressedPublicKeyHashBytes
+import rdx.works.core.decodeHex
+import rdx.works.core.toUByteList
 import rdx.works.profile.data.model.pernetwork.DerivationPath
 import rdx.works.profile.domain.gateway.GetCurrentGatewayUseCase
 import timber.log.Timber

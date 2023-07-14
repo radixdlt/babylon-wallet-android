@@ -54,7 +54,6 @@ fun RETResources.toTransferableResource(resourceAddress: String, allResources: L
     }
 }
 
-
 fun Source.toDepositingTransferableResource(
     allResources: List<Resources>,
     newlyCreated: Map<String, Map<String, MetadataValue>>
@@ -83,7 +82,7 @@ fun ResourceSpecifier.toTransferableResource(
     return when (this) {
         is ResourceSpecifier.Amount -> TransferableResource.Amount(
             amount = amount.asStr().toBigDecimal(),
-            resource =  allFungibles.find {
+            resource = allFungibles.find {
                 it.resourceAddress == resourceAddress.addressString()
             } ?: Resource.FungibleResource.from(
                 resourceAddress = resourceAddress,

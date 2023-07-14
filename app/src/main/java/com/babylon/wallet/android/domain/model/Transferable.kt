@@ -21,7 +21,7 @@ sealed interface Transferable {
 
                     when (val transferable = transferable) {
                         is TransferableResource.Amount -> GuaranteeAssertion.ForAmount(
-                            amount = transferable.amount * predicted.guaranteePercent.toBigDecimal(),
+                            amount = transferable.amount * predicted.guaranteeOffset.toBigDecimal(),
                             instructionIndex = predicted.instructionIndex
                         )
 
@@ -45,13 +45,13 @@ sealed interface Transferable {
 
     fun updateGuarantee(
         @FloatRange(from = 0.0, to = 1.0)
-        guaranteePercent: Float
+        guaranteeOffset: Float
     ): Transferable {
         return when (this) {
             is Depositing -> {
                 val predicted = (guaranteeType as? GuaranteeType.Predicted) ?: return this
 
-                copy(guaranteeType = predicted.copy(guaranteePercent = guaranteePercent))
+                copy(guaranteeType = predicted.copy(guaranteeOffset = guaranteeOffset))
             }
 
             is Withdrawing -> this
@@ -77,8 +77,13 @@ sealed interface GuaranteeType {
     data class Predicted(
         val instructionIndex: Long,
         @FloatRange(from = 0.0, to = 1.0)
-        val guaranteePercent: Float = 1f
-    ) : GuaranteeType
+        val guaranteeOffset: Float = 1f
+    ) : GuaranteeType {
+
+        @Suppress("MagicNumber")
+        val guaranteePercent: Float
+            get() = guaranteeOffset * 100
+    }
 }
 
 sealed interface TransferableResource {

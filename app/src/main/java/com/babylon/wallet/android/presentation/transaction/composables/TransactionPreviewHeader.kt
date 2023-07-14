@@ -5,9 +5,7 @@ package com.babylon.wallet.android.presentation.transaction.composables
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.safeContent
 import androidx.compose.material.IconButton
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -66,7 +64,6 @@ fun TransactionPreviewHeader(
                     maxLines = 2
                 )
             }
-
         },
         navigationIcon = {
             IconButton(

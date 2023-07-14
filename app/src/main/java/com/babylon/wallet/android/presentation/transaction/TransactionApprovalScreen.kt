@@ -90,7 +90,7 @@ fun TransactionApprovalScreen(
         onGuaranteeValueDecreased = viewModel::onGuaranteeValueDecreased,
         onDAppClick = viewModel::onDAppClick,
         onPayerSelected = viewModel::onPayerSelected,
-        onPayerConfirmed =  viewModel::onPayerConfirmed
+        onPayerConfirmed = viewModel::onPayerConfirmed
     )
 
     state.signingState?.let {
@@ -246,7 +246,6 @@ private fun TransactionPreviewContent(
                                 onApproveTransaction = onApproveTransaction
                             )
                         }
-
                     }
                 }
             }

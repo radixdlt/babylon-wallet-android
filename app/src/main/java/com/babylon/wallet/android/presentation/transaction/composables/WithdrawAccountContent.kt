@@ -16,11 +16,12 @@ import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.presentation.transaction.AccountWithTransferableResources
+import kotlinx.collections.immutable.ImmutableList
 
 @Composable
 fun WithdrawAccountContent(
     modifier: Modifier = Modifier,
-    from: List<AccountWithTransferableResources>
+    from: ImmutableList<AccountWithTransferableResources>
 ) {
     if (from.isNotEmpty()) {
         Text(

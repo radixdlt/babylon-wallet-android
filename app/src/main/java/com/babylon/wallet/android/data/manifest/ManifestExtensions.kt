@@ -9,7 +9,6 @@ import com.radixdlt.ret.Decimal
 import com.radixdlt.ret.Instruction
 import com.radixdlt.ret.Instructions
 import com.radixdlt.ret.ManifestValue
-import com.radixdlt.ret.ManifestValueKind
 import com.radixdlt.ret.TransactionHeader
 import com.radixdlt.ret.TransactionManifest
 import rdx.works.core.ret.ManifestMethod
@@ -36,7 +35,8 @@ fun TransactionManifest.addGuaranteeInstructionToManifest(
     instructions = Instructions.fromInstructions(
         instructions = instructions().instructionsList().toMutableList().apply {
             add(
-                index, guaranteeInstruction(
+                index,
+                guaranteeInstruction(
                     resourceAddress = address,
                     guaranteedAmount = guaranteedAmount
                 )
@@ -54,9 +54,11 @@ private fun lockFeeInstruction(
     return Instruction.CallMethod(
         address = Address(addressToLockFee),
         methodName = ManifestMethod.LockFee.value,
-        args = ManifestValue.TupleValue(fields = listOf(
-            ManifestValue.DecimalValue(Decimal(fee.toPlainString()))
-        ))
+        args = ManifestValue.TupleValue(
+            fields = listOf(
+                ManifestValue.DecimalValue(Decimal(fee.toPlainString()))
+            )
+        )
     )
 }
 

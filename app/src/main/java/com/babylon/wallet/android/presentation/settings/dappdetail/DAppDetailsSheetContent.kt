@@ -79,7 +79,7 @@ fun DAppDetailsSheetContent(
                     Divider(color = RadixTheme.colors.gray5)
                 }
             }
-            dApp.dAppWithMetadata.dAppAddress?.let { dappDefinitionAddress ->
+            dApp.dAppWithMetadata.dAppAddress.let { dappDefinitionAddress ->
                 item {
                     Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
                     DappDefinitionAddressRow(

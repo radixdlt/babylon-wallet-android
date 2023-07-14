@@ -11,7 +11,6 @@ import com.babylon.wallet.android.data.gateway.generated.models.TransactionPrevi
 import com.babylon.wallet.android.data.manifest.addLockFeeInstructionToManifest
 import com.babylon.wallet.android.data.manifest.toPrettyString
 import com.babylon.wallet.android.data.repository.transaction.TransactionRepository
-import com.babylon.wallet.android.data.transaction.DappRequestFailure.TransactionApprovalFailure.*
 import com.babylon.wallet.android.data.transaction.model.FeePayerSearchResult
 import com.babylon.wallet.android.data.transaction.model.TransactionApprovalRequest
 import com.babylon.wallet.android.domain.common.asKotlinResult
@@ -99,19 +98,19 @@ class TransactionClient @Inject constructor(
                     manifest = manifestWithTransactionFee
                 )
             }.getOrElse {
-                return Result.failure(DappRequestException(SignCompiledTransactionIntent))
+                return Result.failure(DappRequestException(DappRequestFailure.TransactionApprovalFailure.SignCompiledTransactionIntent))
             }
 
             val transactionIntentHash = runCatching {
                 transactionIntent.intentHash()
             }.getOrElse {
-                return Result.failure(DappRequestException(SignCompiledTransactionIntent))
+                return Result.failure(DappRequestException(DappRequestFailure.TransactionApprovalFailure.SignCompiledTransactionIntent))
             }
 
             val compiledTransactionIntent = runCatching {
                 transactionIntent.compile()
             }.getOrElse {
-                return Result.failure(DappRequestException(PrepareNotarizedTransaction))
+                return Result.failure(DappRequestException(DappRequestFailure.TransactionApprovalFailure.PrepareNotarizedTransaction))
             }
 
             val signatures = collectSignersSignaturesUseCase(
@@ -121,7 +120,7 @@ class TransactionClient @Inject constructor(
                     hashedDataToSign = transactionIntentHash.bytes().toByteArray()
                 )
             ).getOrElse {
-                return Result.failure(DappRequestException(SignCompiledTransactionIntent))
+                return Result.failure(DappRequestException(DappRequestFailure.TransactionApprovalFailure.SignCompiledTransactionIntent))
             }
 
             val signedTransactionIntent = runCatching {
@@ -130,7 +129,7 @@ class TransactionClient @Inject constructor(
                     intentSignatures = signatures
                 )
             }.getOrElse {
-                return Result.failure(DappRequestException(SignCompiledTransactionIntent))
+                return Result.failure(DappRequestException(DappRequestFailure.TransactionApprovalFailure.SignCompiledTransactionIntent))
             }
 
             val signedIntentHash = runCatching {
@@ -138,7 +137,7 @@ class TransactionClient @Inject constructor(
             }.getOrElse { error ->
                 return Result.failure(
                     DappRequestException(
-                        PrepareNotarizedTransaction,
+                        DappRequestFailure.TransactionApprovalFailure.PrepareNotarizedTransaction,
                         msg = error.message,
                         e = error
                     )
@@ -154,7 +153,7 @@ class TransactionClient @Inject constructor(
             }.getOrElse { e ->
                 return Result.failure(
                     DappRequestException(
-                        PrepareNotarizedTransaction,
+                        DappRequestFailure.TransactionApprovalFailure.PrepareNotarizedTransaction,
                         msg = e.message,
                         e = e
                     )
@@ -234,7 +233,7 @@ class TransactionClient @Inject constructor(
         }
         val candidatesWithinOwnAccounts = findFeePayerCandidatesWithinOwnedAccounts(allAccounts.minus(searchedAccounts))
         return if (candidatesWithinOwnAccounts.isEmpty()) {
-            Result.failure(FailedToFindAccountWithEnoughFundsToLockFee)
+            Result.failure(DappRequestFailure.TransactionApprovalFailure.FailedToFindAccountWithEnoughFundsToLockFee)
         } else {
             Result.success(FeePayerSearchResult(candidates = candidatesWithinOwnAccounts))
         }
@@ -279,7 +278,7 @@ class TransactionClient @Inject constructor(
             } catch (e: Exception) {
                 Result.failure(
                     DappRequestException(
-                        BuildTransactionHeader,
+                        DappRequestFailure.TransactionApprovalFailure.BuildTransactionHeader,
                         e.message,
                         e
                     )

@@ -14,8 +14,8 @@ import rdx.works.core.toHexString
 import rdx.works.core.toUByteList
 
 class ManifestBuilder {
-    private var instructions = mutableListOf<String>()
-    private var blobs: MutableList<ByteArray> = mutableListOf()
+    private val instructions = mutableListOf<String>()
+    private val blobs: MutableList<ByteArray> = mutableListOf()
     private var latestBucketIndex: UInt = 0u
 
     fun withdraw(

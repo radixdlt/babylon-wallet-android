@@ -25,6 +25,7 @@ import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.domain.gateway.GetCurrentGatewayUseCase
 import timber.log.Timber
 
+@Suppress("LongParameterList")
 class TransactionSubmitDelegate(
     private val state: MutableStateFlow<State>,
     private val transactionClient: TransactionClient,

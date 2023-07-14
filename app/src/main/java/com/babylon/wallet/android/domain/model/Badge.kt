@@ -15,5 +15,4 @@ data class Badge(
 
     val icon: Uri?
         get() = iconMetadataItem?.url
-
 }

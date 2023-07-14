@@ -35,7 +35,7 @@ class TransactionGuaranteesDelegate(
                                 address = depositing.address,
                                 transferableAmount = amount.key,
                                 instructionIndex = amount.value.instructionIndex,
-                                guaranteeAmountString = (amount.value.guaranteePercent * 100).toString()
+                                guaranteeAmountString = amount.value.guaranteePercent.toString()
                             )
                         )
                     }
@@ -47,13 +47,12 @@ class TransactionGuaranteesDelegate(
                                 account = depositing.account,
                                 transferableAmount = amount.key,
                                 instructionIndex = amount.value.instructionIndex,
-                                guaranteeAmountString = (amount.value.guaranteePercent * 100).toString()
+                                guaranteeAmountString = amount.value.guaranteePercent.toString()
                             )
                         )
                     }
                 }
             }
-
         }
 
         state.update {
@@ -134,5 +133,4 @@ class TransactionGuaranteesDelegate(
             )
         }
     }
-
 }

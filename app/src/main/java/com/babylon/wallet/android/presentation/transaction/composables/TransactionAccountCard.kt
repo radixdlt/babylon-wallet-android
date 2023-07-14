@@ -119,7 +119,6 @@ fun TransactionAccountCard(
             )
         }
 
-
         // Non fungibles
         nftTransferables.forEachIndexed { collectionIndex, nftTransferable ->
             val nft = nftTransferable.transferable as TransferableResource.NFTs
@@ -137,7 +136,7 @@ fun TransactionAccountCard(
             } else {
                 // Show each nft item
                 nft.resource.items.forEachIndexed { itemIndex, item ->
-                    val lastItem = itemIndex == nft.resource.items.lastIndex && collectionIndex ==  nftTransferables.lastIndex
+                    val lastItem = itemIndex == nft.resource.items.lastIndex && collectionIndex == nftTransferables.lastIndex
                     TokenItemContent(
                         isXrdToken = false,
                         tokenUrl = item.imageUrl.toString(),

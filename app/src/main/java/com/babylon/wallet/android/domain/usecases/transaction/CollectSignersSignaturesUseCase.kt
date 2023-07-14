@@ -2,12 +2,12 @@ package com.babylon.wallet.android.domain.usecases.transaction
 
 import com.babylon.wallet.android.data.transaction.SigningState
 import com.radixdlt.hex.extensions.toHexString
+import com.radixdlt.ret.SignatureWithPublicKey
+import com.radixdlt.ret.hash
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.update
-import com.radixdlt.ret.SignatureWithPublicKey
-import com.radixdlt.ret.hash
 import rdx.works.core.decodeHex
 import rdx.works.core.toByteArray
 import rdx.works.core.toUByteList
@@ -40,7 +40,7 @@ class CollectSignersSignaturesUseCase @Inject constructor(
             when (factorSource.id.kind) {
                 FactorSourceKind.DEVICE -> {
                     factorSource as DeviceFactorSource
-                    //_signingState.update { SigningState.Device.Pending(factorSource) }
+                    // _signingState.update { SigningState.Device.Pending(factorSource) }
                     val signatures = signWithDeviceFactorSourceUseCase(
                         deviceFactorSource = factorSource,
                         signers = signers,
@@ -48,7 +48,7 @@ class CollectSignersSignaturesUseCase @Inject constructor(
                         signingPurpose = signingPurpose
                     )
                     signaturesWithPublicKeys.addAll(signatures)
-                    //_signingState.update { SigningState.Device.Success(factorSource) }
+                    // _signingState.update { SigningState.Device.Success(factorSource) }
                 }
 
                 FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET -> {

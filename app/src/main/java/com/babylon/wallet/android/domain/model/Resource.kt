@@ -9,8 +9,8 @@ import com.babylon.wallet.android.domain.model.metadata.SymbolMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.TagsMetadataItem
 import com.radixdlt.ret.NonFungibleLocalId
 import com.radixdlt.ret.utilsKnownAddresses
-import rdx.works.core.toUByteList
 import rdx.works.core.displayableQuantity
+import rdx.works.core.toUByteList
 import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.derivation.model.NetworkId
 import java.math.BigDecimal

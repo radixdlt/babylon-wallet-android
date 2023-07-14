@@ -95,7 +95,7 @@ class TransactionApprovalViewModel @Inject constructor(
         appScope = appScope,
         appEventBus = appEventBus,
         onSendScreenEvent = {
-            viewModelScope.launch { sendEvent(it)  }
+            viewModelScope.launch { sendEvent(it) }
         }
     )
 
@@ -173,7 +173,7 @@ class TransactionApprovalViewModel @Inject constructor(
         val ephemeralNotaryPrivateKey: PrivateKey = PrivateKey.EddsaEd25519.newRandom(),
         val networkFee: BigDecimal = TransactionConfig.NETWORK_FEE.toBigDecimal(),
         val signingState: SigningState? = null
-    ): UiState {
+    ) : UiState {
 
         val isRawManifestToggleVisible: Boolean
             get() = previewType is PreviewType.Transaction
@@ -194,45 +194,45 @@ class TransactionApprovalViewModel @Inject constructor(
             }
 
         sealed class Sheet {
-            object None: Sheet()
+            object None : Sheet()
 
             data class FeePayerChooser(
                 val candidates: List<Network.Account>,
                 val selectedCandidate: Network.Account? = null,
                 val pendingManifest: TransactionManifest
-            ): Sheet() {
+            ) : Sheet() {
 
                 val isSubmitEnabled: Boolean
                     get() = selectedCandidate != null
-
             }
 
             data class CustomizeGuarantees(
                 val accountsWithPredictedGuarantees: List<AccountWithPredictedGuarantee>
-            ): Sheet()
+            ) : Sheet()
 
             data class Dapp(
                 val dApp: DAppWithMetadataAndAssociatedResources
-            ): Sheet()
+            ) : Sheet()
         }
     }
 
-    sealed interface Event: OneOffEvent {
+    sealed interface Event : OneOffEvent {
         object Dismiss : Event
     }
 }
 
 sealed interface PreviewType {
-    object NonConforming: PreviewType
+    object NonConforming : PreviewType
 
     data class Transaction(
         val from: List<AccountWithTransferableResources>,
         val to: List<AccountWithTransferableResources>,
         val badges: List<Badge> = emptyList(),
         val dApps: List<DAppWithMetadataAndAssociatedResources> = emptyList()
-    ): PreviewType
+    ) : PreviewType
 }
 
+@Suppress("MagicNumber")
 sealed interface AccountWithPredictedGuarantee {
 
     val address: String
@@ -280,7 +280,7 @@ sealed interface AccountWithPredictedGuarantee {
         override val transferableAmount: TransferableResource.Amount,
         override val instructionIndex: Long,
         override val guaranteeAmountString: String
-    ): AccountWithPredictedGuarantee {
+    ) : AccountWithPredictedGuarantee {
         override val address: String
             get() = account.address
     }
@@ -288,9 +288,9 @@ sealed interface AccountWithPredictedGuarantee {
     data class Other(
         override val address: String,
         override val transferableAmount: TransferableResource.Amount,
-        override val instructionIndex : Long,
+        override val instructionIndex: Long,
         override val guaranteeAmountString: String
-    ): AccountWithPredictedGuarantee
+    ) : AccountWithPredictedGuarantee
 }
 
 sealed interface AccountWithTransferableResources {
@@ -301,7 +301,7 @@ sealed interface AccountWithTransferableResources {
     data class Owned(
         val account: Network.Account,
         override val resources: List<Transferable>
-    ): AccountWithTransferableResources {
+    ) : AccountWithTransferableResources {
         override val address: String
             get() = account.address
     }
@@ -309,7 +309,7 @@ sealed interface AccountWithTransferableResources {
     data class Other(
         override val address: String,
         override val resources: List<Transferable>
-    ): AccountWithTransferableResources
+    ) : AccountWithTransferableResources
 
     fun updateFromGuarantees(
         accountsWithPredictedGuarantees: List<AccountWithPredictedGuarantee>
@@ -351,5 +351,3 @@ data class TransactionFees(
     val networkFee: BigDecimal = BigDecimal.ZERO,
     val isNetworkCongested: Boolean = false
 )
-
-

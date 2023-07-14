@@ -38,5 +38,4 @@ data class TransactionManifestData(
             message = message
         )
     }
-
 }

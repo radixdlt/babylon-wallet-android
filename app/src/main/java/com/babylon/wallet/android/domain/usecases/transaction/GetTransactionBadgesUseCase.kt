@@ -18,7 +18,7 @@ class GetTransactionBadgesUseCase @Inject constructor(
         val dAppsWithMetadata = dappMetadataRepository.getDAppsMetadata(
             needMostRecentData = false,
             definitionAddresses = accountProofs.map { it.addressString() }
-        ).value() ?: emptyList()
+        ).value().orEmpty()
 
         return dAppsWithMetadata.map { dApp ->
             Badge(

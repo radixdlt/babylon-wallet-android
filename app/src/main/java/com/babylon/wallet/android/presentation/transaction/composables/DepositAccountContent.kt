@@ -26,11 +26,12 @@ import com.babylon.wallet.android.designsystem.composable.RadixTextButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.presentation.transaction.AccountWithTransferableResources
 import com.babylon.wallet.android.presentation.transaction.hasCustomizableGuarantees
+import kotlinx.collections.immutable.ImmutableList
 
 @Composable
 fun DepositAccountContent(
     modifier: Modifier = Modifier,
-    to: List<AccountWithTransferableResources>,
+    to: ImmutableList<AccountWithTransferableResources>,
     promptForGuarantees: () -> Unit
 ) {
     if (to.isNotEmpty()) {

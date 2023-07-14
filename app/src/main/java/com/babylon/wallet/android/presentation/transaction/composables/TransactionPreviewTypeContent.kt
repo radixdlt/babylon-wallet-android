@@ -37,7 +37,7 @@ fun TransactionPreviewTypeContent(
 
             WithdrawAccountContent(
                 modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingDefault),
-                from = preview.from
+                from = preview.from.toPersistentList()
             )
 
             StrokeLine(height = 40.dp)
@@ -49,7 +49,7 @@ fun TransactionPreviewTypeContent(
 
             DepositAccountContent(
                 modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingDefault),
-                to = preview.to,
+                to = preview.to.toPersistentList(),
                 promptForGuarantees = onPromptForGuarantees
             )
 

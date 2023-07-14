@@ -41,7 +41,6 @@ import com.babylon.wallet.android.domain.model.DAppResources
 import com.babylon.wallet.android.domain.model.DAppWithMetadata
 import com.babylon.wallet.android.domain.model.DAppWithMetadataAndAssociatedResources
 import com.babylon.wallet.android.domain.model.Resource
-import com.babylon.wallet.android.domain.model.Resources
 import com.babylon.wallet.android.presentation.common.FullscreenCircularProgressContent
 import com.babylon.wallet.android.presentation.model.toDisplayResource
 import com.babylon.wallet.android.presentation.settings.dappdetail.DAppDetailsSheetContent
