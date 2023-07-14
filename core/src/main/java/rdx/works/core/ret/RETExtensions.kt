@@ -20,7 +20,7 @@ fun ECKeyPair.toEnginePublicKeyModel(): PublicKey {
     return when (this.publicKey.curveType) {
         EllipticCurveType.Secp256k1 -> {
             // Required size 33 bytes
-            PublicKey.EcdsaSecp256k1(getCompressedPublicKey().toUByteList()) // TODO RET
+            PublicKey.EcdsaSecp256k1(getCompressedPublicKey().toUByteList())
         }
         EllipticCurveType.Ed25519 -> {
             // Required size 32 bytes

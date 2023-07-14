@@ -155,7 +155,7 @@ data class Network(
 
                 val address = deriveAccountAddress(
                     networkID = networkId,
-                    publicKey = PublicKey.EddsaEd25519(derivedPublicKeyHex.decodeHex().toUByteList()) // TODO RET
+                    publicKey = PublicKey.EddsaEd25519(derivedPublicKeyHex.decodeHex().toUByteList())
                 )
 
                 val unsecuredSecurityState = SecurityState.unsecured(

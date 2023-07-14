@@ -233,7 +233,7 @@ class TransactionSubmitDelegate(
                         )
                     }
                     is GuaranteeAssertion.ForNFT -> {
-                        // TODO RET ask Matt if needs to be implemented
+                        // Will be implemented later
                     }
                     null -> {}
                 }

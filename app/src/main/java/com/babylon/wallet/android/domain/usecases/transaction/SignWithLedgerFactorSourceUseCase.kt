@@ -136,7 +136,7 @@ class SignWithLedgerFactorSourceUseCase @Inject constructor(
             val ledgerSignatures = signaturesResult.getOrThrow().map { signatureOfSigner ->
                 when (signatureOfSigner.derivedPublicKey.curve) {
                     MessageFromDataChannel.LedgerResponse.DerivedPublicKey.Curve.Curve25519 -> {
-                        SignatureWithPublicKey.EddsaEd25519( // TODO RET
+                        SignatureWithPublicKey.EddsaEd25519(
                             signature = signatureOfSigner.signature.decodeHex().toUByteList(),
                             publicKey = signatureOfSigner.derivedPublicKey.publicKeyHex.decodeHex().toUByteList()
                         )

@@ -68,7 +68,7 @@ suspend fun GetProfileUseCase.nextDerivationPathForAccountOnCurrentNetworkWithLe
 
 suspend fun GetProfileUseCase.currentNetworkAccountHashes(): Set<ByteArray> {
     return accountsOnCurrentNetwork().map {
-        val addressData = Address(it.address).bytes().toByteArray() // TODO RET
+        val addressData = Address(it.address).bytes().toByteArray()
         // last 29 bytes of addressData are hash of public key of this account
         addressData.takeLast(PUBLIC_KEY_HASH_LENGTH).toByteArray()
     }.toSet()
