@@ -72,10 +72,13 @@ fun PersonaData.PersonaDataField.Kind.empty(): PersonaData.PersonaDataField {
 }
 
 val PersonaData.PersonaDataField.Name.fullName: String
-    get() = if (variant == PersonaData.PersonaDataField.Name.Variant.Eastern) {
-        listOfNotNull(family, given).filter { it.isNotEmpty() }.joinToString(" ")
-    } else {
-        listOfNotNull(given, family).filter { it.isNotEmpty() }.joinToString(" ")
+    get() {
+        val fullName = if (variant == PersonaData.PersonaDataField.Name.Variant.Eastern) {
+            listOfNotNull(family, given)
+        } else {
+            listOfNotNull(given, family)
+        }.filter { it.isNotEmpty() }.joinToString(" ")
+        return listOfNotNull(fullName, nickname).filter { it.isNotEmpty() }.joinToString("\n")
     }
 
 fun List<PersonaData.PersonaDataField>.toPersonaData(): PersonaData {
