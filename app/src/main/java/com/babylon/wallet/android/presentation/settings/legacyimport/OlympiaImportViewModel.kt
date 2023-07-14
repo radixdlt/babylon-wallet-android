@@ -7,6 +7,7 @@ import com.babylon.wallet.android.data.dapp.LedgerMessenger
 import com.babylon.wallet.android.data.dapp.model.Curve
 import com.babylon.wallet.android.data.dapp.model.DerivePublicKeyRequest
 import com.babylon.wallet.android.data.dapp.model.LedgerDeviceModel.Companion.getLedgerDeviceModel
+import com.babylon.wallet.android.domain.model.AppConstants.DELAY_300_MS
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
@@ -27,6 +28,7 @@ import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.UUIDGenerator
@@ -38,7 +40,7 @@ import rdx.works.profile.data.model.validatePublicKeysOf
 import rdx.works.profile.domain.AddLedgerFactorSourceUseCase
 import rdx.works.profile.domain.AddOlympiaFactorSourceUseCase
 import rdx.works.profile.domain.GetProfileUseCase
-import rdx.works.profile.domain.account.CheckOlympiaFactorSourceForAccountsExistUseCase
+import rdx.works.profile.domain.account.GetFactorSourceIdForOlympiaAccountsUseCase
 import rdx.works.profile.domain.account.MigrateOlympiaAccountsUseCase
 import rdx.works.profile.domain.accountOnCurrentNetwork
 import rdx.works.profile.domain.currentNetworkAccountHashes
@@ -57,7 +59,7 @@ class OlympiaImportViewModel @Inject constructor(
     private val addOlympiaFactorSourceUseCase: AddOlympiaFactorSourceUseCase,
     addLedgerFactorSourceUseCase: AddLedgerFactorSourceUseCase,
     private val migrateOlympiaAccountsUseCase: MigrateOlympiaAccountsUseCase,
-    private val checkOlympiaFactorSourceForAccountsExistUseCase: CheckOlympiaFactorSourceForAccountsExistUseCase,
+    private val getFactorSourceIdForOlympiaAccountsUseCase: GetFactorSourceIdForOlympiaAccountsUseCase,
     private val getProfileUseCase: GetProfileUseCase,
     private val deviceSecurityHelper: DeviceSecurityHelper,
     private val olympiaWalletDataParser: OlympiaWalletDataParser
@@ -66,9 +68,13 @@ class OlympiaImportViewModel @Inject constructor(
     private var mnemonicWithPassphrase: MnemonicWithPassphrase? = null
     private val scannedData = mutableSetOf<String>()
     private var olympiaWalletData: OlympiaWalletData? = null
-    private val initialPages = listOf(ImportPage.ScanQr, ImportPage.AccountList, ImportPage.ImportComplete)
+    private val initialPages = listOf(
+        OlympiaImportUiState.Page.ScanQr,
+        OlympiaImportUiState.Page.AccountsToImportList,
+        OlympiaImportUiState.Page.ImportComplete
+    )
     private var existingFactorSourceId: FactorSourceID.FromHash? = null
-    private val validatedHardwareAccounts = mutableMapOf<FactorSource, List<OlympiaAccountDetails>>()
+    private val verifiedHardwareAccounts = mutableMapOf<FactorSource, List<OlympiaAccountDetails>>()
 
     private val seedPhraseInputDelegate = SeedPhraseInputDelegate(viewModelScope)
 
@@ -87,12 +93,12 @@ class OlympiaImportViewModel @Inject constructor(
         viewModelScope.launch {
             useLedgerDelegate.state.collect { delegateState ->
                 _state.update { uiState ->
+                    val state = delegateState.addLedgerSheetState
                     uiState.copy(
-                        addLedgerSheetState = delegateState.addLedgerSheetState,
-                        usedLedgerFactorSources = delegateState.usedLedgerFactorSources,
+                        addLedgerSheetState = state,
+                        shouldShowBottomSheet = state == AddLedgerSheetState.InputLedgerName,
                         waitingForLedgerResponse = delegateState.waitingForLedgerResponse,
                         recentlyConnectedLedgerDevice = delegateState.recentlyConnectedLedgerDevice,
-                        hasP2pLinks = delegateState.hasP2pLinks,
                         uiMessage = delegateState.uiMessage
                     )
                 }
@@ -102,7 +108,6 @@ class OlympiaImportViewModel @Inject constructor(
             seedPhraseInputDelegate.state.collect { delegateState ->
                 _state.update { uiState ->
                     uiState.copy(
-                        importSoftwareAccountsEnabled = delegateState.seedPhraseValid,
                         bip39Passphrase = delegateState.bip39Passphrase,
                         seedPhraseWords = delegateState.seedPhraseWords,
                         wordAutocompleteCandidates = delegateState.wordAutocompleteCandidates
@@ -119,12 +124,24 @@ class OlympiaImportViewModel @Inject constructor(
         _state.update { it.copy(waitingForLedgerResponse = false) }
         val hardwareAccountsToMigrate = hardwareAccountsLeftToMigrate()
         val derivedKeys = derivePublicKeyResponse.publicKeysHex.map { it.publicKeyHex }.toSet()
-        val validatedAccounts = hardwareAccountsToMigrate.filter { derivedKeys.contains(it.publicKey) }
-        if (validatedAccounts.isEmpty()) {
-            _state.update { it.copy(uiMessage = UiMessage.InfoMessage.NoAccountsForLedger) }
+        val verifiedAccounts = hardwareAccountsToMigrate.filter { derivedKeys.contains(it.publicKey) }
+        if (verifiedAccounts.isEmpty()) {
+            _state.update {
+                it.copy(
+                    uiMessage = UiMessage.InfoMessage.NoAccountsForLedger,
+                    shouldShowBottomSheet = true
+                )
+            }
             return
         }
-        validatedHardwareAccounts[ledgerFactorSource] = validatedAccounts
+        _state.update {
+            it.copy(
+                verifiedLedgerDevices = (it.verifiedLedgerDevices + ledgerFactorSource)
+                    .distinct()
+                    .toPersistentList()
+            )
+        }
+        verifiedHardwareAccounts[ledgerFactorSource] = verifiedAccounts
         updateHardwareAccountLeftToMigrateCount()
         val hardwareAccountsLeftToMigrate = hardwareAccountsLeftToMigrate()
         if (hardwareAccountsLeftToMigrate.isEmpty()) {
@@ -158,15 +175,17 @@ class OlympiaImportViewModel @Inject constructor(
                 this@OlympiaImportViewModel.olympiaWalletData = data
                 seedPhraseInputDelegate.setSeedPhraseSize(data.mnemonicWordCount)
                 val allImported = data.accountData.all { it.alreadyImported }
-                val nextPage = if (allImported) ImportPage.ImportComplete else ImportPage.AccountList
+                val nextPage =
+                    if (allImported) OlympiaImportUiState.Page.ImportComplete else OlympiaImportUiState.Page.AccountsToImportList
                 _state.update { state ->
                     state.copy(
                         currentPage = nextPage,
-                        olympiaAccounts = data.accountData.toPersistentList(),
+                        olympiaAccountsToImport = data.accountData.toPersistentList(),
                         importButtonEnabled = data.accountData.any { !it.alreadyImported },
-                        totalHardwareAccounts = data.accountData.count { it.type == OlympiaAccountType.Hardware },
                         migratedAccounts = if (allImported) {
-                            data.accountData.mapNotNull { getProfileUseCase.accountOnCurrentNetwork(it.newBabylonAddress)?.toUiModel() }
+                            data.accountData.mapNotNull {
+                                getProfileUseCase.accountOnCurrentNetwork(it.newBabylonAddress)?.toUiModel()
+                            }
                                 .toPersistentList()
                         } else {
                             persistentListOf()
@@ -179,31 +198,35 @@ class OlympiaImportViewModel @Inject constructor(
     }
 
     fun onBackClick() {
-        previousPage()
+        backToPreviousPage()
     }
 
-    @Suppress("MagicNumber")
-    private fun nextPage(page: ImportPage? = null) {
+    private fun proceedToNextPage() {
         viewModelScope.launch {
-            if (page != null) {
-                _state.update { it.copy(currentPage = page, hideBack = page == ImportPage.ImportComplete) }
-                delay(300)
-                sendEvent(OlympiaImportEvent.NextPage(page))
-            } else {
-                val currentPage = _state.value.currentPage
-                _state.value.pages.nextPage(currentPage)?.let { nextPage ->
-                    _state.update { it.copy(currentPage = nextPage, hideBack = nextPage == ImportPage.ImportComplete) }
-                    delay(300)
-                    sendEvent(OlympiaImportEvent.NextPage(nextPage))
+            val currentPage = _state.value.currentPage
+            _state.value.pages.nextPage(currentPage)?.let { nextPage ->
+                _state.update {
+                    it.copy(
+                        currentPage = nextPage,
+                        hideBack = nextPage == OlympiaImportUiState.Page.ImportComplete
+                    )
                 }
+                delay(DELAY_300_MS)
+                if (nextPage == OlympiaImportUiState.Page.MnemonicInput) {
+                    if (checkIfMnemonicForSoftwareAccountsExists()) {
+                        sendEvent(OlympiaImportEvent.BiometricPrompt)
+                        return@launch
+                    }
+                }
+                sendEvent(OlympiaImportEvent.NextPage(nextPage))
             }
         }
     }
 
-    private fun previousPage() {
+    private fun backToPreviousPage() {
         viewModelScope.launch {
             val newPage = _state.value.pages.previousPage(_state.value.currentPage)
-            if (newPage == ImportPage.ScanQr) {
+            if (newPage == OlympiaImportUiState.Page.ScanQr) {
                 scannedData.clear()
                 _state.update { it.copy(qrChunkInfo = null) }
             }
@@ -212,25 +235,25 @@ class OlympiaImportViewModel @Inject constructor(
         }
     }
 
-    private fun buildPages(olympiaAccounts: List<OlympiaAccountDetails>): PersistentList<ImportPage> {
+    private fun buildPages(olympiaAccounts: List<OlympiaAccountDetails>): PersistentList<OlympiaImportUiState.Page> {
         val hasSoftwareAccounts = olympiaAccounts.any { it.type == OlympiaAccountType.Software }
         val hasHardwareAccounts = olympiaAccounts.any { it.type == OlympiaAccountType.Hardware }
-        var pages = listOf(ImportPage.ScanQr, ImportPage.AccountList)
+        var pages = listOf(OlympiaImportUiState.Page.ScanQr, OlympiaImportUiState.Page.AccountsToImportList)
         when {
             hasSoftwareAccounts -> {
-                pages = pages + listOf(ImportPage.MnemonicInput)
+                pages = pages + listOf(OlympiaImportUiState.Page.MnemonicInput)
                 if (hasHardwareAccounts) {
-                    pages = pages + listOf(ImportPage.HardwareAccount)
+                    pages = pages + listOf(OlympiaImportUiState.Page.LedgerAccounts)
                 }
             }
 
             hasHardwareAccounts -> {
-                pages = pages + listOf(ImportPage.HardwareAccount)
+                pages = pages + listOf(OlympiaImportUiState.Page.LedgerAccounts)
             }
 
             else -> {}
         }
-        return (pages + listOf(ImportPage.ImportComplete)).toPersistentList()
+        return (pages + listOf(OlympiaImportUiState.Page.ImportComplete)).toPersistentList()
     }
 
     fun onWordChanged(index: Int, value: String) {
@@ -245,7 +268,7 @@ class OlympiaImportViewModel @Inject constructor(
     }
 
     fun onImportAccounts() {
-        val selectedAccounts = _state.value.olympiaAccounts.filter {
+        val selectedAccounts = _state.value.olympiaAccountsToImport.filter {
             !it.alreadyImported
         }
         val pages = buildPages(selectedAccounts)
@@ -253,23 +276,25 @@ class OlympiaImportViewModel @Inject constructor(
         _state.update { state ->
             state.copy(pages = pages)
         }
-        nextPage()
+        proceedToNextPage()
     }
 
-    @Suppress("UnsafeCallOnNullableType")
     fun onImportSoftwareAccounts() {
         viewModelScope.launch {
             val softwareAccountsToMigrate = softwareAccountsToMigrate()
             mnemonicWithPassphrase =
-                MnemonicWithPassphrase(_state.value.seedPhraseWords.joinToString(" ") { it.value }, _state.value.bip39Passphrase)
-            val accountsValid =
-                existingFactorSourceId != null || mnemonicWithPassphrase?.validatePublicKeysOf(softwareAccountsToMigrate) == true
+                MnemonicWithPassphrase(
+                    mnemonic = _state.value.seedPhraseWords.joinToString(" ") { it.value },
+                    bip39Passphrase = _state.value.bip39Passphrase
+                )
+            val accountsValid = existingFactorSourceId != null ||
+                mnemonicWithPassphrase?.validatePublicKeysOf(softwareAccountsToMigrate) == true
             if (accountsValid) {
                 when (_state.value.pages.nextPage(_state.value.currentPage)) {
-                    ImportPage.HardwareAccount -> nextPage()
+                    OlympiaImportUiState.Page.LedgerAccounts -> proceedToNextPage()
                     else -> {
                         internalImportOlympiaAccounts()
-                        nextPage()
+                        proceedToNextPage()
                     }
                 }
             } else {
@@ -281,8 +306,8 @@ class OlympiaImportViewModel @Inject constructor(
     @Suppress("UnsafeCallOnNullableType")
     private suspend fun internalImportOlympiaAccounts() {
         val softwareAccountsToMigrate = softwareAccountsToMigrate()
-        if (softwareAccountsToMigrate.isEmpty() && validatedHardwareAccounts.isEmpty()) {
-            nextPage()
+        if (softwareAccountsToMigrate.isEmpty() && verifiedHardwareAccounts.isEmpty()) {
+            proceedToNextPage()
             return
         }
         if (softwareAccountsToMigrate.isNotEmpty()) {
@@ -292,8 +317,8 @@ class OlympiaImportViewModel @Inject constructor(
                 factorSourceId = factorSourceID
             )
         }
-        if (validatedHardwareAccounts.isNotEmpty()) {
-            validatedHardwareAccounts.entries.forEach { entry ->
+        if (verifiedHardwareAccounts.isNotEmpty()) {
+            verifiedHardwareAccounts.entries.forEach { entry ->
                 migrateOlympiaAccountsUseCase(
                     olympiaAccounts = entry.value,
                     factorSourceId = entry.key.id as FactorSourceID.FromHash
@@ -302,19 +327,19 @@ class OlympiaImportViewModel @Inject constructor(
         }
         _state.update { state ->
             state.copy(
-                migratedAccounts = state.olympiaAccounts.mapNotNull {
+                migratedAccounts = state.olympiaAccountsToImport.mapNotNull {
                     getProfileUseCase.accountOnCurrentNetwork(it.newBabylonAddress)?.toUiModel()
                 }.toPersistentList()
             )
         }
-        nextPage()
+        proceedToNextPage()
     }
 
     private fun updateHardwareAccountLeftToMigrateCount() {
         val hardwareAccountsLeftToImport = hardwareAccountsLeftToMigrate().map {
             it.address
-        }.toSet().minus(validatedHardwareAccounts.values.flatten().map { it.address }.toSet()).size
-        _state.update { it.copy(hardwareAccountsLeftToImport = hardwareAccountsLeftToImport) }
+        }.toSet().minus(verifiedHardwareAccounts.values.flatten().map { it.address }.toSet()).size
+        _state.update { it.copy(ledgerAccountsLeftToImport = hardwareAccountsLeftToImport) }
     }
 
     fun onConfirmLedgerName(name: String) {
@@ -340,39 +365,40 @@ class OlympiaImportViewModel @Inject constructor(
                 },
                 ledgerDevice = ledgerDevice
             ).onFailure { error ->
-                _state.update { it.copy(uiMessage = UiMessage.ErrorMessage.from(error), waitingForLedgerResponse = false) }
+                _state.update {
+                    it.copy(
+                        uiMessage = UiMessage.ErrorMessage.from(error),
+                        waitingForLedgerResponse = false
+                    )
+                }
             }.onSuccess { derivePublicKeyResponse ->
                 processLedgerResponse(ledgerFactorSource, derivePublicKeyResponse)
             }
         }
     }
 
-    fun onMnemonicAlreadyImported() {
+    private suspend fun checkIfMnemonicForSoftwareAccountsExists(): Boolean {
         val softwareAccountsToMigrate = softwareAccountsToMigrate()
-        viewModelScope.launch {
-            val factorSourceId = checkOlympiaFactorSourceForAccountsExistUseCase(softwareAccountsToMigrate)
-            if (factorSourceId == null) {
-                _state.update { state ->
-                    state.copy(uiMessage = UiMessage.InfoMessage.NoMnemonicForAccounts)
-                }
-                return@launch
-            }
-            existingFactorSourceId = factorSourceId
-            sendEvent(OlympiaImportEvent.BiometricPrompt)
+        if (softwareAccountsToMigrate.isEmpty()) { // if no software accounts then no need to check
+            return false
         }
+        val factorSourceId = getFactorSourceIdForOlympiaAccountsUseCase(softwareAccountsToMigrate) ?: return false
+
+        existingFactorSourceId = factorSourceId
+        return true
     }
 
     private fun softwareAccountsToMigrate(): List<OlympiaAccountDetails> {
-        val softwareAccountsToMigrate = _state.value.olympiaAccounts.filter {
+        val softwareAccountsToMigrate = _state.value.olympiaAccountsToImport.filter {
             it.type == OlympiaAccountType.Software && !it.alreadyImported
         }
         return softwareAccountsToMigrate
     }
 
     private fun hardwareAccountsLeftToMigrate(): List<OlympiaAccountDetails> {
-        val alreadyValidatedKeys = validatedHardwareAccounts.values.flatten().map { it.publicKey }
-        val hardwareAccountsToMigrate = _state.value.olympiaAccounts.filter {
-            it.type == OlympiaAccountType.Hardware && !it.alreadyImported && !alreadyValidatedKeys.contains(
+        val alreadyVerifiedKeys = verifiedHardwareAccounts.values.flatten().map { it.publicKey }
+        val hardwareAccountsToMigrate = _state.value.olympiaAccountsToImport.filter {
+            it.type == OlympiaAccountType.Hardware && !it.alreadyImported && !alreadyVerifiedKeys.contains(
                 it.publicKey
             )
         }
@@ -391,55 +417,72 @@ class OlympiaImportViewModel @Inject constructor(
         _state.update { it.copy(uiMessage = null) }
     }
 
-    fun onSendAddLedgerRequest() {
-        useLedgerDelegate.onSendAddLedgerRequest()
+    fun onImportWithLedger() {
+        viewModelScope.launch {
+            if (useLedgerDelegate.state.first().hasP2PLinks) {
+                useLedgerDelegate.onSendAddLedgerRequest()
+            } else {
+                _state.update {
+                    it.copy(
+                        addLedgerSheetState = AddLedgerSheetState.LinkConnector,
+                        shouldShowBottomSheet = true,
+                    )
+                }
+            }
+        }
     }
-}
 
-enum class ImportPage {
-    ScanQr, AccountList, MnemonicInput, HardwareAccount, ImportComplete
-}
-
-fun List<ImportPage>.nextPage(currentPage: ImportPage): ImportPage? {
-    val currentIndex = indexOf(currentPage)
-    if (currentIndex == -1 || currentIndex == size - 1) return null
-    return this[currentIndex + 1]
-}
-
-fun List<ImportPage>.previousPage(currentPage: ImportPage): ImportPage? {
-    val currentIndex = indexOf(currentPage)
-    if (currentIndex == -1 || currentIndex == 0) return null
-    return this[currentIndex - 1]
+    fun onHideBottomSheet() {
+        viewModelScope.launch {
+            _state.update {
+                it.copy(shouldShowBottomSheet = false)
+            }
+        }
+    }
 }
 
 sealed interface OlympiaImportEvent : OneOffEvent {
     object MoveFocusToNextWord : OlympiaImportEvent
-    data class NextPage(val page: ImportPage) : OlympiaImportEvent
-    data class PreviousPage(val page: ImportPage?) : OlympiaImportEvent
+    data class NextPage(val page: OlympiaImportUiState.Page) : OlympiaImportEvent
+    data class PreviousPage(val page: OlympiaImportUiState.Page?) : OlympiaImportEvent
     object UseLedger : OlympiaImportEvent
     object BiometricPrompt : OlympiaImportEvent
 }
 
 data class OlympiaImportUiState(
-    val isLoading: Boolean = false,
-    val pages: ImmutableList<ImportPage> = persistentListOf(),
-    val currentPage: ImportPage = ImportPage.ScanQr,
+    val pages: ImmutableList<Page> = persistentListOf(),
+    val currentPage: Page = Page.ScanQr,
     val importButtonEnabled: Boolean = false,
-    val importSoftwareAccountsEnabled: Boolean = true,
-    val olympiaAccounts: ImmutableList<OlympiaAccountDetails> = persistentListOf(),
+    val olympiaAccountsToImport: ImmutableList<OlympiaAccountDetails> = persistentListOf(),
     val bip39Passphrase: String = "",
     val uiMessage: UiMessage? = null,
     val migratedAccounts: ImmutableList<AccountItemUiModel> = persistentListOf(),
     val hideBack: Boolean = false,
     val qrChunkInfo: ChunkInfo? = null,
     val isDeviceSecure: Boolean = true,
-    val hardwareAccountsLeftToImport: Int = 0,
+    val ledgerAccountsLeftToImport: Int = 0,
     val waitingForLedgerResponse: Boolean = false,
-    val hasP2pLinks: Boolean = false,
-    val usedLedgerFactorSources: ImmutableList<LedgerHardwareWalletFactorSource> = persistentListOf(),
+    val verifiedLedgerDevices: ImmutableList<LedgerHardwareWalletFactorSource> = persistentListOf(),
     val recentlyConnectedLedgerDevice: LedgerDeviceUiModel? = null,
     val addLedgerSheetState: AddLedgerSheetState = AddLedgerSheetState.Connect,
-    val totalHardwareAccounts: Int = 0,
     val seedPhraseWords: ImmutableList<SeedPhraseInputDelegate.SeedPhraseWord> = persistentListOf(),
-    val wordAutocompleteCandidates: ImmutableList<String> = persistentListOf()
-) : UiState
+    val wordAutocompleteCandidates: ImmutableList<String> = persistentListOf(),
+    val shouldShowBottomSheet: Boolean = false
+) : UiState {
+
+    enum class Page {
+        ScanQr, AccountsToImportList, MnemonicInput, LedgerAccounts, ImportComplete
+    }
+}
+
+private fun List<OlympiaImportUiState.Page>.nextPage(currentPage: OlympiaImportUiState.Page): OlympiaImportUiState.Page? {
+    val currentIndex = indexOf(currentPage)
+    if (currentIndex == -1 || currentIndex == size - 1) return null
+    return this[currentIndex + 1]
+}
+
+private fun List<OlympiaImportUiState.Page>.previousPage(currentPage: OlympiaImportUiState.Page): OlympiaImportUiState.Page? {
+    val currentIndex = indexOf(currentPage)
+    if (currentIndex == -1 || currentIndex == 0) return null
+    return this[currentIndex - 1]
+}
