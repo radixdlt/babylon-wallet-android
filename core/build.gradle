@@ -29,7 +29,7 @@ android {
 }
 
 dependencies {
-    implementation libs.ret
+    implementation libs.retAndroid
     implementation libs.slip10
     implementation libs.crypto
     implementation libs.ktorCore
@@ -44,6 +44,7 @@ dependencies {
     kapt libs.hiltCompiler
 
     testImplementation libs.junit
+    testImplementation libs.retKotlin
     androidTestImplementation libs.androidXJunit
     androidTestImplementation libs.espresso
 }
