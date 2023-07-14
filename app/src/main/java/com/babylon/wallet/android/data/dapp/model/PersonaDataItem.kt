@@ -26,7 +26,7 @@ data class PersonaDataName(
     @SerialName("variant") val variant: Variant,
     @SerialName("family") val family: String,
     @SerialName("given") val given: String,
-    @SerialName("middle") val middle: String? = null,
+    @SerialName("nickname") val nickname: String,
 ) {
     @Serializable
     enum class Variant {
