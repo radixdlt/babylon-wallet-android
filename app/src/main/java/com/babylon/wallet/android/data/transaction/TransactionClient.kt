@@ -32,7 +32,7 @@ import com.radixdlt.ret.SignatureWithPublicKey
 import com.radixdlt.ret.SignedIntent
 import com.radixdlt.ret.TransactionHeader
 import com.radixdlt.ret.TransactionManifest
-import rdx.works.core.crypto.PrivateKey
+import rdx.works.core.ret.crypto.PrivateKey
 import rdx.works.core.then
 import rdx.works.core.toByteArray
 import rdx.works.profile.data.model.pernetwork.Entity

@@ -62,7 +62,7 @@
  * permissions under this License.
  */
 
-package rdx.works.core.crypto;
+package rdx.works.core.ret.crypto;
 
 
 import org.bouncycastle.asn1.x9.X9ECParameters;
@@ -84,7 +84,7 @@ import java.security.Security;
 import java.util.Arrays;
 import java.util.Optional;
 
-class ECKeyUtils {
+public class ECKeyUtils {
 
     private static final String CURVE_NAME = "secp256k1";
     private static final X9IntegerConverter CONVERTER = new X9IntegerConverter();
