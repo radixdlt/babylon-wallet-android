@@ -43,7 +43,9 @@ sealed class UiMessage(val id: String = UUIDGenerator.uuid().toString()) {
             InvalidMnemonic -> context.getString(R.string.importOlympiaAccounts_invalidMnemonic)
             InvalidPayload -> context.getString(R.string.importOlympiaAccounts_invalidPayload)
             NoMnemonicForAccounts -> context.getString(R.string.importOlympiaAccounts_noMnemonicFound)
-            NoAccountsForLedger -> context.getString(R.string.common_somethingWentWrong)
+            NoAccountsForLedger ->
+                "No addresses verified. The currently connected Ledger device is not related " +
+                    "to any accounts to be imported, or has already been used."
             is LedgerAlreadyExist -> context.getString(R.string.addLedgerDevice_alreadyAddedAlert_message, label)
         }
     }
