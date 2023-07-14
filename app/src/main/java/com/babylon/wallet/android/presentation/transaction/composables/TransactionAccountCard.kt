@@ -33,10 +33,11 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.babylon.wallet.android.designsystem.R
-import com.babylon.wallet.android.designsystem.theme.AccountGradientList
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
+import com.babylon.wallet.android.designsystem.theme.getAccountGradientColorsFor
 import com.babylon.wallet.android.domain.SampleDataProvider
+import com.babylon.wallet.android.domain.model.GuaranteeAssertion
 import com.babylon.wallet.android.domain.model.Transferable
 import com.babylon.wallet.android.domain.model.TransferableResource
 import com.babylon.wallet.android.presentation.transaction.AccountWithTransferableResources
@@ -46,6 +47,7 @@ import com.babylon.wallet.android.presentation.ui.composables.ActionableAddressV
 import com.babylon.wallet.android.presentation.ui.composables.ImageSize
 import com.babylon.wallet.android.presentation.ui.composables.rememberImageUrl
 import com.google.accompanist.drawablepainter.rememberDrawablePainter
+import rdx.works.core.displayableQuantity
 
 @Composable
 fun TransactionAccountCard(
@@ -63,7 +65,7 @@ fun TransactionAccountCard(
                 .background(
                     brush = when (account) {
                         is Other -> SolidColor(RadixTheme.colors.gray2)
-                        is Owned -> Brush.linearGradient(AccountGradientList[account.account.appearanceID % AccountGradientList.size])
+                        is Owned -> Brush.linearGradient(getAccountGradientColorsFor(account.account.appearanceID))
                     },
                     shape = RadixTheme.shapes.roundedRectTopMedium
                 )
@@ -89,25 +91,20 @@ fun TransactionAccountCard(
             )
         }
 
-        val fungibles = remember(account.resources) {
+        val amountTransferables = remember(account.resources) {
             account.resources.filter { it.transferable is TransferableResource.Amount }
         }
 
-        val nftItems = remember(account.resources) {
-            account.resources.asSequence()
-                .filterIsInstance<TransferableResource.NFTs>()
-                .map { it.items }
-                .flatten()
-                .toList()
+        val nftTransferables = remember(account.resources) {
+            account.resources.filter { it.transferable is TransferableResource.NFTs }
         }
 
-        val allItemsSize = fungibles.size + nftItems.size
-
         // Fungibles
-        fungibles.forEachIndexed { index, fungible ->
-            val lastItem = index == allItemsSize - 1
+        amountTransferables.forEachIndexed { index, amountTransferable ->
+            val lastItem = if (nftTransferables.isEmpty()) index == amountTransferables.lastIndex else false
             val shape = if (lastItem) RadixTheme.shapes.roundedRectBottomMedium else RectangleShape
-            val transferableAmount = fungible.transferable as TransferableResource.Amount
+            val transferableAmount = amountTransferable.transferable as TransferableResource.Amount
+            val amountGuaranteeAssertion = amountTransferable.guaranteeAssertion as? GuaranteeAssertion.ForAmount
 
             TokenItemContent(
                 isXrdToken = transferableAmount.resource.isXrd,
@@ -117,22 +114,38 @@ fun TransactionAccountCard(
                 },
                 tokenAmount = transferableAmount.amount.toPlainString(),
                 isTokenAmountVisible = true,
+                guaranteedQuantity = amountGuaranteeAssertion?.amount?.displayableQuantity(),
                 shape = shape
             )
         }
 
         // Non fungibles
-        nftItems.forEachIndexed { index, nftItem ->
-            val lastItem = index == allItemsSize - 1
-            val shape = if (lastItem) RadixTheme.shapes.roundedRectBottomMedium else RectangleShape
-
-            TokenItemContent(
-                isXrdToken = false,
-                tokenUrl = nftItem.imageUrl.toString(),
-                tokenSymbol = nftItem.localId.displayable,
-                isTokenAmountVisible = false,
-                shape = shape
-            )
+        nftTransferables.forEachIndexed { collectionIndex, nftTransferable ->
+            val nft = nftTransferable.transferable as TransferableResource.NFTs
+            if (nft.isNewlyCreated) {
+                // In this case show only the collection of the newly created nfts.
+                val lastItem = collectionIndex == nftTransferables.lastIndex
+                TokenItemContent(
+                    isXrdToken = false,
+                    tokenUrl = nft.resource.iconUrl.toString(),
+                    tokenSymbol = nft.resource.name,
+                    isTokenAmountVisible = true,
+                    tokenAmount = nft.resource.items.size.toString(),
+                    shape = if (lastItem) RadixTheme.shapes.roundedRectBottomMedium else RectangleShape
+                )
+            } else {
+                // Show each nft item
+                nft.resource.items.forEachIndexed { itemIndex, item ->
+                    val lastItem = itemIndex == nft.resource.items.lastIndex && collectionIndex == nftTransferables.lastIndex
+                    TokenItemContent(
+                        isXrdToken = false,
+                        tokenUrl = item.imageUrl.toString(),
+                        tokenSymbol = item.localId.displayable,
+                        isTokenAmountVisible = false,
+                        shape = if (lastItem) RadixTheme.shapes.roundedRectBottomMedium else RectangleShape
+                    )
+                }
+            }
         }
     }
 }
@@ -263,7 +276,8 @@ fun TransactionAccountCardPreview() {
                     Transferable.Withdrawing(
                         transferable = TransferableResource.Amount(
                             amount = "689.203".toBigDecimal(),
-                            resource = it
+                            resource = it,
+                            isNewlyCreated = false
                         )
                     )
                 }

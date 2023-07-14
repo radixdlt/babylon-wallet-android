@@ -12,25 +12,22 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
-import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.presentation.transaction.AccountWithTransferableResources
-import com.babylon.wallet.android.presentation.transaction.TransactionAccountItemUiModel
-import kotlinx.collections.immutable.persistentMapOf
+import kotlinx.collections.immutable.ImmutableList
 
 @Composable
 fun WithdrawAccountContent(
     modifier: Modifier = Modifier,
-    from: List<AccountWithTransferableResources>
+    from: ImmutableList<AccountWithTransferableResources>
 ) {
     if (from.isNotEmpty()) {
         Text(
             modifier = Modifier
                 .padding(top = RadixTheme.dimensions.paddingDefault)
-                .padding(horizontal = RadixTheme.dimensions.paddingDefault),
+                .padding(horizontal = RadixTheme.dimensions.paddingXLarge),
             text = stringResource(id = R.string.transactionReview_withdrawalsHeading).uppercase(),
             style = RadixTheme.typography.body1Link,
             color = RadixTheme.colors.gray2,

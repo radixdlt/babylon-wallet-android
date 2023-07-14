@@ -1,50 +1,31 @@
 package com.babylon.wallet.android.presentation.transaction.composables
 
-import android.content.pm.ModuleInfo
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import com.babylon.wallet.android.R
-import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
+import com.babylon.wallet.android.domain.model.DAppWithMetadataAndAssociatedResources
 import com.babylon.wallet.android.presentation.transaction.PreviewType
-import com.babylon.wallet.android.presentation.transaction.TransactionApprovalViewModel2
-import com.babylon.wallet.android.presentation.ui.composables.NotSecureAlertDialog
-import com.babylon.wallet.android.utils.biometricAuthenticate
-import com.babylon.wallet.android.utils.findFragmentActivity
+import com.babylon.wallet.android.presentation.transaction.TransactionApprovalViewModel
 import kotlinx.collections.immutable.toPersistentList
 
 @Composable
 fun TransactionPreviewTypeContent(
     modifier: Modifier = Modifier,
-    state: TransactionApprovalViewModel2.State,
+    state: TransactionApprovalViewModel.State,
     preview: PreviewType.Transaction,
-    onApproveTransaction: () -> Unit
+    onPromptForGuarantees: () -> Unit,
+    onDappClick: (DAppWithMetadataAndAssociatedResources) -> Unit
 ) {
-    var showNotSecuredDialog by remember { mutableStateOf(false) }
-
     Column(
         modifier = modifier.fillMaxSize()
     ) {
-        Column(
-            modifier = Modifier.background(RadixTheme.colors.gray5)
-        ) {
+        Column {
             state.message?.let {
                 TransactionMessageContent(
                     modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingDefault),
@@ -56,69 +37,27 @@ fun TransactionPreviewTypeContent(
 
             WithdrawAccountContent(
                 modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingDefault),
-                from = preview.from
+                from = preview.from.toPersistentList()
             )
 
             StrokeLine(height = 40.dp)
 
+            ConnectedDAppsContent(
+                connectedDApps = preview.dApps.toPersistentList(),
+                onDAppClick = onDappClick
+            )
+
             DepositAccountContent(
                 modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingDefault),
-                to = preview.to,
-                shouldPromptForGuarantees = false,
-                promptForGuarantees = {
-
-                }
+                to = preview.to.toPersistentList(),
+                promptForGuarantees = onPromptForGuarantees
             )
 
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
         }
 
-        PresentingProofsContent(badges = preview.badges.toPersistentList())
-
-        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
-
-        NetworkFeeContent(fees = state.fees)
-
-        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
-
-        val context = LocalContext.current
-        RadixPrimaryButton(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = RadixTheme.dimensions.paddingDefault),
-            text = stringResource(id = R.string.transactionReview_approveButtonTitle),
-            onClick = {
-                if (state.isDeviceSecure) {
-                    context.findFragmentActivity()?.let { activity ->
-                        activity.biometricAuthenticate(true) { authenticatedSuccessfully ->
-                            if (authenticatedSuccessfully) {
-                                onApproveTransaction()
-                            }
-                        }
-                    }
-                } else {
-                    showNotSecuredDialog = true
-                }
-            },
-            enabled = !state.isLoading && !state.isSigning
-            /*&& state.canApprove && state.bottomSheetViewMode != BottomSheetMode.FeePayerSelection*/,
-            icon = {
-                Icon(
-                    painter = painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_lock),
-                    contentDescription = ""
-                )
-            }
+        PresentingProofsContent(
+            badges = preview.badges.toPersistentList()
         )
-
-    }
-
-    if (showNotSecuredDialog) {
-        NotSecureAlertDialog(
-            finish = { accepted ->
-                showNotSecuredDialog = false
-                if (accepted) {
-                    onApproveTransaction()
-                }
-            })
     }
 }
