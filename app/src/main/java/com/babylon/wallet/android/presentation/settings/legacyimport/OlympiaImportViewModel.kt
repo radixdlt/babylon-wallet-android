@@ -243,12 +243,12 @@ class OlympiaImportViewModel @Inject constructor(
             hasSoftwareAccounts -> {
                 pages = pages + listOf(OlympiaImportUiState.Page.MnemonicInput)
                 if (hasHardwareAccounts) {
-                    pages = pages + listOf(OlympiaImportUiState.Page.LedgerAccounts)
+                    pages = pages + listOf(OlympiaImportUiState.Page.HardwareAccounts)
                 }
             }
 
             hasHardwareAccounts -> {
-                pages = pages + listOf(OlympiaImportUiState.Page.LedgerAccounts)
+                pages = pages + listOf(OlympiaImportUiState.Page.HardwareAccounts)
             }
 
             else -> {}
@@ -291,7 +291,7 @@ class OlympiaImportViewModel @Inject constructor(
                 mnemonicWithPassphrase?.validatePublicKeysOf(softwareAccountsToMigrate) == true
             if (accountsValid) {
                 when (_state.value.pages.nextPage(_state.value.currentPage)) {
-                    OlympiaImportUiState.Page.LedgerAccounts -> proceedToNextPage()
+                    OlympiaImportUiState.Page.HardwareAccounts -> proceedToNextPage()
                     else -> {
                         internalImportOlympiaAccounts()
                         proceedToNextPage()
@@ -339,7 +339,7 @@ class OlympiaImportViewModel @Inject constructor(
         val hardwareAccountsLeftToImport = hardwareAccountsLeftToMigrate().map {
             it.address
         }.toSet().minus(verifiedHardwareAccounts.values.flatten().map { it.address }.toSet()).size
-        _state.update { it.copy(ledgerAccountsLeftToImport = hardwareAccountsLeftToImport) }
+        _state.update { it.copy(hardwareAccountsLeftToImport = hardwareAccountsLeftToImport) }
     }
 
     fun onConfirmLedgerName(name: String) {
@@ -460,7 +460,7 @@ data class OlympiaImportUiState(
     val hideBack: Boolean = false,
     val qrChunkInfo: ChunkInfo? = null,
     val isDeviceSecure: Boolean = true,
-    val ledgerAccountsLeftToImport: Int = 0,
+    val hardwareAccountsLeftToImport: Int = 0,
     val waitingForLedgerResponse: Boolean = false,
     val verifiedLedgerDevices: ImmutableList<LedgerHardwareWalletFactorSource> = persistentListOf(),
     val recentlyConnectedLedgerDevice: LedgerDeviceUiModel? = null,
@@ -471,7 +471,7 @@ data class OlympiaImportUiState(
 ) : UiState {
 
     enum class Page {
-        ScanQr, AccountsToImportList, MnemonicInput, LedgerAccounts, ImportComplete
+        ScanQr, AccountsToImportList, MnemonicInput, HardwareAccounts, ImportComplete
     }
 }
 

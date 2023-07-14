@@ -137,7 +137,7 @@ fun OlympiaImportScreen(
         currentPage = state.currentPage,
         qrChunkInfo = state.qrChunkInfo,
         isDeviceSecure = state.isDeviceSecure,
-        accountsLeft = state.ledgerAccountsLeftToImport,
+        hardwareAccountsLeft = state.hardwareAccountsLeftToImport,
         waitingForLedgerResponse = state.waitingForLedgerResponse,
         onConfirmLedgerName = viewModel::onConfirmLedgerName,
         onAddP2PLink = onAddP2PLink,
@@ -175,7 +175,7 @@ private fun OlympiaImportContent(
     currentPage: OlympiaImportUiState.Page,
     qrChunkInfo: ChunkInfo?,
     isDeviceSecure: Boolean,
-    accountsLeft: Int,
+    hardwareAccountsLeft: Int,
     waitingForLedgerResponse: Boolean,
     onConfirmLedgerName: (String) -> Unit,
     onAddP2PLink: () -> Unit,
@@ -343,10 +343,10 @@ private fun OlympiaImportContent(
                             )
                         }
 
-                        OlympiaImportUiState.Page.LedgerAccounts -> {
+                        OlympiaImportUiState.Page.HardwareAccounts -> {
                             LedgerAccountImportPage(
                                 Modifier.fillMaxSize(),
-                                accountsLeft = accountsLeft,
+                                hardwareAccountsLeft = hardwareAccountsLeft,
                                 waitingForLedgerResponse = waitingForLedgerResponse,
                                 verifiedLedgerDevices = verifiedLedgerDevices
                             ) {
@@ -513,7 +513,7 @@ private fun AccountsToImportListPage(
 @Composable
 private fun LedgerAccountImportPage(
     modifier: Modifier = Modifier,
-    accountsLeft: Int,
+    hardwareAccountsLeft: Int,
     waitingForLedgerResponse: Boolean,
     verifiedLedgerDevices: ImmutableList<LedgerHardwareWalletFactorSource>,
     onImportWithLedger: () -> Unit
@@ -547,7 +547,7 @@ private fun LedgerAccountImportPage(
                     textAlign = TextAlign.Center
                 )
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
-                AccountsLeftText(accountsLeft)
+                AccountsLeftText(hardwareAccountsLeft)
                 if (verifiedLedgerDevices.isNotEmpty()) {
                     Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
                     Text(
@@ -813,7 +813,7 @@ fun HardwareImportNoVerifiedLedgersPreview() {
     RadixWalletTheme {
         LedgerAccountImportPage(
             modifier = Modifier,
-            accountsLeft = 5,
+            hardwareAccountsLeft = 5,
             waitingForLedgerResponse = false,
             verifiedLedgerDevices = persistentListOf(),
             onImportWithLedger = {}
@@ -827,7 +827,7 @@ fun HardwareImportWithVerifiedLedgersPreview() {
     RadixWalletTheme {
         LedgerAccountImportPage(
             modifier = Modifier,
-            accountsLeft = 3,
+            hardwareAccountsLeft = 3,
             waitingForLedgerResponse = false,
             verifiedLedgerDevices = SampleDataProvider().ledgerFactorSourcesSample.toPersistentList(),
             onImportWithLedger = {}
@@ -841,7 +841,7 @@ fun HardwareImportNoAccountsLeftPreview() {
     RadixWalletTheme {
         LedgerAccountImportPage(
             modifier = Modifier,
-            accountsLeft = 0,
+            hardwareAccountsLeft = 0,
             waitingForLedgerResponse = true,
             verifiedLedgerDevices = SampleDataProvider().ledgerFactorSourcesSample.toPersistentList(),
             onImportWithLedger = {}
