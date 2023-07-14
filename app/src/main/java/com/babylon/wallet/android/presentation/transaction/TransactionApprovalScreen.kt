@@ -267,11 +267,9 @@ private fun ApproveButton(
         text = stringResource(id = R.string.transactionReview_approveButtonTitle),
         onClick = {
             if (state.isDeviceSecure) {
-                context.findFragmentActivity()?.let { activity ->
-                    activity.biometricAuthenticate(true) { authenticatedSuccessfully ->
-                        if (authenticatedSuccessfully) {
-                            onApproveTransaction()
-                        }
+                context.biometricAuthenticate { authenticatedSuccessfully ->
+                    if (authenticatedSuccessfully) {
+                        onApproveTransaction()
                     }
                 }
             } else {
@@ -341,6 +339,7 @@ private fun BottomSheetContent(
                 onPayerConfirmed = onPayerConfirmed
             )
         }
+
         is State.Sheet.None -> {}
     }
 }
