@@ -18,15 +18,20 @@ import rdx.works.profile.data.model.pernetwork.PersonaData
 fun PersonaDataFieldRow(modifier: Modifier, field: PersonaData.PersonaDataField) {
     when (field) {
         is PersonaData.PersonaDataField.Email -> {
-            PersonaDataFieldString(modifier = modifier, label = stringResource(id = field.kind.toDisplayResource()), value = field.value)
+            PersonaDataStringField(modifier = modifier, label = stringResource(id = field.kind.toDisplayResource()), value = field.value)
         }
 
         is PersonaData.PersonaDataField.Name -> {
-            PersonaDataFieldString(modifier = modifier, label = stringResource(id = field.kind.toDisplayResource()), value = field.fullName)
+            PersonaDataNameField(
+                modifier = modifier,
+                label = stringResource(id = field.kind.toDisplayResource()),
+                fullName = field.fullName,
+                nickname = field.nickname
+            )
         }
 
         is PersonaData.PersonaDataField.PhoneNumber -> {
-            PersonaDataFieldString(modifier = modifier, label = stringResource(id = field.kind.toDisplayResource()), value = field.value)
+            PersonaDataStringField(modifier = modifier, label = stringResource(id = field.kind.toDisplayResource()), value = field.value)
         }
 
         else -> {}
@@ -34,7 +39,7 @@ fun PersonaDataFieldRow(modifier: Modifier, field: PersonaData.PersonaDataField)
 }
 
 @Composable
-fun PersonaDataFieldString(modifier: Modifier, label: String, value: String) {
+fun PersonaDataStringField(modifier: Modifier, label: String, value: String) {
     Column(modifier = modifier) {
         Text(
             text = label,
@@ -51,4 +56,34 @@ fun PersonaDataFieldString(modifier: Modifier, label: String, value: String) {
         )
     }
 }
+
+@Composable
+fun PersonaDataNameField(modifier: Modifier, label: String, fullName: String, nickname: String) {
+    Column(modifier = modifier) {
+        Text(
+            text = label,
+            style = RadixTheme.typography.body1Regular,
+            color = RadixTheme.colors.gray2
+        )
+        Spacer(modifier = Modifier.height(dimensions.paddingSmall))
+        Text(
+            text = fullName,
+            style = RadixTheme.typography.body1HighImportance,
+            color = RadixTheme.colors.gray1,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
+        )
+        if (nickname.isNotEmpty()) {
+            Text(
+                text = nickname,
+                style = RadixTheme.typography.body1HighImportance,
+                color = RadixTheme.colors.gray1,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+        }
+    }
+}
+
+
 

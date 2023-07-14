@@ -150,7 +150,8 @@ fun PersonaDataStringInput(
             }
         ),
         rightLabel = if (required) stringResource(id = R.string.editPersona_requiredByDapp) else null,
-        error = error
+        error = error,
+        singleLine = true
     )
 }
 
@@ -205,6 +206,7 @@ fun PersonaNameInput(
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXSmall))
             NameOrderSelector(modifier = Modifier.fillMaxWidth(), selectedVariant = state.variant, onVariantChanged = { newVariant ->
                 state.variant = newVariant
+                nameChangedCallback()
             })
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
             when (state.variant) {

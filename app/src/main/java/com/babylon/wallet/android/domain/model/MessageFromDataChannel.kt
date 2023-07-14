@@ -5,6 +5,7 @@ import kotlinx.parcelize.Parcelize
 import kotlinx.serialization.Serializable
 import rdx.works.profile.data.model.factorsources.FactorSource
 import rdx.works.profile.data.model.factorsources.LedgerHardwareWalletFactorSource
+import rdx.works.profile.data.model.pernetwork.PersonaData
 import rdx.works.profile.data.model.pernetwork.RequestedNumber
 
 sealed interface MessageFromDataChannel {
@@ -34,7 +35,7 @@ sealed interface MessageFromDataChannel {
 
             fun hasOngoingRequestItemsOnly(): Boolean {
                 return isUsePersonaAuth() && hasNoOneTimeRequestItems() && hasNoResetRequestItem() &&
-                    (ongoingAccountsRequestItem != null || ongoingPersonaDataRequestItem != null)
+                        (ongoingAccountsRequestItem != null || ongoingPersonaDataRequestItem != null)
             }
 
             fun isInternalRequest(): Boolean {
@@ -55,12 +56,12 @@ sealed interface MessageFromDataChannel {
 
             fun hasOnlyAuthItem(): Boolean {
                 return ongoingAccountsRequestItem == null && ongoingPersonaDataRequestItem == null &&
-                    oneTimeAccountsRequestItem == null && oneTimePersonaDataRequestItem == null
+                        oneTimeAccountsRequestItem == null && oneTimePersonaDataRequestItem == null
             }
 
             fun isValidRequest(): Boolean {
                 return ongoingAccountsRequestItem?.isValidRequestItem() != false &&
-                    oneTimeAccountsRequestItem?.isValidRequestItem() != false
+                        oneTimeAccountsRequestItem?.isValidRequestItem() != false
             }
 
             sealed interface AuthRequest {
@@ -210,7 +211,7 @@ sealed interface MessageFromDataChannel {
 }
 
 fun MessageFromDataChannel.IncomingRequest.NumberOfValues.toProfileShareAccountsQuantifier():
-    RequestedNumber.Quantifier {
+        RequestedNumber.Quantifier {
     return when (this.quantifier) {
         MessageFromDataChannel.IncomingRequest.NumberOfValues.Quantifier.Exactly -> {
             RequestedNumber.Quantifier.Exactly
@@ -223,10 +224,18 @@ fun MessageFromDataChannel.IncomingRequest.NumberOfValues.toProfileShareAccounts
 }
 
 fun MessageFromDataChannel.LedgerResponse.LedgerDeviceModel.toProfileLedgerDeviceModel():
-    LedgerHardwareWalletFactorSource.DeviceModel {
+        LedgerHardwareWalletFactorSource.DeviceModel {
     return when (this) {
         MessageFromDataChannel.LedgerResponse.LedgerDeviceModel.NanoS -> LedgerHardwareWalletFactorSource.DeviceModel.NANO_S
         MessageFromDataChannel.LedgerResponse.LedgerDeviceModel.NanoSPlus -> LedgerHardwareWalletFactorSource.DeviceModel.NANO_S_PLUS
         MessageFromDataChannel.LedgerResponse.LedgerDeviceModel.NanoX -> LedgerHardwareWalletFactorSource.DeviceModel.NANO_X
     }
+}
+
+fun MessageFromDataChannel.IncomingRequest.PersonaRequestItem.toRequestedFieldKinds(): List<PersonaData.PersonaDataField.Kind> {
+    return mutableListOf<PersonaData.PersonaDataField.Kind>().also {
+        if (isRequestingName) it.add(PersonaData.PersonaDataField.Kind.Name)
+        if (numberOfRequestedEmailAddresses != null) it.add(PersonaData.PersonaDataField.Kind.EmailAddress)
+        if (numberOfRequestedPhoneNumbers != null) it.add(PersonaData.PersonaDataField.Kind.PhoneNumber)
+    }.toList()
 }

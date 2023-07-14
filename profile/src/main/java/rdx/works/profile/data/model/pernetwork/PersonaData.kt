@@ -104,7 +104,7 @@ data class PersonaData(
             val family: String,
 
             @SerialName("nickname")
-            val nickname: String? = null
+            val nickname: String
 
         ) : PersonaDataField {
             @Serializable
