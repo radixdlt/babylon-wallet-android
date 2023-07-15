@@ -301,7 +301,7 @@
   <string name="transactionReview_title">Review Transaction</string>
   <string name="transactionReview_approveButtonTitle">Approve</string>
   <string name="transactionReview_customizeGuaranteesButtonTitle">Customize Guarantees</string>
-  <string name="transactionReview_depositsHeading">Depositing</string>
+  <string name="transactionReview_depositsHeading">Depositing To</string>
   <string name="transactionReview_estimated">Estimated</string>
   <string name="transactionReview_externalAccountName">Account</string>
   <string name="transactionReview_guaranteed">Guaranteed</string>
@@ -312,7 +312,7 @@
   <string name="transactionReview_unknown">Unknown</string>
   <string name="transactionReview_usingDappsHeading">Using dApps</string>
   <string name="transactionReview_unknownComponents">%d Unknown Components</string>
-  <string name="transactionReview_withdrawalsHeading">Withdrawing</string>
+  <string name="transactionReview_withdrawalsHeading">Withdrawing From</string>
   <string name="transactionReview_xrdAmount">XRD %s</string>
   <string name="transactionReview_networkFee_heading">Transaction Fee</string>
   <string name="transactionReview_networkFee_congestedText">The network is currently congested. Add a tip to speed up your transfer.</string>
