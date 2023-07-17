@@ -74,6 +74,7 @@ import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.dapp.authorized.account.AccountItemUiModel
 import com.babylon.wallet.android.presentation.model.AddLedgerSheetState
 import com.babylon.wallet.android.presentation.settings.connector.qrcode.CameraPreview
+import com.babylon.wallet.android.presentation.ui.MockUiProvider.accountItemUiModelsList
 import com.babylon.wallet.android.presentation.ui.MockUiProvider.olympiaAccountsList
 import com.babylon.wallet.android.presentation.ui.MockUiProvider.seedPhraseWords
 import com.babylon.wallet.android.presentation.ui.composables.AccountCardWithStack
@@ -356,9 +357,7 @@ private fun OlympiaImportContent(
 
                         OlympiaImportUiState.Page.ImportComplete -> {
                             ImportCompletePage(
-                                modifier = Modifier
-                                    .fillMaxSize()
-                                    .padding(RadixTheme.dimensions.paddingDefault),
+                                modifier = Modifier.fillMaxSize(),
                                 migratedAccounts = migratedAccounts,
                                 onContinue = onContinue
                             )
@@ -403,8 +402,12 @@ private fun ScanQrPage(
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(RadixTheme.dimensions.paddingDefault),
-                verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingDefault),
+                    .padding(
+                        start = RadixTheme.dimensions.paddingXLarge,
+                        end = RadixTheme.dimensions.paddingXLarge,
+                        bottom = RadixTheme.dimensions.paddingDefault
+                    ),
+                verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingSemiLarge),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
@@ -454,7 +457,7 @@ private fun AccountsToImportListPage(
 ) {
     Column(modifier = modifier, horizontalAlignment = Alignment.CenterHorizontally) {
         Text(
-            modifier = Modifier.padding(RadixTheme.dimensions.paddingDefault),
+            modifier = Modifier.padding(bottom = RadixTheme.dimensions.paddingMedium),
             text = stringResource(id = R.string.importOlympiaAccounts_accountsToImport_title),
             style = RadixTheme.typography.title,
             color = RadixTheme.colors.gray1
@@ -469,7 +472,7 @@ private fun AccountsToImportListPage(
         ) {
             item {
                 Text(
-                    modifier = Modifier.padding(RadixTheme.dimensions.paddingSmall),
+                    modifier = Modifier.padding(bottom = RadixTheme.dimensions.paddingSmall),
                     text = stringResource(id = R.string.importOlympiaAccounts_accountsToImport_subtitle),
                     textAlign = TextAlign.Center,
                     style = RadixTheme.typography.body1Regular,
@@ -529,7 +532,11 @@ private fun LedgerAccountImportPage(
                     .fillMaxWidth()
                     .weight(1f)
                     .padding(horizontal = RadixTheme.dimensions.paddingLarge)
-                    .padding(top = RadixTheme.dimensions.paddingLarge),
+                    .padding(
+                        start = RadixTheme.dimensions.paddingLarge,
+                        end = RadixTheme.dimensions.paddingLarge,
+                        bottom = RadixTheme.dimensions.paddingLarge
+                    ),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
@@ -622,23 +629,23 @@ private fun ImportCompletePage(
 ) {
     Column(modifier = modifier, horizontalAlignment = Alignment.CenterHorizontally) {
         Text(
-            modifier = Modifier.padding(RadixTheme.dimensions.paddingDefault),
+            modifier = Modifier.padding(bottom = RadixTheme.dimensions.paddingSmall),
             text = stringResource(id = R.string.importOlympiaAccounts_completion_title),
             maxLines = 1,
             style = RadixTheme.typography.title,
             color = RadixTheme.colors.gray1
         )
         LazyColumn(
-            contentPadding = PaddingValues(RadixTheme.dimensions.paddingDefault),
+            contentPadding = PaddingValues(horizontal = RadixTheme.dimensions.paddingMedium),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingDefault),
+            verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingSmall),
             modifier = Modifier
                 .fillMaxWidth()
                 .weight(1f)
         ) {
             item {
                 Text(
-                    modifier = Modifier.padding(RadixTheme.dimensions.paddingSmall),
+                    modifier = Modifier.padding(bottom = RadixTheme.dimensions.paddingLarge),
                     text = stringResource(id = R.string.importOlympiaAccounts_completion_subtitleMultiple),
                     textAlign = TextAlign.Start,
                     style = RadixTheme.typography.body1Regular,
@@ -665,11 +672,15 @@ private fun ImportCompletePage(
                         vertical = true
                     )
                 }
-                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
             }
             item {
+                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSmall))
                 Text(
-                    modifier = Modifier.padding(RadixTheme.dimensions.paddingSmall),
+                    modifier = Modifier.padding(
+                        start = RadixTheme.dimensions.paddingLarge,
+                        end = RadixTheme.dimensions.paddingLarge,
+                        top = RadixTheme.dimensions.paddingXLarge
+                    ),
                     text = stringResource(id = R.string.importOlympiaAccounts_completion_explanation),
                     textAlign = TextAlign.Center,
                     style = RadixTheme.typography.body1Regular,
@@ -680,7 +691,9 @@ private fun ImportCompletePage(
         RadixPrimaryButton(
             text = stringResource(R.string.importOlympiaAccounts_completion_accountListButtonTitle),
             onClick = onContinue,
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(RadixTheme.dimensions.paddingDefault),
             throttleClicks = true
         )
     }
@@ -720,8 +733,12 @@ private fun MnemonicInputPage(
                 .padding(bottom = stripHeight)
                 .verticalScroll(rememberScrollState())
                 .fillMaxSize()
-                .padding(RadixTheme.dimensions.paddingLarge),
-            verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingDefault)
+                .padding(
+                    start = RadixTheme.dimensions.paddingLarge,
+                    end = RadixTheme.dimensions.paddingLarge,
+                    bottom = RadixTheme.dimensions.paddingLarge
+                ),
+            verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingSemiLarge)
         ) {
             Text(
                 text = stringResource(id = R.string.importOlympiaAccounts_verifySeedPhrase_title),
@@ -742,6 +759,7 @@ private fun MnemonicInputPage(
                 contentColor = RadixTheme.colors.orange1,
                 iconRes = com.babylon.wallet.android.designsystem.R.drawable.ic_warning_error
             )
+            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXSmall))
             SeedPhraseInputForm(
                 seedPhraseWords = seedPhraseWords,
                 onWordChanged = onWordChanged,
@@ -845,6 +863,18 @@ fun HardwareImportNoAccountsLeftPreview() {
             waitingForLedgerResponse = true,
             verifiedLedgerDevices = SampleDataProvider().ledgerFactorSourcesSample.toPersistentList(),
             onImportWithLedger = {}
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun ImportCompletePagePreview() {
+    RadixWalletTheme {
+        ImportCompletePage(
+            modifier = Modifier,
+            migratedAccounts = accountItemUiModelsList,
+            onContinue = {}
         )
     }
 }
