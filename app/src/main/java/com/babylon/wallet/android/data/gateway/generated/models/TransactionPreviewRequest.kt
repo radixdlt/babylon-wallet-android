@@ -25,7 +25,7 @@ import kotlinx.serialization.SerialName
  * @param startEpochInclusive An integer between `0` and `10^10`, marking the epoch at which the transaction starts being valid
  * @param endEpochExclusive An integer between `0` and `10^10`, marking the epoch at which the transaction is no longer valid
  * @param tipPercentage An integer between `0` and `255`, giving the validator tip as a percentage amount. A value of `1` corresponds to 1% of the fee.
- * @param nonce A decimal-string-encoded integer between `0` and `2^64 - 1`, used to ensure the transaction intent is unique.
+ * @param nonce A decimal-string-encoded integer between `0` and `2^32 - 1`, used to ensure the transaction intent is unique.
  * @param signerPublicKeys A list of public keys to be used as transaction signers
  * @param flags 
  * @param blobsHex An array of hex-encoded blob data (optional)
@@ -52,7 +52,7 @@ data class TransactionPreviewRequest (
     @SerialName(value = "tip_percentage")
     val tipPercentage: kotlin.Int,
 
-    /* A decimal-string-encoded integer between `0` and `2^64 - 1`, used to ensure the transaction intent is unique. */
+    /* A decimal-string-encoded integer between `0` and `2^32 - 1`, used to ensure the transaction intent is unique. */
     @SerialName(value = "nonce")
     val nonce: kotlin.Long,
 

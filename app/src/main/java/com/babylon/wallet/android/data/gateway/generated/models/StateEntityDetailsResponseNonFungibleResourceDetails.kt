@@ -23,8 +23,7 @@ import kotlinx.serialization.Serializable
  * 
  *
  * @param type 
- * @param accessRulesChain 
- * @param vaultAccessRulesChain 
+ * @param accessRules 
  * @param nonFungibleIdType 
  * @param totalSupply String-encoded decimal representing the amount of a related fungible resource.
  * @param totalMinted String-encoded decimal representing the amount of a related fungible resource.
@@ -37,11 +36,8 @@ data class StateEntityDetailsResponseNonFungibleResourceDetails (
     @SerialName(value = "type")
     override val type: StateEntityDetailsResponseItemDetailsType,
 
-    @SerialName(value = "access_rules_chain")
-    val accessRulesChain: AccessRulesChain,
-
-//    @Contextual @SerialName(value = "vault_access_rules_chain")
-//    val vaultAccessRulesChain: kotlin.Any,
+    @SerialName(value = "access_rules")
+    val accessRules: ComponentEntityAccessRules,
 
     @Contextual @SerialName(value = "non_fungible_id_type")
     val nonFungibleIdType: NonFungibleIdType,

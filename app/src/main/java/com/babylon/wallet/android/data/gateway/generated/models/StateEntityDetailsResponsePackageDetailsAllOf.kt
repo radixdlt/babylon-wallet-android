@@ -21,20 +21,42 @@ import kotlinx.serialization.SerialName
 /**
  * 
  *
+ * @param vmType 
+ * @param codeHashHex Hex-encoded binary blob.
+ * @param schemaHashHex Hex-encoded binary blob.
  * @param codeHex Hex-encoded binary blob.
+ * @param schema 
  * @param royaltyVaultBalance String-encoded decimal representing the amount of a related fungible resource.
+ * @param blueprints 
  */
 @Serializable
 
 data class StateEntityDetailsResponsePackageDetailsAllOf (
 
+    @SerialName(value = "vm_type")
+    val vmType: PackageVmType,
+
+    /* Hex-encoded binary blob. */
+    @SerialName(value = "code_hash_hex")
+    val codeHashHex: kotlin.String,
+
+    /* Hex-encoded binary blob. */
+    @SerialName(value = "schema_hash_hex")
+    val schemaHashHex: kotlin.String,
+
     /* Hex-encoded binary blob. */
     @SerialName(value = "code_hex")
     val codeHex: kotlin.String? = null,
 
+//    @SerialName(value = "schema")
+//    val schema: kotlin.Any? = null,
+
     /* String-encoded decimal representing the amount of a related fungible resource. */
     @SerialName(value = "royalty_vault_balance")
-    val royaltyVaultBalance: kotlin.String? = null
+    val royaltyVaultBalance: kotlin.String? = null,
+
+    @SerialName(value = "blueprints")
+    val blueprints: StateEntityDetailsResponsePackageDetailsBlueprintCollection? = null
 
 )
 

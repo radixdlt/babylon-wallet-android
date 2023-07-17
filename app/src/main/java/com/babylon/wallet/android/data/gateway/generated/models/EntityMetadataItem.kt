@@ -23,7 +23,8 @@ import kotlinx.serialization.Serializable
  * Entity metadata key-value pair.
  *
  * @param key Entity metadata key.
- * @param `value` 
+ * @param value
+ * @param isLocked 
  * @param lastUpdatedAtStateVersion TBD
  */
 @Serializable
@@ -35,7 +36,10 @@ data class EntityMetadataItem (
     val key: kotlin.String,
 
     @SerialName(value = "value")
-    val `value`: EntityMetadataItemValue,
+    val value: EntityMetadataItemValue,
+
+    @SerialName(value = "is_locked")
+    val isLocked: kotlin.Boolean,
 
     /* TBD */
     @SerialName(value = "last_updated_at_state_version")

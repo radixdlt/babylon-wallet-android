@@ -40,7 +40,7 @@ enum class ExplicitMetadataKey(val key: String) {
     OWNER_KEYS("owner_keys");
 
     @Suppress("CyclomaticComplexMethod")
-    fun toStandardMetadataItem(value: EntityMetadataItemValue): StandardMetadataItem = when (this) {
+    fun toStandardMetadataItem(value: EntityMetadataItemValue): StandardMetadataItem = DescriptionMetadataItem("")/*when (this) {
         DESCRIPTION -> DescriptionMetadataItem(description = value.asString.orEmpty())
         SYMBOL -> SymbolMetadataItem(symbol = value.asString.orEmpty())
         NAME -> NameMetadataItem(name = value.asString.orEmpty())
@@ -59,7 +59,7 @@ enum class ExplicitMetadataKey(val key: String) {
         ICON_URL -> IconUrlMetadataItem(url = Uri.parse(value.asString.orEmpty()))
         URL -> InfoUrlMetadataItem(url = Uri.parse(value.asString.orEmpty()))
         OWNER_KEYS -> OwnerKeyHashesMetadataItem(ownerKeys = value.asStringCollection.orEmpty())
-    }
+    }*/
 
     companion object {
 

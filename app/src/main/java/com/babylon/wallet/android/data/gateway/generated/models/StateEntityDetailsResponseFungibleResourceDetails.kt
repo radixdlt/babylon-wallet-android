@@ -15,7 +15,6 @@
 
 package com.babylon.wallet.android.data.gateway.generated.models
 
-import kotlinx.serialization.Contextual
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
@@ -23,8 +22,7 @@ import kotlinx.serialization.Serializable
  * 
  *
  * @param type 
- * @param accessRulesChain 
- * @param vaultAccessRulesChain 
+ * @param accessRules 
  * @param divisibility 
  * @param totalSupply String-encoded decimal representing the amount of a related fungible resource.
  * @param totalMinted String-encoded decimal representing the amount of a related fungible resource.
@@ -37,11 +35,8 @@ data class StateEntityDetailsResponseFungibleResourceDetails (
     @SerialName(value = "type")
     override val type: StateEntityDetailsResponseItemDetailsType,
 
-    @SerialName(value = "access_rules_chain")
-    val accessRulesChain: AccessRulesChain,
-
-//    @Contextual @SerialName(value = "vault_access_rules_chain")
-//    val vaultAccessRulesChain: kotlin.Any,
+    @SerialName(value = "access_rules")
+    val accessRules: ComponentEntityAccessRules,
 
     @SerialName(value = "divisibility")
     val divisibility: kotlin.Int,
@@ -59,79 +54,4 @@ data class StateEntityDetailsResponseFungibleResourceDetails (
     val totalBurned: kotlin.String
 
 ) : StateEntityDetailsResponseItemDetails()
-
-@Serializable
-data class AccessRulesChain(
-    @SerialName(value = "rules")
-    val rules: List<AccessChainRules>,
-
-    @SerialName(value = "mutability")
-    val mutability: List<AccessChainRules>
-)
-
-@Serializable
-data class AccessChainRules(
-    @SerialName(value = "key")
-    val key: Key,
-
-    @SerialName(value = "rule")
-    val rule: Rule
-)
-
-@Serializable
-data class Key(
-    @SerialName(value = "module")
-    val module: String,
-
-    @SerialName(value = "name")
-    val name: String
-)
-
-@Serializable
-data class Rule(
-    @SerialName(value = "access_rule")
-    val accessRule: AccessRule? = null,
-
-    @SerialName(value = "type")
-    val type: String
-)
-
-@Serializable
-data class AccessRule(
-    @SerialName(value = "key")
-    val key: Key? = null,
-
-    @SerialName(value = "type")
-    val type: String
-)
-
-@Serializable
-data class Mutability(
-    @SerialName(value = "access_rule_reference")
-    val access_rule_reference: AccessRuleReference,
-
-    @SerialName(value = "method")
-    val method: Method
-)
-
-@Serializable
-data class AccessRuleReference(
-    @SerialName(value = "access_rule")
-    val access_rule: AccessRule? = null,
-
-    @SerialName(value = "group_name")
-    val group_name: String? = null,
-
-    @SerialName(value = "type")
-    val type: String
-)
-
-@Serializable
-data class Method(
-    @SerialName(value = "module")
-    val module: String,
-
-    @SerialName(value = "name")
-    val name: String
-)
 

@@ -319,10 +319,9 @@ class TransactionClient @Inject constructor(
                 nonce = generateNonce().toLong(),
                 signerPublicKeys = listOf(),
                 flags = TransactionPreviewRequestFlags(
-                    unlimitedLoan = true,
+                    useFreeCredit = false, // TODO ELM
                     assumeAllSignatureProofs = true,
-                    permitDuplicateIntentHash = true,
-                    permitInvalidHeaderEpoch = true
+                    skipEpochCheck = false
                 ),
                 blobsHex = manifest.blobs().map { it.toByteArray().toHexString() },
                 notaryPublicKey = notaryPublicKey,

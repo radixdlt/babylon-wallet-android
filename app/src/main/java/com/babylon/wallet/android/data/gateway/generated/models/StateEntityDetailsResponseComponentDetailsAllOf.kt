@@ -23,7 +23,7 @@ import kotlinx.serialization.Contextual
  * 
  *
  * @param blueprintName 
- * @param accessRulesChain 
+ * @param accessRules 
  * @param packageAddress Bech32m-encoded human readable version of the address.
  * @param state 
  * @param royaltyVaultBalance String-encoded decimal representing the amount of a related fungible resource.
@@ -35,8 +35,8 @@ data class StateEntityDetailsResponseComponentDetailsAllOf (
     @SerialName(value = "blueprint_name")
     val blueprintName: kotlin.String,
 
-//    @Contextual @SerialName(value = "access_rules_chain")
-//    val accessRulesChain: kotlin.Any,
+//    @SerialName(value = "access_rules")
+//    val accessRules: ComponentEntityAccessRules,
 
     /* Bech32m-encoded human readable version of the address. */
     @SerialName(value = "package_address")

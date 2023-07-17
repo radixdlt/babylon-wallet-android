@@ -22,18 +22,14 @@ import kotlinx.serialization.SerialName
 /**
  * 
  *
- * @param asString 
- * @param asStringCollection 
+ * @param typed 
  */
 @Serializable
 
 data class EntityMetadataItemValueAllOf (
 
-    @SerialName(value = "as_string")
-    val asString: kotlin.String? = null,
-
-    @SerialName(value = "as_string_collection")
-    val asStringCollection: kotlin.collections.List<kotlin.String>? = null
+    @SerialName(value = "typed")
+    val typed: MetadataTypedValue? = null
 
 )
 
