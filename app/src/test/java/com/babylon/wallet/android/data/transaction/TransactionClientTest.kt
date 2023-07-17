@@ -19,7 +19,7 @@ import com.babylon.wallet.android.presentation.TestDispatcherRule
 import com.radixdlt.ret.Address
 import com.radixdlt.ret.Decimal
 import com.radixdlt.ret.TransactionManifest
-import com.radixdlt.ret.utilsKnownAddresses
+import com.radixdlt.ret.knownAddresses
 import io.mockk.coEvery
 import io.mockk.mockk
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -63,13 +63,11 @@ internal class TransactionClientTest {
         coEvery { collectSignersSignaturesUseCase.signingState } returns emptyFlow()
         transactionClient = TransactionClient(
             transactionRepository,
-            getCurrentGatewayUseCase,
             getProfileUseCase,
             collectSignersSignaturesUseCase,
             getAccountsWithResourcesUseCase,
             submitTransactionUseCase
         )
-        coEvery { getCurrentGatewayUseCase() } returns Radix.Gateway.default
     }
 
     @OptIn(ExperimentalCoroutinesApi::class)
@@ -168,7 +166,7 @@ internal class TransactionClientTest {
     ): TransactionManifest = ManifestBuilder()
         .withdraw(
             fromAddress = Address(address),
-            fungible = utilsKnownAddresses(networkId = networkId.toUByte()).resourceAddresses.xrd,
+            fungible = knownAddresses(networkId = networkId.toUByte()).resourceAddresses.xrd,
             amount = Decimal("10")
         )
         .build(networkId)

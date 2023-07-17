@@ -163,6 +163,14 @@ class ResourceTests {
         )
     }
 
+    @Test
+    fun `given various nft ids, when a local id is converted to engine id, then no exception is raised`() {
+        Item.ID.from("#1#").toRetId()
+        Item.ID.from("<Michael>").toRetId()
+        Item.ID.from("[5EB52]").toRetId()
+        Item.ID.from("{7b003d8e0b2c9e3a-516cf99882de64a1-f1cd6742ce3299e0-357f54f0333d25d0}").toRetId()
+    }
+
     private fun fungibleResource(
         address: String = "resource_rdx_abcd",
         name: String?,

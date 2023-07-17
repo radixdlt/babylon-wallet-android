@@ -9,12 +9,12 @@ import com.babylon.wallet.android.domain.model.metadata.SymbolMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.TagsMetadataItem
 import com.radixdlt.ret.NonFungibleLocalId
 import com.radixdlt.ret.knownAddresses
+import rdx.works.core.decodeHex
 import rdx.works.core.displayableQuantity
 import rdx.works.core.toUByteList
 import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.derivation.model.NetworkId
 import java.math.BigDecimal
-import java.util.UUID
 
 sealed class Resource {
     abstract val resourceAddress: String
@@ -220,8 +220,10 @@ sealed class Resource {
                     override val displayable: String
                         get() = id
 
-                    // TODO ELM
-                    override fun toRetId(): NonFungibleLocalId = NonFungibleLocalId.Ruid(id.toByteArray().toUByteList())
+                    override fun toRetId(): NonFungibleLocalId {
+                        val hyphenStripped = id.replace("-", "")
+                        return NonFungibleLocalId.Ruid(hyphenStripped.decodeHex().toUByteList())
+                    }
 
                     override fun compareTo(other: RUIDType): Int = other.id.compareTo(id)
                 }
