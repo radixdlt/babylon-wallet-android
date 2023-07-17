@@ -283,7 +283,7 @@ private fun OlympiaImportContent(
             AddLedgerContent(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(RadixTheme.dimensions.paddingDefault),
+                    .padding(horizontal = RadixTheme.dimensions.paddingDefault),
                 deviceModel = deviceModel,
                 onSendAddLedgerRequest = onImportWithLedger,
                 addLedgerSheetState = addLedgerSheetState,
