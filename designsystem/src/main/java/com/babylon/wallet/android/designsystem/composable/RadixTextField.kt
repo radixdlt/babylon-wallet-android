@@ -48,7 +48,7 @@ fun RadixTextField(
     keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
     errorFixedSize: Boolean = false
 ) {
-    Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingXSmall)) {
+    Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingSmall)) {
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
             leftLabel?.let { label ->
                 Text(
