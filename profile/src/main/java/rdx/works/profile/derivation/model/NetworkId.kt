@@ -7,14 +7,17 @@ package rdx.works.profile.derivation.model
 @Suppress("MagicNumber")
 enum class NetworkId(val value: Int) {
     Mainnet(1),
+    Stokenet(2),
     Adapanet(10),
     Nebunet(11),
     Kisharnet(12),
+    Ansharnet(13),
     Gilganet(32),
     Enkinet(33),
     Hammunet(34),
     Nergalnet(35),
-    Mardunet(36);
+    Mardunet(36),
+    Dumunet(37);
 
     companion object {
         fun from(id: Int) = values().find { it.value == id } ?: error("Unknown network id $id")

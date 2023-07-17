@@ -6,7 +6,7 @@ buildscript {
         compileSdk = 33
         targetSdk = 33
         versionName = "0.2.1"
-        internalVersionName = "birch"
+        internalVersionName = "elm"
         kotlinCompilerExtensionVersion = "1.4.7"
     }
     dependencies {
