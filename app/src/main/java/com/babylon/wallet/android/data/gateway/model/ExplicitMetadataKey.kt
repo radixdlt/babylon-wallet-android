@@ -14,7 +14,6 @@ import com.babylon.wallet.android.domain.model.metadata.ClaimedEntitiesMetadataI
 import com.babylon.wallet.android.domain.model.metadata.ClaimedWebsiteMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.DAppDefinitionsMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.DescriptionMetadataItem
-import com.babylon.wallet.android.domain.model.metadata.DomainMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.IconUrlMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.InfoUrlMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.NameMetadataItem
@@ -32,7 +31,6 @@ enum class ExplicitMetadataKey(val key: String) {
     DESCRIPTION("description"),
     SYMBOL("symbol"),
     NAME("name"),
-    DOMAIN("domain"),
     DAPP_DEFINITION("dapp_definition"),
     RELATED_WEBSITES("related_websites"),
     CLAIMED_WEBSITES("claimed_websites"),
@@ -49,17 +47,15 @@ enum class ExplicitMetadataKey(val key: String) {
         DESCRIPTION -> DescriptionMetadataItem(description = value.typed<MetadataStringValue>()?.value.orEmpty())
         SYMBOL -> SymbolMetadataItem(symbol = value.typed<MetadataStringValue>()?.value.orEmpty())
         NAME -> NameMetadataItem(name = value.typed<MetadataStringValue>()?.value.orEmpty())
-        DOMAIN -> DomainMetadataItem(domain = Uri.parse("")) // TODO ELM
-        DAPP_DEFINITION -> DAppDefinitionsMetadataItem(addresses = listOf("")) // TODO ELM
-        RELATED_WEBSITES -> RelatedWebsiteMetadataItem(website = "") // TODO ELM
+        DAPP_DEFINITION -> DAppDefinitionsMetadataItem(addresses = listOf("")) // TODO ELM (dApps)
+        RELATED_WEBSITES -> RelatedWebsiteMetadataItem(website = "") // TODO ELM (NFTs)
         ACCOUNT_TYPE -> AccountTypeMetadataItem(
             type = (AccountType.values().find { it.asString == "" } ?: DAPP_DEFINITION) as AccountType
-        ) // TODO ELM
-
-        CLAIMED_WEBSITES -> ClaimedWebsiteMetadataItem(website = "") // TODO ELM
-        CLAIMED_ENTITIES -> ClaimedEntitiesMetadataItem(entity = "")// TODO ELM
+        ) // TODO ELM ?
+        CLAIMED_WEBSITES -> ClaimedWebsiteMetadataItem(website = "") // TODO ELM (dApps)
+        CLAIMED_ENTITIES -> ClaimedEntitiesMetadataItem(entity = "")// TODO ELM (dApps)
         TAGS -> TagsMetadataItem(tags = value.typed<MetadataStringArrayValue>()?.propertyValues.orEmpty())
-        KEY_IMAGE_URL -> IconUrlMetadataItem(url = Uri.parse("")) // TODO ELM
+        KEY_IMAGE_URL -> IconUrlMetadataItem(url = Uri.parse(value.typed<MetadataUrlValue>()?.value.orEmpty())) // TODO ELM (NFTs)
         INFO_URL -> InfoUrlMetadataItem(url = Uri.parse(value.typed<MetadataUrlValue>()?.value.orEmpty()))
         ICON_URL -> IconUrlMetadataItem(url = Uri.parse(value.typed<MetadataUrlValue>()?.value.orEmpty()))
         OWNER_KEYS -> OwnerKeyHashesMetadataItem(

@@ -28,12 +28,6 @@ data class NameMetadataItem(
     override val key: String = ExplicitMetadataKey.NAME.key
 }
 
-data class DomainMetadataItem(
-    val domain: Uri
-) : StandardMetadataItem {
-    override val key: String = ExplicitMetadataKey.DOMAIN.key
-}
-
 data class DAppDefinitionsMetadataItem(
     val addresses: List<String> // TODO maybe change to component address
 ) : StandardMetadataItem {
