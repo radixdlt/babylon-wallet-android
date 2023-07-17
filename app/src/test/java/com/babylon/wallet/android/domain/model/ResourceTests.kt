@@ -157,8 +157,10 @@ class ResourceTests {
         Assert.assertEquals(Item.ID.IntegerType(1.toULong()), Item.ID.from("#1#"))
         Assert.assertEquals(Item.ID.StringType("Michael"), Item.ID.from("<Michael>"))
         Assert.assertEquals(Item.ID.BytesType("5EB52"), Item.ID.from("[5EB52]"))
-        val uuid = UUID.randomUUID()
-        Assert.assertEquals(Item.ID.UUIDType(uuid), Item.ID.from("{$uuid}"))
+        Assert.assertEquals(
+            Item.ID.RUIDType("7b003d8e0b2c9e3a-516cf99882de64a1-f1cd6742ce3299e0-357f54f0333d25d0"),
+            Item.ID.from("{7b003d8e0b2c9e3a-516cf99882de64a1-f1cd6742ce3299e0-357f54f0333d25d0}")
+        )
     }
 
     private fun fungibleResource(

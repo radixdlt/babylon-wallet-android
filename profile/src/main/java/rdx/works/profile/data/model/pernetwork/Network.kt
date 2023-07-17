@@ -116,7 +116,7 @@ data class Network(
                     mnemonicWithPassphrase.compressedPublicKey(derivationPath = derivationPath).removeLeadingZero()
                 val address = deriveAccountAddress(
                     networkID = networkId,
-                    publicKey = PublicKey.EddsaEd25519(compressedPublicKey.toUByteList())
+                    publicKey = PublicKey.Ed25519(compressedPublicKey.toUByteList())
                 )
 
                 val unsecuredSecurityState = SecurityState.unsecured(
@@ -155,7 +155,7 @@ data class Network(
 
                 val address = deriveAccountAddress(
                     networkID = networkId,
-                    publicKey = PublicKey.EddsaEd25519(derivedPublicKeyHex.decodeHex().toUByteList())
+                    publicKey = PublicKey.Ed25519(derivedPublicKeyHex.decodeHex().toUByteList())
                 )
 
                 val unsecuredSecurityState = SecurityState.unsecured(
@@ -240,7 +240,7 @@ data class Network(
 
                 val address = deriveIdentityAddress(
                     networkID = networkId,
-                    publicKey = PublicKey.EddsaEd25519(compressedPublicKey.toUByteList())
+                    publicKey = PublicKey.Ed25519(compressedPublicKey.toUByteList())
                 )
 
                 val unsecuredSecurityState = SecurityState.unsecured(

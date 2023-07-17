@@ -22,6 +22,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.profile.data.model.pernetwork.Network
+import rdx.works.profile.derivation.model.NetworkId
 import rdx.works.profile.domain.gateway.GetCurrentGatewayUseCase
 import timber.log.Timber
 
@@ -158,8 +159,12 @@ class TransactionSubmitDelegate(
         }
         val request = TransactionApprovalRequest(
             manifest = manifest,
+            networkId = NetworkId.from(transactionRequest.requestMetadata.networkId),
             ephemeralNotaryPrivateKey = state.value.ephemeralNotaryPrivateKey,
-            feePayerAddress = feePayerAddress
+            feePayerAddress = feePayerAddress,
+            message = transactionRequest.transactionManifestData.message?.let {
+                TransactionApprovalRequest.TransactionMessage.Public(it)
+            } ?: TransactionApprovalRequest.TransactionMessage.None
         )
         transactionClient.signAndSubmitTransaction(request).onSuccess { txId ->
             state.update {

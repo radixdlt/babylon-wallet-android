@@ -14,5 +14,9 @@ enum class NetworkId(val value: Int) {
     Enkinet(33),
     Hammunet(34),
     Nergalnet(35),
-    Mardunet(36),
+    Mardunet(36);
+
+    companion object {
+        fun from(id: Int) = values().find { it.value == id } ?: error("Unknown network id $id")
+    }
 }

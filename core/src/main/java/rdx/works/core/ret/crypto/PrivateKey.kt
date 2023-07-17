@@ -176,14 +176,14 @@ sealed class PrivateKey {
                 )
         }
 
-        override fun signToSignature(hashedData: ByteArray): Signature.EcdsaSecp256k1 {
-            return Signature.EcdsaSecp256k1(sign(hashedData).toUByteList())
+        override fun signToSignature(hashedData: ByteArray): Signature.Secp256k1 {
+            return Signature.Secp256k1(sign(hashedData).toUByteList())
         }
 
         override fun signToSignatureWithPublicKey(
             hashedData: ByteArray
-        ): SignatureWithPublicKey.EcdsaSecp256k1 {
-            return SignatureWithPublicKey.EcdsaSecp256k1(signToSignature(hashedData).value)
+        ): SignatureWithPublicKey.Secp256k1 {
+            return SignatureWithPublicKey.Secp256k1(signToSignature(hashedData).value)
         }
 
         // Private Key repr methods
@@ -194,8 +194,8 @@ sealed class PrivateKey {
 
         // Public Key methods
 
-        override fun publicKey(): PublicKey.EcdsaSecp256k1 {
-            return PublicKey.EcdsaSecp256k1(publicKeyByteArray(true).toUByteList())
+        override fun publicKey(): PublicKey.Secp256k1 {
+            return PublicKey.Secp256k1(publicKeyByteArray(true).toUByteList())
         }
 
         private fun publicKeyByteArray(compressed: Boolean): ByteArray {
@@ -311,14 +311,14 @@ sealed class PrivateKey {
             return signer.generateSignature()
         }
 
-        override fun signToSignature(hashedData: ByteArray): Signature.EddsaEd25519 {
-            return Signature.EddsaEd25519(sign(hashedData).toUByteList())
+        override fun signToSignature(hashedData: ByteArray): Signature.Ed25519 {
+            return Signature.Ed25519(sign(hashedData).toUByteList())
         }
 
         override fun signToSignatureWithPublicKey(
             hashedData: ByteArray
-        ): SignatureWithPublicKey.EddsaEd25519 {
-            return SignatureWithPublicKey.EddsaEd25519(signToSignature(hashedData).value, publicKey().value)
+        ): SignatureWithPublicKey.Ed25519 {
+            return SignatureWithPublicKey.Ed25519(signToSignature(hashedData).value, publicKey().value)
         }
 
         // Private Key repr methods
@@ -329,8 +329,8 @@ sealed class PrivateKey {
 
         // Public Key methods
 
-        override fun publicKey(): PublicKey.EddsaEd25519 {
-            return PublicKey.EddsaEd25519(publicKey.encoded.toUByteList())
+        override fun publicKey(): PublicKey.Ed25519 {
+            return PublicKey.Ed25519(publicKey.encoded.toUByteList())
         }
 
         override fun equals(other: Any?): Boolean {

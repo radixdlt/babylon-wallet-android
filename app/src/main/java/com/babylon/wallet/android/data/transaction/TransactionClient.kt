@@ -26,7 +26,10 @@ import com.radixdlt.extensions.removeLeadingZero
 import com.radixdlt.hex.extensions.toHexString
 import com.radixdlt.ret.Address
 import com.radixdlt.ret.Intent
+import com.radixdlt.ret.Message
+import com.radixdlt.ret.MessageContent
 import com.radixdlt.ret.NotarizedTransaction
+import com.radixdlt.ret.PlainTextMessage
 import com.radixdlt.ret.Signature
 import com.radixdlt.ret.SignatureWithPublicKey
 import com.radixdlt.ret.SignedIntent
@@ -50,7 +53,6 @@ import com.babylon.wallet.android.domain.common.Result as ResultInternal
 @Suppress("LongParameterList")
 class TransactionClient @Inject constructor(
     private val transactionRepository: TransactionRepository,
-    private val getCurrentGatewayUseCase: GetCurrentGatewayUseCase,
     private val getProfileUseCase: GetProfileUseCase,
     private val collectSignersSignaturesUseCase: CollectSignersSignaturesUseCase,
     private val getAccountsWithResourcesUseCase: GetAccountsWithResourcesUseCase,
@@ -60,42 +62,26 @@ class TransactionClient @Inject constructor(
 
     private val logger = Timber.tag("TransactionClient")
 
-    suspend fun signAndSubmitTransaction(request: TransactionApprovalRequest): Result<String> {
-        val networkId = getCurrentGatewayUseCase().network.networkId().value
-        return signAndSubmitTransaction(
-            request.manifest,
-            request.ephemeralNotaryPrivateKey,
-            networkId,
-            request.feePayerAddress
-        )
-    }
-
-    fun cancelSigning() {
-        collectSignersSignaturesUseCase.cancel()
-    }
-
-    private suspend fun signAndSubmitTransaction(
-        manifest: TransactionManifest,
-        ephemeralNotaryPrivateKey: PrivateKey,
-        networkId: Int,
-        feePayerAddress: String?,
+    suspend fun signAndSubmitTransaction(
+        request: TransactionApprovalRequest
     ): Result<String> {
-        val manifestWithTransactionFee = if (feePayerAddress == null) {
-            manifest
+        val manifestWithTransactionFee = if (request.feePayerAddress == null) {
+            request.manifest
         } else {
-            manifest.addLockFeeInstructionToManifest(
-                addressToLockFee = feePayerAddress,
+            request.manifest.addLockFeeInstructionToManifest(
+                addressToLockFee = request.feePayerAddress,
                 fee = TransactionConfig.DEFAULT_LOCK_FEE.toBigDecimal()
             )
         }
 
         val signers = getSigningEntities(manifestWithTransactionFee)
-        val notaryAndSigners = NotaryAndSigners(signers, ephemeralNotaryPrivateKey)
-        return buildTransactionHeader(networkId, notaryAndSigners).then { header ->
+        val notaryAndSigners = NotaryAndSigners(signers, request.ephemeralNotaryPrivateKey)
+        return buildTransactionHeader(request.networkId.value, notaryAndSigners).then { header ->
             val transactionIntent = kotlin.runCatching {
                 Intent(
                     header = header,
-                    manifest = manifestWithTransactionFee
+                    manifest = manifestWithTransactionFee,
+                    message = request.message.toEngineMessage()
                 )
             }.getOrElse {
                 return Result.failure(DappRequestException(DappRequestFailure.TransactionApprovalFailure.SignCompiledTransactionIntent))
@@ -169,6 +155,10 @@ class TransactionClient @Inject constructor(
         }
     }
 
+    fun cancelSigning() {
+        collectSignersSignaturesUseCase.cancel()
+    }
+
     @Suppress("UnusedPrivateMember")
     /**
      * this might be handy in case of further signing changes
@@ -176,7 +166,7 @@ class TransactionClient @Inject constructor(
     private fun printDebug(compiledNotarizedTransactionIntent: List<UByte>) {
         val decompiled = NotarizedTransaction.decompile(compiledNotarizedTransaction = compiledNotarizedTransactionIntent)
         val signedIntent = decompiled.signedIntent()
-        val signatures = signedIntent.intentSignatures().map { it as SignatureWithPublicKey.EddsaEd25519 }
+        val signatures = signedIntent.intentSignatures().map { it as SignatureWithPublicKey.Ed25519 }
         val intent = signedIntent.intent()
 
         logger.d("================= Transaction")
@@ -188,7 +178,7 @@ class TransactionClient @Inject constructor(
         signatures.forEach { signature ->
             logger.d("Public key: ${signature.publicKey}, signature: ${signature.signature}")
         }
-        logger.d("Notary Signature: ${(decompiled.notarySignature() as Signature.EddsaEd25519)}")
+        logger.d("Notary Signature: ${(decompiled.notarySignature() as Signature.Ed25519)}")
         logger.d("== Compiled tx intent: ${intent.compile()}")
         logger.d("== Compiled Notarized tx intent: ${compiledNotarizedTransactionIntent.toByteArray().toHexString()}")
     }

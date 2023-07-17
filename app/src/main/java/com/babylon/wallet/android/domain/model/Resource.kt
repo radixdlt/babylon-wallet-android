@@ -8,7 +8,7 @@ import com.babylon.wallet.android.domain.model.metadata.NameMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.SymbolMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.TagsMetadataItem
 import com.radixdlt.ret.NonFungibleLocalId
-import com.radixdlt.ret.utilsKnownAddresses
+import com.radixdlt.ret.knownAddresses
 import rdx.works.core.displayableQuantity
 import rdx.works.core.toUByteList
 import rdx.works.profile.data.model.apppreferences.Radix
@@ -100,7 +100,7 @@ sealed class Resource {
         companion object {
             fun officialXrdResourceAddress(
                 onNetworkId: NetworkId = Radix.Gateway.default.network.networkId()
-            ) = utilsKnownAddresses(networkId = onNetworkId.value.toUByte()).resourceAddresses.xrd.addressString()
+            ) = knownAddresses(networkId = onNetworkId.value.toUByte()).resourceAddresses.xrd.addressString()
         }
     }
 
@@ -157,7 +157,7 @@ sealed class Resource {
                 is ID.StringType -> (other.localId as? ID.StringType)?.compareTo(localId) ?: -1
                 is ID.IntegerType -> (other.localId as? ID.IntegerType)?.compareTo(localId) ?: -1
                 is ID.BytesType -> (other.localId as? ID.BytesType)?.compareTo(localId) ?: -1
-                is ID.UUIDType -> (other.localId as? ID.UUIDType)?.compareTo(localId) ?: -1
+                is ID.RUIDType -> (other.localId as? ID.RUIDType)?.compareTo(localId) ?: -1
             }
 
             sealed class ID {
@@ -212,17 +212,18 @@ sealed class Resource {
                     override fun compareTo(other: BytesType): Int = other.id.compareTo(id)
                 }
 
-                data class UUIDType(
-                    private val id: UUID
-                ) : ID(), Comparable<UUIDType> {
-                    override val prefix: String = UUID_PREFIX
-                    override val suffix: String = UUID_SUFFIX
+                data class RUIDType(
+                    private val id: String
+                ) : ID(), Comparable<RUIDType> {
+                    override val prefix: String = RUID_PREFIX
+                    override val suffix: String = RUID_SUFFIX
                     override val displayable: String
-                        get() = id.toString()
+                        get() = id
 
-                    override fun toRetId(): NonFungibleLocalId = NonFungibleLocalId.Uuid(id.toString())
+                    // TODO ELM
+                    override fun toRetId(): NonFungibleLocalId = NonFungibleLocalId.Ruid(id.toByteArray().toUByteList())
 
-                    override fun compareTo(other: UUIDType): Int = other.id.compareTo(id)
+                    override fun compareTo(other: RUIDType): Int = other.id.compareTo(id)
                 }
 
                 companion object {
@@ -231,8 +232,8 @@ sealed class Resource {
                     private const val INT_DELIMITER = "#"
                     private const val BYTES_PREFIX = "["
                     private const val BYTES_SUFFIX = "]"
-                    private const val UUID_PREFIX = "{"
-                    private const val UUID_SUFFIX = "}"
+                    private const val RUID_PREFIX = "{"
+                    private const val RUID_SUFFIX = "}"
 
                     /**
                      * Infers the type of the [Item].[ID] from its surrounding delimiters
@@ -250,8 +251,8 @@ sealed class Resource {
                         value.startsWith(BYTES_PREFIX) && value.endsWith(BYTES_SUFFIX) -> BytesType(
                             id = value.removeSurrounding(BYTES_PREFIX, BYTES_SUFFIX)
                         )
-                        value.startsWith(UUID_PREFIX) && value.endsWith(UUID_SUFFIX) -> UUIDType(
-                            id = UUID.fromString(value.removeSurrounding(UUID_PREFIX, UUID_SUFFIX))
+                        value.startsWith(RUID_PREFIX) && value.endsWith(RUID_SUFFIX) -> RUIDType(
+                            id = value.removeSurrounding(RUID_PREFIX, RUID_SUFFIX)
                         )
                         else -> StringType(id = value) // cannot infer type, defaults to string
                     }
