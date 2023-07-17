@@ -7,6 +7,7 @@ import com.babylon.wallet.android.data.dapp.LedgerMessenger
 import com.babylon.wallet.android.data.dapp.model.Curve
 import com.babylon.wallet.android.data.dapp.model.DerivePublicKeyRequest
 import com.babylon.wallet.android.data.dapp.model.LedgerDeviceModel.Companion.getLedgerDeviceModel
+import com.babylon.wallet.android.domain.model.AppConstants.ACCOUNT_NAME_MAX_LENGTH
 import com.babylon.wallet.android.domain.model.AppConstants.DELAY_300_MS
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.babylon.wallet.android.presentation.common.OneOffEvent
@@ -180,7 +181,12 @@ class OlympiaImportViewModel @Inject constructor(
                 _state.update { state ->
                     state.copy(
                         currentPage = nextPage,
-                        olympiaAccountsToImport = data.accountData.toPersistentList(),
+                        olympiaAccountsToImport = data.accountData
+                            .map {
+                                // truncate the name, max 20 chars
+                                it.copy(accountName = it.accountName.take(ACCOUNT_NAME_MAX_LENGTH))
+                            }
+                            .toPersistentList(),
                         importButtonEnabled = data.accountData.any { !it.alreadyImported },
                         migratedAccounts = if (allImported) {
                             data.accountData.mapNotNull {
