@@ -98,10 +98,11 @@ class EntityRepositoryImpl @Inject constructor(
 
             // build result list of accounts with resources
             val listOfAccountsWithResources = accounts.map { account ->
-                val metaDataItems = mapOfAccountsWithMetadata[account.address].orEmpty()
+                val metaDataItems = mapOfAccountsWithMetadata[account.address].orEmpty().toMutableList()
                 AccountWithResources(
                     account = account,
-                    accountTypeMetadataItem = metaDataItems.toMutableList().consume(),
+                    accountTypeMetadataItem = metaDataItems.consume(),
+                    ownerKeyHashesMetadataItem = metaDataItems.consume(),
                     resources = Resources(
                         fungibleResources = mapOfAccountsWithFungibleResources[account.address].orEmpty().sorted(),
                         nonFungibleResources = mapOfAccountsWithNonFungibleResources[account.address].orEmpty().sorted()

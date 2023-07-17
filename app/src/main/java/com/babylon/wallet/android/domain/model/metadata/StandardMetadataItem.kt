@@ -88,31 +88,18 @@ data class TagsMetadataItem(
 }
 
 data class OwnerKeyHashesMetadataItem(
-    val ownerKeys: List<String>
+    val keyHashes: List<KeyHash>
 ) : StandardMetadataItem {
     override val key: String = ExplicitMetadataKey.OWNER_KEYS.key
 
-    @Suppress("MagicNumber")
-    fun toPublicKeyHashes(): Set<String> {
-        val curve25519Prefix = "EddsaEd25519PublicKeyHash"
-        val secp256k1Prefix = "EcdsaSecp256k1PublicKeyHash"
-        val lengthCurve25519Prefix = curve25519Prefix.length
-        val lengthSecp256k1Prefix = secp256k1Prefix.length
-        val lengthQuoteAndParenthesis = 2
-        val lengthQuotesAndTwoParenthesis = 2 * lengthQuoteAndParenthesis
-        val lengthCurve25519PubKeyHex = 29 * 2
-        val lengthSecp256K1PubKeyHex = 29 * 2
-        return ownerKeys.map { ownerKey ->
-            when {
-                ownerKey.startsWith(curve25519Prefix) -> {
-                    require(ownerKey.length == lengthQuotesAndTwoParenthesis + lengthCurve25519Prefix + lengthCurve25519PubKeyHex)
-                    ownerKey.drop(lengthQuoteAndParenthesis + lengthCurve25519Prefix).dropLast(lengthQuoteAndParenthesis)
-                }
-                else -> {
-                    require(ownerKey.length == lengthQuotesAndTwoParenthesis + lengthSecp256k1Prefix + lengthSecp256K1PubKeyHex)
-                    ownerKey.drop(lengthQuoteAndParenthesis + lengthSecp256k1Prefix).dropLast(lengthQuoteAndParenthesis)
-                }
-            }
-        }.toSet()
+    sealed interface KeyHash {
+        val hex: String
+
+        data class EcdsaSecp256k1(
+            override val hex: String
+        ): KeyHash
+        data class EddsaEd25519(
+            override val hex: String
+        ): KeyHash
     }
 }

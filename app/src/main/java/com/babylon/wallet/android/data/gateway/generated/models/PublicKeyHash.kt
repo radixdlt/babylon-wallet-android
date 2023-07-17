@@ -25,7 +25,7 @@ import kotlinx.serialization.SerialName
  * @param keyHashType 
  */
 @Serializable(with = PublicKeyHashSerializer::class)
-abstract class PublicKeyHash {
+sealed class PublicKeyHash {
 
     @SerialName(value = "key_hash_type")
     abstract val keyHashType: PublicKeyHashType
