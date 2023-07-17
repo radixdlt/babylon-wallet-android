@@ -8,6 +8,7 @@ data class RadixDimensions(
     val paddingSmall: Dp = 8.dp,
     val paddingMedium: Dp = 12.dp,
     val paddingDefault: Dp = 16.dp,
+    val paddingSemiLarge: Dp = 20.dp,
     val paddingLarge: Dp = 24.dp,
     val paddingXLarge: Dp = 32.dp,
     val paddingXXLarge: Dp = 48.dp,
