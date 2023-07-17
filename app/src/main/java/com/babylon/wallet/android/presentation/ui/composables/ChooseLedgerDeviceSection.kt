@@ -54,10 +54,11 @@ fun ChooseLedgerDeviceSection(
         )
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
         Text(
-            text = if (ledgerFactorSources.isEmpty())
+            text = if (ledgerFactorSources.isEmpty()) {
                 stringResource(id = com.babylon.wallet.android.R.string.ledgerHardwareDevices_navigationTitleNoSelection)
-            else
-                stringResource(id = com.babylon.wallet.android.R.string.ledgerHardwareDevices_navigationTitleAllowSelection),
+            } else {
+                stringResource(id = com.babylon.wallet.android.R.string.ledgerHardwareDevices_navigationTitleAllowSelection)
+            },
             style = RadixTheme.typography.title,
             color = RadixTheme.colors.gray1,
             overflow = TextOverflow.Ellipsis,
@@ -130,7 +131,7 @@ fun ChooseLedgerDeviceSection(
                     Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSmall))
                     RadixSecondaryButton(
                         modifier = Modifier
-                            .fillMaxWidth(0.5f)
+                            .fillMaxWidth(0.7f)
                             .imePadding(),
                         onClick = onAddLedger,
                         text = stringResource(id = com.babylon.wallet.android.R.string.ledgerHardwareDevices_addNewLedger)

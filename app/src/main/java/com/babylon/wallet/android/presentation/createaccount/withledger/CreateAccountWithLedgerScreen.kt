@@ -30,6 +30,7 @@ import com.babylon.wallet.android.presentation.common.FullscreenCircularProgress
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.model.AddLedgerSheetState
 import com.babylon.wallet.android.presentation.ui.composables.AddLedgerContent
+import com.babylon.wallet.android.presentation.ui.composables.BackIconType
 import com.babylon.wallet.android.presentation.ui.composables.ChooseLedgerDeviceSection
 import com.babylon.wallet.android.presentation.ui.composables.LinkConnectorSection
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUiMessageHandler
@@ -164,13 +165,7 @@ fun CreateAccountWithLedgerContent(
                         onConfirmLedgerName = {
                             onConfirmLedgerName(it)
                         },
-                        upIcon = {
-                            Icon(
-                                painterResource(id = R.drawable.ic_arrow_back),
-                                tint = RadixTheme.colors.gray1,
-                                contentDescription = "navigate back"
-                            )
-                        },
+                        backIconType = BackIconType.Back,
                         onClose = onAddLedgerCloseClick,
                         waitingForLedgerResponse = waitingForLedgerResponse,
                         onAddP2PLink = onAddP2PLink

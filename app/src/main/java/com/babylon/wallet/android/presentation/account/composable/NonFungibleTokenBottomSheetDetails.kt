@@ -89,7 +89,7 @@ fun NonFungibleTokenBottomSheetDetails(
             ) {
                 ActionableAddressView(
                     address = item.globalAddress,
-                    textStyle = RadixTheme.typography.body1Regular,
+                    textStyle = RadixTheme.typography.body1HighImportance,
                     textColor = RadixTheme.colors.gray1
                 )
             }
@@ -108,7 +108,7 @@ fun NonFungibleTokenBottomSheetDetails(
                     Spacer(modifier = Modifier.weight(1f))
                     Text(
                         text = name,
-                        style = RadixTheme.typography.body1Regular,
+                        style = RadixTheme.typography.body1HighImportance,
                         color = RadixTheme.colors.gray1
                     )
                 }
