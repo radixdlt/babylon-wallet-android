@@ -16,6 +16,7 @@
 package com.babylon.wallet.android.data.gateway.generated.models
 
 
+import com.babylon.wallet.android.data.gateway.extensions.AccessRule
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Contextual
@@ -28,15 +29,28 @@ import kotlinx.serialization.Contextual
  */
 // TODO ELM
 @Serializable
-//data
-class ComponentEntityAccessRules (
+data class ComponentEntityAccessRules (
 
 //    @SerialName(value = "owner")
 //    val owner: kotlin.Any,
-//
-//    @SerialName(value = "entries")
-//    val propertyEntries: kotlin.Any
 
+    @SerialName(value = "entries")
+    val propertyEntries: List<AccessRulePropertyEntry>
+
+)
+
+@Serializable
+data class AccessRulePropertyEntry(
+    @SerialName("key")
+    val key: String,
+    @SerialName("value")
+    val value: AccessRulePropertyValue
+)
+
+@Serializable
+data class AccessRulePropertyValue(
+    @SerialName("type")
+    val type: String
 )
 
 

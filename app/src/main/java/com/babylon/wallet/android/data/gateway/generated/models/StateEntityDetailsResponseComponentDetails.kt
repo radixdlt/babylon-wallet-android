@@ -37,8 +37,8 @@ data class StateEntityDetailsResponseComponentDetails (
     @SerialName(value = "blueprint_name")
     val blueprintName: kotlin.String,
 
-//    @SerialName(value = "access_rules")
-//    val accessRules: ComponentEntityAccessRules,
+    @SerialName(value = "access_rules")
+    val accessRules: ComponentEntityAccessRules,
 
     /* Bech32m-encoded human readable version of the address. */
     @SerialName(value = "package_address")
