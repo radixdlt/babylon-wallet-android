@@ -15,6 +15,7 @@
 
 package com.babylon.wallet.android.data.gateway.generated.models
 
+import com.babylon.wallet.android.data.gateway.serialisers.MetadataTypedValueSerializer
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerialName
 
@@ -23,7 +24,7 @@ import kotlinx.serialization.SerialName
  *
  * @param type 
  */
-@Serializable
+@Serializable(with = MetadataTypedValueSerializer::class)
 abstract class MetadataTypedValue {
 
     @SerialName(value = "type")

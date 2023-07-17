@@ -43,20 +43,7 @@ enum class PublicKeyHashType(val value: kotlin.String) {
     override fun toString(): String = value
 
     companion object {
-        /**
-         * Converts the provided [data] to a [String] on success, null otherwise.
-         */
-        fun encode(data: kotlin.Any?): kotlin.String? = if (data is PublicKeyHashType) "$data" else null
-
-        /**
-         * Returns a valid [PublicKeyHashType] for [data], null otherwise.
-         */
-        fun decode(data: kotlin.Any?): PublicKeyHashType? = data?.let {
-          val normalizedData = "$it".lowercase()
-          values().firstOrNull { value ->
-            it == value || normalizedData == "$value".lowercase()
-          }
-        }
+        fun from(type: String) = PublicKeyHashType.values().find { it.value == type } ?: error("No PublicKeyHashType found for $type")
     }
 }
 

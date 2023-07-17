@@ -133,20 +133,9 @@ enum class MetadataValueType(val value: kotlin.String) {
     override fun toString(): String = value
 
     companion object {
-        /**
-         * Converts the provided [data] to a [String] on success, null otherwise.
-         */
-        fun encode(data: kotlin.Any?): kotlin.String? = if (data is MetadataValueType) "$data" else null
-
-        /**
-         * Returns a valid [MetadataValueType] for [data], null otherwise.
-         */
-        fun decode(data: kotlin.Any?): MetadataValueType? = data?.let {
-          val normalizedData = "$it".lowercase()
-          values().firstOrNull { value ->
-            it == value || normalizedData == "$value".lowercase()
-          }
-        }
+        fun from(type: String): MetadataValueType = MetadataValueType.values().find {
+            it.value == type
+        } ?: error("Not supported MetadataValueType of $type")
     }
 }
 

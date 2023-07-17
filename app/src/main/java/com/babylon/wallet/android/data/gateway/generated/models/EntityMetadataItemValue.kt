@@ -34,9 +34,6 @@ data class EntityMetadataItemValue (
     @SerialName(value = "raw_hex")
     val rawHex: kotlin.String,
 
-//    @Contextual @SerialName(value = "raw_json")
-//    val rawJson: kotlin.Any,
-
     @SerialName(value = "typed")
     val typed: MetadataTypedValue? = null
 
