@@ -38,7 +38,6 @@ import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.data.repository.ProfileRepository
 import rdx.works.profile.domain.GetProfileUseCase
-import rdx.works.profile.domain.gateway.GetCurrentGatewayUseCase
 import java.math.BigDecimal
 
 internal class TransactionClientTest {
@@ -47,7 +46,6 @@ internal class TransactionClientTest {
     val coroutineRule = TestDispatcherRule()
 
     private val transactionRepository = mockk<TransactionRepository>()
-    private val getCurrentGatewayUseCase = mockk<GetCurrentGatewayUseCase>()
     private val getProfileUseCase = GetProfileUseCase(ProfileRepositoryFake)
     private val getAccountsWithResourcesUseCase = GetAccountsWithResourcesUseCase(
         EntityRepositoryFake,
