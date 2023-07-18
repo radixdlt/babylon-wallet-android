@@ -1,10 +1,10 @@
 package com.babylon.wallet.android.presentation.dapp
 
-import com.babylon.wallet.android.domain.model.MessageFromDataChannel
+import com.babylon.wallet.android.domain.model.RequiredFields
 
 sealed interface InitialUnauthorizedLoginRoute {
     data class OnetimePersonaData(
-        val request: MessageFromDataChannel.IncomingRequest.PersonaRequestItem
+        val requiredFields: RequiredFields
     ) : InitialUnauthorizedLoginRoute
 
     data class ChooseAccount(

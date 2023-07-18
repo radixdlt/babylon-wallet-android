@@ -29,7 +29,7 @@ data class WalletInteraction(
     ) {
 
         companion object {
-            const val VERSION = 1L
+            const val VERSION = 2L
         }
     }
 }

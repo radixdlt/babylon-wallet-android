@@ -16,7 +16,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
-import com.babylon.wallet.android.domain.model.MessageFromDataChannel
+import com.babylon.wallet.android.domain.model.RequiredFields
 import com.babylon.wallet.android.presentation.common.FullscreenCircularProgressContent
 import com.babylon.wallet.android.presentation.dapp.InitialUnauthorizedLoginRoute
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUiMessageHandler
@@ -25,13 +25,13 @@ import com.babylon.wallet.android.presentation.ui.composables.SnackbarUiMessageH
 fun DappUnauthorizedLoginScreen(
     viewModel: DAppUnauthorizedLoginViewModel,
     navigateToChooseAccount: (Int, Boolean) -> Unit,
-    navigateToOneTimePersonaData: (MessageFromDataChannel.IncomingRequest.PersonaRequestItem) -> Unit,
+    navigateToOneTimePersonaData: (RequiredFields) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     when (val route = state.initialUnauthorizedLoginRoute) {
         is InitialUnauthorizedLoginRoute.ChooseAccount -> navigateToChooseAccount(route.numberOfAccounts, route.isExactAccountsCount)
-        is InitialUnauthorizedLoginRoute.OnetimePersonaData -> navigateToOneTimePersonaData(route.request)
+        is InitialUnauthorizedLoginRoute.OnetimePersonaData -> navigateToOneTimePersonaData(route.requiredFields)
         null -> {}
     }
     Box(

@@ -35,7 +35,7 @@ sealed interface MessageFromDataChannel {
 
             fun hasOngoingRequestItemsOnly(): Boolean {
                 return isUsePersonaAuth() && hasNoOneTimeRequestItems() && hasNoResetRequestItem() &&
-                        (ongoingAccountsRequestItem != null || ongoingPersonaDataRequestItem != null)
+                    (ongoingAccountsRequestItem != null || ongoingPersonaDataRequestItem != null)
             }
 
             fun isInternalRequest(): Boolean {
@@ -56,12 +56,12 @@ sealed interface MessageFromDataChannel {
 
             fun hasOnlyAuthItem(): Boolean {
                 return ongoingAccountsRequestItem == null && ongoingPersonaDataRequestItem == null &&
-                        oneTimeAccountsRequestItem == null && oneTimePersonaDataRequestItem == null
+                    oneTimeAccountsRequestItem == null && oneTimePersonaDataRequestItem == null
             }
 
             fun isValidRequest(): Boolean {
                 return ongoingAccountsRequestItem?.isValidRequestItem() != false &&
-                        oneTimeAccountsRequestItem?.isValidRequestItem() != false
+                    oneTimeAccountsRequestItem?.isValidRequestItem() != false
             }
 
             sealed interface AuthRequest {
@@ -125,8 +125,8 @@ sealed interface MessageFromDataChannel {
         @Parcelize
         data class PersonaRequestItem(
             val isRequestingName: Boolean,
-            val numberOfRequestedEmailAddresses: NumberOfValues?,
-            val numberOfRequestedPhoneNumbers: NumberOfValues?,
+            val numberOfRequestedEmailAddresses: NumberOfValues? = null,
+            val numberOfRequestedPhoneNumbers: NumberOfValues? = null,
             val isOngoing: Boolean
         ) : Parcelable {
             fun isValid(): Boolean {
@@ -211,7 +211,7 @@ sealed interface MessageFromDataChannel {
 }
 
 fun MessageFromDataChannel.IncomingRequest.NumberOfValues.toProfileShareAccountsQuantifier():
-        RequestedNumber.Quantifier {
+    RequestedNumber.Quantifier {
     return when (this.quantifier) {
         MessageFromDataChannel.IncomingRequest.NumberOfValues.Quantifier.Exactly -> {
             RequestedNumber.Quantifier.Exactly
@@ -224,7 +224,7 @@ fun MessageFromDataChannel.IncomingRequest.NumberOfValues.toProfileShareAccounts
 }
 
 fun MessageFromDataChannel.LedgerResponse.LedgerDeviceModel.toProfileLedgerDeviceModel():
-        LedgerHardwareWalletFactorSource.DeviceModel {
+    LedgerHardwareWalletFactorSource.DeviceModel {
     return when (this) {
         MessageFromDataChannel.LedgerResponse.LedgerDeviceModel.NanoS -> LedgerHardwareWalletFactorSource.DeviceModel.NANO_S
         MessageFromDataChannel.LedgerResponse.LedgerDeviceModel.NanoSPlus -> LedgerHardwareWalletFactorSource.DeviceModel.NANO_S_PLUS
@@ -232,10 +232,30 @@ fun MessageFromDataChannel.LedgerResponse.LedgerDeviceModel.toProfileLedgerDevic
     }
 }
 
-fun MessageFromDataChannel.IncomingRequest.PersonaRequestItem.toRequestedFieldKinds(): List<PersonaData.PersonaDataField.Kind> {
-    return mutableListOf<PersonaData.PersonaDataField.Kind>().also {
-        if (isRequestingName) it.add(PersonaData.PersonaDataField.Kind.Name)
-        if (numberOfRequestedEmailAddresses != null) it.add(PersonaData.PersonaDataField.Kind.EmailAddress)
-        if (numberOfRequestedPhoneNumbers != null) it.add(PersonaData.PersonaDataField.Kind.PhoneNumber)
-    }.toList()
+fun MessageFromDataChannel.IncomingRequest.PersonaRequestItem.toRequiredFields(): RequiredFields {
+    return RequiredFields(
+        mutableListOf<RequiredField>().also {
+            if (isRequestingName) {
+                it.add(
+                    RequiredField(
+                        PersonaData.PersonaDataField.Kind.Name,
+                        MessageFromDataChannel.IncomingRequest.NumberOfValues(
+                            1,
+                            MessageFromDataChannel.IncomingRequest.NumberOfValues.Quantifier.Exactly
+                        )
+                    )
+                )
+            }
+            if (numberOfRequestedEmailAddresses != null) {
+                it.add(
+                    RequiredField(PersonaData.PersonaDataField.Kind.EmailAddress, numberOfRequestedEmailAddresses)
+                )
+            }
+            if (numberOfRequestedPhoneNumbers != null) {
+                it.add(
+                    RequiredField(PersonaData.PersonaDataField.Kind.PhoneNumber, numberOfRequestedPhoneNumbers)
+                )
+            }
+        }
+    )
 }

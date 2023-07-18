@@ -7,6 +7,8 @@ import com.babylon.wallet.android.domain.common.onError
 import com.babylon.wallet.android.domain.common.onValue
 import com.babylon.wallet.android.domain.model.DAppWithMetadata
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
+import com.babylon.wallet.android.domain.model.RequiredField
+import com.babylon.wallet.android.domain.model.RequiredFields
 import com.babylon.wallet.android.domain.model.Resource
 import com.babylon.wallet.android.domain.usecases.GetDAppWithMetadataAndAssociatedResourcesUseCase
 import com.babylon.wallet.android.presentation.common.OneOffEvent
@@ -15,6 +17,7 @@ import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.presentation.dapp.authorized.account.AccountItemUiModel
+import com.babylon.wallet.android.presentation.dapp.authorized.account.toUiModel
 import com.babylon.wallet.android.presentation.dapp.authorized.selectpersona.PersonaUiModel
 import com.babylon.wallet.android.presentation.model.toQuantifierUsedInRequest
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -27,6 +30,7 @@ import rdx.works.core.UUIDGenerator
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.data.repository.DAppConnectionRepository
 import rdx.works.profile.domain.GetProfileUseCase
+import rdx.works.profile.domain.accountOnCurrentNetwork
 import rdx.works.profile.domain.personaOnCurrentNetwork
 import javax.inject.Inject
 
@@ -51,7 +55,6 @@ class DappDetailViewModel @Inject constructor(
                 needMostRecentData = false
             )
             metadataResult.onValue { dAppWithAssociatedResources ->
-
                 _state.update { state ->
                     state.copy(
                         dappWithMetadata = dAppWithAssociatedResources.dAppWithMetadata,
@@ -121,23 +124,35 @@ class DappDetailViewModel @Inject constructor(
     }
 
     private suspend fun updateSelectedPersonaData(persona: Network.Persona) {
-        // TODO persona data
-//        val personaSimple =
-//            authorizedDapp.referencesToAuthorizedPersonas.firstOrNull { it.identityAddress == persona.address }
-//        val sharedAccounts = personaSimple?.sharedAccounts?.accountsReferencedByAddress?.mapNotNull {
-//            getProfileUseCase.accountOnCurrentNetwork(it)?.toUiModel()
-//        }.orEmpty()
-//        val requiredFieldIds = personaSimple?.fieldIDs.orEmpty()
-//        val requiredFieldKinds = persona.fields.filter { requiredFieldIds.contains(it.id) }.map {
-//            it.id
-//        }
-//        val selectedPersona = PersonaUiModel(persona, requiredFieldIDs = requiredFieldKinds)
-//        _state.update {
-//            it.copy(
-//                sharedPersonaAccounts = sharedAccounts.toPersistentList(),
-//                selectedSheetState = SelectedSheetState.SelectedPersona(selectedPersona)
-//            )
-//        }
+        val personaSimple =
+            authorizedDapp.referencesToAuthorizedPersonas.firstOrNull { it.identityAddress == persona.address }
+        val sharedAccounts = personaSimple?.sharedAccounts?.ids?.mapNotNull {
+            getProfileUseCase.accountOnCurrentNetwork(it)?.toUiModel()
+        }.orEmpty()
+        val requiredKinds = personaSimple?.sharedPersonaData?.alreadyGrantedIds().orEmpty().mapNotNull {
+            persona.personaData.getDataFieldKind(it)
+        }
+        // TODO properly compute required fields and number of values when we will support multiple entry values
+        val selectedPersona = PersonaUiModel(
+            persona = persona,
+            requiredFields = RequiredFields(
+                fields = requiredKinds.map {
+                    RequiredField(
+                        kind = it,
+                        numberOfValues = MessageFromDataChannel.IncomingRequest.NumberOfValues(
+                            1,
+                            MessageFromDataChannel.IncomingRequest.NumberOfValues.Quantifier.Exactly
+                        )
+                    )
+                }
+            )
+        )
+        _state.update {
+            it.copy(
+                sharedPersonaAccounts = sharedAccounts.toPersistentList(),
+                selectedSheetState = SelectedSheetState.SelectedPersona(selectedPersona)
+            )
+        }
     }
 
     fun onPersonaDetailsClosed() {
@@ -166,14 +181,13 @@ class DappDetailViewModel @Inject constructor(
 
     fun onEditPersona() {
         viewModelScope.launch {
-            // TODO persona data
-//            if (_state.value.selectedSheetState is SelectedSheetState.SelectedPersona) {
-//                (_state.value.selectedSheetState as SelectedSheetState.SelectedPersona).persona?.let { persona ->
-//                    sendEvent(
-//                        DappDetailEvent.EditPersona(persona.persona.address, persona.requiredFieldIDs.encodeToString())
-//                    )
-//                }
-//            }
+            if (_state.value.selectedSheetState is SelectedSheetState.SelectedPersona) {
+                (_state.value.selectedSheetState as SelectedSheetState.SelectedPersona).persona?.let { persona ->
+                    sendEvent(
+                        DappDetailEvent.EditPersona(persona.persona.address, persona.requiredFields)
+                    )
+                }
+            }
         }
     }
 
@@ -216,7 +230,7 @@ class DappDetailViewModel @Inject constructor(
 }
 
 sealed interface DappDetailEvent : OneOffEvent {
-    data class EditPersona(val personaAddress: String, val requiredFieldsStringEncoded: String) : DappDetailEvent
+    data class EditPersona(val personaAddress: String, val requiredFields: RequiredFields? = null) : DappDetailEvent
     object LastPersonaDeleted : DappDetailEvent
     object DappDeleted : DappDetailEvent
 }
@@ -237,6 +251,7 @@ sealed interface SelectedSheetState {
     data class SelectedNonFungibleResource(
         val nftItem: Resource.NonFungibleResource.Item
     ) : SelectedSheetState
+
     data class SelectedPersona(
         val persona: PersonaUiModel?
     ) : SelectedSheetState

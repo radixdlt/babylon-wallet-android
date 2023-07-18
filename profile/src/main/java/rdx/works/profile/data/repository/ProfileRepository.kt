@@ -60,6 +60,7 @@ val ProfileRepository.profile: Flow<Profile>
         .filter { it is ProfileState.Restored }
         .map { (it as ProfileState.Restored).profile }
 
+@Suppress("LongParameterList")
 class ProfileRepositoryImpl @Inject constructor(
     private val encryptedPreferencesManager: EncryptedPreferencesManager,
     private val preferencesManager: PreferencesManager,

@@ -27,7 +27,6 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixTheme.dimensions
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.presentation.model.PersonaFieldWrapper
-import com.babylon.wallet.android.presentation.model.empty
 import com.babylon.wallet.android.presentation.model.toDisplayResource
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
@@ -35,6 +34,7 @@ import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import rdx.works.profile.data.model.pernetwork.PersonaData
 import rdx.works.profile.data.model.pernetwork.PersonaDataEntryID
+import rdx.works.profile.data.utils.empty
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -115,7 +115,7 @@ private fun SelectableFieldItem(
     ) {
         Text(
             modifier = Modifier.weight(1f),
-            text = stringResource(id = field.value.kind.toDisplayResource()),
+            text = stringResource(id = field.entry.value.kind.toDisplayResource()),
             style = RadixTheme.typography.body1HighImportance,
             color = RadixTheme.colors.gray1,
             maxLines = 1,
@@ -143,7 +143,7 @@ fun CreateAccountContentPreview() {
             onBackClick = {},
             onAddFields = {},
             onSelectionChanged = { _, _ -> },
-            fieldsToAdd = persistentListOf(PersonaFieldWrapper(value = PersonaData.PersonaDataField.Kind.Name.empty())),
+            fieldsToAdd = persistentListOf(PersonaFieldWrapper(entry = PersonaData.PersonaDataField.Kind.Name.empty())),
             anyFieldSelected = false
         )
     }

@@ -25,6 +25,7 @@ import rdx.works.profile.data.model.factorsources.FactorSourceKind
 import rdx.works.profile.data.model.factorsources.LedgerHardwareWalletFactorSource
 import rdx.works.profile.data.model.pernetwork.DerivationPath
 import rdx.works.profile.data.model.pernetwork.FactorInstance
+import rdx.works.profile.data.model.pernetwork.IdentifiedEntry
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.data.model.pernetwork.PersonaData
 import rdx.works.profile.data.model.pernetwork.SecurityState
@@ -106,7 +107,18 @@ class SampleDataProvider {
                     )
                 )
             ),
-            personaData = PersonaData()
+            personaData = PersonaData(
+                name = IdentifiedEntry.Companion.init(
+                    PersonaData.PersonaDataField.Name(
+                        variant = PersonaData.PersonaDataField.Name.Variant.Western,
+                        given = "John",
+                        family = "",
+                        nickname = ""
+                    ),
+                    "1"
+                ),
+                emailAddresses = listOf(IdentifiedEntry.init(PersonaData.PersonaDataField.Email("test@test.pl"), "2"))
+            )
         )
     }
 

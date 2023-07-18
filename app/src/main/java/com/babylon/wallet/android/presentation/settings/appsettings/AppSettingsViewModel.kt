@@ -24,7 +24,6 @@ class AppSettingsViewModel @Inject constructor(
     private val updateDeveloperModeUseCase: UpdateDeveloperModeUseCase
 ) : StateViewModel<SettingsUiState>() {
 
-
     override fun initialState(): SettingsUiState = SettingsUiState.default
 
     init {

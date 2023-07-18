@@ -2,10 +2,11 @@ package com.babylon.wallet.android.presentation.dapp.authorized.personaonetime
 
 import androidx.lifecycle.SavedStateHandle
 import app.cash.turbine.test
-import rdx.works.core.preferences.PreferencesManager
+import com.babylon.wallet.android.domain.model.MessageFromDataChannel
+import com.babylon.wallet.android.domain.model.RequiredField
+import com.babylon.wallet.android.domain.model.RequiredFields
 import com.babylon.wallet.android.mockdata.profile
 import com.babylon.wallet.android.presentation.StateViewModelTest
-import com.babylon.wallet.android.presentation.model.encodeToString
 import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
@@ -17,7 +18,8 @@ import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Test
-import rdx.works.profile.data.model.pernetwork.Network
+import rdx.works.core.preferences.PreferencesManager
+import rdx.works.profile.data.model.pernetwork.PersonaData
 import rdx.works.profile.domain.GetProfileUseCase
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -40,7 +42,17 @@ internal class PersonaDataOnetimeViewModelTest : StateViewModelTest<PersonaDataO
     @Before
     override fun setUp() {
         super.setUp()
-        every { savedStateHandle.get<String>(ARG_REQUIRED_FIELDS) } returns listOf(Network.Persona.Field.ID.GivenName).encodeToString()
+        every { savedStateHandle.get<RequiredFields>(ARG_REQUIRED_FIELDS) } returns RequiredFields(
+            fields = listOf(
+                RequiredField(
+                    PersonaData.PersonaDataField.Kind.Name,
+                    MessageFromDataChannel.IncomingRequest.NumberOfValues(
+                        1,
+                        MessageFromDataChannel.IncomingRequest.NumberOfValues.Quantifier.Exactly
+                    )
+                )
+            )
+        )
         coEvery { preferencesManager.firstPersonaCreated } returns flow {
             emit(true)
         }
@@ -77,7 +89,7 @@ internal class PersonaDataOnetimeViewModelTest : StateViewModelTest<PersonaDataO
         vm.onEditClick(samplePersona.address)
         advanceUntilIdle()
         val item = vm.oneOffEvent.first()
-        assert(item is PersonaDataOnetimeEvent.OnEditPersona && item.requiredFieldsEncoded == "GivenName")
+        assert(item is PersonaDataOnetimeEvent.OnEditPersona && item.requiredFields.fields.any { it.kind == PersonaData.PersonaDataField.Kind.Name })
     }
 
 }

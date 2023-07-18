@@ -39,7 +39,7 @@ class ChooseAccountsViewModelTest {
         viewModel = OneTimeChooseAccountsViewModel(
             savedStateHandle = SavedStateHandle(
                 mapOf(
-                    ARG_NUMBER_OF_ACCOUNTS to accountsRequestAtLeast.oneTimeAccountsRequestItem!!.numberOfAccounts,
+                    ARG_NUMBER_OF_ACCOUNTS to accountsRequestAtLeast.oneTimeAccountsRequestItem!!.numberOfValues.quantity,
                     ARG_EXACT_ACCOUNT_COUNT to true
                 )
             ),
@@ -102,7 +102,7 @@ class ChooseAccountsViewModelTest {
             viewModel = OneTimeChooseAccountsViewModel(
                 savedStateHandle = SavedStateHandle(
                     mapOf(
-                        ARG_NUMBER_OF_ACCOUNTS to accountsRequestExact.oneTimeAccountsRequestItem!!.numberOfAccounts,
+                        ARG_NUMBER_OF_ACCOUNTS to accountsRequestExact.oneTimeAccountsRequestItem!!.numberOfValues.quantity,
                         ARG_EXACT_ACCOUNT_COUNT to true
                     )
                 ),
@@ -128,7 +128,7 @@ class ChooseAccountsViewModelTest {
             viewModel = OneTimeChooseAccountsViewModel(
                 savedStateHandle = SavedStateHandle(
                     mapOf(
-                        ARG_NUMBER_OF_ACCOUNTS to accountsTwoRequestExact.oneTimeAccountsRequestItem!!.numberOfAccounts,
+                        ARG_NUMBER_OF_ACCOUNTS to accountsTwoRequestExact.oneTimeAccountsRequestItem!!.numberOfValues.quantity,
                         ARG_EXACT_ACCOUNT_COUNT to true
                     )
                 ),
@@ -153,7 +153,7 @@ class ChooseAccountsViewModelTest {
             viewModel = OneTimeChooseAccountsViewModel(
                 savedStateHandle = SavedStateHandle(
                     mapOf(
-                        ARG_NUMBER_OF_ACCOUNTS to accountsTwoRequestExact.oneTimeAccountsRequestItem!!.numberOfAccounts,
+                        ARG_NUMBER_OF_ACCOUNTS to accountsTwoRequestExact.oneTimeAccountsRequestItem!!.numberOfValues.quantity,
                         ARG_EXACT_ACCOUNT_COUNT to true
                     )
                 ),

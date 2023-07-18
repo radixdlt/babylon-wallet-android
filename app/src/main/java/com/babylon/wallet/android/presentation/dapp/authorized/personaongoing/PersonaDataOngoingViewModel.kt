@@ -2,6 +2,7 @@ package com.babylon.wallet.android.presentation.dapp.authorized.personaongoing
 
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
+import com.babylon.wallet.android.domain.model.RequiredFields
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
@@ -30,7 +31,7 @@ class PersonaDataOngoingViewModel @Inject constructor(
     init {
         viewModelScope.launch {
             getProfileUseCase.personaOnCurrentNetworkFlow(args.personaId).collect { persona ->
-                val uiModel = PersonaUiModel(persona, requestItem = args.request)
+                val uiModel = PersonaUiModel(persona, requiredFields = args.requiredFields)
                 _state.update {
                     it.copy(
                         persona = uiModel,
@@ -43,14 +44,16 @@ class PersonaDataOngoingViewModel @Inject constructor(
 
     fun onEditClick(personaAddress: String) {
         viewModelScope.launch {
-            // TODO persona data
-//            sendEvent(PersonaDataOngoingEvent.OnEditPersona(personaAddress, args.requiredFields.toList().encodeToString()))
+            sendEvent(PersonaDataOngoingEvent.OnEditPersona(personaAddress, args.requiredFields))
         }
     }
 }
 
 sealed interface PersonaDataOngoingEvent : OneOffEvent {
-    data class OnEditPersona(val personaAddress: String, val requiredFieldsEncoded: String? = null) : PersonaDataOngoingEvent
+    data class OnEditPersona(
+        val personaAddress: String,
+        val requiredFields: RequiredFields
+    ) : PersonaDataOngoingEvent
 }
 
 data class PersonaDataOngoingUiState(

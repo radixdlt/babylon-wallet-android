@@ -50,7 +50,7 @@ fun NavGraphBuilder.dappLoginUnauthorizedNavGraph(navController: NavController) 
         )
         personaDataOnetimeUnauthorized(
             onEdit = {
-                navController.personaEditScreen(it.personaAddress, it.requiredFieldsEncoded)
+                navController.personaEditScreen(it.personaAddress, it.requiredFields)
             },
             onBackClick = {
                 navController.navigateUp()

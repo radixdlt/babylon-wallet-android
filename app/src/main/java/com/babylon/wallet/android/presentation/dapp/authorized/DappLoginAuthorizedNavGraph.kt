@@ -42,8 +42,8 @@ fun NavGraphBuilder.dappLoginAuthorizedNavGraph(navController: NavController) {
             navigateToSelectPersona = { reqeustId ->
                 navController.selectPersona(reqeustId)
             }
-        ) { personaAddress, fieldsEncoded ->
-            navController.personaDataOngoing(personaAddress, fieldsEncoded)
+        ) { personaAddress, requiredFields ->
+            navController.personaDataOngoing(personaAddress, requiredFields)
         }
         selectPersona(
             navController = navController,
@@ -72,10 +72,10 @@ fun NavGraphBuilder.dappLoginAuthorizedNavGraph(navController: NavController) {
                 navController.loginPermission(event.numberOfAccounts, event.isExactAccountsCount, event.oneTime)
             },
             onPersonaDataOngoing = {
-                navController.personaDataOngoing(it.personaAddress, it.request)
+                navController.personaDataOngoing(it.personaAddress, it.requiredFields)
             },
             onPersonaDataOnetime = {
-                navController.personaDataOnetimeAuthorized(it.request)
+                navController.personaDataOnetimeAuthorized(it.requiredFields)
             }
         )
         loginPermission(
@@ -117,15 +117,15 @@ fun NavGraphBuilder.dappLoginAuthorizedNavGraph(navController: NavController) {
                 navController.popBackStack()
             },
             onPersonaOngoingData = {
-                navController.personaDataOngoing(it.personaAddress, it.request)
+                navController.personaDataOngoing(it.personaAddress, it.requiredFields)
             },
             onPersonaDataOnetime = {
-                navController.personaDataOnetimeAuthorized(it.request)
+                navController.personaDataOnetimeAuthorized(it.requiredFields)
             }
         )
         personaDataOngoing(
             onEdit = {
-                navController.personaEditScreen(it.personaAddress, it.requiredFieldsEncoded)
+                navController.personaEditScreen(it.personaAddress, it.requiredFields)
             },
             navController = navController,
             onBackClick = {
@@ -135,7 +135,7 @@ fun NavGraphBuilder.dappLoginAuthorizedNavGraph(navController: NavController) {
                 navController.popBackStack(ROUTE_DAPP_LOGIN_AUTHORIZED_GRAPH, true)
             },
             onPersonaDataOnetime = {
-                navController.personaDataOnetimeAuthorized(it.request)
+                navController.personaDataOnetimeAuthorized(it.requiredFields)
             },
             onChooseAccounts = { event ->
                 navController.chooseAccounts(
@@ -148,7 +148,7 @@ fun NavGraphBuilder.dappLoginAuthorizedNavGraph(navController: NavController) {
         )
         personaDataOnetimeAuthorized(
             onEdit = {
-                navController.personaEditScreen(it.personaAddress, it.requiredFieldsEncoded)
+                navController.personaEditScreen(it.personaAddress, it.requiredFields)
             },
             navController = navController,
             onBackClick = {

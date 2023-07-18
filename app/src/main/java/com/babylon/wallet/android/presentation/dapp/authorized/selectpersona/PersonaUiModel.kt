@@ -1,7 +1,6 @@
 package com.babylon.wallet.android.presentation.dapp.authorized.selectpersona
 
-import com.babylon.wallet.android.domain.model.MessageFromDataChannel
-import com.babylon.wallet.android.domain.model.toRequestedFieldKinds
+import com.babylon.wallet.android.domain.model.RequiredFields
 import com.babylon.wallet.android.presentation.model.fullName
 import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.toPersistentList
@@ -14,17 +13,17 @@ data class PersonaUiModel(
     val pinned: Boolean = false,
     val lastUsedOn: String? = null,
     val lastUsedOnTimestamp: Long = 0,
-    val requestItem: MessageFromDataChannel.IncomingRequest.PersonaRequestItem? = null
+    val requiredFields: RequiredFields = RequiredFields(listOf())
 ) {
     fun missingFieldKinds(): PersistentList<PersonaData.PersonaDataField.Kind> {
-        val requiredFieldKinds = requestItem?.toRequestedFieldKinds().orEmpty()
+        val requiredFieldKinds = requiredFields.fields.map { it.kind }
         return requiredFieldKinds.minus(persona.personaData.allFields.map { it.value.kind }.toSet()).sortedBy { it.ordinal }
             .toPersistentList()
     }
 
     fun personalInfoFormatted(): String {
         return buildString {
-            val requiredFieldKinds = requestItem?.toRequestedFieldKinds().orEmpty()
+            val requiredFieldKinds = requiredFields.fields.map { it.kind }
             val fields = persona.personaData.allFields.map { it.value }.filter { requiredFieldKinds.contains(it.kind) }
             val fullName = fields.filterIsInstance<PersonaData.PersonaDataField.Name>().firstOrNull()?.fullName
             val email = fields.filterIsInstance<PersonaData.PersonaDataField.Email>().firstOrNull()?.value

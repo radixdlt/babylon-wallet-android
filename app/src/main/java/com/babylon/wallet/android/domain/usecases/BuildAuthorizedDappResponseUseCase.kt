@@ -14,8 +14,9 @@ import com.babylon.wallet.android.data.dapp.model.toProof
 import com.babylon.wallet.android.data.transaction.DappRequestFailure
 import com.babylon.wallet.android.data.transaction.ROLAClient
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
+import com.babylon.wallet.android.presentation.model.toPersonaDataRequestResponseItem
 import rdx.works.profile.data.model.pernetwork.Network
-import rdx.works.profile.data.model.pernetwork.PersonaDataEntryID
+import rdx.works.profile.data.model.pernetwork.PersonaData
 import javax.inject.Inject
 
 class BuildAuthorizedDappResponseUseCase @Inject constructor(
@@ -30,8 +31,8 @@ class BuildAuthorizedDappResponseUseCase @Inject constructor(
         selectedPersona: Network.Persona,
         oneTimeAccounts: List<Network.Account>,
         ongoingAccounts: List<Network.Account>,
-        ongoingDataFields: List<PersonaDataEntryID>,
-        onetimeDataFields: List<PersonaDataEntryID>
+        ongoingSharedPersonaData: PersonaData? = null,
+        onetimeSharedPersonaData: PersonaData? = null
     ): Result<WalletInteractionResponse> {
         val authResponse: Result<AuthRequestResponseItem> = buildAuthResponseItem(request, selectedPersona)
         if (authResponse.isSuccess) {
@@ -52,9 +53,8 @@ class BuildAuthorizedDappResponseUseCase @Inject constructor(
                         auth = authResponse.getOrThrow(),
                         oneTimeAccounts = oneTimeAccountsResponseItem.getOrNull(),
                         ongoingAccounts = ongoingAccountsResponseItem.getOrNull(),
-                        // TODO persona data
-//                        ongoingPersonaData = ongoingDataFields.toDataModel(),
-//                        oneTimePersonaData = onetimeDataFields.toDataModel()
+                        ongoingPersonaData = ongoingSharedPersonaData?.toPersonaDataRequestResponseItem(),
+                        oneTimePersonaData = onetimeSharedPersonaData?.toPersonaDataRequestResponseItem()
                     )
                 )
             )

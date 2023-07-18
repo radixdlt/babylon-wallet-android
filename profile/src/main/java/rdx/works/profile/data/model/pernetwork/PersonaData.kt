@@ -51,10 +51,10 @@ data class PersonaData(
     val allFieldIds: List<PersonaDataEntryID>
         get() = allFields.map { it.id }
 
-    fun <T : PersonaDataField> getDataField(id: PersonaDataEntryID): IdentifiedEntry<out PersonaDataField>? {
+    fun getDataFieldKind(id: PersonaDataEntryID): PersonaDataField.Kind? {
         return allFields.firstOrNull {
             it.id == id
-        }
+        }?.value?.kind
     }
 
     sealed interface PersonaDataField {

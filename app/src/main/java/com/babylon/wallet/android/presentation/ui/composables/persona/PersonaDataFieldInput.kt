@@ -43,6 +43,7 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import rdx.works.profile.data.model.pernetwork.PersonaData
+import rdx.works.profile.data.model.pernetwork.PersonaData.PersonaDataField.Name
 
 @Composable
 fun PersonaDataFieldInput(
@@ -64,8 +65,8 @@ fun PersonaDataFieldInput(
                 onValueChanged = {
                     onValueChanged(PersonaData.PersonaDataField.Email(it))
                 },
-                required = required,
                 modifier = modifier,
+                required = required,
                 onDeleteField = onDeleteField,
                 onFocusChanged = onFocusChanged,
                 phoneInput = phoneInput,
@@ -73,13 +74,13 @@ fun PersonaDataFieldInput(
             )
         }
 
-        is PersonaData.PersonaDataField.Name -> {
+        is Name -> {
             PersonaNameInput(
                 onPersonaNameFieldChanged = onValueChanged,
                 onDeleteField = onDeleteField,
                 required = required,
                 modifier = modifier,
-                state = rememberPersonaNameInputState(field.family, field.given, field.nickname.orEmpty(), field.variant),
+                state = rememberPersonaNameInputState(field.family, field.given, field.nickname, field.variant),
                 onFocusChanged = onFocusChanged,
                 error = error,
                 label = label
@@ -93,8 +94,8 @@ fun PersonaDataFieldInput(
                 onValueChanged = {
                     onValueChanged(PersonaData.PersonaDataField.PhoneNumber(it))
                 },
-                required = required,
                 modifier = modifier,
+                required = required,
                 onDeleteField = onDeleteField,
                 onFocusChanged = onFocusChanged,
                 phoneInput = phoneInput,
@@ -111,8 +112,8 @@ fun PersonaDataStringInput(
     label: String,
     value: String,
     onValueChanged: (String) -> Unit,
-    required: Boolean,
     modifier: Modifier = Modifier,
+    required: Boolean = false,
     onDeleteField: (() -> Unit)? = null,
     onFocusChanged: ((FocusState) -> Unit)? = null,
     phoneInput: Boolean = false,
@@ -157,7 +158,7 @@ fun PersonaDataStringInput(
 
 @Composable
 fun PersonaNameInput(
-    onPersonaNameFieldChanged: (PersonaData.PersonaDataField.Name) -> Unit,
+    onPersonaNameFieldChanged: (Name) -> Unit,
     onDeleteField: () -> Unit,
     required: Boolean,
     modifier: Modifier = Modifier,
@@ -168,7 +169,7 @@ fun PersonaNameInput(
 ) {
     val nameChangedCallback = {
         onPersonaNameFieldChanged(
-            PersonaData.PersonaDataField.Name(
+            Name(
                 state.variant,
                 state.given,
                 state.family,
@@ -187,12 +188,20 @@ fun PersonaNameInput(
                 style = RadixTheme.typography.body1Header,
                 color = RadixTheme.colors.gray1
             )
-            IconButton(onClick = onDeleteField) {
-                Icon(
-                    tint = RadixTheme.colors.gray1,
-                    contentDescription = null,
-                    painter = painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_delete_outline)
+            if (required) {
+                Text(
+                    text = stringResource(id = R.string.editPersona_requiredByDapp),
+                    style = RadixTheme.typography.body1Regular,
+                    color = RadixTheme.colors.gray2
                 )
+            } else {
+                IconButton(onClick = onDeleteField) {
+                    Icon(
+                        tint = RadixTheme.colors.gray1,
+                        contentDescription = null,
+                        painter = painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_delete_outline)
+                    )
+                }
             }
         }
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSmall))
@@ -210,7 +219,7 @@ fun PersonaNameInput(
             })
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
             when (state.variant) {
-                PersonaData.PersonaDataField.Name.Variant.Western -> {
+                Name.Variant.Western -> {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         verticalAlignment = Alignment.CenterVertically,
@@ -223,7 +232,6 @@ fun PersonaNameInput(
                                 state.given = it
                                 nameChangedCallback()
                             },
-                            required = required,
                             modifier = Modifier.weight(1f),
                             onFocusChanged = onFocusChanged,
                             error = error
@@ -235,7 +243,6 @@ fun PersonaNameInput(
                                 state.nickname = it
                                 nameChangedCallback()
                             },
-                            required = required,
                             modifier = Modifier.weight(1f),
                             onFocusChanged = onFocusChanged,
                             error = error
@@ -249,14 +256,13 @@ fun PersonaNameInput(
                             state.family = it
                             nameChangedCallback()
                         },
-                        required = required,
                         modifier = Modifier.fillMaxWidth(),
                         onFocusChanged = onFocusChanged,
                         error = error
                     )
                 }
 
-                PersonaData.PersonaDataField.Name.Variant.Eastern -> {
+                Name.Variant.Eastern -> {
                     PersonaDataStringInput(
                         label = stringResource(id = R.string.authorizedDapps_personaDetails_nameFamily),
                         value = state.family,
@@ -264,7 +270,6 @@ fun PersonaNameInput(
                             state.family = it
                             nameChangedCallback()
                         },
-                        required = required,
                         modifier = Modifier.fillMaxWidth(),
                         onFocusChanged = onFocusChanged,
                         error = error
@@ -282,7 +287,6 @@ fun PersonaNameInput(
                                 state.given = it
                                 nameChangedCallback()
                             },
-                            required = required,
                             modifier = Modifier.weight(1f),
                             onFocusChanged = onFocusChanged,
                             error = error
@@ -294,7 +298,6 @@ fun PersonaNameInput(
                                 state.nickname = it
                                 nameChangedCallback()
                             },
-                            required = required,
                             modifier = Modifier.weight(1f),
                             onFocusChanged = onFocusChanged,
                             error = error
@@ -309,8 +312,8 @@ fun PersonaNameInput(
 @Composable
 private fun NameOrderSelector(
     modifier: Modifier,
-    selectedVariant: PersonaData.PersonaDataField.Name.Variant,
-    onVariantChanged: (PersonaData.PersonaDataField.Name.Variant) -> Unit
+    selectedVariant: Name.Variant,
+    onVariantChanged: (Name.Variant) -> Unit
 ) {
     var isMenuExpanded by remember {
         mutableStateOf(false)
@@ -330,7 +333,7 @@ private fun NameOrderSelector(
             Text(
                 modifier = Modifier.weight(1f),
                 text = stringResource(
-                    id = if (selectedVariant == PersonaData.PersonaDataField.Name.Variant.Eastern) {
+                    id = if (selectedVariant == Name.Variant.Eastern) {
                         R.string.authorizedDapps_personaDetails_nameVariantEastern
                     } else {
                         R.string.authorizedDapps_personaDetails_nameVariantWestern
@@ -351,7 +354,7 @@ private fun NameOrderSelector(
             expanded = isMenuExpanded,
             onDismissRequest = { isMenuExpanded = false }
         ) {
-            PersonaData.PersonaDataField.Name.Variant.values().forEach { variant ->
+            Name.Variant.values().forEach { variant ->
                 DropdownMenuItem(
                     modifier = Modifier
                         .fillMaxWidth(),
@@ -360,8 +363,8 @@ private fun NameOrderSelector(
                             modifier = Modifier.fillMaxWidth(),
                             text = stringResource(
                                 id = when (variant) {
-                                    PersonaData.PersonaDataField.Name.Variant.Western -> R.string.authorizedDapps_personaDetails_nameVariantWestern
-                                    PersonaData.PersonaDataField.Name.Variant.Eastern -> R.string.authorizedDapps_personaDetails_nameVariantEastern
+                                    Name.Variant.Western -> R.string.authorizedDapps_personaDetails_nameVariantWestern
+                                    Name.Variant.Eastern -> R.string.authorizedDapps_personaDetails_nameVariantEastern
                                 }
                             ),
                             style = RadixTheme.typography.body1Regular,
@@ -386,7 +389,7 @@ class PersonaNameInputState(
     familyName: String,
     givenName: String,
     nickname: String,
-    variant: PersonaData.PersonaDataField.Name.Variant
+    variant: Name.Variant
 ) {
     var family by mutableStateOf(familyName)
     var given by mutableStateOf(givenName)
@@ -399,7 +402,7 @@ class PersonaNameInputState(
                 listOf(it.family, it.given, it.nickname, it.variant.name)
             },
             restore = {
-                PersonaNameInputState(it[0], it[1], it[2], PersonaData.PersonaDataField.Name.Variant.valueOf(it[3]))
+                PersonaNameInputState(it[0], it[1], it[2], Name.Variant.valueOf(it[3]))
             }
         )
     }
@@ -410,7 +413,7 @@ fun rememberPersonaNameInputState(
     familyName: String = "",
     givenName: String = "",
     nickname: String = "",
-    variant: PersonaData.PersonaDataField.Name.Variant = PersonaData.PersonaDataField.Name.Variant.Western
+    variant: Name.Variant = Name.Variant.Western
 ): PersonaNameInputState {
     return rememberSaveable(saver = PersonaNameInputState.Saver) {
         PersonaNameInputState(familyName, givenName, nickname, variant)
@@ -422,11 +425,11 @@ fun rememberPersonaNameInputState(
 fun PersonaDataStringInputPreview() {
     RadixWalletTheme {
         PersonaDataStringInput(
-            value = "Field",
-            onFocusChanged = {},
             label = "Label",
+            value = "Field",
+            onValueChanged = {},
             required = false,
-            onValueChanged = {}
+            onFocusChanged = {}
         )
     }
 }

@@ -4,6 +4,7 @@ import com.babylon.wallet.android.domain.SampleDataProvider
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import rdx.works.profile.data.model.pernetwork.Network
+import rdx.works.profile.data.model.pernetwork.PersonaData
 import rdx.works.profile.data.model.pernetwork.PersonaDataEntryID
 import rdx.works.profile.data.model.pernetwork.RequestedNumber
 import rdx.works.profile.data.model.pernetwork.Shared
@@ -109,7 +110,7 @@ class DAppConnectionRepositoryFake : DAppConnectionRepository {
     override suspend fun dAppAuthorizedPersonaHasAllDataFields(
         dAppDefinitionAddress: String,
         personaAddress: String,
-        fieldIds: List<PersonaDataEntryID>
+        requestedFieldKinds: Map<PersonaData.PersonaDataField.Kind, Int>
     ): Boolean {
         return false
     }
