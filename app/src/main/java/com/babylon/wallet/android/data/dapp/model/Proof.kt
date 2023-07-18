@@ -1,9 +1,12 @@
 package com.babylon.wallet.android.data.dapp.model
 
-import com.radixdlt.toolkit.models.crypto.SignatureWithPublicKey
+import com.radixdlt.ret.SignatureWithPublicKey
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import rdx.works.core.decodeHex
+import rdx.works.core.ret.publicKey
+import rdx.works.core.ret.signature
+import rdx.works.core.ret.toHexString
 
 @Serializable
 data class Proof(
@@ -24,13 +27,13 @@ data class Proof(
 fun SignatureWithPublicKey.toProof(challengeHex: String): Proof {
     return when (val signatureWithPublicKey = this) {
         is SignatureWithPublicKey.EcdsaSecp256k1 -> Proof(
-            signatureWithPublicKey.publicKey(challengeHex.decodeHex()).toString(),
-            signatureWithPublicKey.signature().toString(),
+            signatureWithPublicKey.publicKey(challengeHex.decodeHex()).toHexString(),
+            signatureWithPublicKey.signature().toHexString(),
             Proof.Curve.Secp256k1
         )
         is SignatureWithPublicKey.EddsaEd25519 -> Proof(
-            signatureWithPublicKey.publicKey().toString(),
-            signatureWithPublicKey.signature().toString(),
+            signatureWithPublicKey.publicKey().toHexString(),
+            signatureWithPublicKey.signature().toHexString(),
             Proof.Curve.Curve25519
         )
     }

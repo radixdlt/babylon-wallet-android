@@ -55,7 +55,7 @@ dependencies {
     implementation libs.timber
 
     implementation libs.slip10
-    implementation libs.ket
+    implementation libs.retAndroid
 
     testImplementation libs.junit
     testImplementation libs.kotlinTestJunit
@@ -63,4 +63,5 @@ dependencies {
     testImplementation libs.mockk
     testImplementation libs.mockitoKotlin
     testImplementation libs.mockitoInline
+    testImplementation libs.retKotlin
 }

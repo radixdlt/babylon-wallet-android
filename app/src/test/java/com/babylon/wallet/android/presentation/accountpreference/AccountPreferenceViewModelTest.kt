@@ -57,7 +57,7 @@ internal class AccountPreferenceViewModelTest : StateViewModelTest<AccountPrefer
         super.setUp()
         every { deviceSecurityHelper.isDeviceSecure() } returns true
         every { getFreeXrdUseCase.isAllowedToUseFaucet(any()) } returns flow { emit(true) }
-        coEvery { getFreeXrdUseCase(true, any()) } returns Result.success(sampleTxId)
+        coEvery { getFreeXrdUseCase(any()) } returns Result.success(sampleTxId)
         every { savedStateHandle.get<String>(ARG_ADDRESS) } returns sampleAddress
         coEvery { eventBus.sendEvent(any()) } just Runs
     }
@@ -87,18 +87,18 @@ internal class AccountPreferenceViewModelTest : StateViewModelTest<AccountPrefer
         vm.onGetFreeXrdClick()
         advanceUntilIdle()
         val state = vm.state.first()
-        coVerify(exactly = 1) { getFreeXrdUseCase(true, sampleAddress) }
+        coVerify(exactly = 1) { getFreeXrdUseCase(sampleAddress) }
         assert(state.gotFreeXrd)
     }
 
     @Test
     fun `get free xrd failure sets proper state`() = runTest {
-        coEvery { getFreeXrdUseCase(true, any()) } returns Result.failure(Exception())
+        coEvery { getFreeXrdUseCase(any()) } returns Result.failure(Exception())
         val vm = vm.value
         vm.onGetFreeXrdClick()
         advanceUntilIdle()
         val state = vm.state.first()
-        coVerify(exactly = 1) { getFreeXrdUseCase(true, sampleAddress) }
+        coVerify(exactly = 1) { getFreeXrdUseCase(sampleAddress) }
         assert(!state.gotFreeXrd)
         assert(state.error != null)
     }

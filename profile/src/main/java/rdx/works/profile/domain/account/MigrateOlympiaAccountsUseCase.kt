@@ -1,7 +1,7 @@
 package rdx.works.profile.domain.account
 
-import com.radixdlt.toolkit.RadixEngineToolkit
-import com.radixdlt.toolkit.models.method.DeriveBabylonAddressFromOlympiaAddressInput
+import com.radixdlt.ret.Address
+import com.radixdlt.ret.OlympiaAddress
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
@@ -33,12 +33,11 @@ class MigrateOlympiaAccountsUseCase @Inject constructor(
             val networkId = profile.currentNetwork.knownNetworkId ?: Radix.Gateway.default.network.networkId()
             val accountOffset = profile.currentNetwork.accounts.size
             val migratedAccounts = olympiaAccounts.map { olympiaAccount ->
-                val babylonAddress = RadixEngineToolkit.deriveBabylonAddressFromOlympiaAddress(
-                    DeriveBabylonAddressFromOlympiaAddressInput(
-                        networkId.value.toUByte(),
-                        olympiaAccount.address
-                    )
-                ).getOrThrow().babylonAccountAddress
+                val babylonAddress = Address.virtualAccountAddressFromOlympiaAddress(
+                    olympiaAccountAddress = OlympiaAddress(olympiaAccount.address),
+                    networkId = networkId.value.toUByte()
+                ).addressString()
+
                 Network.Account(
                     displayName = olympiaAccount.accountName.ifEmpty { "Unnamed olympia account ${olympiaAccount.index}" },
                     address = babylonAddress,

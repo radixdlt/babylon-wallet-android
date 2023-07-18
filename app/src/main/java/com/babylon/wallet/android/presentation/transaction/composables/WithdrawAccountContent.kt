@@ -12,25 +12,22 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
-import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
-import com.babylon.wallet.android.presentation.transaction.TransactionAccountItemUiModel
-import kotlinx.collections.immutable.ImmutableMap
-import kotlinx.collections.immutable.persistentMapOf
-import kotlinx.collections.immutable.toPersistentList
+import com.babylon.wallet.android.presentation.transaction.AccountWithTransferableResources
+import kotlinx.collections.immutable.ImmutableList
 
 @Composable
 fun WithdrawAccountContent(
-    withdrawAccountsMap: ImmutableMap<String, List<TransactionAccountItemUiModel>>,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    from: ImmutableList<AccountWithTransferableResources>
 ) {
-    if (withdrawAccountsMap.isNotEmpty()) {
+    if (from.isNotEmpty()) {
         Text(
             modifier = Modifier
-                .padding(horizontal = RadixTheme.dimensions.paddingDefault),
+                .padding(top = RadixTheme.dimensions.paddingDefault)
+                .padding(horizontal = RadixTheme.dimensions.paddingXLarge),
             text = stringResource(id = R.string.transactionReview_withdrawalsHeading).uppercase(),
             style = RadixTheme.typography.body1Link,
             color = RadixTheme.colors.gray2,
@@ -46,48 +43,15 @@ fun WithdrawAccountContent(
                 )
                 .padding(RadixTheme.dimensions.paddingMedium)
         ) {
-            withdrawAccountsMap.onEachIndexed { index, accountEntry ->
-                val lastItem = index == withdrawAccountsMap.size - 1
+            from.forEachIndexed { index, account ->
                 TransactionAccountCard(
-                    appearanceId = accountEntry.value.first().appearanceID,
-                    tokens = accountEntry.value.toPersistentList(),
-                    address = accountEntry.value.first().accountAddress,
-                    accountName = accountEntry.value.first().displayName
+                    account = account
                 )
 
-                if (!lastItem) {
-                    Spacer(
-                        modifier = Modifier
-                            .height(RadixTheme.dimensions.paddingMedium)
-                    )
+                if (index != from.lastIndex) {
+                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingMedium))
                 }
             }
         }
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun WithdrawAccountContentPreview() {
-    RadixWalletTheme {
-        WithdrawAccountContent(
-            persistentMapOf(
-                "account_tdx_19jd32jd3928jd3892jd329"
-                    to
-                        listOf(
-                            TransactionAccountItemUiModel(
-                                accountAddress = "account_tdx_19jd32jd3928jd3892jd329",
-                                displayName = "My Savings Account",
-                                tokenSymbol = "XRD",
-                                tokenAmount = "689.203",
-                                appearanceID = 1,
-                                iconUrl = "",
-                                shouldPromptForGuarantees = true,
-                                guaranteedAmount = "689.203",
-                                guaranteedPercentAmount = "100"
-                            )
-                        )
-            )
-        )
     }
 }

@@ -6,7 +6,7 @@ import com.babylon.wallet.android.domain.model.metadata.AccountTypeMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.AccountTypeMetadataItem.AccountType
 import com.babylon.wallet.android.domain.model.metadata.ClaimedEntitiesMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.ClaimedWebsiteMetadataItem
-import com.babylon.wallet.android.domain.model.metadata.DAppDefinitionMetadataItem
+import com.babylon.wallet.android.domain.model.metadata.DAppDefinitionsMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.DescriptionMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.DomainMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.IconUrlMetadataItem
@@ -45,11 +45,12 @@ enum class ExplicitMetadataKey(val key: String) {
         SYMBOL -> SymbolMetadataItem(symbol = value.asString.orEmpty())
         NAME -> NameMetadataItem(name = value.asString.orEmpty())
         DOMAIN -> DomainMetadataItem(domain = Uri.parse(value.asString.orEmpty()))
-        DAPP_DEFINITION -> DAppDefinitionMetadataItem(address = value.asString.orEmpty())
+        DAPP_DEFINITION -> DAppDefinitionsMetadataItem(addresses = listOf(value.asString.orEmpty()))
         RELATED_WEBSITES -> RelatedWebsiteMetadataItem(website = value.asString.orEmpty())
         ACCOUNT_TYPE -> AccountTypeMetadataItem(
             type = (AccountType.values().find { it.asString == value.asString } ?: DAPP_DEFINITION) as AccountType
         )
+
         CLAIMED_WEBSITES -> ClaimedWebsiteMetadataItem(website = value.asString.orEmpty())
         CLAIMED_ENTITIES -> ClaimedEntitiesMetadataItem(entity = value.asString.orEmpty())
         TAGS -> TagsMetadataItem(tags = value.asStringCollection.orEmpty())
@@ -81,6 +82,7 @@ enum class ExplicitMetadataKey(val key: String) {
                 NAME,
                 DESCRIPTION,
                 ACCOUNT_TYPE,
+                DAPP_DEFINITION,
                 RELATED_WEBSITES,
                 ICON_URL
             )

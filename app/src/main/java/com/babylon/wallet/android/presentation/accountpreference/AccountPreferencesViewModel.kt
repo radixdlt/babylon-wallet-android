@@ -3,12 +3,9 @@ package com.babylon.wallet.android.presentation.accountpreference
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
-import com.babylon.wallet.android.data.manifest.getStringInstructions
+import com.babylon.wallet.android.data.manifest.prepareInternalTransactionRequest
 import com.babylon.wallet.android.data.transaction.ROLAClient
-import com.babylon.wallet.android.data.transaction.TransactionVersion
 import com.babylon.wallet.android.di.coroutines.ApplicationScope
-import com.babylon.wallet.android.domain.model.MessageFromDataChannel
-import com.babylon.wallet.android.domain.model.TransactionManifestData
 import com.babylon.wallet.android.domain.usecases.GetFreeXrdUseCase
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiMessage
@@ -62,12 +59,14 @@ class AccountPreferenceViewModel @Inject constructor(
                         is AppEvent.Status.Transaction.Fail -> {
                             _state.update { it.copy(isLoading = false) }
                         }
+
                         is AppEvent.Status.Transaction.Success -> {
                             val account = requireNotNull(state.value.account)
                             val authSigningFactorInstance = requireNotNull(authSigningFactorInstance)
                             addAuthSigningFactorInstanceUseCase(account, authSigningFactorInstance)
                             _state.update { it.copy(isLoading = false) }
                         }
+
                         else -> {}
                     }
                 }
@@ -102,7 +101,7 @@ class AccountPreferenceViewModel @Inject constructor(
     fun onGetFreeXrdClick() {
         appScope.launch {
             _state.update { it.copy(isLoading = true) }
-            getFreeXrdUseCase(true, args.address).onSuccess { _ ->
+            getFreeXrdUseCase(address = args.address).onSuccess { _ ->
                 _state.update { it.copy(isLoading = false, gotFreeXrd = true) }
                 appEventBus.sendEvent(AppEvent.GotFreeXrd)
             }.onFailure { error ->
@@ -126,23 +125,16 @@ class AccountPreferenceViewModel @Inject constructor(
                 _state.update { it.copy(isLoading = true) }
                 rolaClient.generateAuthSigningFactorInstance(account).onSuccess { authSigningFactorInstance ->
                     this@AccountPreferenceViewModel.authSigningFactorInstance = authSigningFactorInstance
-                    rolaClient.createAuthKeyManifestWithStringInstructions(account, authSigningFactorInstance)?.let { manifest ->
-                        Timber.d("Approving: \n$manifest")
-                        uploadAuthKeyRequestId = UUIDGenerator.uuid().toString()
-                        val internalMessage = MessageFromDataChannel.IncomingRequest.TransactionRequest(
-                            dappId = "",
-                            requestId = uploadAuthKeyRequestId,
-                            transactionManifestData = TransactionManifestData(
-                                instructions = requireNotNull(manifest.getStringInstructions()),
-                                version = TransactionVersion.Default.value,
-                                networkId = account.networkID,
-                                blobs = manifest.blobs?.toList().orEmpty()
-                            ),
-                            requestMetadata = MessageFromDataChannel.IncomingRequest.RequestMetadata.internal(account.networkID)
+                    val manifest = rolaClient.createAuthKeyManifestWithStringInstructions(account, authSigningFactorInstance)
+                    Timber.d("Approving: \n$manifest")
+                    uploadAuthKeyRequestId = UUIDGenerator.uuid().toString()
+                    incomingRequestRepository.add(
+                        manifest.prepareInternalTransactionRequest(
+                            networkId = account.networkID,
+                            requestId = uploadAuthKeyRequestId
                         )
-                        incomingRequestRepository.add(internalMessage)
-                        _state.update { it.copy(isLoading = false) }
-                    }
+                    )
+                    _state.update { it.copy(isLoading = false) }
                 }.onFailure {
                     _state.update { state ->
                         state.copy(isLoading = false)

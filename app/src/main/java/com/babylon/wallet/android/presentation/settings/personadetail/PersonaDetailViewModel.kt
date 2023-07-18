@@ -3,15 +3,12 @@ package com.babylon.wallet.android.presentation.settings.personadetail
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
-import com.babylon.wallet.android.data.manifest.getStringInstructions
+import com.babylon.wallet.android.data.manifest.prepareInternalTransactionRequest
 import com.babylon.wallet.android.data.transaction.ROLAClient
-import com.babylon.wallet.android.data.transaction.TransactionVersion
 import com.babylon.wallet.android.domain.common.value
 import com.babylon.wallet.android.domain.model.DAppWithMetadata
 import com.babylon.wallet.android.domain.model.DAppWithMetadataAndAssociatedResources
-import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.babylon.wallet.android.domain.model.Resource
-import com.babylon.wallet.android.domain.model.TransactionManifestData
 import com.babylon.wallet.android.domain.usecases.GetDAppWithMetadataAndAssociatedResourcesUseCase
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiState
@@ -121,22 +118,14 @@ class PersonaDetailViewModel @Inject constructor(
                 _state.update { it.copy(loading = true) }
                 rolaClient.generateAuthSigningFactorInstance(persona).onSuccess { authSigningFactorInstance ->
                     this@PersonaDetailViewModel.authSigningFactorInstance = authSigningFactorInstance
-                    rolaClient.createAuthKeyManifestWithStringInstructions(persona, authSigningFactorInstance)?.let { manifest ->
-                        uploadAuthKeyRequestId = UUIDGenerator.uuid().toString()
-                        val internalMessage = MessageFromDataChannel.IncomingRequest.TransactionRequest(
-                            dappId = "",
-                            requestId = uploadAuthKeyRequestId,
-                            transactionManifestData = TransactionManifestData(
-                                instructions = requireNotNull(manifest.getStringInstructions()),
-                                version = TransactionVersion.Default.value,
-                                networkId = persona.networkID,
-                                blobs = manifest.blobs?.toList().orEmpty()
-                            ),
-                            requestMetadata = MessageFromDataChannel.IncomingRequest.RequestMetadata.internal(persona.networkID)
+                    val manifest = rolaClient.createAuthKeyManifestWithStringInstructions(persona, authSigningFactorInstance)
+                    uploadAuthKeyRequestId = UUIDGenerator.uuid().toString()
+                    incomingRequestRepository.add(
+                        manifest.prepareInternalTransactionRequest(
+                            networkId = persona.networkID,
+                            requestId = uploadAuthKeyRequestId
                         )
-                        incomingRequestRepository.add(internalMessage)
-                    }
-                }.onFailure {
+                    )
                 }
             }
         }

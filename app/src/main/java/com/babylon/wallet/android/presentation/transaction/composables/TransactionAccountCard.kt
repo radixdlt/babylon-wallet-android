@@ -22,6 +22,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
@@ -32,24 +33,26 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.babylon.wallet.android.designsystem.R
-import com.babylon.wallet.android.designsystem.theme.AccountGradientList
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
-import com.babylon.wallet.android.presentation.transaction.TransactionAccountItemUiModel
+import com.babylon.wallet.android.designsystem.theme.getAccountGradientColorsFor
+import com.babylon.wallet.android.domain.SampleDataProvider
+import com.babylon.wallet.android.domain.model.GuaranteeAssertion
+import com.babylon.wallet.android.domain.model.Transferable
+import com.babylon.wallet.android.domain.model.TransferableResource
+import com.babylon.wallet.android.presentation.transaction.AccountWithTransferableResources
+import com.babylon.wallet.android.presentation.transaction.AccountWithTransferableResources.Other
+import com.babylon.wallet.android.presentation.transaction.AccountWithTransferableResources.Owned
 import com.babylon.wallet.android.presentation.ui.composables.ActionableAddressView
 import com.babylon.wallet.android.presentation.ui.composables.ImageSize
 import com.babylon.wallet.android.presentation.ui.composables.rememberImageUrl
 import com.google.accompanist.drawablepainter.rememberDrawablePainter
-import kotlinx.collections.immutable.ImmutableList
-import kotlinx.collections.immutable.persistentListOf
+import rdx.works.core.displayableQuantity
 
 @Composable
 fun TransactionAccountCard(
-    tokens: ImmutableList<TransactionAccountItemUiModel>,
     modifier: Modifier = Modifier,
-    appearanceId: Int,
-    address: String,
-    accountName: String
+    account: AccountWithTransferableResources
 ) {
     Column(
         modifier = modifier,
@@ -60,14 +63,20 @@ fun TransactionAccountCard(
             modifier = Modifier
                 .fillMaxWidth()
                 .background(
-                    brush = Brush.linearGradient(AccountGradientList[appearanceId % AccountGradientList.size]),
+                    brush = when (account) {
+                        is Other -> SolidColor(RadixTheme.colors.gray2)
+                        is Owned -> Brush.linearGradient(getAccountGradientColorsFor(account.account.appearanceID))
+                    },
                     shape = RadixTheme.shapes.roundedRectTopMedium
                 )
                 .padding(RadixTheme.dimensions.paddingMedium),
             verticalAlignment = CenterVertically
         ) {
             Text(
-                text = accountName,
+                text = when (account) {
+                    is Other -> stringResource(id = com.babylon.wallet.android.R.string.transactionReview_externalAccountName)
+                    is Owned -> account.account.displayName
+                },
                 style = RadixTheme.typography.body1Header,
                 maxLines = 1,
                 modifier = Modifier.weight(1f, false),
@@ -75,68 +84,67 @@ fun TransactionAccountCard(
             )
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSmall))
             ActionableAddressView(
-                address = address,
-                textStyle = RadixTheme.typography.body1Regular,
+                address = account.address,
+                textStyle = RadixTheme.typography.body2Regular,
                 textColor = RadixTheme.colors.white,
                 iconColor = RadixTheme.colors.white
             )
         }
 
-        val fungibleTokens = remember(tokens) {
-            tokens.mapNotNull { it.fungibleResource }
+        val amountTransferables = remember(account.resources) {
+            account.resources.filter { it.transferable is TransferableResource.Amount }
         }
 
-        val nonFungibleTokens = remember(tokens) {
-            tokens.map { it.nonFungibleResourceItems }.flatten()
+        val nftTransferables = remember(account.resources) {
+            account.resources.filter { it.transferable is TransferableResource.NFTs }
         }
 
         // Fungibles
-        fungibleTokens.forEachIndexed { index, fungibleResource ->
-            val token = tokens[index]
-            val lastItem = index == fungibleTokens.plus(nonFungibleTokens).size - 1
+        amountTransferables.forEachIndexed { index, amountTransferable ->
+            val lastItem = if (nftTransferables.isEmpty()) index == amountTransferables.lastIndex else false
             val shape = if (lastItem) RadixTheme.shapes.roundedRectBottomMedium else RectangleShape
+            val transferableAmount = amountTransferable.transferable as TransferableResource.Amount
+            val amountGuaranteeAssertion = amountTransferable.guaranteeAssertion as? GuaranteeAssertion.ForAmount
 
             TokenItemContent(
-                isXrdToken = fungibleResource.isXrd,
-                tokenUrl = fungibleResource.iconUrl.toString(),
-                tokenSymbol = fungibleResource.displayTitle.ifEmpty {
+                isXrdToken = transferableAmount.resource.isXrd,
+                tokenUrl = transferableAmount.resource.iconUrl.toString(),
+                tokenSymbol = transferableAmount.resource.displayTitle.ifEmpty {
                     stringResource(id = com.babylon.wallet.android.R.string.transactionReview_unknown)
                 },
-                tokenAmount = fungibleResource.amount?.toPlainString().orEmpty(),
-                guaranteedQuantity = token.guaranteedAmount,
+                tokenAmount = transferableAmount.amount.toPlainString(),
                 isTokenAmountVisible = true,
+                guaranteedQuantity = amountGuaranteeAssertion?.amount?.displayableQuantity(),
                 shape = shape
             )
         }
 
         // Non fungibles
-        nonFungibleTokens.forEachIndexed { index, nonFungibleResource ->
-            val lastItem = index == fungibleTokens.plus(nonFungibleTokens).size - 1
-            val shape = if (lastItem) RadixTheme.shapes.roundedRectBottomMedium else RectangleShape
-
-            TokenItemContent(
-                isXrdToken = false,
-                tokenUrl = nonFungibleResource.imageUrl.toString(),
-                tokenSymbol = nonFungibleResource.localId.displayable,
-                isTokenAmountVisible = false,
-                shape = shape
-            )
-        }
-
-        // Created entities
-        if (fungibleTokens.isEmpty() && nonFungibleTokens.isEmpty()) {
-            tokens.forEachIndexed { index, transactionAccountItemUiModel ->
-                val lastItem = index == tokens.size - 1
-                val shape = if (lastItem) RadixTheme.shapes.roundedRectBottomMedium else RectangleShape
-
+        nftTransferables.forEachIndexed { collectionIndex, nftTransferable ->
+            val nft = nftTransferable.transferable as TransferableResource.NFTs
+            if (nft.isNewlyCreated) {
+                // In this case show only the collection of the newly created nfts.
+                val lastItem = collectionIndex == nftTransferables.lastIndex
                 TokenItemContent(
                     isXrdToken = false,
-                    tokenUrl = transactionAccountItemUiModel.iconUrl.orEmpty(),
-                    tokenSymbol = transactionAccountItemUiModel.tokenSymbol,
-                    tokenAmount = transactionAccountItemUiModel.tokenAmount,
+                    tokenUrl = nft.resource.iconUrl.toString(),
+                    tokenSymbol = nft.resource.name,
                     isTokenAmountVisible = true,
-                    shape = shape
+                    tokenAmount = nft.resource.items.size.toString(),
+                    shape = if (lastItem) RadixTheme.shapes.roundedRectBottomMedium else RectangleShape
                 )
+            } else {
+                // Show each nft item
+                nft.resource.items.forEachIndexed { itemIndex, item ->
+                    val lastItem = itemIndex == nft.resource.items.lastIndex && collectionIndex == nftTransferables.lastIndex
+                    TokenItemContent(
+                        isXrdToken = false,
+                        tokenUrl = item.imageUrl.toString(),
+                        tokenSymbol = item.localId.displayable,
+                        isTokenAmountVisible = false,
+                        shape = if (lastItem) RadixTheme.shapes.roundedRectBottomMedium else RectangleShape
+                    )
+                }
             }
         }
     }
@@ -262,23 +270,18 @@ private fun TokenItemContent(
 fun TransactionAccountCardPreview() {
     RadixWalletTheme {
         TransactionAccountCard(
-            tokens = persistentListOf(
-                TransactionAccountItemUiModel(
-                    accountAddress = "account_tdx_19jd32jd3928jd3892jd329",
-                    displayName = "My Savings Account",
-                    tokenSymbol = "XRD",
-                    tokenAmount = "689.203",
-                    appearanceID = 1,
-                    iconUrl = "",
-                    shouldPromptForGuarantees = true,
-                    guaranteedAmount = "689.203",
-                    guaranteedPercentAmount = "100"
-                )
-            ),
-            modifier = Modifier,
-            appearanceId = 0,
-            address = "d3d3nd32dko3dko3",
-            accountName = "My main account"
+            account = Owned(
+                account = SampleDataProvider().sampleAccount(),
+                resources = SampleDataProvider().sampleFungibleResources().map {
+                    Transferable.Withdrawing(
+                        transferable = TransferableResource.Amount(
+                            amount = "689.203".toBigDecimal(),
+                            resource = it,
+                            isNewlyCreated = false
+                        )
+                    )
+                }
+            )
         )
     }
 }

@@ -1,12 +1,12 @@
 package rdx.works.profile.domain
 
-import com.radixdlt.toolkit.RadixEngineToolkit
-import com.radixdlt.toolkit.models.method.DecodeAddressInput
+import com.radixdlt.ret.Address
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapNotNull
 import rdx.works.core.PUBLIC_KEY_HASH_LENGTH
+import rdx.works.core.toByteArray
 import rdx.works.profile.data.model.currentNetwork
 import rdx.works.profile.data.model.factorsources.DeviceFactorSource
 import rdx.works.profile.data.model.factorsources.FactorSource
@@ -68,7 +68,7 @@ suspend fun GetProfileUseCase.nextDerivationPathForAccountOnCurrentNetworkWithLe
 
 suspend fun GetProfileUseCase.currentNetworkAccountHashes(): Set<ByteArray> {
     return accountsOnCurrentNetwork().map {
-        val addressData = RadixEngineToolkit.decodeAddress(DecodeAddressInput(it.address)).getOrThrow().data
+        val addressData = Address(it.address).bytes().toByteArray()
         // last 29 bytes of addressData are hash of public key of this account
         addressData.takeLast(PUBLIC_KEY_HASH_LENGTH).toByteArray()
     }.toSet()

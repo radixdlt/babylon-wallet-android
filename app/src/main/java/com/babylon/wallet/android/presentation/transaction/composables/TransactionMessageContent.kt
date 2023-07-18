@@ -2,9 +2,8 @@ package com.babylon.wallet.android.presentation.transaction.composables
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -19,56 +18,57 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
+import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.designsystem.theme.bubbleShape
 
 @Composable
-fun TransactionMessageContent(
+fun ColumnScope.TransactionMessageContent(
     transactionMessage: String,
     modifier: Modifier = Modifier
 ) {
-    if (transactionMessage.isNotEmpty()) {
-        val density = LocalDensity.current
+    val density = LocalDensity.current
 
-        val bubbleShape = remember {
-            bubbleShape(
-                density = density
-            )
-        }
-
-        Text(
-            modifier = Modifier
-                .padding(RadixTheme.dimensions.paddingDefault),
-            text = stringResource(id = R.string.transactionReview_messageHeading).uppercase(),
-            style = RadixTheme.typography.body1Link,
-            color = RadixTheme.colors.gray2,
-            overflow = TextOverflow.Ellipsis,
+    val bubbleShape = remember {
+        bubbleShape(
+            density = density
         )
-        Column(
-            modifier = modifier
-                .fillMaxWidth()
-                .shadow(6.dp, bubbleShape)
-                .background(
-                    color = Color.White,
-                    shape = bubbleShape
-                )
-                .padding(
-                    vertical = RadixTheme.dimensions.paddingMedium,
-                    horizontal = RadixTheme.dimensions.paddingDefault
-                )
-        ) {
-            Text(
-                text = transactionMessage,
-                style = RadixTheme.typography.body1Regular,
-                color = RadixTheme.colors.gray1,
-            )
-        }
+    }
 
-        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
+    Text(
+        modifier = Modifier
+            .padding(RadixTheme.dimensions.paddingDefault),
+        text = stringResource(id = R.string.transactionReview_messageHeading).uppercase(),
+        style = RadixTheme.typography.body1Link,
+        color = RadixTheme.colors.gray2,
+        overflow = TextOverflow.Ellipsis,
+    )
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .shadow(6.dp, bubbleShape)
+            .background(
+                color = Color.White,
+                shape = bubbleShape
+            )
+            .padding(
+                vertical = RadixTheme.dimensions.paddingMedium,
+                horizontal = RadixTheme.dimensions.paddingDefault
+            )
+    ) {
+        Text(
+            text = transactionMessage,
+            style = RadixTheme.typography.body1Regular,
+            color = RadixTheme.colors.gray1,
+        )
     }
 }
 
 @Preview(showBackground = true)
 @Composable
 fun TransactionMessageContentPreview() {
-    TransactionMessageContent(transactionMessage = "Message")
+    RadixWalletTheme {
+        Column {
+            TransactionMessageContent(transactionMessage = "Message")
+        }
+    }
 }

@@ -7,9 +7,10 @@ import com.babylon.wallet.android.domain.model.metadata.IconUrlMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.NameMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.SymbolMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.TagsMetadataItem
-import com.radixdlt.toolkit.RadixEngineToolkit
-import com.radixdlt.toolkit.models.method.KnownEntityAddressesInput
+import com.radixdlt.ret.NonFungibleLocalId
+import com.radixdlt.ret.utilsKnownAddresses
 import rdx.works.core.displayableQuantity
+import rdx.works.core.toUByteList
 import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.derivation.model.NetworkId
 import java.math.BigDecimal
@@ -99,9 +100,7 @@ sealed class Resource {
         companion object {
             fun officialXrdResourceAddress(
                 onNetworkId: NetworkId = Radix.Gateway.default.network.networkId()
-            ) = RadixEngineToolkit.knownEntityAddresses(
-                KnownEntityAddressesInput(networkId = onNetworkId.value.toUByte())
-            ).getOrNull()?.xrdResourceAddress
+            ) = utilsKnownAddresses(networkId = onNetworkId.value.toUByte()).resourceAddresses.xrd.addressString()
         }
     }
 
@@ -144,8 +143,8 @@ sealed class Resource {
         data class Item(
             val collectionAddress: String,
             val localId: ID,
-            val nameMetadataItem: NameMetadataItem?,
-            val iconMetadataItem: IconUrlMetadataItem?
+            val nameMetadataItem: NameMetadataItem? = null,
+            val iconMetadataItem: IconUrlMetadataItem? = null
         ) : Comparable<Item> {
 
             val globalAddress: String
@@ -167,6 +166,8 @@ sealed class Resource {
 
                 abstract val displayable: String
 
+                abstract fun toRetId(): NonFungibleLocalId
+
                 val code: String
                     get() = "$prefix$displayable$suffix"
 
@@ -178,6 +179,8 @@ sealed class Resource {
 
                     override val displayable: String
                         get() = id
+
+                    override fun toRetId(): NonFungibleLocalId = NonFungibleLocalId.Str(id)
 
                     override fun compareTo(other: StringType): Int = other.id.compareTo(id)
                 }
@@ -191,6 +194,8 @@ sealed class Resource {
                     override val displayable: String
                         get() = id.toString()
 
+                    override fun toRetId(): NonFungibleLocalId = NonFungibleLocalId.Integer(id)
+
                     override fun compareTo(other: IntegerType): Int = other.id.compareTo(id)
                 }
 
@@ -202,6 +207,8 @@ sealed class Resource {
                     override val displayable: String
                         get() = id
 
+                    override fun toRetId(): NonFungibleLocalId = NonFungibleLocalId.Bytes(id.toByteArray().toUByteList())
+
                     override fun compareTo(other: BytesType): Int = other.id.compareTo(id)
                 }
 
@@ -212,6 +219,8 @@ sealed class Resource {
                     override val suffix: String = UUID_SUFFIX
                     override val displayable: String
                         get() = id.toString()
+
+                    override fun toRetId(): NonFungibleLocalId = NonFungibleLocalId.Uuid(id.toString())
 
                     override fun compareTo(other: UUIDType): Int = other.id.compareTo(id)
                 }

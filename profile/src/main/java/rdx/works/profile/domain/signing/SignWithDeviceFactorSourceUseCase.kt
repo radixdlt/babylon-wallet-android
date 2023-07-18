@@ -1,7 +1,8 @@
 package rdx.works.profile.domain.signing
 
-import com.radixdlt.toolkit.models.crypto.SignatureWithPublicKey
+import com.radixdlt.ret.SignatureWithPublicKey
 import kotlinx.coroutines.flow.first
+import rdx.works.core.ret.toEngineModel
 import rdx.works.profile.data.model.deriveExtendedKey
 import rdx.works.profile.data.model.factorsources.DeviceFactorSource
 import rdx.works.profile.data.model.pernetwork.Entity
@@ -10,7 +11,6 @@ import rdx.works.profile.data.model.pernetwork.SigningPurpose
 import rdx.works.profile.data.repository.MnemonicRepository
 import rdx.works.profile.data.repository.ProfileRepository
 import rdx.works.profile.data.repository.profile
-import rdx.works.profile.data.utils.toEngineModel
 import rdx.works.profile.data.utils.updateLastUsed
 import javax.inject.Inject
 

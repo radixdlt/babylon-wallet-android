@@ -63,6 +63,7 @@ dependencies {
     implementation libs.timber
     
     testImplementation libs.junit
+    testImplementation libs.retKotlin
     testImplementation libs.kotlinTestJunit
     testImplementation libs.coroutinesTest
 }
