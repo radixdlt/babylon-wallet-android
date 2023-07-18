@@ -200,6 +200,7 @@
   <string name="createAccount_completion_subtitleNotFirst">Your Account has been created.</string>
   <string name="createAccount_nameNewAccount_placeholder">e.g. My Main Account</string>
   <string name="createAccount_nameNewAccount_subtitle">What would you like to call your Account?</string>
+  <string name="createAccount_nameNewAccount_explanation">This can be changed any time</string>
   <string name="createAccount_nameNewAccount_continue">Continue</string>
   <string name="createAccount_introduction_title">Create an Account</string>
   <string name="createAccount_titleFirst">Create First Account</string>
