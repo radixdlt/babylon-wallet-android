@@ -19,6 +19,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
+import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.presentation.transaction.AccountWithPredictedGuarantee
 import com.babylon.wallet.android.presentation.transaction.TransactionApprovalViewModel.State
 import com.babylon.wallet.android.presentation.ui.composables.BottomDialogDragHandle
@@ -109,50 +110,4 @@ fun GuaranteesSheet(
             }
         }
     }
-}
-
-@Preview("default")
-@Preview(showBackground = true)
-@Composable
-fun GuaranteesSheetPreview() {
-//    RadixWalletTheme {
-//        GuaranteesSheet(
-//            depositingTransferrables =
-//            persistentListOf(
-//                GuaranteesAccountItemUiModel(
-//                    address = "f43f43f4334",
-//                    appearanceID = 1,
-//                    displayName = "My account 1",
-//                    tokenSymbol = "XRD",
-//                    tokenIconUrl = "",
-//                    tokenEstimatedAmount = "1000",
-//                    tokenGuaranteedAmount = "1000",
-//                    guaranteedPercentAmount = "100"
-//                ),
-//                GuaranteesAccountItemUiModel(
-//                    address = "f43f43f4334",
-//                    appearanceID = 1,
-//                    displayName = "My account 2",
-//                    tokenSymbol = "XRD",
-//                    tokenIconUrl = "",
-//                    tokenEstimatedAmount = "1000",
-//                    tokenGuaranteedAmount = "1000",
-//                    guaranteedPercentAmount = "100"
-//                ),
-//                GuaranteesAccountItemUiModel(
-//                    address = "f43f43f4334",
-//                    appearanceID = 1,
-//                    displayName = "My account 3",
-//                    tokenSymbol = "XRD",
-//                    tokenIconUrl = "",
-//                    tokenEstimatedAmount = "1000",
-//                    tokenGuaranteedAmount = "1000",
-//                    guaranteedPercentAmount = "100"
-//                )
-//            ),
-//            onClose = {},
-//            onApplyClick = {},
-//            onGuaranteeValueChanged = {}
-//        )
-//    }
 }
