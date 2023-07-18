@@ -1,12 +1,15 @@
 package com.babylon.wallet.android.data
 
+import com.babylon.wallet.android.data.gateway.extensions.AccessRule
+import com.babylon.wallet.android.data.gateway.extensions.ResourceAction
 import com.babylon.wallet.android.data.gateway.extensions.calculateResourceBehaviours
-import com.babylon.wallet.android.data.gateway.generated.models.AccessRulesChain
-import com.babylon.wallet.android.data.gateway.generated.models.AccessChainRules
-import com.babylon.wallet.android.data.gateway.generated.models.Key
-import com.babylon.wallet.android.data.gateway.generated.models.Rule
+import com.babylon.wallet.android.data.gateway.generated.models.AccessRulePropertyEntry
+import com.babylon.wallet.android.data.gateway.generated.models.AccessRulePropertyValue
+import com.babylon.wallet.android.data.gateway.generated.models.ComponentEntityAccessRules
+import com.babylon.wallet.android.data.gateway.generated.models.NonFungibleIdType
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponseFungibleResourceDetails
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponseItemDetailsType
+import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponseNonFungibleResourceDetails
 import com.babylon.wallet.android.domain.model.behaviours.ResourceBehaviour
 import org.junit.Assert
 import org.junit.Test
@@ -16,41 +19,20 @@ class ResourceBehaviourTest {
     @Test
     fun `given update_non_fungible_data perform and change rules set to defaults, verify no behaviours`() {
         // given
-        val expectedBehaviours = emptyList<ResourceBehaviour>()
-        val fungibleResource = StateEntityDetailsResponseFungibleResourceDetails(
+        val expectedBehaviours = listOf(ResourceBehaviour.DEFAULT_RESOURCE)
+        val response = StateEntityDetailsResponseNonFungibleResourceDetails(
             type = StateEntityDetailsResponseItemDetailsType.nonFungibleResource,
-            accessRulesChain = AccessRulesChain(
-                rules = listOf(
-                    AccessChainRules(
-                        key = Key(
-                            module = "Main",
-                            name = "update_non_fungible_data"
-                        ),
-                        rule = Rule(
-                            type = "DenyAll"
-                        )
-                    )
-                ),
-                mutability = listOf(
-                    AccessChainRules(
-                        key = Key(
-                            module = "Main",
-                            name = "update_non_fungible_data"
-                        ),
-                        rule = Rule(
-                            type = "DenyAll"
-                        )
-                    )
-                ),
+            accessRules = ComponentEntityAccessRules(
+                propertyEntries = defaultNonFungibleAccessRules
             ),
-            divisibility = 1,
+            nonFungibleIdType = NonFungibleIdType.integer,
             totalSupply = "",
             totalBurned = "",
             totalMinted = ""
         )
 
         // when
-        val behaviours = fungibleResource.calculateResourceBehaviours()
+        val behaviours = response.calculateResourceBehaviours()
 
         // then
         Assert.assertEquals(expectedBehaviours, behaviours)
@@ -62,40 +44,25 @@ class ResourceBehaviourTest {
         val expectedBehaviours = listOf(
             ResourceBehaviour.CHANGE_UPDATE_NON_FUNGIBLE_DATA
         )
-        val fungibleResource = StateEntityDetailsResponseFungibleResourceDetails(
+        val response = StateEntityDetailsResponseNonFungibleResourceDetails(
             type = StateEntityDetailsResponseItemDetailsType.nonFungibleResource,
-            accessRulesChain = AccessRulesChain(
-                rules = listOf(
-                    AccessChainRules(
-                        key = Key(
-                            module = "Main",
-                            name = "update_non_fungible_data"
-                        ),
-                        rule = Rule(
-                            type = "DenyAll"
-                        )
-                    )
-                ),
-                mutability = listOf(
-                    AccessChainRules(
-                        key = Key(
-                            module = "Main",
-                            name = "update_non_fungible_data"
-                        ),
-                        rule = Rule(
-                            type = "AllowAll"
-                        )
-                    )
-                ),
+            accessRules = ComponentEntityAccessRules(
+                propertyEntries = defaultNonFungibleAccessRules.map {
+                    when (it.key) {
+                        ResourceAction.UpdateNonFungibleData.change ->
+                            it.copy(value = AccessRulePropertyValue(type = AccessRule.AllowAll.value))
+                        else -> it
+                    }
+                }
             ),
-            divisibility = 1,
+            nonFungibleIdType = NonFungibleIdType.integer,
             totalSupply = "",
             totalBurned = "",
             totalMinted = ""
         )
 
         // when
-        val behaviours = fungibleResource.calculateResourceBehaviours()
+        val behaviours = response.calculateResourceBehaviours()
 
         // then
         Assert.assertEquals(expectedBehaviours, behaviours)
@@ -107,40 +74,25 @@ class ResourceBehaviourTest {
         val expectedBehaviours = listOf(
             ResourceBehaviour.PERFORM_UPDATE_NON_FUNGIBLE_DATA
         )
-        val fungibleResource = StateEntityDetailsResponseFungibleResourceDetails(
+        val response = StateEntityDetailsResponseNonFungibleResourceDetails(
             type = StateEntityDetailsResponseItemDetailsType.nonFungibleResource,
-            accessRulesChain = AccessRulesChain(
-                rules = listOf(
-                    AccessChainRules(
-                        key = Key(
-                            module = "Main",
-                            name = "update_non_fungible_data"
-                        ),
-                        rule = Rule(
-                            type = "AllowAll"
-                        )
-                    )
-                ),
-                mutability = listOf(
-                    AccessChainRules(
-                        key = Key(
-                            module = "Main",
-                            name = "update_non_fungible_data"
-                        ),
-                        rule = Rule(
-                            type = "DenyAll"
-                        )
-                    )
-                ),
+            accessRules = ComponentEntityAccessRules(
+                propertyEntries = defaultNonFungibleAccessRules.map {
+                    when (it.key) {
+                        ResourceAction.UpdateNonFungibleData.perform ->
+                            it.copy(value = AccessRulePropertyValue(type = AccessRule.AllowAll.value))
+                        else -> it
+                    }
+                }
             ),
-            divisibility = 1,
+            nonFungibleIdType = NonFungibleIdType.integer,
             totalSupply = "",
             totalBurned = "",
             totalMinted = ""
         )
 
         // when
-        val behaviours = fungibleResource.calculateResourceBehaviours()
+        val behaviours = response.calculateResourceBehaviours()
 
         // then
         Assert.assertEquals(expectedBehaviours, behaviours)
@@ -153,83 +105,27 @@ class ResourceBehaviourTest {
             ResourceBehaviour.PERFORM_UPDATE_NON_FUNGIBLE_DATA,
             ResourceBehaviour.CHANGE_UPDATE_NON_FUNGIBLE_DATA
         )
-        val fungibleResource = StateEntityDetailsResponseFungibleResourceDetails(
+        val response = StateEntityDetailsResponseNonFungibleResourceDetails(
             type = StateEntityDetailsResponseItemDetailsType.nonFungibleResource,
-            accessRulesChain = AccessRulesChain(
-                rules = listOf(
-                    AccessChainRules(
-                        key = Key(
-                            module = "Main",
-                            name = "update_non_fungible_data"
-                        ),
-                        rule = Rule(
-                            type = "AllowAll"
-                        )
-                    )
-                ),
-                mutability = listOf(
-                    AccessChainRules(
-                        key = Key(
-                            module = "Main",
-                            name = "update_non_fungible_data"
-                        ),
-                        rule = Rule(
-                            type = "AllowAll"
-                        )
-                    )
-                ),
+            accessRules = ComponentEntityAccessRules(
+                propertyEntries = defaultNonFungibleAccessRules.map {
+                    when (it.key) {
+                        ResourceAction.UpdateNonFungibleData.perform ->
+                            it.copy(value = AccessRulePropertyValue(type = AccessRule.AllowAll.value))
+                        ResourceAction.UpdateNonFungibleData.change ->
+                            it.copy(value = AccessRulePropertyValue(type = AccessRule.AllowAll.value))
+                        else -> it
+                    }
+                }
             ),
-            divisibility = 1,
+            nonFungibleIdType = NonFungibleIdType.integer,
             totalSupply = "",
             totalBurned = "",
             totalMinted = ""
         )
 
         // when
-        val behaviours = fungibleResource.calculateResourceBehaviours()
-
-        // then
-        Assert.assertEquals(expectedBehaviours, behaviours)
-    }
-
-    @Test
-    fun `given update_non_fungible_data perform and change rules set to NON defaults and resource is fungible, verify no update_non_fungible_data behaviors`() {
-        // given
-        val expectedBehaviours = emptyList<ResourceBehaviour>()
-        val fungibleResource = StateEntityDetailsResponseFungibleResourceDetails(
-            type = StateEntityDetailsResponseItemDetailsType.fungibleResource,
-            accessRulesChain = AccessRulesChain(
-                rules = listOf(
-                    AccessChainRules(
-                        key = Key(
-                            module = "Main",
-                            name = "update_non_fungible_data"
-                        ),
-                        rule = Rule(
-                            type = "AllowAll"
-                        )
-                    )
-                ),
-                mutability = listOf(
-                    AccessChainRules(
-                        key = Key(
-                            module = "Main",
-                            name = "update_non_fungible_data"
-                        ),
-                        rule = Rule(
-                            type = "AllowAll"
-                        )
-                    )
-                ),
-            ),
-            divisibility = 1,
-            totalSupply = "",
-            totalBurned = "",
-            totalMinted = ""
-        )
-
-        // when
-        val behaviours = fungibleResource.calculateResourceBehaviours()
+        val behaviours = response.calculateResourceBehaviours()
 
         // then
         Assert.assertEquals(expectedBehaviours, behaviours)
@@ -243,29 +139,13 @@ class ResourceBehaviourTest {
         )
         val fungibleResource = StateEntityDetailsResponseFungibleResourceDetails(
             type = StateEntityDetailsResponseItemDetailsType.fungibleResource,
-            accessRulesChain = AccessRulesChain(
-                rules = listOf(
-                    AccessChainRules(
-                        key = Key(
-                            module = "Main",
-                            name = "recall"
-                        ),
-                        rule = Rule(
-                            type = "AllowAll"
-                        )
-                    )
-                ),
-                mutability = listOf(
-                    AccessChainRules(
-                        key = Key(
-                            module = "Main",
-                            name = "recall"
-                        ),
-                        rule = Rule(
-                            type = "DenyAll"
-                        )
-                    )
-                ),
+            accessRules = ComponentEntityAccessRules(
+                propertyEntries = defaultFungibleAccessRules.map {
+                    when (it.key) {
+                        ResourceAction.Recall.perform -> it.copy(value = AccessRulePropertyValue(type = AccessRule.AllowAll.value))
+                        else -> it
+                    }
+                }
             ),
             divisibility = 1,
             totalSupply = "",
@@ -288,29 +168,13 @@ class ResourceBehaviourTest {
         )
         val fungibleResource = StateEntityDetailsResponseFungibleResourceDetails(
             type = StateEntityDetailsResponseItemDetailsType.fungibleResource,
-            accessRulesChain = AccessRulesChain(
-                rules = listOf(
-                    AccessChainRules(
-                        key = Key(
-                            module = "Main",
-                            name = "recall"
-                        ),
-                        rule = Rule(
-                            type = "DenyAll"
-                        )
-                    )
-                ),
-                mutability = listOf(
-                    AccessChainRules(
-                        key = Key(
-                            module = "Main",
-                            name = "recall"
-                        ),
-                        rule = Rule(
-                            type = "AllowAll"
-                        )
-                    )
-                ),
+            accessRules = ComponentEntityAccessRules(
+                propertyEntries = defaultFungibleAccessRules.map {
+                    when (it.key) {
+                        ResourceAction.Recall.change -> it.copy(value = AccessRulePropertyValue(type = AccessRule.AllowAll.value))
+                        else -> it
+                    }
+                }
             ),
             divisibility = 1,
             totalSupply = "",
@@ -334,29 +198,14 @@ class ResourceBehaviourTest {
         )
         val fungibleResource = StateEntityDetailsResponseFungibleResourceDetails(
             type = StateEntityDetailsResponseItemDetailsType.fungibleResource,
-            accessRulesChain = AccessRulesChain(
-                rules = listOf(
-                    AccessChainRules(
-                        key = Key(
-                            module = "Main",
-                            name = "recall"
-                        ),
-                        rule = Rule(
-                            type = "AllowAll"
-                        )
-                    )
-                ),
-                mutability = listOf(
-                    AccessChainRules(
-                        key = Key(
-                            module = "Main",
-                            name = "recall"
-                        ),
-                        rule = Rule(
-                            type = "AllowAll"
-                        )
-                    )
-                ),
+            accessRules = ComponentEntityAccessRules(
+                propertyEntries = defaultFungibleAccessRules.map {
+                    when (it.key) {
+                        ResourceAction.Recall.perform -> it.copy(value = AccessRulePropertyValue(type = AccessRule.AllowAll.value))
+                        ResourceAction.Recall.change -> it.copy(value = AccessRulePropertyValue(type = AccessRule.AllowAll.value))
+                        else -> it
+                    }
+                }
             ),
             divisibility = 1,
             totalSupply = "",
@@ -379,29 +228,13 @@ class ResourceBehaviourTest {
         )
         val fungibleResource = StateEntityDetailsResponseFungibleResourceDetails(
             type = StateEntityDetailsResponseItemDetailsType.fungibleResource,
-            accessRulesChain = AccessRulesChain(
-                rules = listOf(
-                    AccessChainRules(
-                        key = Key(
-                            module = "Main",
-                            name = "set"
-                        ),
-                        rule = Rule(
-                            type = "AllowAll"
-                        )
-                    )
-                ),
-                mutability = listOf(
-                    AccessChainRules(
-                        key = Key(
-                            module = "Main",
-                            name = "set"
-                        ),
-                        rule = Rule(
-                            type = "DenyAll"
-                        )
-                    )
-                ),
+            accessRules = ComponentEntityAccessRules(
+                propertyEntries = defaultFungibleAccessRules.map {
+                    when (it.key) {
+                        ResourceAction.UpdateMetadata.perform -> it.copy(value = AccessRulePropertyValue(type = AccessRule.AllowAll.value))
+                        else -> it
+                    }
+                }
             ),
             divisibility = 1,
             totalSupply = "",
@@ -424,29 +257,13 @@ class ResourceBehaviourTest {
         )
         val fungibleResource = StateEntityDetailsResponseFungibleResourceDetails(
             type = StateEntityDetailsResponseItemDetailsType.fungibleResource,
-            accessRulesChain = AccessRulesChain(
-                rules = listOf(
-                    AccessChainRules(
-                        key = Key(
-                            module = "Main",
-                            name = "set"
-                        ),
-                        rule = Rule(
-                            type = "DenyAll"
-                        )
-                    )
-                ),
-                mutability = listOf(
-                    AccessChainRules(
-                        key = Key(
-                            module = "Main",
-                            name = "set"
-                        ),
-                        rule = Rule(
-                            type = "AllowAll"
-                        )
-                    )
-                ),
+            accessRules = ComponentEntityAccessRules(
+                propertyEntries = defaultFungibleAccessRules.map {
+                    when (it.key) {
+                        ResourceAction.UpdateMetadata.change -> it.copy(value = AccessRulePropertyValue(type = AccessRule.AllowAll.value))
+                        else -> it
+                    }
+                }
             ),
             divisibility = 1,
             totalSupply = "",
@@ -470,29 +287,14 @@ class ResourceBehaviourTest {
         )
         val fungibleResource = StateEntityDetailsResponseFungibleResourceDetails(
             type = StateEntityDetailsResponseItemDetailsType.fungibleResource,
-            accessRulesChain = AccessRulesChain(
-                rules = listOf(
-                    AccessChainRules(
-                        key = Key(
-                            module = "Main",
-                            name = "set"
-                        ),
-                        rule = Rule(
-                            type = "AllowAll"
-                        )
-                    )
-                ),
-                mutability = listOf(
-                    AccessChainRules(
-                        key = Key(
-                            module = "Main",
-                            name = "set"
-                        ),
-                        rule = Rule(
-                            type = "AllowAll"
-                        )
-                    )
-                ),
+            accessRules = ComponentEntityAccessRules(
+                propertyEntries = defaultFungibleAccessRules.map {
+                    when (it.key) {
+                        ResourceAction.UpdateMetadata.perform -> it.copy(value = AccessRulePropertyValue(type = AccessRule.AllowAll.value))
+                        ResourceAction.UpdateMetadata.change -> it.copy(value = AccessRulePropertyValue(type = AccessRule.AllowAll.value))
+                        else -> it
+                    }
+                }
             ),
             divisibility = 1,
             totalSupply = "",
@@ -515,29 +317,13 @@ class ResourceBehaviourTest {
         )
         val fungibleResource = StateEntityDetailsResponseFungibleResourceDetails(
             type = StateEntityDetailsResponseItemDetailsType.fungibleResource,
-            accessRulesChain = AccessRulesChain(
-                rules = listOf(
-                    AccessChainRules(
-                        key = Key(
-                            module = "Main",
-                            name = "mint"
-                        ),
-                        rule = Rule(
-                            type = "AllowAll"
-                        )
-                    )
-                ),
-                mutability = listOf(
-                    AccessChainRules(
-                        key = Key(
-                            module = "Main",
-                            name = "mint"
-                        ),
-                        rule = Rule(
-                            type = "DenyAll"
-                        )
-                    )
-                ),
+            accessRules = ComponentEntityAccessRules(
+                propertyEntries = defaultFungibleAccessRules.map {
+                    when (it.key) {
+                        ResourceAction.Mint.perform -> it.copy(value = AccessRulePropertyValue(type = AccessRule.AllowAll.value))
+                        else -> it
+                    }
+                }
             ),
             divisibility = 1,
             totalSupply = "",
@@ -560,29 +346,13 @@ class ResourceBehaviourTest {
         )
         val fungibleResource = StateEntityDetailsResponseFungibleResourceDetails(
             type = StateEntityDetailsResponseItemDetailsType.fungibleResource,
-            accessRulesChain = AccessRulesChain(
-                rules = listOf(
-                    AccessChainRules(
-                        key = Key(
-                            module = "Main",
-                            name = "mint"
-                        ),
-                        rule = Rule(
-                            type = "DenyAll"
-                        )
-                    )
-                ),
-                mutability = listOf(
-                    AccessChainRules(
-                        key = Key(
-                            module = "Main",
-                            name = "mint"
-                        ),
-                        rule = Rule(
-                            type = "AllowAll"
-                        )
-                    )
-                ),
+            accessRules = ComponentEntityAccessRules(
+                propertyEntries = defaultFungibleAccessRules.map {
+                    when (it.key) {
+                        ResourceAction.Mint.change -> it.copy(value = AccessRulePropertyValue(type = AccessRule.AllowAll.value))
+                        else -> it
+                    }
+                }
             ),
             divisibility = 1,
             totalSupply = "",
@@ -606,29 +376,14 @@ class ResourceBehaviourTest {
         )
         val fungibleResource = StateEntityDetailsResponseFungibleResourceDetails(
             type = StateEntityDetailsResponseItemDetailsType.fungibleResource,
-            accessRulesChain = AccessRulesChain(
-                rules = listOf(
-                    AccessChainRules(
-                        key = Key(
-                            module = "Main",
-                            name = "mint"
-                        ),
-                        rule = Rule(
-                            type = "AllowAll"
-                        )
-                    )
-                ),
-                mutability = listOf(
-                    AccessChainRules(
-                        key = Key(
-                            module = "Main",
-                            name = "mint"
-                        ),
-                        rule = Rule(
-                            type = "AllowAll"
-                        )
-                    )
-                ),
+            accessRules = ComponentEntityAccessRules(
+                propertyEntries = defaultFungibleAccessRules.map {
+                    when (it.key) {
+                        ResourceAction.Mint.perform -> it.copy(value = AccessRulePropertyValue(type = AccessRule.AllowAll.value))
+                        ResourceAction.Mint.change -> it.copy(value = AccessRulePropertyValue(type = AccessRule.AllowAll.value))
+                        else -> it
+                    }
+                }
             ),
             divisibility = 1,
             totalSupply = "",
@@ -651,29 +406,13 @@ class ResourceBehaviourTest {
         )
         val fungibleResource = StateEntityDetailsResponseFungibleResourceDetails(
             type = StateEntityDetailsResponseItemDetailsType.fungibleResource,
-            accessRulesChain = AccessRulesChain(
-                rules = listOf(
-                    AccessChainRules(
-                        key = Key(
-                            module = "Main",
-                            name = "burn"
-                        ),
-                        rule = Rule(
-                            type = "AllowAll"
-                        )
-                    )
-                ),
-                mutability = listOf(
-                    AccessChainRules(
-                        key = Key(
-                            module = "Main",
-                            name = "burn"
-                        ),
-                        rule = Rule(
-                            type = "DenyAll"
-                        )
-                    )
-                ),
+            accessRules = ComponentEntityAccessRules(
+                propertyEntries = defaultFungibleAccessRules.map {
+                    when (it.key) {
+                        ResourceAction.Burn.perform -> it.copy(value = AccessRulePropertyValue(type = AccessRule.AllowAll.value))
+                        else -> it
+                    }
+                }
             ),
             divisibility = 1,
             totalSupply = "",
@@ -696,29 +435,13 @@ class ResourceBehaviourTest {
         )
         val fungibleResource = StateEntityDetailsResponseFungibleResourceDetails(
             type = StateEntityDetailsResponseItemDetailsType.fungibleResource,
-            accessRulesChain = AccessRulesChain(
-                rules = listOf(
-                    AccessChainRules(
-                        key = Key(
-                            module = "Main",
-                            name = "burn"
-                        ),
-                        rule = Rule(
-                            type = "DenyAll"
-                        )
-                    )
-                ),
-                mutability = listOf(
-                    AccessChainRules(
-                        key = Key(
-                            module = "Main",
-                            name = "burn"
-                        ),
-                        rule = Rule(
-                            type = "AllowAll"
-                        )
-                    )
-                ),
+            accessRules = ComponentEntityAccessRules(
+                propertyEntries = defaultFungibleAccessRules.map {
+                    when (it.key) {
+                        ResourceAction.Burn.change -> it.copy(value = AccessRulePropertyValue(type = AccessRule.AllowAll.value))
+                        else -> it
+                    }
+                }
             ),
             divisibility = 1,
             totalSupply = "",
@@ -742,29 +465,14 @@ class ResourceBehaviourTest {
         )
         val fungibleResource = StateEntityDetailsResponseFungibleResourceDetails(
             type = StateEntityDetailsResponseItemDetailsType.fungibleResource,
-            accessRulesChain = AccessRulesChain(
-                rules = listOf(
-                    AccessChainRules(
-                        key = Key(
-                            module = "Main",
-                            name = "burn"
-                        ),
-                        rule = Rule(
-                            type = "AllowAll"
-                        )
-                    )
-                ),
-                mutability = listOf(
-                    AccessChainRules(
-                        key = Key(
-                            module = "Main",
-                            name = "burn"
-                        ),
-                        rule = Rule(
-                            type = "AllowAll"
-                        )
-                    )
-                ),
+            accessRules = ComponentEntityAccessRules(
+                propertyEntries = defaultFungibleAccessRules.map {
+                    when (it.key) {
+                        ResourceAction.Burn.perform -> it.copy(value = AccessRulePropertyValue(type = AccessRule.AllowAll.value))
+                        ResourceAction.Burn.change -> it.copy(value = AccessRulePropertyValue(type = AccessRule.AllowAll.value))
+                        else -> it
+                    }
+                }
             ),
             divisibility = 1,
             totalSupply = "",
@@ -787,47 +495,16 @@ class ResourceBehaviourTest {
         )
         val fungibleResource = StateEntityDetailsResponseFungibleResourceDetails(
             type = StateEntityDetailsResponseItemDetailsType.fungibleResource,
-            accessRulesChain = AccessRulesChain(
-                rules = listOf(
-                    AccessChainRules(
-                        key = Key(
-                            module = "Main",
-                            name = "burn"
-                        ),
-                        rule = Rule(
-                            type = "AllowAll"
-                        )
-                    ),
-                    AccessChainRules(
-                        key = Key(
-                            module = "Main",
-                            name = "mint"
-                        ),
-                        rule = Rule(
-                            type = "AllowAll"
-                        )
-                    )
-                ),
-                mutability = listOf(
-                    AccessChainRules(
-                        key = Key(
-                            module = "Main",
-                            name = "burn"
-                        ),
-                        rule = Rule(
-                            type = "DenyAll"
-                        )
-                    ),
-                    AccessChainRules(
-                        key = Key(
-                            module = "Main",
-                            name = "mint"
-                        ),
-                        rule = Rule(
-                            type = "DenyAll"
-                        )
-                    )
-                ),
+            accessRules = ComponentEntityAccessRules(
+                propertyEntries = defaultFungibleAccessRules.map {
+                    when (it.key) {
+                        ResourceAction.Burn.perform -> it.copy(value = AccessRulePropertyValue(type = AccessRule.AllowAll.value))
+                        ResourceAction.Burn.change -> it.copy(value = AccessRulePropertyValue(type = AccessRule.DenyAll.value))
+                        ResourceAction.Mint.perform -> it.copy(value = AccessRulePropertyValue(type = AccessRule.AllowAll.value))
+                        ResourceAction.Mint.change -> it.copy(value = AccessRulePropertyValue(type = AccessRule.DenyAll.value))
+                        else -> it
+                    }
+                }
             ),
             divisibility = 1,
             totalSupply = "",
@@ -850,47 +527,16 @@ class ResourceBehaviourTest {
         )
         val fungibleResource = StateEntityDetailsResponseFungibleResourceDetails(
             type = StateEntityDetailsResponseItemDetailsType.fungibleResource,
-            accessRulesChain = AccessRulesChain(
-                rules = listOf(
-                    AccessChainRules(
-                        key = Key(
-                            module = "Main",
-                            name = "burn"
-                        ),
-                        rule = Rule(
-                            type = "DenyAll"
-                        )
-                    ),
-                    AccessChainRules(
-                        key = Key(
-                            module = "Main",
-                            name = "mint"
-                        ),
-                        rule = Rule(
-                            type = "DenyAll"
-                        )
-                    )
-                ),
-                mutability = listOf(
-                    AccessChainRules(
-                        key = Key(
-                            module = "Main",
-                            name = "burn"
-                        ),
-                        rule = Rule(
-                            type = "AllowAll"
-                        )
-                    ),
-                    AccessChainRules(
-                        key = Key(
-                            module = "Main",
-                            name = "mint"
-                        ),
-                        rule = Rule(
-                            type = "AllowAll"
-                        )
-                    )
-                ),
+            accessRules = ComponentEntityAccessRules(
+                propertyEntries = defaultFungibleAccessRules.map {
+                    when (it.key) {
+                        ResourceAction.Burn.perform -> it.copy(value = AccessRulePropertyValue(type = AccessRule.DenyAll.value))
+                        ResourceAction.Burn.change -> it.copy(value = AccessRulePropertyValue(type = AccessRule.AllowAll.value))
+                        ResourceAction.Mint.perform -> it.copy(value = AccessRulePropertyValue(type = AccessRule.DenyAll.value))
+                        ResourceAction.Mint.change -> it.copy(value = AccessRulePropertyValue(type = AccessRule.AllowAll.value))
+                        else -> it
+                    }
+                }
             ),
             divisibility = 1,
             totalSupply = "",
@@ -913,47 +559,16 @@ class ResourceBehaviourTest {
         )
         val fungibleResource = StateEntityDetailsResponseFungibleResourceDetails(
             type = StateEntityDetailsResponseItemDetailsType.fungibleResource,
-            accessRulesChain = AccessRulesChain(
-                rules = listOf(
-                    AccessChainRules(
-                        key = Key(
-                            module = "Main",
-                            name = "deposit"
-                        ),
-                        rule = Rule(
-                            type = "DenyAll"
-                        )
-                    ),
-                    AccessChainRules(
-                        key = Key(
-                            module = "Main",
-                            name = "withdraw"
-                        ),
-                        rule = Rule(
-                            type = "DenyAll"
-                        )
-                    )
-                ),
-                mutability = listOf(
-                    AccessChainRules(
-                        key = Key(
-                            module = "Main",
-                            name = "deposit"
-                        ),
-                        rule = Rule(
-                            type = "DenyAll"
-                        )
-                    ),
-                    AccessChainRules(
-                        key = Key(
-                            module = "Main",
-                            name = "withdraw"
-                        ),
-                        rule = Rule(
-                            type = "DenyAll"
-                        )
-                    )
-                ),
+            accessRules = ComponentEntityAccessRules(
+                propertyEntries = defaultFungibleAccessRules.map {
+                    when (it.key) {
+                        ResourceAction.Deposit.perform -> it.copy(value = AccessRulePropertyValue(type = AccessRule.DenyAll.value))
+                        ResourceAction.Deposit.change -> it.copy(value = AccessRulePropertyValue(type = AccessRule.DenyAll.value))
+                        ResourceAction.Withdraw.perform -> it.copy(value = AccessRulePropertyValue(type = AccessRule.DenyAll.value))
+                        ResourceAction.Withdraw.change -> it.copy(value = AccessRulePropertyValue(type = AccessRule.DenyAll.value))
+                        else -> it
+                    }
+                }
             ),
             divisibility = 1,
             totalSupply = "",
@@ -976,47 +591,16 @@ class ResourceBehaviourTest {
         )
         val fungibleResource = StateEntityDetailsResponseFungibleResourceDetails(
             type = StateEntityDetailsResponseItemDetailsType.fungibleResource,
-            accessRulesChain = AccessRulesChain(
-                rules = listOf(
-                    AccessChainRules(
-                        key = Key(
-                            module = "Main",
-                            name = "deposit"
-                        ),
-                        rule = Rule(
-                            type = "AllowAll"
-                        )
-                    ),
-                    AccessChainRules(
-                        key = Key(
-                            module = "Main",
-                            name = "withdraw"
-                        ),
-                        rule = Rule(
-                            type = "AllowAll"
-                        )
-                    )
-                ),
-                mutability = listOf(
-                    AccessChainRules(
-                        key = Key(
-                            module = "Main",
-                            name = "deposit"
-                        ),
-                        rule = Rule(
-                            type = "DenyAll"
-                        )
-                    ),
-                    AccessChainRules(
-                        key = Key(
-                            module = "Main",
-                            name = "withdraw"
-                        ),
-                        rule = Rule(
-                            type = "AllowAll"
-                        )
-                    )
-                ),
+            accessRules = ComponentEntityAccessRules(
+                propertyEntries = defaultFungibleAccessRules.map {
+                    when (it.key) {
+                        ResourceAction.Deposit.perform -> it.copy(value = AccessRulePropertyValue(type = AccessRule.AllowAll.value))
+                        ResourceAction.Deposit.change -> it.copy(value = AccessRulePropertyValue(type = AccessRule.DenyAll.value))
+                        ResourceAction.Withdraw.perform -> it.copy(value = AccessRulePropertyValue(type = AccessRule.AllowAll.value))
+                        ResourceAction.Withdraw.change -> it.copy(value = AccessRulePropertyValue(type = AccessRule.AllowAll.value))
+                        else -> it
+                    }
+                }
             ),
             divisibility = 1,
             totalSupply = "",
@@ -1039,47 +623,16 @@ class ResourceBehaviourTest {
         )
         val fungibleResource = StateEntityDetailsResponseFungibleResourceDetails(
             type = StateEntityDetailsResponseItemDetailsType.fungibleResource,
-            accessRulesChain = AccessRulesChain(
-                rules = listOf(
-                    AccessChainRules(
-                        key = Key(
-                            module = "Main",
-                            name = "deposit"
-                        ),
-                        rule = Rule(
-                            type = "AllowAll"
-                        )
-                    ),
-                    AccessChainRules(
-                        key = Key(
-                            module = "Main",
-                            name = "withdraw"
-                        ),
-                        rule = Rule(
-                            type = "AllowAll"
-                        )
-                    )
-                ),
-                mutability = listOf(
-                    AccessChainRules(
-                        key = Key(
-                            module = "Main",
-                            name = "deposit"
-                        ),
-                        rule = Rule(
-                            type = "Protected"
-                        )
-                    ),
-                    AccessChainRules(
-                        key = Key(
-                            module = "Main",
-                            name = "withdraw"
-                        ),
-                        rule = Rule(
-                            type = "Protected"
-                        )
-                    )
-                ),
+            accessRules = ComponentEntityAccessRules(
+                propertyEntries = defaultFungibleAccessRules.map {
+                    when (it.key) {
+                        ResourceAction.Deposit.perform -> it.copy(value = AccessRulePropertyValue(type = AccessRule.AllowAll.value))
+                        ResourceAction.Deposit.change -> it.copy(value = AccessRulePropertyValue(type = "Protected"))
+                        ResourceAction.Withdraw.perform -> it.copy(value = AccessRulePropertyValue(type = AccessRule.AllowAll.value))
+                        ResourceAction.Withdraw.change -> it.copy(value = AccessRulePropertyValue(type = "Protected"))
+                        else -> it
+                    }
+                }
             ),
             divisibility = 1,
             totalSupply = "",
@@ -1102,119 +655,8 @@ class ResourceBehaviourTest {
         )
         val fungibleResource = StateEntityDetailsResponseFungibleResourceDetails(
             type = StateEntityDetailsResponseItemDetailsType.fungibleResource,
-            accessRulesChain = AccessRulesChain(
-                rules = listOf(
-                    AccessChainRules(
-                        key = Key(
-                            module = "Main",
-                            name = "mint"
-                        ),
-                        rule = Rule(
-                            type = "DenyAll"
-                        )
-                    ),
-                    AccessChainRules(
-                        key = Key(
-                            module = "Main",
-                            name = "burn"
-                        ),
-                        rule = Rule(
-                            type = "DenyAll"
-                        )
-                    ),
-                    AccessChainRules(
-                        key = Key(
-                            module = "Main",
-                            name = "deposit"
-                        ),
-                        rule = Rule(
-                            type = "AllowAll"
-                        )
-                    ),
-                    AccessChainRules(
-                        key = Key(
-                            module = "Main",
-                            name = "withdraw"
-                        ),
-                        rule = Rule(
-                            type = "AllowAll"
-                        )
-                    ),
-                    AccessChainRules(
-                        key = Key(
-                            module = "Main",
-                            name = "set"
-                        ),
-                        rule = Rule(
-                            type = "DenyAll"
-                        )
-                    ),
-                    AccessChainRules(
-                        key = Key(
-                            module = "Main",
-                            name = "recall"
-                        ),
-                        rule = Rule(
-                            type = "DenyAll"
-                        )
-                    )
-                ),
-                mutability = listOf(
-                    AccessChainRules(
-                        key = Key(
-                            module = "Main",
-                            name = "mint"
-                        ),
-                        rule = Rule(
-                            type = "DenyAll"
-                        )
-                    ),
-                    AccessChainRules(
-                        key = Key(
-                            module = "Main",
-                            name = "burn"
-                        ),
-                        rule = Rule(
-                            type = "DenyAll"
-                        )
-                    ),
-                    AccessChainRules(
-                        key = Key(
-                            module = "Main",
-                            name = "deposit"
-                        ),
-                        rule = Rule(
-                            type = "DenyAll"
-                        )
-                    ),
-                    AccessChainRules(
-                        key = Key(
-                            module = "Main",
-                            name = "withdraw"
-                        ),
-                        rule = Rule(
-                            type = "DenyAll"
-                        )
-                    ),
-                    AccessChainRules(
-                        key = Key(
-                            module = "Main",
-                            name = "set"
-                        ),
-                        rule = Rule(
-                            type = "DenyAll"
-                        )
-                    ),
-                    AccessChainRules(
-                        key = Key(
-                            module = "Main",
-                            name = "recall"
-                        ),
-                        rule = Rule(
-                            type = "DenyAll"
-                        )
-                    )
-                ),
+            accessRules = ComponentEntityAccessRules(
+                propertyEntries = defaultFungibleAccessRules
             ),
             divisibility = 1,
             totalSupply = "",
@@ -1235,141 +677,12 @@ class ResourceBehaviourTest {
         val expectedBehaviours = listOf(
             ResourceBehaviour.DEFAULT_RESOURCE
         )
-        val fungibleResource = StateEntityDetailsResponseFungibleResourceDetails(
+        val fungibleResource = StateEntityDetailsResponseNonFungibleResourceDetails(
             type = StateEntityDetailsResponseItemDetailsType.nonFungibleResource,
-            accessRulesChain = AccessRulesChain(
-                rules = listOf(
-                    AccessChainRules(
-                        key = Key(
-                            module = "Main",
-                            name = "mint"
-                        ),
-                        rule = Rule(
-                            type = "DenyAll"
-                        )
-                    ),
-                    AccessChainRules(
-                        key = Key(
-                            module = "Main",
-                            name = "burn"
-                        ),
-                        rule = Rule(
-                            type = "DenyAll"
-                        )
-                    ),
-                    AccessChainRules(
-                        key = Key(
-                            module = "Main",
-                            name = "deposit"
-                        ),
-                        rule = Rule(
-                            type = "AllowAll"
-                        )
-                    ),
-                    AccessChainRules(
-                        key = Key(
-                            module = "Main",
-                            name = "withdraw"
-                        ),
-                        rule = Rule(
-                            type = "AllowAll"
-                        )
-                    ),
-                    AccessChainRules(
-                        key = Key(
-                            module = "Main",
-                            name = "set"
-                        ),
-                        rule = Rule(
-                            type = "DenyAll"
-                        )
-                    ),
-                    AccessChainRules(
-                        key = Key(
-                            module = "Main",
-                            name = "recall"
-                        ),
-                        rule = Rule(
-                            type = "DenyAll"
-                        )
-                    ),
-                    AccessChainRules(
-                        key = Key(
-                            module = "Main",
-                            name = "update_non_fungible_data"
-                        ),
-                        rule = Rule(
-                            type = "DenyAll"
-                        )
-                    )
-                ),
-                mutability = listOf(
-                    AccessChainRules(
-                        key = Key(
-                            module = "Main",
-                            name = "mint"
-                        ),
-                        rule = Rule(
-                            type = "DenyAll"
-                        )
-                    ),
-                    AccessChainRules(
-                        key = Key(
-                            module = "Main",
-                            name = "burn"
-                        ),
-                        rule = Rule(
-                            type = "DenyAll"
-                        )
-                    ),
-                    AccessChainRules(
-                        key = Key(
-                            module = "Main",
-                            name = "deposit"
-                        ),
-                        rule = Rule(
-                            type = "DenyAll"
-                        )
-                    ),
-                    AccessChainRules(
-                        key = Key(
-                            module = "Main",
-                            name = "withdraw"
-                        ),
-                        rule = Rule(
-                            type = "DenyAll"
-                        )
-                    ),
-                    AccessChainRules(
-                        key = Key(
-                            module = "Main",
-                            name = "set"
-                        ),
-                        rule = Rule(
-                            type = "DenyAll"
-                        )
-                    ),
-                    AccessChainRules(
-                        key = Key(
-                            module = "Main",
-                            name = "recall"
-                        ),
-                        rule = Rule(
-                            type = "DenyAll"
-                        )
-                    ),
-                    AccessChainRules(
-                        key = Key(
-                            module = "Main",
-                            name = "update_non_fungible_data"
-                        ),
-                        rule = Rule(
-                            type = "DenyAll"
-                        )
-                    )
-                ),
+            accessRules = ComponentEntityAccessRules(
+                propertyEntries = defaultNonFungibleAccessRules
             ),
-            divisibility = 1,
+            nonFungibleIdType = NonFungibleIdType.integer,
             totalSupply = "",
             totalBurned = "",
             totalMinted = ""
@@ -1380,5 +693,33 @@ class ResourceBehaviourTest {
 
         // then
         Assert.assertEquals(expectedBehaviours, behaviours)
+    }
+
+    companion object {
+        private val defaultFungibleAccessRules = ResourceAction.actionsForFungibles.map {
+            listOf(
+                AccessRulePropertyEntry(
+                    key = it.perform,
+                    value = AccessRulePropertyValue(type = it.defaultPerformRule.value)
+                ),
+                AccessRulePropertyEntry(
+                    key = it.change,
+                    value = AccessRulePropertyValue(type = it.defaultChangeRule.value)
+                )
+            )
+        }.flatten()
+
+        private val defaultNonFungibleAccessRules = ResourceAction.actionsForNonFungibles.map {
+            listOf(
+                AccessRulePropertyEntry(
+                    key = it.perform,
+                    value = AccessRulePropertyValue(type = it.defaultPerformRule.value)
+                ),
+                AccessRulePropertyEntry(
+                    key = it.change,
+                    value = AccessRulePropertyValue(type = it.defaultChangeRule.value)
+                )
+            )
+        }.flatten()
     }
 }

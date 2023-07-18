@@ -75,6 +75,27 @@ sealed interface ResourceAction {
         override val defaultPerformRule: AccessRule = AccessRule.DenyAll
         override val defaultChangeRule: AccessRule = AccessRule.DenyAll
     }
+
+    companion object {
+        val actionsForFungibles = listOf(
+            Burn,
+            Mint,
+            Deposit,
+            Withdraw,
+            UpdateMetadata,
+            Recall
+        )
+
+        val actionsForNonFungibles = listOf(
+            Burn,
+            Mint,
+            Deposit,
+            Withdraw,
+            UpdateMetadata,
+            Recall,
+            UpdateNonFungibleData
+        )
+    }
 }
 
 private fun StateEntityDetailsResponseItemDetails.toAccessRulesChain(): ComponentEntityAccessRules? {
@@ -123,8 +144,7 @@ fun StateEntityDetailsResponseItemDetails.calculateResourceBehaviours(): List<Re
     // when both withdraw and deposit perform are set to defaults, but either withdraw or deposit for change
     // is set to not just a non default but specifically AllowAll (highly unusual, but it's possible)
     if (
-        (accessRulesChain?.isDefaultPerform(Withdraw) == true &&
-                accessRulesChain.isDefaultPerform(Deposit)) &&
+        (accessRulesChain?.isDefaultPerform(Withdraw) == true && accessRulesChain.isDefaultPerform(Deposit)) &&
         accessRulesChain.change(Withdraw) == AccessRule.AllowAll ||
         accessRulesChain?.change(Deposit) == AccessRule.AllowAll
     ) {
@@ -134,12 +154,11 @@ fun StateEntityDetailsResponseItemDetails.calculateResourceBehaviours(): List<Re
     // 1. when both withdraw and deposit perform are set to defaults,
     // 2. but either withdraw or deposit change is set to non default
     // 3. (but neither set to AllowAll since that would be covered in the one above)
-    val bothPerformSetToDefault = accessRulesChain?.isDefaultPerform(Withdraw) == true &&
-        accessRulesChain.isDefaultPerform(Deposit)
+    val bothPerformSetToDefault = accessRulesChain?.isDefaultPerform(Withdraw) == true && accessRulesChain.isDefaultPerform(Deposit)
     val eitherChangeSetToNonDefault = accessRulesChain?.isDefaultChange(Deposit) == false ||
-        accessRulesChain?.isDefaultChange(Withdraw) == false
+            accessRulesChain?.isDefaultChange(Withdraw) == false
     val neitherChangeSetToAllowAll = accessRulesChain?.change(Deposit) != AccessRule.AllowAll &&
-        accessRulesChain?.change(Withdraw) != AccessRule.AllowAll
+            accessRulesChain?.change(Withdraw) != AccessRule.AllowAll
     if (bothPerformSetToDefault && eitherChangeSetToNonDefault && neitherChangeSetToAllowAll) {
         behaviors.add(ResourceBehaviour.FUTURE_MOVEMENT_WITHDRAW_DEPOSIT)
     }
@@ -187,31 +206,14 @@ private fun ComponentEntityAccessRules.isDefaultPerform(action: ResourceAction):
 
 private fun ComponentEntityAccessRules.isDefaultChange(action: ResourceAction): Boolean = change(action) == action.defaultChangeRule
 
-private fun ComponentEntityAccessRules.isDefault(vararg actions: ResourceAction) = actions.all { action ->
+private fun ComponentEntityAccessRules.isDefault(actions: List<ResourceAction>) = actions.all { action ->
     isDefaultPerform(action = action) && isDefaultChange(action = action)
 }
 
 private fun StateEntityDetailsResponseItemDetails.isUsingDefaultRules(): Boolean {
     return when (val details = this) {
-        is StateEntityDetailsResponseFungibleResourceDetails -> details.accessRules.isDefault(
-            Burn,
-            Mint,
-            Deposit,
-            Withdraw,
-            UpdateMetadata,
-            Recall
-        )
-
-        is StateEntityDetailsResponseNonFungibleResourceDetails -> details.accessRules.isDefault(
-            Burn,
-            Mint,
-            Deposit,
-            Withdraw,
-            UpdateMetadata,
-            Recall,
-            UpdateNonFungibleData
-        )
-
+        is StateEntityDetailsResponseFungibleResourceDetails -> details.accessRules.isDefault(ResourceAction.actionsForFungibles)
+        is StateEntityDetailsResponseNonFungibleResourceDetails -> details.accessRules.isDefault(ResourceAction.actionsForNonFungibles)
         else -> false
     }
 }
