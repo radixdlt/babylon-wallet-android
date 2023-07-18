@@ -37,6 +37,7 @@ import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.ModalBottomSheetValue
 import androidx.compose.material.rememberModalBottomSheetState
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
@@ -366,8 +367,13 @@ private fun OlympiaImportContent(
                 }
             }
         }
-        SnackbarUiMessageHandler(message = uiMessage) {
-            onMessageShown()
+        SnackbarUiMessageHandler(
+            message = uiMessage,
+            onMessageShown = onMessageShown
+        ) {
+            TextButton(
+                onClick = onMessageShown,
+            ) { Text("OK") }
         }
     }
 }

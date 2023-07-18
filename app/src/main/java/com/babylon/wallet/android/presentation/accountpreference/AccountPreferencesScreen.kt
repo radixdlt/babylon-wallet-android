@@ -177,9 +177,10 @@ private fun AccountPreferenceContent(
             if (loading) {
                 FullscreenCircularProgressContent()
             }
-            SnackbarUiMessageHandler(message = error) {
-                onMessageShown()
-            }
+            SnackbarUiMessageHandler(
+                message = error,
+                onMessageShown = onMessageShown
+            )
         }
 
         if (showNotSecuredDialog) {
