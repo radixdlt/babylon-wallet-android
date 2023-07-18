@@ -373,7 +373,7 @@ private fun OlympiaImportContent(
         ) {
             TextButton(
                 onClick = onMessageShown,
-            ) { Text("OK") }
+            ) { Text(stringResource(id = R.string.common_ok)) }
         }
     }
 }
