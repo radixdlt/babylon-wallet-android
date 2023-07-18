@@ -117,8 +117,8 @@ internal class TransactionClientTest {
 
     private object EntityRepositoryFake : EntityRepository {
 
-        const val addressWithFunds = "account_tdx_21_12ya9jylskaa6gdrfr8nvve3pfc6wyhyw7eg83fwlc7fv2w0eanumcd"
-        const val addressWithNoFunds = "account_tdx_21_12xg7tf7aup8lrxkvug0vzatntzww0c6jnntyj6yd4eg5920kpxpzvt"
+        const val addressWithFunds = "account_tdx_d_128zs6vanvyrg4h0psvnsq7wv7wg6sppsepyd9yrfndkhzs04vnvxad"
+        const val addressWithNoFunds = "account_tdx_d_129xd57thxxqne3ugen5pls2yrl6srajlt4vx0z6pgt9n9k9apwx2qq"
 
         val account1 = account(address = addressWithFunds)
         val accountResourcesWithFunds = AccountWithResources(

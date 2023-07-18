@@ -27,7 +27,6 @@ import kotlinx.serialization.Contextual
  * @param owner 
  * @param propertyEntries 
  */
-// TODO ELM
 @Serializable
 data class ComponentEntityAccessRules (
 

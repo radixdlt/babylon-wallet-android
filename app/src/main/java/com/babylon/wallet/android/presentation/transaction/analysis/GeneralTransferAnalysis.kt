@@ -2,7 +2,6 @@ package com.babylon.wallet.android.presentation.transaction.analysis
 
 import com.babylon.wallet.android.domain.common.value
 import com.babylon.wallet.android.domain.model.Resources
-import com.babylon.wallet.android.domain.model.Transferable
 import com.babylon.wallet.android.domain.usecases.GetAccountsWithResourcesUseCase
 import com.babylon.wallet.android.domain.usecases.GetDAppWithMetadataAndAssociatedResourcesUseCase
 import com.babylon.wallet.android.domain.usecases.transaction.GetTransactionBadgesUseCase
@@ -63,7 +62,7 @@ private fun TransactionType.GeneralTransaction.resolveFromAccounts(
     allAccounts: List<Network.Account>
 ) = accountWithdraws.map { withdrawEntry ->
     val transferables = withdrawEntry.value.map {
-        Transferable.Withdrawing(transferable = it.toTransferableResource(allResources, metadataOfNewlyCreatedEntities))
+        it.toWithdrawingTransferableResource(allResources, metadataOfNewlyCreatedEntities)
     }
 
     val ownedAccount = allAccounts.find { it.address == withdrawEntry.key }

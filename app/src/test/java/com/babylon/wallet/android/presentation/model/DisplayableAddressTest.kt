@@ -23,7 +23,7 @@ internal class DisplayableAddressTest(
         fun data() : Collection<Array<Any>> {
             return listOf(
                 arrayOf(RESOURCE_ADDRESS, "reso...8z96qp"),
-                arrayOf(RESOURCE_NFT_ADDRESS, "#1%23"),
+                arrayOf(RESOURCE_NFT_ADDRESS, "1"),
                 arrayOf(ACCOUNT_ADDRESS, "acco...8z96qp"),
                 arrayOf(PACKAGE_ADDRESS, "pack...8z96qp"),
                 arrayOf(TRANSACTION_ADDRESS, "tran...8z96qp"),
@@ -33,7 +33,7 @@ internal class DisplayableAddressTest(
         }
 
         private const val RESOURCE_ADDRESS = "resource_tdx_b_1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq8z96qp"
-        private const val RESOURCE_NFT_ADDRESS = "resource_tdx_b_1qrwpjqtg7qmpn7zhxv6y62eua0xtu3x5lseytycqyvssefkpwy:#1%23"
+        private const val RESOURCE_NFT_ADDRESS = "resource_tdx_b_1qrwpjqtg7qmpn7zhxv6y62eua0xtu3x5lseytycqyvssefkpwy:#1#"
         private const val ACCOUNT_ADDRESS = "account_tdx_b_1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq8z96qp"
         private const val PACKAGE_ADDRESS = "package_tdx_b_1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq8z96qp"
         private const val TRANSACTION_ADDRESS = "transaction_tdx_b_1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq8z96qp"
