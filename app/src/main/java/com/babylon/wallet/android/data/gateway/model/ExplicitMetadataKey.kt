@@ -53,7 +53,7 @@ enum class ExplicitMetadataKey(val key: String) {
             type = (AccountType.values().find { it.asString == "" } ?: DAPP_DEFINITION) as AccountType
         ) // TODO ELM ?
         CLAIMED_WEBSITES -> ClaimedWebsiteMetadataItem(website = "") // TODO ELM (dApps)
-        CLAIMED_ENTITIES -> ClaimedEntitiesMetadataItem(entity = "")// TODO ELM (dApps)
+        CLAIMED_ENTITIES -> ClaimedEntitiesMetadataItem(entity = "") // TODO ELM (dApps)
         TAGS -> TagsMetadataItem(tags = value.typed<MetadataStringArrayValue>()?.propertyValues.orEmpty())
         KEY_IMAGE_URL -> IconUrlMetadataItem(url = Uri.parse(value.typed<MetadataUrlValue>()?.value.orEmpty())) // TODO ELM (NFTs)
         INFO_URL -> InfoUrlMetadataItem(url = Uri.parse(value.typed<MetadataUrlValue>()?.value.orEmpty()))

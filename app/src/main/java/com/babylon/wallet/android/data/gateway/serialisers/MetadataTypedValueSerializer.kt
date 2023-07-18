@@ -39,6 +39,7 @@ import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 
+@Suppress("CyclomaticComplexMethod")
 object MetadataTypedValueSerializer : JsonContentPolymorphicSerializer<MetadataTypedValue>(MetadataTypedValue::class) {
     override fun selectDeserializer(element: JsonElement): DeserializationStrategy<MetadataTypedValue> {
         return when (MetadataValueType.from(element.jsonObject["type"]?.jsonPrimitive?.content.orEmpty())) {

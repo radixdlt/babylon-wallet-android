@@ -1,14 +1,12 @@
 package com.babylon.wallet.android.domain.model
 
 import com.babylon.wallet.android.domain.model.metadata.AccountTypeMetadataItem
-import com.babylon.wallet.android.domain.model.metadata.OwnerKeyHashesMetadataItem
 import rdx.works.profile.data.model.pernetwork.Network
 import java.math.BigDecimal
 
 data class AccountWithResources(
     val account: Network.Account,
     private val accountTypeMetadataItem: AccountTypeMetadataItem? = null,
-    private val ownerKeyHashesMetadataItem: OwnerKeyHashesMetadataItem? = null,
     val resources: Resources?,
 ) {
 

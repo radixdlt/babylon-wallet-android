@@ -26,10 +26,7 @@ import com.radixdlt.extensions.removeLeadingZero
 import com.radixdlt.hex.extensions.toHexString
 import com.radixdlt.ret.Address
 import com.radixdlt.ret.Intent
-import com.radixdlt.ret.Message
-import com.radixdlt.ret.MessageContent
 import com.radixdlt.ret.NotarizedTransaction
-import com.radixdlt.ret.PlainTextMessage
 import com.radixdlt.ret.Signature
 import com.radixdlt.ret.SignatureWithPublicKey
 import com.radixdlt.ret.SignedIntent
@@ -42,7 +39,6 @@ import rdx.works.profile.data.model.pernetwork.Entity
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.accountsOnCurrentNetwork
-import rdx.works.profile.domain.gateway.GetCurrentGatewayUseCase
 import rdx.works.profile.domain.personasOnCurrentNetwork
 import timber.log.Timber
 import java.security.SecureRandom

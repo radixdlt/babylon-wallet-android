@@ -102,7 +102,6 @@ class EntityRepositoryImpl @Inject constructor(
                 AccountWithResources(
                     account = account,
                     accountTypeMetadataItem = metaDataItems.consume(),
-                    ownerKeyHashesMetadataItem = metaDataItems.consume(),
                     resources = Resources(
                         fungibleResources = mapOfAccountsWithFungibleResources[account.address].orEmpty().sorted(),
                         nonFungibleResources = mapOfAccountsWithNonFungibleResources[account.address].orEmpty().sorted()

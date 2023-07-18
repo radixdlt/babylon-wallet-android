@@ -156,9 +156,9 @@ fun StateEntityDetailsResponseItemDetails.calculateResourceBehaviours(): List<Re
     // 3. (but neither set to AllowAll since that would be covered in the one above)
     val bothPerformSetToDefault = accessRulesChain?.isDefaultPerform(Withdraw) == true && accessRulesChain.isDefaultPerform(Deposit)
     val eitherChangeSetToNonDefault = accessRulesChain?.isDefaultChange(Deposit) == false ||
-            accessRulesChain?.isDefaultChange(Withdraw) == false
+        accessRulesChain?.isDefaultChange(Withdraw) == false
     val neitherChangeSetToAllowAll = accessRulesChain?.change(Deposit) != AccessRule.AllowAll &&
-            accessRulesChain?.change(Withdraw) != AccessRule.AllowAll
+        accessRulesChain?.change(Withdraw) != AccessRule.AllowAll
     if (bothPerformSetToDefault && eitherChangeSetToNonDefault && neitherChangeSetToAllowAll) {
         behaviors.add(ResourceBehaviour.FUTURE_MOVEMENT_WITHDRAW_DEPOSIT)
     }
@@ -188,7 +188,6 @@ fun StateEntityDetailsResponseItemDetails.calculateResourceBehaviours(): List<Re
 
     behaviors
 }
-
 
 private fun ComponentEntityAccessRules.perform(action: ResourceAction): AccessRule? = propertyEntries.find { entry ->
     entry.key == action.perform

@@ -91,9 +91,9 @@ data class OwnerKeyHashesMetadataItem(
 
         data class EcdsaSecp256k1(
             override val hex: String
-        ): KeyHash
+        ) : KeyHash
         data class EddsaEd25519(
             override val hex: String
-        ): KeyHash
+        ) : KeyHash
     }
 }

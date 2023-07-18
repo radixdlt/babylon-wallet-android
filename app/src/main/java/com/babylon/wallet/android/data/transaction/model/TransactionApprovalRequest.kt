@@ -17,9 +17,9 @@ data class TransactionApprovalRequest(
 ) {
 
     sealed interface TransactionMessage {
-        object None: TransactionMessage
+        object None : TransactionMessage
 
-        data class Public(val message: String): TransactionMessage
+        data class Public(val message: String) : TransactionMessage
 
         fun toEngineMessage(): Message = when (this) {
             is Public -> Message.PlainText(
@@ -31,5 +31,4 @@ data class TransactionApprovalRequest(
             None -> Message.None
         }
     }
-
 }
