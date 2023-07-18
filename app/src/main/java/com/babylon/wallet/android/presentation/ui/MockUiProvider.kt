@@ -1,6 +1,7 @@
 package com.babylon.wallet.android.presentation.ui
 
 import com.babylon.wallet.android.presentation.common.SeedPhraseInputDelegate.SeedPhraseWord
+import com.babylon.wallet.android.presentation.dapp.authorized.account.AccountItemUiModel
 import kotlinx.collections.immutable.persistentListOf
 import rdx.works.profile.data.model.factorsources.DerivationPathScheme
 import rdx.works.profile.data.model.pernetwork.DerivationPath
@@ -95,5 +96,32 @@ object MockUiProvider {
             derivationPath = DerivationPath(path = "path", scheme = DerivationPathScheme.BIP_44_OLYMPIA),
             newBabylonAddress = "babylon_account_address_3"
         ),
+    )
+
+    val accountItemUiModelsList = persistentListOf(
+        AccountItemUiModel(
+            displayName = "Account name 1",
+            address = "account_address_1",
+            appearanceID = 1,
+            isSelected = true
+        ),
+        AccountItemUiModel(
+            displayName = "Account name 2",
+            address = "account_address_2",
+            appearanceID = 2,
+            isSelected = false
+        ),
+        AccountItemUiModel(
+            displayName = "Account name 3",
+            address = "account_address_3",
+            appearanceID = 3,
+            isSelected = false
+        ),
+        AccountItemUiModel(
+            displayName = "Account name 4",
+            address = "account_address_4",
+            appearanceID = 4,
+            isSelected = false
+        )
     )
 }

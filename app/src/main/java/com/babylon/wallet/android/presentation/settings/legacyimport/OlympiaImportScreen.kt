@@ -37,6 +37,7 @@ import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.ModalBottomSheetValue
 import androidx.compose.material.rememberModalBottomSheetState
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
@@ -63,7 +64,6 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
-import com.babylon.wallet.android.designsystem.composable.RadixSecondaryButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.designsystem.theme.getAccountGradientColorsFor
@@ -75,6 +75,8 @@ import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.dapp.authorized.account.AccountItemUiModel
 import com.babylon.wallet.android.presentation.model.AddLedgerSheetState
 import com.babylon.wallet.android.presentation.settings.connector.qrcode.CameraPreview
+import com.babylon.wallet.android.presentation.ui.MockUiProvider.accountItemUiModelsList
+import com.babylon.wallet.android.presentation.ui.MockUiProvider.olympiaAccountsList
 import com.babylon.wallet.android.presentation.ui.MockUiProvider.seedPhraseWords
 import com.babylon.wallet.android.presentation.ui.composables.AccountCardWithStack
 import com.babylon.wallet.android.presentation.ui.composables.AddLedgerContent
@@ -121,7 +123,7 @@ fun OlympiaImportScreen(
         onQrCodeScanned = viewModel::onQrCodeScanned,
         pages = state.pages,
         oneOffEvent = viewModel.oneOffEvent,
-        legacyAccountDetails = state.olympiaAccounts,
+        olympiaAccountsToImport = state.olympiaAccountsToImport,
         onImportAccounts = viewModel::onImportAccounts,
         onCloseScreen = onCloseScreen,
         importButtonEnabled = state.importButtonEnabled,
@@ -129,7 +131,6 @@ fun OlympiaImportScreen(
         bip39Passphrase = state.bip39Passphrase,
         onWordChanged = viewModel::onWordChanged,
         onPassphraseChanged = viewModel::onPassphraseChanged,
-        importSoftwareAccountsEnabled = state.importSoftwareAccountsEnabled,
         onImportSoftwareAccounts = viewModel::onImportSoftwareAccounts,
         uiMessage = state.uiMessage,
         onMessageShown = viewModel::onMessageShown,
@@ -137,18 +138,18 @@ fun OlympiaImportScreen(
         onContinue = onCloseScreen,
         currentPage = state.currentPage,
         qrChunkInfo = state.qrChunkInfo,
-        onMnemonicAlreadyImported = viewModel::onMnemonicAlreadyImported,
         isDeviceSecure = state.isDeviceSecure,
-        accountsLeft = state.hardwareAccountsLeftToImport,
+        hardwareAccountsLeft = state.hardwareAccountsLeftToImport,
         waitingForLedgerResponse = state.waitingForLedgerResponse,
         onConfirmLedgerName = viewModel::onConfirmLedgerName,
         onAddP2PLink = onAddP2PLink,
-        ledgerFactorSources = state.usedLedgerFactorSources,
+        verifiedLedgerDevices = state.verifiedLedgerDevices,
         addLedgerSheetState = state.addLedgerSheetState,
-        onSendAddLedgerRequest = viewModel::onSendAddLedgerRequest,
+        onImportWithLedger = viewModel::onImportWithLedger,
         deviceModel = state.recentlyConnectedLedgerDevice?.model?.toProfileLedgerDeviceModel()?.value,
-        totalHardwareAccounts = state.totalHardwareAccounts,
-        wordAutocompleteCandidates = state.wordAutocompleteCandidates
+        wordAutocompleteCandidates = state.wordAutocompleteCandidates,
+        shouldShowBottomSheet = state.shouldShowBottomSheet,
+        onHideBottomSheet = viewModel::onHideBottomSheet
     )
 }
 
@@ -158,9 +159,9 @@ private fun OlympiaImportContent(
     modifier: Modifier = Modifier,
     onBackClick: () -> Unit,
     onQrCodeScanned: (String) -> Unit,
-    pages: ImmutableList<ImportPage>,
+    pages: ImmutableList<OlympiaImportUiState.Page>,
     oneOffEvent: Flow<OlympiaImportEvent>,
-    legacyAccountDetails: ImmutableList<OlympiaAccountDetails>,
+    olympiaAccountsToImport: ImmutableList<OlympiaAccountDetails>,
     onImportAccounts: () -> Unit,
     onCloseScreen: () -> Unit,
     importButtonEnabled: Boolean,
@@ -168,26 +169,25 @@ private fun OlympiaImportContent(
     bip39Passphrase: String,
     onWordChanged: (Int, String) -> Unit,
     onPassphraseChanged: (String) -> Unit,
-    importSoftwareAccountsEnabled: Boolean,
     onImportSoftwareAccounts: () -> Unit,
     uiMessage: UiMessage?,
     onMessageShown: () -> Unit,
     migratedAccounts: ImmutableList<AccountItemUiModel>,
     onContinue: () -> Unit,
-    currentPage: ImportPage,
+    currentPage: OlympiaImportUiState.Page,
     qrChunkInfo: ChunkInfo?,
-    onMnemonicAlreadyImported: () -> Unit,
     isDeviceSecure: Boolean,
-    accountsLeft: Int,
+    hardwareAccountsLeft: Int,
     waitingForLedgerResponse: Boolean,
     onConfirmLedgerName: (String) -> Unit,
     onAddP2PLink: () -> Unit,
-    ledgerFactorSources: ImmutableList<LedgerHardwareWalletFactorSource>,
+    verifiedLedgerDevices: ImmutableList<LedgerHardwareWalletFactorSource>,
     addLedgerSheetState: AddLedgerSheetState,
-    onSendAddLedgerRequest: () -> Unit,
+    onImportWithLedger: () -> Unit,
     deviceModel: String?,
-    totalHardwareAccounts: Int,
-    wordAutocompleteCandidates: ImmutableList<String>
+    wordAutocompleteCandidates: ImmutableList<String>,
+    shouldShowBottomSheet: Boolean,
+    onHideBottomSheet: () -> Unit
 ) {
     val focusManager = LocalFocusManager.current
     val cameraPermissionState = rememberPermissionState(permission = Manifest.permission.CAMERA)
@@ -200,14 +200,17 @@ private fun OlympiaImportContent(
     val closeSheetCallback = {
         scope.launch {
             bottomSheetState.hide()
+            onHideBottomSheet()
         }
     }
     var showNotSecuredDialog by remember { mutableStateOf(false) }
     val context = LocalContext.current
     BackHandler {
         when {
-            bottomSheetState.isVisible -> closeSheetCallback()
-            currentPage == ImportPage.ImportComplete || currentPage == ImportPage.ScanQr -> {
+            bottomSheetState.isVisible -> {
+                closeSheetCallback()
+            }
+            currentPage == OlympiaImportUiState.Page.ImportComplete || currentPage == OlympiaImportUiState.Page.ScanQr -> {
                 onCloseScreen()
             }
             else -> {
@@ -271,14 +274,19 @@ private fun OlympiaImportContent(
             }
         })
     }
+    LaunchedEffect(shouldShowBottomSheet) {
+        if (shouldShowBottomSheet) {
+            bottomSheetState.show()
+        }
+    }
     Box(modifier = modifier) {
         DefaultModalSheetLayout(modifier = Modifier.fillMaxSize(), sheetState = bottomSheetState, sheetContent = {
             AddLedgerContent(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(RadixTheme.dimensions.paddingDefault),
+                    .padding(horizontal = RadixTheme.dimensions.paddingDefault),
                 deviceModel = deviceModel,
-                onSendAddLedgerRequest = onSendAddLedgerRequest,
+                onSendAddLedgerRequest = onImportWithLedger,
                 addLedgerSheetState = addLedgerSheetState,
                 onConfirmLedgerName = {
                     onConfirmLedgerName(it)
@@ -293,9 +301,9 @@ private fun OlympiaImportContent(
             Column(modifier = Modifier.fillMaxSize()) {
                 RadixCenteredTopAppBar(
                     title = stringResource(R.string.empty),
-                    onBackClick = if (currentPage == ImportPage.ImportComplete) onCloseScreen else onBackClick,
+                    onBackClick = if (currentPage == OlympiaImportUiState.Page.ImportComplete) onCloseScreen else onBackClick,
                     contentColor = RadixTheme.colors.gray1,
-                    backIconType = if (currentPage == ImportPage.ImportComplete) BackIconType.Close else BackIconType.Back
+                    backIconType = if (currentPage == OlympiaImportUiState.Page.ImportComplete) BackIconType.Close else BackIconType.Back
                 )
                 HorizontalPager(
                     modifier = Modifier
@@ -306,7 +314,7 @@ private fun OlympiaImportContent(
                     userScrollEnabled = false
                 ) { page ->
                     when (pages[page]) {
-                        ImportPage.ScanQr -> {
+                        OlympiaImportUiState.Page.ScanQr -> {
                             ScanQrPage(
                                 cameraPermissionGranted = cameraPermissionState.status.isGranted,
                                 onQrCodeScanned = onQrCodeScanned,
@@ -316,50 +324,41 @@ private fun OlympiaImportContent(
                             )
                         }
 
-                        ImportPage.AccountList -> {
-                            AccountListPage(
+                        OlympiaImportUiState.Page.AccountsToImportList -> {
+                            AccountsToImportListPage(
                                 modifier = Modifier.fillMaxSize(),
-                                olympiaAccounts = legacyAccountDetails,
+                                olympiaAccountsToImport = olympiaAccountsToImport,
                                 onImportAccounts = onImportAccounts,
                                 importButtonEnabled = importButtonEnabled,
                             )
                         }
 
-                        ImportPage.MnemonicInput -> {
-                            InputSeedPhrasePage(
+                        OlympiaImportUiState.Page.MnemonicInput -> {
+                            MnemonicInputPage(
                                 modifier = Modifier.fillMaxSize(),
                                 seedPhraseWords = seedPhraseWords,
                                 bip39Passphrase = bip39Passphrase,
                                 onWordChanged = onWordChanged,
                                 onPassphraseChanged = onPassphraseChanged,
-                                importSoftwareAccountsEnabled = importSoftwareAccountsEnabled,
                                 onImportSoftwareAccounts = onImportSoftwareAccounts,
-                                onMnemonicAlreadyImported = onMnemonicAlreadyImported,
                                 wordAutocompleteCandidates = wordAutocompleteCandidates
                             )
                         }
 
-                        ImportPage.HardwareAccount -> {
-                            HardwareImportScreen(
-                                Modifier
-                                    .fillMaxSize()
-                                    .padding(RadixTheme.dimensions.paddingDefault),
-                                totalHardwareAccounts = totalHardwareAccounts,
-                                accountsLeft = accountsLeft,
+                        OlympiaImportUiState.Page.HardwareAccounts -> {
+                            LedgerAccountImportPage(
+                                Modifier.fillMaxSize(),
+                                hardwareAccountsLeft = hardwareAccountsLeft,
                                 waitingForLedgerResponse = waitingForLedgerResponse,
-                                ledgerFactorSources = ledgerFactorSources
+                                verifiedLedgerDevices = verifiedLedgerDevices
                             ) {
-                                scope.launch {
-                                    bottomSheetState.show()
-                                }
+                                onImportWithLedger()
                             }
                         }
 
-                        ImportPage.ImportComplete -> {
+                        OlympiaImportUiState.Page.ImportComplete -> {
                             ImportCompletePage(
-                                modifier = Modifier
-                                    .fillMaxSize()
-                                    .padding(RadixTheme.dimensions.paddingDefault),
+                                modifier = Modifier.fillMaxSize(),
                                 migratedAccounts = migratedAccounts,
                                 onContinue = onContinue
                             )
@@ -368,8 +367,13 @@ private fun OlympiaImportContent(
                 }
             }
         }
-        SnackbarUiMessageHandler(message = uiMessage) {
-            onMessageShown()
+        SnackbarUiMessageHandler(
+            message = uiMessage,
+            onMessageShown = onMessageShown
+        ) {
+            TextButton(
+                onClick = onMessageShown,
+            ) { Text(stringResource(id = R.string.common_ok)) }
         }
     }
 }
@@ -377,12 +381,12 @@ private fun OlympiaImportContent(
 @Composable
 private fun CameraVisibilityEffect(
     pagerState: PagerState,
-    pages: ImmutableList<ImportPage>,
+    pages: ImmutableList<OlympiaImportUiState.Page>,
     onCameraVisibilityChanged: (Boolean) -> Unit
 ) {
     LaunchedEffect(pagerState, pages) {
         snapshotFlow {
-            pagerState.currentPage == pages.indexOf(ImportPage.ScanQr)
+            pagerState.currentPage == pages.indexOf(OlympiaImportUiState.Page.ScanQr)
         }.distinctUntilChanged().collect { visible ->
             onCameraVisibilityChanged(visible)
         }
@@ -405,10 +409,11 @@ private fun ScanQrPage(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(
-                        horizontal = RadixTheme.dimensions.paddingLarge,
-                        vertical = RadixTheme.dimensions.paddingDefault
+                        start = RadixTheme.dimensions.paddingXLarge,
+                        end = RadixTheme.dimensions.paddingXLarge,
+                        bottom = RadixTheme.dimensions.paddingDefault
                     ),
-                verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingDefault),
+                verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingSemiLarge),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
@@ -429,7 +434,6 @@ private fun ScanQrPage(
                     )
                 }
                 Text(
-                    modifier = Modifier.padding(RadixTheme.dimensions.paddingDefault),
                     text = stringResource(id = R.string.importOlympiaAccounts_scanQR_instructions),
                     style = RadixTheme.typography.body1Regular,
                     color = RadixTheme.colors.gray1,
@@ -451,15 +455,15 @@ private fun ScanQrPage(
 }
 
 @Composable
-private fun AccountListPage(
+private fun AccountsToImportListPage(
     modifier: Modifier = Modifier,
-    olympiaAccounts: ImmutableList<OlympiaAccountDetails>,
+    olympiaAccountsToImport: ImmutableList<OlympiaAccountDetails>,
     onImportAccounts: () -> Unit,
     importButtonEnabled: Boolean
 ) {
     Column(modifier = modifier, horizontalAlignment = Alignment.CenterHorizontally) {
         Text(
-            modifier = Modifier.padding(RadixTheme.dimensions.paddingDefault),
+            modifier = Modifier.padding(bottom = RadixTheme.dimensions.paddingMedium),
             text = stringResource(id = R.string.importOlympiaAccounts_accountsToImport_title),
             style = RadixTheme.typography.title,
             color = RadixTheme.colors.gray1
@@ -474,25 +478,14 @@ private fun AccountListPage(
         ) {
             item {
                 Text(
-                    modifier = Modifier.padding(RadixTheme.dimensions.paddingSmall),
+                    modifier = Modifier.padding(bottom = RadixTheme.dimensions.paddingSmall),
                     text = stringResource(id = R.string.importOlympiaAccounts_accountsToImport_subtitle),
                     textAlign = TextAlign.Center,
                     style = RadixTheme.typography.body1Regular,
                     color = RadixTheme.colors.gray1
                 )
             }
-            if (olympiaAccounts.isEmpty()) {
-                item {
-                    Text(
-                        modifier = Modifier.padding(RadixTheme.dimensions.paddingSmall),
-                        text = "No accounts found to import.", // TODO will be removed
-                        textAlign = TextAlign.Center,
-                        style = RadixTheme.typography.body1Regular,
-                        color = RadixTheme.colors.gray1
-                    )
-                }
-            }
-            items(olympiaAccounts) { item ->
+            items(olympiaAccountsToImport) { item ->
                 val gradientColor = getAccountGradientColorsFor(item.index)
                 LegacyAccountCard(
                     modifier = Modifier
@@ -514,7 +507,7 @@ private fun AccountListPage(
         RadixPrimaryButton(
             text = stringResource(
                 R.string.importOlympiaAccounts_accountsToImport_buttonManyAccounts,
-                olympiaAccounts.size
+                olympiaAccountsToImport.size
             ),
             onClick = onImportAccounts,
             modifier = Modifier
@@ -527,13 +520,12 @@ private fun AccountListPage(
 }
 
 @Composable
-private fun HardwareImportScreen(
+private fun LedgerAccountImportPage(
     modifier: Modifier = Modifier,
-    totalHardwareAccounts: Int,
-    accountsLeft: Int,
+    hardwareAccountsLeft: Int,
     waitingForLedgerResponse: Boolean,
-    ledgerFactorSources: ImmutableList<LedgerHardwareWalletFactorSource>,
-    onUseLedger: () -> Unit
+    verifiedLedgerDevices: ImmutableList<LedgerHardwareWalletFactorSource>,
+    onImportWithLedger: () -> Unit
 ) {
     Box(modifier = modifier) {
         Column(
@@ -545,48 +537,46 @@ private fun HardwareImportScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .weight(1f)
-                    .padding(RadixTheme.dimensions.paddingDefault),
+                    .padding(horizontal = RadixTheme.dimensions.paddingLarge)
+                    .padding(
+                        start = RadixTheme.dimensions.paddingLarge,
+                        end = RadixTheme.dimensions.paddingLarge,
+                        bottom = RadixTheme.dimensions.paddingLarge
+                    ),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
-                    text = stringResource(id = R.string.importOlympiaLedgerAccounts_subtitle, totalHardwareAccounts),
-                    style = RadixTheme.typography.header,
+                    text = stringResource(id = R.string.importOlympiaLedgerAccounts_title),
+                    style = RadixTheme.typography.title,
                     color = RadixTheme.colors.gray1,
-                    overflow = TextOverflow.Ellipsis,
                     textAlign = TextAlign.Center
                 )
-                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
+                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
                 Text(
-                    text = stringResource(id = R.string.importOlympiaLedgerAccounts_listHeading),
-                    style = RadixTheme.typography.body1Header,
+                    text = stringResource(id = R.string.importOlympiaLedgerAccounts_subtitle),
+                    style = RadixTheme.typography.body1Regular,
                     color = RadixTheme.colors.gray1,
                     overflow = TextOverflow.Ellipsis,
                     textAlign = TextAlign.Center
                 )
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
-                if (ledgerFactorSources.isEmpty()) {
+                AccountsLeftText(hardwareAccountsLeft)
+                if (verifiedLedgerDevices.isNotEmpty()) {
+                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
                     Text(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .background(RadixTheme.colors.gray5, RadixTheme.shapes.roundedRectSmall)
-                            .padding(RadixTheme.dimensions.paddingLarge),
-                        text = stringResource(id = R.string.importOlympiaLedgerAccounts_knownLedgersNone),
+                        text = stringResource(id = R.string.importOlympiaLedgerAccounts_listHeading),
                         style = RadixTheme.typography.body1Header,
-                        color = RadixTheme.colors.gray2,
+                        color = RadixTheme.colors.gray1,
                         overflow = TextOverflow.Ellipsis,
                         textAlign = TextAlign.Center
                     )
-                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingMedium))
-                    AccountsLeftText(accountsLeft)
-                } else {
+                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSmall))
                     LazyColumn(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .weight(1f),
+                        modifier = Modifier.fillMaxWidth(),
                         contentPadding = PaddingValues(horizontal = RadixTheme.dimensions.paddingDefault),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        items(items = ledgerFactorSources, key = { item ->
+                        items(items = verifiedLedgerDevices, key = { item ->
                             item.id.body.value
                         }, itemContent = { item ->
                                 LedgerListItem(
@@ -599,18 +589,24 @@ private fun HardwareImportScreen(
                                 )
                                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingMedium))
                             })
-                        item {
-                            AccountsLeftText(accountsLeft)
-                        }
                     }
                 }
+                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
+                Text(
+                    modifier = Modifier.weight(1f),
+                    text = stringResource(id = R.string.importOlympiaLedgerAccounts_instruction),
+                    style = RadixTheme.typography.body1Regular,
+                    color = RadixTheme.colors.gray1,
+                    overflow = TextOverflow.Ellipsis,
+                    textAlign = TextAlign.Center
+                )
             }
             RadixPrimaryButton(
                 text = stringResource(id = R.string.ledgerHardwareDevices_continueWithLedger),
-                onClick = onUseLedger,
+                onClick = onImportWithLedger,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .imePadding()
+                    .padding(RadixTheme.dimensions.paddingDefault)
             )
         }
         if (waitingForLedgerResponse) {
@@ -623,8 +619,8 @@ private fun HardwareImportScreen(
 private fun AccountsLeftText(accountsLeft: Int, modifier: Modifier = Modifier) {
     Text(
         modifier = modifier,
-        text = stringResource(id = R.string.importOlympiaLedgerAccounts_otherDeviceAccounts, accountsLeft),
-        style = RadixTheme.typography.body1Regular,
+        text = stringResource(id = R.string.importOlympiaLedgerAccounts_accountCount, accountsLeft),
+        style = RadixTheme.typography.body1Header,
         color = RadixTheme.colors.gray1,
         overflow = TextOverflow.Ellipsis,
         textAlign = TextAlign.Center
@@ -639,23 +635,23 @@ private fun ImportCompletePage(
 ) {
     Column(modifier = modifier, horizontalAlignment = Alignment.CenterHorizontally) {
         Text(
-            modifier = Modifier.padding(RadixTheme.dimensions.paddingDefault),
+            modifier = Modifier.padding(bottom = RadixTheme.dimensions.paddingSmall),
             text = stringResource(id = R.string.importOlympiaAccounts_completion_title),
             maxLines = 1,
             style = RadixTheme.typography.title,
             color = RadixTheme.colors.gray1
         )
         LazyColumn(
-            contentPadding = PaddingValues(RadixTheme.dimensions.paddingDefault),
+            contentPadding = PaddingValues(horizontal = RadixTheme.dimensions.paddingMedium),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingDefault),
+            verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingSmall),
             modifier = Modifier
                 .fillMaxWidth()
                 .weight(1f)
         ) {
             item {
                 Text(
-                    modifier = Modifier.padding(RadixTheme.dimensions.paddingSmall),
+                    modifier = Modifier.padding(bottom = RadixTheme.dimensions.paddingLarge),
                     text = stringResource(id = R.string.importOlympiaAccounts_completion_subtitleMultiple),
                     textAlign = TextAlign.Start,
                     style = RadixTheme.typography.body1Regular,
@@ -682,11 +678,15 @@ private fun ImportCompletePage(
                         vertical = true
                     )
                 }
-                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
             }
             item {
+                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSmall))
                 Text(
-                    modifier = Modifier.padding(RadixTheme.dimensions.paddingSmall),
+                    modifier = Modifier.padding(
+                        start = RadixTheme.dimensions.paddingLarge,
+                        end = RadixTheme.dimensions.paddingLarge,
+                        top = RadixTheme.dimensions.paddingXLarge
+                    ),
                     text = stringResource(id = R.string.importOlympiaAccounts_completion_explanation),
                     textAlign = TextAlign.Center,
                     style = RadixTheme.typography.body1Regular,
@@ -697,22 +697,22 @@ private fun ImportCompletePage(
         RadixPrimaryButton(
             text = stringResource(R.string.importOlympiaAccounts_completion_accountListButtonTitle),
             onClick = onContinue,
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(RadixTheme.dimensions.paddingDefault),
             throttleClicks = true
         )
     }
 }
 
 @Composable
-private fun InputSeedPhrasePage(
+private fun MnemonicInputPage(
     modifier: Modifier = Modifier,
     seedPhraseWords: ImmutableList<SeedPhraseInputDelegate.SeedPhraseWord>,
     bip39Passphrase: String,
     onWordChanged: (Int, String) -> Unit,
     onPassphraseChanged: (String) -> Unit,
-    importSoftwareAccountsEnabled: Boolean,
     onImportSoftwareAccounts: () -> Unit,
-    onMnemonicAlreadyImported: () -> Unit,
     wordAutocompleteCandidates: ImmutableList<String>
 ) {
     var focusedWordIndex by remember {
@@ -739,8 +739,12 @@ private fun InputSeedPhrasePage(
                 .padding(bottom = stripHeight)
                 .verticalScroll(rememberScrollState())
                 .fillMaxSize()
-                .padding(RadixTheme.dimensions.paddingDefault),
-            verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingDefault)
+                .padding(
+                    start = RadixTheme.dimensions.paddingLarge,
+                    end = RadixTheme.dimensions.paddingLarge,
+                    bottom = RadixTheme.dimensions.paddingLarge
+                ),
+            verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingSemiLarge)
         ) {
             Text(
                 text = stringResource(id = R.string.importOlympiaAccounts_verifySeedPhrase_title),
@@ -761,6 +765,7 @@ private fun InputSeedPhrasePage(
                 contentColor = RadixTheme.colors.orange1,
                 iconRes = com.babylon.wallet.android.designsystem.R.drawable.ic_warning_error
             )
+            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXSmall))
             SeedPhraseInputForm(
                 seedPhraseWords = seedPhraseWords,
                 onWordChanged = onWordChanged,
@@ -775,17 +780,8 @@ private fun InputSeedPhrasePage(
                 text = stringResource(R.string.importOlympiaAccounts_importLabel),
                 onClick = onImportSoftwareAccounts,
                 modifier = Modifier.fillMaxWidth(),
-                enabled = importSoftwareAccountsEnabled,
                 throttleClicks = true
             )
-            if (importSoftwareAccountsEnabled) {
-                RadixSecondaryButton(
-                    modifier = Modifier.fillMaxWidth(),
-                    text = stringResource(R.string.importOlympiaAccounts_alreadyImported),
-                    onClick = onMnemonicAlreadyImported,
-                    throttleClicks = true
-                )
-            }
         }
         if (isSeedPhraseSuggestionsVisible) {
             SeedPhraseSuggestions(
@@ -809,45 +805,13 @@ private fun InputSeedPhrasePage(
 
 @Preview(showBackground = true)
 @Composable
-fun HardwareImportNoVerifiedLedgersPreview() {
+fun AccountListPagePreview() {
     RadixWalletTheme {
-        HardwareImportScreen(
+        AccountsToImportListPage(
             modifier = Modifier,
-            totalHardwareAccounts = 5,
-            accountsLeft = 5,
-            waitingForLedgerResponse = false,
-            ledgerFactorSources = persistentListOf(),
-            onUseLedger = {}
-        )
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun HardwareImportWithVerifiedLedgersPreview() {
-    RadixWalletTheme {
-        HardwareImportScreen(
-            modifier = Modifier,
-            totalHardwareAccounts = 5,
-            accountsLeft = 3,
-            waitingForLedgerResponse = false,
-            ledgerFactorSources = SampleDataProvider().ledgerFactorSourcesSample.toPersistentList(),
-            onUseLedger = {}
-        )
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun HardwareImportNoAccountsLeftPreview() {
-    RadixWalletTheme {
-        HardwareImportScreen(
-            modifier = Modifier,
-            totalHardwareAccounts = 5,
-            accountsLeft = 0,
-            waitingForLedgerResponse = true,
-            ledgerFactorSources = SampleDataProvider().ledgerFactorSourcesSample.toPersistentList(),
-            onUseLedger = {}
+            olympiaAccountsToImport = olympiaAccountsList.toPersistentList(),
+            onImportAccounts = {},
+            importButtonEnabled = true
         )
     }
 }
@@ -856,15 +820,67 @@ fun HardwareImportNoAccountsLeftPreview() {
 @Composable
 fun InputSeedPhrasePagePreview() {
     RadixWalletTheme {
-        InputSeedPhrasePage(
+        MnemonicInputPage(
             seedPhraseWords = seedPhraseWords,
             bip39Passphrase = "test",
             onWordChanged = { _, _ -> },
             onPassphraseChanged = {},
-            importSoftwareAccountsEnabled = false,
             onImportSoftwareAccounts = {},
-            onMnemonicAlreadyImported = {},
             wordAutocompleteCandidates = persistentListOf()
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun HardwareImportNoVerifiedLedgersPreview() {
+    RadixWalletTheme {
+        LedgerAccountImportPage(
+            modifier = Modifier,
+            hardwareAccountsLeft = 5,
+            waitingForLedgerResponse = false,
+            verifiedLedgerDevices = persistentListOf(),
+            onImportWithLedger = {}
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun HardwareImportWithVerifiedLedgersPreview() {
+    RadixWalletTheme {
+        LedgerAccountImportPage(
+            modifier = Modifier,
+            hardwareAccountsLeft = 3,
+            waitingForLedgerResponse = false,
+            verifiedLedgerDevices = SampleDataProvider().ledgerFactorSourcesSample.toPersistentList(),
+            onImportWithLedger = {}
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun HardwareImportNoAccountsLeftPreview() {
+    RadixWalletTheme {
+        LedgerAccountImportPage(
+            modifier = Modifier,
+            hardwareAccountsLeft = 0,
+            waitingForLedgerResponse = true,
+            verifiedLedgerDevices = SampleDataProvider().ledgerFactorSourcesSample.toPersistentList(),
+            onImportWithLedger = {}
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun ImportCompletePagePreview() {
+    RadixWalletTheme {
+        ImportCompletePage(
+            modifier = Modifier,
+            migratedAccounts = accountItemUiModelsList,
+            onContinue = {}
         )
     }
 }

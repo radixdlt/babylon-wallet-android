@@ -12,7 +12,7 @@ import rdx.works.profile.domain.deviceFactorSources
 import rdx.works.profile.olympiaimport.OlympiaAccountDetails
 import javax.inject.Inject
 
-class CheckOlympiaFactorSourceForAccountsExistUseCase @Inject constructor(
+class GetFactorSourceIdForOlympiaAccountsUseCase @Inject constructor(
     private val mnemonicRepository: MnemonicRepository,
     private val getProfileUseCase: GetProfileUseCase,
     @DefaultDispatcher private val defaultDispatcher: CoroutineDispatcher

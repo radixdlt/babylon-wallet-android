@@ -11,6 +11,7 @@ import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.UUIDGenerator
@@ -20,6 +21,7 @@ import rdx.works.profile.data.model.factorsources.LedgerHardwareWalletFactorSour
 import rdx.works.profile.domain.AddLedgerFactorSourceUseCase
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.factorSourceById
+import rdx.works.profile.domain.ledgerFactorSources
 import rdx.works.profile.domain.p2pLinks
 
 class UseLedgerDelegate(
@@ -32,15 +34,18 @@ class UseLedgerDelegate(
 
     init {
         scope.launch {
-            getProfileUseCase.p2pLinks.collect { p2pLinks ->
+            combine(
+                getProfileUseCase.ledgerFactorSources,
+                getProfileUseCase.p2pLinks
+            ) { ledgerFactorSources, p2pLinks ->
+                ledgerFactorSources.isNotEmpty() to p2pLinks.isNotEmpty()
+            }.collect { factorSourcesToP2pLinksExist ->
+                val hasLedgerDevices = factorSourcesToP2pLinksExist.first
+                val hasP2pLinks = factorSourcesToP2pLinksExist.second
                 _state.update { state ->
                     state.copy(
-                        hasP2pLinks = p2pLinks.isNotEmpty(),
-                        addLedgerSheetState = if (p2pLinks.isNotEmpty()) {
-                            AddLedgerSheetState.Connect
-                        } else {
-                            AddLedgerSheetState.LinkConnector
-                        }
+                        hasLedgerDevices = hasLedgerDevices,
+                        hasP2PLinks = hasP2pLinks,
                     )
                 }
             }
@@ -124,7 +129,8 @@ class UseLedgerDelegate(
     data class UseLedgerDelegateState(
         val loading: Boolean = false,
         val usedLedgerFactorSources: ImmutableList<LedgerHardwareWalletFactorSource> = persistentListOf(),
-        val hasP2pLinks: Boolean = false,
+        val hasLedgerDevices: Boolean = false,
+        val hasP2PLinks: Boolean = false,
         val addLedgerSheetState: AddLedgerSheetState = AddLedgerSheetState.Connect,
         val waitingForLedgerResponse: Boolean = false,
         val recentlyConnectedLedgerDevice: LedgerDeviceUiModel? = null,

@@ -338,9 +338,10 @@ private fun TransactionPreviewContent(
                     signingStateDismissed = true
                 }, signingState = state.signingState)
             }
-            SnackbarUiMessageHandler(message = state.error) {
-                onMessageShown()
-            }
+            SnackbarUiMessageHandler(
+                message = state.error,
+                onMessageShown = onMessageShown
+            )
         }
     }
 
