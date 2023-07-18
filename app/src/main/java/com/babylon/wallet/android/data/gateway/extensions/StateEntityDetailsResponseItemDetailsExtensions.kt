@@ -2,109 +2,19 @@
 
 package com.babylon.wallet.android.data.gateway.extensions
 
-import com.babylon.wallet.android.data.gateway.extensions.ResourceAction.Burn
-import com.babylon.wallet.android.data.gateway.extensions.ResourceAction.Deposit
-import com.babylon.wallet.android.data.gateway.extensions.ResourceAction.Mint
-import com.babylon.wallet.android.data.gateway.extensions.ResourceAction.Recall
-import com.babylon.wallet.android.data.gateway.extensions.ResourceAction.UpdateMetadata
-import com.babylon.wallet.android.data.gateway.extensions.ResourceAction.UpdateNonFungibleData
-import com.babylon.wallet.android.data.gateway.extensions.ResourceAction.Withdraw
+import com.babylon.wallet.android.data.gateway.extensions.ResourceRole.Burn
+import com.babylon.wallet.android.data.gateway.extensions.ResourceRole.Deposit
+import com.babylon.wallet.android.data.gateway.extensions.ResourceRole.Mint
+import com.babylon.wallet.android.data.gateway.extensions.ResourceRole.Recall
+import com.babylon.wallet.android.data.gateway.extensions.ResourceRole.UpdateMetadata
+import com.babylon.wallet.android.data.gateway.extensions.ResourceRole.UpdateNonFungibleData
+import com.babylon.wallet.android.data.gateway.extensions.ResourceRole.Withdraw
 import com.babylon.wallet.android.data.gateway.generated.models.ComponentEntityAccessRules
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponseFungibleResourceDetails
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponseItemDetails
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponseItemDetailsType
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponseNonFungibleResourceDetails
 import com.babylon.wallet.android.domain.model.behaviours.ResourceBehaviour
-
-/**
- * The rules to determine behaviours was taken from here ->
- * https://radixdlt.atlassian.net/wiki/spaces/AT/pages/3007840284/Proposal+for+Resource+Behavior+Summarization
- */
-enum class AccessRule(val value: String) {
-    DenyAll("DenyAll"),
-    AllowAll("AllowAll")
-}
-
-sealed interface ResourceAction {
-    val perform: String
-
-    val change: String
-        get() = "${perform}_updater"
-
-    val defaultPerformRule: AccessRule
-    val defaultChangeRule: AccessRule
-
-    object Mint : ResourceAction {
-        override val perform: String = "minter"
-        override val defaultPerformRule: AccessRule = AccessRule.DenyAll
-        override val defaultChangeRule: AccessRule = AccessRule.DenyAll
-    }
-
-    object Burn : ResourceAction {
-        override val perform: String = "burner"
-        override val defaultPerformRule: AccessRule = AccessRule.DenyAll
-        override val defaultChangeRule: AccessRule = AccessRule.DenyAll
-    }
-
-    object Withdraw : ResourceAction {
-        override val perform: String = "withdrawer"
-        override val defaultPerformRule: AccessRule = AccessRule.AllowAll
-        override val defaultChangeRule: AccessRule = AccessRule.DenyAll
-    }
-
-    object Deposit : ResourceAction {
-        override val perform: String = "depositor"
-        override val defaultPerformRule: AccessRule = AccessRule.AllowAll
-        override val defaultChangeRule: AccessRule = AccessRule.DenyAll
-    }
-
-    object Recall : ResourceAction {
-        override val perform: String = "recaller"
-        override val defaultPerformRule: AccessRule = AccessRule.DenyAll
-        override val defaultChangeRule: AccessRule = AccessRule.DenyAll
-    }
-
-    object UpdateMetadata : ResourceAction {
-        override val perform: String = "set" // TODO ELM
-        override val defaultPerformRule: AccessRule = AccessRule.DenyAll
-        override val defaultChangeRule: AccessRule = AccessRule.DenyAll
-    }
-
-    object UpdateNonFungibleData : ResourceAction {
-        override val perform: String = "update_non_fungible_data" // TODO ELM
-        override val defaultPerformRule: AccessRule = AccessRule.DenyAll
-        override val defaultChangeRule: AccessRule = AccessRule.DenyAll
-    }
-
-    companion object {
-        val actionsForFungibles = listOf(
-            Burn,
-            Mint,
-            Deposit,
-            Withdraw,
-            UpdateMetadata,
-            Recall
-        )
-
-        val actionsForNonFungibles = listOf(
-            Burn,
-            Mint,
-            Deposit,
-            Withdraw,
-            UpdateMetadata,
-            Recall,
-            UpdateNonFungibleData
-        )
-    }
-}
-
-private fun StateEntityDetailsResponseItemDetails.toAccessRulesChain(): ComponentEntityAccessRules? {
-    return when (val details = this) {
-        is StateEntityDetailsResponseFungibleResourceDetails -> details.accessRules
-        is StateEntityDetailsResponseNonFungibleResourceDetails -> details.accessRules
-        else -> null
-    }
-}
 
 fun StateEntityDetailsResponseItemDetails.totalSupply(): String? {
     return when (val details = this) {
@@ -156,9 +66,9 @@ fun StateEntityDetailsResponseItemDetails.calculateResourceBehaviours(): List<Re
     // 3. (but neither set to AllowAll since that would be covered in the one above)
     val bothPerformSetToDefault = accessRulesChain?.isDefaultPerform(Withdraw) == true && accessRulesChain.isDefaultPerform(Deposit)
     val eitherChangeSetToNonDefault = accessRulesChain?.isDefaultChange(Deposit) == false ||
-        accessRulesChain?.isDefaultChange(Withdraw) == false
+            accessRulesChain?.isDefaultChange(Withdraw) == false
     val neitherChangeSetToAllowAll = accessRulesChain?.change(Deposit) != AccessRule.AllowAll &&
-        accessRulesChain?.change(Withdraw) != AccessRule.AllowAll
+            accessRulesChain?.change(Withdraw) != AccessRule.AllowAll
     if (bothPerformSetToDefault && eitherChangeSetToNonDefault && neitherChangeSetToAllowAll) {
         behaviors.add(ResourceBehaviour.FUTURE_MOVEMENT_WITHDRAW_DEPOSIT)
     }
@@ -189,30 +99,120 @@ fun StateEntityDetailsResponseItemDetails.calculateResourceBehaviours(): List<Re
     behaviors
 }
 
-private fun ComponentEntityAccessRules.perform(action: ResourceAction): AccessRule? = propertyEntries.find { entry ->
+/**
+ * The rules to determine behaviours was taken from here ->
+ * https://radixdlt.atlassian.net/wiki/spaces/AT/pages/3007840284/Proposal+for+Resource+Behavior+Summarization
+ */
+enum class AccessRule(val value: String) {
+    DenyAll("DenyAll"),
+    AllowAll("AllowAll")
+}
+
+sealed interface ResourceRole {
+    val perform: String
+
+    val change: String
+        get() = "${perform}_updater"
+
+    val defaultPerformRule: AccessRule
+    val defaultChangeRule: AccessRule
+
+    object Mint : ResourceRole {
+        override val perform: String = "minter"
+        override val defaultPerformRule: AccessRule = AccessRule.DenyAll
+        override val defaultChangeRule: AccessRule = AccessRule.DenyAll
+    }
+
+    object Burn : ResourceRole {
+        override val perform: String = "burner"
+        override val defaultPerformRule: AccessRule = AccessRule.DenyAll
+        override val defaultChangeRule: AccessRule = AccessRule.DenyAll
+    }
+
+    object Withdraw : ResourceRole {
+        override val perform: String = "withdrawer"
+        override val defaultPerformRule: AccessRule = AccessRule.AllowAll
+        override val defaultChangeRule: AccessRule = AccessRule.DenyAll
+    }
+
+    object Deposit : ResourceRole {
+        override val perform: String = "depositor"
+        override val defaultPerformRule: AccessRule = AccessRule.AllowAll
+        override val defaultChangeRule: AccessRule = AccessRule.DenyAll
+    }
+
+    object Recall : ResourceRole {
+        override val perform: String = "recaller"
+        override val defaultPerformRule: AccessRule = AccessRule.DenyAll
+        override val defaultChangeRule: AccessRule = AccessRule.DenyAll
+    }
+
+    object UpdateMetadata : ResourceRole {
+        override val perform: String = "metadata_setter"
+        override val defaultPerformRule: AccessRule = AccessRule.DenyAll
+        override val defaultChangeRule: AccessRule = AccessRule.DenyAll
+    }
+
+    object UpdateNonFungibleData : ResourceRole {
+        override val perform: String = "non_fungible_data_updater"
+        override val defaultPerformRule: AccessRule = AccessRule.DenyAll
+        override val defaultChangeRule: AccessRule = AccessRule.DenyAll
+    }
+
+    companion object {
+        val rolesForFungibles = listOf(
+            Burn,
+            Mint,
+            Deposit,
+            Withdraw,
+            UpdateMetadata,
+            Recall
+        )
+
+        val rolesForNonFungibles = listOf(
+            Burn,
+            Mint,
+            Deposit,
+            Withdraw,
+            UpdateMetadata,
+            Recall,
+            UpdateNonFungibleData
+        )
+    }
+}
+
+private fun StateEntityDetailsResponseItemDetails.toAccessRulesChain(): ComponentEntityAccessRules? {
+    return when (val details = this) {
+        is StateEntityDetailsResponseFungibleResourceDetails -> details.accessRules
+        is StateEntityDetailsResponseNonFungibleResourceDetails -> details.accessRules
+        else -> null
+    }
+}
+
+private fun ComponentEntityAccessRules.perform(action: ResourceRole): AccessRule? = propertyEntries.find { entry ->
     entry.key == action.perform
 }?.value?.type?.let { type ->
     AccessRule.values().find { it.value == type }
 }
 
-private fun ComponentEntityAccessRules.change(action: ResourceAction): AccessRule? = propertyEntries.find { entry ->
+private fun ComponentEntityAccessRules.change(action: ResourceRole): AccessRule? = propertyEntries.find { entry ->
     entry.key == action.change
 }?.value?.type?.let { type ->
     AccessRule.values().find { it.value == type }
 }
 
-private fun ComponentEntityAccessRules.isDefaultPerform(action: ResourceAction): Boolean = perform(action) == action.defaultPerformRule
+private fun ComponentEntityAccessRules.isDefaultPerform(action: ResourceRole): Boolean = perform(action) == action.defaultPerformRule
 
-private fun ComponentEntityAccessRules.isDefaultChange(action: ResourceAction): Boolean = change(action) == action.defaultChangeRule
+private fun ComponentEntityAccessRules.isDefaultChange(action: ResourceRole): Boolean = change(action) == action.defaultChangeRule
 
-private fun ComponentEntityAccessRules.isDefault(actions: List<ResourceAction>) = actions.all { action ->
+private fun ComponentEntityAccessRules.isDefault(actions: List<ResourceRole>) = actions.all { action ->
     isDefaultPerform(action = action) && isDefaultChange(action = action)
 }
 
 private fun StateEntityDetailsResponseItemDetails.isUsingDefaultRules(): Boolean {
     return when (val details = this) {
-        is StateEntityDetailsResponseFungibleResourceDetails -> details.accessRules.isDefault(ResourceAction.actionsForFungibles)
-        is StateEntityDetailsResponseNonFungibleResourceDetails -> details.accessRules.isDefault(ResourceAction.actionsForNonFungibles)
+        is StateEntityDetailsResponseFungibleResourceDetails -> details.accessRules.isDefault(ResourceRole.rolesForFungibles)
+        is StateEntityDetailsResponseNonFungibleResourceDetails -> details.accessRules.isDefault(ResourceRole.rolesForNonFungibles)
         else -> false
     }
 }

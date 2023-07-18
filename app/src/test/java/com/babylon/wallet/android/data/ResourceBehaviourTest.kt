@@ -1,7 +1,7 @@
 package com.babylon.wallet.android.data
 
 import com.babylon.wallet.android.data.gateway.extensions.AccessRule
-import com.babylon.wallet.android.data.gateway.extensions.ResourceAction
+import com.babylon.wallet.android.data.gateway.extensions.ResourceRole
 import com.babylon.wallet.android.data.gateway.extensions.calculateResourceBehaviours
 import com.babylon.wallet.android.data.gateway.generated.models.AccessRulePropertyEntry
 import com.babylon.wallet.android.data.gateway.generated.models.AccessRulePropertyValue
@@ -49,7 +49,7 @@ class ResourceBehaviourTest {
             accessRules = ComponentEntityAccessRules(
                 propertyEntries = defaultNonFungibleAccessRules.map {
                     when (it.key) {
-                        ResourceAction.UpdateNonFungibleData.change ->
+                        ResourceRole.UpdateNonFungibleData.change ->
                             it.copy(value = AccessRulePropertyValue(type = AccessRule.AllowAll.value))
                         else -> it
                     }
@@ -79,7 +79,7 @@ class ResourceBehaviourTest {
             accessRules = ComponentEntityAccessRules(
                 propertyEntries = defaultNonFungibleAccessRules.map {
                     when (it.key) {
-                        ResourceAction.UpdateNonFungibleData.perform ->
+                        ResourceRole.UpdateNonFungibleData.perform ->
                             it.copy(value = AccessRulePropertyValue(type = AccessRule.AllowAll.value))
                         else -> it
                     }
@@ -110,9 +110,9 @@ class ResourceBehaviourTest {
             accessRules = ComponentEntityAccessRules(
                 propertyEntries = defaultNonFungibleAccessRules.map {
                     when (it.key) {
-                        ResourceAction.UpdateNonFungibleData.perform ->
+                        ResourceRole.UpdateNonFungibleData.perform ->
                             it.copy(value = AccessRulePropertyValue(type = AccessRule.AllowAll.value))
-                        ResourceAction.UpdateNonFungibleData.change ->
+                        ResourceRole.UpdateNonFungibleData.change ->
                             it.copy(value = AccessRulePropertyValue(type = AccessRule.AllowAll.value))
                         else -> it
                     }
@@ -142,7 +142,7 @@ class ResourceBehaviourTest {
             accessRules = ComponentEntityAccessRules(
                 propertyEntries = defaultFungibleAccessRules.map {
                     when (it.key) {
-                        ResourceAction.Recall.perform -> it.copy(value = AccessRulePropertyValue(type = AccessRule.AllowAll.value))
+                        ResourceRole.Recall.perform -> it.copy(value = AccessRulePropertyValue(type = AccessRule.AllowAll.value))
                         else -> it
                     }
                 }
@@ -171,7 +171,7 @@ class ResourceBehaviourTest {
             accessRules = ComponentEntityAccessRules(
                 propertyEntries = defaultFungibleAccessRules.map {
                     when (it.key) {
-                        ResourceAction.Recall.change -> it.copy(value = AccessRulePropertyValue(type = AccessRule.AllowAll.value))
+                        ResourceRole.Recall.change -> it.copy(value = AccessRulePropertyValue(type = AccessRule.AllowAll.value))
                         else -> it
                     }
                 }
@@ -201,8 +201,8 @@ class ResourceBehaviourTest {
             accessRules = ComponentEntityAccessRules(
                 propertyEntries = defaultFungibleAccessRules.map {
                     when (it.key) {
-                        ResourceAction.Recall.perform -> it.copy(value = AccessRulePropertyValue(type = AccessRule.AllowAll.value))
-                        ResourceAction.Recall.change -> it.copy(value = AccessRulePropertyValue(type = AccessRule.AllowAll.value))
+                        ResourceRole.Recall.perform -> it.copy(value = AccessRulePropertyValue(type = AccessRule.AllowAll.value))
+                        ResourceRole.Recall.change -> it.copy(value = AccessRulePropertyValue(type = AccessRule.AllowAll.value))
                         else -> it
                     }
                 }
@@ -231,7 +231,7 @@ class ResourceBehaviourTest {
             accessRules = ComponentEntityAccessRules(
                 propertyEntries = defaultFungibleAccessRules.map {
                     when (it.key) {
-                        ResourceAction.UpdateMetadata.perform -> it.copy(value = AccessRulePropertyValue(type = AccessRule.AllowAll.value))
+                        ResourceRole.UpdateMetadata.perform -> it.copy(value = AccessRulePropertyValue(type = AccessRule.AllowAll.value))
                         else -> it
                     }
                 }
@@ -260,7 +260,7 @@ class ResourceBehaviourTest {
             accessRules = ComponentEntityAccessRules(
                 propertyEntries = defaultFungibleAccessRules.map {
                     when (it.key) {
-                        ResourceAction.UpdateMetadata.change -> it.copy(value = AccessRulePropertyValue(type = AccessRule.AllowAll.value))
+                        ResourceRole.UpdateMetadata.change -> it.copy(value = AccessRulePropertyValue(type = AccessRule.AllowAll.value))
                         else -> it
                     }
                 }
@@ -290,8 +290,8 @@ class ResourceBehaviourTest {
             accessRules = ComponentEntityAccessRules(
                 propertyEntries = defaultFungibleAccessRules.map {
                     when (it.key) {
-                        ResourceAction.UpdateMetadata.perform -> it.copy(value = AccessRulePropertyValue(type = AccessRule.AllowAll.value))
-                        ResourceAction.UpdateMetadata.change -> it.copy(value = AccessRulePropertyValue(type = AccessRule.AllowAll.value))
+                        ResourceRole.UpdateMetadata.perform -> it.copy(value = AccessRulePropertyValue(type = AccessRule.AllowAll.value))
+                        ResourceRole.UpdateMetadata.change -> it.copy(value = AccessRulePropertyValue(type = AccessRule.AllowAll.value))
                         else -> it
                     }
                 }
@@ -320,7 +320,7 @@ class ResourceBehaviourTest {
             accessRules = ComponentEntityAccessRules(
                 propertyEntries = defaultFungibleAccessRules.map {
                     when (it.key) {
-                        ResourceAction.Mint.perform -> it.copy(value = AccessRulePropertyValue(type = AccessRule.AllowAll.value))
+                        ResourceRole.Mint.perform -> it.copy(value = AccessRulePropertyValue(type = AccessRule.AllowAll.value))
                         else -> it
                     }
                 }
@@ -349,7 +349,7 @@ class ResourceBehaviourTest {
             accessRules = ComponentEntityAccessRules(
                 propertyEntries = defaultFungibleAccessRules.map {
                     when (it.key) {
-                        ResourceAction.Mint.change -> it.copy(value = AccessRulePropertyValue(type = AccessRule.AllowAll.value))
+                        ResourceRole.Mint.change -> it.copy(value = AccessRulePropertyValue(type = AccessRule.AllowAll.value))
                         else -> it
                     }
                 }
@@ -379,8 +379,8 @@ class ResourceBehaviourTest {
             accessRules = ComponentEntityAccessRules(
                 propertyEntries = defaultFungibleAccessRules.map {
                     when (it.key) {
-                        ResourceAction.Mint.perform -> it.copy(value = AccessRulePropertyValue(type = AccessRule.AllowAll.value))
-                        ResourceAction.Mint.change -> it.copy(value = AccessRulePropertyValue(type = AccessRule.AllowAll.value))
+                        ResourceRole.Mint.perform -> it.copy(value = AccessRulePropertyValue(type = AccessRule.AllowAll.value))
+                        ResourceRole.Mint.change -> it.copy(value = AccessRulePropertyValue(type = AccessRule.AllowAll.value))
                         else -> it
                     }
                 }
@@ -409,7 +409,7 @@ class ResourceBehaviourTest {
             accessRules = ComponentEntityAccessRules(
                 propertyEntries = defaultFungibleAccessRules.map {
                     when (it.key) {
-                        ResourceAction.Burn.perform -> it.copy(value = AccessRulePropertyValue(type = AccessRule.AllowAll.value))
+                        ResourceRole.Burn.perform -> it.copy(value = AccessRulePropertyValue(type = AccessRule.AllowAll.value))
                         else -> it
                     }
                 }
@@ -438,7 +438,7 @@ class ResourceBehaviourTest {
             accessRules = ComponentEntityAccessRules(
                 propertyEntries = defaultFungibleAccessRules.map {
                     when (it.key) {
-                        ResourceAction.Burn.change -> it.copy(value = AccessRulePropertyValue(type = AccessRule.AllowAll.value))
+                        ResourceRole.Burn.change -> it.copy(value = AccessRulePropertyValue(type = AccessRule.AllowAll.value))
                         else -> it
                     }
                 }
@@ -468,8 +468,8 @@ class ResourceBehaviourTest {
             accessRules = ComponentEntityAccessRules(
                 propertyEntries = defaultFungibleAccessRules.map {
                     when (it.key) {
-                        ResourceAction.Burn.perform -> it.copy(value = AccessRulePropertyValue(type = AccessRule.AllowAll.value))
-                        ResourceAction.Burn.change -> it.copy(value = AccessRulePropertyValue(type = AccessRule.AllowAll.value))
+                        ResourceRole.Burn.perform -> it.copy(value = AccessRulePropertyValue(type = AccessRule.AllowAll.value))
+                        ResourceRole.Burn.change -> it.copy(value = AccessRulePropertyValue(type = AccessRule.AllowAll.value))
                         else -> it
                     }
                 }
@@ -498,10 +498,10 @@ class ResourceBehaviourTest {
             accessRules = ComponentEntityAccessRules(
                 propertyEntries = defaultFungibleAccessRules.map {
                     when (it.key) {
-                        ResourceAction.Burn.perform -> it.copy(value = AccessRulePropertyValue(type = AccessRule.AllowAll.value))
-                        ResourceAction.Burn.change -> it.copy(value = AccessRulePropertyValue(type = AccessRule.DenyAll.value))
-                        ResourceAction.Mint.perform -> it.copy(value = AccessRulePropertyValue(type = AccessRule.AllowAll.value))
-                        ResourceAction.Mint.change -> it.copy(value = AccessRulePropertyValue(type = AccessRule.DenyAll.value))
+                        ResourceRole.Burn.perform -> it.copy(value = AccessRulePropertyValue(type = AccessRule.AllowAll.value))
+                        ResourceRole.Burn.change -> it.copy(value = AccessRulePropertyValue(type = AccessRule.DenyAll.value))
+                        ResourceRole.Mint.perform -> it.copy(value = AccessRulePropertyValue(type = AccessRule.AllowAll.value))
+                        ResourceRole.Mint.change -> it.copy(value = AccessRulePropertyValue(type = AccessRule.DenyAll.value))
                         else -> it
                     }
                 }
@@ -530,10 +530,10 @@ class ResourceBehaviourTest {
             accessRules = ComponentEntityAccessRules(
                 propertyEntries = defaultFungibleAccessRules.map {
                     when (it.key) {
-                        ResourceAction.Burn.perform -> it.copy(value = AccessRulePropertyValue(type = AccessRule.DenyAll.value))
-                        ResourceAction.Burn.change -> it.copy(value = AccessRulePropertyValue(type = AccessRule.AllowAll.value))
-                        ResourceAction.Mint.perform -> it.copy(value = AccessRulePropertyValue(type = AccessRule.DenyAll.value))
-                        ResourceAction.Mint.change -> it.copy(value = AccessRulePropertyValue(type = AccessRule.AllowAll.value))
+                        ResourceRole.Burn.perform -> it.copy(value = AccessRulePropertyValue(type = AccessRule.DenyAll.value))
+                        ResourceRole.Burn.change -> it.copy(value = AccessRulePropertyValue(type = AccessRule.AllowAll.value))
+                        ResourceRole.Mint.perform -> it.copy(value = AccessRulePropertyValue(type = AccessRule.DenyAll.value))
+                        ResourceRole.Mint.change -> it.copy(value = AccessRulePropertyValue(type = AccessRule.AllowAll.value))
                         else -> it
                     }
                 }
@@ -562,10 +562,10 @@ class ResourceBehaviourTest {
             accessRules = ComponentEntityAccessRules(
                 propertyEntries = defaultFungibleAccessRules.map {
                     when (it.key) {
-                        ResourceAction.Deposit.perform -> it.copy(value = AccessRulePropertyValue(type = AccessRule.DenyAll.value))
-                        ResourceAction.Deposit.change -> it.copy(value = AccessRulePropertyValue(type = AccessRule.DenyAll.value))
-                        ResourceAction.Withdraw.perform -> it.copy(value = AccessRulePropertyValue(type = AccessRule.DenyAll.value))
-                        ResourceAction.Withdraw.change -> it.copy(value = AccessRulePropertyValue(type = AccessRule.DenyAll.value))
+                        ResourceRole.Deposit.perform -> it.copy(value = AccessRulePropertyValue(type = AccessRule.DenyAll.value))
+                        ResourceRole.Deposit.change -> it.copy(value = AccessRulePropertyValue(type = AccessRule.DenyAll.value))
+                        ResourceRole.Withdraw.perform -> it.copy(value = AccessRulePropertyValue(type = AccessRule.DenyAll.value))
+                        ResourceRole.Withdraw.change -> it.copy(value = AccessRulePropertyValue(type = AccessRule.DenyAll.value))
                         else -> it
                     }
                 }
@@ -594,10 +594,10 @@ class ResourceBehaviourTest {
             accessRules = ComponentEntityAccessRules(
                 propertyEntries = defaultFungibleAccessRules.map {
                     when (it.key) {
-                        ResourceAction.Deposit.perform -> it.copy(value = AccessRulePropertyValue(type = AccessRule.AllowAll.value))
-                        ResourceAction.Deposit.change -> it.copy(value = AccessRulePropertyValue(type = AccessRule.DenyAll.value))
-                        ResourceAction.Withdraw.perform -> it.copy(value = AccessRulePropertyValue(type = AccessRule.AllowAll.value))
-                        ResourceAction.Withdraw.change -> it.copy(value = AccessRulePropertyValue(type = AccessRule.AllowAll.value))
+                        ResourceRole.Deposit.perform -> it.copy(value = AccessRulePropertyValue(type = AccessRule.AllowAll.value))
+                        ResourceRole.Deposit.change -> it.copy(value = AccessRulePropertyValue(type = AccessRule.DenyAll.value))
+                        ResourceRole.Withdraw.perform -> it.copy(value = AccessRulePropertyValue(type = AccessRule.AllowAll.value))
+                        ResourceRole.Withdraw.change -> it.copy(value = AccessRulePropertyValue(type = AccessRule.AllowAll.value))
                         else -> it
                     }
                 }
@@ -626,10 +626,10 @@ class ResourceBehaviourTest {
             accessRules = ComponentEntityAccessRules(
                 propertyEntries = defaultFungibleAccessRules.map {
                     when (it.key) {
-                        ResourceAction.Deposit.perform -> it.copy(value = AccessRulePropertyValue(type = AccessRule.AllowAll.value))
-                        ResourceAction.Deposit.change -> it.copy(value = AccessRulePropertyValue(type = "Protected"))
-                        ResourceAction.Withdraw.perform -> it.copy(value = AccessRulePropertyValue(type = AccessRule.AllowAll.value))
-                        ResourceAction.Withdraw.change -> it.copy(value = AccessRulePropertyValue(type = "Protected"))
+                        ResourceRole.Deposit.perform -> it.copy(value = AccessRulePropertyValue(type = AccessRule.AllowAll.value))
+                        ResourceRole.Deposit.change -> it.copy(value = AccessRulePropertyValue(type = "Protected"))
+                        ResourceRole.Withdraw.perform -> it.copy(value = AccessRulePropertyValue(type = AccessRule.AllowAll.value))
+                        ResourceRole.Withdraw.change -> it.copy(value = AccessRulePropertyValue(type = "Protected"))
                         else -> it
                     }
                 }
@@ -696,7 +696,7 @@ class ResourceBehaviourTest {
     }
 
     companion object {
-        private val defaultFungibleAccessRules = ResourceAction.actionsForFungibles.map {
+        private val defaultFungibleAccessRules = ResourceRole.rolesForFungibles.map {
             listOf(
                 AccessRulePropertyEntry(
                     key = it.perform,
@@ -709,7 +709,7 @@ class ResourceBehaviourTest {
             )
         }.flatten()
 
-        private val defaultNonFungibleAccessRules = ResourceAction.actionsForNonFungibles.map {
+        private val defaultNonFungibleAccessRules = ResourceRole.rolesForNonFungibles.map {
             listOf(
                 AccessRulePropertyEntry(
                     key = it.perform,
