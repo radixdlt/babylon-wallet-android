@@ -128,7 +128,7 @@ fun TransactionPreviewHeaderPreview() {
                 ),
                 isDeviceSecure = true,
                 isLoading = false,
-                previewType = PreviewType.NonConforming
+                previewType = PreviewType.None
             ),
             onRawManifestClick = {},
             scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()

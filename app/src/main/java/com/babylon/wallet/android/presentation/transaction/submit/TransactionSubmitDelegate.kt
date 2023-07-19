@@ -102,22 +102,9 @@ class TransactionSubmitDelegate(
         }
     }
 
-    fun onFeePayerSelected(account: Network.Account) {
-        val feePayerSheet = state.value.sheetState as? State.Sheet.FeePayerChooser ?: return
-        state.update {
-            it.copy(
-                sheetState = feePayerSheet.copy(selectedCandidate = account)
-            )
-        }
-    }
-
-    fun onFeePayerConfirmed() {
-        val feePayerSheet = state.value.sheetState as? State.Sheet.FeePayerChooser ?: return
-        val selectedCandidate = feePayerSheet.selectedCandidate ?: return
-
+    fun onFeePayerConfirmed(account: Network.Account, pendingManifest: TransactionManifest) {
         approvalJob = appScope.launch {
-            state.update { it.copy(sheetState = State.Sheet.None) }
-            signAndSubmit(state.value.request, selectedCandidate.address, feePayerSheet.pendingManifest)
+            signAndSubmit(state.value.request, account.address, pendingManifest)
         }
     }
 

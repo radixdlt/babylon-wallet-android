@@ -311,11 +311,11 @@ class TransactionClient @Inject constructor(
                 manifest = manifest.instructions().asStr(),
                 startEpochInclusive = startEpochInclusive,
                 endEpochExclusive = endEpochExclusive,
-                tipPercentage = 5,
+                tipPercentage = 0,
                 nonce = generateNonce().toLong(),
                 signerPublicKeys = listOf(),
                 flags = TransactionPreviewRequestFlags(
-                    useFreeCredit = true,
+                    useFreeCredit = false,
                     assumeAllSignatureProofs = false,
                     skipEpochCheck = false
                 ),

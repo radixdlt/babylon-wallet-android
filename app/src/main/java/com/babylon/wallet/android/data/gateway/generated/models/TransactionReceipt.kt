@@ -64,7 +64,7 @@ data class TransactionReceipt (
 
 ) {
     val isFailed
-        get() = status == "Failed"
+        get() = status == "Failed" || status == "Rejected"
 }
 
 

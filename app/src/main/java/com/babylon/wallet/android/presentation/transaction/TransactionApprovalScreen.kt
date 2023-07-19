@@ -230,6 +230,7 @@ private fun TransactionPreviewContent(
                             modifier = Modifier.verticalScroll(rememberScrollState())
                         ) {
                             when (state.previewType) {
+                                is PreviewType.None -> {}
                                 is PreviewType.NonConforming -> {}
                                 is PreviewType.Transaction -> {
                                     TransactionPreviewTypeContent(
@@ -279,6 +280,7 @@ private fun ApproveButton(
             }
         },
         isLoading = state.isSubmitting,
+        enabled = state.isSubmitEnabled,
         icon = {
             Icon(
                 painter = painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_lock),
