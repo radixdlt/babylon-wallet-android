@@ -211,7 +211,7 @@
       "description" : "unit test",
       "id" : "BABE1442-3C98-41FF-AFB0-D0F5829B020D"
     },
-    "snapshotVersion" : 38
+    "snapshotVersion" : 39
   },
   "networks" : [
     {
@@ -247,7 +247,7 @@
                   "scheme" : "cap26"
                 },
                 "publicKey" : {
-                  "compressedData" : "d992d7ce1965d6cd460e0ca48c310f56dfbfde85fb56fd22cbedf4938bd36a23",
+                  "compressedData" : "6e52ee09dafe75faf08faab3bf4919abf72ec3f95753b0b5c3963d4fedc17299",
                   "curve" : "curve25519"
                 },
                 "factorSourceID" : {
@@ -292,7 +292,7 @@
                   "scheme" : "cap26"
                 },
                 "publicKey" : {
-                  "compressedData" : "daf0fe5b2fde6d1b0811c1096da58b593bc7afd9ae806751a5740b99aae6501c",
+                  "compressedData" : "64201607138dcd8d57ab5fd496f0844d637300f670f35bb39286dc4599ce2caa",
                   "curve" : "curve25519"
                 },
                 "factorSourceID" : {
@@ -337,7 +337,7 @@
                   "scheme" : "cap26"
                 },
                 "publicKey" : {
-                  "compressedData" : "0e2dfaaff11aef66a7806d0fc09846b534b436476b3d3ab876d8824aa109dc4b",
+                  "compressedData" : "a7882284c5569d91226b12869bef693f39724c6a41cfa10caa199f3b62d06b8c",
                   "curve" : "curve25519"
                 },
                 "factorSourceID" : {
@@ -600,7 +600,7 @@
                   "scheme" : "cap26"
                 },
                 "publicKey" : {
-                  "compressedData" : "6372052faa5236121c97267eb800b16164b1082201d51106794e0e004928fb7e",
+                  "compressedData" : "d0421b7afffe7c4677a165b74321f6abb23418c0db2adad24d1d6248a2fd5faf",
                   "curve" : "curve25519"
                 },
                 "factorSourceID" : {
@@ -670,7 +670,7 @@
                   "scheme" : "cap26"
                 },
                 "publicKey" : {
-                  "compressedData" : "016ee546e124c088d52541105f3a4e8469498a6942452fec2ab24e4f92b939df",
+                  "compressedData" : "89516457a22f490183aec20039ca69c3642433e2408b1a39d1a06434dec7ec39",
                   "curve" : "curve25519"
                 },
                 "factorSourceID" : {
