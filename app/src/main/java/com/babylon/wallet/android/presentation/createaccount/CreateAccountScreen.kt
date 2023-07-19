@@ -28,6 +28,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -155,18 +156,21 @@ fun CreateAccountContent(
                     stringResource(id = R.string.createAccount_titleNotFirst)
                 },
                 style = RadixTheme.typography.title,
-                color = RadixTheme.colors.gray1
+                color = RadixTheme.colors.gray1,
+                textAlign = TextAlign.Center
             )
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
             Text(
                 text = stringResource(id = R.string.createAccount_nameNewAccount_subtitle),
                 style = RadixTheme.typography.body1Regular,
-                color = RadixTheme.colors.gray1
+                color = RadixTheme.colors.gray1,
+                textAlign = TextAlign.Center
             )
             Text(
-                text = stringResource(id = R.string.createEntity_nameNewEntity_explanation),
+                text = stringResource(id = R.string.createAccount_nameNewAccount_explanation),
                 style = RadixTheme.typography.body1Regular,
-                color = RadixTheme.colors.gray2
+                color = RadixTheme.colors.gray2,
+                textAlign = TextAlign.Center
             )
             Spacer(modifier = Modifier.height(30.dp))
             RadixTextField(
@@ -199,6 +203,7 @@ fun CreateAccountContent(
                 },
                 modifier = Modifier
                     .fillMaxWidth()
+                    .padding(top = RadixTheme.dimensions.paddingLarge)
                     .imePadding(),
                 enabled = buttonEnabled,
                 throttleClicks = true

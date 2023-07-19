@@ -59,6 +59,7 @@ class LedgerFactorSourcesViewModel @Inject constructor(
 
     fun onConfirmLedgerName(name: String) {
         createLedgerDelegate.onConfirmLedgerName(name)
+        _state.update { it.copy(mode = LedgerFactorSourcesMode.Details) }
     }
 
     fun onMessageShown() {
