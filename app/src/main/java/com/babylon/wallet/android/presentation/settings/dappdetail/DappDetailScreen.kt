@@ -62,6 +62,7 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme.dimensions
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.domain.model.DAppWithMetadata
+import com.babylon.wallet.android.domain.model.RequiredPersonaFields
 import com.babylon.wallet.android.domain.model.Resource
 import com.babylon.wallet.android.domain.model.metadata.DescriptionMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.NameMetadataItem
@@ -70,12 +71,13 @@ import com.babylon.wallet.android.presentation.account.composable.NonFungibleTok
 import com.babylon.wallet.android.presentation.common.FullscreenCircularProgressContent
 import com.babylon.wallet.android.presentation.dapp.authorized.account.AccountItemUiModel
 import com.babylon.wallet.android.presentation.dapp.authorized.selectpersona.PersonaUiModel
-import com.babylon.wallet.android.presentation.model.toDisplayResource
+import com.babylon.wallet.android.presentation.model.allNonEmptyFields
 import com.babylon.wallet.android.presentation.ui.composables.ActionableAddressView
 import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.DefaultModalSheetLayout
 import com.babylon.wallet.android.presentation.ui.composables.GrayBackgroundWrapper
-import com.babylon.wallet.android.presentation.ui.composables.PersonaPropertyRow
+import com.babylon.wallet.android.presentation.ui.composables.PersonaDataFieldRow
+import com.babylon.wallet.android.presentation.ui.composables.PersonaDataStringField
 import com.babylon.wallet.android.presentation.ui.composables.PersonaRoundedAvatar
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
@@ -96,7 +98,7 @@ fun DappDetailScreen(
     viewModel: DappDetailViewModel,
     onBackClick: () -> Unit,
     modifier: Modifier = Modifier,
-    onEditPersona: (String, String) -> Unit
+    onEditPersona: (String, RequiredPersonaFields?) -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     LaunchedEffect(Unit) {
@@ -105,7 +107,7 @@ fun DappDetailScreen(
                 DappDetailEvent.LastPersonaDeleted -> onBackClick()
                 DappDetailEvent.DappDeleted -> onBackClick()
                 is DappDetailEvent.EditPersona -> {
-                    onEditPersona(it.personaAddress, it.requiredFieldsStringEncoded)
+                    onEditPersona(it.personaAddress, it.requiredPersonaFields)
                 }
             }
         }
@@ -676,7 +678,7 @@ private fun PersonaDetailList(
             )
         }
         item {
-            PersonaPropertyRow(
+            PersonaDataStringField(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = dimensions.paddingDefault),
@@ -688,7 +690,8 @@ private fun PersonaDetailList(
                 modifier = Modifier.padding(horizontal = dimensions.paddingDefault)
             )
         }
-        if (persona.persona.fields.isNotEmpty()) {
+        val nonEmptyPersonaFields = persona.persona.personaData.allNonEmptyFields
+        if (nonEmptyPersonaFields.isNotEmpty()) {
             item {
                 Spacer(modifier = Modifier.height(dimensions.paddingDefault))
                 Text(
@@ -704,13 +707,12 @@ private fun PersonaDetailList(
                 )
                 Spacer(modifier = Modifier.height(dimensions.paddingLarge))
             }
-            items(persona.persona.fields) { field ->
-                PersonaPropertyRow(
+            items(nonEmptyPersonaFields) { field ->
+                PersonaDataFieldRow(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = dimensions.paddingDefault),
-                    label = stringResource(id = field.id.toDisplayResource()),
-                    value = field.value
+                    field = field.value
                 )
                 Spacer(modifier = Modifier.height(dimensions.paddingLarge))
             }

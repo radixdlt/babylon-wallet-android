@@ -26,21 +26,23 @@ import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixTheme.dimensions
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
-import com.babylon.wallet.android.presentation.model.PersonaFieldKindWrapper
+import com.babylon.wallet.android.presentation.model.PersonaFieldWrapper
 import com.babylon.wallet.android.presentation.model.toDisplayResource
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
-import rdx.works.profile.data.model.pernetwork.Network
+import rdx.works.profile.data.model.pernetwork.PersonaData
+import rdx.works.profile.data.model.pernetwork.PersonaDataEntryID
+import rdx.works.profile.data.utils.empty
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun AddFieldSheet(
     onBackClick: () -> Unit,
-    fieldsToAdd: ImmutableList<PersonaFieldKindWrapper>,
+    fieldsToAdd: ImmutableList<PersonaFieldWrapper>,
     onAddFields: () -> Unit,
-    onSelectionChanged: (Network.Persona.Field.ID, Boolean) -> Unit,
+    onSelectionChanged: (PersonaDataEntryID, Boolean) -> Unit,
     modifier: Modifier = Modifier,
     anyFieldSelected: Boolean
 ) {
@@ -67,7 +69,7 @@ fun AddFieldSheet(
                     style = RadixTheme.typography.body1HighImportance,
                     color = RadixTheme.colors.gray2
                 )
-                Spacer(modifier = Modifier.height(dimensions.paddingSmall))
+                Spacer(modifier = Modifier.height(dimensions.paddingDefault))
             }
             items(fieldsToAdd, key = { it.id }) { field ->
                 SelectableFieldItem(
@@ -80,6 +82,12 @@ fun AddFieldSheet(
                         }
                         .fillMaxWidth()
                         .padding(horizontal = dimensions.paddingDefault)
+                )
+                Divider(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = dimensions.paddingDefault),
+                    color = RadixTheme.colors.gray4
                 )
             }
         }
@@ -97,8 +105,8 @@ fun AddFieldSheet(
 
 @Composable
 private fun SelectableFieldItem(
-    onSelectionChanged: (Network.Persona.Field.ID, Boolean) -> Unit,
-    field: PersonaFieldKindWrapper,
+    onSelectionChanged: (PersonaDataEntryID, Boolean) -> Unit,
+    field: PersonaFieldWrapper,
     modifier: Modifier = Modifier
 ) {
     Row(
@@ -107,7 +115,7 @@ private fun SelectableFieldItem(
     ) {
         Text(
             modifier = Modifier.weight(1f),
-            text = stringResource(id = field.id.toDisplayResource()),
+            text = stringResource(id = field.entry.value.kind.toDisplayResource()),
             style = RadixTheme.typography.body1HighImportance,
             color = RadixTheme.colors.gray1,
             maxLines = 1,
@@ -135,7 +143,7 @@ fun CreateAccountContentPreview() {
             onBackClick = {},
             onAddFields = {},
             onSelectionChanged = { _, _ -> },
-            fieldsToAdd = persistentListOf(PersonaFieldKindWrapper(Network.Persona.Field.ID.GivenName)),
+            fieldsToAdd = persistentListOf(PersonaFieldWrapper(entry = PersonaData.PersonaDataField.Kind.Name.empty())),
             anyFieldSelected = false
         )
     }

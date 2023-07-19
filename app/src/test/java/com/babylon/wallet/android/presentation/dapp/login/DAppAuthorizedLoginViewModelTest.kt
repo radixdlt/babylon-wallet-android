@@ -5,7 +5,6 @@ package com.babylon.wallet.android.presentation.dapp.login
 import androidx.lifecycle.SavedStateHandle
 import app.cash.turbine.test
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
-import com.babylon.wallet.android.data.dapp.model.PersonaData
 import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.babylon.wallet.android.domain.usecases.BuildAuthorizedDappResponseUseCase
@@ -63,8 +62,11 @@ class DAppAuthorizedLoginViewModelTest : StateViewModelTest<DAppAuthorizedLoginV
         authRequest = MessageFromDataChannel.IncomingRequest.AuthorizedRequest.AuthRequest.LoginRequest.WithoutChallenge,
         oneTimeAccountsRequestItem = null,
         ongoingAccountsRequestItem = MessageFromDataChannel.IncomingRequest.AccountsRequestItem(
-            true, 1,
-            MessageFromDataChannel.IncomingRequest.AccountsRequestItem.AccountNumberQuantifier.AtLeast,
+            true,
+            MessageFromDataChannel.IncomingRequest.NumberOfValues(
+                1,
+                MessageFromDataChannel.IncomingRequest.NumberOfValues.Quantifier.AtLeast
+            ),
             null
         )
     )
@@ -80,8 +82,10 @@ class DAppAuthorizedLoginViewModelTest : StateViewModelTest<DAppAuthorizedLoginV
         ),
         authRequest = MessageFromDataChannel.IncomingRequest.AuthorizedRequest.AuthRequest.UsePersonaRequest("address1"),
         ongoingAccountsRequestItem = MessageFromDataChannel.IncomingRequest.AccountsRequestItem(
-            true, 1,
-            MessageFromDataChannel.IncomingRequest.AccountsRequestItem.AccountNumberQuantifier.AtLeast,
+            true, MessageFromDataChannel.IncomingRequest.NumberOfValues(
+                1,
+                MessageFromDataChannel.IncomingRequest.NumberOfValues.Quantifier.AtLeast
+            ),
             null
         )
     )
@@ -97,13 +101,15 @@ class DAppAuthorizedLoginViewModelTest : StateViewModelTest<DAppAuthorizedLoginV
         ),
         authRequest = MessageFromDataChannel.IncomingRequest.AuthorizedRequest.AuthRequest.UsePersonaRequest("address1"),
         ongoingAccountsRequestItem = MessageFromDataChannel.IncomingRequest.AccountsRequestItem(
-            true, 1,
-            MessageFromDataChannel.IncomingRequest.AccountsRequestItem.AccountNumberQuantifier.AtLeast,
+            true, MessageFromDataChannel.IncomingRequest.NumberOfValues(
+                1,
+                MessageFromDataChannel.IncomingRequest.NumberOfValues.Quantifier.AtLeast
+            ),
             null
         ),
         ongoingPersonaDataRequestItem = MessageFromDataChannel.IncomingRequest.PersonaRequestItem(
-            listOf(PersonaData.PersonaDataField.GivenName),
-            true
+            isRequestingName = true,
+            isOngoing = true
         )
     )
 
@@ -118,8 +124,8 @@ class DAppAuthorizedLoginViewModelTest : StateViewModelTest<DAppAuthorizedLoginV
         ),
         authRequest = MessageFromDataChannel.IncomingRequest.AuthorizedRequest.AuthRequest.UsePersonaRequest("address1"),
         ongoingPersonaDataRequestItem = MessageFromDataChannel.IncomingRequest.PersonaRequestItem(
-            listOf(PersonaData.PersonaDataField.GivenName),
-            true
+            isRequestingName = true,
+            isOngoing = true
         )
     )
 
@@ -134,8 +140,10 @@ class DAppAuthorizedLoginViewModelTest : StateViewModelTest<DAppAuthorizedLoginV
         ),
         authRequest = MessageFromDataChannel.IncomingRequest.AuthorizedRequest.AuthRequest.UsePersonaRequest("address1"),
         oneTimeAccountsRequestItem = MessageFromDataChannel.IncomingRequest.AccountsRequestItem(
-            false, 1,
-            MessageFromDataChannel.IncomingRequest.AccountsRequestItem.AccountNumberQuantifier.AtLeast,
+            false, MessageFromDataChannel.IncomingRequest.NumberOfValues(
+                1,
+                MessageFromDataChannel.IncomingRequest.NumberOfValues.Quantifier.AtLeast
+            ),
             null
         )
     )
@@ -151,13 +159,15 @@ class DAppAuthorizedLoginViewModelTest : StateViewModelTest<DAppAuthorizedLoginV
         ),
         authRequest = MessageFromDataChannel.IncomingRequest.AuthorizedRequest.AuthRequest.UsePersonaRequest("address1"),
         oneTimeAccountsRequestItem = MessageFromDataChannel.IncomingRequest.AccountsRequestItem(
-            false, 1,
-            MessageFromDataChannel.IncomingRequest.AccountsRequestItem.AccountNumberQuantifier.AtLeast,
+            false, MessageFromDataChannel.IncomingRequest.NumberOfValues(
+                1,
+                MessageFromDataChannel.IncomingRequest.NumberOfValues.Quantifier.AtLeast
+            ),
             null
         ),
         oneTimePersonaDataRequestItem = MessageFromDataChannel.IncomingRequest.PersonaRequestItem(
-            listOf(PersonaData.PersonaDataField.GivenName),
-            false
+            isRequestingName = true,
+            isOngoing = false
         )
     )
 

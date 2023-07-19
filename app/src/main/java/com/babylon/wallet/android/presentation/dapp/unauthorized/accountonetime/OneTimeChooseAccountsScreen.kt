@@ -16,6 +16,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.model.DAppWithMetadata
+import com.babylon.wallet.android.domain.model.RequiredPersonaFields
 import com.babylon.wallet.android.domain.model.metadata.NameMetadataItem
 import com.babylon.wallet.android.presentation.dapp.authorized.account.AccountItemUiModel
 import com.babylon.wallet.android.presentation.dapp.unauthorized.login.DAppUnauthorizedLoginViewModel
@@ -32,14 +33,14 @@ fun OneTimeChooseAccountsScreen(
     onAccountCreationClick: () -> Unit,
     sharedViewModel: DAppUnauthorizedLoginViewModel,
     onLoginFlowComplete: () -> Unit,
-    onPersonaOnetime: (String) -> Unit
+    onPersonaOnetime: (RequiredPersonaFields) -> Unit
 ) {
     val context = LocalContext.current
     LaunchedEffect(Unit) {
         sharedViewModel.oneOffEvent.collect { event ->
             when (event) {
                 is Event.LoginFlowCompleted -> onLoginFlowComplete()
-                is Event.PersonaDataOnetime -> onPersonaOnetime(event.requiredFieldsEncoded)
+                is Event.PersonaDataOnetime -> onPersonaOnetime(event.requiredPersonaFields)
                 Event.RejectLogin -> sharedViewModel.onRejectRequest()
                 Event.RequestCompletionBiometricPrompt -> {
                     context.biometricAuthenticate { authenticated ->

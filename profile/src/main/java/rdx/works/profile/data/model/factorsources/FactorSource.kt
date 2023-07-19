@@ -91,7 +91,10 @@ sealed class FactorSource {
          */
         @Serializable(with = InstantSerializer::class)
         @SerialName("lastUsedOn")
-        var lastUsedOn: Instant
+        var lastUsedOn: Instant,
+
+        @SerialName("flags")
+        var flags: List<FactorSourceFlag> = emptyList()
     ) {
 
         @Serializable

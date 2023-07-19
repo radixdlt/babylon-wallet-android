@@ -23,11 +23,12 @@ import rdx.works.profile.data.model.apppreferences.P2PLink
 import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.data.model.apppreferences.Security
 import rdx.works.profile.data.model.factorsources.DeviceFactorSource
-import rdx.works.profile.data.model.factorsources.FactorSourceKind
 import rdx.works.profile.data.model.factorsources.FactorSource
+import rdx.works.profile.data.model.factorsources.FactorSourceKind
 import rdx.works.profile.data.model.pernetwork.DerivationPath
 import rdx.works.profile.data.model.pernetwork.FactorInstance
 import rdx.works.profile.data.model.pernetwork.Network
+import rdx.works.profile.data.model.pernetwork.PersonaData
 import rdx.works.profile.data.model.pernetwork.SecurityState
 import rdx.works.profile.data.model.pernetwork.addPersona
 import rdx.works.profile.data.repository.MnemonicRepository
@@ -48,16 +49,6 @@ class CreatePersonaWithDeviceFactorSourceUseCaseTest {
         val mnemonicWithPassphrase = MnemonicWithPassphrase(
             mnemonic = "noodle question hungry sail type offer grocery clay nation hello mixture forum",
             bip39Passphrase = ""
-        )
-        val personaFields = listOf(
-            Network.Persona.Field(
-                id = Network.Persona.Field.ID.GivenName,
-                value = "Emily"
-            ),
-            Network.Persona.Field(
-                id = Network.Persona.Field.ID.FamilyName,
-                value = "Jacobs"
-            )
         )
         val network = Radix.Gateway.hammunet
         testScope.runTest {
@@ -129,7 +120,7 @@ class CreatePersonaWithDeviceFactorSourceUseCaseTest {
 
             val newPersona = createPersonaWithDeviceFactorSourceUseCase(
                 displayName = personaName,
-                fields = personaFields
+                personaData = PersonaData()
             )
 
             val updatedProfile = profile.addPersona(

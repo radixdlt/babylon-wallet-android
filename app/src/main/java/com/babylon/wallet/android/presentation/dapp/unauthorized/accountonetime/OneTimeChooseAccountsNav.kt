@@ -9,6 +9,7 @@ import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavType
 import androidx.navigation.navArgument
+import com.babylon.wallet.android.domain.model.RequiredPersonaFields
 import com.babylon.wallet.android.presentation.dapp.unauthorized.login.DAppUnauthorizedLoginViewModel
 import com.babylon.wallet.android.presentation.dapp.unauthorized.login.ROUTE_DAPP_LOGIN_UNAUTHORIZED_GRAPH
 import com.google.accompanist.navigation.animation.composable
@@ -42,7 +43,7 @@ fun NavGraphBuilder.chooseAccountsOneTime(
     dismissErrorDialog: () -> Unit,
     onAccountCreationClick: () -> Unit,
     onLoginFlowComplete: () -> Unit,
-    onPersonaOnetime: (String) -> Unit,
+    onPersonaOnetime: (RequiredPersonaFields) -> Unit,
     navController: NavController
 ) {
     composable(

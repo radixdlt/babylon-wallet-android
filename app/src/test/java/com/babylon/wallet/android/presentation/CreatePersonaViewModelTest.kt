@@ -1,6 +1,5 @@
 package com.babylon.wallet.android.presentation
 
-import rdx.works.core.preferences.PreferencesManager
 import com.babylon.wallet.android.presentation.createpersona.CreatePersonaEvent
 import com.babylon.wallet.android.presentation.createpersona.CreatePersonaViewModel
 import com.babylon.wallet.android.presentation.model.PersonaDisplayNameFieldWrapper
@@ -21,12 +20,14 @@ import kotlinx.coroutines.test.runTest
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
+import rdx.works.core.preferences.PreferencesManager
 import rdx.works.profile.data.model.apppreferences.Radix
-import rdx.works.profile.data.model.factorsources.FactorSourceKind
 import rdx.works.profile.data.model.factorsources.FactorSource
+import rdx.works.profile.data.model.factorsources.FactorSourceKind
 import rdx.works.profile.data.model.pernetwork.DerivationPath
 import rdx.works.profile.data.model.pernetwork.FactorInstance
 import rdx.works.profile.data.model.pernetwork.Network
+import rdx.works.profile.data.model.pernetwork.PersonaData
 import rdx.works.profile.data.model.pernetwork.SecurityState
 import rdx.works.profile.derivation.model.KeyType
 import rdx.works.profile.domain.persona.CreatePersonaWithDeviceFactorSourceUseCase
@@ -57,7 +58,7 @@ class CreatePersonaViewModelTest : StateViewModelTest<CreatePersonaViewModel>() 
             address = personaId,
             displayName = personaName.value,
             networkID = Radix.Gateway.default.network.id,
-            fields = emptyList(),
+            personaData = PersonaData(),
             securityState = SecurityState.Unsecured(
                 unsecuredEntityControl = SecurityState.UnsecuredEntityControl(
                     transactionSigning = FactorInstance(

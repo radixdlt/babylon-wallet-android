@@ -1,7 +1,6 @@
 package com.babylon.wallet.android.domain.usecases
 
 import com.babylon.wallet.android.data.dapp.DappMessenger
-import com.babylon.wallet.android.data.dapp.model.toKind
 import com.babylon.wallet.android.data.transaction.DappRequestException
 import com.babylon.wallet.android.data.transaction.DappRequestFailure
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel.IncomingRequest
@@ -9,11 +8,13 @@ import com.babylon.wallet.android.domain.model.MessageFromDataChannel.IncomingRe
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel.IncomingRequest.PersonaRequestItem
 import com.babylon.wallet.android.domain.model.Selectable
 import com.babylon.wallet.android.domain.model.toProfileShareAccountsQuantifier
+import com.babylon.wallet.android.domain.model.toRequiredFields
+import com.babylon.wallet.android.presentation.model.getPersonaDataForFieldKinds
 import com.babylon.wallet.android.utils.toISO8601String
 import rdx.works.profile.data.model.pernetwork.Network
+import rdx.works.profile.data.model.pernetwork.PersonaData
 import rdx.works.profile.data.repository.DAppConnectionRepository
 import rdx.works.profile.data.repository.updateAuthorizedDappPersonas
-import rdx.works.profile.data.utils.filterFields
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.accountOnCurrentNetwork
 import rdx.works.profile.domain.personaOnCurrentNetwork
@@ -61,7 +62,7 @@ class AuthorizeSpecifiedPersonaUseCase @Inject constructor(
                     val hasOngoingAccountsRequest = request.ongoingAccountsRequestItem != null
                     val hasOngoingPersonaDataRequest = request.ongoingPersonaDataRequestItem != null
                     val selectedAccounts: List<Selectable<Network.Account>> = emptyList()
-                    val selectedPersonaData: List<Network.Persona.Field>
+                    val selectedPersonaData: PersonaData?
                     when {
                         hasOngoingAccountsRequest -> {
                             val result = handleOngoingAccountsRequest(
@@ -82,7 +83,7 @@ class AuthorizeSpecifiedPersonaUseCase @Inject constructor(
                                 authorizedDapp = authorizedDapp,
                                 authorizedPersonaSimple = authorizedPersonaSimple
                             )
-                            if (selectedPersonaData.isNotEmpty()) {
+                            if (selectedPersonaData != null) {
                                 val result = sendSuccessResponse(
                                     request = request,
                                     persona = persona,
@@ -115,11 +116,11 @@ class AuthorizeSpecifiedPersonaUseCase @Inject constructor(
             authorizedDapp,
             authorizedPersonaSimple
         )
-        var selectedPersonaData: List<Network.Persona.Field> = emptyList()
+        var selectedPersonaData: PersonaData? = null
         when {
             hasOngoingPersonaDataRequest -> {
                 selectedPersonaData = getAlreadyGrantedPersonaData(request, authorizedDapp, authorizedPersonaSimple)
-                if (selectedAccounts.isNotEmpty() && selectedPersonaData.isNotEmpty()) {
+                if (selectedAccounts.isNotEmpty() && selectedPersonaData != null) {
                     operationResult = sendSuccessResponse(
                         request = request,
                         persona = persona,
@@ -165,7 +166,7 @@ class AuthorizeSpecifiedPersonaUseCase @Inject constructor(
         request: AuthorizedRequest,
         persona: Network.Persona,
         selectedAccounts: List<Selectable<Network.Account>>,
-        selectedPersonaData: List<Network.Persona.Field>,
+        selectedPersonaData: PersonaData?,
         authorizedDapp: Network.AuthorizedDapp
     ): Result<String> {
         return buildAuthorizedDappResponseUseCase(
@@ -174,10 +175,10 @@ class AuthorizeSpecifiedPersonaUseCase @Inject constructor(
             emptyList(),
             selectedAccounts.map { it.data },
             selectedPersonaData,
-            emptyList()
+            null
         ).mapCatching { response ->
             return when (
-                dAppMessenger.sendWalletInteractionAuthorizedSuccessResponse(
+                dAppMessenger.sendWalletInteractionSuccessResponse(
                     dappId = request.dappId,
                     response = response
                 )
@@ -199,13 +200,14 @@ class AuthorizeSpecifiedPersonaUseCase @Inject constructor(
         request: AuthorizedRequest,
         authorizedDapp: Network.AuthorizedDapp,
         authorizedPersonaSimple: Network.AuthorizedDapp.AuthorizedPersonaSimple
-    ): List<Network.Persona.Field> {
-        var result: List<Network.Persona.Field> = emptyList()
+    ): PersonaData? {
+        var result: PersonaData? = null
         val handledRequest = checkNotNull(request.ongoingPersonaDataRequestItem)
+        val requiredFieldKinds = handledRequest.toRequiredFields()
         if (personaDataAccessAlreadyGranted(authorizedDapp, handledRequest, authorizedPersonaSimple.identityAddress)) {
             result = getProfileUseCase.personaOnCurrentNetwork(
                 authorizedPersonaSimple.identityAddress
-            )?.filterFields(handledRequest.fields.map { it.toKind() }).orEmpty()
+            )?.getPersonaDataForFieldKinds(requiredFieldKinds.fields)
         }
         return result
     }
@@ -221,8 +223,8 @@ class AuthorizeSpecifiedPersonaUseCase @Inject constructor(
             val potentialOngoingAddresses = dAppConnectionRepository.dAppAuthorizedPersonaAccountAddresses(
                 authorizedDapp.dAppDefinitionAddress,
                 authorizedPersonaSimple.identityAddress,
-                handledRequest.numberOfAccounts,
-                handledRequest.quantifier.toProfileShareAccountsQuantifier()
+                handledRequest.numberOfValues.quantity,
+                handledRequest.numberOfValues.toProfileShareAccountsQuantifier()
             )
             if (potentialOngoingAddresses.isNotEmpty()) {
                 result = potentialOngoingAddresses.mapNotNull { address ->
@@ -238,14 +240,11 @@ class AuthorizeSpecifiedPersonaUseCase @Inject constructor(
         requestItem: PersonaRequestItem,
         personaAddress: String
     ): Boolean {
-        val requestedFieldsCount = requestItem.fields.size
-        val requestedFieldKinds = requestItem.fields.map { it.toKind() }
-        val personaFields = getProfileUseCase.personaOnCurrentNetwork(personaAddress)?.fields.orEmpty()
-        val requestedFieldsIds = personaFields.filter { requestedFieldKinds.contains(it.id) }.map { it.id }
-        return requestedFieldsCount == requestedFieldsIds.size && dAppConnectionRepository.dAppAuthorizedPersonaHasAllDataFields(
+        val requestedFieldKinds = requestItem.toRequiredFields()
+        return dAppConnectionRepository.dAppAuthorizedPersonaHasAllDataFields(
             dApp.dAppDefinitionAddress,
             personaAddress,
-            requestedFieldsIds
+            requestedFieldKinds.fields.associate { it.kind to it.numberOfValues.quantity }
         )
     }
 }

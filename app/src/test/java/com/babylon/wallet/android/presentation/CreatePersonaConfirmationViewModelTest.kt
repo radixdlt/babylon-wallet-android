@@ -25,6 +25,7 @@ import rdx.works.profile.data.model.factorsources.FactorSourceKind
 import rdx.works.profile.data.model.pernetwork.DerivationPath
 import rdx.works.profile.data.model.pernetwork.FactorInstance
 import rdx.works.profile.data.model.pernetwork.Network
+import rdx.works.profile.data.model.pernetwork.PersonaData
 import rdx.works.profile.data.model.pernetwork.SecurityState
 import rdx.works.profile.derivation.model.KeyType
 import rdx.works.profile.domain.GetProfileUseCase
@@ -41,7 +42,7 @@ class CreatePersonaConfirmationViewModelTest : StateViewModelTest<CreatePersonaC
         address = personaId,
         displayName = personaName,
         networkID = Radix.Gateway.default.network.id,
-        fields = emptyList(),
+        personaData = PersonaData(),
         securityState = SecurityState.Unsecured(
             unsecuredEntityControl = SecurityState.UnsecuredEntityControl(
                 transactionSigning = FactorInstance(

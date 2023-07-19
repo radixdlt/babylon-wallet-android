@@ -1,6 +1,5 @@
 package com.babylon.wallet.android.data.dapp.model
 
-import com.babylon.wallet.android.data.dapp.model.AccountsRequestItem.NumberOfAccounts
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel.IncomingRequest
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -9,49 +8,31 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class AccountsRequestItem(
     @SerialName("challenge") val challenge: String? = null,
-    @SerialName("numberOfAccounts") val numberOfAccounts: NumberOfAccounts
-) {
-
-    @Serializable
-    data class NumberOfAccounts(
-        @SerialName("quantifier") val quantifier: AccountNumberQuantifier,
-        @SerialName("quantity") val quantity: Int,
-    ) {
-
-        @Serializable
-        enum class AccountNumberQuantifier {
-            @SerialName("exactly")
-            Exactly,
-
-            @SerialName("atLeast")
-            AtLeast,
-        }
-    }
-}
+    @SerialName("numberOfAccounts") val numberOfAccounts: NumberOfValues
+)
 
 fun AccountsRequestItem.toDomainModel(isOngoing: Boolean = true): IncomingRequest.AccountsRequestItem? {
     // correct request but not actionable, return null
     if (numberOfAccounts.quantity == 0 &&
-        numberOfAccounts.quantifier == NumberOfAccounts.AccountNumberQuantifier.Exactly
+        numberOfAccounts.quantifier == NumberOfValues.Quantifier.Exactly
     ) {
         return null
     }
     return IncomingRequest.AccountsRequestItem(
         isOngoing = isOngoing,
-        numberOfAccounts = numberOfAccounts.quantity,
-        quantifier = numberOfAccounts.quantifier.toDomainModel(),
+        numberOfValues = numberOfAccounts.toDomainModel(),
         challenge = challenge
     )
 }
 
-fun NumberOfAccounts.AccountNumberQuantifier.toDomainModel(): IncomingRequest.AccountsRequestItem.AccountNumberQuantifier {
+fun NumberOfValues.Quantifier.toDomainModel(): IncomingRequest.NumberOfValues.Quantifier {
     return when (this) {
-        NumberOfAccounts.AccountNumberQuantifier.Exactly -> {
-            IncomingRequest.AccountsRequestItem.AccountNumberQuantifier.Exactly
+        NumberOfValues.Quantifier.Exactly -> {
+            IncomingRequest.NumberOfValues.Quantifier.Exactly
         }
 
-        NumberOfAccounts.AccountNumberQuantifier.AtLeast -> {
-            IncomingRequest.AccountsRequestItem.AccountNumberQuantifier.AtLeast
+        NumberOfValues.Quantifier.AtLeast -> {
+            IncomingRequest.NumberOfValues.Quantifier.AtLeast
         }
     }
 }

@@ -29,7 +29,7 @@ data class WalletInteraction(
     ) {
 
         companion object {
-            const val VERSION = 1L
+            const val VERSION = 2L
         }
     }
 }
@@ -129,7 +129,7 @@ private fun WalletUnauthorizedRequestItems.parseUnauthorizedRequest(
 ): MessageFromDataChannel.IncomingRequest.UnauthorizedRequest {
     return MessageFromDataChannel.IncomingRequest.UnauthorizedRequest(
         dappId = dappId,
-        requestId = requestId,
+        interactionId = requestId,
         requestMetadata = metadata,
         oneTimeAccountsRequestItem = oneTimeAccounts?.toDomainModel(),
         oneTimePersonaDataRequestItem = oneTimePersonaData?.toDomainModel(),

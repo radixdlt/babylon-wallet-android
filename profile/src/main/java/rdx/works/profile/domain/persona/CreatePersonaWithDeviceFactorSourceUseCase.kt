@@ -6,6 +6,7 @@ import kotlinx.coroutines.withContext
 import rdx.works.profile.data.model.currentGateway
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.data.model.pernetwork.Network.Persona.Companion.init
+import rdx.works.profile.data.model.pernetwork.PersonaData
 import rdx.works.profile.data.model.pernetwork.addPersona
 import rdx.works.profile.data.repository.MnemonicRepository
 import rdx.works.profile.data.repository.ProfileRepository
@@ -21,7 +22,7 @@ class CreatePersonaWithDeviceFactorSourceUseCase @Inject constructor(
 
     suspend operator fun invoke(
         displayName: String,
-        fields: List<Network.Persona.Field>
+        personaData: PersonaData
     ): Network.Persona {
         return withContext(defaultDispatcher) {
             val profile = profileRepository.profile.first()
@@ -33,10 +34,10 @@ class CreatePersonaWithDeviceFactorSourceUseCase @Inject constructor(
             // Construct new persona
             val newPersona = init(
                 displayName = displayName,
-                fields = fields,
                 mnemonicWithPassphrase = mnemonicRepository(mnemonicKey = factorSource.id),
                 factorSource = factorSource,
-                networkId = networkID
+                networkId = networkID,
+                personaData = personaData
             )
 
             // Add persona to the profile

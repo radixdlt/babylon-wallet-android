@@ -4,6 +4,10 @@ import com.babylon.wallet.android.domain.SampleDataProvider
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import rdx.works.profile.data.model.pernetwork.Network
+import rdx.works.profile.data.model.pernetwork.PersonaData
+import rdx.works.profile.data.model.pernetwork.PersonaDataEntryID
+import rdx.works.profile.data.model.pernetwork.RequestedNumber
+import rdx.works.profile.data.model.pernetwork.Shared
 import rdx.works.profile.data.repository.DAppConnectionRepository
 
 class DAppConnectionRepositoryFake : DAppConnectionRepository {
@@ -24,15 +28,15 @@ class DAppConnectionRepositoryFake : DAppConnectionRepository {
                     11, dAppDefinitionAddress, "dApp", listOf(
                         Network.AuthorizedDapp.AuthorizedPersonaSimple(
                             identityAddress = "address1",
-                            fieldIDs = emptyList(),
                             lastLogin = "2023-01-31T10:28:14Z",
-                            sharedAccounts = Network.AuthorizedDapp.AuthorizedPersonaSimple.SharedAccounts(
+                            sharedAccounts = Shared(
                                 listOf("address-acc-1", SampleDataProvider().randomAddress()),
-                                Network.AuthorizedDapp.AuthorizedPersonaSimple.SharedAccounts.NumberOfAccounts(
-                                    Network.AuthorizedDapp.AuthorizedPersonaSimple.SharedAccounts.NumberOfAccounts.Quantifier.AtLeast,
+                                RequestedNumber(
+                                    RequestedNumber.Quantifier.AtLeast,
                                     1
                                 )
-                            )
+                            ),
+                            sharedPersonaData = Network.AuthorizedDapp.SharedPersonaData()
                         )
                     )
                 )
@@ -50,15 +54,15 @@ class DAppConnectionRepositoryFake : DAppConnectionRepository {
                         11, "address1", "dApp 1", listOf(
                             Network.AuthorizedDapp.AuthorizedPersonaSimple(
                                 identityAddress = "address1",
-                                fieldIDs = emptyList(),
                                 lastLogin = "2023-01-31T10:28:14Z",
-                                sharedAccounts = Network.AuthorizedDapp.AuthorizedPersonaSimple.SharedAccounts(
+                                sharedAccounts = Shared(
                                     listOf(),
-                                    Network.AuthorizedDapp.AuthorizedPersonaSimple.SharedAccounts.NumberOfAccounts(
-                                        Network.AuthorizedDapp.AuthorizedPersonaSimple.SharedAccounts.NumberOfAccounts.Quantifier.AtLeast,
+                                    RequestedNumber(
+                                        RequestedNumber.Quantifier.AtLeast,
                                         1
                                     )
-                                )
+                                ),
+                                sharedPersonaData = Network.AuthorizedDapp.SharedPersonaData()
                             )
                         )
                     ),
@@ -66,12 +70,12 @@ class DAppConnectionRepositoryFake : DAppConnectionRepository {
                         11, "address2", "dApp 2", listOf(
                             Network.AuthorizedDapp.AuthorizedPersonaSimple(
                                 identityAddress = "address1",
-                                fieldIDs = emptyList(),
+                                sharedPersonaData = Network.AuthorizedDapp.SharedPersonaData(),
                                 lastLogin = "2023-01-31T10:28:14Z",
-                                sharedAccounts = Network.AuthorizedDapp.AuthorizedPersonaSimple.SharedAccounts(
+                                sharedAccounts = Shared(
                                     listOf(),
-                                    Network.AuthorizedDapp.AuthorizedPersonaSimple.SharedAccounts.NumberOfAccounts(
-                                        Network.AuthorizedDapp.AuthorizedPersonaSimple.SharedAccounts.NumberOfAccounts.Quantifier.AtLeast,
+                                    RequestedNumber(
+                                        RequestedNumber.Quantifier.AtLeast,
                                         1
                                     )
                                 )
@@ -98,7 +102,7 @@ class DAppConnectionRepositoryFake : DAppConnectionRepository {
         dAppDefinitionAddress: String,
         personaAddress: String,
         numberOfAccounts: Int,
-        quantifier: Network.AuthorizedDapp.AuthorizedPersonaSimple.SharedAccounts.NumberOfAccounts.Quantifier
+        quantifier: RequestedNumber.Quantifier
     ): List<String> {
         return emptyList()
     }
@@ -106,7 +110,7 @@ class DAppConnectionRepositoryFake : DAppConnectionRepository {
     override suspend fun dAppAuthorizedPersonaHasAllDataFields(
         dAppDefinitionAddress: String,
         personaAddress: String,
-        fieldIds: List<Network.Persona.Field.ID>
+        requestedFieldKinds: Map<PersonaData.PersonaDataField.Kind, Int>
     ): Boolean {
         return false
     }
@@ -114,7 +118,7 @@ class DAppConnectionRepositoryFake : DAppConnectionRepository {
     override suspend fun updateDappAuthorizedPersonaSharedAccounts(
         dAppDefinitionAddress: String,
         personaAddress: String,
-        sharedAccounts: Network.AuthorizedDapp.AuthorizedPersonaSimple.SharedAccounts
+        sharedAccounts: Shared<String>
     ): Network.AuthorizedDapp {
         return checkNotNull(authorizedDApp)
     }
@@ -135,7 +139,7 @@ class DAppConnectionRepositoryFake : DAppConnectionRepository {
     override suspend fun deleteAuthorizedDapp(dAppDefinitionAddress: String) {
     }
 
-    override suspend fun ensureAuthorizedPersonasFieldsExist(personaAddress: String, existingFieldIds: List<Network.Persona.Field.ID>) {
+    override suspend fun ensureAuthorizedPersonasFieldsExist(personaAddress: String, existingFieldIds: List<PersonaDataEntryID>) {
     }
 
 }

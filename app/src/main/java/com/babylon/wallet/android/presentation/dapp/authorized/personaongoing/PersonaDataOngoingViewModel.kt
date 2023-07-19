@@ -2,13 +2,13 @@ package com.babylon.wallet.android.presentation.dapp.authorized.personaongoing
 
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
+import com.babylon.wallet.android.domain.model.RequiredPersonaFields
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.presentation.dapp.authorized.selectpersona.PersonaUiModel
-import com.babylon.wallet.android.presentation.model.encodeToString
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -31,7 +31,7 @@ class PersonaDataOngoingViewModel @Inject constructor(
     init {
         viewModelScope.launch {
             getProfileUseCase.personaOnCurrentNetworkFlow(args.personaId).collect { persona ->
-                val uiModel = PersonaUiModel(persona, requiredFieldIDs = args.requiredFields.toList())
+                val uiModel = PersonaUiModel(persona, requiredPersonaFields = args.requiredPersonaFields)
                 _state.update {
                     it.copy(
                         persona = uiModel,
@@ -44,13 +44,16 @@ class PersonaDataOngoingViewModel @Inject constructor(
 
     fun onEditClick(personaAddress: String) {
         viewModelScope.launch {
-            sendEvent(PersonaDataOngoingEvent.OnEditPersona(personaAddress, args.requiredFields.toList().encodeToString()))
+            sendEvent(PersonaDataOngoingEvent.OnEditPersona(personaAddress, args.requiredPersonaFields))
         }
     }
 }
 
 sealed interface PersonaDataOngoingEvent : OneOffEvent {
-    data class OnEditPersona(val personaAddress: String, val requiredFieldsEncoded: String? = null) : PersonaDataOngoingEvent
+    data class OnEditPersona(
+        val personaAddress: String,
+        val requiredPersonaFields: RequiredPersonaFields
+    ) : PersonaDataOngoingEvent
 }
 
 data class PersonaDataOngoingUiState(

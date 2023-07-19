@@ -25,7 +25,9 @@ import rdx.works.profile.data.model.factorsources.FactorSourceKind
 import rdx.works.profile.data.model.factorsources.LedgerHardwareWalletFactorSource
 import rdx.works.profile.data.model.pernetwork.DerivationPath
 import rdx.works.profile.data.model.pernetwork.FactorInstance
+import rdx.works.profile.data.model.pernetwork.IdentifiedEntry
 import rdx.works.profile.data.model.pernetwork.Network
+import rdx.works.profile.data.model.pernetwork.PersonaData
 import rdx.works.profile.data.model.pernetwork.SecurityState
 import rdx.works.profile.derivation.model.KeyType
 import rdx.works.profile.derivation.model.NetworkId
@@ -89,10 +91,6 @@ class SampleDataProvider {
             address = personaAddress,
             displayName = personaName,
             networkID = NetworkId.Nebunet.value,
-            fields = listOf(
-                Network.Persona.Field(Network.Persona.Field.ID.EmailAddress, "test@test.pl"),
-                Network.Persona.Field(Network.Persona.Field.ID.GivenName, "John")
-            ),
             securityState = SecurityState.Unsecured(
                 unsecuredEntityControl = SecurityState.UnsecuredEntityControl(
                     transactionSigning = FactorInstance(
@@ -108,6 +106,18 @@ class SampleDataProvider {
                         publicKey = FactorInstance.PublicKey.curve25519PublicKey("")
                     )
                 )
+            ),
+            personaData = PersonaData(
+                name = IdentifiedEntry.Companion.init(
+                    PersonaData.PersonaDataField.Name(
+                        variant = PersonaData.PersonaDataField.Name.Variant.Western,
+                        given = "John",
+                        family = "",
+                        nickname = ""
+                    ),
+                    "1"
+                ),
+                emailAddresses = listOf(IdentifiedEntry.init(PersonaData.PersonaDataField.Email("test@test.pl"), "2"))
             )
         )
     }

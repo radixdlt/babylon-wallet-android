@@ -1,5 +1,6 @@
 package com.babylon.wallet.android.presentation.dapp.authorized.personaonetime
 
+import android.net.Uri
 import androidx.annotation.VisibleForTesting
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.runtime.remember
@@ -7,28 +8,30 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.SavedStateHandle
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
-import androidx.navigation.NavType
 import androidx.navigation.navArgument
+import com.babylon.wallet.android.data.gateway.generated.infrastructure.Serializer
+import com.babylon.wallet.android.domain.model.RequiredPersonaFields
 import com.babylon.wallet.android.presentation.dapp.authorized.login.DAppAuthorizedLoginViewModel
 import com.babylon.wallet.android.presentation.dapp.authorized.login.ROUTE_DAPP_LOGIN_AUTHORIZED_GRAPH
-import com.babylon.wallet.android.presentation.model.decodePersonaDataKinds
+import com.babylon.wallet.android.presentation.navigation.RequiredPersonaFieldsParameterType
 import com.google.accompanist.navigation.animation.composable
-import rdx.works.profile.data.model.pernetwork.Network
+import kotlinx.serialization.encodeToString
 
 @VisibleForTesting
 internal const val ARG_REQUIRED_FIELDS = "required_fields"
 
-internal class PersonaDataOnetimeArgs(val requiredFields: Array<Network.Persona.Field.ID>) {
+internal class PersonaDataOnetimeArgs(val requiredPersonaFields: RequiredPersonaFields) {
     constructor(savedStateHandle: SavedStateHandle) : this(
-        (checkNotNull(savedStateHandle[ARG_REQUIRED_FIELDS]) as String).decodePersonaDataKinds().toTypedArray()
+        (checkNotNull(savedStateHandle[ARG_REQUIRED_FIELDS]) as RequiredPersonaFields)
     )
 }
 
 const val ROUTE_PERSONA_DATA_ONETIME_AUTHORIZED =
     "route_persona_data_onetime_authorized/{$ARG_REQUIRED_FIELDS}"
 
-fun NavController.personaDataOnetimeAuthorized(requiredFieldsEncoded: String) {
-    navigate("route_persona_data_onetime_authorized/$requiredFieldsEncoded")
+fun NavController.personaDataOnetimeAuthorized(requiredPersonaFields: RequiredPersonaFields) {
+    val argument = Uri.encode(Serializer.kotlinxSerializationJson.encodeToString(requiredPersonaFields))
+    navigate("route_persona_data_onetime_authorized/$argument")
 }
 
 @Suppress("LongParameterList")
@@ -44,7 +47,7 @@ fun NavGraphBuilder.personaDataOnetimeAuthorized(
         route = ROUTE_PERSONA_DATA_ONETIME_AUTHORIZED,
         arguments = listOf(
             navArgument(ARG_REQUIRED_FIELDS) {
-                type = NavType.StringType
+                type = RequiredPersonaFieldsParameterType
             }
         )
     ) {

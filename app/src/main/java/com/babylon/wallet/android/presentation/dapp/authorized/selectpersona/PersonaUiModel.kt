@@ -1,8 +1,11 @@
 package com.babylon.wallet.android.presentation.dapp.authorized.selectpersona
 
-import kotlinx.collections.immutable.ImmutableList
+import com.babylon.wallet.android.domain.model.RequiredPersonaFields
+import com.babylon.wallet.android.presentation.model.fullName
+import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.toPersistentList
 import rdx.works.profile.data.model.pernetwork.Network
+import rdx.works.profile.data.model.pernetwork.PersonaData
 
 data class PersonaUiModel(
     val persona: Network.Persona,
@@ -10,21 +13,23 @@ data class PersonaUiModel(
     val pinned: Boolean = false,
     val lastUsedOn: String? = null,
     val lastUsedOnTimestamp: Long = 0,
-    val requiredFieldIDs: List<Network.Persona.Field.ID> = emptyList()
+    val requiredPersonaFields: RequiredPersonaFields = RequiredPersonaFields(listOf())
 ) {
-    fun missingFieldKinds(): ImmutableList<Network.Persona.Field.ID> {
-        return requiredFieldIDs.minus(persona.fields.map { it.id }.toSet()).sortedBy { it.ordinal }.toPersistentList()
+    fun missingFieldKinds(): PersistentList<PersonaData.PersonaDataField.Kind> {
+        val requiredFieldKinds = requiredPersonaFields.fields.map { it.kind }
+        return requiredFieldKinds.minus(persona.personaData.allFields.map { it.value.kind }.toSet()).sortedBy { it.ordinal }
+            .toPersistentList()
     }
 
     fun personalInfoFormatted(): String {
         return buildString {
-            val fields = persona.fields.filter { requiredFieldIDs.contains(it.id) }
-            val givenName = fields.firstOrNull { it.id == Network.Persona.Field.ID.GivenName }?.value
-            val familyName = fields.firstOrNull { it.id == Network.Persona.Field.ID.FamilyName }?.value
-            val email = fields.firstOrNull { it.id == Network.Persona.Field.ID.EmailAddress }?.value
-            val phone = fields.firstOrNull { it.id == Network.Persona.Field.ID.PhoneNumber }?.value
+            val requiredFieldKinds = requiredPersonaFields.fields.map { it.kind }
+            val fields = persona.personaData.allFields.map { it.value }.filter { requiredFieldKinds.contains(it.kind) }
+            val fullName = fields.filterIsInstance<PersonaData.PersonaDataField.Name>().firstOrNull()?.fullName
+            val email = fields.filterIsInstance<PersonaData.PersonaDataField.Email>().firstOrNull()?.value
+            val phone = fields.filterIsInstance<PersonaData.PersonaDataField.PhoneNumber>().firstOrNull()?.value
             append(
-                listOfNotNull(listOfNotNull(givenName, familyName).joinToString(separator = " "), email, phone).filter { it.isNotEmpty() }
+                listOfNotNull(fullName, email, phone).filter { it.isNotEmpty() }
                     .joinToString("\n")
             )
         }

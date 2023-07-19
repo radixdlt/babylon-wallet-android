@@ -3,77 +3,47 @@ package com.babylon.wallet.android.data.dapp.model
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import rdx.works.profile.data.model.pernetwork.Network
 
 // REQUEST
 @Serializable
-data class PersonaDataRequestItem( // REQUEST
-    @SerialName("fields") val fields: List<PersonaData.PersonaDataField>
+data class PersonaDataRequestItem(
+    // REQUEST
+    @SerialName("isRequestingName") val isRequestingName: Boolean? = null,
+    @SerialName("numberOfRequestedEmailAddresses") val numberOfRequestedEmailAddresses: NumberOfValues? = null,
+    @SerialName("numberOfRequestedPhoneNumbers") val numberOfRequestedPhoneNumbers: NumberOfValues? = null,
 )
-
-fun PersonaDataRequestItem.toDomainModel(isOngoing: Boolean = false): MessageFromDataChannel.IncomingRequest.PersonaRequestItem? {
-    if (fields.isEmpty()) return null
-    return MessageFromDataChannel.IncomingRequest.PersonaRequestItem(fields, isOngoing = isOngoing)
-}
 
 // RESPONSE
 @Serializable
 data class PersonaDataRequestResponseItem( // RESPONSE
-    @SerialName("fields") val fields: List<PersonaData>
+    @SerialName("name") val name: PersonaDataName? = null,
+    @SerialName("emailAddresses") val emailAddresses: List<String> = emptyList(),
+    @SerialName("phoneNumbers") val phoneNumbers: List<String> = emptyList()
 )
 
-fun List<Network.Persona.Field>.toDataModel(): PersonaDataRequestResponseItem? {
-    if (this.isEmpty()) {
-        return null
-    }
-
-    val personasData = map { networkPersonaField ->
-        PersonaData(
-            field = networkPersonaField.id.toPersonaDataField(),
-            value = networkPersonaField.value
-        )
-    }
-
-    return PersonaDataRequestResponseItem(
-        fields = personasData
-    )
-}
-
 @Serializable
-data class PersonaData(
-    @SerialName("field") val field: PersonaDataField,
-    @SerialName("value") val value: String,
+data class PersonaDataName(
+    @SerialName("variant") val variant: Variant,
+    @SerialName("familyName") val familyName: String,
+    @SerialName("givenNames") val givenNames: String,
+    @SerialName("nickname") val nickname: String,
 ) {
     @Serializable
-    enum class PersonaDataField {
-        @SerialName("givenName")
-        GivenName,
+    enum class Variant {
+        @SerialName("eastern")
+        Eastern,
 
-        @SerialName("familyName")
-        FamilyName,
-
-        @SerialName("emailAddress")
-        EmailAddress,
-
-        @SerialName("phoneNumber")
-        PhoneNumber
+        @SerialName("western")
+        Western
     }
 }
 
-fun PersonaData.PersonaDataField.toKind(): Network.Persona.Field.ID {
-    return when (this) {
-        PersonaData.PersonaDataField.GivenName -> Network.Persona.Field.ID.GivenName
-        PersonaData.PersonaDataField.FamilyName -> Network.Persona.Field.ID.FamilyName
-        PersonaData.PersonaDataField.EmailAddress -> Network.Persona.Field.ID.EmailAddress
-        PersonaData.PersonaDataField.PhoneNumber -> Network.Persona.Field.ID.PhoneNumber
-    }
-}
-
-fun Network.Persona.Field.ID.toPersonaDataField(): PersonaData.PersonaDataField {
-    return when (this) {
-        Network.Persona.Field.ID.GivenName -> PersonaData.PersonaDataField.GivenName
-        Network.Persona.Field.ID.FamilyName -> PersonaData.PersonaDataField.FamilyName
-        Network.Persona.Field.ID.EmailAddress -> PersonaData.PersonaDataField.EmailAddress
-        Network.Persona.Field.ID.PhoneNumber -> PersonaData.PersonaDataField.PhoneNumber
-    }
+fun PersonaDataRequestItem.toDomainModel(isOngoing: Boolean = false): MessageFromDataChannel.IncomingRequest.PersonaRequestItem? {
+    if (isRequestingName == null && numberOfRequestedPhoneNumbers == null && numberOfRequestedEmailAddresses == null) return null
+    return MessageFromDataChannel.IncomingRequest.PersonaRequestItem(
+        isRequestingName = isRequestingName == true,
+        numberOfRequestedEmailAddresses = numberOfRequestedEmailAddresses?.toDomainModel(),
+        numberOfRequestedPhoneNumbers = numberOfRequestedPhoneNumbers?.toDomainModel(),
+        isOngoing = isOngoing
+    )
 }

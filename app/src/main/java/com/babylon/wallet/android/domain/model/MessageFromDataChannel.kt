@@ -1,9 +1,12 @@
 package com.babylon.wallet.android.domain.model
 
-import com.babylon.wallet.android.data.dapp.model.PersonaData
+import android.os.Parcelable
+import kotlinx.parcelize.Parcelize
+import kotlinx.serialization.Serializable
 import rdx.works.profile.data.model.factorsources.FactorSource
 import rdx.works.profile.data.model.factorsources.LedgerHardwareWalletFactorSource
-import rdx.works.profile.data.model.pernetwork.Network
+import rdx.works.profile.data.model.pernetwork.PersonaData
+import rdx.works.profile.data.model.pernetwork.RequestedNumber
 
 sealed interface MessageFromDataChannel {
 
@@ -39,7 +42,7 @@ sealed interface MessageFromDataChannel {
                 return dappId.isEmpty()
             }
 
-            fun isUsePersonaAuth(): Boolean {
+            private fun isUsePersonaAuth(): Boolean {
                 return authRequest is AuthRequest.UsePersonaRequest
             }
 
@@ -73,11 +76,11 @@ sealed interface MessageFromDataChannel {
 
         data class UnauthorizedRequest(
             val dappId: String, // from which dapp comes the message
-            val requestId: String,
+            val interactionId: String,
             val requestMetadata: RequestMetadata,
             val oneTimeAccountsRequestItem: AccountsRequestItem? = null,
             val oneTimePersonaDataRequestItem: PersonaRequestItem? = null
-        ) : IncomingRequest(dappId, requestId, requestMetadata) {
+        ) : IncomingRequest(dappId, interactionId, requestMetadata) {
             fun isValidRequest(): Boolean {
                 return oneTimeAccountsRequestItem?.isValidRequestItem() != false
             }
@@ -109,29 +112,25 @@ sealed interface MessageFromDataChannel {
 
         data class AccountsRequestItem(
             val isOngoing: Boolean,
-            val numberOfAccounts: Int,
-            val quantifier: AccountNumberQuantifier,
+            val numberOfValues: NumberOfValues,
             val challenge: String?
         ) {
-            enum class AccountNumberQuantifier {
-                Exactly, AtLeast;
-
-                fun exactly(): Boolean {
-                    return this == Exactly
-                }
-            }
 
             fun isValidRequestItem(): Boolean {
-                return numberOfAccounts >= 0
+                return numberOfValues.quantity >= 0
             }
         }
 
+        @Serializable
+        @Parcelize
         data class PersonaRequestItem(
-            val fields: List<PersonaData.PersonaDataField>,
+            val isRequestingName: Boolean,
+            val numberOfRequestedEmailAddresses: NumberOfValues? = null,
+            val numberOfRequestedPhoneNumbers: NumberOfValues? = null,
             val isOngoing: Boolean
-        ) {
+        ) : Parcelable {
             fun isValid(): Boolean {
-                return fields.isNotEmpty()
+                return isRequestingName || numberOfRequestedPhoneNumbers != null || numberOfRequestedEmailAddresses != null
             }
         }
 
@@ -139,6 +138,22 @@ sealed interface MessageFromDataChannel {
             val accounts: Boolean,
             val personaData: Boolean
         )
+
+        @Parcelize
+        @Serializable
+        data class NumberOfValues(
+            val quantity: Int,
+            val quantifier: Quantifier
+        ) : Parcelable {
+
+            fun exactly(): Boolean {
+                return quantifier == Quantifier.Exactly
+            }
+
+            enum class Quantifier {
+                Exactly, AtLeast
+            }
+        }
     }
 
     sealed class LedgerResponse(val id: String) : MessageFromDataChannel {
@@ -195,15 +210,15 @@ sealed interface MessageFromDataChannel {
     object Error : MessageFromDataChannel
 }
 
-fun MessageFromDataChannel.IncomingRequest.AccountsRequestItem.AccountNumberQuantifier.toProfileShareAccountsQuantifier():
-    Network.AuthorizedDapp.AuthorizedPersonaSimple.SharedAccounts.NumberOfAccounts.Quantifier {
-    return when (this) {
-        MessageFromDataChannel.IncomingRequest.AccountsRequestItem.AccountNumberQuantifier.Exactly -> {
-            Network.AuthorizedDapp.AuthorizedPersonaSimple.SharedAccounts.NumberOfAccounts.Quantifier.Exactly
+fun MessageFromDataChannel.IncomingRequest.NumberOfValues.toProfileShareAccountsQuantifier():
+    RequestedNumber.Quantifier {
+    return when (this.quantifier) {
+        MessageFromDataChannel.IncomingRequest.NumberOfValues.Quantifier.Exactly -> {
+            RequestedNumber.Quantifier.Exactly
         }
 
-        MessageFromDataChannel.IncomingRequest.AccountsRequestItem.AccountNumberQuantifier.AtLeast -> {
-            Network.AuthorizedDapp.AuthorizedPersonaSimple.SharedAccounts.NumberOfAccounts.Quantifier.AtLeast
+        MessageFromDataChannel.IncomingRequest.NumberOfValues.Quantifier.AtLeast -> {
+            RequestedNumber.Quantifier.AtLeast
         }
     }
 }
@@ -215,4 +230,32 @@ fun MessageFromDataChannel.LedgerResponse.LedgerDeviceModel.toProfileLedgerDevic
         MessageFromDataChannel.LedgerResponse.LedgerDeviceModel.NanoSPlus -> LedgerHardwareWalletFactorSource.DeviceModel.NANO_S_PLUS
         MessageFromDataChannel.LedgerResponse.LedgerDeviceModel.NanoX -> LedgerHardwareWalletFactorSource.DeviceModel.NANO_X
     }
+}
+
+fun MessageFromDataChannel.IncomingRequest.PersonaRequestItem.toRequiredFields(): RequiredPersonaFields {
+    return RequiredPersonaFields(
+        mutableListOf<RequiredPersonaField>().also {
+            if (isRequestingName) {
+                it.add(
+                    RequiredPersonaField(
+                        PersonaData.PersonaDataField.Kind.Name,
+                        MessageFromDataChannel.IncomingRequest.NumberOfValues(
+                            1,
+                            MessageFromDataChannel.IncomingRequest.NumberOfValues.Quantifier.Exactly
+                        )
+                    )
+                )
+            }
+            if (numberOfRequestedEmailAddresses != null) {
+                it.add(
+                    RequiredPersonaField(PersonaData.PersonaDataField.Kind.EmailAddress, numberOfRequestedEmailAddresses)
+                )
+            }
+            if (numberOfRequestedPhoneNumbers != null) {
+                it.add(
+                    RequiredPersonaField(PersonaData.PersonaDataField.Kind.PhoneNumber, numberOfRequestedPhoneNumbers)
+                )
+            }
+        }
+    )
 }

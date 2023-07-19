@@ -53,21 +53,22 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme.dimensions
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.presentation.common.FullscreenCircularProgressContent
 import com.babylon.wallet.android.presentation.model.PersonaDisplayNameFieldWrapper
-import com.babylon.wallet.android.presentation.model.PersonaFieldKindWrapper
+import com.babylon.wallet.android.presentation.model.PersonaFieldWrapper
 import com.babylon.wallet.android.presentation.model.toDisplayResource
 import com.babylon.wallet.android.presentation.ui.composables.DefaultModalSheetLayout
 import com.babylon.wallet.android.presentation.ui.composables.InfoLink
 import com.babylon.wallet.android.presentation.ui.composables.NotSecureAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.UnderlineTextButton
 import com.babylon.wallet.android.presentation.ui.composables.persona.AddFieldSheet
-import com.babylon.wallet.android.presentation.ui.composables.persona.PersonaPropertyInput
+import com.babylon.wallet.android.presentation.ui.composables.persona.PersonaDataFieldInput
 import com.babylon.wallet.android.utils.biometricAuthenticate
 import com.babylon.wallet.android.utils.findFragmentActivity
 import com.google.accompanist.drawablepainter.rememberDrawablePainter
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.launch
-import rdx.works.profile.data.model.pernetwork.Network
+import rdx.works.profile.data.model.pernetwork.PersonaData
+import rdx.works.profile.data.model.pernetwork.PersonaDataEntryID
 
 @Composable
 fun CreatePersonaScreen(
@@ -123,14 +124,14 @@ fun CreatePersonaContent(
     onBackClick: () -> Unit,
     isDeviceSecure: Boolean,
     modifier: Modifier,
-    fieldsToAdd: ImmutableList<PersonaFieldKindWrapper>,
-    currentFields: ImmutableList<PersonaFieldKindWrapper>,
+    fieldsToAdd: ImmutableList<PersonaFieldWrapper>,
+    currentFields: ImmutableList<PersonaFieldWrapper>,
     anyFieldSelected: Boolean,
-    onSelectionChanged: (Network.Persona.Field.ID, Boolean) -> Unit,
+    onSelectionChanged: (PersonaDataEntryID, Boolean) -> Unit,
     onAddFields: () -> Unit,
-    onDeleteField: (Network.Persona.Field.ID) -> Unit,
-    onValueChanged: (Network.Persona.Field.ID, String) -> Unit,
-    onFieldFocusChanged: (Network.Persona.Field.ID, Boolean) -> Unit,
+    onDeleteField: (PersonaDataEntryID) -> Unit,
+    onValueChanged: (PersonaDataEntryID, PersonaData.PersonaDataField) -> Unit,
+    onFieldFocusChanged: (PersonaDataEntryID, Boolean) -> Unit,
     onPersonaDisplayNameFocusChanged: (Boolean) -> Unit
 ) {
     val keyboardController = LocalSoftwareKeyboardController.current
@@ -239,14 +240,14 @@ fun CreatePersonaContent(
 private fun CreatePersonaContentList(
     onPersonaNameChange: (String) -> Unit,
     personaName: PersonaDisplayNameFieldWrapper,
-    currentFields: ImmutableList<PersonaFieldKindWrapper>,
-    onValueChanged: (Network.Persona.Field.ID, String) -> Unit,
-    onDeleteField: (Network.Persona.Field.ID) -> Unit,
+    currentFields: ImmutableList<PersonaFieldWrapper>,
+    onValueChanged: (PersonaDataEntryID, PersonaData.PersonaDataField) -> Unit,
+    onDeleteField: (PersonaDataEntryID) -> Unit,
     addButtonEnabled: Boolean,
     modifier: Modifier = Modifier,
     onAddFieldClick: () -> Unit,
     onEditAvatar: () -> Unit,
-    onFieldFocusChanged: (Network.Persona.Field.ID, Boolean) -> Unit,
+    onFieldFocusChanged: (PersonaDataEntryID, Boolean) -> Unit,
     onPersonaDisplayNameFocusChanged: (Boolean) -> Unit
 ) {
     LazyColumn(
@@ -313,12 +314,12 @@ private fun CreatePersonaContentList(
             Spacer(modifier = Modifier.height(dimensions.paddingDefault))
         }
         items(currentFields, key = { it.id }) { field ->
-            PersonaPropertyInput(
+            PersonaDataFieldInput(
                 modifier = Modifier
                     .fillMaxWidth()
                     .animateItemPlacement(),
-                label = stringResource(id = field.id.toDisplayResource()),
-                value = field.value,
+                label = stringResource(id = field.entry.value.kind.toDisplayResource()),
+                field = field.entry.value,
                 onValueChanged = {
                     onValueChanged(field.id, it)
                 },
@@ -329,12 +330,12 @@ private fun CreatePersonaContentList(
                     onFieldFocusChanged(field.id, it.hasFocus)
                 },
                 required = field.required,
+                phoneInput = field.isPhoneNumber(),
                 error = if (field.shouldDisplayValidationError && field.valid == false) {
                     stringResource(id = R.string.createPersona_requiredField)
                 } else {
                     null
                 },
-                phoneInput = field.isPhoneNumber()
             )
             Spacer(modifier = Modifier.height(dimensions.paddingLarge))
         }

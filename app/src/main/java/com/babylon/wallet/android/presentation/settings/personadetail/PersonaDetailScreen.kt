@@ -42,11 +42,12 @@ import com.babylon.wallet.android.domain.model.DAppWithMetadata
 import com.babylon.wallet.android.domain.model.DAppWithMetadataAndAssociatedResources
 import com.babylon.wallet.android.domain.model.Resource
 import com.babylon.wallet.android.presentation.common.FullscreenCircularProgressContent
-import com.babylon.wallet.android.presentation.model.toDisplayResource
+import com.babylon.wallet.android.presentation.model.allNonEmptyFields
 import com.babylon.wallet.android.presentation.settings.dappdetail.DAppDetailsSheetContent
 import com.babylon.wallet.android.presentation.ui.composables.DefaultModalSheetLayout
 import com.babylon.wallet.android.presentation.ui.composables.GrayBackgroundWrapper
-import com.babylon.wallet.android.presentation.ui.composables.PersonaPropertyRow
+import com.babylon.wallet.android.presentation.ui.composables.PersonaDataFieldRow
+import com.babylon.wallet.android.presentation.ui.composables.PersonaDataStringField
 import com.babylon.wallet.android.presentation.ui.composables.PersonaRoundedAvatar
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.StandardOneLineCard
@@ -198,29 +199,39 @@ private fun PersonaDetailList(
             )
         }
         item {
-            PersonaPropertyRow(
+            PersonaDataStringField(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = dimensions.paddingDefault),
                 label = stringResource(id = R.string.authorizedDapps_personaDetails_personaLabelHeading),
                 value = persona.displayName
             )
-            Divider(
-                modifier = Modifier.padding(dimensions.paddingDefault)
-            )
+            Divider(modifier = Modifier.padding(dimensions.paddingDefault), color = RadixTheme.colors.gray4)
         }
-        items(persona.fields) { field ->
-            PersonaPropertyRow(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = dimensions.paddingDefault),
-                label = stringResource(id = field.id.toDisplayResource()),
-                value = field.value
-            )
-            Spacer(modifier = Modifier.height(dimensions.paddingLarge))
+        val allFields = persona.personaData.allNonEmptyFields
+        if (allFields.isNotEmpty()) {
+            val lastItem = allFields.last()
+            items(allFields) { field ->
+                PersonaDataFieldRow(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = dimensions.paddingDefault),
+                    field = field.value
+                )
+                if (field != lastItem) {
+                    Divider(
+                        modifier = Modifier.padding(horizontal = dimensions.paddingDefault, vertical = dimensions.paddingLarge),
+                        color = RadixTheme.colors.gray4
+                    )
+                }
+            }
         }
         item {
+            Spacer(modifier = Modifier.height(dimensions.paddingLarge))
             RadixSecondaryButton(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = dimensions.paddingXLarge),
                 text = stringResource(id = R.string.authorizedDapps_personaDetails_editPersona),
                 onClick = { onEditPersona(persona.address) },
                 throttleClicks = true
@@ -230,7 +241,7 @@ private fun PersonaDetailList(
                 RadixSecondaryButton(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = dimensions.paddingDefault),
+                        .padding(horizontal = dimensions.paddingXLarge),
                     text = "Create &amp; Upload Auth Key",
                     onClick = onCreateAndUploadAuthKey,
                     enabled = !loading,

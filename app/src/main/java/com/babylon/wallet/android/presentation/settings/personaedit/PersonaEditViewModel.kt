@@ -10,7 +10,8 @@ import com.babylon.wallet.android.presentation.common.PersonaEditableImpl
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.presentation.model.PersonaDisplayNameFieldWrapper
-import com.babylon.wallet.android.presentation.model.PersonaFieldKindWrapper
+import com.babylon.wallet.android.presentation.model.PersonaFieldWrapper
+import com.babylon.wallet.android.presentation.model.toPersonaData
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
@@ -45,7 +46,7 @@ class PersonaEditViewModel @Inject constructor(
                         addFieldButtonEnabled = s.areThereFieldsSelected,
                         currentFields = s.currentFields,
                         fieldsToAdd = s.fieldsToAdd,
-                        dappContextEdit = s.requiredFieldIDS.isNotEmpty(),
+                        dappContextEdit = s.requiredFieldKinds.isNotEmpty(),
                         wasEdited = s.currentFields.any { it.wasEdited } || state.currentFields.size != s.currentFields.size
                     )
                 }
@@ -53,7 +54,7 @@ class PersonaEditViewModel @Inject constructor(
         }
         viewModelScope.launch {
             getProfileUseCase.personaOnCurrentNetworkFlow(args.personaAddress).collect { persona ->
-                setPersona(persona = persona, requiredFieldIDS = args.requiredFields.toList())
+                setPersona(persona = persona, requiredFieldKinds = args.requiredPersonaFields?.fields?.map { it.kind }.orEmpty())
                 _state.update { state ->
                     state.copy(
                         persona = persona,
@@ -69,11 +70,9 @@ class PersonaEditViewModel @Inject constructor(
     fun onSave() {
         viewModelScope.launch {
             state.value.persona?.let { persona ->
-                val fields = state.value.currentFields.map {
-                    Network.Persona.Field.init(id = it.id, value = it.value.trim())
-                }
+                val personaData = state.value.currentFields.toPersonaData()
                 val updatedPersona =
-                    persona.copy(displayName = state.value.personaDisplayName.value.trim(), fields = fields)
+                    persona.copy(displayName = state.value.personaDisplayName.value.trim(), personaData = personaData)
                 updatePersonaUseCase(updatedPersona)
                 sendEvent(PersonaEditEvent.PersonaSaved)
             }
@@ -87,8 +86,8 @@ sealed interface PersonaEditEvent : OneOffEvent {
 
 data class PersonaEditUiState(
     val persona: Network.Persona? = null,
-    val currentFields: ImmutableList<PersonaFieldKindWrapper> = persistentListOf(),
-    val fieldsToAdd: ImmutableList<PersonaFieldKindWrapper> = persistentListOf(),
+    val currentFields: ImmutableList<PersonaFieldWrapper> = persistentListOf(),
+    val fieldsToAdd: ImmutableList<PersonaFieldWrapper> = persistentListOf(),
     val personaDisplayName: PersonaDisplayNameFieldWrapper = PersonaDisplayNameFieldWrapper(),
     val addFieldButtonEnabled: Boolean = false,
     val saveButtonEnabled: Boolean = false,

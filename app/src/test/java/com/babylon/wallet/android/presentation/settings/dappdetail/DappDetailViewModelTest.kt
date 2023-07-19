@@ -20,6 +20,8 @@ import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Test
 import rdx.works.profile.data.model.pernetwork.Network
+import rdx.works.profile.data.model.pernetwork.RequestedNumber
+import rdx.works.profile.data.model.pernetwork.Shared
 import rdx.works.profile.domain.GetProfileUseCase
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -58,12 +60,12 @@ internal class DappDetailViewModelTest : StateViewModelTest<DappDetailViewModel>
                         11, "1", "dApp", listOf(
                             Network.AuthorizedDapp.AuthorizedPersonaSimple(
                                 identityAddress = "address1",
-                                fieldIDs = emptyList(),
+                                sharedPersonaData = Network.AuthorizedDapp.SharedPersonaData(),
                                 lastLogin = "2023-01-31T10:28:14Z",
-                                sharedAccounts = Network.AuthorizedDapp.AuthorizedPersonaSimple.SharedAccounts(
+                                sharedAccounts = Shared(
                                     listOf("address-acc-1"),
-                                    Network.AuthorizedDapp.AuthorizedPersonaSimple.SharedAccounts.NumberOfAccounts(
-                                        Network.AuthorizedDapp.AuthorizedPersonaSimple.SharedAccounts.NumberOfAccounts.Quantifier.AtLeast,
+                                    RequestedNumber(
+                                        RequestedNumber.Quantifier.AtLeast,
                                         1
                                     )
                                 )

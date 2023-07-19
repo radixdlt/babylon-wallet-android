@@ -7,6 +7,8 @@ import com.babylon.wallet.android.domain.common.onError
 import com.babylon.wallet.android.domain.common.onValue
 import com.babylon.wallet.android.domain.model.DAppWithMetadata
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
+import com.babylon.wallet.android.domain.model.RequiredPersonaField
+import com.babylon.wallet.android.domain.model.RequiredPersonaFields
 import com.babylon.wallet.android.domain.model.Resource
 import com.babylon.wallet.android.domain.usecases.GetDAppWithMetadataAndAssociatedResourcesUseCase
 import com.babylon.wallet.android.presentation.common.OneOffEvent
@@ -17,7 +19,6 @@ import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.presentation.dapp.authorized.account.AccountItemUiModel
 import com.babylon.wallet.android.presentation.dapp.authorized.account.toUiModel
 import com.babylon.wallet.android.presentation.dapp.authorized.selectpersona.PersonaUiModel
-import com.babylon.wallet.android.presentation.model.encodeToString
 import com.babylon.wallet.android.presentation.model.toQuantifierUsedInRequest
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
@@ -54,7 +55,6 @@ class DappDetailViewModel @Inject constructor(
                 needMostRecentData = false
             )
             metadataResult.onValue { dAppWithAssociatedResources ->
-
                 _state.update { state ->
                     state.copy(
                         dappWithMetadata = dAppWithAssociatedResources.dAppWithMetadata,
@@ -126,14 +126,27 @@ class DappDetailViewModel @Inject constructor(
     private suspend fun updateSelectedPersonaData(persona: Network.Persona) {
         val personaSimple =
             authorizedDapp.referencesToAuthorizedPersonas.firstOrNull { it.identityAddress == persona.address }
-        val sharedAccounts = personaSimple?.sharedAccounts?.accountsReferencedByAddress?.mapNotNull {
+        val sharedAccounts = personaSimple?.sharedAccounts?.ids?.mapNotNull {
             getProfileUseCase.accountOnCurrentNetwork(it)?.toUiModel()
         }.orEmpty()
-        val requiredFieldIds = personaSimple?.fieldIDs.orEmpty()
-        val requiredFieldKinds = persona.fields.filter { requiredFieldIds.contains(it.id) }.map {
-            it.id
+        val requiredKinds = personaSimple?.sharedPersonaData?.alreadyGrantedIds().orEmpty().mapNotNull {
+            persona.personaData.getDataFieldKind(it)
         }
-        val selectedPersona = PersonaUiModel(persona, requiredFieldIDs = requiredFieldKinds)
+        // TODO properly compute required fields and number of values when we will support multiple entry values
+        val selectedPersona = PersonaUiModel(
+            persona = persona,
+            requiredPersonaFields = RequiredPersonaFields(
+                fields = requiredKinds.map {
+                    RequiredPersonaField(
+                        kind = it,
+                        numberOfValues = MessageFromDataChannel.IncomingRequest.NumberOfValues(
+                            1,
+                            MessageFromDataChannel.IncomingRequest.NumberOfValues.Quantifier.Exactly
+                        )
+                    )
+                }
+            )
+        )
         _state.update {
             it.copy(
                 sharedPersonaAccounts = sharedAccounts.toPersistentList(),
@@ -171,7 +184,7 @@ class DappDetailViewModel @Inject constructor(
             if (_state.value.selectedSheetState is SelectedSheetState.SelectedPersona) {
                 (_state.value.selectedSheetState as SelectedSheetState.SelectedPersona).persona?.let { persona ->
                     sendEvent(
-                        DappDetailEvent.EditPersona(persona.persona.address, persona.requiredFieldIDs.encodeToString())
+                        DappDetailEvent.EditPersona(persona.persona.address, persona.requiredPersonaFields)
                     )
                 }
             }
@@ -201,8 +214,10 @@ class DappDetailViewModel @Inject constructor(
                         ),
                         ongoingAccountsRequestItem = MessageFromDataChannel.IncomingRequest.AccountsRequestItem(
                             isOngoing = true,
-                            numberOfAccounts = sharedAccounts.request.quantity,
-                            quantifier = sharedAccounts.request.quantifier.toQuantifierUsedInRequest(),
+                            numberOfValues = MessageFromDataChannel.IncomingRequest.NumberOfValues(
+                                quantity = sharedAccounts.request.quantity,
+                                quantifier = sharedAccounts.request.quantifier.toQuantifierUsedInRequest()
+                            ),
                             challenge = null
                         ),
                         resetRequestItem = MessageFromDataChannel.IncomingRequest.ResetRequestItem(accounts = true, personaData = false)
@@ -215,7 +230,7 @@ class DappDetailViewModel @Inject constructor(
 }
 
 sealed interface DappDetailEvent : OneOffEvent {
-    data class EditPersona(val personaAddress: String, val requiredFieldsStringEncoded: String) : DappDetailEvent
+    data class EditPersona(val personaAddress: String, val requiredPersonaFields: RequiredPersonaFields? = null) : DappDetailEvent
     object LastPersonaDeleted : DappDetailEvent
     object DappDeleted : DappDetailEvent
 }
@@ -236,6 +251,7 @@ sealed interface SelectedSheetState {
     data class SelectedNonFungibleResource(
         val nftItem: Resource.NonFungibleResource.Item
     ) : SelectedSheetState
+
     data class SelectedPersona(
         val persona: PersonaUiModel?
     ) : SelectedSheetState

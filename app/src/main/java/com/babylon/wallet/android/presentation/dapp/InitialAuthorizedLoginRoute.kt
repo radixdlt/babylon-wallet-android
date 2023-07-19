@@ -1,5 +1,7 @@
 package com.babylon.wallet.android.presentation.dapp
 
+import com.babylon.wallet.android.domain.model.RequiredPersonaFields
+
 sealed interface InitialAuthorizedLoginRoute {
     data class SelectPersona(val reqId: String) : InitialAuthorizedLoginRoute
     data class Permission(
@@ -11,11 +13,11 @@ sealed interface InitialAuthorizedLoginRoute {
 
     data class OngoingPersonaData(
         val personaAddress: String,
-        val requestedFieldsEncoded: String
+        val requiredPersonaFields: RequiredPersonaFields
     ) : InitialAuthorizedLoginRoute
 
     data class OneTimePersonaData(
-        val requestedFieldsEncoded: String
+        val requiredPersonaFields: RequiredPersonaFields
     ) : InitialAuthorizedLoginRoute
 
     data class ChooseAccount(
