@@ -32,6 +32,7 @@ import rdx.works.profile.domain.accountOnCurrentNetwork
 import rdx.works.profile.domain.accountsOnCurrentNetwork
 import rdx.works.profile.domain.backup.GetBackupStateUseCase
 import rdx.works.profile.domain.factorSources
+import timber.log.Timber
 import javax.inject.Inject
 
 @HiltViewModel
@@ -73,6 +74,7 @@ class WalletViewModel @Inject constructor(
                     }
                     .onError { error ->
                         _state.update { it.onResourcesError(error) }
+                        Timber.w(error)
                     }
             }
         }

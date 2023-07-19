@@ -3,14 +3,14 @@ package com.babylon.wallet.android.domain.model
 import android.net.Uri
 import com.babylon.wallet.android.domain.model.metadata.AccountTypeMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.ClaimedEntitiesMetadataItem
-import com.babylon.wallet.android.domain.model.metadata.ClaimedWebsiteMetadataItem
+import com.babylon.wallet.android.domain.model.metadata.ClaimedWebsitesMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.DAppDefinitionsMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.DescriptionMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.IconUrlMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.MetadataItem
 import com.babylon.wallet.android.domain.model.metadata.MetadataItem.Companion.consume
 import com.babylon.wallet.android.domain.model.metadata.NameMetadataItem
-import com.babylon.wallet.android.domain.model.metadata.RelatedWebsiteMetadataItem
+import com.babylon.wallet.android.domain.model.metadata.RelatedWebsitesMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.StringMetadataItem
 
 data class DAppWithMetadata(
@@ -18,8 +18,8 @@ data class DAppWithMetadata(
     private val nameItem: NameMetadataItem? = null,
     private val descriptionItem: DescriptionMetadataItem? = null,
     private val iconMetadataItem: IconUrlMetadataItem? = null,
-    private val relatedWebsitesItem: RelatedWebsiteMetadataItem? = null,
-    private val claimedWebsiteItem: ClaimedWebsiteMetadataItem? = null,
+    private val relatedWebsitesItem: RelatedWebsitesMetadataItem? = null,
+    private val claimedWebsitesItem: ClaimedWebsitesMetadataItem? = null,
     private val claimedEntitiesItem: ClaimedEntitiesMetadataItem? = null,
     private val accountTypeItem: AccountTypeMetadataItem? = null,
     private val dAppDefinitionsMetadataItem: DAppDefinitionsMetadataItem? = null,
@@ -44,14 +44,17 @@ data class DAppWithMetadata(
     val definitionAddresses: List<String>
         get() = dAppDefinitionsMetadataItem?.addresses.orEmpty()
 
-    val claimedWebsite: String?
-        get() = claimedWebsiteItem?.website
+    val claimedWebsites: List<String>
+        get() = claimedWebsitesItem?.websites.orEmpty()
+
+    val firstClaimedWebsite: String?
+        get() = claimedWebsites.firstOrNull()
 
     val claimedEntities: List<String>
-        get() = claimedEntitiesItem?.entity?.split(",")?.map { it.trim() }.orEmpty()
+        get() = claimedEntitiesItem?.entities.orEmpty()
 
     fun isRelatedWith(origin: String): Boolean {
-        return relatedWebsitesItem?.website == origin
+        return relatedWebsitesItem?.websites?.any { it == origin } == true
     }
 
     companion object {
@@ -64,7 +67,7 @@ data class DAppWithMetadata(
                 descriptionItem = remainingItems.consume(),
                 iconMetadataItem = remainingItems.consume(),
                 relatedWebsitesItem = remainingItems.consume(),
-                claimedWebsiteItem = remainingItems.consume(),
+                claimedWebsitesItem = remainingItems.consume(),
                 claimedEntitiesItem = remainingItems.consume(),
                 accountTypeItem = remainingItems.consume(),
                 nonExplicitMetadataItems = remainingItems.filterIsInstance<StringMetadataItem>()

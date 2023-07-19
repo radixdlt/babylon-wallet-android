@@ -376,7 +376,7 @@ fun DappDetails(
                     Spacer(modifier = Modifier.height(dimensions.paddingDefault))
                 }
             }
-            dappWithMetadata?.claimedWebsite?.let {
+            dappWithMetadata?.firstClaimedWebsite?.let {
                 item {
                     DAppWebsiteAddressRow(
                         websiteAddress = it,

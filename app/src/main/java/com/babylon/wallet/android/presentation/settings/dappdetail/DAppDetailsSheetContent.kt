@@ -91,7 +91,7 @@ fun DAppDetailsSheetContent(
                     Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
                 }
             }
-            dApp.dAppWithMetadata.claimedWebsite?.let {
+            dApp.dAppWithMetadata.firstClaimedWebsite?.let {
                 item {
                     DAppWebsiteAddressRow(
                         websiteAddress = it,

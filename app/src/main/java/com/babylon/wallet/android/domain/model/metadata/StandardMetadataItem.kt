@@ -34,20 +34,20 @@ data class DAppDefinitionsMetadataItem(
     override val key: String = ExplicitMetadataKey.DAPP_DEFINITION.key
 }
 
-data class RelatedWebsiteMetadataItem(
-    val website: String // TODO check that
+data class RelatedWebsitesMetadataItem(
+    val websites: List<String>
 ) : StandardMetadataItem {
     override val key: String = ExplicitMetadataKey.RELATED_WEBSITES.key
 }
 
-data class ClaimedWebsiteMetadataItem(
-    val website: String
+data class ClaimedWebsitesMetadataItem(
+    val websites: List<String>
 ) : StandardMetadataItem {
     override val key: String = ExplicitMetadataKey.CLAIMED_WEBSITES.key
 }
 
 data class ClaimedEntitiesMetadataItem(
-    val entity: String
+    val entities: List<String>
 ) : StandardMetadataItem {
     override val key: String = ExplicitMetadataKey.CLAIMED_ENTITIES.key
 }

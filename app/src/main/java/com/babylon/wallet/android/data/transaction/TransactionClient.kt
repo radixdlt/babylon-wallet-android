@@ -315,8 +315,8 @@ class TransactionClient @Inject constructor(
                 nonce = generateNonce().toLong(),
                 signerPublicKeys = listOf(),
                 flags = TransactionPreviewRequestFlags(
-                    useFreeCredit = false, // TODO ELM
-                    assumeAllSignatureProofs = true,
+                    useFreeCredit = true,
+                    assumeAllSignatureProofs = false,
                     skipEpochCheck = false
                 ),
                 blobsHex = manifest.blobs().map { it.toByteArray().toHexString() },
