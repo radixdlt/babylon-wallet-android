@@ -26,7 +26,7 @@ class TokenQuantityToDisplayTest {
 
     @Test
     fun `given a token quantity of 123456789012345,4, then the token amount to display is 123,456,789,012,345-dot-4`() {
-        val expectedTokenQuantityToDisplay = "123,456,789,012,345.4"
+        val expectedTokenQuantityToDisplay = "123.45679 T"
 
         val actual = BigDecimal(123456789012345.4).displayableQuantity()
 
@@ -35,7 +35,7 @@ class TokenQuantityToDisplayTest {
 
     @Test
     fun `given a token quantity of 120073000000123,92, then the token amount to display is 120,073,000,000,123-dot-9`() {
-        val expectedTokenQuantityToDisplay = "120,073,000,000,123.9"
+        val expectedTokenQuantityToDisplay = "120.073 T"
 
         val actual = BigDecimal(120073000000123.92).displayableQuantity()
 
@@ -80,7 +80,7 @@ class TokenQuantityToDisplayTest {
 
     @Test
     fun `given a token quantity of 12345678901,1000 then the token amount to display is 12,345,678,901-dot-1`() {
-        val expectedTokenQuantityToDisplay = "12,345,678,901.1"
+        val expectedTokenQuantityToDisplay = "12.345679 B"
 
         val actual = BigDecimal(12345678901.1000).displayableQuantity()
 
@@ -116,7 +116,7 @@ class TokenQuantityToDisplayTest {
 
     @Test
     fun `given a token quantity of 1234567890,01 then the token amount to display is 1,234,567,890`() {
-        val expectedTokenQuantityToDisplay = "1,234,567,890"
+        val expectedTokenQuantityToDisplay = "1,234.5679 M"
 
         val actual = BigDecimal(1234567890.01).displayableQuantity()
 
@@ -128,6 +128,127 @@ class TokenQuantityToDisplayTest {
         val expectedTokenQuantityToDisplay = "1,234,567.2"
 
         val actual = BigDecimal(1234567.19).displayableQuantity()
+
+        Assert.assertEquals(expectedTokenQuantityToDisplay, actual)
+    }
+
+    /**
+     * Table of all examples taken from here as a source of truth ->
+     * https://radixdlt.atlassian.net/wiki/spaces/AT/pages/2820538382/Wallet+Token+Amount+Display+and+Copying
+     */
+    @Test
+    fun `test1`() {
+        val expectedTokenQuantityToDisplay = "0.1234568"
+
+        val actual = BigDecimal(0.123456789).displayableQuantity()
+
+        Assert.assertEquals(expectedTokenQuantityToDisplay, actual)
+    }
+
+    @Test
+    fun `test2`() {
+        val expectedTokenQuantityToDisplay = "0.4321"
+
+        val actual = BigDecimal(0.4321).displayableQuantity()
+
+        Assert.assertEquals(expectedTokenQuantityToDisplay, actual)
+    }
+
+    @Test
+    fun `test3`() {
+        val expectedTokenQuantityToDisplay = "0"
+
+        val actual = BigDecimal(0.0000000000001).displayableQuantity()
+
+        Assert.assertEquals(expectedTokenQuantityToDisplay, actual)
+    }
+
+    @Test
+    fun `test4`() {
+        val expectedTokenQuantityToDisplay = "1"
+
+        val actual = BigDecimal(0.9999999999999).displayableQuantity()
+
+        Assert.assertEquals(expectedTokenQuantityToDisplay, actual)
+    }
+
+    @Test
+    fun `test5`() {
+        val expectedTokenQuantityToDisplay = "1,000"
+
+        val actual = BigDecimal(1000).displayableQuantity()
+
+        Assert.assertEquals(expectedTokenQuantityToDisplay, actual)
+    }
+
+    @Test
+    fun `test6`() {
+        val expectedTokenQuantityToDisplay = "1,000.01"
+
+        val actual = BigDecimal(1000.01).displayableQuantity()
+
+        Assert.assertEquals(expectedTokenQuantityToDisplay, actual)
+    }
+
+    @Test
+    fun `test7`() {
+        val expectedTokenQuantityToDisplay = "1,000.1235"
+
+        val actual = BigDecimal(1000.123456789).displayableQuantity()
+
+        Assert.assertEquals(expectedTokenQuantityToDisplay, actual)
+    }
+
+    @Test
+    fun `test8`() {
+        val expectedTokenQuantityToDisplay = "1,000,000.1"
+
+        val actual = BigDecimal(1000000.1234).displayableQuantity()
+
+        Assert.assertEquals(expectedTokenQuantityToDisplay, actual)
+    }
+
+    @Test
+    fun `test9`() {
+        val expectedTokenQuantityToDisplay = "10,000,000"
+
+        val actual = BigDecimal(10000000.1234).displayableQuantity()
+
+        Assert.assertEquals(expectedTokenQuantityToDisplay, actual)
+    }
+
+    @Test
+    fun `test10`() {
+        val expectedTokenQuantityToDisplay = "100.12346 M"
+
+        val actual = BigDecimal(100123456).displayableQuantity()
+
+        Assert.assertEquals(expectedTokenQuantityToDisplay, actual)
+    }
+
+    @Test
+    fun `test11`() {
+        val expectedTokenQuantityToDisplay = "1,000.1235 M"
+
+        val actual = BigDecimal(1000123456).displayableQuantity()
+
+        Assert.assertEquals(expectedTokenQuantityToDisplay, actual)
+    }
+
+    @Test
+    fun `test12`() {
+        val expectedTokenQuantityToDisplay = "100.00012 B"
+
+        val actual = BigDecimal(100000123456).displayableQuantity()
+
+        Assert.assertEquals(expectedTokenQuantityToDisplay, actual)
+    }
+
+    @Test
+    fun `test13`() {
+        val expectedTokenQuantityToDisplay = "100.00012 T"
+
+        val actual = BigDecimal(100000123456789).displayableQuantity()
 
         Assert.assertEquals(expectedTokenQuantityToDisplay, actual)
     }
