@@ -24,8 +24,8 @@ data class PersonaDataRequestResponseItem( // RESPONSE
 @Serializable
 data class PersonaDataName(
     @SerialName("variant") val variant: Variant,
-    @SerialName("family") val family: String,
-    @SerialName("given") val given: String,
+    @SerialName("familyName") val familyName: String,
+    @SerialName("givenNames") val givenNames: String,
     @SerialName("nickname") val nickname: String,
 ) {
     @Serializable

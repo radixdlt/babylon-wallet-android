@@ -12,7 +12,9 @@ import com.babylon.wallet.android.domain.common.onError
 import com.babylon.wallet.android.domain.common.onValue
 import com.babylon.wallet.android.domain.model.DAppWithMetadata
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
-import com.babylon.wallet.android.domain.model.toRequestedFieldKinds
+import com.babylon.wallet.android.domain.model.RequiredPersonaFields
+import com.babylon.wallet.android.domain.model.toRequiredFields
+import com.babylon.wallet.android.domain.usecases.BuildUnauthorizedDappResponseUseCase
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
@@ -36,6 +38,7 @@ import kotlinx.coroutines.launch
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.data.model.pernetwork.PersonaData
 import rdx.works.profile.domain.GetProfileUseCase
+import rdx.works.profile.domain.accountOnCurrentNetwork
 import rdx.works.profile.domain.gateway.GetCurrentGatewayUseCase
 import rdx.works.profile.domain.personaOnCurrentNetwork
 import javax.inject.Inject
@@ -49,7 +52,8 @@ class DAppUnauthorizedLoginViewModel @Inject constructor(
     private val getProfileUseCase: GetProfileUseCase,
     private val getCurrentGatewayUseCase: GetCurrentGatewayUseCase,
     private val dAppRepository: DAppRepository,
-    private val incomingRequestRepository: IncomingRequestRepository
+    private val incomingRequestRepository: IncomingRequestRepository,
+    private val buildUnauthorizedDappResponseUseCase: BuildUnauthorizedDappResponseUseCase
 ) : StateViewModel<DAppUnauthorizedLoginUiState>(),
     OneOffEventHandler<Event> by OneOffEventHandlerImpl() {
 
@@ -98,7 +102,8 @@ class DAppUnauthorizedLoginViewModel @Inject constructor(
                     it.copy(
                         initialUnauthorizedLoginRoute = InitialUnauthorizedLoginRoute.ChooseAccount(
                             request.oneTimeAccountsRequestItem.numberOfValues.quantity,
-                            request.oneTimeAccountsRequestItem.numberOfValues.quantifier == MessageFromDataChannel.IncomingRequest.NumberOfValues.Quantifier.Exactly
+                            request.oneTimeAccountsRequestItem.numberOfValues.quantifier
+                                == MessageFromDataChannel.IncomingRequest.NumberOfValues.Quantifier.Exactly
                         )
                     )
                 }
@@ -107,9 +112,8 @@ class DAppUnauthorizedLoginViewModel @Inject constructor(
             request.oneTimePersonaDataRequestItem != null -> {
                 _state.update { state ->
                     state.copy(
-                        // TODO persona data
                         initialUnauthorizedLoginRoute = InitialUnauthorizedLoginRoute.OnetimePersonaData(
-                            request.oneTimePersonaDataRequestItem
+                            request.oneTimePersonaDataRequestItem.toRequiredFields()
                         )
                     )
                 }
@@ -140,11 +144,11 @@ class DAppUnauthorizedLoginViewModel @Inject constructor(
     fun onGrantedPersonaDataOnetime() {
         val selectedPersona = checkNotNull(state.value.selectedPersona)
         viewModelScope.launch {
-            val requiredFields = checkNotNull(request.oneTimePersonaDataRequestItem?.toRequestedFieldKinds())
+            val requiredFields = checkNotNull(request.oneTimePersonaDataRequestItem?.toRequiredFields()?.fields?.map { it.kind })
             getProfileUseCase.personaOnCurrentNetwork(selectedPersona.persona.address)?.let { updatedPersona ->
                 val dataFields = updatedPersona.personaData.allFields.filter { requiredFields.contains(it.value.kind) }
-                _state.update {
-                    it.copy(
+                _state.update { state ->
+                    state.copy(
                         selectedPersona = updatedPersona.toUiModel(),
                         selectedPersonaData = dataFields.map { it.value }.toPersonaData()
                     )
@@ -176,7 +180,7 @@ class DAppUnauthorizedLoginViewModel @Inject constructor(
             if (request.oneTimePersonaDataRequestItem != null) {
                 sendEvent(
                     Event.PersonaDataOnetime(
-                        request.oneTimePersonaDataRequestItem
+                        request.oneTimePersonaDataRequestItem.toRequiredFields()
                     )
                 )
             } else {
@@ -187,19 +191,27 @@ class DAppUnauthorizedLoginViewModel @Inject constructor(
 
     fun sendRequestResponse() {
         viewModelScope.launch {
-            dAppMessenger.sendWalletInteractionUnauthorizedSuccessResponse(
-                request.dappId,
-                args.requestId,
-                state.value.selectedAccountsOneTime,
-                state.value.selectedPersonaData,
-            )
-            sendEvent(Event.LoginFlowCompleted)
-            appEventBus.sendEvent(
-                AppEvent.Status.DappInteraction(
-                    requestId = request.id,
-                    dAppName = state.value.dappWithMetadata?.name
+            buildUnauthorizedDappResponseUseCase(
+                request,
+                state.value.selectedAccountsOneTime.mapNotNull { getProfileUseCase.accountOnCurrentNetwork(it.address) },
+                state.value.selectedPersonaData
+            ).onSuccess {
+                dAppMessenger.sendWalletInteractionSuccessResponse(
+                    request.dappId,
+                    it
                 )
-            )
+                sendEvent(Event.LoginFlowCompleted)
+                appEventBus.sendEvent(
+                    AppEvent.Status.DappInteraction(
+                        requestId = request.id,
+                        dAppName = state.value.dappWithMetadata?.name
+                    )
+                )
+            }.onFailure { throwable ->
+                if (throwable is DappRequestFailure) {
+                    handleRequestError(throwable)
+                }
+            }
         }
     }
 
@@ -215,7 +227,7 @@ sealed interface Event : OneOffEvent {
 
     object LoginFlowCompleted : Event
 
-    data class PersonaDataOnetime(val request: MessageFromDataChannel.IncomingRequest.PersonaRequestItem) : Event
+    data class PersonaDataOnetime(val requiredPersonaFields: RequiredPersonaFields) : Event
 }
 
 data class DAppUnauthorizedLoginUiState(

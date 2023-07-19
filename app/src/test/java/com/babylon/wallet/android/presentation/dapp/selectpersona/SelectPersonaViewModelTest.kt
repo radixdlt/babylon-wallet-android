@@ -44,8 +44,11 @@ internal class SelectPersonaViewModelTest : StateViewModelTest<SelectPersonaView
         authRequest = MessageFromDataChannel.IncomingRequest.AuthorizedRequest.AuthRequest.LoginRequest.WithoutChallenge,
         oneTimeAccountsRequestItem = null,
         ongoingAccountsRequestItem = MessageFromDataChannel.IncomingRequest.AccountsRequestItem(
-            true, 1,
-            MessageFromDataChannel.IncomingRequest.NumberOfValues.AtLeast,
+            true,
+            MessageFromDataChannel.IncomingRequest.NumberOfValues(
+                1,
+                MessageFromDataChannel.IncomingRequest.NumberOfValues.Quantifier.AtLeast
+            ),
             null
         )
     )
@@ -68,10 +71,12 @@ internal class SelectPersonaViewModelTest : StateViewModelTest<SelectPersonaView
         }
         every { savedStateHandle.get<String>(ARG_REQUEST_ID) } returns "1"
         every { getProfileUseCase() } returns flowOf(
-            profile(personas = listOf(
-                SampleDataProvider().samplePersona("address1"),
-                SampleDataProvider().samplePersona("address2")
-            ))
+            profile(
+                personas = listOf(
+                    SampleDataProvider().samplePersona("address1"),
+                    SampleDataProvider().samplePersona("address2")
+                )
+            )
         )
         coEvery { incomingRequestRepository.getAuthorizedRequest(any()) } returns requestWithNonExistingDappAddress
     }

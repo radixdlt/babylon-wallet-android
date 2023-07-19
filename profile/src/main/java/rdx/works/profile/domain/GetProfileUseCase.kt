@@ -5,6 +5,9 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapNotNull
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.modules.SerializersModule
 import rdx.works.core.PUBLIC_KEY_HASH_LENGTH
 import rdx.works.core.toByteArray
 import rdx.works.profile.data.model.currentNetwork
@@ -13,10 +16,13 @@ import rdx.works.profile.data.model.factorsources.FactorSource
 import rdx.works.profile.data.model.factorsources.FactorSourceKind
 import rdx.works.profile.data.model.factorsources.LedgerHardwareWalletFactorSource
 import rdx.works.profile.data.model.pernetwork.DerivationPath
+import rdx.works.profile.data.model.serialisers.InstantSerializer
 import rdx.works.profile.data.repository.ProfileRepository
 import rdx.works.profile.data.repository.profile
 import rdx.works.profile.data.utils.factorSourceId
 import rdx.works.profile.data.utils.getNextDerivationPathForAccount
+import timber.log.Timber
+import java.time.Instant
 import javax.inject.Inject
 
 class GetProfileUseCase @Inject constructor(private val profileRepository: ProfileRepository) {
@@ -27,7 +33,16 @@ class GetProfileUseCase @Inject constructor(private val profileRepository: Profi
  * Accounts on network
  */
 val GetProfileUseCase.accountsOnCurrentNetwork
-    get() = invoke().map { it.currentNetwork.accounts }
+    get() = invoke().map {
+        val json = Json {
+            prettyPrint = true
+            serializersModule = SerializersModule {
+                contextual(Instant::class, InstantSerializer)
+            }
+        }
+        Timber.d("Getting profile: ${json.encodeToString(it.snapshot())}")
+        it.currentNetwork.accounts
+    }
 
 val GetProfileUseCase.factorSources
     get() = invoke().map { profile -> profile.factorSources }

@@ -6,6 +6,7 @@ import com.babylon.wallet.android.data.dapp.model.AccountsRequestResponseItem
 import com.babylon.wallet.android.data.dapp.model.AuthLoginWithChallengeRequestItem
 import com.babylon.wallet.android.data.dapp.model.AuthLoginWithoutChallengeRequestItem
 import com.babylon.wallet.android.data.dapp.model.AuthUsePersonaRequestItem
+import com.babylon.wallet.android.data.dapp.model.NumberOfValues
 import com.babylon.wallet.android.data.dapp.model.Proof
 import com.babylon.wallet.android.data.dapp.model.WalletAuthorizedRequestItems
 import com.babylon.wallet.android.data.dapp.model.WalletInteraction
@@ -15,9 +16,7 @@ import com.babylon.wallet.android.data.dapp.model.WalletTransactionItems
 import com.babylon.wallet.android.data.dapp.model.WalletTransactionResponseItems
 import com.babylon.wallet.android.data.dapp.model.WalletUnauthorizedRequestItems
 import com.babylon.wallet.android.data.dapp.model.peerdroidRequestJson
-import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
-import org.junit.Assert
 import org.junit.Assert.assertEquals
 import org.junit.Test
 
@@ -116,7 +115,11 @@ class WalletInteractionModelsTest {
                "items":{
                   "discriminator":"unauthorizedRequest",
                   "oneTimePersonaData":{
-                    "fields":["givenName", "emailAddress"]
+                      "isRequestingName": true,
+                      "numberOfRequestedEmailAddresses": {
+                        "quantifier": "exactly",
+                        "quantity": 1
+                      }
                   }               
                },
                "interactionId":"4abe2cb1-93e2-467d-a854-5e2cec897c50",
@@ -131,7 +134,9 @@ class WalletInteractionModelsTest {
         val result = peerdroidRequestJson.decodeFromString<WalletInteraction>(request)
         assert(result.items is WalletUnauthorizedRequestItems)
         val item = result.items as WalletUnauthorizedRequestItems
-        assert(item.oneTimePersonaData?.fields?.size == 2)
+        assert(item.oneTimePersonaData?.isRequestingName == true)
+        assert(item.oneTimePersonaData?.numberOfRequestedEmailAddresses?.quantity == 1)
+        assert(item.oneTimePersonaData?.numberOfRequestedEmailAddresses?.quantifier == NumberOfValues.Quantifier.Exactly)
     }
 
     @Test
@@ -143,7 +148,7 @@ class WalletInteractionModelsTest {
                   "auth":{
                     "discriminator":"usePersona",
                     "identityAddress":"randomAddress1"
-                  }
+                  },
                   "oneTimeAccounts":{
                      "numberOfAccounts":{
                         "quantity":1,
@@ -176,7 +181,7 @@ class WalletInteractionModelsTest {
                   "auth":{
                     "discriminator":"usePersona",
                     "identityAddress":"randomAddress1"
-                  }
+                  },
                   "ongoingAccounts":{
                      "numberOfAccounts":{
                         "quantity":1,
@@ -209,9 +214,13 @@ class WalletInteractionModelsTest {
                    "auth":{
                     "discriminator":"usePersona",
                     "identityAddress":"randomAddress1"
-                  }
+                  },
                   "oneTimePersonaData":{
-                    "fields":["givenName", "emailAddress"]
+                      "isRequestingName": true,
+                      "numberOfRequestedEmailAddresses": {
+                        "quantifier": "exactly",
+                        "quantity": 1
+                      }
                   }               
                },
                "interactionId":"4abe2cb1-93e2-467d-a854-5e2cec897c50",
@@ -226,7 +235,9 @@ class WalletInteractionModelsTest {
         val result = peerdroidRequestJson.decodeFromString<WalletInteraction>(request)
         assert(result.items is WalletAuthorizedRequestItems)
         val item = result.items as WalletAuthorizedRequestItems
-        assert(item.oneTimePersonaData?.fields?.size == 2)
+        assert(item.oneTimePersonaData?.isRequestingName == true)
+        assert(item.oneTimePersonaData?.numberOfRequestedEmailAddresses?.quantity == 1)
+        assert(item.oneTimePersonaData?.numberOfRequestedEmailAddresses?.quantifier == NumberOfValues.Quantifier.Exactly)
     }
 
     @Test
@@ -238,10 +249,14 @@ class WalletInteractionModelsTest {
                    "auth":{
                     "discriminator":"usePersona",
                     "identityAddress":"randomAddress1"
-                  }
+                  },
                   "ongoingPersonaData":{
-                     "fields":["givenName", "emailAddress"]
-                  }               
+                      "isRequestingName": true,
+                      "numberOfRequestedEmailAddresses": {
+                        "quantifier": "exactly",
+                        "quantity": 1
+                      }
+                  }
                },
                "interactionId":"4abe2cb1-93e2-467d-a854-5e2cec897c50",
                "metadata":{
@@ -255,7 +270,9 @@ class WalletInteractionModelsTest {
         val result = peerdroidRequestJson.decodeFromString<WalletInteraction>(request)
         assert(result.items is WalletAuthorizedRequestItems)
         val item = result.items as WalletAuthorizedRequestItems
-        assert(item.ongoingPersonaData?.fields?.size == 2)
+        assert(item.ongoingPersonaData?.isRequestingName == true)
+        assert(item.ongoingPersonaData?.numberOfRequestedEmailAddresses?.quantity == 1)
+        assert(item.ongoingPersonaData?.numberOfRequestedEmailAddresses?.quantifier == NumberOfValues.Quantifier.Exactly)
     }
 
     @Test
@@ -266,7 +283,7 @@ class WalletInteractionModelsTest {
                   "discriminator":"authorizedRequest",
                   "auth":{
                     "discriminator":"loginWithoutChallenge"                   
-                  }
+                  },
                   "oneTimeAccounts":{
                      "challenge": "challenge",
                      "numberOfAccounts":{
@@ -300,7 +317,7 @@ class WalletInteractionModelsTest {
                   "auth":{
                     "discriminator":"loginWithChallenge",
                     "challenge":"randomChallenge"
-                  }
+                  },
                   "ongoingAccounts":{
                      "numberOfAccounts":{
                         "quantity":1,
@@ -333,9 +350,9 @@ class WalletInteractionModelsTest {
                   "auth":{
                     "discriminator":"loginWithChallenge",
                     "challenge":"randomChallenge"
-                  }
+                  },
                   "ongoingAccounts":{
-                     "challenge":"challenge"
+                     "challenge":"challenge",
                      "numberOfAccounts":{
                         "quantity":1,
                         "quantifier":"exactly"
@@ -366,10 +383,14 @@ class WalletInteractionModelsTest {
                   "discriminator":"authorizedRequest",
                    "auth":{
                     "discriminator":"loginWithoutChallenge"                   
-                  }
+                  },
                   "oneTimePersonaData":{
-                    "fields":["givenName", "emailAddress"]
-                  }               
+                      "isRequestingName": true,
+                      "numberOfRequestedEmailAddresses": {
+                        "quantifier": "exactly",
+                        "quantity": 1
+                      }
+                  }
                },
                "interactionId":"4abe2cb1-93e2-467d-a854-5e2cec897c50",
                "metadata":{
@@ -384,7 +405,9 @@ class WalletInteractionModelsTest {
         assert(result.items is WalletAuthorizedRequestItems)
         val item = result.items as WalletAuthorizedRequestItems
         assertEquals(AuthLoginWithoutChallengeRequestItem, item.auth)
-        assert(item.oneTimePersonaData?.fields?.size == 2)
+        assert(item.oneTimePersonaData?.isRequestingName == true)
+        assert(item.oneTimePersonaData?.numberOfRequestedEmailAddresses?.quantity == 1)
+        assert(item.oneTimePersonaData?.numberOfRequestedEmailAddresses?.quantifier == NumberOfValues.Quantifier.Exactly)
     }
 
     @Test
@@ -396,10 +419,14 @@ class WalletInteractionModelsTest {
                    "auth":{
                     "discriminator":"loginWithChallenge",
                     "challenge":"randomChallenge"
-                  }
+                  },
                   "ongoingPersonaData":{
-                    "fields":["givenName", "emailAddress"]
-                  }               
+                      "isRequestingName": true,
+                      "numberOfRequestedEmailAddresses": {
+                        "quantifier": "exactly",
+                        "quantity": 1
+                      }
+                  }
                },
                "interactionId":"4abe2cb1-93e2-467d-a854-5e2cec897c50",
                "metadata":{
@@ -414,7 +441,9 @@ class WalletInteractionModelsTest {
         assert(result.items is WalletAuthorizedRequestItems)
         val item = result.items as WalletAuthorizedRequestItems
         assertEquals(AuthLoginWithChallengeRequestItem("randomChallenge"), item.auth)
-        assert(item.ongoingPersonaData?.fields?.size == 2)
+        assert(item.ongoingPersonaData?.isRequestingName == true)
+        assert(item.ongoingPersonaData?.numberOfRequestedEmailAddresses?.quantity == 1)
+        assert(item.ongoingPersonaData?.numberOfRequestedEmailAddresses?.quantifier == NumberOfValues.Quantifier.Exactly)
     }
 
     @Test
@@ -424,7 +453,7 @@ class WalletInteractionModelsTest {
                "items":{
                   "discriminator":"transaction",
                   "send":{
-                      "transactionManifest":"manifest"   
+                      "transactionManifest":"manifest",
                       "version":1,
                       "blobs":["blob1", "blob2"],
                       "message":"manifest"
@@ -456,7 +485,7 @@ class WalletInteractionModelsTest {
             )
         )
         val result = peerdroidRequestJson.encodeToString(response)
-        Assert.assertEquals(expected, result)
+        assertEquals(expected, result)
     }
 
 }

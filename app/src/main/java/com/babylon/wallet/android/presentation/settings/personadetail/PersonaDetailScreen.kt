@@ -42,6 +42,7 @@ import com.babylon.wallet.android.domain.model.DAppWithMetadata
 import com.babylon.wallet.android.domain.model.DAppWithMetadataAndAssociatedResources
 import com.babylon.wallet.android.domain.model.Resource
 import com.babylon.wallet.android.presentation.common.FullscreenCircularProgressContent
+import com.babylon.wallet.android.presentation.model.allNonEmptyFields
 import com.babylon.wallet.android.presentation.settings.dappdetail.DAppDetailsSheetContent
 import com.babylon.wallet.android.presentation.ui.composables.DefaultModalSheetLayout
 import com.babylon.wallet.android.presentation.ui.composables.GrayBackgroundWrapper
@@ -207,19 +208,22 @@ private fun PersonaDetailList(
             )
             Divider(modifier = Modifier.padding(dimensions.paddingDefault), color = RadixTheme.colors.gray4)
         }
-        val lastItem = persona.personaData.allFields.last()
-        items(persona.personaData.allFields) { field ->
-            PersonaDataFieldRow(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = dimensions.paddingDefault),
-                field = field.value
-            )
-            if (field != lastItem) {
-                Divider(
-                    modifier = Modifier.padding(horizontal = dimensions.paddingDefault, vertical = dimensions.paddingLarge),
-                    color = RadixTheme.colors.gray4
+        val allFields = persona.personaData.allNonEmptyFields
+        if (allFields.isNotEmpty()) {
+            val lastItem = allFields.last()
+            items(allFields) { field ->
+                PersonaDataFieldRow(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = dimensions.paddingDefault),
+                    field = field.value
                 )
+                if (field != lastItem) {
+                    Divider(
+                        modifier = Modifier.padding(horizontal = dimensions.paddingDefault, vertical = dimensions.paddingLarge),
+                        color = RadixTheme.colors.gray4
+                    )
+                }
             }
         }
         item {

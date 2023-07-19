@@ -6,7 +6,7 @@ import rdx.works.profile.data.model.pernetwork.PersonaData
 import rdx.works.profile.data.model.pernetwork.PersonaDataEntryID
 
 data class PersonaFieldWrapper(
-    val value: PersonaData.PersonaDataField,
+    val entry: IdentifiedEntry<PersonaData.PersonaDataField>,
     val selected: Boolean = false,
     val valid: Boolean? = null,
     val required: Boolean = false,
@@ -15,30 +15,44 @@ data class PersonaFieldWrapper(
     val id: PersonaDataEntryID = UUIDGenerator.uuid().toString(),
 ) {
     fun isPhoneNumber(): Boolean {
-        return value.kind == PersonaData.PersonaDataField.Kind.PhoneNumber
+        return entry.value.kind == PersonaData.PersonaDataField.Kind.PhoneNumber
     }
 }
 
 fun List<PersonaFieldWrapper>.toPersonaData(): PersonaData {
-    val fields = mapNotNull { it.value }
+    val fields = map { it.entry }
     return PersonaData(
-        name = fields.filterIsInstance<PersonaData.PersonaDataField.Name>().firstOrNull()?.let { IdentifiedEntry.init(it) },
-        dateOfBirth = fields.filterIsInstance<PersonaData.PersonaDataField.DateOfBirth>().firstOrNull()?.let { IdentifiedEntry.init(it) },
-        companyName = fields.filterIsInstance<PersonaData.PersonaDataField.CompanyName>().firstOrNull()?.let { IdentifiedEntry.init(it) },
-        emailAddresses = fields.filterIsInstance<PersonaData.PersonaDataField.Email>().let { field ->
-            field.map { IdentifiedEntry.init(it) }
+        name = fields.firstOrNull { it.value.kind == PersonaData.PersonaDataField.Kind.Name }?.let {
+            val nameValue = it.value as PersonaData.PersonaDataField.Name
+            IdentifiedEntry.init(nameValue, it.id)
         },
-        phoneNumbers = fields.filterIsInstance<PersonaData.PersonaDataField.PhoneNumber>().let { field ->
-            field.map { IdentifiedEntry.init(it) }
+        dateOfBirth = fields.firstOrNull { it.value.kind == PersonaData.PersonaDataField.Kind.DateOfBirth }?.let {
+            val nameValue = it.value as PersonaData.PersonaDataField.DateOfBirth
+            IdentifiedEntry.init(nameValue, it.id)
         },
-        urls = fields.filterIsInstance<PersonaData.PersonaDataField.Url>().let { field ->
-            field.map { IdentifiedEntry.init(it) }
+        companyName = fields.firstOrNull { it.value.kind == PersonaData.PersonaDataField.Kind.CompanyName }?.let {
+            val nameValue = it.value as PersonaData.PersonaDataField.CompanyName
+            IdentifiedEntry.init(nameValue, it.id)
         },
-        postalAddresses = fields.filterIsInstance<PersonaData.PersonaDataField.PostalAddress>().let { field ->
-            field.map { IdentifiedEntry.init(it) }
+        emailAddresses = fields.filter { it.value.kind == PersonaData.PersonaDataField.Kind.EmailAddress }.map {
+            val emailValue = it.value as PersonaData.PersonaDataField.Email
+            IdentifiedEntry.init(emailValue, it.id)
         },
-        creditCards = fields.filterIsInstance<PersonaData.PersonaDataField.CreditCard>().let { field ->
-            field.map { IdentifiedEntry.init(it) }
+        phoneNumbers = fields.filter { it.value.kind == PersonaData.PersonaDataField.Kind.PhoneNumber }.map {
+            val emailValue = it.value as PersonaData.PersonaDataField.PhoneNumber
+            IdentifiedEntry.init(emailValue, it.id)
+        },
+        urls = fields.filter { it.value.kind == PersonaData.PersonaDataField.Kind.Url }.map {
+            val emailValue = it.value as PersonaData.PersonaDataField.Url
+            IdentifiedEntry.init(emailValue, it.id)
+        },
+        postalAddresses = fields.filter { it.value.kind == PersonaData.PersonaDataField.Kind.PostalAddress }.map {
+            val emailValue = it.value as PersonaData.PersonaDataField.PostalAddress
+            IdentifiedEntry.init(emailValue, it.id)
+        },
+        creditCards = fields.filter { it.value.kind == PersonaData.PersonaDataField.Kind.CreditCard }.map {
+            val emailValue = it.value as PersonaData.PersonaDataField.CreditCard
+            IdentifiedEntry.init(emailValue, it.id)
         }
     )
 }

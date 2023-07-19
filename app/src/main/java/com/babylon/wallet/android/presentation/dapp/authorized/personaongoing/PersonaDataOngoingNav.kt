@@ -11,11 +11,11 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavType
 import androidx.navigation.navArgument
 import com.babylon.wallet.android.data.gateway.generated.infrastructure.Serializer
-import com.babylon.wallet.android.domain.model.MessageFromDataChannel
+import com.babylon.wallet.android.domain.model.RequiredPersonaFields
 import com.babylon.wallet.android.presentation.dapp.authorized.login.DAppAuthorizedLoginViewModel
 import com.babylon.wallet.android.presentation.dapp.authorized.login.Event
 import com.babylon.wallet.android.presentation.dapp.authorized.login.ROUTE_DAPP_LOGIN_AUTHORIZED_GRAPH
-import com.babylon.wallet.android.presentation.navigation.PersonaRequestItemParameterType
+import com.babylon.wallet.android.presentation.navigation.RequiredPersonaFieldsParameterType
 import com.google.accompanist.navigation.animation.composable
 import kotlinx.serialization.encodeToString
 
@@ -25,19 +25,19 @@ internal const val ARG_PERSONA_ID = "persona_id"
 @VisibleForTesting
 internal const val ARG_REQUIRED_FIELDS = "required_fields"
 
-internal class PersonaDataOngoingPermissionArgs(val personaId: String, val request: MessageFromDataChannel.IncomingRequest.PersonaRequestItem) {
+internal class PersonaDataOngoingPermissionArgs(val personaId: String, val requiredPersonaFields: RequiredPersonaFields) {
     constructor(savedStateHandle: SavedStateHandle) : this(
         checkNotNull(savedStateHandle[ARG_PERSONA_ID]) as String,
-        (checkNotNull(savedStateHandle[ARG_REQUIRED_FIELDS]) as MessageFromDataChannel.IncomingRequest.PersonaRequestItem)
+        (checkNotNull(savedStateHandle[ARG_REQUIRED_FIELDS]) as RequiredPersonaFields)
     )
 }
 
 const val ROUTE_PERSONA_DATA_ONGOING =
     "route_persona_data_ongoing/{$ARG_PERSONA_ID}/{$ARG_REQUIRED_FIELDS}"
 
-fun NavController.personaDataOngoing(personaAddress: String, request: MessageFromDataChannel.IncomingRequest.PersonaRequestItem) {
+fun NavController.personaDataOngoing(personaAddress: String, request: RequiredPersonaFields) {
     val argument = Uri.encode(Serializer.kotlinxSerializationJson.encodeToString(request))
-    navigate("route_persona_data_ongoing/$personaAddress/$request")
+    navigate("route_persona_data_ongoing/$personaAddress/$argument")
 }
 
 @Suppress("LongParameterList")
@@ -57,7 +57,7 @@ fun NavGraphBuilder.personaDataOngoing(
                 type = NavType.StringType
             },
             navArgument(ARG_REQUIRED_FIELDS) {
-                type = PersonaRequestItemParameterType
+                type = RequiredPersonaFieldsParameterType
             }
         )
     ) { entry ->

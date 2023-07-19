@@ -318,8 +318,8 @@ private fun CreatePersonaContentList(
                 modifier = Modifier
                     .fillMaxWidth()
                     .animateItemPlacement(),
-                label = stringResource(id = field.value.kind.toDisplayResource()),
-                field = field.value,
+                label = stringResource(id = field.entry.value.kind.toDisplayResource()),
+                field = field.entry.value,
                 onValueChanged = {
                     onValueChanged(field.id, it)
                 },

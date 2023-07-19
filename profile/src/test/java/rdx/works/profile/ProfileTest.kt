@@ -240,7 +240,8 @@ class ProfileTest {
                     PersonaData.PersonaDataField.Name(
                         variant = PersonaData.PersonaDataField.Name.Variant.Western,
                         given = "Maria",
-                        family = "Publicson"
+                        family = "Publicson",
+                        nickname = "MP"
                     ),
                     id = "0"
                 )
@@ -603,23 +604,22 @@ class ProfileTest {
                 expected.networks.first().personas[personaIndex].personaData.name?.id,
                 actual.networks.first().personas[personaIndex].personaData.name?.id
             )
-            //TODO persona data update test
-//            assertEquals(
-//                "The persona[$personaIndex] first field value is the same",
-//                expected.networks.first().personas[personaIndex].fields[0].value,
-//                actual.networks.first().personas[personaIndex].fields[0].value
-//            )
-//
-//            assertEquals(
-//                "The persona[$personaIndex] second field kind is the same",
-//                expected.networks.first().personas[personaIndex].fields[1].id,
-//                actual.networks.first().personas[personaIndex].fields[1].id
-//            )
-//            assertEquals(
-//                "The persona[$personaIndex] second field value is the same",
-//                expected.networks.first().personas[personaIndex].fields[1].value,
-//                actual.networks.first().personas[personaIndex].fields[1].value
-//            )
+            assertEquals(
+                "The persona[$personaIndex] given name is the same",
+                expected.networks.first().personas[personaIndex].personaData.name?.value?.given,
+                actual.networks.first().personas[personaIndex].personaData.name?.value?.given
+            )
+
+            assertEquals(
+                "The persona[$personaIndex] family name is the same",
+                expected.networks.first().personas[personaIndex].personaData.name?.value?.family,
+                actual.networks.first().personas[personaIndex].personaData.name?.value?.family
+            )
+            assertEquals(
+                "The persona[$personaIndex] nickname value is the same",
+                expected.networks.first().personas[personaIndex].personaData.name?.value?.nickname,
+                actual.networks.first().personas[personaIndex].personaData.name?.value?.nickname
+            )
 
             assertEquals(
                 "The persona[$personaIndex] factor source id is the same",
@@ -662,7 +662,7 @@ class ProfileTest {
                     variant = PersonaData.PersonaDataField.Name.Variant.Eastern,
                     given = "Satoshi",
                     family = "Nakamoto",
-                    middle = "Creator of Bitcoin"
+                    nickname = "Creator of Bitcoin"
                 ),
                 "0"
             ),

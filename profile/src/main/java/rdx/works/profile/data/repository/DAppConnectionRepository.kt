@@ -8,10 +8,14 @@ import rdx.works.core.mapWhen
 import rdx.works.profile.data.model.Profile
 import rdx.works.profile.data.model.currentGateway
 import rdx.works.profile.data.model.pernetwork.Network
+import rdx.works.profile.data.model.pernetwork.PersonaData
 import rdx.works.profile.data.model.pernetwork.PersonaDataEntryID
 import rdx.works.profile.data.model.pernetwork.RequestedNumber
 import rdx.works.profile.data.model.pernetwork.Shared
 import rdx.works.profile.data.model.pernetwork.ensurePersonaDataExist
+import rdx.works.profile.data.utils.toSharedPersonaData
+import rdx.works.profile.domain.GetProfileUseCase
+import rdx.works.profile.domain.personaOnCurrentNetwork
 import timber.log.Timber
 import javax.inject.Inject
 
@@ -38,7 +42,7 @@ interface DAppConnectionRepository {
     suspend fun dAppAuthorizedPersonaHasAllDataFields(
         dAppDefinitionAddress: String,
         personaAddress: String,
-        fieldIds: List<PersonaDataEntryID>
+        requestedFieldKinds: Map<PersonaData.PersonaDataField.Kind, Int>
     ): Boolean
 
     suspend fun updateDappAuthorizedPersonaSharedAccounts(
@@ -62,7 +66,8 @@ interface DAppConnectionRepository {
 
 @Suppress("TooManyFunctions")
 class DAppConnectionRepositoryImpl @Inject constructor(
-    private val profileRepository: ProfileRepository
+    private val profileRepository: ProfileRepository,
+    private val getProfileUseCase: GetProfileUseCase
 ) : DAppConnectionRepository {
 
     override fun getAuthorizedDappFlow(dAppDefinitionAddress: String): Flow<Network.AuthorizedDapp?> {
@@ -124,17 +129,30 @@ class DAppConnectionRepositoryImpl @Inject constructor(
         }
     }
 
+    @Suppress("UnsafeCallOnNullableType")
     override suspend fun dAppAuthorizedPersonaHasAllDataFields(
         dAppDefinitionAddress: String,
         personaAddress: String,
-        dataIds: List<PersonaDataEntryID>
+        requestedFieldKinds: Map<PersonaData.PersonaDataField.Kind, Int>
     ): Boolean {
+        val requestedFieldsMutableMap = requestedFieldKinds.toMutableMap()
+        val personaData = checkNotNull(getProfileUseCase.personaOnCurrentNetwork(personaAddress)).personaData
         val alreadyGrantedIds = getAuthorizedDapp(
             dAppDefinitionAddress
         )?.referencesToAuthorizedPersonas?.firstOrNull {
             it.identityAddress == personaAddress
         }?.sharedPersonaData?.alreadyGrantedIds().orEmpty()
-        return alreadyGrantedIds.containsAll(dataIds)
+        alreadyGrantedIds.forEach { entryId ->
+            val entryKind = personaData.getDataFieldKind(entryId)
+            if (requestedFieldsMutableMap.containsKey(entryKind)) {
+                if (requestedFieldsMutableMap[entryKind]!! > 1) {
+                    requestedFieldsMutableMap[entryKind!!] = requestedFieldsMutableMap[entryKind]!! - 1
+                } else {
+                    requestedFieldsMutableMap.remove(entryKind)
+                }
+            }
+        }
+        return requestedFieldsMutableMap.isEmpty()
     }
 
     override suspend fun updateDappAuthorizedPersonaSharedAccounts(
@@ -273,15 +291,14 @@ fun Network.AuthorizedDapp.updateAuthorizedDappPersonas(
 
 fun Network.AuthorizedDapp.updateAuthorizedDappPersonaFields(
     personaAddress: String,
-    allExistingFieldIds: List<PersonaDataEntryID>,
-    requestedFieldIds: List<PersonaDataEntryID>
+    personaData: PersonaData,
+    requiredFields: Map<PersonaData.PersonaDataField.Kind, Int>
 ): Network.AuthorizedDapp {
     val updatedAuthPersonas = referencesToAuthorizedPersonas.mapWhen(predicate = {
         it.identityAddress == personaAddress
     }) { persona ->
-        // TODO persona data
-        persona
-//        persona.copy(fieldIDs = (persona.fieldIDs.filter { allExistingFieldIds.contains(it) } + requestedFieldIds).distinct())
+        val sharedPersonaData = personaData.toSharedPersonaData(requiredFields)
+        persona.copy(sharedPersonaData = sharedPersonaData)
     }
     return copy(
         networkID = networkID,

@@ -27,8 +27,10 @@ class IncomingRequestRepositoryTest {
         authRequest = MessageFromDataChannel.IncomingRequest.AuthorizedRequest.AuthRequest.LoginRequest.WithoutChallenge,
         ongoingAccountsRequestItem = MessageFromDataChannel.IncomingRequest.AccountsRequestItem(
             isOngoing = true,
-            numberOfAccounts = 1,
-            numberOfValues = MessageFromDataChannel.IncomingRequest.NumberOfValues.Exactly,
+            numberOfValues = MessageFromDataChannel.IncomingRequest.NumberOfValues(
+                1,
+                MessageFromDataChannel.IncomingRequest.NumberOfValues.Quantifier.Exactly
+            ),
             challenge = null
         )
     )
@@ -45,7 +47,11 @@ class IncomingRequestRepositoryTest {
                 val coroutines = 1.rangeTo(10).map { // create 1000 coroutines
                     launch {
                         for (i in 1..amountOfIncomingRequests) { // and in each of them, add an incoming request
-                            incomingRequestRepository.add(incomingRequest = sampleIncomingRequest.copy(interactionId = UUIDGenerator.uuid().toString()))
+                            incomingRequestRepository.add(
+                                incomingRequest = sampleIncomingRequest.copy(
+                                    interactionId = UUIDGenerator.uuid().toString()
+                                )
+                            )
                         }
                     }
                 }

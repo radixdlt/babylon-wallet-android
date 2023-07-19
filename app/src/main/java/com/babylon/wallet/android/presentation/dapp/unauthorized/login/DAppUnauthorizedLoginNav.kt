@@ -9,7 +9,7 @@ import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavType
 import androidx.navigation.navArgument
-import com.babylon.wallet.android.domain.model.MessageFromDataChannel
+import com.babylon.wallet.android.domain.model.RequiredPersonaFields
 import com.google.accompanist.navigation.animation.composable
 
 @VisibleForTesting
@@ -31,7 +31,7 @@ fun NavController.dAppLoginUnauthorized(requestId: String) {
 fun NavGraphBuilder.dAppLoginUnauthorized(
     navController: NavController,
     navigateToChooseAccount: (Int, Boolean) -> Unit,
-    navigateToOneTimePersonaData: (MessageFromDataChannel.IncomingRequest.PersonaRequestItem) -> Unit
+    navigateToOneTimePersonaData: (RequiredPersonaFields) -> Unit
 ) {
     composable(
         route = ROUTE_DAPP_LOGIN_UNAUTHORIZED_SCREEN,

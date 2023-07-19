@@ -630,7 +630,8 @@
               "value" : {
                 "family" : "Publicson",
                 "given" : "Maria",
-                "variant" : "western"
+                "variant" : "western",
+                "nickname" : "MP"
               }
             },
             "phoneNumbers" : [

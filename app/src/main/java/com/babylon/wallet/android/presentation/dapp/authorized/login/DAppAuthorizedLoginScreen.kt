@@ -14,7 +14,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
-import com.babylon.wallet.android.domain.model.MessageFromDataChannel
+import com.babylon.wallet.android.domain.model.RequiredPersonaFields
 import com.babylon.wallet.android.presentation.common.FullscreenCircularProgressContent
 import com.babylon.wallet.android.presentation.dapp.InitialAuthorizedLoginRoute
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUiMessageHandler
@@ -25,9 +25,9 @@ fun DappAuthorizedLoginScreen(
     onBackClick: () -> Unit,
     navigateToChooseAccount: (Int, Boolean, Boolean, Boolean) -> Unit,
     navigateToPermissions: (Int, Boolean, Boolean, Boolean) -> Unit,
-    navigateToOneTimePersonaData: (MessageFromDataChannel.IncomingRequest.PersonaRequestItem) -> Unit,
+    navigateToOneTimePersonaData: (RequiredPersonaFields) -> Unit,
     navigateToSelectPersona: (String) -> Unit,
-    navigateToOngoingPersonaData: (String, MessageFromDataChannel.IncomingRequest.PersonaRequestItem) -> Unit,
+    navigateToOngoingPersonaData: (String, RequiredPersonaFields) -> Unit,
     modifier: Modifier = Modifier
 ) {
     LaunchedEffect(Unit) {
@@ -46,10 +46,10 @@ fun DappAuthorizedLoginScreen(
             route.oneTime,
             route.showBack
         )
-        is InitialAuthorizedLoginRoute.OneTimePersonaData -> navigateToOneTimePersonaData(route.request)
+        is InitialAuthorizedLoginRoute.OneTimePersonaData -> navigateToOneTimePersonaData(route.requiredPersonaFields)
         is InitialAuthorizedLoginRoute.OngoingPersonaData -> navigateToOngoingPersonaData(
             route.personaAddress,
-            route.request
+            route.requiredPersonaFields
         )
         is InitialAuthorizedLoginRoute.Permission -> navigateToPermissions(
             route.numberOfAccounts,

@@ -2,6 +2,7 @@ package com.babylon.wallet.android.presentation.dapp.unauthorized.personaonetime
 
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
+import com.babylon.wallet.android.domain.model.RequiredPersonaFields
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
@@ -45,7 +46,7 @@ class PersonaDataOnetimeViewModel @Inject constructor(
                             val existingPersona = existingPersonas.firstOrNull { it.persona.address == persona.address }
                             PersonaUiModel(
                                 persona,
-                                requestItem = args.request,
+                                requiredPersonaFields = args.requiredPersonaFields,
                                 selected = existingPersona?.selected ?: false
                             )
                         }.toImmutableList()
@@ -65,8 +66,7 @@ class PersonaDataOnetimeViewModel @Inject constructor(
 
     fun onEditClick(personaAddress: String) {
         viewModelScope.launch {
-            // TODO persona data
-//            sendEvent(PersonaDataOnetimeEvent.OnEditPersona(personaAddress, args.requiredFields.toList().encodeToString()))
+            sendEvent(PersonaDataOnetimeEvent.OnEditPersona(personaAddress, args.requiredPersonaFields))
         }
     }
 
@@ -78,7 +78,11 @@ class PersonaDataOnetimeViewModel @Inject constructor(
 }
 
 sealed interface PersonaDataOnetimeEvent : OneOffEvent {
-    data class OnEditPersona(val personaAddress: String, val requiredFieldsEncoded: String? = null) : PersonaDataOnetimeEvent
+    data class OnEditPersona(
+        val personaAddress: String,
+        val requiredPersonaFields: RequiredPersonaFields? = null
+    ) : PersonaDataOnetimeEvent
+
     data class CreatePersona(val firstPersonaCreated: Boolean) : PersonaDataOnetimeEvent
 }
 

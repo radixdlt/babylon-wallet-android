@@ -5,10 +5,10 @@ import com.babylon.wallet.android.R
 import com.babylon.wallet.android.data.dapp.model.PersonaDataName
 import com.babylon.wallet.android.data.dapp.model.PersonaDataRequestResponseItem
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
-import com.babylon.wallet.android.utils.decodeUtf8
+import com.babylon.wallet.android.domain.model.RequiredPersonaField
 import com.babylon.wallet.android.utils.encodeUtf8
-import com.babylon.wallet.android.utils.isValidEmail
 import rdx.works.profile.data.model.pernetwork.IdentifiedEntry
+import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.data.model.pernetwork.PersonaData
 import rdx.works.profile.data.model.pernetwork.RequestedNumber
 
@@ -26,12 +26,8 @@ fun List<PersonaData.PersonaDataField.Kind>.encodeToString(): String {
     return joinToString(",") { it.name }.encodeUtf8()
 }
 
-fun String.decodePersonaDataKinds(): List<PersonaData.PersonaDataField.Kind> {
-    return decodeUtf8().split(",").filter { it.isNotEmpty() }.map { PersonaData.PersonaDataField.Kind.valueOf(it) }
-}
-
 fun RequestedNumber.Quantifier.toQuantifierUsedInRequest():
-        MessageFromDataChannel.IncomingRequest.NumberOfValues.Quantifier {
+    MessageFromDataChannel.IncomingRequest.NumberOfValues.Quantifier {
     return when (this) {
         RequestedNumber.Quantifier.Exactly -> {
             MessageFromDataChannel.IncomingRequest.NumberOfValues.Quantifier.Exactly
@@ -43,42 +39,32 @@ fun RequestedNumber.Quantifier.toQuantifierUsedInRequest():
     }
 }
 
-fun PersonaData.PersonaDataField.sortOrderInt(): Int {
-    return kind.ordinal
-}
-
 fun PersonaData.PersonaDataField.isValid(): Boolean {
     return when (this) {
-        is PersonaData.PersonaDataField.Email -> value.trim().isValidEmail()
-        is PersonaData.PersonaDataField.Name -> given.trim().isNotEmpty() && family.isNotEmpty()
-        is PersonaData.PersonaDataField.PhoneNumber -> value.trim().isNotEmpty()
         else -> true
     }
 }
 
-fun PersonaData.PersonaDataField.Kind.empty(): PersonaData.PersonaDataField {
+fun PersonaData.PersonaDataField.isEmpty(): Boolean {
     return when (this) {
-        PersonaData.PersonaDataField.Kind.Name -> PersonaData.PersonaDataField.Name(
-            variant = PersonaData.PersonaDataField.Name.Variant.Western,
-            given = "",
-            family = "",
-            nickname = ""
-        )
-
-        PersonaData.PersonaDataField.Kind.EmailAddress -> PersonaData.PersonaDataField.Email("")
-        PersonaData.PersonaDataField.Kind.PhoneNumber -> PersonaData.PersonaDataField.PhoneNumber("")
-        else -> throw RuntimeException("Field $this not supported")
+        is PersonaData.PersonaDataField.Email -> value.isEmpty()
+        is PersonaData.PersonaDataField.Name -> fullName.isEmpty()
+        is PersonaData.PersonaDataField.PhoneNumber -> value.isEmpty()
+        else -> true
     }
 }
+
+val PersonaData.allNonEmptyFields: List<IdentifiedEntry<out PersonaData.PersonaDataField>>
+    get() = allFields.filterNot { it.value.isEmpty() }
 
 val PersonaData.PersonaDataField.Name.fullName: String
     get() {
         val fullName = if (variant == PersonaData.PersonaDataField.Name.Variant.Eastern) {
-            listOfNotNull(family, given)
+            listOf(family, given)
         } else {
-            listOfNotNull(given, family)
+            listOf(given, family)
         }.filter { it.isNotEmpty() }.joinToString(" ")
-        return listOfNotNull(fullName, nickname).filter { it.isNotEmpty() }.joinToString("\n")
+        return listOf(fullName, nickname).filter { it.isNotEmpty() }.joinToString("\n")
     }
 
 fun List<PersonaData.PersonaDataField>.toPersonaData(): PersonaData {
@@ -117,4 +103,45 @@ fun PersonaData.PersonaDataField.Name.Variant.toVariantDTO(): PersonaDataName.Va
         PersonaData.PersonaDataField.Name.Variant.Eastern -> PersonaDataName.Variant.Eastern
         PersonaData.PersonaDataField.Name.Variant.Western -> PersonaDataName.Variant.Western
     }
+}
+
+fun Network.Persona.getPersonaDataForFieldKinds(requiredPersonaFields: List<RequiredPersonaField>): PersonaData {
+    return PersonaData(
+        name = if (requiredPersonaFields.any { it.kind == PersonaData.PersonaDataField.Kind.Name }) personaData.name else null,
+        dateOfBirth = if (requiredPersonaFields.any { it.kind == PersonaData.PersonaDataField.Kind.DateOfBirth }) {
+            personaData.dateOfBirth
+        } else {
+            null
+        },
+        companyName = if (requiredPersonaFields.any { it.kind == PersonaData.PersonaDataField.Kind.CompanyName }) {
+            personaData.companyName
+        } else {
+            null
+        },
+        emailAddresses = requiredPersonaFields.firstOrNull { it.kind == PersonaData.PersonaDataField.Kind.EmailAddress }?.let {
+            val count = it.numberOfValues.quantity
+            require(count <= personaData.emailAddresses.size)
+            personaData.emailAddresses.take(count)
+        }.orEmpty(),
+        phoneNumbers = requiredPersonaFields.firstOrNull { it.kind == PersonaData.PersonaDataField.Kind.PhoneNumber }?.let {
+            val count = it.numberOfValues.quantity
+            require(count <= personaData.phoneNumbers.size)
+            personaData.phoneNumbers.take(count)
+        }.orEmpty(),
+        urls = requiredPersonaFields.firstOrNull { it.kind == PersonaData.PersonaDataField.Kind.Url }?.let {
+            val count = it.numberOfValues.quantity
+            require(count <= personaData.urls.size)
+            personaData.urls.take(count)
+        }.orEmpty(),
+        postalAddresses = requiredPersonaFields.firstOrNull { it.kind == PersonaData.PersonaDataField.Kind.PostalAddress }?.let {
+            val count = it.numberOfValues.quantity
+            require(count <= personaData.postalAddresses.size)
+            personaData.postalAddresses.take(count)
+        }.orEmpty(),
+        creditCards = requiredPersonaFields.firstOrNull { it.kind == PersonaData.PersonaDataField.Kind.CreditCard }?.let {
+            val count = it.numberOfValues.quantity
+            require(count <= personaData.creditCards.size)
+            personaData.creditCards.take(count)
+        }.orEmpty()
+    )
 }

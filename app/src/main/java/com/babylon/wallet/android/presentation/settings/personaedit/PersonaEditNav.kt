@@ -1,5 +1,6 @@
 package com.babylon.wallet.android.presentation.settings.personaedit
 
+import android.net.Uri
 import androidx.annotation.VisibleForTesting
 import androidx.compose.animation.AnimatedContentScope
 import androidx.compose.animation.EnterTransition
@@ -10,9 +11,11 @@ import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavType
 import androidx.navigation.navArgument
-import com.babylon.wallet.android.presentation.model.decodePersonaDataKinds
+import com.babylon.wallet.android.data.gateway.generated.infrastructure.Serializer
+import com.babylon.wallet.android.domain.model.RequiredPersonaFields
+import com.babylon.wallet.android.presentation.navigation.RequiredPersonaFieldsParameterType
 import com.google.accompanist.navigation.animation.composable
-import rdx.works.profile.data.model.pernetwork.PersonaData
+import kotlinx.serialization.encodeToString
 
 @VisibleForTesting
 internal const val ARG_PERSONA_ADDRESS = "persona_address"
@@ -24,18 +27,19 @@ const val ROUTE_EDIT_PERSONA = "persona_edit/{$ARG_PERSONA_ADDRESS}?$ARG_REQUIRE
 
 internal class PersonaEditScreenArgs(
     val personaAddress: String,
-    val requiredFields: Array<PersonaData.PersonaDataField.Kind> = emptyArray()
+    val requiredPersonaFields: RequiredPersonaFields? = null
 ) {
     constructor(savedStateHandle: SavedStateHandle) : this(
         checkNotNull(savedStateHandle[ARG_PERSONA_ADDRESS]) as String,
-        savedStateHandle.get<String>(ARG_REQUIRED_FIELDS)?.decodePersonaDataKinds().orEmpty().toTypedArray()
+        savedStateHandle.get(ARG_REQUIRED_FIELDS) as? RequiredPersonaFields
     )
 }
 
-fun NavController.personaEditScreen(personaAddress: String, fieldsEncoded: String? = null) {
+fun NavController.personaEditScreen(personaAddress: String, requiredPersonaFields: RequiredPersonaFields? = null) {
     var route = "persona_edit/$personaAddress"
-    fieldsEncoded?.let {
-        route += "?$ARG_REQUIRED_FIELDS=$it"
+    requiredPersonaFields?.let {
+        val argument = Uri.encode(Serializer.kotlinxSerializationJson.encodeToString(requiredPersonaFields))
+        route += "?$ARG_REQUIRED_FIELDS=$argument"
     }
     navigate(route)
 }
@@ -66,7 +70,7 @@ fun NavGraphBuilder.personaEditScreen(
                 type = NavType.StringType
             },
             navArgument(ARG_REQUIRED_FIELDS) {
-                type = NavType.StringType
+                type = RequiredPersonaFieldsParameterType
                 nullable = true
             }
         )

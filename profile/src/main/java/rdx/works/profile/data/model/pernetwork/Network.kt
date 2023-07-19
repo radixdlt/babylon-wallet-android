@@ -335,7 +335,12 @@ data class Network(
             val creditCards: Shared<PersonaDataEntryID>? = null
         ) {
             fun alreadyGrantedIds(): List<PersonaDataEntryID> {
-                return emailAddresses?.ids.orEmpty() + postalAddresses?.ids.orEmpty() + listOfNotNull(name)
+                return listOfNotNull(name, dateOfBirth, companyName) +
+                    emailAddresses?.ids.orEmpty() +
+                    phoneNumbers?.ids.orEmpty() +
+                    urls?.ids.orEmpty() +
+                    postalAddresses?.ids.orEmpty() +
+                    creditCards?.ids.orEmpty()
             }
 
             companion object {
@@ -381,6 +386,16 @@ data class RequestedNumber(
 
         @SerialName("atLeast")
         AtLeast
+    }
+
+    companion object {
+        fun exactly(value: Int): RequestedNumber {
+            return RequestedNumber(quantifier = Quantifier.Exactly, value)
+        }
+
+        fun atLeast(value: Int): RequestedNumber {
+            return RequestedNumber(quantifier = Quantifier.AtLeast, value)
+        }
     }
 }
 
@@ -632,17 +647,49 @@ fun List<Network.NextDerivationIndices>.incrementPersonaIndex(forNetworkId: Netw
     return mutatedList
 }
 
-fun Network.AuthorizedDapp.AuthorizedPersonaSimple.ensurePersonaDataExist(existingFieldIds: List<PersonaDataEntryID>): Network.AuthorizedDapp.AuthorizedPersonaSimple {
+fun Network.AuthorizedDapp.AuthorizedPersonaSimple.ensurePersonaDataExist(
+    existingFieldIds: List<PersonaDataEntryID>
+): Network.AuthorizedDapp.AuthorizedPersonaSimple {
     return copy(
         sharedPersonaData = sharedPersonaData.copy(
             name = if (existingFieldIds.contains(sharedPersonaData.name)) sharedPersonaData.name else null,
             dateOfBirth = if (existingFieldIds.contains(sharedPersonaData.dateOfBirth)) sharedPersonaData.dateOfBirth else null,
             companyName = if (existingFieldIds.contains(sharedPersonaData.companyName)) sharedPersonaData.companyName else null,
-            emailAddresses = sharedPersonaData.emailAddresses?.removeNonExisting(existingFieldIds),
-            phoneNumbers = sharedPersonaData.phoneNumbers?.removeNonExisting(existingFieldIds),
-            urls = sharedPersonaData.urls?.removeNonExisting(existingFieldIds),
-            postalAddresses = sharedPersonaData.postalAddresses?.removeNonExisting(existingFieldIds),
-            creditCards = sharedPersonaData.creditCards?.removeNonExisting(existingFieldIds),
+            emailAddresses = sharedPersonaData.emailAddresses?.removeNonExisting(existingFieldIds)?.let {
+                if (it.ids.isEmpty()) {
+                    null
+                } else {
+                    it
+                }
+            },
+            phoneNumbers = sharedPersonaData.phoneNumbers?.removeNonExisting(existingFieldIds)?.let {
+                if (it.ids.isEmpty()) {
+                    null
+                } else {
+                    it
+                }
+            },
+            urls = sharedPersonaData.urls?.removeNonExisting(existingFieldIds)?.let {
+                if (it.ids.isEmpty()) {
+                    null
+                } else {
+                    it
+                }
+            },
+            postalAddresses = sharedPersonaData.postalAddresses?.removeNonExisting(existingFieldIds)?.let {
+                if (it.ids.isEmpty()) {
+                    null
+                } else {
+                    it
+                }
+            },
+            creditCards = sharedPersonaData.creditCards?.removeNonExisting(existingFieldIds)?.let {
+                if (it.ids.isEmpty()) {
+                    null
+                } else {
+                    it
+                }
+            }
         )
     )
 }
