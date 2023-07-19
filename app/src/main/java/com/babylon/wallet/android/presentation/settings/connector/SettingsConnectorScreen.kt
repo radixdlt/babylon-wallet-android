@@ -19,6 +19,8 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Divider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -180,7 +182,8 @@ private fun SettingsLinkConnectorContent(
                                     .padding(horizontal = RadixTheme.dimensions.paddingDefault),
                                 text = stringResource(id = R.string.linkedConnectors_linkNewConnector),
                                 style = RadixTheme.typography.title,
-                                color = RadixTheme.colors.gray1
+                                color = RadixTheme.colors.gray1,
+                                textAlign = TextAlign.Center
                             )
 
                             Text(
@@ -358,6 +361,7 @@ private fun ConnectorNameInput(
 ) {
     Column(
         modifier = modifier
+            .verticalScroll(rememberScrollState())
             .padding(horizontal = RadixTheme.dimensions.paddingDefault)
     ) {
         Text(
