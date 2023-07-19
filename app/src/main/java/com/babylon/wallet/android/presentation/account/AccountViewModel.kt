@@ -25,6 +25,7 @@ import rdx.works.profile.data.model.factorsources.FactorSource.FactorSourceID
 import rdx.works.profile.data.utils.factorSourceId
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.accountOnCurrentNetwork
+import timber.log.Timber
 import javax.inject.Inject
 
 @HiltViewModel
@@ -83,6 +84,7 @@ class AccountViewModel @Inject constructor(
         viewModelScope.launch {
             val result = getAccountsWithResourcesUseCase(listOf(account), isRefreshing)
             result.onError { e ->
+                Timber.w(e)
                 _state.update { accountUiState ->
                     accountUiState.copy(
                         uiMessage = UiMessage.ErrorMessage.from(error = e),
@@ -133,6 +135,10 @@ class AccountViewModel @Inject constructor(
                     sendEvent(AccountEvent.NavigateToMnemonicBackup(it))
                 }
         }
+    }
+
+    fun onMessageShown() {
+        _state.update { it.copy(uiMessage = null) }
     }
 }
 

@@ -35,6 +35,7 @@ import androidx.compose.material.pullrefresh.rememberPullRefreshState
 import androidx.compose.material.rememberModalBottomSheetState
 import androidx.compose.material3.FabPosition
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -67,6 +68,8 @@ import com.babylon.wallet.android.presentation.account.composable.FungibleTokenB
 import com.babylon.wallet.android.presentation.account.composable.NonFungibleTokenBottomSheetDetails
 import com.babylon.wallet.android.presentation.transfer.assets.ResourceTab
 import com.babylon.wallet.android.presentation.transfer.assets.ResourcesTabs
+import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
+import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
 import com.babylon.wallet.android.presentation.ui.composables.resources.FungibleResourceItem
 import com.babylon.wallet.android.presentation.ui.composables.resources.NonFungibleResourceItem
 import com.babylon.wallet.android.presentation.ui.composables.resources.fungibleResources
@@ -104,6 +107,7 @@ fun AccountScreen(
         onRefresh = viewModel::refresh,
         onHistoryClick = {},
         onTransferClick = onTransferClick,
+        onMessageShown = viewModel::onMessageShown,
         onFungibleResourceClicked = viewModel::onFungibleResourceClicked,
         onNonFungibleItemClicked = viewModel::onNonFungibleResourceClicked,
         modifier = modifier,
@@ -121,6 +125,7 @@ private fun AccountScreenContent(
     onRefresh: () -> Unit,
     onHistoryClick: () -> Unit,
     onTransferClick: (String) -> Unit,
+    onMessageShown: () -> Unit,
     onFungibleResourceClicked: (Resource.FungibleResource) -> Unit,
     onNonFungibleItemClicked: (Resource.NonFungibleResource, Resource.NonFungibleResource.Item) -> Unit,
     onApplySecuritySettings: () -> Unit
@@ -144,6 +149,13 @@ private fun AccountScreenContent(
             onBackClick()
         }
     }
+
+    val snackBarHostState = remember { SnackbarHostState() }
+    SnackbarUIMessage(
+        message = state.uiMessage,
+        snackbarHostState = snackBarHostState,
+        onMessageShown = onMessageShown
+    )
 
     ModalBottomSheetLayout(
         modifier = modifier,
@@ -186,11 +198,17 @@ private fun AccountScreenContent(
                         )
                     }
                 },
-                floatingActionButtonPosition = FabPosition.Center
+                floatingActionButtonPosition = FabPosition.Center,
+                snackbarHost = {
+                    RadixSnackbarHost(
+                        modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingDefault),
+                        hostState = snackBarHostState
+                    )
+                }
             ) { innerPadding ->
                 AssetsContent(
                     modifier = Modifier.padding(innerPadding),
-                    resources = state.accountWithResources?.resources,
+                    state = state,
                     lazyListState = lazyListState,
                     onFungibleTokenClick = {
                         onFungibleResourceClicked(it)
@@ -262,7 +280,7 @@ private fun SheetContent(
 fun AssetsContent(
     modifier: Modifier = Modifier,
     lazyListState: LazyListState,
-    resources: Resources?,
+    state: AccountUiState,
     onFungibleTokenClick: (Resource.FungibleResource) -> Unit,
     onNonFungibleItemClick: (Resource.NonFungibleResource, Resource.NonFungibleResource.Item) -> Unit,
 ) {
@@ -273,7 +291,7 @@ fun AssetsContent(
         elevation = 8.dp
     ) {
         var selectedTab by remember { mutableStateOf(ResourceTab.Tokens) }
-
+        val resources = state.accountWithResources?.resources
         val xrdItem = resources?.xrd
         val restOfFungibles = resources?.nonXrdFungibles.orEmpty()
 
@@ -340,7 +358,7 @@ fun AssetsContent(
                 }
             }
 
-            if (resources == null) {
+            if (state.isLoading) {
                 CircularProgressIndicator(
                     modifier = Modifier.align(Alignment.Center),
                     color = RadixTheme.colors.gray1
@@ -388,6 +406,7 @@ fun AccountContentPreview() {
                 onRefresh = {},
                 onHistoryClick = {},
                 onTransferClick = {},
+                onMessageShown = {},
                 onFungibleResourceClicked = {},
                 onNonFungibleItemClicked = { _, _ -> },
                 onApplySecuritySettings = {}
