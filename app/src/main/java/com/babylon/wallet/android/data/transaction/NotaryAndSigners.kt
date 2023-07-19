@@ -2,11 +2,16 @@ package com.babylon.wallet.android.data.transaction
 
 import com.radixdlt.crypto.ec.EllipticCurveType
 import com.radixdlt.crypto.toECKeyPair
+import com.radixdlt.hex.extensions.hexToByteArray
+import com.radixdlt.hex.model.HexString
 import com.radixdlt.ret.PublicKey
 import com.radixdlt.ret.Signature
 import rdx.works.core.ret.crypto.PrivateKey
 import rdx.works.core.ret.toEnginePublicKeyModel
+import rdx.works.core.toUByteList
+import rdx.works.profile.data.model.factorsources.Slip10Curve
 import rdx.works.profile.data.model.pernetwork.Entity
+import rdx.works.profile.data.model.pernetwork.SecurityState
 import com.radixdlt.model.PrivateKey as SLIP10PrivateKey
 
 data class NotaryAndSigners(
@@ -16,14 +21,26 @@ data class NotaryAndSigners(
     val notaryIsSignatory: Boolean
         get() = signers.isEmpty()
 
-    fun notaryPrivateKeySLIP10(): SLIP10PrivateKey {
-        return SLIP10PrivateKey(ephemeralNotaryPrivateKey.toByteArray(), EllipticCurveType.Ed25519)
-    }
-
     fun notaryPublicKey(): PublicKey {
-        return notaryPrivateKeySLIP10()
+        return SLIP10PrivateKey(ephemeralNotaryPrivateKey.toByteArray(), EllipticCurveType.Ed25519)
             .toECKeyPair()
             .toEnginePublicKeyModel()
+    }
+
+    fun signersPublicKeys() = signers.map { signer ->
+        when (val securityState = signer.securityState) {
+            is SecurityState.Unsecured -> {
+                val publicKey = securityState.unsecuredEntityControl.transactionSigning.publicKey
+                when (publicKey.curve) {
+                    Slip10Curve.CURVE_25519 -> PublicKey.Ed25519(
+                        value = HexString(publicKey.compressedData).hexToByteArray().toUByteList()
+                    )
+                    Slip10Curve.SECP_256K1 -> PublicKey.Secp256k1(
+                        value = HexString(publicKey.compressedData).hexToByteArray().toUByteList()
+                    )
+                }
+            }
+        }
     }
 
     fun signWithNotary(hashedData: ByteArray): Signature {

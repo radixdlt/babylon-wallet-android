@@ -2,9 +2,7 @@
 
 package com.babylon.wallet.android.data.transaction
 
-import com.babylon.wallet.android.data.gateway.generated.models.PublicKey
-import com.babylon.wallet.android.data.gateway.generated.models.PublicKeyEddsaEd25519
-import com.babylon.wallet.android.data.gateway.generated.models.PublicKeyType
+import com.babylon.wallet.android.data.gateway.extensions.asGatewayPublicKey
 import com.babylon.wallet.android.data.gateway.generated.models.TransactionPreviewRequest
 import com.babylon.wallet.android.data.gateway.generated.models.TransactionPreviewRequestFlags
 import com.babylon.wallet.android.data.gateway.generated.models.TransactionPreviewResponse
@@ -20,9 +18,6 @@ import com.babylon.wallet.android.domain.usecases.GetAccountsWithResourcesUseCas
 import com.babylon.wallet.android.domain.usecases.transaction.CollectSignersSignaturesUseCase
 import com.babylon.wallet.android.domain.usecases.transaction.SignRequest
 import com.babylon.wallet.android.domain.usecases.transaction.SubmitTransactionUseCase
-import com.radixdlt.crypto.getCompressedPublicKey
-import com.radixdlt.crypto.toECKeyPair
-import com.radixdlt.extensions.removeLeadingZero
 import com.radixdlt.hex.extensions.toHexString
 import com.radixdlt.ret.Address
 import com.radixdlt.ret.Intent
@@ -300,27 +295,22 @@ class TransactionClient @Inject constructor(
             signers = getSigningEntities(manifest),
             ephemeralNotaryPrivateKey = ephemeralNotaryPrivateKey
         )
-        val notaryPrivateKey = notaryAndSigners.notaryPrivateKeySLIP10()
-        val notaryPublicKey: PublicKey = PublicKeyEddsaEd25519(
-            keyType = PublicKeyType.eddsaEd25519,
-            keyHex = notaryPrivateKey.toECKeyPair().getCompressedPublicKey().removeLeadingZero().toHexString()
-        )
+
         return transactionRepository.getTransactionPreview(
-            // TODO things like tipPercentage might change later on
             TransactionPreviewRequest(
                 manifest = manifest.instructions().asStr(),
                 startEpochInclusive = startEpochInclusive,
                 endEpochExclusive = endEpochExclusive,
                 tipPercentage = 0,
                 nonce = generateNonce().toLong(),
-                signerPublicKeys = listOf(),
+                signerPublicKeys = notaryAndSigners.signersPublicKeys().map { it.asGatewayPublicKey() },
                 flags = TransactionPreviewRequestFlags(
                     useFreeCredit = false,
                     assumeAllSignatureProofs = false,
                     skipEpochCheck = false
                 ),
                 blobsHex = manifest.blobs().map { it.toByteArray().toHexString() },
-                notaryPublicKey = notaryPublicKey,
+                notaryPublicKey = notaryAndSigners.notaryPublicKey().asGatewayPublicKey(),
                 notaryIsSignatory = notaryAndSigners.notaryIsSignatory
             )
         ).asKotlinResult().fold(
