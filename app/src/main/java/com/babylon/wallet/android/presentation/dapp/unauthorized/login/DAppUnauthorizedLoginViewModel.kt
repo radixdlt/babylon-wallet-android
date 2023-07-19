@@ -14,6 +14,7 @@ import com.babylon.wallet.android.domain.model.DAppWithMetadata
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.babylon.wallet.android.domain.model.RequiredPersonaFields
 import com.babylon.wallet.android.domain.model.toRequiredFields
+import com.babylon.wallet.android.domain.usecases.BuildUnauthorizedDappResponseUseCase
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
@@ -37,6 +38,7 @@ import kotlinx.coroutines.launch
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.data.model.pernetwork.PersonaData
 import rdx.works.profile.domain.GetProfileUseCase
+import rdx.works.profile.domain.accountOnCurrentNetwork
 import rdx.works.profile.domain.gateway.GetCurrentGatewayUseCase
 import rdx.works.profile.domain.personaOnCurrentNetwork
 import javax.inject.Inject
@@ -50,7 +52,8 @@ class DAppUnauthorizedLoginViewModel @Inject constructor(
     private val getProfileUseCase: GetProfileUseCase,
     private val getCurrentGatewayUseCase: GetCurrentGatewayUseCase,
     private val dAppRepository: DAppRepository,
-    private val incomingRequestRepository: IncomingRequestRepository
+    private val incomingRequestRepository: IncomingRequestRepository,
+    private val buildUnauthorizedDappResponseUseCase: BuildUnauthorizedDappResponseUseCase
 ) : StateViewModel<DAppUnauthorizedLoginUiState>(),
     OneOffEventHandler<Event> by OneOffEventHandlerImpl() {
 
@@ -188,19 +191,27 @@ class DAppUnauthorizedLoginViewModel @Inject constructor(
 
     fun sendRequestResponse() {
         viewModelScope.launch {
-            dAppMessenger.sendWalletInteractionUnauthorizedSuccessResponse(
-                request.dappId,
-                args.requestId,
-                state.value.selectedAccountsOneTime,
-                state.value.selectedPersonaData,
-            )
-            sendEvent(Event.LoginFlowCompleted)
-            appEventBus.sendEvent(
-                AppEvent.Status.DappInteraction(
-                    requestId = request.id,
-                    dAppName = state.value.dappWithMetadata?.name
+            buildUnauthorizedDappResponseUseCase(
+                request,
+                state.value.selectedAccountsOneTime.mapNotNull { getProfileUseCase.accountOnCurrentNetwork(it.address) },
+                state.value.selectedPersonaData
+            ).onSuccess {
+                dAppMessenger.sendWalletInteractionSuccessResponse(
+                    request.dappId,
+                    it
                 )
-            )
+                sendEvent(Event.LoginFlowCompleted)
+                appEventBus.sendEvent(
+                    AppEvent.Status.DappInteraction(
+                        requestId = request.id,
+                        dAppName = state.value.dappWithMetadata?.name
+                    )
+                )
+            }.onFailure { throwable ->
+                if (throwable is DappRequestFailure) {
+                    handleRequestError(throwable)
+                }
+            }
         }
     }
 

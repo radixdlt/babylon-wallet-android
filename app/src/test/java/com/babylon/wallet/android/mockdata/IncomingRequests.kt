@@ -5,7 +5,7 @@ import rdx.works.core.UUIDGenerator
 
 val accountsRequestExact = MessageFromDataChannel.IncomingRequest.UnauthorizedRequest(
     dappId = "dappId",
-    requestId = UUIDGenerator.uuid().toString(),
+    interactionId = UUIDGenerator.uuid().toString(),
     requestMetadata = MessageFromDataChannel.IncomingRequest.RequestMetadata(1, "", "", false),
     oneTimeAccountsRequestItem = MessageFromDataChannel.IncomingRequest.AccountsRequestItem(
         isOngoing = false,
@@ -18,7 +18,7 @@ val accountsRequestExact = MessageFromDataChannel.IncomingRequest.UnauthorizedRe
 )
 val accountsTwoRequestExact = MessageFromDataChannel.IncomingRequest.UnauthorizedRequest(
     dappId = "dappId",
-    requestId = UUIDGenerator.uuid().toString(),
+    interactionId = UUIDGenerator.uuid().toString(),
     requestMetadata = MessageFromDataChannel.IncomingRequest.RequestMetadata(1, "", "", false),
     oneTimeAccountsRequestItem = MessageFromDataChannel.IncomingRequest.AccountsRequestItem(
         isOngoing = false,
@@ -32,7 +32,7 @@ val accountsTwoRequestExact = MessageFromDataChannel.IncomingRequest.Unauthorize
 
 val accountsRequestAtLeast = MessageFromDataChannel.IncomingRequest.UnauthorizedRequest(
     dappId = "dappId",
-    requestId = UUIDGenerator.uuid().toString(),
+    interactionId = UUIDGenerator.uuid().toString(),
     requestMetadata = MessageFromDataChannel.IncomingRequest.RequestMetadata(1, "", "", false),
     oneTimeAccountsRequestItem = MessageFromDataChannel.IncomingRequest.AccountsRequestItem(
         isOngoing = false,

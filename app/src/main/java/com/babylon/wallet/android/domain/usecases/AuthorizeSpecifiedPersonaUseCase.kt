@@ -178,7 +178,7 @@ class AuthorizeSpecifiedPersonaUseCase @Inject constructor(
             null
         ).mapCatching { response ->
             return when (
-                dAppMessenger.sendWalletInteractionAuthorizedSuccessResponse(
+                dAppMessenger.sendWalletInteractionSuccessResponse(
                     dappId = request.dappId,
                     response = response
                 )

@@ -643,7 +643,7 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
                     state.value.selectedOngoingPersonaData,
                     state.value.selectedOnetimePersonaData
                 ).onSuccess { response ->
-                    dAppMessenger.sendWalletInteractionAuthorizedSuccessResponse(dappId = request.dappId, response = response)
+                    dAppMessenger.sendWalletInteractionSuccessResponse(dappId = request.dappId, response = response)
                     mutex.withLock {
                         editedDapp?.let { dAppConnectionRepository.updateOrCreateAuthorizedDApp(it) }
                     }

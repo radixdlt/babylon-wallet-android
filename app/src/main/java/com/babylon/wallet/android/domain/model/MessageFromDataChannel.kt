@@ -76,11 +76,11 @@ sealed interface MessageFromDataChannel {
 
         data class UnauthorizedRequest(
             val dappId: String, // from which dapp comes the message
-            val requestId: String,
+            val interactionId: String,
             val requestMetadata: RequestMetadata,
             val oneTimeAccountsRequestItem: AccountsRequestItem? = null,
             val oneTimePersonaDataRequestItem: PersonaRequestItem? = null
-        ) : IncomingRequest(dappId, requestId, requestMetadata) {
+        ) : IncomingRequest(dappId, interactionId, requestMetadata) {
             fun isValidRequest(): Boolean {
                 return oneTimeAccountsRequestItem?.isValidRequestItem() != false
             }

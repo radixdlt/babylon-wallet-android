@@ -10,6 +10,7 @@ import com.babylon.wallet.android.data.dapp.model.Persona
 import com.babylon.wallet.android.data.dapp.model.WalletAuthorizedRequestResponseItems
 import com.babylon.wallet.android.data.dapp.model.WalletInteractionResponse
 import com.babylon.wallet.android.data.dapp.model.WalletInteractionSuccessResponse
+import com.babylon.wallet.android.data.dapp.model.WalletUnauthorizedRequestResponseItems
 import com.babylon.wallet.android.data.dapp.model.toProof
 import com.babylon.wallet.android.data.transaction.DappRequestFailure
 import com.babylon.wallet.android.data.transaction.ROLAClient
@@ -19,11 +20,56 @@ import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.data.model.pernetwork.PersonaData
 import javax.inject.Inject
 
-class BuildAuthorizedDappResponseUseCase @Inject constructor(
-    private val rolaClient: ROLAClient
-) {
+open class BuildDappResponseUseCase(private val rolaClient: ROLAClient) {
 
     val signingState = rolaClient.signingState
+
+    protected suspend fun buildAccountsResponseItem(
+        request: MessageFromDataChannel.IncomingRequest,
+        accounts: List<Network.Account>,
+        challengeHex: String?
+    ): Result<AccountsRequestResponseItem?> {
+        if (accounts.isEmpty()) {
+            return Result.success(null)
+        }
+        var accountProofs: List<AccountProof>? = null
+        if (challengeHex != null) {
+            accountProofs = accounts.map { account ->
+                val signatureWithPublicKey = rolaClient.signAuthChallenge(
+                    account,
+                    challengeHex,
+                    request.metadata.dAppDefinitionAddress,
+                    request.metadata.origin
+                )
+                if (signatureWithPublicKey.isFailure) return Result.failure(DappRequestFailure.FailedToSignAuthChallenge())
+                AccountProof(
+                    account.address,
+                    signatureWithPublicKey.getOrThrow().toProof(challengeHex)
+                )
+            }
+        }
+
+        val accountsResponses = accounts.map { account ->
+            AccountsRequestResponseItem.Account(
+                address = account.address,
+                label = account.displayName,
+                appearanceId = account.appearanceID
+            )
+        }
+
+        return Result.success(
+            AccountsRequestResponseItem(
+                accounts = accountsResponses,
+                challenge = challengeHex,
+                proofs = accountProofs
+            )
+        )
+    }
+}
+
+class BuildAuthorizedDappResponseUseCase @Inject constructor(
+    private val rolaClient: ROLAClient
+) : BuildDappResponseUseCase(rolaClient) {
 
     @Suppress("LongParameterList", "ReturnCount")
     suspend operator fun invoke(
@@ -89,6 +135,7 @@ class BuildAuthorizedDappResponseUseCase @Inject constructor(
                 }
                 response
             }
+
             MessageFromDataChannel.IncomingRequest.AuthorizedRequest.AuthRequest.LoginRequest.WithoutChallenge -> {
                 Result.success(
                     AuthLoginWithoutChallengeRequestResponseItem(
@@ -99,6 +146,7 @@ class BuildAuthorizedDappResponseUseCase @Inject constructor(
                     )
                 )
             }
+
             is MessageFromDataChannel.IncomingRequest.AuthorizedRequest.AuthRequest.UsePersonaRequest -> {
                 Result.success(
                     AuthUsePersonaRequestResponseItem(
@@ -112,45 +160,30 @@ class BuildAuthorizedDappResponseUseCase @Inject constructor(
         }
         return authResponse
     }
+}
 
-    private suspend fun buildAccountsResponseItem(
-        request: MessageFromDataChannel.IncomingRequest.AuthorizedRequest,
-        accounts: List<Network.Account>,
-        challengeHex: String?
-    ): Result<AccountsRequestResponseItem?> {
-        if (accounts.isEmpty()) {
-            return Result.success(null)
-        }
-        var accountProofs: List<AccountProof>? = null
-        if (challengeHex != null) {
-            accountProofs = accounts.map { account ->
-                val signatureWithPublicKey = rolaClient.signAuthChallenge(
-                    account,
-                    challengeHex,
-                    request.metadata.dAppDefinitionAddress,
-                    request.metadata.origin
-                )
-                if (signatureWithPublicKey.isFailure) return Result.failure(DappRequestFailure.FailedToSignAuthChallenge())
-                AccountProof(
-                    account.address,
-                    signatureWithPublicKey.getOrThrow().toProof(challengeHex)
-                )
-            }
-        }
+class BuildUnauthorizedDappResponseUseCase @Inject constructor(
+    rolaClient: ROLAClient
+) : BuildDappResponseUseCase(rolaClient) {
 
-        val accountsResponses = accounts.map { account ->
-            AccountsRequestResponseItem.Account(
-                address = account.address,
-                label = account.displayName,
-                appearanceId = account.appearanceID
-            )
+    @Suppress("LongParameterList", "ReturnCount")
+    suspend operator fun invoke(
+        request: MessageFromDataChannel.IncomingRequest.UnauthorizedRequest,
+        oneTimeAccounts: List<Network.Account>,
+        onetimeSharedPersonaData: PersonaData? = null
+    ): Result<WalletInteractionResponse> {
+        val oneTimeAccountsResponseItem =
+            buildAccountsResponseItem(request, oneTimeAccounts, request.oneTimeAccountsRequestItem?.challenge)
+        if (oneTimeAccountsResponseItem.isFailure) {
+            return Result.failure(DappRequestFailure.FailedToSignAuthChallenge())
         }
-
         return Result.success(
-            AccountsRequestResponseItem(
-                accounts = accountsResponses,
-                challenge = challengeHex,
-                proofs = accountProofs
+            WalletInteractionSuccessResponse(
+                interactionId = request.interactionId,
+                items = WalletUnauthorizedRequestResponseItems(
+                    oneTimeAccounts = oneTimeAccountsResponseItem.getOrNull(),
+                    oneTimePersonaData = onetimeSharedPersonaData?.toPersonaDataRequestResponseItem()
+                )
             )
         )
     }
