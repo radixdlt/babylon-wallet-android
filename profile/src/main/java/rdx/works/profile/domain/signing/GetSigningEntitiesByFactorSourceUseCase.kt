@@ -16,7 +16,7 @@ class GetSigningEntitiesByFactorSourceUseCase @Inject constructor(
     private val getProfileUseCase: GetProfileUseCase
 ) {
 
-    @Suppress("NestedBlockDepth")
+    @Suppress("NestedBlockDepth", "UnsafeCallOnNullableType")
     suspend operator fun invoke(signers: List<Entity>): Map<FactorSource, List<Entity>> {
         val result = mutableMapOf<FactorSource, List<Entity>>()
         signers.forEach { signer ->
