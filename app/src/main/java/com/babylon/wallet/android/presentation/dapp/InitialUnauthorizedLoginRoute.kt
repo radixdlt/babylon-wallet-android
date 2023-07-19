@@ -1,10 +1,10 @@
 package com.babylon.wallet.android.presentation.dapp
 
-import com.babylon.wallet.android.domain.model.RequiredFields
+import com.babylon.wallet.android.domain.model.RequiredPersonaFields
 
 sealed interface InitialUnauthorizedLoginRoute {
     data class OnetimePersonaData(
-        val requiredFields: RequiredFields
+        val requiredPersonaFields: RequiredPersonaFields
     ) : InitialUnauthorizedLoginRoute
 
     data class ChooseAccount(

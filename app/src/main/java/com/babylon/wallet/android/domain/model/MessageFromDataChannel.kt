@@ -232,12 +232,12 @@ fun MessageFromDataChannel.LedgerResponse.LedgerDeviceModel.toProfileLedgerDevic
     }
 }
 
-fun MessageFromDataChannel.IncomingRequest.PersonaRequestItem.toRequiredFields(): RequiredFields {
-    return RequiredFields(
-        mutableListOf<RequiredField>().also {
+fun MessageFromDataChannel.IncomingRequest.PersonaRequestItem.toRequiredFields(): RequiredPersonaFields {
+    return RequiredPersonaFields(
+        mutableListOf<RequiredPersonaField>().also {
             if (isRequestingName) {
                 it.add(
-                    RequiredField(
+                    RequiredPersonaField(
                         PersonaData.PersonaDataField.Kind.Name,
                         MessageFromDataChannel.IncomingRequest.NumberOfValues(
                             1,
@@ -248,12 +248,12 @@ fun MessageFromDataChannel.IncomingRequest.PersonaRequestItem.toRequiredFields()
             }
             if (numberOfRequestedEmailAddresses != null) {
                 it.add(
-                    RequiredField(PersonaData.PersonaDataField.Kind.EmailAddress, numberOfRequestedEmailAddresses)
+                    RequiredPersonaField(PersonaData.PersonaDataField.Kind.EmailAddress, numberOfRequestedEmailAddresses)
                 )
             }
             if (numberOfRequestedPhoneNumbers != null) {
                 it.add(
-                    RequiredField(PersonaData.PersonaDataField.Kind.PhoneNumber, numberOfRequestedPhoneNumbers)
+                    RequiredPersonaField(PersonaData.PersonaDataField.Kind.PhoneNumber, numberOfRequestedPhoneNumbers)
                 )
             }
         }

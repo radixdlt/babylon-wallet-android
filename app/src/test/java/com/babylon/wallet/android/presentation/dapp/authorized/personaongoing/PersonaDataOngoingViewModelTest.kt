@@ -6,8 +6,8 @@ import androidx.lifecycle.SavedStateHandle
 import app.cash.turbine.test
 import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
-import com.babylon.wallet.android.domain.model.RequiredField
-import com.babylon.wallet.android.domain.model.RequiredFields
+import com.babylon.wallet.android.domain.model.RequiredPersonaField
+import com.babylon.wallet.android.domain.model.RequiredPersonaFields
 import com.babylon.wallet.android.mockdata.profile
 import com.babylon.wallet.android.presentation.TestDispatcherRule
 import io.mockk.every
@@ -42,9 +42,9 @@ internal class PersonaDataOngoingViewModelTest {
     @Before
     fun setUp() {
         every { savedStateHandle.get<String>(ARG_PERSONA_ID) } returns samplePersona.address
-        every { savedStateHandle.get<RequiredFields>(ARG_REQUIRED_FIELDS) } returns RequiredFields(
+        every { savedStateHandle.get<RequiredPersonaFields>(ARG_REQUIRED_FIELDS) } returns RequiredPersonaFields(
             fields = listOf(
-                RequiredField(
+                RequiredPersonaField(
                     PersonaData.PersonaDataField.Kind.Name,
                     MessageFromDataChannel.IncomingRequest.NumberOfValues(
                         1,
@@ -69,9 +69,9 @@ internal class PersonaDataOngoingViewModelTest {
 
     @Test
     fun `initial state is set up properly when fields are missing`() = runTest {
-        every { savedStateHandle.get<RequiredFields>(ARG_REQUIRED_FIELDS) } returns RequiredFields(
+        every { savedStateHandle.get<RequiredPersonaFields>(ARG_REQUIRED_FIELDS) } returns RequiredPersonaFields(
             fields = listOf(
-                RequiredField(
+                RequiredPersonaField(
                     PersonaData.PersonaDataField.Kind.PhoneNumber,
                     MessageFromDataChannel.IncomingRequest.NumberOfValues(
                         1,

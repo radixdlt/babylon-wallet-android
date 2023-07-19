@@ -3,8 +3,8 @@ package com.babylon.wallet.android.presentation.dapp.authorized.personaonetime
 import androidx.lifecycle.SavedStateHandle
 import app.cash.turbine.test
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
-import com.babylon.wallet.android.domain.model.RequiredField
-import com.babylon.wallet.android.domain.model.RequiredFields
+import com.babylon.wallet.android.domain.model.RequiredPersonaField
+import com.babylon.wallet.android.domain.model.RequiredPersonaFields
 import com.babylon.wallet.android.mockdata.profile
 import com.babylon.wallet.android.presentation.StateViewModelTest
 import io.mockk.coEvery
@@ -42,9 +42,9 @@ internal class PersonaDataOnetimeViewModelTest : StateViewModelTest<PersonaDataO
     @Before
     override fun setUp() {
         super.setUp()
-        every { savedStateHandle.get<RequiredFields>(ARG_REQUIRED_FIELDS) } returns RequiredFields(
+        every { savedStateHandle.get<RequiredPersonaFields>(ARG_REQUIRED_FIELDS) } returns RequiredPersonaFields(
             fields = listOf(
-                RequiredField(
+                RequiredPersonaField(
                     PersonaData.PersonaDataField.Kind.Name,
                     MessageFromDataChannel.IncomingRequest.NumberOfValues(
                         1,
@@ -89,7 +89,7 @@ internal class PersonaDataOnetimeViewModelTest : StateViewModelTest<PersonaDataO
         vm.onEditClick(samplePersona.address)
         advanceUntilIdle()
         val item = vm.oneOffEvent.first()
-        assert(item is PersonaDataOnetimeEvent.OnEditPersona && item.requiredFields.fields.any { it.kind == PersonaData.PersonaDataField.Kind.Name })
+        assert(item is PersonaDataOnetimeEvent.OnEditPersona && item.requiredPersonaFields.fields.any { it.kind == PersonaData.PersonaDataField.Kind.Name })
     }
 
 }

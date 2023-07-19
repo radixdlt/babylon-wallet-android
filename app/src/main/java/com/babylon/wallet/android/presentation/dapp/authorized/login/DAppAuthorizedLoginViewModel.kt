@@ -15,7 +15,7 @@ import com.babylon.wallet.android.domain.model.DAppWithMetadata
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel.IncomingRequest.AccountsRequestItem
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel.IncomingRequest.AuthorizedRequest
-import com.babylon.wallet.android.domain.model.RequiredFields
+import com.babylon.wallet.android.domain.model.RequiredPersonaFields
 import com.babylon.wallet.android.domain.model.toProfileShareAccountsQuantifier
 import com.babylon.wallet.android.domain.model.toRequiredFields
 import com.babylon.wallet.android.domain.usecases.BuildAuthorizedDappResponseUseCase
@@ -337,7 +337,7 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
         viewModelScope.launch {
             val requiredFields =
                 checkNotNull(request.oneTimePersonaDataRequestItem?.toRequiredFields())
-            val sharedPersonaData = persona.getPersonaDataForFieldKinds(requiredFields = requiredFields.fields)
+            val sharedPersonaData = persona.getPersonaDataForFieldKinds(requiredPersonaFields = requiredFields.fields)
             _state.update {
                 it.copy(
                     selectedOnetimePersonaData = sharedPersonaData
@@ -681,10 +681,10 @@ sealed interface Event : OneOffEvent {
 
     data class PersonaDataOngoing(
         val personaAddress: String,
-        val requiredFields: RequiredFields
+        val requiredPersonaFields: RequiredPersonaFields
     ) : Event
 
-    data class PersonaDataOnetime(val requiredFields: RequiredFields) : Event
+    data class PersonaDataOnetime(val requiredPersonaFields: RequiredPersonaFields) : Event
 
     data class ChooseAccounts(
         val numberOfAccounts: Int,

@@ -5,7 +5,7 @@ import com.babylon.wallet.android.R
 import com.babylon.wallet.android.data.dapp.model.PersonaDataName
 import com.babylon.wallet.android.data.dapp.model.PersonaDataRequestResponseItem
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
-import com.babylon.wallet.android.domain.model.RequiredField
+import com.babylon.wallet.android.domain.model.RequiredPersonaField
 import com.babylon.wallet.android.utils.encodeUtf8
 import rdx.works.profile.data.model.pernetwork.IdentifiedEntry
 import rdx.works.profile.data.model.pernetwork.Network
@@ -105,40 +105,40 @@ fun PersonaData.PersonaDataField.Name.Variant.toVariantDTO(): PersonaDataName.Va
     }
 }
 
-fun Network.Persona.getPersonaDataForFieldKinds(requiredFields: List<RequiredField>): PersonaData {
+fun Network.Persona.getPersonaDataForFieldKinds(requiredPersonaFields: List<RequiredPersonaField>): PersonaData {
     return PersonaData(
-        name = if (requiredFields.any { it.kind == PersonaData.PersonaDataField.Kind.Name }) personaData.name else null,
-        dateOfBirth = if (requiredFields.any { it.kind == PersonaData.PersonaDataField.Kind.DateOfBirth }) {
+        name = if (requiredPersonaFields.any { it.kind == PersonaData.PersonaDataField.Kind.Name }) personaData.name else null,
+        dateOfBirth = if (requiredPersonaFields.any { it.kind == PersonaData.PersonaDataField.Kind.DateOfBirth }) {
             personaData.dateOfBirth
         } else {
             null
         },
-        companyName = if (requiredFields.any { it.kind == PersonaData.PersonaDataField.Kind.CompanyName }) {
+        companyName = if (requiredPersonaFields.any { it.kind == PersonaData.PersonaDataField.Kind.CompanyName }) {
             personaData.companyName
         } else {
             null
         },
-        emailAddresses = requiredFields.firstOrNull { it.kind == PersonaData.PersonaDataField.Kind.EmailAddress }?.let {
+        emailAddresses = requiredPersonaFields.firstOrNull { it.kind == PersonaData.PersonaDataField.Kind.EmailAddress }?.let {
             val count = it.numberOfValues.quantity
             require(count <= personaData.emailAddresses.size)
             personaData.emailAddresses.take(count)
         }.orEmpty(),
-        phoneNumbers = requiredFields.firstOrNull { it.kind == PersonaData.PersonaDataField.Kind.PhoneNumber }?.let {
+        phoneNumbers = requiredPersonaFields.firstOrNull { it.kind == PersonaData.PersonaDataField.Kind.PhoneNumber }?.let {
             val count = it.numberOfValues.quantity
             require(count <= personaData.phoneNumbers.size)
             personaData.phoneNumbers.take(count)
         }.orEmpty(),
-        urls = requiredFields.firstOrNull { it.kind == PersonaData.PersonaDataField.Kind.Url }?.let {
+        urls = requiredPersonaFields.firstOrNull { it.kind == PersonaData.PersonaDataField.Kind.Url }?.let {
             val count = it.numberOfValues.quantity
             require(count <= personaData.urls.size)
             personaData.urls.take(count)
         }.orEmpty(),
-        postalAddresses = requiredFields.firstOrNull { it.kind == PersonaData.PersonaDataField.Kind.PostalAddress }?.let {
+        postalAddresses = requiredPersonaFields.firstOrNull { it.kind == PersonaData.PersonaDataField.Kind.PostalAddress }?.let {
             val count = it.numberOfValues.quantity
             require(count <= personaData.postalAddresses.size)
             personaData.postalAddresses.take(count)
         }.orEmpty(),
-        creditCards = requiredFields.firstOrNull { it.kind == PersonaData.PersonaDataField.Kind.CreditCard }?.let {
+        creditCards = requiredPersonaFields.firstOrNull { it.kind == PersonaData.PersonaDataField.Kind.CreditCard }?.let {
             val count = it.numberOfValues.quantity
             require(count <= personaData.creditCards.size)
             personaData.creditCards.take(count)

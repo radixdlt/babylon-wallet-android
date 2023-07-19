@@ -4,8 +4,8 @@ import androidx.lifecycle.SavedStateHandle
 import app.cash.turbine.test
 import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
-import com.babylon.wallet.android.domain.model.RequiredField
-import com.babylon.wallet.android.domain.model.RequiredFields
+import com.babylon.wallet.android.domain.model.RequiredPersonaField
+import com.babylon.wallet.android.domain.model.RequiredPersonaFields
 import com.babylon.wallet.android.mockdata.profile
 import com.babylon.wallet.android.presentation.StateViewModelTest
 import com.babylon.wallet.android.utils.isValidEmail
@@ -49,9 +49,9 @@ internal class PersonaEditViewModelTest : StateViewModelTest<PersonaEditViewMode
     override fun setUp() {
         super.setUp()
         every { savedStateHandle.get<String>(ARG_PERSONA_ADDRESS) } returns "1"
-        every { savedStateHandle.get<RequiredFields>(ARG_REQUIRED_FIELDS) } returns RequiredFields(
+        every { savedStateHandle.get<RequiredPersonaFields>(ARG_REQUIRED_FIELDS) } returns RequiredPersonaFields(
             fields = listOf(
-                RequiredField(
+                RequiredPersonaField(
                     PersonaData.PersonaDataField.Kind.Name,
                     MessageFromDataChannel.IncomingRequest.NumberOfValues(
                         1,

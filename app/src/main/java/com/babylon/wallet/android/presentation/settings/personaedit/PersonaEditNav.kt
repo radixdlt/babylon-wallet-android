@@ -12,8 +12,8 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavType
 import androidx.navigation.navArgument
 import com.babylon.wallet.android.data.gateway.generated.infrastructure.Serializer
-import com.babylon.wallet.android.domain.model.RequiredFields
-import com.babylon.wallet.android.presentation.navigation.RequiredFieldsParameterType
+import com.babylon.wallet.android.domain.model.RequiredPersonaFields
+import com.babylon.wallet.android.presentation.navigation.RequiredPersonaFieldsParameterType
 import com.google.accompanist.navigation.animation.composable
 import kotlinx.serialization.encodeToString
 
@@ -27,18 +27,18 @@ const val ROUTE_EDIT_PERSONA = "persona_edit/{$ARG_PERSONA_ADDRESS}?$ARG_REQUIRE
 
 internal class PersonaEditScreenArgs(
     val personaAddress: String,
-    val requiredFields: RequiredFields? = null
+    val requiredPersonaFields: RequiredPersonaFields? = null
 ) {
     constructor(savedStateHandle: SavedStateHandle) : this(
         checkNotNull(savedStateHandle[ARG_PERSONA_ADDRESS]) as String,
-        savedStateHandle.get(ARG_REQUIRED_FIELDS) as? RequiredFields
+        savedStateHandle.get(ARG_REQUIRED_FIELDS) as? RequiredPersonaFields
     )
 }
 
-fun NavController.personaEditScreen(personaAddress: String, requiredFields: RequiredFields? = null) {
+fun NavController.personaEditScreen(personaAddress: String, requiredPersonaFields: RequiredPersonaFields? = null) {
     var route = "persona_edit/$personaAddress"
-    requiredFields?.let {
-        val argument = Uri.encode(Serializer.kotlinxSerializationJson.encodeToString(requiredFields))
+    requiredPersonaFields?.let {
+        val argument = Uri.encode(Serializer.kotlinxSerializationJson.encodeToString(requiredPersonaFields))
         route += "?$ARG_REQUIRED_FIELDS=$argument"
     }
     navigate(route)
@@ -70,7 +70,7 @@ fun NavGraphBuilder.personaEditScreen(
                 type = NavType.StringType
             },
             navArgument(ARG_REQUIRED_FIELDS) {
-                type = RequiredFieldsParameterType
+                type = RequiredPersonaFieldsParameterType
                 nullable = true
             }
         )

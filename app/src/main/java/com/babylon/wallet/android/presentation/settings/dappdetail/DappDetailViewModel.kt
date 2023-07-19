@@ -7,8 +7,8 @@ import com.babylon.wallet.android.domain.common.onError
 import com.babylon.wallet.android.domain.common.onValue
 import com.babylon.wallet.android.domain.model.DAppWithMetadata
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
-import com.babylon.wallet.android.domain.model.RequiredField
-import com.babylon.wallet.android.domain.model.RequiredFields
+import com.babylon.wallet.android.domain.model.RequiredPersonaField
+import com.babylon.wallet.android.domain.model.RequiredPersonaFields
 import com.babylon.wallet.android.domain.model.Resource
 import com.babylon.wallet.android.domain.usecases.GetDAppWithMetadataAndAssociatedResourcesUseCase
 import com.babylon.wallet.android.presentation.common.OneOffEvent
@@ -135,9 +135,9 @@ class DappDetailViewModel @Inject constructor(
         // TODO properly compute required fields and number of values when we will support multiple entry values
         val selectedPersona = PersonaUiModel(
             persona = persona,
-            requiredFields = RequiredFields(
+            requiredPersonaFields = RequiredPersonaFields(
                 fields = requiredKinds.map {
-                    RequiredField(
+                    RequiredPersonaField(
                         kind = it,
                         numberOfValues = MessageFromDataChannel.IncomingRequest.NumberOfValues(
                             1,
@@ -184,7 +184,7 @@ class DappDetailViewModel @Inject constructor(
             if (_state.value.selectedSheetState is SelectedSheetState.SelectedPersona) {
                 (_state.value.selectedSheetState as SelectedSheetState.SelectedPersona).persona?.let { persona ->
                     sendEvent(
-                        DappDetailEvent.EditPersona(persona.persona.address, persona.requiredFields)
+                        DappDetailEvent.EditPersona(persona.persona.address, persona.requiredPersonaFields)
                     )
                 }
             }
@@ -230,7 +230,7 @@ class DappDetailViewModel @Inject constructor(
 }
 
 sealed interface DappDetailEvent : OneOffEvent {
-    data class EditPersona(val personaAddress: String, val requiredFields: RequiredFields? = null) : DappDetailEvent
+    data class EditPersona(val personaAddress: String, val requiredPersonaFields: RequiredPersonaFields? = null) : DappDetailEvent
     object LastPersonaDeleted : DappDetailEvent
     object DappDeleted : DappDetailEvent
 }

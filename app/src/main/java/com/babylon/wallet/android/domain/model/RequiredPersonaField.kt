@@ -9,14 +9,14 @@ import rdx.works.profile.data.model.pernetwork.PersonaData
 @Keep
 @Serializable
 @Parcelize
-data class RequiredFields(
-    val fields: List<RequiredField> = emptyList()
+data class RequiredPersonaFields(
+    val fields: List<RequiredPersonaField> = emptyList()
 ) : Parcelable
 
 @Keep
 @Serializable
 @Parcelize
-data class RequiredField(
+data class RequiredPersonaField(
     val kind: PersonaData.PersonaDataField.Kind,
     val numberOfValues: MessageFromDataChannel.IncomingRequest.NumberOfValues
 ) : Parcelable

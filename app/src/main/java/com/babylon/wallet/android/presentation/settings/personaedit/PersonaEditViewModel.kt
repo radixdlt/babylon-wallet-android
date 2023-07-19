@@ -54,7 +54,7 @@ class PersonaEditViewModel @Inject constructor(
         }
         viewModelScope.launch {
             getProfileUseCase.personaOnCurrentNetworkFlow(args.personaAddress).collect { persona ->
-                setPersona(persona = persona, requiredFieldKinds = args.requiredFields?.fields?.map { it.kind }.orEmpty())
+                setPersona(persona = persona, requiredFieldKinds = args.requiredPersonaFields?.fields?.map { it.kind }.orEmpty())
                 _state.update { state ->
                     state.copy(
                         persona = persona,

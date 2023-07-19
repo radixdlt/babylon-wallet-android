@@ -62,7 +62,7 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme.dimensions
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.domain.model.DAppWithMetadata
-import com.babylon.wallet.android.domain.model.RequiredFields
+import com.babylon.wallet.android.domain.model.RequiredPersonaFields
 import com.babylon.wallet.android.domain.model.Resource
 import com.babylon.wallet.android.domain.model.metadata.DescriptionMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.NameMetadataItem
@@ -98,7 +98,7 @@ fun DappDetailScreen(
     viewModel: DappDetailViewModel,
     onBackClick: () -> Unit,
     modifier: Modifier = Modifier,
-    onEditPersona: (String, RequiredFields?) -> Unit
+    onEditPersona: (String, RequiredPersonaFields?) -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     LaunchedEffect(Unit) {
@@ -107,7 +107,7 @@ fun DappDetailScreen(
                 DappDetailEvent.LastPersonaDeleted -> onBackClick()
                 DappDetailEvent.DappDeleted -> onBackClick()
                 is DappDetailEvent.EditPersona -> {
-                    onEditPersona(it.personaAddress, it.requiredFields)
+                    onEditPersona(it.personaAddress, it.requiredPersonaFields)
                 }
             }
         }

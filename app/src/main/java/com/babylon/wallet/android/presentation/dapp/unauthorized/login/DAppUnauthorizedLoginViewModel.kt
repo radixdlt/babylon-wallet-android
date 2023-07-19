@@ -12,7 +12,7 @@ import com.babylon.wallet.android.domain.common.onError
 import com.babylon.wallet.android.domain.common.onValue
 import com.babylon.wallet.android.domain.model.DAppWithMetadata
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
-import com.babylon.wallet.android.domain.model.RequiredFields
+import com.babylon.wallet.android.domain.model.RequiredPersonaFields
 import com.babylon.wallet.android.domain.model.toRequiredFields
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
@@ -216,7 +216,7 @@ sealed interface Event : OneOffEvent {
 
     object LoginFlowCompleted : Event
 
-    data class PersonaDataOnetime(val requiredFields: RequiredFields) : Event
+    data class PersonaDataOnetime(val requiredPersonaFields: RequiredPersonaFields) : Event
 }
 
 data class DAppUnauthorizedLoginUiState(

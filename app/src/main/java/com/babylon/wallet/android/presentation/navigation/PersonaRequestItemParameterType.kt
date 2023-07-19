@@ -4,23 +4,23 @@ import android.os.Build
 import android.os.Bundle
 import androidx.navigation.NavType
 import com.babylon.wallet.android.data.gateway.generated.infrastructure.Serializer
-import com.babylon.wallet.android.domain.model.RequiredFields
+import com.babylon.wallet.android.domain.model.RequiredPersonaFields
 
-val RequiredFieldsParameterType =
-    object : NavType<RequiredFields>(isNullableAllowed = true) {
-        override fun get(bundle: Bundle, key: String): RequiredFields? {
+val RequiredPersonaFieldsParameterType =
+    object : NavType<RequiredPersonaFields>(isNullableAllowed = true) {
+        override fun get(bundle: Bundle, key: String): RequiredPersonaFields? {
             return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                bundle.getParcelable(key, RequiredFields::class.java)
+                bundle.getParcelable(key, RequiredPersonaFields::class.java)
             } else {
                 bundle.getParcelable(key)
             }
         }
 
-        override fun parseValue(value: String): RequiredFields {
+        override fun parseValue(value: String): RequiredPersonaFields {
             return Serializer.kotlinxSerializationJson.decodeFromString(value)
         }
 
-        override fun put(bundle: Bundle, key: String, value: RequiredFields) {
+        override fun put(bundle: Bundle, key: String, value: RequiredPersonaFields) {
             bundle.putParcelable(key, value)
         }
     }
