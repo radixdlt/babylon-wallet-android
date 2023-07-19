@@ -4,7 +4,7 @@ import android.net.Uri
 import com.babylon.wallet.android.domain.model.metadata.AccountTypeMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.ClaimedEntitiesMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.ClaimedWebsiteMetadataItem
-import com.babylon.wallet.android.domain.model.metadata.DAppDefinitionMetadataItem
+import com.babylon.wallet.android.domain.model.metadata.DAppDefinitionsMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.DescriptionMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.IconUrlMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.MetadataItem
@@ -22,7 +22,7 @@ data class DAppWithMetadata(
     private val claimedWebsiteItem: ClaimedWebsiteMetadataItem? = null,
     private val claimedEntitiesItem: ClaimedEntitiesMetadataItem? = null,
     private val accountTypeItem: AccountTypeMetadataItem? = null,
-    private val dAppDefinitionMetadataItem: DAppDefinitionMetadataItem? = null,
+    private val dAppDefinitionsMetadataItem: DAppDefinitionsMetadataItem? = null,
     private val nonExplicitMetadataItems: List<StringMetadataItem> = emptyList()
 ) {
 
@@ -41,8 +41,8 @@ data class DAppWithMetadata(
     val displayableMetadata: List<StringMetadataItem>
         get() = nonExplicitMetadataItems
 
-    val definitionAddress: String?
-        get() = dAppDefinitionMetadataItem?.address
+    val definitionAddresses: List<String>
+        get() = dAppDefinitionsMetadataItem?.addresses.orEmpty()
 
     val claimedWebsite: String?
         get() = claimedWebsiteItem?.website

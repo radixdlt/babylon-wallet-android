@@ -92,7 +92,7 @@ fun SeedPhraseInputForm(
                 optionalHint = stringResource(id = R.string.importMnemonic_passphraseHint)
             )
         }
-        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
+        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingMedium))
         RadixTextButton(
             modifier = Modifier.fillMaxWidth(),
             text = stringResource(

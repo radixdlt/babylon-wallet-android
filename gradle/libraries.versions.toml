@@ -22,8 +22,9 @@ hiltNavigation = "1.1.0-alpha01"
 biometricKtx = "1.2.0-alpha05"
 coilCompose = "2.3.0"
 kotlinxSerialization = "1.5.1"
-ket = "2.0.15-snapshot"
+ret = "0.10.0-elm.1-5b838e5"
 slip10 = "1.2-snapshot"
+crypto = "1.72"
 okhttpBom = "5.0.0-alpha.11"
 retrofit = "2.9.0"
 retrofitKoltinxConverter = "0.8.0"
@@ -89,8 +90,10 @@ biometricKtx = { module = "androidx.biometric:biometric-ktx", version.ref = "bio
 coilCompose = { module = "io.coil-kt:coil-compose", version.ref = "coilCompose" }
 coilComposeSvg = { module = "io.coil-kt:coil-svg", version.ref = "coilCompose" }
 kotlinxSerialization = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinxSerialization" }
-ket = { module = "com.radixdlt:kotlin-engine-toolkit", version.ref = "ket" }
+retAndroid = { module = "com.radixdlt:radix-engine-toolkit-android", version.ref = "ret" }
+retKotlin = { module = "com.radixdlt:radix-engine-toolkit-kotlin", version.ref = "ret" }
 slip10 = { module = "com.radixdlt:slip10-android", version.ref = "slip10" }
+crypto = { module = "org.bouncycastle:bcprov-jdk15to18", version.ref = "crypto" }
 okhttpBom = { module = "com.squareup.okhttp3:okhttp-bom", version.ref = "okhttpBom" }
 okhttp = { module = "com.squareup.okhttp3:okhttp" }
 okhttpInterceptor = { module = "com.squareup.okhttp3:logging-interceptor" }

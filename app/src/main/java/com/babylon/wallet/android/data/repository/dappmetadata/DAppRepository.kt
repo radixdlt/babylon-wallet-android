@@ -125,6 +125,8 @@ class DAppRepositoryImpl @Inject constructor(
         explicitMetadata: Set<ExplicitMetadataKey>,
         needMostRecentData: Boolean
     ): Result<List<DAppWithMetadata>> = withContext(ioDispatcher) {
+        if (definitionAddresses.isEmpty()) return@withContext Result.Success(emptyList())
+
         val optIns = if (explicitMetadata.isNotEmpty()) {
             StateEntityDetailsOptIns(
                 explicitMetadata = explicitMetadata.map { it.key }

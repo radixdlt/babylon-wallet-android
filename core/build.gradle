@@ -29,10 +29,12 @@ android {
 }
 
 dependencies {
-    implementation libs.ket
+    implementation libs.retAndroid
     implementation libs.slip10
+    implementation libs.crypto
     implementation libs.ktorCore
     implementation libs.zxing
+    implementation libs.kotlinxSerialization
 
     // Datastore
     implementation libs.datastorePreferences
@@ -42,6 +44,7 @@ dependencies {
     kapt libs.hiltCompiler
 
     testImplementation libs.junit
+    testImplementation libs.retKotlin
     androidTestImplementation libs.androidXJunit
     androidTestImplementation libs.espresso
 }

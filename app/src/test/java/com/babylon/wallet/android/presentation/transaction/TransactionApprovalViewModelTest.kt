@@ -2,6 +2,7 @@ package com.babylon.wallet.android.presentation.transaction
 
 import androidx.lifecycle.SavedStateHandle
 import com.babylon.wallet.android.data.dapp.DappMessenger
+import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepositoryImpl
 import com.babylon.wallet.android.data.dapp.model.WalletErrorType
 import com.babylon.wallet.android.data.gateway.generated.models.FeeSummary
@@ -9,25 +10,24 @@ import com.babylon.wallet.android.data.gateway.generated.models.TransactionPrevi
 import com.babylon.wallet.android.data.gateway.generated.models.TransactionReceipt
 import com.babylon.wallet.android.data.transaction.DappRequestException
 import com.babylon.wallet.android.data.transaction.DappRequestFailure
-import com.babylon.wallet.android.data.transaction.model.FeePayerSearchResult
 import com.babylon.wallet.android.data.transaction.TransactionClient
+import com.babylon.wallet.android.data.transaction.model.FeePayerSearchResult
+import com.babylon.wallet.android.di.coroutines.ApplicationScope
+import com.babylon.wallet.android.domain.model.Badge
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.babylon.wallet.android.domain.model.TransactionManifestData
+import com.babylon.wallet.android.domain.usecases.GetAccountsWithResourcesUseCase
 import com.babylon.wallet.android.domain.usecases.GetDAppWithMetadataAndAssociatedResourcesUseCase
-import com.babylon.wallet.android.domain.usecases.transaction.GetTransactionComponentResourcesUseCase
-import com.babylon.wallet.android.domain.usecases.transaction.GetTransactionProofResourcesUseCase
+import com.babylon.wallet.android.domain.usecases.transaction.GetTransactionBadgesUseCase
 import com.babylon.wallet.android.presentation.StateViewModelTest
 import com.babylon.wallet.android.utils.AppEventBus
 import com.babylon.wallet.android.utils.DeviceSecurityHelper
-import com.radixdlt.toolkit.models.method.AnalyzeTransactionExecutionOutput
-import com.radixdlt.toolkit.models.method.EncounteredAddresses
-import com.radixdlt.toolkit.models.method.EncounteredComponents
-import com.radixdlt.toolkit.models.method.NewlyCreated
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.slot
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.first
@@ -37,6 +37,7 @@ import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Test
 import rdx.works.profile.data.model.apppreferences.Radix
+import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.gateway.GetCurrentGatewayUseCase
 import com.babylon.wallet.android.domain.common.Result as ResultInternal
 
@@ -45,8 +46,9 @@ internal class TransactionApprovalViewModelTest : StateViewModelTest<Transaction
 
     private val transactionClient = mockk<TransactionClient>()
     private val getCurrentGatewayUseCase = mockk<GetCurrentGatewayUseCase>()
-    private val getTransactionComponentResourcesUseCase = mockk<GetTransactionComponentResourcesUseCase>()
-    private val getTransactionProofResourcesUseCase = mockk<GetTransactionProofResourcesUseCase>()
+    private val getAccountsWithResourcesUseCase = mockk<GetAccountsWithResourcesUseCase>()
+    private val getProfileUseCase = mockk<GetProfileUseCase>()
+    private val getTransactionBadgesUseCase = mockk<GetTransactionBadgesUseCase>()
     private val getDAppWithAssociatedResourcesUseCase = mockk<GetDAppWithMetadataAndAssociatedResourcesUseCase>()
     private val incomingRequestRepository = IncomingRequestRepositoryImpl()
     private val dAppMessenger = mockk<DappMessenger>()
@@ -66,7 +68,6 @@ internal class TransactionApprovalViewModelTest : StateViewModelTest<Transaction
             false
         )
     )
-    private val sampleManifest = sampleDataProvider.sampleManifest()
 
     @Before
     override fun setUp() = runTest {
@@ -74,19 +75,14 @@ internal class TransactionApprovalViewModelTest : StateViewModelTest<Transaction
         every { deviceSecurityHelper.isDeviceSecure() } returns true
         every { savedStateHandle.get<String>(ARG_TRANSACTION_REQUEST_ID) } returns sampleRequestId
         coEvery { getCurrentGatewayUseCase() } returns Radix.Gateway.nebunet
-        coEvery { getTransactionProofResourcesUseCase.invoke(any()) } returns listOf(
-            PresentingProofUiModel("", "")
+        coEvery { getTransactionBadgesUseCase.invoke(any()) } returns listOf(
+            Badge(address = "", nameMetadataItem = null, iconMetadataItem = null)
         )
         coEvery { transactionClient.signAndSubmitTransaction(any()) } returns Result.success(sampleTxId)
-        coEvery { transactionClient.manifestInStringFormat(any()) } returns Result.success(sampleManifest)
         coEvery { transactionClient.findFeePayerInManifest(any()) } returns Result.success(FeePayerSearchResult("feePayer"))
         coEvery { transactionClient.signingState } returns emptyFlow()
-        coEvery { transactionClient.convertManifestInstructionsToJSON(any()) } returns Result.success(sampleManifest)
-        coEvery { transactionClient.getTransactionPreview(any(), any(), any()) } returns Result.success(
+        coEvery { transactionClient.getTransactionPreview(any(), any()) } returns Result.success(
             previewResponse()
-        )
-        coEvery { transactionClient.analyzeManifestWithPreviewContext(any(), any()) } returns Result.success(
-            analyzeManifestResponse()
         )
         coEvery {
             dAppMessenger.sendTransactionWriteResponseSuccess(
@@ -109,17 +105,18 @@ internal class TransactionApprovalViewModelTest : StateViewModelTest<Transaction
 
     override fun initVM(): TransactionApprovalViewModel {
         return TransactionApprovalViewModel(
-            transactionClient,
-            getTransactionComponentResourcesUseCase,
-            getTransactionProofResourcesUseCase,
-            incomingRequestRepository,
-            getCurrentGatewayUseCase,
-            deviceSecurityHelper,
-            dAppMessenger,
-            getDAppWithAssociatedResourcesUseCase,
-            TestScope(),
-            appEventBus,
-            savedStateHandle
+            transactionClient = transactionClient,
+            getAccountsWithResourcesUseCase = getAccountsWithResourcesUseCase,
+            getProfileUseCase = getProfileUseCase,
+            getTransactionBadgesUseCase = getTransactionBadgesUseCase,
+            getDAppWithMetadataAndAssociatedResourcesUseCase = getDAppWithAssociatedResourcesUseCase,
+            getCurrentGatewayUseCase = getCurrentGatewayUseCase,
+            dAppMessenger = dAppMessenger,
+            appEventBus = appEventBus,
+            incomingRequestRepository = incomingRequestRepository,
+            deviceSecurityHelper = deviceSecurityHelper,
+            appScope = TestScope(),
+            savedStateHandle = savedStateHandle
         )
     }
 
@@ -155,7 +152,7 @@ internal class TransactionApprovalViewModelTest : StateViewModelTest<Transaction
             )
         }
         assert(errorSlot.captured == WalletErrorType.WrongNetwork)
-        assert(vm.oneOffEvent.first() is TransactionApprovalEvent.Dismiss)
+        assert(vm.oneOffEvent.first() is TransactionApprovalViewModel.Event.Dismiss)
     }
 
     @Test
@@ -200,27 +197,5 @@ internal class TransactionApprovalViewModelTest : StateViewModelTest<Transaction
             errorMessage = ""
         ),
         logs = emptyList()
-    )
-
-    private fun analyzeManifestResponse() = AnalyzeTransactionExecutionOutput(
-        encounteredAddresses = EncounteredAddresses(
-            EncounteredComponents(
-                emptyArray(),
-                emptyArray(),
-                emptyArray(),
-                emptyArray(),
-                emptyArray(),
-                emptyArray()
-            ),
-            emptyArray(),
-            emptyArray()
-        ),
-        accountsRequiringAuth = emptyArray(),
-        accountProofResources = emptyArray(),
-        accountWithdraws = emptyArray(),
-        accountDeposits = emptyArray(),
-        newlyCreated = NewlyCreated(
-            resources = emptyArray()
-        )
     )
 }

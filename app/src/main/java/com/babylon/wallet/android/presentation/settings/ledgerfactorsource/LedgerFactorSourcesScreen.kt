@@ -1,5 +1,3 @@
-@file:OptIn(ExperimentalMaterialApi::class)
-
 package com.babylon.wallet.android.presentation.settings.ledgerfactorsource
 
 import androidx.activity.compose.BackHandler
@@ -17,18 +15,13 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.ExperimentalMaterialApi
-import androidx.compose.material.ModalBottomSheetValue
-import androidx.compose.material.rememberModalBottomSheetState
 import androidx.compose.material3.Divider
-import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -44,13 +37,12 @@ import com.babylon.wallet.android.domain.model.toProfileLedgerDeviceModel
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.model.AddLedgerSheetState
 import com.babylon.wallet.android.presentation.ui.composables.AddLedgerContent
-import com.babylon.wallet.android.presentation.ui.composables.DefaultModalSheetLayout
+import com.babylon.wallet.android.presentation.ui.composables.BackIconType
 import com.babylon.wallet.android.presentation.ui.composables.LedgerListItem
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUiMessageHandler
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
-import kotlinx.coroutines.launch
 import rdx.works.profile.data.model.factorsources.FactorSource
 import rdx.works.profile.data.model.factorsources.LedgerHardwareWalletFactorSource
 
@@ -59,7 +51,7 @@ fun LedgerFactorSourcesScreen(
     viewModel: LedgerFactorSourcesViewModel,
     onBackClick: () -> Unit,
     modifier: Modifier = Modifier,
-    onAddP2PLink: () -> Unit,
+    onAddP2PLink: () -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     SettingsLinkConnectorContent(
@@ -69,6 +61,7 @@ fun LedgerFactorSourcesScreen(
             .background(RadixTheme.colors.gray5),
         onBackClick = onBackClick,
         ledgerFactorSources = state.ledgerFactorSources,
+        mode = state.mode,
         onAddP2PLink = onAddP2PLink,
         onSendAddLedgerRequest = viewModel::onSendAddLedgerRequest,
         addLedgerSheetState = state.addLedgerSheetState,
@@ -76,7 +69,9 @@ fun LedgerFactorSourcesScreen(
         onConfirmLedgerName = viewModel::onConfirmLedgerName,
         deviceModel = state.recentlyConnectedLedgerDevice?.model?.toProfileLedgerDeviceModel()?.value,
         uiMessage = state.uiMessage,
-        onMessageShown = viewModel::onMessageShown
+        onMessageShown = viewModel::onMessageShown,
+        onAddLedgerClick = viewModel::onAddLedgerClick,
+        onCloseAddLedgerClick = viewModel::onCloseAddLedgerClick
     )
 }
 
@@ -92,50 +87,22 @@ private fun SettingsLinkConnectorContent(
     waitingForLedgerResponse: Boolean,
     onConfirmLedgerName: (String) -> Unit,
     deviceModel: String?,
+    mode: LedgerFactorSourcesMode,
     uiMessage: UiMessage?,
-    onMessageShown: () -> Unit
+    onMessageShown: () -> Unit,
+    onAddLedgerClick: () -> Unit,
+    onCloseAddLedgerClick: () -> Unit,
 ) {
-    val scope = rememberCoroutineScope()
-    val bottomSheetState =
-        rememberModalBottomSheetState(initialValue = ModalBottomSheetValue.Hidden, skipHalfExpanded = true)
-    val closeSheetCallback = {
-        scope.launch {
-            bottomSheetState.hide()
-        }
-    }
     BackHandler {
-        if (bottomSheetState.isVisible) {
-            closeSheetCallback()
+        if (mode == LedgerFactorSourcesMode.AddLedger) {
+            onCloseAddLedgerClick()
         } else {
             onBackClick()
         }
     }
     Box(modifier = modifier) {
-        DefaultModalSheetLayout(modifier = Modifier.fillMaxSize(), sheetState = bottomSheetState, sheetContent = {
-            AddLedgerContent(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(RadixTheme.dimensions.paddingDefault),
-                deviceModel = deviceModel,
-                onSendAddLedgerRequest = onSendAddLedgerRequest,
-                addLedgerSheetState = addLedgerSheetState,
-                onConfirmLedgerName = {
-                    onConfirmLedgerName(it)
-                    closeSheetCallback()
-                },
-                upIcon = {
-                    Icon(
-                        painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_close),
-                        tint = RadixTheme.colors.gray1,
-                        contentDescription = "navigate back"
-                    )
-                },
-                onClose = { closeSheetCallback() },
-                waitingForLedgerResponse = waitingForLedgerResponse,
-                onAddP2PLink = onAddP2PLink
-            )
-        }) {
-            Column(modifier = Modifier.fillMaxSize()) {
+        Column(modifier = Modifier.fillMaxSize()) {
+            if (mode != LedgerFactorSourcesMode.AddLedger) {
                 RadixCenteredTopAppBar(
                     title = stringResource(R.string.settings_ledgerHardwareWallets),
                     onBackClick = onBackClick,
@@ -143,15 +110,32 @@ private fun SettingsLinkConnectorContent(
                     modifier = Modifier.background(RadixTheme.colors.defaultBackground)
                 )
                 Divider(color = RadixTheme.colors.gray5)
-                LedgerFactorSourcesDetails(
-                    modifier = Modifier.fillMaxWidth(),
-                    ledgerFactorSources = ledgerFactorSources,
-                    onAddLedger = {
-                        scope.launch {
-                            bottomSheetState.show()
-                        }
-                    }
-                )
+            }
+            when (mode) {
+                LedgerFactorSourcesMode.Details -> {
+                    LedgerFactorSourcesDetails(
+                        modifier = Modifier.fillMaxWidth(),
+                        ledgerFactorSources = ledgerFactorSources,
+                        onAddLedger = onAddLedgerClick
+                    )
+                }
+
+                LedgerFactorSourcesMode.AddLedger -> {
+                    AddLedgerContent(
+                        modifier = Modifier
+                            .fillMaxSize(),
+                        deviceModel = deviceModel,
+                        onSendAddLedgerRequest = onSendAddLedgerRequest,
+                        addLedgerSheetState = addLedgerSheetState,
+                        onConfirmLedgerName = {
+                            onConfirmLedgerName(it)
+                        },
+                        backIconType = BackIconType.Back,
+                        onClose = onCloseAddLedgerClick,
+                        waitingForLedgerResponse = waitingForLedgerResponse,
+                        onAddP2PLink = onAddP2PLink
+                    )
+                }
             }
         }
         SnackbarUiMessageHandler(
@@ -268,10 +252,14 @@ fun SettingsScreenLinkConnectorWithActiveConnectorPreview() {
             onAddP2PLink = {},
             onSendAddLedgerRequest = {},
             addLedgerSheetState = AddLedgerSheetState.Connect,
+            mode = LedgerFactorSourcesMode.Details,
             waitingForLedgerResponse = false,
             onConfirmLedgerName = {},
             deviceModel = null,
-            uiMessage = null
-        ) {}
+            uiMessage = null,
+            onMessageShown = {},
+            onAddLedgerClick = {},
+            onCloseAddLedgerClick = {}
+        )
     }
 }

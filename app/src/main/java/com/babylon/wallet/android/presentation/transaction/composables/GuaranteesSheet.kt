@@ -16,28 +16,26 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
-import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
-import com.babylon.wallet.android.presentation.transaction.GuaranteesAccountItemUiModel
+import com.babylon.wallet.android.presentation.transaction.AccountWithPredictedGuarantee
+import com.babylon.wallet.android.presentation.transaction.TransactionApprovalViewModel.State
 import com.babylon.wallet.android.presentation.ui.composables.BottomDialogDragHandle
 import com.babylon.wallet.android.presentation.ui.composables.GrayBackgroundWrapper
 import com.babylon.wallet.android.presentation.ui.composables.InfoLink
-import kotlinx.collections.immutable.ImmutableList
-import kotlinx.collections.immutable.persistentListOf
 
 @Composable
 fun GuaranteesSheet(
     modifier: Modifier = Modifier,
-    guaranteesAccounts: ImmutableList<GuaranteesAccountItemUiModel>,
+    state: State.Sheet.CustomizeGuarantees,
     onClose: () -> Unit,
     onApplyClick: () -> Unit,
-    onGuaranteeValueChanged: (Pair<String, GuaranteesAccountItemUiModel>) -> Unit
+    onGuaranteeValueChanged: (AccountWithPredictedGuarantee, String) -> Unit,
+    onGuaranteeValueIncreased: (AccountWithPredictedGuarantee) -> Unit,
+    onGuaranteeValueDecreased: (AccountWithPredictedGuarantee) -> Unit,
 ) {
     Column(
-        modifier = modifier
-            .imePadding()
+        modifier = modifier.imePadding()
     ) {
         BottomDialogDragHandle(
             modifier = Modifier
@@ -79,22 +77,19 @@ fun GuaranteesSheet(
                 )
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
             }
-            items(guaranteesAccounts) { guaranteesAccount ->
+            items(state.accountsWithPredictedGuarantees) { accountWithCustomizableGuarantee ->
                 GrayBackgroundWrapper {
                     TransactionAccountWithGuaranteesCard(
-                        appearanceId = guaranteesAccount.appearanceID,
-                        tokenAddress = guaranteesAccount.address,
-                        tokenIconUrl = guaranteesAccount.tokenIconUrl,
-                        isTokenXrd = guaranteesAccount.isXrd(),
-                        tokenSymbol = guaranteesAccount.tokenSymbol,
-                        tokenEstimatedQuantity = guaranteesAccount.tokenEstimatedAmount,
-                        tokenGuaranteedQuantity = guaranteesAccount.tokenGuaranteedAmount,
-                        modifier = Modifier.padding(top = RadixTheme.dimensions.paddingDefault),
-                        accountName = guaranteesAccount.displayName,
-                        guaranteePercentValue = guaranteesAccount.guaranteedPercentAmount,
-                        onGuaranteeValueChanged = { percentValue ->
-                            onGuaranteeValueChanged(Pair(percentValue, guaranteesAccount))
-                        }
+                        accountWithGuarantee = accountWithCustomizableGuarantee,
+                        onGuaranteePercentChanged = {
+                            onGuaranteeValueChanged(accountWithCustomizableGuarantee, it)
+                        },
+                        onGuaranteePercentIncreased = {
+                            onGuaranteeValueIncreased(accountWithCustomizableGuarantee)
+                        },
+                        onGuaranteePercentDecreased = {
+                            onGuaranteeValueDecreased(accountWithCustomizableGuarantee)
+                        },
                     )
                 }
             }
@@ -112,51 +107,5 @@ fun GuaranteesSheet(
                 )
             }
         }
-    }
-}
-
-@Preview("default")
-@Preview(showBackground = true)
-@Composable
-fun GuaranteesSheetPreview() {
-    RadixWalletTheme {
-        GuaranteesSheet(
-            guaranteesAccounts =
-            persistentListOf(
-                GuaranteesAccountItemUiModel(
-                    address = "f43f43f4334",
-                    appearanceID = 1,
-                    displayName = "My account 1",
-                    tokenSymbol = "XRD",
-                    tokenIconUrl = "",
-                    tokenEstimatedAmount = "1000",
-                    tokenGuaranteedAmount = "1000",
-                    guaranteedPercentAmount = "100"
-                ),
-                GuaranteesAccountItemUiModel(
-                    address = "f43f43f4334",
-                    appearanceID = 1,
-                    displayName = "My account 2",
-                    tokenSymbol = "XRD",
-                    tokenIconUrl = "",
-                    tokenEstimatedAmount = "1000",
-                    tokenGuaranteedAmount = "1000",
-                    guaranteedPercentAmount = "100"
-                ),
-                GuaranteesAccountItemUiModel(
-                    address = "f43f43f4334",
-                    appearanceID = 1,
-                    displayName = "My account 3",
-                    tokenSymbol = "XRD",
-                    tokenIconUrl = "",
-                    tokenEstimatedAmount = "1000",
-                    tokenGuaranteedAmount = "1000",
-                    guaranteedPercentAmount = "100"
-                )
-            ),
-            onClose = {},
-            onApplyClick = {},
-            onGuaranteeValueChanged = {}
-        )
     }
 }

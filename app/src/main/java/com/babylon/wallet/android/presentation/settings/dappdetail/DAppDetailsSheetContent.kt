@@ -26,27 +26,22 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
-import com.babylon.wallet.android.domain.model.DAppWithMetadata
-import com.babylon.wallet.android.domain.model.Resource
+import com.babylon.wallet.android.domain.model.DAppWithMetadataAndAssociatedResources
 import com.babylon.wallet.android.presentation.ui.composables.GrayBackgroundWrapper
 import com.babylon.wallet.android.presentation.ui.composables.PersonaRoundedAvatar
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.StandardOneLineCard
 import com.google.accompanist.drawablepainter.rememberDrawablePainter
-import kotlinx.collections.immutable.ImmutableList
 
 @Composable
 fun DAppDetailsSheetContent(
     onBackClick: () -> Unit,
     modifier: Modifier = Modifier,
-    dappName: String,
-    dappWithMetadata: DAppWithMetadata?,
-    associatedFungibleTokens: ImmutableList<Resource.FungibleResource>,
-    associatedNonFungibleTokens: ImmutableList<Resource.NonFungibleResource.Item>
+    dApp: DAppWithMetadataAndAssociatedResources
 ) {
     Column(modifier = modifier) {
         RadixCenteredTopAppBar(
-            title = dappName,
+            title = dApp.dAppWithMetadata.name.orEmpty(),
             onBackClick = onBackClick,
             contentColor = RadixTheme.colors.gray1
         )
@@ -56,7 +51,7 @@ fun DAppDetailsSheetContent(
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier.fillMaxSize()
         ) {
-            dappWithMetadata?.iconUrl?.let {
+            dApp.dAppWithMetadata.iconUrl?.let {
                 val url = it.toString()
                 if (url.isNotEmpty()) {
                     item {
@@ -70,7 +65,7 @@ fun DAppDetailsSheetContent(
                     }
                 }
             }
-            dappWithMetadata?.description?.let { description ->
+            dApp.dAppWithMetadata.description?.let { description ->
                 item {
                     Text(
                         modifier = Modifier
@@ -84,7 +79,7 @@ fun DAppDetailsSheetContent(
                     Divider(color = RadixTheme.colors.gray5)
                 }
             }
-            dappWithMetadata?.dAppAddress?.let { dappDefinitionAddress ->
+            dApp.dAppWithMetadata.dAppAddress.let { dappDefinitionAddress ->
                 item {
                     Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
                     DappDefinitionAddressRow(
@@ -96,7 +91,7 @@ fun DAppDetailsSheetContent(
                     Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
                 }
             }
-            dappWithMetadata?.claimedWebsite?.let {
+            dApp.dAppWithMetadata.claimedWebsite?.let {
                 item {
                     DAppWebsiteAddressRow(
                         websiteAddress = it,
@@ -107,7 +102,7 @@ fun DAppDetailsSheetContent(
                     Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
                 }
             }
-            if (associatedFungibleTokens.isNotEmpty()) {
+            if (dApp.fungibleResources.isNotEmpty()) {
                 item {
                     GrayBackgroundWrapper {
                         Text(
@@ -122,7 +117,7 @@ fun DAppDetailsSheetContent(
                     }
                 }
             }
-            items(associatedFungibleTokens) { fungibleToken ->
+            items(dApp.fungibleResources) { fungibleToken ->
                 GrayBackgroundWrapper {
                     val placeholder = if (fungibleToken.isXrd) {
                         painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_xrd_token)
@@ -150,7 +145,7 @@ fun DAppDetailsSheetContent(
                     Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
                 }
             }
-            if (associatedNonFungibleTokens.isNotEmpty()) {
+            if (dApp.nonFungibleResources.isNotEmpty()) {
                 item {
                     GrayBackgroundWrapper {
                         Text(
@@ -165,7 +160,7 @@ fun DAppDetailsSheetContent(
                     }
                 }
             }
-            items(associatedNonFungibleTokens) { nonFungibleToken ->
+            items(dApp.nonFungibleResources) { nonFungibleToken ->
                 GrayBackgroundWrapper {
                     StandardOneLineCard(
                         image = nonFungibleToken.imageUrl.toString(),

@@ -2,175 +2,61 @@
 
 package com.babylon.wallet.android.data.manifest
 
-import com.babylon.wallet.android.data.gateway.model.ExplicitMetadataKey
-import com.babylon.wallet.android.data.transaction.DappRequestException
-import com.babylon.wallet.android.data.transaction.DappRequestFailure
-import com.babylon.wallet.android.data.transaction.MethodName
-import com.babylon.wallet.android.data.transaction.TransactionConfig
-import com.babylon.wallet.android.data.transaction.TransactionVersion
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.babylon.wallet.android.domain.model.TransactionManifestData
-import com.radixdlt.toolkit.RadixEngineToolkit
-import com.radixdlt.toolkit.builders.ManifestBuilder
-import com.radixdlt.toolkit.models.EnumDiscriminator
-import com.radixdlt.toolkit.models.Instruction
-import com.radixdlt.toolkit.models.ManifestAstValue
-import com.radixdlt.toolkit.models.ValueKind
-import com.radixdlt.toolkit.models.method.ConvertManifestInput
-import com.radixdlt.toolkit.models.method.ConvertManifestOutput
-import com.radixdlt.toolkit.models.transaction.ManifestInstructions
-import com.radixdlt.toolkit.models.transaction.ManifestInstructionsKind
-import com.radixdlt.toolkit.models.transaction.TransactionManifest
-import rdx.works.core.compressedPublicKeyHashBytes
-import rdx.works.profile.data.model.factorsources.Slip10Curve
-import rdx.works.profile.data.model.pernetwork.FactorInstance
+import com.radixdlt.ret.Address
+import com.radixdlt.ret.Decimal
+import com.radixdlt.ret.Instruction
+import com.radixdlt.ret.Instructions
+import com.radixdlt.ret.ManifestValue
+import com.radixdlt.ret.TransactionHeader
+import com.radixdlt.ret.TransactionManifest
+import rdx.works.core.ret.ManifestMethod
+import java.lang.StringBuilder
 import java.math.BigDecimal
 import java.util.UUID
 
-/**
- * Instruction to add free xrd from given address
- */
-fun ManifestBuilder.addFreeXrdInstruction(
-    faucetComponentAddress: String
-): ManifestBuilder {
-    return addInstruction(
-        Instruction.CallMethod(
-            componentAddress = ManifestAstValue.Address(faucetComponentAddress),
-            methodName = ManifestAstValue.String(MethodName.Free.stringValue),
-            arguments = arrayOf()
-        )
-    )
-}
-
-/**
- * Instruction to Deposit withdrawn tokens
- * @param recipientComponentAddress component we want to deposit on
- */
-fun ManifestBuilder.addDepositBatchInstruction(
-    recipientComponentAddress: String
-): ManifestBuilder {
-    return addInstruction(
-        Instruction.CallMethod(
-            componentAddress = ManifestAstValue.Address(
-                value = recipientComponentAddress
-            ),
-            methodName = ManifestAstValue.String(MethodName.TryDepositBatchOrAbort.stringValue),
-            arguments = arrayOf(ManifestAstValue.Expression("ENTIRE_WORKTOP"))
-        )
-    )
-}
-
-fun ManifestBuilder.addSetMetadataInstructionForOwnerKeys(
-    entityAddress: String,
-    ownerKeysHashes: List<FactorInstance.PublicKey>
-): ManifestBuilder {
-    val keyHashesAdsEngineValues: Array<ManifestAstValue> = ownerKeysHashes.map { key ->
-        ManifestAstValue.Enum(
-            variant = key.curveKindScryptoDiscriminator(),
-            fields = arrayOf(ManifestAstValue.Bytes(key.compressedData.compressedPublicKeyHashBytes()))
-        )
-    }.toTypedArray()
-    return addInstruction(
-        Instruction.SetMetadata(
-            entityAddress = ManifestAstValue.Address(
-                value = entityAddress
-            ),
-            key = ManifestAstValue.String(ExplicitMetadataKey.OWNER_KEYS.key),
-            value = ManifestAstValue.Enum(
-                variant = publicKeyHashArrayDiscriminator,
-                fields = arrayOf(ManifestAstValue.Array(ValueKind.Enum, keyHashesAdsEngineValues))
-            )
-        )
-    )
-}
-
-/**
- * Lock fee instruction
- */
-fun ManifestBuilder.addLockFeeInstruction(
-    addressToLockFee: String
-): ManifestBuilder {
-    return addInstruction(lockFeeInstruction(addressToLockFee))
-}
-
 fun TransactionManifest.addLockFeeInstructionToManifest(
-    addressToLockFee: String
-): TransactionManifest {
-    val instructions = instructions
-    var updatedInstructions = instructions
-    when (instructions) {
-        is ManifestInstructions.ParsedInstructions -> {
-            updatedInstructions =
-                instructions.copy(
-                    instructions = arrayOf(lockFeeInstruction(addressToLockFee)) + instructions.instructions
-                )
-        }
-
-        is ManifestInstructions.StringInstructions -> {}
-    }
-    return copy(updatedInstructions, blobs)
-}
+    addressToLockFee: String,
+    fee: BigDecimal
+): TransactionManifest = TransactionManifest(
+    instructions = Instructions.fromInstructions(
+        instructions = listOf(lockFeeInstruction(addressToLockFee, fee)) + instructions().instructionsList(),
+        networkId = instructions().networkId()
+    ),
+    blobs = blobs()
+)
 
 fun TransactionManifest.addGuaranteeInstructionToManifest(
     address: String,
     guaranteedAmount: String,
     index: Int
-): TransactionManifest {
-    val instructions = instructions
-    var updatedManifestInstructions = instructions
-    when (instructions) {
-        is ManifestInstructions.ParsedInstructions -> {
-            val guaranteeInstruction = guaranteeInstruction(
-                resourceAddress = address,
-                guaranteedAmount = guaranteedAmount
-            )
-
-            val updatedInstructions = instructions.instructions.toMutableList()
-            updatedInstructions.add(index, guaranteeInstruction)
-
-            updatedManifestInstructions = instructions.copy(
-                instructions = updatedInstructions.toTypedArray()
-            )
-        }
-
-        is ManifestInstructions.StringInstructions -> {}
-    }
-    return copy(updatedManifestInstructions, blobs)
-}
-
-fun TransactionManifest.convertManifestInstructionsToString(
-    networkId: Int
-): Result<ConvertManifestOutput> {
-    return try {
-        Result.success(
-            RadixEngineToolkit.convertManifest(
-                ConvertManifestInput(
-                    networkId = networkId.toUByte(),
-                    instructionsOutputKind = ManifestInstructionsKind.String,
-                    manifest = this
+): TransactionManifest = TransactionManifest(
+    instructions = Instructions.fromInstructions(
+        instructions = instructions().instructionsList().toMutableList().apply {
+            add(
+                index,
+                guaranteeInstruction(
+                    resourceAddress = address,
+                    guaranteedAmount = guaranteedAmount
                 )
-            ).getOrThrow()
-        )
-    } catch (e: Exception) {
-        Result.failure(
-            DappRequestException(
-                DappRequestFailure.TransactionApprovalFailure.ConvertManifest,
-                e.message,
-                e
             )
-        )
-    }
-}
+        }.toList(),
+        networkId = instructions().networkId()
+    ),
+    blobs = blobs()
+)
 
 private fun lockFeeInstruction(
-    addressToLockFee: String
+    addressToLockFee: String,
+    fee: BigDecimal
 ): Instruction {
     return Instruction.CallMethod(
-        componentAddress = ManifestAstValue.Address(addressToLockFee),
-        methodName = ManifestAstValue.String(MethodName.LockFee.stringValue),
-        arguments = arrayOf(
-            ManifestAstValue.Decimal(
-                BigDecimal.valueOf(TransactionConfig.DEFAULT_LOCK_FEE)
+        address = Address(addressToLockFee),
+        methodName = ManifestMethod.LockFee.value,
+        args = ManifestValue.TupleValue(
+            fields = listOf(
+                ManifestValue.DecimalValue(Decimal(fee.toPlainString()))
             )
         )
     )
@@ -181,52 +67,53 @@ private fun guaranteeInstruction(
     guaranteedAmount: String
 ): Instruction {
     return Instruction.AssertWorktopContains(
-        resourceAddress = ManifestAstValue.Address(resourceAddress),
-        amount = ManifestAstValue.Decimal(guaranteedAmount)
+        resourceAddress = Address(resourceAddress),
+        amount = Decimal(guaranteedAmount)
     )
 }
 
-fun FactorInstance.PublicKey.curveKindScryptoDiscriminator(): EnumDiscriminator.U8 {
-    return when (curve) {
-        Slip10Curve.SECP_256K1 -> EnumDiscriminator.U8(0x00u)
-        Slip10Curve.CURVE_25519 -> EnumDiscriminator.U8(0x01u)
-    }
-}
-
-private val publicKeyHashArrayDiscriminator = EnumDiscriminator.U8(143u)
-
-fun TransactionManifest.getStringInstructions(): String? {
-    return when (val instructions = this.instructions) {
-        is ManifestInstructions.ParsedInstructions -> null
-        is ManifestInstructions.StringInstructions -> instructions.instructions
-    }
-}
-
-fun TransactionManifest.toTransactionRequest(
+fun TransactionManifest.prepareInternalTransactionRequest(
     networkId: Int,
-    message: String? = null,
-    requestId: String = UUID.randomUUID().toString()
-): Result<MessageFromDataChannel.IncomingRequest.TransactionRequest> {
-    return convertManifestInstructionsToString(networkId).mapCatching {
-        val stringInstructions = it.getStringInstructions()
-        if (stringInstructions == null) {
-            throw DappRequestException(
-                failure = DappRequestFailure.TransactionApprovalFailure.ConvertManifest,
-                msg = "Converted instructions are null"
-            )
-        } else {
-            MessageFromDataChannel.IncomingRequest.TransactionRequest(
-                dappId = "",
-                requestId = requestId,
-                transactionManifestData = TransactionManifestData(
-                    instructions = stringInstructions,
-                    version = TransactionVersion.Default.value,
-                    networkId = networkId,
-                    blobs = it.blobs?.toList().orEmpty(),
-                    message = message
-                ),
-                requestMetadata = MessageFromDataChannel.IncomingRequest.RequestMetadata.internal(networkId)
-            )
-        }
+    requestId: String = UUID.randomUUID().toString(),
+    message: String? = null
+) = MessageFromDataChannel.IncomingRequest.TransactionRequest(
+    // Since we mock this request as a dApp request from the wallet app, the dApp's id is empty. Should never be invoked as we always
+    // check if a request is not internal before sending message to the dApp
+    dappId = "",
+    requestId = requestId,
+    transactionManifestData = TransactionManifestData.from(
+        manifest = this,
+        networkId = networkId,
+        message = message
+    ),
+    requestMetadata = MessageFromDataChannel.IncomingRequest.RequestMetadata.internal(networkId)
+)
+
+fun TransactionHeader.toPrettyString(): String = StringBuilder()
+    .appendLine("[Start Epoch]         => $startEpochInclusive")
+    .appendLine("[End Epoch]           => $endEpochExclusive")
+    .appendLine("[Network id]          => $networkId")
+    .appendLine("[Nonce]               => $nonce")
+    .appendLine("[Notary is signatory] => $notaryIsSignatory")
+    .appendLine("[Tip %]               => $tipPercentage")
+    .toString()
+
+fun TransactionManifest.toPrettyString(): String {
+    val blobSeparator = "\n"
+    val blobPreamble = "BLOBS\n"
+    val blobLabel = "BLOB\n"
+
+    val instructionsFormatted = instructions().asStr()
+
+    val blobsByByteCount = blobs().mapIndexed { index, bytes ->
+        "$blobLabel[$index]: #${bytes.size} bytes"
+    }.joinToString(blobSeparator)
+
+    val blobsString = if (blobsByByteCount.isNotEmpty()) {
+        listOf(blobPreamble, blobsByByteCount).joinToString(separator = blobSeparator)
+    } else {
+        ""
     }
+
+    return "$instructionsFormatted$blobsString"
 }

@@ -2,11 +2,11 @@ package com.babylon.wallet.android.data.transaction
 
 import com.radixdlt.crypto.ec.EllipticCurveType
 import com.radixdlt.crypto.toECKeyPair
-import com.radixdlt.toolkit.models.crypto.PrivateKey
-import com.radixdlt.toolkit.models.crypto.PublicKey
-import com.radixdlt.toolkit.models.crypto.Signature
+import com.radixdlt.ret.PublicKey
+import com.radixdlt.ret.Signature
+import rdx.works.core.ret.crypto.PrivateKey
+import rdx.works.core.ret.toEnginePublicKeyModel
 import rdx.works.profile.data.model.pernetwork.Entity
-import rdx.works.profile.data.utils.toEnginePublicKeyModel
 import com.radixdlt.model.PrivateKey as SLIP10PrivateKey
 
 data class NotaryAndSigners(

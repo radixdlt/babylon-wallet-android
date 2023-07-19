@@ -19,13 +19,19 @@ import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.getMessage
 
 @Composable
-fun BoxScope.SnackbarUiMessageHandler(message: UiMessage?, modifier: Modifier = Modifier, onMessageShown: () -> Unit) {
+fun BoxScope.SnackbarUiMessageHandler(
+    message: UiMessage?,
+    modifier: Modifier = Modifier,
+    onMessageShown: () -> Unit,
+    action: @Composable (() -> Unit)? = null,
+) {
     val snackbarHostState = remember { SnackbarHostState() }
     RadixSnackbarHost(
         hostState = snackbarHostState,
         modifier = modifier
             .align(Alignment.BottomCenter)
-            .padding(RadixTheme.dimensions.paddingLarge)
+            .padding(RadixTheme.dimensions.paddingLarge),
+        action = action
     )
     SnackbarUIMessage(
         message = message,
@@ -53,9 +59,10 @@ fun SnackbarUIMessage(
 fun RadixSnackbarHost(
     hostState: SnackbarHostState,
     modifier: Modifier = Modifier,
+    action: @Composable (() -> Unit)? = null,
     snackbar: @Composable (SnackbarData) -> Unit = { data ->
-        RadixSnackbar(snackbarData = data)
-    }
+        RadixSnackbar(snackbarData = data, action = action)
+    },
 ) {
     SnackbarHost(hostState = hostState, modifier = modifier, snackbar = snackbar)
 }
@@ -77,6 +84,6 @@ fun RadixSnackbar(
         contentColor = contentColor,
         content = {
             Text(text = snackbarData.visuals.message, style = RadixTheme.typography.body2Regular)
-        }
+        },
     )
 }

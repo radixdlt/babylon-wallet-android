@@ -12,6 +12,7 @@ import javax.inject.Inject
 class GetDAppWithMetadataAndAssociatedResourcesUseCase @Inject constructor(
     private val dAppRepository: DAppRepository,
 ) {
+
     suspend operator fun invoke(
         definitionAddress: String,
         needMostRecentData: Boolean
@@ -29,10 +30,8 @@ class GetDAppWithMetadataAndAssociatedResourcesUseCase @Inject constructor(
 
         val updatedDAppMetadata = dAppMetadata.copy(
             claimedWebsiteItem = if (isWebsiteAuthentic) {
-                dAppMetadata.claimedWebsite?.let {
-                    ClaimedWebsiteMetadataItem(
-                        it
-                    )
+                dAppMetadata.claimedWebsite?.let { website ->
+                    ClaimedWebsiteMetadataItem(website = website)
                 }
             } else {
                 null

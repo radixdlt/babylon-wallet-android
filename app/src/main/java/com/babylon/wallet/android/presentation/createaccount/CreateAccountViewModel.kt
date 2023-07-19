@@ -2,6 +2,7 @@ package com.babylon.wallet.android.presentation.createaccount
 
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
+import com.babylon.wallet.android.domain.model.AppConstants.ACCOUNT_NAME_MAX_LENGTH
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
@@ -159,7 +160,6 @@ class CreateAccountViewModel @Inject constructor(
     ) : UiState
 
     companion object {
-        private const val ACCOUNT_NAME_MAX_LENGTH = 20
         private const val ACCOUNT_NAME = "account_name"
         private const val CREATE_ACCOUNT_BUTTON_ENABLED = "create_account_button_enabled"
     }

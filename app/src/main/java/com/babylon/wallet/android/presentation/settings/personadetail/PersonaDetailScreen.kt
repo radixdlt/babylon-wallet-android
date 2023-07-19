@@ -37,6 +37,7 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixTheme.dimensions
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.SampleDataProvider
+import com.babylon.wallet.android.domain.model.DAppResources
 import com.babylon.wallet.android.domain.model.DAppWithMetadata
 import com.babylon.wallet.android.domain.model.DAppWithMetadataAndAssociatedResources
 import com.babylon.wallet.android.domain.model.Resource
@@ -120,17 +121,22 @@ private fun PersonaDetailContent(
                         .fillMaxSize(),
                     sheetState = bottomSheetState,
                     sheetContent = {
-                        DAppDetailsSheetContent(
-                            onBackClick = {
-                                scope.launch {
-                                    bottomSheetState.hide()
-                                }
-                            },
-                            dappName = selectedDAppWithMetadata?.name.orEmpty(),
-                            dappWithMetadata = selectedDAppWithMetadata,
-                            associatedFungibleTokens = selectedDAppAssociatedFungibleTokens,
-                            associatedNonFungibleTokens = selectedDAppAssociatedNonFungibleTokens
-                        )
+                        selectedDAppWithMetadata?.let {
+                            DAppDetailsSheetContent(
+                                onBackClick = {
+                                    scope.launch {
+                                        bottomSheetState.hide()
+                                    }
+                                },
+                                dApp = DAppWithMetadataAndAssociatedResources(
+                                    dAppWithMetadata = it,
+                                    resources = DAppResources(
+                                        fungibleResources = selectedDAppAssociatedFungibleTokens,
+                                        nonFungibleResources = selectedDAppAssociatedNonFungibleTokens
+                                    )
+                                )
+                            )
+                        }
                     }
                 ) {
                     Column(Modifier.fillMaxSize()) {

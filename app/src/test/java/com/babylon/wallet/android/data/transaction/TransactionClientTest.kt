@@ -16,9 +16,10 @@ import com.babylon.wallet.android.domain.usecases.transaction.SubmitTransactionU
 import com.babylon.wallet.android.mockdata.account
 import com.babylon.wallet.android.mockdata.profile
 import com.babylon.wallet.android.presentation.TestDispatcherRule
-import com.radixdlt.toolkit.builders.ManifestBuilder
-import com.radixdlt.toolkit.models.Instruction
-import com.radixdlt.toolkit.models.ManifestAstValue
+import com.radixdlt.ret.Address
+import com.radixdlt.ret.Decimal
+import com.radixdlt.ret.TransactionManifest
+import com.radixdlt.ret.utilsKnownAddresses
 import io.mockk.coEvery
 import io.mockk.mockk
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -30,6 +31,7 @@ import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import rdx.works.core.ret.ManifestBuilder
 import rdx.works.profile.data.model.Profile
 import rdx.works.profile.data.model.ProfileState
 import rdx.works.profile.data.model.apppreferences.Radix
@@ -74,17 +76,11 @@ internal class TransactionClientTest {
     @Test
     fun `when address exists, finds address involved & signing for set metadata manifest`() =
         runTest {
-            var manifest = ManifestBuilder().addInstruction(
-                Instruction.SetMetadata(
-                    entityAddress = ManifestAstValue.Address(EntityRepositoryFake.addressWithFunds),
-                    ManifestAstValue.String("name"),
-                    ManifestAstValue.Enum("RadixDashboard")
-                )
-            ).build()
+            var manifest = manifestWithAddress(EntityRepositoryFake.addressWithFunds)
 
             val addressToLockFee = transactionClient.findFeePayerInManifest(manifest).getOrThrow().feePayerAddressFromManifest
-            manifest = manifest.addLockFeeInstructionToManifest(addressToLockFee!!)
-            val signingEntities = transactionClient.getSigningEntities(Radix.Gateway.default.network.id, manifest)
+            manifest = manifest.addLockFeeInstructionToManifest(addressToLockFee!!, TransactionConfig.NETWORK_FEE.toBigDecimal())
+            val signingEntities = transactionClient.getSigningEntities(manifest)
 
             Assert.assertEquals(1, signingEntities.size)
             Assert.assertEquals(
@@ -97,13 +93,7 @@ internal class TransactionClientTest {
     @Test
     fun `when given address has no funds but there is another address with funds, use the other address for the transaction`() =
         runTest {
-            val manifest = ManifestBuilder().addInstruction(
-                Instruction.SetMetadata(
-                    entityAddress = ManifestAstValue.Address(EntityRepositoryFake.addressWithNoFunds),
-                    ManifestAstValue.String("name"),
-                    ManifestAstValue.Enum("RadixDashboard")
-                )
-            ).build()
+            val manifest = manifestWithAddress(EntityRepositoryFake.addressWithNoFunds)
 
             val addressToLockFee = transactionClient.findFeePayerInManifest(manifest).getOrThrow()
             assert(addressToLockFee.feePayerAddressFromManifest == null)
@@ -112,13 +102,7 @@ internal class TransactionClientTest {
 
     @Test
     fun `when address has no funds, return the respective error`() = runTest {
-        val manifest = ManifestBuilder().addInstruction(
-            Instruction.SetMetadata(
-                entityAddress = ManifestAstValue.Address(EntityRepositoryFake.addressWithNoFunds),
-                ManifestAstValue.String("name"),
-                ManifestAstValue.Enum("RadixDashboard")
-            )
-        ).build()
+        val manifest = manifestWithAddress(EntityRepositoryFake.addressWithNoFunds)
 
         try {
             transactionClient.findFeePayerInManifest(manifest)
@@ -177,6 +161,17 @@ internal class TransactionClientTest {
         }
 
     }
+
+    private fun manifestWithAddress(
+        address: String,
+        networkId: Int = Radix.Gateway.default.network.id
+    ): TransactionManifest = ManifestBuilder()
+        .withdraw(
+            fromAddress = Address(address),
+            fungible = utilsKnownAddresses(networkId = networkId.toUByte()).resourceAddresses.xrd,
+            amount = Decimal("10")
+        )
+        .build(networkId)
 
     private object ProfileRepositoryFake: ProfileRepository {
         private val profile = profile(accounts = listOf(EntityRepositoryFake.account1, EntityRepositoryFake.account2))
