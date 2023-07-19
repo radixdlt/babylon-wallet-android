@@ -60,7 +60,7 @@ data class DerivationPath(
         fun authSigningDerivationPathFromBip44LikePath(networkId: NetworkId, derivationPath: DerivationPath): DerivationPath {
             val pathComponents = derivationPath.path.split("/").drop(1).toMutableList()
             require(pathComponents.size == OlympiaDerivationPathComponent.values().size)
-            val accountIndex = pathComponents.last().toInt()
+            val accountIndex = pathComponents.last().lowercase().replace("h", "").toInt()
             return forAccount(networkId, accountIndex, KeyType.AUTHENTICATION_SIGNING)
         }
     }
