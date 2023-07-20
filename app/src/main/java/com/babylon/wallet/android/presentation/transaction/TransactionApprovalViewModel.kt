@@ -171,7 +171,6 @@ class TransactionApprovalViewModel @Inject constructor(
         } else {
             submit.onFeePayerConfirmed(selectedCandidate, feePayerSheet.pendingManifest)
         }
-
     }
 
     fun onDAppClick(dApp: DAppWithMetadataAndAssociatedResources) {
@@ -245,7 +244,7 @@ class TransactionApprovalViewModel @Inject constructor(
 }
 
 sealed interface PreviewType {
-    object None: PreviewType
+    object None : PreviewType
 
     object NonConforming : PreviewType
 

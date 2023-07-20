@@ -10,7 +10,6 @@ import com.babylon.wallet.android.data.gateway.generated.models.MetadataUrlValue
 import com.babylon.wallet.android.data.gateway.generated.models.PublicKeyHashEcdsaSecp256k1
 import com.babylon.wallet.android.data.gateway.generated.models.PublicKeyHashEddsaEd25519
 import com.babylon.wallet.android.domain.model.metadata.AccountTypeMetadataItem
-import com.babylon.wallet.android.domain.model.metadata.AccountTypeMetadataItem.AccountType
 import com.babylon.wallet.android.domain.model.metadata.ClaimedEntitiesMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.ClaimedWebsitesMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.DAppDefinitionsMetadataItem
