@@ -45,7 +45,7 @@ enum class ExplicitMetadataKey(val key: String) {
     OWNER_KEYS("owner_keys");
 
     @Suppress("CyclomaticComplexMethod")
-    fun toStandardMetadataItem(value: EntityMetadataItemValue): StandardMetadataItem = when (this) {
+    fun toStandardMetadataItem(value: EntityMetadataItemValue): StandardMetadataItem? = when (this) {
         DESCRIPTION -> DescriptionMetadataItem(
             description = value.typed<MetadataStringValue>()?.value.orEmpty()
         )
@@ -64,9 +64,9 @@ enum class ExplicitMetadataKey(val key: String) {
         RELATED_WEBSITES -> RelatedWebsitesMetadataItem(
             websites = value.typed<MetadataUrlArrayValue>()?.propertyValues.orEmpty()
         )
-        ACCOUNT_TYPE -> AccountTypeMetadataItem(
-            type = (AccountType.values().find { it.asString == "" } ?: DAPP_DEFINITION) as AccountType
-        ) // TODO ELM
+        ACCOUNT_TYPE -> AccountTypeMetadataItem.from(
+            value = value.typed<MetadataStringValue>()?.value.orEmpty()
+        )
         CLAIMED_WEBSITES -> ClaimedWebsitesMetadataItem(
             websites = value.typed<MetadataUrlArrayValue>()?.propertyValues.orEmpty()
         )
@@ -83,7 +83,7 @@ enum class ExplicitMetadataKey(val key: String) {
             url = Uri.parse(value.typed<MetadataUrlValue>()?.value.orEmpty())
         )
         ICON_URL -> IconUrlMetadataItem(
-            url = Uri.parse(value.typed<MetadataUrlValue>()?.value.orEmpty())
+            url = Uri.parse(value.typed<MetadataStringValue>()?.value.orEmpty())
         )
         OWNER_KEYS -> OwnerKeyHashesMetadataItem(
             keyHashes = value.typed<MetadataPublicKeyHashArrayValue>()?.propertyValues?.map { hash ->
