@@ -13,6 +13,10 @@ fun Context.biometricAuthenticate(authenticationCallback: (successful: Boolean) 
     }
 }
 
+suspend fun Context.biometricAuthenticateSuspend(): Boolean {
+    return findFragmentActivity()?.biometricAuthenticateSuspend(true) ?: false
+}
+
 @Suppress("SwallowedException")
 fun NavController.routeExist(route: String): Boolean {
     return try {

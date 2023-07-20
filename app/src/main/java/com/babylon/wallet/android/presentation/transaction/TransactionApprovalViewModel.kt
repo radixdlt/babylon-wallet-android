@@ -135,8 +135,8 @@ class TransactionApprovalViewModel @Inject constructor(
         _state.update { it.copy(isRawManifestVisible = !it.isRawManifestVisible) }
     }
 
-    fun approveTransaction() {
-        submit.onSubmit()
+    fun approveTransaction(deviceBiometricAuthenticationProvider: suspend () -> Boolean) {
+        submit.onSubmit(deviceBiometricAuthenticationProvider)
     }
 
     fun promptForGuaranteesClick() = guarantees.onEdit()
@@ -175,6 +175,9 @@ class TransactionApprovalViewModel @Inject constructor(
         } else {
             submit.onFeePayerConfirmed(selectedCandidate, feePayerSheet.pendingManifest)
         }
+    }
+    fun onPayerConfirmed(deviceBiometricAuthenticationProvider: suspend () -> Boolean) {
+        submit.onFeePayerConfirmed(deviceBiometricAuthenticationProvider)
     }
 
     fun onDAppClick(dApp: DAppWithMetadataAndAssociatedResources) {

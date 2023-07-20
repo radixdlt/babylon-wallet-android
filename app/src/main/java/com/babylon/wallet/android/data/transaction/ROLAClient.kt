@@ -73,12 +73,14 @@ class ROLAClient @Inject constructor(
 
     suspend fun signAuthChallenge(
         entity: Entity,
-        signRequest: SignRequest
+        signRequest: SignRequest,
+        deviceBiometricAuthenticationProvider: suspend () -> Boolean
     ): Result<SignatureWithPublicKey> {
         return collectSignersSignaturesUseCase(
             signers = listOf(entity),
             signRequest = signRequest,
-            signingPurpose = SigningPurpose.SignAuth
+            signingPurpose = SigningPurpose.SignAuth,
+            deviceBiometricAuthenticationProvider = deviceBiometricAuthenticationProvider
         ).mapCatching { signatures ->
             if (signatures.size == 1) {
                 signatures.first()

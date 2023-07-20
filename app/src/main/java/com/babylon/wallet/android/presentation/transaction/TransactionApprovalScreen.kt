@@ -59,6 +59,7 @@ import com.babylon.wallet.android.presentation.ui.composables.DefaultModalSheetL
 import com.babylon.wallet.android.presentation.ui.composables.NotSecureAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
+import com.babylon.wallet.android.utils.biometricAuthenticateSuspend
 import com.babylon.wallet.android.utils.biometricAuthenticate
 import com.babylon.wallet.android.utils.findFragmentActivity
 import kotlinx.coroutines.launch
@@ -72,11 +73,15 @@ fun TransactionApprovalScreen(
     onDismiss: () -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
-
+    val context = LocalContext.current
     TransactionPreviewContent(
         onBackClick = viewModel::onBackClick,
         state = state,
-        onApproveTransaction = viewModel::approveTransaction,
+        onApproveTransaction = {
+            viewModel.approveTransaction(deviceBiometricAuthenticationProvider = {
+                context.biometricAuthenticateSuspend()
+            })
+        },
         onRawManifestToggle = viewModel::onRawManifestToggle,
         onMessageShown = viewModel::onMessageShown,
         modifier = modifier,
@@ -88,7 +93,11 @@ fun TransactionApprovalScreen(
         onGuaranteeValueDecreased = viewModel::onGuaranteeValueDecreased,
         onDAppClick = viewModel::onDAppClick,
         onPayerSelected = viewModel::onPayerSelected,
-        onPayerConfirmed = viewModel::onPayerConfirmed
+        onPayerConfirmed = {
+            viewModel.onPayerConfirmed(deviceBiometricAuthenticationProvider = {
+                context.biometricAuthenticateSuspend()
+            })
+        }
     )
 
     state.signingState?.let {
@@ -256,7 +265,6 @@ private fun ApproveButton(
     onApproveTransaction: () -> Unit
 ) {
     var showNotSecuredDialog by remember { mutableStateOf(false) }
-    val context = LocalContext.current
     RadixPrimaryButton(
         modifier = Modifier
             .fillMaxWidth()
@@ -264,13 +272,7 @@ private fun ApproveButton(
         text = stringResource(id = R.string.transactionReview_approveButtonTitle),
         onClick = {
             if (state.isDeviceSecure) {
-                context.findFragmentActivity()?.let { activity ->
-                    activity.biometricAuthenticate(true) { authenticatedSuccessfully ->
-                        if (authenticatedSuccessfully) {
-                            onApproveTransaction()
-                        }
-                    }
-                }
+                onApproveTransaction()
             } else {
                 showNotSecuredDialog = true
             }

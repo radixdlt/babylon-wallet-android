@@ -32,15 +32,21 @@ class CollectSignersSignaturesUseCase @Inject constructor(
     suspend operator fun invoke(
         signers: List<Entity>,
         signRequest: SignRequest,
+        deviceBiometricAuthenticationProvider: suspend () -> Boolean,
         signingPurpose: SigningPurpose = SigningPurpose.SignTransaction
     ): Result<List<SignatureWithPublicKey>> {
+        var deviceAuthenticated = false
         val signaturesWithPublicKeys = mutableListOf<SignatureWithPublicKey>()
         val signersPerFactorSource = getSigningEntitiesByFactorSourceUseCase(signers)
         signersPerFactorSource.forEach { (factorSource, signers) ->
             when (factorSource.id.kind) {
                 FactorSourceKind.DEVICE -> {
                     factorSource as DeviceFactorSource
-                    // _signingState.update { SigningState.Device.Pending(factorSource) }
+                    if (!deviceAuthenticated) {
+                        _signingState.update { SigningState.Device.Pending(factorSource) }
+                        deviceAuthenticated = deviceBiometricAuthenticationProvider()
+                    }
+                    if (!deviceAuthenticated) return Result.failure(Exception("Failed to collect device factor source signatures"))
                     val signatures = signWithDeviceFactorSourceUseCase(
                         deviceFactorSource = factorSource,
                         signers = signers,

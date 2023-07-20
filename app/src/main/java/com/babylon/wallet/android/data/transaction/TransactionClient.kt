@@ -54,10 +54,32 @@ class TransactionClient @Inject constructor(
     private val logger = Timber.tag("TransactionClient")
 
     suspend fun signAndSubmitTransaction(
-        request: TransactionApprovalRequest
+        request: TransactionApprovalRequest,
+        deviceBiometricAuthenticationProvider: suspend () -> Boolean
     ): Result<String> {
-        val manifestWithTransactionFee = if (request.feePayerAddress == null) {
-            request.manifest
+        val networkId = getCurrentGatewayUseCase().network.networkId().value
+        return signAndSubmitTransaction(
+            request.manifest,
+            request.ephemeralNotaryPrivateKey,
+            networkId,
+            request.feePayerAddress,
+            deviceBiometricAuthenticationProvider = deviceBiometricAuthenticationProvider
+        )
+    }
+
+    fun cancelSigning() {
+        collectSignersSignaturesUseCase.cancel()
+    }
+
+    private suspend fun prepareSignedTransactionIntent(
+        manifest: TransactionManifest,
+        ephemeralNotaryPrivateKey: PrivateKey,
+        networkId: Int,
+        feePayerAddress: String?,
+        deviceBiometricAuthenticationProvider: suspend () -> Boolean,
+    ): Result<NotarizedTransactionResult> {
+        val manifestWithTransactionFee = if (feePayerAddress == null) {
+            manifest
         } else {
             request.manifest.addLockFeeInstructionToManifest(
                 addressToLockFee = request.feePayerAddress,
@@ -95,7 +117,8 @@ class TransactionClient @Inject constructor(
                 signRequest = SignRequest.SignTransactionRequest(
                     dataToSign = compiledTransactionIntent.toByteArray(),
                     hashedDataToSign = transactionIntentHash.bytes().toByteArray()
-                )
+                ),
+                deviceBiometricAuthenticationProvider = deviceBiometricAuthenticationProvider
             ).getOrElse {
                 return Result.failure(DappRequestException(DappRequestFailure.TransactionApprovalFailure.SignCompiledTransactionIntent))
             }
@@ -136,13 +159,38 @@ class TransactionClient @Inject constructor(
                     )
                 )
             }
-
-            submitTransactionUseCase(
-                transactionIntentHash.bytes().toByteArray().toHexString(),
-                compiledNotarizedIntent.toByteArray().toHexString()
-            )
+            val txId = transactionIntentHash.bytes().toByteArray().toHexString()
+            Result.success(NotarizedTransactionResult(txId, compiledNotarizedIntent.toByteArray().toHexString()))
         }.onFailure {
             logger.w(it)
+        }
+    }
+
+    private suspend fun submitTransaction(notarizedTransactionResult: NotarizedTransactionResult): Result<String> {
+        return submitTransactionUseCase(
+            notarizedTransactionResult.txIdHex,
+            notarizedTransactionResult.notarizedTransactionIntentHex
+        )
+    }
+
+    private suspend fun signAndSubmitTransaction(
+        manifest: TransactionManifest,
+        ephemeralNotaryPrivateKey: PrivateKey,
+        networkId: Int,
+        feePayerAddress: String?,
+        deviceBiometricAuthenticationProvider: suspend () -> Boolean,
+    ): Result<String> {
+        return prepareSignedTransactionIntent(
+            manifest = manifest,
+            ephemeralNotaryPrivateKey = ephemeralNotaryPrivateKey,
+            networkId = networkId,
+            feePayerAddress = feePayerAddress,
+            deviceBiometricAuthenticationProvider = deviceBiometricAuthenticationProvider
+        ).mapCatching { notarizedTransactionResult ->
+            submitTransactionUseCase(
+                notarizedTransactionResult.txIdHex,
+                notarizedTransactionResult.notarizedTransactionIntentHex
+            ).getOrThrow()
         }
     }
 
@@ -336,3 +384,8 @@ class TransactionClient @Inject constructor(
         return nonce
     }
 }
+
+data class NotarizedTransactionResult(
+    val txIdHex: String,
+    val notarizedTransactionIntentHex: String
+)

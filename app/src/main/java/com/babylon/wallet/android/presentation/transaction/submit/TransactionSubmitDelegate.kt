@@ -40,7 +40,7 @@ class TransactionSubmitDelegate(
 ) {
     private var approvalJob: Job? = null
 
-    fun onSubmit() {
+    fun onSubmit(deviceBiometricAuthenticationProvider: suspend () -> Boolean) {
         // Do not re-submit while submission is in progress
         if (approvalJob != null) return
 
@@ -69,6 +69,30 @@ class TransactionSubmitDelegate(
     fun onFeePayerConfirmed(account: Network.Account, pendingManifest: TransactionManifest) {
         approvalJob = appScope.launch {
             signAndSubmit(state.value.request, account.address, pendingManifest)
+        }
+    }
+
+    fun onFeePayerSelected(account: Network.Account) {
+        val feePayerSheet = state.value.sheetState as? State.Sheet.FeePayerChooser ?: return
+        state.update {
+            it.copy(
+                sheetState = feePayerSheet.copy(selectedCandidate = account)
+            )
+        }
+    }
+
+    fun onFeePayerConfirmed(deviceBiometricAuthenticationProvider: suspend () -> Boolean) {
+        val feePayerSheet = state.value.sheetState as? State.Sheet.FeePayerChooser ?: return
+        val selectedCandidate = feePayerSheet.selectedCandidate ?: return
+
+        approvalJob = appScope.launch {
+            state.update { it.copy(sheetState = State.Sheet.None) }
+            signAndSubmit(
+                state.value.request,
+                selectedCandidate.address,
+                feePayerSheet.pendingManifest,
+                deviceBiometricAuthenticationProvider
+            )
         }
     }
 
@@ -128,7 +152,8 @@ class TransactionSubmitDelegate(
     private suspend fun signAndSubmit(
         transactionRequest: MessageFromDataChannel.IncomingRequest.TransactionRequest,
         feePayerAddress: String,
-        manifest: TransactionManifest
+        manifest: TransactionManifest,
+        deviceBiometricAuthenticationProvider: suspend () -> Boolean
     ) {
         state.update {
             it.copy(
@@ -144,7 +169,7 @@ class TransactionSubmitDelegate(
                 TransactionApprovalRequest.TransactionMessage.Public(it)
             } ?: TransactionApprovalRequest.TransactionMessage.None
         )
-        transactionClient.signAndSubmitTransaction(request).onSuccess { txId ->
+        transactionClient.signAndSubmitTransaction(request, deviceBiometricAuthenticationProvider).onSuccess { txId ->
             state.update {
                 it.copy(
                     isSubmitting = false

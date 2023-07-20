@@ -21,12 +21,7 @@ import rdx.works.core.ret.ManifestBuilder
 import rdx.works.profile.domain.gateway.GetCurrentGatewayUseCase
 import java.math.BigDecimal
 import javax.inject.Inject
-import kotlin.Boolean
 import kotlin.Result
-import kotlin.String
-import kotlin.Suppress
-import kotlin.fold
-import kotlin.onSuccess
 import com.babylon.wallet.android.domain.common.Result as ResultInternal
 
 @Suppress("LongParameterList")
@@ -68,7 +63,7 @@ class GetFreeXrdUseCase @Inject constructor(
                                 networkId = gateway.network.networkId(),
                                 hasLockFee = true
                             )
-                            transactionClient.signAndSubmitTransaction(request).onSuccess { txId ->
+                            transactionClient.signAndSubmitTransaction(request, deviceBiometricAuthenticationProvider = { true }).onSuccess { txId ->
                                 pollTransactionStatusUseCase(txId).onValue {
                                     preferencesManager.updateEpoch(address, epochResult.data)
                                 }

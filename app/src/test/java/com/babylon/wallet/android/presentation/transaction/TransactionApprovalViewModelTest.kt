@@ -2,7 +2,6 @@ package com.babylon.wallet.android.presentation.transaction
 
 import androidx.lifecycle.SavedStateHandle
 import com.babylon.wallet.android.data.dapp.DappMessenger
-import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepositoryImpl
 import com.babylon.wallet.android.data.dapp.model.WalletErrorType
 import com.babylon.wallet.android.data.gateway.generated.models.FeeSummary
@@ -12,7 +11,6 @@ import com.babylon.wallet.android.data.transaction.DappRequestException
 import com.babylon.wallet.android.data.transaction.DappRequestFailure
 import com.babylon.wallet.android.data.transaction.TransactionClient
 import com.babylon.wallet.android.data.transaction.model.FeePayerSearchResult
-import com.babylon.wallet.android.di.coroutines.ApplicationScope
 import com.babylon.wallet.android.domain.model.Badge
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.babylon.wallet.android.domain.model.TransactionManifestData
@@ -27,7 +25,6 @@ import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.slot
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.first
@@ -78,7 +75,7 @@ internal class TransactionApprovalViewModelTest : StateViewModelTest<Transaction
         coEvery { getTransactionBadgesUseCase.invoke(any()) } returns listOf(
             Badge(address = "", nameMetadataItem = null, iconMetadataItem = null)
         )
-        coEvery { transactionClient.signAndSubmitTransaction(any()) } returns Result.success(sampleTxId)
+        coEvery { transactionClient.signAndSubmitTransaction(any(),) } returns Result.success(sampleTxId)
         coEvery { transactionClient.findFeePayerInManifest(any()) } returns Result.success(FeePayerSearchResult("feePayer"))
         coEvery { transactionClient.signingState } returns emptyFlow()
         coEvery { transactionClient.getTransactionPreview(any(), any()) } returns Result.success(
@@ -157,7 +154,7 @@ internal class TransactionApprovalViewModelTest : StateViewModelTest<Transaction
 
     @Test
     fun `transaction approval sign and submit error`() = runTest {
-        coEvery { transactionClient.signAndSubmitTransaction(any()) } returns Result.failure(
+        coEvery { transactionClient.signAndSubmitTransaction(any(),) } returns Result.failure(
             DappRequestException(
                 DappRequestFailure.TransactionApprovalFailure.SubmitNotarizedTransaction
             )
