@@ -61,11 +61,8 @@ class TransactionAnalysisDelegate(
             return
         }
         // End temporary
-        getTransactionPreview(manifestWithLockFee)
-            .then { preview ->
-                analyzeExecution(manifestWithLockFee, preview)
-            }
-            .resolve()
+
+        startAnalysis(manifestWithLockFee)
     }
 
     suspend fun onFeePayerConfirmed(account: Network.Account, pendingManifest: TransactionManifest) {
@@ -74,12 +71,14 @@ class TransactionAnalysisDelegate(
             fee = TransactionConfig.DEFAULT_LOCK_FEE.toBigDecimal()
         )
 
-        getTransactionPreview(manifestWithLockFee)
-            .then { preview ->
-                analyzeExecution(manifestWithLockFee, preview)
-            }
-            .resolve()
+        startAnalysis(manifestWithLockFee)
     }
+
+    private suspend fun startAnalysis(manifest: TransactionManifest) = getTransactionPreview(manifest)
+        .then { preview ->
+            analyzeExecution(manifest, preview)
+        }
+        .resolve()
 
     private suspend fun getTransactionPreview(manifest: TransactionManifest) = transactionClient.getTransactionPreview(
         manifest = manifest,
