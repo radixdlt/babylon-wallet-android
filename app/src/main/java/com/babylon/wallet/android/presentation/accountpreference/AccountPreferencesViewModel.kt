@@ -4,6 +4,7 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.data.manifest.prepareInternalTransactionRequest
+import com.babylon.wallet.android.data.transaction.FactorSourceInteractionState
 import com.babylon.wallet.android.data.transaction.ROLAClient
 import com.babylon.wallet.android.di.coroutines.ApplicationScope
 import com.babylon.wallet.android.domain.usecases.GetFreeXrdUseCase
@@ -15,6 +16,7 @@ import com.babylon.wallet.android.utils.AppEventBus
 import com.babylon.wallet.android.utils.DeviceSecurityHelper
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.map
@@ -47,11 +49,19 @@ class AccountPreferenceViewModel @Inject constructor(
     private val args = AccountPreferencesArgs(savedStateHandle)
     private var authSigningFactorInstance: FactorInstance? = null
     private lateinit var uploadAuthKeyRequestId: String
+    private var job: Job? = null
 
     override fun initialState(): AccountPreferenceUiState = AccountPreferenceUiState(accountAddress = args.address)
 
     init {
         loadAccount()
+        viewModelScope.launch {
+            rolaClient.signingState.collect { signingState ->
+                _state.update { state ->
+                    state.copy(factorSourceInteractionState = signingState)
+                }
+            }
+        }
         viewModelScope.launch {
             appEventBus.events.filterIsInstance<AppEvent.Status.Transaction>().filter { it.requestId == uploadAuthKeyRequestId }
                 .collect { event ->
@@ -119,8 +129,13 @@ class AccountPreferenceViewModel @Inject constructor(
         _state.update { it.copy(error = null) }
     }
 
+    fun onDismissSigning() {
+        job?.cancel()
+        job = null
+    }
+
     fun onCreateAndUploadAuthKey() {
-        viewModelScope.launch {
+        job = viewModelScope.launch {
             state.value.account?.let { account ->
                 _state.update { it.copy(isLoading = true) }
                 rolaClient.generateAuthSigningFactorInstance(account).onSuccess { authSigningFactorInstance ->
@@ -153,5 +168,6 @@ data class AccountPreferenceUiState(
     val isDeviceSecure: Boolean = false,
     val gotFreeXrd: Boolean = false,
     val error: UiMessage? = null,
-    val hasAuthKey: Boolean = false
+    val hasAuthKey: Boolean = false,
+    val factorSourceInteractionState: FactorSourceInteractionState? = null
 ) : UiState

@@ -125,7 +125,7 @@ fun PersonaDataOnetimeScreen(
         onEditClick = viewModel::onEditClick,
         continueButtonEnabled = state.continueButtonEnabled
     )
-    SigningStateDialog(sharedState.signingState)
+    SigningStateDialog(sharedState.factorSourceInteractionState)
 }
 
 @Composable

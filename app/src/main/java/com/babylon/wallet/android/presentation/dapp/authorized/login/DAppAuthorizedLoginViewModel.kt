@@ -8,7 +8,7 @@ import com.babylon.wallet.android.data.dapp.model.WalletErrorType
 import com.babylon.wallet.android.data.repository.dappmetadata.DAppRepository
 import com.babylon.wallet.android.data.transaction.DappRequestException
 import com.babylon.wallet.android.data.transaction.DappRequestFailure
-import com.babylon.wallet.android.data.transaction.SigningState
+import com.babylon.wallet.android.data.transaction.FactorSourceInteractionState
 import com.babylon.wallet.android.domain.common.onError
 import com.babylon.wallet.android.domain.common.onValue
 import com.babylon.wallet.android.domain.model.DAppWithMetadata
@@ -703,5 +703,5 @@ data class DAppLoginUiState(
     val selectedOnetimePersonaData: PersonaData? = null,
     val selectedAccountsOneTime: List<AccountItemUiModel> = emptyList(),
     val selectedPersona: PersonaUiModel? = null,
-    val signingState: SigningState? = null
+    val factorSourceInteractionState: FactorSourceInteractionState? = null
 ) : UiState

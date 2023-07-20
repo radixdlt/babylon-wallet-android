@@ -9,6 +9,7 @@ import com.radixdlt.ret.Address
 import com.radixdlt.ret.ManifestValue
 import com.radixdlt.ret.SignatureWithPublicKey
 import com.radixdlt.ret.TransactionManifest
+import kotlinx.coroutines.flow.merge
 import rdx.works.core.compressedPublicKeyHash
 import rdx.works.core.compressedPublicKeyHashBytes
 import rdx.works.core.ret.ManifestBuilder
@@ -25,7 +26,10 @@ class ROLAClient @Inject constructor(
     private val collectSignersSignaturesUseCase: CollectSignersSignaturesUseCase
 ) {
 
-    val signingState = collectSignersSignaturesUseCase.signingState
+    val signingState = merge(
+        collectSignersSignaturesUseCase.factorSourceInteractionState,
+        generateAuthSigningFactorInstanceUseCase.factorSourceInteractionState
+    )
 
     suspend fun generateAuthSigningFactorInstance(entity: Entity): Result<FactorInstance> {
         return generateAuthSigningFactorInstanceUseCase(entity)

@@ -83,5 +83,4 @@ suspend fun FragmentActivity.biometricAuthenticateSuspend(
             biometricPrompt.authenticate(promptInfo)
         }
     }
-
 }

@@ -49,7 +49,7 @@ class TransactionClient @Inject constructor(
     private val getAccountsWithResourcesUseCase: GetAccountsWithResourcesUseCase,
     private val submitTransactionUseCase: SubmitTransactionUseCase
 ) {
-    val signingState = collectSignersSignaturesUseCase.signingState
+    val signingState = collectSignersSignaturesUseCase.factorSourceInteractionState
 
     private val logger = Timber.tag("TransactionClient")
 
@@ -59,10 +59,10 @@ class TransactionClient @Inject constructor(
     ): Result<String> {
         val networkId = getCurrentGatewayUseCase().network.networkId().value
         return signAndSubmitTransaction(
-            request.manifest,
-            request.ephemeralNotaryPrivateKey,
-            networkId,
-            request.feePayerAddress,
+            manifest = request.manifest,
+            ephemeralNotaryPrivateKey = request.ephemeralNotaryPrivateKey,
+            networkId = networkId,
+            feePayerAddress = request.feePayerAddress,
             deviceBiometricAuthenticationProvider = deviceBiometricAuthenticationProvider
         )
     }
@@ -120,7 +120,12 @@ class TransactionClient @Inject constructor(
                 ),
                 deviceBiometricAuthenticationProvider = deviceBiometricAuthenticationProvider
             ).getOrElse {
-                return Result.failure(DappRequestException(DappRequestFailure.TransactionApprovalFailure.SignCompiledTransactionIntent))
+                return Result.failure(
+                    DappRequestException(
+                        DappRequestFailure.TransactionApprovalFailure.SignCompiledTransactionIntent,
+                        e = it
+                    )
+                )
             }
 
             val signedTransactionIntent = runCatching {
@@ -129,7 +134,12 @@ class TransactionClient @Inject constructor(
                     intentSignatures = signatures
                 )
             }.getOrElse {
-                return Result.failure(DappRequestException(DappRequestFailure.TransactionApprovalFailure.SignCompiledTransactionIntent))
+                return Result.failure(
+                    DappRequestException(
+                        DappRequestFailure.TransactionApprovalFailure.SignCompiledTransactionIntent,
+                        e = it
+                    )
+                )
             }
 
             val signedIntentHash = runCatching {
@@ -164,13 +174,6 @@ class TransactionClient @Inject constructor(
         }.onFailure {
             logger.w(it)
         }
-    }
-
-    private suspend fun submitTransaction(notarizedTransactionResult: NotarizedTransactionResult): Result<String> {
-        return submitTransactionUseCase(
-            notarizedTransactionResult.txIdHex,
-            notarizedTransactionResult.notarizedTransactionIntentHex
-        )
     }
 
     private suspend fun signAndSubmitTransaction(

@@ -39,7 +39,8 @@ open class BuildDappResponseUseCase(private val rolaClient: ROLAClient) {
                 val signRequest = SignRequest.SignAuthChallengeRequest(
                     challengeHex,
                     request.metadata.origin,
-                    request.metadata.dAppDefinitionAddress
+                    request.metadata.dAppDefinitionAddress,
+                    { true } // TODO signing
                 )
                 val signatureWithPublicKey = rolaClient.signAuthChallenge(account, signRequest, { true }) //TODO signing
                 if (signatureWithPublicKey.isFailure) return Result.failure(DappRequestFailure.FailedToSignAuthChallenge())

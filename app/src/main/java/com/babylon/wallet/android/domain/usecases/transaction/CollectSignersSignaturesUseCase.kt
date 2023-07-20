@@ -1,6 +1,6 @@
 package com.babylon.wallet.android.domain.usecases.transaction
 
-import com.babylon.wallet.android.data.transaction.SigningState
+import com.babylon.wallet.android.data.transaction.FactorSourceInteractionState
 import com.radixdlt.hex.extensions.toHexString
 import com.radixdlt.ret.SignatureWithPublicKey
 import com.radixdlt.ret.hash
@@ -26,8 +26,8 @@ class CollectSignersSignaturesUseCase @Inject constructor(
     private val getSigningEntitiesByFactorSourceUseCase: GetSigningEntitiesByFactorSourceUseCase,
 ) {
 
-    private val _signingState = MutableStateFlow<SigningState?>(null)
-    val signingState: Flow<SigningState?> = _signingState.asSharedFlow()
+    private val _factorSourceInteractionState = MutableStateFlow<FactorSourceInteractionState?>(null)
+    val factorSourceInteractionState: Flow<FactorSourceInteractionState?> = _factorSourceInteractionState.asSharedFlow()
 
     suspend operator fun invoke(
         signers: List<Entity>,
@@ -42,11 +42,16 @@ class CollectSignersSignaturesUseCase @Inject constructor(
             when (factorSource.id.kind) {
                 FactorSourceKind.DEVICE -> {
                     factorSource as DeviceFactorSource
+                    //here I assume that in the future we will grant
+                    // access to keystore key for few seconds, so I ask for auth only once, instead of on every DEVICE signature
                     if (!deviceAuthenticated) {
-                        _signingState.update { SigningState.Device.Pending(factorSource) }
+                        _factorSourceInteractionState.update { FactorSourceInteractionState.Device.Pending(factorSource) }
                         deviceAuthenticated = deviceBiometricAuthenticationProvider()
                     }
-                    if (!deviceAuthenticated) return Result.failure(Exception("Failed to collect device factor source signatures"))
+                    if (!deviceAuthenticated) {
+                        _factorSourceInteractionState.update { null }
+                        return Result.failure(SignatureCancelledException("Failed to collect device factor source signatures"))
+                    }
                     val signatures = signWithDeviceFactorSourceUseCase(
                         deviceFactorSource = factorSource,
                         signers = signers,
@@ -59,17 +64,17 @@ class CollectSignersSignaturesUseCase @Inject constructor(
 
                 FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET -> {
                     factorSource as LedgerHardwareWalletFactorSource
-                    _signingState.update { SigningState.Ledger.Pending(factorSource) }
+                    _factorSourceInteractionState.update { FactorSourceInteractionState.Ledger.Pending(factorSource) }
                     signWithLedgerFactorSourceUseCase(
                         ledgerFactorSource = factorSource,
                         signers = signers,
                         signRequest = signRequest,
                         signingPurpose = signingPurpose
                     ).onSuccess { signatures ->
-                        _signingState.update { SigningState.Ledger.Success(factorSource) }
+                        _factorSourceInteractionState.update { FactorSourceInteractionState.Ledger.Success(factorSource) }
                         signaturesWithPublicKeys.addAll(signatures)
                     }.onFailure {
-                        _signingState.update { SigningState.Ledger.Failure(factorSource) }
+                        _factorSourceInteractionState.update { FactorSourceInteractionState.Ledger.Failure(factorSource) }
                         return Result.failure(it)
                     }
                 }
@@ -87,7 +92,7 @@ class CollectSignersSignaturesUseCase @Inject constructor(
     }
 
     fun cancel() {
-        _signingState.update { null }
+        _factorSourceInteractionState.update { null }
     }
 }
 

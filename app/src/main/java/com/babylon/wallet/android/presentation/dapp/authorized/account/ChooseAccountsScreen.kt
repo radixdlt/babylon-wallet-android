@@ -97,7 +97,7 @@ fun ChooseAccountsScreen(
             dismissErrorDialog = dismissErrorDialog
         )
     }
-    SigningStateDialog(sharedState.signingState)
+    SigningStateDialog(sharedState.factorSourceInteractionState)
 }
 
 @Composable

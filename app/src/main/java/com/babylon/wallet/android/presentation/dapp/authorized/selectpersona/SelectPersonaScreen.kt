@@ -116,7 +116,7 @@ fun SelectPersonaScreen(
         createNewPersona = viewModel::onCreatePersona,
         isLoading = state.isLoading
     )
-    SigningStateDialog(sharedState.signingState)
+    SigningStateDialog(sharedState.factorSourceInteractionState)
 }
 
 @Composable

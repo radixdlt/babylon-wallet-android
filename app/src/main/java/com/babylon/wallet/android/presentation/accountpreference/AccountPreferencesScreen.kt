@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -32,6 +33,7 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.presentation.common.FullscreenCircularProgressContent
 import com.babylon.wallet.android.presentation.common.UiMessage
+import com.babylon.wallet.android.presentation.status.signing.SigningStatusBottomDialog
 import com.babylon.wallet.android.presentation.ui.composables.AccountQRCodeView
 import com.babylon.wallet.android.presentation.ui.composables.BottomDialogDragHandle
 import com.babylon.wallet.android.presentation.ui.composables.NotSecureAlertDialog
@@ -93,6 +95,13 @@ fun AccountPreferenceScreen(
             hasAuthKey = state.hasAuthKey,
             onCreateAndUploadAuthKey = viewModel::onCreateAndUploadAuthKey
         )
+        state.factorSourceInteractionState?.let {
+            SigningStatusBottomDialog(
+                modifier = Modifier.fillMaxHeight(0.8f),
+                onDismissDialogClick = viewModel::onDismissSigning,
+                factorSourceInteractionState = it
+            )
+        }
     }
 }
 

@@ -27,7 +27,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.babylon.wallet.android.data.transaction.SigningState
+import com.babylon.wallet.android.data.transaction.FactorSourceInteractionState
 import com.babylon.wallet.android.designsystem.R
 import com.babylon.wallet.android.designsystem.theme.GradientBrand2
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
@@ -43,7 +43,7 @@ import rdx.works.profile.data.model.factorsources.LedgerHardwareWalletFactorSour
 fun SigningStatusBottomDialog(
     modifier: Modifier = Modifier,
     onDismissDialogClick: () -> Unit,
-    signingState: SigningState
+    factorSourceInteractionState: FactorSourceInteractionState
 ) {
     val dismissHandler = {
         onDismissDialogClick()
@@ -53,7 +53,7 @@ fun SigningStatusBottomDialog(
     ) {
         SigningStatusBottomDialogContent(
             modifier = modifier,
-            signingState = signingState
+            factorSourceInteractionState = factorSourceInteractionState
         )
     }
 }
@@ -61,11 +61,11 @@ fun SigningStatusBottomDialog(
 @Composable
 fun SigningStatusBottomDialogContent(
     modifier: Modifier = Modifier,
-    signingState: SigningState?
+    factorSourceInteractionState: FactorSourceInteractionState?
 ) {
-    when (signingState) {
-        is SigningState.Ledger.Failure,
-        is SigningState.Device.Failure -> {
+    when (factorSourceInteractionState) {
+        is FactorSourceInteractionState.Ledger.Failure,
+        is FactorSourceInteractionState.Device.Failure -> {
             SomethingWentWrongDialogContent(
                 title = stringResource(id = com.babylon.wallet.android.R.string.common_somethingWentWrong),
                 subtitle = stringResource(id = com.babylon.wallet.android.R.string.common_somethingWentWrong),
@@ -73,14 +73,17 @@ fun SigningStatusBottomDialogContent(
             )
         }
 
-        is SigningState.Ledger.Success,
-        is SigningState.Device.Success -> {
+        is FactorSourceInteractionState.Ledger.Success,
+        is FactorSourceInteractionState.Device.Success -> {
             SignatureSuccessfulContent(modifier = modifier)
         }
 
-        is SigningState.Device.Pending,
-        is SigningState.Ledger.Pending -> {
-            SignatureRequestContent(signingState, modifier)
+        is FactorSourceInteractionState.Device.Pending -> {
+            SignatureRequestContent(factorSourceInteractionState, modifier)
+        }
+
+        is FactorSourceInteractionState.Ledger.Pending -> {
+            SignatureRequestContent(factorSourceInteractionState, modifier)
         }
 
         else -> {}
@@ -89,7 +92,7 @@ fun SigningStatusBottomDialogContent(
 
 @Composable
 private fun SignatureRequestContent(
-    signingState: SigningState?,
+    factorSourceInteractionState: FactorSourceInteractionState?,
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -108,22 +111,39 @@ private fun SignatureRequestContent(
             contentDescription = null,
             tint = RadixTheme.colors.gray3
         )
+        val title = stringResource(
+            id = when (factorSourceInteractionState) {
+                is FactorSourceInteractionState.Ledger -> {
+                    when (factorSourceInteractionState.interactionType) {
+                        FactorSourceInteractionState.Ledger.InteractionType.DeriveKey -> {
+                            com.babylon.wallet.android.R.string.createAccount_derivePublicKeys_subtitle
+                        }
+                        else -> {
+                            com.babylon.wallet.android.R.string.signing_signatureRequest_title
+                        }
+                    }
+                }
+
+                is FactorSourceInteractionState.Device -> com.babylon.wallet.android.R.string.signing_signatureRequest_title
+                else -> com.babylon.wallet.android.R.string.empty
+            }
+        )
         Text(
-            text = stringResource(com.babylon.wallet.android.R.string.signing_signatureRequest_title),
+            text = title,
             style = RadixTheme.typography.title,
             color = RadixTheme.colors.gray1
         )
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
-        val subtitle = when (signingState) {
-            is SigningState.Device.Failure,
-            is SigningState.Device.Success,
-            is SigningState.Device.Pending -> {
+        val subtitle = when (factorSourceInteractionState) {
+            is FactorSourceInteractionState.Device.Failure,
+            is FactorSourceInteractionState.Device.Success,
+            is FactorSourceInteractionState.Device.Pending -> {
                 com.babylon.wallet.android.R.string.signing_withDeviceFactorSource_signTransaction
             }
 
-            is SigningState.Ledger.Success,
-            is SigningState.Ledger.Failure,
-            is SigningState.Ledger.Pending -> {
+            is FactorSourceInteractionState.Ledger.Success,
+            is FactorSourceInteractionState.Ledger.Failure,
+            is FactorSourceInteractionState.Ledger.Pending -> {
                 com.babylon.wallet.android.R.string.signing_signatureRequest_body
             }
 
@@ -135,7 +155,7 @@ private fun SignatureRequestContent(
             color = RadixTheme.colors.gray1,
             textAlign = TextAlign.Center
         )
-        if (signingState?.usingLedger == true) {
+        if (factorSourceInteractionState?.usingLedger == true) {
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
             Row(
                 modifier = Modifier
@@ -152,7 +172,7 @@ private fun SignatureRequestContent(
                     tint = RadixTheme.colors.gray3
                 )
                 Text(
-                    text = signingState.label,
+                    text = factorSourceInteractionState.label,
                     style = RadixTheme.typography.secondaryHeader,
                     color = RadixTheme.colors.gray1
                 )
@@ -210,7 +230,7 @@ private fun SignatureSuccessfulContent(
 fun SignatureRequestContentPreview() {
     RadixWalletTheme {
         SignatureRequestContent(
-            signingState = SigningState.Ledger.Pending(
+            factorSourceInteractionState = FactorSourceInteractionState.Ledger.Pending(
                 LedgerHardwareWalletFactorSource.newSource(
                     model = LedgerHardwareWalletFactorSource.DeviceModel.NANO_S,
                     name = "nanoS",

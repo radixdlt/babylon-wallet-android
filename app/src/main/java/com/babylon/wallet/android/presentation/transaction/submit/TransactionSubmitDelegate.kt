@@ -9,6 +9,7 @@ import com.babylon.wallet.android.data.transaction.TransactionClient
 import com.babylon.wallet.android.data.transaction.model.TransactionApprovalRequest
 import com.babylon.wallet.android.domain.model.GuaranteeAssertion
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
+import com.babylon.wallet.android.domain.usecases.transaction.SignatureCancelledException
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.transaction.PreviewType
 import com.babylon.wallet.android.presentation.transaction.TransactionApprovalViewModel.Event
@@ -109,7 +110,7 @@ class TransactionSubmitDelegate(
             }
             onSendScreenEvent(Event.Dismiss)
             incomingRequestRepository.requestHandled(request.id)
-        } else if (state.value.signingState != null) {
+        } else if (state.value.factorSourceInteractionState != null) {
             approvalJob?.cancel()
             approvalJob = null
             transactionClient.cancelSigning()
@@ -238,6 +239,28 @@ class TransactionSubmitDelegate(
     }
 
     private suspend fun reportFailure(error: Throwable) {
+        val exception = error as? DappRequestException
+        if (exception?.e is SignatureCancelledException) {
+            state.update { it.copy(isSubmitting = false,) }
+            approvalJob = null
+            return@onFailure
+        }
+        state.update {
+            it.copy(
+                isSubmitting = false,
+                error = UiMessage.ErrorMessage.from(error = error)
+            )
+        }
+        if (exception != null) {
+            if (!transactionRequest.isInternal) {
+                dAppMessenger.sendWalletInteractionResponseFailure(
+                    dappId = transactionRequest.dappId,
+                    requestId = transactionRequest.requestId,
+                    error = exception.failure.toWalletErrorType(),
+                    message = exception.failure.getDappMessage()
+                )
+            }
+        }
         logger.w(error)
 
         state.update {
