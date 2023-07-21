@@ -156,12 +156,11 @@ private fun TransactionPreviewContent(
     )
 
     DefaultModalSheetLayout(
-        modifier = modifier
-            .navigationBarsPadding()
-            .fillMaxSize(),
+        modifier = modifier.fillMaxSize(),
         sheetState = modalBottomSheetState,
         sheetContent = {
             BottomSheetContent(
+                modifier = Modifier.navigationBarsPadding(),
                 sheetState = state.sheetState,
                 onPayerSelected = onPayerSelected,
                 onPayerConfirmed = onPayerConfirmed,
@@ -190,11 +189,10 @@ private fun TransactionPreviewContent(
             },
             snackbarHost = {
                 RadixSnackbarHost(
-                    modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingDefault),
+                    modifier = Modifier.padding(RadixTheme.dimensions.paddingDefault),
                     hostState = snackBarHostState
                 )
             },
-            contentWindowInsets = WindowInsets.ime,
             containerColor = RadixTheme.colors.gray5
         ) { padding ->
             Box(modifier = Modifier.padding(padding)) {
@@ -303,6 +301,7 @@ private fun ApproveButton(
 
 @Composable
 private fun BottomSheetContent(
+    modifier: Modifier = Modifier,
     sheetState: State.Sheet,
     onPayerSelected: (Network.Account) -> Unit,
     onPayerConfirmed: () -> Unit,
@@ -317,7 +316,7 @@ private fun BottomSheetContent(
     when (sheetState) {
         is State.Sheet.CustomizeGuarantees -> {
             GuaranteesSheet(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = modifier,
                 state = sheetState,
                 onClose = onGuaranteesCloseClick,
                 onApplyClick = onGuaranteesApplyClick,
@@ -329,6 +328,7 @@ private fun BottomSheetContent(
 
         is State.Sheet.Dapp -> {
             DAppDetailsSheetContent(
+                modifier = modifier,
                 onBackClick = onCloseDAppSheet,
                 dApp = sheetState.dApp
             )
@@ -336,7 +336,7 @@ private fun BottomSheetContent(
 
         is State.Sheet.FeePayerChooser -> {
             FeePayerSelectionSheet(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = modifier,
                 sheet = sheetState,
                 onClose = onCloseFeePayerSheet,
                 onPayerSelected = onPayerSelected,
