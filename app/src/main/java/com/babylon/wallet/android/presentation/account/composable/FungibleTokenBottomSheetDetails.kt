@@ -129,27 +129,25 @@ fun FungibleTokenBottomSheetDetails(
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
             }
 
-            fungible.currentSupplyToDisplay?.let { currentSupply ->
-                Row(
-                    modifier = Modifier,
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Text(
-                        text = stringResource(id = R.string.assetDetails_currentSupply),
-                        style = RadixTheme.typography.body1Regular,
-                        color = RadixTheme.colors.gray2
-                    )
-                    Spacer(modifier = Modifier.weight(1f))
-                    Text(
-                        modifier = Modifier
-                            .padding(start = RadixTheme.dimensions.paddingDefault),
-                        text = currentSupply,
-                        style = RadixTheme.typography.body1Regular,
-                        color = RadixTheme.colors.gray1,
-                        textAlign = TextAlign.End
-                    )
-                }
+            Row(
+                modifier = Modifier,
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text(
+                    text = stringResource(id = R.string.assetDetails_currentSupply),
+                    style = RadixTheme.typography.body1Regular,
+                    color = RadixTheme.colors.gray2
+                )
+                Spacer(modifier = Modifier.weight(1f))
+                Text(
+                    modifier = Modifier
+                        .padding(start = RadixTheme.dimensions.paddingDefault),
+                    text = fungible.currentSupplyToDisplay ?: stringResource(id = R.string.assetDetails_supplyUnkown),
+                    style = RadixTheme.typography.body1Regular,
+                    color = RadixTheme.colors.gray1,
+                    textAlign = TextAlign.End
+                )
             }
 
             if (fungible.resourceBehaviours.isNotEmpty()) {
