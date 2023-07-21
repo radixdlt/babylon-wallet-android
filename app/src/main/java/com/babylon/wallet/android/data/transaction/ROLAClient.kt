@@ -73,24 +73,18 @@ class ROLAClient @Inject constructor(
 
     suspend fun signAuthChallenge(
         entity: Entity,
-        challengeHex: String,
-        dAppDefinitionAddress: String,
-        origin: String
+        signRequest: SignRequest
     ): Result<SignatureWithPublicKey> {
         return collectSignersSignaturesUseCase(
             signers = listOf(entity),
-            signRequest = SignRequest.SignAuthChallengeRequest(
-                challengeHex = challengeHex,
-                origin = origin,
-                dAppDefinitionAddress = dAppDefinitionAddress
-            ),
+            signRequest = signRequest,
             signingPurpose = SigningPurpose.SignAuth
         ).mapCatching { signatures ->
             if (signatures.size == 1) {
                 signatures.first()
             } else {
                 throw DappRequestFailure.FailedToSignAuthChallenge(
-                    msg = "Failed to sign challenge $challengeHex by entity: ${entity.address}"
+                    msg = "Failed to sign request $signRequest by entity: ${entity.address}"
                 )
             }
         }

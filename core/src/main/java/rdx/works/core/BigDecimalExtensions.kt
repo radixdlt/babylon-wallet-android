@@ -18,6 +18,7 @@ private const val TRILLION_DIGITS_LENGTH = 12
  *
  * https://radixdlt.atlassian.net/wiki/spaces/AT/pages/2820538382/Wallet+Token+Amount+Display+and+Copying
  */
+@Suppress("MagicNumber")
 fun BigDecimal.displayableQuantity(): String {
     val integralPart: BigInteger = this.toBigInteger()
     val integralPartLength = if (integralPart.signum() == 0) 0 else integralPart.toString().length
@@ -40,7 +41,7 @@ fun BigDecimal.displayableQuantity(): String {
             decimalFormat.format(wholeNumbers).plus(" T")
         } else if (integralPartLength > BILLION_DIGITS_LENGTH) {
             // billion
-            val wholeNumbers = this.divide(BigDecimal(10).pow(BILLION_DIGITS_LENGTH-1))
+            val wholeNumbers = this.divide(BigDecimal(10).pow(BILLION_DIGITS_LENGTH - 1))
             val wholeDecimalPlaces = wholeNumbers.toBigInteger().toString().length
             decimalFormat.maximumFractionDigits = MAX_TOKEN_DIGITS_LENGTH - wholeDecimalPlaces
             decimalFormat.format(wholeNumbers).plus(" B")
