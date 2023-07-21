@@ -182,13 +182,10 @@ private fun AccountScreenContent(
         )
         val lazyListState = rememberLazyListState()
         Box(
-            modifier = Modifier
-                .pullRefresh(pullToRefreshState)
+            modifier = Modifier.pullRefresh(pullToRefreshState)
         ) {
             Scaffold(
-                modifier = Modifier
-                    .navigationBarsPadding()
-                    .background(Brush.horizontalGradient(gradient)),
+                modifier = Modifier.background(Brush.horizontalGradient(gradient)),
                 topBar = {
                     AccountTopBar(
                         state = state,
@@ -211,13 +208,13 @@ private fun AccountScreenContent(
                 floatingActionButtonPosition = FabPosition.Center,
                 snackbarHost = {
                     RadixSnackbarHost(
-                        modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingDefault),
+                        modifier = Modifier.padding(RadixTheme.dimensions.paddingDefault),
                         hostState = snackBarHostState
                     )
                 }
             ) { innerPadding ->
                 AssetsContent(
-                    innerPadding = innerPadding,
+                    modifier = Modifier.padding(innerPadding),
                     state = state,
                     lazyListState = lazyListState,
                     onFungibleTokenClick = {
@@ -290,19 +287,13 @@ private fun SheetContent(
 @Composable
 fun AssetsContent(
     modifier: Modifier = Modifier,
-    innerPadding: PaddingValues,
     lazyListState: LazyListState,
     state: AccountUiState,
     onFungibleTokenClick: (Resource.FungibleResource) -> Unit,
     onNonFungibleItemClick: (Resource.NonFungibleResource, Resource.NonFungibleResource.Item) -> Unit,
 ) {
-    val layoutDirection = LocalLayoutDirection.current
     Surface(
-        modifier = modifier.padding(
-            start = innerPadding.calculateStartPadding(layoutDirection),
-            end = innerPadding.calculateEndPadding(layoutDirection),
-            top = innerPadding.calculateTopPadding()
-        ),
+        modifier = modifier,
         color = RadixTheme.colors.gray5,
         shape = RadixTheme.shapes.roundedRectTopDefault,
         elevation = 8.dp
@@ -324,10 +315,8 @@ fun AssetsContent(
                 modifier = Modifier.fillMaxSize(),
                 state = lazyListState,
                 contentPadding = PaddingValues(
-                    start = RadixTheme.dimensions.paddingDefault,
-                    end = RadixTheme.dimensions.paddingDefault,
-                    top = RadixTheme.dimensions.paddingLarge,
-                    bottom = innerPadding.calculateBottomPadding()
+                    horizontal = RadixTheme.dimensions.paddingDefault,
+                    vertical = RadixTheme.dimensions.paddingLarge
                 )
             ) {
                 item {
