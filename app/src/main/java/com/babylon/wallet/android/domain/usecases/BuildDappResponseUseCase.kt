@@ -15,6 +15,7 @@ import com.babylon.wallet.android.data.dapp.model.toProof
 import com.babylon.wallet.android.data.transaction.DappRequestFailure
 import com.babylon.wallet.android.data.transaction.ROLAClient
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
+import com.babylon.wallet.android.domain.usecases.transaction.SignRequest
 import com.babylon.wallet.android.presentation.model.toPersonaDataRequestResponseItem
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.data.model.pernetwork.PersonaData
@@ -35,16 +36,16 @@ open class BuildDappResponseUseCase(private val rolaClient: ROLAClient) {
         var accountProofs: List<AccountProof>? = null
         if (challengeHex != null) {
             accountProofs = accounts.map { account ->
-                val signatureWithPublicKey = rolaClient.signAuthChallenge(
-                    account,
+                val signRequest = SignRequest.SignAuthChallengeRequest(
                     challengeHex,
-                    request.metadata.dAppDefinitionAddress,
-                    request.metadata.origin
+                    request.metadata.origin,
+                    request.metadata.dAppDefinitionAddress
                 )
+                val signatureWithPublicKey = rolaClient.signAuthChallenge(account, signRequest)
                 if (signatureWithPublicKey.isFailure) return Result.failure(DappRequestFailure.FailedToSignAuthChallenge())
                 AccountProof(
                     account.address,
-                    signatureWithPublicKey.getOrThrow().toProof(challengeHex)
+                    signatureWithPublicKey.getOrThrow().toProof(signRequest.dataToSign)
                 )
             }
         }
@@ -116,11 +117,14 @@ class BuildAuthorizedDappResponseUseCase @Inject constructor(
         val authResponse: Result<AuthRequestResponseItem> = when (val authRequest = request.authRequest) {
             is MessageFromDataChannel.IncomingRequest.AuthorizedRequest.AuthRequest.LoginRequest.WithChallenge -> {
                 var response: Result<AuthRequestResponseItem> = Result.failure(DappRequestFailure.FailedToSignAuthChallenge())
+                val signRequest = SignRequest.SignAuthChallengeRequest(
+                    challengeHex = authRequest.challenge,
+                    origin = request.metadata.origin,
+                    dAppDefinitionAddress = request.metadata.dAppDefinitionAddress
+                )
                 rolaClient.signAuthChallenge(
                     selectedPersona,
-                    authRequest.challenge,
-                    request.metadata.dAppDefinitionAddress,
-                    request.metadata.origin
+                    signRequest
                 ).onSuccess { signature ->
                     response = Result.success(
                         AuthLoginWithChallengeRequestResponseItem(
@@ -129,7 +133,7 @@ class BuildAuthorizedDappResponseUseCase @Inject constructor(
                                 selectedPersona.displayName
                             ),
                             authRequest.challenge,
-                            signature.toProof(authRequest.challenge)
+                            signature.toProof(signRequest.dataToSign)
                         )
                     )
                 }

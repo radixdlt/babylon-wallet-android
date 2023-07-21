@@ -10,11 +10,11 @@ import com.radixdlt.ret.Signature
 import com.radixdlt.ret.SignatureWithPublicKey
 import org.bouncycastle.math.ec.ECPoint
 import org.bouncycastle.util.encoders.Hex
+import rdx.works.core.blake2Hash
 import rdx.works.core.ret.crypto.ECKeyUtils
 import rdx.works.core.toByteArray
 import rdx.works.core.toUByteList
 import java.math.BigInteger
-import java.security.MessageDigest
 
 fun ECKeyPair.toEnginePublicKeyModel(): PublicKey {
     return when (this.publicKey.curveType) {
@@ -69,7 +69,7 @@ fun SignatureWithPublicKey.EcdsaSecp256k1.publicKey(message: ByteArray): PublicK
 
     // We expect that the raw message is passed (not the hash), therefore, we need to hash
     // the message to get to the expected output
-    val doubleHashedMessage: ByteArray = sha256(sha256(message))
+    val doubleHashedMessage: ByteArray = message.blake2Hash()
 
     // Derive the ECPoint of the public key from the above parameters. Note: we use `get` on
     // the return of the below function assuming that the signature is a valid signature
@@ -93,7 +93,3 @@ fun Signature.EddsaEd25519.toHexString(): String = Hex.toHexString(value.toByteA
 
 fun PublicKey.EcdsaSecp256k1.toHexString(): String = Hex.toHexString(value.toByteArray())
 fun PublicKey.EddsaEd25519.toHexString(): String = Hex.toHexString(value.toByteArray())
-
-private fun sha256(message: ByteArray): ByteArray {
-    return MessageDigest.getInstance("SHA-256").digest(message)
-}
