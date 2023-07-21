@@ -326,7 +326,7 @@ fun AssetsContent(
                 contentPadding = PaddingValues(
                     start = RadixTheme.dimensions.paddingDefault,
                     end = RadixTheme.dimensions.paddingDefault,
-                    top =  RadixTheme.dimensions.paddingLarge,
+                    top = RadixTheme.dimensions.paddingLarge,
                     bottom = innerPadding.calculateBottomPadding()
                 )
             ) {
