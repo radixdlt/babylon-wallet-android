@@ -305,7 +305,7 @@ class TransactionClient @Inject constructor(
                 nonce = generateNonce().toLong(),
                 signerPublicKeys = notaryAndSigners.signersPublicKeys().map { it.asGatewayPublicKey() },
                 flags = TransactionPreviewRequestFlags(
-                    useFreeCredit = false,
+                    useFreeCredit = true,
                     assumeAllSignatureProofs = false,
                     skipEpochCheck = false
                 ),

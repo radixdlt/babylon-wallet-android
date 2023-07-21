@@ -35,34 +35,7 @@ class TransactionAnalysisDelegate(
     suspend fun analyse() {
         val manifest = state.value.request.transactionManifestData.toTransactionManifest()
 
-        // Temporary https://rdxworks.slack.com/archives/C02MTV9602H/p1689761008265229?thread_ts=1689666632.743269&cid=C02MTV9602H
-        val feePayerResult = transactionClient.findFeePayerInManifest(manifest).getOrElse { error ->
-            state.update {
-                it.copy(isLoading = false, error = UiMessage.ErrorMessage.from(error = error))
-            }
-            return
-        }
-
-        val manifestWithLockFee = if (feePayerResult.feePayerAddressFromManifest != null) {
-            manifest.addLockFeeInstructionToManifest(
-                addressToLockFee = feePayerResult.feePayerAddressFromManifest,
-                fee = TransactionConfig.DEFAULT_LOCK_FEE.toBigDecimal()
-            )
-        } else {
-            state.update { state ->
-                state.copy(
-                    isSubmitting = false,
-                    sheetState = State.Sheet.FeePayerChooser(
-                        candidates = feePayerResult.candidates,
-                        pendingManifest = manifest
-                    )
-                )
-            }
-            return
-        }
-        // End temporary
-
-        startAnalysis(manifestWithLockFee)
+        startAnalysis(manifest)
     }
 
     suspend fun onFeePayerConfirmed(account: Network.Account, pendingManifest: TransactionManifest) {
