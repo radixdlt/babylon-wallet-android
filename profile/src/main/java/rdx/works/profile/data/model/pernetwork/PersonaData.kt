@@ -285,7 +285,7 @@ data class PersonaData(
         }
 
         enum class Kind {
-            Name, DateOfBirth, CompanyName, EmailAddress, Url, PhoneNumber, PostalAddress, CreditCard;
+            Name, DateOfBirth, CompanyName, PhoneNumber, EmailAddress, Url, PostalAddress, CreditCard;
 
             companion object {
                 val supportedKindsSingleValue: List<Kind>

@@ -83,6 +83,7 @@ fun PersonaDataOngoingScreen(
                 is Event.LoginFlowCompleted -> onLoginFlowComplete()
                 is Event.ChooseAccounts -> onChooseAccounts(event)
                 is Event.PersonaDataOnetime -> onPersonaDataOnetime(event)
+                is Event.RejectLogin -> onLoginFlowComplete()
                 Event.RequestCompletionBiometricPrompt -> {
                     context.biometricAuthenticate { authenticated ->
                         if (authenticated) {

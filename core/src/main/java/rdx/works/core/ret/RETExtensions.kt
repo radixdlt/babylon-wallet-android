@@ -69,14 +69,14 @@ fun SignatureWithPublicKey.EcdsaSecp256k1.publicKey(message: ByteArray): PublicK
 
     // We expect that the raw message is passed (not the hash), therefore, we need to hash
     // the message to get to the expected output
-    val doubleHashedMessage: ByteArray = message.blake2Hash()
+    val hashedMessage: ByteArray = message.blake2Hash()
 
     // Derive the ECPoint of the public key from the above parameters. Note: we use `get` on
     // the return of the below function assuming that the signature is a valid signature
     // that can produce a valid ecPoint. It might be better to handle this with an exception
     // or not use `get` optimistically.
     val ecPoint: ECPoint =
-        ECKeyUtils.recoverFromSignature(v.toInt(), r, s, doubleHashedMessage).get()
+        ECKeyUtils.recoverFromSignature(v.toInt(), r, s, hashedMessage).get()
 
     // Getting the bytes of the compressed public key (below, true = compress) and then
     // creating a new public key object.
