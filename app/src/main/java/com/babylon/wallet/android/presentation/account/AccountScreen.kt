@@ -12,9 +12,12 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.calculateEndPadding
+import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
@@ -46,9 +49,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -164,7 +167,12 @@ private fun AccountScreenContent(
         scrimColor = Color.Black.copy(alpha = 0.3f),
         sheetShape = RadixTheme.shapes.roundedRectTopDefault,
         sheetContent = {
-            SheetContent(state, scope, bottomSheetState)
+            SheetContent(
+                modifier = Modifier.navigationBarsPadding(),
+                state = state,
+                scope = scope,
+                bottomSheetState = bottomSheetState
+            )
         },
     ) {
         val pullToRefreshState = rememberPullRefreshState(
@@ -178,7 +186,9 @@ private fun AccountScreenContent(
                 .pullRefresh(pullToRefreshState)
         ) {
             Scaffold(
-                modifier = Modifier.background(Brush.horizontalGradient(gradient)),
+                modifier = Modifier
+                    .navigationBarsPadding()
+                    .background(Brush.horizontalGradient(gradient)),
                 topBar = {
                     AccountTopBar(
                         state = state,
@@ -207,7 +217,7 @@ private fun AccountScreenContent(
                 }
             ) { innerPadding ->
                 AssetsContent(
-                    modifier = Modifier.padding(innerPadding),
+                    innerPadding = innerPadding,
                     state = state,
                     lazyListState = lazyListState,
                     onFungibleTokenClick = {
@@ -238,6 +248,7 @@ private fun AccountScreenContent(
 
 @Composable
 private fun SheetContent(
+    modifier: Modifier = Modifier,
     state: AccountUiState,
     scope: CoroutineScope,
     bottomSheetState: ModalBottomSheetState
@@ -245,7 +256,7 @@ private fun SheetContent(
     when (val selected = state.selectedResource) {
         is SelectedResource.SelectedNonFungibleResource -> {
             NonFungibleTokenBottomSheetDetails(
-                modifier = Modifier
+                modifier = modifier
                     .fillMaxWidth()
                     .verticalScroll(rememberScrollState()),
                 item = selected.item,
@@ -260,7 +271,7 @@ private fun SheetContent(
 
         is SelectedResource.SelectedFungibleResource -> {
             FungibleTokenBottomSheetDetails(
-                modifier = Modifier
+                modifier = modifier
                     .fillMaxWidth()
                     .verticalScroll(rememberScrollState()),
                 fungible = selected.fungible,
@@ -279,13 +290,19 @@ private fun SheetContent(
 @Composable
 fun AssetsContent(
     modifier: Modifier = Modifier,
+    innerPadding: PaddingValues,
     lazyListState: LazyListState,
     state: AccountUiState,
     onFungibleTokenClick: (Resource.FungibleResource) -> Unit,
     onNonFungibleItemClick: (Resource.NonFungibleResource, Resource.NonFungibleResource.Item) -> Unit,
 ) {
+    val layoutDirection = LocalLayoutDirection.current
     Surface(
-        modifier = modifier,
+        modifier = modifier.padding(
+            start = innerPadding.calculateStartPadding(layoutDirection),
+            end = innerPadding.calculateEndPadding(layoutDirection),
+            top = innerPadding.calculateTopPadding()
+        ),
         color = RadixTheme.colors.gray5,
         shape = RadixTheme.shapes.roundedRectTopDefault,
         elevation = 8.dp
@@ -300,13 +317,17 @@ fun AssetsContent(
             nonFungibleCollections.map { true }.toMutableStateList()
         }
 
-        Box(modifier = Modifier.fillMaxSize()) {
+        Box(
+            modifier = Modifier.fillMaxSize()
+        ) {
             LazyColumn(
                 modifier = Modifier.fillMaxSize(),
                 state = lazyListState,
                 contentPadding = PaddingValues(
-                    horizontal = RadixTheme.dimensions.paddingDefault,
-                    vertical = RadixTheme.dimensions.paddingLarge
+                    start = RadixTheme.dimensions.paddingDefault,
+                    end = RadixTheme.dimensions.paddingDefault,
+                    top =  RadixTheme.dimensions.paddingLarge,
+                    bottom = innerPadding.calculateBottomPadding()
                 )
             ) {
                 item {
