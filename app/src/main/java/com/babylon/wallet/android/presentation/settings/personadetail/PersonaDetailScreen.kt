@@ -42,7 +42,6 @@ import com.babylon.wallet.android.domain.model.DAppWithMetadata
 import com.babylon.wallet.android.domain.model.DAppWithMetadataAndAssociatedResources
 import com.babylon.wallet.android.domain.model.Resource
 import com.babylon.wallet.android.presentation.common.FullscreenCircularProgressContent
-import com.babylon.wallet.android.presentation.model.allNonEmptyFields
 import com.babylon.wallet.android.presentation.settings.dappdetail.DAppDetailsSheetContent
 import com.babylon.wallet.android.presentation.ui.composables.DefaultModalSheetLayout
 import com.babylon.wallet.android.presentation.ui.composables.GrayBackgroundWrapper
@@ -208,7 +207,7 @@ private fun PersonaDetailList(
             )
             Divider(modifier = Modifier.padding(dimensions.paddingDefault), color = RadixTheme.colors.gray4)
         }
-        val allFields = persona.personaData.allNonEmptyFields
+        val allFields = persona.personaData.allFields
         if (allFields.isNotEmpty()) {
             val lastItem = allFields.last()
             items(allFields) { field ->

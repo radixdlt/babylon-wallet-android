@@ -54,9 +54,6 @@ fun PersonaData.PersonaDataField.isEmpty(): Boolean {
     }
 }
 
-val PersonaData.allNonEmptyFields: List<IdentifiedEntry<out PersonaData.PersonaDataField>>
-    get() = allFields.filterNot { it.value.isEmpty() }
-
 val PersonaData.PersonaDataField.Name.fullName: String
     get() {
         val fullName = if (variant == PersonaData.PersonaDataField.Name.Variant.Eastern) {

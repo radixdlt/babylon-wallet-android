@@ -52,6 +52,7 @@ import com.babylon.wallet.android.presentation.ui.composables.BottomPrimaryButto
 import com.babylon.wallet.android.presentation.ui.composables.DefaultModalSheetLayout
 import com.babylon.wallet.android.presentation.ui.composables.PersonaRoundedAvatar
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
+import com.babylon.wallet.android.presentation.ui.composables.RequiredPersonaInformationInfo
 import com.babylon.wallet.android.presentation.ui.composables.UnderlineTextButton
 import com.babylon.wallet.android.presentation.ui.composables.persona.AddFieldSheet
 import com.babylon.wallet.android.presentation.ui.composables.persona.PersonaDataFieldInput
@@ -98,7 +99,8 @@ fun PersonaEditScreen(
         onFieldFocusChanged = viewModel::onFieldFocusChanged,
         onPersonaDisplayNameFocusChanged = viewModel::onPersonaDisplayNameFieldFocusChanged,
         dappContextEdit = state.dappContextEdit,
-        wasEdited = state.wasEdited
+        wasEdited = state.wasEdited,
+        missingFields = state.missingFields
     )
 }
 
@@ -123,7 +125,8 @@ private fun PersonaEditContent(
     onFieldFocusChanged: (PersonaDataEntryID, Boolean) -> Unit,
     onPersonaDisplayNameFocusChanged: (Boolean) -> Unit,
     dappContextEdit: Boolean,
-    wasEdited: Boolean
+    wasEdited: Boolean,
+    missingFields: ImmutableList<PersonaData.PersonaDataField.Kind>
 ) {
     val keyboardController = LocalSoftwareKeyboardController.current
     val bottomSheetState =
@@ -205,7 +208,8 @@ private fun PersonaEditContent(
                         addButtonEnabled = fieldsToAdd.isNotEmpty(),
                         onFieldFocusChanged = onFieldFocusChanged,
                         onPersonaDisplayNameFocusChanged = onPersonaDisplayNameFocusChanged,
-                        dappContextEdit = dappContextEdit
+                        dappContextEdit = dappContextEdit,
+                        missingFields = missingFields
                     )
                     BottomPrimaryButton(
                         onClick = onSave,
@@ -264,7 +268,8 @@ private fun PersonaDetailList(
     addButtonEnabled: Boolean,
     onFieldFocusChanged: (PersonaDataEntryID, Boolean) -> Unit,
     onPersonaDisplayNameFocusChanged: (Boolean) -> Unit,
-    dappContextEdit: Boolean
+    dappContextEdit: Boolean,
+    missingFields: ImmutableList<PersonaData.PersonaDataField.Kind>
 ) {
     LazyColumn(
         contentPadding = PaddingValues(vertical = dimensions.paddingDefault),
@@ -316,6 +321,14 @@ private fun PersonaDetailList(
                 style = RadixTheme.typography.body1HighImportance,
                 color = RadixTheme.colors.gray2
             )
+            if (missingFields.isNotEmpty()) {
+                RequiredPersonaInformationInfo(
+                    requiredFields = missingFields,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(dimensions.paddingDefault)
+                )
+            }
             Spacer(modifier = Modifier.height(dimensions.paddingLarge))
         }
         items(editedFields) { field ->
@@ -388,7 +401,8 @@ fun DappDetailContentPreview() {
             onFieldFocusChanged = { _, _ -> },
             onPersonaDisplayNameFocusChanged = {},
             dappContextEdit = false,
-            wasEdited = false
+            wasEdited = false,
+            missingFields = persistentListOf()
         )
     }
 }
