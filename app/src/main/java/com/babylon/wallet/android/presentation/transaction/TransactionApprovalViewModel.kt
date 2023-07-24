@@ -163,7 +163,7 @@ class TransactionApprovalViewModel @Inject constructor(
         }
     }
 
-    fun onPayerConfirmed() {
+    fun onPayerConfirmed(deviceBiometricAuthenticationProvider: suspend () -> Boolean) {
         val feePayerSheet = state.value.sheetState as? State.Sheet.FeePayerChooser ?: return
         _state.update { it.copy(sheetState = State.Sheet.None) }
 
@@ -173,11 +173,8 @@ class TransactionApprovalViewModel @Inject constructor(
                 analysis.onFeePayerConfirmed(selectedCandidate, feePayerSheet.pendingManifest)
             }
         } else {
-            submit.onFeePayerConfirmed(selectedCandidate, feePayerSheet.pendingManifest)
+            submit.onFeePayerConfirmed(selectedCandidate, feePayerSheet.pendingManifest, deviceBiometricAuthenticationProvider)
         }
-    }
-    fun onPayerConfirmed(deviceBiometricAuthenticationProvider: suspend () -> Boolean) {
-        submit.onFeePayerConfirmed(deviceBiometricAuthenticationProvider)
     }
 
     fun onDAppClick(dApp: DAppWithMetadataAndAssociatedResources) {

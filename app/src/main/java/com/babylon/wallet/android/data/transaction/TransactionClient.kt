@@ -53,33 +53,16 @@ class TransactionClient @Inject constructor(
 
     private val logger = Timber.tag("TransactionClient")
 
-    suspend fun signAndSubmitTransaction(
-        request: TransactionApprovalRequest,
-        deviceBiometricAuthenticationProvider: suspend () -> Boolean
-    ): Result<String> {
-        val networkId = getCurrentGatewayUseCase().network.networkId().value
-        return signAndSubmitTransaction(
-            manifest = request.manifest,
-            ephemeralNotaryPrivateKey = request.ephemeralNotaryPrivateKey,
-            networkId = networkId,
-            feePayerAddress = request.feePayerAddress,
-            deviceBiometricAuthenticationProvider = deviceBiometricAuthenticationProvider
-        )
-    }
-
     fun cancelSigning() {
         collectSignersSignaturesUseCase.cancel()
     }
 
     private suspend fun prepareSignedTransactionIntent(
-        manifest: TransactionManifest,
-        ephemeralNotaryPrivateKey: PrivateKey,
-        networkId: Int,
-        feePayerAddress: String?,
-        deviceBiometricAuthenticationProvider: suspend () -> Boolean,
+        request: TransactionApprovalRequest,
+        deviceBiometricAuthenticationProvider: suspend () -> Boolean
     ): Result<NotarizedTransactionResult> {
-        val manifestWithTransactionFee = if (feePayerAddress == null) {
-            manifest
+        val manifestWithTransactionFee = if (request.feePayerAddress == null) {
+            request.manifest
         } else {
             request.manifest.addLockFeeInstructionToManifest(
                 addressToLockFee = request.feePayerAddress,
@@ -176,18 +159,12 @@ class TransactionClient @Inject constructor(
         }
     }
 
-    private suspend fun signAndSubmitTransaction(
-        manifest: TransactionManifest,
-        ephemeralNotaryPrivateKey: PrivateKey,
-        networkId: Int,
-        feePayerAddress: String?,
-        deviceBiometricAuthenticationProvider: suspend () -> Boolean,
+    suspend fun signAndSubmitTransaction(
+        request: TransactionApprovalRequest,
+        deviceBiometricAuthenticationProvider: suspend () -> Boolean
     ): Result<String> {
         return prepareSignedTransactionIntent(
-            manifest = manifest,
-            ephemeralNotaryPrivateKey = ephemeralNotaryPrivateKey,
-            networkId = networkId,
-            feePayerAddress = feePayerAddress,
+            request = request,
             deviceBiometricAuthenticationProvider = deviceBiometricAuthenticationProvider
         ).mapCatching { notarizedTransactionResult ->
             submitTransactionUseCase(
@@ -195,10 +172,6 @@ class TransactionClient @Inject constructor(
                 notarizedTransactionResult.notarizedTransactionIntentHex
             ).getOrThrow()
         }
-    }
-
-    fun cancelSigning() {
-        collectSignersSignaturesUseCase.cancel()
     }
 
     @Suppress("UnusedPrivateMember")

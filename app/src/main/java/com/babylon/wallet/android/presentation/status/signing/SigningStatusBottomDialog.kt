@@ -69,6 +69,7 @@ fun SigningStatusBottomDialogContent(
             SignatureSuccessfulContent(modifier = modifier)
         }
 
+        is InteractionState.Ledger.DerivingPublicKey,
         is InteractionState.Device.Pending -> {
             SignatureRequestContent(interactionState, modifier)
         }
