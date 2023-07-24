@@ -1,8 +1,10 @@
 package rdx.works.core
 
-inline fun <T, S> Result<T>.then(other: (T) -> Result<S>): Result<S> = fold(
-    onSuccess = {
-        other(it)
+inline fun <FirstResult, SecondResult> Result<FirstResult>.then(
+    other: (FirstResult) -> Result<SecondResult>
+): Result<SecondResult> = fold(
+    onSuccess = { receivedValue ->
+        other(receivedValue)
     },
     onFailure = {
         Result.failure(it)

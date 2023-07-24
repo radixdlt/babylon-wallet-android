@@ -23,19 +23,23 @@ import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.domain.GetProfileUseCase
 import timber.log.Timber
 
+@Suppress("LongParameterList")
 class TransactionAnalysisDelegate(
     private val state: MutableStateFlow<State>,
     private val getProfileUseCase: GetProfileUseCase,
     private val getAccountsWithResourcesUseCase: GetAccountsWithResourcesUseCase,
     private val getTransactionBadgesUseCase: GetTransactionBadgesUseCase,
     private val getDAppWithMetadataAndAssociatedResourcesUseCase: GetDAppWithMetadataAndAssociatedResourcesUseCase,
-    private val transactionClient: TransactionClient
+    private val transactionClient: TransactionClient,
+    private val logger: Timber.Tree
 ) {
 
     suspend fun analyse() {
-        val manifest = state.value.request.transactionManifestData.toTransactionManifest()
-
-        startAnalysis(manifest)
+        state.value.request.transactionManifestData.toTransactionManifest().onSuccess {
+            startAnalysis(it)
+        }.onFailure { error ->
+            reportFailure(error)
+        }
     }
 
     suspend fun onFeePayerConfirmed(account: Network.Account, pendingManifest: TransactionManifest) {
@@ -50,8 +54,7 @@ class TransactionAnalysisDelegate(
     private suspend fun startAnalysis(manifest: TransactionManifest) = getTransactionPreview(manifest)
         .then { preview ->
             analyzeExecution(manifest, preview)
-        }
-        .resolve()
+        }.resolve()
 
     private suspend fun getTransactionPreview(manifest: TransactionManifest) = transactionClient.getTransactionPreview(
         manifest = manifest,
@@ -101,7 +104,12 @@ class TransactionAnalysisDelegate(
             )
         }
     }.onFailure { error ->
-        Timber.w(error)
+        reportFailure(error)
+    }
+
+    private fun reportFailure(error: Throwable) {
+        logger.w(error)
+
         state.update {
             it.copy(
                 isLoading = false,

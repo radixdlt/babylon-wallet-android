@@ -14,14 +14,16 @@ data class TransactionManifestData(
     val message: String? = null
 ) {
 
-    fun toTransactionManifest() = with(blobs.map { it.toUByteList() }) {
-        TransactionManifest(
-            instructions = Instructions.fromString(
-                string = instructions,
-                networkId = networkId.toUByte()
-            ),
-            blobs = this
-        )
+    fun toTransactionManifest() = runCatching {
+        with(blobs.map { it.toUByteList() }) {
+            TransactionManifest(
+                instructions = Instructions.fromString(
+                    string = instructions,
+                    networkId = networkId.toUByte()
+                ),
+                blobs = this
+            )
+        }
     }
 
     companion object {

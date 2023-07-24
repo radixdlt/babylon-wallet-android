@@ -43,6 +43,7 @@ import rdx.works.core.ret.crypto.PrivateKey
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.gateway.GetCurrentGatewayUseCase
+import timber.log.Timber
 import java.math.BigDecimal
 import javax.inject.Inject
 
@@ -65,6 +66,7 @@ class TransactionApprovalViewModel @Inject constructor(
     OneOffEventHandler<Event> by OneOffEventHandlerImpl() {
 
     private val args = TransactionApprovalArgs(savedStateHandle)
+    private val logger = Timber.tag("TransactionApproval")
 
     override fun initialState(): State = State(
         request = incomingRequestRepository.getTransactionWriteRequest(args.requestId),
@@ -79,7 +81,8 @@ class TransactionApprovalViewModel @Inject constructor(
         getAccountsWithResourcesUseCase = getAccountsWithResourcesUseCase,
         getTransactionBadgesUseCase = getTransactionBadgesUseCase,
         getDAppWithMetadataAndAssociatedResourcesUseCase = getDAppWithMetadataAndAssociatedResourcesUseCase,
-        transactionClient = transactionClient
+        transactionClient = transactionClient,
+        logger = logger
     )
 
     private val guarantees: TransactionGuaranteesDelegate = TransactionGuaranteesDelegate(
@@ -94,6 +97,7 @@ class TransactionApprovalViewModel @Inject constructor(
         getCurrentGatewayUseCase = getCurrentGatewayUseCase,
         appScope = appScope,
         appEventBus = appEventBus,
+        logger = logger,
         onSendScreenEvent = {
             viewModelScope.launch { sendEvent(it) }
         }
@@ -197,7 +201,7 @@ class TransactionApprovalViewModel @Inject constructor(
         val isRawManifestToggleVisible: Boolean
             get() = previewType is PreviewType.Transaction
 
-        val rawManifest: String = request.transactionManifestData.toTransactionManifest().toPrettyString()
+        val rawManifest: String = request.transactionManifestData.toTransactionManifest().getOrNull()?.toPrettyString().orEmpty()
 
         val isSheetVisible: Boolean
             get() = sheetState != Sheet.None
