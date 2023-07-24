@@ -43,10 +43,10 @@ class ROLAClient @Inject constructor(
         val ownerKeysHashes = ownerKeys?.keyHashes.orEmpty()
         val authSigningKeyHash = authSigningFactorInstance.publicKey.compressedData.compressedPublicKeyHash()
         val transactionSigningKeyHash = transactionSigningKey.compressedData.compressedPublicKeyHash()
-        if (!ownerKeysHashes.any { it.hex == authSigningKeyHash }) {
+        if (ownerKeysHashes.none { it.hex == authSigningKeyHash }) {
             publicKeyHashes.add(authSigningFactorInstance.publicKey)
         }
-        if (!ownerKeysHashes.any { it.hex == transactionSigningKeyHash }) {
+        if (ownerKeysHashes.none { it.hex == transactionSigningKeyHash }) {
             publicKeyHashes.add(transactionSigningKey)
         }
         return ManifestBuilder()
