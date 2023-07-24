@@ -208,7 +208,7 @@
   <string name="createAccount_derivePublicKeys_title">Creating Account</string>
   <string name="createAccount_derivePublicKeys_subtitle">Deriving public keys</string>
   <string name="createEntity_completion_destinationChooseAccounts">Choose Accounts</string>
-  <string name="createEntity_completion_destinationChoosePersonas">Choose Personas</string>
+  <string name="createEntity_completion_destinationChoosePersonas">Persona Selection</string>
   <string name="createEntity_completion_destinationGateways">Gateways</string>
   <string name="createEntity_completion_destinationHome">Account List</string>
   <string name="createEntity_completion_destinationPersonaList">Persona List</string>
