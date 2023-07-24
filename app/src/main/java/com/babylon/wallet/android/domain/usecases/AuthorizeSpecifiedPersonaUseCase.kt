@@ -170,12 +170,11 @@ class AuthorizeSpecifiedPersonaUseCase @Inject constructor(
         authorizedDapp: Network.AuthorizedDapp
     ): Result<String> {
         return buildAuthorizedDappResponseUseCase(
-            request,
-            persona,
-            emptyList(),
-            selectedAccounts.map { it.data },
-            selectedPersonaData,
-            null
+            request = request,
+            selectedPersona = persona,
+            oneTimeAccounts = emptyList(),
+            ongoingAccounts = selectedAccounts.map { it.data },
+            ongoingSharedPersonaData = selectedPersonaData
         ).mapCatching { response ->
             return when (
                 dAppMessenger.sendWalletInteractionSuccessResponse(

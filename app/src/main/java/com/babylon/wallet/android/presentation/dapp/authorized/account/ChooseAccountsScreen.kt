@@ -1,6 +1,7 @@
 package com.babylon.wallet.android.presentation.dapp.authorized.account
 
 import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.material.AlertDialog
 import androidx.compose.material.TextButton
 import androidx.compose.material3.Text
@@ -17,11 +18,12 @@ import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.model.DAppWithMetadata
 import com.babylon.wallet.android.domain.model.metadata.NameMetadataItem
-import com.babylon.wallet.android.presentation.dapp.SigningStateDialog
 import com.babylon.wallet.android.presentation.dapp.authorized.login.DAppAuthorizedLoginViewModel
 import com.babylon.wallet.android.presentation.dapp.authorized.login.Event
+import com.babylon.wallet.android.presentation.status.signing.SigningStatusBottomDialog
 import com.babylon.wallet.android.presentation.ui.composables.ChooseAccountContent
 import com.babylon.wallet.android.utils.biometricAuthenticate
+import com.babylon.wallet.android.utils.biometricAuthenticateSuspend
 import kotlinx.collections.immutable.persistentListOf
 
 @Composable
@@ -34,7 +36,8 @@ fun ChooseAccountsScreen(
     onLoginFlowComplete: () -> Unit,
     onBackClick: () -> Boolean,
     onPersonaOngoingData: (Event.PersonaDataOngoing) -> Unit,
-    onPersonaDataOnetime: (Event.PersonaDataOnetime) -> Unit
+    onPersonaDataOnetime: (Event.PersonaDataOnetime) -> Unit,
+    modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
     LaunchedEffect(Unit) {
@@ -45,10 +48,16 @@ fun ChooseAccountsScreen(
                 is Event.PersonaDataOngoing -> onPersonaOngoingData(event)
                 is Event.PersonaDataOnetime -> onPersonaDataOnetime(event)
                 is Event.RejectLogin -> onLoginFlowComplete()
-                Event.RequestCompletionBiometricPrompt -> {
-                    context.biometricAuthenticate { authenticated ->
-                        if (authenticated) {
-                            sharedViewModel.sendRequestResponse()
+                is Event.RequestCompletionBiometricPrompt -> {
+                    if (event.requestDuringSigning) {
+                        sharedViewModel.sendRequestResponse(deviceBiometricAuthenticationProvider = {
+                            context.biometricAuthenticateSuspend()
+                        })
+                    } else {
+                        context.biometricAuthenticate { authenticated ->
+                            if (authenticated) {
+                                sharedViewModel.sendRequestResponse()
+                            }
                         }
                     }
                 }
@@ -87,7 +96,8 @@ fun ChooseAccountsScreen(
         dappWithMetadata = sharedState.dappWithMetadata,
         isOneTime = state.oneTimeRequest,
         isSingleChoice = state.isSingleChoice,
-        showBackButton = state.showBackButton
+        showBackButton = state.showBackButton,
+        modifier = modifier
     )
 
     state.error?.let { error ->
@@ -97,7 +107,13 @@ fun ChooseAccountsScreen(
             dismissErrorDialog = dismissErrorDialog
         )
     }
-    SigningStateDialog(sharedState.factorSourceInteractionState)
+    sharedState.interactionState?.let {
+        SigningStatusBottomDialog(
+            modifier = Modifier.fillMaxHeight(0.8f),
+            onDismissDialogClick = {}, // TODO back
+            interactionState = it
+        )
+    }
 }
 
 @Composable

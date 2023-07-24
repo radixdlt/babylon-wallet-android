@@ -95,11 +95,11 @@ fun AccountPreferenceScreen(
             hasAuthKey = state.hasAuthKey,
             onCreateAndUploadAuthKey = viewModel::onCreateAndUploadAuthKey
         )
-        state.factorSourceInteractionState?.let {
+        state.interactionState?.let {
             SigningStatusBottomDialog(
                 modifier = Modifier.fillMaxHeight(0.8f),
                 onDismissDialogClick = viewModel::onDismissSigning,
-                factorSourceInteractionState = it
+                interactionState = it
             )
         }
     }

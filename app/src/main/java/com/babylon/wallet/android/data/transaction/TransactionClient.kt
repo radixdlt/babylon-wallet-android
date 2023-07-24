@@ -49,7 +49,7 @@ class TransactionClient @Inject constructor(
     private val getAccountsWithResourcesUseCase: GetAccountsWithResourcesUseCase,
     private val submitTransactionUseCase: SubmitTransactionUseCase
 ) {
-    val signingState = collectSignersSignaturesUseCase.factorSourceInteractionState
+    val signingState = collectSignersSignaturesUseCase.interactionState
 
     private val logger = Timber.tag("TransactionClient")
 

@@ -27,8 +27,8 @@ class ROLAClient @Inject constructor(
 ) {
 
     val signingState = merge(
-        collectSignersSignaturesUseCase.factorSourceInteractionState,
-        generateAuthSigningFactorInstanceUseCase.factorSourceInteractionState
+        collectSignersSignaturesUseCase.interactionState,
+        generateAuthSigningFactorInstanceUseCase.interactionState
     )
 
     suspend fun generateAuthSigningFactorInstance(entity: Entity): Result<FactorInstance> {
@@ -70,7 +70,6 @@ class ROLAClient @Inject constructor(
             }
 
             val bytes = key.compressedData.compressedPublicKeyHashBytes()
-
             publicKeyType to bytes
         }
     )

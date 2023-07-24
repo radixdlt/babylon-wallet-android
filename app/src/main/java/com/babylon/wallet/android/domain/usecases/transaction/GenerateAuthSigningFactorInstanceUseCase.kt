@@ -5,7 +5,7 @@ import com.babylon.wallet.android.data.dapp.model.Curve
 import com.babylon.wallet.android.data.dapp.model.DerivePublicKeyRequest
 import com.babylon.wallet.android.data.dapp.model.LedgerDeviceModel.Companion.getLedgerDeviceModel
 import com.babylon.wallet.android.data.transaction.DappRequestFailure
-import com.babylon.wallet.android.data.transaction.FactorSourceInteractionState
+import com.babylon.wallet.android.data.transaction.InteractionState
 import com.radixdlt.extensions.removeLeadingZero
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -37,8 +37,8 @@ class GenerateAuthSigningFactorInstanceUseCase @Inject constructor(
     private val ledgerMessenger: LedgerMessenger
 ) {
 
-    private val _factorSourceInteractionState = MutableStateFlow<FactorSourceInteractionState?>(null)
-    val factorSourceInteractionState: Flow<FactorSourceInteractionState?> = _factorSourceInteractionState.asSharedFlow()
+    private val _interactionState = MutableStateFlow<InteractionState?>(null)
+    val interactionState: Flow<InteractionState?> = _interactionState.asSharedFlow()
 
     suspend operator fun invoke(entity: Entity): Result<FactorInstance> {
         val factorSourceId: FactorSourceID.FromHash
@@ -83,11 +83,8 @@ class GenerateAuthSigningFactorInstanceUseCase @Inject constructor(
         authSigningDerivationPath: DerivationPath
     ): Result<FactorInstance> {
         val deviceModel = requireNotNull(ledgerHardwareWalletFactorSource.getLedgerDeviceModel())
-        _factorSourceInteractionState.update {
-            FactorSourceInteractionState.Ledger.Pending(
-                ledgerHardwareWalletFactorSource,
-                FactorSourceInteractionState.Ledger.InteractionType.DeriveKey
-            )
+        _interactionState.update {
+            InteractionState.Ledger.DerivingPublicKey(ledgerHardwareWalletFactorSource)
         }
         val deriveResult = ledgerMessenger.sendDerivePublicKeyRequest(
             interactionId = UUIDGenerator.uuid().toString(),
@@ -106,7 +103,7 @@ class GenerateAuthSigningFactorInstanceUseCase @Inject constructor(
             derivePublicKeyResponse.publicKeysHex.first().publicKeyHex
         }
         return if (deriveResult.isSuccess) {
-            _factorSourceInteractionState.update { null }
+            _interactionState.update { null }
             Result.success(
                 FactorInstance(
                     derivationPath = authSigningDerivationPath,
@@ -115,7 +112,7 @@ class GenerateAuthSigningFactorInstanceUseCase @Inject constructor(
                 )
             )
         } else {
-            _factorSourceInteractionState.update { null }
+            _interactionState.update { null }
             Result.failure(DappRequestFailure.LedgerCommunicationFailure.FailedToDerivePublicKeys)
         }
     }

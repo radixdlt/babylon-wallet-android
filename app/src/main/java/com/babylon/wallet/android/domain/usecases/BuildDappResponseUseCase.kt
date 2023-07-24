@@ -12,9 +12,11 @@ import com.babylon.wallet.android.data.dapp.model.WalletInteractionResponse
 import com.babylon.wallet.android.data.dapp.model.WalletInteractionSuccessResponse
 import com.babylon.wallet.android.data.dapp.model.WalletUnauthorizedRequestResponseItems
 import com.babylon.wallet.android.data.dapp.model.toProof
+import com.babylon.wallet.android.data.transaction.DappRequestException
 import com.babylon.wallet.android.data.transaction.DappRequestFailure
 import com.babylon.wallet.android.data.transaction.ROLAClient
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
+import com.babylon.wallet.android.domain.model.MessageFromDataChannel.IncomingRequest.AuthorizedRequest
 import com.babylon.wallet.android.domain.usecases.transaction.SignRequest
 import com.babylon.wallet.android.presentation.model.toPersonaDataRequestResponseItem
 import rdx.works.profile.data.model.pernetwork.Network
@@ -28,20 +30,27 @@ open class BuildDappResponseUseCase(private val rolaClient: ROLAClient) {
     protected suspend fun buildAccountsResponseItem(
         request: MessageFromDataChannel.IncomingRequest,
         accounts: List<Network.Account>,
-        challengeHex: String?
+        challengeHex: String?,
+        deviceBiometricAuthenticationProvider: suspend () -> Boolean,
     ): Result<AccountsRequestResponseItem?> {
         if (accounts.isEmpty()) {
             return Result.success(null)
         }
         var accountProofs: List<AccountProof>? = null
         if (challengeHex != null) {
-            accountProofs = accounts.map { account ->
+            accountProofs = accounts.mapIndexed { index, account ->
+                // TODO this is hacky workaround to only ask for biometrics once - this will go away with MFA refactor
+                val biometricAuthProvider: suspend () -> Boolean = if (index == 0) {
+                    deviceBiometricAuthenticationProvider
+                } else {
+                    { true }
+                }
                 val signRequest = SignRequest.SignAuthChallengeRequest(
                     challengeHex,
                     request.metadata.origin,
                     request.metadata.dAppDefinitionAddress
                 )
-                val signatureWithPublicKey = rolaClient.signAuthChallenge(account, signRequest, { true }) //TODO signing
+                val signatureWithPublicKey = rolaClient.signAuthChallenge(account, signRequest, biometricAuthProvider)
                 if (signatureWithPublicKey.isFailure) return Result.failure(DappRequestFailure.FailedToSignAuthChallenge())
                 AccountProof(
                     account.address,
@@ -74,22 +83,40 @@ class BuildAuthorizedDappResponseUseCase @Inject constructor(
 
     @Suppress("LongParameterList", "ReturnCount")
     suspend operator fun invoke(
-        request: MessageFromDataChannel.IncomingRequest.AuthorizedRequest,
+        request: AuthorizedRequest,
         selectedPersona: Network.Persona,
         oneTimeAccounts: List<Network.Account>,
         ongoingAccounts: List<Network.Account>,
         ongoingSharedPersonaData: PersonaData? = null,
-        onetimeSharedPersonaData: PersonaData? = null
+        onetimeSharedPersonaData: PersonaData? = null,
+        deviceBiometricAuthenticationProvider: suspend () -> Boolean = { true }
     ): Result<WalletInteractionResponse> {
-        val authResponse: Result<AuthRequestResponseItem> = buildAuthResponseItem(request, selectedPersona)
+        val loginWithChallenge = request.authRequest is AuthorizedRequest.AuthRequest.LoginRequest.WithChallenge
+        val authResponse: Result<AuthRequestResponseItem> =
+            buildAuthResponseItem(request, selectedPersona, deviceBiometricAuthenticationProvider)
         if (authResponse.isSuccess) {
+            val authProvider = if (loginWithChallenge) {
+                { true } // TODO this will go away with MFA, don't ask for biometrics twice
+            } else {
+                deviceBiometricAuthenticationProvider
+            }
             val oneTimeAccountsResponseItem =
-                buildAccountsResponseItem(request, oneTimeAccounts, request.oneTimeAccountsRequestItem?.challenge)
+                buildAccountsResponseItem(
+                    request,
+                    oneTimeAccounts,
+                    request.oneTimeAccountsRequestItem?.challenge,
+                    authProvider
+                )
             if (oneTimeAccountsResponseItem.isFailure) {
                 return Result.failure(authResponse.exceptionOrNull() ?: DappRequestFailure.FailedToSignAuthChallenge())
             }
             val ongoingAccountsResponseItem =
-                buildAccountsResponseItem(request, ongoingAccounts, request.ongoingAccountsRequestItem?.challenge)
+                buildAccountsResponseItem(
+                    request,
+                    ongoingAccounts,
+                    request.ongoingAccountsRequestItem?.challenge,
+                    authProvider
+                )
             if (ongoingAccountsResponseItem.isFailure) {
                 return Result.failure(authResponse.exceptionOrNull() ?: DappRequestFailure.FailedToSignAuthChallenge())
             }
@@ -111,11 +138,12 @@ class BuildAuthorizedDappResponseUseCase @Inject constructor(
     }
 
     private suspend fun buildAuthResponseItem(
-        request: MessageFromDataChannel.IncomingRequest.AuthorizedRequest,
-        selectedPersona: Network.Persona
+        request: AuthorizedRequest,
+        selectedPersona: Network.Persona,
+        deviceBiometricAuthenticationProvider: suspend () -> Boolean
     ): Result<AuthRequestResponseItem> {
         val authResponse: Result<AuthRequestResponseItem> = when (val authRequest = request.authRequest) {
-            is MessageFromDataChannel.IncomingRequest.AuthorizedRequest.AuthRequest.LoginRequest.WithChallenge -> {
+            is AuthorizedRequest.AuthRequest.LoginRequest.WithChallenge -> {
                 var response: Result<AuthRequestResponseItem> = Result.failure(DappRequestFailure.FailedToSignAuthChallenge())
                 val signRequest = SignRequest.SignAuthChallengeRequest(
                     challengeHex = authRequest.challenge,
@@ -125,7 +153,7 @@ class BuildAuthorizedDappResponseUseCase @Inject constructor(
                 rolaClient.signAuthChallenge(
                     selectedPersona,
                     signRequest,
-                    { true } //TODO signing
+                    deviceBiometricAuthenticationProvider
                 ).onSuccess { signature ->
                     response = Result.success(
                         AuthLoginWithChallengeRequestResponseItem(
@@ -137,11 +165,13 @@ class BuildAuthorizedDappResponseUseCase @Inject constructor(
                             signature.toProof(signRequest.dataToSign)
                         )
                     )
+                }.onFailure {
+                    response = Result.failure(DappRequestException(DappRequestFailure.FailedToSignAuthChallenge(), e = it))
                 }
                 response
             }
 
-            MessageFromDataChannel.IncomingRequest.AuthorizedRequest.AuthRequest.LoginRequest.WithoutChallenge -> {
+            AuthorizedRequest.AuthRequest.LoginRequest.WithoutChallenge -> {
                 Result.success(
                     AuthLoginWithoutChallengeRequestResponseItem(
                         Persona(
@@ -152,7 +182,7 @@ class BuildAuthorizedDappResponseUseCase @Inject constructor(
                 )
             }
 
-            is MessageFromDataChannel.IncomingRequest.AuthorizedRequest.AuthRequest.UsePersonaRequest -> {
+            is AuthorizedRequest.AuthRequest.UsePersonaRequest -> {
                 Result.success(
                     AuthUsePersonaRequestResponseItem(
                         Persona(
@@ -174,11 +204,17 @@ class BuildUnauthorizedDappResponseUseCase @Inject constructor(
     @Suppress("LongParameterList", "ReturnCount")
     suspend operator fun invoke(
         request: MessageFromDataChannel.IncomingRequest.UnauthorizedRequest,
-        oneTimeAccounts: List<Network.Account>,
-        onetimeSharedPersonaData: PersonaData? = null
+        oneTimeAccounts: List<Network.Account> = emptyList(),
+        onetimeSharedPersonaData: PersonaData? = null,
+        deviceBiometricAuthenticationProvider: suspend () -> Boolean = { true },
     ): Result<WalletInteractionResponse> {
         val oneTimeAccountsResponseItem =
-            buildAccountsResponseItem(request, oneTimeAccounts, request.oneTimeAccountsRequestItem?.challenge)
+            buildAccountsResponseItem(
+                request = request,
+                accounts = oneTimeAccounts,
+                challengeHex = request.oneTimeAccountsRequestItem?.challenge,
+                deviceBiometricAuthenticationProvider = deviceBiometricAuthenticationProvider
+            )
         if (oneTimeAccountsResponseItem.isFailure) {
             return Result.failure(DappRequestFailure.FailedToSignAuthChallenge())
         }

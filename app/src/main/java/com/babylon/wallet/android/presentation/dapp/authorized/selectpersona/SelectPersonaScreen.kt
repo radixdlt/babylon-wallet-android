@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -45,15 +46,16 @@ import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.model.DAppWithMetadata
 import com.babylon.wallet.android.domain.model.metadata.NameMetadataItem
 import com.babylon.wallet.android.presentation.common.FullscreenCircularProgressContent
-import com.babylon.wallet.android.presentation.dapp.SigningStateDialog
 import com.babylon.wallet.android.presentation.dapp.authorized.login.DAppAuthorizedLoginViewModel
 import com.babylon.wallet.android.presentation.dapp.authorized.login.Event
+import com.babylon.wallet.android.presentation.status.signing.SigningStatusBottomDialog
 import com.babylon.wallet.android.presentation.ui.composables.BottomPrimaryButton
 import com.babylon.wallet.android.presentation.ui.composables.ImageSize
 import com.babylon.wallet.android.presentation.ui.composables.PersonaCard
 import com.babylon.wallet.android.presentation.ui.composables.rememberImageUrl
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import com.babylon.wallet.android.utils.biometricAuthenticate
+import com.babylon.wallet.android.utils.biometricAuthenticateSuspend
 import com.babylon.wallet.android.utils.formattedSpans
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
@@ -69,7 +71,8 @@ fun SelectPersonaScreen(
     createNewPersona: (Boolean) -> Unit,
     onDisplayPermission: (Event.DisplayPermission) -> Unit,
     onPersonaDataOngoing: (Event.PersonaDataOngoing) -> Unit,
-    onPersonaDataOnetime: (Event.PersonaDataOnetime) -> Unit
+    onPersonaDataOnetime: (Event.PersonaDataOnetime) -> Unit,
+    modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
     LaunchedEffect(Unit) {
@@ -81,10 +84,16 @@ fun SelectPersonaScreen(
                 is Event.DisplayPermission -> onDisplayPermission(event)
                 is Event.PersonaDataOngoing -> onPersonaDataOngoing(event)
                 is Event.PersonaDataOnetime -> onPersonaDataOnetime(event)
-                Event.RequestCompletionBiometricPrompt -> {
-                    context.biometricAuthenticate { authenticated ->
-                        if (authenticated) {
-                            sharedViewModel.sendRequestResponse()
+                is Event.RequestCompletionBiometricPrompt -> {
+                    if (event.requestDuringSigning) {
+                        sharedViewModel.sendRequestResponse(deviceBiometricAuthenticationProvider = {
+                            context.biometricAuthenticateSuspend()
+                        })
+                    } else {
+                        context.biometricAuthenticate { authenticated ->
+                            if (authenticated) {
+                                sharedViewModel.sendRequestResponse()
+                            }
                         }
                     }
                 }
@@ -114,9 +123,16 @@ fun SelectPersonaScreen(
         continueButtonEnabled = state.continueButtonEnabled,
         personas = state.personaListToDisplay,
         createNewPersona = viewModel::onCreatePersona,
-        isLoading = state.isLoading
+        isLoading = state.isLoading,
+        modifier = modifier
     )
-    SigningStateDialog(sharedState.factorSourceInteractionState)
+    sharedState.interactionState?.let {
+        SigningStatusBottomDialog(
+            modifier = Modifier.fillMaxHeight(0.8f),
+            onDismissDialogClick = {}, // TODO back
+            interactionState = it
+        )
+    }
 }
 
 @Composable

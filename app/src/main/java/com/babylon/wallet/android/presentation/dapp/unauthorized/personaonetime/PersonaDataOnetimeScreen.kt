@@ -55,6 +55,7 @@ import com.babylon.wallet.android.presentation.ui.composables.rememberImageUrl
 import com.babylon.wallet.android.presentation.ui.modifier.applyIf
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import com.babylon.wallet.android.utils.biometricAuthenticate
+import com.babylon.wallet.android.utils.biometricAuthenticateSuspend
 import com.babylon.wallet.android.utils.formattedSpans
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
@@ -78,10 +79,16 @@ fun PersonaDataOnetimeScreen(
             when (event) {
                 is Event.LoginFlowCompleted -> onLoginFlowComplete()
                 Event.RejectLogin -> onLoginFlowCancelled()
-                Event.RequestCompletionBiometricPrompt -> {
-                    context.biometricAuthenticate { authenticated ->
-                        if (authenticated) {
-                            sharedViewModel.sendRequestResponse()
+                is Event.RequestCompletionBiometricPrompt -> {
+                    if (event.requestDuringSigning) {
+                        sharedViewModel.sendRequestResponse(deviceBiometricAuthenticationProvider = {
+                            context.biometricAuthenticateSuspend()
+                        })
+                    } else {
+                        context.biometricAuthenticate { authenticated ->
+                            if (authenticated) {
+                                sharedViewModel.sendRequestResponse()
+                            }
                         }
                     }
                 }

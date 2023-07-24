@@ -110,7 +110,7 @@ class TransactionSubmitDelegate(
             }
             onSendScreenEvent(Event.Dismiss)
             incomingRequestRepository.requestHandled(request.id)
-        } else if (state.value.factorSourceInteractionState != null) {
+        } else if (state.value.interactionState != null) {
             approvalJob?.cancel()
             approvalJob = null
             transactionClient.cancelSigning()

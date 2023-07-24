@@ -7,7 +7,7 @@ import com.babylon.wallet.android.data.dapp.DappMessenger
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.data.manifest.toPrettyString
 import com.babylon.wallet.android.data.transaction.DappRequestFailure
-import com.babylon.wallet.android.data.transaction.FactorSourceInteractionState
+import com.babylon.wallet.android.data.transaction.InteractionState
 import com.babylon.wallet.android.data.transaction.TransactionClient
 import com.babylon.wallet.android.data.transaction.TransactionConfig
 import com.babylon.wallet.android.di.coroutines.ApplicationScope
@@ -107,7 +107,7 @@ class TransactionApprovalViewModel @Inject constructor(
         viewModelScope.launch {
             transactionClient.signingState.collect { signingState ->
                 _state.update { state ->
-                    state.copy(factorSourceInteractionState = signingState)
+                    state.copy(interactionState = signingState)
                 }
             }
         }
@@ -198,7 +198,7 @@ class TransactionApprovalViewModel @Inject constructor(
         val error: UiMessage? = null,
         val ephemeralNotaryPrivateKey: PrivateKey = PrivateKey.EddsaEd25519.newRandom(),
         val networkFee: BigDecimal = TransactionConfig.NETWORK_FEE.toBigDecimal(),
-        val factorSourceInteractionState: FactorSourceInteractionState? = null
+        val interactionState: InteractionState? = null
     ) : UiState {
 
         val isRawManifestToggleVisible: Boolean

@@ -102,11 +102,11 @@ fun TransactionApprovalScreen(
         }
     )
 
-    state.factorSourceInteractionState?.let {
+    state.interactionState?.let {
         SigningStatusBottomDialog(
             modifier = Modifier.fillMaxHeight(0.8f),
             onDismissDialogClick = viewModel::onBackClick,
-            factorSourceInteractionState = it
+            interactionState = it
         )
     }
 

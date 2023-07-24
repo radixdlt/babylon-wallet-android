@@ -4,7 +4,7 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.data.manifest.prepareInternalTransactionRequest
-import com.babylon.wallet.android.data.transaction.FactorSourceInteractionState
+import com.babylon.wallet.android.data.transaction.InteractionState
 import com.babylon.wallet.android.data.transaction.ROLAClient
 import com.babylon.wallet.android.di.coroutines.ApplicationScope
 import com.babylon.wallet.android.domain.usecases.GetFreeXrdUseCase
@@ -58,7 +58,7 @@ class AccountPreferenceViewModel @Inject constructor(
         viewModelScope.launch {
             rolaClient.signingState.collect { signingState ->
                 _state.update { state ->
-                    state.copy(factorSourceInteractionState = signingState)
+                    state.copy(interactionState = signingState)
                 }
             }
         }
@@ -169,5 +169,5 @@ data class AccountPreferenceUiState(
     val gotFreeXrd: Boolean = false,
     val error: UiMessage? = null,
     val hasAuthKey: Boolean = false,
-    val factorSourceInteractionState: FactorSourceInteractionState? = null
+    val interactionState: InteractionState? = null
 ) : UiState
