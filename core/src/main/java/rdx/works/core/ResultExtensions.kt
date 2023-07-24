@@ -2,9 +2,9 @@ package rdx.works.core
 
 inline fun <FirstResult, SecondResult> Result<FirstResult>.then(
     other: (FirstResult) -> Result<SecondResult>
-): Result<Pair<FirstResult, SecondResult>> = fold(
+): Result<SecondResult> = fold(
     onSuccess = { receivedValue ->
-        other(receivedValue).map { receivedValue to it }
+        other(receivedValue)
     },
     onFailure = {
         Result.failure(it)

@@ -21,7 +21,6 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import rdx.works.core.then
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.derivation.model.NetworkId
 import rdx.works.profile.domain.gateway.GetCurrentGatewayUseCase
@@ -36,6 +35,7 @@ class TransactionSubmitDelegate(
     private val incomingRequestRepository: IncomingRequestRepository,
     private val appScope: CoroutineScope,
     private val appEventBus: AppEventBus,
+    private val logger: Timber.Tree,
     private val onSendScreenEvent: (Event) -> Unit
 ) {
     private var approvalJob: Job? = null
@@ -58,46 +58,10 @@ class TransactionSubmitDelegate(
 
             state.update { it.copy(isSubmitting = true) }
 
-            currentState.request.transactionManifestData.toTransactionManifest().then { manifest ->
-                transactionClient.findFeePayerInManifest(manifest)
-            }.onSuccess { result ->
-                val manifest = result.first
-                val feePayerResult = result.second
-
-                state.update { it.copy(isSubmitting = false) }
-                if (feePayerResult.feePayerAddressFromManifest != null) {
-                    signAndSubmit(
-                        transactionRequest = currentState.request,
-                        feePayerAddress = feePayerResult.feePayerAddressFromManifest,
-                        manifest = manifest
-                    )
-                } else {
-                    state.update { state ->
-                        state.copy(
-                            isSubmitting = false,
-                            sheetState = State.Sheet.FeePayerChooser(
-                                candidates = feePayerResult.candidates,
-                                pendingManifest = manifest
-                            )
-                        )
-                    }
-                }
-                approvalJob = null
+            currentState.request.transactionManifestData.toTransactionManifest().onSuccess { manifest ->
+                resolveFeePayerAndSubmit(manifest.attachGuarantees(currentState.previewType))
             }.onFailure { error ->
-                state.update {
-                    it.copy(isSubmitting = false, error = UiMessage.ErrorMessage.from(error = error))
-                }
-
-                if (error is DappRequestException && !currentState.request.isInternal) {
-                    dAppMessenger.sendWalletInteractionResponseFailure(
-                        dappId = currentState.request.dappId,
-                        requestId = currentState.request.requestId,
-                        error = error.failure.toWalletErrorType(),
-                        message = error.failure.getDappMessage()
-                    )
-                }
-
-                approvalJob = null
+                reportFailure(error)
             }
         }
     }
@@ -129,8 +93,35 @@ class TransactionSubmitDelegate(
                 it.copy(isSubmitting = false)
             }
         } else {
-            Timber.d("Cannot dismiss transaction while is in progress")
+            logger.d("Cannot dismiss transaction while is in progress")
         }
+    }
+
+    private suspend fun resolveFeePayerAndSubmit(manifest: TransactionManifest) {
+        transactionClient.findFeePayerInManifest(manifest)
+            .onSuccess { feePayerResult ->
+                state.update { it.copy(isSubmitting = false) }
+                if (feePayerResult.feePayerAddressFromManifest != null) {
+                    signAndSubmit(
+                        transactionRequest = state.value.request,
+                        feePayerAddress = feePayerResult.feePayerAddressFromManifest,
+                        manifest = manifest
+                    )
+                } else {
+                    state.update { state ->
+                        state.copy(
+                            isSubmitting = false,
+                            sheetState = State.Sheet.FeePayerChooser(
+                                candidates = feePayerResult.candidates,
+                                pendingManifest = manifest
+                            )
+                        )
+                    }
+                }
+                approvalJob = null
+            }.onFailure { error ->
+                reportFailure(error)
+            }
     }
 
     @Suppress("LongMethod")
@@ -183,30 +174,14 @@ class TransactionSubmitDelegate(
                 )
             )
         }.onFailure { error ->
-            state.update {
-                it.copy(
-                    isSubmitting = false,
-                    error = UiMessage.ErrorMessage.from(error = error)
-                )
-            }
-            val exception = error as? DappRequestException
-            if (exception != null) {
-                if (!transactionRequest.isInternal) {
-                    dAppMessenger.sendWalletInteractionResponseFailure(
-                        dappId = transactionRequest.dappId,
-                        requestId = transactionRequest.requestId,
-                        error = exception.failure.toWalletErrorType(),
-                        message = exception.failure.getDappMessage()
-                    )
-                }
-            }
+            reportFailure(error)
 
             appEventBus.sendEvent(
                 AppEvent.Status.Transaction.Fail(
                     requestId = transactionRequest.requestId,
                     transactionId = "",
                     isInternal = transactionRequest.isInternal,
-                    errorMessage = UiMessage.ErrorMessage.from(exception?.failure)
+                    errorMessage = UiMessage.ErrorMessage.from((error as? DappRequestException)?.failure)
                 )
             )
         }
@@ -235,5 +210,25 @@ class TransactionSubmitDelegate(
         }
 
         return manifest
+    }
+
+    private suspend fun reportFailure(error: Throwable) {
+        logger.w(error)
+
+        state.update {
+            it.copy(isSubmitting = false, error = UiMessage.ErrorMessage.from(error = error))
+        }
+
+        val currentState = state.value
+        if (error is DappRequestException && !currentState.request.isInternal) {
+            dAppMessenger.sendWalletInteractionResponseFailure(
+                dappId = currentState.request.dappId,
+                requestId = currentState.request.requestId,
+                error = error.failure.toWalletErrorType(),
+                message = error.failure.getDappMessage()
+            )
+        }
+
+        approvalJob = null
     }
 }

@@ -143,7 +143,7 @@ class TransactionClient @Inject constructor(
             )
         }.onFailure {
             logger.w(it)
-        }.map { it.second }
+        }
     }
 
     fun cancelSigning() {

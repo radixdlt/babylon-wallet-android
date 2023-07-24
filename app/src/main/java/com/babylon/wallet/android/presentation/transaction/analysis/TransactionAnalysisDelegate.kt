@@ -23,13 +23,15 @@ import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.domain.GetProfileUseCase
 import timber.log.Timber
 
+@Suppress("LongParameterList")
 class TransactionAnalysisDelegate(
     private val state: MutableStateFlow<State>,
     private val getProfileUseCase: GetProfileUseCase,
     private val getAccountsWithResourcesUseCase: GetAccountsWithResourcesUseCase,
     private val getTransactionBadgesUseCase: GetTransactionBadgesUseCase,
     private val getDAppWithMetadataAndAssociatedResourcesUseCase: GetDAppWithMetadataAndAssociatedResourcesUseCase,
-    private val transactionClient: TransactionClient
+    private val transactionClient: TransactionClient,
+    private val logger: Timber.Tree
 ) {
 
     suspend fun analyse() {
@@ -52,7 +54,7 @@ class TransactionAnalysisDelegate(
     private suspend fun startAnalysis(manifest: TransactionManifest) = getTransactionPreview(manifest)
         .then { preview ->
             analyzeExecution(manifest, preview)
-        }.map { it.second }.resolve()
+        }.resolve()
 
     private suspend fun getTransactionPreview(manifest: TransactionManifest) = transactionClient.getTransactionPreview(
         manifest = manifest,
@@ -106,7 +108,8 @@ class TransactionAnalysisDelegate(
     }
 
     private fun reportFailure(error: Throwable) {
-        Timber.w(error)
+        logger.w(error)
+
         state.update {
             it.copy(
                 isLoading = false,
