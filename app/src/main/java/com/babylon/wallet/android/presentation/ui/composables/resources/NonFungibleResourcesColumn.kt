@@ -55,6 +55,7 @@ fun NonFungibleResourcesColumn(
 }
 
 fun LazyListScope.nonFungibleResources(
+    modifier: Modifier = Modifier,
     collections: List<Resource.NonFungibleResource>,
     collapsedState: SnapshotStateList<Boolean>,
     nftItem: @Composable (Resource.NonFungibleResource, Resource.NonFungibleResource.Item) -> Unit,
@@ -62,7 +63,7 @@ fun LazyListScope.nonFungibleResources(
     if (collections.isEmpty()) {
         item {
             EmptyResourcesContent(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = modifier.fillMaxWidth(),
                 tab = ResourceTab.Nfts
             )
         }
@@ -75,7 +76,7 @@ fun LazyListScope.nonFungibleResources(
                 contentType = { "collection" }
             ) {
                 NonFungibleResourceCollectionHeader(
-                    modifier = Modifier.padding(bottom = 1.dp),
+                    modifier = modifier.padding(bottom = 1.dp),
                     collection = collection,
                     collapsed = collapsed,
                     parentSectionClick = {
@@ -93,7 +94,7 @@ fun LazyListScope.nonFungibleResources(
                     targetValue = if (collection.items.last().globalAddress == item.globalAddress) 12.dp else 0.dp
                 )
                 Card(
-                    modifier = Modifier
+                    modifier = modifier
                         .padding(vertical = 1.dp)
                         .fillMaxWidth(),
                     shape = RoundedCornerShape(0.dp, 0.dp, bottomCorners, bottomCorners),
@@ -108,9 +109,7 @@ fun LazyListScope.nonFungibleResources(
                 }
             }
 
-            if (collectionIndex != collections.lastIndex) {
-                item { Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault)) }
-            }
+            item { Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault)) }
         }
     }
 }

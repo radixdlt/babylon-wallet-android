@@ -6,12 +6,16 @@
 package com.babylon.wallet.android.presentation.account
 
 import androidx.activity.compose.BackHandler
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -26,10 +30,12 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.Icon
+import androidx.compose.material.IconButton
 import androidx.compose.material.ModalBottomSheetLayout
 import androidx.compose.material.ModalBottomSheetState
 import androidx.compose.material.ModalBottomSheetValue
 import androidx.compose.material.Surface
+import androidx.compose.material.Text
 import androidx.compose.material.pullrefresh.PullRefreshIndicator
 import androidx.compose.material.pullrefresh.pullRefresh
 import androidx.compose.material.pullrefresh.rememberPullRefreshState
@@ -51,6 +57,8 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -68,12 +76,16 @@ import com.babylon.wallet.android.presentation.account.composable.FungibleTokenB
 import com.babylon.wallet.android.presentation.account.composable.NonFungibleTokenBottomSheetDetails
 import com.babylon.wallet.android.presentation.transfer.assets.ResourceTab
 import com.babylon.wallet.android.presentation.transfer.assets.ResourcesTabs
+import com.babylon.wallet.android.presentation.ui.composables.ActionableAddressView
+import com.babylon.wallet.android.presentation.ui.composables.ApplySecuritySettingsLabel
 import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
 import com.babylon.wallet.android.presentation.ui.composables.resources.FungibleResourceItem
 import com.babylon.wallet.android.presentation.ui.composables.resources.NonFungibleResourceItem
 import com.babylon.wallet.android.presentation.ui.composables.resources.fungibleResources
 import com.babylon.wallet.android.presentation.ui.composables.resources.nonFungibleResources
+import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import rdx.works.profile.data.model.factorsources.FactorSource
@@ -133,7 +145,7 @@ private fun AccountScreenContent(
     val gradient = remember(state.accountWithResources) {
         val appearanceId = state.accountWithResources?.account?.appearanceID ?: 0
         AccountGradientList[appearanceId % AccountGradientList.size]
-    }
+    }.toPersistentList()
 
     val bottomSheetState = rememberModalBottomSheetState(
         initialValue = ModalBottomSheetValue.Hidden,
@@ -184,14 +196,39 @@ private fun AccountScreenContent(
             Scaffold(
                 modifier = Modifier.background(Brush.horizontalGradient(gradient)),
                 topBar = {
-                    AccountTopBar(
-                        state = state,
-                        lazyListState = lazyListState,
-                        onBackClick = onBackClick,
-                        onAccountPreferenceClick = onAccountPreferenceClick,
-                        onTransferClick = onTransferClick,
-                        onApplySecuritySettings = onApplySecuritySettings
-                    )
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        IconButton(
+                            onClick = onBackClick
+                        ) {
+                            Icon(
+                                painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_arrow_back),
+                                tint = RadixTheme.colors.white,
+                                contentDescription = "navigate back"
+                            )
+                        }
+                        Spacer(modifier = Modifier.weight(1f))
+                        Text(
+                            modifier = Modifier,
+                            text = state.accountWithResources?.account?.displayName.orEmpty(),
+                            style = RadixTheme.typography.body1Header.copy(textAlign = TextAlign.Center),
+                            color = RadixTheme.colors.white,
+                            maxLines = 2,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                        Spacer(modifier = Modifier.weight(1f))
+                        IconButton(
+                            onClick = { onAccountPreferenceClick(state.accountWithResources?.account?.address.orEmpty()) }
+                        ) {
+                            Icon(
+                                painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_more_horiz),
+                                tint = RadixTheme.colors.white,
+                                contentDescription = "account settings"
+                            )
+                        }
+                    }
                 },
                 containerColor = Color.Transparent,
                 floatingActionButton = {
@@ -225,7 +262,10 @@ private fun AccountScreenContent(
                         scope.launch {
                             bottomSheetState.show()
                         }
-                    }
+                    },
+                    gradient = gradient,
+                    onTransferClick = onTransferClick,
+                    onApplySecuritySettings = onApplySecuritySettings
                 )
             }
 
@@ -288,12 +328,13 @@ fun AssetsContent(
     state: AccountUiState,
     onFungibleTokenClick: (Resource.FungibleResource) -> Unit,
     onNonFungibleItemClick: (Resource.NonFungibleResource, Resource.NonFungibleResource.Item) -> Unit,
+    gradient: ImmutableList<Color>,
+    onTransferClick: (String) -> Unit,
+    onApplySecuritySettings: () -> Unit
 ) {
     Surface(
         modifier = modifier,
-        color = RadixTheme.colors.gray5,
-        shape = RadixTheme.shapes.roundedRectTopDefault,
-        elevation = 8.dp
+        color = RadixTheme.colors.gray5
     ) {
         var selectedTab by remember { mutableStateOf(ResourceTab.Tokens) }
         val resources = state.accountWithResources?.resources
@@ -305,22 +346,86 @@ fun AssetsContent(
             nonFungibleCollections.map { true }.toMutableStateList()
         }
 
+        val accountAddress = remember(state.accountWithResources) {
+            state.accountWithResources?.account?.address.orEmpty()
+        }
+
         Box(
-            modifier = Modifier.fillMaxSize()
+            modifier = Modifier
+                .fillMaxSize()
         ) {
+            val horizontalPadding = RadixTheme.dimensions.paddingDefault
+
             LazyColumn(
-                modifier = Modifier.fillMaxSize(),
+                modifier = Modifier
+                    .fillMaxSize(),
                 state = lazyListState,
-                contentPadding = PaddingValues(
-                    horizontal = RadixTheme.dimensions.paddingDefault,
-                    vertical = RadixTheme.dimensions.paddingLarge
-                )
             ) {
+                item {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(
+                                brush = Brush.horizontalGradient(gradient)
+                            )
+                            .padding(horizontal = RadixTheme.dimensions.paddingXLarge),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        ActionableAddressView(
+                            modifier = Modifier
+                                .padding(bottom = RadixTheme.dimensions.paddingXLarge),
+                            address = accountAddress,
+                            textStyle = RadixTheme.typography.body2HighImportance,
+                            textColor = RadixTheme.colors.white
+                        )
+
+                        androidx.compose.animation.AnimatedVisibility(
+                            modifier = Modifier
+                                .padding(bottom = RadixTheme.dimensions.paddingLarge),
+                            visible = state.isTransferEnabled,
+                            enter = fadeIn(),
+                            exit = fadeOut()
+                        ) {
+                            RadixSecondaryButton(
+                                text = stringResource(id = R.string.account_transfer),
+                                onClick = { onTransferClick(accountAddress) },
+                                containerColor = RadixTheme.colors.white.copy(alpha = 0.2f),
+                                contentColor = RadixTheme.colors.white,
+                                shape = RadixTheme.shapes.circle
+                            ) {
+                                Icon(
+                                    painter = painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_transfer),
+                                    tint = RadixTheme.colors.white,
+                                    contentDescription = null
+                                )
+                            }
+                        }
+
+                        androidx.compose.animation.AnimatedVisibility(
+                            modifier = Modifier
+                                .padding(bottom = RadixTheme.dimensions.paddingLarge),
+                            visible = state.isSecurityPromptVisible,
+                            enter = fadeIn(),
+                            exit = fadeOut()
+                        ) {
+                            ApplySecuritySettingsLabel(
+                                modifier = Modifier.fillMaxWidth(),
+                                onClick = onApplySecuritySettings,
+                                text = stringResource(id = R.string.homePage_applySecuritySettings)
+                            )
+                        }
+                    }
+                }
                 item {
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(bottom = RadixTheme.dimensions.paddingLarge),
+                            .background(brush = Brush.horizontalGradient(gradient))
+                            .background(
+                                color = RadixTheme.colors.gray5,
+                                shape = RadixTheme.shapes.roundedRectTopDefault
+                            )
+                            .padding(vertical = RadixTheme.dimensions.paddingLarge),
                         contentAlignment = Alignment.Center
                     ) {
                         ResourcesTabs(
@@ -335,6 +440,9 @@ fun AssetsContent(
                 if (resources != null) {
                     when (selectedTab) {
                         ResourceTab.Tokens -> fungibleResources(
+                            modifier = Modifier.padding(
+                                horizontal = horizontalPadding
+                            ),
                             xrdItem = xrdItem,
                             restOfFungibles = restOfFungibles
                         ) { _, item ->
@@ -349,6 +457,9 @@ fun AssetsContent(
                         }
 
                         ResourceTab.Nfts -> nonFungibleResources(
+                            modifier = Modifier.padding(
+                                horizontal = horizontalPadding
+                            ),
                             collections = nonFungibleCollections,
                             collapsedState = collapsedState,
                         ) { collection, item ->

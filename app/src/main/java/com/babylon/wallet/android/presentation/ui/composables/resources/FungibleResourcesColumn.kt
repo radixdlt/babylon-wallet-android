@@ -54,6 +54,7 @@ fun FungibleResourcesColumn(
 }
 
 fun LazyListScope.fungibleResources(
+    modifier: Modifier = Modifier,
     xrdItem: Resource.FungibleResource?,
     restOfFungibles: List<Resource.FungibleResource>,
     item: @Composable (index: Int, resource: Resource.FungibleResource) -> Unit
@@ -61,14 +62,16 @@ fun LazyListScope.fungibleResources(
     if (xrdItem == null && restOfFungibles.isEmpty()) {
         item {
             EmptyResourcesContent(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = modifier.fillMaxWidth(),
                 tab = ResourceTab.Tokens
             )
         }
     } else {
         if (xrdItem != null) {
             item {
-                FungibleResourceCard {
+                FungibleResourceCard(
+                    modifier = modifier
+                ) {
                     item(index = 0, resource = xrdItem)
                 }
             }
@@ -81,8 +84,9 @@ fun LazyListScope.fungibleResources(
             },
             itemContent = { index, resource ->
                 val topPadding = if (index == 0) RadixTheme.dimensions.paddingDefault else 0.dp
+                val bottomPadding = if (index == restOfFungibles.size - 1) RadixTheme.dimensions.paddingDefault else 0.dp
                 FungibleResourceCard(
-                    modifier = Modifier.padding(top = topPadding),
+                    modifier = modifier.padding(top = topPadding, bottom = bottomPadding),
                     itemIndex = index,
                     allItemsSize = restOfFungibles.size,
                     bottomContent = if (index != restOfFungibles.lastIndex) {
