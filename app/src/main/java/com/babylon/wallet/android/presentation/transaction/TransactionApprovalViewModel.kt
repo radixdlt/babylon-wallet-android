@@ -197,7 +197,7 @@ class TransactionApprovalViewModel @Inject constructor(
         val isRawManifestToggleVisible: Boolean
             get() = previewType is PreviewType.Transaction
 
-        val rawManifest: String = request.transactionManifestData.toTransactionManifest().toPrettyString()
+        val rawManifest: String = request.transactionManifestData.toTransactionManifest().getOrNull()?.toPrettyString().orEmpty()
 
         val isSheetVisible: Boolean
             get() = sheetState != Sheet.None

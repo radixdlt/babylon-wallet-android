@@ -33,9 +33,11 @@ class TransactionAnalysisDelegate(
 ) {
 
     suspend fun analyse() {
-        val manifest = state.value.request.transactionManifestData.toTransactionManifest()
-
-        startAnalysis(manifest)
+        state.value.request.transactionManifestData.toTransactionManifest().onSuccess {
+            startAnalysis(it)
+        }.onFailure { error ->
+            reportFailure(error)
+        }
     }
 
     suspend fun onFeePayerConfirmed(account: Network.Account, pendingManifest: TransactionManifest) {
@@ -50,8 +52,7 @@ class TransactionAnalysisDelegate(
     private suspend fun startAnalysis(manifest: TransactionManifest) = getTransactionPreview(manifest)
         .then { preview ->
             analyzeExecution(manifest, preview)
-        }
-        .resolve()
+        }.map { it.second }.resolve()
 
     private suspend fun getTransactionPreview(manifest: TransactionManifest) = transactionClient.getTransactionPreview(
         manifest = manifest,
@@ -101,6 +102,10 @@ class TransactionAnalysisDelegate(
             )
         }
     }.onFailure { error ->
+        reportFailure(error)
+    }
+
+    private fun reportFailure(error: Throwable) {
         Timber.w(error)
         state.update {
             it.copy(

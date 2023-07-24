@@ -21,6 +21,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import rdx.works.core.then
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.derivation.model.NetworkId
 import rdx.works.profile.domain.gateway.GetCurrentGatewayUseCase
@@ -57,48 +58,47 @@ class TransactionSubmitDelegate(
 
             state.update { it.copy(isSubmitting = true) }
 
-            val manifest = currentState.request.transactionManifestData
-                .toTransactionManifest()
-                .attachGuarantees(currentState.previewType)
+            currentState.request.transactionManifestData.toTransactionManifest().then { manifest ->
+                transactionClient.findFeePayerInManifest(manifest)
+            }.onSuccess { result ->
+                val manifest = result.first
+                val feePayerResult = result.second
 
-            transactionClient.findFeePayerInManifest(manifest)
-                .onSuccess { feePayerResult ->
-                    state.update { it.copy(isSubmitting = false) }
-                    if (feePayerResult.feePayerAddressFromManifest != null) {
-                        signAndSubmit(
-                            transactionRequest = currentState.request,
-                            feePayerAddress = feePayerResult.feePayerAddressFromManifest,
-                            manifest = manifest
-                        )
-                    } else {
-                        state.update { state ->
-                            state.copy(
-                                isSubmitting = false,
-                                sheetState = State.Sheet.FeePayerChooser(
-                                    candidates = feePayerResult.candidates,
-                                    pendingManifest = manifest
-                                )
+                state.update { it.copy(isSubmitting = false) }
+                if (feePayerResult.feePayerAddressFromManifest != null) {
+                    signAndSubmit(
+                        transactionRequest = currentState.request,
+                        feePayerAddress = feePayerResult.feePayerAddressFromManifest,
+                        manifest = manifest
+                    )
+                } else {
+                    state.update { state ->
+                        state.copy(
+                            isSubmitting = false,
+                            sheetState = State.Sheet.FeePayerChooser(
+                                candidates = feePayerResult.candidates,
+                                pendingManifest = manifest
                             )
-                        }
-                    }
-                    approvalJob = null
-                }
-                .onFailure { error ->
-                    state.update {
-                        it.copy(isSubmitting = false, error = UiMessage.ErrorMessage.from(error = error))
-                    }
-
-                    if (error is DappRequestException && !currentState.request.isInternal) {
-                        dAppMessenger.sendWalletInteractionResponseFailure(
-                            dappId = currentState.request.dappId,
-                            requestId = currentState.request.requestId,
-                            error = error.failure.toWalletErrorType(),
-                            message = error.failure.getDappMessage()
                         )
                     }
-
-                    approvalJob = null
                 }
+                approvalJob = null
+            }.onFailure { error ->
+                state.update {
+                    it.copy(isSubmitting = false, error = UiMessage.ErrorMessage.from(error = error))
+                }
+
+                if (error is DappRequestException && !currentState.request.isInternal) {
+                    dAppMessenger.sendWalletInteractionResponseFailure(
+                        dappId = currentState.request.dappId,
+                        requestId = currentState.request.requestId,
+                        error = error.failure.toWalletErrorType(),
+                        message = error.failure.getDappMessage()
+                    )
+                }
+
+                approvalJob = null
+            }
         }
     }
 
@@ -224,9 +224,11 @@ class TransactionSubmitDelegate(
                             index = assertion.instructionIndex.toInt()
                         )
                     }
+
                     is GuaranteeAssertion.ForNFT -> {
                         // Will be implemented later
                     }
+
                     null -> {}
                 }
             }
