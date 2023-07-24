@@ -125,7 +125,7 @@ fun PersonaDataStringInput(
         onValueChanged = onValueChanged,
         value = value,
         leftLabel = label,
-        iconToTheRight = if (!required && onDeleteField != null) {
+        iconToTheRight = if (onDeleteField != null) {
             {
                 IconButton(onClick = onDeleteField) {
                     Icon(
@@ -194,14 +194,13 @@ fun PersonaNameInput(
                     style = RadixTheme.typography.body1Regular,
                     color = RadixTheme.colors.gray2
                 )
-            } else {
-                IconButton(onClick = onDeleteField) {
-                    Icon(
-                        tint = RadixTheme.colors.gray1,
-                        contentDescription = null,
-                        painter = painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_delete_outline)
-                    )
-                }
+            }
+            IconButton(onClick = onDeleteField) {
+                Icon(
+                    tint = RadixTheme.colors.gray1,
+                    contentDescription = null,
+                    painter = painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_delete_outline)
+                )
             }
         }
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSmall))

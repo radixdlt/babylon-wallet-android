@@ -71,7 +71,6 @@ import com.babylon.wallet.android.presentation.account.composable.NonFungibleTok
 import com.babylon.wallet.android.presentation.common.FullscreenCircularProgressContent
 import com.babylon.wallet.android.presentation.dapp.authorized.account.AccountItemUiModel
 import com.babylon.wallet.android.presentation.dapp.authorized.selectpersona.PersonaUiModel
-import com.babylon.wallet.android.presentation.model.allNonEmptyFields
 import com.babylon.wallet.android.presentation.ui.composables.ActionableAddressView
 import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.DefaultModalSheetLayout
@@ -690,7 +689,7 @@ private fun PersonaDetailList(
                 modifier = Modifier.padding(horizontal = dimensions.paddingDefault)
             )
         }
-        val nonEmptyPersonaFields = persona.persona.personaData.allNonEmptyFields
+        val nonEmptyPersonaFields = persona.persona.personaData.allFields
         if (nonEmptyPersonaFields.isNotEmpty()) {
             item {
                 Spacer(modifier = Modifier.height(dimensions.paddingDefault))

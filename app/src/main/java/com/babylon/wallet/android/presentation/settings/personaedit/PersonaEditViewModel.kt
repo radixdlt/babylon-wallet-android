@@ -14,10 +14,13 @@ import com.babylon.wallet.android.presentation.model.PersonaFieldWrapper
 import com.babylon.wallet.android.presentation.model.toPersonaData
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.persistentListOf
+import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.profile.data.model.pernetwork.Network
+import rdx.works.profile.data.model.pernetwork.PersonaData
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.persona.UpdatePersonaUseCase
 import rdx.works.profile.domain.personaOnCurrentNetworkFlow
@@ -47,7 +50,8 @@ class PersonaEditViewModel @Inject constructor(
                         currentFields = s.currentFields,
                         fieldsToAdd = s.fieldsToAdd,
                         dappContextEdit = s.requiredFieldKinds.isNotEmpty(),
-                        wasEdited = s.currentFields.any { it.wasEdited } || state.currentFields.size != s.currentFields.size
+                        wasEdited = s.currentFields.any { it.wasEdited } || state.currentFields.size != s.currentFields.size,
+                        missingFields = missingPersonaFieldKinds()
                     )
                 }
             }
@@ -65,6 +69,12 @@ class PersonaEditViewModel @Inject constructor(
                 }
             }
         }
+    }
+
+    private fun missingPersonaFieldKinds(): PersistentList<PersonaData.PersonaDataField.Kind> {
+        return args.requiredPersonaFields?.fields?.map {
+            it.kind
+        }?.toSet()?.minus(state.value.currentFields.map { it.entry.value.kind }.toSet()).orEmpty().toPersistentList()
     }
 
     fun onSave() {
@@ -92,5 +102,6 @@ data class PersonaEditUiState(
     val addFieldButtonEnabled: Boolean = false,
     val saveButtonEnabled: Boolean = false,
     val dappContextEdit: Boolean = false,
-    val wasEdited: Boolean = false
+    val wasEdited: Boolean = false,
+    val missingFields: ImmutableList<PersonaData.PersonaDataField.Kind> = persistentListOf()
 ) : UiState

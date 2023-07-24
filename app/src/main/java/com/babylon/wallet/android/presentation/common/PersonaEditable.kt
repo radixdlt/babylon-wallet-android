@@ -41,28 +41,14 @@ class PersonaEditableImpl : PersonaEditable {
 
     override fun setPersona(persona: Network.Persona?, requiredFieldKinds: List<PersonaData.PersonaDataField.Kind>) {
         val shouldValidateInput = requiredFieldKinds.isNotEmpty()
-        val existingPersonaFields =
-            persona?.personaData?.allFields?.map {
-                PersonaFieldWrapper(
-                    id = it.id,
-                    entry = IdentifiedEntry.init(it.value, it.id),
-                    valid = true,
-                    required = requiredFieldKinds.contains(it.value.kind)
-                )
-            }.orEmpty().toPersistentList()
-        val missingFields = requiredFieldKinds.minus(existingPersonaFields.map { it.entry.value.kind }.toSet())
-        val currentFields =
-            (
-                existingPersonaFields + missingFields.map {
-                    PersonaFieldWrapper(
-                        required = true,
-                        shouldDisplayValidationError = true,
-                        wasEdited = true,
-                        entry = it.empty()
-                    )
-                }
-                ).sortedBy { it.entry.value.sortOrderInt() }
-                .toPersistentList()
+        val currentFields = persona?.personaData?.allFields?.map {
+            PersonaFieldWrapper(
+                id = it.id,
+                entry = IdentifiedEntry.init(it.value, it.id),
+                valid = true,
+                required = requiredFieldKinds.contains(it.value.kind)
+            )
+        }.orEmpty().sortedBy { it.entry.value.sortOrderInt() }.toPersistentList()
         _state.update { state ->
             val fieldsToAdd = getFieldsToAdd(currentFields.map { it.entry.value.kind }.toSet())
             state.copy(
