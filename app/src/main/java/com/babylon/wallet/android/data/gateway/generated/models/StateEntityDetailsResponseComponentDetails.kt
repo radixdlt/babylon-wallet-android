@@ -15,7 +15,6 @@
 
 package com.babylon.wallet.android.data.gateway.generated.models
 
-import kotlinx.serialization.Contextual
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
@@ -38,8 +37,10 @@ data class StateEntityDetailsResponseComponentDetails (
     @SerialName(value = "blueprint_name")
     val blueprintName: kotlin.String,
 
-//    @Contextual @SerialName(value = "access_rules_chain")
-//    val accessRulesChain: kotlin.Any,
+    // TODO GW (access rules) Waiting for a fix
+    // https://rdxworks.slack.com/archives/C02MTV9602H/p1689761889447179?thread_ts=1689692837.158109&cid=C02MTV9602H
+//    @SerialName(value = "access_rules")
+//    val accessRules: ComponentEntityAccessRules,
 
     /* Bech32m-encoded human readable version of the address. */
     @SerialName(value = "package_address")

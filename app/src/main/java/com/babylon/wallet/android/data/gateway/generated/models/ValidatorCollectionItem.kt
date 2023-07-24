@@ -23,7 +23,10 @@ import kotlinx.serialization.Contextual
  * 
  *
  * @param address Bech32m-encoded human readable version of the address.
- * @param currentStake String-encoded decimal representing the amount of a related fungible resource.
+ * @param stakeVault 
+ * @param pendingXrdWithdrawVault 
+ * @param lockedOwnerStakeUnitVault 
+ * @param pendingOwnerStakeUnitUnlockVault 
  * @param metadata 
  * @param state 
  * @param activeInEpoch 
@@ -36,9 +39,17 @@ data class ValidatorCollectionItem (
     @SerialName(value = "address")
     val address: kotlin.String,
 
-    /* String-encoded decimal representing the amount of a related fungible resource. */
-    @SerialName(value = "current_stake")
-    val currentStake: kotlin.String,
+    @SerialName(value = "stake_vault")
+    val stakeVault: ValidatorVaultItem,
+
+    @SerialName(value = "pending_xrd_withdraw_vault")
+    val pendingXrdWithdrawVault: ValidatorVaultItem,
+
+    @SerialName(value = "locked_owner_stake_unit_vault")
+    val lockedOwnerStakeUnitVault: ValidatorVaultItem,
+
+    @SerialName(value = "pending_owner_stake_unit_unlock_vault")
+    val pendingOwnerStakeUnitUnlockVault: ValidatorVaultItem,
 
     @SerialName(value = "metadata")
     val metadata: EntityMetadataCollection,

@@ -21,26 +21,22 @@ import kotlinx.serialization.SerialName
 /**
  * 
  *
- * @param unlimitedLoan 
+ * @param useFreeCredit 
  * @param assumeAllSignatureProofs 
- * @param permitDuplicateIntentHash 
- * @param permitInvalidHeaderEpoch 
+ * @param skipEpochCheck 
  */
 @Serializable
 
 data class TransactionPreviewRequestFlags (
 
-    @SerialName(value = "unlimited_loan")
-    val unlimitedLoan: kotlin.Boolean,
+    @SerialName(value = "use_free_credit")
+    val useFreeCredit: kotlin.Boolean,
 
     @SerialName(value = "assume_all_signature_proofs")
     val assumeAllSignatureProofs: kotlin.Boolean,
 
-    @SerialName(value = "permit_duplicate_intent_hash")
-    val permitDuplicateIntentHash: kotlin.Boolean,
-
-    @SerialName(value = "permit_invalid_header_epoch")
-    val permitInvalidHeaderEpoch: kotlin.Boolean
+    @SerialName(value = "skip_epoch_check")
+    val skipEpochCheck: kotlin.Boolean
 
 )
 

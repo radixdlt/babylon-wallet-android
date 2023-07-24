@@ -69,7 +69,7 @@ class TransactionApprovalViewModel @Inject constructor(
     override fun initialState(): State = State(
         request = incomingRequestRepository.getTransactionWriteRequest(args.requestId),
         isLoading = true,
-        previewType = PreviewType.NonConforming,
+        previewType = PreviewType.None,
         isDeviceSecure = deviceSecurityHelper.isDeviceSecure()
     )
 
@@ -150,9 +150,28 @@ class TransactionApprovalViewModel @Inject constructor(
 
     fun onGuaranteesCloseClick() = guarantees.onClose()
 
-    fun onPayerSelected(account: Network.Account) = submit.onFeePayerSelected(account)
+    fun onPayerSelected(account: Network.Account) {
+        val feePayerSheet = state.value.sheetState as? State.Sheet.FeePayerChooser ?: return
+        _state.update {
+            it.copy(
+                sheetState = feePayerSheet.copy(selectedCandidate = account)
+            )
+        }
+    }
 
-    fun onPayerConfirmed() = submit.onFeePayerConfirmed()
+    fun onPayerConfirmed() {
+        val feePayerSheet = state.value.sheetState as? State.Sheet.FeePayerChooser ?: return
+        _state.update { it.copy(sheetState = State.Sheet.None) }
+
+        val selectedCandidate = feePayerSheet.selectedCandidate ?: return
+        if (state.value.isLoading) {
+            viewModelScope.launch {
+                analysis.onFeePayerConfirmed(selectedCandidate, feePayerSheet.pendingManifest)
+            }
+        } else {
+            submit.onFeePayerConfirmed(selectedCandidate, feePayerSheet.pendingManifest)
+        }
+    }
 
     fun onDAppClick(dApp: DAppWithMetadataAndAssociatedResources) {
         _state.update {
@@ -193,6 +212,9 @@ class TransactionApprovalViewModel @Inject constructor(
                 }
             }
 
+        val isSubmitEnabled: Boolean
+            get() = previewType !is PreviewType.None
+
         sealed class Sheet {
             object None : Sheet()
 
@@ -222,6 +244,8 @@ class TransactionApprovalViewModel @Inject constructor(
 }
 
 sealed interface PreviewType {
+    object None : PreviewType
+
     object NonConforming : PreviewType
 
     data class Transaction(

@@ -8,6 +8,7 @@ import com.radixdlt.ret.Address
 import com.radixdlt.ret.Decimal
 import com.radixdlt.ret.Instruction
 import com.radixdlt.ret.Instructions
+import com.radixdlt.ret.ManifestAddress
 import com.radixdlt.ret.ManifestValue
 import com.radixdlt.ret.TransactionHeader
 import com.radixdlt.ret.TransactionManifest
@@ -52,7 +53,7 @@ private fun lockFeeInstruction(
     fee: BigDecimal
 ): Instruction {
     return Instruction.CallMethod(
-        address = Address(addressToLockFee),
+        address = ManifestAddress.Static(Address(addressToLockFee)),
         methodName = ManifestMethod.LockFee.value,
         args = ManifestValue.TupleValue(
             fields = listOf(

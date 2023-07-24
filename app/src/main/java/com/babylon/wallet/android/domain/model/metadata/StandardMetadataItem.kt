@@ -28,32 +28,26 @@ data class NameMetadataItem(
     override val key: String = ExplicitMetadataKey.NAME.key
 }
 
-data class DomainMetadataItem(
-    val domain: Uri
-) : StandardMetadataItem {
-    override val key: String = ExplicitMetadataKey.DOMAIN.key
-}
-
 data class DAppDefinitionsMetadataItem(
     val addresses: List<String> // TODO maybe change to component address
 ) : StandardMetadataItem {
     override val key: String = ExplicitMetadataKey.DAPP_DEFINITION.key
 }
 
-data class RelatedWebsiteMetadataItem(
-    val website: String // TODO check that
+data class RelatedWebsitesMetadataItem(
+    val websites: List<String>
 ) : StandardMetadataItem {
     override val key: String = ExplicitMetadataKey.RELATED_WEBSITES.key
 }
 
-data class ClaimedWebsiteMetadataItem(
-    val website: String
+data class ClaimedWebsitesMetadataItem(
+    val websites: List<String>
 ) : StandardMetadataItem {
     override val key: String = ExplicitMetadataKey.CLAIMED_WEBSITES.key
 }
 
 data class ClaimedEntitiesMetadataItem(
-    val entity: String
+    val entities: List<String>
 ) : StandardMetadataItem {
     override val key: String = ExplicitMetadataKey.CLAIMED_ENTITIES.key
 }
@@ -66,6 +60,10 @@ data class AccountTypeMetadataItem(
 
     enum class AccountType(val asString: String) {
         DAPP_DEFINITION("dapp definition")
+    }
+
+    companion object {
+        fun from(value: String) = AccountType.values().find { it.asString == value }?.let { AccountTypeMetadataItem(it) }
     }
 }
 
@@ -88,31 +86,18 @@ data class TagsMetadataItem(
 }
 
 data class OwnerKeyHashesMetadataItem(
-    val ownerKeys: List<String>
+    val keyHashes: List<KeyHash>
 ) : StandardMetadataItem {
     override val key: String = ExplicitMetadataKey.OWNER_KEYS.key
 
-    @Suppress("MagicNumber")
-    fun toPublicKeyHashes(): Set<String> {
-        val curve25519Prefix = "EddsaEd25519PublicKeyHash"
-        val secp256k1Prefix = "EcdsaSecp256k1PublicKeyHash"
-        val lengthCurve25519Prefix = curve25519Prefix.length
-        val lengthSecp256k1Prefix = secp256k1Prefix.length
-        val lengthQuoteAndParenthesis = 2
-        val lengthQuotesAndTwoParenthesis = 2 * lengthQuoteAndParenthesis
-        val lengthCurve25519PubKeyHex = 29 * 2
-        val lengthSecp256K1PubKeyHex = 29 * 2
-        return ownerKeys.map { ownerKey ->
-            when {
-                ownerKey.startsWith(curve25519Prefix) -> {
-                    require(ownerKey.length == lengthQuotesAndTwoParenthesis + lengthCurve25519Prefix + lengthCurve25519PubKeyHex)
-                    ownerKey.drop(lengthQuoteAndParenthesis + lengthCurve25519Prefix).dropLast(lengthQuoteAndParenthesis)
-                }
-                else -> {
-                    require(ownerKey.length == lengthQuotesAndTwoParenthesis + lengthSecp256k1Prefix + lengthSecp256K1PubKeyHex)
-                    ownerKey.drop(lengthQuoteAndParenthesis + lengthSecp256k1Prefix).dropLast(lengthQuoteAndParenthesis)
-                }
-            }
-        }.toSet()
+    sealed interface KeyHash {
+        val hex: String
+
+        data class EcdsaSecp256k1(
+            override val hex: String
+        ) : KeyHash
+        data class EddsaEd25519(
+            override val hex: String
+        ) : KeyHash
     }
 }

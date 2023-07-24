@@ -34,7 +34,7 @@ internal class AddressDashboardUrlTest(
 
         private const val BASE_URL = "https://rcnet-dashboard.radixdlt.com"
         private const val RESOURCE_ADDRESS = "resource_tdx_b_1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq8z96qp"
-        private const val RESOURCE_NFT_ADDRESS = "resource_tdx_b_1qrwpjqtg7qmpn7zhxv6y62eua0xtu3x5lseytycqyvssefkpwy:#1%23"
+        private const val RESOURCE_NFT_ADDRESS = "resource_tdx_b_1qrwpjqtg7qmpn7zhxv6y62eua0xtu3x5lseytycqyvssefkpwy:#1#"
         private const val ACCOUNT_ADDRESS = "account_tdx_b_1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq8z96qp"
         private const val PACKAGE_ADDRESS = "package_tdx_b_1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq8z96qp"
         private const val TRANSACTION_ADDRESS = "transaction_tdx_b_1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq8z96qp"

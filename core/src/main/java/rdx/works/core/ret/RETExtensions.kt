@@ -20,11 +20,11 @@ fun ECKeyPair.toEnginePublicKeyModel(): PublicKey {
     return when (this.publicKey.curveType) {
         EllipticCurveType.Secp256k1 -> {
             // Required size 33 bytes
-            PublicKey.EcdsaSecp256k1(getCompressedPublicKey().toUByteList())
+            PublicKey.Secp256k1(getCompressedPublicKey().toUByteList())
         }
         EllipticCurveType.Ed25519 -> {
             // Required size 32 bytes
-            PublicKey.EddsaEd25519(getCompressedPublicKey().removeLeadingZero().toUByteList())
+            PublicKey.Ed25519(getCompressedPublicKey().removeLeadingZero().toUByteList())
         }
         EllipticCurveType.P256 -> error("Curve EllipticCurveType.P256 not supported")
     }
@@ -43,14 +43,14 @@ fun PrivateKey.toEngineModel(): rdx.works.core.ret.crypto.PrivateKey {
 /**
  * A getter method for the [PublicKey].
  *
- * This method derives the public key associated with a given [Signature.EcdsaSecp256k1]
+ * This method derives the public key associated with a given [Signature.Secp256k1]
  * which is a process that requires access to the following information.
  * 1. The recovery id (otherwise known as `v`) of the public key - This is the first byte in
- *    the 65-byte long [Signature.EcdsaSecp256k1].
+ *    the 65-byte long [Signature.Secp256k1].
  * 2. The `r` parameter of the signature - These are the subsequent 32-bytes in the
- *    [Signature.EcdsaSecp256k1].
+ *    [Signature.Secp256k1].
  * 3. The `s` parameter of the signature - These are the subsequent 32-bytes in the
- *    [Signature.EcdsaSecp256k1].
+ *    [Signature.Secp256k1].
  * 4. The message that was signed - This is not stored anywhere in the signature and needs
  *    to be provided as an argument to this method.
  *
@@ -59,7 +59,7 @@ fun PrivateKey.toEngineModel(): rdx.works.core.ret.crypto.PrivateKey {
  * @return The public key associated with the signature
  */
 @Suppress("MagicNumber")
-fun SignatureWithPublicKey.EcdsaSecp256k1.publicKey(message: ByteArray): PublicKey.EcdsaSecp256k1 {
+fun SignatureWithPublicKey.Secp256k1.publicKey(message: ByteArray): PublicKey.Secp256k1 {
     // Extracting the v, r, and s parameters from the 65-byte long signature.
     val signatureBytes: ByteArray = signature.toByteArray()
 
@@ -81,15 +81,15 @@ fun SignatureWithPublicKey.EcdsaSecp256k1.publicKey(message: ByteArray): PublicK
     // Getting the bytes of the compressed public key (below, true = compress) and then
     // creating a new public key object.
     val publicKeyBytes: ByteArray = ecPoint.getEncoded(true)
-    return PublicKey.EcdsaSecp256k1(publicKeyBytes.toUByteList())
+    return PublicKey.Secp256k1(publicKeyBytes.toUByteList())
 }
-fun SignatureWithPublicKey.EddsaEd25519.publicKey() = PublicKey.EddsaEd25519(publicKey)
+fun SignatureWithPublicKey.Ed25519.publicKey() = PublicKey.Ed25519(publicKey)
 
-fun SignatureWithPublicKey.EcdsaSecp256k1.signature() = Signature.EcdsaSecp256k1(signature)
-fun SignatureWithPublicKey.EddsaEd25519.signature() = Signature.EddsaEd25519(signature)
+fun SignatureWithPublicKey.Secp256k1.signature() = Signature.Secp256k1(signature)
+fun SignatureWithPublicKey.Ed25519.signature() = Signature.Ed25519(signature)
 
-fun Signature.EcdsaSecp256k1.toHexString(): String = Hex.toHexString(value.toByteArray())
-fun Signature.EddsaEd25519.toHexString(): String = Hex.toHexString(value.toByteArray())
+fun Signature.Secp256k1.toHexString(): String = Hex.toHexString(value.toByteArray())
+fun Signature.Ed25519.toHexString(): String = Hex.toHexString(value.toByteArray())
 
-fun PublicKey.EcdsaSecp256k1.toHexString(): String = Hex.toHexString(value.toByteArray())
-fun PublicKey.EddsaEd25519.toHexString(): String = Hex.toHexString(value.toByteArray())
+fun PublicKey.Secp256k1.toHexString(): String = Hex.toHexString(value.toByteArray())
+fun PublicKey.Ed25519.toHexString(): String = Hex.toHexString(value.toByteArray())

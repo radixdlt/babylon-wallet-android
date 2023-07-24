@@ -38,3 +38,5 @@ vendor/
 
 # Default translation file (See in app/build.gradle)
 app/src/main/res/values/strings.xml
+# Jacoco export
+app/jacoco.exec

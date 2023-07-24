@@ -8,10 +8,8 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
@@ -62,6 +60,7 @@ import com.babylon.wallet.android.presentation.ui.composables.NotSecureAlertDial
 import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
 import com.babylon.wallet.android.utils.biometricAuthenticate
+import com.babylon.wallet.android.utils.findFragmentActivity
 import kotlinx.coroutines.launch
 import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.data.model.pernetwork.Network
@@ -155,12 +154,11 @@ private fun TransactionPreviewContent(
     )
 
     DefaultModalSheetLayout(
-        modifier = modifier
-            .navigationBarsPadding()
-            .fillMaxSize(),
+        modifier = modifier.fillMaxSize(),
         sheetState = modalBottomSheetState,
         sheetContent = {
             BottomSheetContent(
+                modifier = Modifier.navigationBarsPadding(),
                 sheetState = state.sheetState,
                 onPayerSelected = onPayerSelected,
                 onPayerConfirmed = onPayerConfirmed,
@@ -189,11 +187,10 @@ private fun TransactionPreviewContent(
             },
             snackbarHost = {
                 RadixSnackbarHost(
-                    modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingDefault),
+                    modifier = Modifier.padding(RadixTheme.dimensions.paddingDefault),
                     hostState = snackBarHostState
                 )
             },
-            contentWindowInsets = WindowInsets.ime,
             containerColor = RadixTheme.colors.gray5
         ) { padding ->
             Box(modifier = Modifier.padding(padding)) {
@@ -229,6 +226,7 @@ private fun TransactionPreviewContent(
                             modifier = Modifier.verticalScroll(rememberScrollState())
                         ) {
                             when (state.previewType) {
+                                is PreviewType.None -> {}
                                 is PreviewType.NonConforming -> {}
                                 is PreviewType.Transaction -> {
                                     TransactionPreviewTypeContent(
@@ -266,9 +264,11 @@ private fun ApproveButton(
         text = stringResource(id = R.string.transactionReview_approveButtonTitle),
         onClick = {
             if (state.isDeviceSecure) {
-                context.biometricAuthenticate { authenticatedSuccessfully ->
-                    if (authenticatedSuccessfully) {
-                        onApproveTransaction()
+                context.findFragmentActivity()?.let { activity ->
+                    activity.biometricAuthenticate(true) { authenticatedSuccessfully ->
+                        if (authenticatedSuccessfully) {
+                            onApproveTransaction()
+                        }
                     }
                 }
             } else {
@@ -276,6 +276,7 @@ private fun ApproveButton(
             }
         },
         isLoading = state.isSubmitting,
+        enabled = state.isSubmitEnabled,
         icon = {
             Icon(
                 painter = painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_lock),
@@ -298,6 +299,7 @@ private fun ApproveButton(
 
 @Composable
 private fun BottomSheetContent(
+    modifier: Modifier = Modifier,
     sheetState: State.Sheet,
     onPayerSelected: (Network.Account) -> Unit,
     onPayerConfirmed: () -> Unit,
@@ -312,7 +314,7 @@ private fun BottomSheetContent(
     when (sheetState) {
         is State.Sheet.CustomizeGuarantees -> {
             GuaranteesSheet(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = modifier,
                 state = sheetState,
                 onClose = onGuaranteesCloseClick,
                 onApplyClick = onGuaranteesApplyClick,
@@ -324,6 +326,7 @@ private fun BottomSheetContent(
 
         is State.Sheet.Dapp -> {
             DAppDetailsSheetContent(
+                modifier = modifier,
                 onBackClick = onCloseDAppSheet,
                 dApp = sheetState.dApp
             )
@@ -331,14 +334,13 @@ private fun BottomSheetContent(
 
         is State.Sheet.FeePayerChooser -> {
             FeePayerSelectionSheet(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = modifier,
                 sheet = sheetState,
                 onClose = onCloseFeePayerSheet,
                 onPayerSelected = onPayerSelected,
                 onPayerConfirmed = onPayerConfirmed
             )
         }
-
         is State.Sheet.None -> {}
     }
 }

@@ -38,17 +38,17 @@ fun PresentingProofsContent(
     modifier: Modifier = Modifier
 ) {
     if (badges.isNotEmpty()) {
-        Column(modifier = modifier.padding(horizontal = RadixTheme.dimensions.paddingDefault)) {
+        Column(modifier = modifier) {
             Divider(
                 modifier = Modifier.fillMaxWidth(),
                 thickness = 1.dp,
                 color = RadixTheme.colors.gray4
             )
-
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
 
             Row(
-                modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingDefault)
+                modifier = Modifier
+                    .padding(horizontal = RadixTheme.dimensions.paddingDefault)
             ) {
                 Text(
                     text = stringResource(id = R.string.transactionReview_presentingHeading).uppercase(),

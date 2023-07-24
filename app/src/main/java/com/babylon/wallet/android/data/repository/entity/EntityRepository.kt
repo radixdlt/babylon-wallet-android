@@ -98,10 +98,10 @@ class EntityRepositoryImpl @Inject constructor(
 
             // build result list of accounts with resources
             val listOfAccountsWithResources = accounts.map { account ->
-                val metaDataItems = mapOfAccountsWithMetadata[account.address].orEmpty()
+                val metaDataItems = mapOfAccountsWithMetadata[account.address].orEmpty().toMutableList()
                 AccountWithResources(
                     account = account,
-                    accountTypeMetadataItem = metaDataItems.toMutableList().consume(),
+                    accountTypeMetadataItem = metaDataItems.consume(),
                     resources = Resources(
                         fungibleResources = mapOfAccountsWithFungibleResources[account.address].orEmpty().sorted(),
                         nonFungibleResources = mapOfAccountsWithNonFungibleResources[account.address].orEmpty().sorted()
@@ -456,7 +456,10 @@ class EntityRepositoryImpl @Inject constructor(
     ): Result<OwnerKeyHashesMetadataItem?> {
         return stateApi.entityDetails(
             StateEntityDetailsRequest(
-                addresses = listOf(entityAddress)
+                addresses = listOf(entityAddress),
+                optIns = StateEntityDetailsOptIns(
+                    explicitMetadata = ExplicitMetadataKey.forEntities.map { it.key }
+                )
             )
         ).execute(
             cacheParameters = CacheParameters(
@@ -464,8 +467,11 @@ class EntityRepositoryImpl @Inject constructor(
                 timeoutDuration = if (isRefreshing) NO_CACHE else TimeoutDuration.FIVE_MINUTES
             ),
             map = { response ->
-                response.items.first().metadata.asMetadataItems().filterIsInstance<OwnerKeyHashesMetadataItem>()
-                    .firstOrNull()
+                response.items.first()
+                    .explicitMetadata
+                    ?.asMetadataItems()
+                    ?.filterIsInstance<OwnerKeyHashesMetadataItem>()
+                    ?.firstOrNull()
             },
         )
     }

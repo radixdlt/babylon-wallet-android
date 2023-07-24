@@ -25,8 +25,7 @@ import kotlinx.serialization.Contextual
  *
  * @param rawHex 
  * @param rawJson 
- * @param asString 
- * @param asStringCollection 
+ * @param typed 
  */
 @Serializable
 
@@ -35,14 +34,11 @@ data class EntityMetadataItemValue (
     @SerialName(value = "raw_hex")
     val rawHex: kotlin.String,
 
-//    @Contextual @SerialName(value = "raw_json")
-//    val rawJson: kotlin.Any,
+    @SerialName(value = "typed")
+    val typed: MetadataTypedValue? = null
 
-    @SerialName(value = "as_string")
-    val asString: kotlin.String? = null,
+) {
 
-    @SerialName(value = "as_string_collection")
-    val asStringCollection: kotlin.collections.List<kotlin.String>? = null
-
-)
+    inline fun <reified T: MetadataTypedValue> typed(): T? = typed as? T
+}
 

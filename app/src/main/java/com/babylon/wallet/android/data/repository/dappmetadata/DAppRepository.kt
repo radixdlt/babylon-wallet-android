@@ -1,10 +1,8 @@
 package com.babylon.wallet.android.data.repository.dappmetadata
 
-import androidx.core.net.toUri
 import com.babylon.wallet.android.data.gateway.apis.DAppDefinitionApi
 import com.babylon.wallet.android.data.gateway.apis.StateApi
 import com.babylon.wallet.android.data.gateway.extensions.asMetadataItems
-import com.babylon.wallet.android.data.gateway.extensions.asMetadataStringMap
 import com.babylon.wallet.android.data.gateway.generated.models.ResourceAggregationLevel
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsOptIns
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsRequest
@@ -30,10 +28,7 @@ import com.babylon.wallet.android.domain.common.value
 import com.babylon.wallet.android.domain.model.DAppResources
 import com.babylon.wallet.android.domain.model.DAppWithMetadata
 import com.babylon.wallet.android.domain.model.Resource
-import com.babylon.wallet.android.domain.model.metadata.DescriptionMetadataItem
-import com.babylon.wallet.android.domain.model.metadata.IconUrlMetadataItem
-import com.babylon.wallet.android.domain.model.metadata.NameMetadataItem
-import com.babylon.wallet.android.domain.model.metadata.SymbolMetadataItem
+import com.babylon.wallet.android.domain.model.metadata.MetadataItem.Companion.consume
 import com.babylon.wallet.android.presentation.model.ActionableAddress
 import com.babylon.wallet.android.utils.isValidHttpsUrl
 import kotlinx.coroutines.CoroutineDispatcher
@@ -204,19 +199,19 @@ class DAppRepositoryImpl @Inject constructor(
             }
 
             val fungibleResources = fungibleItems.map { fungibleItem ->
-                val metadataMap = fungibleItem.metadata.asMetadataStringMap()
+                val metadataItems = fungibleItem.metadata.asMetadataItems().toMutableList()
                 Resource.FungibleResource(
                     resourceAddress = fungibleItem.address,
                     amount = null, // No amount given in metadata
-                    nameMetadataItem = metadataMap[ExplicitMetadataKey.NAME.key]?.let { NameMetadataItem(it) },
-                    symbolMetadataItem = metadataMap[ExplicitMetadataKey.SYMBOL.key]?.let { SymbolMetadataItem(it) },
-                    descriptionMetadataItem = metadataMap[ExplicitMetadataKey.DESCRIPTION.key]?.let { DescriptionMetadataItem(it) },
-                    iconUrlMetadataItem = metadataMap[ExplicitMetadataKey.ICON_URL.key]?.let { IconUrlMetadataItem(it.toUri()) }
+                    nameMetadataItem = metadataItems.consume(),
+                    symbolMetadataItem = metadataItems.consume(),
+                    descriptionMetadataItem = metadataItems.consume(),
+                    iconUrlMetadataItem = metadataItems.consume()
                 )
             }
 
             val nonFungibleResource = nonFungibleItems.map { nonFungibleItem ->
-                val metadataMap = nonFungibleItem.metadata.asMetadataStringMap()
+                val metadataItems = nonFungibleItem.metadata.asMetadataItems().toMutableList()
 
                 Resource.NonFungibleResource.Item(
                     collectionAddress = nonFungibleItem.address,
@@ -224,9 +219,7 @@ class DAppRepositoryImpl @Inject constructor(
                         nonFungibleItem.ancestorIdentities?.globalAddress.orEmpty()
                     ),
                     nameMetadataItem = null,
-                    iconMetadataItem = metadataMap[ExplicitMetadataKey.ICON_URL.key]?.let {
-                        IconUrlMetadataItem(it.toUri())
-                    }
+                    iconMetadataItem = metadataItems.consume()
                 )
             }
 

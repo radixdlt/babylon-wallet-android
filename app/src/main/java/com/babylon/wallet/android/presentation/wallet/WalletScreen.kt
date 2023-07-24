@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
@@ -105,7 +104,7 @@ private fun WalletContent(
     )
 
     Scaffold(
-        modifier = modifier.navigationBarsPadding(),
+        modifier = modifier,
         topBar = {
             TopAppBar(
                 modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingDefault),
@@ -147,15 +146,15 @@ private fun WalletContent(
         },
         snackbarHost = {
             RadixSnackbarHost(
-                modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingDefault),
+                modifier = Modifier.padding(RadixTheme.dimensions.paddingDefault),
                 hostState = snackBarHostState
             )
         },
         containerColor = RadixTheme.colors.defaultBackground,
         contentColor = RadixTheme.colors.defaultText
-    ) {
+    ) { padding ->
         val pullRefreshState = rememberPullRefreshState(state.isRefreshing, onRefresh = onRefresh)
-        Box(modifier = Modifier.padding(top = it.calculateTopPadding())) {
+        Box(modifier = Modifier.padding(padding)) {
             WalletAccountList(
                 modifier = Modifier.pullRefresh(pullRefreshState),
                 state = state,

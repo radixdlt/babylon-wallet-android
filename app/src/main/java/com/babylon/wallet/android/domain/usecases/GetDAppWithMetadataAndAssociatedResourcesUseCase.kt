@@ -6,7 +6,7 @@ import com.babylon.wallet.android.domain.common.map
 import com.babylon.wallet.android.domain.common.switchMap
 import com.babylon.wallet.android.domain.common.value
 import com.babylon.wallet.android.domain.model.DAppWithMetadataAndAssociatedResources
-import com.babylon.wallet.android.domain.model.metadata.ClaimedWebsiteMetadataItem
+import com.babylon.wallet.android.domain.model.metadata.ClaimedWebsitesMetadataItem
 import javax.inject.Inject
 
 class GetDAppWithMetadataAndAssociatedResourcesUseCase @Inject constructor(
@@ -21,21 +21,17 @@ class GetDAppWithMetadataAndAssociatedResourcesUseCase @Inject constructor(
         needMostRecentData = false
     ).switchMap { dAppMetadata ->
         // If well known file verification fails, we dont want claimed websites
-        val isWebsiteAuthentic = dAppMetadata.claimedWebsite?.let { website ->
-            dAppRepository.verifyDapp(
-                origin = website,
+        val websites = dAppMetadata.claimedWebsites.map {
+            val isWebsiteAuthentic = dAppRepository.verifyDapp(
+                origin = it,
                 dAppDefinitionAddress = dAppMetadata.dAppAddress
             ).value() == true
-        } ?: false
+
+            it to isWebsiteAuthentic
+        }.filterNot { !it.second }
 
         val updatedDAppMetadata = dAppMetadata.copy(
-            claimedWebsiteItem = if (isWebsiteAuthentic) {
-                dAppMetadata.claimedWebsite?.let { website ->
-                    ClaimedWebsiteMetadataItem(website = website)
-                }
-            } else {
-                null
-            }
+            claimedWebsitesItem = ClaimedWebsitesMetadataItem(websites = websites.map { it.first })
         )
 
         dAppRepository.getDAppResources(dAppMetadata = updatedDAppMetadata, needMostRecentData)

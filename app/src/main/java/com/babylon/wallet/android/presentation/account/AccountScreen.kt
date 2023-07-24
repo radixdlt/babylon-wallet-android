@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
@@ -35,6 +36,7 @@ import androidx.compose.material.pullrefresh.rememberPullRefreshState
 import androidx.compose.material.rememberModalBottomSheetState
 import androidx.compose.material3.FabPosition
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -45,7 +47,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
@@ -67,6 +68,8 @@ import com.babylon.wallet.android.presentation.account.composable.FungibleTokenB
 import com.babylon.wallet.android.presentation.account.composable.NonFungibleTokenBottomSheetDetails
 import com.babylon.wallet.android.presentation.transfer.assets.ResourceTab
 import com.babylon.wallet.android.presentation.transfer.assets.ResourcesTabs
+import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
+import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
 import com.babylon.wallet.android.presentation.ui.composables.resources.FungibleResourceItem
 import com.babylon.wallet.android.presentation.ui.composables.resources.NonFungibleResourceItem
 import com.babylon.wallet.android.presentation.ui.composables.resources.fungibleResources
@@ -104,6 +107,7 @@ fun AccountScreen(
         onRefresh = viewModel::refresh,
         onHistoryClick = {},
         onTransferClick = onTransferClick,
+        onMessageShown = viewModel::onMessageShown,
         onFungibleResourceClicked = viewModel::onFungibleResourceClicked,
         onNonFungibleItemClicked = viewModel::onNonFungibleResourceClicked,
         modifier = modifier,
@@ -121,6 +125,7 @@ private fun AccountScreenContent(
     onRefresh: () -> Unit,
     onHistoryClick: () -> Unit,
     onTransferClick: (String) -> Unit,
+    onMessageShown: () -> Unit,
     onFungibleResourceClicked: (Resource.FungibleResource) -> Unit,
     onNonFungibleItemClicked: (Resource.NonFungibleResource, Resource.NonFungibleResource.Item) -> Unit,
     onApplySecuritySettings: () -> Unit
@@ -145,6 +150,13 @@ private fun AccountScreenContent(
         }
     }
 
+    val snackBarHostState = remember { SnackbarHostState() }
+    SnackbarUIMessage(
+        message = state.uiMessage,
+        snackbarHostState = snackBarHostState,
+        onMessageShown = onMessageShown
+    )
+
     ModalBottomSheetLayout(
         modifier = modifier,
         sheetState = bottomSheetState,
@@ -152,7 +164,12 @@ private fun AccountScreenContent(
         scrimColor = Color.Black.copy(alpha = 0.3f),
         sheetShape = RadixTheme.shapes.roundedRectTopDefault,
         sheetContent = {
-            SheetContent(state, scope, bottomSheetState)
+            SheetContent(
+                modifier = Modifier.navigationBarsPadding(),
+                state = state,
+                scope = scope,
+                bottomSheetState = bottomSheetState
+            )
         },
     ) {
         val pullToRefreshState = rememberPullRefreshState(
@@ -162,8 +179,7 @@ private fun AccountScreenContent(
         )
         val lazyListState = rememberLazyListState()
         Box(
-            modifier = Modifier
-                .pullRefresh(pullToRefreshState)
+            modifier = Modifier.pullRefresh(pullToRefreshState)
         ) {
             Scaffold(
                 modifier = Modifier.background(Brush.horizontalGradient(gradient)),
@@ -186,11 +202,17 @@ private fun AccountScreenContent(
                         )
                     }
                 },
-                floatingActionButtonPosition = FabPosition.Center
+                floatingActionButtonPosition = FabPosition.Center,
+                snackbarHost = {
+                    RadixSnackbarHost(
+                        modifier = Modifier.padding(RadixTheme.dimensions.paddingDefault),
+                        hostState = snackBarHostState
+                    )
+                }
             ) { innerPadding ->
                 AssetsContent(
                     modifier = Modifier.padding(innerPadding),
-                    resources = state.accountWithResources?.resources,
+                    state = state,
                     lazyListState = lazyListState,
                     onFungibleTokenClick = {
                         onFungibleResourceClicked(it)
@@ -220,6 +242,7 @@ private fun AccountScreenContent(
 
 @Composable
 private fun SheetContent(
+    modifier: Modifier = Modifier,
     state: AccountUiState,
     scope: CoroutineScope,
     bottomSheetState: ModalBottomSheetState
@@ -227,7 +250,7 @@ private fun SheetContent(
     when (val selected = state.selectedResource) {
         is SelectedResource.SelectedNonFungibleResource -> {
             NonFungibleTokenBottomSheetDetails(
-                modifier = Modifier
+                modifier = modifier
                     .fillMaxWidth()
                     .verticalScroll(rememberScrollState()),
                 item = selected.item,
@@ -242,7 +265,7 @@ private fun SheetContent(
 
         is SelectedResource.SelectedFungibleResource -> {
             FungibleTokenBottomSheetDetails(
-                modifier = Modifier
+                modifier = modifier
                     .fillMaxWidth()
                     .verticalScroll(rememberScrollState()),
                 fungible = selected.fungible,
@@ -262,7 +285,7 @@ private fun SheetContent(
 fun AssetsContent(
     modifier: Modifier = Modifier,
     lazyListState: LazyListState,
-    resources: Resources?,
+    state: AccountUiState,
     onFungibleTokenClick: (Resource.FungibleResource) -> Unit,
     onNonFungibleItemClick: (Resource.NonFungibleResource, Resource.NonFungibleResource.Item) -> Unit,
 ) {
@@ -273,7 +296,7 @@ fun AssetsContent(
         elevation = 8.dp
     ) {
         var selectedTab by remember { mutableStateOf(ResourceTab.Tokens) }
-
+        val resources = state.accountWithResources?.resources
         val xrdItem = resources?.xrd
         val restOfFungibles = resources?.nonXrdFungibles.orEmpty()
 
@@ -282,7 +305,9 @@ fun AssetsContent(
             nonFungibleCollections.map { true }.toMutableStateList()
         }
 
-        Box(modifier = Modifier.fillMaxSize()) {
+        Box(
+            modifier = Modifier.fillMaxSize()
+        ) {
             LazyColumn(
                 modifier = Modifier.fillMaxSize(),
                 state = lazyListState,
@@ -340,7 +365,7 @@ fun AssetsContent(
                 }
             }
 
-            if (resources == null) {
+            if (state.isLoading) {
                 CircularProgressIndicator(
                     modifier = Modifier.align(Alignment.Center),
                     color = RadixTheme.colors.gray1
@@ -388,6 +413,7 @@ fun AccountContentPreview() {
                 onRefresh = {},
                 onHistoryClick = {},
                 onTransferClick = {},
+                onMessageShown = {},
                 onFungibleResourceClicked = {},
                 onNonFungibleItemClicked = { _, _ -> },
                 onApplySecuritySettings = {}

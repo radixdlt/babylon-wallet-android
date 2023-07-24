@@ -22,7 +22,7 @@ import kotlinx.serialization.Serializable
 /**
  * 
  *
- * Values: string,integer,bytes,uuid
+ * Values: string,integer,bytes,ruid
  */
 @Serializable
 enum class NonFungibleIdType(val value: kotlin.String) {
@@ -36,11 +36,11 @@ enum class NonFungibleIdType(val value: kotlin.String) {
     @SerialName(value = "Bytes")
     bytes("Bytes"),
 
-    @SerialName(value = "Uuid")
-    uuid("Uuid");
+    @SerialName(value = "Ruid")
+    ruid("Ruid");
 
     /**
-     * Override toString() to avoid using the enum variable name as the value, and instead use
+     * Override [toString()] to avoid using the enum variable name as the value, and instead use
      * the actual value defined in the API spec file.
      *
      * This solves a problem when the variable name and its value are different, and ensures that

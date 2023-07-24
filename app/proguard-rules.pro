@@ -54,12 +54,6 @@
 
 -keep class org.bouncycastle.**  { *; }
 
--keep class com.sun.jna.** { *; }
--keep class * implements com.sun.jna.** { *; }
-
--keep class com.radixdlt.** { *; }
--keep class * implements com.radixdlt.** { *; }
-
 -dontwarn java.awt.Component
 -dontwarn java.awt.GraphicsEnvironment
 -dontwarn java.awt.HeadlessException

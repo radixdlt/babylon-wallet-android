@@ -23,8 +23,7 @@ import kotlinx.serialization.Contextual
 /**
  * 
  *
- * @param accessRulesChain 
- * @param vaultAccessRulesChain 
+ * @param accessRules 
  * @param divisibility 
  * @param totalSupply String-encoded decimal representing the amount of a related fungible resource.
  * @param totalMinted String-encoded decimal representing the amount of a related fungible resource.
@@ -34,11 +33,8 @@ import kotlinx.serialization.Contextual
 
 data class StateEntityDetailsResponseFungibleResourceDetailsAllOf (
 
-//    @Contextual @SerialName(value = "access_rules_chain")
-//    val accessRulesChain: kotlin.Any,
-
-//    @Contextual @SerialName(value = "vault_access_rules_chain")
-//    val vaultAccessRulesChain: kotlin.Any,
+//    @SerialName(value = "access_rules")
+//    val accessRules: ComponentEntityAccessRules,
 
     @SerialName(value = "divisibility")
     val divisibility: kotlin.Int,

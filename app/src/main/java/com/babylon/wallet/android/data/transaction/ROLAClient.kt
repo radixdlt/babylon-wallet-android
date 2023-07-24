@@ -40,13 +40,13 @@ class ROLAClient @Inject constructor(
         }
         val ownerKeys = entityRepository.getEntityOwnerKeyHashes(entity.address, true).value()
         val publicKeyHashes = mutableListOf<FactorInstance.PublicKey>()
-        val ownerKeysHashes = ownerKeys?.toPublicKeyHashes().orEmpty()
+        val ownerKeysHashes = ownerKeys?.keyHashes.orEmpty()
         val authSigningKeyHash = authSigningFactorInstance.publicKey.compressedData.compressedPublicKeyHash()
         val transactionSigningKeyHash = transactionSigningKey.compressedData.compressedPublicKeyHash()
-        if (!ownerKeysHashes.contains(authSigningKeyHash)) {
+        if (ownerKeysHashes.none { it.hex == authSigningKeyHash }) {
             publicKeyHashes.add(authSigningFactorInstance.publicKey)
         }
-        if (!ownerKeysHashes.contains(transactionSigningKeyHash)) {
+        if (ownerKeysHashes.none { it.hex == transactionSigningKeyHash }) {
             publicKeyHashes.add(transactionSigningKey)
         }
         return ManifestBuilder()

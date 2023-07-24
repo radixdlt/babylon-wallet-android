@@ -172,7 +172,6 @@ class ManifestBuilder {
         TransactionManifest(
             instructions = Instructions.fromString(
                 string = instructionsStr,
-                blobs = this,
                 networkId = networkId.toUByte()
             ),
             blobs = this
@@ -188,5 +187,5 @@ fun NonFungibleLocalId.asStr() = when (this) {
     is NonFungibleLocalId.Bytes -> "[${value.toByteArray()}]"
     is NonFungibleLocalId.Integer -> "#$value#"
     is NonFungibleLocalId.Str -> "<$value>"
-    is NonFungibleLocalId.Uuid -> "{$value}"
+    is NonFungibleLocalId.Ruid -> "{$value}"
 }

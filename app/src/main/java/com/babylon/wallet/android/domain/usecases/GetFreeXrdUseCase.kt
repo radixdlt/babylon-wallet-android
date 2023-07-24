@@ -63,7 +63,11 @@ class GetFreeXrdUseCase @Inject constructor(
                         )
 
                         is ResultInternal.Success -> {
-                            val request = TransactionApprovalRequest(manifest = manifest, hasLockFee = true)
+                            val request = TransactionApprovalRequest(
+                                manifest = manifest,
+                                networkId = gateway.network.networkId(),
+                                hasLockFee = true
+                            )
                             transactionClient.signAndSubmitTransaction(request).onSuccess { txId ->
                                 pollTransactionStatusUseCase(txId).onValue {
                                     preferencesManager.updateEpoch(address, epochResult.data)

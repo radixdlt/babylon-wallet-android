@@ -25,13 +25,13 @@ data class Proof(
 
 fun SignatureWithPublicKey.toProof(signedMessage: ByteArray): Proof {
     return when (val signatureWithPublicKey = this) {
-        is SignatureWithPublicKey.EcdsaSecp256k1 -> Proof(
+        is SignatureWithPublicKey.Secp256k1 -> Proof(
             signatureWithPublicKey.publicKey(signedMessage).toHexString(),
             signatureWithPublicKey.signature().toHexString(),
             Proof.Curve.Secp256k1
         )
 
-        is SignatureWithPublicKey.EddsaEd25519 -> Proof(
+        is SignatureWithPublicKey.Ed25519 -> Proof(
             signatureWithPublicKey.publicKey().toHexString(),
             signatureWithPublicKey.signature().toHexString(),
             Proof.Curve.Curve25519

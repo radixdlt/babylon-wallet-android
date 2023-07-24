@@ -18,7 +18,6 @@ data class TransactionManifestData(
         TransactionManifest(
             instructions = Instructions.fromString(
                 string = instructions,
-                blobs = this,
                 networkId = networkId.toUByte()
             ),
             blobs = this

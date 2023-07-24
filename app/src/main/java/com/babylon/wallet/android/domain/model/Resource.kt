@@ -8,13 +8,12 @@ import com.babylon.wallet.android.domain.model.metadata.NameMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.SymbolMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.TagsMetadataItem
 import com.radixdlt.ret.NonFungibleLocalId
-import com.radixdlt.ret.utilsKnownAddresses
+import com.radixdlt.ret.knownAddresses
+import com.radixdlt.ret.nonFungibleLocalIdFromStr
 import rdx.works.core.displayableQuantity
-import rdx.works.core.toUByteList
 import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.derivation.model.NetworkId
 import java.math.BigDecimal
-import java.util.UUID
 
 sealed class Resource {
     abstract val resourceAddress: String
@@ -100,7 +99,7 @@ sealed class Resource {
         companion object {
             fun officialXrdResourceAddress(
                 onNetworkId: NetworkId = Radix.Gateway.default.network.networkId()
-            ) = utilsKnownAddresses(networkId = onNetworkId.value.toUByte()).resourceAddresses.xrd.addressString()
+            ) = knownAddresses(networkId = onNetworkId.value.toUByte()).resourceAddresses.xrd.addressString()
         }
     }
 
@@ -157,7 +156,7 @@ sealed class Resource {
                 is ID.StringType -> (other.localId as? ID.StringType)?.compareTo(localId) ?: -1
                 is ID.IntegerType -> (other.localId as? ID.IntegerType)?.compareTo(localId) ?: -1
                 is ID.BytesType -> (other.localId as? ID.BytesType)?.compareTo(localId) ?: -1
-                is ID.UUIDType -> (other.localId as? ID.UUIDType)?.compareTo(localId) ?: -1
+                is ID.RUIDType -> (other.localId as? ID.RUIDType)?.compareTo(localId) ?: -1
             }
 
             sealed class ID {
@@ -207,22 +206,22 @@ sealed class Resource {
                     override val displayable: String
                         get() = id
 
-                    override fun toRetId(): NonFungibleLocalId = NonFungibleLocalId.Bytes(id.toByteArray().toUByteList())
+                    override fun toRetId(): NonFungibleLocalId = nonFungibleLocalIdFromStr("$prefix$id$suffix")
 
                     override fun compareTo(other: BytesType): Int = other.id.compareTo(id)
                 }
 
-                data class UUIDType(
-                    private val id: UUID
-                ) : ID(), Comparable<UUIDType> {
-                    override val prefix: String = UUID_PREFIX
-                    override val suffix: String = UUID_SUFFIX
+                data class RUIDType(
+                    private val id: String
+                ) : ID(), Comparable<RUIDType> {
+                    override val prefix: String = RUID_PREFIX
+                    override val suffix: String = RUID_SUFFIX
                     override val displayable: String
-                        get() = id.toString()
+                        get() = id
 
-                    override fun toRetId(): NonFungibleLocalId = NonFungibleLocalId.Uuid(id.toString())
+                    override fun toRetId(): NonFungibleLocalId = nonFungibleLocalIdFromStr("$prefix$id$suffix")
 
-                    override fun compareTo(other: UUIDType): Int = other.id.compareTo(id)
+                    override fun compareTo(other: RUIDType): Int = other.id.compareTo(id)
                 }
 
                 companion object {
@@ -231,29 +230,20 @@ sealed class Resource {
                     private const val INT_DELIMITER = "#"
                     private const val BYTES_PREFIX = "["
                     private const val BYTES_SUFFIX = "]"
-                    private const val UUID_PREFIX = "{"
-                    private const val UUID_SUFFIX = "}"
+                    private const val RUID_PREFIX = "{"
+                    private const val RUID_SUFFIX = "}"
 
                     /**
                      * Infers the type of the [Item].[ID] from its surrounding delimiters
                      *
-                     * More info [here](https://docs-babylon.radixdlt.com/main/reference-materials/resource-addressing.html#_non_fungibles_individual_units_of_non_fungible_resources)
+                     * More info https://docs-babylon.radixdlt.com/main/reference-materials/resource-addressing.html
+                     * #_non_fungibles_individual_units_of_non_fungible_resources
                      */
-                    @Suppress("MaxLineLength")
-                    fun from(value: String): ID = when {
-                        value.startsWith(STRING_PREFIX) && value.endsWith(STRING_SUFFIX) -> StringType(
-                            id = value.removeSurrounding(STRING_PREFIX, STRING_SUFFIX)
-                        )
-                        value.startsWith(INT_DELIMITER) && value.endsWith(INT_DELIMITER) -> IntegerType(
-                            id = value.removeSurrounding(INT_DELIMITER).toULong()
-                        )
-                        value.startsWith(BYTES_PREFIX) && value.endsWith(BYTES_SUFFIX) -> BytesType(
-                            id = value.removeSurrounding(BYTES_PREFIX, BYTES_SUFFIX)
-                        )
-                        value.startsWith(UUID_PREFIX) && value.endsWith(UUID_SUFFIX) -> UUIDType(
-                            id = UUID.fromString(value.removeSurrounding(UUID_PREFIX, UUID_SUFFIX))
-                        )
-                        else -> StringType(id = value) // cannot infer type, defaults to string
+                    fun from(value: String): ID = when (val id = nonFungibleLocalIdFromStr(value)) {
+                        is NonFungibleLocalId.Integer -> IntegerType(id = id.value)
+                        is NonFungibleLocalId.Str -> StringType(id = id.value)
+                        is NonFungibleLocalId.Bytes -> BytesType(id = value.removeSurrounding(BYTES_PREFIX, BYTES_SUFFIX))
+                        is NonFungibleLocalId.Ruid -> RUIDType(id = value.removeSurrounding(RUID_PREFIX, RUID_SUFFIX))
                     }
                 }
             }

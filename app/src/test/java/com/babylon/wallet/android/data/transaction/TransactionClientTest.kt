@@ -19,7 +19,7 @@ import com.babylon.wallet.android.presentation.TestDispatcherRule
 import com.radixdlt.ret.Address
 import com.radixdlt.ret.Decimal
 import com.radixdlt.ret.TransactionManifest
-import com.radixdlt.ret.utilsKnownAddresses
+import com.radixdlt.ret.knownAddresses
 import io.mockk.coEvery
 import io.mockk.mockk
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -38,7 +38,6 @@ import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.data.repository.ProfileRepository
 import rdx.works.profile.domain.GetProfileUseCase
-import rdx.works.profile.domain.gateway.GetCurrentGatewayUseCase
 import java.math.BigDecimal
 
 internal class TransactionClientTest {
@@ -47,7 +46,6 @@ internal class TransactionClientTest {
     val coroutineRule = TestDispatcherRule()
 
     private val transactionRepository = mockk<TransactionRepository>()
-    private val getCurrentGatewayUseCase = mockk<GetCurrentGatewayUseCase>()
     private val getProfileUseCase = GetProfileUseCase(ProfileRepositoryFake)
     private val getAccountsWithResourcesUseCase = GetAccountsWithResourcesUseCase(
         EntityRepositoryFake,
@@ -63,13 +61,11 @@ internal class TransactionClientTest {
         coEvery { collectSignersSignaturesUseCase.signingState } returns emptyFlow()
         transactionClient = TransactionClient(
             transactionRepository,
-            getCurrentGatewayUseCase,
             getProfileUseCase,
             collectSignersSignaturesUseCase,
             getAccountsWithResourcesUseCase,
             submitTransactionUseCase
         )
-        coEvery { getCurrentGatewayUseCase() } returns Radix.Gateway.default
     }
 
     @OptIn(ExperimentalCoroutinesApi::class)
@@ -119,8 +115,8 @@ internal class TransactionClientTest {
 
     private object EntityRepositoryFake : EntityRepository {
 
-        const val addressWithFunds = "account_tdx_21_12ya9jylskaa6gdrfr8nvve3pfc6wyhyw7eg83fwlc7fv2w0eanumcd"
-        const val addressWithNoFunds = "account_tdx_21_12xg7tf7aup8lrxkvug0vzatntzww0c6jnntyj6yd4eg5920kpxpzvt"
+        const val addressWithFunds = "account_tdx_d_128zs6vanvyrg4h0psvnsq7wv7wg6sppsepyd9yrfndkhzs04vnvxad"
+        const val addressWithNoFunds = "account_tdx_d_129xd57thxxqne3ugen5pls2yrl6srajlt4vx0z6pgt9n9k9apwx2qq"
 
         val account1 = account(address = addressWithFunds)
         val accountResourcesWithFunds = AccountWithResources(
@@ -168,7 +164,7 @@ internal class TransactionClientTest {
     ): TransactionManifest = ManifestBuilder()
         .withdraw(
             fromAddress = Address(address),
-            fungible = utilsKnownAddresses(networkId = networkId.toUByte()).resourceAddresses.xrd,
+            fungible = knownAddresses(networkId = networkId.toUByte()).resourceAddresses.xrd,
             amount = Decimal("10")
         )
         .build(networkId)

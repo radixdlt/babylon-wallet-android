@@ -49,6 +49,11 @@ object Radix {
                 name = "enkinet",
                 displayDescription = "Enkinet (Test Network)"
             )
+            val ansharnet = Network(
+                id = NetworkId.Ansharnet.value,
+                name = "ansharnet",
+                displayDescription = "Ansharnet (Test Network)"
+            )
 
             fun allKnownNetworks(): List<Network> {
                 return listOf(hammunet, nebunet, kisharnet, mardunet, enkinet)
@@ -81,7 +86,7 @@ object Radix {
 
         companion object {
             val default: Gateway
-                get() = enkinet
+                get() = ansharnet
 
             val nebunet = Gateway(
                 url = "https://betanet.radixdlt.com",
@@ -102,6 +107,10 @@ object Radix {
             val mardunet = Gateway(
                 url = "https://mardunet-gateway.radixdlt.com",
                 network = Network.mardunet
+            )
+            val ansharnet = Gateway(
+                url = "https://ansharnet-gateway.radixdlt.com",
+                network = Network.ansharnet
             )
         }
     }

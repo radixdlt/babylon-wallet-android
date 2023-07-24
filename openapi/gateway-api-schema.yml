@@ -612,7 +612,7 @@ components:
     LastUpdatedAtStateVersion:
       description: TBD # TODO describe
       type: integer
-      format: int64
+      format: int64 # TODO define min/max using CoreApi as a reference
 
     #
     # Keys
@@ -660,6 +660,43 @@ components:
               minLength: 64
               maxLength: 64
               description: The hex-encoded compressed EdDSA Ed25519 public key (32 bytes)
+
+    PublicKeyHashType:
+      type: string
+      enum:
+        - EcdsaSecp256k1
+        - EddsaEd25519
+    PublicKeyHash:
+      type: object
+      required:
+        - key_hash_type
+      properties:
+        key_hash_type:
+          $ref: "#/components/schemas/PublicKeyHashType"
+      discriminator:
+        propertyName: key_hash_type
+        mapping:
+          # NOTE: These need to match PublicKeyHashType
+          EcdsaSecp256k1: "#/components/schemas/PublicKeyHashEcdsaSecp256k1"
+          EddsaEd25519: "#/components/schemas/PublicKeyHashEddsaEd25519"
+    PublicKeyHashEcdsaSecp256k1:
+      allOf:
+        - $ref: "#/components/schemas/PublicKeyHash"
+        - type: object
+          required:
+            - hash_hex
+          properties:
+            hash_hex:
+              $ref: "#/components/schemas/HashHexString"
+    PublicKeyHashEddsaEd25519:
+      allOf:
+        - $ref: "#/components/schemas/PublicKeyHash"
+        - type: object
+          required:
+            - hash_hex
+          properties:
+            hash_hex:
+              $ref: "#/components/schemas/HashHexString"
 
     #
     # Common Request Types
@@ -715,6 +752,21 @@ components:
     #
     # Common Response Types
     #
+
+    ValidatorVaultItem:
+      type: object
+      required:
+        - balance
+        - last_changed_at_state_version
+        - address
+      properties:
+        balance:
+          $ref: "#/components/schemas/BigDecimal"
+        last_changed_at_state_version:
+          type: integer
+          format: int64
+        address:
+          $ref: "#/components/schemas/Address"
 
     LedgerStateMixin:
       type: object
@@ -810,6 +862,7 @@ components:
       required:
         - key
         - value
+        - is_locked
         - last_updated_at_state_version
       properties:
         key:
@@ -817,6 +870,8 @@ components:
           type: string
         value:
           $ref: "#/components/schemas/EntityMetadataItemValue"
+        is_locked:
+          type: boolean
         last_updated_at_state_version:
           $ref: "#/components/schemas/LastUpdatedAtStateVersion"
     EntityMetadataItemValue:
@@ -824,12 +879,19 @@ components:
         - $ref: "#/components/schemas/ScryptoSborValue"
         - type: object
           properties:
-            as_string:
-              type: string
-            as_string_collection:
-              type: array
-              items:
-                type: string
+            typed:
+              $ref: "#/components/schemas/MetadataTypedValue"
+
+    ComponentEntityAccessRules:
+      type: object
+      required:
+        - owner
+        - entries
+      properties:
+        owner:
+          type: object
+        entries:
+          type: object
 
     FungibleResourcesCollection:
       description: Fungible resources collection.
@@ -1100,7 +1162,13 @@ components:
         - String
         - Integer
         - Bytes
-        - Uuid
+        - Ruid
+
+    PackageVmType:
+      type: string
+      enum:
+        - Native
+        - ScryptoV1
 
     ValidatorCollection:
       allOf:
@@ -1118,15 +1186,24 @@ components:
       required:
         - address
         - metadata
-        - current_stake
+        - stake_vault
+        - pending_xrd_withdraw_vault
+        - locked_owner_stake_unit_vault
+        - pending_owner_stake_unit_unlock_vault
       properties:
         address:
           $ref: "#/components/schemas/Address"
+        stake_vault:
+          $ref: "#/components/schemas/ValidatorVaultItem"
+        pending_xrd_withdraw_vault:
+          $ref: "#/components/schemas/ValidatorVaultItem"
+        locked_owner_stake_unit_vault:
+          $ref: "#/components/schemas/ValidatorVaultItem"
+        pending_owner_stake_unit_unlock_vault:
+          $ref: "#/components/schemas/ValidatorVaultItem"
         state:
           type: object
           nullable: true
-        current_stake:
-          $ref: "#/components/schemas/BigDecimal"
         active_in_epoch:
           $ref: "#/components/schemas/ValidatorCollectionItemActiveInEpoch"
         metadata:
@@ -1332,7 +1409,7 @@ components:
           type: integer
           format: int64
           minimum: 0
-          description: A decimal-string-encoded integer between `0` and `2^64 - 1`, used to ensure the transaction intent is unique.
+          description: A decimal-string-encoded integer between `0` and `2^32 - 1`, used to ensure the transaction intent is unique.
         signer_public_keys:
           type: array
           items:
@@ -1341,18 +1418,15 @@ components:
         flags:
           type: object
           required:
-            - unlimited_loan
+            - use_free_credit
             - assume_all_signature_proofs
-            - permit_duplicate_intent_hash
-            - permit_invalid_header_epoch
+            - skip_epoch_check
           properties:
-            unlimited_loan:
+            use_free_credit:
               type: boolean
             assume_all_signature_proofs:
               type: boolean
-            permit_duplicate_intent_hash:
-              type: boolean
-            permit_invalid_header_epoch:
+            skip_epoch_check:
               type: boolean
     TransactionPreviewResponse:
       type: object
@@ -1672,17 +1746,14 @@ components:
         - $ref: "#/components/schemas/StateEntityDetailsResponseItemDetails"
         - type: object
           required:
-            - access_rules_chain
-            - vault_access_rules_chain
+            - access_rules
             - divisibility
             - total_supply
             - total_minted
             - total_burned
           properties:
-            access_rules_chain:
-              type: object
-            vault_access_rules_chain:
-              type: object
+            access_rules:
+              $ref: "#/components/schemas/ComponentEntityAccessRules"
             divisibility:
               type: integer
               minimum: 0
@@ -1697,17 +1768,14 @@ components:
         - $ref: "#/components/schemas/StateEntityDetailsResponseItemDetails"
         - type: object
           required:
-            - access_rules_chain
-            - vault_access_rules_chain
+            - access_rules
             - non_fungible_id_type
             - total_supply
             - total_minted
             - total_burned
           properties:
-            access_rules_chain:
-              type: object
-            vault_access_rules_chain:
-              type: object
+            access_rules:
+              $ref: "#/components/schemas/ComponentEntityAccessRules"
             non_fungible_id_type:
               $ref: "#/components/schemas/NonFungibleIdType"
             total_supply:
@@ -1728,18 +1796,71 @@ components:
       allOf:
         - $ref: "#/components/schemas/StateEntityDetailsResponseItemDetails"
         - type: object
+          required:
+            - vm_type
+            - code_hash_hex
+            - schema_hash_hex
           properties:
+            vm_type:
+              $ref: "#/components/schemas/PackageVmType"
+            code_hash_hex:
+              $ref: "#/components/schemas/HexString"
             code_hex:
               $ref: "#/components/schemas/HexString"
+            schema_hash_hex:
+              $ref: "#/components/schemas/HexString"
+            schema:
+              type: object
             royalty_vault_balance:
               $ref: "#/components/schemas/BigDecimal"
+            blueprints:
+              $ref: "#/components/schemas/StateEntityDetailsResponsePackageDetailsBlueprintCollection"
+    StateEntityDetailsResponsePackageDetailsBlueprintCollection:
+      description: Entity metadata collection.
+      allOf:
+        - $ref: "#/components/schemas/ResultSetCursorMixin"
+        - type: object
+          required:
+            - items
+          properties:
+            items:
+              type: array
+              items:
+                $ref: "#/components/schemas/StateEntityDetailsResponsePackageDetailsBlueprintItem"
+    StateEntityDetailsResponsePackageDetailsBlueprintItem:
+      type: object
+      required:
+        - name
+        - version
+        - definition
+      properties:
+        name:
+          type: string
+        version:
+          type: string
+        definition:
+          type: object
+        dependant_entities:
+          type: array
+          items:
+            $ref: "#/components/schemas/Address"
+        auth_template:
+          type: object
+        auth_template_is_locked:
+          type: boolean
+          nullable: true
+        royalty_config:
+          type: object
+        royalty_config_is_locked:
+          type: boolean
+          nullable: true
     StateEntityDetailsResponseComponentDetails:
       allOf:
         - $ref: "#/components/schemas/StateEntityDetailsResponseItemDetails"
         - type: object
           required:
             - blueprint_name
-            - access_rules_chain
+            - access_rules
           properties:
             package_address:
               $ref: "#/components/schemas/Address"
@@ -1747,8 +1868,8 @@ components:
               type: string
             state:
               type: object
-            access_rules_chain:
-              type: object
+            access_rules:
+              $ref: "#/components/schemas/ComponentEntityAccessRules"
             royalty_vault_balance:
               $ref: "#/components/schemas/BigDecimal"
 
@@ -2177,3 +2298,414 @@ components:
           type: array
           items:
             type: string
+
+    #
+    # Metadata Typed Value
+    #
+
+    MetadataValueType:
+      type: string
+      enum:
+        - String
+        - Bool
+        - U8
+        - U32
+        - U64
+        - I32
+        - I64
+        - Decimal
+        - GlobalAddress
+        - PublicKey
+        - NonFungibleGlobalId
+        - NonFungibleLocalId
+        - Instant
+        - Url
+        - Origin
+        - PublicKeyHash
+        - StringArray
+        - BoolArray
+        - U8Array
+        - U32Array
+        - U64Array
+        - I32Array
+        - I64Array
+        - DecimalArray
+        - GlobalAddressArray
+        - PublicKeyArray
+        - NonFungibleGlobalIdArray
+        - NonFungibleLocalIdArray
+        - InstantArray
+        - UrlArray
+        - OriginArray
+        - PublicKeyHashArray
+    MetadataTypedValue:
+      type: object
+      discriminator:
+        propertyName: type
+        mapping:
+          String: "#/components/schemas/MetadataStringValue"
+          Bool: "#/components/schemas/MetadataBoolValue"
+          U8: "#/components/schemas/MetadataU8Value"
+          U32: "#/components/schemas/MetadataU32Value"
+          U64: "#/components/schemas/MetadataU64Value"
+          I32: "#/components/schemas/MetadataI32Value"
+          I64: "#/components/schemas/MetadataI64Value"
+          Decimal: "#/components/schemas/MetadataDecimalValue"
+          GlobalAddress: "#/components/schemas/MetadataGlobalAddressValue"
+          PublicKey: "#/components/schemas/MetadataPublicKeyValue"
+          NonFungibleGlobalId: "#/components/schemas/MetadataNonFungibleGlobalIdValue"
+          NonFungibleLocalId: "#/components/schemas/MetadataNonFungibleLocalIdValue"
+          Instant: "#/components/schemas/MetadataInstantValue"
+          Url: "#/components/schemas/MetadataUrlValue"
+          Origin: "#/components/schemas/MetadataOriginValue"
+          PublicKeyHash: "#/components/schemas/MetadataPublicKeyHashValue"
+          StringArray: "#/components/schemas/MetadataStringArrayValue"
+          BoolArray: "#/components/schemas/MetadataBoolArrayValue"
+          U8Array: "#/components/schemas/MetadataU8ArrayValue"
+          U32Array: "#/components/schemas/MetadataU32ArrayValue"
+          U64Array: "#/components/schemas/MetadataU64ArrayValue"
+          I32Array: "#/components/schemas/MetadataI32ArrayValue"
+          I64Array: "#/components/schemas/MetadataI64ArrayValue"
+          DecimalArray: "#/components/schemas/MetadataDecimalArrayValue"
+          GlobalAddressArray: "#/components/schemas/MetadataGlobalAddressArrayValue"
+          PublicKeyArray: "#/components/schemas/MetadataPublicKeyArrayValue"
+          NonFungibleGlobalIdArray: "#/components/schemas/MetadataNonFungibleGlobalIdArrayValue"
+          NonFungibleLocalIdArray: "#/components/schemas/MetadataNonFungibleLocalIdArrayValue"
+          InstantArray: "#/components/schemas/MetadataInstantArrayValue"
+          UrlArray: "#/components/schemas/MetadataUrlArrayValue"
+          OriginArray: "#/components/schemas/MetadataOriginArrayValue"
+          PublicKeyHashArray: "#/components/schemas/MetadataPublicKeyHashArrayValue"
+      required:
+        - type
+      properties:
+        type:
+          $ref: "#/components/schemas/MetadataValueType"
+    MetadataStringValue:
+      allOf:
+        - $ref: "#/components/schemas/MetadataTypedValue"
+        - type: object
+          required:
+            - value
+          properties:
+            value:
+              type: string
+    MetadataBoolValue:
+      allOf:
+        - $ref: "#/components/schemas/MetadataTypedValue"
+        - type: object
+          required:
+            - value
+          properties:
+            value:
+              type: boolean
+    MetadataU8Value:
+      allOf:
+        - $ref: "#/components/schemas/MetadataTypedValue"
+        - type: object
+          required:
+            - value
+          properties:
+            value:
+              type: string
+    MetadataU32Value:
+      allOf:
+        - $ref: "#/components/schemas/MetadataTypedValue"
+        - type: object
+          required:
+            - value
+          properties:
+            value:
+              type: string
+    MetadataU64Value:
+      allOf:
+        - $ref: "#/components/schemas/MetadataTypedValue"
+        - type: object
+          required:
+            - value
+          properties:
+            value:
+              type: string
+    MetadataI32Value:
+      allOf:
+        - $ref: "#/components/schemas/MetadataTypedValue"
+        - type: object
+          required:
+            - value
+          properties:
+            value:
+              type: string
+    MetadataI64Value:
+      allOf:
+        - $ref: "#/components/schemas/MetadataTypedValue"
+        - type: object
+          required:
+            - value
+          properties:
+            value:
+              type: string
+    MetadataDecimalValue:
+      allOf:
+        - $ref: "#/components/schemas/MetadataTypedValue"
+        - type: object
+          required:
+            - value
+          properties:
+            value:
+              type: string
+    MetadataGlobalAddressValue:
+      allOf:
+        - $ref: "#/components/schemas/MetadataTypedValue"
+        - type: object
+          required:
+            - value
+          properties:
+            value:
+              type: string
+    MetadataPublicKeyValue:
+      allOf:
+        - $ref: "#/components/schemas/MetadataTypedValue"
+        - type: object
+          required:
+            - value
+          properties:
+            value:
+              $ref: "#/components/schemas/PublicKey"
+    MetadataNonFungibleGlobalIdValue:
+      allOf:
+        - $ref: "#/components/schemas/MetadataTypedValue"
+        - type: object
+          required:
+            - resource_address
+            - non_fungible_id
+          properties:
+            resource_address:
+              $ref: "#/components/schemas/Address"
+            non_fungible_id:
+              $ref: "#/components/schemas/NonFungibleId"
+    MetadataNonFungibleLocalIdValue:
+      allOf:
+        - $ref: "#/components/schemas/MetadataTypedValue"
+        - type: object
+          required:
+            - value
+          properties:
+            value:
+              type: string
+    MetadataInstantValue:
+      allOf:
+        - $ref: "#/components/schemas/MetadataTypedValue"
+        - type: object
+          required:
+            - value
+          properties:
+            value:
+              type: string
+    MetadataUrlValue:
+      allOf:
+        - $ref: "#/components/schemas/MetadataTypedValue"
+        - type: object
+          required:
+            - value
+          properties:
+            value:
+              type: string
+    MetadataOriginValue:
+      allOf:
+        - $ref: "#/components/schemas/MetadataTypedValue"
+        - type: object
+          required:
+            - value
+          properties:
+            value:
+              type: string
+    MetadataPublicKeyHashValue:
+      allOf:
+        - $ref: "#/components/schemas/MetadataTypedValue"
+        - type: object
+          required:
+            - value
+          properties:
+            value:
+              $ref: "#/components/schemas/PublicKeyHash"
+    MetadataStringArrayValue:
+      allOf:
+        - $ref: "#/components/schemas/MetadataTypedValue"
+        - type: object
+          required:
+            - values
+          properties:
+            values:
+              type: array
+              items:
+                type: string
+    MetadataBoolArrayValue:
+      allOf:
+        - $ref: "#/components/schemas/MetadataTypedValue"
+        - type: object
+          required:
+            - values
+          properties:
+            values:
+              type: array
+              items:
+                type: boolean
+    MetadataU8ArrayValue:
+      allOf:
+        - $ref: "#/components/schemas/MetadataTypedValue"
+        - type: object
+          required:
+            - value_hex
+          properties:
+            value_hex:
+              type: string
+    MetadataU32ArrayValue:
+      allOf:
+        - $ref: "#/components/schemas/MetadataTypedValue"
+        - type: object
+          required:
+            - values
+          properties:
+            values:
+              type: array
+              items:
+                type: string
+    MetadataU64ArrayValue:
+      allOf:
+        - $ref: "#/components/schemas/MetadataTypedValue"
+        - type: object
+          required:
+            - values
+          properties:
+            values:
+              type: array
+              items:
+                type: string
+    MetadataI32ArrayValue:
+      allOf:
+        - $ref: "#/components/schemas/MetadataTypedValue"
+        - type: object
+          required:
+            - values
+          properties:
+            values:
+              type: array
+              items:
+                type: string
+    MetadataI64ArrayValue:
+      allOf:
+        - $ref: "#/components/schemas/MetadataTypedValue"
+        - type: object
+          required:
+            - values
+          properties:
+            values:
+              type: array
+              items:
+                type: string
+    MetadataDecimalArrayValue:
+      allOf:
+        - $ref: "#/components/schemas/MetadataTypedValue"
+        - type: object
+          required:
+            - values
+          properties:
+            values:
+              type: array
+              items:
+                type: string
+    MetadataGlobalAddressArrayValue:
+      allOf:
+        - $ref: "#/components/schemas/MetadataTypedValue"
+        - type: object
+          required:
+            - values
+          properties:
+            values:
+              type: array
+              items:
+                type: string
+    MetadataPublicKeyArrayValue:
+      allOf:
+        - $ref: "#/components/schemas/MetadataTypedValue"
+        - type: object
+          required:
+            - values
+          properties:
+            values:
+              type: array
+              items:
+                $ref: "#/components/schemas/PublicKey"
+    MetadataNonFungibleGlobalIdArrayValue:
+      allOf:
+        - $ref: "#/components/schemas/MetadataTypedValue"
+        - type: object
+          required:
+            - values
+          properties:
+            values:
+              type: array
+              items:
+                type: object
+                required:
+                  - resource_address
+                  - non_fungible_id
+                properties:
+                  resource_address:
+                    $ref: "#/components/schemas/Address"
+                  non_fungible_id:
+                    $ref: "#/components/schemas/NonFungibleId"
+    MetadataNonFungibleLocalIdArrayValue:
+      allOf:
+        - $ref: "#/components/schemas/MetadataTypedValue"
+        - type: object
+          required:
+            - values
+          properties:
+            values:
+              type: array
+              items:
+                type: string
+    MetadataInstantArrayValue:
+      allOf:
+        - $ref: "#/components/schemas/MetadataTypedValue"
+        - type: object
+          required:
+            - values
+          properties:
+            values:
+              type: array
+              items:
+                type: string
+    MetadataUrlArrayValue:
+      allOf:
+        - $ref: "#/components/schemas/MetadataTypedValue"
+        - type: object
+          required:
+            - values
+          properties:
+            values:
+              type: array
+              items:
+                type: string
+    MetadataOriginArrayValue:
+      allOf:
+        - $ref: "#/components/schemas/MetadataTypedValue"
+        - type: object
+          required:
+            - values
+          properties:
+            values:
+              type: array
+              items:
+                type: string
+    MetadataPublicKeyHashArrayValue:
+      allOf:
+        - $ref: "#/components/schemas/MetadataTypedValue"
+        - type: object
+          required:
+            - values
+          properties:
+            values:
+              type: array
+              items:
+                $ref: "#/components/schemas/PublicKeyHash"
