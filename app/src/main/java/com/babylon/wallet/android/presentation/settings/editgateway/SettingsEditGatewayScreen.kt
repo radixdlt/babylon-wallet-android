@@ -50,7 +50,6 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.DefaultModalSheetLayout
-import com.babylon.wallet.android.presentation.ui.composables.InfoLink
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import kotlinx.collections.immutable.PersistentList
@@ -175,12 +174,12 @@ private fun SettingsEditGatewayContent(
                         color = RadixTheme.colors.gray2
                     )
                     Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
-                    InfoLink(
-                        stringResource(R.string.gateways_whatIsAGateway),
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = RadixTheme.dimensions.paddingDefault)
-                    )
+//                    InfoLink( // TODO enable it when we have a link
+//                        stringResource(R.string.gateways_whatIsAGateway),
+//                        modifier = Modifier
+//                            .fillMaxWidth()
+//                            .padding(horizontal = RadixTheme.dimensions.paddingDefault)
+//                    )
                     Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
                     Divider(
                         color = RadixTheme.colors.gray5,

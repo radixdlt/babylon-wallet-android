@@ -23,7 +23,6 @@ import com.babylon.wallet.android.designsystem.composable.RadixSecondaryButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.presentation.dapp.authorized.selectpersona.PersonaUiModel
 import com.babylon.wallet.android.presentation.ui.composables.PersonaRoundedAvatar
-import com.babylon.wallet.android.presentation.ui.composables.RequiredPersonaInformationInfo
 import kotlinx.collections.immutable.ImmutableList
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.data.model.pernetwork.PersonaData

@@ -350,7 +350,7 @@ fun ScanQRContent(
     ) {
         Text(
             modifier = Modifier
-                .padding(vertical = RadixTheme.dimensions.paddingDefault),
+                .padding(RadixTheme.dimensions.paddingDefault),
             text = stringResource(id = R.string.assetTransfer_qrScanInstructions),
             style = RadixTheme.typography.body1Regular,
             color = RadixTheme.colors.gray1

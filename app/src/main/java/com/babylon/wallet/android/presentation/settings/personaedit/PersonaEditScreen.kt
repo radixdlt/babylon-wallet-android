@@ -52,10 +52,10 @@ import com.babylon.wallet.android.presentation.ui.composables.BottomPrimaryButto
 import com.babylon.wallet.android.presentation.ui.composables.DefaultModalSheetLayout
 import com.babylon.wallet.android.presentation.ui.composables.PersonaRoundedAvatar
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
-import com.babylon.wallet.android.presentation.ui.composables.RequiredPersonaInformationInfo
 import com.babylon.wallet.android.presentation.ui.composables.UnderlineTextButton
 import com.babylon.wallet.android.presentation.ui.composables.persona.AddFieldSheet
 import com.babylon.wallet.android.presentation.ui.composables.persona.PersonaDataFieldInput
+import com.babylon.wallet.android.presentation.ui.composables.persona.RequiredPersonaInformationInfo
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.launch

@@ -30,7 +30,6 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.domain.model.PersonaUiModel
 import com.babylon.wallet.android.presentation.ui.composables.ApplySecuritySettingsLabel
 import com.babylon.wallet.android.presentation.ui.composables.BackIconType
-import com.babylon.wallet.android.presentation.ui.composables.InfoLink
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.StandardOneLineCard
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
@@ -103,7 +102,10 @@ fun PersonasContent(
                     color = RadixTheme.colors.gray2
                 )
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
-                InfoLink(stringResource(R.string.personas_whatIsPersona), modifier = Modifier.fillMaxWidth())
+//                InfoLink( // TODO enable it when we have a link
+//                    stringResource(R.string.personas_whatIsPersona),
+//                    modifier = Modifier.fillMaxWidth()
+//                )
                 if (displaySecurityPrompt) {
                     Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSmall))
                     ApplySecuritySettingsLabel(

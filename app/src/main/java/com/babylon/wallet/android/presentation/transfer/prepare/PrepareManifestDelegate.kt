@@ -4,6 +4,7 @@ import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.data.manifest.prepareInternalTransactionRequest
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.babylon.wallet.android.domain.model.Resource
+import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.transfer.SpendingAsset
 import com.babylon.wallet.android.presentation.transfer.TargetAccount
 import com.babylon.wallet.android.presentation.transfer.TransferViewModel
@@ -13,6 +14,7 @@ import com.radixdlt.ret.NonFungibleGlobalId
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
 import rdx.works.core.ret.ManifestBuilder
+import rdx.works.core.ret.buildSafely
 import rdx.works.profile.data.model.pernetwork.Network
 import timber.log.Timber
 import java.math.BigDecimal
@@ -24,33 +26,35 @@ class PrepareManifestDelegate(
 
     suspend fun onSubmit() {
         val fromAccount = state.value.fromAccount ?: return
-        val request = prepareRequest(fromAccount, state.value)
-        state.update { it.copy(transferRequestId = request.requestId) }
-        Timber.d("Manifest for ${request.requestId} prepared:")
-        Timber.d(request.transactionManifestData.instructions)
-        incomingRequestRepository.add(request)
+        prepareRequest(fromAccount, state.value).onSuccess { request ->
+            state.update { it.copy(transferRequestId = request.requestId) }
+            Timber.d("Manifest for ${request.requestId} prepared:")
+            Timber.d(request.transactionManifestData.instructions)
+            incomingRequestRepository.add(request)
+        }.onFailure { error ->
+            state.update { it.copy(error = UiMessage.ErrorMessage.from(error)) }
+        }
     }
 
     private fun prepareRequest(
         fromAccount: Network.Account,
         currentState: TransferViewModel.State
-    ): MessageFromDataChannel.IncomingRequest.TransactionRequest {
-        val manifest = ManifestBuilder()
-            .attachInstructionsForFungibles(
-                fromAccount = fromAccount,
-                targetAccounts = currentState.targetAccounts
-            )
-            .attachInstructionsForNFTs(
-                fromAccount = fromAccount,
-                targetAccounts = currentState.targetAccounts
-            )
-            .build(fromAccount.networkID)
-
-        return manifest.prepareInternalTransactionRequest(
-            networkId = fromAccount.networkID,
-            message = currentState.submittedMessage,
+    ): Result<MessageFromDataChannel.IncomingRequest.TransactionRequest> = ManifestBuilder()
+        .attachInstructionsForFungibles(
+            fromAccount = fromAccount,
+            targetAccounts = currentState.targetAccounts
         )
-    }
+        .attachInstructionsForNFTs(
+            fromAccount = fromAccount,
+            targetAccounts = currentState.targetAccounts
+        )
+        .buildSafely(fromAccount.networkID)
+        .map { manifest ->
+            manifest.prepareInternalTransactionRequest(
+                networkId = fromAccount.networkID,
+                message = currentState.submittedMessage,
+            )
+        }
 
     @Suppress("NestedBlockDepth")
     private fun ManifestBuilder.attachInstructionsForFungibles(

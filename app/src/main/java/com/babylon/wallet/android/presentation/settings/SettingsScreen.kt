@@ -303,7 +303,7 @@ fun SettingsScreenWithoutActiveConnectionPreview() {
             onDeleteWalletClick = {},
             appSettings = persistentListOf(
                 SettingsItem.TopLevelSettings.Connection,
-                SettingsItem.TopLevelSettings.LinkedConnector,
+                SettingsItem.TopLevelSettings.LinkedConnectors,
                 SettingsItem.TopLevelSettings.Gateways,
                 SettingsItem.TopLevelSettings.AuthorizedDapps,
                 SettingsItem.TopLevelSettings.Personas,

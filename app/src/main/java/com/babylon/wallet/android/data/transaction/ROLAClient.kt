@@ -12,6 +12,7 @@ import com.radixdlt.ret.TransactionManifest
 import rdx.works.core.compressedPublicKeyHash
 import rdx.works.core.compressedPublicKeyHashBytes
 import rdx.works.core.ret.ManifestBuilder
+import rdx.works.core.ret.buildSafely
 import rdx.works.profile.data.model.factorsources.Slip10Curve
 import rdx.works.profile.data.model.pernetwork.Entity
 import rdx.works.profile.data.model.pernetwork.FactorInstance
@@ -34,7 +35,7 @@ class ROLAClient @Inject constructor(
     suspend fun createAuthKeyManifestWithStringInstructions(
         entity: Entity,
         authSigningFactorInstance: FactorInstance
-    ): TransactionManifest {
+    ): Result<TransactionManifest> {
         val transactionSigningKey = when (val state = entity.securityState) {
             is SecurityState.Unsecured -> state.unsecuredEntityControl.transactionSigning.publicKey
         }
@@ -51,7 +52,7 @@ class ROLAClient @Inject constructor(
         }
         return ManifestBuilder()
             .addSetMetadataInstructionForOwnerKeys(entity.address, publicKeyHashes)
-            .build(entity.networkID)
+            .buildSafely(entity.networkID)
     }
 
     private fun ManifestBuilder.addSetMetadataInstructionForOwnerKeys(

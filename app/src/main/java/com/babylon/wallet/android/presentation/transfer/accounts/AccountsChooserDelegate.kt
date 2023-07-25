@@ -39,8 +39,9 @@ class AccountsChooserDelegate(
     }
 
     fun addressTyped(address: String) {
+        val currentNetworkId = state.value.fromAccount?.networkID ?: return
         updateSheetState { sheetState ->
-            val validity = if (!AddressValidator.isValid(address)) {
+            val validity = if (!AddressValidator.isValid(address = address, networkId = currentNetworkId)) {
                 TargetAccount.Other.AddressValidity.INVALID
             } else {
                 val selectedAccountAddresses = state.value.targetAccounts.map { it.address }
