@@ -24,6 +24,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -37,6 +38,7 @@ import com.babylon.wallet.android.presentation.ui.composables.BackIconType
 import com.babylon.wallet.android.presentation.ui.composables.GrayBackgroundWrapper
 import com.babylon.wallet.android.presentation.ui.composables.InfoLink
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
+import com.babylon.wallet.android.presentation.ui.composables.RedWarningText
 import com.babylon.wallet.android.presentation.ui.composables.SimpleAccountCard
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import com.babylon.wallet.android.utils.biometricAuthenticate
@@ -204,20 +206,22 @@ private fun SeedPhraseCard(
                 tint = RadixTheme.colors.gray1
             )
         }
-        val securityPromptRes = when (mnemonicState) {
-//            DeviceFactorSourceData.MnemonicState.NotBackedUp -> R.string.seedPhrases_message // TODO replace UI element
-            DeviceFactorSourceData.MnemonicState.NeedRecover -> R.string.homePage_applySecuritySettings
-            else -> null
-        }
-        securityPromptRes?.let { promptRes ->
-            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXSmall))
-            ApplySecuritySettingsLabel(
-                modifier = Modifier.fillMaxWidth(),
-                onClick = null,
-                text = stringResource(id = promptRes),
-                labelColor = RadixTheme.colors.gray4.copy(alpha = 0.6f),
-                contentColor = RadixTheme.colors.gray1
-            )
+        when (mnemonicState) {
+            DeviceFactorSourceData.MnemonicState.NotBackedUp -> {
+                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXSmall))
+                RedWarningText(text = AnnotatedString("Please backup this seed phrase")) // TODO crowdin
+            }
+            DeviceFactorSourceData.MnemonicState.NeedRecover -> {
+                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXSmall))
+                ApplySecuritySettingsLabel(
+                    modifier = Modifier.fillMaxWidth(),
+                    onClick = null,
+                    text = stringResource(id = R.string.homePage_applySecuritySettings),
+                    labelColor = RadixTheme.colors.gray4.copy(alpha = 0.6f),
+                    contentColor = RadixTheme.colors.gray1
+                )
+            }
+            else -> {}
         }
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXSmall))
         accounts.forEachIndexed { index, account ->
