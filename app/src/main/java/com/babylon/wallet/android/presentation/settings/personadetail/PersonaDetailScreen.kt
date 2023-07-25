@@ -31,6 +31,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.babylon.wallet.android.BuildConfig
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixSecondaryButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
@@ -236,12 +237,12 @@ private fun PersonaDetailList(
                 throttleClicks = true
             )
             Spacer(modifier = Modifier.height(dimensions.paddingDefault))
-            if (!hasAuthKey) {
+            if (BuildConfig.DEBUG_MODE && !hasAuthKey) {
                 RadixSecondaryButton(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = dimensions.paddingXLarge),
-                    text = "Create &amp; Upload Auth Key",
+                    text = stringResource(id = R.string.biometrics_prompt_createSignAuthKey),
                     onClick = onCreateAndUploadAuthKey,
                     enabled = !loading,
                     throttleClicks = true
