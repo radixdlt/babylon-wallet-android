@@ -38,7 +38,6 @@ import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.data.repository.ProfileRepository
 import rdx.works.profile.domain.GetProfileUseCase
-import java.math.BigDecimal
 
 internal class TransactionClientTest {
 
@@ -75,7 +74,7 @@ internal class TransactionClientTest {
             var manifest = manifestWithAddress(EntityRepositoryFake.addressWithFunds)
 
             val addressToLockFee = transactionClient.findFeePayerInManifest(manifest).getOrThrow().feePayerAddressFromManifest
-            manifest = manifest.addLockFeeInstructionToManifest(addressToLockFee!!, TransactionConfig.NETWORK_FEE.toBigDecimal())
+            manifest = manifest.addLockFeeInstructionToManifest(addressToLockFee!!, TransactionConfig.DEFAULT_LOCK_FEE.toBigDecimal())
             val signingEntities = transactionClient.getSigningEntities(manifest)
 
             Assert.assertEquals(1, signingEntities.size)
@@ -125,7 +124,7 @@ internal class TransactionClientTest {
                 fungibleResources = listOf(
                     Resource.FungibleResource(
                         resourceAddress = Resource.FungibleResource.officialXrdResourceAddress()!!,
-                        amount = BigDecimal.TEN,
+                        amount = 30.toBigDecimal(),
                         symbolMetadataItem = SymbolMetadataItem("XRD")
                     )
                 ),
