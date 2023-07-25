@@ -63,7 +63,10 @@ class GetFreeXrdUseCase @Inject constructor(
                                 networkId = gateway.network.networkId(),
                                 hasLockFee = true
                             )
-                            transactionClient.signAndSubmitTransaction(request, deviceBiometricAuthenticationProvider = { true }).onSuccess { txId ->
+                            transactionClient.signAndSubmitTransaction(
+                                request = request,
+                                deviceBiometricAuthenticationProvider = { true }
+                            ).onSuccess { txId ->
                                 pollTransactionStatusUseCase(txId).onValue {
                                     preferencesManager.updateEpoch(address, epochResult.data)
                                 }
