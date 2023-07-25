@@ -60,7 +60,7 @@ class TransactionSubmitDelegate(
             state.update { it.copy(isSubmitting = true) }
 
             currentState.request.transactionManifestData.toTransactionManifest().onSuccess { manifest ->
-                resolveFeePayerAndSubmit(manifest.attachGuarantees(currentState.previewType))
+                resolveFeePayerAndSubmit(manifest.attachGuarantees(currentState.previewType), deviceBiometricAuthenticationProvider)
             }.onFailure { error ->
                 reportFailure(error)
             }
@@ -102,7 +102,10 @@ class TransactionSubmitDelegate(
         }
     }
 
-    private suspend fun resolveFeePayerAndSubmit(manifest: TransactionManifest) {
+    private suspend fun resolveFeePayerAndSubmit(
+        manifest: TransactionManifest,
+        deviceBiometricAuthenticationProvider: suspend () -> Boolean
+    ) {
         transactionClient.findFeePayerInManifest(manifest)
             .onSuccess { feePayerResult ->
                 state.update { it.copy(isSubmitting = false) }
@@ -110,7 +113,8 @@ class TransactionSubmitDelegate(
                     signAndSubmit(
                         transactionRequest = state.value.request,
                         feePayerAddress = feePayerResult.feePayerAddressFromManifest,
-                        manifest = manifest
+                        manifest = manifest,
+                        deviceBiometricAuthenticationProvider = deviceBiometricAuthenticationProvider
                     )
                 } else {
                     state.update { state ->
@@ -180,8 +184,13 @@ class TransactionSubmitDelegate(
                 )
             )
         }.onFailure { error ->
+            val exception = error as? DappRequestException
+            if (exception?.e is SignatureCancelledException) {
+                state.update { it.copy(isSubmitting = false) }
+                approvalJob = null
+                return
+            }
             reportFailure(error)
-
             appEventBus.sendEvent(
                 AppEvent.Status.Transaction.Fail(
                     requestId = transactionRequest.requestId,
@@ -219,30 +228,7 @@ class TransactionSubmitDelegate(
     }
 
     private suspend fun reportFailure(error: Throwable) {
-        val exception = error as? DappRequestException
-        if (exception?.e is SignatureCancelledException) {
-            state.update { it.copy(isSubmitting = false,) }
-            approvalJob = null
-            return@onFailure
-        }
-        state.update {
-            it.copy(
-                isSubmitting = false,
-                error = UiMessage.ErrorMessage.from(error = error)
-            )
-        }
-        if (exception != null) {
-            if (!transactionRequest.isInternal) {
-                dAppMessenger.sendWalletInteractionResponseFailure(
-                    dappId = transactionRequest.dappId,
-                    requestId = transactionRequest.requestId,
-                    error = exception.failure.toWalletErrorType(),
-                    message = exception.failure.getDappMessage()
-                )
-            }
-        }
         logger.w(error)
-
         state.update {
             it.copy(isSubmitting = false, error = UiMessage.ErrorMessage.from(error = error))
         }
