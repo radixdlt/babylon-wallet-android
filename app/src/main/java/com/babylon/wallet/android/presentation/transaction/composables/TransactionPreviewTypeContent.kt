@@ -43,6 +43,7 @@ fun TransactionPreviewTypeContent(
             StrokeLine(height = 40.dp)
 
             ConnectedDAppsContent(
+                modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingDefault),
                 connectedDApps = preview.dApps.toPersistentList(),
                 onDAppClick = onDappClick
             )

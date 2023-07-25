@@ -100,6 +100,7 @@ fun ConnectedDAppsContent(
     ) {
         Column(
             modifier = Modifier
+                .padding(horizontal = RadixTheme.dimensions.paddingDefault)
                 .fillMaxWidth(),
             horizontalAlignment = Alignment.End
         ) {
