@@ -166,7 +166,7 @@ data class AccountUiState(
         get() = !isLoading && refreshing
 
     val isTransferEnabled: Boolean
-        get() = (accountWithResources?.resources?.isNotEmpty == true) && !isLoading
+        get() = !isLoading
 
     val isHistoryEnabled: Boolean = false
 }
