@@ -121,30 +121,17 @@ fun TransactionAccountCard(
 
         // Non fungibles
         nftTransferables.forEachIndexed { collectionIndex, nftTransferable ->
-            val nft = nftTransferable.transferable as TransferableResource.NFTs
-            if (nft.isNewlyCreated) {
-                // In this case show only the collection of the newly created nfts.
-                val lastItem = collectionIndex == nftTransferables.lastIndex
+            val collection = nftTransferable.transferable as TransferableResource.NFTs
+            // Show each nft item
+            collection.resource.items.forEachIndexed { itemIndex, item ->
+                val lastItem = itemIndex == collection.resource.items.lastIndex && collectionIndex == nftTransferables.lastIndex
                 TokenItemContent(
                     isXrdToken = false,
-                    tokenUrl = nft.resource.iconUrl.toString(),
-                    tokenSymbol = nft.resource.name,
-                    isTokenAmountVisible = true,
-                    tokenAmount = nft.resource.items.size.toString(),
+                    tokenUrl = collection.resource.iconUrl.toString(),
+                    tokenSymbol = item.localId.displayable,
+                    isTokenAmountVisible = false,
                     shape = if (lastItem) RadixTheme.shapes.roundedRectBottomMedium else RectangleShape
                 )
-            } else {
-                // Show each nft item
-                nft.resource.items.forEachIndexed { itemIndex, item ->
-                    val lastItem = itemIndex == nft.resource.items.lastIndex && collectionIndex == nftTransferables.lastIndex
-                    TokenItemContent(
-                        isXrdToken = false,
-                        tokenUrl = item.imageUrl.toString(),
-                        tokenSymbol = item.localId.displayable,
-                        isTokenAmountVisible = false,
-                        shape = if (lastItem) RadixTheme.shapes.roundedRectBottomMedium else RectangleShape
-                    )
-                }
             }
         }
     }
