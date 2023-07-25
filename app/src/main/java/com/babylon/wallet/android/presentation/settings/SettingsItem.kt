@@ -9,7 +9,7 @@ sealed interface SettingsItem {
 
     sealed interface TopLevelSettings {
         object Connection : TopLevelSettings
-        object LinkedConnector : TopLevelSettings
+        object LinkedConnectors : TopLevelSettings
         object Gateways : TopLevelSettings
         object AuthorizedDapps : TopLevelSettings
         object AppSettings : TopLevelSettings
@@ -28,7 +28,7 @@ sealed interface SettingsItem {
                 Connection -> R.string.empty
                 DeleteAll -> R.string.settings_deleteWalletData
                 Gateways -> R.string.settings_gateways
-                LinkedConnector -> R.string.settings_linkedConnectors
+                LinkedConnectors -> R.string.settings_linkedConnectors
                 Personas -> R.string.settings_personas
                 AuthorizedDapps -> R.string.settings_authorizedDapps
                 AppSettings -> R.string.settings_appSettings
@@ -43,7 +43,7 @@ sealed interface SettingsItem {
         fun getIcon(): Int? {
             return when (this) {
                 Gateways -> com.babylon.wallet.android.designsystem.R.drawable.ic_gateways
-                LinkedConnector -> com.babylon.wallet.android.designsystem.R.drawable.ic_desktop_connection
+                LinkedConnectors -> com.babylon.wallet.android.designsystem.R.drawable.ic_desktop_connection
                 Personas -> com.babylon.wallet.android.designsystem.R.drawable.ic_personas
                 AuthorizedDapps -> com.babylon.wallet.android.designsystem.R.drawable.ic_authorized_dapps
                 AppSettings -> com.babylon.wallet.android.designsystem.R.drawable.ic_app_settings

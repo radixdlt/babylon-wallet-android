@@ -120,7 +120,7 @@ private fun NavGraphBuilder.settingsAll(navController: NavController) {
                         navController.personaScreen()
                     }
 
-                    SettingsItem.TopLevelSettings.LinkedConnector -> {
+                    SettingsItem.TopLevelSettings.LinkedConnectors -> {
                         navController.settingsConnectorScreen()
                     }
 
