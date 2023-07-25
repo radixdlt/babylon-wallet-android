@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.Divider
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -61,14 +60,14 @@ private fun AppSettingsContent(
         )
         Divider(color = RadixTheme.colors.gray5)
         LazyColumn(modifier = Modifier.fillMaxSize()) {
-            item {
-                Text(
-                    modifier = Modifier.padding(all = RadixTheme.dimensions.paddingDefault),
-                    text = stringResource(id = R.string.appSettings_subtitle),
-                    style = RadixTheme.typography.body1HighImportance,
-                    color = RadixTheme.colors.gray2
-                )
-            }
+//            item { // TODO when we can really customize it
+//                Text(
+//                    modifier = Modifier.padding(all = RadixTheme.dimensions.paddingDefault),
+//                    text = stringResource(id = R.string.appSettings_subtitle),
+//                    style = RadixTheme.typography.body1HighImportance,
+//                    color = RadixTheme.colors.gray2
+//                )
+//            }
             appSettings.forEachIndexed { index, settingsItem ->
                 item {
                     when (settingsItem) {
