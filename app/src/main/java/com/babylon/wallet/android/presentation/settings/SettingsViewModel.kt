@@ -40,8 +40,8 @@ class SettingsViewModel @Inject constructor(
             SettingsItem.TopLevelSettings.AuthorizedDapps,
             SettingsItem.TopLevelSettings.Personas,
             SettingsItem.TopLevelSettings.AppSettings,
-            SettingsItem.TopLevelSettings.LedgerHardwareWallets,
             SettingsItem.TopLevelSettings.SeedPhrases,
+            SettingsItem.TopLevelSettings.LedgerHardwareWallets,
             SettingsItem.TopLevelSettings.ImportFromLegacyWallet,
             SettingsItem.TopLevelSettings.DeleteAll
         )
