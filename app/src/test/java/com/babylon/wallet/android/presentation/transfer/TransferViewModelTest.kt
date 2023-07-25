@@ -107,7 +107,7 @@ class TransferViewModelTest : StateViewModelTest<TransferViewModel>() {
         viewModel.state.test {
             assertFromAccountSet()
             assertOpenSheetForSkeleton(viewModel, viewModel.state.value.targetAccounts[0] as TargetAccount.Skeleton)
-            assertOtherAccountSubmitted(viewModel, "account_tdx_21_12ya9jylskaa6gdrfr8nvve3pfc6wyhyw7eg83fwlc7fv2w0eanumcd")
+            assertOtherAccountSubmitted(viewModel, "account_tdx_d_12y4ptquue8cgxsmvjsl7993lk2c2wnnalkh4cn449fz8edzwa8yezf")
         }
     }
 
