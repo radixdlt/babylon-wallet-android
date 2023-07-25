@@ -577,7 +577,7 @@
   <string name="addLedgerDevice_nameLedger_continueButtonTitle">Save and Continue</string>
   <string name="androidProfileBackup_disabledText">Back up is turned off</string>
   <string name="androidProfileBackup_lastBackedUp">Last Backed up: %s</string>
-  <string name="androidProfileBackup_noLastBackUp">Not Backed up yet</string>
+  <string name="androidProfileBackup_noLastBackUp">Not backed up yet</string>
   <string name="androidProfileBackup_openSystemBackupSettings">Open System Backup Settings</string>
   <string name="androidProfileBackup_backupWalletData_title">Backup Wallet Data</string>
   <string name="androidProfileBackup_backupWalletData_message">Warning: If disabled you might lose access to your Accounts and Personas.</string>
