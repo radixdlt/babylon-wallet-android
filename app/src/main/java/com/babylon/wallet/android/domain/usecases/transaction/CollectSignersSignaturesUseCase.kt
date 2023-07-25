@@ -1,6 +1,6 @@
 package com.babylon.wallet.android.domain.usecases.transaction
 
-import com.babylon.wallet.android.data.transaction.SigningState
+import com.babylon.wallet.android.data.transaction.InteractionState
 import com.radixdlt.hex.extensions.toHexString
 import com.radixdlt.ret.SignatureWithPublicKey
 import com.radixdlt.ret.hash
@@ -26,21 +26,33 @@ class CollectSignersSignaturesUseCase @Inject constructor(
     private val getSigningEntitiesByFactorSourceUseCase: GetSigningEntitiesByFactorSourceUseCase,
 ) {
 
-    private val _signingState = MutableStateFlow<SigningState?>(null)
-    val signingState: Flow<SigningState?> = _signingState.asSharedFlow()
+    private val _interactionState = MutableStateFlow<InteractionState?>(null)
+    val interactionState: Flow<InteractionState?> = _interactionState.asSharedFlow()
 
+    @Suppress("ReturnCount")
     suspend operator fun invoke(
         signers: List<Entity>,
         signRequest: SignRequest,
+        deviceBiometricAuthenticationProvider: suspend () -> Boolean,
         signingPurpose: SigningPurpose = SigningPurpose.SignTransaction
     ): Result<List<SignatureWithPublicKey>> {
+        var deviceAuthenticated = false
         val signaturesWithPublicKeys = mutableListOf<SignatureWithPublicKey>()
         val signersPerFactorSource = getSigningEntitiesByFactorSourceUseCase(signers)
         signersPerFactorSource.forEach { (factorSource, signers) ->
             when (factorSource.id.kind) {
                 FactorSourceKind.DEVICE -> {
                     factorSource as DeviceFactorSource
-                    // _signingState.update { SigningState.Device.Pending(factorSource) }
+                    // here I assume that in the future we will grant
+                    // access to keystore key for few seconds, so I ask for auth only once, instead of on every DEVICE signature
+                    if (!deviceAuthenticated) {
+                        _interactionState.update { InteractionState.Device.Pending(factorSource, signingPurpose) }
+                        deviceAuthenticated = deviceBiometricAuthenticationProvider()
+                    }
+                    if (!deviceAuthenticated) {
+                        _interactionState.update { null }
+                        return Result.failure(SignatureCancelledException("Failed to collect device factor source signatures"))
+                    }
                     val signatures = signWithDeviceFactorSourceUseCase(
                         deviceFactorSource = factorSource,
                         signers = signers,
@@ -52,18 +64,25 @@ class CollectSignersSignaturesUseCase @Inject constructor(
                 }
 
                 FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET -> {
+                    if (!deviceAuthenticated) {
+                        deviceAuthenticated = deviceBiometricAuthenticationProvider()
+                    }
+                    if (!deviceAuthenticated) {
+                        _interactionState.update { null }
+                        return Result.failure(SignatureCancelledException("Failed to collect device factor source signatures"))
+                    }
                     factorSource as LedgerHardwareWalletFactorSource
-                    _signingState.update { SigningState.Ledger.Pending(factorSource) }
+                    _interactionState.update { InteractionState.Ledger.Pending(factorSource, signingPurpose) }
                     signWithLedgerFactorSourceUseCase(
                         ledgerFactorSource = factorSource,
                         signers = signers,
                         signRequest = signRequest,
                         signingPurpose = signingPurpose
                     ).onSuccess { signatures ->
-                        _signingState.update { SigningState.Ledger.Success(factorSource) }
+                        _interactionState.update { null }
                         signaturesWithPublicKeys.addAll(signatures)
                     }.onFailure {
-                        _signingState.update { SigningState.Ledger.Failure(factorSource) }
+                        _interactionState.update { null }
                         return Result.failure(it)
                     }
                 }
@@ -81,7 +100,7 @@ class CollectSignersSignaturesUseCase @Inject constructor(
     }
 
     fun cancel() {
-        _signingState.update { null }
+        _interactionState.update { null }
     }
 }
 

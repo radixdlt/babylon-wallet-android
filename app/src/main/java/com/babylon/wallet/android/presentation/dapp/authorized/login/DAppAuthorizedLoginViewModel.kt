@@ -8,7 +8,7 @@ import com.babylon.wallet.android.data.dapp.model.WalletErrorType
 import com.babylon.wallet.android.data.repository.dappmetadata.DAppRepository
 import com.babylon.wallet.android.data.transaction.DappRequestException
 import com.babylon.wallet.android.data.transaction.DappRequestFailure
-import com.babylon.wallet.android.data.transaction.SigningState
+import com.babylon.wallet.android.data.transaction.InteractionState
 import com.babylon.wallet.android.domain.common.onError
 import com.babylon.wallet.android.domain.common.onValue
 import com.babylon.wallet.android.domain.model.DAppWithMetadata
@@ -19,6 +19,7 @@ import com.babylon.wallet.android.domain.model.RequiredPersonaFields
 import com.babylon.wallet.android.domain.model.toProfileShareAccountsQuantifier
 import com.babylon.wallet.android.domain.model.toRequiredFields
 import com.babylon.wallet.android.domain.usecases.BuildAuthorizedDappResponseUseCase
+import com.babylon.wallet.android.domain.usecases.transaction.SignatureCancelledException
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
@@ -36,7 +37,6 @@ import com.babylon.wallet.android.utils.AppEventBus
 import com.babylon.wallet.android.utils.toISO8601String
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
@@ -92,15 +92,17 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
             val currentNetworkId = getCurrentGatewayUseCase().network.networkId().value
             if (currentNetworkId != request.requestMetadata.networkId) {
                 handleRequestError(
-                    DappRequestFailure.WrongNetwork(
-                        currentNetworkId,
-                        request.requestMetadata.networkId
+                    DappRequestException(
+                        DappRequestFailure.WrongNetwork(
+                            currentNetworkId,
+                            request.requestMetadata.networkId
+                        )
                     )
                 )
                 return@launch
             }
             if (!request.isValidRequest()) {
-                handleRequestError(DappRequestFailure.InvalidRequest)
+                handleRequestError(DappRequestException(DappRequestFailure.InvalidRequest))
                 return@launch
             }
             authorizedDapp = dAppConnectionRepository.getAuthorizedDapp(
@@ -125,13 +127,16 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
 
     private fun observeSigningState() {
         viewModelScope.launch {
-            buildAuthorizedDappResponseUseCase.signingState.filterNotNull().collect { signingState ->
-                // TODO verify how we should show signing state in persona login flow
-//                _state.update { state ->
-//                    state.copy(signingState = signingState)
-//                }
+            buildAuthorizedDappResponseUseCase.signingState.collect { signingState ->
+                _state.update { state ->
+                    state.copy(interactionState = signingState)
+                }
             }
         }
+    }
+
+    fun onDismissSigningStatusDialog() {
+        _state.update { it.copy(interactionState = null) }
     }
 
     private suspend fun setInitialDappLoginRoute() {
@@ -233,7 +238,11 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
     }
 
     @Suppress("MagicNumber")
-    private suspend fun handleRequestError(failure: DappRequestFailure) {
+    private suspend fun handleRequestError(exception: DappRequestException) {
+        if (exception.e is SignatureCancelledException) {
+            return
+        }
+        val failure = exception.failure
         _state.update { it.copy(uiMessage = UiMessage.ErrorMessage.from(DappRequestException(failure))) }
         dAppMessenger.sendWalletInteractionResponseFailure(
             request.dappId,
@@ -625,10 +634,10 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
     }
 
     private suspend fun promptForBiometrics() {
-        sendEvent(Event.RequestCompletionBiometricPrompt)
+        sendEvent(Event.RequestCompletionBiometricPrompt(request.needSignatures()))
     }
 
-    fun sendRequestResponse() {
+    fun sendRequestResponse(deviceBiometricAuthenticationProvider: suspend () -> Boolean = { true }) {
         viewModelScope.launch {
             val selectedPersona = state.value.selectedPersona?.persona
             requireNotNull(selectedPersona)
@@ -636,12 +645,17 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
                 incomingRequestRepository.requestHandled(request.interactionId)
             } else {
                 buildAuthorizedDappResponseUseCase(
-                    request,
-                    selectedPersona,
-                    state.value.selectedAccountsOneTime.mapNotNull { getProfileUseCase.accountOnCurrentNetwork(it.address) },
-                    state.value.selectedAccountsOngoing.mapNotNull { getProfileUseCase.accountOnCurrentNetwork(it.address) },
-                    state.value.selectedOngoingPersonaData,
-                    state.value.selectedOnetimePersonaData
+                    request = request,
+                    selectedPersona = selectedPersona,
+                    oneTimeAccounts = state.value.selectedAccountsOneTime.mapNotNull {
+                        getProfileUseCase.accountOnCurrentNetwork(it.address)
+                    },
+                    ongoingAccounts = state.value.selectedAccountsOngoing.mapNotNull {
+                        getProfileUseCase.accountOnCurrentNetwork(it.address)
+                    },
+                    ongoingSharedPersonaData = state.value.selectedOngoingPersonaData,
+                    onetimeSharedPersonaData = state.value.selectedOnetimePersonaData,
+                    deviceBiometricAuthenticationProvider = deviceBiometricAuthenticationProvider
                 ).onSuccess { response ->
                     dAppMessenger.sendWalletInteractionSuccessResponse(dappId = request.dappId, response = response)
                     mutex.withLock {
@@ -657,7 +671,7 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
                         )
                     }
                 }.onFailure { throwable ->
-                    if (throwable is DappRequestFailure) {
+                    if (throwable is DappRequestException) {
                         handleRequestError(throwable)
                     }
                 }
@@ -669,7 +683,7 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
 sealed interface Event : OneOffEvent {
 
     object RejectLogin : Event
-    object RequestCompletionBiometricPrompt : Event
+    data class RequestCompletionBiometricPrompt(val requestDuringSigning: Boolean) : Event
 
     object LoginFlowCompleted : Event
 
@@ -703,5 +717,5 @@ data class DAppLoginUiState(
     val selectedOnetimePersonaData: PersonaData? = null,
     val selectedAccountsOneTime: List<AccountItemUiModel> = emptyList(),
     val selectedPersona: PersonaUiModel? = null,
-    val signingState: SigningState? = null
+    val interactionState: InteractionState? = null
 ) : UiState

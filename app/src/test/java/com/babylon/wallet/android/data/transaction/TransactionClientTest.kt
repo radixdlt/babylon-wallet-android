@@ -57,7 +57,7 @@ internal class TransactionClientTest {
 
     @Before
     fun setUp() {
-        coEvery { collectSignersSignaturesUseCase.signingState } returns emptyFlow()
+        coEvery { collectSignersSignaturesUseCase.interactionState } returns emptyFlow()
         transactionClient = TransactionClient(
             transactionRepository,
             getProfileUseCase,

@@ -40,8 +40,8 @@ class GetSigningEntitiesByFactorSourceUseCase @Inject constructor(
 
 fun FactorSourceKind.signingOrder(): Int {
     return when (this) {
-        FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET -> 0
-        FactorSourceKind.DEVICE -> 1 // DEVICE should always go last
+        FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET -> 1
+        FactorSourceKind.DEVICE -> 0 // DEVICE should always go last
         else -> Int.MAX_VALUE // it doesn't matter because we add only the ledger or device factor sources (see line 24)
     }
 }

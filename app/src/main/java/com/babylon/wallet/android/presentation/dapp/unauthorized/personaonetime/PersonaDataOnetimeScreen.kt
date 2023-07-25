@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -49,12 +50,14 @@ import com.babylon.wallet.android.presentation.dapp.InitialUnauthorizedLoginRout
 import com.babylon.wallet.android.presentation.dapp.authorized.selectpersona.PersonaUiModel
 import com.babylon.wallet.android.presentation.dapp.unauthorized.login.DAppUnauthorizedLoginViewModel
 import com.babylon.wallet.android.presentation.dapp.unauthorized.login.Event
+import com.babylon.wallet.android.presentation.status.signing.SigningStatusBottomDialog
 import com.babylon.wallet.android.presentation.ui.composables.ImageSize
 import com.babylon.wallet.android.presentation.ui.composables.persona.PersonaDetailCard
 import com.babylon.wallet.android.presentation.ui.composables.rememberImageUrl
 import com.babylon.wallet.android.presentation.ui.modifier.applyIf
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import com.babylon.wallet.android.utils.biometricAuthenticate
+import com.babylon.wallet.android.utils.biometricAuthenticateSuspend
 import com.babylon.wallet.android.utils.formattedSpans
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
@@ -69,6 +72,7 @@ fun PersonaDataOnetimeScreen(
     onBackClick: () -> Unit,
     onLoginFlowComplete: () -> Unit,
     onLoginFlowCancelled: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -78,10 +82,16 @@ fun PersonaDataOnetimeScreen(
             when (event) {
                 is Event.LoginFlowCompleted -> onLoginFlowComplete()
                 Event.RejectLogin -> onLoginFlowCancelled()
-                Event.RequestCompletionBiometricPrompt -> {
-                    context.biometricAuthenticate { authenticated ->
-                        if (authenticated) {
-                            sharedViewModel.sendRequestResponse()
+                is Event.RequestCompletionBiometricPrompt -> {
+                    if (event.requestDuringSigning) {
+                        sharedViewModel.sendRequestResponse(deviceBiometricAuthenticationProvider = {
+                            context.biometricAuthenticateSuspend()
+                        })
+                    } else {
+                        context.biometricAuthenticate { authenticated ->
+                            if (authenticated) {
+                                sharedViewModel.sendRequestResponse()
+                            }
                         }
                     }
                 }
@@ -101,6 +111,7 @@ fun PersonaDataOnetimeScreen(
         }
     }
     PersonaDataOnetimeContent(
+        modifier = modifier,
         onContinueClick = sharedViewModel::onGrantedPersonaDataOnetime,
         dappWithMetadata = sharedState.dappWithMetadata,
         onBackClick = {
@@ -120,6 +131,13 @@ fun PersonaDataOnetimeScreen(
         onEditClick = viewModel::onEditClick,
         continueButtonEnabled = state.continueButtonEnabled
     )
+    sharedState.interactionState?.let {
+        SigningStatusBottomDialog(
+            modifier = Modifier.fillMaxHeight(0.8f),
+            onDismissDialogClick = sharedViewModel::onDismissSigningStatusDialog,
+            interactionState = it
+        )
+    }
 }
 
 @Composable

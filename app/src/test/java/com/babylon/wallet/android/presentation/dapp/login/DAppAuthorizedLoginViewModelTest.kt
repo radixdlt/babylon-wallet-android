@@ -191,7 +191,7 @@ class DAppAuthorizedLoginViewModelTest : StateViewModelTest<DAppAuthorizedLoginV
         every { savedStateHandle.get<String>(ARG_INTERACTION_ID) } returns "1"
         coEvery { getCurrentGatewayUseCase() } returns Radix.Gateway.nebunet
         every { buildAuthorizedDappResponseUseCase.signingState } returns emptyFlow()
-        coEvery { buildAuthorizedDappResponseUseCase.invoke(any(), any(), any(), any(), any(), any()) } returns Result.success(any())
+        coEvery { buildAuthorizedDappResponseUseCase.invoke(any(), any(), any(), any(), any(), any(),) } returns Result.success(any())
         every { getProfileUseCase() } returns flowOf(
             profile(
                 personas = listOf(samplePersona),

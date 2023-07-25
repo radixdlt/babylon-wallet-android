@@ -7,7 +7,7 @@ import com.babylon.wallet.android.data.dapp.DappMessenger
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.data.manifest.toPrettyString
 import com.babylon.wallet.android.data.transaction.DappRequestFailure
-import com.babylon.wallet.android.data.transaction.SigningState
+import com.babylon.wallet.android.data.transaction.InteractionState
 import com.babylon.wallet.android.data.transaction.TransactionClient
 import com.babylon.wallet.android.data.transaction.TransactionConfig
 import com.babylon.wallet.android.di.coroutines.ApplicationScope
@@ -107,7 +107,7 @@ class TransactionApprovalViewModel @Inject constructor(
         viewModelScope.launch {
             transactionClient.signingState.collect { signingState ->
                 _state.update { state ->
-                    state.copy(signingState = signingState)
+                    state.copy(interactionState = signingState)
                 }
             }
         }
@@ -135,8 +135,8 @@ class TransactionApprovalViewModel @Inject constructor(
         _state.update { it.copy(isRawManifestVisible = !it.isRawManifestVisible) }
     }
 
-    fun approveTransaction() {
-        submit.onSubmit()
+    fun approveTransaction(deviceBiometricAuthenticationProvider: suspend () -> Boolean) {
+        submit.onSubmit(deviceBiometricAuthenticationProvider)
     }
 
     fun promptForGuaranteesClick() = guarantees.onEdit()
@@ -163,7 +163,7 @@ class TransactionApprovalViewModel @Inject constructor(
         }
     }
 
-    fun onPayerConfirmed() {
+    fun onPayerConfirmed(deviceBiometricAuthenticationProvider: suspend () -> Boolean) {
         val feePayerSheet = state.value.sheetState as? State.Sheet.FeePayerChooser ?: return
         _state.update { it.copy(sheetState = State.Sheet.None) }
 
@@ -173,7 +173,7 @@ class TransactionApprovalViewModel @Inject constructor(
                 analysis.onFeePayerConfirmed(selectedCandidate, feePayerSheet.pendingManifest)
             }
         } else {
-            submit.onFeePayerConfirmed(selectedCandidate, feePayerSheet.pendingManifest)
+            submit.onFeePayerConfirmed(selectedCandidate, feePayerSheet.pendingManifest, deviceBiometricAuthenticationProvider)
         }
     }
 
@@ -195,7 +195,7 @@ class TransactionApprovalViewModel @Inject constructor(
         val error: UiMessage? = null,
         val ephemeralNotaryPrivateKey: PrivateKey = PrivateKey.EddsaEd25519.newRandom(),
         val networkFee: BigDecimal = TransactionConfig.NETWORK_FEE.toBigDecimal(),
-        val signingState: SigningState? = null
+        val interactionState: InteractionState? = null
     ) : UiState {
 
         val isRawManifestToggleVisible: Boolean

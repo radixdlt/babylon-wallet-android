@@ -8,6 +8,7 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBarsPadding
@@ -59,8 +60,7 @@ import com.babylon.wallet.android.presentation.ui.composables.DefaultModalSheetL
 import com.babylon.wallet.android.presentation.ui.composables.NotSecureAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
-import com.babylon.wallet.android.utils.biometricAuthenticate
-import com.babylon.wallet.android.utils.findFragmentActivity
+import com.babylon.wallet.android.utils.biometricAuthenticateSuspend
 import kotlinx.coroutines.launch
 import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.data.model.pernetwork.Network
@@ -72,11 +72,15 @@ fun TransactionApprovalScreen(
     onDismiss: () -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
-
+    val context = LocalContext.current
     TransactionPreviewContent(
         onBackClick = viewModel::onBackClick,
         state = state,
-        onApproveTransaction = viewModel::approveTransaction,
+        onApproveTransaction = {
+            viewModel.approveTransaction(deviceBiometricAuthenticationProvider = {
+                context.biometricAuthenticateSuspend(allowIfDeviceIsNotSecure = true)
+            })
+        },
         onRawManifestToggle = viewModel::onRawManifestToggle,
         onMessageShown = viewModel::onMessageShown,
         modifier = modifier,
@@ -88,13 +92,18 @@ fun TransactionApprovalScreen(
         onGuaranteeValueDecreased = viewModel::onGuaranteeValueDecreased,
         onDAppClick = viewModel::onDAppClick,
         onPayerSelected = viewModel::onPayerSelected,
-        onPayerConfirmed = viewModel::onPayerConfirmed
+        onPayerConfirmed = {
+            viewModel.onPayerConfirmed(deviceBiometricAuthenticationProvider = {
+                context.biometricAuthenticateSuspend(allowIfDeviceIsNotSecure = true)
+            })
+        }
     )
 
-    state.signingState?.let {
+    state.interactionState?.let {
         SigningStatusBottomDialog(
+            modifier = Modifier.fillMaxHeight(0.8f),
             onDismissDialogClick = viewModel::onBackClick,
-            signingState = it
+            interactionState = it
         )
     }
 
@@ -256,7 +265,6 @@ private fun ApproveButton(
     onApproveTransaction: () -> Unit
 ) {
     var showNotSecuredDialog by remember { mutableStateOf(false) }
-    val context = LocalContext.current
     RadixPrimaryButton(
         modifier = Modifier
             .fillMaxWidth()
@@ -264,13 +272,7 @@ private fun ApproveButton(
         text = stringResource(id = R.string.transactionReview_approveButtonTitle),
         onClick = {
             if (state.isDeviceSecure) {
-                context.findFragmentActivity()?.let { activity ->
-                    activity.biometricAuthenticate(true) { authenticatedSuccessfully ->
-                        if (authenticatedSuccessfully) {
-                            onApproveTransaction()
-                        }
-                    }
-                }
+                onApproveTransaction()
             } else {
                 showNotSecuredDialog = true
             }

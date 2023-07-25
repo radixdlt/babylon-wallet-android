@@ -33,6 +33,12 @@ sealed interface MessageFromDataChannel {
             val resetRequestItem: ResetRequestItem? = null
         ) : IncomingRequest(dappId, interactionId, requestMetadata) {
 
+            fun needSignatures(): Boolean {
+                return authRequest is AuthRequest.LoginRequest.WithChallenge ||
+                    ongoingAccountsRequestItem?.challenge != null ||
+                    oneTimeAccountsRequestItem?.challenge != null
+            }
+
             fun hasOngoingRequestItemsOnly(): Boolean {
                 return isUsePersonaAuth() && hasNoOneTimeRequestItems() && hasNoResetRequestItem() &&
                     (ongoingAccountsRequestItem != null || ongoingPersonaDataRequestItem != null)
@@ -83,6 +89,10 @@ sealed interface MessageFromDataChannel {
         ) : IncomingRequest(dappId, interactionId, requestMetadata) {
             fun isValidRequest(): Boolean {
                 return oneTimeAccountsRequestItem?.isValidRequestItem() != false
+            }
+
+            fun needSignatures(): Boolean {
+                return oneTimeAccountsRequestItem?.challenge != null
             }
         }
 

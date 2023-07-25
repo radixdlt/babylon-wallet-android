@@ -9,6 +9,7 @@ import com.radixdlt.ret.Address
 import com.radixdlt.ret.ManifestValue
 import com.radixdlt.ret.SignatureWithPublicKey
 import com.radixdlt.ret.TransactionManifest
+import kotlinx.coroutines.flow.merge
 import rdx.works.core.compressedPublicKeyHash
 import rdx.works.core.compressedPublicKeyHashBytes
 import rdx.works.core.ret.ManifestBuilder
@@ -26,7 +27,10 @@ class ROLAClient @Inject constructor(
     private val collectSignersSignaturesUseCase: CollectSignersSignaturesUseCase
 ) {
 
-    val signingState = collectSignersSignaturesUseCase.signingState
+    val signingState = merge(
+        collectSignersSignaturesUseCase.interactionState,
+        generateAuthSigningFactorInstanceUseCase.interactionState
+    )
 
     suspend fun generateAuthSigningFactorInstance(entity: Entity): Result<FactorInstance> {
         return generateAuthSigningFactorInstanceUseCase(entity)
@@ -67,19 +71,20 @@ class ROLAClient @Inject constructor(
             }
 
             val bytes = key.compressedData.compressedPublicKeyHashBytes()
-
             publicKeyType to bytes
         }
     )
 
     suspend fun signAuthChallenge(
         entity: Entity,
-        signRequest: SignRequest
+        signRequest: SignRequest,
+        deviceBiometricAuthenticationProvider: suspend () -> Boolean
     ): Result<SignatureWithPublicKey> {
         return collectSignersSignaturesUseCase(
             signers = listOf(entity),
             signRequest = signRequest,
-            signingPurpose = SigningPurpose.SignAuth
+            signingPurpose = SigningPurpose.SignAuth,
+            deviceBiometricAuthenticationProvider = deviceBiometricAuthenticationProvider
         ).mapCatching { signatures ->
             if (signatures.size == 1) {
                 signatures.first()

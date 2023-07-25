@@ -1,6 +1,7 @@
 package com.babylon.wallet.android.presentation.dapp.unauthorized.accountonetime
 
 import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.material.AlertDialog
 import androidx.compose.material.Text
 import androidx.compose.material.TextButton
@@ -21,8 +22,10 @@ import com.babylon.wallet.android.domain.model.metadata.NameMetadataItem
 import com.babylon.wallet.android.presentation.dapp.authorized.account.AccountItemUiModel
 import com.babylon.wallet.android.presentation.dapp.unauthorized.login.DAppUnauthorizedLoginViewModel
 import com.babylon.wallet.android.presentation.dapp.unauthorized.login.Event
+import com.babylon.wallet.android.presentation.status.signing.SigningStatusBottomDialog
 import com.babylon.wallet.android.presentation.ui.composables.ChooseAccountContent
 import com.babylon.wallet.android.utils.biometricAuthenticate
+import com.babylon.wallet.android.utils.biometricAuthenticateSuspend
 import kotlinx.collections.immutable.persistentListOf
 
 @Composable
@@ -33,7 +36,8 @@ fun OneTimeChooseAccountsScreen(
     onAccountCreationClick: () -> Unit,
     sharedViewModel: DAppUnauthorizedLoginViewModel,
     onLoginFlowComplete: () -> Unit,
-    onPersonaOnetime: (RequiredPersonaFields) -> Unit
+    onPersonaOnetime: (RequiredPersonaFields) -> Unit,
+    modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
     LaunchedEffect(Unit) {
@@ -41,11 +45,17 @@ fun OneTimeChooseAccountsScreen(
             when (event) {
                 is Event.LoginFlowCompleted -> onLoginFlowComplete()
                 is Event.PersonaDataOnetime -> onPersonaOnetime(event.requiredPersonaFields)
-                Event.RejectLogin -> sharedViewModel.onRejectRequest()
-                Event.RequestCompletionBiometricPrompt -> {
-                    context.biometricAuthenticate { authenticated ->
-                        if (authenticated) {
-                            sharedViewModel.sendRequestResponse()
+                Event.RejectLogin -> onLoginFlowComplete()
+                is Event.RequestCompletionBiometricPrompt -> {
+                    if (event.requestDuringSigning) {
+                        sharedViewModel.sendRequestResponse(deviceBiometricAuthenticationProvider = {
+                            context.biometricAuthenticateSuspend()
+                        })
+                    } else {
+                        context.biometricAuthenticate { authenticated ->
+                            if (authenticated) {
+                                sharedViewModel.sendRequestResponse()
+                            }
                         }
                     }
                 }
@@ -84,8 +94,16 @@ fun OneTimeChooseAccountsScreen(
         isSingleChoice = state.isSingleChoice,
         numberOfAccounts = state.numberOfAccounts,
         isExactAccountsCount = state.isExactAccountsCount,
-        showBackButton = false
+        showBackButton = false,
+        modifier = modifier
     )
+    sharedState.interactionState?.let {
+        SigningStatusBottomDialog(
+            modifier = Modifier.fillMaxHeight(0.8f),
+            onDismissDialogClick = sharedViewModel::onDismissSigningStatusDialog,
+            interactionState = it
+        )
+    }
     state.error?.let { error ->
         DAppAlertDialog(
             title = stringResource(id = R.string.dAppRequest_chooseAccounts_verificationErrorTitle),

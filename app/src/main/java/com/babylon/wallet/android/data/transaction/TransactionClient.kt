@@ -49,13 +49,18 @@ class TransactionClient @Inject constructor(
     private val getAccountsWithResourcesUseCase: GetAccountsWithResourcesUseCase,
     private val submitTransactionUseCase: SubmitTransactionUseCase
 ) {
-    val signingState = collectSignersSignaturesUseCase.signingState
+    val signingState = collectSignersSignaturesUseCase.interactionState
 
     private val logger = Timber.tag("TransactionClient")
 
-    suspend fun signAndSubmitTransaction(
-        request: TransactionApprovalRequest
-    ): Result<String> {
+    fun cancelSigning() {
+        collectSignersSignaturesUseCase.cancel()
+    }
+
+    private suspend fun prepareSignedTransactionIntent(
+        request: TransactionApprovalRequest,
+        deviceBiometricAuthenticationProvider: suspend () -> Boolean
+    ): Result<NotarizedTransactionResult> {
         val manifestWithTransactionFee = if (request.feePayerAddress == null) {
             request.manifest
         } else {
@@ -95,9 +100,15 @@ class TransactionClient @Inject constructor(
                 signRequest = SignRequest.SignTransactionRequest(
                     dataToSign = compiledTransactionIntent.toByteArray(),
                     hashedDataToSign = transactionIntentHash.bytes().toByteArray()
-                )
+                ),
+                deviceBiometricAuthenticationProvider = deviceBiometricAuthenticationProvider
             ).getOrElse {
-                return Result.failure(DappRequestException(DappRequestFailure.TransactionApprovalFailure.SignCompiledTransactionIntent))
+                return Result.failure(
+                    DappRequestException(
+                        DappRequestFailure.TransactionApprovalFailure.SignCompiledTransactionIntent,
+                        e = it
+                    )
+                )
             }
 
             val signedTransactionIntent = runCatching {
@@ -106,7 +117,12 @@ class TransactionClient @Inject constructor(
                     intentSignatures = signatures
                 )
             }.getOrElse {
-                return Result.failure(DappRequestException(DappRequestFailure.TransactionApprovalFailure.SignCompiledTransactionIntent))
+                return Result.failure(
+                    DappRequestException(
+                        DappRequestFailure.TransactionApprovalFailure.SignCompiledTransactionIntent,
+                        e = it
+                    )
+                )
             }
 
             val signedIntentHash = runCatching {
@@ -136,18 +152,26 @@ class TransactionClient @Inject constructor(
                     )
                 )
             }
-
-            submitTransactionUseCase(
-                transactionIntentHash.bytes().toByteArray().toHexString(),
-                compiledNotarizedIntent.toByteArray().toHexString()
-            )
+            val txId = transactionIntentHash.bytes().toByteArray().toHexString()
+            Result.success(NotarizedTransactionResult(txId, compiledNotarizedIntent.toByteArray().toHexString()))
         }.onFailure {
             logger.w(it)
         }
     }
 
-    fun cancelSigning() {
-        collectSignersSignaturesUseCase.cancel()
+    suspend fun signAndSubmitTransaction(
+        request: TransactionApprovalRequest,
+        deviceBiometricAuthenticationProvider: suspend () -> Boolean
+    ): Result<String> {
+        return prepareSignedTransactionIntent(
+            request = request,
+            deviceBiometricAuthenticationProvider = deviceBiometricAuthenticationProvider
+        ).mapCatching { notarizedTransactionResult ->
+            submitTransactionUseCase(
+                notarizedTransactionResult.txIdHex,
+                notarizedTransactionResult.notarizedTransactionIntentHex
+            ).getOrThrow()
+        }
     }
 
     @Suppress("UnusedPrivateMember")
@@ -336,3 +360,8 @@ class TransactionClient @Inject constructor(
         return nonce
     }
 }
+
+data class NotarizedTransactionResult(
+    val txIdHex: String,
+    val notarizedTransactionIntentHex: String
+)
