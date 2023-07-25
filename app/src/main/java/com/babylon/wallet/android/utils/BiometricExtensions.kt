@@ -46,13 +46,9 @@ fun FragmentActivity.biometricAuthenticate(
     biometricPrompt.authenticate(promptInfo)
 }
 
-suspend fun FragmentActivity.biometricAuthenticateSuspend(
-    authenticate: Boolean
-): Boolean {
+suspend fun FragmentActivity.biometricAuthenticateSuspend(): Boolean {
     return withContext(Dispatchers.Main) {
         suspendCoroutine {
-            if (!authenticate) it.resume(false)
-
             val authCallback = object : BiometricPrompt.AuthenticationCallback() {
                 override fun onAuthenticationSucceeded(result: BiometricPrompt.AuthenticationResult) {
                     it.resume(true)

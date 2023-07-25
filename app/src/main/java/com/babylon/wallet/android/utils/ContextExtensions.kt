@@ -13,8 +13,9 @@ fun Context.biometricAuthenticate(authenticationCallback: (successful: Boolean) 
     }
 }
 
-suspend fun Context.biometricAuthenticateSuspend(): Boolean {
-    return findFragmentActivity()?.biometricAuthenticateSuspend(true) ?: false
+suspend fun Context.biometricAuthenticateSuspend(allowIfDeviceIsNotSecure: Boolean = false): Boolean {
+    if (allowIfDeviceIsNotSecure) return true
+    return findFragmentActivity()?.biometricAuthenticateSuspend() ?: false
 }
 
 @Suppress("SwallowedException")

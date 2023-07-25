@@ -78,7 +78,7 @@ fun TransactionApprovalScreen(
         state = state,
         onApproveTransaction = {
             viewModel.approveTransaction(deviceBiometricAuthenticationProvider = {
-                context.biometricAuthenticateSuspend()
+                context.biometricAuthenticateSuspend(allowIfDeviceIsNotSecure = true)
             })
         },
         onRawManifestToggle = viewModel::onRawManifestToggle,
@@ -94,7 +94,7 @@ fun TransactionApprovalScreen(
         onPayerSelected = viewModel::onPayerSelected,
         onPayerConfirmed = {
             viewModel.onPayerConfirmed(deviceBiometricAuthenticationProvider = {
-                context.biometricAuthenticateSuspend()
+                context.biometricAuthenticateSuspend(allowIfDeviceIsNotSecure = true)
             })
         }
     )
