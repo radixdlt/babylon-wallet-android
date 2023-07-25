@@ -205,7 +205,7 @@ private fun SeedPhraseCard(
             )
         }
         val securityPromptRes = when (mnemonicState) {
-            DeviceFactorSourceData.MnemonicState.NotBackedUp -> R.string.seedPhrases_message
+//            DeviceFactorSourceData.MnemonicState.NotBackedUp -> R.string.seedPhrases_message // TODO replace UI element
             DeviceFactorSourceData.MnemonicState.NeedRecover -> R.string.homePage_applySecuritySettings
             else -> null
         }
