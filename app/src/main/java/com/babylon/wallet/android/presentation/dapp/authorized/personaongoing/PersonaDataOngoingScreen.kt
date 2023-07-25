@@ -130,7 +130,7 @@ fun PersonaDataOngoingScreen(
     sharedState.interactionState?.let {
         SigningStatusBottomDialog(
             modifier = Modifier.fillMaxHeight(0.8f),
-            onDismissDialogClick = {}, // TODO back
+            onDismissDialogClick = sharedViewModel::onDismissSigningStatusDialog,
             interactionState = it
         )
     }

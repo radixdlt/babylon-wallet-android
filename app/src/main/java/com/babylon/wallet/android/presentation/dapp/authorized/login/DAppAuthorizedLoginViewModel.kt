@@ -135,6 +135,10 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
         }
     }
 
+    fun onDismissSigningStatusDialog() {
+        _state.update { it.copy(interactionState = null) }
+    }
+
     private suspend fun setInitialDappLoginRoute() {
         when (val request = request.authRequest) {
             is AuthorizedRequest.AuthRequest.UsePersonaRequest -> {

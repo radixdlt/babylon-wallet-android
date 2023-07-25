@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -49,6 +50,7 @@ import com.babylon.wallet.android.presentation.dapp.InitialUnauthorizedLoginRout
 import com.babylon.wallet.android.presentation.dapp.authorized.selectpersona.PersonaUiModel
 import com.babylon.wallet.android.presentation.dapp.unauthorized.login.DAppUnauthorizedLoginViewModel
 import com.babylon.wallet.android.presentation.dapp.unauthorized.login.Event
+import com.babylon.wallet.android.presentation.status.signing.SigningStatusBottomDialog
 import com.babylon.wallet.android.presentation.ui.composables.ImageSize
 import com.babylon.wallet.android.presentation.ui.composables.persona.PersonaDetailCard
 import com.babylon.wallet.android.presentation.ui.composables.rememberImageUrl
@@ -127,6 +129,13 @@ fun PersonaDataOnetimeScreen(
         onEditClick = viewModel::onEditClick,
         continueButtonEnabled = state.continueButtonEnabled
     )
+    sharedState.interactionState?.let {
+        SigningStatusBottomDialog(
+            modifier = Modifier.fillMaxHeight(0.8f),
+            onDismissDialogClick = sharedViewModel::onDismissSigningStatusDialog,
+            interactionState = it
+        )
+    }
 }
 
 @Composable

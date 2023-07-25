@@ -110,6 +110,10 @@ class DAppUnauthorizedLoginViewModel @Inject constructor(
         }
     }
 
+    fun onDismissSigningStatusDialog() {
+        _state.update { it.copy(interactionState = null) }
+    }
+
     private fun setInitialDappLoginRoute() {
         when {
             request.oneTimeAccountsRequestItem != null -> {
@@ -118,7 +122,7 @@ class DAppUnauthorizedLoginViewModel @Inject constructor(
                         initialUnauthorizedLoginRoute = InitialUnauthorizedLoginRoute.ChooseAccount(
                             request.oneTimeAccountsRequestItem.numberOfValues.quantity,
                             request.oneTimeAccountsRequestItem.numberOfValues.quantifier
-                                == MessageFromDataChannel.IncomingRequest.NumberOfValues.Quantifier.Exactly
+                                    == MessageFromDataChannel.IncomingRequest.NumberOfValues.Quantifier.Exactly
                         )
                     )
                 }

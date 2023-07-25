@@ -69,9 +69,7 @@ suspend fun FragmentActivity.biometricAuthenticateSuspend(
 
             val promptInfo = BiometricPrompt.PromptInfo.Builder()
                 .setTitle(getString(R.string.biometrics_prompt_title))
-                .setAllowedAuthenticators(
-                    BiometricManager.Authenticators.BIOMETRIC_WEAK or BiometricManager.Authenticators.DEVICE_CREDENTIAL
-                )
+                .setAllowedAuthenticators(ALLOWED_AUTHENTICATORS)
                 .build()
 
             val biometricPrompt = BiometricPrompt(
@@ -84,3 +82,5 @@ suspend fun FragmentActivity.biometricAuthenticateSuspend(
         }
     }
 }
+
+private const val ALLOWED_AUTHENTICATORS = BiometricManager.Authenticators.BIOMETRIC_STRONG or BiometricManager.Authenticators.DEVICE_CREDENTIAL

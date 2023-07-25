@@ -45,7 +45,7 @@ fun OneTimeChooseAccountsScreen(
             when (event) {
                 is Event.LoginFlowCompleted -> onLoginFlowComplete()
                 is Event.PersonaDataOnetime -> onPersonaOnetime(event.requiredPersonaFields)
-                Event.RejectLogin -> sharedViewModel.onRejectRequest()
+                Event.RejectLogin -> onLoginFlowComplete()
                 is Event.RequestCompletionBiometricPrompt -> {
                     if (event.requestDuringSigning) {
                         sharedViewModel.sendRequestResponse(deviceBiometricAuthenticationProvider = {
@@ -100,7 +100,7 @@ fun OneTimeChooseAccountsScreen(
     sharedState.interactionState?.let {
         SigningStatusBottomDialog(
             modifier = Modifier.fillMaxHeight(0.8f),
-            onDismissDialogClick = {}, // TODO back
+            onDismissDialogClick = sharedViewModel::onDismissSigningStatusDialog,
             interactionState = it
         )
     }
