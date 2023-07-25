@@ -83,4 +83,5 @@ suspend fun FragmentActivity.biometricAuthenticateSuspend(
     }
 }
 
-private const val ALLOWED_AUTHENTICATORS = BiometricManager.Authenticators.BIOMETRIC_STRONG or BiometricManager.Authenticators.DEVICE_CREDENTIAL
+private const val ALLOWED_AUTHENTICATORS = BiometricManager.Authenticators.BIOMETRIC_STRONG or
+    BiometricManager.Authenticators.DEVICE_CREDENTIAL

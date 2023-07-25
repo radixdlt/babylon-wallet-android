@@ -122,7 +122,7 @@ class DAppUnauthorizedLoginViewModel @Inject constructor(
                         initialUnauthorizedLoginRoute = InitialUnauthorizedLoginRoute.ChooseAccount(
                             request.oneTimeAccountsRequestItem.numberOfValues.quantity,
                             request.oneTimeAccountsRequestItem.numberOfValues.quantifier
-                                    == MessageFromDataChannel.IncomingRequest.NumberOfValues.Quantifier.Exactly
+                                == MessageFromDataChannel.IncomingRequest.NumberOfValues.Quantifier.Exactly
                         )
                     )
                 }

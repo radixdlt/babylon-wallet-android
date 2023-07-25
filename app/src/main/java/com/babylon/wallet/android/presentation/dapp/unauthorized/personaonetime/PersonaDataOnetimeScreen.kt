@@ -72,6 +72,7 @@ fun PersonaDataOnetimeScreen(
     onBackClick: () -> Unit,
     onLoginFlowComplete: () -> Unit,
     onLoginFlowCancelled: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -110,6 +111,7 @@ fun PersonaDataOnetimeScreen(
         }
     }
     PersonaDataOnetimeContent(
+        modifier = modifier,
         onContinueClick = sharedViewModel::onGrantedPersonaDataOnetime,
         dappWithMetadata = sharedState.dappWithMetadata,
         onBackClick = {
