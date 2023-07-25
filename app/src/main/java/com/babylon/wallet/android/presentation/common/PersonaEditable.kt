@@ -178,5 +178,5 @@ data class PersonaEditLogicState(
     val fieldsToAdd: ImmutableList<PersonaFieldWrapper> = persistentListOf(),
     val personaDisplayName: PersonaDisplayNameFieldWrapper = PersonaDisplayNameFieldWrapper(),
     val areThereFieldsSelected: Boolean = false,
-    val inputValid: Boolean = false
+    val inputValid: Boolean = true
 )
