@@ -189,3 +189,5 @@ fun NonFungibleLocalId.asStr() = when (this) {
     is NonFungibleLocalId.Str -> "<$value>"
     is NonFungibleLocalId.Ruid -> "{$value}"
 }
+
+fun ManifestBuilder.buildSafely(networkId: Int) = runCatching { build(networkId) }

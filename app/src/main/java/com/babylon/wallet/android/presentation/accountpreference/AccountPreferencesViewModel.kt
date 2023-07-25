@@ -125,7 +125,14 @@ class AccountPreferenceViewModel @Inject constructor(
                 _state.update { it.copy(isLoading = true) }
                 rolaClient.generateAuthSigningFactorInstance(account).onSuccess { authSigningFactorInstance ->
                     this@AccountPreferenceViewModel.authSigningFactorInstance = authSigningFactorInstance
-                    val manifest = rolaClient.createAuthKeyManifestWithStringInstructions(account, authSigningFactorInstance)
+                    val manifest = rolaClient
+                        .createAuthKeyManifestWithStringInstructions(account, authSigningFactorInstance)
+                        .getOrElse {
+                            _state.update { state ->
+                                state.copy(isLoading = false)
+                            }
+                            return@launch
+                        }
                     Timber.d("Approving: \n$manifest")
                     uploadAuthKeyRequestId = UUIDGenerator.uuid().toString()
                     incomingRequestRepository.add(

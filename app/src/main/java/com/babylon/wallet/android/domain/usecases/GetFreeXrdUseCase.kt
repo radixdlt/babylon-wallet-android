@@ -18,6 +18,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 import rdx.works.core.preferences.PreferencesManager
 import rdx.works.core.ret.ManifestBuilder
+import rdx.works.core.ret.buildSafely
 import rdx.works.profile.domain.gateway.GetCurrentGatewayUseCase
 import java.math.BigDecimal
 import javax.inject.Inject
@@ -56,7 +57,10 @@ class GetFreeXrdUseCase @Inject constructor(
                         .depositBatch(
                             toAddress = Address(address)
                         )
-                        .build(gateway.network.id)
+                        .buildSafely(gateway.network.id)
+                        .getOrElse {
+                            return@withContext Result.failure(it)
+                        }
                     when (val epochResult = transactionRepository.getLedgerEpoch()) {
                         is ResultInternal.Error -> Result.failure(
                             exception = epochResult.exception ?: DappRequestFailure.TransactionApprovalFailure.PrepareNotarizedTransaction
