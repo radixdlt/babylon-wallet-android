@@ -159,7 +159,7 @@ private fun AccountPreferenceContent(
                     },
                     enabled = !loading && canUseFaucet
                 )
-                if (BuildConfig.DEBUG_MODE && !hasAuthKey) {
+                if (BuildConfig.EXPERIMENTAL_FEATURES_ENABLED && !hasAuthKey) {
                     RadixSecondaryButton(
                         modifier = Modifier.fillMaxWidth(),
                         text = stringResource(id = R.string.biometrics_prompt_createSignAuthKey),

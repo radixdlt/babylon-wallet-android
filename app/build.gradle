@@ -56,6 +56,7 @@ android {
         versionCode 1
         versionName rootProject.ext.versionName
         buildConfigField "boolean", "DEBUG_MODE", "true"
+        buildConfigField "boolean", "EXPERIMENTAL_FEATURES_ENABLED", "true"
         buildConfigField "String", "WELL_KNOWN_URL_SUFFIX", '".well-known/radix.json"'
         buildConfigField "String", "IMAGE_HOST_BASE_URL", '"https://image-service-dev.extratools.works"'
         resValue "string", "app_name", "Radix Wallet"
@@ -92,7 +93,6 @@ android {
         }
         releasePreview {
             initWith release
-            buildConfigField "boolean", "DEBUG_MODE", "false"
             buildConfigField "String", "IMAGE_HOST_BASE_URL", '"https://image-service.radixdlt.com"'
             signingConfig signingConfigs.releasePreview
             applicationIdSuffix ".preview"
@@ -105,6 +105,7 @@ android {
         release {
             minifyEnabled true
             buildConfigField "boolean", "DEBUG_MODE", "false"
+            buildConfigField "boolean", "EXPERIMENTAL_FEATURES_ENABLED", "false"
             buildConfigField "String", "IMAGE_HOST_BASE_URL", '"https://image-service.radixdlt.com"'
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
