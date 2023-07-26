@@ -67,10 +67,19 @@ android {
     }
 
     buildTypes {
+        // keep the default build types (debug, release) at the TOP of the closure
+        // if you want your other custom build types to inherit the properties of the default ones
         debug {
             testCoverageEnabled true
             versionNameSuffix "-" + rootProject.ext.internalVersionName + "-" + getCommitHash()
             resValue "string", "app_name", "Radix Wallet Dev"
+        }
+        release {
+            minifyEnabled true
+            buildConfigField "boolean", "DEBUG_MODE", "false"
+            buildConfigField "boolean", "EXPERIMENTAL_FEATURES_ENABLED", "false"
+            buildConfigField "String", "IMAGE_HOST_BASE_URL", '"https://image-service.radixdlt.com"'
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
         debugAlpha {
             initWith debug
@@ -93,20 +102,11 @@ android {
         }
         releasePreview {
             initWith release
-            buildConfigField "String", "IMAGE_HOST_BASE_URL", '"https://image-service.radixdlt.com"'
             signingConfig signingConfigs.releasePreview
             applicationIdSuffix ".preview"
-            versionNameSuffix "-" + rootProject.ext.internalVersionName
             minifyEnabled true
             resValue "string", "app_name", "Radix Wallet Preview"
             matchingFallbacks = ['release']
-            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-        }
-        release {
-            minifyEnabled true
-            buildConfigField "boolean", "DEBUG_MODE", "false"
-            buildConfigField "boolean", "EXPERIMENTAL_FEATURES_ENABLED", "false"
-            buildConfigField "String", "IMAGE_HOST_BASE_URL", '"https://image-service.radixdlt.com"'
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
