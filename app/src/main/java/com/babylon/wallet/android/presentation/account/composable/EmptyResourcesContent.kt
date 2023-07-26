@@ -16,7 +16,6 @@ import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.presentation.transfer.assets.ResourceTab
-import com.babylon.wallet.android.presentation.ui.composables.InfoLink
 
 @Composable
 fun EmptyResourcesContent(
@@ -58,6 +57,7 @@ private fun ResourceTab.toEmptyTitleRes() = when (this) {
     ResourceTab.Nfts -> R.string.assetDetails_NFTDetails_noNfts
 }
 
+@Suppress("UnusedPrivateMember") // it will be used soon
 @StringRes
 private fun ResourceTab.toEmptyInfoRes() = when (this) {
     ResourceTab.Tokens -> R.string.assetDetails_tokenDetails_whatAreTokens
