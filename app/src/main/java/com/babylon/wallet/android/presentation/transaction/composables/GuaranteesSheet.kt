@@ -22,7 +22,6 @@ import com.babylon.wallet.android.presentation.transaction.AccountWithPredictedG
 import com.babylon.wallet.android.presentation.transaction.TransactionApprovalViewModel.State
 import com.babylon.wallet.android.presentation.ui.composables.BottomDialogDragHandle
 import com.babylon.wallet.android.presentation.ui.composables.GrayBackgroundWrapper
-import com.babylon.wallet.android.presentation.ui.composables.InfoLink
 
 @Composable
 fun GuaranteesSheet(
@@ -70,7 +69,9 @@ fun GuaranteesSheet(
                 Text(
                     modifier = Modifier
                         .padding(horizontal = RadixTheme.dimensions.paddingXXLarge),
-                    text = stringResource(id = com.babylon.wallet.android.R.string.transactionReview_guarantees_subtitle),
+                    text = stringResource(
+                        id = com.babylon.wallet.android.R.string.transactionReview_guarantees_subtitle
+                    ),
                     style = RadixTheme.typography.body1Regular,
                     color = RadixTheme.colors.gray1,
                     textAlign = TextAlign.Center
