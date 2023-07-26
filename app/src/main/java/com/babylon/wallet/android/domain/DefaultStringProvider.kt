@@ -9,5 +9,4 @@ class DefaultStringProvider @Inject constructor(
     @ApplicationContext context: Context
 ) {
     val unknownDapp = context.getString(R.string.dAppRequest_metadata_unknownName)
-    val empty = context.getString(R.string.empty)
 }
