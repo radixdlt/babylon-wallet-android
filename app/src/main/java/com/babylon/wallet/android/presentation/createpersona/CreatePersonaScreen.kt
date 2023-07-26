@@ -56,7 +56,6 @@ import com.babylon.wallet.android.presentation.model.PersonaDisplayNameFieldWrap
 import com.babylon.wallet.android.presentation.model.PersonaFieldWrapper
 import com.babylon.wallet.android.presentation.model.toDisplayResource
 import com.babylon.wallet.android.presentation.ui.composables.DefaultModalSheetLayout
-import com.babylon.wallet.android.presentation.ui.composables.InfoLink
 import com.babylon.wallet.android.presentation.ui.composables.NotSecureAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.UnderlineTextButton
 import com.babylon.wallet.android.presentation.ui.composables.persona.AddFieldSheet
@@ -264,12 +263,12 @@ private fun CreatePersonaContentList(
                 style = RadixTheme.typography.title,
                 color = RadixTheme.colors.gray1
             )
-            Spacer(modifier = Modifier.height(dimensions.paddingSmall))
-            InfoLink(
-                stringResource(R.string.createPersona_introduction_learnAboutPersonas),
-                modifier = Modifier
-                    .padding(horizontal = dimensions.paddingDefault)
-            )
+//            Spacer(modifier = Modifier.height(dimensions.paddingSmall))
+//            InfoLink(
+//                stringResource(R.string.createPersona_introduction_learnAboutPersonas),
+//                modifier = Modifier
+//                    .padding(horizontal = dimensions.paddingDefault)
+//            )
             Spacer(modifier = Modifier.height(30.dp))
             AsyncImage(
                 model = "",

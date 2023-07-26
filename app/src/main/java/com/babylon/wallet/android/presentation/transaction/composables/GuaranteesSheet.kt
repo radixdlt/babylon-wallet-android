@@ -58,14 +58,14 @@ fun GuaranteesSheet(
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier.fillMaxSize()
         ) {
-            item {
-                InfoLink(
-                    stringResource(com.babylon.wallet.android.R.string.transactionReview_guarantees_howDoGuaranteesWork),
-                    modifier = Modifier
-                        .padding(horizontal = RadixTheme.dimensions.paddingDefault)
-                )
-                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
-            }
+//            item {
+//                InfoLink(
+//                    stringResource(com.babylon.wallet.android.R.string.transactionReview_guarantees_howDoGuaranteesWork),
+//                    modifier = Modifier
+//                        .padding(horizontal = RadixTheme.dimensions.paddingDefault)
+//                )
+//                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
+//            }
             item {
                 Text(
                     modifier = Modifier
