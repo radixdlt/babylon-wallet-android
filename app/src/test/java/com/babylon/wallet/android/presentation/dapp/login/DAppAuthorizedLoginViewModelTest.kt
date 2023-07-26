@@ -5,7 +5,6 @@ package com.babylon.wallet.android.presentation.dapp.login
 import androidx.lifecycle.SavedStateHandle
 import app.cash.turbine.test
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
-import com.babylon.wallet.android.domain.DefaultStringProvider
 import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.babylon.wallet.android.domain.usecases.BuildAuthorizedDappResponseUseCase
@@ -48,7 +47,6 @@ class DAppAuthorizedLoginViewModelTest : StateViewModelTest<DAppAuthorizedLoginV
     private val buildAuthorizedDappResponseUseCase = mockk<BuildAuthorizedDappResponseUseCase>()
     private val dAppMessenger = DappMessengerFake()
     private val dAppConnectionRepository = spyk<DAppConnectionRepositoryFake> { DAppConnectionRepositoryFake() }
-    private val defaultStringProvider = mockk<DefaultStringProvider>()
 
     private val samplePersona = SampleDataProvider().samplePersona(personaAddress = "address1")
 
@@ -183,15 +181,13 @@ class DAppAuthorizedLoginViewModelTest : StateViewModelTest<DAppAuthorizedLoginV
             getCurrentGatewayUseCase,
             dappMetadataRepository,
             incomingRequestRepository,
-            buildAuthorizedDappResponseUseCase,
-            defaultStringProvider
+            buildAuthorizedDappResponseUseCase
         )
     }
 
     @Before
     override fun setUp() {
         super.setUp()
-        every { defaultStringProvider.unknownDapp } returns "Dapp"
         every { savedStateHandle.get<String>(ARG_INTERACTION_ID) } returns "1"
         coEvery { getCurrentGatewayUseCase() } returns Radix.Gateway.nebunet
         every { buildAuthorizedDappResponseUseCase.signingState } returns emptyFlow()

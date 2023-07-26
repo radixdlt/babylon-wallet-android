@@ -31,6 +31,7 @@ import com.babylon.wallet.android.presentation.ui.composables.GrayBackgroundWrap
 import com.babylon.wallet.android.presentation.ui.composables.PersonaRoundedAvatar
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.StandardOneLineCard
+import com.babylon.wallet.android.presentation.ui.composables.displayName
 import com.google.accompanist.drawablepainter.rememberDrawablePainter
 
 @Composable
@@ -41,7 +42,7 @@ fun DAppDetailsSheetContent(
 ) {
     Column(modifier = modifier) {
         RadixCenteredTopAppBar(
-            title = dApp.dAppWithMetadata.name.orEmpty(),
+            title = dApp.dAppWithMetadata.displayName(),
             onBackClick = onBackClick,
             contentColor = RadixTheme.colors.gray1
         )

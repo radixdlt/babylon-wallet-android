@@ -51,6 +51,7 @@ import com.babylon.wallet.android.presentation.ui.composables.PersonaDataStringF
 import com.babylon.wallet.android.presentation.ui.composables.PersonaRoundedAvatar
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.StandardOneLineCard
+import com.babylon.wallet.android.presentation.ui.composables.displayName
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
@@ -267,7 +268,7 @@ private fun PersonaDetailList(
                 GrayBackgroundWrapper {
                     StandardOneLineCard(
                         image = dApp.dAppWithMetadata.iconUrl.toString(),
-                        title = dApp.dAppWithMetadata.name.orEmpty(),
+                        title = dApp.dAppWithMetadata.displayName(),
                         modifier = Modifier
                             .shadow(elevation = 8.dp, shape = RadixTheme.shapes.roundedRectMedium)
                             .clip(RadixTheme.shapes.roundedRectMedium)

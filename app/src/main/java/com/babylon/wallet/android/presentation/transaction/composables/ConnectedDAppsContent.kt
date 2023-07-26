@@ -41,6 +41,7 @@ import com.babylon.wallet.android.domain.model.DAppResources
 import com.babylon.wallet.android.domain.model.DAppWithMetadata
 import com.babylon.wallet.android.domain.model.DAppWithMetadataAndAssociatedResources
 import com.babylon.wallet.android.presentation.ui.composables.ImageSize
+import com.babylon.wallet.android.presentation.ui.composables.displayName
 import com.babylon.wallet.android.presentation.ui.composables.rememberImageUrl
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import kotlinx.collections.immutable.ImmutableList
@@ -143,9 +144,9 @@ fun ConnectedDAppsContent(
                             .clip(RadixTheme.shapes.circle)
                     )
                     Spacer(modifier = Modifier.width(RadixTheme.dimensions.paddingDefault))
-                    connectedDApp.dAppWithMetadata.name.orEmpty()
+                    connectedDApp.dAppWithMetadata.displayName()
                     Text(
-                        text = connectedDApp.dAppWithMetadata.name ?: stringResource(id = R.string.transactionReview_unknown),
+                        text = connectedDApp.dAppWithMetadata.displayName(),
                         style = RadixTheme.typography.body1HighImportance,
                         color = RadixTheme.colors.gray1,
                         overflow = TextOverflow.Ellipsis
