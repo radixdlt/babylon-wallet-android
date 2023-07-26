@@ -80,8 +80,9 @@ private fun AuthorizedDAppsContent(
                     color = RadixTheme.colors.gray2
                 )
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
-                InfoLink(stringResource(R.string.authorizedDapps_whatIsDapp), modifier = Modifier.fillMaxWidth())
-                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
+                // TODO enable it when we have the link
+//                InfoLink(stringResource(R.string.authorizedDapps_whatIsDapp), modifier = Modifier.fillMaxWidth())
+//                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
             }
             items(dApps) { dApp ->
                 StandardOneLineCard(

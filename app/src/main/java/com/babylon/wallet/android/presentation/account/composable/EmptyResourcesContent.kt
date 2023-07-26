@@ -40,9 +40,9 @@ fun EmptyResourcesContent(
             color = RadixTheme.colors.gray1
         )
 
-        InfoLink(
-            text = stringResource(id = tab.toEmptyInfoRes()),
-        )
+//        InfoLink( // TODO enable it when we have the links
+//            text = stringResource(id = tab.toEmptyInfoRes()),
+//        )
     }
 }
 
