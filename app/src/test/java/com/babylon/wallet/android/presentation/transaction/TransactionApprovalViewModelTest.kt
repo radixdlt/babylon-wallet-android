@@ -15,7 +15,7 @@ import com.babylon.wallet.android.domain.model.Badge
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.babylon.wallet.android.domain.model.TransactionManifestData
 import com.babylon.wallet.android.domain.usecases.GetAccountsWithResourcesUseCase
-import com.babylon.wallet.android.domain.usecases.GetDAppWithMetadataAndAssociatedResourcesUseCase
+import com.babylon.wallet.android.domain.usecases.ResolveDAppsUseCase
 import com.babylon.wallet.android.domain.usecases.transaction.GetTransactionBadgesUseCase
 import com.babylon.wallet.android.presentation.StateViewModelTest
 import com.babylon.wallet.android.utils.AppEventBus
@@ -46,7 +46,7 @@ internal class TransactionApprovalViewModelTest : StateViewModelTest<Transaction
     private val getAccountsWithResourcesUseCase = mockk<GetAccountsWithResourcesUseCase>()
     private val getProfileUseCase = mockk<GetProfileUseCase>()
     private val getTransactionBadgesUseCase = mockk<GetTransactionBadgesUseCase>()
-    private val getDAppWithAssociatedResourcesUseCase = mockk<GetDAppWithMetadataAndAssociatedResourcesUseCase>()
+    private val resolveDAppsUseCase = mockk<ResolveDAppsUseCase>()
     private val incomingRequestRepository = IncomingRequestRepositoryImpl()
     private val dAppMessenger = mockk<DappMessenger>()
     private val appEventBus = mockk<AppEventBus>()
@@ -106,7 +106,7 @@ internal class TransactionApprovalViewModelTest : StateViewModelTest<Transaction
             getAccountsWithResourcesUseCase = getAccountsWithResourcesUseCase,
             getProfileUseCase = getProfileUseCase,
             getTransactionBadgesUseCase = getTransactionBadgesUseCase,
-            getDAppWithMetadataAndAssociatedResourcesUseCase = getDAppWithAssociatedResourcesUseCase,
+            resolveDAppsUseCase = resolveDAppsUseCase,
             getCurrentGatewayUseCase = getCurrentGatewayUseCase,
             dAppMessenger = dAppMessenger,
             appEventBus = appEventBus,

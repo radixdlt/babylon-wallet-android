@@ -32,7 +32,6 @@ import com.babylon.wallet.android.designsystem.R
 import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
-import com.babylon.wallet.android.presentation.ui.composables.InfoLink
 import com.google.accompanist.drawablepainter.rememberDrawablePainter
 
 @Composable
@@ -94,11 +93,11 @@ private fun CreatePersonaInfoContent(
                 style = RadixTheme.typography.title,
                 color = RadixTheme.colors.gray1
             )
-            Spacer(modifier = Modifier.height(22.dp))
-            InfoLink(
-                stringResource(com.babylon.wallet.android.R.string.createPersona_introduction_learnAboutPersonas),
-                modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingDefault)
-            )
+//            Spacer(modifier = Modifier.height(22.dp))
+//            InfoLink(
+//                stringResource(com.babylon.wallet.android.R.string.createPersona_introduction_learnAboutPersonas),
+//                modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingDefault)
+//            )
             Spacer(modifier = Modifier.height(20.dp))
             Text(
                 text = stringResource(id = com.babylon.wallet.android.R.string.createPersona_introduction_subtitle1),

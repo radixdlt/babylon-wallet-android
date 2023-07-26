@@ -18,7 +18,7 @@ import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.babylon.wallet.android.domain.model.Transferable
 import com.babylon.wallet.android.domain.model.TransferableResource
 import com.babylon.wallet.android.domain.usecases.GetAccountsWithResourcesUseCase
-import com.babylon.wallet.android.domain.usecases.GetDAppWithMetadataAndAssociatedResourcesUseCase
+import com.babylon.wallet.android.domain.usecases.ResolveDAppsUseCase
 import com.babylon.wallet.android.domain.usecases.transaction.GetTransactionBadgesUseCase
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
@@ -55,7 +55,7 @@ class TransactionApprovalViewModel @Inject constructor(
     getAccountsWithResourcesUseCase: GetAccountsWithResourcesUseCase,
     getProfileUseCase: GetProfileUseCase,
     getTransactionBadgesUseCase: GetTransactionBadgesUseCase,
-    getDAppWithMetadataAndAssociatedResourcesUseCase: GetDAppWithMetadataAndAssociatedResourcesUseCase,
+    resolveDAppsUseCase: ResolveDAppsUseCase,
     getCurrentGatewayUseCase: GetCurrentGatewayUseCase,
     dAppMessenger: DappMessenger,
     appEventBus: AppEventBus,
@@ -81,7 +81,7 @@ class TransactionApprovalViewModel @Inject constructor(
         getProfileUseCase = getProfileUseCase,
         getAccountsWithResourcesUseCase = getAccountsWithResourcesUseCase,
         getTransactionBadgesUseCase = getTransactionBadgesUseCase,
-        getDAppWithMetadataAndAssociatedResourcesUseCase = getDAppWithMetadataAndAssociatedResourcesUseCase,
+        resolveDAppsUseCase = resolveDAppsUseCase,
         transactionClient = transactionClient,
         logger = logger
     )
