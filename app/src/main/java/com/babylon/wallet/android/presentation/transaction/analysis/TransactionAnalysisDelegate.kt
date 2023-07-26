@@ -5,7 +5,7 @@ import com.babylon.wallet.android.data.manifest.addLockFeeInstructionToManifest
 import com.babylon.wallet.android.data.transaction.TransactionClient
 import com.babylon.wallet.android.data.transaction.TransactionConfig
 import com.babylon.wallet.android.domain.usecases.GetAccountsWithResourcesUseCase
-import com.babylon.wallet.android.domain.usecases.GetDAppWithMetadataAndAssociatedResourcesUseCase
+import com.babylon.wallet.android.domain.usecases.ResolveDAppsUseCase
 import com.babylon.wallet.android.domain.usecases.transaction.GetTransactionBadgesUseCase
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.transaction.PreviewType
@@ -29,7 +29,7 @@ class TransactionAnalysisDelegate(
     private val getProfileUseCase: GetProfileUseCase,
     private val getAccountsWithResourcesUseCase: GetAccountsWithResourcesUseCase,
     private val getTransactionBadgesUseCase: GetTransactionBadgesUseCase,
-    private val getDAppWithMetadataAndAssociatedResourcesUseCase: GetDAppWithMetadataAndAssociatedResourcesUseCase,
+    private val resolveDAppsUseCase: ResolveDAppsUseCase,
     private val transactionClient: TransactionClient,
     private val logger: Timber.Tree
 ) {
@@ -81,7 +81,7 @@ class TransactionAnalysisDelegate(
                 getTransactionBadgesUseCase = getTransactionBadgesUseCase,
                 getProfileUseCase = getProfileUseCase,
                 getAccountsWithResourcesUseCase = getAccountsWithResourcesUseCase,
-                getDAppWithMetadataAndAssociatedResourcesUseCase = getDAppWithMetadataAndAssociatedResourcesUseCase
+                resolveDAppsUseCase = resolveDAppsUseCase
             )
 
             is TransactionType.SimpleTransfer -> type.resolve(

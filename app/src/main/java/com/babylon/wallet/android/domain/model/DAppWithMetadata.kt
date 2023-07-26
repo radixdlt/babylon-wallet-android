@@ -78,6 +78,7 @@ data class DAppWithMetadata(
                 relatedWebsitesItem = remainingItems.consume(),
                 claimedWebsitesItem = remainingItems.consume(),
                 claimedEntitiesItem = remainingItems.consume(),
+                dAppDefinitionsMetadataItem = remainingItems.consume(),
                 accountTypeItem = remainingItems.consume(),
                 nonExplicitMetadataItems = remainingItems.filterIsInstance<StringMetadataItem>()
             )

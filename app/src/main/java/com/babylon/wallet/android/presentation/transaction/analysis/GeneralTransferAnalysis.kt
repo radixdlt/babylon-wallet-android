@@ -3,7 +3,7 @@ package com.babylon.wallet.android.presentation.transaction.analysis
 import com.babylon.wallet.android.domain.common.value
 import com.babylon.wallet.android.domain.model.Resources
 import com.babylon.wallet.android.domain.usecases.GetAccountsWithResourcesUseCase
-import com.babylon.wallet.android.domain.usecases.GetDAppWithMetadataAndAssociatedResourcesUseCase
+import com.babylon.wallet.android.domain.usecases.ResolveDAppsUseCase
 import com.babylon.wallet.android.domain.usecases.transaction.GetTransactionBadgesUseCase
 import com.babylon.wallet.android.presentation.transaction.AccountWithTransferableResources
 import com.babylon.wallet.android.presentation.transaction.PreviewType
@@ -21,10 +21,10 @@ suspend fun TransactionType.GeneralTransaction.resolve(
     getTransactionBadgesUseCase: GetTransactionBadgesUseCase,
     getProfileUseCase: GetProfileUseCase,
     getAccountsWithResourcesUseCase: GetAccountsWithResourcesUseCase,
-    getDAppWithMetadataAndAssociatedResourcesUseCase: GetDAppWithMetadataAndAssociatedResourcesUseCase
+    resolveDAppsUseCase: ResolveDAppsUseCase
 ): PreviewType {
     val badges = getTransactionBadgesUseCase(accountProofs = accountProofs)
-    val dApps = resolveDApps(getDAppWithMetadataAndAssociatedResourcesUseCase)
+    val dApps = resolveDApps(resolveDAppsUseCase)
 
     val allAccounts = getProfileUseCase.accountsOnCurrentNetwork().filter {
         it.address in accountWithdraws.keys || it.address in accountDeposits.keys
@@ -42,19 +42,16 @@ suspend fun TransactionType.GeneralTransaction.resolve(
 }
 
 private suspend fun TransactionType.GeneralTransaction.resolveDApps(
-    getDAppWithMetadataAndAssociatedResourcesUseCase: GetDAppWithMetadataAndAssociatedResourcesUseCase
+    resolveDAppsUseCase: ResolveDAppsUseCase
 ) = coroutineScope {
     addressesInManifest[EntityType.GLOBAL_GENERIC_COMPONENT].orEmpty()
         .map { address ->
             async {
-                getDAppWithMetadataAndAssociatedResourcesUseCase(
-                    definitionAddress = address.addressString(),
-                    needMostRecentData = true
-                )
+                resolveDAppsUseCase.invoke(address.addressString())
             }
         }
         .awaitAll()
-        .mapNotNull { it.value() }
+        .mapNotNull { it.getOrNull() }
 }
 
 private fun TransactionType.GeneralTransaction.resolveFromAccounts(
