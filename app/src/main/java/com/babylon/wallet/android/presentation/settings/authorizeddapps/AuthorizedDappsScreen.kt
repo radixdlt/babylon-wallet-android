@@ -27,7 +27,6 @@ import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.model.DAppWithMetadataAndAssociatedResources
-import com.babylon.wallet.android.presentation.ui.composables.InfoLink
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.StandardOneLineCard
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
@@ -80,8 +79,9 @@ private fun AuthorizedDAppsContent(
                     color = RadixTheme.colors.gray2
                 )
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
-                InfoLink(stringResource(R.string.authorizedDapps_whatIsDapp), modifier = Modifier.fillMaxWidth())
-                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
+                // TODO enable it when we have the link
+//                InfoLink(stringResource(R.string.authorizedDapps_whatIsDapp), modifier = Modifier.fillMaxWidth())
+//                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
             }
             items(dApps) { dApp ->
                 StandardOneLineCard(
