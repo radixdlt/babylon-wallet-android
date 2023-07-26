@@ -82,7 +82,7 @@ enum class ExplicitMetadataKey(val key: String) {
             url = Uri.parse(value.typed<MetadataUrlValue>()?.value.orEmpty())
         )
         ICON_URL -> IconUrlMetadataItem(
-            url = Uri.parse(value.typed<MetadataStringValue>()?.value.orEmpty())
+            url = Uri.parse(value.typed<MetadataUrlValue>()?.value.orEmpty())
         )
         OWNER_KEYS -> OwnerKeyHashesMetadataItem(
             keyHashes = value.typed<MetadataPublicKeyHashArrayValue>()?.propertyValues?.map { hash ->
