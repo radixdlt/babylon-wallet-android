@@ -45,6 +45,7 @@ import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.gateway.GetCurrentGatewayUseCase
 import timber.log.Timber
 import java.math.BigDecimal
+import java.math.RoundingMode
 import javax.inject.Inject
 
 @Suppress("LongParameterList", "TooManyFunctions")
@@ -269,14 +270,15 @@ sealed interface AccountWithPredictedGuarantee {
     val guaranteeAmountString: String
 
     val guaranteeOffsetDecimal: Float
-        @FloatRange(from = 0.0, to = 1.0)
+        @FloatRange(from = 0.0)
         get() = (guaranteeAmountString.toFloatOrNull() ?: 0f) / 100f
 
     val guaranteedAmount: BigDecimal
         get() = transferableAmount.amount * guaranteeOffsetDecimal.toBigDecimal()
 
     fun increase(): AccountWithPredictedGuarantee {
-        val newOffset = (guaranteeOffsetDecimal + 0.001f).coerceAtMost(1f) * 100f
+        val newOffset = (guaranteeOffsetDecimal.toBigDecimal().plus(BigDecimal(0.001)))
+            .multiply(BigDecimal(100)).setScale(1, RoundingMode.HALF_EVEN)
         return when (this) {
             is Other -> copy(guaranteeAmountString = newOffset.toString())
             is Owned -> copy(guaranteeAmountString = newOffset.toString())
@@ -284,7 +286,10 @@ sealed interface AccountWithPredictedGuarantee {
     }
 
     fun decrease(): AccountWithPredictedGuarantee {
-        val newOffset = (guaranteeOffsetDecimal - 0.001f).coerceAtLeast(0f) * 100f
+        val newOffset = (
+            guaranteeOffsetDecimal.toBigDecimal().minus(BigDecimal(0.001))
+                .coerceAtLeast(BigDecimal.ZERO).multiply(BigDecimal(100))
+            ).setScale(1, RoundingMode.HALF_EVEN)
         return when (this) {
             is Other -> copy(guaranteeAmountString = newOffset.toString())
             is Owned -> copy(guaranteeAmountString = newOffset.toString())
@@ -293,7 +298,7 @@ sealed interface AccountWithPredictedGuarantee {
 
     fun change(amount: String): AccountWithPredictedGuarantee {
         val value = amount.toFloatOrNull() ?: 0f
-        return if (value in 0f..100f) {
+        return if (value >= 0f) {
             when (this) {
                 is Other -> copy(guaranteeAmountString = amount)
                 is Owned -> copy(guaranteeAmountString = amount)
