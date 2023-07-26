@@ -10,9 +10,9 @@
       "saved" : [
         {
           "network" : {
-            "displayDescription" : "Ansharnet (Test Network)",
+            "displayDescription" : "RCnet-V2 test network",
             "id" : 13,
-            "name" : "ansharnet"
+            "name" : "RCnet Gateway"
           },
           "url" : "https://ansharnet-gateway.radixdlt.com"
         }

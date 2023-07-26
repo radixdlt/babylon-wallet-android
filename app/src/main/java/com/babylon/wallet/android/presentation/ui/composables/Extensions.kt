@@ -91,7 +91,7 @@ enum class ImageSize(val size: Int) {
 @Composable
 fun Resource.Tag.name(): String {
     return when (this) {
-        is Resource.Tag.Official -> "Official Radix"
+        is Resource.Tag.Official -> "RADIX NETWORK"
         is Resource.Tag.Dynamic -> name
     }
 }
