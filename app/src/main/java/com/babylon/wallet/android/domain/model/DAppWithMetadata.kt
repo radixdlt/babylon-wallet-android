@@ -53,8 +53,17 @@ data class DAppWithMetadata(
     val claimedEntities: List<String>
         get() = claimedEntitiesItem?.entities.orEmpty()
 
+    @Suppress("SwallowedException")
     fun isRelatedWith(origin: String): Boolean {
-        return relatedWebsitesItem?.websites?.any { it == origin } == true
+        return claimedWebsites.any {
+            try {
+                val claimedUri = Uri.parse(it)
+                val originUri = Uri.parse(origin)
+                claimedUri.scheme != null && claimedUri.scheme == originUri.scheme
+            } catch (e: Exception) {
+                false
+            }
+        }
     }
 
     companion object {
