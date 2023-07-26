@@ -44,7 +44,7 @@ sealed interface Transferable {
     ) : Transferable
 
     fun updateGuarantee(
-        @FloatRange(from = 0.0, to = 1.0)
+        @FloatRange(from = 0.0)
         guaranteeOffset: Float
     ): Transferable {
         return when (this) {

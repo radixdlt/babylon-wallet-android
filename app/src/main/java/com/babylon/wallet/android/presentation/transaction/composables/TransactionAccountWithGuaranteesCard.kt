@@ -210,7 +210,9 @@ fun TransactionAccountWithGuaranteesCard(
             ) {
                 Text(
                     modifier = Modifier.weight(2f),
-                    text = stringResource(id = com.babylon.wallet.android.R.string.transactionReview_guarantees_setGuaranteedMinimum),
+                    text = stringResource(
+                        id = com.babylon.wallet.android.R.string.transactionReview_guarantees_setGuaranteedMinimum
+                    ).replace("%%", "%"),
                     style = RadixTheme.typography.body2Header,
                     color = RadixTheme.colors.gray1
                 )
