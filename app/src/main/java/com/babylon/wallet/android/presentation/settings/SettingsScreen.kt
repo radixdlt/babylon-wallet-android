@@ -30,7 +30,6 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.BuildConfig
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixSecondaryButton
-import com.babylon.wallet.android.designsystem.theme.Orange1
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.presentation.settings.backup.backupMessage
@@ -107,6 +106,7 @@ private fun SettingsContent(
                             )
                         }
                     }
+
                     SettingsItem.TopLevelSettings.DeleteAll -> {
                         settingsItem.descriptionRes().let {
                             item {
@@ -119,6 +119,7 @@ private fun SettingsContent(
                             }
                         }
                     }
+
                     else -> {
                         item {
                             if (settingsItem is SettingsItem.TopLevelSettings.Backups) {
@@ -213,27 +214,29 @@ private fun BackupSettingsItem(
             Icon(painter = painterResource(id = it), contentDescription = null)
         }
 
-        Column(verticalArrangement = Arrangement.spacedBy(0.dp)) {
+        Column {
             Text(
                 text = stringResource(id = backupSettingsItem.descriptionRes()),
                 style = RadixTheme.typography.body2Header,
                 color = RadixTheme.colors.gray1
             )
 
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                Text(
-                    text = backupMessage(state = backupSettingsItem.backupState),
-                    style = RadixTheme.typography.body2Regular,
-                    color = RadixTheme.colors.gray2
-                )
-
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingSmall),
+                verticalAlignment = CenterVertically
+            ) {
                 if (backupSettingsItem.backupState.isWarningVisible) {
                     Icon(
                         painter = painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_warning_error),
                         contentDescription = null,
-                        tint = Orange1
+                        tint = RadixTheme.colors.orange1
                     )
                 }
+                Text(
+                    text = backupMessage(state = backupSettingsItem.backupState),
+                    style = RadixTheme.typography.body2Regular,
+                    color = RadixTheme.colors.orange1
+                )
             }
         }
         Spacer(modifier = Modifier.weight(1f))
