@@ -169,7 +169,7 @@ private fun Resource.FungibleResource.Companion.from(
     descriptionMetadataItem = metadata?.get(ExplicitMetadataKey.DESCRIPTION.key)?.let { it as? MetadataValue.StringValue }?.let {
         DescriptionMetadataItem(description = it.value)
     },
-    iconUrlMetadataItem = metadata?.get(ExplicitMetadataKey.ICON_URL.key)?.let { it as? MetadataValue.StringValue }?.let {
+    iconUrlMetadataItem = metadata?.get(ExplicitMetadataKey.ICON_URL.key)?.let { it as? MetadataValue.UrlValue }?.let {
         IconUrlMetadataItem(url = Uri.parse(it.value))
     }
 )
@@ -213,7 +213,7 @@ private fun ResourceTracker.NonFungible.toTransferableResource(
             nameMetadataItem = metadata?.get(ExplicitMetadataKey.NAME.key)?.let { it as? MetadataValue.StringValue }?.let {
                 NameMetadataItem(name = it.value)
             },
-            iconMetadataItem = metadata?.get(ExplicitMetadataKey.ICON_URL.key)?.let { it as? MetadataValue.StringValue }?.let {
+            iconMetadataItem = metadata?.get(ExplicitMetadataKey.ICON_URL.key)?.let { it as? MetadataValue.UrlValue }?.let {
                 IconUrlMetadataItem(url = Uri.parse(it.value))
             },
             items = items
