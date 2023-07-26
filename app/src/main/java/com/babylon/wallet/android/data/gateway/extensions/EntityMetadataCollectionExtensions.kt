@@ -7,8 +7,7 @@ import com.babylon.wallet.android.domain.model.metadata.MetadataItem
 
 fun EntityMetadataItem.toMetadataItem(): MetadataItem? {
     val explicitMetadataKey = ExplicitMetadataKey.from(key = key)
-    val metadataItem = explicitMetadataKey?.toStandardMetadataItem(value)
-    return metadataItem
+    return explicitMetadataKey?.toStandardMetadataItem(value)
 }
 
 fun EntityMetadataCollection.asMetadataItems(): List<MetadataItem> {
