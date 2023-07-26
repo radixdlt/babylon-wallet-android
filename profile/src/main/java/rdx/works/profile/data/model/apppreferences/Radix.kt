@@ -51,12 +51,12 @@ object Radix {
             )
             val ansharnet = Network(
                 id = NetworkId.Ansharnet.value,
-                name = "ansharnet",
-                displayDescription = "Ansharnet (Test Network)"
+                name = "RCnet Gateway",
+                displayDescription = "RCnet-V2 test network"
             )
 
             fun allKnownNetworks(): List<Network> {
-                return listOf(hammunet, nebunet, kisharnet, mardunet, enkinet)
+                return listOf(hammunet, nebunet, kisharnet, mardunet, enkinet, ansharnet)
             }
 
             fun forName(name: String): Network {

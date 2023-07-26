@@ -371,7 +371,7 @@ private fun GatewayCard(
 
 @Composable
 private fun Radix.Gateway.displayName(): String = when (network.id) {
-    Radix.Network.kisharnet.id -> stringResource(id = R.string.gateways_rcNetGateway)
+    Radix.Network.ansharnet.id -> stringResource(id = R.string.gateways_rcNetGateway)
     else -> url
 }
 

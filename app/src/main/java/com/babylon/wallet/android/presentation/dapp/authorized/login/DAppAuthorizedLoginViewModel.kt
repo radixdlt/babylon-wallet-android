@@ -9,6 +9,7 @@ import com.babylon.wallet.android.data.repository.dappmetadata.DAppRepository
 import com.babylon.wallet.android.data.transaction.DappRequestException
 import com.babylon.wallet.android.data.transaction.DappRequestFailure
 import com.babylon.wallet.android.data.transaction.InteractionState
+import com.babylon.wallet.android.domain.DefaultStringProvider
 import com.babylon.wallet.android.domain.common.onError
 import com.babylon.wallet.android.domain.common.onValue
 import com.babylon.wallet.android.domain.model.DAppWithMetadata
@@ -70,6 +71,7 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
     private val dAppRepository: DAppRepository,
     private val incomingRequestRepository: IncomingRequestRepository,
     private val buildAuthorizedDappResponseUseCase: BuildAuthorizedDappResponseUseCase,
+    private val defaultStringProvider: DefaultStringProvider
 ) : StateViewModel<DAppLoginUiState>(),
     OneOffEventHandler<Event> by OneOffEventHandlerImpl() {
 
@@ -508,7 +510,7 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
         val dApp = authorizedDapp
         val date = LocalDateTime.now().toISO8601String()
         if (dApp == null) {
-            val dAppName = state.value.dappWithMetadata?.name.orEmpty().ifEmpty { "Unknown dApp" }
+            val dAppName = state.value.dappWithMetadata?.name.orEmpty().ifEmpty { defaultStringProvider.unknownDapp }
             mutex.withLock {
                 editedDapp = Network.AuthorizedDapp(
                     request.metadata.networkId,

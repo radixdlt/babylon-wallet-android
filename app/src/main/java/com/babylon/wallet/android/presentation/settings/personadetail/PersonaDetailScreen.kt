@@ -237,7 +237,7 @@ private fun PersonaDetailList(
                 throttleClicks = true
             )
             Spacer(modifier = Modifier.height(dimensions.paddingDefault))
-            if (BuildConfig.DEBUG_MODE && !hasAuthKey) {
+            if (BuildConfig.EXPERIMENTAL_FEATURES_ENABLED && !hasAuthKey) {
                 RadixSecondaryButton(
                     modifier = Modifier
                         .fillMaxWidth()

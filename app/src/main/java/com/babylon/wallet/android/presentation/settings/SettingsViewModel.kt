@@ -2,7 +2,7 @@ package com.babylon.wallet.android.presentation.settings
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.babylon.wallet.android.BuildConfig.DEBUG_MODE
+import com.babylon.wallet.android.BuildConfig.EXPERIMENTAL_FEATURES_ENABLED
 import com.babylon.wallet.android.data.dapp.PeerdroidClient
 import com.babylon.wallet.android.domain.model.AppConstants
 import com.babylon.wallet.android.presentation.common.OneOffEvent
@@ -33,7 +33,7 @@ class SettingsViewModel @Inject constructor(
     getBackupStateUseCase: GetBackupStateUseCase
 ) : ViewModel(), OneOffEventHandler<SettingsEvent> by OneOffEventHandlerImpl() {
 
-    private val defaultSettings = if (DEBUG_MODE) {
+    private val defaultSettings = if (EXPERIMENTAL_FEATURES_ENABLED) {
         persistentListOf(
             SettingsItem.TopLevelSettings.LinkedConnectors,
             SettingsItem.TopLevelSettings.Gateways,

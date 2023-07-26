@@ -10,9 +10,9 @@
       "saved" : [
         {
           "network" : {
-            "displayDescription" : "Ansharnet (Test Network)",
+            "displayDescription" : "RCnet-V2 test network",
             "id" : 13,
-            "name" : "ansharnet"
+            "name" : "RCnet Gateway"
           },
           "url" : "https://ansharnet-gateway.radixdlt.com"
         }
@@ -211,7 +211,7 @@
       "description" : "unit test",
       "id" : "BABE1442-3C98-41FF-AFB0-D0F5829B020D"
     },
-    "snapshotVersion" : 39
+    "snapshotVersion" : 40
   },
   "networks" : [
     {
