@@ -67,7 +67,7 @@ enum class ExplicitMetadataKey(val key: String) {
             value = value.typed<MetadataStringValue>()?.value.orEmpty()
         )
         CLAIMED_WEBSITES -> ClaimedWebsitesMetadataItem(
-            websites = value.typed<MetadataUrlArrayValue>()?.propertyValues.orEmpty()
+            websites = value.typed<MetadataStringArrayValue>()?.propertyValues.orEmpty()
         )
         CLAIMED_ENTITIES -> ClaimedEntitiesMetadataItem(
             entities = value.typed<MetadataStringArrayValue>()?.propertyValues.orEmpty()
@@ -121,7 +121,7 @@ enum class ExplicitMetadataKey(val key: String) {
                 ACCOUNT_TYPE,
                 DAPP_DEFINITION,
                 DAPP_DEFINITIONS,
-                RELATED_WEBSITES,
+                CLAIMED_WEBSITES,
                 ICON_URL
             )
 
