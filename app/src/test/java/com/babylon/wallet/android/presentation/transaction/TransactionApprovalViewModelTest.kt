@@ -32,7 +32,6 @@ import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.junit.Before
-import org.junit.Ignore
 import org.junit.Test
 import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.domain.GetProfileUseCase
@@ -76,7 +75,7 @@ internal class TransactionApprovalViewModelTest : StateViewModelTest<Transaction
         coEvery { getTransactionBadgesUseCase.invoke(any()) } returns listOf(
             Badge(address = "", nameMetadataItem = null, iconMetadataItem = null)
         )
-        coEvery { transactionClient.signAndSubmitTransaction(any(), { true }) } returns Result.success(sampleTxId)
+        coEvery { transactionClient.signAndSubmitTransaction(any(), any()) } returns Result.success(sampleTxId)
         coEvery { transactionClient.findFeePayerInManifest(any()) } returns Result.success(FeePayerSearchResult("feePayer"))
         coEvery { transactionClient.signingState } returns emptyFlow()
         coEvery { transactionClient.getTransactionPreview(any(), any()) } returns Result.success(
@@ -119,7 +118,6 @@ internal class TransactionApprovalViewModelTest : StateViewModelTest<Transaction
     }
 
     @Test
-    @Ignore
     fun `transaction approval success`() = runTest {
         val vm = vm.value
         advanceUntilIdle()
@@ -155,9 +153,8 @@ internal class TransactionApprovalViewModelTest : StateViewModelTest<Transaction
     }
 
     @Test
-    @Ignore
     fun `transaction approval sign and submit error`() = runTest {
-        coEvery { transactionClient.signAndSubmitTransaction(any(), { true }) } returns Result.failure(
+        coEvery { transactionClient.signAndSubmitTransaction(any(), any()) } returns Result.failure(
             DappRequestException(
                 DappRequestFailure.TransactionApprovalFailure.SubmitNotarizedTransaction
             )
