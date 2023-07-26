@@ -71,15 +71,20 @@ fun TransactionApprovalScreen(
     viewModel: TransactionApprovalViewModel,
     onDismiss: () -> Unit
 ) {
+    var notSecuredDialogContext by remember { mutableStateOf<SecureDialogContext?>(null) }
     val state by viewModel.state.collectAsStateWithLifecycle()
     val context = LocalContext.current
     TransactionPreviewContent(
         onBackClick = viewModel::onBackClick,
         state = state,
         onApproveTransaction = {
-            viewModel.approveTransaction(deviceBiometricAuthenticationProvider = {
-                context.biometricAuthenticateSuspend(allowIfDeviceIsNotSecure = true)
-            })
+            if (state.isDeviceSecure) {
+                viewModel.approveTransaction(deviceBiometricAuthenticationProvider = {
+                    context.biometricAuthenticateSuspend()
+                })
+            } else {
+                notSecuredDialogContext = SecureDialogContext.ApproveTransaction
+            }
         },
         onRawManifestToggle = viewModel::onRawManifestToggle,
         onMessageShown = viewModel::onMessageShown,
@@ -93,9 +98,13 @@ fun TransactionApprovalScreen(
         onDAppClick = viewModel::onDAppClick,
         onPayerSelected = viewModel::onPayerSelected,
         onPayerConfirmed = {
-            viewModel.onPayerConfirmed(deviceBiometricAuthenticationProvider = {
-                context.biometricAuthenticateSuspend(allowIfDeviceIsNotSecure = true)
-            })
+            if (state.isDeviceSecure) {
+                viewModel.onPayerConfirmed(deviceBiometricAuthenticationProvider = {
+                    context.biometricAuthenticateSuspend()
+                })
+            } else {
+                notSecuredDialogContext = SecureDialogContext.ConfirmPayer
+            }
         }
     )
 
@@ -115,6 +124,30 @@ fun TransactionApprovalScreen(
                 }
             }
         }
+    }
+    if (notSecuredDialogContext != null) {
+        NotSecureAlertDialog(
+            finish = { accepted ->
+                if (accepted) {
+                    when (notSecuredDialogContext) {
+                        SecureDialogContext.ConfirmPayer -> {
+                            viewModel.onPayerConfirmed(deviceBiometricAuthenticationProvider = {
+                                context.biometricAuthenticateSuspend(allowIfDeviceIsNotSecure = true)
+                            })
+                        }
+
+                        SecureDialogContext.ApproveTransaction -> {
+                            viewModel.approveTransaction(deviceBiometricAuthenticationProvider = {
+                                context.biometricAuthenticateSuspend(allowIfDeviceIsNotSecure = true)
+                            })
+                        }
+
+                        else -> {}
+                    }
+                }
+                notSecuredDialogContext = null
+            }
+        )
     }
 }
 
@@ -264,19 +297,12 @@ private fun ApproveButton(
     state: State,
     onApproveTransaction: () -> Unit
 ) {
-    var showNotSecuredDialog by remember { mutableStateOf(false) }
     RadixPrimaryButton(
         modifier = Modifier
             .fillMaxWidth()
             .padding(RadixTheme.dimensions.paddingDefault),
         text = stringResource(id = R.string.transactionReview_approveButtonTitle),
-        onClick = {
-            if (state.isDeviceSecure) {
-                onApproveTransaction()
-            } else {
-                showNotSecuredDialog = true
-            }
-        },
+        onClick = onApproveTransaction,
         isLoading = state.isSubmitting,
         enabled = state.isSubmitEnabled,
         icon = {
@@ -286,17 +312,6 @@ private fun ApproveButton(
             )
         }
     )
-
-    if (showNotSecuredDialog) {
-        NotSecureAlertDialog(
-            finish = { accepted ->
-                showNotSecuredDialog = false
-                if (accepted) {
-                    onApproveTransaction()
-                }
-            }
-        )
-    }
 }
 
 @Composable
@@ -343,6 +358,7 @@ private fun BottomSheetContent(
                 onPayerConfirmed = onPayerConfirmed
             )
         }
+
         is State.Sheet.None -> {}
     }
 }
@@ -368,6 +384,10 @@ private fun SyncSheetState(
             onSheetClosed()
         }
     }
+}
+
+private enum class SecureDialogContext {
+    ConfirmPayer, ApproveTransaction
 }
 
 @Preview(showBackground = true)
