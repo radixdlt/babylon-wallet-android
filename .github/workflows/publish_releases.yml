@@ -137,6 +137,11 @@ jobs:
           ruby-version: '3.1.2'
           bundler-cache: true
 
+      - uses: actions/setup-java@v3
+        with:
+          distribution: 'zulu' # See 'Supported distributions' for available options
+          java-version: '17'
+
       - name: Decode keystore credentials
         uses: timheuer/base64-to-file@48657ba25c726c2e3dcf02efa3639fff9b3d587e
         id: google_play_keystore
