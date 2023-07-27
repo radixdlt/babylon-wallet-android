@@ -65,7 +65,7 @@ fun RETResources.toTransferableResource(resourceAddress: String, allResources: L
 
 fun ResourceTracker.toDepositingTransferableResource(
     allResources: List<Resources>,
-    newlyCreated: Map<String, Map<String, MetadataValue>>
+    newlyCreated: Map<String, Map<String, MetadataValue?>>
 ): Transferable.Depositing {
     val allFungibles = allResources.map { it.fungibleResources }.flatten()
     val allNFTCollections = allResources.map { it.nonFungibleResources }.flatten()
@@ -87,7 +87,7 @@ fun ResourceTracker.toDepositingTransferableResource(
 
 fun ResourceTracker.toWithdrawingTransferableResource(
     allResources: List<Resources>,
-    newlyCreated: Map<String, Map<String, MetadataValue>> = emptyMap()
+    newlyCreated: Map<String, Map<String, MetadataValue?>> = emptyMap()
 ): Transferable.Withdrawing {
     val allFungibles = allResources.map { it.fungibleResources }.flatten()
     val allNFTCollections = allResources.map { it.nonFungibleResources }.flatten()
@@ -117,7 +117,7 @@ fun ResourceSpecifier.toTransferableResource(
                 it.resourceAddress == resourceAddress.addressString()
             } ?: Resource.FungibleResource.from(
                 resourceAddress = resourceAddress,
-                metadata = newlyCreated[resourceAddress.addressString()]
+                metadata = newlyCreated[resourceAddress.addressString()].orEmpty()
             ),
             isNewlyCreated = newlyCreated[resourceAddress.addressString()] != null
         )
@@ -156,41 +156,41 @@ fun ResourceSpecifier.toTransferableResource(
 
 private fun Resource.FungibleResource.Companion.from(
     resourceAddress: Address,
-    metadata: Map<String, MetadataValue>?
+    metadata: Map<String, MetadataValue?>
 ): Resource.FungibleResource = Resource.FungibleResource(
     resourceAddress = resourceAddress.addressString(),
     amount = BigDecimal.ZERO,
-    nameMetadataItem = metadata?.get(ExplicitMetadataKey.NAME.key)?.let { it as? MetadataValue.StringValue }?.let {
+    nameMetadataItem = metadata[ExplicitMetadataKey.NAME.key]?.let { it as? MetadataValue.StringValue }?.let {
         NameMetadataItem(name = it.value)
     },
-    symbolMetadataItem = metadata?.get(ExplicitMetadataKey.SYMBOL.key)?.let { it as? MetadataValue.StringValue }?.let {
+    symbolMetadataItem = metadata[ExplicitMetadataKey.SYMBOL.key]?.let { it as? MetadataValue.StringValue }?.let {
         SymbolMetadataItem(symbol = it.value)
     },
-    descriptionMetadataItem = metadata?.get(ExplicitMetadataKey.DESCRIPTION.key)?.let { it as? MetadataValue.StringValue }?.let {
+    descriptionMetadataItem = metadata[ExplicitMetadataKey.DESCRIPTION.key]?.let { it as? MetadataValue.StringValue }?.let {
         DescriptionMetadataItem(description = it.value)
     },
-    iconUrlMetadataItem = metadata?.get(ExplicitMetadataKey.ICON_URL.key)?.let { it as? MetadataValue.UrlValue }?.let {
+    iconUrlMetadataItem = metadata[ExplicitMetadataKey.ICON_URL.key]?.let { it as? MetadataValue.UrlValue }?.let {
         IconUrlMetadataItem(url = Uri.parse(it.value))
     }
 )
 
 private fun ResourceTracker.Fungible.toTransferableResource(
     allFungibles: List<Resource.FungibleResource>,
-    newlyCreated: Map<String, Map<String, MetadataValue>>
+    newlyCreated: Map<String, Map<String, MetadataValue?>>
 ) = TransferableResource.Amount(
     amount = amount.valueDecimal,
     resource = allFungibles.find {
         it.resourceAddress == resourceAddress.addressString()
     } ?: Resource.FungibleResource.from(
         resourceAddress = resourceAddress,
-        metadata = newlyCreated[resourceAddress.addressString()]
+        metadata = newlyCreated[resourceAddress.addressString()].orEmpty()
     ),
     isNewlyCreated = newlyCreated[resourceAddress.addressString()] != null
 )
 
 private fun ResourceTracker.NonFungible.toTransferableResource(
     allNFTCollections: List<Resource.NonFungibleResource>,
-    newlyCreated: Map<String, Map<String, MetadataValue>>
+    newlyCreated: Map<String, Map<String, MetadataValue?>>
 ): TransferableResource.NFTs {
     val collection = allNFTCollections.find { it.resourceAddress == resourceAddress.addressString() }
     val metadata = newlyCreated[resourceAddress.addressString()]
