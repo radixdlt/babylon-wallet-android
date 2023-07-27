@@ -2,28 +2,21 @@ package com.babylon.wallet.android.presentation.settings.backup
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Divider
-import androidx.compose.material3.Icon
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
-import com.babylon.wallet.android.designsystem.theme.Orange1
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
+import com.babylon.wallet.android.presentation.ui.composables.NotBackedUpWarning
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.SwitchSettingsItem
 import rdx.works.profile.data.model.BackupState
@@ -80,24 +73,7 @@ private fun BackupScreenContent(
 
         Divider(color = RadixTheme.colors.gray5)
 
-        Row(
-            modifier = Modifier.padding(all = RadixTheme.dimensions.paddingDefault),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            Text(
-                text = backupMessage(state = state.backupState),
-                style = RadixTheme.typography.body2Regular,
-                color = RadixTheme.colors.defaultText
-            )
-
-            if (state.backupState.isWarningVisible) {
-                Icon(
-                    painter = painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_warning_error),
-                    contentDescription = null,
-                    tint = Orange1
-                )
-            }
-        }
+        NotBackedUpWarning(backupState = state.backupState, modifier = Modifier.padding(all = RadixTheme.dimensions.paddingDefault))
 
         if (isBackupScreenNavigationSupported()) {
             RadixPrimaryButton(
@@ -107,20 +83,6 @@ private fun BackupScreenContent(
                 text = stringResource(id = R.string.androidProfileBackup_openSystemBackupSettings),
                 onClick = onSystemBackupSettingsClick
             )
-        }
-    }
-}
-
-@Composable
-fun backupMessage(state: BackupState) = when (state) {
-    is BackupState.Closed -> stringResource(id = R.string.androidProfileBackup_disabledText)
-    is BackupState.Open -> {
-        val lastBackupRelativeTime = remember(state) { state.lastBackupTimeRelative }
-
-        if (lastBackupRelativeTime != null) {
-            stringResource(id = R.string.androidProfileBackup_lastBackedUp, lastBackupRelativeTime)
-        } else {
-            stringResource(id = R.string.androidProfileBackup_noLastBackUp)
         }
     }
 }

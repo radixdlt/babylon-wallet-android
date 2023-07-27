@@ -32,7 +32,7 @@ import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixSecondaryButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
-import com.babylon.wallet.android.presentation.settings.backup.backupMessage
+import com.babylon.wallet.android.presentation.ui.composables.NotBackedUpWarning
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import kotlinx.collections.immutable.ImmutableList
@@ -221,23 +221,7 @@ private fun BackupSettingsItem(
                 color = RadixTheme.colors.gray1
             )
 
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingSmall),
-                verticalAlignment = CenterVertically
-            ) {
-                if (backupSettingsItem.backupState.isWarningVisible) {
-                    Icon(
-                        painter = painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_warning_error),
-                        contentDescription = null,
-                        tint = RadixTheme.colors.orange1
-                    )
-                }
-                Text(
-                    text = backupMessage(state = backupSettingsItem.backupState),
-                    style = RadixTheme.typography.body2Regular,
-                    color = RadixTheme.colors.orange1
-                )
-            }
+            NotBackedUpWarning(backupState = backupSettingsItem.backupState)
         }
         Spacer(modifier = Modifier.weight(1f))
         Icon(
