@@ -86,13 +86,13 @@ fun SelectPersonaScreen(
                 is Event.PersonaDataOnetime -> onPersonaDataOnetime(event)
                 is Event.RequestCompletionBiometricPrompt -> {
                     if (event.requestDuringSigning) {
-                        sharedViewModel.sendRequestResponse(deviceBiometricAuthenticationProvider = {
+                        sharedViewModel.completeRequestHandling(deviceBiometricAuthenticationProvider = {
                             context.biometricAuthenticateSuspend()
                         })
                     } else {
                         context.biometricAuthenticate { authenticated ->
                             if (authenticated) {
-                                sharedViewModel.sendRequestResponse()
+                                sharedViewModel.completeRequestHandling()
                             }
                         }
                     }

@@ -85,6 +85,9 @@ class DappDetailViewModel @Inject constructor(
                 val personas = authorizedDapp.referencesToAuthorizedPersonas.mapNotNull { personaSimple ->
                     getProfileUseCase.personaOnCurrentNetwork(personaSimple.identityAddress)
                 }
+                (state.value.selectedSheetState as? SelectedSheetState.SelectedPersona)?.persona?.persona?.let { persona ->
+                    updateSelectedPersonaData(persona)
+                }
                 _state.update { state ->
                     state.copy(
                         dapp = authorizedDapp,
@@ -207,7 +210,7 @@ class DappDetailViewModel @Inject constructor(
                             authorizedDapp.networkID,
                             "",
                             authorizedDapp.dAppDefinitionAddress,
-                            isInternal = false
+                            isInternal = true
                         ),
                         authRequest = MessageFromDataChannel.IncomingRequest.AuthorizedRequest.AuthRequest.UsePersonaRequest(
                             persona.address

@@ -89,13 +89,13 @@ fun PersonaDataOngoingScreen(
                 is Event.RejectLogin -> onLoginFlowComplete()
                 is Event.RequestCompletionBiometricPrompt -> {
                     if (event.requestDuringSigning) {
-                        sharedViewModel.sendRequestResponse(deviceBiometricAuthenticationProvider = {
+                        sharedViewModel.completeRequestHandling(deviceBiometricAuthenticationProvider = {
                             context.biometricAuthenticateSuspend()
                         })
                     } else {
                         context.biometricAuthenticate { authenticated ->
                             if (authenticated) {
-                                sharedViewModel.sendRequestResponse()
+                                sharedViewModel.completeRequestHandling()
                             }
                         }
                     }
