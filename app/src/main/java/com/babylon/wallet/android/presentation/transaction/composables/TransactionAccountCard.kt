@@ -1,6 +1,7 @@
 package com.babylon.wallet.android.presentation.transaction.composables
 
 import android.graphics.drawable.ColorDrawable
+import android.net.Uri
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -108,7 +109,7 @@ fun TransactionAccountCard(
 
             TokenItemContent(
                 isXrdToken = transferableAmount.resource.isXrd,
-                tokenUrl = transferableAmount.resource.iconUrl.toString(),
+                tokenUrl = transferableAmount.resource.iconUrl,
                 tokenSymbol = transferableAmount.resource.displayTitle.ifEmpty {
                     stringResource(id = com.babylon.wallet.android.R.string.transactionReview_unknown)
                 },
@@ -127,7 +128,7 @@ fun TransactionAccountCard(
                 val lastItem = itemIndex == collection.resource.items.lastIndex && collectionIndex == nftTransferables.lastIndex
                 TokenItemContent(
                     isXrdToken = false,
-                    tokenUrl = collection.resource.iconUrl.toString(),
+                    tokenUrl = collection.resource.iconUrl,
                     tokenSymbol = item.localId.displayable,
                     isTokenAmountVisible = false,
                     shape = if (lastItem) RadixTheme.shapes.roundedRectBottomMedium else RectangleShape
@@ -140,7 +141,7 @@ fun TransactionAccountCard(
 @Composable
 private fun TokenItemContent(
     isXrdToken: Boolean,
-    tokenUrl: String,
+    tokenUrl: Uri?,
     tokenSymbol: String?,
     tokenAmount: String? = null,
     isTokenAmountVisible: Boolean,

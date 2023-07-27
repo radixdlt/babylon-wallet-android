@@ -49,7 +49,7 @@ fun FungibleResourceItem(
             model = if (resource.isXrd) {
                 R.drawable.ic_xrd_token
             } else {
-                rememberImageUrl(fromUrl = resource.iconUrl.toString(), size = ImageSize.MEDIUM)
+                rememberImageUrl(fromUrl = resource.iconUrl, size = ImageSize.MEDIUM)
             },
             placeholder = placeholder,
             fallback = placeholder,

@@ -79,7 +79,7 @@ fun PresentingProofsContent(
                         val placeholder =
                             rememberDrawablePainter(drawable = ColorDrawable(RadixTheme.colors.gray3.toArgb()))
                         AsyncImage(
-                            model = rememberImageUrl(fromUrl = badge.icon.toString(), size = ImageSize.SMALL),
+                            model = rememberImageUrl(fromUrl = badge.icon, size = ImageSize.SMALL),
                             placeholder = placeholder,
                             fallback = placeholder,
                             error = placeholder,
