@@ -48,7 +48,7 @@ class AccountPreferenceViewModel @Inject constructor(
 
     private val args = AccountPreferencesArgs(savedStateHandle)
     private var authSigningFactorInstance: FactorInstance? = null
-    private lateinit var uploadAuthKeyRequestId: String
+    private var uploadAuthKeyRequestId: String? = null
     private var job: Job? = null
 
     override fun initialState(): AccountPreferenceUiState = AccountPreferenceUiState(accountAddress = args.address)
@@ -149,11 +149,12 @@ class AccountPreferenceViewModel @Inject constructor(
                             return@launch
                         }
                     Timber.d("Approving: \n$manifest")
-                    uploadAuthKeyRequestId = UUIDGenerator.uuid().toString()
+                    val interactionId = UUIDGenerator.uuid().toString()
+                    uploadAuthKeyRequestId = interactionId
                     incomingRequestRepository.add(
                         manifest.prepareInternalTransactionRequest(
                             networkId = account.networkID,
-                            requestId = uploadAuthKeyRequestId
+                            requestId = interactionId
                         )
                     )
                     _state.update { it.copy(isLoading = false) }
