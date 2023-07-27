@@ -638,12 +638,16 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
         sendEvent(Event.RequestCompletionBiometricPrompt(request.needSignatures()))
     }
 
-    fun sendRequestResponse(deviceBiometricAuthenticationProvider: suspend () -> Boolean = { true }) {
+    fun completeRequestHandling(deviceBiometricAuthenticationProvider: suspend () -> Boolean = { true }) {
         viewModelScope.launch {
             val selectedPersona = state.value.selectedPersona?.persona
             requireNotNull(selectedPersona)
             if (request.isInternalRequest()) {
+                mutex.withLock {
+                    editedDapp?.let { dAppConnectionRepository.updateOrCreateAuthorizedDApp(it) }
+                }
                 incomingRequestRepository.requestHandled(request.interactionId)
+                sendEvent(Event.LoginFlowCompleted)
             } else {
                 buildAuthorizedDappResponseUseCase(
                     request = request,
