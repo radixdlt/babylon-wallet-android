@@ -185,7 +185,7 @@ private fun SelectPersonaContent(
                         item {
                             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
                             AsyncImage(
-                                model = rememberImageUrl(fromUrl = dappWithMetadata?.iconUrl?.toString(), size = ImageSize.MEDIUM),
+                                model = rememberImageUrl(fromUrl = dappWithMetadata?.iconUrl, size = ImageSize.MEDIUM),
                                 placeholder = painterResource(id = R.drawable.img_placeholder),
                                 fallback = painterResource(id = R.drawable.img_placeholder),
                                 error = painterResource(id = R.drawable.img_placeholder),

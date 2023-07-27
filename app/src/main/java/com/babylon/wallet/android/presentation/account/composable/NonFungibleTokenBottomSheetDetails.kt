@@ -67,7 +67,7 @@ fun NonFungibleTokenBottomSheetDetails(
         ) {
             val painter = rememberAsyncImagePainter(
                 model = rememberImageUrl(
-                    fromUrl = item.imageUrl.toString(),
+                    fromUrl = item.imageUrl,
                     size = ImageSize.LARGE
                 ),
                 placeholder = painterResource(id = R.drawable.img_placeholder),
@@ -133,7 +133,7 @@ fun NonFungibleTokenBottomSheetDetails(
                         rememberDrawablePainter(drawable = ColorDrawable(RadixTheme.colors.gray3.toArgb()))
                     AsyncImage(
                         model = rememberImageUrl(
-                            fromUrl = nonFungibleItem.iconUrl.toString(),
+                            fromUrl = nonFungibleItem.iconUrl,
                             size = ImageSize.LARGE
                         ),
                         placeholder = placeholder,

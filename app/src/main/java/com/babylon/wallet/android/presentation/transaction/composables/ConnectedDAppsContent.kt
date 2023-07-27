@@ -131,7 +131,7 @@ fun ConnectedDAppsContent(
                     val placeholder = painterResource(id = R.drawable.ic_unknown_component)
                     AsyncImage(
                         model = rememberImageUrl(
-                            fromUrl = connectedDApp.dAppWithMetadata.iconUrl.toString(),
+                            fromUrl = connectedDApp.dAppWithMetadata.iconUrl,
                             size = ImageSize.SMALL
                         ),
                         placeholder = placeholder,

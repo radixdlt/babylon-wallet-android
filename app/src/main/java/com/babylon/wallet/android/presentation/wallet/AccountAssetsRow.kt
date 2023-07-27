@@ -142,7 +142,7 @@ private fun AssetsContent(
             } else {
                 AsyncImage(
                     modifier = iconModifier,
-                    model = rememberImageUrl(fromUrl = fungible.iconUrl.toString(), size = ImageSize.SMALL),
+                    model = rememberImageUrl(fromUrl = fungible.iconUrl, size = ImageSize.SMALL),
                     placeholder = painterResource(id = R.drawable.ic_token),
                     error = painterResource(id = R.drawable.ic_token),
                     contentDescription = null,

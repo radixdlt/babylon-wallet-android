@@ -1,6 +1,7 @@
 package com.babylon.wallet.android.presentation.ui.composables
 
 import android.content.Context
+import android.net.Uri
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.runtime.Composable
@@ -16,6 +17,7 @@ import coil.request.ImageRequest
 import com.babylon.wallet.android.BuildConfig
 import com.babylon.wallet.android.domain.model.Resource
 import com.babylon.wallet.android.domain.model.behaviours.ResourceBehaviour
+import rdx.works.core.toEncodedString
 
 private const val IMAGE_RATIO = 16 / 9f
 
@@ -42,7 +44,7 @@ fun Modifier.applyImageAspectRatio(
 
 // For some reason Coil library requires this header to be added when using with cloudflare service. Otherwise it fails
 private fun Context.buildImageRequest(
-    imageUrl: String?,
+    imageUrl: Uri?,
     @DrawableRes placeholder: Int?,
     @DrawableRes error: Int?
 ): ImageRequest {
@@ -65,15 +67,20 @@ private fun Context.buildImageRequest(
 
 @Composable
 fun rememberImageUrl(
-    fromUrl: String?,
+    fromUrl: Uri?,
     size: ImageSize = ImageSize.SMALL,
     @DrawableRes placeholder: Int? = null,
     @DrawableRes error: Int? = null
 ): ImageRequest {
     val context = LocalContext.current
-    val url = "${BuildConfig.IMAGE_HOST_BASE_URL}/?imageOrigin=$fromUrl&imageSize=${size.toSizeString()}"
-    return remember(url, placeholder, error) {
-        context.buildImageRequest(url, placeholder, error)
+    return remember(fromUrl, size, placeholder, error) {
+        val requestUrl = fromUrl?.let {
+            Uri.parse(
+                "${BuildConfig.IMAGE_HOST_BASE_URL}/?imageOrigin=${it.toEncodedString()}&imageSize=${size.toSizeString()}"
+            )
+        }
+
+        context.buildImageRequest(requestUrl, placeholder, error)
     }
 }
 

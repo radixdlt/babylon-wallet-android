@@ -106,7 +106,7 @@ fun NonFungibleResourceCollectionHeader(
             ) {
                 Image(
                     painter = rememberAsyncImagePainter(
-                        model = rememberImageUrl(fromUrl = collection.iconUrl?.toString().orEmpty(), size = ImageSize.SMALL),
+                        model = rememberImageUrl(fromUrl = collection.iconUrl, size = ImageSize.SMALL),
                         placeholder = painterResource(id = R.drawable.img_placeholder),
                         error = painterResource(id = R.drawable.img_placeholder)
                     ),

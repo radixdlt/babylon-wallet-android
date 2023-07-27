@@ -130,7 +130,7 @@ fun TransactionAccountWithGuaranteesCard(
                         .background(RadixTheme.colors.gray3, shape = RadixTheme.shapes.circle)
                 ) {
                     AsyncImage(
-                        model = rememberImageUrl(fromUrl = transferrable.resource.iconUrl.toString(), size = ImageSize.LARGE),
+                        model = rememberImageUrl(fromUrl = transferrable.resource.iconUrl, size = ImageSize.LARGE),
                         placeholder = placeholder,
                         fallback = placeholder,
                         error = placeholder,

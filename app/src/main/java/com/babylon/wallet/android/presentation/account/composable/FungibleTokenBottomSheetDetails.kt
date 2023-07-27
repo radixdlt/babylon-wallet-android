@@ -76,7 +76,7 @@ fun FungibleTokenBottomSheetDetails(
                 rememberDrawablePainter(drawable = ColorDrawable(RadixTheme.colors.gray3.toArgb()))
             }
             AsyncImage(
-                model = rememberImageUrl(fromUrl = fungible.iconUrl.toString(), size = ImageSize.LARGE),
+                model = rememberImageUrl(fromUrl = fungible.iconUrl, size = ImageSize.LARGE),
                 placeholder = placeholder,
                 fallback = placeholder,
                 error = placeholder,

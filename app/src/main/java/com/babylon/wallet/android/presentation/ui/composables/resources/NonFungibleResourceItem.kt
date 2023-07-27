@@ -41,7 +41,7 @@ fun NonFungibleResourceItem(
         if (imageUrl != null) {
             val painter = rememberAsyncImagePainter(
                 model = rememberImageUrl(
-                    fromUrl = imageUrl.toString(),
+                    fromUrl = imageUrl,
                     size = ImageSize.LARGE
                 ),
                 placeholder = placeholder,

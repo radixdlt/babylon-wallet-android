@@ -138,7 +138,7 @@ private fun ColumnScope.FungibleSpendingAsset(
             model = if (resource.isXrd) {
                 R.drawable.ic_xrd_token
             } else {
-                rememberImageUrl(fromUrl = resource.iconUrl.toString(), size = ImageSize.MEDIUM)
+                rememberImageUrl(fromUrl = resource.iconUrl, size = ImageSize.MEDIUM)
             },
             placeholder = placeholder,
             fallback = placeholder,
@@ -275,7 +275,7 @@ private fun NonFungibleSpendingAsset(
         if (nft.imageUrl != null) {
             AsyncImage(
                 model = rememberImageUrl(
-                    fromUrl = nft.imageUrl.toString(),
+                    fromUrl = nft.imageUrl,
                     size = ImageSize.SMALL,
                     placeholder = com.babylon.wallet.android.R.drawable.img_placeholder,
                     error = com.babylon.wallet.android.R.drawable.img_placeholder
