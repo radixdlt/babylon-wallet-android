@@ -252,8 +252,7 @@ fun NonFungibleTokenBottomSheetDetails(
                                                 shape = RadixTheme.shapes.roundedTag
                                             )
                                             .padding(RadixTheme.dimensions.paddingSmall),
-                                        name = tag.name(),
-                                        isXrd = tag is Resource.Tag.Official
+                                        tag = tag
                                     )
                                 }
                             }

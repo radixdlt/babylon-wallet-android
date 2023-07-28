@@ -194,8 +194,7 @@ fun FungibleTokenBottomSheetDetails(
                                         shape = RadixTheme.shapes.roundedTag
                                     )
                                     .padding(RadixTheme.dimensions.paddingSmall),
-                                name = tag.name(),
-                                isXrd = tag is Resource.Tag.Official
+                                tag = tag
                             )
                         }
                     }
@@ -271,15 +270,14 @@ fun Behaviour(
 @Composable
 fun Tag(
     modifier: Modifier = Modifier,
-    name: String,
-    isXrd: Boolean
+    tag: Resource.Tag
 ) {
     Row(
         modifier = modifier,
         verticalAlignment = Alignment.CenterVertically
     ) {
         Icon(
-            painter = if (isXrd) {
+            painter = if (tag == Resource.Tag.Official) {
                 painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_radix_tag)
             } else {
                 painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_token_tag)
@@ -290,7 +288,7 @@ fun Tag(
 
         Text(
             modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingSmall),
-            text = name,
+            text = tag.name(),
             style = RadixTheme.typography.body2HighImportance,
             color = RadixTheme.colors.gray2
         )

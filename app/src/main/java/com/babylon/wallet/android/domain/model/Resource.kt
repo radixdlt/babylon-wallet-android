@@ -49,9 +49,6 @@ sealed class Resource {
                 tagsMetadataItem?.tags?.map { Tag.Dynamic(name = it) }.orEmpty()
             }
 
-        val isRadixOfficial: Boolean
-            get() = tags.any { it is Tag.Official }
-
         val resourceBehaviours: List<ResourceBehaviour>
             get() = behaviours
 
