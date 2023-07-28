@@ -40,16 +40,16 @@ class MetadataRepositoryImpl @Inject constructor(
         explicitMetadata = ExplicitMetadataKey.forAssets,
         isRefreshing = isRefreshing
     ).switchMap { entityDetailsResponses ->
-        Result.Success(buildMapOfAccountsAddressesWithMetadata(entityDetailsResponses))
+        Result.Success(buildMapOfResourceAddressesWithMetadata(entityDetailsResponses))
     }
 
-    private fun buildMapOfAccountsAddressesWithMetadata(
+    private fun buildMapOfResourceAddressesWithMetadata(
         entityDetailsResponses: List<StateEntityDetailsResponse>
     ): Map<String, List<MetadataItem>> {
         return entityDetailsResponses.map { entityDetailsResponse ->
             entityDetailsResponse.items
                 .groupingBy { entityDetailsResponseItem ->
-                    entityDetailsResponseItem.address // this is account address
+                    entityDetailsResponseItem.address
                 }
                 .foldTo(mutableMapOf(), listOf<MetadataItem>()) { _, entityItem ->
                     entityItem.metadata.asMetadataItems()
