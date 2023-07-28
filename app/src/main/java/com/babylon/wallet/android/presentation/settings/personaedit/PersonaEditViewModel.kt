@@ -51,7 +51,7 @@ class PersonaEditViewModel @Inject constructor(
                         fieldsToAdd = s.fieldsToAdd,
                         dappContextEdit = s.requiredFieldKinds.isNotEmpty(),
                         wasEdited = s.currentFields.any { it.wasEdited } || state.currentFields.size != s.currentFields.size,
-                        missingFields = missingPersonaFieldKinds()
+                        missingFields = missingPersonaFieldKinds(s.currentFields)
                     )
                 }
             }
@@ -71,10 +71,10 @@ class PersonaEditViewModel @Inject constructor(
         }
     }
 
-    private fun missingPersonaFieldKinds(): PersistentList<PersonaData.PersonaDataField.Kind> {
+    private fun missingPersonaFieldKinds(currentFields: ImmutableList<PersonaFieldWrapper>): PersistentList<PersonaData.PersonaDataField.Kind> {
         return args.requiredPersonaFields?.fields?.map {
             it.kind
-        }?.toSet()?.minus(state.value.currentFields.map { it.entry.value.kind }.toSet()).orEmpty().toPersistentList()
+        }?.toSet()?.minus(currentFields.map { it.entry.value.kind }.toSet()).orEmpty().toPersistentList()
     }
 
     fun onSave() {
