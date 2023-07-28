@@ -2,7 +2,6 @@ package com.babylon.wallet.android.presentation.ui.composables.resources
 
 import android.graphics.drawable.ColorDrawable
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -20,12 +19,12 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.babylon.wallet.android.designsystem.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.domain.model.Resource
+import com.babylon.wallet.android.presentation.account.composable.Tag
 import com.babylon.wallet.android.presentation.ui.composables.ImageSize
 import com.babylon.wallet.android.presentation.ui.composables.name
 import com.babylon.wallet.android.presentation.ui.composables.rememberImageUrl
@@ -116,36 +115,15 @@ fun SelectableFungibleResourceItem(
         },
         bottomContent = {
             if (resource.isRadixOfficial) {
-                RadixNetworkTag(resource.isXrd)
+                Tag(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(RadixTheme.colors.gray5, shape = RadixTheme.shapes.roundedRectBottomMedium)
+                        .padding(horizontal = RadixTheme.dimensions.paddingMedium, vertical = RadixTheme.dimensions.paddingSmall),
+                    name = Resource.Tag.Official.name(),
+                    isXrd = resource.isXrd
+                )
             }
         }
     )
-}
-
-@Composable
-private fun RadixNetworkTag(isXrd: Boolean, modifier: Modifier = Modifier) {
-    Row(
-        modifier = modifier
-            .fillMaxWidth()
-            .background(RadixTheme.colors.gray5, shape = RadixTheme.shapes.roundedRectBottomMedium)
-            .padding(horizontal = RadixTheme.dimensions.paddingMedium, vertical = RadixTheme.dimensions.paddingSmall),
-        horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingSmall),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        androidx.compose.material.Icon(
-            painter = if (isXrd) {
-                painterResource(id = R.drawable.ic_radix_tag)
-            } else {
-                painterResource(id = R.drawable.ic_token_tag)
-            },
-            contentDescription = null,
-            tint = RadixTheme.colors.gray2
-        )
-        Text(
-            text = Resource.Tag.Official.name(),
-            style = RadixTheme.typography.body2Link,
-            color = RadixTheme.colors.gray2,
-            maxLines = 1
-        )
-    }
 }

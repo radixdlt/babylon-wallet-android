@@ -186,6 +186,14 @@ fun FungibleTokenBottomSheetDetails(
                     content = {
                         fungible.tags.forEach { tag ->
                             Tag(
+                                modifier = Modifier
+                                    .padding(RadixTheme.dimensions.paddingXSmall)
+                                    .border(
+                                        width = 1.dp,
+                                        color = RadixTheme.colors.gray4,
+                                        shape = RadixTheme.shapes.roundedTag
+                                    )
+                                    .padding(RadixTheme.dimensions.paddingSmall),
                                 name = tag.name(),
                                 isXrd = tag is Resource.Tag.Official
                             )
@@ -267,14 +275,7 @@ fun Tag(
     isXrd: Boolean
 ) {
     Row(
-        modifier = modifier
-            .padding(RadixTheme.dimensions.paddingXSmall)
-            .border(
-                width = 1.dp,
-                color = RadixTheme.colors.gray4,
-                shape = RadixTheme.shapes.roundedTag
-            )
-            .padding(RadixTheme.dimensions.paddingSmall),
+        modifier = modifier,
         verticalAlignment = Alignment.CenterVertically
     ) {
         Icon(

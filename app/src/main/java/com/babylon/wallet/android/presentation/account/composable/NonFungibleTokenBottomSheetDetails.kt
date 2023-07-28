@@ -3,6 +3,7 @@ package com.babylon.wallet.android.presentation.account.composable
 import android.graphics.drawable.ColorDrawable
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
@@ -243,6 +244,14 @@ fun NonFungibleTokenBottomSheetDetails(
                             content = {
                                 nonFungibleItem.tags.forEach { tag ->
                                     Tag(
+                                        modifier = Modifier
+                                            .padding(RadixTheme.dimensions.paddingXSmall)
+                                            .border(
+                                                width = 1.dp,
+                                                color = RadixTheme.colors.gray4,
+                                                shape = RadixTheme.shapes.roundedTag
+                                            )
+                                            .padding(RadixTheme.dimensions.paddingSmall),
                                         name = tag.name(),
                                         isXrd = tag is Resource.Tag.Official
                                     )
