@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.pager.HorizontalPager
@@ -140,7 +141,7 @@ fun ChooseAssetsSheet(
                                 val isSelected = state.targetAccount.assets.any { it.address == resource.resourceAddress }
                                 SelectableFungibleResourceItem(
                                     modifier = Modifier
-                                        .height(85.dp)
+                                        .heightIn(min = 85.dp)
                                         .clickable {
                                             val fungibleAsset = SpendingAsset.Fungible(resource = resource)
                                             onAssetSelectionChanged(fungibleAsset, !isSelected)

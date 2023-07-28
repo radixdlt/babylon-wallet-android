@@ -80,11 +80,13 @@ sealed class Resource {
                 symbolMetadataItem != null && other.symbolMetadataItem == null -> -1
                 symbolMetadataItem != null && other.symbolMetadataItem != null ->
                     symbolMetadataItem.symbol.compareTo(other.symbolMetadataItem.symbol)
+
                 else -> when {
                     nameMetadataItem == null && other.nameMetadataItem != null -> 1
                     nameMetadataItem != null && other.nameMetadataItem == null -> -1
                     nameMetadataItem != null && other.nameMetadataItem != null ->
                         nameMetadataItem.name.compareTo(other.nameMetadataItem.name)
+
                     else -> 0
                 }
             }
