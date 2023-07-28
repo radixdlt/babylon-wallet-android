@@ -2,13 +2,18 @@ package com.babylon.wallet.android.presentation.ui.composables.resources
 
 import android.graphics.drawable.ColorDrawable
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.Text
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CheckboxDefaults
+import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -16,12 +21,14 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.babylon.wallet.android.designsystem.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.domain.model.Resource
 import com.babylon.wallet.android.presentation.ui.composables.ImageSize
+import com.babylon.wallet.android.presentation.ui.composables.name
 import com.babylon.wallet.android.presentation.ui.composables.rememberImageUrl
 import com.google.accompanist.drawablepainter.rememberDrawablePainter
 import rdx.works.core.displayableQuantity
@@ -32,51 +39,56 @@ fun FungibleResourceItem(
     modifier: Modifier = Modifier,
     trailingContent: @Composable (() -> Unit) = {
         Spacer(modifier = Modifier.width(28.dp))
-    }
+    },
+    bottomContent: @Composable (() -> Unit) = {}
 ) {
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        modifier = modifier,
-    ) {
-        Spacer(modifier = Modifier.width(28.dp))
-
-        val placeholder = rememberDrawablePainter(drawable = ColorDrawable(RadixTheme.colors.gray3.toArgb()))
-        AsyncImage(
+    Column(modifier = modifier, horizontalAlignment = Alignment.CenterHorizontally) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier
-                .size(44.dp)
-                .background(RadixTheme.colors.gray3, shape = RadixTheme.shapes.circle)
-                .clip(RadixTheme.shapes.circle),
-            model = if (resource.isXrd) {
-                R.drawable.ic_xrd_token
-            } else {
-                rememberImageUrl(fromUrl = resource.iconUrl, size = ImageSize.MEDIUM)
-            },
-            placeholder = placeholder,
-            fallback = placeholder,
-            error = placeholder,
-            contentDescription = null,
-            contentScale = ContentScale.Crop
-        )
-        Spacer(modifier = Modifier.width(RadixTheme.dimensions.paddingMedium))
-        Text(
-            modifier = Modifier.weight(1f),
-            text = resource.displayTitle,
-            style = RadixTheme.typography.body2HighImportance,
-            color = RadixTheme.colors.gray1,
-            maxLines = 1
-        )
-        Spacer(modifier = Modifier.width(RadixTheme.dimensions.paddingMedium))
-
-        resource.amount?.let { amount ->
-            Text(
-                text = amount.displayableQuantity(),
-                style = RadixTheme.typography.secondaryHeader,
-                color = RadixTheme.colors.gray1,
-                maxLines = 2
+                .fillMaxWidth()
+                .padding(horizontal = RadixTheme.dimensions.paddingDefault, vertical = RadixTheme.dimensions.paddingLarge),
+        ) {
+            Spacer(modifier = Modifier.width(RadixTheme.dimensions.paddingMedium))
+            val placeholder = rememberDrawablePainter(drawable = ColorDrawable(RadixTheme.colors.gray3.toArgb()))
+            AsyncImage(
+                modifier = Modifier
+                    .size(44.dp)
+                    .background(RadixTheme.colors.gray3, shape = RadixTheme.shapes.circle)
+                    .clip(RadixTheme.shapes.circle),
+                model = if (resource.isXrd) {
+                    R.drawable.ic_xrd_token
+                } else {
+                    rememberImageUrl(fromUrl = resource.iconUrl, size = ImageSize.MEDIUM)
+                },
+                placeholder = placeholder,
+                fallback = placeholder,
+                error = placeholder,
+                contentDescription = null,
+                contentScale = ContentScale.Crop
             )
-        }
+            Spacer(modifier = Modifier.width(RadixTheme.dimensions.paddingMedium))
+            Text(
+                modifier = Modifier.weight(1f),
+                text = resource.displayTitle,
+                style = RadixTheme.typography.body2HighImportance,
+                color = RadixTheme.colors.gray1,
+                maxLines = 1
+            )
+            Spacer(modifier = Modifier.width(RadixTheme.dimensions.paddingMedium))
 
-        trailingContent()
+            resource.amount?.let { amount ->
+                Text(
+                    text = amount.displayableQuantity(),
+                    style = RadixTheme.typography.secondaryHeader,
+                    color = RadixTheme.colors.gray1,
+                    maxLines = 2
+                )
+            }
+
+            trailingContent()
+        }
+        bottomContent()
     }
 }
 
@@ -102,6 +114,31 @@ fun SelectableFungibleResourceItem(
             )
 
             Spacer(modifier = Modifier.width(RadixTheme.dimensions.paddingSmall))
+        },
+        bottomContent = {
+            if (resource.isXrd) {
+                RadixNetworkTag(resource)
+            }
         }
     )
+}
+
+@Composable
+private fun RadixNetworkTag(resource: Resource.FungibleResource, modifier: Modifier = Modifier) {
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .background(RadixTheme.colors.gray5, shape = RadixTheme.shapes.roundedRectBottomMedium)
+            .padding(horizontal = RadixTheme.dimensions.paddingMedium, vertical = RadixTheme.dimensions.paddingSmall),
+        horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingSmall),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Icon(painter = painterResource(id = R.drawable.ic_radix_tag), contentDescription = null, tint = RadixTheme.colors.gray2)
+        Text(
+            text = resource.tags.filterIsInstance<Resource.Tag.Official>().firstOrNull()?.name().orEmpty(),
+            style = RadixTheme.typography.body2Link,
+            color = RadixTheme.colors.gray2,
+            maxLines = 1
+        )
+    }
 }
