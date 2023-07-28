@@ -13,7 +13,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.material.Text
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CheckboxDefaults
-import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -116,15 +115,15 @@ fun SelectableFungibleResourceItem(
             Spacer(modifier = Modifier.width(RadixTheme.dimensions.paddingSmall))
         },
         bottomContent = {
-            if (resource.isXrd) {
-                RadixNetworkTag(resource)
+            if (resource.isRadixOfficial) {
+                RadixNetworkTag(resource.isXrd)
             }
         }
     )
 }
 
 @Composable
-private fun RadixNetworkTag(resource: Resource.FungibleResource, modifier: Modifier = Modifier) {
+private fun RadixNetworkTag(isXrd: Boolean, modifier: Modifier = Modifier) {
     Row(
         modifier = modifier
             .fillMaxWidth()
@@ -133,9 +132,17 @@ private fun RadixNetworkTag(resource: Resource.FungibleResource, modifier: Modif
         horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingSmall),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Icon(painter = painterResource(id = R.drawable.ic_radix_tag), contentDescription = null, tint = RadixTheme.colors.gray2)
+        androidx.compose.material.Icon(
+            painter = if (isXrd) {
+                painterResource(id = R.drawable.ic_radix_tag)
+            } else {
+                painterResource(id = R.drawable.ic_token_tag)
+            },
+            contentDescription = null,
+            tint = RadixTheme.colors.gray2
+        )
         Text(
-            text = resource.tags.filterIsInstance<Resource.Tag.Official>().firstOrNull()?.name().orEmpty(),
+            text = Resource.Tag.Official.name(),
             style = RadixTheme.typography.body2Link,
             color = RadixTheme.colors.gray2,
             maxLines = 1
