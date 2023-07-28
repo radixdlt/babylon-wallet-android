@@ -71,7 +71,9 @@ class PersonaEditViewModel @Inject constructor(
         }
     }
 
-    private fun missingPersonaFieldKinds(currentFields: ImmutableList<PersonaFieldWrapper>): PersistentList<PersonaData.PersonaDataField.Kind> {
+    private fun missingPersonaFieldKinds(
+        currentFields: ImmutableList<PersonaFieldWrapper>
+    ): PersistentList<PersonaData.PersonaDataField.Kind> {
         return args.requiredPersonaFields?.fields?.map {
             it.kind
         }?.toSet()?.minus(currentFields.map { it.entry.value.kind }.toSet()).orEmpty().toPersistentList()
