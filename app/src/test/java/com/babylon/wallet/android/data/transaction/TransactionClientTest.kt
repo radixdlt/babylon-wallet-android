@@ -158,12 +158,10 @@ internal class TransactionClientTest {
 
         override suspend fun getResourcesMetadata(
             resourceAddresses: List<String>,
-            explicitMetadataForAssets: Set<ExplicitMetadataKey>,
             isRefreshing: Boolean
         ): Result<Map<String, List<MetadataItem>>> {
             error("Not needed")
         }
-
     }
 
     private fun manifestWithAddress(
