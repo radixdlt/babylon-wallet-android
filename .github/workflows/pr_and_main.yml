@@ -177,6 +177,7 @@ jobs:
     runs-on: ubuntu-latest
 
     needs:
+      - unit_tests
       - static_analysis
       - snyk_scan_deps_licences
       - snyk_scan_code
