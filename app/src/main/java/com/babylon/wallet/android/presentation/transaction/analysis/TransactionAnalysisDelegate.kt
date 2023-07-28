@@ -5,6 +5,7 @@ import com.babylon.wallet.android.data.manifest.addLockFeeInstructionToManifest
 import com.babylon.wallet.android.data.transaction.TransactionClient
 import com.babylon.wallet.android.data.transaction.TransactionConfig
 import com.babylon.wallet.android.domain.usecases.GetAccountsWithResourcesUseCase
+import com.babylon.wallet.android.domain.usecases.GetResourcesMetadataUseCase
 import com.babylon.wallet.android.domain.usecases.ResolveDAppsUseCase
 import com.babylon.wallet.android.domain.usecases.transaction.GetTransactionBadgesUseCase
 import com.babylon.wallet.android.presentation.common.UiMessage
@@ -28,6 +29,7 @@ class TransactionAnalysisDelegate(
     private val state: MutableStateFlow<State>,
     private val getProfileUseCase: GetProfileUseCase,
     private val getAccountsWithResourcesUseCase: GetAccountsWithResourcesUseCase,
+    private val getResourcesMetadataUseCase: GetResourcesMetadataUseCase,
     private val getTransactionBadgesUseCase: GetTransactionBadgesUseCase,
     private val resolveDAppsUseCase: ResolveDAppsUseCase,
     private val transactionClient: TransactionClient,
@@ -81,6 +83,7 @@ class TransactionAnalysisDelegate(
                 getTransactionBadgesUseCase = getTransactionBadgesUseCase,
                 getProfileUseCase = getProfileUseCase,
                 getAccountsWithResourcesUseCase = getAccountsWithResourcesUseCase,
+                getResourcesMetadataUseCase = getResourcesMetadataUseCase,
                 resolveDAppsUseCase = resolveDAppsUseCase
             )
 

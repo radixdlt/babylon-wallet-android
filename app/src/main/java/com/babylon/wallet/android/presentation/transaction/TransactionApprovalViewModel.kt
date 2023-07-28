@@ -18,6 +18,7 @@ import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.babylon.wallet.android.domain.model.Transferable
 import com.babylon.wallet.android.domain.model.TransferableResource
 import com.babylon.wallet.android.domain.usecases.GetAccountsWithResourcesUseCase
+import com.babylon.wallet.android.domain.usecases.GetResourcesMetadataUseCase
 import com.babylon.wallet.android.domain.usecases.ResolveDAppsUseCase
 import com.babylon.wallet.android.domain.usecases.transaction.GetTransactionBadgesUseCase
 import com.babylon.wallet.android.presentation.common.OneOffEvent
@@ -53,6 +54,7 @@ import javax.inject.Inject
 class TransactionApprovalViewModel @Inject constructor(
     private val transactionClient: TransactionClient,
     getAccountsWithResourcesUseCase: GetAccountsWithResourcesUseCase,
+    getResourcesMetadataUseCase: GetResourcesMetadataUseCase,
     getProfileUseCase: GetProfileUseCase,
     getTransactionBadgesUseCase: GetTransactionBadgesUseCase,
     resolveDAppsUseCase: ResolveDAppsUseCase,
@@ -81,6 +83,7 @@ class TransactionApprovalViewModel @Inject constructor(
         getProfileUseCase = getProfileUseCase,
         getAccountsWithResourcesUseCase = getAccountsWithResourcesUseCase,
         getTransactionBadgesUseCase = getTransactionBadgesUseCase,
+        getResourcesMetadataUseCase = getResourcesMetadataUseCase,
         resolveDAppsUseCase = resolveDAppsUseCase,
         transactionClient = transactionClient,
         logger = logger

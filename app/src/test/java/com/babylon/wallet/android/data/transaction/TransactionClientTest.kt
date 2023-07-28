@@ -8,6 +8,7 @@ import com.babylon.wallet.android.domain.common.Result
 import com.babylon.wallet.android.domain.model.AccountWithResources
 import com.babylon.wallet.android.domain.model.Resource
 import com.babylon.wallet.android.domain.model.Resources
+import com.babylon.wallet.android.domain.model.metadata.MetadataItem
 import com.babylon.wallet.android.domain.model.metadata.OwnerKeyHashesMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.SymbolMetadataItem
 import com.babylon.wallet.android.domain.usecases.GetAccountsWithResourcesUseCase
@@ -152,6 +153,14 @@ internal class TransactionClientTest {
         })
 
         override suspend fun getEntityOwnerKeyHashes(entityAddress: String, isRefreshing: Boolean): Result<OwnerKeyHashesMetadataItem?> {
+            error("Not needed")
+        }
+
+        override suspend fun getResourcesMetadata(
+            resourceAddresses: List<String>,
+            explicitMetadataForAssets: Set<ExplicitMetadataKey>,
+            isRefreshing: Boolean
+        ): Result<Map<String, List<MetadataItem>>> {
             error("Not needed")
         }
 

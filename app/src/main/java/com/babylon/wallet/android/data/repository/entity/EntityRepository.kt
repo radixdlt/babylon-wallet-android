@@ -59,6 +59,11 @@ interface EntityRepository {
         entityAddress: String,
         isRefreshing: Boolean = false
     ): Result<OwnerKeyHashesMetadataItem?>
+
+    suspend fun getResourcesMetadata(
+        resourceAddresses: List<String>,
+        isRefreshing: Boolean = true
+    ): Result<Map<String, List<MetadataItem>>>
 }
 
 @Suppress("TooManyFunctions")
@@ -474,6 +479,17 @@ class EntityRepositoryImpl @Inject constructor(
                     ?.firstOrNull()
             },
         )
+    }
+
+    override suspend fun getResourcesMetadata(
+        resourceAddresses: List<String>,
+        isRefreshing: Boolean
+    ): Result<Map<String, List<MetadataItem>>> = getStateEntityDetailsResponse(
+        addresses = resourceAddresses,
+        explicitMetadata = ExplicitMetadataKey.forAssets,
+        isRefreshing = isRefreshing
+    ).switchMap { entityDetailsResponses ->
+        Result.Success(buildMapOfAccountsWithMetadata(entityDetailsResponses))
     }
 
     private suspend fun getDetailsForResources(
