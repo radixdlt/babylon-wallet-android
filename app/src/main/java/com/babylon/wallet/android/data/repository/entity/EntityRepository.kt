@@ -59,11 +59,6 @@ interface EntityRepository {
         entityAddress: String,
         isRefreshing: Boolean = false
     ): Result<OwnerKeyHashesMetadataItem?>
-
-    suspend fun getResourcesMetadata(
-        resourceAddresses: List<String>,
-        isRefreshing: Boolean = true
-    ): Result<Map<String, List<MetadataItem>>>
 }
 
 @Suppress("TooManyFunctions")
@@ -93,7 +88,7 @@ class EntityRepositoryImpl @Inject constructor(
                 resourceAddresses = resourceAddresses
             )
 
-            val mapOfAccountsWithMetadata = buildMapOfAccountsWithMetadata(entityDetailsResponses)
+            val mapOfAccountsWithMetadata = buildMapOfAccountsAddressesWithMetadata(entityDetailsResponses)
             val mapOfAccountsWithFungibleResources = buildMapOfAccountsWithFungibles(entityDetailsResponses, resourcesDetails)
             val mapOfAccountsWithNonFungibleResources = buildMapOfAccountsWithNonFungibles(
                 entityDetailsResponses = entityDetailsResponses,
@@ -118,7 +113,7 @@ class EntityRepositoryImpl @Inject constructor(
         }
     }
 
-    private fun buildMapOfAccountsWithMetadata(
+    private fun buildMapOfAccountsAddressesWithMetadata(
         entityDetailsResponses: List<StateEntityDetailsResponse>
     ): Map<String, List<MetadataItem>> {
         return entityDetailsResponses.map { entityDetailsResponse ->
@@ -479,17 +474,6 @@ class EntityRepositoryImpl @Inject constructor(
                     ?.firstOrNull()
             },
         )
-    }
-
-    override suspend fun getResourcesMetadata(
-        resourceAddresses: List<String>,
-        isRefreshing: Boolean
-    ): Result<Map<String, List<MetadataItem>>> = getStateEntityDetailsResponse(
-        addresses = resourceAddresses,
-        explicitMetadata = ExplicitMetadataKey.forAssets,
-        isRefreshing = isRefreshing
-    ).switchMap { entityDetailsResponses ->
-        Result.Success(buildMapOfAccountsWithMetadata(entityDetailsResponses))
     }
 
     private suspend fun getDetailsForResources(

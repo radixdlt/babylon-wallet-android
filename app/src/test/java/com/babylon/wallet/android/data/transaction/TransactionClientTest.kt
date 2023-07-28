@@ -155,13 +155,6 @@ internal class TransactionClientTest {
         override suspend fun getEntityOwnerKeyHashes(entityAddress: String, isRefreshing: Boolean): Result<OwnerKeyHashesMetadataItem?> {
             error("Not needed")
         }
-
-        override suspend fun getResourcesMetadata(
-            resourceAddresses: List<String>,
-            isRefreshing: Boolean
-        ): Result<Map<String, List<MetadataItem>>> {
-            error("Not needed")
-        }
     }
 
     private fun manifestWithAddress(

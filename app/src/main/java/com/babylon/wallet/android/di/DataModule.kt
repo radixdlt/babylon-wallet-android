@@ -12,6 +12,8 @@ import com.babylon.wallet.android.data.repository.dappmetadata.DAppRepository
 import com.babylon.wallet.android.data.repository.dappmetadata.DAppRepositoryImpl
 import com.babylon.wallet.android.data.repository.entity.EntityRepository
 import com.babylon.wallet.android.data.repository.entity.EntityRepositoryImpl
+import com.babylon.wallet.android.data.repository.metadata.MetadataRepository
+import com.babylon.wallet.android.data.repository.metadata.MetadataRepositoryImpl
 import com.babylon.wallet.android.data.repository.networkinfo.NetworkInfoRepository
 import com.babylon.wallet.android.data.repository.networkinfo.NetworkInfoRepositoryImpl
 import com.babylon.wallet.android.data.repository.transaction.TransactionRepository
@@ -30,6 +32,11 @@ interface DataModule {
     fun bindEntityRepository(
         entityRepository: EntityRepositoryImpl
     ): EntityRepository
+
+    @Binds
+    fun bindMetadataRepository(
+        metadataRepository: MetadataRepositoryImpl
+    ): MetadataRepository
 
     @Binds
     fun bindTransactionRepository(
