@@ -16,8 +16,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
-import coil.compose.rememberAsyncImagePainter
+import coil.compose.SubcomposeAsyncImage
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.domain.model.Resource
@@ -34,29 +33,45 @@ fun NonFungibleResourceItem(
         modifier = modifier,
         verticalArrangement = spacedBy(RadixTheme.dimensions.paddingDefault)
     ) {
-        val brokenImagePlaceholder = painterResource(id = R.drawable.img_nft_broken_image)
-        val placeholder = painterResource(id = R.drawable.img_placeholder)
+//        val brokenImagePlaceholder = painterResource(id = R.drawable.img_nft_broken_image)
+//        val placeholder = painterResource(id = R.drawable.img_placeholder)
         val imageUrl = item.imageUrl
 
         if (imageUrl != null) {
-            val painter = rememberAsyncImagePainter(
+            SubcomposeAsyncImage(
                 model = rememberImageUrl(
                     fromUrl = imageUrl,
-                    size = ImageSize.LARGE
+                    size = ImageSize.LARGE,
+                    placeholder = R.drawable.img_placeholder,
+                    error = R.drawable.img_nft_broken_image
                 ),
-                placeholder = placeholder,
-                error = brokenImagePlaceholder
-            )
-            Image(
-                painter = painter,
-                contentDescription = "Nft image",
-                contentScale = ContentScale.Crop,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .applyImageAspectRatio(painter = painter)
-                    .clip(RadixTheme.shapes.roundedRectMedium)
-                    .background(Color.Transparent, RadixTheme.shapes.roundedRectMedium)
-            )
+                contentDescription = null
+            ) {
+                Image(
+                    painter = painter,
+                    contentDescription = "Nft image",
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .applyImageAspectRatio(painter = painter)
+                        .clip(RadixTheme.shapes.roundedRectMedium)
+                        .background(Color.Transparent, RadixTheme.shapes.roundedRectMedium)
+                )
+            }
+//            AsyncImage(
+//                model = rememberImageUrl(fromUrl = imageUrl, size = ImageSize.LARGE),
+//                onSuccess = {
+//                    Timber.d("List issue: ${it.result.dataSource}")
+//                },
+//                contentDescription = "Nft image",
+//                contentScale = ContentScale.Crop,
+//                modifier = Modifier
+//                    .fillMaxWidth()
+// //                    .height(300.dp)
+//                    .applyImageAspectRatio(painter = painter)
+//                    .clip(RadixTheme.shapes.roundedRectMedium)
+//                    .background(Color.Transparent, RadixTheme.shapes.roundedRectMedium)
+//            )
         }
 
         item.nameMetadataItem?.name?.let { name ->
