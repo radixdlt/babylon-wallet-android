@@ -9,6 +9,8 @@ import com.babylon.wallet.android.domain.model.Transferable
 import com.babylon.wallet.android.domain.model.TransferableResource
 import com.babylon.wallet.android.domain.model.metadata.DescriptionMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.IconUrlMetadataItem
+import com.babylon.wallet.android.domain.model.metadata.MetadataItem
+import com.babylon.wallet.android.domain.model.metadata.MetadataItem.Companion.consume
 import com.babylon.wallet.android.domain.model.metadata.NameMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.SymbolMetadataItem
 import com.radixdlt.ret.Address
@@ -65,14 +67,15 @@ fun RETResources.toTransferableResource(resourceAddress: String, allResources: L
 
 fun ResourceTracker.toDepositingTransferableResource(
     allResources: List<Resources>,
-    newlyCreated: Map<String, Map<String, MetadataValue?>>
+    newlyCreated: Map<String, Map<String, MetadataValue?>>,
+    thirdPartyMetadata: Map<String, List<MetadataItem>>
 ): Transferable.Depositing {
     val allFungibles = allResources.map { it.fungibleResources }.flatten()
     val allNFTCollections = allResources.map { it.nonFungibleResources }.flatten()
 
     return when (this) {
         is ResourceTracker.Fungible -> Transferable.Depositing(
-            transferable = toTransferableResource(allFungibles, newlyCreated),
+            transferable = toTransferableResource(allFungibles, newlyCreated, thirdPartyMetadata),
             guaranteeType = amount.toGuaranteeType()
         )
 
@@ -174,19 +177,43 @@ private fun Resource.FungibleResource.Companion.from(
     }
 )
 
+private fun Resource.FungibleResource.Companion.from(
+    resourceAddress: Address,
+    metadataItems: List<MetadataItem>,
+): Resource.FungibleResource = Resource.FungibleResource(
+    resourceAddress = resourceAddress.addressString(),
+    amount = BigDecimal.ZERO,
+    nameMetadataItem = metadataItems.toMutableList().consume(),
+    symbolMetadataItem = metadataItems.toMutableList().consume(),
+    descriptionMetadataItem = metadataItems.toMutableList().consume(),
+    iconUrlMetadataItem = metadataItems.toMutableList().consume()
+)
+
 private fun ResourceTracker.Fungible.toTransferableResource(
     allFungibles: List<Resource.FungibleResource>,
-    newlyCreated: Map<String, Map<String, MetadataValue?>>
-) = TransferableResource.Amount(
-    amount = amount.valueDecimal,
-    resource = allFungibles.find {
+    newlyCreated: Map<String, Map<String, MetadataValue?>>,
+    thirdPartyMetadata: Map<String, List<MetadataItem>> = emptyMap()
+): TransferableResource.Amount {
+    val resource = allFungibles.find {
         it.resourceAddress == resourceAddress.addressString()
-    } ?: Resource.FungibleResource.from(
-        resourceAddress = resourceAddress,
-        metadata = newlyCreated[resourceAddress.addressString()].orEmpty()
-    ),
-    isNewlyCreated = newlyCreated[resourceAddress.addressString()] != null
-)
+    } ?: if (thirdPartyMetadata[resourceAddress.addressString()] != null) {
+        Resource.FungibleResource.from(
+            resourceAddress = resourceAddress,
+            metadataItems = thirdPartyMetadata[resourceAddress.addressString()].orEmpty()
+        )
+    } else {
+        Resource.FungibleResource.from(
+            resourceAddress = resourceAddress,
+            metadata = newlyCreated[resourceAddress.addressString()].orEmpty()
+        )
+    }
+
+    return TransferableResource.Amount(
+        amount = amount.valueDecimal,
+        resource = resource,
+        isNewlyCreated = newlyCreated[resourceAddress.addressString()] != null
+    )
+}
 
 private fun ResourceTracker.NonFungible.toTransferableResource(
     allNFTCollections: List<Resource.NonFungibleResource>,

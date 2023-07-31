@@ -88,7 +88,7 @@ class EntityRepositoryImpl @Inject constructor(
                 resourceAddresses = resourceAddresses
             )
 
-            val mapOfAccountsWithMetadata = buildMapOfAccountsWithMetadata(entityDetailsResponses)
+            val mapOfAccountsWithMetadata = buildMapOfAccountsAddressesWithMetadata(entityDetailsResponses)
             val mapOfAccountsWithFungibleResources = buildMapOfAccountsWithFungibles(entityDetailsResponses, resourcesDetails)
             val mapOfAccountsWithNonFungibleResources = buildMapOfAccountsWithNonFungibles(
                 entityDetailsResponses = entityDetailsResponses,
@@ -113,7 +113,7 @@ class EntityRepositoryImpl @Inject constructor(
         }
     }
 
-    private fun buildMapOfAccountsWithMetadata(
+    private fun buildMapOfAccountsAddressesWithMetadata(
         entityDetailsResponses: List<StateEntityDetailsResponse>
     ): Map<String, List<MetadataItem>> {
         return entityDetailsResponses.map { entityDetailsResponse ->
