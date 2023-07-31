@@ -33,11 +33,7 @@ fun NonFungibleResourceItem(
         modifier = modifier,
         verticalArrangement = spacedBy(RadixTheme.dimensions.paddingDefault)
     ) {
-//        val brokenImagePlaceholder = painterResource(id = R.drawable.img_nft_broken_image)
-//        val placeholder = painterResource(id = R.drawable.img_placeholder)
-        val imageUrl = item.imageUrl
-
-        if (imageUrl != null) {
+        item.imageUrl?.let { imageUrl ->
             SubcomposeAsyncImage(
                 model = rememberImageUrl(
                     fromUrl = imageUrl,
@@ -58,20 +54,6 @@ fun NonFungibleResourceItem(
                         .background(Color.Transparent, RadixTheme.shapes.roundedRectMedium)
                 )
             }
-//            AsyncImage(
-//                model = rememberImageUrl(fromUrl = imageUrl, size = ImageSize.LARGE),
-//                onSuccess = {
-//                    Timber.d("List issue: ${it.result.dataSource}")
-//                },
-//                contentDescription = "Nft image",
-//                contentScale = ContentScale.Crop,
-//                modifier = Modifier
-//                    .fillMaxWidth()
-// //                    .height(300.dp)
-//                    .applyImageAspectRatio(painter = painter)
-//                    .clip(RadixTheme.shapes.roundedRectMedium)
-//                    .background(Color.Transparent, RadixTheme.shapes.roundedRectMedium)
-//            )
         }
 
         item.nameMetadataItem?.name?.let { name ->
