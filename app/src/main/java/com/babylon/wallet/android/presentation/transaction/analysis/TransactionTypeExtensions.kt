@@ -67,7 +67,8 @@ fun RETResources.toTransferableResource(resourceAddress: String, allResources: L
 
 fun ResourceTracker.toDepositingTransferableResource(
     allResources: List<Resources>,
-    newlyCreated: Map<String, Map<String, MetadataValue?>>,
+    newlyCreatedMetadata: Map<String, Map<String, MetadataValue?>>,
+    newlyCreatedEntities: List<Address>,
     thirdPartyMetadata: Map<String, List<MetadataItem>>
 ): Transferable.Depositing {
     val allFungibles = allResources.map { it.fungibleResources }.flatten()
@@ -75,13 +76,18 @@ fun ResourceTracker.toDepositingTransferableResource(
 
     return when (this) {
         is ResourceTracker.Fungible -> Transferable.Depositing(
-            transferable = toTransferableResource(allFungibles, newlyCreated, thirdPartyMetadata),
+            transferable = toTransferableResource(
+                allFungibles,
+                newlyCreatedMetadata,
+                newlyCreatedEntities,
+                thirdPartyMetadata
+            ),
             guaranteeType = amount.toGuaranteeType()
         )
 
         is ResourceTracker.NonFungible -> {
             Transferable.Depositing(
-                transferable = toTransferableResource(allNFTCollections, newlyCreated),
+                transferable = toTransferableResource(allNFTCollections, newlyCreatedMetadata, newlyCreatedEntities),
                 guaranteeType = ids.toGuaranteeType()
             )
         }
@@ -90,18 +96,19 @@ fun ResourceTracker.toDepositingTransferableResource(
 
 fun ResourceTracker.toWithdrawingTransferableResource(
     allResources: List<Resources>,
-    newlyCreated: Map<String, Map<String, MetadataValue?>> = emptyMap()
+    newlyCreatedMetadata: Map<String, Map<String, MetadataValue?>> = emptyMap(),
+    newlyCreatedEntities: List<Address>
 ): Transferable.Withdrawing {
     val allFungibles = allResources.map { it.fungibleResources }.flatten()
     val allNFTCollections = allResources.map { it.nonFungibleResources }.flatten()
 
     return when (this) {
         is ResourceTracker.Fungible -> Transferable.Withdrawing(
-            transferable = toTransferableResource(allFungibles, newlyCreated)
+            transferable = toTransferableResource(allFungibles, newlyCreatedMetadata, newlyCreatedEntities)
         )
 
         is ResourceTracker.NonFungible -> Transferable.Withdrawing(
-            transferable = toTransferableResource(allNFTCollections, newlyCreated)
+            transferable = toTransferableResource(allNFTCollections, newlyCreatedMetadata, newlyCreatedEntities)
         )
     }
 }
@@ -192,6 +199,7 @@ private fun Resource.FungibleResource.Companion.from(
 private fun ResourceTracker.Fungible.toTransferableResource(
     allFungibles: List<Resource.FungibleResource>,
     newlyCreated: Map<String, Map<String, MetadataValue?>>,
+    newlyCreatedEntities: List<Address>,
     thirdPartyMetadata: Map<String, List<MetadataItem>> = emptyMap()
 ): TransferableResource.Amount {
     val resource = allFungibles.find {
@@ -211,13 +219,14 @@ private fun ResourceTracker.Fungible.toTransferableResource(
     return TransferableResource.Amount(
         amount = amount.valueDecimal,
         resource = resource,
-        isNewlyCreated = newlyCreated[resourceAddress.addressString()] != null
+        isNewlyCreated = newlyCreatedEntities.map { it.addressString() }.contains(resourceAddress.addressString())
     )
 }
 
 private fun ResourceTracker.NonFungible.toTransferableResource(
     allNFTCollections: List<Resource.NonFungibleResource>,
-    newlyCreated: Map<String, Map<String, MetadataValue?>>
+    newlyCreated: Map<String, Map<String, MetadataValue?>>,
+    newlyCreatedEntities: List<Address>,
 ): TransferableResource.NFTs {
     val collection = allNFTCollections.find { it.resourceAddress == resourceAddress.addressString() }
     val metadata = newlyCreated[resourceAddress.addressString()]
@@ -245,7 +254,7 @@ private fun ResourceTracker.NonFungible.toTransferableResource(
             },
             items = items
         ),
-        isNewlyCreated = newlyCreated[resourceAddress.addressString()] != null
+        isNewlyCreated = newlyCreatedEntities.map { it.addressString() }.contains(resourceAddress.addressString())
     )
 }
 

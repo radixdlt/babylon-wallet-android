@@ -92,7 +92,11 @@ private fun TransactionType.GeneralTransaction.resolveFromAccounts(
     allAccounts: List<Network.Account>
 ) = accountWithdraws.map { withdrawEntry ->
     val transferables = withdrawEntry.value.map {
-        it.toWithdrawingTransferableResource(allResources, metadataOfNewlyCreatedEntities)
+        it.toWithdrawingTransferableResource(
+            allResources = allResources,
+            newlyCreatedMetadata = metadataOfNewlyCreatedEntities,
+            newlyCreatedEntities = addressesOfNewlyCreatedEntities
+        )
     }
 
     val ownedAccount = allAccounts.find { it.address == withdrawEntry.key }
@@ -115,7 +119,12 @@ private fun TransactionType.GeneralTransaction.resolveToAccounts(
     thirdPartyMetadata: Map<String, List<MetadataItem>> = emptyMap()
 ) = accountDeposits.map { depositEntry ->
     val transferables = depositEntry.value.map {
-        it.toDepositingTransferableResource(allResources, metadataOfNewlyCreatedEntities, thirdPartyMetadata)
+        it.toDepositingTransferableResource(
+            allResources = allResources,
+            newlyCreatedMetadata = metadataOfNewlyCreatedEntities,
+            newlyCreatedEntities = addressesOfNewlyCreatedEntities,
+            thirdPartyMetadata = thirdPartyMetadata
+        )
     }
 
     val ownedAccount = allAccounts.find { it.address == depositEntry.key }
