@@ -219,7 +219,7 @@ private fun ResourceTracker.Fungible.toTransferableResource(
     return TransferableResource.Amount(
         amount = amount.valueDecimal,
         resource = resource,
-        isNewlyCreated = newlyCreatedEntities.contains(resourceAddress)
+        isNewlyCreated = newlyCreatedEntities.map { it.addressString() }.contains(resourceAddress.addressString())
     )
 }
 
@@ -254,7 +254,7 @@ private fun ResourceTracker.NonFungible.toTransferableResource(
             },
             items = items
         ),
-        isNewlyCreated = newlyCreatedEntities.contains(resourceAddress)
+        isNewlyCreated = newlyCreatedEntities.map { it.addressString() }.contains(resourceAddress.addressString())
     )
 }
 
