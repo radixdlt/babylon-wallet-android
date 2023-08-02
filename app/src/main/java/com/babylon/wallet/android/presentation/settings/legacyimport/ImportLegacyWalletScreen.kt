@@ -70,6 +70,9 @@ import com.babylon.wallet.android.presentation.common.SeedPhraseInputDelegate
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.dapp.authorized.account.AccountItemUiModel
 import com.babylon.wallet.android.presentation.model.AddLedgerSheetState
+import com.babylon.wallet.android.presentation.settings.linkedconnectors.AddLinkConnectorScreen
+import com.babylon.wallet.android.presentation.settings.linkedconnectors.AddLinkConnectorUiState
+import com.babylon.wallet.android.presentation.settings.linkedconnectors.AddLinkConnectorViewModel
 import com.babylon.wallet.android.presentation.settings.linkedconnectors.qrcode.CameraPreview
 import com.babylon.wallet.android.presentation.ui.MockUiProvider.accountItemUiModelsList
 import com.babylon.wallet.android.presentation.ui.MockUiProvider.olympiaAccountsList
@@ -104,11 +107,14 @@ import rdx.works.profile.olympiaimport.OlympiaAccountDetails
 @Composable
 fun ImportLegacyWalletScreen(
     viewModel: ImportLegacyWalletViewModel,
+    addLinkConnectorViewModel: AddLinkConnectorViewModel,
     onCloseScreen: () -> Unit,
-    modifier: Modifier = Modifier,
-    onAddP2PLink: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
+    val addLinkConnectorState by addLinkConnectorViewModel.state.collectAsStateWithLifecycle()
+    val coroutineScope = rememberCoroutineScope()
+
     ImportLegacyWalletContent(
         modifier = modifier
             .navigationBarsPadding()
@@ -137,13 +143,26 @@ fun ImportLegacyWalletScreen(
         hardwareAccountsLeft = state.hardwareAccountsLeftToImport,
         waitingForLedgerResponse = state.waitingForLedgerResponse,
         onConfirmLedgerName = viewModel::onConfirmLedgerName,
-        onAddP2PLink = onAddP2PLink,
         verifiedLedgerDevices = state.verifiedLedgerDevices,
         addLedgerSheetState = state.addLedgerSheetState,
-        onImportWithLedger = viewModel::onImportWithLedger,
+        onContinueWithLedgerClick = viewModel::onContinueWithLedgerClick,
         deviceModel = state.recentlyConnectedLedgerDevice?.model?.toProfileLedgerDeviceModel()?.value,
         wordAutocompleteCandidates = state.wordAutocompleteCandidates,
-        shouldShowSettings = state.shouldShowSettings,
+        shouldShowAddLinkConnectorScreen = state.shouldShowAddLinkConnectorScreen,
+        addLinkConnectorState = addLinkConnectorState,
+        onLinkConnectorQrCodeScanned = addLinkConnectorViewModel::onQrCodeScanned,
+        onConnectorDisplayNameChanged = addLinkConnectorViewModel::onConnectorDisplayNameChanged,
+        shouldShowAddLedgerDeviceScreen = state.shouldShowAddLedgerDeviceScreen,
+        onNewConnectorContinueClick = {
+            coroutineScope.launch {
+                addLinkConnectorViewModel.onContinueClick()
+                viewModel.onNewConnectorAdded()
+            }
+        },
+        onNewConnectorCloseClick = {
+            addLinkConnectorViewModel.onCloseClick()
+            viewModel.onNewConnectorCloseClick()
+        },
         onCloseSettings = viewModel::onCloseSettings
     )
 }
@@ -175,13 +194,18 @@ private fun ImportLegacyWalletContent(
     hardwareAccountsLeft: Int,
     waitingForLedgerResponse: Boolean,
     onConfirmLedgerName: (String) -> Unit,
-    onAddP2PLink: () -> Unit,
     verifiedLedgerDevices: ImmutableList<LedgerHardwareWalletFactorSource>,
     addLedgerSheetState: AddLedgerSheetState,
-    onImportWithLedger: () -> Unit,
+    onContinueWithLedgerClick: () -> Unit,
     deviceModel: String?,
     wordAutocompleteCandidates: ImmutableList<String>,
-    shouldShowSettings: Boolean,
+    shouldShowAddLinkConnectorScreen: Boolean,
+    addLinkConnectorState: AddLinkConnectorUiState,
+    onLinkConnectorQrCodeScanned: (String) -> Unit,
+    onConnectorDisplayNameChanged: (String) -> Unit,
+    onNewConnectorContinueClick: () -> Unit,
+    onNewConnectorCloseClick: () -> Unit,
+    shouldShowAddLedgerDeviceScreen: Boolean,
     onCloseSettings: () -> Unit
 ) {
     val focusManager = LocalFocusManager.current
@@ -258,12 +282,25 @@ private fun ImportLegacyWalletContent(
     }
     Box(modifier = modifier) {
         Column(modifier = Modifier.fillMaxSize()) {
-            if (shouldShowSettings) {
+            if (shouldShowAddLinkConnectorScreen) {
+                AddLinkConnectorScreen(
+                    modifier = Modifier,
+                    showContent = addLinkConnectorState.showContent,
+                    isLoading = addLinkConnectorState.isLoading,
+                    onQrCodeScanned = onLinkConnectorQrCodeScanned,
+                    onConnectorDisplayNameChanged = onConnectorDisplayNameChanged,
+                    connectorDisplayName = addLinkConnectorState.connectorDisplayName,
+                    isNewConnectorContinueButtonEnabled = addLinkConnectorState.isContinueButtonEnabled,
+                    onNewConnectorContinueClick = onNewConnectorContinueClick,
+                    onNewConnectorCloseClick = onNewConnectorCloseClick
+                )
+            }
+            if (shouldShowAddLedgerDeviceScreen) {
                 AddLedgerContent(
                     modifier = Modifier
                         .fillMaxSize(),
                     deviceModel = deviceModel,
-                    onSendAddLedgerRequest = onImportWithLedger,
+                    onSendAddLedgerRequest = onContinueWithLedgerClick,
                     addLedgerSheetState = addLedgerSheetState,
                     onConfirmLedgerName = {
                         onConfirmLedgerName(it)
@@ -310,7 +347,7 @@ private fun ImportLegacyWalletContent(
                     }
 
                     ImportLegacyWalletUiState.Page.MnemonicInput -> {
-                        MnemonicInputPage(
+                        VerifyWithYourSeedPhrasePage(
                             modifier = Modifier.fillMaxSize(),
                             seedPhraseWords = seedPhraseWords,
                             bip39Passphrase = bip39Passphrase,
@@ -322,14 +359,13 @@ private fun ImportLegacyWalletContent(
                     }
 
                     ImportLegacyWalletUiState.Page.HardwareAccounts -> {
-                        LedgerAccountImportPage(
+                        VerifyWithLedgerDevicePage(
                             Modifier.fillMaxSize(),
                             hardwareAccountsLeft = hardwareAccountsLeft,
                             waitingForLedgerResponse = waitingForLedgerResponse,
-                            verifiedLedgerDevices = verifiedLedgerDevices
-                        ) {
-                            onImportWithLedger()
-                        }
+                            verifiedLedgerDevices = verifiedLedgerDevices,
+                            onContinueWithLedgerClick = onContinueWithLedgerClick
+                        )
                     }
 
                     ImportLegacyWalletUiState.Page.ImportComplete -> {
@@ -495,12 +531,12 @@ private fun AccountsToImportListPage(
 }
 
 @Composable
-private fun LedgerAccountImportPage(
+private fun VerifyWithLedgerDevicePage(
     modifier: Modifier = Modifier,
     hardwareAccountsLeft: Int,
     waitingForLedgerResponse: Boolean,
     verifiedLedgerDevices: ImmutableList<LedgerHardwareWalletFactorSource>,
-    onImportWithLedger: () -> Unit
+    onContinueWithLedgerClick: () -> Unit
 ) {
     Box(modifier = modifier) {
         Column(
@@ -578,7 +614,7 @@ private fun LedgerAccountImportPage(
             }
             RadixPrimaryButton(
                 text = stringResource(id = R.string.ledgerHardwareDevices_continueWithLedger),
-                onClick = onImportWithLedger,
+                onClick = onContinueWithLedgerClick,
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(RadixTheme.dimensions.paddingDefault)
@@ -686,7 +722,7 @@ private fun ImportCompletePage(
 }
 
 @Composable
-private fun MnemonicInputPage(
+private fun VerifyWithYourSeedPhrasePage(
     modifier: Modifier = Modifier,
     seedPhraseWords: ImmutableList<SeedPhraseInputDelegate.SeedPhraseWord>,
     bip39Passphrase: String,
@@ -800,7 +836,7 @@ fun AccountListPagePreview() {
 @Composable
 fun InputSeedPhrasePagePreview() {
     RadixWalletTheme {
-        MnemonicInputPage(
+        VerifyWithYourSeedPhrasePage(
             seedPhraseWords = seedPhraseWords,
             bip39Passphrase = "test",
             onWordChanged = { _, _ -> },
@@ -815,12 +851,12 @@ fun InputSeedPhrasePagePreview() {
 @Composable
 fun HardwareImportNoVerifiedLedgersPreview() {
     RadixWalletTheme {
-        LedgerAccountImportPage(
+        VerifyWithLedgerDevicePage(
             modifier = Modifier,
             hardwareAccountsLeft = 5,
             waitingForLedgerResponse = false,
             verifiedLedgerDevices = persistentListOf(),
-            onImportWithLedger = {}
+            onContinueWithLedgerClick = {}
         )
     }
 }
@@ -829,12 +865,12 @@ fun HardwareImportNoVerifiedLedgersPreview() {
 @Composable
 fun HardwareImportWithVerifiedLedgersPreview() {
     RadixWalletTheme {
-        LedgerAccountImportPage(
+        VerifyWithLedgerDevicePage(
             modifier = Modifier,
             hardwareAccountsLeft = 3,
             waitingForLedgerResponse = false,
             verifiedLedgerDevices = SampleDataProvider().ledgerFactorSourcesSample.toPersistentList(),
-            onImportWithLedger = {}
+            onContinueWithLedgerClick = {}
         )
     }
 }
@@ -843,12 +879,12 @@ fun HardwareImportWithVerifiedLedgersPreview() {
 @Composable
 fun HardwareImportNoAccountsLeftPreview() {
     RadixWalletTheme {
-        LedgerAccountImportPage(
+        VerifyWithLedgerDevicePage(
             modifier = Modifier,
             hardwareAccountsLeft = 0,
             waitingForLedgerResponse = true,
             verifiedLedgerDevices = SampleDataProvider().ledgerFactorSourcesSample.toPersistentList(),
-            onImportWithLedger = {}
+            onContinueWithLedgerClick = {}
         )
     }
 }

@@ -76,9 +76,6 @@ fun NavGraphBuilder.settingsNavGraph(
         importLegacyWalletScreen(
             onBackClick = {
                 navController.popBackStack()
-            },
-            onAddP2PLink = {
-                navController.linkedConnectorsScreen(/*scanQr = true,*/) // TODO
             }
         )
         ledgerHardwareWalletsScreen(

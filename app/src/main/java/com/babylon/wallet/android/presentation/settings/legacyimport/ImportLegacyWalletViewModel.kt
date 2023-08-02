@@ -45,6 +45,7 @@ import rdx.works.profile.domain.account.GetFactorSourceIdForOlympiaAccountsUseCa
 import rdx.works.profile.domain.account.MigrateOlympiaAccountsUseCase
 import rdx.works.profile.domain.accountOnCurrentNetwork
 import rdx.works.profile.domain.currentNetworkAccountHashes
+import rdx.works.profile.domain.p2pLinks
 import rdx.works.profile.olympiaimport.ChunkInfo
 import rdx.works.profile.olympiaimport.OlympiaAccountDetails
 import rdx.works.profile.olympiaimport.OlympiaAccountType
@@ -96,7 +97,7 @@ class ImportLegacyWalletViewModel @Inject constructor(
                     val state = delegateState.addLedgerSheetState
                     uiState.copy(
                         addLedgerSheetState = state,
-                        shouldShowSettings = state == AddLedgerSheetState.InputLedgerName,
+                        shouldShowAddLedgerDeviceScreen = state == AddLedgerSheetState.InputLedgerName,
                         waitingForLedgerResponse = delegateState.waitingForLedgerResponse,
                         recentlyConnectedLedgerDevice = delegateState.recentlyConnectedLedgerDevice,
                         uiMessage = delegateState.uiMessage
@@ -129,7 +130,7 @@ class ImportLegacyWalletViewModel @Inject constructor(
             _state.update {
                 it.copy(
                     uiMessage = UiMessage.InfoMessage.NoAccountsForLedger,
-                    shouldShowSettings = true
+                    shouldShowAddLedgerDeviceScreen = true
                 )
             }
             return
@@ -369,12 +370,9 @@ class ImportLegacyWalletViewModel @Inject constructor(
                     DerivePublicKeyRequest.KeyParameters(Curve.Secp256k1, derivationPath)
                 },
                 ledgerDevice = ledgerDevice
-            ).onFailure { error ->
-                _state.update {
-                    it.copy(
-                        uiMessage = UiMessage.ErrorMessage.from(error),
-                        waitingForLedgerResponse = false
-                    )
+            ).onFailure {
+                _state.update { uiState ->
+                    uiState.copy(waitingForLedgerResponse = false)
                 }
             }.onSuccess { derivePublicKeyResponse ->
                 processLedgerResponse(ledgerFactorSource, derivePublicKeyResponse)
@@ -422,16 +420,19 @@ class ImportLegacyWalletViewModel @Inject constructor(
         _state.update { it.copy(uiMessage = null) }
     }
 
-    fun onImportWithLedger() {
+    fun onContinueWithLedgerClick() {
         viewModelScope.launch {
             if (useLedgerDelegate.state.first().hasP2PLinks) {
                 useLedgerDelegate.onSendAddLedgerRequest()
+            } else if (getProfileUseCase.p2pLinks.first().isEmpty()) {
+                _state.update {
+                    it.copy(shouldShowAddLinkConnectorScreen = true,)
+                }
             } else {
-                println("-----> onImportWithLedger() addLedgerSheetState: LinkConnector")
                 _state.update {
                     it.copy(
                         addLedgerSheetState = AddLedgerSheetState.AddLedgerDevice,
-                        shouldShowSettings = true,
+                        shouldShowAddLedgerDeviceScreen = true,
                     )
                 }
             }
@@ -439,10 +440,30 @@ class ImportLegacyWalletViewModel @Inject constructor(
     }
 
     fun onCloseSettings() {
+        _state.update {
+            it.copy(shouldShowAddLedgerDeviceScreen = false)
+        }
+    }
+
+    fun onNewConnectorAdded() {
         viewModelScope.launch {
             _state.update {
-                it.copy(shouldShowSettings = false)
+                it.copy(shouldShowAddLinkConnectorScreen = false)
             }
+            if (useLedgerDelegate.state.first().hasLedgerDevices.not()) {
+                _state.update {
+                    it.copy(
+                        addLedgerSheetState = AddLedgerSheetState.AddLedgerDevice,
+                        shouldShowAddLedgerDeviceScreen = true,
+                    )
+                }
+            }
+        }
+    }
+
+    fun onNewConnectorCloseClick() {
+        _state.update {
+            it.copy(shouldShowAddLinkConnectorScreen = false)
         }
     }
 }
@@ -472,7 +493,8 @@ data class ImportLegacyWalletUiState(
     val addLedgerSheetState: AddLedgerSheetState = AddLedgerSheetState.AddLedgerDevice,
     val seedPhraseWords: ImmutableList<SeedPhraseInputDelegate.SeedPhraseWord> = persistentListOf(),
     val wordAutocompleteCandidates: ImmutableList<String> = persistentListOf(),
-    val shouldShowSettings: Boolean = false
+    val shouldShowAddLinkConnectorScreen: Boolean = false,
+    val shouldShowAddLedgerDeviceScreen: Boolean = false
 ) : UiState {
 
     enum class Page {

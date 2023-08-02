@@ -16,8 +16,7 @@ fun NavController.importLegacyWalletScreen() {
 
 @OptIn(ExperimentalAnimationApi::class)
 fun NavGraphBuilder.importLegacyWalletScreen(
-    onBackClick: () -> Unit,
-    onAddP2PLink: () -> Unit
+    onBackClick: () -> Unit
 ) {
     markAsHighPriority(ROUTE)
     composable(
@@ -31,8 +30,8 @@ fun NavGraphBuilder.importLegacyWalletScreen(
     ) {
         ImportLegacyWalletScreen(
             viewModel = hiltViewModel(),
-            onCloseScreen = onBackClick,
-            onAddP2PLink = onAddP2PLink
+            addLinkConnectorViewModel = hiltViewModel(),
+            onCloseScreen = onBackClick
         )
     }
 }
