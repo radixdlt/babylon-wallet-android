@@ -23,12 +23,12 @@ import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.factorSourceById
 import rdx.works.profile.domain.ledgerFactorSources
 
-class CreateLedgerDelegate(
+class AddLedgerDeviceDelegate(
     private val getProfileUseCase: GetProfileUseCase,
     private val ledgerMessenger: LedgerMessenger,
     private val addLedgerFactorSourceUseCase: AddLedgerFactorSourceUseCase,
     private val scope: CoroutineScope
-) : Stateful<CreateLedgerDelegate.CreateLedgerDelegateState>() {
+) : Stateful<AddLedgerDeviceDelegate.AddLedgerDeviceState>() {
 
     init {
         scope.launch {
@@ -134,7 +134,7 @@ class CreateLedgerDelegate(
         addLedgerFactorSource()
     }
 
-    data class CreateLedgerDelegateState(
+    data class AddLedgerDeviceState(
         val loading: Boolean = false,
         val ledgerDevices: ImmutableList<LedgerHardwareWalletFactorSource> = persistentListOf(),
         val selectedLedgerDeviceId: FactorSource.FactorSourceID.FromHash? = null,
@@ -144,7 +144,7 @@ class CreateLedgerDelegate(
         val uiMessage: UiMessage? = null
     ) : UiState
 
-    override fun initialState(): CreateLedgerDelegateState {
-        return CreateLedgerDelegateState()
+    override fun initialState(): AddLedgerDeviceState {
+        return AddLedgerDeviceState()
     }
 }

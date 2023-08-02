@@ -5,7 +5,7 @@ import com.babylon.wallet.android.data.dapp.LedgerMessenger
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
-import com.babylon.wallet.android.presentation.createaccount.withledger.CreateLedgerDelegate
+import com.babylon.wallet.android.presentation.createaccount.withledger.AddLedgerDeviceDelegate
 import com.babylon.wallet.android.presentation.model.AddLedgerSheetState
 import com.babylon.wallet.android.presentation.model.LedgerDeviceUiModel
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -28,7 +28,7 @@ class LedgerHardwareWalletsViewModel @Inject constructor(
     addLedgerFactorSourceUseCase: AddLedgerFactorSourceUseCase
 ) : StateViewModel<LedgerHardwareWalletsUiState>() {
 
-    private val createLedgerDelegate = CreateLedgerDelegate(
+    private val addLedgerDeviceDelegate = AddLedgerDeviceDelegate(
         getProfileUseCase = getProfileUseCase,
         ledgerMessenger = ledgerMessenger,
         addLedgerFactorSourceUseCase = addLedgerFactorSourceUseCase,
@@ -39,7 +39,7 @@ class LedgerHardwareWalletsViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            createLedgerDelegate.state.collect { delegateState ->
+            addLedgerDeviceDelegate.state.collect { delegateState ->
                 _state.update { uiState ->
                     uiState.copy(
                         loading = delegateState.loading,
@@ -55,11 +55,11 @@ class LedgerHardwareWalletsViewModel @Inject constructor(
     }
 
     fun onSendAddLedgerRequest() {
-        createLedgerDelegate.onSendAddLedgerRequest()
+        addLedgerDeviceDelegate.onSendAddLedgerRequest()
     }
 
     fun onConfirmLedgerName(name: String) {
-        createLedgerDelegate.onConfirmLedgerName(name)
+        addLedgerDeviceDelegate.onConfirmLedgerName(name)
         _state.update { it.copy(showContent = LedgerHardwareWalletsUiState.ShowContent.Details) }
     }
 

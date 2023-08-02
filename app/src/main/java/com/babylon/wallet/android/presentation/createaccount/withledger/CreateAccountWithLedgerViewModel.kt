@@ -40,7 +40,7 @@ class CreateAccountWithLedgerViewModel @Inject constructor(
 ) : StateViewModel<CreateAccountWithLedgerUiState>(),
     OneOffEventHandler<CreateAccountWithLedgerEvent> by OneOffEventHandlerImpl() {
 
-    private val createLedgerDelegate = CreateLedgerDelegate(
+    private val addLedgerDeviceDelegate = AddLedgerDeviceDelegate(
         getProfileUseCase = getProfileUseCase,
         ledgerMessenger = ledgerMessenger,
         addLedgerFactorSourceUseCase = addLedgerFactorSourceUseCase,
@@ -49,7 +49,7 @@ class CreateAccountWithLedgerViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            createLedgerDelegate.state.collect { delegateState ->
+            addLedgerDeviceDelegate.state.collect { delegateState ->
                 _state.update { uiState ->
                     val selectedLedgerDeviceId = delegateState.selectedLedgerDeviceId
                     uiState.copy(
@@ -73,15 +73,15 @@ class CreateAccountWithLedgerViewModel @Inject constructor(
     override fun initialState(): CreateAccountWithLedgerUiState = CreateAccountWithLedgerUiState()
 
     fun onLedgerDeviceSelected(ledgerFactorSource: LedgerHardwareWalletFactorSource) {
-        createLedgerDelegate.onLedgerFactorSourceSelected(ledgerFactorSource)
+        addLedgerDeviceDelegate.onLedgerFactorSourceSelected(ledgerFactorSource)
     }
 
     fun onSendAddLedgerRequest() {
-        createLedgerDelegate.onSendAddLedgerRequest()
+        addLedgerDeviceDelegate.onSendAddLedgerRequest()
     }
 
     fun onSkipLedgerName() {
-        createLedgerDelegate.onSkipLedgerName()
+        addLedgerDeviceDelegate.onSkipLedgerName()
     }
 
     fun onUseLedgerContinueClick() {
@@ -126,7 +126,7 @@ class CreateAccountWithLedgerViewModel @Inject constructor(
     }
 
     fun onConfirmLedgerName(name: String) {
-        createLedgerDelegate.onConfirmLedgerName(name)
+        addLedgerDeviceDelegate.onConfirmLedgerName(name)
         _state.update {
             it.copy(showContent = CreateAccountWithLedgerUiState.ShowContent.ChooseLedger)
         }
