@@ -11,7 +11,6 @@ import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.UUIDGenerator
@@ -22,7 +21,6 @@ import rdx.works.profile.domain.AddLedgerFactorSourceUseCase
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.factorSourceById
 import rdx.works.profile.domain.ledgerFactorSources
-import rdx.works.profile.domain.p2pLinks
 
 class UseLedgerDelegate(
     private val getProfileUseCase: GetProfileUseCase,
@@ -34,18 +32,10 @@ class UseLedgerDelegate(
 
     init {
         scope.launch {
-            combine(
-                getProfileUseCase.ledgerFactorSources,
-                getProfileUseCase.p2pLinks
-            ) { ledgerFactorSources, p2pLinks ->
-                ledgerFactorSources.isNotEmpty() to p2pLinks.isNotEmpty()
-            }.collect { factorSourcesToP2pLinksExist ->
-                val hasLedgerDevices = factorSourcesToP2pLinksExist.first
-                val hasP2pLinks = factorSourcesToP2pLinksExist.second
+            getProfileUseCase.ledgerFactorSources.collect { ledgerDevices ->
                 _state.update { state ->
                     state.copy(
-                        hasLedgerDevices = hasLedgerDevices,
-                        hasP2PLinks = hasP2pLinks,
+                        hasLedgerDevices = ledgerDevices.isNotEmpty(),
                     )
                 }
             }
@@ -130,7 +120,6 @@ class UseLedgerDelegate(
         val loading: Boolean = false,
         val usedLedgerFactorSources: ImmutableList<LedgerHardwareWalletFactorSource> = persistentListOf(),
         val hasLedgerDevices: Boolean = false,
-        val hasP2PLinks: Boolean = false,
         val addLedgerSheetState: AddLedgerSheetState = AddLedgerSheetState.AddLedgerDevice,
         val waitingForLedgerResponse: Boolean = false,
         val recentlyConnectedLedgerDevice: LedgerDeviceUiModel? = null,

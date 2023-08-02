@@ -422,7 +422,7 @@ class ImportLegacyWalletViewModel @Inject constructor(
 
     fun onContinueWithLedgerClick() {
         viewModelScope.launch {
-            if (useLedgerDelegate.state.first().hasP2PLinks) {
+            if (getProfileUseCase.p2pLinks.first().isNotEmpty()) {
                 useLedgerDelegate.onSendAddLedgerRequest()
             } else if (getProfileUseCase.p2pLinks.first().isEmpty()) {
                 _state.update {
