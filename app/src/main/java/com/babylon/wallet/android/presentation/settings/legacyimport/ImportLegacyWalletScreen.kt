@@ -308,8 +308,7 @@ private fun ImportLegacyWalletContent(
                     },
                     backIconType = BackIconType.Back,
                     onClose = onCloseSettings,
-                    waitingForLedgerResponse = waitingForLedgerResponse,
-//                    onAddP2PLink = onAddP2PLink
+                    waitingForLedgerResponse = waitingForLedgerResponse
                 )
             }
             RadixCenteredTopAppBar(
