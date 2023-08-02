@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.presentation.settings.ledgerfactorsource
+package com.babylon.wallet.android.presentation.settings.ledgerhardwarewallets
 
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.dapp.LedgerMessenger
@@ -12,19 +12,21 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toPersistentList
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.profile.data.model.factorsources.LedgerHardwareWalletFactorSource
 import rdx.works.profile.domain.AddLedgerFactorSourceUseCase
 import rdx.works.profile.domain.GetProfileUseCase
+import rdx.works.profile.domain.p2pLinks
 import javax.inject.Inject
 
 @HiltViewModel
-class LedgerFactorSourcesViewModel @Inject constructor(
-    getProfileUseCase: GetProfileUseCase,
+class LedgerHardwareWalletsViewModel @Inject constructor(
+    private val getProfileUseCase: GetProfileUseCase,
     ledgerMessenger: LedgerMessenger,
-    addLedgerFactorSourceUseCase: AddLedgerFactorSourceUseCase,
-) : StateViewModel<LedgerFactorSourcesUiState>() {
+    addLedgerFactorSourceUseCase: AddLedgerFactorSourceUseCase
+) : StateViewModel<LedgerHardwareWalletsUiState>() {
 
     private val createLedgerDelegate = CreateLedgerDelegate(
         getProfileUseCase = getProfileUseCase,
@@ -33,7 +35,7 @@ class LedgerFactorSourcesViewModel @Inject constructor(
         scope = viewModelScope
     )
 
-    override fun initialState(): LedgerFactorSourcesUiState = LedgerFactorSourcesUiState()
+    override fun initialState(): LedgerHardwareWalletsUiState = LedgerHardwareWalletsUiState()
 
     init {
         viewModelScope.launch {
@@ -42,10 +44,9 @@ class LedgerFactorSourcesViewModel @Inject constructor(
                     uiState.copy(
                         loading = delegateState.loading,
                         addLedgerSheetState = delegateState.addLedgerSheetState,
-                        ledgerFactorSources = delegateState.ledgerFactorSources.toPersistentList(),
+                        ledgerDevices = delegateState.ledgerDevices.toPersistentList(),
                         waitingForLedgerResponse = delegateState.waitingForLedgerResponse,
                         recentlyConnectedLedgerDevice = delegateState.recentlyConnectedLedgerDevice,
-                        hasP2pLinks = delegateState.hasP2pLinks,
                         uiMessage = delegateState.uiMessage
                     )
                 }
@@ -59,33 +60,53 @@ class LedgerFactorSourcesViewModel @Inject constructor(
 
     fun onConfirmLedgerName(name: String) {
         createLedgerDelegate.onConfirmLedgerName(name)
-        _state.update { it.copy(mode = LedgerFactorSourcesMode.Details) }
+        _state.update { it.copy(showContent = LedgerHardwareWalletsUiState.ShowContent.Details) }
     }
 
     fun onMessageShown() {
         _state.update { it.copy(uiMessage = null) }
     }
 
-    fun onAddLedgerClick() {
-        _state.update { it.copy(mode = LedgerFactorSourcesMode.AddLedger) }
+    fun onAddLedgerDeviceClick() {
+        viewModelScope.launch {
+            if (getProfileUseCase.p2pLinks.first().isEmpty()) {
+                _state.update { it.copy(showContent = LedgerHardwareWalletsUiState.ShowContent.LinkNewConnector) }
+            } else {
+                _state.update { it.copy(showContent = LedgerHardwareWalletsUiState.ShowContent.AddLedger) }
+            }
+        }
     }
 
-    fun onCloseAddLedgerClick() {
-        _state.update { it.copy(mode = LedgerFactorSourcesMode.Details) }
+    fun onCloseClick() {
+        _state.update {
+            it.copy(showContent = LedgerHardwareWalletsUiState.ShowContent.Details)
+        }
+    }
+
+    fun onLinkConnectorClick() {
+        _state.update {
+            it.copy(showContent = LedgerHardwareWalletsUiState.ShowContent.AddLinkConnector)
+        }
+    }
+
+    fun onNewConnectorCloseClick() {
+        _state.update {
+            it.copy(showContent = LedgerHardwareWalletsUiState.ShowContent.Details)
+        }
     }
 }
 
-enum class LedgerFactorSourcesMode {
-    Details, AddLedger
-}
-
-data class LedgerFactorSourcesUiState(
-    val ledgerFactorSources: ImmutableList<LedgerHardwareWalletFactorSource> = persistentListOf(),
+data class LedgerHardwareWalletsUiState(
     val loading: Boolean = false,
-    val hasP2pLinks: Boolean = false,
-    val addLedgerSheetState: AddLedgerSheetState = AddLedgerSheetState.Connect,
+    val showContent: ShowContent = ShowContent.Details,
+    val ledgerDevices: ImmutableList<LedgerHardwareWalletFactorSource> = persistentListOf(),
+    val addLedgerSheetState: AddLedgerSheetState = AddLedgerSheetState.AddLedgerDevice,
     val waitingForLedgerResponse: Boolean = false,
     val recentlyConnectedLedgerDevice: LedgerDeviceUiModel? = null,
-    val mode: LedgerFactorSourcesMode = LedgerFactorSourcesMode.Details,
     val uiMessage: UiMessage? = null
-) : UiState
+) : UiState {
+
+    enum class ShowContent {
+        Details, AddLedger, LinkNewConnector, AddLinkConnector
+    }
+}
