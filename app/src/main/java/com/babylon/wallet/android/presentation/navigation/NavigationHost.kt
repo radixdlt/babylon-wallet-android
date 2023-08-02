@@ -30,12 +30,11 @@ import com.babylon.wallet.android.presentation.main.main
 import com.babylon.wallet.android.presentation.navigation.Screen.Companion.ARG_ACCOUNT_ID
 import com.babylon.wallet.android.presentation.onboarding.OnboardingScreen
 import com.babylon.wallet.android.presentation.settings.backup.restoreMnemonicScreen
-import com.babylon.wallet.android.presentation.settings.connector.settingsConnectorScreen
 import com.babylon.wallet.android.presentation.settings.incompatibleprofile.IncompatibleProfileContent
 import com.babylon.wallet.android.presentation.settings.incompatibleprofile.ROUTE_INCOMPATIBLE_PROFILE
 import com.babylon.wallet.android.presentation.settings.personadetail.personaDetailScreen
 import com.babylon.wallet.android.presentation.settings.personaedit.personaEditScreen
-import com.babylon.wallet.android.presentation.settings.seedphrases.settingsShowMnemonic
+import com.babylon.wallet.android.presentation.settings.seedphrases.seedPhrases
 import com.babylon.wallet.android.presentation.settings.settingsNavGraph
 import com.babylon.wallet.android.presentation.status.dapp.dappInteractionDialog
 import com.babylon.wallet.android.presentation.status.transaction.transactionStatusDialog
@@ -94,7 +93,7 @@ fun NavigationHost(
                 navController.navigate(ROUTE_INCOMPATIBLE_PROFILE)
             },
             onNavigateToMnemonicBackup = {
-                navController.settingsShowMnemonic()
+                navController.seedPhrases()
             }
         )
         composable(
@@ -112,7 +111,7 @@ fun NavigationHost(
                     navController.navigateUp()
                 },
                 onNavigateToMnemonicBackup = {
-                    navController.settingsShowMnemonic()
+                    navController.seedPhrases()
                 },
                 onTransferClick = { accountId ->
                     navController.transfer(accountId = accountId)
@@ -141,10 +140,6 @@ fun NavigationHost(
             },
             goBackToCreateAccount = {
                 navController.popBackStack(ROUTE_CREATE_ACCOUNT, false)
-            },
-            // TODO https://github.com/radixdlt/babylon-wallet-android/pull/303#discussion_r1233727181
-            onAddP2PLink = {
-                navController.settingsConnectorScreen(scanQr = true, closeAfterLinked = true)
             }
         )
         createAccountConfirmationScreen(
@@ -181,7 +176,7 @@ fun NavigationHost(
                 navController.personaDetailScreen(personaAddress)
             },
             onNavigateToMnemonicBackup = {
-                navController.settingsShowMnemonic()
+                navController.seedPhrases()
             }
         )
         personaDetailScreen(

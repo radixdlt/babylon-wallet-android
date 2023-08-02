@@ -67,13 +67,13 @@ class SettingsViewModel @Inject constructor(
         // Update connection settings based on p2p links
         val visibleSettings = if (showConnectionSetting) {
             defaultSettings.toMutableList().apply {
-                if (!contains(SettingsItem.TopLevelSettings.Connection)) {
-                    add(0, SettingsItem.TopLevelSettings.Connection)
+                if (!contains(SettingsItem.TopLevelSettings.LinkToConnector)) {
+                    add(0, SettingsItem.TopLevelSettings.LinkToConnector)
                 }
             }
         } else {
             defaultSettings.filter { settingSectionItem ->
-                settingSectionItem != SettingsItem.TopLevelSettings.Connection
+                settingSectionItem != SettingsItem.TopLevelSettings.LinkToConnector
             }.toMutableList()
         }
 

@@ -94,7 +94,7 @@ private fun SettingsContent(
         LazyColumn(modifier = Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally) {
             appSettings.forEach { settingsItem ->
                 when (settingsItem) {
-                    SettingsItem.TopLevelSettings.Connection -> {
+                    SettingsItem.TopLevelSettings.LinkToConnector -> {
                         item {
                             ConnectionSettingItem(
                                 modifier = Modifier
@@ -289,7 +289,7 @@ fun SettingsScreenWithoutActiveConnectionPreview() {
             onBackClick = {},
             onDeleteWalletClick = {},
             appSettings = persistentListOf(
-                SettingsItem.TopLevelSettings.Connection,
+                SettingsItem.TopLevelSettings.LinkToConnector,
                 SettingsItem.TopLevelSettings.LinkedConnectors,
                 SettingsItem.TopLevelSettings.Gateways,
                 SettingsItem.TopLevelSettings.AuthorizedDapps,

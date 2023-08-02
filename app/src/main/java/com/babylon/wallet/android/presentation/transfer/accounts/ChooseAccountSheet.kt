@@ -49,7 +49,7 @@ import com.babylon.wallet.android.designsystem.composable.RadixTextField
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.getAccountGradientColorsFor
 import com.babylon.wallet.android.presentation.dapp.authorized.account.AccountSelectionCard
-import com.babylon.wallet.android.presentation.settings.connector.qrcode.CameraPreview
+import com.babylon.wallet.android.presentation.settings.linkedconnectors.qrcode.CameraPreview
 import com.babylon.wallet.android.presentation.transfer.TargetAccount
 import com.babylon.wallet.android.presentation.transfer.TransferViewModel.State.Sheet.ChooseAccounts
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
