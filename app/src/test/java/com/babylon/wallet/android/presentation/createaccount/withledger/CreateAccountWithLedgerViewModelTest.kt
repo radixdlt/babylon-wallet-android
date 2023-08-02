@@ -86,9 +86,8 @@ internal class CreateAccountWithLedgerViewModelTest : StateViewModelTest<CreateA
         advanceUntilIdle()
         vm.state.test {
             val item = expectMostRecentItem()
-            assert(item.ledgerFactorSources.size == 1)
-            assert(item.mode == CreateAccountWithLedgerMode.LinkConnector)
-            assert(item.ledgerFactorSources.first { it.selected }.data.id.body.value == secondDeviceId)
+            assert(item.ledgerDevices.size == 1)
+            assert(item.ledgerDevices.first { it.selected }.data.id.body.value == secondDeviceId)
         }
     }
 
@@ -99,9 +98,8 @@ internal class CreateAccountWithLedgerViewModelTest : StateViewModelTest<CreateA
         advanceUntilIdle()
         vm.state.test {
             val item = expectMostRecentItem()
-            assert(item.ledgerFactorSources.size == 1)
-            assert(item.mode == CreateAccountWithLedgerMode.LinkConnector)
-            assert(item.ledgerFactorSources.first { it.selected }.data.id.body.value == secondDeviceId)
+            assert(item.ledgerDevices.size == 1)
+            assert(item.ledgerDevices.first { it.selected }.data.id.body.value == secondDeviceId)
         }
     }
 
@@ -129,7 +127,7 @@ internal class CreateAccountWithLedgerViewModelTest : StateViewModelTest<CreateA
         advanceUntilIdle()
         vm.state.test {
             val item = expectMostRecentItem()
-            assert(item.addLedgerSheetState == AddLedgerSheetState.Connect)
+            assert(item.addLedgerSheetState == AddLedgerSheetState.AddLedgerDevice)
         }
     }
 
@@ -145,7 +143,7 @@ internal class CreateAccountWithLedgerViewModelTest : StateViewModelTest<CreateA
         vm.state.test {
             val item = expectMostRecentItem()
             println("item = $item")
-            assert(item.addLedgerSheetState == AddLedgerSheetState.Connect)
+            assert(item.addLedgerSheetState == AddLedgerSheetState.AddLedgerDevice)
         }
         coVerify(exactly = 1) {
             addLedgerFactorSourceUseCase(
