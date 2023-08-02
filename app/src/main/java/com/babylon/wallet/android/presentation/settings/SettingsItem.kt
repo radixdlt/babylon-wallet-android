@@ -8,7 +8,7 @@ import rdx.works.profile.data.model.BackupState
 sealed interface SettingsItem {
 
     sealed interface TopLevelSettings {
-        object Connection : TopLevelSettings
+        object LinkToConnector : TopLevelSettings
         object LinkedConnectors : TopLevelSettings
         object Gateways : TopLevelSettings
         object AuthorizedDapps : TopLevelSettings
@@ -25,7 +25,7 @@ sealed interface SettingsItem {
         @StringRes
         fun descriptionRes(): Int {
             return when (this) {
-                Connection -> R.string.empty
+                LinkToConnector -> R.string.empty
                 DeleteAll -> R.string.settings_deleteWalletData
                 Gateways -> R.string.settings_gateways
                 LinkedConnectors -> R.string.settings_linkedConnectors
