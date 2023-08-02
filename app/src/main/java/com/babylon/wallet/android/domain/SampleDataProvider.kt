@@ -17,6 +17,7 @@ import rdx.works.profile.data.model.Profile
 import rdx.works.profile.data.model.apppreferences.AppPreferences
 import rdx.works.profile.data.model.apppreferences.Display
 import rdx.works.profile.data.model.apppreferences.Gateways
+import rdx.works.profile.data.model.apppreferences.P2PLink
 import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.data.model.apppreferences.Security
 import rdx.works.profile.data.model.factorsources.DeviceFactorSource
@@ -34,6 +35,17 @@ import rdx.works.profile.derivation.model.NetworkId
 import java.math.BigDecimal
 
 class SampleDataProvider {
+
+    val p2pLinksSample = listOf(
+        P2PLink(
+            displayName = "chrome connection",
+            connectionPassword = "chrome_pass"
+        ),
+        P2PLink(
+            displayName = "firefox connection",
+            connectionPassword = "firefox_pass"
+        )
+    )
 
     val ledgerFactorSourcesSample = listOf(
         LedgerHardwareWalletFactorSource.newSource(
