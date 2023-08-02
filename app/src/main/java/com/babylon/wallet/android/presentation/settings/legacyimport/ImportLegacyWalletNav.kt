@@ -8,14 +8,14 @@ import androidx.navigation.NavGraphBuilder
 import com.babylon.wallet.android.presentation.navigation.markAsHighPriority
 import com.google.accompanist.navigation.animation.composable
 
-private const val ROUTE = "settings_import_olympia_account"
+private const val ROUTE = "import_legacy_wallet_route"
 
-fun NavController.settingsImportOlympiaAccounts() {
+fun NavController.importLegacyWalletScreen() {
     navigate(ROUTE)
 }
 
 @OptIn(ExperimentalAnimationApi::class)
-fun NavGraphBuilder.settingsImportOlympiaAccounts(
+fun NavGraphBuilder.importLegacyWalletScreen(
     onBackClick: () -> Unit,
     onAddP2PLink: () -> Unit
 ) {
@@ -29,7 +29,7 @@ fun NavGraphBuilder.settingsImportOlympiaAccounts(
             slideOutOfContainer(AnimatedContentScope.SlideDirection.Right)
         }
     ) {
-        OlympiaImportScreen(
+        ImportLegacyWalletScreen(
             viewModel = hiltViewModel(),
             onCloseScreen = onBackClick,
             onAddP2PLink = onAddP2PLink

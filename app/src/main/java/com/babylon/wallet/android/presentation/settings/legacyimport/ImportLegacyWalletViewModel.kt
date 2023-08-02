@@ -55,7 +55,7 @@ import javax.inject.Inject
 
 @Suppress("TooManyFunctions")
 @HiltViewModel
-class OlympiaImportViewModel @Inject constructor(
+class ImportLegacyWalletViewModel @Inject constructor(
     private val ledgerMessenger: LedgerMessenger,
     private val addOlympiaFactorSourceUseCase: AddOlympiaFactorSourceUseCase,
     addLedgerFactorSourceUseCase: AddLedgerFactorSourceUseCase,
@@ -64,15 +64,15 @@ class OlympiaImportViewModel @Inject constructor(
     private val getProfileUseCase: GetProfileUseCase,
     private val deviceSecurityHelper: DeviceSecurityHelper,
     private val olympiaWalletDataParser: OlympiaWalletDataParser
-) : StateViewModel<OlympiaImportUiState>(), OneOffEventHandler<OlympiaImportEvent> by OneOffEventHandlerImpl() {
+) : StateViewModel<ImportLegacyWalletUiState>(), OneOffEventHandler<OlympiaImportEvent> by OneOffEventHandlerImpl() {
 
     private var mnemonicWithPassphrase: MnemonicWithPassphrase? = null
     private val scannedData = mutableSetOf<String>()
     private var olympiaWalletData: OlympiaWalletData? = null
     private val initialPages = listOf(
-        OlympiaImportUiState.Page.ScanQr,
-        OlympiaImportUiState.Page.AccountsToImportList,
-        OlympiaImportUiState.Page.ImportComplete
+        ImportLegacyWalletUiState.Page.ScanQr,
+        ImportLegacyWalletUiState.Page.AccountsToImportList,
+        ImportLegacyWalletUiState.Page.ImportComplete
     )
     private var existingFactorSourceId: FactorSourceID.FromHash? = null
     private val verifiedHardwareAccounts = mutableMapOf<FactorSource, List<OlympiaAccountDetails>>()
@@ -85,7 +85,6 @@ class OlympiaImportViewModel @Inject constructor(
         addLedgerFactorSourceUseCase = addLedgerFactorSourceUseCase,
         scope = viewModelScope,
         onUseLedger = { ledgerFactorSource ->
-            sendEvent(OlympiaImportEvent.UseLedger)
             onUseLedger(ledgerFactorSource)
         }
     )
@@ -95,9 +94,10 @@ class OlympiaImportViewModel @Inject constructor(
             useLedgerDelegate.state.collect { delegateState ->
                 _state.update { uiState ->
                     val state = delegateState.addLedgerSheetState
+                    println("-----> init() addLedgerSheetState: $state")
                     uiState.copy(
                         addLedgerSheetState = state,
-                        shouldShowBottomSheet = state == AddLedgerSheetState.InputLedgerName,
+                        shouldShowSettings = state == AddLedgerSheetState.InputLedgerName,
                         waitingForLedgerResponse = delegateState.waitingForLedgerResponse,
                         recentlyConnectedLedgerDevice = delegateState.recentlyConnectedLedgerDevice,
                         uiMessage = delegateState.uiMessage
@@ -130,7 +130,7 @@ class OlympiaImportViewModel @Inject constructor(
             _state.update {
                 it.copy(
                     uiMessage = UiMessage.InfoMessage.NoAccountsForLedger,
-                    shouldShowBottomSheet = true
+                    shouldShowSettings = true
                 )
             }
             return
@@ -173,11 +173,11 @@ class OlympiaImportViewModel @Inject constructor(
                 existingAccountHashes = getProfileUseCase.currentNetworkAccountHashes()
             )
             olympiaWalletData?.let { data ->
-                this@OlympiaImportViewModel.olympiaWalletData = data
+                this@ImportLegacyWalletViewModel.olympiaWalletData = data
                 seedPhraseInputDelegate.setSeedPhraseSize(data.mnemonicWordCount)
                 val allImported = data.accountData.all { it.alreadyImported }
                 val nextPage =
-                    if (allImported) OlympiaImportUiState.Page.ImportComplete else OlympiaImportUiState.Page.AccountsToImportList
+                    if (allImported) ImportLegacyWalletUiState.Page.ImportComplete else ImportLegacyWalletUiState.Page.AccountsToImportList
                 _state.update { state ->
                     state.copy(
                         currentPage = nextPage,
@@ -214,11 +214,11 @@ class OlympiaImportViewModel @Inject constructor(
                 _state.update {
                     it.copy(
                         currentPage = nextPage,
-                        hideBack = nextPage == OlympiaImportUiState.Page.ImportComplete
+                        hideBack = nextPage == ImportLegacyWalletUiState.Page.ImportComplete
                     )
                 }
                 delay(DELAY_300_MS)
-                if (nextPage == OlympiaImportUiState.Page.MnemonicInput) {
+                if (nextPage == ImportLegacyWalletUiState.Page.MnemonicInput) {
                     if (checkIfMnemonicForSoftwareAccountsExists()) {
                         sendEvent(OlympiaImportEvent.BiometricPrompt)
                         return@launch
@@ -232,7 +232,7 @@ class OlympiaImportViewModel @Inject constructor(
     private fun backToPreviousPage() {
         viewModelScope.launch {
             val newPage = _state.value.pages.previousPage(_state.value.currentPage)
-            if (newPage == OlympiaImportUiState.Page.ScanQr) {
+            if (newPage == ImportLegacyWalletUiState.Page.ScanQr) {
                 scannedData.clear()
                 _state.update { it.copy(qrChunkInfo = null) }
             }
@@ -241,25 +241,25 @@ class OlympiaImportViewModel @Inject constructor(
         }
     }
 
-    private fun buildPages(olympiaAccounts: List<OlympiaAccountDetails>): PersistentList<OlympiaImportUiState.Page> {
+    private fun buildPages(olympiaAccounts: List<OlympiaAccountDetails>): PersistentList<ImportLegacyWalletUiState.Page> {
         val hasSoftwareAccounts = olympiaAccounts.any { it.type == OlympiaAccountType.Software }
         val hasHardwareAccounts = olympiaAccounts.any { it.type == OlympiaAccountType.Hardware }
-        var pages = listOf(OlympiaImportUiState.Page.ScanQr, OlympiaImportUiState.Page.AccountsToImportList)
+        var pages = listOf(ImportLegacyWalletUiState.Page.ScanQr, ImportLegacyWalletUiState.Page.AccountsToImportList)
         when {
             hasSoftwareAccounts -> {
-                pages = pages + listOf(OlympiaImportUiState.Page.MnemonicInput)
+                pages = pages + listOf(ImportLegacyWalletUiState.Page.MnemonicInput)
                 if (hasHardwareAccounts) {
-                    pages = pages + listOf(OlympiaImportUiState.Page.HardwareAccounts)
+                    pages = pages + listOf(ImportLegacyWalletUiState.Page.HardwareAccounts)
                 }
             }
 
             hasHardwareAccounts -> {
-                pages = pages + listOf(OlympiaImportUiState.Page.HardwareAccounts)
+                pages = pages + listOf(ImportLegacyWalletUiState.Page.HardwareAccounts)
             }
 
             else -> {}
         }
-        return (pages + listOf(OlympiaImportUiState.Page.ImportComplete)).toPersistentList()
+        return (pages + listOf(ImportLegacyWalletUiState.Page.ImportComplete)).toPersistentList()
     }
 
     fun onWordChanged(index: Int, value: String) {
@@ -297,7 +297,7 @@ class OlympiaImportViewModel @Inject constructor(
                 mnemonicWithPassphrase?.validatePublicKeysOf(softwareAccountsToMigrate) == true
             if (accountsValid) {
                 when (_state.value.pages.nextPage(_state.value.currentPage)) {
-                    OlympiaImportUiState.Page.HardwareAccounts -> proceedToNextPage()
+                    ImportLegacyWalletUiState.Page.HardwareAccounts -> proceedToNextPage()
                     else -> {
                         internalImportOlympiaAccounts()
                         proceedToNextPage()
@@ -411,8 +411,8 @@ class OlympiaImportViewModel @Inject constructor(
         return hardwareAccountsToMigrate
     }
 
-    override fun initialState(): OlympiaImportUiState {
-        return OlympiaImportUiState(
+    override fun initialState(): ImportLegacyWalletUiState {
+        return ImportLegacyWalletUiState(
             seedPhraseWords = persistentListOf(),
             pages = initialPages.toPersistentList(),
             isDeviceSecure = deviceSecurityHelper.isDeviceSecure()
@@ -428,20 +428,21 @@ class OlympiaImportViewModel @Inject constructor(
             if (useLedgerDelegate.state.first().hasP2PLinks) {
                 useLedgerDelegate.onSendAddLedgerRequest()
             } else {
+                println("-----> onImportWithLedger() addLedgerSheetState: LinkConnector")
                 _state.update {
                     it.copy(
-                        addLedgerSheetState = AddLedgerSheetState.LinkConnector,
-                        shouldShowBottomSheet = true,
+                        addLedgerSheetState = AddLedgerSheetState.AddLedgerDevice,
+                        shouldShowSettings = true,
                     )
                 }
             }
         }
     }
 
-    fun onHideBottomSheet() {
+    fun onCloseSettings() {
         viewModelScope.launch {
             _state.update {
-                it.copy(shouldShowBottomSheet = false)
+                it.copy(shouldShowSettings = false)
             }
         }
     }
@@ -449,13 +450,12 @@ class OlympiaImportViewModel @Inject constructor(
 
 sealed interface OlympiaImportEvent : OneOffEvent {
     object MoveFocusToNextWord : OlympiaImportEvent
-    data class NextPage(val page: OlympiaImportUiState.Page) : OlympiaImportEvent
-    data class PreviousPage(val page: OlympiaImportUiState.Page?) : OlympiaImportEvent
-    object UseLedger : OlympiaImportEvent
+    data class NextPage(val page: ImportLegacyWalletUiState.Page) : OlympiaImportEvent
+    data class PreviousPage(val page: ImportLegacyWalletUiState.Page?) : OlympiaImportEvent
     object BiometricPrompt : OlympiaImportEvent
 }
 
-data class OlympiaImportUiState(
+data class ImportLegacyWalletUiState(
     val pages: ImmutableList<Page> = persistentListOf(),
     val currentPage: Page = Page.ScanQr,
     val importButtonEnabled: Boolean = false,
@@ -470,10 +470,10 @@ data class OlympiaImportUiState(
     val waitingForLedgerResponse: Boolean = false,
     val verifiedLedgerDevices: ImmutableList<LedgerHardwareWalletFactorSource> = persistentListOf(),
     val recentlyConnectedLedgerDevice: LedgerDeviceUiModel? = null,
-    val addLedgerSheetState: AddLedgerSheetState = AddLedgerSheetState.Connect,
+    val addLedgerSheetState: AddLedgerSheetState = AddLedgerSheetState.AddLedgerDevice,
     val seedPhraseWords: ImmutableList<SeedPhraseInputDelegate.SeedPhraseWord> = persistentListOf(),
     val wordAutocompleteCandidates: ImmutableList<String> = persistentListOf(),
-    val shouldShowBottomSheet: Boolean = false
+    val shouldShowSettings: Boolean = false
 ) : UiState {
 
     enum class Page {
@@ -481,13 +481,17 @@ data class OlympiaImportUiState(
     }
 }
 
-private fun List<OlympiaImportUiState.Page>.nextPage(currentPage: OlympiaImportUiState.Page): OlympiaImportUiState.Page? {
+private fun List<ImportLegacyWalletUiState.Page>.nextPage(
+    currentPage: ImportLegacyWalletUiState.Page
+): ImportLegacyWalletUiState.Page? {
     val currentIndex = indexOf(currentPage)
     if (currentIndex == -1 || currentIndex == size - 1) return null
     return this[currentIndex + 1]
 }
 
-private fun List<OlympiaImportUiState.Page>.previousPage(currentPage: OlympiaImportUiState.Page): OlympiaImportUiState.Page? {
+private fun List<ImportLegacyWalletUiState.Page>.previousPage(
+    currentPage: ImportLegacyWalletUiState.Page
+): ImportLegacyWalletUiState.Page? {
     val currentIndex = indexOf(currentPage)
     if (currentIndex == -1 || currentIndex == 0) return null
     return this[currentIndex - 1]
