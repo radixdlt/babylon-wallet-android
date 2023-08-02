@@ -38,9 +38,9 @@ import rdx.works.profile.data.model.factorsources.LedgerHardwareWalletFactorSour
 @Composable
 fun ChooseLedgerDeviceSection(
     modifier: Modifier,
-    ledgerFactorSources: ImmutableList<Selectable<LedgerHardwareWalletFactorSource>>,
-    onAddLedger: () -> Unit,
-    onLedgerFactorSourceSelected: (LedgerHardwareWalletFactorSource) -> Unit,
+    ledgerDevices: ImmutableList<Selectable<LedgerHardwareWalletFactorSource>>,
+    onAddLedgerDeviceClick: () -> Unit,
+    onLedgerDeviceSelected: (LedgerHardwareWalletFactorSource) -> Unit,
 ) {
     Column(
         modifier = modifier
@@ -54,7 +54,7 @@ fun ChooseLedgerDeviceSection(
         )
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
         Text(
-            text = if (ledgerFactorSources.isEmpty()) {
+            text = if (ledgerDevices.isEmpty()) {
                 stringResource(id = com.babylon.wallet.android.R.string.ledgerHardwareDevices_navigationTitleNoSelection)
             } else {
                 stringResource(id = com.babylon.wallet.android.R.string.ledgerHardwareDevices_navigationTitleAllowSelection)
@@ -66,7 +66,7 @@ fun ChooseLedgerDeviceSection(
         )
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
         Text(
-            text = if (ledgerFactorSources.isEmpty()) {
+            text = if (ledgerDevices.isEmpty()) {
                 stringResource(id = com.babylon.wallet.android.R.string.ledgerHardwareDevices_subtitleSelectLedgerExisting)
             } else {
                 stringResource(id = com.babylon.wallet.android.R.string.ledgerHardwareDevices_subtitleSelectLedger)
@@ -77,7 +77,7 @@ fun ChooseLedgerDeviceSection(
             textAlign = TextAlign.Center
         )
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
-        if (ledgerFactorSources.isEmpty()) {
+        if (ledgerDevices.isEmpty()) {
             Text(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -92,7 +92,7 @@ fun ChooseLedgerDeviceSection(
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
             RadixPrimaryButton(
                 text = stringResource(id = com.babylon.wallet.android.R.string.ledgerHardwareDevices_addNewLedger),
-                onClick = onAddLedger,
+                onClick = onAddLedgerDeviceClick,
                 modifier = Modifier
                     .fillMaxWidth(0.7f)
                     .imePadding()
@@ -106,7 +106,7 @@ fun ChooseLedgerDeviceSection(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 items(
-                    items = ledgerFactorSources,
+                    items = ledgerDevices,
                     key = { item ->
                         item.data.id.body.value
                     },
@@ -118,11 +118,11 @@ fun ChooseLedgerDeviceSection(
                                 .fillMaxWidth()
                                 .background(RadixTheme.colors.gray5, shape = RadixTheme.shapes.roundedRectSmall)
                                 .throttleClickable {
-                                    onLedgerFactorSourceSelected(ledgerItem.data)
+                                    onLedgerDeviceSelected(ledgerItem.data)
                                 }
                                 .padding(RadixTheme.dimensions.paddingLarge),
                             selected = ledgerItem.selected,
-                            onLedgerSelected = onLedgerFactorSourceSelected
+                            onLedgerSelected = onLedgerDeviceSelected
                         )
                         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingMedium))
                     }
@@ -133,7 +133,7 @@ fun ChooseLedgerDeviceSection(
                         modifier = Modifier
                             .fillMaxWidth(0.7f)
                             .imePadding(),
-                        onClick = onAddLedger,
+                        onClick = onAddLedgerDeviceClick,
                         text = stringResource(id = com.babylon.wallet.android.R.string.ledgerHardwareDevices_addNewLedger)
                     )
                 }
@@ -148,13 +148,13 @@ fun FullscreenCircularProgressContentPreview() {
     RadixWalletTheme {
         ChooseLedgerDeviceSection(
             modifier = Modifier,
-            ledgerFactorSources = SampleDataProvider()
+            ledgerDevices = SampleDataProvider()
                 .ledgerFactorSourcesSample
                 .map {
                     Selectable(it)
                 }.toImmutableList(),
-            onAddLedger = {},
-            onLedgerFactorSourceSelected = {}
+            onAddLedgerDeviceClick = {},
+            onLedgerDeviceSelected = {}
         )
     }
 }
