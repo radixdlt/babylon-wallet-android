@@ -4,206 +4,218 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.babylon.wallet.android.designsystem.R
+import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
+import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.domain.model.Selectable
 import com.babylon.wallet.android.domain.model.toProfileLedgerDeviceModel
 import com.babylon.wallet.android.presentation.common.FullscreenCircularProgressContent
 import com.babylon.wallet.android.presentation.common.UiMessage
-import com.babylon.wallet.android.presentation.model.AddLedgerSheetState
+import com.babylon.wallet.android.presentation.settings.linkedconnectors.AddLinkConnectorScreen
+import com.babylon.wallet.android.presentation.settings.linkedconnectors.AddLinkConnectorViewModel
 import com.babylon.wallet.android.presentation.ui.composables.AddLedgerContent
 import com.babylon.wallet.android.presentation.ui.composables.BackIconType
 import com.babylon.wallet.android.presentation.ui.composables.ChooseLedgerDeviceSection
-import com.babylon.wallet.android.presentation.ui.composables.LinkConnectorSection
+import com.babylon.wallet.android.presentation.ui.composables.LinkConnectorScreen
+import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUiMessageHandler
 import kotlinx.collections.immutable.ImmutableList
-import kotlinx.collections.immutable.persistentListOf
+import kotlinx.collections.immutable.toPersistentList
+import kotlinx.coroutines.launch
 import rdx.works.profile.data.model.factorsources.LedgerHardwareWalletFactorSource
 
 @Composable
 fun CreateAccountWithLedgerScreen(
     viewModel: CreateAccountWithLedgerViewModel,
+    addLinkConnectorViewModel: AddLinkConnectorViewModel,
     onBackClick: () -> Unit,
     modifier: Modifier = Modifier,
     goBackToCreateAccount: () -> Unit,
-    onAddP2PLink: () -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
-    if (state.loading) {
-        FullscreenCircularProgressContent()
-    } else {
-        LaunchedEffect(Unit) {
-            viewModel.oneOffEvent.collect { event ->
-                when (event) {
-                    CreateAccountWithLedgerEvent.DerivedPublicKeyForAccount -> goBackToCreateAccount()
-                }
+    val addLinkConnectorState by addLinkConnectorViewModel.state.collectAsStateWithLifecycle()
+    val coroutineScope = rememberCoroutineScope()
+
+    LaunchedEffect(Unit) {
+        viewModel.oneOffEvent.collect { event ->
+            when (event) {
+                CreateAccountWithLedgerEvent.DerivedPublicKeyForAccount -> goBackToCreateAccount()
             }
         }
-        CreateAccountWithLedgerContent(
-            modifier = modifier,
-            onBackClick = onBackClick,
-            ledgerFactorSources = state.ledgerFactorSources,
-            onLedgerFactorSourceSelected = viewModel::onLedgerFactorSourceSelected,
-            onSendAddLedgerRequest = viewModel::onSendAddLedgerRequest,
-            addLedgerSheetState = state.addLedgerSheetState,
-            onConfirmLedgerName = viewModel::onConfirmLedgerName,
-            onAddLedgerClick = viewModel::onAddLedgerClick,
-            onAddLedgerCloseClick = viewModel::onAddLedgerCloseClick,
-            onUseLedger = viewModel::onUseLedger,
-            waitingForLedgerResponse = state.waitingForLedgerResponse,
-            mode = state.mode,
-            onAddP2PLink = onAddP2PLink,
-            deviceModel = state.recentlyConnectedLedgerDevice?.model?.toProfileLedgerDeviceModel()?.value,
-            uiMessage = state.uiMessage,
-            onMessageShown = viewModel::onMessageShown
-        )
+    }
+
+    when (state.showContent) {
+        CreateAccountWithLedgerUiState.ShowContent.ChooseLedger -> {
+            ChooseLedgerDeviceContent(
+                modifier = modifier,
+                onBackClick = onBackClick,
+                ledgerDevices = state.ledgerDevices,
+                waitingForLedgerResponse = state.waitingForLedgerResponse,
+                onLedgerDeviceSelected = viewModel::onLedgerDeviceSelected,
+                onAddLedgerDeviceClick = viewModel::onAddLedgerDeviceClick,
+                onUseLedgerContinueClick = viewModel::onUseLedgerContinueClick,
+                uiMessage = state.uiMessage,
+                onMessageShown = viewModel::onMessageShown
+            )
+        }
+
+        CreateAccountWithLedgerUiState.ShowContent.LinkNewConnector -> {
+            LinkConnectorScreen(
+                modifier = Modifier.fillMaxSize(),
+                onLinkConnectorClick = viewModel::onLinkConnectorClick,
+                onBackClick = viewModel::onCloseClick
+            )
+        }
+
+        CreateAccountWithLedgerUiState.ShowContent.AddLinkConnector -> {
+            AddLinkConnectorScreen(
+                modifier = Modifier,
+                showContent = addLinkConnectorState.showContent,
+                isLoading = addLinkConnectorState.isLoading,
+                onQrCodeScanned = addLinkConnectorViewModel::onQrCodeScanned,
+                onConnectorDisplayNameChanged = addLinkConnectorViewModel::onConnectorDisplayNameChanged,
+                connectorDisplayName = addLinkConnectorState.connectorDisplayName,
+                isNewConnectorContinueButtonEnabled = addLinkConnectorState.isContinueButtonEnabled,
+                onNewConnectorContinueClick = {
+                    coroutineScope.launch {
+                        addLinkConnectorViewModel.onContinueClick()
+                        viewModel.onAddLedgerDeviceClick()
+                    }
+                },
+                onNewConnectorCloseClick = {
+                    addLinkConnectorViewModel.onCloseClick()
+                    viewModel.onCloseClick()
+                }
+            )
+        }
+
+        CreateAccountWithLedgerUiState.ShowContent.AddLedger -> {
+            Box(
+                modifier = modifier
+                    .navigationBarsPadding()
+                    .fillMaxSize()
+            ) {
+                AddLedgerContent(
+                    modifier = Modifier,
+                    deviceModel = state.recentlyConnectedLedgerDevice?.model?.toProfileLedgerDeviceModel()?.value,
+                    onSendAddLedgerRequest = viewModel::onSendAddLedgerRequest,
+                    addLedgerSheetState = state.addLedgerSheetState,
+                    onConfirmLedgerName = {
+                        viewModel.onConfirmLedgerName(it)
+                    },
+                    backIconType = BackIconType.Back,
+                    onClose = viewModel::onCloseClick,
+                    waitingForLedgerResponse = state.waitingForLedgerResponse
+                )
+                SnackbarUiMessageHandler(
+                    message = state.uiMessage,
+                    onMessageShown = viewModel::onMessageShown
+                )
+            }
+        }
     }
 }
 
 @Composable
-fun CreateAccountWithLedgerContent(
+private fun ChooseLedgerDeviceContent(
     modifier: Modifier,
-    onBackClick: () -> Unit,
-    ledgerFactorSources: ImmutableList<Selectable<LedgerHardwareWalletFactorSource>>,
-    onLedgerFactorSourceSelected: (LedgerHardwareWalletFactorSource) -> Unit,
-    onSendAddLedgerRequest: () -> Unit,
-    addLedgerSheetState: AddLedgerSheetState,
-    onConfirmLedgerName: (String) -> Unit,
-    onAddLedgerClick: () -> Unit,
-    onAddLedgerCloseClick: () -> Unit,
-    onUseLedger: () -> Unit,
+    ledgerDevices: ImmutableList<Selectable<LedgerHardwareWalletFactorSource>>,
     waitingForLedgerResponse: Boolean,
-    mode: CreateAccountWithLedgerMode,
-    onAddP2PLink: () -> Unit,
-    deviceModel: String?,
+    onLedgerDeviceSelected: (LedgerHardwareWalletFactorSource) -> Unit,
+    onUseLedgerContinueClick: () -> Unit,
+    onAddLedgerDeviceClick: () -> Unit,
     uiMessage: UiMessage?,
-    onMessageShown: () -> Unit
+    onMessageShown: () -> Unit,
+    onBackClick: () -> Unit
 ) {
-    BackHandler {
-        onBackClick()
-    }
+    BackHandler { onBackClick() }
+
     Box(
         modifier = modifier
             .navigationBarsPadding()
             .background(RadixTheme.colors.defaultBackground)
             .fillMaxSize()
     ) {
-        val contentModifier = Modifier
-            .fillMaxSize()
-            .padding(
-                horizontal = RadixTheme.dimensions.paddingLarge,
-                vertical = RadixTheme.dimensions.paddingDefault
-            )
         Column(
             modifier = Modifier.fillMaxSize()
         ) {
-            if (mode != CreateAccountWithLedgerMode.AddLedger) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(
-                            start = RadixTheme.dimensions.paddingDefault,
-                            top = RadixTheme.dimensions.paddingDefault
-                        )
-                ) {
-                    IconButton(onClick = onBackClick) {
-                        Icon(
-                            painterResource(id = R.drawable.ic_close),
-                            tint = RadixTheme.colors.gray1,
-                            contentDescription = "navigate back"
-                        )
-                    }
-                }
-            }
-            when (mode) {
-                CreateAccountWithLedgerMode.LinkConnector -> {
-                    LinkConnectorSection(contentModifier, onAddP2PLink)
-                }
-                CreateAccountWithLedgerMode.ChooseLedger -> {
-                    ChooseLedgerDeviceSection(
-                        modifier = contentModifier.weight(1f),
-                        ledgerFactorSources = ledgerFactorSources,
-                        onAddLedger = onAddLedgerClick,
-                        onLedgerFactorSourceSelected = onLedgerFactorSourceSelected
+            RadixCenteredTopAppBar(
+                title = stringResource(id = R.string.empty),
+                onBackClick = onBackClick,
+                contentColor = RadixTheme.colors.gray1,
+                modifier = Modifier
+                    .background(RadixTheme.colors.defaultBackground)
+                    .padding(
+                        start = RadixTheme.dimensions.paddingMedium,
+                        top = RadixTheme.dimensions.paddingMedium
+                    ),
+                backIconType = BackIconType.Close
+            )
+            ChooseLedgerDeviceSection(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(
+                        horizontal = RadixTheme.dimensions.paddingLarge,
+                        vertical = RadixTheme.dimensions.paddingDefault
                     )
-                    RadixPrimaryButton(
-                        text = stringResource(id = com.babylon.wallet.android.R.string.ledgerHardwareDevices_continueWithLedger),
-                        onClick = onUseLedger,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(RadixTheme.dimensions.paddingLarge)
-                            .imePadding(),
-                        enabled = ledgerFactorSources.any { it.selected }
-                    )
-                }
-                CreateAccountWithLedgerMode.AddLedger -> {
-                    AddLedgerContent(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(RadixTheme.dimensions.paddingDefault),
-                        deviceModel = deviceModel,
-                        onSendAddLedgerRequest = onSendAddLedgerRequest,
-                        addLedgerSheetState = addLedgerSheetState,
-                        onConfirmLedgerName = {
-                            onConfirmLedgerName(it)
-                        },
-                        backIconType = BackIconType.Back,
-                        onClose = onAddLedgerCloseClick,
-                        waitingForLedgerResponse = waitingForLedgerResponse,
-                        onAddP2PLink = onAddP2PLink
-                    )
-                }
-            }
-        }
-        if (waitingForLedgerResponse) {
-            FullscreenCircularProgressContent()
+                    .weight(1f),
+                ledgerDevices = ledgerDevices,
+                onAddLedgerDeviceClick = onAddLedgerDeviceClick,
+                onLedgerDeviceSelected = onLedgerDeviceSelected
+            )
+            RadixPrimaryButton(
+                text = stringResource(id = R.string.ledgerHardwareDevices_continueWithLedger),
+                onClick = onUseLedgerContinueClick,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(RadixTheme.dimensions.paddingSemiLarge)
+                    .imePadding(),
+                enabled = ledgerDevices.any { it.selected }
+            )
         }
         SnackbarUiMessageHandler(
             message = uiMessage,
             onMessageShown = onMessageShown
         )
     }
+    if (waitingForLedgerResponse) {
+        FullscreenCircularProgressContent()
+    }
 }
 
 @Preview(showBackground = true)
 @Composable
-fun CreateAccountWithLedgerContentPreview() {
+fun CreateAccountWithLedgerScreenPreview() {
     RadixWalletTheme {
-        CreateAccountWithLedgerContent(
+        ChooseLedgerDeviceContent(
             modifier = Modifier.fillMaxSize(),
-            onBackClick = {},
-            ledgerFactorSources = persistentListOf(),
-            onLedgerFactorSourceSelected = {},
-            onSendAddLedgerRequest = {},
-            addLedgerSheetState = AddLedgerSheetState.Connect,
-            onConfirmLedgerName = {},
-            onAddLedgerClick = {},
-            onAddLedgerCloseClick = {},
-            onUseLedger = {},
+            ledgerDevices = SampleDataProvider()
+                .ledgerFactorSourcesSample
+                .map {
+                    Selectable(it, false)
+                }.toPersistentList(),
             waitingForLedgerResponse = false,
-            mode = CreateAccountWithLedgerMode.ChooseLedger,
-            onAddP2PLink = {},
-            deviceModel = null,
+            onLedgerDeviceSelected = {},
+            onUseLedgerContinueClick = {},
+            onAddLedgerDeviceClick = {},
             uiMessage = null,
-            onMessageShown = {}
+            onMessageShown = {},
+            onBackClick = {}
         )
     }
 }

@@ -11,7 +11,6 @@ import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.UUIDGenerator
@@ -23,7 +22,6 @@ import rdx.works.profile.domain.AddLedgerFactorSourceUseCase
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.factorSourceById
 import rdx.works.profile.domain.ledgerFactorSources
-import rdx.works.profile.domain.p2pLinks
 
 class CreateLedgerDelegate(
     private val getProfileUseCase: GetProfileUseCase,
@@ -34,20 +32,11 @@ class CreateLedgerDelegate(
 
     init {
         scope.launch {
-            combine(getProfileUseCase.ledgerFactorSources, getProfileUseCase.p2pLinks) { ledgerFactorSources, p2pLinks ->
-                ledgerFactorSources to p2pLinks.isNotEmpty()
-            }.collect { factorSourcesToP2pLinksExist ->
+            getProfileUseCase.ledgerFactorSources.collect { ledgerDevices ->
                 _state.update { state ->
                     state.copy(
-                        ledgerFactorSources = factorSourcesToP2pLinksExist.first.toPersistentList(),
-                        hasP2pLinks = factorSourcesToP2pLinksExist.second,
-                        selectedFactorSourceID = state.selectedFactorSourceID
-                            ?: factorSourcesToP2pLinksExist.first.firstOrNull()?.id,
-                        addLedgerSheetState = if (factorSourcesToP2pLinksExist.second) {
-                            AddLedgerSheetState.Connect
-                        } else {
-                            AddLedgerSheetState.LinkConnector
-                        }
+                        ledgerDevices = ledgerDevices.toPersistentList(),
+                        selectedLedgerDeviceId = state.selectedLedgerDeviceId ?: ledgerDevices.firstOrNull()?.id,
                     )
                 }
             }
@@ -60,7 +49,7 @@ class CreateLedgerDelegate(
 
     fun onLedgerFactorSourceSelected(ledgerFactorSource: LedgerHardwareWalletFactorSource) {
         _state.update { state ->
-            state.copy(selectedFactorSourceID = ledgerFactorSource.id)
+            state.copy(selectedLedgerDeviceId = ledgerFactorSource.id)
         }
     }
 
@@ -90,7 +79,7 @@ class CreateLedgerDelegate(
                     _state.update { state ->
                         existingLedgerFactorSource as LedgerHardwareWalletFactorSource
                         state.copy(
-                            addLedgerSheetState = AddLedgerSheetState.Connect,
+                            addLedgerSheetState = AddLedgerSheetState.AddLedgerDevice,
                             uiMessage = UiMessage.InfoMessage.LedgerAlreadyExist(existingLedgerFactorSource.hint.name),
                             recentlyConnectedLedgerDevice = LedgerDeviceUiModel(
                                 id = deviceInfoResponse.deviceId,
@@ -129,8 +118,8 @@ class CreateLedgerDelegate(
                 }
                 _state.update { state ->
                     state.copy(
-                        selectedFactorSourceID = ledgerAddResult.ledgerFactorSource.id,
-                        addLedgerSheetState = AddLedgerSheetState.Connect,
+                        selectedLedgerDeviceId = ledgerAddResult.ledgerFactorSource.id,
+                        addLedgerSheetState = AddLedgerSheetState.AddLedgerDevice,
                         uiMessage = message
                     )
                 }
@@ -147,10 +136,9 @@ class CreateLedgerDelegate(
 
     data class CreateLedgerDelegateState(
         val loading: Boolean = false,
-        val ledgerFactorSources: ImmutableList<LedgerHardwareWalletFactorSource> = persistentListOf(),
-        val selectedFactorSourceID: FactorSource.FactorSourceID.FromHash? = null,
-        val hasP2pLinks: Boolean = false,
-        val addLedgerSheetState: AddLedgerSheetState = AddLedgerSheetState.Connect,
+        val ledgerDevices: ImmutableList<LedgerHardwareWalletFactorSource> = persistentListOf(),
+        val selectedLedgerDeviceId: FactorSource.FactorSourceID.FromHash? = null,
+        val addLedgerSheetState: AddLedgerSheetState = AddLedgerSheetState.AddLedgerDevice,
         val waitingForLedgerResponse: Boolean = false,
         val recentlyConnectedLedgerDevice: LedgerDeviceUiModel? = null,
         val uiMessage: UiMessage? = null

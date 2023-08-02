@@ -17,7 +17,10 @@ fun NavController.createAccountWithLedger() {
 }
 
 @OptIn(ExperimentalAnimationApi::class)
-fun NavGraphBuilder.createAccountWithLedger(onBackClick: () -> Unit, goBackToCreateAccount: () -> Unit, onAddP2PLink: () -> Unit) {
+fun NavGraphBuilder.createAccountWithLedger(
+    onBackClick: () -> Unit,
+    goBackToCreateAccount: () -> Unit
+) {
     markAsHighPriority(ROUTE_CREATE_ACCOUNT_WITH_LEDGER)
     composable(
         route = ROUTE_CREATE_ACCOUNT_WITH_LEDGER,
@@ -30,9 +33,9 @@ fun NavGraphBuilder.createAccountWithLedger(onBackClick: () -> Unit, goBackToCre
     ) {
         CreateAccountWithLedgerScreen(
             viewModel = hiltViewModel(),
+            addLinkConnectorViewModel = hiltViewModel(),
             onBackClick = onBackClick,
-            goBackToCreateAccount = goBackToCreateAccount,
-            onAddP2PLink = onAddP2PLink
+            goBackToCreateAccount = goBackToCreateAccount
         )
     }
 }

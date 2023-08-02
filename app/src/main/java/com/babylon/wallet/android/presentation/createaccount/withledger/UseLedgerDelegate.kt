@@ -78,7 +78,7 @@ class UseLedgerDelegate(
                     _state.update { state ->
                         existingLedgerFactorSource as LedgerHardwareWalletFactorSource
                         state.copy(
-                            addLedgerSheetState = AddLedgerSheetState.Connect,
+                            addLedgerSheetState = AddLedgerSheetState.AddLedgerDevice,
                             waitingForLedgerResponse = false,
                             usedLedgerFactorSources = (
                                 state.usedLedgerFactorSources +
@@ -110,7 +110,7 @@ class UseLedgerDelegate(
                 )
                 _state.update { state ->
                     state.copy(
-                        addLedgerSheetState = AddLedgerSheetState.Connect,
+                        addLedgerSheetState = AddLedgerSheetState.AddLedgerDevice,
                         usedLedgerFactorSources = (state.usedLedgerFactorSources + result.ledgerFactorSource).toPersistentList()
                     )
                 }
@@ -131,7 +131,7 @@ class UseLedgerDelegate(
         val usedLedgerFactorSources: ImmutableList<LedgerHardwareWalletFactorSource> = persistentListOf(),
         val hasLedgerDevices: Boolean = false,
         val hasP2PLinks: Boolean = false,
-        val addLedgerSheetState: AddLedgerSheetState = AddLedgerSheetState.Connect,
+        val addLedgerSheetState: AddLedgerSheetState = AddLedgerSheetState.AddLedgerDevice,
         val waitingForLedgerResponse: Boolean = false,
         val recentlyConnectedLedgerDevice: LedgerDeviceUiModel? = null,
         val uiMessage: UiMessage? = null
