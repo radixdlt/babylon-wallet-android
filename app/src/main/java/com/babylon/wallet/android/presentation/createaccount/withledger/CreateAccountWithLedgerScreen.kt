@@ -28,7 +28,7 @@ import com.babylon.wallet.android.presentation.common.FullscreenCircularProgress
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.settings.linkedconnectors.AddLinkConnectorScreen
 import com.babylon.wallet.android.presentation.settings.linkedconnectors.AddLinkConnectorViewModel
-import com.babylon.wallet.android.presentation.ui.composables.AddLedgerContent
+import com.babylon.wallet.android.presentation.ui.composables.AddLedgerDeviceScreen
 import com.babylon.wallet.android.presentation.ui.composables.BackIconType
 import com.babylon.wallet.android.presentation.ui.composables.ChooseLedgerDeviceSection
 import com.babylon.wallet.android.presentation.ui.composables.LinkConnectorScreen
@@ -110,7 +110,7 @@ fun CreateAccountWithLedgerScreen(
                     .navigationBarsPadding()
                     .fillMaxSize()
             ) {
-                AddLedgerContent(
+                AddLedgerDeviceScreen(
                     modifier = Modifier,
                     deviceModel = state.recentlyConnectedLedgerDevice?.model?.toProfileLedgerDeviceModel()?.value,
                     onSendAddLedgerRequest = viewModel::onSendAddLedgerRequest,

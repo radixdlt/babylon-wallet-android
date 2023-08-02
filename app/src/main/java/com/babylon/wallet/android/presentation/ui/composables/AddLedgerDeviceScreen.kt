@@ -36,7 +36,7 @@ import com.babylon.wallet.android.presentation.common.FullscreenCircularProgress
 import com.babylon.wallet.android.presentation.model.AddLedgerSheetState
 
 @Composable
-fun AddLedgerContent(
+fun AddLedgerDeviceScreen(
     modifier: Modifier,
     deviceModel: String?,
     onSendAddLedgerRequest: () -> Unit,
@@ -181,9 +181,9 @@ fun AddLedgerContent(
 
 @Preview(showBackground = true)
 @Composable
-fun AddLedgerDeviceContentPreview() {
+fun AddLedgerDeviceScreenPreview() {
     RadixWalletTheme {
-        AddLedgerContent(
+        AddLedgerDeviceScreen(
             modifier = Modifier.fillMaxSize(),
             deviceModel = "device model",
             onSendAddLedgerRequest = {},
@@ -200,7 +200,7 @@ fun AddLedgerDeviceContentPreview() {
 @Composable
 fun AddLedgerDeviceContentPreview3() {
     RadixWalletTheme {
-        AddLedgerContent(
+        AddLedgerDeviceScreen(
             modifier = Modifier.fillMaxSize(),
             deviceModel = "device model",
             onSendAddLedgerRequest = {},

@@ -39,7 +39,7 @@ import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.model.AddLedgerSheetState
 import com.babylon.wallet.android.presentation.settings.linkedconnectors.AddLinkConnectorScreen
 import com.babylon.wallet.android.presentation.settings.linkedconnectors.AddLinkConnectorViewModel
-import com.babylon.wallet.android.presentation.ui.composables.AddLedgerContent
+import com.babylon.wallet.android.presentation.ui.composables.AddLedgerDeviceScreen
 import com.babylon.wallet.android.presentation.ui.composables.BackIconType
 import com.babylon.wallet.android.presentation.ui.composables.LedgerListItem
 import com.babylon.wallet.android.presentation.ui.composables.LinkConnectorScreen
@@ -160,7 +160,7 @@ private fun AddLedgerDeviceScreen(
     onMessageShown: () -> Unit
 ) {
     Box {
-        AddLedgerContent(
+        AddLedgerDeviceScreen(
             modifier = modifier,
             deviceModel = deviceModel,
             onSendAddLedgerRequest = onSendAddLedgerRequest,

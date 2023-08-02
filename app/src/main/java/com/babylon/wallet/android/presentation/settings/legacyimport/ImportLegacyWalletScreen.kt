@@ -78,7 +78,7 @@ import com.babylon.wallet.android.presentation.ui.MockUiProvider.accountItemUiMo
 import com.babylon.wallet.android.presentation.ui.MockUiProvider.olympiaAccountsList
 import com.babylon.wallet.android.presentation.ui.MockUiProvider.seedPhraseWords
 import com.babylon.wallet.android.presentation.ui.composables.AccountCardWithStack
-import com.babylon.wallet.android.presentation.ui.composables.AddLedgerContent
+import com.babylon.wallet.android.presentation.ui.composables.AddLedgerDeviceScreen
 import com.babylon.wallet.android.presentation.ui.composables.BackIconType
 import com.babylon.wallet.android.presentation.ui.composables.InfoLink
 import com.babylon.wallet.android.presentation.ui.composables.LedgerListItem
@@ -296,7 +296,7 @@ private fun ImportLegacyWalletContent(
                 )
             }
             if (shouldShowAddLedgerDeviceScreen) {
-                AddLedgerContent(
+                AddLedgerDeviceScreen(
                     modifier = Modifier
                         .fillMaxSize(),
                     deviceModel = deviceModel,
