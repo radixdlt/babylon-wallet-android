@@ -26,10 +26,12 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
 import com.babylon.wallet.android.designsystem.R
 import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
 import com.babylon.wallet.android.designsystem.composable.RadixTextField
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
+import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.presentation.common.FullscreenCircularProgressContent
 import com.babylon.wallet.android.presentation.model.AddLedgerSheetState
 
@@ -42,8 +44,7 @@ fun AddLedgerContent(
     onConfirmLedgerName: (String) -> Unit,
     backIconType: BackIconType,
     onClose: () -> Unit,
-    waitingForLedgerResponse: Boolean,
-    onAddP2PLink: () -> Unit
+    waitingForLedgerResponse: Boolean
 ) {
     Box(modifier = modifier) {
         Column(
@@ -63,19 +64,22 @@ fun AddLedgerContent(
             )
             Column(
                 modifier = Modifier
-                    .padding(RadixTheme.dimensions.paddingDefault)
+                    .padding(
+                        horizontal = RadixTheme.dimensions.paddingDefault,
+                        vertical = RadixTheme.dimensions.paddingXLarge
+                    )
                     .verticalScroll(rememberScrollState()),
                 verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingSmall),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 when (addLedgerSheetState) {
-                    AddLedgerSheetState.Connect -> {
+                    AddLedgerSheetState.AddLedgerDevice -> {
                         Icon(
                             painterResource(id = R.drawable.ic_hardware_ledger_big),
                             tint = Color.Unspecified,
                             contentDescription = null
                         )
-                        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
+                        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXXLarge))
                         Text(
                             text = stringResource(id = com.babylon.wallet.android.R.string.ledgerHardwareDevices_addNewLedger),
                             style = RadixTheme.typography.title,
@@ -83,7 +87,7 @@ fun AddLedgerContent(
                             overflow = TextOverflow.Ellipsis,
                             textAlign = TextAlign.Center
                         )
-                        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
+                        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
                         Text(
                             text = stringResource(id = com.babylon.wallet.android.R.string.addLedgerDevice_addDevice_body1),
                             style = RadixTheme.typography.body1Regular,
@@ -166,15 +170,45 @@ fun AddLedgerContent(
                                 .imePadding()
                         )
                     }
-
-                    AddLedgerSheetState.LinkConnector -> {
-                        LinkConnectorSection(modifier = Modifier.fillMaxSize(), onAddP2PLink = onAddP2PLink)
-                    }
                 }
             }
         }
         if (waitingForLedgerResponse) {
             FullscreenCircularProgressContent()
         }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun AddLedgerDeviceContentPreview() {
+    RadixWalletTheme {
+        AddLedgerContent(
+            modifier = Modifier.fillMaxSize(),
+            deviceModel = "device model",
+            onSendAddLedgerRequest = {},
+            addLedgerSheetState = AddLedgerSheetState.AddLedgerDevice,
+            onConfirmLedgerName = { },
+            backIconType = BackIconType.Back,
+            onClose = {},
+            waitingForLedgerResponse = false
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun AddLedgerDeviceContentPreview3() {
+    RadixWalletTheme {
+        AddLedgerContent(
+            modifier = Modifier.fillMaxSize(),
+            deviceModel = "device model",
+            onSendAddLedgerRequest = {},
+            addLedgerSheetState = AddLedgerSheetState.InputLedgerName,
+            onConfirmLedgerName = { },
+            backIconType = BackIconType.Back,
+            onClose = {},
+            waitingForLedgerResponse = false
+        )
     }
 }
