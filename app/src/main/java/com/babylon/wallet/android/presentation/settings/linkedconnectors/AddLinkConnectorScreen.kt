@@ -154,7 +154,6 @@ private fun ScanQrCode(
                 .clip(RadixTheme.shapes.roundedRectMedium),
             isVisible = true,
             onQrCodeDetected = {
-                println("-----> onQrCodeDetected")
                 onQrCodeScanned(it)
             }
         )

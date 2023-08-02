@@ -94,7 +94,6 @@ class ImportLegacyWalletViewModel @Inject constructor(
             useLedgerDelegate.state.collect { delegateState ->
                 _state.update { uiState ->
                     val state = delegateState.addLedgerSheetState
-                    println("-----> init() addLedgerSheetState: $state")
                     uiState.copy(
                         addLedgerSheetState = state,
                         shouldShowSettings = state == AddLedgerSheetState.InputLedgerName,
