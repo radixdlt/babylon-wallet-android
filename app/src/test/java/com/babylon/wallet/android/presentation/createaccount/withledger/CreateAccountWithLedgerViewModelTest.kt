@@ -132,30 +132,6 @@ internal class CreateAccountWithLedgerViewModelTest : StateViewModelTest<CreateA
     }
 
     @Test
-    fun `adding ledger and skipping name`() = runTest {
-        val vm = vm.value
-        advanceUntilIdle()
-        vm.onSendAddLedgerRequest()
-        advanceUntilIdle()
-        val ledgerName = mutableListOf<String?>()
-        vm.onSkipLedgerName()
-        advanceUntilIdle()
-        vm.state.test {
-            val item = expectMostRecentItem()
-            println("item = $item")
-            assert(item.addLedgerSheetState == AddLedgerSheetState.AddLedgerDevice)
-        }
-        coVerify(exactly = 1) {
-            addLedgerFactorSourceUseCase(
-                ledgerId = FactorSource.HexCoded32Bytes(firstDeviceId),
-                model = any(),
-                name = captureNullable(ledgerName)
-            )
-        }
-        assert(ledgerName.first() == null)
-    }
-
-    @Test
     fun `use ledger to create account`() = runTest {
         val vm = vm.value
         advanceUntilIdle()

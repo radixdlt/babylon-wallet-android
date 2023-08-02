@@ -43,11 +43,7 @@ class AddLedgerDeviceDelegate(
         }
     }
 
-    fun onSkipLedgerName() {
-        addLedgerFactorSource()
-    }
-
-    fun onLedgerFactorSourceSelected(ledgerFactorSource: LedgerHardwareWalletFactorSource) {
+    fun onLedgerDeviceSelected(ledgerFactorSource: LedgerHardwareWalletFactorSource) {
         _state.update { state ->
             state.copy(selectedLedgerDeviceId = ledgerFactorSource.id)
         }

@@ -73,15 +73,11 @@ class CreateAccountWithLedgerViewModel @Inject constructor(
     override fun initialState(): CreateAccountWithLedgerUiState = CreateAccountWithLedgerUiState()
 
     fun onLedgerDeviceSelected(ledgerFactorSource: LedgerHardwareWalletFactorSource) {
-        addLedgerDeviceDelegate.onLedgerFactorSourceSelected(ledgerFactorSource)
+        addLedgerDeviceDelegate.onLedgerDeviceSelected(ledgerFactorSource)
     }
 
     fun onSendAddLedgerRequest() {
         addLedgerDeviceDelegate.onSendAddLedgerRequest()
-    }
-
-    fun onSkipLedgerName() {
-        addLedgerDeviceDelegate.onSkipLedgerName()
     }
 
     fun onUseLedgerContinueClick() {
