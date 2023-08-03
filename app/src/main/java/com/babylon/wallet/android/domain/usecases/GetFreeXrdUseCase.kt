@@ -41,10 +41,11 @@ class GetFreeXrdUseCase @Inject constructor(
             val gateway = getCurrentGatewayUseCase()
             networkInfoRepository.getFaucetComponentAddress(gateway.url).asKotlinResult().fold(
                 onSuccess = { faucetComponentAddress ->
+                    val lockFee = BigDecimal.valueOf(TransactionConfig.DEFAULT_LOCK_FEE)
                     val manifest = ManifestBuilder()
                         .lockFee(
                             fromAddress = Address(faucetComponentAddress),
-                            fee = Decimal(BigDecimal.valueOf(TransactionConfig.DEFAULT_LOCK_FEE).toPlainString())
+                            fee = Decimal(lockFee.toPlainString())
                         )
                         .freeXrd(
                             faucetAddress = Address(faucetComponentAddress)
@@ -69,6 +70,7 @@ class GetFreeXrdUseCase @Inject constructor(
                             )
                             transactionClient.signAndSubmitTransaction(
                                 request = request,
+                                lockFee = lockFee,
                                 deviceBiometricAuthenticationProvider = { true }
                             ).onSuccess { txId ->
                                 pollTransactionStatusUseCase(txId).onValue {

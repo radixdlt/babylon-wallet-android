@@ -49,6 +49,7 @@ import com.babylon.wallet.android.presentation.ui.composables.ImageSize
 import com.babylon.wallet.android.presentation.ui.composables.rememberImageUrl
 import com.google.accompanist.drawablepainter.rememberDrawablePainter
 import rdx.works.core.displayableQuantity
+import rdx.works.profile.data.model.pernetwork.Network
 
 @Composable
 fun TransactionAccountCard(
@@ -59,38 +60,10 @@ fun TransactionAccountCard(
         modifier = modifier,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Row(
-            horizontalArrangement = Arrangement.SpaceBetween,
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(
-                    brush = when (account) {
-                        is Other -> SolidColor(RadixTheme.colors.gray2)
-                        is Owned -> Brush.linearGradient(getAccountGradientColorsFor(account.account.appearanceID))
-                    },
-                    shape = RadixTheme.shapes.roundedRectTopMedium
-                )
-                .padding(RadixTheme.dimensions.paddingMedium),
-            verticalAlignment = CenterVertically
-        ) {
-            Text(
-                text = when (account) {
-                    is Other -> stringResource(id = com.babylon.wallet.android.R.string.transactionReview_externalAccountName)
-                    is Owned -> account.account.displayName
-                },
-                style = RadixTheme.typography.body1Header,
-                maxLines = 1,
-                modifier = Modifier.weight(1f, false),
-                color = RadixTheme.colors.white
-            )
-            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSmall))
-            ActionableAddressView(
-                address = account.address,
-                textStyle = RadixTheme.typography.body2Regular,
-                textColor = RadixTheme.colors.white,
-                iconColor = RadixTheme.colors.white
-            )
-        }
+        TransactionAccountCardHeader(
+            account = account,
+            shape = RadixTheme.shapes.roundedRectTopMedium
+        )
 
         val amountTransferables = remember(account.resources) {
             account.resources.filter { it.transferable is TransferableResource.Amount }
@@ -135,6 +108,46 @@ fun TransactionAccountCard(
                 )
             }
         }
+    }
+}
+
+@Composable
+fun TransactionAccountCardHeader(
+    modifier: Modifier = Modifier,
+    account: AccountWithTransferableResources,
+    shape: Shape = RadixTheme.shapes.roundedRectTopMedium
+) {
+    Row(
+        horizontalArrangement = Arrangement.SpaceBetween,
+        modifier = modifier
+            .fillMaxWidth()
+            .background(
+                brush = when (account) {
+                    is Other -> SolidColor(RadixTheme.colors.gray2)
+                    is Owned -> Brush.linearGradient(getAccountGradientColorsFor(account.account.appearanceID))
+                },
+                shape = shape
+            )
+            .padding(RadixTheme.dimensions.paddingMedium),
+        verticalAlignment = CenterVertically
+    ) {
+        Text(
+            text = when (account) {
+                is Other -> stringResource(id = com.babylon.wallet.android.R.string.transactionReview_externalAccountName)
+                is Owned -> account.account.displayName
+            },
+            style = RadixTheme.typography.body1Header,
+            maxLines = 1,
+            modifier = Modifier.weight(1f, false),
+            color = RadixTheme.colors.white
+        )
+        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSmall))
+        ActionableAddressView(
+            address = account.address,
+            textStyle = RadixTheme.typography.body2Regular,
+            textColor = RadixTheme.colors.white,
+            iconColor = RadixTheme.colors.white
+        )
     }
 }
 

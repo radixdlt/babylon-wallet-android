@@ -9,7 +9,7 @@ import com.babylon.wallet.android.data.manifest.toPrettyString
 import com.babylon.wallet.android.data.transaction.DappRequestFailure
 import com.babylon.wallet.android.data.transaction.InteractionState
 import com.babylon.wallet.android.data.transaction.TransactionClient
-import com.babylon.wallet.android.data.transaction.TransactionConfig
+import com.babylon.wallet.android.data.transaction.model.FeePayerSearchResult
 import com.babylon.wallet.android.di.coroutines.ApplicationScope
 import com.babylon.wallet.android.domain.model.Badge
 import com.babylon.wallet.android.domain.model.DAppWithMetadataAndAssociatedResources
@@ -30,21 +30,23 @@ import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.presentation.transaction.TransactionApprovalViewModel.Event
 import com.babylon.wallet.android.presentation.transaction.TransactionApprovalViewModel.State
 import com.babylon.wallet.android.presentation.transaction.analysis.TransactionAnalysisDelegate
+import com.babylon.wallet.android.presentation.transaction.fees.TransactionFeesDelegate
 import com.babylon.wallet.android.presentation.transaction.guarantees.TransactionGuaranteesDelegate
 import com.babylon.wallet.android.presentation.transaction.submit.TransactionSubmitDelegate
 import com.babylon.wallet.android.utils.AppEventBus
 import com.babylon.wallet.android.utils.DeviceSecurityHelper
-import com.radixdlt.ret.TransactionManifest
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import rdx.works.core.displayableQuantity
 import rdx.works.core.mapWhen
 import rdx.works.core.ret.crypto.PrivateKey
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.gateway.GetCurrentGatewayUseCase
 import timber.log.Timber
+import java.lang.NumberFormatException
 import java.math.BigDecimal
 import java.math.RoundingMode
 import javax.inject.Inject
@@ -91,6 +93,11 @@ class TransactionApprovalViewModel @Inject constructor(
 
     private val guarantees: TransactionGuaranteesDelegate = TransactionGuaranteesDelegate(
         state = _state
+    )
+
+    private val fees: TransactionFeesDelegate = TransactionFeesDelegate(
+        state = _state,
+        getProfileUseCase = getProfileUseCase
     )
 
     private val submit: TransactionSubmitDelegate = TransactionSubmitDelegate(
@@ -158,26 +165,40 @@ class TransactionApprovalViewModel @Inject constructor(
 
     fun onGuaranteesCloseClick() = guarantees.onClose()
 
-    fun onPayerSelected(account: Network.Account) {
-        val feePayerSheet = state.value.sheetState as? State.Sheet.FeePayerChooser ?: return
-        _state.update {
-            it.copy(
-                sheetState = feePayerSheet.copy(selectedCandidate = account)
-            )
+    fun onCustomizeClick() {
+        viewModelScope.launch {
+            fees.onCustomizeClick()
         }
     }
 
-    fun onPayerConfirmed(deviceBiometricAuthenticationProvider: suspend () -> Boolean) {
-        val feePayerSheet = state.value.sheetState as? State.Sheet.FeePayerChooser ?: return
-        _state.update { it.copy(sheetState = State.Sheet.None) }
+    fun onChangeFeePayerClick() = fees.onChangeFeePayerClick()
 
-        val selectedCandidate = feePayerSheet.selectedCandidate ?: return
-        if (state.value.isLoading) {
-            viewModelScope.launch {
-                analysis.onFeePayerConfirmed(selectedCandidate, feePayerSheet.pendingManifest)
-            }
-        } else {
-            submit.onFeePayerConfirmed(selectedCandidate, feePayerSheet.pendingManifest, deviceBiometricAuthenticationProvider)
+    fun onSelectFeePayerClick() = fees.onSelectFeePayerClick()
+
+    fun onNetworkAndRoyaltyFeeChanged(networkAndRoyaltyFee: String) =
+        fees.onNetworkAndRoyaltyFeeChanged(networkAndRoyaltyFee)
+
+    fun onTipPercentageChanged(tipPercentage: String) = fees.onTipPercentageChanged(tipPercentage)
+
+    fun onViewDefaultModeClick() = fees.onViewDefaultModeClick()
+
+    fun onViewAdvancedModeClick() = fees.onViewAdvancedModeClick()
+
+    fun onPayerSelected(selectedFeePayer: Network.Account) {
+        val feePayerResult = state.value.feePayerSearchResult
+        val customizeFeesSheet = state.value.sheetState as? State.Sheet.CustomizeFees ?: return
+        _state.update {
+            it.copy(
+                feePayerSearchResult = feePayerResult?.copy(
+                    feePayerAddressFromManifest = selectedFeePayer.address,
+                    candidates = feePayerResult.candidates
+                ),
+                sheetState = customizeFeesSheet.copy(
+                    feePayerMode = State.Sheet.CustomizeFees.FeePayerMode.FeePayerSelected(
+                        feePayerCandidate = selectedFeePayer
+                    )
+                )
+            )
         }
     }
 
@@ -195,10 +216,10 @@ class TransactionApprovalViewModel @Inject constructor(
         val isRawManifestVisible: Boolean = false,
         val previewType: PreviewType,
         val fees: TransactionFees = TransactionFees(),
+        val feePayerSearchResult: FeePayerSearchResult? = null,
         val sheetState: Sheet = Sheet.None,
         val error: UiMessage? = null,
         val ephemeralNotaryPrivateKey: PrivateKey = PrivateKey.EddsaEd25519.newRandom(),
-        val networkFee: BigDecimal = TransactionConfig.NETWORK_FEE.toBigDecimal(),
         val interactionState: InteractionState? = null
     ) : UiState {
 
@@ -226,19 +247,35 @@ class TransactionApprovalViewModel @Inject constructor(
         sealed class Sheet {
             object None : Sheet()
 
-            data class FeePayerChooser(
-                val candidates: List<Network.Account>,
-                val selectedCandidate: Network.Account? = null,
-                val pendingManifest: TransactionManifest
-            ) : Sheet() {
-
-                val isSubmitEnabled: Boolean
-                    get() = selectedCandidate != null
-            }
-
             data class CustomizeGuarantees(
                 val accountsWithPredictedGuarantees: List<AccountWithPredictedGuarantee>
             ) : Sheet()
+
+            data class CustomizeFees(
+                val feePayerMode: FeePayerMode = FeePayerMode.NoFeePayerRequired,
+                val feesMode: FeesMode = FeesMode.Default
+            ) : Sheet() {
+
+                sealed interface FeePayerMode {
+                    object NoFeePayerRequired : FeePayerMode
+
+                    data class FeePayerSelected(
+                        val feePayerCandidate: Network.Account
+                    ) : FeePayerMode
+
+                    data class NoFeePayerSelected(
+                        val candidates: List<Network.Account>
+                    ) : FeePayerMode
+
+                    data class SelectFeePayer(
+                        val candidates: List<Network.Account>
+                    ) : FeePayerMode
+                }
+
+                enum class FeesMode {
+                    Default, Advanced
+                }
+            }
 
             data class Dapp(
                 val dApp: DAppWithMetadataAndAssociatedResources
@@ -384,6 +421,86 @@ fun List<AccountWithTransferableResources>.hasCustomizableGuarantees() = any { a
 }
 
 data class TransactionFees(
-    val networkFee: BigDecimal = BigDecimal.ZERO,
+    private val networkFee: BigDecimal = BigDecimal.ZERO,
+    private val royaltyFee: BigDecimal = BigDecimal.ZERO,
+    private val nonContingentFeeLock: BigDecimal = BigDecimal.ZERO,
+    private val defaultTip: BigDecimal = BigDecimal.ZERO,
+    private val networkAndRoyaltyFees: String? = null,
+    private val tipPercentage: String? = null,
     val isNetworkCongested: Boolean = false
-)
+) {
+    // ********* DEFAULT *********
+
+    val defaultNetworkFee: String
+        get() = networkFee.displayableQuantity()
+
+    val defaultRoyaltyFee: String
+        get() = royaltyFee.displayableQuantity()
+
+    val defaultTipToDisplay: String
+        get() = defaultTip.displayableQuantity()
+
+    val defaultTransactionFee: BigDecimal
+        get() = networkFee
+            .multiply(BigDecimal(MARGIN))
+            .add(royaltyFee)
+            .subtract(nonContingentFeeLock)
+
+
+    // ********* ADVANCED *********
+    /**
+     * Finalized fee to lock for the transaction
+     * the TRANSACTION FEE at the bottom should be calculated as:
+     *  "XRD to Lock for Network & Royalty Fees" + ( "Validator Tip % to Lock" x ( network fee x 1.15 ) ).
+     * And then that number is exactly what should be locked from the user's selected account.
+     */
+    val transactionFeeToLock: BigDecimal
+        get() = if (networkAndRoyaltyFees != null && tipPercentage != null) {
+            // Both tip and network&royalty fee has changed
+            val tipPercentageBigDecimal = try {
+                tipPercentage.toBigDecimal().divide(BigDecimal(100))
+            } catch (e: NumberFormatException) {
+                BigDecimal.ZERO
+            }
+            networkAndRoyaltyFees.toBigDecimal()
+                .add(
+                    tipPercentageBigDecimal
+                        .multiply(networkFee)
+                        .multiply(BigDecimal(MARGIN))
+                )
+        } else if (networkAndRoyaltyFees == null && tipPercentage != null) {
+            // Just percentage has changed
+            val tipPercentageBigDecimal = try {
+                tipPercentage.toBigDecimal().divide(BigDecimal(100))
+            } catch (e: NumberFormatException) {
+                BigDecimal.ZERO
+            }
+            defaultTransactionFee
+                .add(
+                    tipPercentageBigDecimal
+                        .multiply(networkFee)
+                        .multiply(BigDecimal(MARGIN))
+                )
+        } else if (networkAndRoyaltyFees != null && tipPercentage == null) {
+            // Just network&royalty fee has changed, tip remains 0%
+            try {
+                networkAndRoyaltyFees.toBigDecimal()
+            } catch (e: NumberFormatException) {
+                BigDecimal.ZERO
+            }
+        } else {
+            defaultTransactionFee
+        }
+
+    val networkAndRoyaltyFeesToDisplay: String
+        get() = networkAndRoyaltyFees ?: networkFee
+            .multiply(BigDecimal(MARGIN))
+            .add(royaltyFee).displayableQuantity()
+
+    val tipPercentageToDisplay: String
+        get() = tipPercentage ?: "0"
+
+    companion object {
+        private const val MARGIN = "1.15"
+    }
+}

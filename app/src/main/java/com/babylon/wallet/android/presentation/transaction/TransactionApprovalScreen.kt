@@ -50,7 +50,7 @@ import com.babylon.wallet.android.presentation.common.FullscreenCircularProgress
 import com.babylon.wallet.android.presentation.settings.dappdetail.DAppDetailsSheetContent
 import com.babylon.wallet.android.presentation.status.signing.SigningStatusBottomDialog
 import com.babylon.wallet.android.presentation.transaction.TransactionApprovalViewModel.State
-import com.babylon.wallet.android.presentation.transaction.composables.FeePayerSelectionSheet
+import com.babylon.wallet.android.presentation.transaction.composables.FeesSheet
 import com.babylon.wallet.android.presentation.transaction.composables.GuaranteesSheet
 import com.babylon.wallet.android.presentation.transaction.composables.NetworkFeeContent
 import com.babylon.wallet.android.presentation.transaction.composables.RawManifestView
@@ -90,22 +90,20 @@ fun TransactionApprovalScreen(
         onMessageShown = viewModel::onMessageShown,
         modifier = modifier,
         promptForGuarantees = viewModel::promptForGuaranteesClick,
+        onCustomizeClick = viewModel::onCustomizeClick,
         onGuaranteesApplyClick = viewModel::onGuaranteesApplyClick,
         onGuaranteesCloseClick = viewModel::onGuaranteesCloseClick,
         onGuaranteeValueChanged = viewModel::onGuaranteeValueChange,
         onGuaranteeValueIncreased = viewModel::onGuaranteeValueIncreased,
         onGuaranteeValueDecreased = viewModel::onGuaranteeValueDecreased,
         onDAppClick = viewModel::onDAppClick,
+        onChangeFeePayerClick = viewModel::onChangeFeePayerClick,
+        onSelectFeePayerClick = viewModel::onSelectFeePayerClick,
         onPayerSelected = viewModel::onPayerSelected,
-        onPayerConfirmed = {
-            if (state.isDeviceSecure) {
-                viewModel.onPayerConfirmed(deviceBiometricAuthenticationProvider = {
-                    context.biometricAuthenticateSuspend()
-                })
-            } else {
-                notSecuredDialogContext = SecureDialogContext.ConfirmPayer
-            }
-        }
+        onNetworkAndRoyaltyFeeChanged = viewModel::onNetworkAndRoyaltyFeeChanged,
+        onTipPercentageChanged = viewModel::onTipPercentageChanged,
+        onViewDefaultModeClick = viewModel::onViewDefaultModeClick,
+        onViewAdvancedModeClick = viewModel::onViewAdvancedModeClick
     )
 
     state.interactionState?.let {
@@ -130,12 +128,6 @@ fun TransactionApprovalScreen(
             finish = { accepted ->
                 if (accepted) {
                     when (notSecuredDialogContext) {
-                        SecureDialogContext.ConfirmPayer -> {
-                            viewModel.onPayerConfirmed(deviceBiometricAuthenticationProvider = {
-                                context.biometricAuthenticateSuspend(allowIfDeviceIsNotSecure = true)
-                            })
-                        }
-
                         SecureDialogContext.ApproveTransaction -> {
                             viewModel.approveTransaction(deviceBiometricAuthenticationProvider = {
                                 context.biometricAuthenticateSuspend(allowIfDeviceIsNotSecure = true)
@@ -162,14 +154,20 @@ private fun TransactionPreviewContent(
     onRawManifestToggle: () -> Unit,
     onMessageShown: () -> Unit,
     promptForGuarantees: () -> Unit,
+    onCustomizeClick: () -> Unit,
     onGuaranteesApplyClick: () -> Unit,
     onGuaranteesCloseClick: () -> Unit,
     onGuaranteeValueChanged: (AccountWithPredictedGuarantee, String) -> Unit,
     onGuaranteeValueIncreased: (AccountWithPredictedGuarantee) -> Unit,
     onGuaranteeValueDecreased: (AccountWithPredictedGuarantee) -> Unit,
     onDAppClick: (DAppWithMetadataAndAssociatedResources) -> Unit,
+    onChangeFeePayerClick: () -> Unit,
+    onSelectFeePayerClick: () -> Unit,
     onPayerSelected: (Network.Account) -> Unit,
-    onPayerConfirmed: () -> Unit
+    onNetworkAndRoyaltyFeeChanged: (String) -> Unit,
+    onTipPercentageChanged: (String) -> Unit,
+    onViewDefaultModeClick: () -> Unit,
+    onViewAdvancedModeClick: () -> Unit
 ) {
     val modalBottomSheetState = rememberModalBottomSheetState(
         initialValue = ModalBottomSheetValue.Hidden,
@@ -202,15 +200,20 @@ private fun TransactionPreviewContent(
             BottomSheetContent(
                 modifier = Modifier.navigationBarsPadding(),
                 sheetState = state.sheetState,
-                onPayerSelected = onPayerSelected,
-                onPayerConfirmed = onPayerConfirmed,
+                transactionFees = state.fees,
                 onGuaranteesCloseClick = onGuaranteesCloseClick,
                 onGuaranteesApplyClick = onGuaranteesApplyClick,
                 onGuaranteeValueChanged = onGuaranteeValueChanged,
                 onGuaranteeValueIncreased = onGuaranteeValueIncreased,
                 onGuaranteeValueDecreased = onGuaranteeValueDecreased,
-                onCloseFeePayerSheet = onBackClick,
                 onCloseDAppSheet = onBackClick,
+                onChangeFeePayerClick = onChangeFeePayerClick,
+                onSelectFeePayerClick = onSelectFeePayerClick,
+                onPayerSelected = onPayerSelected,
+                onNetworkAndRoyaltyFeeChanged = onNetworkAndRoyaltyFeeChanged,
+                onTipPercentageChanged = onTipPercentageChanged,
+                onViewDefaultModeClick = onViewDefaultModeClick,
+                onViewAdvancedModeClick = onViewAdvancedModeClick
             )
         }
     ) {
@@ -251,7 +254,10 @@ private fun TransactionPreviewContent(
                                 modifier = Modifier.padding(RadixTheme.dimensions.paddingDefault),
                                 manifest = state.rawManifest
                             )
-                            NetworkFeeContent(fees = state.fees)
+                            NetworkFeeContent(
+                                fees = state.fees,
+                                onCustomizeClick = onCustomizeClick
+                            )
                             ApproveButton(
                                 state = state,
                                 onApproveTransaction = onApproveTransaction
@@ -279,7 +285,10 @@ private fun TransactionPreviewContent(
                                     )
                                 }
                             }
-                            NetworkFeeContent(fees = state.fees)
+                            NetworkFeeContent(
+                                fees = state.fees,
+                                onCustomizeClick = onCustomizeClick
+                            )
                             ApproveButton(
                                 state = state,
                                 onApproveTransaction = onApproveTransaction
@@ -318,15 +327,20 @@ private fun ApproveButton(
 private fun BottomSheetContent(
     modifier: Modifier = Modifier,
     sheetState: State.Sheet,
-    onPayerSelected: (Network.Account) -> Unit,
-    onPayerConfirmed: () -> Unit,
+    transactionFees: TransactionFees,
     onGuaranteesCloseClick: () -> Unit,
     onGuaranteesApplyClick: () -> Unit,
     onGuaranteeValueChanged: (AccountWithPredictedGuarantee, String) -> Unit,
     onGuaranteeValueIncreased: (AccountWithPredictedGuarantee) -> Unit,
     onGuaranteeValueDecreased: (AccountWithPredictedGuarantee) -> Unit,
-    onCloseFeePayerSheet: () -> Unit,
-    onCloseDAppSheet: () -> Unit
+    onCloseDAppSheet: () -> Unit,
+    onChangeFeePayerClick: () -> Unit,
+    onSelectFeePayerClick: () -> Unit,
+    onPayerSelected: (Network.Account) -> Unit,
+    onNetworkAndRoyaltyFeeChanged: (String) -> Unit,
+    onTipPercentageChanged: (String) -> Unit,
+    onViewDefaultModeClick: () -> Unit,
+    onViewAdvancedModeClick: () -> Unit
 ) {
     when (sheetState) {
         is State.Sheet.CustomizeGuarantees -> {
@@ -340,22 +354,27 @@ private fun BottomSheetContent(
                 onGuaranteeValueDecreased = onGuaranteeValueDecreased
             )
         }
+        is State.Sheet.CustomizeFees -> {
+            FeesSheet(
+                modifier = modifier,
+                state = sheetState,
+                transactionFees = transactionFees,
+                onClose = onGuaranteesCloseClick,
+                onChangeFeePayerClick = onChangeFeePayerClick,
+                onSelectFeePayerClick = onSelectFeePayerClick,
+                onPayerSelected = onPayerSelected,
+                onNetworkAndRoyaltyFeeChanged = onNetworkAndRoyaltyFeeChanged,
+                onTipPercentageChanged = onTipPercentageChanged,
+                onViewDefaultModeClick = onViewDefaultModeClick,
+                onViewAdvancedModeClick = onViewAdvancedModeClick
+            )
+        }
 
         is State.Sheet.Dapp -> {
             DAppDetailsSheetContent(
                 modifier = modifier,
                 onBackClick = onCloseDAppSheet,
                 dApp = sheetState.dApp
-            )
-        }
-
-        is State.Sheet.FeePayerChooser -> {
-            FeePayerSelectionSheet(
-                modifier = modifier,
-                sheet = sheetState,
-                onClose = onCloseFeePayerSheet,
-                onPayerSelected = onPayerSelected,
-                onPayerConfirmed = onPayerConfirmed
             )
         }
 
@@ -387,7 +406,7 @@ private fun SyncSheetState(
 }
 
 private enum class SecureDialogContext {
-    ConfirmPayer, ApproveTransaction
+    ApproveTransaction
 }
 
 @Preview(showBackground = true)
@@ -418,12 +437,18 @@ fun TransactionPreviewContentPreview() {
             onGuaranteesApplyClick = {},
             onGuaranteesCloseClick = {},
             promptForGuarantees = {},
+            onCustomizeClick = {},
             onDAppClick = {},
             onGuaranteeValueChanged = { _, _ -> },
             onGuaranteeValueIncreased = {},
             onGuaranteeValueDecreased = {},
+            onChangeFeePayerClick = {},
+            onSelectFeePayerClick = {},
             onPayerSelected = {},
-            onPayerConfirmed = {}
+            onNetworkAndRoyaltyFeeChanged = {},
+            onTipPercentageChanged = {},
+            onViewDefaultModeClick = {},
+            onViewAdvancedModeClick = {},
         )
     }
 }

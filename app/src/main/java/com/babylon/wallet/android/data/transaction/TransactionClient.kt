@@ -36,6 +36,7 @@ import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.accountsOnCurrentNetwork
 import rdx.works.profile.domain.personasOnCurrentNetwork
 import timber.log.Timber
+import java.math.BigDecimal
 import java.security.SecureRandom
 import javax.inject.Inject
 import kotlin.Result
@@ -59,6 +60,7 @@ class TransactionClient @Inject constructor(
 
     private suspend fun prepareSignedTransactionIntent(
         request: TransactionApprovalRequest,
+        lockFee: BigDecimal,
         deviceBiometricAuthenticationProvider: suspend () -> Boolean
     ): Result<NotarizedTransactionResult> {
         val manifestWithTransactionFee = if (request.feePayerAddress == null) {
@@ -66,7 +68,7 @@ class TransactionClient @Inject constructor(
         } else {
             request.manifest.addLockFeeInstructionToManifest(
                 addressToLockFee = request.feePayerAddress,
-                fee = TransactionConfig.DEFAULT_LOCK_FEE.toBigDecimal()
+                fee = lockFee
             )
         }
 
@@ -161,10 +163,12 @@ class TransactionClient @Inject constructor(
 
     suspend fun signAndSubmitTransaction(
         request: TransactionApprovalRequest,
+        lockFee: BigDecimal,
         deviceBiometricAuthenticationProvider: suspend () -> Boolean
     ): Result<String> {
         return prepareSignedTransactionIntent(
             request = request,
+            lockFee = lockFee,
             deviceBiometricAuthenticationProvider = deviceBiometricAuthenticationProvider
         ).mapCatching { notarizedTransactionResult ->
             submitTransactionUseCase(
@@ -198,50 +202,62 @@ class TransactionClient @Inject constructor(
         logger.d("== Compiled Notarized tx intent: ${compiledNotarizedTransactionIntent.toByteArray().toHexString()}")
     }
 
-    suspend fun findFeePayerInManifest(manifest: TransactionManifest): Result<FeePayerSearchResult> {
+    suspend fun findFeePayerInManifest(manifest: TransactionManifest, lockFee: BigDecimal): Result<FeePayerSearchResult> {
         val allAccounts = getProfileUseCase.accountsOnCurrentNetwork()
 
-        val searchedAccounts = mutableSetOf<Network.Account>().apply {
-            addAll(
-                findFeePayerCandidatesWithinOwnedAccounts(
-                    entityAddress = manifest.accountsWithdrawnFrom(),
-                    ownedAccounts = allAccounts
-                ).also {
-                    val withdrawnFromCandidate = findFeePayerWithFundsWithin(it)
-                    if (withdrawnFromCandidate != null) {
-                        return Result.success(FeePayerSearchResult(feePayerAddressFromManifest = withdrawnFromCandidate))
-                    }
-                }
-            )
-            addAll(
-                findFeePayerCandidatesWithinOwnedAccounts(
-                    entityAddress = manifest.accountsRequiringAuth(),
-                    ownedAccounts = allAccounts
-                ).also {
-                    val requiringAuthCandidate = findFeePayerWithFundsWithin(it)
-                    if (requiringAuthCandidate != null) {
-                        return Result.success(FeePayerSearchResult(feePayerAddressFromManifest = requiringAuthCandidate))
-                    }
-                }
-            )
-            addAll(
-                findFeePayerCandidatesWithinOwnedAccounts(
-                    entityAddress = manifest.accountsDepositedInto(),
-                    ownedAccounts = allAccounts
-                ).also {
-                    val depositedIntoCandidate = findFeePayerWithFundsWithin(it)
-                    if (depositedIntoCandidate != null) {
-                        return Result.success(FeePayerSearchResult(feePayerAddressFromManifest = depositedIntoCandidate))
-                    }
-                }
-            )
+        // 1. accountsWithdrawnFrom
+        findFeePayerCandidatesWithinOwnedAccounts(
+            entityAddress = manifest.accountsWithdrawnFrom(),
+            ownedAccounts = allAccounts
+        ).let {
+            val withdrawnFromCandidate = findFeePayerWithFundsWithin(accounts = it, lockFee = lockFee)
+            if (withdrawnFromCandidate != null) {
+                return Result.success(
+                    FeePayerSearchResult(
+                        feePayerAddressFromManifest = withdrawnFromCandidate,
+                        candidates = allAccounts
+                    )
+                )
+            }
         }
-        val candidatesWithinOwnAccounts = findFeePayerCandidatesWithinOwnedAccounts(allAccounts.minus(searchedAccounts))
-        return if (candidatesWithinOwnAccounts.isEmpty()) {
-            Result.failure(DappRequestFailure.TransactionApprovalFailure.FailedToFindAccountWithEnoughFundsToLockFee)
-        } else {
-            Result.success(FeePayerSearchResult(candidates = candidatesWithinOwnAccounts))
+
+        // 2. accountsDepositedInto
+        findFeePayerCandidatesWithinOwnedAccounts(
+            entityAddress = manifest.accountsDepositedInto(),
+            ownedAccounts = allAccounts
+        ).let {
+            val depositedIntoCandidate = findFeePayerWithFundsWithin(accounts = it, lockFee = lockFee)
+            if (depositedIntoCandidate != null) {
+                return Result.success(
+                    FeePayerSearchResult(
+                        feePayerAddressFromManifest = depositedIntoCandidate,
+                        candidates = allAccounts
+                    )
+                )
+            }
         }
+
+        // 3. accountsRequiringAuth
+        findFeePayerCandidatesWithinOwnedAccounts(
+            entityAddress = manifest.accountsRequiringAuth(),
+            ownedAccounts = allAccounts
+        ).let {
+            val requiringAuthCandidate = findFeePayerWithFundsWithin(accounts = it, lockFee = lockFee)
+            if (requiringAuthCandidate != null) {
+                return Result.success(
+                    FeePayerSearchResult(
+                        feePayerAddressFromManifest = requiringAuthCandidate,
+                        candidates = allAccounts
+                    )
+                )
+            }
+        }
+
+        return Result.success(
+            FeePayerSearchResult(
+                candidates = allAccounts
+            )
+        )
     }
 
     private fun findFeePayerCandidatesWithinOwnedAccounts(
@@ -251,14 +267,12 @@ class TransactionClient @Inject constructor(
         ownedAccounts.find { it.address == address.addressString() }
     }
 
-    private suspend fun findFeePayerWithFundsWithin(accounts: List<Network.Account>): String? {
+    private suspend fun findFeePayerWithFundsWithin(
+        accounts: List<Network.Account>,
+        lockFee: BigDecimal
+    ): String? {
         return getAccountsWithResourcesUseCase(accounts = accounts, isRefreshing = true)
-            .value()?.findAccountWithEnoughXRDBalance(TransactionConfig.DEFAULT_LOCK_FEE)?.account?.address
-    }
-
-    private suspend fun findFeePayerCandidatesWithinOwnedAccounts(accounts: List<Network.Account>): List<Network.Account> {
-        return getAccountsWithResourcesUseCase(accounts = accounts, isRefreshing = true)
-            .value()?.filter { it.resources?.hasXrd(TransactionConfig.DEFAULT_LOCK_FEE) == true }?.map { it.account }.orEmpty()
+            .value()?.findAccountWithEnoughXRDBalance(lockFee)?.account?.address
     }
 
     private suspend fun buildTransactionHeader(
