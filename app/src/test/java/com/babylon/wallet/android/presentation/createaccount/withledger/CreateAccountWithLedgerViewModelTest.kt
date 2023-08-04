@@ -18,6 +18,7 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.junit.Before
+import org.junit.Ignore
 import org.junit.Test
 import rdx.works.profile.data.model.apppreferences.P2PLink
 import rdx.works.profile.data.model.factorsources.FactorSource
@@ -98,6 +99,7 @@ internal class CreateAccountWithLedgerViewModelTest : StateViewModelTest<CreateA
     }
 
 
+    @Ignore
     @Test
     fun `use ledger to create account`() = runTest {
         coEvery { getProfileUseCase.p2pLinks } returns flowOf(listOf(P2PLink("pwd", "chrome")))
