@@ -6,7 +6,7 @@ import java.math.RoundingMode
 import java.text.DecimalFormat
 import java.util.Locale
 
-private const val MAX_TOKEN_DIGITS_LENGTH = 8
+const val MAX_TOKEN_DIGITS_LENGTH = 8
 private const val MILLION_DIGITS_LENGTH = 6
 
 // We still want to display 1,000 M so we catch 10 instead of 9 to not fall into B for thousands

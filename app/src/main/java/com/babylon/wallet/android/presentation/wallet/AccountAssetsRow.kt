@@ -38,6 +38,7 @@ import com.babylon.wallet.android.designsystem.theme.AccountGradientList
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.designsystem.theme.White
+import com.babylon.wallet.android.domain.model.AccountValidatorsWithStakeResources
 import com.babylon.wallet.android.domain.model.Resource
 import com.babylon.wallet.android.domain.model.Resources
 import com.babylon.wallet.android.domain.model.allNftItemsSize
@@ -302,7 +303,9 @@ fun AssetsContentRowPreview() {
             AccountAssetsRow(
                 resources = Resources(
                     fungibleResources = allFungibles,
-                    nonFungibleResources = nonFungibles
+                    nonFungibleResources = nonFungibles,
+                    poolUnits = emptyList(),
+                    accountValidatorsWithStakeResources = AccountValidatorsWithStakeResources()
                 ),
                 isLoading = false
             )

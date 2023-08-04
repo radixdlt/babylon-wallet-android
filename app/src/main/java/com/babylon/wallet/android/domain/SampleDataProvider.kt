@@ -2,6 +2,7 @@
 
 package com.babylon.wallet.android.domain
 
+import com.babylon.wallet.android.domain.model.AccountValidatorsWithStakeResources
 import com.babylon.wallet.android.domain.model.AccountWithResources
 import com.babylon.wallet.android.domain.model.DAppResources
 import com.babylon.wallet.android.domain.model.DAppWithMetadata
@@ -142,7 +143,9 @@ class SampleDataProvider {
             account = sampleAccount(address = address),
             resources = Resources(
                 fungibleResources = withFungibleTokens,
-                nonFungibleResources = emptyList()
+                nonFungibleResources = emptyList(),
+                poolUnits = emptyList(),
+                accountValidatorsWithStakeResources = AccountValidatorsWithStakeResources()
             )
         )
     }

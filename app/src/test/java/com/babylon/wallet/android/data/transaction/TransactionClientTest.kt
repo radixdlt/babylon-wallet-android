@@ -8,7 +8,6 @@ import com.babylon.wallet.android.domain.common.Result
 import com.babylon.wallet.android.domain.model.AccountWithResources
 import com.babylon.wallet.android.domain.model.Resource
 import com.babylon.wallet.android.domain.model.Resources
-import com.babylon.wallet.android.domain.model.metadata.MetadataItem
 import com.babylon.wallet.android.domain.model.metadata.OwnerKeyHashesMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.SymbolMetadataItem
 import com.babylon.wallet.android.domain.usecases.GetAccountsWithResourcesUseCase
@@ -77,7 +76,6 @@ internal class TransactionClientTest {
             val addressToLockFee = transactionClient.findFeePayerInManifest(manifest).getOrThrow().feePayerAddressFromManifest
             manifest = manifest.addLockFeeInstructionToManifest(addressToLockFee!!, TransactionConfig.DEFAULT_LOCK_FEE.toBigDecimal())
             val signingEntities = transactionClient.getSigningEntities(manifest)
-
             Assert.assertEquals(1, signingEntities.size)
             Assert.assertEquals(
                 EntityRepositoryFake.addressWithFunds,
@@ -129,7 +127,8 @@ internal class TransactionClientTest {
                         symbolMetadataItem = SymbolMetadataItem("XRD")
                     )
                 ),
-                nonFungibleResources = emptyList()
+                nonFungibleResources = emptyList(),
+                poolUnits = emptyList()
             )
         )
 
@@ -152,7 +151,7 @@ internal class TransactionClientTest {
             }
         })
 
-        override suspend fun getEntityOwnerKeyHashes(entityAddress: String, isRefreshing: Boolean): Result<OwnerKeyHashesMetadataItem?> {
+        override suspend fun getEntityOwnerKeyHashes(entityAddress: String, isRefreshing: Boolean, stateVersion: Long?): Result<OwnerKeyHashesMetadataItem?> {
             error("Not needed")
         }
     }

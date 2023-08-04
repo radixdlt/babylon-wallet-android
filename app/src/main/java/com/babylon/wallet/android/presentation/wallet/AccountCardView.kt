@@ -25,6 +25,7 @@ import com.babylon.wallet.android.designsystem.theme.AccountGradientList
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.SampleDataProvider
+import com.babylon.wallet.android.domain.model.AccountValidatorsWithStakeResources
 import com.babylon.wallet.android.domain.model.AccountWithResources
 import com.babylon.wallet.android.domain.model.Resource
 import com.babylon.wallet.android.domain.model.Resources
@@ -201,7 +202,9 @@ fun AccountCardPreview() {
                                 symbolMetadataItem = SymbolMetadataItem("XRD")
                             )
                         ),
-                        nonFungibleResources = listOf()
+                        nonFungibleResources = listOf(),
+                        poolUnits = emptyList(),
+                        accountValidatorsWithStakeResources = AccountValidatorsWithStakeResources()
                     )
                 ),
                 accountTag = WalletUiState.AccountTag.DAPP_DEFINITION,

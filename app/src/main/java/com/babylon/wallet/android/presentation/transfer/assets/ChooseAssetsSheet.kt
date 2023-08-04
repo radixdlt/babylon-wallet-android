@@ -42,6 +42,7 @@ import com.babylon.wallet.android.presentation.ui.composables.resources.Selectab
 import com.babylon.wallet.android.presentation.ui.composables.resources.SelectableNonFungibleResourceItem
 import com.babylon.wallet.android.presentation.ui.composables.sheets.SheetHeader
 
+@Suppress("CyclomaticComplexMethod")
 @Composable
 fun ChooseAssetsSheet(
     modifier: Modifier = Modifier,
@@ -111,11 +112,13 @@ fun ChooseAssetsSheet(
                 selectedTab = when (state.selectedTab) {
                     ChooseAssets.Tab.Tokens -> ResourceTab.Tokens
                     ChooseAssets.Tab.NFTs -> ResourceTab.Nfts
+                    ChooseAssets.Tab.PoolUnits -> ResourceTab.PoolUnits
                 },
                 onTabSelected = {
                     val viewModelTab = when (it) {
                         ResourceTab.Tokens -> ChooseAssets.Tab.Tokens
                         ResourceTab.Nfts -> ChooseAssets.Tab.NFTs
+                        ResourceTab.PoolUnits -> ChooseAssets.Tab.PoolUnits
                     }
                     onTabSelected(viewModelTab)
                 },
@@ -172,6 +175,9 @@ fun ChooseAssetsSheet(
                                         onAssetSelectionChanged(nonFungibleAsset, it)
                                     }
                                 )
+                            }
+
+                            ChooseAssets.Tab.PoolUnits -> {
                             }
                         }
                     }
