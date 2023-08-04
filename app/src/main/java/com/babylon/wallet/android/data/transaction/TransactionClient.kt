@@ -61,6 +61,7 @@ class TransactionClient @Inject constructor(
     private suspend fun prepareSignedTransactionIntent(
         request: TransactionApprovalRequest,
         lockFee: BigDecimal,
+        tipPercentage: UShort,
         deviceBiometricAuthenticationProvider: suspend () -> Boolean
     ): Result<NotarizedTransactionResult> {
         val manifestWithTransactionFee = if (request.feePayerAddress == null) {
@@ -74,7 +75,11 @@ class TransactionClient @Inject constructor(
 
         val signers = getSigningEntities(manifestWithTransactionFee)
         val notaryAndSigners = NotaryAndSigners(signers, request.ephemeralNotaryPrivateKey)
-        return buildTransactionHeader(request.networkId.value, notaryAndSigners).then { header ->
+        return buildTransactionHeader(
+            networkId = request.networkId.value,
+            notaryAndSigners = notaryAndSigners,
+            tipPercentage = tipPercentage
+        ).then { header ->
             val transactionIntent = kotlin.runCatching {
                 Intent(
                     header = header,
@@ -164,11 +169,13 @@ class TransactionClient @Inject constructor(
     suspend fun signAndSubmitTransaction(
         request: TransactionApprovalRequest,
         lockFee: BigDecimal,
+        tipPercentage: UShort,
         deviceBiometricAuthenticationProvider: suspend () -> Boolean
     ): Result<String> {
         return prepareSignedTransactionIntent(
             request = request,
             lockFee = lockFee,
+            tipPercentage = tipPercentage,
             deviceBiometricAuthenticationProvider = deviceBiometricAuthenticationProvider
         ).mapCatching { notarizedTransactionResult ->
             submitTransactionUseCase(
@@ -278,6 +285,7 @@ class TransactionClient @Inject constructor(
     private suspend fun buildTransactionHeader(
         networkId: Int,
         notaryAndSigners: NotaryAndSigners,
+        tipPercentage: UShort,
     ): Result<TransactionHeader> {
         val epochResult = transactionRepository.getLedgerEpoch()
         if (epochResult is ResultInternal.Success) {
@@ -291,7 +299,7 @@ class TransactionClient @Inject constructor(
                         nonce = generateNonce(),
                         notaryPublicKey = notaryAndSigners.notaryPublicKey(),
                         notaryIsSignatory = notaryAndSigners.notaryIsSignatory,
-                        tipPercentage = TransactionConfig.TIP_PERCENTAGE
+                        tipPercentage = tipPercentage
                     )
                 )
             } catch (e: Exception) {

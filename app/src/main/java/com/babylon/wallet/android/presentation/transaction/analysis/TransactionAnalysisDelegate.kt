@@ -3,7 +3,6 @@ package com.babylon.wallet.android.presentation.transaction.analysis
 import com.babylon.wallet.android.data.gateway.generated.models.TransactionPreviewResponse
 import com.babylon.wallet.android.data.manifest.addLockFeeInstructionToManifest
 import com.babylon.wallet.android.data.transaction.TransactionClient
-import com.babylon.wallet.android.data.transaction.TransactionConfig
 import com.babylon.wallet.android.domain.usecases.GetAccountsWithResourcesUseCase
 import com.babylon.wallet.android.domain.usecases.GetResourcesMetadataUseCase
 import com.babylon.wallet.android.domain.usecases.ResolveDAppsUseCase
@@ -11,8 +10,7 @@ import com.babylon.wallet.android.domain.usecases.transaction.GetTransactionBadg
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.transaction.PreviewType
 import com.babylon.wallet.android.presentation.transaction.TransactionApprovalViewModel.State
-import com.babylon.wallet.android.presentation.transaction.TransactionFees
-import com.radixdlt.ret.Decimal
+import com.babylon.wallet.android.presentation.transaction.fees.TransactionFees
 import com.radixdlt.ret.ExecutionAnalysis
 import com.radixdlt.ret.TransactionManifest
 import com.radixdlt.ret.TransactionType
@@ -44,19 +42,6 @@ class TransactionAnalysisDelegate(
         }.onFailure { error ->
             reportFailure(error)
         }
-    }
-
-    suspend fun onFeePayerConfirmed(
-        account: Network.Account,
-        pendingManifest: TransactionManifest,
-        lockFee: BigDecimal
-    ) {
-        val manifestWithLockFee = pendingManifest.addLockFeeInstructionToManifest(
-            addressToLockFee = account.address,
-            fee = lockFee
-        )
-
-        startAnalysis(manifestWithLockFee)
     }
 
     private suspend fun startAnalysis(manifest: TransactionManifest) = getTransactionPreview(manifest)
@@ -112,7 +97,7 @@ class TransactionAnalysisDelegate(
         state.update {
             it.copy(
                 isRawManifestVisible = previewType == PreviewType.NonConforming,
-                fees = transactionFees,
+                transactionFees = transactionFees,
                 isLoading = false,
                 previewType = previewType,
                 feePayerSearchResult = feePayerResult

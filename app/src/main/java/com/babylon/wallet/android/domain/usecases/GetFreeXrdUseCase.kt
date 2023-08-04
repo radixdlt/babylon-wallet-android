@@ -5,6 +5,7 @@ import com.babylon.wallet.android.data.repository.transaction.TransactionReposit
 import com.babylon.wallet.android.data.transaction.DappRequestFailure
 import com.babylon.wallet.android.data.transaction.TransactionClient
 import com.babylon.wallet.android.data.transaction.TransactionConfig
+import com.babylon.wallet.android.data.transaction.TransactionConfig.TIP_PERCENTAGE
 import com.babylon.wallet.android.data.transaction.model.TransactionApprovalRequest
 import com.babylon.wallet.android.di.coroutines.IoDispatcher
 import com.babylon.wallet.android.domain.common.asKotlinResult
@@ -71,6 +72,7 @@ class GetFreeXrdUseCase @Inject constructor(
                             transactionClient.signAndSubmitTransaction(
                                 request = request,
                                 lockFee = lockFee,
+                                tipPercentage = TIP_PERCENTAGE,
                                 deviceBiometricAuthenticationProvider = { true }
                             ).onSuccess { txId ->
                                 pollTransactionStatusUseCase(txId).onValue {

@@ -120,7 +120,8 @@ class TransactionSubmitDelegate(
                 isSubmitting = true,
             )
         }
-        val lockFee = state.value.fees.transactionFeeToLock
+        val lockFee = state.value.transactionFees.transactionFeeToLock
+        val tipPercentage = state.value.transactionFees.tipPercentageForTransaction
         val request = TransactionApprovalRequest(
             manifest = manifest,
             networkId = NetworkId.from(transactionRequest.requestMetadata.networkId),
@@ -133,6 +134,7 @@ class TransactionSubmitDelegate(
         transactionClient.signAndSubmitTransaction(
             request,
             lockFee = lockFee,
+            tipPercentage = tipPercentage,
             deviceBiometricAuthenticationProvider
         ).onSuccess { txId ->
             state.update {

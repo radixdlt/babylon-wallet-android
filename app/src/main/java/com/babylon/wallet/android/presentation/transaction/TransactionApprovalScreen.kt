@@ -56,6 +56,7 @@ import com.babylon.wallet.android.presentation.transaction.composables.NetworkFe
 import com.babylon.wallet.android.presentation.transaction.composables.RawManifestView
 import com.babylon.wallet.android.presentation.transaction.composables.TransactionPreviewHeader
 import com.babylon.wallet.android.presentation.transaction.composables.TransactionPreviewTypeContent
+import com.babylon.wallet.android.presentation.transaction.fees.TransactionFees
 import com.babylon.wallet.android.presentation.ui.composables.DefaultModalSheetLayout
 import com.babylon.wallet.android.presentation.ui.composables.NotSecureAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
@@ -200,7 +201,7 @@ private fun TransactionPreviewContent(
             BottomSheetContent(
                 modifier = Modifier.navigationBarsPadding(),
                 sheetState = state.sheetState,
-                transactionFees = state.fees,
+                transactionFees = state.transactionFees,
                 onGuaranteesCloseClick = onGuaranteesCloseClick,
                 onGuaranteesApplyClick = onGuaranteesApplyClick,
                 onGuaranteeValueChanged = onGuaranteeValueChanged,
@@ -255,7 +256,7 @@ private fun TransactionPreviewContent(
                                 manifest = state.rawManifest
                             )
                             NetworkFeeContent(
-                                fees = state.fees,
+                                fees = state.transactionFees,
                                 onCustomizeClick = onCustomizeClick
                             )
                             ApproveButton(
@@ -286,7 +287,7 @@ private fun TransactionPreviewContent(
                                 }
                             }
                             NetworkFeeContent(
-                                fees = state.fees,
+                                fees = state.transactionFees,
                                 onCustomizeClick = onCustomizeClick
                             )
                             ApproveButton(

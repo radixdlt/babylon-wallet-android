@@ -19,8 +19,7 @@ import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixTextButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
-import com.babylon.wallet.android.presentation.transaction.TransactionFees
-import com.radixdlt.ret.Decimal
+import com.babylon.wallet.android.presentation.transaction.fees.TransactionFees
 import rdx.works.core.displayableQuantity
 import java.math.BigDecimal
 
@@ -58,7 +57,7 @@ fun NetworkFeeContent(
             )
             Spacer(modifier = Modifier.weight(1f))
             Text(
-                text = stringResource(id = R.string.transactionReview_xrdAmount, fees.defaultTransactionFee.displayableQuantity()),
+                text = stringResource(id = R.string.transactionReview_xrdAmount, fees.transactionFeeToLock.displayableQuantity()),
                 style = RadixTheme.typography.body1Link,
                 color = RadixTheme.colors.gray1
             )

@@ -14,7 +14,7 @@ class TransactionFeesDelegate(
 ) {
 
     suspend fun onCustomizeClick() {
-        val transactionFees = state.value.fees
+        val transactionFees = state.value.transactionFees
         if (transactionFees.defaultTransactionFee == BigDecimal.ZERO) {
             // None required
             state.update { state ->
@@ -65,10 +65,10 @@ class TransactionFeesDelegate(
     }
 
     fun onNetworkAndRoyaltyFeeChanged(networkAndRoyaltyFee: String) {
-        val transactionFees = state.value.fees
+        val transactionFees = state.value.transactionFees
         state.update { state ->
             state.copy(
-                fees = transactionFees.copy(
+                transactionFees = transactionFees.copy(
                     networkAndRoyaltyFees = networkAndRoyaltyFee
                 )
             )
@@ -82,11 +82,11 @@ class TransactionFeesDelegate(
             }
         } catch (_: NumberFormatException) { }
 
-        val transactionFees = state.value.fees
+        val transactionFees = state.value.transactionFees
 
         state.update { state ->
             state.copy(
-                fees = transactionFees.copy(
+                transactionFees = transactionFees.copy(
                     tipPercentage = tipPercentage
                 )
             )
@@ -95,11 +95,11 @@ class TransactionFeesDelegate(
 
     fun onViewDefaultModeClick() {
         val customizeFeesSheet = state.value.sheetState as? State.Sheet.CustomizeFees ?: return
-        val transactionFees = state.value.fees
+        val transactionFees = state.value.transactionFees
         state.update {
             it.copy(
                 // When switching back to default mode, reset field values that have been modified in advanced mode
-                fees = transactionFees.copy(
+                transactionFees = transactionFees.copy(
                     networkAndRoyaltyFees = null,
                     tipPercentage = null
                 ),
@@ -123,10 +123,10 @@ class TransactionFeesDelegate(
 
     private fun switchToFeePayerSelection() {
         val feePayerResult = state.value.feePayerSearchResult
-        val transactionFees = state.value.fees
+        val transactionFees = state.value.transactionFees
         state.update { state ->
             state.copy(
-                fees = transactionFees,
+                transactionFees = transactionFees,
                 sheetState = State.Sheet.CustomizeFees(
                     feePayerMode = State.Sheet.CustomizeFees.FeePayerMode.SelectFeePayer(
                         candidates = feePayerResult?.candidates.orEmpty()

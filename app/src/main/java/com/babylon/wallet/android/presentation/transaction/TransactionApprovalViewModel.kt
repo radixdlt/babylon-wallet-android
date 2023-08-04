@@ -30,6 +30,7 @@ import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.presentation.transaction.TransactionApprovalViewModel.Event
 import com.babylon.wallet.android.presentation.transaction.TransactionApprovalViewModel.State
 import com.babylon.wallet.android.presentation.transaction.analysis.TransactionAnalysisDelegate
+import com.babylon.wallet.android.presentation.transaction.fees.TransactionFees
 import com.babylon.wallet.android.presentation.transaction.fees.TransactionFeesDelegate
 import com.babylon.wallet.android.presentation.transaction.guarantees.TransactionGuaranteesDelegate
 import com.babylon.wallet.android.presentation.transaction.submit.TransactionSubmitDelegate
@@ -39,14 +40,12 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import rdx.works.core.displayableQuantity
 import rdx.works.core.mapWhen
 import rdx.works.core.ret.crypto.PrivateKey
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.gateway.GetCurrentGatewayUseCase
 import timber.log.Timber
-import java.lang.NumberFormatException
 import java.math.BigDecimal
 import java.math.RoundingMode
 import javax.inject.Inject
@@ -215,7 +214,7 @@ class TransactionApprovalViewModel @Inject constructor(
         val isSubmitting: Boolean = false,
         val isRawManifestVisible: Boolean = false,
         val previewType: PreviewType,
-        val fees: TransactionFees = TransactionFees(),
+        val transactionFees: TransactionFees = TransactionFees(),
         val feePayerSearchResult: FeePayerSearchResult? = null,
         val sheetState: Sheet = Sheet.None,
         val error: UiMessage? = null,
@@ -418,89 +417,4 @@ sealed interface AccountWithTransferableResources {
 
 fun List<AccountWithTransferableResources>.hasCustomizableGuarantees() = any { accountWithTransferableResources ->
     accountWithTransferableResources.resources.any { it.guaranteeAssertion is GuaranteeAssertion.ForAmount }
-}
-
-data class TransactionFees(
-    private val networkFee: BigDecimal = BigDecimal.ZERO,
-    private val royaltyFee: BigDecimal = BigDecimal.ZERO,
-    private val nonContingentFeeLock: BigDecimal = BigDecimal.ZERO,
-    private val defaultTip: BigDecimal = BigDecimal.ZERO,
-    private val networkAndRoyaltyFees: String? = null,
-    private val tipPercentage: String? = null,
-    val isNetworkCongested: Boolean = false
-) {
-    // ********* DEFAULT *********
-
-    val defaultNetworkFee: String
-        get() = networkFee.displayableQuantity()
-
-    val defaultRoyaltyFee: String
-        get() = royaltyFee.displayableQuantity()
-
-    val defaultTipToDisplay: String
-        get() = defaultTip.displayableQuantity()
-
-    val defaultTransactionFee: BigDecimal
-        get() = networkFee
-            .multiply(BigDecimal(MARGIN))
-            .add(royaltyFee)
-            .subtract(nonContingentFeeLock)
-
-
-    // ********* ADVANCED *********
-    /**
-     * Finalized fee to lock for the transaction
-     * the TRANSACTION FEE at the bottom should be calculated as:
-     *  "XRD to Lock for Network & Royalty Fees" + ( "Validator Tip % to Lock" x ( network fee x 1.15 ) ).
-     * And then that number is exactly what should be locked from the user's selected account.
-     */
-    val transactionFeeToLock: BigDecimal
-        get() = if (networkAndRoyaltyFees != null && tipPercentage != null) {
-            // Both tip and network&royalty fee has changed
-            val tipPercentageBigDecimal = try {
-                tipPercentage.toBigDecimal().divide(BigDecimal(100))
-            } catch (e: NumberFormatException) {
-                BigDecimal.ZERO
-            }
-            networkAndRoyaltyFees.toBigDecimal()
-                .add(
-                    tipPercentageBigDecimal
-                        .multiply(networkFee)
-                        .multiply(BigDecimal(MARGIN))
-                )
-        } else if (networkAndRoyaltyFees == null && tipPercentage != null) {
-            // Just percentage has changed
-            val tipPercentageBigDecimal = try {
-                tipPercentage.toBigDecimal().divide(BigDecimal(100))
-            } catch (e: NumberFormatException) {
-                BigDecimal.ZERO
-            }
-            defaultTransactionFee
-                .add(
-                    tipPercentageBigDecimal
-                        .multiply(networkFee)
-                        .multiply(BigDecimal(MARGIN))
-                )
-        } else if (networkAndRoyaltyFees != null && tipPercentage == null) {
-            // Just network&royalty fee has changed, tip remains 0%
-            try {
-                networkAndRoyaltyFees.toBigDecimal()
-            } catch (e: NumberFormatException) {
-                BigDecimal.ZERO
-            }
-        } else {
-            defaultTransactionFee
-        }
-
-    val networkAndRoyaltyFeesToDisplay: String
-        get() = networkAndRoyaltyFees ?: networkFee
-            .multiply(BigDecimal(MARGIN))
-            .add(royaltyFee).displayableQuantity()
-
-    val tipPercentageToDisplay: String
-        get() = tipPercentage ?: "0"
-
-    companion object {
-        private const val MARGIN = "1.15"
-    }
 }
