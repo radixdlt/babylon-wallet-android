@@ -1,15 +1,12 @@
-package com.babylon.wallet.android.presentation.createaccount.withledger
+package com.babylon.wallet.android.presentation.settings.legacyimport
 
 import com.babylon.wallet.android.data.dapp.LedgerMessenger
 import com.babylon.wallet.android.domain.model.toProfileLedgerDeviceModel
 import com.babylon.wallet.android.presentation.common.Stateful
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
-import com.babylon.wallet.android.presentation.model.AddLedgerSheetState
 import com.babylon.wallet.android.presentation.model.LedgerDeviceUiModel
-import kotlinx.collections.immutable.ImmutableList
-import kotlinx.collections.immutable.persistentListOf
-import kotlinx.collections.immutable.toPersistentList
+import com.babylon.wallet.android.presentation.settings.ledgerhardwarewallets.AddLedgerDeviceUiState
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -56,7 +53,7 @@ class UseLedgerDelegate(
                 if (existingLedgerFactorSource == null) {
                     _state.update { state ->
                         state.copy(
-                            addLedgerSheetState = AddLedgerSheetState.InputLedgerName,
+                            addLedgerSheetState = AddLedgerDeviceUiState.ShowContent.NameLedgerDevice,
                             waitingForLedgerResponse = false,
                             recentlyConnectedLedgerDevice = LedgerDeviceUiModel(
                                 id = deviceInfoResponse.deviceId,
@@ -68,12 +65,8 @@ class UseLedgerDelegate(
                     _state.update { state ->
                         existingLedgerFactorSource as LedgerHardwareWalletFactorSource
                         state.copy(
-                            addLedgerSheetState = AddLedgerSheetState.AddLedgerDevice,
-                            waitingForLedgerResponse = false,
-                            usedLedgerFactorSources = (
-                                state.usedLedgerFactorSources +
-                                    existingLedgerFactorSource
-                                ).distinct().toPersistentList()
+                            addLedgerSheetState = AddLedgerDeviceUiState.ShowContent.AddLedgerDeviceInfo,
+                            waitingForLedgerResponse = false
                         )
                     }
                     onUseLedger(existingLedgerFactorSource as LedgerHardwareWalletFactorSource)
@@ -99,10 +92,7 @@ class UseLedgerDelegate(
                     name = ledgerDeviceUiModel.name
                 )
                 _state.update { state ->
-                    state.copy(
-                        addLedgerSheetState = AddLedgerSheetState.AddLedgerDevice,
-                        usedLedgerFactorSources = (state.usedLedgerFactorSources + result.ledgerFactorSource).toPersistentList()
-                    )
+                    state.copy(addLedgerSheetState = AddLedgerDeviceUiState.ShowContent.AddLedgerDeviceInfo)
                 }
                 onUseLedger(result.ledgerFactorSource)
             }
@@ -118,9 +108,8 @@ class UseLedgerDelegate(
 
     data class UseLedgerDelegateState(
         val loading: Boolean = false,
-        val usedLedgerFactorSources: ImmutableList<LedgerHardwareWalletFactorSource> = persistentListOf(),
         val hasLedgerDevices: Boolean = false,
-        val addLedgerSheetState: AddLedgerSheetState = AddLedgerSheetState.AddLedgerDevice,
+        val addLedgerSheetState: AddLedgerDeviceUiState.ShowContent = AddLedgerDeviceUiState.ShowContent.AddLedgerDeviceInfo,
         val waitingForLedgerResponse: Boolean = false,
         val recentlyConnectedLedgerDevice: LedgerDeviceUiModel? = null,
         val uiMessage: UiMessage? = null

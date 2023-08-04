@@ -69,8 +69,7 @@ import com.babylon.wallet.android.presentation.common.FullscreenCircularProgress
 import com.babylon.wallet.android.presentation.common.SeedPhraseInputDelegate
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.dapp.authorized.account.AccountItemUiModel
-import com.babylon.wallet.android.presentation.model.AddLedgerSheetState
-import com.babylon.wallet.android.presentation.settings.linkedconnectors.AddLinkConnectorScreen
+import com.babylon.wallet.android.presentation.settings.ledgerhardwarewallets.AddLedgerDeviceUiState
 import com.babylon.wallet.android.presentation.settings.linkedconnectors.AddLinkConnectorUiState
 import com.babylon.wallet.android.presentation.settings.linkedconnectors.AddLinkConnectorViewModel
 import com.babylon.wallet.android.presentation.settings.linkedconnectors.qrcode.CameraPreview
@@ -79,6 +78,7 @@ import com.babylon.wallet.android.presentation.ui.MockUiProvider.olympiaAccounts
 import com.babylon.wallet.android.presentation.ui.MockUiProvider.seedPhraseWords
 import com.babylon.wallet.android.presentation.ui.composables.AccountCardWithStack
 import com.babylon.wallet.android.presentation.ui.composables.AddLedgerDeviceScreen
+import com.babylon.wallet.android.presentation.ui.composables.AddLinkConnectorScreen
 import com.babylon.wallet.android.presentation.ui.composables.BackIconType
 import com.babylon.wallet.android.presentation.ui.composables.InfoLink
 import com.babylon.wallet.android.presentation.ui.composables.LedgerListItem
@@ -195,7 +195,7 @@ private fun ImportLegacyWalletContent(
     waitingForLedgerResponse: Boolean,
     onConfirmLedgerName: (String) -> Unit,
     verifiedLedgerDevices: ImmutableList<LedgerHardwareWalletFactorSource>,
-    addLedgerSheetState: AddLedgerSheetState,
+    addLedgerSheetState: AddLedgerDeviceUiState.ShowContent,
     onContinueWithLedgerClick: () -> Unit,
     deviceModel: String?,
     wordAutocompleteCandidates: ImmutableList<String>,
@@ -300,15 +300,17 @@ private fun ImportLegacyWalletContent(
                     modifier = Modifier
                         .fillMaxSize(),
                     deviceModel = deviceModel,
-                    onSendAddLedgerRequest = onContinueWithLedgerClick,
-                    addLedgerSheetState = addLedgerSheetState,
-                    onConfirmLedgerName = {
+                    onSendAddLedgerRequestClick = onContinueWithLedgerClick,
+                    showContent = addLedgerSheetState,
+                    onConfirmLedgerNameClick = {
                         onConfirmLedgerName(it)
                         onCloseSettings()
                     },
                     backIconType = BackIconType.Back,
                     onClose = onCloseSettings,
-                    waitingForLedgerResponse = waitingForLedgerResponse
+                    waitingForLedgerResponse = waitingForLedgerResponse,
+                    onBackClick = onCloseSettings
+
                 )
             }
             RadixCenteredTopAppBar(
@@ -455,7 +457,7 @@ private fun ScanQrPage(
                         .weight(1f)
                         .fillMaxWidth()
                         .clip(RadixTheme.shapes.roundedRectMedium),
-                    disableBack = false,
+                    disableBackHandler = false,
                     isVisible = isVisible,
                     onQrCodeDetected = onQrCodeScanned
                 )

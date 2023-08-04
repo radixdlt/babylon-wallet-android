@@ -17,11 +17,10 @@ import com.babylon.wallet.android.presentation.common.SeedPhraseInputDelegate
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
-import com.babylon.wallet.android.presentation.createaccount.withledger.UseLedgerDelegate
 import com.babylon.wallet.android.presentation.dapp.authorized.account.AccountItemUiModel
 import com.babylon.wallet.android.presentation.dapp.authorized.account.toUiModel
-import com.babylon.wallet.android.presentation.model.AddLedgerSheetState
 import com.babylon.wallet.android.presentation.model.LedgerDeviceUiModel
+import com.babylon.wallet.android.presentation.settings.ledgerhardwarewallets.AddLedgerDeviceUiState
 import com.babylon.wallet.android.utils.DeviceSecurityHelper
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
@@ -97,7 +96,7 @@ class ImportLegacyWalletViewModel @Inject constructor(
                     val state = delegateState.addLedgerSheetState
                     uiState.copy(
                         addLedgerSheetState = state,
-                        shouldShowAddLedgerDeviceScreen = state == AddLedgerSheetState.InputLedgerName,
+                        shouldShowAddLedgerDeviceScreen = state == AddLedgerDeviceUiState.ShowContent.NameLedgerDevice,
                         waitingForLedgerResponse = delegateState.waitingForLedgerResponse,
                         recentlyConnectedLedgerDevice = delegateState.recentlyConnectedLedgerDevice,
                         uiMessage = delegateState.uiMessage
@@ -431,7 +430,7 @@ class ImportLegacyWalletViewModel @Inject constructor(
             } else {
                 _state.update {
                     it.copy(
-                        addLedgerSheetState = AddLedgerSheetState.AddLedgerDevice,
+                        addLedgerSheetState = AddLedgerDeviceUiState.ShowContent.AddLedgerDeviceInfo,
                         shouldShowAddLedgerDeviceScreen = true,
                     )
                 }
@@ -453,7 +452,7 @@ class ImportLegacyWalletViewModel @Inject constructor(
             if (useLedgerDelegate.state.first().hasLedgerDevices.not()) {
                 _state.update {
                     it.copy(
-                        addLedgerSheetState = AddLedgerSheetState.AddLedgerDevice,
+                        addLedgerSheetState = AddLedgerDeviceUiState.ShowContent.AddLedgerDeviceInfo,
                         shouldShowAddLedgerDeviceScreen = true,
                     )
                 }
@@ -490,7 +489,7 @@ data class ImportLegacyWalletUiState(
     val waitingForLedgerResponse: Boolean = false,
     val verifiedLedgerDevices: ImmutableList<LedgerHardwareWalletFactorSource> = persistentListOf(),
     val recentlyConnectedLedgerDevice: LedgerDeviceUiModel? = null,
-    val addLedgerSheetState: AddLedgerSheetState = AddLedgerSheetState.AddLedgerDevice,
+    val addLedgerSheetState: AddLedgerDeviceUiState.ShowContent = AddLedgerDeviceUiState.ShowContent.AddLedgerDeviceInfo,
     val seedPhraseWords: ImmutableList<SeedPhraseInputDelegate.SeedPhraseWord> = persistentListOf(),
     val wordAutocompleteCandidates: ImmutableList<String> = persistentListOf(),
     val shouldShowAddLinkConnectorScreen: Boolean = false,
