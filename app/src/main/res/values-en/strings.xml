@@ -490,7 +490,7 @@
   <string name="assetTransfer_chooseReceivingAccount_invalidAddressError">Invalid address</string>
   <string name="assetTransfer_chooseReceivingAccount_alreadyAddedError">Account already added</string>
   <string name="assetTransfer_chooseReceivingAccount_navigationTitle">Choose Receiving Account</string>
-  <string name="assetTransfer_chooseReceivingAccount_enterManually">Enter or scan and Account address</string>
+  <string name="assetTransfer_chooseReceivingAccount_enterManually">Enter or scan an Account address</string>
   <string name="assetTransfer_chooseReceivingAccount_chooseOwnAccount">Or: Choose one of your own Accounts</string>
   <string name="assetTransfer_chooseReceivingAccount_scanQRNavigationTitle">Scan Account QR Code</string>
   <string name="assetTransfer_chooseReceivingAccount_addressFieldPlaceholder">Enter Radix Account address</string>
