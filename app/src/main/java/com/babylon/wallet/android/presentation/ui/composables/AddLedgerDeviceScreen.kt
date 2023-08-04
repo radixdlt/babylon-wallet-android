@@ -1,5 +1,6 @@
 package com.babylon.wallet.android.presentation.ui.composables
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -33,19 +34,22 @@ import com.babylon.wallet.android.designsystem.composable.RadixTextField
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.presentation.common.FullscreenCircularProgressContent
-import com.babylon.wallet.android.presentation.model.AddLedgerSheetState
+import com.babylon.wallet.android.presentation.settings.ledgerhardwarewallets.AddLedgerDeviceUiState
 
 @Composable
 fun AddLedgerDeviceScreen(
     modifier: Modifier,
+    showContent: AddLedgerDeviceUiState.ShowContent,
     deviceModel: String?,
-    onSendAddLedgerRequest: () -> Unit,
-    addLedgerSheetState: AddLedgerSheetState,
-    onConfirmLedgerName: (String) -> Unit,
-    backIconType: BackIconType,
+    onSendAddLedgerRequestClick: () -> Unit,
+    onConfirmLedgerNameClick: (String) -> Unit,
+    backIconType: BackIconType = BackIconType.Close,
     onClose: () -> Unit,
-    waitingForLedgerResponse: Boolean
+    waitingForLedgerResponse: Boolean,
+    onBackClick: () -> Unit
 ) {
+    BackHandler(onBack = onBackClick)
+
     Box(modifier = modifier) {
         Column(
             modifier = Modifier
@@ -72,8 +76,8 @@ fun AddLedgerDeviceScreen(
                 verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingSmall),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                when (addLedgerSheetState) {
-                    AddLedgerSheetState.AddLedgerDevice -> {
+                when (showContent) {
+                    AddLedgerDeviceUiState.ShowContent.AddLedgerDeviceInfo -> {
                         Icon(
                             painterResource(id = R.drawable.ic_hardware_ledger_big),
                             tint = Color.Unspecified,
@@ -106,12 +110,12 @@ fun AddLedgerDeviceScreen(
                         Spacer(modifier = Modifier.weight(1f))
                         RadixPrimaryButton(
                             modifier = Modifier.fillMaxWidth(),
-                            onClick = onSendAddLedgerRequest,
+                            onClick = onSendAddLedgerRequestClick,
                             text = stringResource(id = com.babylon.wallet.android.R.string.addLedgerDevice_addDevice_continue)
                         )
                     }
 
-                    AddLedgerSheetState.InputLedgerName -> {
+                    AddLedgerDeviceUiState.ShowContent.NameLedgerDevice -> {
                         Text(
                             text = stringResource(id = com.babylon.wallet.android.R.string.addLedgerDevice_nameLedger_title),
                             style = RadixTheme.typography.title,
@@ -162,7 +166,7 @@ fun AddLedgerDeviceScreen(
                             text = stringResource(com.babylon.wallet.android.R.string.addLedgerDevice_nameLedger_continueButtonTitle),
                             enabled = ledgerNameValue.trim().isNotEmpty(),
                             onClick = {
-                                onConfirmLedgerName(ledgerNameValue)
+                                onConfirmLedgerNameClick(ledgerNameValue)
                                 ledgerNameValue = ""
                             },
                             modifier = Modifier
@@ -185,13 +189,14 @@ fun AddLedgerDeviceScreenPreview() {
     RadixWalletTheme {
         AddLedgerDeviceScreen(
             modifier = Modifier.fillMaxSize(),
+            showContent = AddLedgerDeviceUiState.ShowContent.AddLedgerDeviceInfo,
             deviceModel = "device model",
-            onSendAddLedgerRequest = {},
-            addLedgerSheetState = AddLedgerSheetState.AddLedgerDevice,
-            onConfirmLedgerName = { },
+            onSendAddLedgerRequestClick = {},
+            onConfirmLedgerNameClick = { },
             backIconType = BackIconType.Back,
             onClose = {},
-            waitingForLedgerResponse = false
+            waitingForLedgerResponse = false,
+            onBackClick = {}
         )
     }
 }
@@ -202,13 +207,14 @@ fun AddLedgerDeviceContentPreview3() {
     RadixWalletTheme {
         AddLedgerDeviceScreen(
             modifier = Modifier.fillMaxSize(),
+            showContent = AddLedgerDeviceUiState.ShowContent.NameLedgerDevice,
             deviceModel = "device model",
-            onSendAddLedgerRequest = {},
-            addLedgerSheetState = AddLedgerSheetState.InputLedgerName,
-            onConfirmLedgerName = { },
+            onSendAddLedgerRequestClick = {},
+            onConfirmLedgerNameClick = { },
             backIconType = BackIconType.Back,
             onClose = {},
-            waitingForLedgerResponse = false
+            waitingForLedgerResponse = false,
+            onBackClick = {}
         )
     }
 }
