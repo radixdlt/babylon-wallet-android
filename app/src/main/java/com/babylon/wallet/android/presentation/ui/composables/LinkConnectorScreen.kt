@@ -1,5 +1,6 @@
 package com.babylon.wallet.android.presentation.ui.composables
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -29,12 +30,14 @@ fun LinkConnectorScreen(
     modifier: Modifier,
     backIconType: BackIconType = BackIconType.Back,
     onLinkConnectorClick: () -> Unit,
-    onBackClick: () -> Unit
+    onCloseClick: () -> Unit
 ) {
+    BackHandler(onBack = onCloseClick)
+
     Column(modifier = modifier.background(RadixTheme.colors.defaultBackground)) {
         RadixCenteredTopAppBar(
             title = stringResource(id = com.babylon.wallet.android.R.string.empty),
-            onBackClick = onBackClick,
+            onBackClick = onCloseClick,
             contentColor = RadixTheme.colors.gray1,
             modifier = Modifier.background(RadixTheme.colors.defaultBackground),
             backIconType = backIconType
@@ -88,7 +91,7 @@ fun LinkConnectorSectionPreview() {
         LinkConnectorScreen(
             modifier = Modifier.fillMaxSize(),
             onLinkConnectorClick = {},
-            onBackClick = {}
+            onCloseClick = {}
         )
     }
 }

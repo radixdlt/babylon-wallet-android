@@ -1,6 +1,7 @@
-package com.babylon.wallet.android.presentation.settings.linkedconnectors
+package com.babylon.wallet.android.presentation.ui.composables
 
 import android.Manifest
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -27,9 +28,8 @@ import com.babylon.wallet.android.designsystem.composable.RadixTextField
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.presentation.common.FullscreenCircularProgressContent
+import com.babylon.wallet.android.presentation.settings.linkedconnectors.AddLinkConnectorUiState
 import com.babylon.wallet.android.presentation.settings.linkedconnectors.qrcode.CameraPreview
-import com.babylon.wallet.android.presentation.ui.composables.BackIconType
-import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
@@ -47,6 +47,8 @@ fun AddLinkConnectorScreen(
     onNewConnectorContinueClick: () -> Unit,
     onNewConnectorCloseClick: () -> Unit
 ) {
+    BackHandler(onBack = onNewConnectorCloseClick)
+
     val cameraPermissionState = rememberPermissionState(permission = Manifest.permission.CAMERA)
     LaunchedEffect(Unit) {
         cameraPermissionState.launchPermissionRequest()
@@ -120,10 +122,11 @@ private fun AddLinkConnectorContent(
 
 @Composable
 private fun ScanQrCode(
+    modifier: Modifier = Modifier,
     onQrCodeScanned: (String) -> Unit,
 ) {
     Column(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = modifier,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(
@@ -152,6 +155,7 @@ private fun ScanQrCode(
                 )
                 .imePadding()
                 .clip(RadixTheme.shapes.roundedRectMedium),
+            disableBackHandler = false,
             isVisible = true,
             onQrCodeDetected = {
                 onQrCodeScanned(it)
