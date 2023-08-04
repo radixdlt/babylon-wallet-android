@@ -28,6 +28,7 @@ fun NavGraphBuilder.ledgerHardwareWalletsScreen(
     ) {
         LedgerHardwareWalletsScreen(
             viewModel = hiltViewModel(),
+            addLedgerDeviceViewModel = hiltViewModel(),
             addLinkConnectorViewModel = hiltViewModel(),
             onBackClick = onBackClick
         )

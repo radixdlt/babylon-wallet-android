@@ -35,11 +35,9 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.domain.model.toProfileLedgerDeviceModel
-import com.babylon.wallet.android.presentation.common.UiMessage
-import com.babylon.wallet.android.presentation.model.AddLedgerSheetState
-import com.babylon.wallet.android.presentation.settings.linkedconnectors.AddLinkConnectorScreen
 import com.babylon.wallet.android.presentation.settings.linkedconnectors.AddLinkConnectorViewModel
 import com.babylon.wallet.android.presentation.ui.composables.AddLedgerDeviceScreen
+import com.babylon.wallet.android.presentation.ui.composables.AddLinkConnectorScreen
 import com.babylon.wallet.android.presentation.ui.composables.BackIconType
 import com.babylon.wallet.android.presentation.ui.composables.LedgerListItem
 import com.babylon.wallet.android.presentation.ui.composables.LinkConnectorScreen
@@ -52,12 +50,14 @@ import rdx.works.profile.data.model.factorsources.LedgerHardwareWalletFactorSour
 
 @Composable
 fun LedgerHardwareWalletsScreen(
+    modifier: Modifier = Modifier,
     viewModel: LedgerHardwareWalletsViewModel,
+    addLedgerDeviceViewModel: AddLedgerDeviceViewModel,
     addLinkConnectorViewModel: AddLinkConnectorViewModel,
-    onBackClick: () -> Unit,
-    modifier: Modifier = Modifier
+    onBackClick: () -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
+    val addLedgerDeviceState by addLedgerDeviceViewModel.state.collectAsStateWithLifecycle()
     val addLinkConnectorState by addLinkConnectorViewModel.state.collectAsStateWithLifecycle()
     val coroutineScope = rememberCoroutineScope()
 
@@ -77,24 +77,41 @@ fun LedgerHardwareWalletsScreen(
             }
 
             LedgerHardwareWalletsUiState.ShowContent.AddLedger -> {
-                AddLedgerDeviceScreen(
-                    modifier = Modifier,
-                    deviceModel = state.recentlyConnectedLedgerDevice?.model?.toProfileLedgerDeviceModel()?.value,
-                    onSendAddLedgerRequest = viewModel::onSendAddLedgerRequest,
-                    addLedgerSheetState = state.addLedgerSheetState,
-                    onConfirmLedgerName = viewModel::onConfirmLedgerName,
-                    onCloseAddLedgerClick = viewModel::onCloseClick,
-                    waitingForLedgerResponse = state.waitingForLedgerResponse,
-                    uiMessage = state.uiMessage,
-                    onMessageShown = viewModel::onMessageShown
-                )
+                Box {
+                    AddLedgerDeviceScreen(
+                        modifier = Modifier,
+                        showContent = addLedgerDeviceState.showContent,
+                        deviceModel = addLedgerDeviceState.newConnectedLedgerDevice?.model?.toProfileLedgerDeviceModel()?.value,
+                        onSendAddLedgerRequestClick = addLedgerDeviceViewModel::onSendAddLedgerRequestClick,
+                        onConfirmLedgerNameClick = {
+                            coroutineScope.launch {
+                                addLedgerDeviceViewModel.onConfirmLedgerNameClick(it)
+                                viewModel.onCloseClick()
+                            }
+                        },
+                        backIconType = BackIconType.Back,
+                        onClose = {
+                            addLedgerDeviceViewModel.initState()
+                            viewModel.onCloseClick()
+                        },
+                        waitingForLedgerResponse = false,
+                        onBackClick = {
+                            addLedgerDeviceViewModel.initState()
+                            viewModel.onCloseClick()
+                        }
+                    )
+                    SnackbarUiMessageHandler(
+                        message = addLedgerDeviceState.uiMessage,
+                        onMessageShown = addLedgerDeviceViewModel::onMessageShown
+                    )
+                }
             }
 
             LedgerHardwareWalletsUiState.ShowContent.LinkNewConnector -> {
                 LinkConnectorScreen(
                     modifier = Modifier.fillMaxSize(),
                     onLinkConnectorClick = viewModel::onLinkConnectorClick,
-                    onBackClick = viewModel::onCloseClick
+                    onCloseClick = viewModel::onCloseClick
                 )
             }
 
@@ -143,38 +160,6 @@ private fun LedgerHardwareWalletsContent(
             modifier = Modifier.fillMaxWidth(),
             ledgerFactorSources = ledgerDevices,
             onAddLedgerDeviceClick = onAddLedgerDeviceClick
-        )
-    }
-}
-
-@Composable
-private fun AddLedgerDeviceScreen(
-    modifier: Modifier,
-    deviceModel: String?,
-    onSendAddLedgerRequest: () -> Unit,
-    addLedgerSheetState: AddLedgerSheetState,
-    onConfirmLedgerName: (String) -> Unit,
-    onCloseAddLedgerClick: () -> Unit,
-    waitingForLedgerResponse: Boolean,
-    uiMessage: UiMessage?,
-    onMessageShown: () -> Unit
-) {
-    Box {
-        AddLedgerDeviceScreen(
-            modifier = modifier,
-            deviceModel = deviceModel,
-            onSendAddLedgerRequest = onSendAddLedgerRequest,
-            addLedgerSheetState = addLedgerSheetState,
-            onConfirmLedgerName = {
-                onConfirmLedgerName(it)
-            },
-            backIconType = BackIconType.Back,
-            onClose = onCloseAddLedgerClick,
-            waitingForLedgerResponse = waitingForLedgerResponse
-        )
-        SnackbarUiMessageHandler(
-            message = uiMessage,
-            onMessageShown = onMessageShown
         )
     }
 }
