@@ -18,7 +18,7 @@ import java.util.concurrent.Executors
 @Composable
 fun CameraPreview(
     modifier: Modifier,
-    disableBack: Boolean = true,
+    disableBackHandler: Boolean = true,
     isVisible: Boolean = true,
     onQrCodeDetected: (qrCode: String) -> Unit,
 ) {
@@ -27,7 +27,7 @@ fun CameraPreview(
         onQrCodeDetected = onQrCodeDetected,
         isVisible = isVisible
     )
-    BackHandler(enabled = disableBack) { }
+    BackHandler(enabled = disableBackHandler) { }
 }
 
 @Composable
