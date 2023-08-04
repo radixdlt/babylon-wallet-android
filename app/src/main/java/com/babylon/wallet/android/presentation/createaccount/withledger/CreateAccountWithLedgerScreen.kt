@@ -24,11 +24,10 @@ import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.domain.model.Selectable
 import com.babylon.wallet.android.domain.model.toProfileLedgerDeviceModel
-import com.babylon.wallet.android.presentation.common.FullscreenCircularProgressContent
-import com.babylon.wallet.android.presentation.common.UiMessage
-import com.babylon.wallet.android.presentation.settings.linkedconnectors.AddLinkConnectorScreen
+import com.babylon.wallet.android.presentation.settings.ledgerhardwarewallets.AddLedgerDeviceViewModel
 import com.babylon.wallet.android.presentation.settings.linkedconnectors.AddLinkConnectorViewModel
 import com.babylon.wallet.android.presentation.ui.composables.AddLedgerDeviceScreen
+import com.babylon.wallet.android.presentation.ui.composables.AddLinkConnectorScreen
 import com.babylon.wallet.android.presentation.ui.composables.BackIconType
 import com.babylon.wallet.android.presentation.ui.composables.ChooseLedgerDeviceSection
 import com.babylon.wallet.android.presentation.ui.composables.LinkConnectorScreen
@@ -42,12 +41,14 @@ import rdx.works.profile.data.model.factorsources.LedgerHardwareWalletFactorSour
 @Composable
 fun CreateAccountWithLedgerScreen(
     viewModel: CreateAccountWithLedgerViewModel,
+    addLedgerDeviceViewModel: AddLedgerDeviceViewModel,
     addLinkConnectorViewModel: AddLinkConnectorViewModel,
     onBackClick: () -> Unit,
     modifier: Modifier = Modifier,
     goBackToCreateAccount: () -> Unit,
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
+    val addLedgerDeviceState by addLedgerDeviceViewModel.state.collectAsStateWithLifecycle()
     val addLinkConnectorState by addLinkConnectorViewModel.state.collectAsStateWithLifecycle()
     val coroutineScope = rememberCoroutineScope()
 
@@ -65,12 +66,9 @@ fun CreateAccountWithLedgerScreen(
                 modifier = modifier,
                 onBackClick = onBackClick,
                 ledgerDevices = state.ledgerDevices,
-                waitingForLedgerResponse = state.waitingForLedgerResponse,
                 onLedgerDeviceSelected = viewModel::onLedgerDeviceSelected,
                 onAddLedgerDeviceClick = viewModel::onAddLedgerDeviceClick,
-                onUseLedgerContinueClick = viewModel::onUseLedgerContinueClick,
-                uiMessage = state.uiMessage,
-                onMessageShown = viewModel::onMessageShown
+                onUseLedgerContinueClick = viewModel::onUseLedgerContinueClick
             )
         }
 
@@ -78,7 +76,7 @@ fun CreateAccountWithLedgerScreen(
             LinkConnectorScreen(
                 modifier = Modifier.fillMaxSize(),
                 onLinkConnectorClick = viewModel::onLinkConnectorClick,
-                onBackClick = viewModel::onCloseClick
+                onCloseClick = viewModel::onCloseClick
             )
         }
 
@@ -112,19 +110,29 @@ fun CreateAccountWithLedgerScreen(
             ) {
                 AddLedgerDeviceScreen(
                     modifier = Modifier,
-                    deviceModel = state.recentlyConnectedLedgerDevice?.model?.toProfileLedgerDeviceModel()?.value,
-                    onSendAddLedgerRequest = viewModel::onSendAddLedgerRequest,
-                    addLedgerSheetState = state.addLedgerSheetState,
-                    onConfirmLedgerName = {
-                        viewModel.onConfirmLedgerName(it)
+                    showContent = addLedgerDeviceState.showContent,
+                    deviceModel = addLedgerDeviceState.newConnectedLedgerDevice?.model?.toProfileLedgerDeviceModel()?.value,
+                    onSendAddLedgerRequestClick = addLedgerDeviceViewModel::onSendAddLedgerRequestClick,
+                    onConfirmLedgerNameClick = {
+                        coroutineScope.launch {
+                            addLedgerDeviceViewModel.onConfirmLedgerNameClick(it)
+                            viewModel.onCloseClick()
+                        }
                     },
                     backIconType = BackIconType.Back,
-                    onClose = viewModel::onCloseClick,
-                    waitingForLedgerResponse = state.waitingForLedgerResponse
+                    onClose = {
+                        addLedgerDeviceViewModel.initState()
+                        viewModel.onCloseClick()
+                    },
+                    waitingForLedgerResponse = false,
+                    onBackClick = {
+                        addLedgerDeviceViewModel.initState()
+                        viewModel.onCloseClick()
+                    }
                 )
                 SnackbarUiMessageHandler(
-                    message = state.uiMessage,
-                    onMessageShown = viewModel::onMessageShown
+                    message = addLedgerDeviceState.uiMessage,
+                    onMessageShown = addLedgerDeviceViewModel::onMessageShown
                 )
             }
         }
@@ -135,12 +143,9 @@ fun CreateAccountWithLedgerScreen(
 private fun ChooseLedgerDeviceContent(
     modifier: Modifier,
     ledgerDevices: ImmutableList<Selectable<LedgerHardwareWalletFactorSource>>,
-    waitingForLedgerResponse: Boolean,
     onLedgerDeviceSelected: (LedgerHardwareWalletFactorSource) -> Unit,
     onUseLedgerContinueClick: () -> Unit,
     onAddLedgerDeviceClick: () -> Unit,
-    uiMessage: UiMessage?,
-    onMessageShown: () -> Unit,
     onBackClick: () -> Unit
 ) {
     BackHandler { onBackClick() }
@@ -188,13 +193,6 @@ private fun ChooseLedgerDeviceContent(
                 enabled = ledgerDevices.any { it.selected }
             )
         }
-        SnackbarUiMessageHandler(
-            message = uiMessage,
-            onMessageShown = onMessageShown
-        )
-    }
-    if (waitingForLedgerResponse) {
-        FullscreenCircularProgressContent()
     }
 }
 
@@ -209,12 +207,9 @@ fun CreateAccountWithLedgerScreenPreview() {
                 .map {
                     Selectable(it, false)
                 }.toPersistentList(),
-            waitingForLedgerResponse = false,
             onLedgerDeviceSelected = {},
             onUseLedgerContinueClick = {},
             onAddLedgerDeviceClick = {},
-            uiMessage = null,
-            onMessageShown = {},
             onBackClick = {}
         )
     }

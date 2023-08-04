@@ -33,6 +33,7 @@ fun NavGraphBuilder.createAccountWithLedger(
     ) {
         CreateAccountWithLedgerScreen(
             viewModel = hiltViewModel(),
+            addLedgerDeviceViewModel = hiltViewModel(),
             addLinkConnectorViewModel = hiltViewModel(),
             onBackClick = onBackClick,
             goBackToCreateAccount = goBackToCreateAccount
