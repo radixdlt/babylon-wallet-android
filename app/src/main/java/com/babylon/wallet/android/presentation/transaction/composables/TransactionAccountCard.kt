@@ -49,7 +49,6 @@ import com.babylon.wallet.android.presentation.ui.composables.ImageSize
 import com.babylon.wallet.android.presentation.ui.composables.rememberImageUrl
 import com.google.accompanist.drawablepainter.rememberDrawablePainter
 import rdx.works.core.displayableQuantity
-import rdx.works.profile.data.model.pernetwork.Network
 
 @Composable
 fun TransactionAccountCard(

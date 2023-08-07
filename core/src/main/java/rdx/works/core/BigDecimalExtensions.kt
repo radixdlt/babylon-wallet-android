@@ -74,4 +74,5 @@ fun BigDecimal.displayableQuantity(): String {
     }
 }
 
+@Suppress("MagicNumber")
 fun BigDecimal.toRETDecimal(roundingMode: RoundingMode): Decimal = Decimal(setScale(18, roundingMode).toPlainString())

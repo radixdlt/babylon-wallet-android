@@ -11,16 +11,26 @@ import com.babylon.wallet.android.data.transaction.DappRequestException
 import com.babylon.wallet.android.data.transaction.DappRequestFailure
 import com.babylon.wallet.android.data.transaction.TransactionClient
 import com.babylon.wallet.android.data.transaction.model.FeePayerSearchResult
+import com.babylon.wallet.android.domain.model.AccountWithResources
 import com.babylon.wallet.android.domain.model.Badge
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
+import com.babylon.wallet.android.domain.model.Resource
+import com.babylon.wallet.android.domain.model.Resources
 import com.babylon.wallet.android.domain.model.TransactionManifestData
+import com.babylon.wallet.android.domain.model.metadata.SymbolMetadataItem
 import com.babylon.wallet.android.domain.usecases.GetAccountsWithResourcesUseCase
 import com.babylon.wallet.android.domain.usecases.GetResourcesMetadataUseCase
 import com.babylon.wallet.android.domain.usecases.ResolveDAppsUseCase
 import com.babylon.wallet.android.domain.usecases.transaction.GetTransactionBadgesUseCase
+import com.babylon.wallet.android.mockdata.account
+import com.babylon.wallet.android.mockdata.profile
 import com.babylon.wallet.android.presentation.StateViewModelTest
 import com.babylon.wallet.android.utils.AppEventBus
 import com.babylon.wallet.android.utils.DeviceSecurityHelper
+import com.radixdlt.ret.Decimal
+import com.radixdlt.ret.ExecutionAnalysis
+import com.radixdlt.ret.FeeLocks
+import com.radixdlt.ret.TransactionType
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
@@ -29,14 +39,17 @@ import io.mockk.slot
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Test
 import rdx.works.profile.data.model.apppreferences.Radix
+import rdx.works.profile.data.model.currentNetwork
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.gateway.GetCurrentGatewayUseCase
+import java.math.BigDecimal
 import com.babylon.wallet.android.domain.common.Result as ResultInternal
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -67,6 +80,30 @@ internal class TransactionApprovalViewModelTest : StateViewModelTest<Transaction
             false
         )
     )
+    private val sampleProfile = profile(accounts = listOf(account(address = "adr_1", name = "primary")))
+    private val fromAccount = account(
+        address = "account_tdx_19jd32jd3928jd3892jd329",
+        name = "From Account"
+    )
+    private val otherAccounts = listOf(
+        account(
+            address = "account_tdx_3j892dj3289dj32d2d2d2d9",
+            name = "To Account 1"
+        ),
+        account(
+            address = "account_tdx_39jfc32jd932ke9023j89r9",
+            name = "To Account 2"
+        ),
+        account(
+            address = "account_tdx_12901829jd9281jd189jd98",
+            name = "To account 3"
+        )
+    )
+    private val sampleXrdResource = Resource.FungibleResource(
+        resourceAddress = "addr_xrd",
+        amount = BigDecimal.TEN,
+        symbolMetadataItem = SymbolMetadataItem("XRD")
+    )
 
     @Before
     override fun setUp() = runTest {
@@ -77,8 +114,8 @@ internal class TransactionApprovalViewModelTest : StateViewModelTest<Transaction
         coEvery { getTransactionBadgesUseCase.invoke(any()) } returns listOf(
             Badge(address = "", nameMetadataItem = null, iconMetadataItem = null)
         )
-        coEvery { transactionClient.signAndSubmitTransaction(any(), any()) } returns Result.success(sampleTxId)
-        coEvery { transactionClient.findFeePayerInManifest(any()) } returns Result.success(FeePayerSearchResult("feePayer"))
+        coEvery { transactionClient.signAndSubmitTransaction(any(), any(), any(), any()) } returns Result.success(sampleTxId)
+        coEvery { transactionClient.findFeePayerInManifest(any(), any()) } returns Result.success(FeePayerSearchResult("feePayer"))
         coEvery { transactionClient.signingState } returns emptyFlow()
         coEvery { transactionClient.getTransactionPreview(any(), any()) } returns Result.success(
             previewResponse()
@@ -100,6 +137,53 @@ internal class TransactionApprovalViewModelTest : StateViewModelTest<Transaction
         } returns ResultInternal.Success(Unit)
         incomingRequestRepository.add(sampleRequest)
         coEvery { appEventBus.sendEvent(any()) } returns Unit
+        coEvery { transactionClient.analyzeExecution(any(), any()) } returns Result.success(
+            ExecutionAnalysis(
+                feeLocks = FeeLocks(
+                    lock = Decimal.zero(),
+                    contingentLock = Decimal.zero()
+                ),
+                feeSummary = com.radixdlt.ret.FeeSummary(
+                    networkFee = Decimal.zero(),
+                    royaltyFee = Decimal.zero()
+                ),
+                transactionType = TransactionType.GeneralTransaction(
+                    accountProofs = listOf(),
+                    accountWithdraws = mapOf(),
+                    accountDeposits = mapOf(),
+                    addressesInManifest = mapOf(),
+                    metadataOfNewlyCreatedEntities = mapOf(),
+                    dataOfNewlyMintedNonFungibles = mapOf(),
+                    addressesOfNewlyCreatedEntities = listOf()
+                )
+            )
+        )
+        every { getProfileUseCase() } returns flowOf(profile(accounts = listOf(fromAccount) + otherAccounts))
+        coEvery {
+            getAccountsWithResourcesUseCase(
+                accounts = any(),
+                isRefreshing = false
+            )
+        } returns com.babylon.wallet.android.domain.common.Result.Success(
+            listOf(
+                AccountWithResources(
+                    account = sampleProfile.currentNetwork.accounts[0],
+                    resources = Resources(fungibleResources = listOf(sampleXrdResource), nonFungibleResources = emptyList())
+                ),
+                AccountWithResources(
+                    account = sampleProfile.currentNetwork.accounts[0],
+                    resources = Resources(fungibleResources = emptyList(), nonFungibleResources = emptyList())
+                )
+            )
+        )
+        coEvery {
+            getResourcesMetadataUseCase.invoke(
+                resourceAddresses = any(),
+                isRefreshing = false
+            )
+        } returns com.babylon.wallet.android.domain.common.Result.Success(
+            mapOf()
+        )
     }
 
     override fun initVM(): TransactionApprovalViewModel {
@@ -157,7 +241,7 @@ internal class TransactionApprovalViewModelTest : StateViewModelTest<Transaction
 
     @Test
     fun `transaction approval sign and submit error`() = runTest {
-        coEvery { transactionClient.signAndSubmitTransaction(any(), any()) } returns Result.failure(
+        coEvery { transactionClient.signAndSubmitTransaction(any(), any(), any(), any()) } returns Result.failure(
             DappRequestException(
                 DappRequestFailure.TransactionApprovalFailure.SubmitNotarizedTransaction
             )
@@ -179,6 +263,8 @@ internal class TransactionApprovalViewModelTest : StateViewModelTest<Transaction
         assert(errorSlot.captured == WalletErrorType.FailedToSubmitTransaction)
         assert(state.error != null)
     }
+
+    // TODO test TransactionFees
 
     private fun previewResponse() = TransactionPreviewResponse(
         encodedReceipt = "",

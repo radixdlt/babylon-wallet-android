@@ -104,7 +104,9 @@ fun TransactionApprovalScreen(
         onNetworkAndRoyaltyFeeChanged = viewModel::onNetworkAndRoyaltyFeeChanged,
         onTipPercentageChanged = viewModel::onTipPercentageChanged,
         onViewDefaultModeClick = viewModel::onViewDefaultModeClick,
-        onViewAdvancedModeClick = viewModel::onViewAdvancedModeClick
+        onViewAdvancedModeClick = viewModel::onViewAdvancedModeClick,
+        noFeePayerSelected = state.noFeePayerSelected,
+        insufficientBalanceToPayTheFee = state.insufficientBalanceToPayTheFee
     )
 
     state.interactionState?.let {
@@ -168,7 +170,9 @@ private fun TransactionPreviewContent(
     onNetworkAndRoyaltyFeeChanged: (String) -> Unit,
     onTipPercentageChanged: (String) -> Unit,
     onViewDefaultModeClick: () -> Unit,
-    onViewAdvancedModeClick: () -> Unit
+    onViewAdvancedModeClick: () -> Unit,
+    noFeePayerSelected: Boolean,
+    insufficientBalanceToPayTheFee: Boolean
 ) {
     val modalBottomSheetState = rememberModalBottomSheetState(
         initialValue = ModalBottomSheetValue.Hidden,
@@ -257,6 +261,8 @@ private fun TransactionPreviewContent(
                             )
                             NetworkFeeContent(
                                 fees = state.transactionFees,
+                                noFeePayerSelected = noFeePayerSelected,
+                                insufficientBalanceToPayTheFee = insufficientBalanceToPayTheFee,
                                 onCustomizeClick = onCustomizeClick
                             )
                             ApproveButton(
@@ -288,6 +294,8 @@ private fun TransactionPreviewContent(
                             }
                             NetworkFeeContent(
                                 fees = state.transactionFees,
+                                noFeePayerSelected = noFeePayerSelected,
+                                insufficientBalanceToPayTheFee = insufficientBalanceToPayTheFee,
                                 onCustomizeClick = onCustomizeClick
                             )
                             ApproveButton(
@@ -450,6 +458,8 @@ fun TransactionPreviewContentPreview() {
             onTipPercentageChanged = {},
             onViewDefaultModeClick = {},
             onViewAdvancedModeClick = {},
+            noFeePayerSelected = false,
+            insufficientBalanceToPayTheFee = false,
         )
     }
 }

@@ -1,5 +1,6 @@
 package com.babylon.wallet.android.presentation.transaction.composables
 
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -31,6 +32,7 @@ import com.babylon.wallet.android.presentation.ui.composables.BottomDialogDragHa
 import rdx.works.core.displayableQuantity
 import rdx.works.profile.data.model.pernetwork.Network
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun FeesSheet(
     modifier: Modifier = Modifier,
@@ -50,7 +52,7 @@ fun FeesSheet(
             .fillMaxSize()
             .imePadding()
     ) {
-        item {
+        stickyHeader {
             BottomDialogDragHandle(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -58,6 +60,9 @@ fun FeesSheet(
                     .padding(top = RadixTheme.dimensions.paddingDefault),
                 onDismissRequest = onClose
             )
+        }
+
+        item {
             val title = when (state.feesMode) {
                 TransactionApprovalViewModel.State.Sheet.CustomizeFees.FeesMode.Default -> {
                     "Customize Fees"
@@ -76,7 +81,6 @@ fun FeesSheet(
                 color = RadixTheme.colors.gray1,
                 textAlign = TextAlign.Center
             )
-            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
         }
 
         item {
@@ -104,7 +108,7 @@ fun FeesSheet(
             Divider(
                 Modifier
                     .fillMaxWidth()
-                    .padding(RadixTheme.dimensions.paddingDefault),
+                    .padding(top = RadixTheme.dimensions.paddingLarge),
                 color = RadixTheme.colors.gray4
             )
         }
@@ -131,10 +135,23 @@ fun FeesSheet(
 
                     Row(
                         modifier = Modifier
-                            .padding(horizontal = RadixTheme.dimensions.paddingLarge),
+                            .fillMaxWidth()
+                            .padding(horizontal = RadixTheme.dimensions.paddingLarge)
+                            .background(
+                                color = RadixTheme.colors.gray5,
+                                shape = RadixTheme.shapes.roundedRectMedium
+                            )
+                            .padding(
+                                vertical = RadixTheme.dimensions.paddingMedium,
+                                horizontal = RadixTheme.dimensions.paddingDefault
+                            ),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text(text = "None required")
+                        Text(
+                            text = "None required",
+                            style = RadixTheme.typography.body1Header,
+                            color = RadixTheme.colors.gray2
+                        )
                     }
                 }
             }
@@ -163,16 +180,46 @@ fun FeesSheet(
                             account = feePayer.feePayerCandidate,
                             resources = emptyList()
                         ),
-                        shape = RadixTheme.shapes.roundedRectDefault
+                        shape = RadixTheme.shapes.roundedRectMedium
                     )
                 }
             }
             is TransactionApprovalViewModel.State.Sheet.CustomizeFees.FeePayerMode.NoFeePayerSelected -> {
                 item {
-                    RadixTextButton(
-                        text = "Select Fee Payer",
-                        onClick = onSelectFeePayerClick
+                    Row(
+                        modifier = Modifier
+                            .padding(horizontal = RadixTheme.dimensions.paddingLarge),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = "Pay fee from".uppercase(),
+                            style = RadixTheme.typography.body1Link,
+                            color = RadixTheme.colors.gray2
+                        )
+                        Spacer(modifier = Modifier.weight(1f))
+                        RadixTextButton(
+                            text = "Change",
+                            onClick = { /* Not needed since its disabled */ },
+                            enabled = false
+                        )
+                    }
+                    Text(
+                        modifier = Modifier
+                            .fillMaxWidth(),
+                        text = "No account selected",
+                        style = RadixTheme.typography.body1Link,
+                        color = RadixTheme.colors.gray2
                     )
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth(),
+                        horizontalArrangement = Arrangement.Center
+                    ) {
+                        RadixTextButton(
+                            text = "Select Fee Payer",
+                            onClick = onSelectFeePayerClick
+                        )
+                    }
                 }
             }
             is TransactionApprovalViewModel.State.Sheet.CustomizeFees.FeePayerMode.SelectFeePayer -> {
@@ -184,11 +231,9 @@ fun FeesSheet(
         }
 
         item {
-            Divider(
-                Modifier
-                    .fillMaxWidth()
-                    .padding(RadixTheme.dimensions.paddingDefault),
-                color = RadixTheme.colors.gray4
+            Spacer(
+                modifier = Modifier
+                    .height(RadixTheme.dimensions.paddingLarge)
             )
         }
 
@@ -239,10 +284,11 @@ fun FeesSheet(
 
 @Composable
 fun NetworkFeesDefaultView(
+    modifier: Modifier = Modifier,
     transactionFees: TransactionFees?
 ) {
     Column(
-        modifier = Modifier
+        modifier = modifier
             .background(RadixTheme.colors.gray5)
             .padding(
                 vertical = RadixTheme.dimensions.paddingDefault,
@@ -260,7 +306,11 @@ fun NetworkFeesDefaultView(
             )
             Spacer(modifier = Modifier.weight(1f))
             Text(
-                text = "${transactionFees?.defaultNetworkFee.orEmpty()} XRD",
+                text = transactionFees?.networkFeeDisplayed?.let {
+                    "$it XRD"
+                } ?: run {
+                    "None due"
+                },
                 style = RadixTheme.typography.body1Header,
                 color = RadixTheme.colors.gray1
             )
@@ -278,34 +328,23 @@ fun NetworkFeesDefaultView(
             )
             Spacer(modifier = Modifier.weight(1f))
             Text(
-                text = "${transactionFees?.defaultRoyaltyFee.orEmpty()} XRD",
+                text = transactionFees?.royaltyFeesDisplayed?.let {
+                    "$it XRD"
+                } ?: run {
+                    "None due"
+                },
                 style = RadixTheme.typography.body1Header,
                 color = RadixTheme.colors.gray1
-            )
-        }
-
-        Row(
-            modifier = Modifier
-                .padding(vertical = RadixTheme.dimensions.paddingSmall)
-        ) {
-            Text(
-                modifier = Modifier,
-                text = "Tip".uppercase(),
-                style = RadixTheme.typography.body1Link,
-                color = RadixTheme.colors.gray2
-            )
-            Spacer(modifier = Modifier.weight(1f))
-            Text(
-                text = "${transactionFees?.defaultTipToDisplay} XRD",
-                style = RadixTheme.typography.body1Link,
-                color = RadixTheme.colors.gray2
             )
         }
 
         Divider(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(vertical = RadixTheme.dimensions.paddingSmall),
+                .padding(
+                    top = RadixTheme.dimensions.paddingDefault,
+                    bottom = RadixTheme.dimensions.paddingSmall
+                ),
             color = RadixTheme.colors.gray4
         )
 
@@ -331,12 +370,13 @@ fun NetworkFeesDefaultView(
 
 @Composable
 fun NetworkFeesAdvancedView(
+    modifier: Modifier = Modifier,
     transactionFees: TransactionFees?,
     onNetworkAndRoyaltyFeeChanged: (String) -> Unit,
     onTipPercentageChanged: (String) -> Unit
 ) {
     Column(
-        modifier = Modifier
+        modifier = modifier
             .padding(
                 vertical = RadixTheme.dimensions.paddingDefault,
                 horizontal = RadixTheme.dimensions.paddingXLarge
@@ -358,7 +398,8 @@ fun NetworkFeesAdvancedView(
                 unfocusedBorderColor = RadixTheme.colors.gray3,
                 focusedContainerColor = RadixTheme.colors.gray5,
                 unfocusedContainerColor = RadixTheme.colors.gray5
-            )
+            ),
+            textStyle = RadixTheme.typography.body1Regular.copy(textAlign = TextAlign.End)
         )
 
         RadixTextField(
@@ -377,12 +418,13 @@ fun NetworkFeesAdvancedView(
                 unfocusedBorderColor = RadixTheme.colors.gray3,
                 focusedContainerColor = RadixTheme.colors.gray5,
                 unfocusedContainerColor = RadixTheme.colors.gray5
-            )
+            ),
+            textStyle = RadixTheme.typography.body1Regular.copy(textAlign = TextAlign.End)
         )
 
         Row(
             modifier = Modifier
-                .padding(vertical = RadixTheme.dimensions.paddingMedium)
+                .padding(vertical = RadixTheme.dimensions.paddingDefault)
         ) {
             Text(
                 modifier = Modifier

@@ -27,9 +27,11 @@ import com.radixdlt.ret.SignatureWithPublicKey
 import com.radixdlt.ret.SignedIntent
 import com.radixdlt.ret.TransactionHeader
 import com.radixdlt.ret.TransactionManifest
+import rdx.works.core.decodeHex
 import rdx.works.core.ret.crypto.PrivateKey
 import rdx.works.core.then
 import rdx.works.core.toByteArray
+import rdx.works.core.toUByteList
 import rdx.works.profile.data.model.pernetwork.Entity
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.domain.GetProfileUseCase
@@ -369,6 +371,13 @@ class TransactionClient @Inject constructor(
             },
             onFailure = { Result.failure(it) }
         )
+    }
+
+    fun analyzeExecution(
+        manifest: TransactionManifest,
+        preview: TransactionPreviewResponse
+    ) = runCatching {
+        manifest.analyzeExecution(transactionReceipt = preview.encodedReceipt.decodeHex().toUByteList())
     }
 
     @Suppress("MagicNumber")

@@ -243,6 +243,12 @@ class TransactionApprovalViewModel @Inject constructor(
         val isSubmitEnabled: Boolean
             get() = previewType !is PreviewType.None
 
+        val noFeePayerSelected: Boolean
+            get() = feePayerSearchResult?.feePayerAddressFromManifest == null
+
+        val insufficientBalanceToPayTheFee: Boolean
+            get() = false // todo Will need to be added later on
+
         sealed class Sheet {
             object None : Sheet()
 

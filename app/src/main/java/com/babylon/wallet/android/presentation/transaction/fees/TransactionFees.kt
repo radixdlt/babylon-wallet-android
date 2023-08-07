@@ -9,28 +9,31 @@ data class TransactionFees(
     private val networkFee: BigDecimal = BigDecimal.ZERO,
     private val royaltyFee: BigDecimal = BigDecimal.ZERO,
     private val nonContingentFeeLock: BigDecimal = BigDecimal.ZERO,
-    private val defaultTip: BigDecimal = BigDecimal.ZERO,
     private val networkAndRoyaltyFees: String? = null,
     private val tipPercentage: String? = null,
     val isNetworkCongested: Boolean = false
 ) {
     // ********* DEFAULT *********
 
-    val defaultNetworkFee: String
-        get() = networkFee.displayableQuantity()
+    val networkFeeDisplayed: String?
+        get() = if (networkFee.subtract(nonContingentFeeLock) > BigDecimal.ZERO) {
+            networkFee.subtract(nonContingentFeeLock).displayableQuantity()
+        } else {
+            null
+        }
 
-    val defaultRoyaltyFee: String
-        get() = royaltyFee.displayableQuantity()
-
-    val defaultTipToDisplay: String
-        get() = defaultTip.displayableQuantity()
+    val royaltyFeesDisplayed: String?
+        get() = if (royaltyFee.subtract(nonContingentFeeLock.subtract(networkFee).abs()) > BigDecimal.ZERO) {
+            royaltyFee.subtract(nonContingentFeeLock.subtract(networkFee)).displayableQuantity()
+        } else {
+            null
+        }
 
     val defaultTransactionFee: BigDecimal
         get() = networkFee
             .multiply(MARGIN)
             .add(royaltyFee)
             .subtract(nonContingentFeeLock)
-
 
     // ********* ADVANCED *********
     /**
@@ -39,6 +42,7 @@ data class TransactionFees(
      *  "XRD to Lock for Network & Royalty Fees" + ( "Validator Tip % to Lock" x ( network fee x 1.15 ) ).
      * And then that number is exactly what should be locked from the user's selected account.
      */
+    @Suppress("MagicNumber")
     val transactionFeeToLock: BigDecimal
         get() = if (networkAndRoyaltyFees != null && tipPercentage != null) {
             // Both tip and network&royalty fee has changed
@@ -89,6 +93,9 @@ data class TransactionFees(
         get() = tipPercentage?.toBigDecimal()
             ?.toLong()?.toUShort()
             ?: TransactionConfig.TIP_PERCENTAGE
+
+    val hasNetworkOrTipBeenSetup: Boolean
+        get() = networkAndRoyaltyFees != null || tipPercentage != null
 
     companion object {
         private val MARGIN = BigDecimal(1.15)
