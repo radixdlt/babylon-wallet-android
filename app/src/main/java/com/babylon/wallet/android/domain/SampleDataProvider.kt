@@ -2,13 +2,13 @@
 
 package com.babylon.wallet.android.domain
 
-import com.babylon.wallet.android.domain.model.AccountValidatorsWithStakeResources
 import com.babylon.wallet.android.domain.model.AccountWithResources
 import com.babylon.wallet.android.domain.model.DAppResources
 import com.babylon.wallet.android.domain.model.DAppWithMetadata
 import com.babylon.wallet.android.domain.model.DAppWithMetadataAndAssociatedResources
 import com.babylon.wallet.android.domain.model.Resource
 import com.babylon.wallet.android.domain.model.Resources
+import com.babylon.wallet.android.domain.model.ValidatorsWithStakeResources
 import com.babylon.wallet.android.domain.model.metadata.NameMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.SymbolMetadataItem
 import rdx.works.core.InstantGenerator
@@ -145,7 +145,7 @@ class SampleDataProvider {
                 fungibleResources = withFungibleTokens,
                 nonFungibleResources = emptyList(),
                 poolUnits = emptyList(),
-                accountValidatorsWithStakeResources = AccountValidatorsWithStakeResources()
+                validatorsWithStakeResources = ValidatorsWithStakeResources()
             )
         )
     }

@@ -2,16 +2,15 @@
 
 package com.babylon.wallet.android.presentation.ui.composables.resources
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.requiredHeight
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Surface
@@ -34,24 +33,22 @@ import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
-import com.babylon.wallet.android.domain.model.AccountValidatorsWithStakeResources
-import com.babylon.wallet.android.domain.model.Resource
 import com.babylon.wallet.android.domain.model.ValidatorWithStakeResources
-import com.babylon.wallet.android.presentation.account.composable.Tag
+import com.babylon.wallet.android.domain.model.ValidatorsWithStakeResources
 import java.math.BigDecimal
 
 @Composable
 fun LiquidStakeUnitResourceHeader(
     modifier: Modifier = Modifier,
-    collection: AccountValidatorsWithStakeResources,
+    collection: ValidatorsWithStakeResources,
     cardHeight: Dp = 103.dp,
-    collapsed: Boolean = false,
+    collapsed: Boolean = true,
     groupInnerPadding: Dp = 6.dp,
     parentSectionClick: () -> Unit,
 ) {
     val bottomCorners = if (collapsed) 12.dp else 0.dp
     val cardShape = RoundedCornerShape(12.dp, 12.dp, bottomCorners, bottomCorners)
-    Box(
+    BoxWithConstraints(
         modifier = modifier
     ) {
         if (collapsed) {
@@ -74,6 +71,7 @@ fun LiquidStakeUnitResourceHeader(
         Card(
             modifier = Modifier
                 .fillMaxWidth()
+                .requiredHeight(cardHeight)
                 .clickable { parentSectionClick() },
             shape = cardShape,
             colors = CardDefaults.cardColors(
@@ -86,7 +84,7 @@ fun LiquidStakeUnitResourceHeader(
         ) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.padding(RadixTheme.dimensions.paddingLarge),
+                modifier = Modifier.weight(1f).padding(horizontal = RadixTheme.dimensions.paddingLarge),
                 horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingDefault)
             ) {
                 Icon(
@@ -112,31 +110,31 @@ fun LiquidStakeUnitResourceHeader(
                     )
                 }
             }
-            Row(
-                Modifier
-                    .fillMaxWidth()
-                    .background(
-                        RadixTheme.colors.gray5,
-                        shape = if (collapsed) {
-                            RadixTheme.shapes.roundedRectBottomMedium
-                        } else {
-                            RoundedCornerShape(0.dp)
-                        }
-                    )
-                    .padding(horizontal = RadixTheme.dimensions.paddingMedium, vertical = RadixTheme.dimensions.paddingSmall)
-            ) {
-                Tag(
-                    modifier = Modifier
-                        .padding(RadixTheme.dimensions.paddingXSmall)
-                        .border(
-                            width = 1.dp,
-                            color = RadixTheme.colors.gray4,
-                            shape = RadixTheme.shapes.roundedTag
-                        )
-                        .padding(RadixTheme.dimensions.paddingSmall),
-                    tag = Resource.Tag.Official
-                )
-            }
+//            Row(
+//                Modifier
+//                    .fillMaxWidth()
+//                    .background(
+//                        RadixTheme.colors.gray5,
+//                        shape = if (collapsed) {
+//                            RadixTheme.shapes.roundedRectBottomMedium
+//                        } else {
+//                            RoundedCornerShape(0.dp)
+//                        }
+//                    )
+//                    .padding(horizontal = RadixTheme.dimensions.paddingMedium, vertical = RadixTheme.dimensions.paddingSmall)
+//            ) {
+//                Tag(
+//                    modifier = Modifier
+//                        .padding(RadixTheme.dimensions.paddingXSmall)
+//                        .border(
+//                            width = 1.dp,
+//                            color = RadixTheme.colors.gray4,
+//                            shape = RadixTheme.shapes.roundedTag
+//                        )
+//                        .padding(RadixTheme.dimensions.paddingSmall),
+//                    tag = Resource.Tag.Official
+//                )
+//            }
         }
     }
 }
@@ -148,7 +146,7 @@ fun LiquidStakeUnitResourceHeaderPreview() {
         LiquidStakeUnitResourceHeader(
             modifier = Modifier.padding(all = 30.dp),
             collapsed = true,
-            collection = AccountValidatorsWithStakeResources(
+            collection = ValidatorsWithStakeResources(
                 listOf(
                     ValidatorWithStakeResources("address1", "Validator 1", null, BigDecimal(1000)),
                     ValidatorWithStakeResources("address1", "Validator 1", null, BigDecimal(1000))

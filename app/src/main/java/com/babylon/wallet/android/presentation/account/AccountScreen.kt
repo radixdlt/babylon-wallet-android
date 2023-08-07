@@ -69,10 +69,10 @@ import com.babylon.wallet.android.designsystem.theme.AccountGradientList
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.SampleDataProvider
-import com.babylon.wallet.android.domain.model.AccountValidatorsWithStakeResources
 import com.babylon.wallet.android.domain.model.AccountWithResources
 import com.babylon.wallet.android.domain.model.Resource
 import com.babylon.wallet.android.domain.model.Resources
+import com.babylon.wallet.android.domain.model.ValidatorsWithStakeResources
 import com.babylon.wallet.android.presentation.account.composable.FungibleTokenBottomSheetDetails
 import com.babylon.wallet.android.presentation.account.composable.NonFungibleTokenBottomSheetDetails
 import com.babylon.wallet.android.presentation.transfer.assets.ResourceTab
@@ -338,7 +338,7 @@ fun AssetsContent(
         val collapsedState = remember(nonFungibleCollections) {
             nonFungibleCollections.map { true }.toMutableStateList()
         }
-        var collapsedStakeState by remember(resources?.accountValidatorsWithStakeResources) { mutableStateOf(true) }
+        var collapsedStakeState by remember(resources?.validatorsWithStakeResources) { mutableStateOf(true) }
 
         val accountAddress = remember(state.accountWithResources) {
             state.accountWithResources?.account?.address.orEmpty()
@@ -458,7 +458,7 @@ fun AssetsContent(
                             poolUnitsResources(
                                 modifier = contentModifier,
                                 collapsedState = collapsedStakeState,
-                                accountValidatorsWithStakeResources = resources.accountValidatorsWithStakeResources,
+                                validatorsWithStakeResources = resources.validatorsWithStakeResources,
                                 poolUnits = resources.poolUnits
                             ) {
                                 collapsedStakeState = !collapsedStakeState
@@ -512,7 +512,7 @@ fun AccountContentPreview() {
                             fungibleResources = sampleFungibleResources(),
                             nonFungibleResources = listOf(),
                             poolUnits = listOf(),
-                            accountValidatorsWithStakeResources = AccountValidatorsWithStakeResources()
+                            validatorsWithStakeResources = ValidatorsWithStakeResources()
                         ),
                     )
                 ),

@@ -302,11 +302,17 @@ sealed class Resource {
     }
 
     data class PoolUnitResource(
-        val fungibleResource: FungibleResource
+        val poolUnitResource: FungibleResource,
+        val poolResources: List<FungibleResource> = emptyList()
     ) : Resource() {
 
         override val resourceAddress: String
-            get() = fungibleResource.poolAddress.orEmpty()
+            get() = poolUnitResource.poolAddress.orEmpty()
+
+        fun resourceRedemptionValue(resourceAddress: String): BigDecimal? {
+            val resourceVaultBalance = poolResources.find { it.resourceAddress == resourceAddress }?.amount
+            return poolUnitResource.amount?.multiply(resourceVaultBalance)?.divide(poolUnitResource.currentSupply)
+        }
     }
 
     sealed interface Tag {

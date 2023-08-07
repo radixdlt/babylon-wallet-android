@@ -19,7 +19,7 @@ data class Resources(
     val fungibleResources: List<Resource.FungibleResource>,
     val nonFungibleResources: List<Resource.NonFungibleResource>,
     val poolUnits: List<Resource.PoolUnitResource>,
-    val accountValidatorsWithStakeResources: AccountValidatorsWithStakeResources = AccountValidatorsWithStakeResources()
+    val validatorsWithStakeResources: ValidatorsWithStakeResources = ValidatorsWithStakeResources()
 ) {
 
     val xrd: Resource.FungibleResource? = fungibleResources.find { it.isXrd }
@@ -34,19 +34,26 @@ data class Resources(
         }
     } == true
 
+    fun poolUnitsSize(): Int {
+        return poolUnits.size + validatorsWithStakeResources.validators.size
+    }
+
     companion object {
         val EMPTY = Resources(
             fungibleResources = emptyList(),
             nonFungibleResources = emptyList(),
             poolUnits = emptyList(),
-            accountValidatorsWithStakeResources = AccountValidatorsWithStakeResources()
+            validatorsWithStakeResources = ValidatorsWithStakeResources()
         )
     }
 }
 
-data class AccountValidatorsWithStakeResources(
+data class ValidatorsWithStakeResources(
     val validators: List<ValidatorWithStakeResources> = emptyList()
-)
+) {
+    val isEmpty
+        get() = validators.isEmpty()
+}
 
 data class ValidatorWithStakeResources(
     val address: String,

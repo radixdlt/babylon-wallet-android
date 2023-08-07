@@ -37,10 +37,10 @@ import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
-import com.babylon.wallet.android.domain.model.AccountValidatorsWithStakeResources
 import com.babylon.wallet.android.domain.model.Resource
 import com.babylon.wallet.android.domain.model.Resources
 import com.babylon.wallet.android.domain.model.ValidatorWithStakeResources
+import com.babylon.wallet.android.domain.model.ValidatorsWithStakeResources
 import com.babylon.wallet.android.presentation.account.composable.EmptyResourcesContent
 import com.babylon.wallet.android.presentation.transfer.assets.ResourceTab
 import rdx.works.core.displayableQuantity
@@ -66,7 +66,7 @@ fun PoolUnitResourcesColumn(
     ) {
         poolUnitsResources(
             collapsedState = collapsedStakeState,
-            accountValidatorsWithStakeResources = resources?.accountValidatorsWithStakeResources,
+            validatorsWithStakeResources = resources?.validatorsWithStakeResources,
             poolUnits = resources?.poolUnits.orEmpty()
         ) {
             collapsedStakeState = !collapsedStakeState
@@ -78,11 +78,11 @@ fun PoolUnitResourcesColumn(
 fun LazyListScope.poolUnitsResources(
     modifier: Modifier = Modifier,
     collapsedState: Boolean,
-    accountValidatorsWithStakeResources: AccountValidatorsWithStakeResources?,
+    validatorsWithStakeResources: ValidatorsWithStakeResources?,
     poolUnits: List<Resource.PoolUnitResource>,
     parentSectionClick: () -> Unit
 ) {
-    if (accountValidatorsWithStakeResources == null && poolUnits.isEmpty()) {
+    if ((validatorsWithStakeResources == null || validatorsWithStakeResources.isEmpty) && poolUnits.isEmpty()) {
         item {
             EmptyResourcesContent(
                 modifier = modifier.fillMaxWidth(),
@@ -90,18 +90,18 @@ fun LazyListScope.poolUnitsResources(
             )
         }
     } else {
-        accountValidatorsWithStakeResources?.let { validatorsWithStakeResources ->
+        validatorsWithStakeResources?.let { validatorWithStakeResources ->
             item {
                 LiquidStakeUnitResourceHeader(
                     modifier = modifier,
-                    collection = validatorsWithStakeResources,
+                    collection = validatorWithStakeResources,
                     collapsed = collapsedState,
                     parentSectionClick = parentSectionClick
                 )
             }
             if (!collapsedState) {
-                val validatorsSize = validatorsWithStakeResources.validators.size
-                validatorsWithStakeResources.validators.forEachIndexed { index, validator ->
+                val validatorsSize = validatorWithStakeResources.validators.size
+                validatorWithStakeResources.validators.forEachIndexed { index, validator ->
                     val lastValidator = validatorsSize - 1 == index
                     item(key = validator.address) {
                         CardWrapper(modifier) {
@@ -375,7 +375,7 @@ private fun PoolUnitItem(
                 horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingMedium)
             ) {
                 AsyncImage(
-                    model = resource.fungibleResource.iconUrl,
+                    model = resource.poolUnitResource.iconUrl,
                     placeholder = painterResource(id = R.drawable.img_placeholder),
                     error = painterResource(id = R.drawable.img_placeholder),
                     contentDescription = null,
@@ -391,10 +391,51 @@ private fun PoolUnitItem(
                     maxLines = 2
                 )
             }
+            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
+            Column(modifier = Modifier.border(1.dp, RadixTheme.colors.gray4, RadixTheme.shapes.roundedRectMedium)) {
+                val itemsSize = resource.poolResources.size
+                resource.poolResources.forEachIndexed { index, poolResource ->
+                    Row(
+                        modifier = Modifier.padding(
+                            horizontal = RadixTheme.dimensions.paddingDefault,
+                            vertical = RadixTheme.dimensions.paddingLarge
+                        ),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingMedium)
+                    ) {
+                        AsyncImage(
+                            model = poolResource.iconUrl,
+                            placeholder = painterResource(id = R.drawable.img_placeholder),
+                            error = painterResource(id = R.drawable.img_placeholder),
+                            contentDescription = null,
+                            contentScale = ContentScale.Crop,
+                            modifier = Modifier
+                                .size(44.dp)
+                                .clip(RadixTheme.shapes.roundedRectSmall)
+                        )
+                        Text(
+                            modifier = Modifier.weight(1f),
+                            text = poolResource.displayTitle,
+                            style = RadixTheme.typography.body2HighImportance,
+                            color = RadixTheme.colors.gray1,
+                            maxLines = 2
+                        )
+                        Text(
+                            resource.resourceRedemptionValue(poolResource.resourceAddress)?.displayableQuantity().orEmpty(),
+                            style = RadixTheme.typography.secondaryHeader,
+                            color = RadixTheme.colors.gray1,
+                            maxLines = 1
+                        )
+                    }
+                    if (index != itemsSize - 1) {
+                        Divider(color = RadixTheme.colors.gray4)
+                    }
+                }
+            }
         }
     }
 }
 
 private fun poolName(poolUnit: Resource.PoolUnitResource): String {
-    return poolUnit.fungibleResource.displayTitle.ifEmpty { "Unnamed Pool" }
+    return poolUnit.poolUnitResource.displayTitle.ifEmpty { "Unnamed Pool" }
 }

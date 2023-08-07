@@ -38,11 +38,11 @@ import com.babylon.wallet.android.domain.common.Result
 import com.babylon.wallet.android.domain.common.map
 import com.babylon.wallet.android.domain.common.switchMap
 import com.babylon.wallet.android.domain.common.value
-import com.babylon.wallet.android.domain.model.AccountValidatorsWithStakeResources
 import com.babylon.wallet.android.domain.model.AccountWithResources
 import com.babylon.wallet.android.domain.model.Resource
 import com.babylon.wallet.android.domain.model.Resources
 import com.babylon.wallet.android.domain.model.ValidatorWithStakeResources
+import com.babylon.wallet.android.domain.model.ValidatorsWithStakeResources
 import com.babylon.wallet.android.domain.model.metadata.ClaimAmountMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.IconUrlMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.MetadataItem
@@ -114,7 +114,7 @@ class EntityRepositoryImpl @Inject constructor(
                     isRefreshing = isRefreshing,
                     stateVersion = stateVersion
                 )
-            val poolUnitDetails = getPoolDetails(
+            val poolsList = getPoolDetails(
                 mapOfAccountsWithFungibleResources = mapOfAccountsWithFungibleResources,
                 isRefreshing = isRefreshing,
                 stateVersion = stateVersion
@@ -122,7 +122,7 @@ class EntityRepositoryImpl @Inject constructor(
             val validatorResourceAddresses = validatorDetails.map { item ->
                 listOfNotNull(item.details?.stakeUnitResourceAddress(), item.details?.unstakeClaimTokenAddress())
             }.flatten().toSet()
-            val poolAddresses = poolUnitDetails.map { item -> item.address }.toSet()
+            val poolAddresses = poolsList.map { item -> item.address }.toSet()
 
             val mapOfAccountsWithLiquidStakeUnitResources = mapOfAccountsWithFungibleResources.mapValues { fungibleResources ->
                 fungibleResources.value.filter { validatorResourceAddresses.contains(it.resourceAddress) }.map {
@@ -135,8 +135,14 @@ class EntityRepositoryImpl @Inject constructor(
                 }.map { Resource.StakeClaimResource(it) }
             }.filter { it.value.isNotEmpty() }
             val mapOfAccountsWithPoolUnits = mapOfAccountsWithFungibleResources.mapValues { fungibleResources ->
-                fungibleResources.value.filter { poolAddresses.contains(it.poolAddress) }.map {
-                    Resource.PoolUnitResource(it)
+                fungibleResources.value.filter { poolAddresses.contains(it.poolAddress) }.map { poolUnitResource ->
+                    val poolDetails = poolsList.find { it.address == poolUnitResource.poolAddress }
+                    val poolResources = poolDetails?.fungibleResources?.items?.mapNotNull { poolResource ->
+                        (poolResource as? FungibleResourcesCollectionItemVaultAggregated)?.let {
+                            mapToFungibleResource(it)
+                        }
+                    }.orEmpty()
+                    Resource.PoolUnitResource(poolUnitResource, poolResources)
                 }
             }.filter { it.value.isNotEmpty() }
 
@@ -165,8 +171,8 @@ class EntityRepositoryImpl @Inject constructor(
                     resources = Resources(
                         fungibleResources = mapOfAccountsWithFungibleResources[account.address].orEmpty().sorted(),
                         nonFungibleResources = mapOfAccountsWithNonFungibleResources[account.address].orEmpty().sorted(),
-                        accountValidatorsWithStakeResources = liquidStakeCollectionPerAccountAddress[account.address]
-                            ?: AccountValidatorsWithStakeResources(),
+                        validatorsWithStakeResources = liquidStakeCollectionPerAccountAddress[account.address]
+                            ?: ValidatorsWithStakeResources(),
                         poolUnits = mapOfAccountsWithPoolUnits[account.address].orEmpty()
                     )
                 )
@@ -225,7 +231,7 @@ class EntityRepositoryImpl @Inject constructor(
         accountAddressToLiquidStakeUnits: Map<String, List<Resource.LiquidStakeUnitResource>>,
         accountAddressToStakeClaimNtfs: Map<String, List<Resource.StakeClaimResource>>,
         validatorDetailsList: List<StateEntityDetailsResponseItem>,
-    ): Map<String, AccountValidatorsWithStakeResources> {
+    ): Map<String, ValidatorsWithStakeResources> {
         if (validatorDetailsList.isEmpty()) return emptyMap()
         val accountAddresses = accountAddressToLiquidStakeUnits.keys + accountAddressToStakeClaimNtfs.keys
         return accountAddresses.associateWith { address ->
@@ -255,7 +261,7 @@ class EntityRepositoryImpl @Inject constructor(
                         stakeClaimNft = nftPerValidator[validatorAddress].orEmpty().firstOrNull()
                     )
                 }
-            AccountValidatorsWithStakeResources(
+            ValidatorsWithStakeResources(
                 validators = accountValidators
             )
         }
@@ -304,24 +310,7 @@ class EntityRepositoryImpl @Inject constructor(
                         val fungibleDetails = resourcesDetails.find {
                             it.address == fungibleResourcesItem.resourceAddress
                         }
-                        val resourceBehaviours = fungibleDetails?.details?.calculateResourceBehaviours().orEmpty()
-                        val currentSupply = fungibleDetails?.details?.totalSupply()?.toBigDecimal()
-                        val metaDataItems = fungibleDetails?.explicitMetadata?.asMetadataItems().orEmpty()
-                        val amount = fungibleResourcesItem.vaults.items.first().amount.toBigDecimal()
-                        if (amount == BigDecimal.ZERO) return@mapNotNull null
-                        Resource.FungibleResource(
-                            resourceAddress = fungibleResourcesItem.resourceAddress,
-                            amount = amount,
-                            nameMetadataItem = metaDataItems.toMutableList().consume(),
-                            symbolMetadataItem = metaDataItems.toMutableList().consume(),
-                            descriptionMetadataItem = metaDataItems.toMutableList().consume(),
-                            iconUrlMetadataItem = metaDataItems.toMutableList().consume(),
-                            tagsMetadataItem = metaDataItems.toMutableList().consume(),
-                            behaviours = resourceBehaviours,
-                            currentSupply = currentSupply,
-                            validatorMetadataItem = metaDataItems.toMutableList().consume(),
-                            poolMetadataItem = metaDataItems.toMutableList().consume()
-                        )
+                        mapToFungibleResource(fungibleResourcesItem, fungibleDetails)
                     }
                 }
         }.flatMap { map ->
@@ -329,6 +318,30 @@ class EntityRepositoryImpl @Inject constructor(
         }.associate { map ->
             map.key to map.value
         }
+    }
+
+    private fun mapToFungibleResource(
+        fungibleResourcesItem: FungibleResourcesCollectionItemVaultAggregated,
+        fungibleDetails: StateEntityDetailsResponseItem? = null
+    ): Resource.FungibleResource? {
+        val resourceBehaviours = fungibleDetails?.details?.calculateResourceBehaviours().orEmpty()
+        val currentSupply = fungibleDetails?.details?.totalSupply()?.toBigDecimal()
+        val metaDataItems = (fungibleDetails?.explicitMetadata ?: fungibleResourcesItem.explicitMetadata)?.asMetadataItems().orEmpty()
+        val amount = fungibleResourcesItem.vaults.items.first().amount.toBigDecimal()
+        if (amount == BigDecimal.ZERO) return null
+        return Resource.FungibleResource(
+            resourceAddress = fungibleResourcesItem.resourceAddress,
+            amount = amount,
+            nameMetadataItem = metaDataItems.toMutableList().consume(),
+            symbolMetadataItem = metaDataItems.toMutableList().consume(),
+            descriptionMetadataItem = metaDataItems.toMutableList().consume(),
+            iconUrlMetadataItem = metaDataItems.toMutableList().consume(),
+            tagsMetadataItem = metaDataItems.toMutableList().consume(),
+            behaviours = resourceBehaviours,
+            currentSupply = currentSupply,
+            validatorMetadataItem = metaDataItems.toMutableList().consume(),
+            poolMetadataItem = metaDataItems.toMutableList().consume()
+        )
     }
 
     private suspend fun buildMapOfAccountsWithNonFungibles(
