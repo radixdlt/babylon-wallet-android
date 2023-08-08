@@ -328,10 +328,10 @@ fun NetworkFeesDefaultView(
             )
             Spacer(modifier = Modifier.weight(1f))
             Text(
-                text = transactionFees?.royaltyFeesDisplayed?.let {
-                    "$it XRD"
-                } ?: run {
+                text = if (transactionFees?.royaltyFeesDisplayed == "0") {
                     "None due"
+                } else {
+                    "${transactionFees?.royaltyFeesDisplayed} XRD"
                 },
                 style = RadixTheme.typography.body1Header,
                 color = RadixTheme.colors.gray1

@@ -15,6 +15,9 @@ data class TransactionFees(
 ) {
     // ********* DEFAULT *********
 
+    /**
+     * Network Fee displayed = Network Fee - Non-contingent lock or null if negative or 0 fee applicable
+     */
     val networkFeeDisplayed: String?
         get() = if (networkFee.subtract(nonContingentFeeLock) > BigDecimal.ZERO) {
             networkFee.subtract(nonContingentFeeLock).displayableQuantity()
@@ -22,18 +25,25 @@ data class TransactionFees(
             null
         }
 
-    val royaltyFeesDisplayed: String?
-        get() = if (royaltyFee.subtract(nonContingentFeeLock.subtract(networkFee).abs()) > BigDecimal.ZERO) {
-            royaltyFee.subtract(nonContingentFeeLock.subtract(networkFee)).displayableQuantity()
-        } else {
-            null
-        }
+    /**
+     * Royalty Fee displayed = Royalty Fee - abs(Non-contingent lock - Network Fee) or 0 if negative
+     */
+    val royaltyFeesDisplayed: String
+        get() = BigDecimal.ZERO.max(
+            royaltyFee.subtract(
+                BigDecimal.ZERO.max(
+                    nonContingentFeeLock.subtract(networkFee)
+                )
+            )
+        ).displayableQuantity()
 
     val defaultTransactionFee: BigDecimal
-        get() = networkFee
-            .multiply(MARGIN)
-            .add(royaltyFee)
-            .subtract(nonContingentFeeLock)
+        get() = BigDecimal.ZERO.max(
+            networkFee
+                .multiply(MARGIN)
+                .add(royaltyFee)
+                .subtract(nonContingentFeeLock)
+        )
 
     // ********* ADVANCED *********
     /**
@@ -41,35 +51,23 @@ data class TransactionFees(
      * the TRANSACTION FEE at the bottom should be calculated as:
      *  "XRD to Lock for Network & Royalty Fees" + ( "Validator Tip % to Lock" x ( network fee x 1.15 ) ).
      * And then that number is exactly what should be locked from the user's selected account.
+     *    let networkFee = max(advanced.networkAndRoyaltyFee - royaltyFee, .zero)
+     *   let tipAmount = networkFee * (advanced.tipPercentage / 100)
+     *   let total = advanced.networkAndRoyaltyFee + tipAmount
      */
     @Suppress("MagicNumber")
     val transactionFeeToLock: BigDecimal
         get() = if (networkAndRoyaltyFees != null && tipPercentage != null) {
             // Both tip and network&royalty fee has changed
-            val tipPercentageBigDecimal = try {
-                tipPercentage.toBigDecimal().divide(BigDecimal(100))
-            } catch (e: NumberFormatException) {
-                BigDecimal.ZERO
-            }
-            networkAndRoyaltyFees.toBigDecimal()
-                .add(
-                    tipPercentageBigDecimal
-                        .multiply(networkFee)
-                        .multiply(MARGIN)
-                )
+            val networkAndRoyaltyBigDecimal = networkAndRoyaltyFees.toBigDecimal()
+            val networkFeeForTip = BigDecimal.ZERO.max(networkAndRoyaltyBigDecimal.subtract(royaltyFee))
+            val tipAmount = networkFeeForTip.multiply(tipPercentage.toBigDecimal().divide(BigDecimal(100)))
+            networkAndRoyaltyBigDecimal.add(tipAmount)
         } else if (networkAndRoyaltyFees == null && tipPercentage != null) {
             // Just percentage has changed
-            val tipPercentageBigDecimal = try {
-                tipPercentage.toBigDecimal().divide(BigDecimal(100))
-            } catch (e: NumberFormatException) {
-                BigDecimal.ZERO
-            }
-            defaultTransactionFee
-                .add(
-                    tipPercentageBigDecimal
-                        .multiply(networkFee)
-                        .multiply(MARGIN)
-                )
+            val networkFeeForTip = BigDecimal.ZERO.max(defaultTransactionFee.subtract(royaltyFee))
+            val tipAmount = networkFeeForTip.multiply(tipPercentage.toBigDecimal().divide(BigDecimal(100)))
+            defaultTransactionFee.add(tipAmount)
         } else if (networkAndRoyaltyFees != null && tipPercentage == null) {
             // Just network&royalty fee has changed, tip remains 0%
             try {
