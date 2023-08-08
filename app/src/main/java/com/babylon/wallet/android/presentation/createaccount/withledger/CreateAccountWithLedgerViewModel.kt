@@ -10,87 +10,88 @@ import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.presentation.common.StateViewModel
-import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
-import com.babylon.wallet.android.presentation.model.AddLedgerSheetState
-import com.babylon.wallet.android.presentation.model.LedgerDeviceUiModel
 import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
+import kotlinx.collections.immutable.toImmutableList
 import kotlinx.collections.immutable.toPersistentList
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.UUIDGenerator
+import rdx.works.profile.data.model.factorsources.FactorSource
 import rdx.works.profile.data.model.factorsources.LedgerHardwareWalletFactorSource
-import rdx.works.profile.domain.AddLedgerFactorSourceUseCase
 import rdx.works.profile.domain.GetProfileUseCase
+import rdx.works.profile.domain.ledgerFactorSources
 import rdx.works.profile.domain.nextDerivationPathForAccountOnCurrentNetworkWithLedger
+import rdx.works.profile.domain.p2pLinks
 import javax.inject.Inject
 
 @HiltViewModel
 class CreateAccountWithLedgerViewModel @Inject constructor(
     private val getProfileUseCase: GetProfileUseCase,
     private val ledgerMessenger: LedgerMessenger,
-    addLedgerFactorSourceUseCase: AddLedgerFactorSourceUseCase,
     private val appEventBus: AppEventBus
-) : StateViewModel<CreateAccountWithLedgerViewModel.CreateAccountWithLedgerState>(),
+) : StateViewModel<CreateAccountWithLedgerUiState>(),
     OneOffEventHandler<CreateAccountWithLedgerEvent> by OneOffEventHandlerImpl() {
 
-    private val createLedgerDelegate = CreateLedgerDelegate(
-        getProfileUseCase = getProfileUseCase,
-        ledgerMessenger = ledgerMessenger,
-        addLedgerFactorSourceUseCase = addLedgerFactorSourceUseCase,
-        scope = viewModelScope
-    )
+    override fun initialState(): CreateAccountWithLedgerUiState = CreateAccountWithLedgerUiState()
 
     init {
         viewModelScope.launch {
-            createLedgerDelegate.state.collect { delegateState ->
+            getProfileUseCase.ledgerFactorSources.collect { ledgerDevices ->
                 _state.update { uiState ->
-                    val selectedFactorSourceId = delegateState.selectedFactorSourceID
                     uiState.copy(
-                        loading = delegateState.loading,
-                        addLedgerSheetState = delegateState.addLedgerSheetState,
-                        ledgerFactorSources = delegateState.ledgerFactorSources.map { ledgerFactorSource ->
-                            Selectable(
-                                data = ledgerFactorSource,
-                                selected = ledgerFactorSource.id == selectedFactorSourceId
-                            )
-                        }.toPersistentList(),
-                        waitingForLedgerResponse = delegateState.waitingForLedgerResponse,
-                        recentlyConnectedLedgerDevice = delegateState.recentlyConnectedLedgerDevice,
-                        mode = if (delegateState.hasP2pLinks) {
-                            CreateAccountWithLedgerMode.ChooseLedger
-                        } else {
-                            CreateAccountWithLedgerMode.LinkConnector
-                        },
-                        uiMessage = delegateState.uiMessage
+                        loading = false,
+                        ledgerDevices = ledgerDevices.mapIndexed { index, ledgerDevice ->
+                            if (uiState.selectedLedgerDeviceId == null && index == 0) {
+                                Selectable(
+                                    data = ledgerDevice,
+                                    selected = true
+                                )
+                            } else {
+                                Selectable(
+                                    data = ledgerDevice,
+                                    selected = ledgerDevice.id == uiState.selectedLedgerDeviceId
+                                )
+                            }
+                        }.toPersistentList()
                     )
                 }
             }
         }
     }
 
-    override fun initialState(): CreateAccountWithLedgerState = CreateAccountWithLedgerState()
-
-    fun onLedgerFactorSourceSelected(ledgerFactorSource: LedgerHardwareWalletFactorSource) {
-        createLedgerDelegate.onLedgerFactorSourceSelected(ledgerFactorSource)
+    fun onLedgerDeviceSelected(selectedLedgerDevice: LedgerHardwareWalletFactorSource) {
+        _state.update { uiState ->
+            uiState.copy(
+                selectedLedgerDeviceId = selectedLedgerDevice.id,
+                ledgerDevices = uiState.ledgerDevices.map { selectableLedgerDevice ->
+                    val updatedSelectableLedgerDevice = selectableLedgerDevice.copy(
+                        selected = selectableLedgerDevice.data.id == selectedLedgerDevice.id
+                    )
+                    updatedSelectableLedgerDevice
+                }.toImmutableList()
+            )
+        }
     }
 
-    fun onSendAddLedgerRequest() {
-        createLedgerDelegate.onSendAddLedgerRequest()
-    }
-
-    fun onSkipLedgerName() {
-        createLedgerDelegate.onSkipLedgerName()
-    }
-
-    fun onUseLedger() {
-        state.value.ledgerFactorSources.firstOrNull { it.selected }?.let { ledgerFactorSource ->
+    fun onUseLedgerContinueClick() {
+        state.value.ledgerDevices.firstOrNull { selectableLedgerDevice ->
+            selectableLedgerDevice.selected
+        }?.let { ledgerFactorSource ->
             viewModelScope.launch {
-                _state.update { it.copy(waitingForLedgerResponse = true) }
+                // check again if link connector exists
+                if (getProfileUseCase.p2pLinks.first().isEmpty()) {
+                    _state.update {
+                        it.copy(showContent = CreateAccountWithLedgerUiState.ShowContent.LinkNewConnector)
+                    }
+                    return@launch
+                }
+
                 val derivationPath = getProfileUseCase.nextDerivationPathForAccountOnCurrentNetworkWithLedger(
                     ledgerHardwareWalletFactorSource = ledgerFactorSource.data
                 )
@@ -118,35 +119,41 @@ class CreateAccountWithLedgerViewModel @Inject constructor(
         }
     }
 
-    fun onConfirmLedgerName(name: String) {
-        createLedgerDelegate.onConfirmLedgerName(name)
+    fun onAddLedgerDeviceClick() {
+        viewModelScope.launch {
+            _state.update {
+                if (getProfileUseCase.p2pLinks.first().isEmpty()) {
+                    it.copy(showContent = CreateAccountWithLedgerUiState.ShowContent.LinkNewConnector)
+                } else {
+                    it.copy(showContent = CreateAccountWithLedgerUiState.ShowContent.AddLedger)
+                }
+            }
+        }
     }
 
-    fun onAddLedgerClick() {
-        _state.update { it.copy(mode = CreateAccountWithLedgerMode.AddLedger) }
+    fun onCloseClick() {
+        _state.update {
+            it.copy(showContent = CreateAccountWithLedgerUiState.ShowContent.ChooseLedger)
+        }
     }
 
-    fun onAddLedgerCloseClick() {
-        _state.update { it.copy(mode = CreateAccountWithLedgerMode.ChooseLedger) }
+    fun onLinkConnectorClick() {
+        _state.update {
+            it.copy(showContent = CreateAccountWithLedgerUiState.ShowContent.AddLinkConnector)
+        }
     }
-
-    fun onMessageShown() {
-        _state.update { it.copy(uiMessage = null) }
-    }
-
-    data class CreateAccountWithLedgerState(
-        val loading: Boolean = false,
-        val ledgerFactorSources: ImmutableList<Selectable<LedgerHardwareWalletFactorSource>> = persistentListOf(),
-        val mode: CreateAccountWithLedgerMode = CreateAccountWithLedgerMode.ChooseLedger,
-        val addLedgerSheetState: AddLedgerSheetState = AddLedgerSheetState.Connect,
-        val waitingForLedgerResponse: Boolean = false,
-        val recentlyConnectedLedgerDevice: LedgerDeviceUiModel? = null,
-        val uiMessage: UiMessage? = null
-    ) : UiState
 }
 
-enum class CreateAccountWithLedgerMode {
-    LinkConnector, ChooseLedger, AddLedger
+data class CreateAccountWithLedgerUiState(
+    val loading: Boolean = false,
+    val showContent: ShowContent = ShowContent.ChooseLedger,
+    val ledgerDevices: ImmutableList<Selectable<LedgerHardwareWalletFactorSource>> = persistentListOf(),
+    val selectedLedgerDeviceId: FactorSource.FactorSourceID.FromHash? = null
+) : UiState {
+
+    enum class ShowContent {
+        ChooseLedger, AddLedger, LinkNewConnector, AddLinkConnector
+    }
 }
 
 internal sealed interface CreateAccountWithLedgerEvent : OneOffEvent {

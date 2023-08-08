@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.presentation.settings.ledgerfactorsource
+package com.babylon.wallet.android.presentation.settings.ledgerhardwarewallets
 
 import androidx.compose.animation.AnimatedContentScope
 import androidx.compose.animation.ExperimentalAnimationApi
@@ -7,19 +7,18 @@ import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import com.google.accompanist.navigation.animation.composable
 
-const val ROUTE_LEDGER_FACTOR_SOURCES = "settings_ledger_factor_source"
+private const val ROUTE = "ledger_hardware_wallets_route"
 
-fun NavController.settingsLedgerFactorSourcesScreen() {
-    navigate(ROUTE_LEDGER_FACTOR_SOURCES)
+fun NavController.ledgerHardwareWalletsScreen() {
+    navigate(ROUTE)
 }
 
 @OptIn(ExperimentalAnimationApi::class)
-fun NavGraphBuilder.settingsLedgerFactorSourcesScreen(
-    onBackClick: () -> Unit,
-    onAddP2PLink: () -> Unit
+fun NavGraphBuilder.ledgerHardwareWalletsScreen(
+    onBackClick: () -> Unit
 ) {
     composable(
-        route = ROUTE_LEDGER_FACTOR_SOURCES,
+        route = ROUTE,
         enterTransition = {
             slideIntoContainer(AnimatedContentScope.SlideDirection.Left)
         },
@@ -27,10 +26,11 @@ fun NavGraphBuilder.settingsLedgerFactorSourcesScreen(
             slideOutOfContainer(AnimatedContentScope.SlideDirection.Right)
         }
     ) {
-        LedgerFactorSourcesScreen(
+        LedgerHardwareWalletsScreen(
             viewModel = hiltViewModel(),
-            onBackClick = onBackClick,
-            onAddP2PLink = onAddP2PLink
+            addLedgerDeviceViewModel = hiltViewModel(),
+            addLinkConnectorViewModel = hiltViewModel(),
+            onBackClick = onBackClick
         )
     }
 }

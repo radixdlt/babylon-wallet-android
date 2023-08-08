@@ -11,12 +11,12 @@ import rdx.works.profile.data.model.factorsources.FactorSource
 
 const val ROUTE_SETTINGS_SHOW_MNEMONIC = "settings_seed_phrases"
 
-fun NavController.settingsShowMnemonic() {
+fun NavController.seedPhrases() {
     navigate(ROUTE_SETTINGS_SHOW_MNEMONIC)
 }
 
 @OptIn(ExperimentalAnimationApi::class)
-fun NavGraphBuilder.settingsShowMnemonic(
+fun NavGraphBuilder.seedPhrases(
     onBackClick: () -> Unit,
     onNavigateToRecoverMnemonic: (FactorSource.FactorSourceID.FromHash) -> Unit,
     onNavigateToSeedPhrase: (FactorSource.FactorSourceID.FromHash) -> Unit

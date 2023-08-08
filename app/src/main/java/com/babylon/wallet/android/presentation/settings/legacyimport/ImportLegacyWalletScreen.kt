@@ -1,7 +1,6 @@
 @file:Suppress("CyclomaticComplexMethod", "TooManyFunctions")
 @file:OptIn(
     ExperimentalPermissionsApi::class,
-    ExperimentalMaterialApi::class,
     ExperimentalFoundationApi::class
 )
 
@@ -33,9 +32,6 @@ import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.ExperimentalMaterialApi
-import androidx.compose.material.ModalBottomSheetValue
-import androidx.compose.material.rememberModalBottomSheetState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -73,15 +69,17 @@ import com.babylon.wallet.android.presentation.common.FullscreenCircularProgress
 import com.babylon.wallet.android.presentation.common.SeedPhraseInputDelegate
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.dapp.authorized.account.AccountItemUiModel
-import com.babylon.wallet.android.presentation.model.AddLedgerSheetState
-import com.babylon.wallet.android.presentation.settings.connector.qrcode.CameraPreview
+import com.babylon.wallet.android.presentation.settings.ledgerhardwarewallets.AddLedgerDeviceUiState
+import com.babylon.wallet.android.presentation.settings.linkedconnectors.AddLinkConnectorUiState
+import com.babylon.wallet.android.presentation.settings.linkedconnectors.AddLinkConnectorViewModel
+import com.babylon.wallet.android.presentation.settings.linkedconnectors.qrcode.CameraPreview
 import com.babylon.wallet.android.presentation.ui.MockUiProvider.accountItemUiModelsList
 import com.babylon.wallet.android.presentation.ui.MockUiProvider.olympiaAccountsList
 import com.babylon.wallet.android.presentation.ui.MockUiProvider.seedPhraseWords
 import com.babylon.wallet.android.presentation.ui.composables.AccountCardWithStack
-import com.babylon.wallet.android.presentation.ui.composables.AddLedgerContent
+import com.babylon.wallet.android.presentation.ui.composables.AddLedgerDeviceScreen
+import com.babylon.wallet.android.presentation.ui.composables.AddLinkConnectorScreen
 import com.babylon.wallet.android.presentation.ui.composables.BackIconType
-import com.babylon.wallet.android.presentation.ui.composables.DefaultModalSheetLayout
 import com.babylon.wallet.android.presentation.ui.composables.InfoLink
 import com.babylon.wallet.android.presentation.ui.composables.LedgerListItem
 import com.babylon.wallet.android.presentation.ui.composables.NotSecureAlertDialog
@@ -107,14 +105,17 @@ import rdx.works.profile.olympiaimport.ChunkInfo
 import rdx.works.profile.olympiaimport.OlympiaAccountDetails
 
 @Composable
-fun OlympiaImportScreen(
-    viewModel: OlympiaImportViewModel,
+fun ImportLegacyWalletScreen(
+    viewModel: ImportLegacyWalletViewModel,
+    addLinkConnectorViewModel: AddLinkConnectorViewModel,
     onCloseScreen: () -> Unit,
-    modifier: Modifier = Modifier,
-    onAddP2PLink: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
-    OlympiaImportContent(
+    val addLinkConnectorState by addLinkConnectorViewModel.state.collectAsStateWithLifecycle()
+    val coroutineScope = rememberCoroutineScope()
+
+    ImportLegacyWalletContent(
         modifier = modifier
             .navigationBarsPadding()
             .fillMaxSize()
@@ -142,24 +143,37 @@ fun OlympiaImportScreen(
         hardwareAccountsLeft = state.hardwareAccountsLeftToImport,
         waitingForLedgerResponse = state.waitingForLedgerResponse,
         onConfirmLedgerName = viewModel::onConfirmLedgerName,
-        onAddP2PLink = onAddP2PLink,
         verifiedLedgerDevices = state.verifiedLedgerDevices,
         addLedgerSheetState = state.addLedgerSheetState,
-        onImportWithLedger = viewModel::onImportWithLedger,
+        onContinueWithLedgerClick = viewModel::onContinueWithLedgerClick,
         deviceModel = state.recentlyConnectedLedgerDevice?.model?.toProfileLedgerDeviceModel()?.value,
         wordAutocompleteCandidates = state.wordAutocompleteCandidates,
-        shouldShowBottomSheet = state.shouldShowBottomSheet,
-        onHideBottomSheet = viewModel::onHideBottomSheet
+        shouldShowAddLinkConnectorScreen = state.shouldShowAddLinkConnectorScreen,
+        addLinkConnectorState = addLinkConnectorState,
+        onLinkConnectorQrCodeScanned = addLinkConnectorViewModel::onQrCodeScanned,
+        onConnectorDisplayNameChanged = addLinkConnectorViewModel::onConnectorDisplayNameChanged,
+        shouldShowAddLedgerDeviceScreen = state.shouldShowAddLedgerDeviceScreen,
+        onNewConnectorContinueClick = {
+            coroutineScope.launch {
+                addLinkConnectorViewModel.onContinueClick()
+                viewModel.onNewConnectorAdded()
+            }
+        },
+        onNewConnectorCloseClick = {
+            addLinkConnectorViewModel.onCloseClick()
+            viewModel.onNewConnectorCloseClick()
+        },
+        onCloseSettings = viewModel::onCloseSettings
     )
 }
 
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
-private fun OlympiaImportContent(
+private fun ImportLegacyWalletContent(
     modifier: Modifier = Modifier,
     onBackClick: () -> Unit,
     onQrCodeScanned: (String) -> Unit,
-    pages: ImmutableList<OlympiaImportUiState.Page>,
+    pages: ImmutableList<ImportLegacyWalletUiState.Page>,
     oneOffEvent: Flow<OlympiaImportEvent>,
     olympiaAccountsToImport: ImmutableList<OlympiaAccountDetails>,
     onImportAccounts: () -> Unit,
@@ -174,20 +188,25 @@ private fun OlympiaImportContent(
     onMessageShown: () -> Unit,
     migratedAccounts: ImmutableList<AccountItemUiModel>,
     onContinue: () -> Unit,
-    currentPage: OlympiaImportUiState.Page,
+    currentPage: ImportLegacyWalletUiState.Page,
     qrChunkInfo: ChunkInfo?,
     isDeviceSecure: Boolean,
     hardwareAccountsLeft: Int,
     waitingForLedgerResponse: Boolean,
     onConfirmLedgerName: (String) -> Unit,
-    onAddP2PLink: () -> Unit,
     verifiedLedgerDevices: ImmutableList<LedgerHardwareWalletFactorSource>,
-    addLedgerSheetState: AddLedgerSheetState,
-    onImportWithLedger: () -> Unit,
+    addLedgerSheetState: AddLedgerDeviceUiState.ShowContent,
+    onContinueWithLedgerClick: () -> Unit,
     deviceModel: String?,
     wordAutocompleteCandidates: ImmutableList<String>,
-    shouldShowBottomSheet: Boolean,
-    onHideBottomSheet: () -> Unit
+    shouldShowAddLinkConnectorScreen: Boolean,
+    addLinkConnectorState: AddLinkConnectorUiState,
+    onLinkConnectorQrCodeScanned: (String) -> Unit,
+    onConnectorDisplayNameChanged: (String) -> Unit,
+    onNewConnectorContinueClick: () -> Unit,
+    onNewConnectorCloseClick: () -> Unit,
+    shouldShowAddLedgerDeviceScreen: Boolean,
+    onCloseSettings: () -> Unit
 ) {
     val focusManager = LocalFocusManager.current
     val cameraPermissionState = rememberPermissionState(permission = Manifest.permission.CAMERA)
@@ -196,23 +215,14 @@ private fun OlympiaImportContent(
     var cameraVisible by remember {
         mutableStateOf(false)
     }
-    val bottomSheetState = rememberModalBottomSheetState(initialValue = ModalBottomSheetValue.Hidden, skipHalfExpanded = true)
-    val closeSheetCallback = {
-        scope.launch {
-            bottomSheetState.hide()
-            onHideBottomSheet()
-        }
-    }
     var showNotSecuredDialog by remember { mutableStateOf(false) }
     val context = LocalContext.current
     BackHandler {
-        when {
-            bottomSheetState.isVisible -> {
-                closeSheetCallback()
-            }
-            currentPage == OlympiaImportUiState.Page.ImportComplete || currentPage == OlympiaImportUiState.Page.ScanQr -> {
+        when (currentPage) {
+            ImportLegacyWalletUiState.Page.ImportComplete, ImportLegacyWalletUiState.Page.ScanQr -> {
                 onCloseScreen()
             }
+
             else -> {
                 onBackClick()
             }
@@ -256,10 +266,6 @@ private fun OlympiaImportContent(
                     }
                 }
 
-                OlympiaImportEvent.UseLedger -> {
-                    closeSheetCallback()
-                }
-
                 OlympiaImportEvent.MoveFocusToNextWord -> {
                     focusManager.moveFocus(FocusDirection.Next)
                 }
@@ -274,95 +280,101 @@ private fun OlympiaImportContent(
             }
         })
     }
-    LaunchedEffect(shouldShowBottomSheet) {
-        if (shouldShowBottomSheet) {
-            bottomSheetState.show()
-        }
-    }
     Box(modifier = modifier) {
-        DefaultModalSheetLayout(modifier = Modifier.fillMaxSize(), sheetState = bottomSheetState, sheetContent = {
-            AddLedgerContent(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(horizontal = RadixTheme.dimensions.paddingDefault),
-                deviceModel = deviceModel,
-                onSendAddLedgerRequest = onImportWithLedger,
-                addLedgerSheetState = addLedgerSheetState,
-                onConfirmLedgerName = {
-                    onConfirmLedgerName(it)
-                    closeSheetCallback()
-                },
-                backIconType = BackIconType.Back,
-                onClose = { closeSheetCallback() },
-                waitingForLedgerResponse = waitingForLedgerResponse,
-                onAddP2PLink = onAddP2PLink
-            )
-        }) {
-            Column(modifier = Modifier.fillMaxSize()) {
-                RadixCenteredTopAppBar(
-                    title = stringResource(R.string.empty),
-                    onBackClick = if (currentPage == OlympiaImportUiState.Page.ImportComplete) onCloseScreen else onBackClick,
-                    contentColor = RadixTheme.colors.gray1,
-                    backIconType = if (currentPage == OlympiaImportUiState.Page.ImportComplete) BackIconType.Close else BackIconType.Back
+        Column(modifier = Modifier.fillMaxSize()) {
+            if (shouldShowAddLinkConnectorScreen) {
+                AddLinkConnectorScreen(
+                    modifier = Modifier,
+                    showContent = addLinkConnectorState.showContent,
+                    isLoading = addLinkConnectorState.isLoading,
+                    onQrCodeScanned = onLinkConnectorQrCodeScanned,
+                    onConnectorDisplayNameChanged = onConnectorDisplayNameChanged,
+                    connectorDisplayName = addLinkConnectorState.connectorDisplayName,
+                    isNewConnectorContinueButtonEnabled = addLinkConnectorState.isContinueButtonEnabled,
+                    onNewConnectorContinueClick = onNewConnectorContinueClick,
+                    onNewConnectorCloseClick = onNewConnectorCloseClick
                 )
-                HorizontalPager(
+            }
+            if (shouldShowAddLedgerDeviceScreen) {
+                AddLedgerDeviceScreen(
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .weight(1f),
-                    pageCount = pages.size,
-                    state = pagerState,
-                    userScrollEnabled = false
-                ) { page ->
-                    when (pages[page]) {
-                        OlympiaImportUiState.Page.ScanQr -> {
-                            ScanQrPage(
-                                cameraPermissionGranted = cameraPermissionState.status.isGranted,
-                                onQrCodeScanned = onQrCodeScanned,
-                                isVisible = cameraVisible,
-                                modifier = Modifier.fillMaxSize(),
-                                qrChunkInfo = qrChunkInfo
-                            )
-                        }
+                        .fillMaxSize(),
+                    deviceModel = deviceModel,
+                    onSendAddLedgerRequestClick = onContinueWithLedgerClick,
+                    showContent = addLedgerSheetState,
+                    onConfirmLedgerNameClick = {
+                        onConfirmLedgerName(it)
+                        onCloseSettings()
+                    },
+                    backIconType = BackIconType.Back,
+                    onClose = onCloseSettings,
+                    waitingForLedgerResponse = waitingForLedgerResponse,
+                    onBackClick = onCloseSettings
 
-                        OlympiaImportUiState.Page.AccountsToImportList -> {
-                            AccountsToImportListPage(
-                                modifier = Modifier.fillMaxSize(),
-                                olympiaAccountsToImport = olympiaAccountsToImport,
-                                onImportAccounts = onImportAccounts,
-                                importButtonEnabled = importButtonEnabled,
-                            )
-                        }
+                )
+            }
+            RadixCenteredTopAppBar(
+                title = stringResource(R.string.empty),
+                onBackClick = if (currentPage == ImportLegacyWalletUiState.Page.ImportComplete) onCloseScreen else onBackClick,
+                contentColor = RadixTheme.colors.gray1,
+                backIconType = if (currentPage == ImportLegacyWalletUiState.Page.ImportComplete) BackIconType.Close else BackIconType.Back
+            )
+            HorizontalPager(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f),
+                pageCount = pages.size,
+                state = pagerState,
+                userScrollEnabled = false
+            ) { page ->
+                when (pages[page]) {
+                    ImportLegacyWalletUiState.Page.ScanQr -> {
+                        ScanQrPage(
+                            cameraPermissionGranted = cameraPermissionState.status.isGranted,
+                            onQrCodeScanned = onQrCodeScanned,
+                            isVisible = cameraVisible,
+                            modifier = Modifier.fillMaxSize(),
+                            qrChunkInfo = qrChunkInfo
+                        )
+                    }
 
-                        OlympiaImportUiState.Page.MnemonicInput -> {
-                            MnemonicInputPage(
-                                modifier = Modifier.fillMaxSize(),
-                                seedPhraseWords = seedPhraseWords,
-                                bip39Passphrase = bip39Passphrase,
-                                onWordChanged = onWordChanged,
-                                onPassphraseChanged = onPassphraseChanged,
-                                onImportSoftwareAccounts = onImportSoftwareAccounts,
-                                wordAutocompleteCandidates = wordAutocompleteCandidates
-                            )
-                        }
+                    ImportLegacyWalletUiState.Page.AccountsToImportList -> {
+                        AccountsToImportListPage(
+                            modifier = Modifier.fillMaxSize(),
+                            olympiaAccountsToImport = olympiaAccountsToImport,
+                            onImportAccounts = onImportAccounts,
+                            importButtonEnabled = importButtonEnabled,
+                        )
+                    }
 
-                        OlympiaImportUiState.Page.HardwareAccounts -> {
-                            LedgerAccountImportPage(
-                                Modifier.fillMaxSize(),
-                                hardwareAccountsLeft = hardwareAccountsLeft,
-                                waitingForLedgerResponse = waitingForLedgerResponse,
-                                verifiedLedgerDevices = verifiedLedgerDevices
-                            ) {
-                                onImportWithLedger()
-                            }
-                        }
+                    ImportLegacyWalletUiState.Page.MnemonicInput -> {
+                        VerifyWithYourSeedPhrasePage(
+                            modifier = Modifier.fillMaxSize(),
+                            seedPhraseWords = seedPhraseWords,
+                            bip39Passphrase = bip39Passphrase,
+                            onWordChanged = onWordChanged,
+                            onPassphraseChanged = onPassphraseChanged,
+                            onImportSoftwareAccounts = onImportSoftwareAccounts,
+                            wordAutocompleteCandidates = wordAutocompleteCandidates
+                        )
+                    }
 
-                        OlympiaImportUiState.Page.ImportComplete -> {
-                            ImportCompletePage(
-                                modifier = Modifier.fillMaxSize(),
-                                migratedAccounts = migratedAccounts,
-                                onContinue = onContinue
-                            )
-                        }
+                    ImportLegacyWalletUiState.Page.HardwareAccounts -> {
+                        VerifyWithLedgerDevicePage(
+                            Modifier.fillMaxSize(),
+                            hardwareAccountsLeft = hardwareAccountsLeft,
+                            waitingForLedgerResponse = waitingForLedgerResponse,
+                            verifiedLedgerDevices = verifiedLedgerDevices,
+                            onContinueWithLedgerClick = onContinueWithLedgerClick
+                        )
+                    }
+
+                    ImportLegacyWalletUiState.Page.ImportComplete -> {
+                        ImportCompletePage(
+                            modifier = Modifier.fillMaxSize(),
+                            migratedAccounts = migratedAccounts,
+                            onContinue = onContinue
+                        )
                     }
                 }
             }
@@ -381,12 +393,12 @@ private fun OlympiaImportContent(
 @Composable
 private fun CameraVisibilityEffect(
     pagerState: PagerState,
-    pages: ImmutableList<OlympiaImportUiState.Page>,
+    pages: ImmutableList<ImportLegacyWalletUiState.Page>,
     onCameraVisibilityChanged: (Boolean) -> Unit
 ) {
     LaunchedEffect(pagerState, pages) {
         snapshotFlow {
-            pagerState.currentPage == pages.indexOf(OlympiaImportUiState.Page.ScanQr)
+            pagerState.currentPage == pages.indexOf(ImportLegacyWalletUiState.Page.ScanQr)
         }.distinctUntilChanged().collect { visible ->
             onCameraVisibilityChanged(visible)
         }
@@ -445,7 +457,7 @@ private fun ScanQrPage(
                         .weight(1f)
                         .fillMaxWidth()
                         .clip(RadixTheme.shapes.roundedRectMedium),
-                    disableBack = false,
+                    disableBackHandler = false,
                     isVisible = isVisible,
                     onQrCodeDetected = onQrCodeScanned
                 )
@@ -520,12 +532,12 @@ private fun AccountsToImportListPage(
 }
 
 @Composable
-private fun LedgerAccountImportPage(
+private fun VerifyWithLedgerDevicePage(
     modifier: Modifier = Modifier,
     hardwareAccountsLeft: Int,
     waitingForLedgerResponse: Boolean,
     verifiedLedgerDevices: ImmutableList<LedgerHardwareWalletFactorSource>,
-    onImportWithLedger: () -> Unit
+    onContinueWithLedgerClick: () -> Unit
 ) {
     Box(modifier = modifier) {
         Column(
@@ -603,7 +615,7 @@ private fun LedgerAccountImportPage(
             }
             RadixPrimaryButton(
                 text = stringResource(id = R.string.ledgerHardwareDevices_continueWithLedger),
-                onClick = onImportWithLedger,
+                onClick = onContinueWithLedgerClick,
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(RadixTheme.dimensions.paddingDefault)
@@ -661,7 +673,12 @@ private fun ImportCompletePage(
             itemsIndexed(migratedAccounts) { index, item ->
                 val gradientColor = getAccountGradientColorsFor(item.appearanceID)
                 if (index == migratedAccounts.size - 1) {
-                    AccountCardWithStack(Modifier.fillMaxWidth(0.8f), item.appearanceID, item.displayName.orEmpty(), item.address)
+                    AccountCardWithStack(
+                        Modifier.fillMaxWidth(0.8f),
+                        item.appearanceID,
+                        item.displayName.orEmpty(),
+                        item.address
+                    )
                 } else {
                     SimpleAccountCard(
                         modifier = Modifier
@@ -706,7 +723,7 @@ private fun ImportCompletePage(
 }
 
 @Composable
-private fun MnemonicInputPage(
+private fun VerifyWithYourSeedPhrasePage(
     modifier: Modifier = Modifier,
     seedPhraseWords: ImmutableList<SeedPhraseInputDelegate.SeedPhraseWord>,
     bip39Passphrase: String,
@@ -820,7 +837,7 @@ fun AccountListPagePreview() {
 @Composable
 fun InputSeedPhrasePagePreview() {
     RadixWalletTheme {
-        MnemonicInputPage(
+        VerifyWithYourSeedPhrasePage(
             seedPhraseWords = seedPhraseWords,
             bip39Passphrase = "test",
             onWordChanged = { _, _ -> },
@@ -835,12 +852,12 @@ fun InputSeedPhrasePagePreview() {
 @Composable
 fun HardwareImportNoVerifiedLedgersPreview() {
     RadixWalletTheme {
-        LedgerAccountImportPage(
+        VerifyWithLedgerDevicePage(
             modifier = Modifier,
             hardwareAccountsLeft = 5,
             waitingForLedgerResponse = false,
             verifiedLedgerDevices = persistentListOf(),
-            onImportWithLedger = {}
+            onContinueWithLedgerClick = {}
         )
     }
 }
@@ -849,12 +866,12 @@ fun HardwareImportNoVerifiedLedgersPreview() {
 @Composable
 fun HardwareImportWithVerifiedLedgersPreview() {
     RadixWalletTheme {
-        LedgerAccountImportPage(
+        VerifyWithLedgerDevicePage(
             modifier = Modifier,
             hardwareAccountsLeft = 3,
             waitingForLedgerResponse = false,
             verifiedLedgerDevices = SampleDataProvider().ledgerFactorSourcesSample.toPersistentList(),
-            onImportWithLedger = {}
+            onContinueWithLedgerClick = {}
         )
     }
 }
@@ -863,12 +880,12 @@ fun HardwareImportWithVerifiedLedgersPreview() {
 @Composable
 fun HardwareImportNoAccountsLeftPreview() {
     RadixWalletTheme {
-        LedgerAccountImportPage(
+        VerifyWithLedgerDevicePage(
             modifier = Modifier,
             hardwareAccountsLeft = 0,
             waitingForLedgerResponse = true,
             verifiedLedgerDevices = SampleDataProvider().ledgerFactorSourcesSample.toPersistentList(),
-            onImportWithLedger = {}
+            onContinueWithLedgerClick = {}
         )
     }
 }
