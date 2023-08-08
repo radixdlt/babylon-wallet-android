@@ -87,7 +87,7 @@ class AddLedgerDeviceViewModel @Inject constructor(
         _state.update { state ->
             state.copy(newConnectedLedgerDevice = state.newConnectedLedgerDevice?.copy(name = name))
         }
-        addLedgerDeviceInProfile()
+        addLedgerDeviceToProfile()
     }
 
     fun initState() {
@@ -98,7 +98,7 @@ class AddLedgerDeviceViewModel @Inject constructor(
         _state.update { it.copy(uiMessage = null) }
     }
 
-    private suspend fun addLedgerDeviceInProfile() {
+    private suspend fun addLedgerDeviceToProfile() {
         state.value.newConnectedLedgerDevice?.let { ledgerDeviceUiModel ->
             val result = addLedgerFactorSourceUseCase(
                 ledgerId = ledgerDeviceUiModel.id,

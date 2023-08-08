@@ -208,7 +208,7 @@ private fun NameNewConnector(
                 .padding(horizontal = RadixTheme.dimensions.paddingMedium),
             onValueChanged = onConnectorDisplayNameChanged,
             value = connectorDisplayName,
-            hint = "",
+            hint = stringResource(id = R.string.empty),
             optionalHint = stringResource(id = R.string.linkedConnectors_nameNewConnector_textFieldHint),
             singleLine = true
         )
