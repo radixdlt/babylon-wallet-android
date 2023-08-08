@@ -194,6 +194,10 @@ class SampleDataProvider {
         }
     }
 
+    fun samplePoolUnit(): Resource.PoolUnitResource {
+        return Resource.PoolUnitResource(sampleFungibleResources().first(), sampleFungibleResources())
+    }
+
     fun sampleDAppWithResources(): DAppWithMetadataAndAssociatedResources {
         return DAppWithMetadataAndAssociatedResources(
             dAppWithMetadata = DAppWithMetadata(

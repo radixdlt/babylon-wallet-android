@@ -122,7 +122,8 @@ fun ChooseAssetsSheet(
                     }
                     onTabSelected(viewModelTab)
                 },
-                pagerState = pagerState
+                pagerState = pagerState,
+                excludePoolUnits = true
             )
 
             Box(modifier = Modifier.fillMaxSize()) {

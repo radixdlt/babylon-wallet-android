@@ -75,6 +75,7 @@ import com.babylon.wallet.android.domain.model.Resources
 import com.babylon.wallet.android.domain.model.ValidatorsWithStakeResources
 import com.babylon.wallet.android.presentation.account.composable.FungibleTokenBottomSheetDetails
 import com.babylon.wallet.android.presentation.account.composable.NonFungibleTokenBottomSheetDetails
+import com.babylon.wallet.android.presentation.account.composable.PoolUnitBottomSheetDetails
 import com.babylon.wallet.android.presentation.transfer.assets.ResourceTab
 import com.babylon.wallet.android.presentation.transfer.assets.ResourcesTabs
 import com.babylon.wallet.android.presentation.ui.composables.ActionableAddressView
@@ -113,6 +114,7 @@ fun AccountScreen(
         }
     }
     AccountScreenContent(
+        modifier = modifier,
         state = state,
         onAccountPreferenceClick = {
             onAccountPreferenceClick(it)
@@ -124,8 +126,8 @@ fun AccountScreen(
         onMessageShown = viewModel::onMessageShown,
         onFungibleResourceClicked = viewModel::onFungibleResourceClicked,
         onNonFungibleItemClicked = viewModel::onNonFungibleResourceClicked,
-        modifier = modifier,
-        onApplySecuritySettings = viewModel::onApplySecuritySettings
+        onApplySecuritySettings = viewModel::onApplySecuritySettings,
+        onPoolUnitClick = viewModel::onPoolUnitClicked
     )
 }
 
@@ -142,7 +144,8 @@ private fun AccountScreenContent(
     onMessageShown: () -> Unit,
     onFungibleResourceClicked: (Resource.FungibleResource) -> Unit,
     onNonFungibleItemClicked: (Resource.NonFungibleResource, Resource.NonFungibleResource.Item) -> Unit,
-    onApplySecuritySettings: () -> Unit
+    onApplySecuritySettings: () -> Unit,
+    onPoolUnitClick: (Resource.PoolUnitResource) -> Unit
 ) {
     val gradient = remember(state.accountWithResources) {
         val appearanceId = state.accountWithResources?.account?.appearanceID ?: 0
@@ -258,7 +261,13 @@ private fun AccountScreenContent(
                     },
                     gradient = gradient,
                     onTransferClick = onTransferClick,
-                    onApplySecuritySettings = onApplySecuritySettings
+                    onApplySecuritySettings = onApplySecuritySettings,
+                    onPoolUnitClick = {
+                        onPoolUnitClick(it)
+                        scope.launch {
+                            bottomSheetState.show()
+                        }
+                    }
                 )
             }
 
@@ -310,6 +319,20 @@ private fun SheetContent(
             )
         }
 
+        is SelectedResource.SelectedPoolUnit -> {
+            PoolUnitBottomSheetDetails(
+                modifier = modifier
+                    .fillMaxWidth()
+                    .verticalScroll(rememberScrollState()),
+                poolUnit = selected.poolUnit,
+                onCloseClick = {
+                    scope.launch {
+                        bottomSheetState.hide()
+                    }
+                }
+            )
+        }
+
         else -> {}
     }
 }
@@ -321,6 +344,7 @@ fun AssetsContent(
     state: AccountUiState,
     onFungibleTokenClick: (Resource.FungibleResource) -> Unit,
     onNonFungibleItemClick: (Resource.NonFungibleResource, Resource.NonFungibleResource.Item) -> Unit,
+    onPoolUnitClick: (Resource.PoolUnitResource) -> Unit,
     gradient: ImmutableList<Color>,
     onTransferClick: (String) -> Unit,
     onApplySecuritySettings: () -> Unit
@@ -459,10 +483,17 @@ fun AssetsContent(
                                 modifier = contentModifier,
                                 collapsedState = collapsedStakeState,
                                 validatorsWithStakeResources = resources.validatorsWithStakeResources,
-                                poolUnits = resources.poolUnits
-                            ) {
-                                collapsedStakeState = !collapsedStakeState
-                            }
+                                poolUnits = resources.poolUnits,
+                                parentSectionClick = {
+                                    collapsedStakeState = !collapsedStakeState
+                                },
+                                onPoolUnitClick = {
+                                    onPoolUnitClick(it)
+                                },
+                                lsuClick = {
+                                    onFungibleTokenClick(it.fungibleResource)
+                                }
+                            )
                             item {
                                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
                             }
@@ -524,7 +555,8 @@ fun AccountContentPreview() {
                 onMessageShown = {},
                 onFungibleResourceClicked = {},
                 onNonFungibleItemClicked = { _, _ -> },
-                onApplySecuritySettings = {}
+                onApplySecuritySettings = {},
+                onPoolUnitClick = {}
             )
         }
     }

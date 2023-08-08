@@ -1,6 +1,7 @@
 package com.babylon.wallet.android.presentation.ui.composables.resources
 
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -55,7 +56,9 @@ fun PoolUnitResourcesColumn(
         end = RadixTheme.dimensions.paddingMedium,
         top = RadixTheme.dimensions.paddingLarge,
         bottom = 100.dp
-    )
+    ),
+    poolUnitClick: (Resource.PoolUnitResource) -> Unit,
+    lsuClick: (Resource.LiquidStakeUnitResource) -> Unit
 ) {
     var collapsedStakeState by remember(resources) {
         mutableStateOf(true)
@@ -67,20 +70,25 @@ fun PoolUnitResourcesColumn(
         poolUnitsResources(
             collapsedState = collapsedStakeState,
             validatorsWithStakeResources = resources?.validatorsWithStakeResources,
-            poolUnits = resources?.poolUnits.orEmpty()
-        ) {
-            collapsedStakeState = !collapsedStakeState
-        }
+            poolUnits = resources?.poolUnits.orEmpty(),
+            parentSectionClick = {
+                collapsedStakeState = !collapsedStakeState
+            },
+            onPoolUnitClick = poolUnitClick,
+            lsuClick = lsuClick
+        )
     }
 }
 
-@Suppress("LongMethod", "CyclomaticComplexMethod")
+@Suppress("LongMethod", "CyclomaticComplexMethod", "LongParameterList")
 fun LazyListScope.poolUnitsResources(
     modifier: Modifier = Modifier,
     collapsedState: Boolean,
     validatorsWithStakeResources: ValidatorsWithStakeResources?,
     poolUnits: List<Resource.PoolUnitResource>,
-    parentSectionClick: () -> Unit
+    parentSectionClick: () -> Unit,
+    onPoolUnitClick: (Resource.PoolUnitResource) -> Unit,
+    lsuClick: (Resource.LiquidStakeUnitResource) -> Unit,
 ) {
     if ((validatorsWithStakeResources == null || validatorsWithStakeResources.isEmpty) && poolUnits.isEmpty()) {
         item {
@@ -122,10 +130,12 @@ fun LazyListScope.poolUnitsResources(
                         items(items = validator.liquidStakeUnits, key = { it.fungibleResource.resourceAddress }) { liquidStakeUnit ->
                             val lastItem = liquidStakeUnit == last
                             CardWrapper(
-                                modifier = modifier,
+                                modifier = modifier.clickable {
+                                    lsuClick(liquidStakeUnit)
+                                },
                                 lastItem = lastCollection && lastItem && lastValidator
                             ) {
-                                LiquidStakeUnitItem(liquidStakeUnit, validator.totalXrdStake)
+                                LiquidStakeUnitItem(validator.stakeValueInXRD(liquidStakeUnit.resourceAddress))
                                 ItemSpacer(lastItem)
                                 if (lastCollection && !lastValidator) {
                                     Divider(Modifier.fillMaxWidth(), color = RadixTheme.colors.gray4)
@@ -166,10 +176,12 @@ fun LazyListScope.poolUnitsResources(
             }
             items(poolUnits, key = { it.resourceAddress }) { poolUnit ->
                 PoolUnitItem(
-                    modifier = modifier,
+                    modifier = modifier.clickable {
+                        onPoolUnitClick(poolUnit)
+                    },
                     resource = poolUnit
                 )
-                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSmall))
+                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
             }
         }
     }
@@ -303,8 +315,7 @@ private fun StakeClaimNftItem(stakeClaimNft: Resource.NonFungibleResource.Item, 
 
 @Composable
 private fun LiquidStakeUnitItem(
-    liquidStakeUnit: Resource.LiquidStakeUnitResource,
-    totalXrdStake: BigDecimal?,
+    stakeValueInXRD: BigDecimal?,
     modifier: Modifier = Modifier
 ) {
     Row(
@@ -342,7 +353,7 @@ private fun LiquidStakeUnitItem(
             )
         }
         Text(
-            liquidStakeUnit.percentageOwned?.multiply(totalXrdStake)?.displayableQuantity().orEmpty(),
+            stakeValueInXRD?.displayableQuantity().orEmpty(),
             style = RadixTheme.typography.secondaryHeader,
             color = RadixTheme.colors.gray1,
             maxLines = 1
@@ -385,57 +396,62 @@ private fun PoolUnitItem(
                         .clip(RadixTheme.shapes.roundedRectSmall)
                 )
                 Text(
-                    poolName(resource),
+                    poolName(resource.poolUnitResource.displayTitle),
                     style = RadixTheme.typography.secondaryHeader,
                     color = RadixTheme.colors.gray1,
                     maxLines = 2
                 )
             }
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
-            Column(modifier = Modifier.border(1.dp, RadixTheme.colors.gray4, RadixTheme.shapes.roundedRectMedium)) {
-                val itemsSize = resource.poolResources.size
-                resource.poolResources.forEachIndexed { index, poolResource ->
-                    Row(
-                        modifier = Modifier.padding(
-                            horizontal = RadixTheme.dimensions.paddingDefault,
-                            vertical = RadixTheme.dimensions.paddingLarge
-                        ),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingMedium)
-                    ) {
-                        AsyncImage(
-                            model = poolResource.iconUrl,
-                            placeholder = painterResource(id = R.drawable.img_placeholder),
-                            error = painterResource(id = R.drawable.img_placeholder),
-                            contentDescription = null,
-                            contentScale = ContentScale.Crop,
-                            modifier = Modifier
-                                .size(44.dp)
-                                .clip(RadixTheme.shapes.roundedRectSmall)
-                        )
-                        Text(
-                            modifier = Modifier.weight(1f),
-                            text = poolResource.displayTitle,
-                            style = RadixTheme.typography.body2HighImportance,
-                            color = RadixTheme.colors.gray1,
-                            maxLines = 2
-                        )
-                        Text(
-                            resource.resourceRedemptionValue(poolResource.resourceAddress)?.displayableQuantity().orEmpty(),
-                            style = RadixTheme.typography.secondaryHeader,
-                            color = RadixTheme.colors.gray1,
-                            maxLines = 1
-                        )
-                    }
-                    if (index != itemsSize - 1) {
-                        Divider(color = RadixTheme.colors.gray4)
-                    }
-                }
+            PoolResourcesValues(resource)
+        }
+    }
+}
+
+@Composable
+fun PoolResourcesValues(resource: Resource.PoolUnitResource, modifier: Modifier = Modifier) {
+    Column(modifier = modifier.border(1.dp, RadixTheme.colors.gray4, RadixTheme.shapes.roundedRectMedium)) {
+        val itemsSize = resource.poolResources.size
+        resource.poolResources.forEachIndexed { index, poolResource ->
+            Row(
+                modifier = Modifier.padding(
+                    horizontal = RadixTheme.dimensions.paddingDefault,
+                    vertical = RadixTheme.dimensions.paddingLarge
+                ),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingMedium)
+            ) {
+                AsyncImage(
+                    model = poolResource.iconUrl,
+                    placeholder = painterResource(id = R.drawable.img_placeholder),
+                    error = painterResource(id = R.drawable.img_placeholder),
+                    contentDescription = null,
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier
+                        .size(44.dp)
+                        .clip(RadixTheme.shapes.circle)
+                )
+                Text(
+                    modifier = Modifier.weight(1f),
+                    text = poolResource.displayTitle,
+                    style = RadixTheme.typography.body2HighImportance,
+                    color = RadixTheme.colors.gray1,
+                    maxLines = 2
+                )
+                Text(
+                    resource.resourceRedemptionValue(poolResource.resourceAddress)?.displayableQuantity().orEmpty(),
+                    style = RadixTheme.typography.secondaryHeader,
+                    color = RadixTheme.colors.gray1,
+                    maxLines = 1
+                )
+            }
+            if (index != itemsSize - 1) {
+                Divider(color = RadixTheme.colors.gray4)
             }
         }
     }
 }
 
-private fun poolName(poolUnit: Resource.PoolUnitResource): String {
-    return poolUnit.poolUnitResource.displayTitle.ifEmpty { "Unnamed Pool" }
+fun poolName(name: String?): String {
+    return name?.ifEmpty { "Unnamed Pool" } ?: "Unnamed Pool"
 }
