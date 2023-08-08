@@ -82,7 +82,7 @@ fun NetworkFeeContent(
         if (noFeePayerSelected) {
             InfoLink(
                 modifier = Modifier.fillMaxWidth(),
-                text = "Please select a fee payer for the transaction fee",
+                text = stringResource(id = R.string.transactionReview_customizeNetworkFeeSheet_selectFeePayer_warning),
                 contentColor = RadixTheme.colors.orange1,
                 iconRes = com.babylon.wallet.android.designsystem.R.drawable.ic_warning_error
             )
@@ -91,7 +91,7 @@ fun NetworkFeeContent(
         if (insufficientBalanceToPayTheFee) {
             InfoLink(
                 modifier = Modifier.fillMaxWidth(),
-                text = "Insufficient balance to pay the transaction fee",
+                text = stringResource(id = R.string.transactionReview_customizeNetworkFeeSheet_insufficientBalance_warning),
                 contentColor = RadixTheme.colors.red1,
                 iconRes = com.babylon.wallet.android.designsystem.R.drawable.ic_warning_error
             )
