@@ -12,7 +12,6 @@ import com.babylon.wallet.android.domain.common.asKotlinResult
 import com.babylon.wallet.android.domain.common.onValue
 import com.babylon.wallet.android.domain.usecases.transaction.PollTransactionStatusUseCase
 import com.radixdlt.ret.Address
-import com.radixdlt.ret.Decimal
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -20,8 +19,10 @@ import kotlinx.coroutines.withContext
 import rdx.works.core.preferences.PreferencesManager
 import rdx.works.core.ret.ManifestBuilder
 import rdx.works.core.ret.buildSafely
+import rdx.works.core.toRETDecimal
 import rdx.works.profile.domain.gateway.GetCurrentGatewayUseCase
 import java.math.BigDecimal
+import java.math.RoundingMode
 import javax.inject.Inject
 import kotlin.Result
 import com.babylon.wallet.android.domain.common.Result as ResultInternal
@@ -46,7 +47,7 @@ class GetFreeXrdUseCase @Inject constructor(
                     val manifest = ManifestBuilder()
                         .lockFee(
                             fromAddress = Address(faucetComponentAddress),
-                            fee = Decimal(lockFee.toPlainString())
+                            fee = lockFee.toRETDecimal(RoundingMode.HALF_UP)
                         )
                         .freeXrd(
                             faucetAddress = Address(faucetComponentAddress)

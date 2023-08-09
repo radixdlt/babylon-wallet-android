@@ -44,9 +44,9 @@ fun LazyListScope.feePayerSelectionContent(
                 .padding(horizontal = RadixTheme.dimensions.paddingLarge)
                 .background(
                     brush = Brush.horizontalGradient(gradientColor),
-                    shape = RadixTheme.shapes.roundedRectSmall
+                    shape = RadixTheme.shapes.roundedRectMedium
                 )
-                .clip(RadixTheme.shapes.roundedRectSmall)
+                .clip(RadixTheme.shapes.roundedRectMedium)
                 .throttleClickable {
                     onPayerSelected(candidate)
                 },
