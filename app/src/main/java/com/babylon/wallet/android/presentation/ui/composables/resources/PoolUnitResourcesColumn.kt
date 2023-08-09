@@ -103,6 +103,7 @@ fun LazyListScope.poolUnitsResources(
                     collapsed = collapsedState,
                     parentSectionClick = parentSectionClick
                 )
+                Divider(Modifier.fillMaxWidth(), color = RadixTheme.colors.gray4)
             }
             if (!collapsedState) {
                 val validatorsSize = validatorWithStakeResources.validators.size

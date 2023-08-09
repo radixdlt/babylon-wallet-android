@@ -103,7 +103,39 @@ fun SpendingAssetItem(
                 },
                 onMaxClicked = onMaxClicked
             )
+
             is SpendingAsset.NFT -> NonFungibleSpendingAsset(
+                nft = asset.item,
+                isExceedingBalance = asset.exceedingBalance,
+            )
+
+            is SpendingAsset.LSU -> FungibleSpendingAsset(
+                resource = asset.resource,
+                amount = asset.amountString,
+                isExceedingBalance = asset.exceedingBalance,
+                onAmountChanged = onAmountTyped,
+                focusRequester = focusRequester,
+                isEditing = isEditingState.value,
+                onEditStateChanged = {
+                    isEditingState.value = it
+                },
+                onMaxClicked = onMaxClicked
+            )
+
+            is SpendingAsset.PoolUnit -> FungibleSpendingAsset(
+                resource = asset.resource,
+                amount = asset.amountString,
+                isExceedingBalance = asset.exceedingBalance,
+                onAmountChanged = onAmountTyped,
+                focusRequester = focusRequester,
+                isEditing = isEditingState.value,
+                onEditStateChanged = {
+                    isEditingState.value = it
+                },
+                onMaxClicked = onMaxClicked
+            )
+
+            is SpendingAsset.StakeClaimNFT -> NonFungibleSpendingAsset(
                 nft = asset.item,
                 isExceedingBalance = asset.exceedingBalance,
             )

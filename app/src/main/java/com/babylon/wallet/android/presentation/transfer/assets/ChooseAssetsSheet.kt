@@ -195,12 +195,15 @@ fun ChooseAssetsSheet(
                                             resource = poolUnit,
                                             modifier = Modifier
                                                 .throttleClickable {
-//                                                onAssetSelectionChanged(nonFungibleAsset, !isSelected)
+                                                    val spendingAsset = SpendingAsset.Fungible(poolUnit.poolUnitResource)
+                                                    onAssetSelectionChanged(spendingAsset, !isSelected)
                                                 },
                                             trailingContent = {
                                                 Checkbox(
                                                     checked = isSelected,
                                                     onCheckedChange = {
+                                                        val spendingAsset = SpendingAsset.Fungible(poolUnit.poolUnitResource)
+                                                        onAssetSelectionChanged(spendingAsset, !isSelected)
                                                     },
                                                     colors = CheckboxDefaults.colors(
                                                         checkedColor = RadixTheme.colors.gray1,
@@ -216,11 +219,15 @@ fun ChooseAssetsSheet(
                                         LiquidStakeUnitItem(
                                             stakeValueInXRD = stakeValueInXRD,
                                             modifier = Modifier.throttleClickable {
+                                                val spendingAsset = SpendingAsset.Fungible(liquidStakeUnit.fungibleResource)
+                                                onAssetSelectionChanged(spendingAsset, !isSelected)
                                             },
                                             trailingContent = {
                                                 Checkbox(
                                                     checked = isSelected,
                                                     onCheckedChange = {
+                                                        val spendingAsset = SpendingAsset.Fungible(liquidStakeUnit.fungibleResource)
+                                                        onAssetSelectionChanged(spendingAsset, !isSelected)
                                                     },
                                                     colors = CheckboxDefaults.colors(
                                                         checkedColor = RadixTheme.colors.gray1,
@@ -234,11 +241,17 @@ fun ChooseAssetsSheet(
                                     stakeClaimItem = { stakeClaim, stakeClaimNftItem ->
                                         val isSelected = state.targetAccount.assets.any { it.address == stakeClaimNftItem.globalAddress }
                                         StakeClaimNftItem(
+                                            modifier = Modifier.throttleClickable {
+                                                val spendingAsset = SpendingAsset.NFT(stakeClaimNftItem)
+                                                onAssetSelectionChanged(spendingAsset, !isSelected)
+                                            },
                                             stakeClaimNft = stakeClaimNftItem,
                                             trailingContent = {
                                                 Checkbox(
                                                     checked = isSelected,
                                                     onCheckedChange = {
+                                                        val spendingAsset = SpendingAsset.NFT(stakeClaimNftItem)
+                                                        onAssetSelectionChanged(spendingAsset, !isSelected)
                                                     },
                                                     colors = CheckboxDefaults.colors(
                                                         checkedColor = RadixTheme.colors.gray1,

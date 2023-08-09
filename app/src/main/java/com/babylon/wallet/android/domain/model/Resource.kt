@@ -13,7 +13,6 @@ import com.babylon.wallet.android.domain.model.metadata.ValidatorMetadataItem
 import com.radixdlt.ret.NonFungibleLocalId
 import com.radixdlt.ret.knownAddresses
 import com.radixdlt.ret.nonFungibleLocalIdFromStr
-import rdx.works.core.MAX_TOKEN_DIGITS_LENGTH
 import rdx.works.core.displayableQuantity
 import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.derivation.model.NetworkId
@@ -286,7 +285,7 @@ sealed class Resource {
             get() = fungibleResource.resourceAddress
 
         val percentageOwned: BigDecimal?
-            get() = fungibleResource.amount?.divide(fungibleResource.currentSupply, MAX_TOKEN_DIGITS_LENGTH, RoundingMode.HALF_UP)
+            get() = fungibleResource.amount?.divide(fungibleResource.currentSupply, RoundingMode.HALF_UP)
     }
 
     data class StakeClaimResource(
