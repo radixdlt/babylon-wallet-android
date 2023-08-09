@@ -306,7 +306,7 @@ sealed class Resource {
     ) : Resource() {
 
         override val resourceAddress: String
-            get() = poolUnitResource.poolAddress.orEmpty()
+            get() = poolUnitResource.resourceAddress
 
         fun resourceRedemptionValue(resourceAddress: String): BigDecimal? {
             val resourceVaultBalance = poolResources.find { it.resourceAddress == resourceAddress }?.amount
