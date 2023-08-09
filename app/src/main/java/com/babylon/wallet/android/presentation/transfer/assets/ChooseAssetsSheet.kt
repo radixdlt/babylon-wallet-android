@@ -17,6 +17,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material.CircularProgressIndicator
+import androidx.compose.material3.Checkbox
+import androidx.compose.material3.CheckboxDefaults
 import androidx.compose.material3.Divider
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHostState
@@ -24,6 +26,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -37,10 +40,15 @@ import com.babylon.wallet.android.presentation.transfer.TransferViewModel.State.
 import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
 import com.babylon.wallet.android.presentation.ui.composables.resources.FungibleResourcesColumn
+import com.babylon.wallet.android.presentation.ui.composables.resources.LiquidStakeUnitItem
 import com.babylon.wallet.android.presentation.ui.composables.resources.NonFungibleResourcesColumn
+import com.babylon.wallet.android.presentation.ui.composables.resources.PoolUnitItem
+import com.babylon.wallet.android.presentation.ui.composables.resources.PoolUnitResourcesColumn
 import com.babylon.wallet.android.presentation.ui.composables.resources.SelectableFungibleResourceItem
 import com.babylon.wallet.android.presentation.ui.composables.resources.SelectableNonFungibleResourceItem
+import com.babylon.wallet.android.presentation.ui.composables.resources.StakeClaimNftItem
 import com.babylon.wallet.android.presentation.ui.composables.sheets.SheetHeader
+import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 
 @Suppress("CyclomaticComplexMethod")
 @Composable
@@ -122,8 +130,7 @@ fun ChooseAssetsSheet(
                     }
                     onTabSelected(viewModelTab)
                 },
-                pagerState = pagerState,
-                excludePoolUnits = true
+                pagerState = pagerState
             )
 
             Box(modifier = Modifier.fillMaxSize()) {
@@ -179,6 +186,70 @@ fun ChooseAssetsSheet(
                             }
 
                             ChooseAssets.Tab.PoolUnits -> {
+                                PoolUnitResourcesColumn(
+                                    modifier = Modifier.fillMaxSize(),
+                                    resources = state.resources,
+                                    poolUnitItem = { poolUnit ->
+                                        val isSelected = state.targetAccount.assets.any { it.address == poolUnit.resourceAddress }
+                                        PoolUnitItem(
+                                            resource = poolUnit,
+                                            modifier = Modifier
+                                                .throttleClickable {
+//                                                onAssetSelectionChanged(nonFungibleAsset, !isSelected)
+                                                },
+                                            trailingContent = {
+                                                Checkbox(
+                                                    checked = isSelected,
+                                                    onCheckedChange = {
+                                                    },
+                                                    colors = CheckboxDefaults.colors(
+                                                        checkedColor = RadixTheme.colors.gray1,
+                                                        uncheckedColor = RadixTheme.colors.gray2,
+                                                        checkmarkColor = Color.White
+                                                    )
+                                                )
+                                            }
+                                        )
+                                    },
+                                    liquidStakeItem = { liquidStakeUnit, stakeValueInXRD ->
+                                        val isSelected = state.targetAccount.assets.any { it.address == liquidStakeUnit.resourceAddress }
+                                        LiquidStakeUnitItem(
+                                            stakeValueInXRD = stakeValueInXRD,
+                                            modifier = Modifier.throttleClickable {
+                                            },
+                                            trailingContent = {
+                                                Checkbox(
+                                                    checked = isSelected,
+                                                    onCheckedChange = {
+                                                    },
+                                                    colors = CheckboxDefaults.colors(
+                                                        checkedColor = RadixTheme.colors.gray1,
+                                                        uncheckedColor = RadixTheme.colors.gray2,
+                                                        checkmarkColor = Color.White
+                                                    )
+                                                )
+                                            }
+                                        )
+                                    },
+                                    stakeClaimItem = { stakeClaim, stakeClaimNftItem ->
+                                        val isSelected = state.targetAccount.assets.any { it.address == stakeClaimNftItem.globalAddress }
+                                        StakeClaimNftItem(
+                                            stakeClaimNft = stakeClaimNftItem,
+                                            trailingContent = {
+                                                Checkbox(
+                                                    checked = isSelected,
+                                                    onCheckedChange = {
+                                                    },
+                                                    colors = CheckboxDefaults.colors(
+                                                        checkedColor = RadixTheme.colors.gray1,
+                                                        uncheckedColor = RadixTheme.colors.gray2,
+                                                        checkmarkColor = Color.White
+                                                    )
+                                                )
+                                            }
+                                        )
+                                    }
+                                )
                             }
                         }
                     }

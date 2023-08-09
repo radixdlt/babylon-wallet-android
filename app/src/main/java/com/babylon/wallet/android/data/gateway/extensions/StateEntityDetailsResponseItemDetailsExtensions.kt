@@ -21,7 +21,7 @@ fun StateEntityDetailsResponseItemDetails.totalSupply(): String? {
     }
 }
 
-fun StateEntityDetailsResponseItem.getVaultAmount(vaultAddress: String): BigDecimal? {
+fun StateEntityDetailsResponseItem.getXRDVaultAmount(vaultAddress: String): BigDecimal? {
     return when (
         val resource = fungibleResources?.items?.find {
             Resource.FungibleResource.officialXrdResourceAddress() == it.resourceAddress

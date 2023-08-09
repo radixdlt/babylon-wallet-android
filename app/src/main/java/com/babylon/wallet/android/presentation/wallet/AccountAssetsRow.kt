@@ -232,7 +232,7 @@ private fun AssetsContent(
                     modifier = Modifier
                         .align(Alignment.CenterStart)
                         .height(iconSize),
-                    text = "${resources.poolUnitsSize()}",
+                    text = resources.poolUnitsSize().toString(),
                     contentPadding = PaddingValues(
                         start = iconSize + RadixTheme.dimensions.paddingSmall,
                         end = RadixTheme.dimensions.paddingSmall

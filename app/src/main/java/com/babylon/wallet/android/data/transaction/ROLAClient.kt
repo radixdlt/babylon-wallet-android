@@ -43,7 +43,7 @@ class ROLAClient @Inject constructor(
         val transactionSigningKey = when (val state = entity.securityState) {
             is SecurityState.Unsecured -> state.unsecuredEntityControl.transactionSigning.publicKey
         }
-        val ownerKeys = entityRepository.getEntityOwnerKeyHashes(entity.address, true,).value()
+        val ownerKeys = entityRepository.getEntityOwnerKeyHashes(entity.address, true).value()
         val publicKeyHashes = mutableListOf<FactorInstance.PublicKey>()
         val ownerKeysHashes = ownerKeys?.keyHashes.orEmpty()
         val authSigningKeyHash = authSigningFactorInstance.publicKey.compressedData.compressedPublicKeyHash()

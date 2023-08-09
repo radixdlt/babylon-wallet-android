@@ -635,4 +635,5 @@
   <string name="assetDetails_poolUnitDetails_unstaking">Unstaking</string>
   <string name="assetDetails_poolUnitDetails_readyToClaim">Ready to Claim</string>
   <string name="assetDetails_poolUnitDetails_xrdSymbol">XRD</string>
+  <string name="assetDetails_poolUnitDetails_currentRedeemableValue">Current Redeemable Value</string>
 </resources>

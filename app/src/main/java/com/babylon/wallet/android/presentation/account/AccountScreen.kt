@@ -83,10 +83,14 @@ import com.babylon.wallet.android.presentation.ui.composables.ApplySecuritySetti
 import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
 import com.babylon.wallet.android.presentation.ui.composables.resources.FungibleResourceItem
+import com.babylon.wallet.android.presentation.ui.composables.resources.LiquidStakeUnitItem
 import com.babylon.wallet.android.presentation.ui.composables.resources.NonFungibleResourceItem
+import com.babylon.wallet.android.presentation.ui.composables.resources.PoolUnitItem
+import com.babylon.wallet.android.presentation.ui.composables.resources.StakeClaimNftItem
 import com.babylon.wallet.android.presentation.ui.composables.resources.fungibleResources
 import com.babylon.wallet.android.presentation.ui.composables.resources.nonFungibleResources
 import com.babylon.wallet.android.presentation.ui.composables.resources.poolUnitsResources
+import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.CoroutineScope
@@ -487,11 +491,30 @@ fun AssetsContent(
                                 parentSectionClick = {
                                     collapsedStakeState = !collapsedStakeState
                                 },
-                                onPoolUnitClick = {
-                                    onPoolUnitClick(it)
+                                poolUnitItem = { poolUnit ->
+                                    PoolUnitItem(
+                                        resource = poolUnit,
+                                        modifier = Modifier.throttleClickable {
+                                            onPoolUnitClick(poolUnit)
+                                        }.padding(horizontal = RadixTheme.dimensions.paddingDefault)
+                                    )
                                 },
-                                lsuClick = {
-                                    onFungibleTokenClick(it.fungibleResource)
+                                liquidStakeItem = { liquidStakeUnit, stakeValueInXRD ->
+                                    LiquidStakeUnitItem(
+                                        stakeValueInXRD = stakeValueInXRD,
+                                        modifier = Modifier.throttleClickable {
+                                            onFungibleTokenClick(liquidStakeUnit.fungibleResource)
+                                        }
+                                    )
+                                },
+                                stakeClaimItem = { stakeClaim, stakeClaimNftItem ->
+                                    StakeClaimNftItem(
+                                        modifier = Modifier.throttleClickable {
+                                            // TODO for now just open NFT details
+                                            onNonFungibleItemClick(stakeClaim.nonFungibleResource, stakeClaimNftItem)
+                                        },
+                                        stakeClaimNft = stakeClaimNftItem
+                                    )
                                 }
                             )
                             item {

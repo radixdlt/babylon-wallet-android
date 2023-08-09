@@ -6,7 +6,7 @@ import com.babylon.wallet.android.data.gateway.apis.StateApi
 import com.babylon.wallet.android.data.gateway.extensions.allResourceAddresses
 import com.babylon.wallet.android.data.gateway.extensions.asMetadataItems
 import com.babylon.wallet.android.data.gateway.extensions.calculateResourceBehaviours
-import com.babylon.wallet.android.data.gateway.extensions.getVaultAmount
+import com.babylon.wallet.android.data.gateway.extensions.getXRDVaultAmount
 import com.babylon.wallet.android.data.gateway.extensions.stakeUnitResourceAddress
 import com.babylon.wallet.android.data.gateway.extensions.totalSupply
 import com.babylon.wallet.android.data.gateway.extensions.unstakeClaimTokenAddress
@@ -248,7 +248,7 @@ class EntityRepositoryImpl @Inject constructor(
             val accountValidators = allValidatorAddresses
                 .map { validatorAddress ->
                     val validatorDetails = validatorDetailsList.firstOrNull { it.address == validatorAddress }
-                    val totalXrdStake = validatorDetails?.details?.xrdVaultAddress()?.let { validatorDetails.getVaultAmount(it) }
+                    val totalXrdStake = validatorDetails?.details?.xrdVaultAddress()?.let { validatorDetails.getXRDVaultAmount(it) }
                     val validatorMetadata = validatorDetails?.explicitMetadata?.asMetadataItems().orEmpty().toMutableList()
                     val nameMetadata: NameMetadataItem? = validatorMetadata.consume()
                     val iconUrlMetadataItem: IconUrlMetadataItem? = validatorMetadata.consume()

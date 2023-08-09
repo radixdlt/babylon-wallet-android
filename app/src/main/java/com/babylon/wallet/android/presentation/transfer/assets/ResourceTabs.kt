@@ -32,8 +32,7 @@ fun ResourcesTabs(
     modifier: Modifier = Modifier,
     pagerState: PagerState,
     selectedTab: ResourceTab,
-    onTabSelected: (ResourceTab) -> Unit,
-    excludePoolUnits: Boolean = false
+    onTabSelected: (ResourceTab) -> Unit
 ) {
     val scope = rememberCoroutineScope()
     LaunchedEffect(selectedTab) {
@@ -45,8 +44,7 @@ fun ResourcesTabs(
     ResourcesTabs(
         modifier = modifier,
         selectedTab = selectedTab,
-        onTabSelected = onTabSelected,
-        excludePoolUnits = excludePoolUnits
+        onTabSelected = onTabSelected
     )
 }
 
@@ -54,15 +52,13 @@ fun ResourcesTabs(
 fun ResourcesTabs(
     modifier: Modifier = Modifier,
     selectedTab: ResourceTab,
-    onTabSelected: (ResourceTab) -> Unit,
-    excludePoolUnits: Boolean = false
+    onTabSelected: (ResourceTab) -> Unit
 ) {
-    val tabs = if (excludePoolUnits) ResourceTab.valuesWithoutPoolUnits() else ResourceTab.values()
     val tabIndex = remember(selectedTab) {
         ResourceTab.values().indexOf(selectedTab)
     }
     TabRow(
-        modifier = modifier.width(100.dp * tabs.size),
+        modifier = modifier.width(300.dp),
         selectedTabIndex = tabIndex,
         containerColor = Color.Transparent,
         divider = {},
@@ -76,7 +72,7 @@ fun ResourcesTabs(
             )
         }
     ) {
-        tabs.forEach { tab ->
+        ResourceTab.values().forEach { tab ->
             val isSelected = tab == selectedTab
             Tab(
                 modifier = Modifier.wrapContentWidth(),
@@ -112,11 +108,5 @@ private fun ResourceTab.name(): String = when (this) {
 enum class ResourceTab {
     Tokens,
     Nfts,
-    PoolUnits;
-
-    companion object {
-        fun valuesWithoutPoolUnits(): Array<ResourceTab> {
-            return arrayOf(Tokens, Nfts)
-        }
-    }
+    PoolUnits
 }
