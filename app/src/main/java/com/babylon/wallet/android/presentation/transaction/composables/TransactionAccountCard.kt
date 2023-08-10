@@ -1,10 +1,8 @@
 package com.babylon.wallet.android.presentation.transaction.composables
 
-import android.graphics.drawable.ColorDrawable
 import android.net.Uri
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
@@ -15,7 +13,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Alignment.Companion.CenterVertically
 import androidx.compose.ui.Modifier
@@ -24,7 +25,6 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.SolidColor
-import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -47,7 +47,6 @@ import com.babylon.wallet.android.presentation.transaction.AccountWithTransferab
 import com.babylon.wallet.android.presentation.ui.composables.ActionableAddressView
 import com.babylon.wallet.android.presentation.ui.composables.ImageSize
 import com.babylon.wallet.android.presentation.ui.composables.rememberImageUrl
-import com.google.accompanist.drawablepainter.rememberDrawablePainter
 import rdx.works.core.displayableQuantity
 
 @Composable
@@ -116,7 +115,8 @@ fun TransactionAccountCard(
                 tokenAmount = transferableAmount.amount.toPlainString(),
                 isTokenAmountVisible = true,
                 guaranteedQuantity = amountGuaranteeAssertion?.amount?.displayableQuantity(),
-                shape = shape
+                shape = shape,
+                isNft = false
             )
         }
 
@@ -131,7 +131,8 @@ fun TransactionAccountCard(
                     tokenUrl = collection.resource.iconUrl,
                     tokenSymbol = item.localId.displayable,
                     isTokenAmountVisible = false,
-                    shape = if (lastItem) RadixTheme.shapes.roundedRectBottomMedium else RectangleShape
+                    shape = if (lastItem) RadixTheme.shapes.roundedRectBottomMedium else RectangleShape,
+                    isNft = true
                 )
             }
         }
@@ -146,14 +147,15 @@ private fun TokenItemContent(
     tokenAmount: String? = null,
     isTokenAmountVisible: Boolean,
     guaranteedQuantity: String? = null,
-    shape: Shape
+    shape: Shape,
+    isNft: Boolean
 ) {
     Row(
         verticalAlignment = CenterVertically,
         modifier = Modifier
             .height(IntrinsicSize.Min)
             .background(
-                color = RadixTheme.colors.gray4,
+                color = RadixTheme.colors.gray5,
                 shape = shape
             )
             .padding(
@@ -165,25 +167,30 @@ private fun TokenItemContent(
         val placeholder = if (isXrdToken) {
             painterResource(id = R.drawable.ic_xrd_token)
         } else {
-            rememberDrawablePainter(drawable = ColorDrawable(RadixTheme.colors.gray3.toArgb()))
+            if (isNft) {
+                painterResource(id = R.drawable.ic_nfts)
+            } else {
+                painterResource(id = R.drawable.ic_token)
+            }
         }
-        Box(
+        var contentScale by remember {
+            mutableStateOf(ContentScale.Crop)
+        }
+        AsyncImage(
             modifier = Modifier
                 .size(44.dp)
-                .background(RadixTheme.colors.gray3, shape = RadixTheme.shapes.circle)
-        ) {
-            AsyncImage(
-                model = rememberImageUrl(fromUrl = tokenUrl, size = ImageSize.SMALL),
-                placeholder = placeholder,
-                fallback = placeholder,
-                error = placeholder,
-                contentDescription = null,
-                contentScale = ContentScale.Crop,
-                modifier = Modifier
-                    .size(44.dp)
-                    .clip(RadixTheme.shapes.circle)
-            )
-        }
+                .background(RadixTheme.colors.gray4, shape = RadixTheme.shapes.circle)
+                .clip(RadixTheme.shapes.circle),
+            model = rememberImageUrl(fromUrl = tokenUrl, size = ImageSize.SMALL),
+            placeholder = placeholder,
+            fallback = placeholder,
+            error = placeholder,
+            contentDescription = null,
+            contentScale = contentScale,
+            onError = {
+                contentScale = ContentScale.Inside
+            }
+        )
         Text(
             modifier = Modifier
                 .weight(1f),

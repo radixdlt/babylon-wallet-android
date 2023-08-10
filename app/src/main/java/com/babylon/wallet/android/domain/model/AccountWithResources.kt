@@ -1,5 +1,6 @@
 package com.babylon.wallet.android.domain.model
 
+import android.net.Uri
 import com.babylon.wallet.android.domain.model.metadata.AccountTypeMetadataItem
 import rdx.works.profile.data.model.pernetwork.Network
 import java.math.BigDecimal
@@ -17,6 +18,8 @@ data class AccountWithResources(
 data class Resources(
     val fungibleResources: List<Resource.FungibleResource>,
     val nonFungibleResources: List<Resource.NonFungibleResource>,
+    val poolUnits: List<Resource.PoolUnitResource>,
+    val validatorsWithStakeResources: ValidatorsWithStakeResources = ValidatorsWithStakeResources()
 ) {
 
     val xrd: Resource.FungibleResource? = fungibleResources.find { it.isXrd }
@@ -31,8 +34,38 @@ data class Resources(
         }
     } == true
 
+    fun poolUnitsSize(): Int {
+        return poolUnits.size + validatorsWithStakeResources.validators.size
+    }
+
     companion object {
-        val EMPTY = Resources(fungibleResources = emptyList(), nonFungibleResources = emptyList())
+        val EMPTY = Resources(
+            fungibleResources = emptyList(),
+            nonFungibleResources = emptyList(),
+            poolUnits = emptyList(),
+            validatorsWithStakeResources = ValidatorsWithStakeResources()
+        )
+    }
+}
+
+data class ValidatorsWithStakeResources(
+    val validators: List<ValidatorWithStakeResources> = emptyList()
+) {
+    val isEmpty
+        get() = validators.isEmpty()
+}
+
+data class ValidatorWithStakeResources(
+    val address: String,
+    val name: String,
+    val url: Uri?,
+    val totalXrdStake: BigDecimal?,
+    val liquidStakeUnits: List<Resource.LiquidStakeUnitResource> = emptyList(),
+    val stakeClaimNft: Resource.StakeClaimResource? = null
+) {
+    fun stakeValueInXRD(lsuAddress: String): BigDecimal? {
+        val lsuPercentageOwned = liquidStakeUnits.find { it.resourceAddress == lsuAddress }?.percentageOwned
+        return lsuPercentageOwned?.multiply(totalXrdStake)
     }
 }
 

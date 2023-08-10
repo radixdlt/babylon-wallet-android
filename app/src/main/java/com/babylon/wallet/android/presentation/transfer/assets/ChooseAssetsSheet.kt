@@ -17,6 +17,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material.CircularProgressIndicator
+import androidx.compose.material3.Checkbox
+import androidx.compose.material3.CheckboxDefaults
 import androidx.compose.material3.Divider
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHostState
@@ -24,6 +26,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -37,11 +40,17 @@ import com.babylon.wallet.android.presentation.transfer.TransferViewModel.State.
 import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
 import com.babylon.wallet.android.presentation.ui.composables.resources.FungibleResourcesColumn
+import com.babylon.wallet.android.presentation.ui.composables.resources.LiquidStakeUnitItem
 import com.babylon.wallet.android.presentation.ui.composables.resources.NonFungibleResourcesColumn
+import com.babylon.wallet.android.presentation.ui.composables.resources.PoolUnitItem
+import com.babylon.wallet.android.presentation.ui.composables.resources.PoolUnitResourcesColumn
 import com.babylon.wallet.android.presentation.ui.composables.resources.SelectableFungibleResourceItem
 import com.babylon.wallet.android.presentation.ui.composables.resources.SelectableNonFungibleResourceItem
+import com.babylon.wallet.android.presentation.ui.composables.resources.StakeClaimNftItem
 import com.babylon.wallet.android.presentation.ui.composables.sheets.SheetHeader
+import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 
+@Suppress("CyclomaticComplexMethod")
 @Composable
 fun ChooseAssetsSheet(
     modifier: Modifier = Modifier,
@@ -111,11 +120,13 @@ fun ChooseAssetsSheet(
                 selectedTab = when (state.selectedTab) {
                     ChooseAssets.Tab.Tokens -> ResourceTab.Tokens
                     ChooseAssets.Tab.NFTs -> ResourceTab.Nfts
+                    ChooseAssets.Tab.PoolUnits -> ResourceTab.PoolUnits
                 },
                 onTabSelected = {
                     val viewModelTab = when (it) {
                         ResourceTab.Tokens -> ChooseAssets.Tab.Tokens
                         ResourceTab.Nfts -> ChooseAssets.Tab.NFTs
+                        ResourceTab.PoolUnits -> ChooseAssets.Tab.PoolUnits
                     }
                     onTabSelected(viewModelTab)
                 },
@@ -170,6 +181,86 @@ fun ChooseAssetsSheet(
                                     onCheckChanged = {
                                         val nonFungibleAsset = SpendingAsset.NFT(item = item)
                                         onAssetSelectionChanged(nonFungibleAsset, it)
+                                    }
+                                )
+                            }
+
+                            ChooseAssets.Tab.PoolUnits -> {
+                                PoolUnitResourcesColumn(
+                                    modifier = Modifier.fillMaxSize(),
+                                    resources = state.resources,
+                                    poolUnitItem = { poolUnit ->
+                                        val isSelected = state.targetAccount.assets.any { it.address == poolUnit.resourceAddress }
+                                        PoolUnitItem(
+                                            resource = poolUnit,
+                                            modifier = Modifier
+                                                .throttleClickable {
+                                                    val spendingAsset = SpendingAsset.Fungible(poolUnit.poolUnitResource)
+                                                    onAssetSelectionChanged(spendingAsset, !isSelected)
+                                                },
+                                            trailingContent = {
+                                                Checkbox(
+                                                    checked = isSelected,
+                                                    onCheckedChange = {
+                                                        val spendingAsset = SpendingAsset.Fungible(poolUnit.poolUnitResource)
+                                                        onAssetSelectionChanged(spendingAsset, !isSelected)
+                                                    },
+                                                    colors = CheckboxDefaults.colors(
+                                                        checkedColor = RadixTheme.colors.gray1,
+                                                        uncheckedColor = RadixTheme.colors.gray2,
+                                                        checkmarkColor = Color.White
+                                                    )
+                                                )
+                                            }
+                                        )
+                                    },
+                                    liquidStakeItem = { liquidStakeUnit, stakeValueInXRD ->
+                                        val isSelected = state.targetAccount.assets.any { it.address == liquidStakeUnit.resourceAddress }
+                                        LiquidStakeUnitItem(
+                                            stakeValueInXRD = stakeValueInXRD,
+                                            modifier = Modifier.throttleClickable {
+                                                val spendingAsset = SpendingAsset.Fungible(liquidStakeUnit.fungibleResource)
+                                                onAssetSelectionChanged(spendingAsset, !isSelected)
+                                            },
+                                            trailingContent = {
+                                                Checkbox(
+                                                    checked = isSelected,
+                                                    onCheckedChange = {
+                                                        val spendingAsset = SpendingAsset.Fungible(liquidStakeUnit.fungibleResource)
+                                                        onAssetSelectionChanged(spendingAsset, !isSelected)
+                                                    },
+                                                    colors = CheckboxDefaults.colors(
+                                                        checkedColor = RadixTheme.colors.gray1,
+                                                        uncheckedColor = RadixTheme.colors.gray2,
+                                                        checkmarkColor = Color.White
+                                                    )
+                                                )
+                                            }
+                                        )
+                                    },
+                                    stakeClaimItem = { stakeClaim, stakeClaimNftItem ->
+                                        val isSelected = state.targetAccount.assets.any { it.address == stakeClaimNftItem.globalAddress }
+                                        StakeClaimNftItem(
+                                            modifier = Modifier.throttleClickable {
+                                                val spendingAsset = SpendingAsset.NFT(stakeClaimNftItem)
+                                                onAssetSelectionChanged(spendingAsset, !isSelected)
+                                            },
+                                            stakeClaimNft = stakeClaimNftItem,
+                                            trailingContent = {
+                                                Checkbox(
+                                                    checked = isSelected,
+                                                    onCheckedChange = {
+                                                        val spendingAsset = SpendingAsset.NFT(stakeClaimNftItem)
+                                                        onAssetSelectionChanged(spendingAsset, !isSelected)
+                                                    },
+                                                    colors = CheckboxDefaults.colors(
+                                                        checkedColor = RadixTheme.colors.gray1,
+                                                        uncheckedColor = RadixTheme.colors.gray2,
+                                                        checkmarkColor = Color.White
+                                                    )
+                                                )
+                                            }
+                                        )
                                     }
                                 )
                             }

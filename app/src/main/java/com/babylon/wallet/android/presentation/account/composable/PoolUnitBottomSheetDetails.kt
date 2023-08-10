@@ -1,30 +1,23 @@
 package com.babylon.wallet.android.presentation.account.composable
 
 import android.graphics.drawable.ColorDrawable
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.material3.Divider
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -41,14 +34,15 @@ import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAp
 import com.babylon.wallet.android.presentation.ui.composables.icon
 import com.babylon.wallet.android.presentation.ui.composables.name
 import com.babylon.wallet.android.presentation.ui.composables.rememberImageUrl
+import com.babylon.wallet.android.presentation.ui.composables.resources.PoolResourcesValues
 import com.babylon.wallet.android.presentation.ui.composables.resources.ResourceAddressRow
 import com.babylon.wallet.android.presentation.ui.composables.resources.TokenBalance
+import com.babylon.wallet.android.presentation.ui.composables.resources.poolName
 import com.google.accompanist.drawablepainter.rememberDrawablePainter
 
-@OptIn(ExperimentalLayoutApi::class)
 @Composable
-fun FungibleTokenBottomSheetDetails(
-    fungible: Resource.FungibleResource,
+fun PoolUnitBottomSheetDetails(
+    poolUnit: Resource.PoolUnitResource,
     onCloseClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -57,7 +51,7 @@ fun FungibleTokenBottomSheetDetails(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         RadixCenteredTopAppBar(
-            title = fungible.name,
+            title = poolName(poolUnit.poolUnitResource.name),
             onBackClick = onCloseClick,
             modifier = Modifier.fillMaxWidth(),
             contentColor = RadixTheme.colors.gray1,
@@ -70,13 +64,9 @@ fun FungibleTokenBottomSheetDetails(
                 .padding(horizontal = RadixTheme.dimensions.paddingLarge),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            val placeholder = if (fungible.isXrd) {
-                painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_xrd_token)
-            } else {
-                rememberDrawablePainter(drawable = ColorDrawable(RadixTheme.colors.gray3.toArgb()))
-            }
+            val placeholder = rememberDrawablePainter(drawable = ColorDrawable(RadixTheme.colors.gray3.toArgb()))
             AsyncImage(
-                model = rememberImageUrl(fromUrl = fungible.iconUrl, size = ImageSize.LARGE),
+                model = rememberImageUrl(fromUrl = poolUnit.poolUnitResource.iconUrl, size = ImageSize.LARGE),
                 placeholder = placeholder,
                 fallback = placeholder,
                 error = placeholder,
@@ -84,31 +74,53 @@ fun FungibleTokenBottomSheetDetails(
                 contentScale = ContentScale.Crop,
                 modifier = Modifier
                     .size(104.dp)
-                    .background(RadixTheme.colors.gray3, RadixTheme.shapes.circle)
-                    .clip(RadixTheme.shapes.circle)
+                    .background(RadixTheme.colors.gray3, RadixTheme.shapes.roundedRectMedium)
+                    .clip(RadixTheme.shapes.roundedRectMedium)
             )
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
-            TokenBalance(fungible)
-            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
-
-            if (fungible.description.isNotBlank()) {
-                Divider(Modifier.fillMaxWidth(), color = RadixTheme.colors.gray4)
-                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
+            TokenBalance(poolUnit.poolUnitResource)
+            Divider(
+                Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = RadixTheme.dimensions.paddingLarge),
+                color = RadixTheme.colors.gray4
+            )
+            Text(
+                text = stringResource(id = R.string.account_poolUnits_details_currentRedeemableValue),
+                style = RadixTheme.typography.secondaryHeader,
+                color = RadixTheme.colors.gray1
+            )
+            PoolResourcesValues(
+                resource = poolUnit,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = RadixTheme.dimensions.paddingLarge, bottom = RadixTheme.dimensions.paddingDefault)
+            )
+            Divider(
+                Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = RadixTheme.dimensions.paddingLarge),
+                color = RadixTheme.colors.gray4
+            )
+            if (poolUnit.poolUnitResource.description.isNotBlank()) {
                 Text(
-                    text = fungible.description,
+                    text = poolUnit.poolUnitResource.description,
                     style = RadixTheme.typography.body2Regular,
                     color = RadixTheme.colors.gray1
                 )
-                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
-                Divider(Modifier.fillMaxWidth(), color = RadixTheme.colors.gray4)
-                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
+                Divider(
+                    Modifier
+                        .fillMaxWidth()
+                        .padding(top = RadixTheme.dimensions.paddingLarge, bottom = RadixTheme.dimensions.paddingDefault),
+                    color = RadixTheme.colors.gray4
+                )
             }
             ResourceAddressRow(
                 modifier = Modifier.fillMaxWidth(),
-                address = fungible.resourceAddress
+                address = poolUnit.poolUnitResource.resourceAddress
             )
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
-            if (fungible.displayTitle.isNotEmpty()) {
+            if (poolUnit.poolUnitResource.displayTitle.isNotEmpty()) {
                 Row(
                     modifier = Modifier,
                     verticalAlignment = Alignment.CenterVertically,
@@ -121,8 +133,8 @@ fun FungibleTokenBottomSheetDetails(
                     )
                     Spacer(modifier = Modifier.weight(1f))
                     Text(
-                        text = fungible.displayTitle,
-                        style = RadixTheme.typography.body1Regular,
+                        text = poolUnit.poolUnitResource.displayTitle,
+                        style = RadixTheme.typography.body1HighImportance,
                         color = RadixTheme.colors.gray1
                     )
                 }
@@ -143,14 +155,14 @@ fun FungibleTokenBottomSheetDetails(
                 Text(
                     modifier = Modifier
                         .padding(start = RadixTheme.dimensions.paddingDefault),
-                    text = fungible.currentSupplyToDisplay ?: stringResource(id = R.string.assetDetails_supplyUnkown),
-                    style = RadixTheme.typography.body1Regular,
+                    text = poolUnit.poolUnitResource.currentSupplyToDisplay ?: stringResource(id = R.string.assetDetails_supplyUnkown),
+                    style = RadixTheme.typography.body1HighImportance,
                     color = RadixTheme.colors.gray1,
                     textAlign = TextAlign.End
                 )
             }
 
-            if (fungible.resourceBehaviours.isNotEmpty()) {
+            if (poolUnit.poolUnitResource.resourceBehaviours.isNotEmpty()) {
                 Column {
                     Text(
                         modifier = Modifier
@@ -163,7 +175,7 @@ fun FungibleTokenBottomSheetDetails(
                         style = RadixTheme.typography.body1Regular,
                         color = RadixTheme.colors.gray2
                     )
-                    fungible.resourceBehaviours.forEach { resourceBehaviour ->
+                    poolUnit.poolUnitResource.resourceBehaviours.forEach { resourceBehaviour ->
                         Behaviour(
                             icon = resourceBehaviour.icon(),
                             name = resourceBehaviour.name()
@@ -171,111 +183,17 @@ fun FungibleTokenBottomSheetDetails(
                     }
                 }
             }
-
-            if (fungible.tags.isNotEmpty()) {
-                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
-                Text(
-                    modifier = Modifier.fillMaxWidth(),
-                    text = stringResource(id = R.string.assetDetails_tags),
-                    style = RadixTheme.typography.body1Regular,
-                    color = RadixTheme.colors.gray2
-                )
-                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
-                FlowRow(
-                    modifier = Modifier.fillMaxWidth(),
-                    content = {
-                        fungible.tags.forEach { tag ->
-                            Tag(
-                                modifier = Modifier
-                                    .padding(RadixTheme.dimensions.paddingXSmall)
-                                    .border(
-                                        width = 1.dp,
-                                        color = RadixTheme.colors.gray4,
-                                        shape = RadixTheme.shapes.roundedTag
-                                    )
-                                    .padding(RadixTheme.dimensions.paddingSmall),
-                                tag = tag
-                            )
-                        }
-                    }
-                )
-                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
-            }
-
             Spacer(modifier = Modifier.height(100.dp))
         }
     }
 }
 
-@Composable
-fun Behaviour(
-    modifier: Modifier = Modifier,
-    icon: Painter,
-    name: String
-) {
-    Row(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(vertical = RadixTheme.dimensions.paddingXSmall),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Image(
-            painter = icon,
-            contentDescription = "behaviour image"
-        )
-
-        Text(
-            modifier = Modifier
-                .weight(1f)
-                .padding(horizontal = RadixTheme.dimensions.paddingDefault),
-            text = name,
-            style = RadixTheme.typography.body2Regular,
-            color = RadixTheme.colors.gray1,
-            maxLines = 2
-        )
-
-        Icon(
-            painter = painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_info_outline),
-            contentDescription = null,
-            tint = RadixTheme.colors.gray3
-        )
-    }
-}
-
-@Composable
-fun Tag(
-    modifier: Modifier = Modifier,
-    tag: Resource.Tag
-) {
-    Row(
-        modifier = modifier,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Icon(
-            painter = if (tag == Resource.Tag.Official) {
-                painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_radix_tag)
-            } else {
-                painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_token_tag)
-            },
-            contentDescription = "tag image",
-            tint = RadixTheme.colors.gray2
-        )
-
-        Text(
-            modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingSmall),
-            text = tag.name(),
-            style = RadixTheme.typography.body2HighImportance,
-            color = RadixTheme.colors.gray2
-        )
-    }
-}
-
 @Preview
 @Composable
-fun FungibleTokenBottomSheetDetailsPreview() {
+fun PoolUnitBottomSheetDetailsPreview() {
     RadixWalletTheme {
-        FungibleTokenBottomSheetDetails(
-            fungible = SampleDataProvider().sampleFungibleResources().first(),
+        PoolUnitBottomSheetDetails(
+            poolUnit = SampleDataProvider().samplePoolUnit(),
             onCloseClick = {}
         )
     }

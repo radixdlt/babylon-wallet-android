@@ -49,12 +49,14 @@ fun EmptyResourcesContent(
 private fun ResourceTab.toEmptyIconRes() = when (this) {
     ResourceTab.Tokens -> R.drawable.ic_empty_fungibles
     ResourceTab.Nfts -> R.drawable.ic_empty_non_fungibles
+    ResourceTab.PoolUnits -> R.drawable.ic_empty_pool_tokens
 }
 
 @StringRes
 private fun ResourceTab.toEmptyTitleRes() = when (this) {
     ResourceTab.Tokens -> R.string.assetDetails_tokenDetails_noTokens
     ResourceTab.Nfts -> R.string.assetDetails_NFTDetails_noNfts
+    ResourceTab.PoolUnits -> R.string.assetDetails_poolUnitDetails_noPoolUnits
 }
 
 @Suppress("UnusedPrivateMember") // it will be used soon
@@ -62,4 +64,5 @@ private fun ResourceTab.toEmptyTitleRes() = when (this) {
 private fun ResourceTab.toEmptyInfoRes() = when (this) {
     ResourceTab.Tokens -> R.string.assetDetails_tokenDetails_whatAreTokens
     ResourceTab.Nfts -> R.string.assetDetails_NFTDetails_whatAreNfts
+    ResourceTab.PoolUnits -> R.string.assetDetails_poolUnitDetails_whatArePoolUnits
 }

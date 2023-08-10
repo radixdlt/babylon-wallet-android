@@ -16,6 +16,7 @@ import com.babylon.wallet.android.presentation.transaction.TransactionApprovalVi
 import com.babylon.wallet.android.presentation.transaction.TransactionApprovalViewModel.State
 import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
+import com.babylon.wallet.android.utils.toRETDecimalString
 import com.radixdlt.ret.TransactionManifest
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
@@ -210,7 +211,7 @@ class TransactionSubmitDelegate(
                     is GuaranteeAssertion.ForAmount -> {
                         manifest = manifest.addGuaranteeInstructionToManifest(
                             address = depositing.transferable.resourceAddress,
-                            guaranteedAmount = assertion.amount.toPlainString(),
+                            guaranteedAmount = assertion.amount.toRETDecimalString(),
                             index = assertion.instructionIndex.toInt()
                         )
                     }

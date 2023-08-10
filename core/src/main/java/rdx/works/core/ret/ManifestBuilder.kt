@@ -9,7 +9,7 @@ import com.radixdlt.ret.ManifestValue
 import com.radixdlt.ret.NonFungibleGlobalId
 import com.radixdlt.ret.NonFungibleLocalId
 import com.radixdlt.ret.TransactionManifest
-import rdx.works.core.toByteArray
+import com.radixdlt.ret.nonFungibleLocalIdAsStr
 import rdx.works.core.toHexString
 import rdx.works.core.toUByteList
 
@@ -183,11 +183,6 @@ class ManifestBuilder {
     }
 }
 
-fun NonFungibleLocalId.asStr() = when (this) {
-    is NonFungibleLocalId.Bytes -> "[${value.toByteArray()}]"
-    is NonFungibleLocalId.Integer -> "#$value#"
-    is NonFungibleLocalId.Str -> "<$value>"
-    is NonFungibleLocalId.Ruid -> "{$value}"
-}
+fun NonFungibleLocalId.asStr() = nonFungibleLocalIdAsStr(this)
 
 fun ManifestBuilder.buildSafely(networkId: Int) = runCatching { build(networkId) }

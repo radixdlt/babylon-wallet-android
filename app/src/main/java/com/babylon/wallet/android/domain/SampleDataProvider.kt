@@ -8,6 +8,7 @@ import com.babylon.wallet.android.domain.model.DAppWithMetadata
 import com.babylon.wallet.android.domain.model.DAppWithMetadataAndAssociatedResources
 import com.babylon.wallet.android.domain.model.Resource
 import com.babylon.wallet.android.domain.model.Resources
+import com.babylon.wallet.android.domain.model.ValidatorsWithStakeResources
 import com.babylon.wallet.android.domain.model.metadata.NameMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.SymbolMetadataItem
 import rdx.works.core.InstantGenerator
@@ -142,7 +143,9 @@ class SampleDataProvider {
             account = sampleAccount(address = address),
             resources = Resources(
                 fungibleResources = withFungibleTokens,
-                nonFungibleResources = emptyList()
+                nonFungibleResources = emptyList(),
+                poolUnits = emptyList(),
+                validatorsWithStakeResources = ValidatorsWithStakeResources()
             )
         )
     }
@@ -189,6 +192,10 @@ class SampleDataProvider {
                 )
             }
         }
+    }
+
+    fun samplePoolUnit(): Resource.PoolUnitResource {
+        return Resource.PoolUnitResource(sampleFungibleResources().first(), sampleFungibleResources())
     }
 
     fun sampleDAppWithResources(): DAppWithMetadataAndAssociatedResources {

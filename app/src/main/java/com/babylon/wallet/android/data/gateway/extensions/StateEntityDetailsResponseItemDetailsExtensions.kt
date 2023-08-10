@@ -1,24 +1,57 @@
-@file:Suppress("CommentSpacing", "UnusedPrivateMember", "NoUnusedImports")
+@file:Suppress("CommentSpacing", "UnusedPrivateMember", "NoUnusedImports", "TooManyFunctions")
 
 package com.babylon.wallet.android.data.gateway.extensions
 
-import com.babylon.wallet.android.data.gateway.extensions.ResourceRole.Burn
-import com.babylon.wallet.android.data.gateway.extensions.ResourceRole.Deposit
-import com.babylon.wallet.android.data.gateway.extensions.ResourceRole.Mint
-import com.babylon.wallet.android.data.gateway.extensions.ResourceRole.Recall
-import com.babylon.wallet.android.data.gateway.extensions.ResourceRole.UpdateMetadata
-import com.babylon.wallet.android.data.gateway.extensions.ResourceRole.UpdateNonFungibleData
-import com.babylon.wallet.android.data.gateway.extensions.ResourceRole.Withdraw
 import com.babylon.wallet.android.data.gateway.generated.models.ComponentEntityAccessRules
+import com.babylon.wallet.android.data.gateway.generated.models.FungibleResourcesCollectionItemVaultAggregated
+import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponseComponentDetails
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponseFungibleResourceDetails
+import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponseItem
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponseItemDetails
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponseNonFungibleResourceDetails
+import com.babylon.wallet.android.domain.model.Resource
 import com.babylon.wallet.android.domain.model.behaviours.ResourceBehaviour
+import java.math.BigDecimal
 
 fun StateEntityDetailsResponseItemDetails.totalSupply(): String? {
     return when (val details = this) {
         is StateEntityDetailsResponseFungibleResourceDetails -> details.totalSupply
         is StateEntityDetailsResponseNonFungibleResourceDetails -> details.totalSupply
+        else -> null
+    }
+}
+
+fun StateEntityDetailsResponseItem.getXRDVaultAmount(vaultAddress: String): BigDecimal? {
+    return when (
+        val resource = fungibleResources?.items?.find {
+            Resource.FungibleResource.officialXrdResourceAddress() == it.resourceAddress
+        }
+    ) {
+        is FungibleResourcesCollectionItemVaultAggregated -> {
+            resource.vaults.items.find { it.vaultAddress == vaultAddress }?.amount?.toBigDecimal()
+        }
+
+        else -> null
+    }
+}
+
+fun StateEntityDetailsResponseItemDetails.xrdVaultAddress(): String? {
+    return when (val details = this) {
+        is StateEntityDetailsResponseComponentDetails -> details.state?.value?.stakeXrdVault?.entityAddress
+        else -> null
+    }
+}
+
+fun StateEntityDetailsResponseItemDetails.stakeUnitResourceAddress(): String? {
+    return when (val details = this) {
+        is StateEntityDetailsResponseComponentDetails -> details.state?.value?.stakeUnitResourceAddress
+        else -> null
+    }
+}
+
+fun StateEntityDetailsResponseItemDetails.unstakeClaimTokenAddress(): String? {
+    return when (val details = this) {
+        is StateEntityDetailsResponseComponentDetails -> details.state?.value?.unstakeClaimTokenResourceAddress
         else -> null
     }
 }
