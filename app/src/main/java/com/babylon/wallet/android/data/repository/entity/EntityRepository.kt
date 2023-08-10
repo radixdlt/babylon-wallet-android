@@ -332,6 +332,7 @@ class EntityRepositoryImpl @Inject constructor(
         return allNonFungibles
     }
 
+    @Suppress("LongMethod")
     private suspend fun getNonFungibleResourceItemsForAccount(
         accountAddress: String,
         vaultAddress: String,

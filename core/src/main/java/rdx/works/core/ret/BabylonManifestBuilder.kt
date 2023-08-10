@@ -119,7 +119,6 @@ class BabylonManifestBuilder {
         latestBucketIndex += 1
     }
 
-
     fun build(networkId: Int): TransactionManifest = manifestBuilder.build(networkId.toUByte())
 }
 
