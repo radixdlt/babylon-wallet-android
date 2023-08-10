@@ -15,8 +15,11 @@
 
 package com.babylon.wallet.android.data.gateway.generated.models
 
+import com.babylon.wallet.android.data.gateway.generated.models.GatewayError
+
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerialName
+import kotlinx.serialization.Contextual
 
 /**
  * 
@@ -26,7 +29,7 @@ import kotlinx.serialization.SerialName
  */
 @Serializable
 
-data class TransactionNotFoundError(
+data class TransactionNotFoundError (
 
     /* The type of error. Each subtype may have its own additional structured fields. */
     @SerialName(value = "type")

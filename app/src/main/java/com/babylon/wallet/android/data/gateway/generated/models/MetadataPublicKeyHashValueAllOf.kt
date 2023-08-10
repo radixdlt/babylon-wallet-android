@@ -15,19 +15,23 @@
 
 package com.babylon.wallet.android.data.gateway.generated.models
 
+import com.babylon.wallet.android.data.gateway.generated.models.PublicKeyHash
+
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerialName
+import kotlinx.serialization.Contextual
 
 /**
  * 
  *
- * @param value
+ * @param `value` 
  */
 @Serializable
+
 data class MetadataPublicKeyHashValueAllOf (
 
     @SerialName(value = "value")
-    val value: PublicKeyHash
+    val `value`: PublicKeyHash
 
 )
 

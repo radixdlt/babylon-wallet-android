@@ -15,8 +15,10 @@
 
 package com.babylon.wallet.android.data.gateway.generated.models
 
+
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerialName
+import kotlinx.serialization.Contextual
 
 /**
  * 
@@ -46,6 +48,7 @@ import kotlinx.serialization.SerialName
  * @param consensusManager Bech32m-encoded human readable version of the address.
  * @param genesisHelper Bech32m-encoded human readable version of the address.
  * @param faucet Bech32m-encoded human readable version of the address.
+ * @param poolPackage Bech32m-encoded human readable version of the address.
  */
 @Serializable
 
@@ -149,7 +152,11 @@ data class NetworkConfigurationResponseWellKnownAddresses (
 
     /* Bech32m-encoded human readable version of the address. */
     @SerialName(value = "faucet")
-    val faucet: kotlin.String
+    val faucet: kotlin.String,
+
+    /* Bech32m-encoded human readable version of the address. */
+    @SerialName(value = "pool_package")
+    val poolPackage: kotlin.String
 
 )
 

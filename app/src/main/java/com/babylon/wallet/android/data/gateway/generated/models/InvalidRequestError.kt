@@ -15,8 +15,12 @@
 
 package com.babylon.wallet.android.data.gateway.generated.models
 
+import com.babylon.wallet.android.data.gateway.generated.models.GatewayError
+import com.babylon.wallet.android.data.gateway.generated.models.ValidationErrorsAtPath
+
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerialName
+import kotlinx.serialization.Contextual
 
 /**
  * 
@@ -26,7 +30,7 @@ import kotlinx.serialization.SerialName
  */
 @Serializable
 
-data class InvalidRequestError(
+data class InvalidRequestError (
 
     /* The type of error. Each subtype may have its own additional structured fields. */
     @SerialName(value = "type")

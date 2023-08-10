@@ -12,7 +12,6 @@ import com.radixdlt.ret.knownAddresses
 import com.radixdlt.ret.nonFungibleLocalIdFromStr
 import rdx.works.core.displayableQuantity
 import rdx.works.profile.data.model.apppreferences.Radix
-import rdx.works.profile.derivation.model.NetworkId
 import java.math.BigDecimal
 
 sealed class Resource {
@@ -64,7 +63,7 @@ sealed class Resource {
                 ""
             }
 
-        val isXrd: Boolean = officialXrdResourceAddress() == resourceAddress
+        val isXrd: Boolean = officialXrdResourceAddresses().contains(resourceAddress)
 
         @Suppress("CyclomaticComplexMethod")
         override fun compareTo(other: FungibleResource): Int {
@@ -99,9 +98,10 @@ sealed class Resource {
         }
 
         companion object {
-            fun officialXrdResourceAddress(
-                onNetworkId: NetworkId = Radix.Gateway.default.network.networkId()
-            ) = knownAddresses(networkId = onNetworkId.value.toUByte()).resourceAddresses.xrd.addressString()
+            // todo Needs to be revisited. Having default network in param does not work on different networks
+            fun officialXrdResourceAddresses(): List<String> = Radix.Network.allKnownNetworks().map { network ->
+                knownAddresses(networkId = network.networkId().value.toUByte()).resourceAddresses.xrd.addressString()
+            }
         }
     }
 

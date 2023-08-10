@@ -1,7 +1,6 @@
 package com.babylon.wallet.android.data.repository.entity
 
 import android.net.Uri
-import androidx.core.net.toUri
 import com.babylon.wallet.android.data.gateway.apis.StateApi
 import com.babylon.wallet.android.data.gateway.extensions.allResourceAddresses
 import com.babylon.wallet.android.data.gateway.extensions.asMetadataItems
@@ -22,7 +21,6 @@ import com.babylon.wallet.android.data.gateway.generated.models.StateEntityNonFu
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityNonFungiblesPageRequest
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityNonFungiblesPageResponse
 import com.babylon.wallet.android.data.gateway.generated.models.StateNonFungibleDataRequest
-import com.babylon.wallet.android.data.gateway.generated.models.StateNonFungibleDetailsResponseItem
 import com.babylon.wallet.android.data.gateway.model.ExplicitMetadataKey
 import com.babylon.wallet.android.data.repository.cache.CacheParameters
 import com.babylon.wallet.android.data.repository.cache.HttpCache
@@ -387,10 +385,14 @@ class EntityRepositoryImpl @Inject constructor(
                             Resource.NonFungibleResource.Item(
                                 collectionAddress = resourceAddress,
                                 localId = Resource.NonFungibleResource.Item.ID.from(stateNonFungibleDetailsResponseItem.nonFungibleId),
-                                nameMetadataItem = stateNonFungibleDetailsResponseItem.nftName()
-                                    ?.let { name -> NameMetadataItem(name = name) },
-                                iconMetadataItem = stateNonFungibleDetailsResponseItem.nftImage()
-                                    ?.let { imageUrl -> IconUrlMetadataItem(url = imageUrl) }
+                                nameMetadataItem = stateNonFungibleDetailsResponseItem.data
+                                    ?.programmaticJson?.fields?.find { field ->
+                                        field.field_name == ExplicitMetadataKey.NAME.key
+                                    }?.value?.let { name -> NameMetadataItem(name = name) },
+                                iconMetadataItem = stateNonFungibleDetailsResponseItem.data
+                                    ?.programmaticJson?.fields?.find { field ->
+                                        field.field_name == ExplicitMetadataKey.KEY_IMAGE_URL.key
+                                    }?.value?.let { imageUrl -> IconUrlMetadataItem(url = Uri.parse(imageUrl)) }
                             )
                         }
                     }.value()
@@ -398,19 +400,6 @@ class EntityRepositoryImpl @Inject constructor(
             Result.Success(nonFungibleResourceItemsList)
         }
     }
-
-    private fun StateNonFungibleDetailsResponseItem.nftImage(): Uri? = data.rawJson.fields.find { element ->
-        val value = element.value
-        value.contains("https")
-    }?.value?.toUri()
-
-    // This is the hack to collect name. Didnt come up with better solution to disqinquish it for now,
-    // it should not matter much as its temporary anyway
-    @Suppress("MagicNumber")
-    private fun StateNonFungibleDetailsResponseItem.nftName(): String? = data.rawJson.fields.find { element ->
-        val value = element.value
-        value.length in 5..30 && !value.contains("https")
-    }?.value
 
     private suspend fun nextFungiblesPage(
         accountAddress: String,

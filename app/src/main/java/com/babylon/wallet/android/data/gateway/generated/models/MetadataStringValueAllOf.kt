@@ -18,17 +18,19 @@ package com.babylon.wallet.android.data.gateway.generated.models
 
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerialName
+import kotlinx.serialization.Contextual
 
 /**
  * 
  *
- * @param value
+ * @param `value` 
  */
 @Serializable
+
 data class MetadataStringValueAllOf (
 
     @SerialName(value = "value")
-    val value: kotlin.String
+    val `value`: kotlin.String
 
 )
 

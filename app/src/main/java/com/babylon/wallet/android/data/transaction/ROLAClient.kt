@@ -6,14 +6,15 @@ import com.babylon.wallet.android.domain.usecases.transaction.CollectSignersSign
 import com.babylon.wallet.android.domain.usecases.transaction.GenerateAuthSigningFactorInstanceUseCase
 import com.babylon.wallet.android.domain.usecases.transaction.SignRequest
 import com.radixdlt.ret.Address
-import com.radixdlt.ret.ManifestValue
+import com.radixdlt.ret.PublicKeyHash
 import com.radixdlt.ret.SignatureWithPublicKey
 import com.radixdlt.ret.TransactionManifest
 import kotlinx.coroutines.flow.merge
 import rdx.works.core.compressedPublicKeyHash
 import rdx.works.core.compressedPublicKeyHashBytes
-import rdx.works.core.ret.ManifestBuilder
+import rdx.works.core.ret.BabylonManifestBuilder
 import rdx.works.core.ret.buildSafely
+import rdx.works.core.toUByteList
 import rdx.works.profile.data.model.factorsources.Slip10Curve
 import rdx.works.profile.data.model.pernetwork.Entity
 import rdx.works.profile.data.model.pernetwork.FactorInstance
@@ -54,26 +55,26 @@ class ROLAClient @Inject constructor(
         if (ownerKeysHashes.none { it.hex == transactionSigningKeyHash }) {
             publicKeyHashes.add(transactionSigningKey)
         }
-        return ManifestBuilder()
+        return BabylonManifestBuilder()
             .addSetMetadataInstructionForOwnerKeys(entity.address, publicKeyHashes)
             .buildSafely(entity.networkID)
     }
 
-    private fun ManifestBuilder.addSetMetadataInstructionForOwnerKeys(
+    private fun BabylonManifestBuilder.addSetMetadataInstructionForOwnerKeys(
         entityAddress: String,
         ownerKeysHashes: List<FactorInstance.PublicKey>
-    ): ManifestBuilder = setOwnerKeys(
-        address = Address(entityAddress),
-        keys = ownerKeysHashes.map { key ->
-            val publicKeyType = when (key.curve) {
-                Slip10Curve.SECP_256K1 -> ManifestValue.U8Value(0x00u)
-                Slip10Curve.CURVE_25519 -> ManifestValue.U8Value(0x01u)
+    ): BabylonManifestBuilder {
+        return setOwnerKeys(
+            address = Address(entityAddress),
+            keys = ownerKeysHashes.map { key ->
+                val bytes = key.compressedData.compressedPublicKeyHashBytes()
+                when (key.curve) {
+                    Slip10Curve.SECP_256K1 -> PublicKeyHash.Secp256k1(bytes.toUByteList())
+                    Slip10Curve.CURVE_25519 -> PublicKeyHash.Secp256k1(bytes.toUByteList())
+                }
             }
-
-            val bytes = key.compressedData.compressedPublicKeyHashBytes()
-            publicKeyType to bytes
-        }
-    )
+        )
+    }
 
     suspend fun signAuthChallenge(
         entity: Entity,

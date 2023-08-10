@@ -15,8 +15,12 @@
 
 package com.babylon.wallet.android.data.gateway.generated.models
 
+import com.babylon.wallet.android.data.gateway.generated.models.PublicKeyHash
+import com.babylon.wallet.android.data.gateway.generated.models.PublicKeyHashType
+
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerialName
+import kotlinx.serialization.Contextual
 
 /**
  * 
@@ -25,9 +29,10 @@ import kotlinx.serialization.SerialName
  * @param hashHex Hex-encoded SHA-256 hash.
  */
 @Serializable
+
 data class PublicKeyHashEcdsaSecp256k1 (
 
-    @SerialName(value = "key_hash_type")
+    @Contextual @SerialName(value = "key_hash_type")
     override val keyHashType: PublicKeyHashType,
 
     /* Hex-encoded SHA-256 hash. */

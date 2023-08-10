@@ -77,25 +77,31 @@ class TransactionAnalysisDelegate(
     }
 
     private suspend fun Result<ExecutionAnalysis>.resolve() = this.onSuccess { analysis ->
-        val previewType = when (val type = analysis.transactionType) {
-            is TransactionType.NonConforming -> PreviewType.NonConforming
-            is TransactionType.GeneralTransaction -> type.resolve(
-                getTransactionBadgesUseCase = getTransactionBadgesUseCase,
-                getProfileUseCase = getProfileUseCase,
-                getAccountsWithResourcesUseCase = getAccountsWithResourcesUseCase,
-                getResourcesMetadataUseCase = getResourcesMetadataUseCase,
-                resolveDAppsUseCase = resolveDAppsUseCase
-            )
+        val transactionTypes = analysis.transactionTypes
+        val previewType = if (transactionTypes.isEmpty()) {
+            PreviewType.NonConforming
+        } else {
+            when (val type = analysis.transactionTypes[0]) {
+                is TransactionType.GeneralTransaction -> type.resolve(
+                    getTransactionBadgesUseCase = getTransactionBadgesUseCase,
+                    getProfileUseCase = getProfileUseCase,
+                    getAccountsWithResourcesUseCase = getAccountsWithResourcesUseCase,
+                    getResourcesMetadataUseCase = getResourcesMetadataUseCase,
+                    resolveDAppsUseCase = resolveDAppsUseCase
+                )
 
-            is TransactionType.SimpleTransfer -> type.resolve(
-                getProfileUseCase = getProfileUseCase,
-                getAccountsWithResourcesUseCase = getAccountsWithResourcesUseCase
-            )
+                is TransactionType.SimpleTransfer -> type.resolve(
+                    getProfileUseCase = getProfileUseCase,
+                    getAccountsWithResourcesUseCase = getAccountsWithResourcesUseCase
+                )
 
-            is TransactionType.Transfer -> type.resolve(
-                getProfileUseCase = getProfileUseCase,
-                getAccountsWithResourcesUseCase = getAccountsWithResourcesUseCase
-            )
+                is TransactionType.Transfer -> type.resolve(
+                    getProfileUseCase = getProfileUseCase,
+                    getAccountsWithResourcesUseCase = getAccountsWithResourcesUseCase
+                )
+
+                else -> { PreviewType.NonConforming }
+            }
         }
 
         state.update {

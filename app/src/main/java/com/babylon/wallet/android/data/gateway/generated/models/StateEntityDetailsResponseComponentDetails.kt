@@ -15,23 +15,29 @@
 
 package com.babylon.wallet.android.data.gateway.generated.models
 
-import kotlinx.serialization.SerialName
+import com.babylon.wallet.android.data.gateway.generated.models.ComponentEntityRoleAssignments
+import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponseItemDetails
+import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponseItemDetailsType
+
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Contextual
 
 /**
  * 
  *
  * @param type 
  * @param blueprintName 
- * @param accessRulesChain 
  * @param packageAddress Bech32m-encoded human readable version of the address.
  * @param state 
+ * @param roleAssignments 
  * @param royaltyVaultBalance String-encoded decimal representing the amount of a related fungible resource.
  */
 @Serializable
+
 data class StateEntityDetailsResponseComponentDetails (
 
-    @SerialName(value = "type")
+    @Contextual @SerialName(value = "type")
     override val type: StateEntityDetailsResponseItemDetailsType,
 
     @SerialName(value = "blueprint_name")
@@ -48,6 +54,9 @@ data class StateEntityDetailsResponseComponentDetails (
 
 //    @Contextual @SerialName(value = "state")
 //    val state: kotlin.Any? = null,
+
+    @SerialName(value = "role_assignments")
+    val roleAssignments: ComponentEntityRoleAssignments? = null,
 
     /* String-encoded decimal representing the amount of a related fungible resource. */
     @SerialName(value = "royalty_vault_balance")

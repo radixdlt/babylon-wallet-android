@@ -15,14 +15,19 @@
 
 package com.babylon.wallet.android.data.gateway.generated.models
 
-import kotlinx.serialization.SerialName
+import com.babylon.wallet.android.data.gateway.generated.models.ComponentEntityRoleAssignments
+import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponseItemDetails
+import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponseItemDetailsType
+
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Contextual
 
 /**
  * 
  *
  * @param type 
- * @param accessRules 
+ * @param roleAssignments 
  * @param divisibility 
  * @param totalSupply String-encoded decimal representing the amount of a related fungible resource.
  * @param totalMinted String-encoded decimal representing the amount of a related fungible resource.
@@ -32,28 +37,30 @@ import kotlinx.serialization.Serializable
 
 data class StateEntityDetailsResponseFungibleResourceDetails (
 
-    @SerialName(value = "type")
+    @Contextual @SerialName(value = "type")
     override val type: StateEntityDetailsResponseItemDetailsType,
 
     // TODO GW (access rules) Waiting for a fix
     // https://rdxworks.slack.com/archives/C02MTV9602H/p1689761889447179?thread_ts=1689692837.158109&cid=C02MTV9602H
 //    @SerialName(value = "access_rules")
 //    val accessRules: ComponentEntityAccessRules,
+    @SerialName(value = "role_assignments")
+    val roleAssignments: ComponentEntityRoleAssignments,
 
     @SerialName(value = "divisibility")
     val divisibility: kotlin.Int,
 
     /* String-encoded decimal representing the amount of a related fungible resource. */
     @SerialName(value = "total_supply")
-    val totalSupply: kotlin.String?,
+    val totalSupply: kotlin.String,
 
     /* String-encoded decimal representing the amount of a related fungible resource. */
     @SerialName(value = "total_minted")
-    val totalMinted: kotlin.String?,
+    val totalMinted: kotlin.String,
 
     /* String-encoded decimal representing the amount of a related fungible resource. */
     @SerialName(value = "total_burned")
-    val totalBurned: kotlin.String?
+    val totalBurned: kotlin.String
 
 ) : StateEntityDetailsResponseItemDetails()
 

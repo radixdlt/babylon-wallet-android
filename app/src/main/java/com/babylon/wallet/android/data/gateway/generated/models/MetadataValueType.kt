@@ -124,7 +124,7 @@ enum class MetadataValueType(val value: kotlin.String) {
     publicKeyHashArray("PublicKeyHashArray");
 
     /**
-     * Override toString() to avoid using the enum variable name as the value, and instead use
+     * Override [toString()] to avoid using the enum variable name as the value, and instead use
      * the actual value defined in the API spec file.
      *
      * This solves a problem when the variable name and its value are different, and ensures that
@@ -133,9 +133,20 @@ enum class MetadataValueType(val value: kotlin.String) {
     override fun toString(): String = value
 
     companion object {
-        fun from(type: String): MetadataValueType = MetadataValueType.values().find {
-            it.value == type
-        } ?: error("Not supported MetadataValueType of $type")
+        /**
+         * Converts the provided [data] to a [String] on success, null otherwise.
+         */
+        fun encode(data: kotlin.Any?): kotlin.String? = if (data is MetadataValueType) "$data" else null
+
+        /**
+         * Returns a valid [MetadataValueType] for [data], null otherwise.
+         */
+        fun decode(data: kotlin.Any?): MetadataValueType? = data?.let {
+          val normalizedData = "$it".lowercase()
+          values().firstOrNull { value ->
+            it == value || normalizedData == "$value".lowercase()
+          }
+        }
     }
 }
 

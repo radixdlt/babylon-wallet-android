@@ -15,30 +15,37 @@
 
 package com.babylon.wallet.android.data.gateway.generated.models
 
+import com.babylon.wallet.android.data.gateway.generated.models.ScryptoSborValue
+
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerialName
+import kotlinx.serialization.Contextual
 
 /**
  * 
  *
+ * @param isBurned 
  * @param nonFungibleId String-encoded non-fungible ID.
- * @param `data` 
  * @param lastUpdatedAtStateVersion TBD
+ * @param `data` 
  */
 @Serializable
 
 data class StateNonFungibleDetailsResponseItem (
 
+    @SerialName(value = "is_burned")
+    val isBurned: kotlin.Boolean,
+
     /* String-encoded non-fungible ID. */
     @SerialName(value = "non_fungible_id")
     val nonFungibleId: kotlin.String,
 
-    @SerialName(value = "data")
-    val data: ScryptoSborValue,
-
     /* TBD */
     @SerialName(value = "last_updated_at_state_version")
-    val lastUpdatedAtStateVersion: kotlin.Long
+    val lastUpdatedAtStateVersion: kotlin.Long,
+
+    @SerialName(value = "data")
+    val `data`: ScryptoSborValue? = null
 
 )
 
