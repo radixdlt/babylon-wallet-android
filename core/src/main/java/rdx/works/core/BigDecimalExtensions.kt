@@ -1,5 +1,6 @@
 package rdx.works.core
 
+import com.radixdlt.ret.Decimal
 import java.math.BigDecimal
 import java.math.BigInteger
 import java.math.RoundingMode
@@ -72,3 +73,6 @@ fun BigDecimal.displayableQuantity(): String {
         decimalFormat.format(this)
     }
 }
+
+@Suppress("MagicNumber")
+fun BigDecimal.toRETDecimal(roundingMode: RoundingMode): Decimal = Decimal(setScale(18, roundingMode).toPlainString())

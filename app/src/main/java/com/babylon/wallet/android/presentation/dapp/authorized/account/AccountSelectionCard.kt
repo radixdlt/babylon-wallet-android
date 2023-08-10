@@ -32,7 +32,10 @@ fun AccountSelectionCard(
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .padding(RadixTheme.dimensions.paddingDefault),
+            .padding(
+                horizontal = RadixTheme.dimensions.paddingLarge,
+                vertical = RadixTheme.dimensions.paddingDefault,
+            ),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Column(
@@ -42,13 +45,13 @@ fun AccountSelectionCard(
                 text = accountName,
                 textAlign = TextAlign.Start,
                 maxLines = 2,
-                style = RadixTheme.typography.body2Header,
+                style = RadixTheme.typography.body1Header,
                 color = Color.White
             )
 
             ActionableAddressView(
                 address = address,
-                textStyle = RadixTheme.typography.body2Link,
+                textStyle = RadixTheme.typography.body2HighImportance,
                 textColor = RadixTheme.colors.white.copy(alpha = 0.8f)
             )
         }

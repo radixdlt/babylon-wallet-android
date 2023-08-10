@@ -28,9 +28,9 @@ data class Resources(
     val isNotEmpty: Boolean
         get() = fungibleResources.isNotEmpty() || nonFungibleResources.isNotEmpty()
 
-    fun hasXrd(minimumBalance: Long = 1L): Boolean = xrd?.let {
+    fun hasXrd(minimumBalance: BigDecimal = BigDecimal(1)): Boolean = xrd?.let {
         it.amount?.let { amount ->
-            amount >= BigDecimal(minimumBalance)
+            amount >= minimumBalance
         }
     } == true
 
@@ -69,7 +69,7 @@ data class ValidatorWithStakeResources(
     }
 }
 
-fun List<AccountWithResources>.findAccountWithEnoughXRDBalance(minimumBalance: Long) = find {
+fun List<AccountWithResources>.findAccountWithEnoughXRDBalance(minimumBalance: BigDecimal) = find {
     it.resources?.hasXrd(minimumBalance) ?: false
 }
 

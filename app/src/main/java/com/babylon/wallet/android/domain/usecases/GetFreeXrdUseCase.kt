@@ -5,13 +5,13 @@ import com.babylon.wallet.android.data.repository.transaction.TransactionReposit
 import com.babylon.wallet.android.data.transaction.DappRequestFailure
 import com.babylon.wallet.android.data.transaction.TransactionClient
 import com.babylon.wallet.android.data.transaction.TransactionConfig
+import com.babylon.wallet.android.data.transaction.TransactionConfig.TIP_PERCENTAGE
 import com.babylon.wallet.android.data.transaction.model.TransactionApprovalRequest
 import com.babylon.wallet.android.di.coroutines.IoDispatcher
 import com.babylon.wallet.android.domain.common.asKotlinResult
 import com.babylon.wallet.android.domain.common.onValue
 import com.babylon.wallet.android.domain.usecases.transaction.PollTransactionStatusUseCase
 import com.radixdlt.ret.Address
-import com.radixdlt.ret.Decimal
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -19,8 +19,10 @@ import kotlinx.coroutines.withContext
 import rdx.works.core.preferences.PreferencesManager
 import rdx.works.core.ret.ManifestBuilder
 import rdx.works.core.ret.buildSafely
+import rdx.works.core.toRETDecimal
 import rdx.works.profile.domain.gateway.GetCurrentGatewayUseCase
 import java.math.BigDecimal
+import java.math.RoundingMode
 import javax.inject.Inject
 import kotlin.Result
 import com.babylon.wallet.android.domain.common.Result as ResultInternal
@@ -41,10 +43,11 @@ class GetFreeXrdUseCase @Inject constructor(
             val gateway = getCurrentGatewayUseCase()
             networkInfoRepository.getFaucetComponentAddress(gateway.url).asKotlinResult().fold(
                 onSuccess = { faucetComponentAddress ->
+                    val lockFee = BigDecimal.valueOf(TransactionConfig.DEFAULT_LOCK_FEE)
                     val manifest = ManifestBuilder()
                         .lockFee(
                             fromAddress = Address(faucetComponentAddress),
-                            fee = Decimal(BigDecimal.valueOf(TransactionConfig.DEFAULT_LOCK_FEE).toPlainString())
+                            fee = lockFee.toRETDecimal(RoundingMode.HALF_UP)
                         )
                         .freeXrd(
                             faucetAddress = Address(faucetComponentAddress)
@@ -69,6 +72,8 @@ class GetFreeXrdUseCase @Inject constructor(
                             )
                             transactionClient.signAndSubmitTransaction(
                                 request = request,
+                                lockFee = lockFee,
+                                tipPercentage = TIP_PERCENTAGE,
                                 deviceBiometricAuthenticationProvider = { true }
                             ).onSuccess { txId ->
                                 pollTransactionStatusUseCase(txId).onValue {

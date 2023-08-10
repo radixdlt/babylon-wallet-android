@@ -73,7 +73,10 @@ internal class TransactionClientTest {
         runTest {
             var manifest = manifestWithAddress(EntityRepositoryFake.addressWithFunds)
 
-            val addressToLockFee = transactionClient.findFeePayerInManifest(manifest).getOrThrow().feePayerAddressFromManifest
+            val addressToLockFee = transactionClient.findFeePayerInManifest(
+                manifest,
+                TransactionConfig.DEFAULT_LOCK_FEE.toBigDecimal()
+            ).getOrThrow().feePayerAddressFromManifest
             manifest = manifest.addLockFeeInstructionToManifest(addressToLockFee!!, TransactionConfig.DEFAULT_LOCK_FEE.toBigDecimal())
             val signingEntities = transactionClient.getSigningEntities(manifest)
             Assert.assertEquals(1, signingEntities.size)
@@ -85,30 +88,28 @@ internal class TransactionClientTest {
 
     @OptIn(ExperimentalCoroutinesApi::class)
     @Test
-    fun `when given address has no funds but there is another address with funds, use the other address for the transaction`() =
+    fun `when given address has funds, verify feePayerAddress exists and all accounts as candidates`() =
         runTest {
-            val manifest = manifestWithAddress(EntityRepositoryFake.addressWithNoFunds)
+            val manifest = manifestWithAddress(EntityRepositoryFake.addressWithFunds)
 
-            val addressToLockFee = transactionClient.findFeePayerInManifest(manifest).getOrThrow()
-            assert(addressToLockFee.feePayerAddressFromManifest == null)
-            assert(addressToLockFee.candidates.size == 1)
+            val addressToLockFee = transactionClient.findFeePayerInManifest(
+                manifest,
+                TransactionConfig.DEFAULT_LOCK_FEE.toBigDecimal()
+            ).getOrThrow()
+            assert(addressToLockFee.feePayerAddressFromManifest != null)
+            assert(addressToLockFee.candidates.size == 2)
         }
 
     @Test
-    fun `when address has no funds, return the respective error`() = runTest {
+    fun `when address has no funds, return no feePayer and all accounts as candidates`() = runTest {
         val manifest = manifestWithAddress(EntityRepositoryFake.addressWithNoFunds)
 
-        try {
-            transactionClient.findFeePayerInManifest(manifest)
-        } catch (exception: Exception) {
-            Assert.assertEquals(
-                DappRequestException(
-                    DappRequestFailure.TransactionApprovalFailure.FailedToFindAccountWithEnoughFundsToLockFee
-                ),
-                exception
-            )
-        }
-
+        val feePayerResult = transactionClient.findFeePayerInManifest(
+            manifest,
+            TransactionConfig.DEFAULT_LOCK_FEE.toBigDecimal()
+        ).getOrNull()
+        assert(feePayerResult?.feePayerAddressFromManifest == null)
+        assert(feePayerResult?.candidates?.size == 2)
     }
 
     private object EntityRepositoryFake : EntityRepository {
