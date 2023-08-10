@@ -1,6 +1,5 @@
 package com.babylon.wallet.android.presentation.transfer.assets
 
-import android.graphics.drawable.ColorDrawable
 import android.net.Uri
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
@@ -40,9 +39,10 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
-import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
@@ -61,7 +61,6 @@ import com.babylon.wallet.android.domain.model.metadata.SymbolMetadataItem
 import com.babylon.wallet.android.presentation.transfer.SpendingAsset
 import com.babylon.wallet.android.presentation.ui.composables.ImageSize
 import com.babylon.wallet.android.presentation.ui.composables.rememberImageUrl
-import com.google.accompanist.drawablepainter.rememberDrawablePainter
 import rdx.works.core.displayableQuantity
 import java.math.BigDecimal
 
@@ -160,7 +159,7 @@ private fun ColumnScope.FungibleSpendingAsset(
         modifier = modifier.padding(horizontal = RadixTheme.dimensions.paddingDefault),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        val placeholder = rememberDrawablePainter(drawable = ColorDrawable(RadixTheme.colors.gray3.toArgb()))
+        val placeholder = painterResource(id = R.drawable.ic_token)
 
         AsyncImage(
             modifier = Modifier
@@ -180,7 +179,7 @@ private fun ColumnScope.FungibleSpendingAsset(
         )
         Spacer(modifier = Modifier.width(RadixTheme.dimensions.paddingSmall))
         Text(
-            text = resource.displayTitle,
+            text = resource.displayTitle.ifEmpty { stringResource(id = com.babylon.wallet.android.R.string.transactionReview_unknown) },
             style = RadixTheme.typography.body2HighImportance,
             color = RadixTheme.colors.gray1,
             maxLines = 2
@@ -304,23 +303,30 @@ private fun NonFungibleSpendingAsset(
             .padding(RadixTheme.dimensions.paddingSmall),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        if (nft.imageUrl != null) {
-            AsyncImage(
-                model = rememberImageUrl(
-                    fromUrl = nft.imageUrl,
-                    size = ImageSize.SMALL,
-                    placeholder = com.babylon.wallet.android.R.drawable.img_placeholder,
-                    error = com.babylon.wallet.android.R.drawable.img_placeholder
-                ),
-                contentDescription = "Nft image",
-                contentScale = ContentScale.Crop,
-                alignment = Alignment.Center,
-                modifier = Modifier
-                    .size(55.dp)
-                    .clip(RadixTheme.shapes.roundedRectSmall),
-            )
+        val placeholder = painterResource(id = R.drawable.ic_nfts)
+        var contentScale by remember {
+            mutableStateOf(ContentScale.Crop)
         }
-
+        AsyncImage(
+            model = rememberImageUrl(
+                fromUrl = nft.imageUrl,
+                size = ImageSize.SMALL
+            ),
+            placeholder = placeholder,
+            error = placeholder,
+            fallback = placeholder,
+            contentDescription = "Nft image",
+            contentScale = contentScale,
+            alignment = Alignment.Center,
+            modifier = Modifier
+                .size(55.dp)
+                .background(RadixTheme.colors.gray3, shape = RadixTheme.shapes.roundedRectSmall)
+                .clip(RadixTheme.shapes.roundedRectSmall),
+            onError = {
+                // to properly render nft icon placeholder
+                contentScale = ContentScale.Inside
+            }
+        )
         Spacer(modifier = Modifier.width(RadixTheme.dimensions.paddingDefault))
         Column {
             Text(
