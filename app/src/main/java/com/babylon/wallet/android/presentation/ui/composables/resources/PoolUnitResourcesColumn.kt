@@ -119,7 +119,7 @@ fun LazyListScope.poolUnitsResources(
                         item {
                             CardWrapper(modifier = modifier) {
                                 StakeSectionTitle(
-                                    title = stringResource(id = R.string.assetDetails_poolUnitDetails_liquidStakeUnits)
+                                    title = stringResource(id = R.string.account_poolUnits_liquidStakeUnits)
                                 )
                                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSmall))
                             }
@@ -143,7 +143,7 @@ fun LazyListScope.poolUnitsResources(
                         item {
                             CardWrapper(modifier = modifier) {
                                 StakeSectionTitle(
-                                    title = stringResource(id = R.string.assetDetails_poolUnitDetails_stakeClaimNfts)
+                                    title = stringResource(id = R.string.account_poolUnits_stakeClaimNFTs)
                                 )
                                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSmall))
                             }

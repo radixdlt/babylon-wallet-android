@@ -626,14 +626,4 @@
   <string name="iOSProfileBackup_totalAccountsNumberLabel">Number of Accounts: %d</string>
   <string name="iOSProfileBackup_totalPersonasNumberLabel">Number of Personas: %d</string>
   <string name="iOSProfileBackup_incompatibleWalletDataLabel">Incompatible Wallet data</string>
-
-  <string name="assetDetails_poolUnitDetails_stakes">%d Stakes</string>
-  <string name="assetDetails_poolUnitDetails_radixStakesTitle">Radix Network XRD Stake</string>
-  <string name="assetDetails_poolUnitDetails_liquidStakeUnits">LIQUID STAKE UNITS</string>
-  <string name="assetDetails_poolUnitDetails_stakeClaimNfts">STAKE CLAIM NFTS</string>
-  <string name="assetDetails_poolUnitDetails_staked">Staked</string>
-  <string name="assetDetails_poolUnitDetails_unstaking">Unstaking</string>
-  <string name="assetDetails_poolUnitDetails_readyToClaim">Ready to Claim</string>
-  <string name="assetDetails_poolUnitDetails_xrdSymbol">XRD</string>
-  <string name="assetDetails_poolUnitDetails_currentRedeemableValue">Current Redeemable Value</string>
 </resources>

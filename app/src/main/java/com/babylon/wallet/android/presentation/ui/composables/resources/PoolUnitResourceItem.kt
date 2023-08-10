@@ -158,9 +158,9 @@ fun StakeClaimNftItem(
         )
         Text(
             text = if (stakeClaimNft.readyToClaim) {
-                stringResource(id = R.string.assetDetails_poolUnitDetails_readyToClaim)
+                stringResource(id = R.string.account_poolUnits_readyToClaim)
             } else {
-                stringResource(id = R.string.assetDetails_poolUnitDetails_unstaking)
+                stringResource(id = R.string.account_poolUnits_unstaking)
             },
             modifier = Modifier.weight(1f),
             style = RadixTheme.typography.body2HighImportance,
@@ -207,13 +207,13 @@ fun LiquidStakeUnitItem(
         )
         Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.Center) {
             Text(
-                stringResource(id = R.string.assetDetails_poolUnitDetails_xrdSymbol),
+                Resource.XRD_SYMBOL,
                 style = RadixTheme.typography.body2HighImportance,
                 color = RadixTheme.colors.gray1,
                 maxLines = 2
             )
             Text(
-                stringResource(id = R.string.assetDetails_poolUnitDetails_staked),
+                stringResource(id = R.string.account_poolUnits_staked),
                 style = RadixTheme.typography.body2HighImportance,
                 color = RadixTheme.colors.gray2,
                 maxLines = 1

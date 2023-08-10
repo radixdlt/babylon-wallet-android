@@ -97,13 +97,13 @@ fun LiquidStakeUnitResourceHeader(
                 )
                 Column(verticalArrangement = Arrangement.Center) {
                     Text(
-                        stringResource(id = R.string.assetDetails_poolUnitDetails_radixStakesTitle),
+                        stringResource(id = R.string.account_poolUnits_lsuResourceHeader),
                         style = RadixTheme.typography.secondaryHeader,
                         color = RadixTheme.colors.gray1,
                         maxLines = 2
                     )
                     Text(
-                        stringResource(id = R.string.assetDetails_poolUnitDetails_stakes, collection.validators.size),
+                        stringResource(id = R.string.account_poolUnits_numberOfStakes, collection.validators.size),
                         style = RadixTheme.typography.body2HighImportance,
                         color = RadixTheme.colors.gray2,
                         maxLines = 1

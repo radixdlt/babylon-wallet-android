@@ -86,7 +86,7 @@ fun PoolUnitBottomSheetDetails(
                 color = RadixTheme.colors.gray4
             )
             Text(
-                text = stringResource(id = R.string.assetDetails_poolUnitDetails_currentRedeemableValue),
+                text = stringResource(id = R.string.account_poolUnits_details_currentRedeemableValue),
                 style = RadixTheme.typography.secondaryHeader,
                 color = RadixTheme.colors.gray1
             )

@@ -321,4 +321,8 @@ sealed class Resource {
             val name: String
         ) : Tag
     }
+
+    companion object {
+        const val XRD_SYMBOL = "XRD"
+    }
 }
