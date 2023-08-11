@@ -101,3 +101,39 @@ data class OwnerKeyHashesMetadataItem(
         ) : KeyHash
     }
 }
+
+data class ValidatorMetadataItem(
+    val validatorAddress: String
+) : StandardMetadataItem {
+    override val key: String = ExplicitMetadataKey.VALIDATOR.key
+}
+
+data class ClaimAmountMetadataItem(
+    val amount: String
+) : StandardMetadataItem {
+    override val key: String = ExplicitMetadataKey.CLAIM_AMOUNT.key
+}
+
+data class ClaimEpochMetadataItem(
+    val claimEpoch: Long
+) : StandardMetadataItem {
+    override val key: String = ExplicitMetadataKey.CLAIM_EPOCH.key
+}
+
+data class PoolMetadataItem(
+    val poolAddress: String
+) : StandardMetadataItem {
+    override val key: String = ExplicitMetadataKey.POOL.key
+}
+
+data class PoolUnitMetadataItem(
+    val poolAddress: String
+) : StandardMetadataItem {
+    override val key: String = ExplicitMetadataKey.POOL_UNIT.key
+}
+
+data class ClaimNftMetadataItem(
+    val stakeClaimNftAddress: String
+) : StandardMetadataItem {
+    override val key: String = ExplicitMetadataKey.CLAIM_NFT.key
+}

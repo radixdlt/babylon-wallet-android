@@ -55,10 +55,6 @@ suspend fun FragmentActivity.biometricAuthenticateSuspend(): Boolean {
                 override fun onAuthenticationError(errorCode: Int, errString: CharSequence) {
                     it.resume(false)
                 }
-
-                override fun onAuthenticationFailed() {
-                    it.resume(false)
-                }
             }
 
             val promptInfo = BiometricPrompt.PromptInfo.Builder()

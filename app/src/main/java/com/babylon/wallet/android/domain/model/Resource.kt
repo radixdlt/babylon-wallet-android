@@ -2,17 +2,21 @@ package com.babylon.wallet.android.domain.model
 
 import android.net.Uri
 import com.babylon.wallet.android.domain.model.behaviours.ResourceBehaviour
+import com.babylon.wallet.android.domain.model.metadata.ClaimAmountMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.DescriptionMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.IconUrlMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.NameMetadataItem
+import com.babylon.wallet.android.domain.model.metadata.PoolMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.SymbolMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.TagsMetadataItem
+import com.babylon.wallet.android.domain.model.metadata.ValidatorMetadataItem
 import com.radixdlt.ret.NonFungibleLocalId
 import com.radixdlt.ret.knownAddresses
 import com.radixdlt.ret.nonFungibleLocalIdFromStr
 import rdx.works.core.displayableQuantity
 import rdx.works.profile.data.model.apppreferences.Radix
 import java.math.BigDecimal
+import java.math.RoundingMode
 
 sealed class Resource {
     abstract val resourceAddress: String
@@ -26,7 +30,9 @@ sealed class Resource {
         private val iconUrlMetadataItem: IconUrlMetadataItem? = null,
         private val tagsMetadataItem: TagsMetadataItem? = null,
         private val behaviours: List<ResourceBehaviour> = emptyList(),
-        private val currentSupply: BigDecimal? = null
+        val currentSupply: BigDecimal? = null,
+        private val validatorMetadataItem: ValidatorMetadataItem? = null,
+        private val poolMetadataItem: PoolMetadataItem? = null
     ) : Resource(), Comparable<FungibleResource> {
         val name: String
             get() = nameMetadataItem?.name.orEmpty()
@@ -39,6 +45,12 @@ sealed class Resource {
 
         val iconUrl: Uri?
             get() = iconUrlMetadataItem?.url
+
+        val validatorAddress: String?
+            get() = validatorMetadataItem?.validatorAddress
+
+        val poolAddress: String?
+            get() = poolMetadataItem?.poolAddress
 
         val tags: List<Tag>
             get() = if (isXrd) {
@@ -114,7 +126,8 @@ sealed class Resource {
         private val tagsMetadataItem: TagsMetadataItem? = null,
         private val behaviours: List<ResourceBehaviour> = emptyList(),
         val items: List<Item>,
-        private val currentSupply: BigDecimal? = null
+        private val currentSupply: BigDecimal? = null,
+        private val validatorMetadataItem: ValidatorMetadataItem? = null
     ) : Resource(), Comparable<NonFungibleResource> {
         val name: String
             get() = nameMetadataItem?.name.orEmpty()
@@ -127,6 +140,9 @@ sealed class Resource {
 
         val tags: List<Tag>
             get() = tagsMetadataItem?.tags?.map { Tag.Dynamic(name = it) }.orEmpty()
+
+        val validatorAddress: String?
+            get() = validatorMetadataItem?.validatorAddress
 
         val resourceBehaviours: List<ResourceBehaviour>
             get() = behaviours
@@ -145,7 +161,9 @@ sealed class Resource {
             val collectionAddress: String,
             val localId: ID,
             val nameMetadataItem: NameMetadataItem? = null,
-            val iconMetadataItem: IconUrlMetadataItem? = null
+            val iconMetadataItem: IconUrlMetadataItem? = null,
+            val readyToClaim: Boolean = false,
+            val claimAmountMetadataItem: ClaimAmountMetadataItem? = null
         ) : Comparable<Item> {
 
             val globalAddress: String
@@ -153,6 +171,9 @@ sealed class Resource {
 
             val imageUrl: Uri?
                 get() = iconMetadataItem?.url
+
+            val claimAmountXrd: BigDecimal?
+                get() = claimAmountMetadataItem?.amount?.toBigDecimal()
 
             override fun compareTo(other: Item): Int = when (localId) {
                 is ID.StringType -> (other.localId as? ID.StringType)?.compareTo(localId) ?: -1
@@ -252,11 +273,56 @@ sealed class Resource {
         }
     }
 
+    data class LiquidStakeUnitResource(
+        val fungibleResource: FungibleResource,
+        val validator: ValidatorWithStakeResources? = null
+    ) : Resource() {
+
+        val validatorAddress: String
+            get() = fungibleResource.validatorAddress.orEmpty()
+
+        override val resourceAddress: String
+            get() = fungibleResource.resourceAddress
+
+        val percentageOwned: BigDecimal?
+            get() = fungibleResource.amount?.divide(fungibleResource.currentSupply, RoundingMode.HALF_UP)
+    }
+
+    data class StakeClaimResource(
+        val nonFungibleResource: NonFungibleResource,
+        val validator: ValidatorWithStakeResources? = null
+    ) : Resource() {
+
+        val validatorAddress: String
+            get() = nonFungibleResource.validatorAddress.orEmpty()
+
+        override val resourceAddress: String
+            get() = nonFungibleResource.resourceAddress
+    }
+
+    data class PoolUnitResource(
+        val poolUnitResource: FungibleResource,
+        val poolResources: List<FungibleResource> = emptyList()
+    ) : Resource() {
+
+        override val resourceAddress: String
+            get() = poolUnitResource.resourceAddress
+
+        fun resourceRedemptionValue(resourceAddress: String): BigDecimal? {
+            val resourceVaultBalance = poolResources.find { it.resourceAddress == resourceAddress }?.amount
+            return poolUnitResource.amount?.multiply(resourceVaultBalance)?.divide(poolUnitResource.currentSupply)
+        }
+    }
+
     sealed interface Tag {
         object Official : Tag
 
         data class Dynamic(
             val name: String
         ) : Tag
+    }
+
+    companion object {
+        const val XRD_SYMBOL = "XRD"
     }
 }

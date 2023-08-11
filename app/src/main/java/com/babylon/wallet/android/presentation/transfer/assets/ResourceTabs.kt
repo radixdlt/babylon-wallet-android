@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
@@ -57,7 +58,7 @@ fun ResourcesTabs(
         ResourceTab.values().indexOf(selectedTab)
     }
     TabRow(
-        modifier = modifier.width(200.dp),
+        modifier = modifier.width(300.dp),
         selectedTabIndex = tabIndex,
         containerColor = Color.Transparent,
         divider = {},
@@ -74,6 +75,7 @@ fun ResourcesTabs(
         ResourceTab.values().forEach { tab ->
             val isSelected = tab == selectedTab
             Tab(
+                modifier = Modifier.wrapContentWidth(),
                 selected = isSelected,
                 onClick = {
                     if (!isSelected) {
@@ -100,9 +102,11 @@ fun ResourcesTabs(
 private fun ResourceTab.name(): String = when (this) {
     ResourceTab.Tokens -> stringResource(id = R.string.account_tokens)
     ResourceTab.Nfts -> stringResource(id = R.string.account_nfts)
+    ResourceTab.PoolUnits -> stringResource(id = R.string.account_poolUnits)
 }
 
 enum class ResourceTab {
     Tokens,
-    Nfts
+    Nfts,
+    PoolUnits
 }

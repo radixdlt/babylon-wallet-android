@@ -17,12 +17,17 @@
   <string name="account_tokens">Tokens</string>
   <string name="account_nfts">NFTs</string>
   <string name="account_poolUnits">Pool Units</string>
+  <string name="account_poolUnits_lsuResourceHeader">Radix Network XRD Stake</string>
   <string name="account_poolUnits_unstaking">Unstaking</string>
   <string name="account_poolUnits_readyToClaim">Ready to Claim</string>
   <string name="account_poolUnits_liquidStakeUnits">LIQUID STAKE UNITS</string>
   <string name="account_poolUnits_staked">Staked</string>
   <string name="account_poolUnits_stakeClaimNFTs">STAKE CLAIM NFTS</string>
   <string name="account_poolUnits_numberOfStakes">%d Stakes</string>
+  <string name="account_poolUnits_unknownValidatorName">Unknown</string>
+  <string name="account_poolUnits_unknownSymbolName">Unknown</string>
+  <string name="account_poolUnits_unknownPoolUnitName">Unknown</string>
+  <string name="account_poolUnits_details_currentRedeemableValue">Current Redeemable Value</string>
   <string name="account_badges">Badges</string>
   <string name="assetDetails_resourceAddress">Address</string>
   <string name="assetDetails_name">Name</string>

@@ -13,8 +13,10 @@ import com.radixdlt.ret.ManifestValue
 import com.radixdlt.ret.TransactionHeader
 import com.radixdlt.ret.TransactionManifest
 import rdx.works.core.ret.ManifestMethod
+import rdx.works.core.toRETDecimal
 import java.lang.StringBuilder
 import java.math.BigDecimal
+import java.math.RoundingMode
 import java.util.UUID
 
 fun TransactionManifest.addLockFeeInstructionToManifest(
@@ -57,7 +59,7 @@ private fun lockFeeInstruction(
         methodName = ManifestMethod.LockFee.value,
         args = ManifestValue.TupleValue(
             fields = listOf(
-                ManifestValue.DecimalValue(Decimal(fee.toPlainString()))
+                ManifestValue.DecimalValue(fee.toRETDecimal(roundingMode = RoundingMode.HALF_UP))
             )
         )
     )

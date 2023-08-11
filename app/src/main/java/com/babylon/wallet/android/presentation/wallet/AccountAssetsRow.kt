@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -40,6 +41,7 @@ import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.designsystem.theme.White
 import com.babylon.wallet.android.domain.model.Resource
 import com.babylon.wallet.android.domain.model.Resources
+import com.babylon.wallet.android.domain.model.ValidatorsWithStakeResources
 import com.babylon.wallet.android.domain.model.allNftItemsSize
 import com.babylon.wallet.android.domain.model.metadata.IconUrlMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.NameMetadataItem
@@ -82,6 +84,7 @@ fun AccountAssetsRow(
 }
 
 @Composable
+@Suppress("CyclomaticComplexMethod")
 private fun AssetsContent(
     modifier: Modifier = Modifier,
     resources: Resources,
@@ -98,11 +101,14 @@ private fun AssetsContent(
                 .coerceAtLeast(minimumValue = 0)
         }
         val nftsCount = remember(resources.nonFungibleResources) { resources.nonFungibleResources.allNftItemsSize() }
+        val poolUnitCount = remember(resources.poolUnits, resources.validatorsWithStakeResources) {
+            resources.poolUnitsSize()
+        }
 
         val fungibleRefs = visibleFungibles.map { createRef() }
         val fungibleCounterBoxRef = if (remainingFungiblesCount > 0) createRef() else null
-        val nftsIconRef = if (nftsCount > 0) createRef() else null
-        val nftsCounterRef = if (nftsIconRef != null) createRef() else null
+        val nftsRowRef = if (nftsCount > 0) createRef() else null
+        val poolUnitRowRef = if (poolUnitCount > 0) createRef() else null
 
         visibleFungibles.forEachIndexed { index, fungible ->
             val iconModifier = Modifier
@@ -166,49 +172,92 @@ private fun AssetsContent(
             )
         }
 
-        if (nftsIconRef != null && nftsCounterRef != null) {
-            CounterBox(
-                modifier = Modifier
-                    .constrainAs(nftsCounterRef) {
-                        start.linkTo(nftsIconRef.start, margin = bordersSize)
-                        linkTo(nftsIconRef.top, nftsIconRef.bottom)
-                        height = Dimension.value(iconSize)
-                    },
-                text = "${resources.nonFungibleResources.allNftItemsSize()}",
-                contentPadding = PaddingValues(
-                    start = iconSize + RadixTheme.dimensions.paddingSmall,
-                    end = RadixTheme.dimensions.paddingSmall
+        if (nftsRowRef != null) {
+            val fungibleRef = fungibleCounterBoxRef ?: fungibleRefs.lastOrNull()
+
+            Box(
+                modifier = Modifier.constrainAs(nftsRowRef) {
+                    start.linkTo(
+                        anchor = fungibleRef?.end ?: parent.start,
+                        margin = if (fungibleRef != null) 12.dp else 0.dp
+                    )
+                }
+            ) {
+                CounterBox(
+                    modifier = Modifier
+                        .align(Alignment.CenterStart)
+                        .height(iconSize),
+                    text = "${resources.nonFungibleResources.allNftItemsSize()}",
+                    contentPadding = PaddingValues(
+                        start = iconSize + RadixTheme.dimensions.paddingSmall,
+                        end = RadixTheme.dimensions.paddingSmall
+                    )
                 )
-            )
 
-            Image(
-                modifier = Modifier
-                    .constrainAs(nftsIconRef) {
-                        val fungibleRef = fungibleCounterBoxRef ?: fungibleRefs.lastOrNull()
-
-                        start.linkTo(
-                            anchor = fungibleRef?.end ?: parent.start,
-                            margin = if (fungibleRef != null) 12.dp else 0.dp
+                Image(
+                    modifier = Modifier
+                        .align(Alignment.CenterStart)
+                        .size(iconSize + bordersSize * 2)
+                        .border(
+                            width = bordersSize,
+                            color = RadixTheme.colors.white.copy(alpha = 0.2f),
+                            shape = RoundedCornerShape(9.dp)
                         )
-                        width = Dimension.value(iconSize + bordersSize * 2)
-                        height = Dimension.value(iconSize + bordersSize * 2)
-                    }
-                    .border(
-                        width = bordersSize,
-                        color = RadixTheme.colors.white.copy(alpha = 0.2f),
-                        shape = RoundedCornerShape(9.dp)
+                        .padding(bordersSize)
+                        .background(
+                            brush = Brush.linearGradient(
+                                colors = listOf(White, White.copy(alpha = 0.73f))
+                            ),
+                            shape = RadixTheme.shapes.roundedRectSmall
+                        )
+                        .padding(top = 4.dp), // Needed since the icon is not correctly centered.
+                    painter = painterResource(id = R.drawable.ic_nfts),
+                    contentDescription = null
+                )
+            }
+        }
+
+        if (poolUnitRowRef != null) {
+            val fungibleRef = fungibleCounterBoxRef ?: fungibleRefs.lastOrNull()
+            Box(
+                modifier = Modifier.constrainAs(poolUnitRowRef) {
+                    val previousElementRef = nftsRowRef ?: fungibleRef
+                    start.linkTo(
+                        anchor = (previousElementRef)?.end ?: parent.start,
+                        margin = if (previousElementRef != null) 12.dp else 0.dp
                     )
-                    .padding(bordersSize)
-                    .background(
-                        brush = Brush.linearGradient(
-                            colors = listOf(White, White.copy(alpha = 0.73f))
-                        ),
-                        shape = RadixTheme.shapes.roundedRectSmall
+                }
+            ) {
+                CounterBox(
+                    modifier = Modifier
+                        .align(Alignment.CenterStart)
+                        .height(iconSize),
+                    text = resources.poolUnitsSize().toString(),
+                    contentPadding = PaddingValues(
+                        start = iconSize + RadixTheme.dimensions.paddingSmall,
+                        end = RadixTheme.dimensions.paddingSmall
                     )
-                    .padding(top = 4.dp), // Needed since the icon is not correctly centered.
-                painter = painterResource(id = R.drawable.ic_nfts),
-                contentDescription = null
-            )
+                )
+                Image(
+                    modifier = Modifier
+                        .align(Alignment.CenterStart)
+                        .size(iconSize + bordersSize * 2)
+                        .border(
+                            width = bordersSize,
+                            color = RadixTheme.colors.white.copy(alpha = 0.2f),
+                            shape = CircleShape
+                        )
+                        .padding(bordersSize)
+                        .background(
+                            brush = Brush.linearGradient(
+                                colors = listOf(White, White.copy(alpha = 0.73f))
+                            ),
+                            shape = RadixTheme.shapes.circle
+                        ).padding(4.dp),
+                    painter = painterResource(id = R.drawable.ic_pool_units),
+                    contentDescription = null
+                )
+            }
         }
     }
 }
@@ -302,7 +351,9 @@ fun AssetsContentRowPreview() {
             AccountAssetsRow(
                 resources = Resources(
                     fungibleResources = allFungibles,
-                    nonFungibleResources = nonFungibles
+                    nonFungibleResources = nonFungibles,
+                    poolUnits = emptyList(),
+                    validatorsWithStakeResources = ValidatorsWithStakeResources()
                 ),
                 isLoading = false
             )

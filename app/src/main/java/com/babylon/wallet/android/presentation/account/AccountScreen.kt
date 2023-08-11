@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -71,8 +72,10 @@ import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.domain.model.AccountWithResources
 import com.babylon.wallet.android.domain.model.Resource
 import com.babylon.wallet.android.domain.model.Resources
+import com.babylon.wallet.android.domain.model.ValidatorsWithStakeResources
 import com.babylon.wallet.android.presentation.account.composable.FungibleTokenBottomSheetDetails
 import com.babylon.wallet.android.presentation.account.composable.NonFungibleTokenBottomSheetDetails
+import com.babylon.wallet.android.presentation.account.composable.PoolUnitBottomSheetDetails
 import com.babylon.wallet.android.presentation.transfer.assets.ResourceTab
 import com.babylon.wallet.android.presentation.transfer.assets.ResourcesTabs
 import com.babylon.wallet.android.presentation.ui.composables.ActionableAddressView
@@ -80,9 +83,14 @@ import com.babylon.wallet.android.presentation.ui.composables.ApplySecuritySetti
 import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
 import com.babylon.wallet.android.presentation.ui.composables.resources.FungibleResourceItem
+import com.babylon.wallet.android.presentation.ui.composables.resources.LiquidStakeUnitItem
 import com.babylon.wallet.android.presentation.ui.composables.resources.NonFungibleResourceItem
+import com.babylon.wallet.android.presentation.ui.composables.resources.PoolUnitItem
+import com.babylon.wallet.android.presentation.ui.composables.resources.StakeClaimNftItem
 import com.babylon.wallet.android.presentation.ui.composables.resources.fungibleResources
 import com.babylon.wallet.android.presentation.ui.composables.resources.nonFungibleResources
+import com.babylon.wallet.android.presentation.ui.composables.resources.poolUnitsResources
+import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.CoroutineScope
@@ -110,6 +118,7 @@ fun AccountScreen(
         }
     }
     AccountScreenContent(
+        modifier = modifier,
         state = state,
         onAccountPreferenceClick = {
             onAccountPreferenceClick(it)
@@ -121,8 +130,8 @@ fun AccountScreen(
         onMessageShown = viewModel::onMessageShown,
         onFungibleResourceClicked = viewModel::onFungibleResourceClicked,
         onNonFungibleItemClicked = viewModel::onNonFungibleResourceClicked,
-        modifier = modifier,
-        onApplySecuritySettings = viewModel::onApplySecuritySettings
+        onApplySecuritySettings = viewModel::onApplySecuritySettings,
+        onPoolUnitClick = viewModel::onPoolUnitClicked
     )
 }
 
@@ -139,7 +148,8 @@ private fun AccountScreenContent(
     onMessageShown: () -> Unit,
     onFungibleResourceClicked: (Resource.FungibleResource) -> Unit,
     onNonFungibleItemClicked: (Resource.NonFungibleResource, Resource.NonFungibleResource.Item) -> Unit,
-    onApplySecuritySettings: () -> Unit
+    onApplySecuritySettings: () -> Unit,
+    onPoolUnitClick: (Resource.PoolUnitResource) -> Unit
 ) {
     val gradient = remember(state.accountWithResources) {
         val appearanceId = state.accountWithResources?.account?.appearanceID ?: 0
@@ -192,60 +202,51 @@ private fun AccountScreenContent(
         Box(
             modifier = Modifier.pullRefresh(pullToRefreshState)
         ) {
-            Scaffold(
-                modifier = Modifier.background(Brush.horizontalGradient(gradient)),
-                topBar = {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically
+            Scaffold(modifier = Modifier.background(Brush.horizontalGradient(gradient)), topBar = {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    IconButton(
+                        onClick = onBackClick
                     ) {
-                        IconButton(
-                            onClick = onBackClick
-                        ) {
-                            Icon(
-                                painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_arrow_back),
-                                tint = RadixTheme.colors.white,
-                                contentDescription = "navigate back"
-                            )
-                        }
-                        Spacer(modifier = Modifier.weight(1f))
-                        Text(
-                            modifier = Modifier,
-                            text = state.accountWithResources?.account?.displayName.orEmpty(),
-                            style = RadixTheme.typography.body1Header.copy(textAlign = TextAlign.Center),
-                            color = RadixTheme.colors.white,
-                            maxLines = 2,
-                            overflow = TextOverflow.Ellipsis
+                        Icon(
+                            painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_arrow_back),
+                            tint = RadixTheme.colors.white,
+                            contentDescription = "navigate back"
                         )
-                        Spacer(modifier = Modifier.weight(1f))
-                        IconButton(
-                            onClick = { onAccountPreferenceClick(state.accountWithResources?.account?.address.orEmpty()) }
-                        ) {
-                            Icon(
-                                painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_more_horiz),
-                                tint = RadixTheme.colors.white,
-                                contentDescription = "account settings"
-                            )
-                        }
                     }
-                },
-                containerColor = Color.Transparent,
-                floatingActionButton = {
+                    Spacer(modifier = Modifier.weight(1f))
+                    Text(
+                        modifier = Modifier,
+                        text = state.accountWithResources?.account?.displayName.orEmpty(),
+                        style = RadixTheme.typography.body1Header.copy(textAlign = TextAlign.Center),
+                        color = RadixTheme.colors.white,
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                    Spacer(modifier = Modifier.weight(1f))
+                    IconButton(onClick = { onAccountPreferenceClick(state.accountWithResources?.account?.address.orEmpty()) }) {
+                        Icon(
+                            painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_more_horiz),
+                            tint = RadixTheme.colors.white,
+                            contentDescription = "account settings"
+                        )
+                    }
+                }
+            }, containerColor = Color.Transparent, floatingActionButton = {
                     if (state.isHistoryEnabled) {
                         HistoryButton(
                             modifier = Modifier.size(174.dp, 50.dp),
                             onHistoryClick
                         )
                     }
-                },
-                floatingActionButtonPosition = FabPosition.Center,
-                snackbarHost = {
+                }, floatingActionButtonPosition = FabPosition.Center, snackbarHost = {
                     RadixSnackbarHost(
                         modifier = Modifier.padding(RadixTheme.dimensions.paddingDefault),
                         hostState = snackBarHostState
                     )
-                }
-            ) { innerPadding ->
+                }) { innerPadding ->
                 AssetsContent(
                     modifier = Modifier.padding(innerPadding),
                     state = state,
@@ -264,7 +265,13 @@ private fun AccountScreenContent(
                     },
                     gradient = gradient,
                     onTransferClick = onTransferClick,
-                    onApplySecuritySettings = onApplySecuritySettings
+                    onApplySecuritySettings = onApplySecuritySettings,
+                    onPoolUnitClick = {
+                        onPoolUnitClick(it)
+                        scope.launch {
+                            bottomSheetState.show()
+                        }
+                    }
                 )
             }
 
@@ -316,6 +323,20 @@ private fun SheetContent(
             )
         }
 
+        is SelectedResource.SelectedPoolUnit -> {
+            PoolUnitBottomSheetDetails(
+                modifier = modifier
+                    .fillMaxWidth()
+                    .verticalScroll(rememberScrollState()),
+                poolUnit = selected.poolUnit,
+                onCloseClick = {
+                    scope.launch {
+                        bottomSheetState.hide()
+                    }
+                }
+            )
+        }
+
         else -> {}
     }
 }
@@ -327,6 +348,7 @@ fun AssetsContent(
     state: AccountUiState,
     onFungibleTokenClick: (Resource.FungibleResource) -> Unit,
     onNonFungibleItemClick: (Resource.NonFungibleResource, Resource.NonFungibleResource.Item) -> Unit,
+    onPoolUnitClick: (Resource.PoolUnitResource) -> Unit,
     gradient: ImmutableList<Color>,
     onTransferClick: (String) -> Unit,
     onApplySecuritySettings: () -> Unit
@@ -344,20 +366,19 @@ fun AssetsContent(
         val collapsedState = remember(nonFungibleCollections) {
             nonFungibleCollections.map { true }.toMutableStateList()
         }
+        var collapsedStakeState by remember(resources?.validatorsWithStakeResources) { mutableStateOf(true) }
 
         val accountAddress = remember(state.accountWithResources) {
             state.accountWithResources?.account?.address.orEmpty()
         }
 
         Box(
-            modifier = Modifier
-                .fillMaxSize()
+            modifier = Modifier.fillMaxSize()
         ) {
             val horizontalPadding = RadixTheme.dimensions.paddingDefault
 
             LazyColumn(
-                modifier = Modifier
-                    .fillMaxSize(),
+                modifier = Modifier.fillMaxSize(),
                 state = lazyListState,
             ) {
                 item {
@@ -371,16 +392,14 @@ fun AssetsContent(
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         ActionableAddressView(
-                            modifier = Modifier
-                                .padding(bottom = RadixTheme.dimensions.paddingXLarge),
+                            modifier = Modifier.padding(bottom = RadixTheme.dimensions.paddingXLarge),
                             address = accountAddress,
                             textStyle = RadixTheme.typography.body2HighImportance,
                             textColor = RadixTheme.colors.white
                         )
 
                         androidx.compose.animation.AnimatedVisibility(
-                            modifier = Modifier
-                                .padding(bottom = RadixTheme.dimensions.paddingLarge),
+                            modifier = Modifier.padding(bottom = RadixTheme.dimensions.paddingLarge),
                             visible = state.isTransferEnabled,
                             enter = fadeIn(),
                             exit = fadeOut()
@@ -401,8 +420,7 @@ fun AssetsContent(
                         }
 
                         androidx.compose.animation.AnimatedVisibility(
-                            modifier = Modifier
-                                .padding(bottom = RadixTheme.dimensions.paddingLarge),
+                            modifier = Modifier.padding(bottom = RadixTheme.dimensions.paddingLarge),
                             visible = state.isSecurityPromptVisible,
                             enter = fadeIn(),
                             exit = fadeOut()
@@ -427,48 +445,81 @@ fun AssetsContent(
                             .padding(vertical = RadixTheme.dimensions.paddingLarge),
                         contentAlignment = Alignment.Center
                     ) {
-                        ResourcesTabs(
-                            selectedTab = selectedTab,
-                            onTabSelected = {
-                                selectedTab = it
-                            }
-                        )
+                        ResourcesTabs(selectedTab = selectedTab, onTabSelected = {
+                            selectedTab = it
+                        })
                     }
                 }
 
                 if (resources != null) {
+                    val contentModifier = Modifier.padding(
+                        horizontal = horizontalPadding
+                    )
                     when (selectedTab) {
                         ResourceTab.Tokens -> fungibleResources(
-                            modifier = Modifier.padding(
-                                horizontal = horizontalPadding
-                            ),
+                            modifier = contentModifier,
                             xrdItem = xrdItem,
                             restOfFungibles = restOfFungibles
                         ) { _, item ->
                             FungibleResourceItem(
-                                modifier = Modifier
-                                    .clickable {
-                                        onFungibleTokenClick(item)
-                                    },
+                                modifier = Modifier.clickable {
+                                    onFungibleTokenClick(item)
+                                },
                                 resource = item
                             )
                         }
 
                         ResourceTab.Nfts -> nonFungibleResources(
-                            modifier = Modifier.padding(
-                                horizontal = horizontalPadding
-                            ),
+                            modifier = contentModifier,
                             collections = nonFungibleCollections,
                             collapsedState = collapsedState,
                         ) { collection, item ->
                             NonFungibleResourceItem(
-                                modifier = Modifier
-                                    .padding(RadixTheme.dimensions.paddingDefault)
-                                    .clickable {
-                                        onNonFungibleItemClick(collection, item)
-                                    },
+                                modifier = contentModifier.clickable {
+                                    onNonFungibleItemClick(collection, item)
+                                },
                                 item = item
                             )
+                        }
+
+                        ResourceTab.PoolUnits -> {
+                            poolUnitsResources(
+                                modifier = contentModifier,
+                                collapsedState = collapsedStakeState,
+                                validatorsWithStakeResources = resources.validatorsWithStakeResources,
+                                poolUnits = resources.poolUnits,
+                                parentSectionClick = {
+                                    collapsedStakeState = !collapsedStakeState
+                                },
+                                poolUnitItem = { poolUnit ->
+                                    PoolUnitItem(
+                                        resource = poolUnit,
+                                        modifier = Modifier.throttleClickable {
+                                            onPoolUnitClick(poolUnit)
+                                        }.padding(horizontal = RadixTheme.dimensions.paddingDefault)
+                                    )
+                                },
+                                liquidStakeItem = { liquidStakeUnit, stakeValueInXRD ->
+                                    LiquidStakeUnitItem(
+                                        stakeValueInXRD = stakeValueInXRD,
+                                        modifier = Modifier.throttleClickable {
+                                            onFungibleTokenClick(liquidStakeUnit.fungibleResource)
+                                        }
+                                    )
+                                },
+                                stakeClaimItem = { stakeClaim, stakeClaimNftItem ->
+                                    StakeClaimNftItem(
+                                        modifier = Modifier.throttleClickable {
+                                            // TODO for now just open NFT details
+                                            onNonFungibleItemClick(stakeClaim.nonFungibleResource, stakeClaimNftItem)
+                                        },
+                                        stakeClaimNft = stakeClaimNftItem
+                                    )
+                                }
+                            )
+                            item {
+                                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
+                            }
                         }
                     }
                 }
@@ -513,7 +564,9 @@ fun AccountContentPreview() {
                         account = sampleAccount("acount_rdx_abcde"),
                         resources = Resources(
                             fungibleResources = sampleFungibleResources(),
-                            nonFungibleResources = listOf()
+                            nonFungibleResources = listOf(),
+                            poolUnits = listOf(),
+                            validatorsWithStakeResources = ValidatorsWithStakeResources()
                         ),
                     )
                 ),
@@ -525,7 +578,8 @@ fun AccountContentPreview() {
                 onMessageShown = {},
                 onFungibleResourceClicked = {},
                 onNonFungibleItemClicked = { _, _ -> },
-                onApplySecuritySettings = {}
+                onApplySecuritySettings = {},
+                onPoolUnitClick = {}
             )
         }
     }

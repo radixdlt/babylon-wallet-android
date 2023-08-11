@@ -16,13 +16,13 @@ import com.babylon.wallet.android.presentation.transaction.TransactionApprovalVi
 import com.babylon.wallet.android.presentation.transaction.TransactionApprovalViewModel.State
 import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
+import com.babylon.wallet.android.utils.toRETDecimalString
 import com.radixdlt.ret.TransactionManifest
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.derivation.model.NetworkId
 import rdx.works.profile.domain.gateway.GetCurrentGatewayUseCase
 import timber.log.Timber
@@ -67,16 +67,6 @@ class TransactionSubmitDelegate(
         }
     }
 
-    fun onFeePayerConfirmed(
-        account: Network.Account,
-        pendingManifest: TransactionManifest,
-        deviceBiometricAuthenticationProvider: suspend () -> Boolean
-    ) {
-        approvalJob = appScope.launch {
-            signAndSubmit(state.value.request, account.address, pendingManifest, deviceBiometricAuthenticationProvider)
-        }
-    }
-
     suspend fun onDismiss(failure: DappRequestFailure) {
         if (approvalJob == null) {
             val request = state.value.request
@@ -106,31 +96,17 @@ class TransactionSubmitDelegate(
         manifest: TransactionManifest,
         deviceBiometricAuthenticationProvider: suspend () -> Boolean
     ) {
-        transactionClient.findFeePayerInManifest(manifest)
-            .onSuccess { feePayerResult ->
-                state.update { it.copy(isSubmitting = false) }
-                if (feePayerResult.feePayerAddressFromManifest != null) {
-                    signAndSubmit(
-                        transactionRequest = state.value.request,
-                        feePayerAddress = feePayerResult.feePayerAddressFromManifest,
-                        manifest = manifest,
-                        deviceBiometricAuthenticationProvider = deviceBiometricAuthenticationProvider
-                    )
-                } else {
-                    state.update { state ->
-                        state.copy(
-                            isSubmitting = false,
-                            sheetState = State.Sheet.FeePayerChooser(
-                                candidates = feePayerResult.candidates,
-                                pendingManifest = manifest
-                            )
-                        )
-                    }
-                }
-                approvalJob = null
-            }.onFailure { error ->
-                reportFailure(error)
+        state.value.feePayerSearchResult?.let { feePayerResult ->
+            state.update { it.copy(isSubmitting = false) }
+            if (feePayerResult.feePayerAddressFromManifest != null) {
+                signAndSubmit(
+                    transactionRequest = state.value.request,
+                    feePayerAddress = feePayerResult.feePayerAddressFromManifest,
+                    manifest = manifest,
+                    deviceBiometricAuthenticationProvider = deviceBiometricAuthenticationProvider
+                )
             }
+        }
     }
 
     @Suppress("LongMethod")
@@ -145,6 +121,8 @@ class TransactionSubmitDelegate(
                 isSubmitting = true,
             )
         }
+        val lockFee = state.value.transactionFees.transactionFeeToLock
+        val tipPercentage = state.value.transactionFees.tipPercentageForTransaction
         val request = TransactionApprovalRequest(
             manifest = manifest,
             networkId = NetworkId.from(transactionRequest.requestMetadata.networkId),
@@ -154,7 +132,12 @@ class TransactionSubmitDelegate(
                 TransactionApprovalRequest.TransactionMessage.Public(it)
             } ?: TransactionApprovalRequest.TransactionMessage.None
         )
-        transactionClient.signAndSubmitTransaction(request, deviceBiometricAuthenticationProvider).onSuccess { txId ->
+        transactionClient.signAndSubmitTransaction(
+            request,
+            lockFee = lockFee,
+            tipPercentage = tipPercentage,
+            deviceBiometricAuthenticationProvider
+        ).onSuccess { txId ->
             state.update {
                 it.copy(
                     isSubmitting = false
@@ -210,7 +193,7 @@ class TransactionSubmitDelegate(
                     is GuaranteeAssertion.ForAmount -> {
                         manifest = manifest.addGuaranteeInstructionToManifest(
                             address = depositing.transferable.resourceAddress,
-                            guaranteedAmount = assertion.amount.toPlainString(),
+                            guaranteedAmount = assertion.amount.toRETDecimalString(),
                             index = assertion.instructionIndex.toInt()
                         )
                     }
