@@ -169,11 +169,15 @@ internal class TransactionApprovalViewModelTest : StateViewModelTest<Transaction
             listOf(
                 AccountWithResources(
                     account = sampleProfile.currentNetwork.accounts[0],
-                    resources = Resources(fungibleResources = listOf(sampleXrdResource), nonFungibleResources = emptyList())
+                    resources = Resources(
+                        fungibleResources = listOf(sampleXrdResource),
+                        nonFungibleResources = emptyList(),
+                        poolUnits = emptyList()
+                    )
                 ),
                 AccountWithResources(
                     account = sampleProfile.currentNetwork.accounts[0],
-                    resources = Resources(fungibleResources = emptyList(), nonFungibleResources = emptyList())
+                    resources = Resources(fungibleResources = emptyList(), nonFungibleResources = emptyList(), poolUnits = emptyList())
                 )
             )
         )
