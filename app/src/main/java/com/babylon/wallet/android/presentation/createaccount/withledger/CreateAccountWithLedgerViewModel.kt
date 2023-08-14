@@ -87,7 +87,7 @@ class CreateAccountWithLedgerViewModel @Inject constructor(
                 // check again if link connector exists
                 if (getProfileUseCase.p2pLinks.first().isEmpty()) {
                     _state.update {
-                        it.copy(showContent = CreateAccountWithLedgerUiState.ShowContent.LinkNewConnector)
+                        it.copy(showContent = CreateAccountWithLedgerUiState.ShowContent.LinkNewConnector(false))
                     }
                     return@launch
                 }
@@ -123,7 +123,7 @@ class CreateAccountWithLedgerViewModel @Inject constructor(
         viewModelScope.launch {
             _state.update {
                 if (getProfileUseCase.p2pLinks.first().isEmpty()) {
-                    it.copy(showContent = CreateAccountWithLedgerUiState.ShowContent.LinkNewConnector)
+                    it.copy(showContent = CreateAccountWithLedgerUiState.ShowContent.LinkNewConnector())
                 } else {
                     it.copy(showContent = CreateAccountWithLedgerUiState.ShowContent.AddLedger)
                 }
@@ -137,9 +137,9 @@ class CreateAccountWithLedgerViewModel @Inject constructor(
         }
     }
 
-    fun onLinkConnectorClick() {
+    fun onLinkConnectorClick(addDeviceAfterLinking: Boolean) {
         _state.update {
-            it.copy(showContent = CreateAccountWithLedgerUiState.ShowContent.AddLinkConnector)
+            it.copy(showContent = CreateAccountWithLedgerUiState.ShowContent.AddLinkConnector(addDeviceAfterLinking))
         }
     }
 }
@@ -151,8 +151,11 @@ data class CreateAccountWithLedgerUiState(
     val selectedLedgerDeviceId: FactorSource.FactorSourceID.FromHash? = null
 ) : UiState {
 
-    enum class ShowContent {
-        ChooseLedger, AddLedger, LinkNewConnector, AddLinkConnector
+    sealed interface ShowContent {
+        object ChooseLedger : ShowContent
+        object AddLedger : ShowContent
+        data class LinkNewConnector(val addDeviceAfterLinking: Boolean = true) : ShowContent
+        data class AddLinkConnector(val addDeviceAfterLinking: Boolean = true) : ShowContent
     }
 }
 
