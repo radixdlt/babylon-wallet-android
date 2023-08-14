@@ -15,6 +15,9 @@
 
 package com.babylon.wallet.android.data.gateway.generated.models
 
+import com.babylon.wallet.android.data.gateway.generated.models.ComponentEntityRoleAssignments
+import com.babylon.wallet.android.data.gateway.generated.models.NonFungibleIdType
+
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Contextual
@@ -22,7 +25,7 @@ import kotlinx.serialization.Contextual
 /**
  * 
  *
- * @param accessRules
+ * @param roleAssignments 
  * @param nonFungibleIdType 
  * @param totalSupply String-encoded decimal representing the amount of a related fungible resource.
  * @param totalMinted String-encoded decimal representing the amount of a related fungible resource.
@@ -32,8 +35,8 @@ import kotlinx.serialization.Contextual
 
 data class StateEntityDetailsResponseNonFungibleResourceDetailsAllOf (
 
-//    @SerialName(value = "access_rules")
-//    val accessRules: ComponentEntityAccessRules,
+    @SerialName(value = "role_assignments")
+    val roleAssignments: ComponentEntityRoleAssignments,
 
     @Contextual @SerialName(value = "non_fungible_id_type")
     val nonFungibleIdType: NonFungibleIdType,

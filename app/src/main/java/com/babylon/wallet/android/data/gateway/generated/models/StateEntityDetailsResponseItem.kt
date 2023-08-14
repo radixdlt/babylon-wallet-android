@@ -15,8 +15,15 @@
 
 package com.babylon.wallet.android.data.gateway.generated.models
 
-import kotlinx.serialization.SerialName
+import com.babylon.wallet.android.data.gateway.generated.models.EntityMetadataCollection
+import com.babylon.wallet.android.data.gateway.generated.models.FungibleResourcesCollection
+import com.babylon.wallet.android.data.gateway.generated.models.NonFungibleResourcesCollection
+import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponseItemAncestorIdentities
+import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponseItemDetails
+
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Contextual
 
 /**
  * 

@@ -15,6 +15,8 @@
 
 package com.babylon.wallet.android.data.gateway.generated.models
 
+import com.babylon.wallet.android.data.gateway.generated.models.ComponentEntityRoleAssignments
+
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Contextual
@@ -23,9 +25,9 @@ import kotlinx.serialization.Contextual
  * 
  *
  * @param blueprintName 
- * @param accessRules 
  * @param packageAddress Bech32m-encoded human readable version of the address.
  * @param state 
+ * @param roleAssignments 
  * @param royaltyVaultBalance String-encoded decimal representing the amount of a related fungible resource.
  */
 @Serializable
@@ -35,15 +37,15 @@ data class StateEntityDetailsResponseComponentDetailsAllOf (
     @SerialName(value = "blueprint_name")
     val blueprintName: kotlin.String,
 
-//    @SerialName(value = "access_rules")
-//    val accessRules: ComponentEntityAccessRules,
-
     /* Bech32m-encoded human readable version of the address. */
     @SerialName(value = "package_address")
     val packageAddress: kotlin.String? = null,
 
-    @Contextual @SerialName(value = "state")
-    val state: kotlin.Any? = null,
+//    @Contextual @SerialName(value = "state")
+//    val state: kotlin.Any? = null,
+
+    @SerialName(value = "role_assignments")
+    val roleAssignments: ComponentEntityRoleAssignments? = null,
 
     /* String-encoded decimal representing the amount of a related fungible resource. */
     @SerialName(value = "royalty_vault_balance")

@@ -1,7 +1,6 @@
 package com.babylon.wallet.android.data.repository.entity
 
 import android.net.Uri
-import androidx.core.net.toUri
 import com.babylon.wallet.android.data.gateway.apis.StateApi
 import com.babylon.wallet.android.data.gateway.extensions.allResourceAddresses
 import com.babylon.wallet.android.data.gateway.extensions.asMetadataItems
@@ -413,7 +412,7 @@ class EntityRepositoryImpl @Inject constructor(
         val responses = addresses
             .chunked(CHUNK_SIZE_OF_ITEMS)
             .map { chunkedAddresses ->
-                stateApi.entityDetails( // TODO use stateEntityDetails if possible
+                stateApi.entityDetails(
                     StateEntityDetailsRequest(
                         addresses = chunkedAddresses,
                         aggregationLevel = ResourceAggregationLevel.vault,
@@ -505,6 +504,7 @@ class EntityRepositoryImpl @Inject constructor(
         return allNonFungibles
     }
 
+    @Suppress("LongMethod")
     private suspend fun getNonFungibleResourceItemsForAccount(
         accountAddress: String,
         vaultAddress: String,
@@ -563,13 +563,17 @@ class EntityRepositoryImpl @Inject constructor(
                             Resource.NonFungibleResource.Item(
                                 collectionAddress = resourceAddress,
                                 localId = Resource.NonFungibleResource.Item.ID.from(stateNonFungibleDetailsResponseItem.nonFungibleId),
-                                nameMetadataItem = stateNonFungibleDetailsResponseItem.nftName()
-                                    ?.let { name -> NameMetadataItem(name = name) },
-                                iconMetadataItem = stateNonFungibleDetailsResponseItem.nftImage()
-                                    ?.let { imageUrl -> IconUrlMetadataItem(url = imageUrl) },
+                                nameMetadataItem = stateNonFungibleDetailsResponseItem.data
+                                    ?.programmaticJson?.fields?.find { field ->
+                                        field.field_name == ExplicitMetadataKey.NAME.key
+                                    }?.value?.let { name -> NameMetadataItem(name = name) },
+                                iconMetadataItem = stateNonFungibleDetailsResponseItem.data
+                                    ?.programmaticJson?.fields?.find { field ->
+                                        field.field_name == ExplicitMetadataKey.KEY_IMAGE_URL.key
+                                    }?.value?.let { imageUrl -> IconUrlMetadataItem(url = Uri.parse(imageUrl)) },
+                                readyToClaim = readyToClaim,
                                 claimAmountMetadataItem = stateNonFungibleDetailsResponseItem.claimAmount()
-                                    ?.let { claimAmount -> ClaimAmountMetadataItem(claimAmount) },
-                                readyToClaim = readyToClaim
+                                    ?.let { claimAmount -> ClaimAmountMetadataItem(claimAmount) }
                             )
                         }
                     }.value()
@@ -578,24 +582,11 @@ class EntityRepositoryImpl @Inject constructor(
         }
     }
 
-    private fun StateNonFungibleDetailsResponseItem.nftImage(): Uri? = data.rawJson.fields.find { element ->
-        val value = element.value
-        value.contains("https")
-    }?.value?.toUri()
-
-    // This is the hack to collect name. Didnt come up with better solution to disqinquish it for now,
-    // it should not matter much as its temporary anyway
-    @Suppress("MagicNumber")
-    private fun StateNonFungibleDetailsResponseItem.nftName(): String? = data.rawJson.fields.find { element ->
-        val value = element.value
-        value.length in 5..30 && !value.contains("https")
-    }?.value
-
-    private fun StateNonFungibleDetailsResponseItem.claimAmount(): String? = data.rawJson.fields.find { element ->
+    private fun StateNonFungibleDetailsResponseItem.claimAmount(): String? = data?.rawJson?.fields?.find { element ->
         element.kind == "Decimal"
     }?.value
 
-    private fun StateNonFungibleDetailsResponseItem.claimEpoch(): String? = data.rawJson.fields.find { element ->
+    private fun StateNonFungibleDetailsResponseItem.claimEpoch(): String? = data?.rawJson?.fields?.find { element ->
         element.kind == "U64"
     }?.value
 

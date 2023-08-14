@@ -24,7 +24,7 @@ fun StateEntityDetailsResponseItemDetails.totalSupply(): String? {
 fun StateEntityDetailsResponseItem.getXRDVaultAmount(vaultAddress: String): BigDecimal? {
     return when (
         val resource = fungibleResources?.items?.find {
-            Resource.FungibleResource.officialXrdResourceAddress() == it.resourceAddress
+            Resource.FungibleResource.officialXrdResourceAddresses().contains(it.resourceAddress)
         }
     ) {
         is FungibleResourcesCollectionItemVaultAggregated -> {

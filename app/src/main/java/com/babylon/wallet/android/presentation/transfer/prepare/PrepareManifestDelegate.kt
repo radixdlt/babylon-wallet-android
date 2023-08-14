@@ -13,7 +13,7 @@ import com.radixdlt.ret.Decimal
 import com.radixdlt.ret.NonFungibleGlobalId
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
-import rdx.works.core.ret.ManifestBuilder
+import rdx.works.core.ret.BabylonManifestBuilder
 import rdx.works.core.ret.buildSafely
 import rdx.works.profile.data.model.pernetwork.Network
 import timber.log.Timber
@@ -39,31 +39,32 @@ class PrepareManifestDelegate(
     private fun prepareRequest(
         fromAccount: Network.Account,
         currentState: TransferViewModel.State
-    ): Result<MessageFromDataChannel.IncomingRequest.TransactionRequest> = ManifestBuilder()
-        .attachInstructionsForFungibles(
-            fromAccount = fromAccount,
-            targetAccounts = currentState.targetAccounts
-        )
-        .attachInstructionsForNFTs(
-            fromAccount = fromAccount,
-            targetAccounts = currentState.targetAccounts
-        )
-        .buildSafely(fromAccount.networkID)
-        .map { manifest ->
-            manifest.prepareInternalTransactionRequest(
-                networkId = fromAccount.networkID,
-                message = currentState.submittedMessage,
+    ): Result<MessageFromDataChannel.IncomingRequest.TransactionRequest> =
+        BabylonManifestBuilder()
+            .attachInstructionsForFungibles(
+                fromAccount = fromAccount,
+                targetAccounts = currentState.targetAccounts
             )
-        }
+            .attachInstructionsForNFTs(
+                fromAccount = fromAccount,
+                targetAccounts = currentState.targetAccounts
+            )
+            .buildSafely(fromAccount.networkID)
+            .map { manifest ->
+                manifest.prepareInternalTransactionRequest(
+                    networkId = fromAccount.networkID,
+                    message = currentState.submittedMessage,
+                )
+            }
 
     @Suppress("NestedBlockDepth")
-    private fun ManifestBuilder.attachInstructionsForFungibles(
+    private fun BabylonManifestBuilder.attachInstructionsForFungibles(
         fromAccount: Network.Account,
         targetAccounts: List<TargetAccount>
     ) = apply {
         state.value.withdrawingFungibles().forEach { (resource, amount) ->
             // Withdraw the total amount for each fungible
-            withdraw(
+            withdrawFromAccount(
                 fromAddress = Address(fromAccount.address),
                 fungible = Address(resource.resourceAddress),
                 amount = Decimal(amount.toPlainString())
@@ -85,7 +86,7 @@ class PrepareManifestDelegate(
                     )
 
                     // Then deposit the bucket into the target account
-                    deposit(
+                    accountTryDepositOrAbort(
                         toAddress = Address(targetAccount.address),
                         fromBucket = bucket
                     )
@@ -94,7 +95,7 @@ class PrepareManifestDelegate(
         }
     }
 
-    private fun ManifestBuilder.attachInstructionsForNFTs(
+    private fun BabylonManifestBuilder.attachInstructionsForNFTs(
         fromAccount: Network.Account,
         targetAccounts: List<TargetAccount>
     ) = apply {
@@ -107,15 +108,15 @@ class PrepareManifestDelegate(
                     resourceAddress = Address(nft.item.collectionAddress),
                     nonFungibleLocalId = nft.item.localId.toRetId()
                 )
-                withdraw(
+                withdrawNonFungiblesFromAccount(
                     fromAddress = Address(fromAccount.address),
                     nonFungible = globalId
                 )
-                takeFromWorktop(
+                takeNonFungiblesFromWorktop(
                     nonFungible = globalId,
                     intoBucket = bucket
                 )
-                deposit(
+                accountTryDepositOrAbort(
                     toAddress = Address(targetAccount.address),
                     fromBucket = bucket
                 )

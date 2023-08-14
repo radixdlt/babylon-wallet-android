@@ -49,30 +49,40 @@ class TransactionAnalysisDelegate(
     )
 
     private suspend fun Result<ExecutionAnalysis>.resolve(manifest: TransactionManifest) = this.onSuccess { analysis ->
-        val previewType = when (val type = analysis.transactionType) {
-            is TransactionType.NonConforming -> PreviewType.NonConforming
-            is TransactionType.GeneralTransaction -> type.resolve(
-                getTransactionBadgesUseCase = getTransactionBadgesUseCase,
-                getProfileUseCase = getProfileUseCase,
-                getAccountsWithResourcesUseCase = getAccountsWithResourcesUseCase,
-                getResourcesMetadataUseCase = getResourcesMetadataUseCase,
-                resolveDAppsUseCase = resolveDAppsUseCase
-            )
+        val transactionTypes = analysis.transactionTypes
+        val previewType = if (transactionTypes.isEmpty()) {
+            PreviewType.NonConforming
+        } else {
+            when (val type = analysis.transactionTypes[0]) {
+                is TransactionType.GeneralTransaction -> type.resolve(
+                    getTransactionBadgesUseCase = getTransactionBadgesUseCase,
+                    getProfileUseCase = getProfileUseCase,
+                    getAccountsWithResourcesUseCase = getAccountsWithResourcesUseCase,
+                    getResourcesMetadataUseCase = getResourcesMetadataUseCase,
+                    resolveDAppsUseCase = resolveDAppsUseCase
+                )
 
-            is TransactionType.SimpleTransfer -> type.resolve(
-                getProfileUseCase = getProfileUseCase,
-                getAccountsWithResourcesUseCase = getAccountsWithResourcesUseCase
-            )
+                is TransactionType.SimpleTransfer -> type.resolve(
+                    getProfileUseCase = getProfileUseCase,
+                    getAccountsWithResourcesUseCase = getAccountsWithResourcesUseCase
+                )
 
-            is TransactionType.Transfer -> type.resolve(
-                getProfileUseCase = getProfileUseCase,
-                getAccountsWithResourcesUseCase = getAccountsWithResourcesUseCase
-            )
+                is TransactionType.Transfer -> type.resolve(
+                    getProfileUseCase = getProfileUseCase,
+                    getAccountsWithResourcesUseCase = getAccountsWithResourcesUseCase
+                )
+
+                else -> { PreviewType.NonConforming }
+            }
         }
 
+        val networkFee = analysis.feeSummary.executionCost
+            .add(analysis.feeSummary.finalizationCost)
+            .add(analysis.feeSummary.storageExpansionCost)
+
         val transactionFees = TransactionFees(
-            networkFee = analysis.feeSummary.networkFee.asStr().toBigDecimal(),
-            royaltyFee = analysis.feeSummary.royaltyFee.asStr().toBigDecimal(),
+            networkFee = networkFee.asStr().toBigDecimal(),
+            royaltyFee = analysis.feeSummary.royaltyCost.asStr().toBigDecimal(),
             nonContingentFeeLock = analysis.feeLocks.lock.asStr().toBigDecimal()
         )
 

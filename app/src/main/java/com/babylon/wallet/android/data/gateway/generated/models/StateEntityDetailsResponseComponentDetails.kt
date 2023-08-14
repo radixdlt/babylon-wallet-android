@@ -15,6 +15,10 @@
 
 package com.babylon.wallet.android.data.gateway.generated.models
 
+import com.babylon.wallet.android.data.gateway.generated.models.ComponentEntityRoleAssignments
+import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponseItemDetails
+import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponseItemDetailsType
+
 import kotlinx.serialization.Contextual
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -32,7 +36,7 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class StateEntityDetailsResponseComponentDetails(
 
-    @SerialName(value = "type")
+    @Contextual @SerialName(value = "type")
     override val type: StateEntityDetailsResponseItemDetailsType,
 
     @SerialName(value = "blueprint_name")
@@ -49,6 +53,9 @@ data class StateEntityDetailsResponseComponentDetails(
 
     @Contextual @SerialName(value = "state")
     val state: ComponentEntityState? = null,
+
+    @SerialName(value = "role_assignments")
+    val roleAssignments: ComponentEntityRoleAssignments? = null,
 
     /* String-encoded decimal representing the amount of a related fungible resource. */
     @SerialName(value = "royalty_vault_balance")

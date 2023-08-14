@@ -15,9 +15,11 @@
 
 package com.babylon.wallet.android.data.gateway.generated.models
 
+import com.babylon.wallet.android.data.gateway.generated.models.MetadataTypedValue
 
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerialName
+import kotlinx.serialization.Contextual
 
 /**
  * 
@@ -29,7 +31,7 @@ import kotlinx.serialization.SerialName
 data class EntityMetadataItemValueAllOf (
 
     @SerialName(value = "typed")
-    val typed: MetadataTypedValue? = null
+    val typed: MetadataTypedValue
 
 )
 

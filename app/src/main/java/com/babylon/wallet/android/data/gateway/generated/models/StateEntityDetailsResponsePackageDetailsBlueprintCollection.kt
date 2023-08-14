@@ -15,11 +15,14 @@
 
 package com.babylon.wallet.android.data.gateway.generated.models
 
+import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponsePackageDetailsBlueprintItem
+
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerialName
+import kotlinx.serialization.Contextual
 
 /**
- * Entity metadata collection.
+ * 
  *
  * @param items 
  * @param totalCount Total number of items in underlying collection, fragment of which is available in `items` collection.

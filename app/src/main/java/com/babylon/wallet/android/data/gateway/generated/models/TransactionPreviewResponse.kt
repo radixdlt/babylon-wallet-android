@@ -15,6 +15,8 @@
 
 package com.babylon.wallet.android.data.gateway.generated.models
 
+import com.babylon.wallet.android.data.gateway.generated.models.TransactionPreviewResponseLogsInner
+
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Contextual
@@ -35,7 +37,7 @@ data class TransactionPreviewResponse (
     @SerialName(value = "encoded_receipt")
     val encodedReceipt: kotlin.String,
 
-    @SerialName(value = "receipt")
+    @Contextual @SerialName(value = "receipt")
     val receipt: TransactionReceipt,
 
 //    @SerialName(value = "resource_changes")

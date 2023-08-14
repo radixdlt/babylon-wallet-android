@@ -18,6 +18,7 @@ package com.babylon.wallet.android.data.gateway.generated.models
 
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerialName
+import kotlinx.serialization.Contextual
 
 /**
  * 
@@ -40,7 +41,7 @@ data class GatewayInfoResponseReleaseInfo (
 
     /* Image tag that is currently deployed to the Gateway API. */
     @SerialName(value = "image_tag")
-    val imageTag: kotlin.String? = null
+    val imageTag: kotlin.String
 
 )
 

@@ -18,6 +18,7 @@ package com.babylon.wallet.android.data.gateway.generated.models
 
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerialName
+import kotlinx.serialization.Contextual
 
 /**
  * The ledger state against which the response was generated. Can be used to detect if the Network Gateway is returning up-to-date information. 

@@ -31,7 +31,7 @@ import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
-import rdx.works.core.ret.ManifestBuilder
+import rdx.works.core.ret.BabylonManifestBuilder
 import rdx.works.profile.data.model.Profile
 import rdx.works.profile.data.model.ProfileState
 import rdx.works.profile.data.model.apppreferences.Radix
@@ -123,7 +123,7 @@ internal class TransactionClientTest {
             resources = Resources(
                 fungibleResources = listOf(
                     Resource.FungibleResource(
-                        resourceAddress = Resource.FungibleResource.officialXrdResourceAddress()!!,
+                        resourceAddress = Resource.FungibleResource.officialXrdResourceAddresses().first(),
                         amount = 30.toBigDecimal(),
                         symbolMetadataItem = SymbolMetadataItem("XRD")
                     )
@@ -160,13 +160,12 @@ internal class TransactionClientTest {
     private fun manifestWithAddress(
         address: String,
         networkId: Int = Radix.Gateway.default.network.id
-    ): TransactionManifest = ManifestBuilder()
-        .withdraw(
+    ): TransactionManifest = BabylonManifestBuilder()
+        .withdrawFromAccount(
             fromAddress = Address(address),
             fungible = knownAddresses(networkId = networkId.toUByte()).resourceAddresses.xrd,
             amount = Decimal("10")
-        )
-        .build(networkId)
+        ).build(networkId)
 
     private object ProfileRepositoryFake: ProfileRepository {
         private val profile = profile(accounts = listOf(EntityRepositoryFake.account1, EntityRepositoryFake.account2))
