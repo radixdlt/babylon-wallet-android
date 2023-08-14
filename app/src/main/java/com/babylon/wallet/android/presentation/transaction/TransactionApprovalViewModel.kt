@@ -175,7 +175,7 @@ class TransactionApprovalViewModel @Inject constructor(
     fun onSelectFeePayerClick() = fees.onSelectFeePayerClick()
 
     fun onNetworkAndRoyaltyFeeChanged(networkAndRoyaltyFee: String) =
-        fees.onNetworkAndRoyaltyFeeChanged(networkAndRoyaltyFee)
+        fees.onFeePaddingAmountChanged(networkAndRoyaltyFee)
 
     fun onTipPercentageChanged(tipPercentage: String) = fees.onTipPercentageChanged(tipPercentage)
 

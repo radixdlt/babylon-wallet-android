@@ -74,12 +74,12 @@ class TransactionFeesDelegate(
         switchToFeePayerSelection()
     }
 
-    fun onNetworkAndRoyaltyFeeChanged(networkAndRoyaltyFee: String) {
+    fun onFeePaddingAmountChanged(feePaddingAmount: String) {
         val transactionFees = state.value.transactionFees
         state.update { state ->
             state.copy(
                 transactionFees = transactionFees.copy(
-                    networkAndRoyaltyFees = networkAndRoyaltyFee
+                    feePaddingAmount = feePaddingAmount
                 )
             )
         }
@@ -88,7 +88,7 @@ class TransactionFeesDelegate(
     @Suppress("MagicNumber")
     fun onTipPercentageChanged(tipPercentage: String) {
         try {
-            if (tipPercentage.toBigDecimal() > BigDecimal(100) || tipPercentage.contains(".")) {
+            if (tipPercentage.contains(".")) {
                 return
             }
         } catch (_: NumberFormatException) { }
@@ -111,7 +111,7 @@ class TransactionFeesDelegate(
             it.copy(
                 // When switching back to default mode, reset field values that have been modified in advanced mode
                 transactionFees = transactionFees.copy(
-                    networkAndRoyaltyFees = null,
+                    feePaddingAmount = null,
                     tipPercentage = null
                 ),
                 sheetState = customizeFeesSheet.copy(

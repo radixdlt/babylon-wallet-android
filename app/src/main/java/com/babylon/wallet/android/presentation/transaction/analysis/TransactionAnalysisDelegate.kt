@@ -76,14 +76,12 @@ class TransactionAnalysisDelegate(
             }
         }
 
-        val networkFee = analysis.feeSummary.executionCost
-            .add(analysis.feeSummary.finalizationCost)
-            .add(analysis.feeSummary.storageExpansionCost)
-
         val transactionFees = TransactionFees(
-            networkFee = networkFee.asStr().toBigDecimal(),
-            royaltyFee = analysis.feeSummary.royaltyCost.asStr().toBigDecimal(),
-            nonContingentFeeLock = analysis.feeLocks.lock.asStr().toBigDecimal()
+            nonContingentFeeLock = analysis.feeLocks.lock.asStr().toBigDecimal(),
+            networkExecution = analysis.feeSummary.executionCost.asStr().toBigDecimal(),
+            networkFinalization = analysis.feeSummary.finalizationCost.asStr().toBigDecimal(),
+            networkStorage = analysis.feeSummary.storageExpansionCost.asStr().toBigDecimal(),
+            royalties = analysis.feeSummary.royaltyCost.asStr().toBigDecimal(),
         )
 
         val feePayerResult = transactionClient.findFeePayerInManifest(

@@ -108,9 +108,7 @@ fun NetworkFeeContent(
 @Composable
 fun NetworkFeeContentPreview() {
     NetworkFeeContent(
-        fees = TransactionFees(
-            networkFee = BigDecimal("10")
-        ),
+        fees = TransactionFees(),
         noFeePayerSelected = false,
         insufficientBalanceToPayTheFee = false,
         onCustomizeClick = {}
