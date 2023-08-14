@@ -274,8 +274,7 @@ sealed class Resource {
     }
 
     data class LiquidStakeUnitResource(
-        val fungibleResource: FungibleResource,
-        val validator: ValidatorWithStakeResources? = null
+        val fungibleResource: FungibleResource
     ) : Resource() {
 
         val validatorAddress: String
@@ -284,8 +283,12 @@ sealed class Resource {
         override val resourceAddress: String
             get() = fungibleResource.resourceAddress
 
-        val percentageOwned: BigDecimal?
+        private val percentageOwned: BigDecimal?
             get() = fungibleResource.amount?.divide(fungibleResource.currentSupply, RoundingMode.HALF_UP)
+
+        fun stakeValueInXRD(totalXrdStake: BigDecimal?): BigDecimal? {
+            return percentageOwned?.multiply(totalXrdStake)
+        }
     }
 
     data class StakeClaimResource(

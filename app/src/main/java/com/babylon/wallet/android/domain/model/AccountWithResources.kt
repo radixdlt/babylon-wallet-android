@@ -55,19 +55,19 @@ data class ValidatorsWithStakeResources(
         get() = validators.isEmpty()
 }
 
-data class ValidatorWithStakeResources(
+data class ValidatorDetail(
     val address: String,
     val name: String,
     val url: Uri?,
-    val totalXrdStake: BigDecimal?,
+    val description: String?,
+    val totalXrdStake: BigDecimal?
+)
+
+data class ValidatorWithStakeResources(
+    val validatorDetail: ValidatorDetail,
     val liquidStakeUnits: List<Resource.LiquidStakeUnitResource> = emptyList(),
     val stakeClaimNft: Resource.StakeClaimResource? = null
-) {
-    fun stakeValueInXRD(lsuAddress: String): BigDecimal? {
-        val lsuPercentageOwned = liquidStakeUnits.find { it.resourceAddress == lsuAddress }?.percentageOwned
-        return lsuPercentageOwned?.multiply(totalXrdStake)
-    }
-}
+)
 
 fun List<AccountWithResources>.findAccountWithEnoughXRDBalance(minimumBalance: BigDecimal) = find {
     it.resources?.hasXrd(minimumBalance) ?: false
