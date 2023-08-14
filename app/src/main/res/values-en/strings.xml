@@ -246,6 +246,7 @@
   <string name="createPersona_nameNewPersona_placeholder">e.g. My Main Persona</string>
   <string name="createPersona_nameNewPersona_continue">Continue</string>
   <string name="createPersona_requiredField">Required field</string>
+  <string name="createPersona_derivePublicKeys_title">Creating Persona</string>
   <string name="createPersona_saveAndContinueButtonTitle">Save and Continue</string>
   <string name="dAppRequest_login_titleKnownDapp">Login Request</string>
   <string name="dAppRequest_login_subtitleKnownDapp">%s is requesting that you login with a Persona.</string>
