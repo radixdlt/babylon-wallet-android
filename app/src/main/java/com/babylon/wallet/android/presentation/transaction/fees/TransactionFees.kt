@@ -68,13 +68,13 @@ data class TransactionFees(
     /**
      * (tip % entered by the user) x (NETWORK EXECUTION + NETWORK FINALIZATION)
      */
+    @Suppress("MagicNumber")
     val effectiveTip: BigDecimal
         get() = if (tipPercentage.isNullOrEmpty()) {
             BigDecimal.ZERO
         } else {
             tipPercentage.toBigDecimal().divide(BigDecimal(100)).multiply(networkExecution.add(networkFinalization)) ?: BigDecimal.ZERO
         }
-
 
     /**
      * Finalized fee to lock for the transaction

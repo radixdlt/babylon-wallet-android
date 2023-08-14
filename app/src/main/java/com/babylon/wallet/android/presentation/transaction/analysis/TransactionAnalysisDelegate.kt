@@ -84,19 +84,23 @@ class TransactionAnalysisDelegate(
             royalties = analysis.feeSummary.royaltyCost.asStr().toBigDecimal(),
         )
 
-        val feePayerResult = transactionClient.findFeePayerInManifest(
+        transactionClient.findFeePayerInManifest(
             manifest = manifest,
             lockFee = transactionFees.defaultTransactionFee
-        ).getOrNull()
+        ).onSuccess { feePayerResult ->
+            val candidateXrdBalance = feePayerResult.candidateXrdBalance()
 
-        state.update {
-            it.copy(
-                isRawManifestVisible = previewType == PreviewType.NonConforming,
-                transactionFees = transactionFees,
-                isLoading = false,
-                previewType = previewType,
-                feePayerSearchResult = feePayerResult
-            )
+            state.update {
+                it.copy(
+                    isRawManifestVisible = previewType == PreviewType.NonConforming,
+                    transactionFees = transactionFees,
+                    isLoading = false,
+                    previewType = previewType,
+                    feePayerSearchResult = feePayerResult.copy(
+                        insufficientBalanceToPayTheFee = candidateXrdBalance < transactionFees.defaultTransactionFee
+                    )
+                )
+            }
         }
     }.onFailure { error ->
         reportFailure(error)

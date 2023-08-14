@@ -213,6 +213,13 @@ class TransactionClient @Inject constructor(
 
     suspend fun findFeePayerInManifest(manifest: TransactionManifest, lockFee: BigDecimal): Result<FeePayerSearchResult> {
         val allAccounts = getProfileUseCase.accountsOnCurrentNetwork()
+        val allAccountsWithResources = getAccountsWithResourcesUseCase(accounts = allAccounts, isRefreshing = false).value()
+        val candidates = allAccountsWithResources?.map {
+            FeePayerSearchResult.FeePayerCandidate(
+                account = it.account,
+                xrdAmount = it.resources?.xrd?.amount ?: BigDecimal.ZERO
+            )
+        }.orEmpty()
 
         // 1. accountsWithdrawnFrom
         findFeePayerCandidatesWithinOwnedAccounts(
@@ -224,7 +231,7 @@ class TransactionClient @Inject constructor(
                 return Result.success(
                     FeePayerSearchResult(
                         feePayerAddressFromManifest = withdrawnFromCandidate,
-                        candidates = allAccounts
+                        candidates = candidates
                     )
                 )
             }
@@ -240,7 +247,7 @@ class TransactionClient @Inject constructor(
                 return Result.success(
                     FeePayerSearchResult(
                         feePayerAddressFromManifest = depositedIntoCandidate,
-                        candidates = allAccounts
+                        candidates = candidates
                     )
                 )
             }
@@ -256,7 +263,7 @@ class TransactionClient @Inject constructor(
                 return Result.success(
                     FeePayerSearchResult(
                         feePayerAddressFromManifest = requiringAuthCandidate,
-                        candidates = allAccounts
+                        candidates = candidates
                     )
                 )
             }
@@ -264,7 +271,7 @@ class TransactionClient @Inject constructor(
 
         return Result.success(
             FeePayerSearchResult(
-                candidates = allAccounts
+                candidates = candidates
             )
         )
     }

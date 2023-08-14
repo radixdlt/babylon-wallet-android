@@ -31,6 +31,7 @@ import com.babylon.wallet.android.presentation.transaction.AccountWithTransferab
 import com.babylon.wallet.android.presentation.transaction.TransactionApprovalViewModel
 import com.babylon.wallet.android.presentation.transaction.fees.TransactionFees
 import com.babylon.wallet.android.presentation.ui.composables.BottomDialogDragHandle
+import com.babylon.wallet.android.presentation.ui.composables.InfoLink
 import rdx.works.core.displayableQuantity
 import rdx.works.profile.data.model.pernetwork.Network
 
@@ -40,6 +41,7 @@ fun FeesSheet(
     modifier: Modifier = Modifier,
     state: TransactionApprovalViewModel.State.Sheet.CustomizeFees,
     transactionFees: TransactionFees,
+    insufficientBalanceToPayTheFee: Boolean,
     onClose: () -> Unit,
     onChangeFeePayerClick: () -> Unit,
     onSelectFeePayerClick: () -> Unit,
@@ -194,6 +196,20 @@ fun FeesSheet(
                         ),
                         shape = RadixTheme.shapes.roundedRectMedium
                     )
+
+                    if (insufficientBalanceToPayTheFee) {
+                        InfoLink(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(
+                                    horizontal = RadixTheme.dimensions.paddingDefault,
+                                    vertical = RadixTheme.dimensions.paddingSmall
+                                ),
+                            text = stringResource(id = R.string.transactionReview_customizeNetworkFeeSheet_insufficientBalance_warning),
+                            contentColor = RadixTheme.colors.red1,
+                            iconRes = com.babylon.wallet.android.designsystem.R.drawable.ic_warning_error
+                        )
+                    }
                 }
             }
             is TransactionApprovalViewModel.State.Sheet.CustomizeFees.FeePayerMode.NoFeePayerSelected -> {
@@ -342,14 +358,15 @@ fun NetworkFeesDefaultView(
             )
             Spacer(modifier = Modifier.weight(1f))
             val royaltyFee = transactionFees?.royaltyFeesDisplayed
+            val noRoyaltiesDue = royaltyFee == "0"
             Text(
-                text = if (royaltyFee == "0") {
+                text = if (noRoyaltiesDue) {
                     stringResource(id = R.string.transactionReview_customizeNetworkFeeSheet_noneDue)
                 } else {
                     stringResource(id = R.string.transactionReview_xrdAmount, royaltyFee.orEmpty())
                 },
                 style = RadixTheme.typography.body1Header,
-                color = RadixTheme.colors.gray1
+                color = if (noRoyaltiesDue) RadixTheme.colors.gray1 else RadixTheme.colors.gray3
             )
         }
 
@@ -593,7 +610,8 @@ fun NetworkFeesAdvancedView(
                     color = RadixTheme.colors.gray2
                 )
                 Spacer(modifier = Modifier.weight(1f))
-                val royaltyFee = if (transactionFees?.royaltiesCost.orEmpty() == "0") {
+                val noRoyaltiesDue = transactionFees?.royaltiesCost.orEmpty() == "0"
+                val royaltyFee = if (noRoyaltiesDue) {
                     stringResource(id = R.string.transactionReview_customizeNetworkFeeSheet_noneDue)
                 } else {
                     stringResource(
@@ -604,7 +622,7 @@ fun NetworkFeesAdvancedView(
                 Text(
                     text = royaltyFee,
                     style = RadixTheme.typography.body1Header,
-                    color = RadixTheme.colors.gray1
+                    color = if (noRoyaltiesDue) RadixTheme.colors.gray1 else RadixTheme.colors.gray3
                 )
             }
 
@@ -628,7 +646,7 @@ fun NetworkFeesAdvancedView(
                 Text(
                     modifier = Modifier
                         .padding(end = RadixTheme.dimensions.paddingDefault),
-                text = stringResource(id = R.string.transactionReview_networkFee_heading).uppercase(),
+                    text = stringResource(id = R.string.transactionReview_networkFee_heading).uppercase(),
                     style = RadixTheme.typography.body1Link,
                     color = RadixTheme.colors.gray2
                 )
