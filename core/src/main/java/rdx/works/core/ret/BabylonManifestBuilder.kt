@@ -103,13 +103,13 @@ class BabylonManifestBuilder {
 
     fun setOwnerKeys(
         address: Address,
-        keys: List<PublicKeyHash>
+        ownerKeyHashes: List<PublicKeyHash>
     ): BabylonManifestBuilder {
         manifestBuilder = manifestBuilder.setMetadata(
             address = address,
             key = "owner_keys",
             value = MetadataValue.PublicKeyHashArrayValue(
-                value = keys
+                value = ownerKeyHashes
             )
         )
         return this

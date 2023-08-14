@@ -62,11 +62,11 @@ class ROLAClient @Inject constructor(
 
     private fun BabylonManifestBuilder.addSetMetadataInstructionForOwnerKeys(
         entityAddress: String,
-        ownerKeysHashes: List<FactorInstance.PublicKey>
+        ownerPublicKeys: List<FactorInstance.PublicKey>
     ): BabylonManifestBuilder {
         return setOwnerKeys(
             address = Address(entityAddress),
-            keys = ownerKeysHashes.map { key ->
+            ownerKeyHashes = ownerPublicKeys.map { key ->
                 val bytes = key.compressedData.compressedPublicKeyHashBytes()
                 when (key.curve) {
                     Slip10Curve.SECP_256K1 -> PublicKeyHash.Secp256k1(bytes.toUByteList())

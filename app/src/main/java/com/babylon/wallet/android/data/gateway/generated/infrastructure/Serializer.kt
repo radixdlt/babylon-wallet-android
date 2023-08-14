@@ -39,11 +39,6 @@ object Serializer {
         contextual(StringBuilder::class, StringBuilderAdapter)
     }
 
-    @Deprecated("Use Serializer.kotlinxSerializationJson instead", replaceWith = ReplaceWith("Serializer.kotlinxSerializationJson"))
-    @JvmStatic
-    val jvmJson: Json
-        get() { return kotlinxSerializationJson }
-
     @JvmStatic
     val kotlinxSerializationJson: Json by lazy {
         Json {
