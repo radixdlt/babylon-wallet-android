@@ -60,7 +60,7 @@ fun CreateAccountWithLedgerScreen(
         }
     }
 
-    when (state.showContent) {
+    when (val showContent = state.showContent) {
         CreateAccountWithLedgerUiState.ShowContent.ChooseLedger -> {
             ChooseLedgerDeviceContent(
                 modifier = modifier,
@@ -72,15 +72,17 @@ fun CreateAccountWithLedgerScreen(
             )
         }
 
-        CreateAccountWithLedgerUiState.ShowContent.LinkNewConnector -> {
+        is CreateAccountWithLedgerUiState.ShowContent.LinkNewConnector -> {
             LinkConnectorScreen(
                 modifier = Modifier.fillMaxSize(),
-                onLinkConnectorClick = viewModel::onLinkConnectorClick,
+                onLinkConnectorClick = {
+                    viewModel.onLinkConnectorClick(showContent.addDeviceAfterLinking)
+                },
                 onCloseClick = viewModel::onCloseClick
             )
         }
 
-        CreateAccountWithLedgerUiState.ShowContent.AddLinkConnector -> {
+        is CreateAccountWithLedgerUiState.ShowContent.AddLinkConnector -> {
             AddLinkConnectorScreen(
                 modifier = Modifier,
                 showContent = addLinkConnectorState.showContent,
@@ -92,7 +94,11 @@ fun CreateAccountWithLedgerScreen(
                 onNewConnectorContinueClick = {
                     coroutineScope.launch {
                         addLinkConnectorViewModel.onContinueClick()
-                        viewModel.onAddLedgerDeviceClick()
+                        if (showContent.addDeviceAfterLinking) {
+                            viewModel.onAddLedgerDeviceClick()
+                        } else {
+                            viewModel.onCloseClick()
+                        }
                     }
                 },
                 onNewConnectorCloseClick = {
