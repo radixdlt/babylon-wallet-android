@@ -475,9 +475,11 @@ fun AssetsContent(
                             collapsedState = collapsedState,
                         ) { collection, item ->
                             NonFungibleResourceItem(
-                                modifier = contentModifier.clickable {
-                                    onNonFungibleItemClick(collection, item)
-                                },
+                                modifier = Modifier
+                                    .padding(RadixTheme.dimensions.paddingDefault)
+                                    .clickable {
+                                        onNonFungibleItemClick(collection, item)
+                                    },
                                 item = item
                             )
                         }
@@ -494,9 +496,11 @@ fun AssetsContent(
                                 poolUnitItem = { poolUnit ->
                                     PoolUnitItem(
                                         resource = poolUnit,
-                                        modifier = Modifier.throttleClickable {
-                                            onPoolUnitClick(poolUnit)
-                                        }.padding(horizontal = RadixTheme.dimensions.paddingDefault)
+                                        modifier = Modifier
+                                            .throttleClickable {
+                                                onPoolUnitClick(poolUnit)
+                                            }
+                                            .padding(horizontal = RadixTheme.dimensions.paddingDefault)
                                     )
                                 },
                                 liquidStakeItem = { liquidStakeUnit, stakeValueInXRD ->
