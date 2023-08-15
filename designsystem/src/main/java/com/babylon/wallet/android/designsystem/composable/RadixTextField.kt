@@ -35,10 +35,17 @@ fun RadixTextField(
     onValueChanged: (String) -> Unit,
     value: String,
     colors: TextFieldColors? = null,
-    leftLabel: String? = null,
     hint: String? = null,
     hintColor: Color? = RadixTheme.colors.defaultText,
     error: String? = null,
+    leftLabel: String? = null,
+    leftLabelContent: @Composable (() -> Unit) = {
+        Text(
+            text = leftLabel.orEmpty(),
+            style = RadixTheme.typography.body1HighImportance,
+            color = if (error != null) RadixTheme.colors.red1 else RadixTheme.colors.gray1
+        )
+    },
     rightLabel: String? = null,
     optionalHint: String? = null,
     trailingIcon: @Composable (() -> Unit)? = null,
@@ -52,12 +59,8 @@ fun RadixTextField(
 ) {
     Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingSmall)) {
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-            leftLabel?.let { label ->
-                Text(
-                    text = label,
-                    style = RadixTheme.typography.body1HighImportance,
-                    color = if (error != null) RadixTheme.colors.red1 else RadixTheme.colors.gray1
-                )
+            Column {
+                leftLabelContent.invoke()
             }
             rightLabel?.let { hint ->
                 Text(text = hint, style = RadixTheme.typography.body1Regular, color = RadixTheme.colors.gray2)
@@ -144,7 +147,6 @@ fun RadixTextFieldPreview() {
             modifier = Modifier.fillMaxWidth(),
             onValueChanged = {},
             value = "",
-            leftLabel = "Label",
             hint = "Placeholder",
             optionalHint = "This is a hint text, It should be short and sweet"
         )
@@ -159,7 +161,6 @@ fun RadixTextFieldFilled() {
             modifier = Modifier.fillMaxWidth(),
             onValueChanged = {},
             value = "Input Text",
-            leftLabel = "Label",
             hint = "Placeholder",
             rightLabel = "7/10",
             optionalHint = "This is a hint text, It should be short and sweet"
@@ -175,7 +176,6 @@ fun RadixTextErrorField() {
             modifier = Modifier.fillMaxWidth(),
             onValueChanged = {},
             value = "",
-            leftLabel = "Label",
             hint = "Placeholder",
             error = "Error",
             optionalHint = "This is a hint text, It should be short and sweet"
@@ -191,7 +191,6 @@ fun RadixTextFieldWithIcon() {
             modifier = Modifier.fillMaxWidth(),
             onValueChanged = { },
             value = "casino",
-            leftLabel = "Word ",
             trailingIcon = {
                 Icon(
                     modifier = Modifier.size(20.dp),

@@ -246,6 +246,7 @@
   <string name="createPersona_nameNewPersona_placeholder">e.g. My Main Persona</string>
   <string name="createPersona_nameNewPersona_continue">Continue</string>
   <string name="createPersona_requiredField">Required field</string>
+  <string name="createPersona_derivePublicKeys_title">Creating Persona</string>
   <string name="createPersona_saveAndContinueButtonTitle">Save and Continue</string>
   <string name="dAppRequest_login_titleKnownDapp">Login Request</string>
   <string name="dAppRequest_login_subtitleKnownDapp">%s is requesting that you login with a Persona.</string>
@@ -331,6 +332,8 @@
   <string name="transactionReview_networkFee_congestedText">The network is currently congested. Add a tip to speed up your transfer.</string>
   <string name="transactionReview_networkFee_customizeButtonTitle">Customize</string>
   <string name="transactionReview_customizeNetworkFeeSheet_normalMode_title">Customize Fees</string>
+  <string name="transactionReview_customizeNetworkFeeSheet_totalFee">Transaction Fee</string>
+  <string name="transactionReview_customizeNetworkFeeSheet_totalFee_info">(maximum to lock)</string>
   <string name="transactionReview_customizeNetworkFeeSheet_advancedMode_title">Advanced Customize Fees</string>
   <string name="transactionReview_customizeNetworkFeeSheet_normalMode_subtitle">Choose what account to pay the transaction fee from, or add a “tip” to speed up your transaction if necessary.</string>
   <string name="transactionReview_customizeNetworkFeeSheet_advancedMode_subtitle">Fully customize fee payment for this transaction. Not recommended unless you are a developer or advanced user.</string>
@@ -343,9 +346,16 @@
   <string name="transactionReview_customizeNetworkFeeSheet_viewNormalModeButtonTitle">View Normal Mode</string>
   <string name="transactionReview_customizeNetworkFeeSheet_viewAdvancedModeButtonTitle">View Advanced Mode</string>
   <string name="transactionReview_customizeNetworkFeeSheet_networkFee">Network Fee</string>
+  <string name="transactionReview_customizeNetworkFeeSheet_networkExecution">Network Execution</string>
+  <string name="transactionReview_customizeNetworkFeeSheet_networkFinalization">Network Finalization</string>
+  <string name="transactionReview_customizeNetworkFeeSheet_effectiveTip">Effective Tip</string>
+  <string name="transactionReview_customizeNetworkFeeSheet_networkStorage">Network Storage</string>
+  <string name="transactionReview_customizeNetworkFeeSheet_padding">Padding</string>
+  <string name="transactionReview_customizeNetworkFeeSheet_royalties">Royalties</string>
   <string name="transactionReview_customizeNetworkFeeSheet_royaltyFee">Royalty fee</string>
-  <string name="transactionReview_customizeNetworkFeeSheet_networkRoyaltyFeesFieldLabel">XRD to Lock for Network and Royalty Fees</string>
-  <string name="transactionReview_customizeNetworkFeeSheet_tipFieldLabel">Tip to Lock(% of the Network Fee)</string>
+  <string name="transactionReview_customizeNetworkFeeSheet_paddingField">Adjust Fee Padding Amount (XRD)</string>
+  <string name="transactionReview_customizeNetworkFeeSheet_tipFieldLabel">Adjust Tip to Lock</string>
+  <string name="transactionReview_customizeNetworkFeeSheet_tipFieldInfo">(% of Execution + Finalization Fees)</string>
   <string name="transactionReview_customizeNetworkFeeSheet_selectFeePayer_warning">Please select a fee payer for the transaction fee</string>
   <string name="transactionReview_customizeNetworkFeeSheet_insufficientBalance_warning">Insufficient balance to pay the transaction fee</string>
   <string name="transactionReview_guarantees_title">Customize Guarantees</string>
