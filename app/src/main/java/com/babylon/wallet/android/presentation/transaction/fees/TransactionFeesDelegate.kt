@@ -134,7 +134,7 @@ class TransactionFeesDelegate(
 
     private fun switchToFeePayerSelection() {
         val feePayerResult = state.value.feePayerSearchResult
-        val feesMode = state.value.sheetState as State.Sheet.CustomizeFees ?: return
+        val feesMode = state.value.sheetState as State.Sheet.CustomizeFees
         val transactionFees = state.value.transactionFees
         state.update { state ->
             state.copy(

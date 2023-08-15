@@ -174,15 +174,17 @@ class TransactionApprovalViewModel @Inject constructor(
 
     fun onSelectFeePayerClick() = fees.onSelectFeePayerClick()
 
-    fun onNetworkAndRoyaltyFeeChanged(networkAndRoyaltyFee: String) {
-        fees.onFeePaddingAmountChanged(networkAndRoyaltyFee)
+    fun onFeePaddingAmountChanged(feePaddingAmount: String) {
+        fees.onFeePaddingAmountChanged(feePaddingAmount)
 
         // Validate lock fee against available amount
         val feePayerResult = state.value.feePayerSearchResult
         _state.update {
             it.copy(
                 feePayerSearchResult = feePayerResult?.copy(
-                    insufficientBalanceToPayTheFee = hasInsufficientBalanceToPayTheFee()
+                    insufficientBalanceToPayTheFee = feePayerResult.hasInsufficientBalanceToPayTheFee(
+                        feePayerResult.feePayerAddressFromManifest.orEmpty()
+                    )
                 )
             )
         }
@@ -196,21 +198,19 @@ class TransactionApprovalViewModel @Inject constructor(
         _state.update {
             it.copy(
                 feePayerSearchResult = feePayerResult?.copy(
-                    insufficientBalanceToPayTheFee = hasInsufficientBalanceToPayTheFee()
+                    insufficientBalanceToPayTheFee = feePayerResult.hasInsufficientBalanceToPayTheFee(
+                        feePayerResult.feePayerAddressFromManifest.orEmpty()
+                    )
                 )
             )
         }
     }
 
-    private fun hasInsufficientBalanceToPayTheFee(): Boolean {
+    private fun FeePayerSearchResult.hasInsufficientBalanceToPayTheFee(candidateAddress: String): Boolean {
         val transactionFee = state.value.transactionFees.transactionFeeToLock
-        return state.value.feePayerSearchResult?.let { feePayerResult ->
-            feePayerResult.candidateXrdBalance(
-                candidateAddress = feePayerResult.feePayerAddressFromManifest.orEmpty()
-            ) < transactionFee
-        } ?: run {
-            false
-        }
+        return candidateXrdBalance(
+            candidateAddress = candidateAddress
+        ) < transactionFee
     }
 
     fun onViewDefaultModeClick() = fees.onViewDefaultModeClick()
@@ -218,19 +218,23 @@ class TransactionApprovalViewModel @Inject constructor(
     fun onViewAdvancedModeClick() = fees.onViewAdvancedModeClick()
 
     fun onPayerSelected(selectedFeePayer: Network.Account) {
-        val feePayerResult = state.value.feePayerSearchResult
+        val feePayerSearchResult = state.value.feePayerSearchResult
+
+        val updatedFeePayerResult = feePayerSearchResult?.copy(
+            feePayerAddressFromManifest = selectedFeePayer.address,
+            candidates = feePayerSearchResult.candidates,
+            insufficientBalanceToPayTheFee = feePayerSearchResult.hasInsufficientBalanceToPayTheFee(
+                selectedFeePayer.address
+            )
+        )
+
         val customizeFeesSheet = state.value.sheetState as? State.Sheet.CustomizeFees ?: return
         _state.update {
             it.copy(
-                feePayerSearchResult = feePayerResult?.copy(
-                    feePayerAddressFromManifest = selectedFeePayer.address,
-                    candidates = feePayerResult.candidates,
-                    insufficientBalanceToPayTheFee = hasInsufficientBalanceToPayTheFee()
-                ),
+                feePayerSearchResult = updatedFeePayerResult,
                 sheetState = customizeFeesSheet.copy(
                     feePayerMode = State.Sheet.CustomizeFees.FeePayerMode.FeePayerSelected(
-                        feePayerCandidate = selectedFeePayer,
-//                        insufficientBalanceToPayTheFee = hasInsufficientBalanceToPayTheFee()
+                        feePayerCandidate = selectedFeePayer
                     )
                 )
             )

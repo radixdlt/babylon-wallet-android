@@ -46,7 +46,7 @@ fun FeesSheet(
     onChangeFeePayerClick: () -> Unit,
     onSelectFeePayerClick: () -> Unit,
     onPayerSelected: (Network.Account) -> Unit,
-    onNetworkAndRoyaltyFeeChanged: (String) -> Unit,
+    onFeePaddingAmountChanged: (String) -> Unit,
     onTipPercentageChanged: (String) -> Unit,
     onViewDefaultModeClick: () -> Unit,
     onViewAdvancedModeClick: () -> Unit
@@ -274,7 +274,7 @@ fun FeesSheet(
                 TransactionApprovalViewModel.State.Sheet.CustomizeFees.FeesMode.Advanced -> {
                     NetworkFeesAdvancedView(
                         transactionFees = transactionFees,
-                        onNetworkAndRoyaltyFeeChanged = onNetworkAndRoyaltyFeeChanged,
+                        onFeePaddingAmountChanged = onFeePaddingAmountChanged,
                         onTipPercentageChanged = onTipPercentageChanged
                     )
                 }
@@ -407,7 +407,7 @@ fun NetworkFeesDefaultView(
 fun NetworkFeesAdvancedView(
     modifier: Modifier = Modifier,
     transactionFees: TransactionFees?,
-    onNetworkAndRoyaltyFeeChanged: (String) -> Unit,
+    onFeePaddingAmountChanged: (String) -> Unit,
     onTipPercentageChanged: (String) -> Unit
 ) {
     Column(
@@ -434,7 +434,7 @@ fun NetworkFeesAdvancedView(
                     vertical = RadixTheme.dimensions.paddingMedium,
                     horizontal = RadixTheme.dimensions.paddingXLarge
                 ),
-            onValueChanged = onNetworkAndRoyaltyFeeChanged,
+            onValueChanged = onFeePaddingAmountChanged,
             value = transactionFees?.feePaddingAmountToDisplay?.displayableQuantity().orEmpty(),
             leftLabel = "Adjust Fee Padding Amount (XRD)",
             keyboardOptions = KeyboardOptions(
