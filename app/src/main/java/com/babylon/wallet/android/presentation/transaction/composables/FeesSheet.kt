@@ -410,7 +410,7 @@ fun NetworkFeesAdvancedView(
             onValueChanged = onNetworkAndRoyaltyFeeChanged,
             value = transactionFees?.networkAndRoyaltyFeesToDisplay.orEmpty(),
             leftLabel = stringResource(
-                id = R.string.transactionReview_customizeNetworkFeeSheet_networkRoyaltyFeesFieldLabel
+                id = R.string.transactionReview_customizeNetworkFeeSheet_paddingField
             ),
             keyboardOptions = KeyboardOptions(
                 keyboardType = KeyboardType.Decimal,
