@@ -366,7 +366,7 @@ fun NetworkFeesDefaultView(
                     stringResource(id = R.string.transactionReview_xrdAmount, royaltyFee.orEmpty())
                 },
                 style = RadixTheme.typography.body1Header,
-                color = if (noRoyaltiesDue) RadixTheme.colors.gray1 else RadixTheme.colors.gray3
+                color = if (noRoyaltiesDue) RadixTheme.colors.gray3 else RadixTheme.colors.gray1
             )
         }
 
@@ -622,7 +622,7 @@ fun NetworkFeesAdvancedView(
                 Text(
                     text = royaltyFee,
                     style = RadixTheme.typography.body1Header,
-                    color = if (noRoyaltiesDue) RadixTheme.colors.gray1 else RadixTheme.colors.gray3
+                    color = if (noRoyaltiesDue) RadixTheme.colors.gray3 else RadixTheme.colors.gray1
                 )
             }
 
