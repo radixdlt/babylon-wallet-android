@@ -239,7 +239,7 @@
   <string name="createPersona_explanation_thisWillBeShared">This will be shared with dApps you login to</string>
   <string name="createPersona_introduction_title">Create a Persona</string>
   <string name="createPersona_introduction_subtitle1">A Persona is an identity that you own and control. You can have as many as you like.</string>
-  <string name="createPersona_introduction_subtitle2">You will chosose a Persona when you login to dApps on Radix, and dApps may request access to personal information associated with that persona.</string>
+  <string name="createPersona_introduction_subtitle2">Personas are used to login to dApps on Radix. dApps may request access to personal information associated with your Persona, like your name or email address.</string>
   <string name="createPersona_introduction_learnAboutPersonas">Learn about Personas</string>
   <string name="createPersona_introduction_continue">Continue</string>
   <string name="createPersona_nameNewPersona_subtitle">What would you like to call your Persona?</string>
@@ -455,9 +455,9 @@
   <string name="importOlympiaAccounts_verifySeedPhrase_subtitle">To complete importing your accounts, please view your seed phrase in the Radix Desktop Wallet and enter the words here.</string>
   <string name="importOlympiaAccounts_verifySeedPhrase_warning">This will give this Radix Wallet control of your accounts. Never give your seed phrase to anyone for any reason.</string>
   <string name="importOlympiaAccounts_completion_title">Congratulations</string>
-  <string name="importOlympiaAccounts_completion_subtitleMultiple">You\'ve imported your accounts</string>
-  <string name="importOlympiaAccounts_completion_subtitleSingle">You\'ve imported your account</string>
-  <string name="importOlympiaAccounts_completion_explanation">They will live on the Radix Network and you can access them anytime in your Wallet.</string>
+  <string name="importOlympiaAccounts_completion_subtitleMultiple">You\'ve now imported these Accounts:</string>
+  <string name="importOlympiaAccounts_completion_subtitleSingle">You\'ve now imported this Account:</string>
+  <string name="importOlympiaAccounts_completion_explanation">Your Accounts live on the Radix Network and you can access them anytime in your Wallet.</string>
   <string name="importOlympiaAccounts_completion_accountListButtonTitle">Continue to Account List</string>
   <string name="importOlympiaAccounts_alreadyImported">Already imported</string>
   <string name="importOlympiaAccounts_bip39passphrase">BIP39 passphrase</string>
@@ -484,7 +484,7 @@
   <string name="splash_passcodeCheckFailedAlert_title">Warning</string>
   <string name="splash_passcodeCheckFailedAlert_message">Passcode is not set up. Please update settings.</string>
   <string name="transactionSigning_title">Approve Transaction</string>
-  <string name="transactionSigning_preparingTransaction">Preparing transaction…</string>
+  <string name="transactionSigning_preparingTransaction">Incoming Transaction</string>
   <string name="transactionSigning_signTransactionButtonTitle">Approve Transaction</string>
   <string name="transactionSigning_signingAndSubmittingTransaction">Submitting transaction…</string>
   <string name="importMnemonic_navigationTitle">Import Seed Phrase</string>
