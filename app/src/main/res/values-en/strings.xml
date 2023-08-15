@@ -125,10 +125,10 @@
   <string name="linkedConnectors_lastConnected">Last connected %s</string>
   <string name="linkedConnectors_linkNewConnector">Link New Connector</string>
   <string name="linkedConnectors_newConnection_title">Link New Connector</string>
-  <string name="linkedConnectors_newConnection_subtitle">Scan the QR code shown in the Radix Connector browser extension</string>
+  <string name="linkedConnectors_newConnection_subtitle">Open your Radix Connector extension\'s menu by clicking its icon in your list of browser extensions, and scan the QR code shown.</string>
   <string name="linkedConnectors_newConnection_linking">Linking…</string>
   <string name="linkedConnectors_nameNewConnector_title">Name New Connector</string>
-  <string name="linkedConnectors_nameNewConnector_subtitle">What would you like to call this Connector?</string>
+  <string name="linkedConnectors_nameNewConnector_subtitle">What would you like to call this Radix Connector installation?</string>
   <string name="linkedConnectors_nameNewConnector_textFieldPlaceholder">e.g. Chrome on Personal Laptop</string>
   <string name="linkedConnectors_nameNewConnector_textFieldHint">Name this connector e.g. ‘Chrome on MacBook Pro’</string>
   <string name="linkedConnectors_nameNewConnector_saveLinkButtonTitle">Continue</string>
@@ -443,7 +443,7 @@
   <string name="importOlympiaAccounts_scanQR_instructions">Scan the QR code shown in the Export section of the Radix Desktop Wallet for Olympia.</string>
   <string name="importOlympiaAccounts_scanQR_scannedLabel">Scanned: %d/%d</string>
   <string name="importOlympiaAccounts_accountsToImport_title">Import Accounts</string>
-  <string name="importOlympiaAccounts_accountsToImport_subtitle">The following accounts will be imported to your new wallet.</string>
+  <string name="importOlympiaAccounts_accountsToImport_subtitle">The following accounts will be imported into this Radix Wallet.</string>
   <string name="importOlympiaAccounts_accountsToImport_legacyAccount">Legacy Account</string>
   <string name="importOlympiaAccounts_accountsToImport_ledgerAccount">Ledger (Legacy)</string>
   <string name="importOlympiaAccounts_accountsToImport_unnamed">Unnamed</string>
@@ -453,7 +453,7 @@
   <string name="importOlympiaAccounts_accountsToImport_buttonOneAcccount">Import 1 account</string>
   <string name="importOlympiaAccounts_verifySeedPhrase_title">Verify With Your Seed Phrase</string>
   <string name="importOlympiaAccounts_verifySeedPhrase_subtitle">To complete importing your accounts, please view your seed phrase in the Radix Desktop Wallet and enter the words here.</string>
-  <string name="importOlympiaAccounts_verifySeedPhrase_warning">This is a one-time process to import your accounts. Never give your seed phrase to anyone for any reason.</string>
+  <string name="importOlympiaAccounts_verifySeedPhrase_warning">This will give this Radix Wallet control of your accounts. Never give your seed phrase to anyone for any reason.</string>
   <string name="importOlympiaAccounts_completion_title">Congratulations</string>
   <string name="importOlympiaAccounts_completion_subtitleMultiple">You\'ve imported your accounts</string>
   <string name="importOlympiaAccounts_completion_subtitleSingle">You\'ve imported your account</string>
@@ -610,7 +610,7 @@
   <string name="addLedgerDevice_addDevice_continue">Continue</string>
   <string name="addLedgerDevice_nameLedger_title">Name Your Ledger</string>
   <string name="addLedgerDevice_nameLedger_subtitle">What would you like to call this Ledger device?</string>
-  <string name="addLedgerDevice_nameLedger_fieldHint">This will be displayed when you’re prompted to sign with this ledger</string>
+  <string name="addLedgerDevice_nameLedger_fieldHint">This will be displayed when you’re prompted to sign with this Ledger device.</string>
   <string name="addLedgerDevice_nameLedger_detectedType">Detected type: %s</string>
   <string name="addLedgerDevice_nameLedger_namePlaceholder">Green Ledger Nano S+</string>
   <string name="addLedgerDevice_nameLedger_continueButtonTitle">Save and Continue</string>
