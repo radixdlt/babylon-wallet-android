@@ -15,8 +15,13 @@
 
 package com.babylon.wallet.android.data.gateway.generated.models
 
+import com.babylon.wallet.android.data.gateway.generated.models.MetadataTypedValue
+import com.babylon.wallet.android.data.gateway.generated.models.MetadataValueType
+import com.babylon.wallet.android.data.gateway.generated.models.PublicKey
+
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerialName
+import kotlinx.serialization.Contextual
 
 /**
  * 
@@ -28,7 +33,7 @@ import kotlinx.serialization.SerialName
 
 data class MetadataPublicKeyArrayValue (
 
-    @SerialName(value = "type")
+    @Contextual @SerialName(value = "type")
     override val type: MetadataValueType,
 
     @SerialName(value = "values")

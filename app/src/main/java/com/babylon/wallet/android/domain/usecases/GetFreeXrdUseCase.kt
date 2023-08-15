@@ -1,23 +1,21 @@
 package com.babylon.wallet.android.domain.usecases
 
-import com.babylon.wallet.android.data.repository.networkinfo.NetworkInfoRepository
 import com.babylon.wallet.android.data.repository.transaction.TransactionRepository
 import com.babylon.wallet.android.data.transaction.DappRequestFailure
 import com.babylon.wallet.android.data.transaction.TransactionClient
 import com.babylon.wallet.android.data.transaction.TransactionConfig
+import com.babylon.wallet.android.data.transaction.TransactionConfig.TIP_PERCENTAGE
 import com.babylon.wallet.android.data.transaction.model.TransactionApprovalRequest
 import com.babylon.wallet.android.di.coroutines.IoDispatcher
-import com.babylon.wallet.android.domain.common.asKotlinResult
 import com.babylon.wallet.android.domain.common.onValue
 import com.babylon.wallet.android.domain.usecases.transaction.PollTransactionStatusUseCase
 import com.radixdlt.ret.Address
-import com.radixdlt.ret.Decimal
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 import rdx.works.core.preferences.PreferencesManager
-import rdx.works.core.ret.ManifestBuilder
+import rdx.works.core.ret.BabylonManifestBuilder
 import rdx.works.core.ret.buildSafely
 import rdx.works.profile.domain.gateway.GetCurrentGatewayUseCase
 import java.math.BigDecimal
@@ -29,7 +27,6 @@ import com.babylon.wallet.android.domain.common.Result as ResultInternal
 class GetFreeXrdUseCase @Inject constructor(
     private val transactionClient: TransactionClient,
     private val transactionRepository: TransactionRepository,
-    private val networkInfoRepository: NetworkInfoRepository,
     private val getCurrentGatewayUseCase: GetCurrentGatewayUseCase,
     private val preferencesManager: PreferencesManager,
     private val pollTransactionStatusUseCase: PollTransactionStatusUseCase,
@@ -39,49 +36,40 @@ class GetFreeXrdUseCase @Inject constructor(
     suspend operator fun invoke(address: String): Result<String> {
         return withContext(ioDispatcher) {
             val gateway = getCurrentGatewayUseCase()
-            networkInfoRepository.getFaucetComponentAddress(gateway.url).asKotlinResult().fold(
-                onSuccess = { faucetComponentAddress ->
-                    val manifest = ManifestBuilder()
-                        .lockFee(
-                            fromAddress = Address(faucetComponentAddress),
-                            fee = Decimal(BigDecimal.valueOf(TransactionConfig.DEFAULT_LOCK_FEE).toPlainString())
-                        )
-                        .freeXrd(
-                            faucetAddress = Address(faucetComponentAddress)
-                        )
-                        .depositBatch(
-                            toAddress = Address(address)
-                        )
-                        .buildSafely(gateway.network.id)
-                        .getOrElse {
-                            return@withContext Result.failure(it)
-                        }
-                    when (val epochResult = transactionRepository.getLedgerEpoch()) {
-                        is ResultInternal.Error -> Result.failure(
-                            exception = epochResult.exception ?: DappRequestFailure.TransactionApprovalFailure.PrepareNotarizedTransaction
-                        )
+            val manifest = BabylonManifestBuilder()
+                .lockFee()
+                .freeXrd()
+                .accountTryDepositBatchOrAbort(
+                    toAddress = Address(address)
+                )
+                .buildSafely(gateway.network.id)
+                .getOrElse {
+                    return@withContext Result.failure(it)
+                }
+            when (val epochResult = transactionRepository.getLedgerEpoch()) {
+                is ResultInternal.Error -> Result.failure(
+                    exception = epochResult.exception ?: DappRequestFailure.TransactionApprovalFailure.PrepareNotarizedTransaction
+                )
 
-                        is ResultInternal.Success -> {
-                            val request = TransactionApprovalRequest(
-                                manifest = manifest,
-                                networkId = gateway.network.networkId(),
-                                hasLockFee = true
-                            )
-                            transactionClient.signAndSubmitTransaction(
-                                request = request,
-                                deviceBiometricAuthenticationProvider = { true }
-                            ).onSuccess { txId ->
-                                pollTransactionStatusUseCase(txId).onValue {
-                                    preferencesManager.updateEpoch(address, epochResult.data)
-                                }
-                            }
+                is ResultInternal.Success -> {
+                    val request = TransactionApprovalRequest(
+                        manifest = manifest,
+                        networkId = gateway.network.networkId(),
+                        hasLockFee = true
+                    )
+                    val lockFee = BigDecimal.valueOf(TransactionConfig.DEFAULT_LOCK_FEE)
+                    transactionClient.signAndSubmitTransaction(
+                        request = request,
+                        lockFee = lockFee,
+                        tipPercentage = TIP_PERCENTAGE,
+                        deviceBiometricAuthenticationProvider = { true }
+                    ).onSuccess { txId ->
+                        pollTransactionStatusUseCase(txId).onValue {
+                            preferencesManager.updateEpoch(address, epochResult.data)
                         }
                     }
-                },
-                onFailure = {
-                    Result.failure(it)
                 }
-            )
+            }
         }
     }
 

@@ -17,14 +17,20 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.R
+import com.babylon.wallet.android.designsystem.composable.RadixTextButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
-import com.babylon.wallet.android.presentation.transaction.TransactionFees
+import com.babylon.wallet.android.presentation.transaction.fees.TransactionFees
+import com.babylon.wallet.android.presentation.ui.composables.InfoLink
+import rdx.works.core.displayableQuantity
 import java.math.BigDecimal
 
 @Composable
 fun NetworkFeeContent(
     fees: TransactionFees,
-    modifier: Modifier = Modifier
+    noFeePayerSelected: Boolean,
+    insufficientBalanceToPayTheFee: Boolean,
+    modifier: Modifier = Modifier,
+    onCustomizeClick: () -> Unit
 ) {
     Column(
         modifier = modifier.padding(horizontal = RadixTheme.dimensions.paddingDefault)
@@ -54,7 +60,7 @@ fun NetworkFeeContent(
             )
             Spacer(modifier = Modifier.weight(1f))
             Text(
-                text = stringResource(id = R.string.transactionReview_xrdAmount, fees.networkFee.toPlainString()),
+                text = "${fees.transactionFeeToLock.displayableQuantity()} XRD",
                 style = RadixTheme.typography.body1Link,
                 color = RadixTheme.colors.gray1
             )
@@ -72,11 +78,29 @@ fun NetworkFeeContent(
                 color = RadixTheme.colors.orange1
             )
         }
-        // TODO hidden for now
-//        RadixTextButton(
-//            text = stringResource(id = R.string.transactionReview_networkFee_customizeButtonTitle),
-//            onClick = onCustomizeClick
-//        )
+
+        if (noFeePayerSelected) {
+            InfoLink(
+                modifier = Modifier.fillMaxWidth(),
+                text = stringResource(id = R.string.transactionReview_customizeNetworkFeeSheet_selectFeePayer_warning),
+                contentColor = RadixTheme.colors.orange1,
+                iconRes = com.babylon.wallet.android.designsystem.R.drawable.ic_warning_error
+            )
+        }
+
+        if (insufficientBalanceToPayTheFee) {
+            InfoLink(
+                modifier = Modifier.fillMaxWidth(),
+                text = stringResource(id = R.string.transactionReview_customizeNetworkFeeSheet_insufficientBalance_warning),
+                contentColor = RadixTheme.colors.red1,
+                iconRes = com.babylon.wallet.android.designsystem.R.drawable.ic_warning_error
+            )
+        }
+
+        RadixTextButton(
+            text = stringResource(id = R.string.transactionReview_networkFee_customizeButtonTitle),
+            onClick = onCustomizeClick
+        )
     }
 }
 
@@ -85,7 +109,10 @@ fun NetworkFeeContent(
 fun NetworkFeeContentPreview() {
     NetworkFeeContent(
         fees = TransactionFees(
-            networkFee = BigDecimal.TEN
-        )
+            networkFee = BigDecimal("10")
+        ),
+        noFeePayerSelected = false,
+        insufficientBalanceToPayTheFee = false,
+        onCustomizeClick = {}
     )
 }

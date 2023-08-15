@@ -8,7 +8,6 @@ import com.babylon.wallet.android.domain.common.Result
 import com.babylon.wallet.android.domain.model.AccountWithResources
 import com.babylon.wallet.android.domain.model.Resource
 import com.babylon.wallet.android.domain.model.Resources
-import com.babylon.wallet.android.domain.model.metadata.MetadataItem
 import com.babylon.wallet.android.domain.model.metadata.OwnerKeyHashesMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.SymbolMetadataItem
 import com.babylon.wallet.android.domain.usecases.GetAccountsWithResourcesUseCase
@@ -32,7 +31,7 @@ import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
-import rdx.works.core.ret.ManifestBuilder
+import rdx.works.core.ret.BabylonManifestBuilder
 import rdx.works.profile.data.model.Profile
 import rdx.works.profile.data.model.ProfileState
 import rdx.works.profile.data.model.apppreferences.Radix
@@ -74,10 +73,12 @@ internal class TransactionClientTest {
         runTest {
             var manifest = manifestWithAddress(EntityRepositoryFake.addressWithFunds)
 
-            val addressToLockFee = transactionClient.findFeePayerInManifest(manifest).getOrThrow().feePayerAddressFromManifest
+            val addressToLockFee = transactionClient.findFeePayerInManifest(
+                manifest,
+                TransactionConfig.DEFAULT_LOCK_FEE.toBigDecimal()
+            ).getOrThrow().feePayerAddressFromManifest
             manifest = manifest.addLockFeeInstructionToManifest(addressToLockFee!!, TransactionConfig.DEFAULT_LOCK_FEE.toBigDecimal())
             val signingEntities = transactionClient.getSigningEntities(manifest)
-
             Assert.assertEquals(1, signingEntities.size)
             Assert.assertEquals(
                 EntityRepositoryFake.addressWithFunds,
@@ -87,30 +88,28 @@ internal class TransactionClientTest {
 
     @OptIn(ExperimentalCoroutinesApi::class)
     @Test
-    fun `when given address has no funds but there is another address with funds, use the other address for the transaction`() =
+    fun `when given address has funds, verify feePayerAddress exists and all accounts as candidates`() =
         runTest {
-            val manifest = manifestWithAddress(EntityRepositoryFake.addressWithNoFunds)
+            val manifest = manifestWithAddress(EntityRepositoryFake.addressWithFunds)
 
-            val addressToLockFee = transactionClient.findFeePayerInManifest(manifest).getOrThrow()
-            assert(addressToLockFee.feePayerAddressFromManifest == null)
-            assert(addressToLockFee.candidates.size == 1)
+            val addressToLockFee = transactionClient.findFeePayerInManifest(
+                manifest,
+                TransactionConfig.DEFAULT_LOCK_FEE.toBigDecimal()
+            ).getOrThrow()
+            assert(addressToLockFee.feePayerAddressFromManifest != null)
+            assert(addressToLockFee.candidates.size == 2)
         }
 
     @Test
-    fun `when address has no funds, return the respective error`() = runTest {
+    fun `when address has no funds, return no feePayer and all accounts as candidates`() = runTest {
         val manifest = manifestWithAddress(EntityRepositoryFake.addressWithNoFunds)
 
-        try {
-            transactionClient.findFeePayerInManifest(manifest)
-        } catch (exception: Exception) {
-            Assert.assertEquals(
-                DappRequestException(
-                    DappRequestFailure.TransactionApprovalFailure.FailedToFindAccountWithEnoughFundsToLockFee
-                ),
-                exception
-            )
-        }
-
+        val feePayerResult = transactionClient.findFeePayerInManifest(
+            manifest,
+            TransactionConfig.DEFAULT_LOCK_FEE.toBigDecimal()
+        ).getOrNull()
+        assert(feePayerResult?.feePayerAddressFromManifest == null)
+        assert(feePayerResult?.candidates?.size == 2)
     }
 
     private object EntityRepositoryFake : EntityRepository {
@@ -124,12 +123,13 @@ internal class TransactionClientTest {
             resources = Resources(
                 fungibleResources = listOf(
                     Resource.FungibleResource(
-                        resourceAddress = Resource.FungibleResource.officialXrdResourceAddress()!!,
+                        resourceAddress = Resource.FungibleResource.officialXrdResourceAddresses().first(),
                         amount = 30.toBigDecimal(),
                         symbolMetadataItem = SymbolMetadataItem("XRD")
                     )
                 ),
-                nonFungibleResources = emptyList()
+                nonFungibleResources = emptyList(),
+                poolUnits = emptyList()
             )
         )
 
@@ -152,7 +152,7 @@ internal class TransactionClientTest {
             }
         })
 
-        override suspend fun getEntityOwnerKeyHashes(entityAddress: String, isRefreshing: Boolean): Result<OwnerKeyHashesMetadataItem?> {
+        override suspend fun getEntityOwnerKeyHashes(entityAddress: String, isRefreshing: Boolean, stateVersion: Long?): Result<OwnerKeyHashesMetadataItem?> {
             error("Not needed")
         }
     }
@@ -160,13 +160,12 @@ internal class TransactionClientTest {
     private fun manifestWithAddress(
         address: String,
         networkId: Int = Radix.Gateway.default.network.id
-    ): TransactionManifest = ManifestBuilder()
-        .withdraw(
+    ): TransactionManifest = BabylonManifestBuilder()
+        .withdrawFromAccount(
             fromAddress = Address(address),
             fungible = knownAddresses(networkId = networkId.toUByte()).resourceAddresses.xrd,
             amount = Decimal("10")
-        )
-        .build(networkId)
+        ).build(networkId)
 
     private object ProfileRepositoryFake: ProfileRepository {
         private val profile = profile(accounts = listOf(EntityRepositoryFake.account1, EntityRepositoryFake.account2))

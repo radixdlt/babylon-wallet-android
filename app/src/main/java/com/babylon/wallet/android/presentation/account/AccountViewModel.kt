@@ -125,6 +125,12 @@ class AccountViewModel @Inject constructor(
         }
     }
 
+    fun onPoolUnitClicked(resource: Resource.PoolUnitResource) {
+        _state.update { accountUiState ->
+            accountUiState.copy(selectedResource = SelectedResource.SelectedPoolUnit(resource))
+        }
+    }
+
     fun onApplySecuritySettings() {
         viewModelScope.launch {
             _state.value.accountWithResources
@@ -177,4 +183,5 @@ sealed interface SelectedResource {
         val nonFungible: Resource.NonFungibleResource,
         val item: Resource.NonFungibleResource.Item
     ) : SelectedResource
+    data class SelectedPoolUnit(val poolUnit: Resource.PoolUnitResource) : SelectedResource
 }

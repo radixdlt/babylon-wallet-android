@@ -42,7 +42,7 @@ import kotlinx.serialization.json.jsonPrimitive
 @Suppress("CyclomaticComplexMethod")
 object MetadataTypedValueSerializer : JsonContentPolymorphicSerializer<MetadataTypedValue>(MetadataTypedValue::class) {
     override fun selectDeserializer(element: JsonElement): DeserializationStrategy<MetadataTypedValue> {
-        return when (MetadataValueType.from(element.jsonObject["type"]?.jsonPrimitive?.content.orEmpty())) {
+        return when (MetadataValueType.decode(element.jsonObject["type"]?.jsonPrimitive?.content.orEmpty())) {
             MetadataValueType.string -> MetadataStringValue.serializer()
             MetadataValueType.bool -> MetadataBoolValue.serializer()
             MetadataValueType.u8 -> MetadataU8Value.serializer()
@@ -75,6 +75,7 @@ object MetadataTypedValueSerializer : JsonContentPolymorphicSerializer<MetadataT
             MetadataValueType.urlArray -> MetadataUrlArrayValue.serializer()
             MetadataValueType.originArray -> MetadataOriginArrayValue.serializer()
             MetadataValueType.publicKeyHashArray -> MetadataPublicKeyHashArrayValue.serializer()
+            else -> error("")
         }
     }
 }

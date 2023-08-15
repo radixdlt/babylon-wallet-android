@@ -15,23 +15,28 @@
 
 package com.babylon.wallet.android.data.gateway.generated.models
 
+import com.babylon.wallet.android.data.gateway.generated.models.ComponentEntityRoleAssignments
+import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponseItemDetails
+import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponseItemDetailsType
+
+import kotlinx.serialization.Contextual
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 /**
- * 
  *
- * @param type 
- * @param blueprintName 
- * @param accessRulesChain 
+ *
+ * @param type
+ * @param blueprintName
+ * @param accessRulesChain
  * @param packageAddress Bech32m-encoded human readable version of the address.
- * @param state 
+ * @param state
  * @param royaltyVaultBalance String-encoded decimal representing the amount of a related fungible resource.
  */
 @Serializable
-data class StateEntityDetailsResponseComponentDetails (
+data class StateEntityDetailsResponseComponentDetails(
 
-    @SerialName(value = "type")
+    @Contextual @SerialName(value = "type")
     override val type: StateEntityDetailsResponseItemDetailsType,
 
     @SerialName(value = "blueprint_name")
@@ -46,8 +51,11 @@ data class StateEntityDetailsResponseComponentDetails (
     @SerialName(value = "package_address")
     val packageAddress: kotlin.String? = null,
 
-//    @Contextual @SerialName(value = "state")
-//    val state: kotlin.Any? = null,
+    @Contextual @SerialName(value = "state")
+    val state: ComponentEntityState? = null,
+
+    @SerialName(value = "role_assignments")
+    val roleAssignments: ComponentEntityRoleAssignments? = null,
 
     /* String-encoded decimal representing the amount of a related fungible resource. */
     @SerialName(value = "royalty_vault_balance")
@@ -55,3 +63,37 @@ data class StateEntityDetailsResponseComponentDetails (
 
 ) : StateEntityDetailsResponseItemDetails()
 
+@Serializable
+data class ComponentEntityState(
+
+    @SerialName(value = "value")
+    val value: ComponentEntityStateValue? = null
+
+)
+
+@Serializable
+data class ComponentEntityStateValue(
+
+    @SerialName(value = "stake_xrd_vault")
+    val stakeXrdVault: StakeXrdVault? = null,
+
+    @SerialName(value = "stake_unit_resource_address")
+    val stakeUnitResourceAddress: String? = null,
+
+    @SerialName(value = "unstake_claim_token_resource_address")
+    val unstakeClaimTokenResourceAddress: String? = null
+)
+
+@Serializable
+data class StakeXrdVault(
+
+    @SerialName(value = "is_global")
+    val isGlobal: Boolean? = null,
+
+    @SerialName(value = "entity_type")
+    val entityType: String? = null,
+
+    @SerialName(value = "entity_address")
+    val entityAddress: String? = null
+
+)

@@ -22,6 +22,7 @@ import androidx.compose.ui.focus.FocusState
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.designsystem.R
@@ -46,6 +47,7 @@ fun RadixTextField(
     onFocusChanged: ((FocusState) -> Unit)? = null,
     keyboardActions: KeyboardActions = KeyboardActions.Default,
     keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
+    textStyle: TextStyle = RadixTheme.typography.body1Regular,
     errorFixedSize: Boolean = false
 ) {
     Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingSmall)) {
@@ -100,7 +102,7 @@ fun RadixTextField(
                 trailingIcon = trailingIcon,
                 isError = error != null,
                 singleLine = singleLine,
-                textStyle = RadixTheme.typography.body1Regular,
+                textStyle = textStyle,
                 keyboardActions = keyboardActions,
                 keyboardOptions = keyboardOptions,
 

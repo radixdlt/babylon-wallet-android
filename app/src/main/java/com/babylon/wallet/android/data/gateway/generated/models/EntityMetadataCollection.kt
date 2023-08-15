@@ -15,8 +15,11 @@
 
 package com.babylon.wallet.android.data.gateway.generated.models
 
-import kotlinx.serialization.SerialName
+import com.babylon.wallet.android.data.gateway.generated.models.EntityMetadataItem
+
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Contextual
 
 /**
  * Entity metadata collection.
@@ -46,3 +49,4 @@ data class EntityMetadataCollection (
     val nextCursor: kotlin.String? = null
 
 )
+

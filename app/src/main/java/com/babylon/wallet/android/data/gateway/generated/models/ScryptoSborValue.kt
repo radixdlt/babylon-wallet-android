@@ -15,6 +15,7 @@
 
 package com.babylon.wallet.android.data.gateway.generated.models
 
+
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Contextual
@@ -23,7 +24,7 @@ import kotlinx.serialization.Contextual
  * 
  *
  * @param rawHex 
- * @param rawJson 
+ * @param programmaticJson 
  */
 @Serializable
 
@@ -32,10 +33,39 @@ data class ScryptoSborValue (
     @SerialName(value = "raw_hex")
     val rawHex: kotlin.String,
 
+    @SerialName(value = "programmatic_json")
+    val programmaticJson: ProgrammaticJson? = null,
+
     @SerialName(value = "raw_json")
-    val rawJson: RawJson
+    val rawJson: RawJson? = null // todo to be removed
 
 ) {
+    @Serializable
+    data class ProgrammaticJson(
+        @SerialName(value = "fields")
+        val fields: List<ProgrammaticJsonField>,
+
+        @SerialName(value = "kind")
+        val kind: String,
+
+        @SerialName(value = "type_name")
+        val type_name: String
+    )
+
+    @Serializable
+    data class ProgrammaticJsonField(
+        @SerialName(value = "field_name")
+        val field_name: String,
+
+        @SerialName(value = "kind")
+        val kind: String,
+
+        @SerialName(value = "type_name")
+        val type_name: String? = null,
+
+        @SerialName(value = "value")
+        val value: String
+    )
 
     @Serializable
     data class RawJson(
@@ -51,10 +81,13 @@ data class ScryptoSborValue (
         data class RawJsonElement(
             @SerialName(value = "type_name")
             val typeName: String? = null,
+
+            @SerialName(value = "kind")
             val kind: String,
+
+            @SerialName(value = "value")
             val value: String
         )
     }
 }
-
 

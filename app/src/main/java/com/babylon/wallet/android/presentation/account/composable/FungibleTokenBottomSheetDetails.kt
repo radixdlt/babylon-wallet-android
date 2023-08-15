@@ -35,15 +35,15 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.domain.model.Resource
-import com.babylon.wallet.android.presentation.ui.composables.ActionableAddressView
 import com.babylon.wallet.android.presentation.ui.composables.BackIconType
 import com.babylon.wallet.android.presentation.ui.composables.ImageSize
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.icon
 import com.babylon.wallet.android.presentation.ui.composables.name
 import com.babylon.wallet.android.presentation.ui.composables.rememberImageUrl
+import com.babylon.wallet.android.presentation.ui.composables.resources.ResourceAddressRow
+import com.babylon.wallet.android.presentation.ui.composables.resources.TokenBalance
 import com.google.accompanist.drawablepainter.rememberDrawablePainter
-import rdx.works.core.displayableQuantity
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
@@ -208,31 +208,6 @@ fun FungibleTokenBottomSheetDetails(
 }
 
 @Composable
-fun ResourceAddressRow(
-    modifier: Modifier,
-    address: String
-) {
-    Row(
-        modifier,
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween
-    ) {
-        Text(
-            text = stringResource(id = R.string.assetDetails_resourceAddress),
-            style = RadixTheme.typography.body1Regular,
-            color = RadixTheme.colors.gray2
-        )
-
-        ActionableAddressView(
-            address = address,
-            textStyle = RadixTheme.typography.body1Regular,
-            textColor = RadixTheme.colors.gray1,
-            iconColor = RadixTheme.colors.gray2
-        )
-    }
-}
-
-@Composable
 fun Behaviour(
     modifier: Modifier = Modifier,
     icon: Painter,
@@ -291,26 +266,6 @@ fun Tag(
             text = tag.name(),
             style = RadixTheme.typography.body2HighImportance,
             color = RadixTheme.colors.gray2
-        )
-    }
-}
-
-@Composable
-private fun TokenBalance(resource: Resource.FungibleResource, modifier: Modifier = Modifier) {
-    Row(modifier = modifier) {
-        resource.amount?.let { amount ->
-            Text(
-                modifier = Modifier.alignByBaseline(),
-                text = amount.displayableQuantity(),
-                style = RadixTheme.typography.title,
-                color = RadixTheme.colors.gray1
-            )
-        }
-        Text(
-            modifier = Modifier.alignByBaseline(),
-            text = " ${resource.symbol}",
-            style = RadixTheme.typography.header,
-            color = RadixTheme.colors.gray1
         )
     }
 }

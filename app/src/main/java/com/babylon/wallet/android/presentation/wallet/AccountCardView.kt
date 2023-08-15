@@ -28,6 +28,7 @@ import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.domain.model.AccountWithResources
 import com.babylon.wallet.android.domain.model.Resource
 import com.babylon.wallet.android.domain.model.Resources
+import com.babylon.wallet.android.domain.model.ValidatorsWithStakeResources
 import com.babylon.wallet.android.domain.model.metadata.NameMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.SymbolMetadataItem
 import com.babylon.wallet.android.presentation.ui.composables.ActionableAddressView
@@ -201,7 +202,9 @@ fun AccountCardPreview() {
                                 symbolMetadataItem = SymbolMetadataItem("XRD")
                             )
                         ),
-                        nonFungibleResources = listOf()
+                        nonFungibleResources = listOf(),
+                        poolUnits = emptyList(),
+                        validatorsWithStakeResources = ValidatorsWithStakeResources()
                     )
                 ),
                 accountTag = WalletUiState.AccountTag.DAPP_DEFINITION,

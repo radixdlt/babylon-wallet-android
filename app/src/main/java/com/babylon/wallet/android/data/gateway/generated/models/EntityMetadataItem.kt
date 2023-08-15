@@ -15,15 +15,17 @@
 
 package com.babylon.wallet.android.data.gateway.generated.models
 
+import com.babylon.wallet.android.data.gateway.generated.models.EntityMetadataItemValue
 
-import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Contextual
 
 /**
  * Entity metadata key-value pair.
  *
  * @param key Entity metadata key.
- * @param value
+ * @param `value` 
  * @param isLocked 
  * @param lastUpdatedAtStateVersion TBD
  */
@@ -36,7 +38,7 @@ data class EntityMetadataItem (
     val key: kotlin.String,
 
     @SerialName(value = "value")
-    val value: EntityMetadataItemValue,
+    val `value`: EntityMetadataItemValue,
 
     @SerialName(value = "is_locked")
     val isLocked: kotlin.Boolean,

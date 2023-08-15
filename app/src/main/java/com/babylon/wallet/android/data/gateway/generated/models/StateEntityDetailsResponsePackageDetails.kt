@@ -15,8 +15,15 @@
 
 package com.babylon.wallet.android.data.gateway.generated.models
 
-import kotlinx.serialization.SerialName
+import com.babylon.wallet.android.data.gateway.generated.models.PackageVmType
+import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponseItemDetails
+import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponseItemDetailsType
+import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponsePackageDetailsBlueprintCollection
+import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponsePackageDetailsSchemaCollection
+
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Contextual
 
 /**
  * 
@@ -24,20 +31,19 @@ import kotlinx.serialization.Serializable
  * @param type 
  * @param vmType 
  * @param codeHashHex Hex-encoded binary blob.
- * @param schemaHashHex Hex-encoded binary blob.
  * @param codeHex Hex-encoded binary blob.
- * @param schema 
  * @param royaltyVaultBalance String-encoded decimal representing the amount of a related fungible resource.
  * @param blueprints 
+ * @param schemas 
  */
 @Serializable
 
 data class StateEntityDetailsResponsePackageDetails (
 
-    @SerialName(value = "type")
+    @Contextual @SerialName(value = "type")
     override val type: StateEntityDetailsResponseItemDetailsType,
 
-    @SerialName(value = "vm_type")
+    @Contextual @SerialName(value = "vm_type")
     val vmType: PackageVmType,
 
     /* Hex-encoded binary blob. */
@@ -45,22 +51,18 @@ data class StateEntityDetailsResponsePackageDetails (
     val codeHashHex: kotlin.String,
 
     /* Hex-encoded binary blob. */
-    @SerialName(value = "schema_hash_hex")
-    val schemaHashHex: kotlin.String,
-
-    /* Hex-encoded binary blob. */
     @SerialName(value = "code_hex")
-    val codeHex: kotlin.String? = null,
-
-//    @Contextual @SerialName(value = "schema")
-//    val schema: kotlin.Any? = null,
+    val codeHex: kotlin.String,
 
     /* String-encoded decimal representing the amount of a related fungible resource. */
     @SerialName(value = "royalty_vault_balance")
     val royaltyVaultBalance: kotlin.String? = null,
 
     @SerialName(value = "blueprints")
-    val blueprints: StateEntityDetailsResponsePackageDetailsBlueprintCollection? = null
+    val blueprints: StateEntityDetailsResponsePackageDetailsBlueprintCollection? = null,
+
+    @SerialName(value = "schemas")
+    val schemas: StateEntityDetailsResponsePackageDetailsSchemaCollection? = null
 
 ) : StateEntityDetailsResponseItemDetails()
 

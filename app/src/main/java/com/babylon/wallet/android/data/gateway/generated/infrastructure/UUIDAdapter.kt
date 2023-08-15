@@ -1,6 +1,5 @@
 package com.babylon.wallet.android.data.gateway.generated.infrastructure
 
-import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializer
 import kotlinx.serialization.encoding.Decoder
@@ -10,7 +9,6 @@ import kotlinx.serialization.descriptors.PrimitiveKind
 import kotlinx.serialization.descriptors.SerialDescriptor
 import java.util.UUID
 
-@OptIn(ExperimentalSerializationApi::class)
 @Serializer(forClass = UUID::class)
 object UUIDAdapter : KSerializer<UUID> {
     override val descriptor: SerialDescriptor = PrimitiveSerialDescriptor("UUID", PrimitiveKind.STRING)

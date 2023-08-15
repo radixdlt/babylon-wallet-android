@@ -15,6 +15,7 @@
 
 package com.babylon.wallet.android.data.gateway.generated.models
 
+import com.babylon.wallet.android.data.gateway.generated.models.ComponentEntityRoleAssignments
 
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerialName
@@ -23,7 +24,7 @@ import kotlinx.serialization.Contextual
 /**
  * 
  *
- * @param accessRules 
+ * @param roleAssignments 
  * @param divisibility 
  * @param totalSupply String-encoded decimal representing the amount of a related fungible resource.
  * @param totalMinted String-encoded decimal representing the amount of a related fungible resource.
@@ -33,8 +34,8 @@ import kotlinx.serialization.Contextual
 
 data class StateEntityDetailsResponseFungibleResourceDetailsAllOf (
 
-//    @SerialName(value = "access_rules")
-//    val accessRules: ComponentEntityAccessRules,
+    @SerialName(value = "role_assignments")
+    val roleAssignments: ComponentEntityRoleAssignments,
 
     @SerialName(value = "divisibility")
     val divisibility: kotlin.Int,

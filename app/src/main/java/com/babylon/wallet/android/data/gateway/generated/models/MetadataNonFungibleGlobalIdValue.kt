@@ -15,8 +15,12 @@
 
 package com.babylon.wallet.android.data.gateway.generated.models
 
+import com.babylon.wallet.android.data.gateway.generated.models.MetadataTypedValue
+import com.babylon.wallet.android.data.gateway.generated.models.MetadataValueType
+
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerialName
+import kotlinx.serialization.Contextual
 
 /**
  * 
@@ -29,7 +33,7 @@ import kotlinx.serialization.SerialName
 
 data class MetadataNonFungibleGlobalIdValue (
 
-    @SerialName(value = "type")
+    @Contextual @SerialName(value = "type")
     override val type: MetadataValueType,
 
     /* Bech32m-encoded human readable version of the address. */

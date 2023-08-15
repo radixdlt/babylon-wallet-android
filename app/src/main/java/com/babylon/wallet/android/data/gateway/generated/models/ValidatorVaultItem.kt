@@ -15,8 +15,10 @@
 
 package com.babylon.wallet.android.data.gateway.generated.models
 
+
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerialName
+import kotlinx.serialization.Contextual
 
 /**
  * 
@@ -26,6 +28,7 @@ import kotlinx.serialization.SerialName
  * @param address Bech32m-encoded human readable version of the address.
  */
 @Serializable
+
 data class ValidatorVaultItem (
 
     /* String-encoded decimal representing the amount of a related fungible resource. */

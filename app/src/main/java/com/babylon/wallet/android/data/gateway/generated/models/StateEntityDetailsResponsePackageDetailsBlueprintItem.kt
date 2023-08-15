@@ -15,8 +15,10 @@
 
 package com.babylon.wallet.android.data.gateway.generated.models
 
+
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerialName
+import kotlinx.serialization.Contextual
 
 /**
  * 
@@ -31,6 +33,7 @@ import kotlinx.serialization.SerialName
  * @param royaltyConfigIsLocked 
  */
 @Serializable
+
 data class StateEntityDetailsResponsePackageDetailsBlueprintItem (
 
     @SerialName(value = "name")
@@ -39,19 +42,19 @@ data class StateEntityDetailsResponsePackageDetailsBlueprintItem (
     @SerialName(value = "version")
     val version: kotlin.String,
 
-//    @SerialName(value = "definition")
+//    @Contextual @SerialName(value = "definition")
 //    val definition: kotlin.Any,
 
     @SerialName(value = "dependant_entities")
     val dependantEntities: kotlin.collections.List<kotlin.String>? = null,
 
-//    @SerialName(value = "auth_template")
+//    @Contextual @SerialName(value = "auth_template")
 //    val authTemplate: kotlin.Any? = null,
 
     @SerialName(value = "auth_template_is_locked")
     val authTemplateIsLocked: kotlin.Boolean? = null,
 
-//    @SerialName(value = "royalty_config")
+//    @Contextual @SerialName(value = "royalty_config")
 //    val royaltyConfig: kotlin.Any? = null,
 
     @SerialName(value = "royalty_config_is_locked")

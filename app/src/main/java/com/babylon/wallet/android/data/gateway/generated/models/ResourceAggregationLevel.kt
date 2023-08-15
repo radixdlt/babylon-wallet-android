@@ -15,6 +15,7 @@
 
 package com.babylon.wallet.android.data.gateway.generated.models
 
+
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
@@ -33,7 +34,7 @@ enum class ResourceAggregationLevel(val value: kotlin.String) {
     vault("Vault");
 
     /**
-     * Override toString() to avoid using the enum variable name as the value, and instead use
+     * Override [toString()] to avoid using the enum variable name as the value, and instead use
      * the actual value defined in the API spec file.
      *
      * This solves a problem when the variable name and its value are different, and ensures that

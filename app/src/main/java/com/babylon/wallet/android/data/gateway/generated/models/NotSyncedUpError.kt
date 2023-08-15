@@ -15,11 +15,14 @@
 
 package com.babylon.wallet.android.data.gateway.generated.models
 
+import com.babylon.wallet.android.data.gateway.generated.models.GatewayError
+
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerialName
+import kotlinx.serialization.Contextual
 
 /**
- *
+ * 
  *
  * @param type The type of error. Each subtype may have its own additional structured fields.
  * @param requestType The request type that triggered this exception.
@@ -28,7 +31,7 @@ import kotlinx.serialization.SerialName
  */
 @Serializable
 
-data class NotSyncedUpError(
+data class NotSyncedUpError (
 
     /* The type of error. Each subtype may have its own additional structured fields. */
     @SerialName(value = "type")

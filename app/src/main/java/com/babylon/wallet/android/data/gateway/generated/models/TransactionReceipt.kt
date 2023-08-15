@@ -32,6 +32,7 @@ import kotlinx.serialization.Contextual
  * @param errorMessage Error message (only present if status is `Failed` or `Rejected`)
  */
 @Serializable
+
 data class TransactionReceipt (
 
     /* The status of the transaction. */
@@ -42,20 +43,20 @@ data class TransactionReceipt (
     @SerialName(value = "fee_summary")
     val feeSummary: FeeSummary? = null,
 
-    /* Transaction state updates (only present if status is Succeeded or Failed). */
-//    @SerialName(value = "state_updates")
+//    /* Transaction state updates (only present if status is Succeeded or Failed). */
+//    @Contextual @SerialName(value = "state_updates")
 //    val stateUpdates: kotlin.Any? = null,
-
-    /* Information (number and active validator list) about new epoch if occured. */
-//    @SerialName(value = "next_epoch")
+//
+//    /* Information (number and active validator list) about new epoch if occured. */
+//    @Contextual @SerialName(value = "next_epoch")
 //    val nextEpoch: kotlin.Any? = null,
-
-    /* The manifest line-by-line engine return data (only present if `status` is `Succeeded`). */
-//    @SerialName(value = "output")
+//
+//    /* The manifest line-by-line engine return data (only present if `status` is `Succeeded`). */
+//    @Contextual @SerialName(value = "output")
 //    val output: kotlin.Any? = null,
-
-    /* Events emitted by a transaction. */
-//    @SerialName(value = "events")
+//
+//    /* Events emitted by a transaction. */
+//    @Contextual @SerialName(value = "events")
 //    val events: kotlin.Any? = null,
 
     /* Error message (only present if status is `Failed` or `Rejected`) */
@@ -65,8 +66,8 @@ data class TransactionReceipt (
 ) {
     val isFailed
         get() = status == "Failed" || status == "Rejected"
-}
 
+}
 
 @Serializable
 data class FeeSummary(
@@ -87,4 +88,3 @@ data class FeeSummary(
     @SerialName("xrd_total_tipped")
     val xrd_total_tipped: String
 )
-

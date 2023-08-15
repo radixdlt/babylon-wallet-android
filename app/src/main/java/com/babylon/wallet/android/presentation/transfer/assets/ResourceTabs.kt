@@ -7,10 +7,10 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.pager.PagerState
+import androidx.compose.material3.ScrollableTabRow
 import androidx.compose.material3.Tab
-import androidx.compose.material3.TabRow
 import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -20,7 +20,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
@@ -56,8 +55,8 @@ fun ResourcesTabs(
     val tabIndex = remember(selectedTab) {
         ResourceTab.values().indexOf(selectedTab)
     }
-    TabRow(
-        modifier = modifier.width(200.dp),
+    ScrollableTabRow(
+        modifier = modifier,
         selectedTabIndex = tabIndex,
         containerColor = Color.Transparent,
         divider = {},
@@ -74,6 +73,7 @@ fun ResourcesTabs(
         ResourceTab.values().forEach { tab ->
             val isSelected = tab == selectedTab
             Tab(
+                modifier = Modifier.wrapContentWidth(),
                 selected = isSelected,
                 onClick = {
                     if (!isSelected) {
@@ -100,9 +100,11 @@ fun ResourcesTabs(
 private fun ResourceTab.name(): String = when (this) {
     ResourceTab.Tokens -> stringResource(id = R.string.account_tokens)
     ResourceTab.Nfts -> stringResource(id = R.string.account_nfts)
+    ResourceTab.PoolUnits -> stringResource(id = R.string.account_poolUnits)
 }
 
 enum class ResourceTab {
     Tokens,
-    Nfts
+    Nfts,
+    PoolUnits
 }
