@@ -33,7 +33,7 @@ fun LazyListScope.feePayerSelectionContent(
                     horizontal = RadixTheme.dimensions.paddingXXLarge,
                     vertical = RadixTheme.dimensions.paddingDefault
                 ),
-            text = stringResource(id = R.string.transactionReview_selectFeePayer_navigationTitle),
+            text = stringResource(id = R.string.transactionReview_customizeNetworkFeeSheet_selectFeePayer_navigationTitle),
             style = RadixTheme.typography.body1Regular,
             color = RadixTheme.colors.gray1,
             textAlign = TextAlign.Center

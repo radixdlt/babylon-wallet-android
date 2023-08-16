@@ -241,7 +241,7 @@ fun FeesSheet(
                     ) {
                         RadixTextButton(
                             text = stringResource(
-                                id = R.string.transactionReview_customizeNetworkFeeSheet_selectFeePayerButtonTitle
+                                id = R.string.transactionReview_customizeNetworkFeeSheet_selectFeePayer_navigationTitle
                             ),
                             onClick = onSelectFeePayerClick
                         )
@@ -437,7 +437,7 @@ fun NetworkFeesAdvancedView(
             onValueChanged = onFeePaddingAmountChanged,
             value = transactionFees?.feePaddingAmountToDisplay?.displayableQuantity().orEmpty(),
             leftLabel = stringResource(
-                id = R.string.transactionReview_customizeNetworkFeeSheet_paddingField
+                id = R.string.transactionReview_customizeNetworkFeeSheet_paddingFieldLabel
             ),
             keyboardOptions = KeyboardOptions(
                 keyboardType = KeyboardType.Decimal,
@@ -494,7 +494,7 @@ fun NetworkFeesAdvancedView(
                     horizontal = RadixTheme.dimensions.paddingLarge,
                     vertical = RadixTheme.dimensions.paddingDefault
                 ),
-            text = "Estimated Transaction Fees".uppercase(),
+            text = stringResource(id = R.string.transactionReview_customizeNetworkFeeSheet_feeBreakdownTitle).uppercase(),
             style = RadixTheme.typography.body1Link,
             color = RadixTheme.colors.gray2
         )
