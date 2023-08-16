@@ -357,16 +357,20 @@ fun NetworkFeesDefaultView(
                 color = RadixTheme.colors.gray2
             )
             Spacer(modifier = Modifier.weight(1f))
-            val royaltyFee = transactionFees?.royaltyFeesDisplayed
-            val noRoyaltiesDue = royaltyFee == "0"
+            val royaltyFee = transactionFees?.defaultRoyaltyFeesDisplayed
+
             Text(
-                text = if (noRoyaltiesDue) {
+                text = if (transactionFees?.noDefautRoyaltiesDue == true) {
                     stringResource(id = R.string.transactionReview_customizeNetworkFeeSheet_noneDue)
                 } else {
                     stringResource(id = R.string.transactionReview_xrdAmount, royaltyFee.orEmpty())
                 },
                 style = RadixTheme.typography.body1Header,
-                color = if (noRoyaltiesDue) RadixTheme.colors.gray3 else RadixTheme.colors.gray1
+                color = if (transactionFees?.noDefautRoyaltiesDue == true) {
+                    RadixTheme.colors.gray3
+                } else {
+                    RadixTheme.colors.gray1
+                }
             )
         }
 
@@ -632,8 +636,8 @@ fun NetworkFeesAdvancedView(
                     color = RadixTheme.colors.gray2
                 )
                 Spacer(modifier = Modifier.weight(1f))
-                val noRoyaltiesDue = transactionFees?.royaltiesCost.orEmpty() == "0"
-                val royaltyFee = if (noRoyaltiesDue) {
+
+                val royaltyFee = if (transactionFees?.noRoyaltiesCostDue == true) {
                     stringResource(id = R.string.transactionReview_customizeNetworkFeeSheet_noneDue)
                 } else {
                     stringResource(
@@ -644,7 +648,11 @@ fun NetworkFeesAdvancedView(
                 Text(
                     text = royaltyFee,
                     style = RadixTheme.typography.body1Header,
-                    color = if (noRoyaltiesDue) RadixTheme.colors.gray3 else RadixTheme.colors.gray1
+                    color = if (transactionFees?.noRoyaltiesCostDue == true) {
+                        RadixTheme.colors.gray3
+                    } else {
+                        RadixTheme.colors.gray1
+                    }
                 )
             }
 

@@ -11,7 +11,7 @@ data class TransactionFees(
     private val networkStorage: BigDecimal = BigDecimal.ZERO,
     private val royalties: BigDecimal = BigDecimal.ZERO,
     private val feePaddingAmount: String? = null,
-    private val tipPercentage: String? = null,
+    private val tipPercentage: BigDecimal? = null,
     val isNetworkCongested: Boolean = false
 ) {
     // ********* DEFAULT *********
@@ -33,7 +33,7 @@ data class TransactionFees(
     /**
      * Royalty Fee displayed = Royalty Fee - abs(Non-contingent lock - Network Fee) or 0 if negative
      */
-    val royaltyFeesDisplayed: String
+    val defaultRoyaltyFeesDisplayed: String
         get() = BigDecimal.ZERO.max(
             royalties.subtract(
                 BigDecimal.ZERO.max(
@@ -41,6 +41,9 @@ data class TransactionFees(
                 )
             )
         ).displayableQuantity()
+
+    val noDefautRoyaltiesDue: Boolean
+        get() = defaultRoyaltyFeesDisplayed == "0"
 
     val defaultTransactionFee: BigDecimal
         get() = BigDecimal.ZERO.max(
@@ -65,16 +68,21 @@ data class TransactionFees(
     val royaltiesCost: String
         get() = royalties.displayableQuantity()
 
+    val noRoyaltiesCostDue: Boolean
+        get() = royaltiesCost == "0"
+
     /**
      * (tip % entered by the user) x (NETWORK EXECUTION + NETWORK FINALIZATION)
      */
     @Suppress("MagicNumber")
     val effectiveTip: BigDecimal
-        get() = if (tipPercentage.isNullOrEmpty()) {
-            BigDecimal.ZERO
-        } else {
-            tipPercentage.toBigDecimal().divide(BigDecimal(100)).multiply(networkExecution.add(networkFinalization)) ?: BigDecimal.ZERO
-        }
+        get() = tipPercentage?.divide(
+            BigDecimal(100)
+        )?.multiply(
+            networkExecution.add(
+                networkFinalization
+            )
+        ) ?: BigDecimal.ZERO
 
     /**
      * Finalized fee to lock for the transaction
@@ -101,11 +109,10 @@ data class TransactionFees(
         }
 
     val tipPercentageToDisplay: String
-        get() = tipPercentage ?: "0"
+        get() = tipPercentage?.toPlainString() ?: "0"
 
     val tipPercentageForTransaction: UShort
-        get() = tipPercentage?.toBigDecimal()
-            ?.toLong()?.toUShort()
+        get() = tipPercentage?.toLong()?.toUShort()
             ?: TransactionConfig.TIP_PERCENTAGE
 
     val hasNetworkOrTipBeenSetup: Boolean

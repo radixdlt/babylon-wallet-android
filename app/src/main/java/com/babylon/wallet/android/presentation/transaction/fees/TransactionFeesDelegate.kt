@@ -5,7 +5,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.accountOnCurrentNetwork
-import java.lang.NumberFormatException
 import java.math.BigDecimal
 
 class TransactionFeesDelegate(
@@ -87,18 +86,12 @@ class TransactionFeesDelegate(
 
     @Suppress("MagicNumber")
     fun onTipPercentageChanged(tipPercentage: String) {
-        try {
-            if (tipPercentage.contains(".")) {
-                return
-            }
-        } catch (_: NumberFormatException) { }
-
         val transactionFees = state.value.transactionFees
 
         state.update { state ->
             state.copy(
                 transactionFees = transactionFees.copy(
-                    tipPercentage = tipPercentage
+                    tipPercentage = tipPercentage.toBigDecimalOrNull()
                 )
             )
         }

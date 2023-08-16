@@ -299,7 +299,7 @@ internal class TransactionApprovalViewModelTest : StateViewModelTest<Transaction
         val vm = vm.value
         advanceUntilIdle()
         assert(vm.state.value.transactionFees.networkFeeDisplayed == null)
-        assert(vm.state.value.transactionFees.royaltyFeesDisplayed == "0")
+        assert(vm.state.value.transactionFees.defaultRoyaltyFeesDisplayed == "0")
         assert(vm.state.value.transactionFees.defaultTransactionFee.displayableQuantity() == "0")
     }
 
@@ -334,7 +334,7 @@ internal class TransactionApprovalViewModelTest : StateViewModelTest<Transaction
         val vm = vm.value
         advanceUntilIdle()
         assert(vm.state.value.transactionFees.networkFeeDisplayed == null)
-        assert(vm.state.value.transactionFees.royaltyFeesDisplayed == "0.1")
+        assert(vm.state.value.transactionFees.defaultRoyaltyFeesDisplayed == "0.1")
         assert(vm.state.value.transactionFees.defaultTransactionFee.displayableQuantity() == "0.22")
     }
 
@@ -369,7 +369,7 @@ internal class TransactionApprovalViewModelTest : StateViewModelTest<Transaction
         val vm = vm.value
         advanceUntilIdle()
         assert(vm.state.value.transactionFees.networkFeeDisplayed == "0.3")
-        assert(vm.state.value.transactionFees.royaltyFeesDisplayed == "0.2")
+        assert(vm.state.value.transactionFees.defaultRoyaltyFeesDisplayed == "0.2")
         assert(vm.state.value.transactionFees.defaultTransactionFee.displayableQuantity() == "0.62")
     }
 
@@ -404,7 +404,7 @@ internal class TransactionApprovalViewModelTest : StateViewModelTest<Transaction
         val vm = vm.value
         advanceUntilIdle()
         assert(vm.state.value.transactionFees.networkFeeDisplayed == null)
-        assert(vm.state.value.transactionFees.royaltyFeesDisplayed == "0")
+        assert(vm.state.value.transactionFees.defaultRoyaltyFeesDisplayed == "0")
         assert(vm.state.value.transactionFees.defaultTransactionFee.displayableQuantity() == "0.12")
     }
 
@@ -439,7 +439,7 @@ internal class TransactionApprovalViewModelTest : StateViewModelTest<Transaction
         val vm = vm.value
         advanceUntilIdle()
         assert(vm.state.value.transactionFees.networkFeeDisplayed == null)
-        assert(vm.state.value.transactionFees.royaltyFeesDisplayed == "0")
+        assert(vm.state.value.transactionFees.defaultRoyaltyFeesDisplayed == "0")
         assert(vm.state.value.transactionFees.defaultTransactionFee.displayableQuantity() == "0")
     }
 
