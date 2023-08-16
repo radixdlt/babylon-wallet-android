@@ -268,256 +268,301 @@ internal class TransactionApprovalViewModelTest : StateViewModelTest<Transaction
         assert(state.error != null)
     }
 
-    // TODO Fix unit test once Advanced view in fee breakdown is added
-//    @Test
-//    fun `given all fees are zero, network royalty and total fee are 0 (none due)`() = runTest {
-//        coEvery { transactionClient.analyzeExecution(any(), any()) } returns Result.success(
-//            ExecutionAnalysis(
-//                feeLocks = FeeLocks(
-//                    lock = Decimal.zero(),
-//                    contingentLock = Decimal.zero()
-//                ),
-//                feeSummary = com.radixdlt.ret.FeeSummary(
-//                    networkFee = Decimal.zero(),
-//                    royaltyFee = Decimal.zero()
-//                ),
-//                transactionType = TransactionType.GeneralTransaction(
-//                    accountProofs = listOf(),
-//                    accountWithdraws = mapOf(),
-//                    accountDeposits = mapOf(),
-//                    addressesInManifest = mapOf(),
-//                    metadataOfNewlyCreatedEntities = mapOf(),
-//                    dataOfNewlyMintedNonFungibles = mapOf(),
-//                    addressesOfNewlyCreatedEntities = listOf()
-//                )
-//            )
-//        )
-//        val vm = vm.value
-//        advanceUntilIdle()
-//        assert(vm.state.value.transactionFees.networkFeeDisplayed == null)
-//        assert(vm.state.value.transactionFees.royaltyFeesDisplayed == "0")
-//        assert(vm.state.value.transactionFees.defaultTransactionFee.displayableQuantity() == "0")
-//    }
-//
-//    @Test
-//    fun `verify network fee royalty and total fee is displayed correctly on default screen 1`() = runTest {
-//        coEvery { transactionClient.analyzeExecution(any(), any()) } returns Result.success(
-//            ExecutionAnalysis(
-//                feeLocks = FeeLocks(
-//                    lock = Decimal("0.9"),
-//                    contingentLock = Decimal.zero()
-//                ),
-//                feeSummary = com.radixdlt.ret.FeeSummary(
-//                    networkFee = Decimal("0.8"),
-//                    royaltyFee = Decimal("0.2")
-//                ),
-//                transactionType = TransactionType.GeneralTransaction(
-//                    accountProofs = listOf(),
-//                    accountWithdraws = mapOf(),
-//                    accountDeposits = mapOf(),
-//                    addressesInManifest = mapOf(),
-//                    metadataOfNewlyCreatedEntities = mapOf(),
-//                    dataOfNewlyMintedNonFungibles = mapOf(),
-//                    addressesOfNewlyCreatedEntities = listOf()
-//                )
-//            )
-//        )
-//        val vm = vm.value
-//        advanceUntilIdle()
-//        assert(vm.state.value.transactionFees.networkFeeDisplayed == null)
-//        assert(vm.state.value.transactionFees.royaltyFeesDisplayed == "0.1")
-//        assert(vm.state.value.transactionFees.defaultTransactionFee.displayableQuantity() == "0.22")
-//    }
-//
-//    @Test
-//    fun `verify network fee royalty and total fee is displayed correctly on default screen 2`() = runTest {
-//        coEvery { transactionClient.analyzeExecution(any(), any()) } returns Result.success(
-//            ExecutionAnalysis(
-//                feeLocks = FeeLocks(
-//                    lock = Decimal("0.5"),
-//                    contingentLock = Decimal.zero()
-//                ),
-//                feeSummary = com.radixdlt.ret.FeeSummary(
-//                    networkFee = Decimal("0.8"),
-//                    royaltyFee = Decimal("0.2")
-//                ),
-//                transactionType = TransactionType.GeneralTransaction(
-//                    accountProofs = listOf(),
-//                    accountWithdraws = mapOf(),
-//                    accountDeposits = mapOf(),
-//                    addressesInManifest = mapOf(),
-//                    metadataOfNewlyCreatedEntities = mapOf(),
-//                    dataOfNewlyMintedNonFungibles = mapOf(),
-//                    addressesOfNewlyCreatedEntities = listOf()
-//                )
-//            )
-//        )
-//        val vm = vm.value
-//        advanceUntilIdle()
-//        assert(vm.state.value.transactionFees.networkFeeDisplayed == "0.3")
-//        assert(vm.state.value.transactionFees.royaltyFeesDisplayed == "0.2")
-//        assert(vm.state.value.transactionFees.defaultTransactionFee.displayableQuantity() == "0.62")
-//    }
-//
-//    @Test
-//    fun `verify network fee royalty and total fee is displayed correctly on default screen 3`() = runTest {
-//        coEvery { transactionClient.analyzeExecution(any(), any()) } returns Result.success(
-//            ExecutionAnalysis(
-//                feeLocks = FeeLocks(
-//                    lock = Decimal("1.0"),
-//                    contingentLock = Decimal.zero()
-//                ),
-//                feeSummary = com.radixdlt.ret.FeeSummary(
-//                    networkFee = Decimal("0.8"),
-//                    royaltyFee = Decimal("0.2")
-//                ),
-//                transactionType = TransactionType.GeneralTransaction(
-//                    accountProofs = listOf(),
-//                    accountWithdraws = mapOf(),
-//                    accountDeposits = mapOf(),
-//                    addressesInManifest = mapOf(),
-//                    metadataOfNewlyCreatedEntities = mapOf(),
-//                    dataOfNewlyMintedNonFungibles = mapOf(),
-//                    addressesOfNewlyCreatedEntities = listOf()
-//                )
-//            )
-//        )
-//        val vm = vm.value
-//        advanceUntilIdle()
-//        assert(vm.state.value.transactionFees.networkFeeDisplayed == null)
-//        assert(vm.state.value.transactionFees.royaltyFeesDisplayed == "0")
-//        assert(vm.state.value.transactionFees.defaultTransactionFee.displayableQuantity() == "0.12")
-//    }
-//
-//    @Test
-//    fun `verify network fee royalty and total fee is displayed correctly on default screen 4`() = runTest {
-//        coEvery { transactionClient.analyzeExecution(any(), any()) } returns Result.success(
-//            ExecutionAnalysis(
-//                feeLocks = FeeLocks(
-//                    lock = Decimal("1.5"),
-//                    contingentLock = Decimal.zero()
-//                ),
-//                feeSummary = com.radixdlt.ret.FeeSummary(
-//                    networkFee = Decimal("0.8"),
-//                    royaltyFee = Decimal("0.2")
-//                ),
-//                transactionType = TransactionType.GeneralTransaction(
-//                    accountProofs = listOf(),
-//                    accountWithdraws = mapOf(),
-//                    accountDeposits = mapOf(),
-//                    addressesInManifest = mapOf(),
-//                    metadataOfNewlyCreatedEntities = mapOf(),
-//                    dataOfNewlyMintedNonFungibles = mapOf(),
-//                    addressesOfNewlyCreatedEntities = listOf()
-//                )
-//            )
-//        )
-//        val vm = vm.value
-//        advanceUntilIdle()
-//        assert(vm.state.value.transactionFees.networkFeeDisplayed == null)
-//        assert(vm.state.value.transactionFees.royaltyFeesDisplayed == "0")
-//        assert(vm.state.value.transactionFees.defaultTransactionFee.displayableQuantity() == "0")
-//    }
-//
-//    @Test
-//    fun `verify transaction fee to lock is correct on advanced screen 1`() = runTest {
-//        val networkAndRoyaltyFee = "1.6"
-//        coEvery { transactionClient.analyzeExecution(any(), any()) } returns Result.success(
-//            ExecutionAnalysis(
-//                feeLocks = FeeLocks(
-//                    lock = Decimal("1.5"),
-//                    contingentLock = Decimal.zero()
-//                ),
-//                feeSummary = com.radixdlt.ret.FeeSummary(
-//                    networkFee = Decimal("0.8"),
-//                    royaltyFee = Decimal("0.2")
-//                ),
-//                transactionType = TransactionType.GeneralTransaction(
-//                    accountProofs = listOf(),
-//                    accountWithdraws = mapOf(),
-//                    accountDeposits = mapOf(),
-//                    addressesInManifest = mapOf(),
-//                    metadataOfNewlyCreatedEntities = mapOf(),
-//                    dataOfNewlyMintedNonFungibles = mapOf(),
-//                    addressesOfNewlyCreatedEntities = listOf()
-//                )
-//            )
-//        )
-//        val vm = vm.value
-//        advanceUntilIdle()
-//        vm.onNetworkAndRoyaltyFeeChanged(networkAndRoyaltyFee)
-//
-//        assert(vm.state.value.transactionFees.transactionFeeToLock == BigDecimal(networkAndRoyaltyFee))
-//    }
-//
-//    @Test
-//    fun `verify transaction fee to lock is correct on advanced screen 2`() = runTest {
-//        val tipPercentage = "25"
-//        coEvery { transactionClient.analyzeExecution(any(), any()) } returns Result.success(
-//            ExecutionAnalysis(
-//                feeLocks = FeeLocks(
-//                    lock = Decimal("0.5"),
-//                    contingentLock = Decimal.zero()
-//                ),
-//                feeSummary = com.radixdlt.ret.FeeSummary(
-//                    networkFee = Decimal("0.8"),
-//                    royaltyFee = Decimal("0.2")
-//                ),
-//                transactionType = TransactionType.GeneralTransaction(
-//                    accountProofs = listOf(),
-//                    accountWithdraws = mapOf(),
-//                    accountDeposits = mapOf(),
-//                    addressesInManifest = mapOf(),
-//                    metadataOfNewlyCreatedEntities = mapOf(),
-//                    dataOfNewlyMintedNonFungibles = mapOf(),
-//                    addressesOfNewlyCreatedEntities = listOf()
-//                )
-//            )
-//        )
-//        val vm = vm.value
-//        advanceUntilIdle()
-//        vm.onTipPercentageChanged(tipPercentage)
-//
-//        // defaultTransactionFee + ((defaultTransactionFee - royaltyFee) * tipPercentage)
-//        // defaultTransactionFee = (0.8 * 1.15) + 0.2 - 0.5 = 0.62
-//        // 0.62 + ((0.62 - 0.2) * 0.25)
-//        assert(vm.state.value.transactionFees.transactionFeeToLock.displayableQuantity() == "0.725")
-//    }
-//
-//    @Test
-//    fun `verify transaction fee to lock is correct on advanced screen 3`() = runTest {
-//        val networkAndRoyaltyFee = "1.6"
-//        val tipPercentage = "25"
-//        coEvery { transactionClient.analyzeExecution(any(), any()) } returns Result.success(
-//            ExecutionAnalysis(
-//                feeLocks = FeeLocks(
-//                    lock = Decimal("0.5"),
-//                    contingentLock = Decimal.zero()
-//                ),
-//                feeSummary = com.radixdlt.ret.FeeSummary(
-//                    networkFee = Decimal("0.8"),
-//                    royaltyFee = Decimal("0.2")
-//                ),
-//                transactionType = TransactionType.GeneralTransaction(
-//                    accountProofs = listOf(),
-//                    accountWithdraws = mapOf(),
-//                    accountDeposits = mapOf(),
-//                    addressesInManifest = mapOf(),
-//                    metadataOfNewlyCreatedEntities = mapOf(),
-//                    dataOfNewlyMintedNonFungibles = mapOf(),
-//                    addressesOfNewlyCreatedEntities = listOf()
-//                )
-//            )
-//        )
-//        val vm = vm.value
-//        advanceUntilIdle()
-//        vm.onNetworkAndRoyaltyFeeChanged(networkAndRoyaltyFee)
-//        vm.onTipPercentageChanged(tipPercentage)
-//
-//        // networkAndRoyaltyFee + ((networkAndRoyaltyFee - royaltyFee) * tipPercentage)
-//        // 1.6 * (1.6 - 0.2)*0.25 = 1.95
-//        assert(vm.state.value.transactionFees.transactionFeeToLock.displayableQuantity() == "1.950")
-//    }
+    @Test
+    fun `given all fees are zero, network royalty and total fee are 0 (none due)`() = runTest {
+        coEvery { transactionClient.analyzeExecution(any(), any()) } returns Result.success(
+            ExecutionAnalysis(
+                feeLocks = FeeLocks(
+                    lock = Decimal.zero(),
+                    contingentLock = Decimal.zero()
+                ),
+                feeSummary = com.radixdlt.ret.FeeSummary(
+                    executionCost = Decimal.zero(),
+                    finalizationCost = Decimal.zero(),
+                    storageExpansionCost = Decimal.zero(),
+                    royaltyCost = Decimal.zero()
+                ),
+                transactionTypes = listOf(
+                    TransactionType.GeneralTransaction(
+                        accountProofs = listOf(),
+                        accountWithdraws = mapOf(),
+                        accountDeposits = mapOf(),
+                        addressesInManifest = mapOf(),
+                        metadataOfNewlyCreatedEntities = mapOf(),
+                        dataOfNewlyMintedNonFungibles = mapOf(),
+                        addressesOfNewlyCreatedEntities = listOf()
+                    )
+                ),
+                reservedInstructions = emptyList()
+            )
+        )
+        val vm = vm.value
+        advanceUntilIdle()
+        assert(vm.state.value.transactionFees.networkFeeDisplayed == null)
+        assert(vm.state.value.transactionFees.royaltyFeesDisplayed == "0")
+        assert(vm.state.value.transactionFees.defaultTransactionFee.displayableQuantity() == "0")
+    }
+
+    @Test
+    fun `verify network fee royalty and total fee is displayed correctly on default screen 1`() = runTest {
+        coEvery { transactionClient.analyzeExecution(any(), any()) } returns Result.success(
+            ExecutionAnalysis(
+                feeLocks = FeeLocks(
+                    lock = Decimal("0.9"),
+                    contingentLock = Decimal.zero()
+                ),
+                feeSummary = com.radixdlt.ret.FeeSummary(
+                    executionCost = Decimal("0.3"),
+                    finalizationCost = Decimal("0.3"),
+                    storageExpansionCost = Decimal("0.2"),
+                    royaltyCost = Decimal("0.2")
+                ),
+                transactionTypes = listOf(
+                    TransactionType.GeneralTransaction(
+                        accountProofs = listOf(),
+                        accountWithdraws = mapOf(),
+                        accountDeposits = mapOf(),
+                        addressesInManifest = mapOf(),
+                        metadataOfNewlyCreatedEntities = mapOf(),
+                        dataOfNewlyMintedNonFungibles = mapOf(),
+                        addressesOfNewlyCreatedEntities = listOf()
+                    )
+                ),
+                reservedInstructions = emptyList()
+            )
+        )
+        val vm = vm.value
+        advanceUntilIdle()
+        assert(vm.state.value.transactionFees.networkFeeDisplayed == null)
+        assert(vm.state.value.transactionFees.royaltyFeesDisplayed == "0.1")
+        assert(vm.state.value.transactionFees.defaultTransactionFee.displayableQuantity() == "0.22")
+    }
+
+    @Test
+    fun `verify network fee royalty and total fee is displayed correctly on default screen 2`() = runTest {
+        coEvery { transactionClient.analyzeExecution(any(), any()) } returns Result.success(
+            ExecutionAnalysis(
+                feeLocks = FeeLocks(
+                    lock = Decimal("0.5"),
+                    contingentLock = Decimal.zero()
+                ),
+                feeSummary = com.radixdlt.ret.FeeSummary(
+                    executionCost = Decimal("0.3"),
+                    finalizationCost = Decimal("0.3"),
+                    storageExpansionCost = Decimal("0.2"),
+                    royaltyCost = Decimal("0.2")
+                ),
+                transactionTypes = listOf(
+                    TransactionType.GeneralTransaction(
+                        accountProofs = listOf(),
+                        accountWithdraws = mapOf(),
+                        accountDeposits = mapOf(),
+                        addressesInManifest = mapOf(),
+                        metadataOfNewlyCreatedEntities = mapOf(),
+                        dataOfNewlyMintedNonFungibles = mapOf(),
+                        addressesOfNewlyCreatedEntities = listOf()
+                    )
+                ),
+                reservedInstructions = emptyList()
+            )
+        )
+        val vm = vm.value
+        advanceUntilIdle()
+        assert(vm.state.value.transactionFees.networkFeeDisplayed == "0.3")
+        assert(vm.state.value.transactionFees.royaltyFeesDisplayed == "0.2")
+        assert(vm.state.value.transactionFees.defaultTransactionFee.displayableQuantity() == "0.62")
+    }
+
+    @Test
+    fun `verify network fee royalty and total fee is displayed correctly on default screen 3`() = runTest {
+        coEvery { transactionClient.analyzeExecution(any(), any()) } returns Result.success(
+            ExecutionAnalysis(
+                feeLocks = FeeLocks(
+                    lock = Decimal("1.0"),
+                    contingentLock = Decimal.zero()
+                ),
+                feeSummary = com.radixdlt.ret.FeeSummary(
+                    executionCost = Decimal("0.3"),
+                    finalizationCost = Decimal("0.3"),
+                    storageExpansionCost = Decimal("0.2"),
+                    royaltyCost = Decimal("0.2")
+                ),
+                transactionTypes = listOf(
+                    TransactionType.GeneralTransaction(
+                        accountProofs = listOf(),
+                        accountWithdraws = mapOf(),
+                        accountDeposits = mapOf(),
+                        addressesInManifest = mapOf(),
+                        metadataOfNewlyCreatedEntities = mapOf(),
+                        dataOfNewlyMintedNonFungibles = mapOf(),
+                        addressesOfNewlyCreatedEntities = listOf()
+                    )
+                ),
+                reservedInstructions = emptyList()
+            )
+        )
+        val vm = vm.value
+        advanceUntilIdle()
+        assert(vm.state.value.transactionFees.networkFeeDisplayed == null)
+        assert(vm.state.value.transactionFees.royaltyFeesDisplayed == "0")
+        assert(vm.state.value.transactionFees.defaultTransactionFee.displayableQuantity() == "0.12")
+    }
+
+    @Test
+    fun `verify network fee royalty and total fee is displayed correctly on default screen 4`() = runTest {
+        coEvery { transactionClient.analyzeExecution(any(), any()) } returns Result.success(
+            ExecutionAnalysis(
+                feeLocks = FeeLocks(
+                    lock = Decimal("1.5"),
+                    contingentLock = Decimal.zero()
+                ),
+                feeSummary = com.radixdlt.ret.FeeSummary(
+                    executionCost = Decimal("0.3"),
+                    finalizationCost = Decimal("0.3"),
+                    storageExpansionCost = Decimal("0.2"),
+                    royaltyCost = Decimal("0.2")
+                ),
+                transactionTypes = listOf(
+                    TransactionType.GeneralTransaction(
+                        accountProofs = listOf(),
+                        accountWithdraws = mapOf(),
+                        accountDeposits = mapOf(),
+                        addressesInManifest = mapOf(),
+                        metadataOfNewlyCreatedEntities = mapOf(),
+                        dataOfNewlyMintedNonFungibles = mapOf(),
+                        addressesOfNewlyCreatedEntities = listOf()
+                    )
+                ),
+                reservedInstructions = emptyList()
+            )
+        )
+        val vm = vm.value
+        advanceUntilIdle()
+        assert(vm.state.value.transactionFees.networkFeeDisplayed == null)
+        assert(vm.state.value.transactionFees.royaltyFeesDisplayed == "0")
+        assert(vm.state.value.transactionFees.defaultTransactionFee.displayableQuantity() == "0")
+    }
+
+    @Test
+    fun `verify transaction fee to lock is correct on advanced screen 1`() = runTest {
+        val feePaddingAmount = "1.6"
+
+        // Sum of executionCost finalizationCost storageExpansionCost royaltyCost padding and tip
+        val expectedFeeLock = "2.6"
+        coEvery { transactionClient.analyzeExecution(any(), any()) } returns Result.success(
+            ExecutionAnalysis(
+                feeLocks = FeeLocks(
+                    lock = Decimal("1.5"),
+                    contingentLock = Decimal.zero()
+                ),
+                feeSummary = com.radixdlt.ret.FeeSummary(
+                    executionCost = Decimal("0.3"),
+                    finalizationCost = Decimal("0.3"),
+                    storageExpansionCost = Decimal("0.2"),
+                    royaltyCost = Decimal("0.2")
+                ),
+                transactionTypes = listOf(
+                    TransactionType.GeneralTransaction(
+                        accountProofs = listOf(),
+                        accountWithdraws = mapOf(),
+                        accountDeposits = mapOf(),
+                        addressesInManifest = mapOf(),
+                        metadataOfNewlyCreatedEntities = mapOf(),
+                        dataOfNewlyMintedNonFungibles = mapOf(),
+                        addressesOfNewlyCreatedEntities = listOf()
+                    )
+                ),
+                reservedInstructions = emptyList()
+            )
+        )
+        val vm = vm.value
+        advanceUntilIdle()
+        vm.onFeePaddingAmountChanged(feePaddingAmount)
+
+        assert(vm.state.value.transactionFees.transactionFeeToLock == BigDecimal(expectedFeeLock))
+    }
+
+    @Test
+    fun `verify transaction fee to lock is correct on advanced screen 2`() = runTest {
+        val tipPercentage = "25"
+
+        // Sum of executionCost finalizationCost storageExpansionCost royaltyCost padding and tip
+        val expectedFeeLock = "1.24"
+
+        coEvery { transactionClient.analyzeExecution(any(), any()) } returns Result.success(
+            ExecutionAnalysis(
+                feeLocks = FeeLocks(
+                    lock = Decimal("0.5"),
+                    contingentLock = Decimal.zero()
+                ),
+                feeSummary = com.radixdlt.ret.FeeSummary(
+                    executionCost = Decimal("0.3"),
+                    finalizationCost = Decimal("0.3"),
+                    storageExpansionCost = Decimal("0.2"),
+                    royaltyCost = Decimal("0.2")
+                ),
+                transactionTypes = listOf(
+                    TransactionType.GeneralTransaction(
+                        accountProofs = listOf(),
+                        accountWithdraws = mapOf(),
+                        accountDeposits = mapOf(),
+                        addressesInManifest = mapOf(),
+                        metadataOfNewlyCreatedEntities = mapOf(),
+                        dataOfNewlyMintedNonFungibles = mapOf(),
+                        addressesOfNewlyCreatedEntities = listOf()
+                    )
+                ),
+                reservedInstructions = emptyList()
+            )
+        )
+        val vm = vm.value
+        advanceUntilIdle()
+        vm.onTipPercentageChanged(tipPercentage)
+
+        assert(vm.state.value.transactionFees.transactionFeeToLock.displayableQuantity() == expectedFeeLock)
+    }
+
+    @Test
+    fun `verify transaction fee to lock is correct on advanced screen 3`() = runTest {
+        val feePaddingAmount = "1.6"
+        val tipPercentage = "25"
+
+        // Sum of executionCost finalizationCost storageExpansionCost royaltyCost padding and tip
+        val expectedFeeLock = "2.750"
+
+        coEvery { transactionClient.analyzeExecution(any(), any()) } returns Result.success(
+            ExecutionAnalysis(
+                feeLocks = FeeLocks(
+                    lock = Decimal("0.5"),
+                    contingentLock = Decimal.zero()
+                ),
+                feeSummary = com.radixdlt.ret.FeeSummary(
+                    executionCost = Decimal("0.3"),
+                    finalizationCost = Decimal("0.3"),
+                    storageExpansionCost = Decimal("0.2"),
+                    royaltyCost = Decimal("0.2")
+                ),
+                transactionTypes = listOf(
+                    TransactionType.GeneralTransaction(
+                        accountProofs = listOf(),
+                        accountWithdraws = mapOf(),
+                        accountDeposits = mapOf(),
+                        addressesInManifest = mapOf(),
+                        metadataOfNewlyCreatedEntities = mapOf(),
+                        dataOfNewlyMintedNonFungibles = mapOf(),
+                        addressesOfNewlyCreatedEntities = listOf()
+                    )
+                ),
+                reservedInstructions = emptyList()
+            )
+        )
+        val vm = vm.value
+        advanceUntilIdle()
+        vm.onFeePaddingAmountChanged(feePaddingAmount)
+        vm.onTipPercentageChanged(tipPercentage)
+
+        assert(vm.state.value.transactionFees.transactionFeeToLock.displayableQuantity() == expectedFeeLock)
+    }
 
     private fun previewResponse() = TransactionPreviewResponse(
         encodedReceipt = "",
