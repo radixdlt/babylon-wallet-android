@@ -72,8 +72,10 @@ import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.domain.model.AccountWithResources
 import com.babylon.wallet.android.domain.model.Resource
 import com.babylon.wallet.android.domain.model.Resources
+import com.babylon.wallet.android.domain.model.ValidatorDetail
 import com.babylon.wallet.android.domain.model.ValidatorsWithStakeResources
 import com.babylon.wallet.android.presentation.account.composable.FungibleTokenBottomSheetDetails
+import com.babylon.wallet.android.presentation.account.composable.LSUBottomSheetDetails
 import com.babylon.wallet.android.presentation.account.composable.NonFungibleTokenBottomSheetDetails
 import com.babylon.wallet.android.presentation.account.composable.PoolUnitBottomSheetDetails
 import com.babylon.wallet.android.presentation.transfer.assets.ResourceTab
@@ -131,7 +133,8 @@ fun AccountScreen(
         onFungibleResourceClicked = viewModel::onFungibleResourceClicked,
         onNonFungibleItemClicked = viewModel::onNonFungibleResourceClicked,
         onApplySecuritySettings = viewModel::onApplySecuritySettings,
-        onPoolUnitClick = viewModel::onPoolUnitClicked
+        onPoolUnitClick = viewModel::onPoolUnitClicked,
+        onLSUUnitClicked = viewModel::onLSUUnitClicked
     )
 }
 
@@ -149,7 +152,8 @@ private fun AccountScreenContent(
     onFungibleResourceClicked: (Resource.FungibleResource) -> Unit,
     onNonFungibleItemClicked: (Resource.NonFungibleResource, Resource.NonFungibleResource.Item) -> Unit,
     onApplySecuritySettings: () -> Unit,
-    onPoolUnitClick: (Resource.PoolUnitResource) -> Unit
+    onPoolUnitClick: (Resource.PoolUnitResource) -> Unit,
+    onLSUUnitClicked: (Resource.LiquidStakeUnitResource, ValidatorDetail) -> Unit
 ) {
     val gradient = remember(state.accountWithResources) {
         val appearanceId = state.accountWithResources?.account?.appearanceID ?: 0
@@ -271,6 +275,12 @@ private fun AccountScreenContent(
                         scope.launch {
                             bottomSheetState.show()
                         }
+                    },
+                    onLSUUnitClicked = { lsu, validator ->
+                        onLSUUnitClicked(lsu, validator)
+                        scope.launch {
+                            bottomSheetState.show()
+                        }
                     }
                 )
             }
@@ -337,6 +347,21 @@ private fun SheetContent(
             )
         }
 
+        is SelectedResource.SelectedLSUUnit -> {
+            LSUBottomSheetDetails(
+                modifier = modifier
+                    .fillMaxWidth()
+                    .verticalScroll(rememberScrollState()),
+                lsuUnit = selected.lsuUnit,
+                validatorDetail = selected.validatorDetail,
+                onCloseClick = {
+                    scope.launch {
+                        bottomSheetState.hide()
+                    }
+                }
+            )
+        }
+
         else -> {}
     }
 }
@@ -351,7 +376,8 @@ fun AssetsContent(
     onPoolUnitClick: (Resource.PoolUnitResource) -> Unit,
     gradient: ImmutableList<Color>,
     onTransferClick: (String) -> Unit,
-    onApplySecuritySettings: () -> Unit
+    onApplySecuritySettings: () -> Unit,
+    onLSUUnitClicked: (Resource.LiquidStakeUnitResource, ValidatorDetail) -> Unit
 ) {
     Surface(
         modifier = modifier,
@@ -494,16 +520,18 @@ fun AssetsContent(
                                 poolUnitItem = { poolUnit ->
                                     PoolUnitItem(
                                         resource = poolUnit,
-                                        modifier = Modifier.throttleClickable {
-                                            onPoolUnitClick(poolUnit)
-                                        }.padding(horizontal = RadixTheme.dimensions.paddingDefault)
+                                        modifier = Modifier
+                                            .throttleClickable {
+                                                onPoolUnitClick(poolUnit)
+                                            }
+                                            .padding(horizontal = RadixTheme.dimensions.paddingDefault)
                                     )
                                 },
-                                liquidStakeItem = { liquidStakeUnit, stakeValueInXRD ->
+                                liquidStakeItem = { liquidStakeUnit, validatorDetail ->
                                     LiquidStakeUnitItem(
-                                        stakeValueInXRD = stakeValueInXRD,
+                                        stakeValueInXRD = liquidStakeUnit.stakeValueInXRD(validatorDetail.totalXrdStake),
                                         modifier = Modifier.throttleClickable {
-                                            onFungibleTokenClick(liquidStakeUnit.fungibleResource)
+                                            onLSUUnitClicked(liquidStakeUnit, validatorDetail)
                                         }
                                     )
                                 },
@@ -579,7 +607,8 @@ fun AccountContentPreview() {
                 onFungibleResourceClicked = {},
                 onNonFungibleItemClicked = { _, _ -> },
                 onApplySecuritySettings = {},
-                onPoolUnitClick = {}
+                onPoolUnitClick = {},
+                onLSUUnitClicked = { _, _ -> }
             )
         }
     }

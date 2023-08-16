@@ -198,6 +198,12 @@ class SampleDataProvider {
         return Resource.PoolUnitResource(sampleFungibleResources().first(), sampleFungibleResources())
     }
 
+    fun sampleLSUUnit(): Resource.LiquidStakeUnitResource {
+        return Resource.LiquidStakeUnitResource(
+            sampleFungibleResources().first()
+        )
+    }
+
     fun sampleDAppWithResources(): DAppWithMetadataAndAssociatedResources {
         return DAppWithMetadataAndAssociatedResources(
             dAppWithMetadata = DAppWithMetadata(

@@ -12,8 +12,9 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.presentation.ui.composables.ActionableAddressView
 
 @Composable
-fun ResourceAddressRow(
-    modifier: Modifier,
+fun AddressRow(
+    modifier: Modifier = Modifier,
+    label: String = stringResource(id = R.string.assetDetails_resourceAddress),
     address: String
 ) {
     Row(
@@ -22,7 +23,7 @@ fun ResourceAddressRow(
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
         Text(
-            text = stringResource(id = R.string.assetDetails_resourceAddress),
+            text = label,
             style = RadixTheme.typography.body1Regular,
             color = RadixTheme.colors.gray2
         )

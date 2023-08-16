@@ -2,6 +2,7 @@ package com.babylon.wallet.android.presentation.account.composable
 
 import android.graphics.drawable.ColorDrawable
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -18,6 +19,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -28,6 +30,7 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.domain.model.Resource
+import com.babylon.wallet.android.domain.model.ValidatorDetail
 import com.babylon.wallet.android.presentation.ui.composables.BackIconType
 import com.babylon.wallet.android.presentation.ui.composables.ImageSize
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
@@ -35,14 +38,17 @@ import com.babylon.wallet.android.presentation.ui.composables.icon
 import com.babylon.wallet.android.presentation.ui.composables.name
 import com.babylon.wallet.android.presentation.ui.composables.rememberImageUrl
 import com.babylon.wallet.android.presentation.ui.composables.resources.AddressRow
-import com.babylon.wallet.android.presentation.ui.composables.resources.PoolResourcesValues
 import com.babylon.wallet.android.presentation.ui.composables.resources.TokenBalance
+import com.babylon.wallet.android.presentation.ui.composables.resources.ValidatorDetailsItem
 import com.babylon.wallet.android.presentation.ui.composables.resources.poolName
 import com.google.accompanist.drawablepainter.rememberDrawablePainter
+import rdx.works.core.displayableQuantity
+import java.math.BigDecimal
 
 @Composable
-fun PoolUnitBottomSheetDetails(
-    poolUnit: Resource.PoolUnitResource,
+fun LSUBottomSheetDetails(
+    lsuUnit: Resource.LiquidStakeUnitResource,
+    validatorDetail: ValidatorDetail,
     onCloseClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -51,7 +57,7 @@ fun PoolUnitBottomSheetDetails(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         RadixCenteredTopAppBar(
-            title = poolName(poolUnit.poolUnitResource.name),
+            title = poolName(lsuUnit.fungibleResource.name),
             onBackClick = onCloseClick,
             modifier = Modifier.fillMaxWidth(),
             contentColor = RadixTheme.colors.gray1,
@@ -66,7 +72,7 @@ fun PoolUnitBottomSheetDetails(
         ) {
             val placeholder = rememberDrawablePainter(drawable = ColorDrawable(RadixTheme.colors.gray3.toArgb()))
             AsyncImage(
-                model = rememberImageUrl(fromUrl = poolUnit.poolUnitResource.iconUrl, size = ImageSize.LARGE),
+                model = rememberImageUrl(fromUrl = lsuUnit.fungibleResource.iconUrl, size = ImageSize.LARGE),
                 placeholder = placeholder,
                 fallback = placeholder,
                 error = placeholder,
@@ -78,7 +84,7 @@ fun PoolUnitBottomSheetDetails(
                     .clip(RadixTheme.shapes.roundedRectMedium)
             )
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
-            TokenBalance(poolUnit.poolUnitResource)
+            TokenBalance(lsuUnit.fungibleResource)
             Divider(
                 Modifier
                     .fillMaxWidth()
@@ -90,21 +96,20 @@ fun PoolUnitBottomSheetDetails(
                 style = RadixTheme.typography.secondaryHeader,
                 color = RadixTheme.colors.gray1
             )
-            PoolResourcesValues(
-                resource = poolUnit,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = RadixTheme.dimensions.paddingLarge, bottom = RadixTheme.dimensions.paddingDefault)
+            ValidatorDetailsItem(
+                modifier = Modifier.fillMaxWidth().padding(vertical = RadixTheme.dimensions.paddingDefault),
+                validator = validatorDetail
             )
+            LSUResourceValue(resource = lsuUnit, validatorDetail)
             Divider(
                 Modifier
                     .fillMaxWidth()
                     .padding(vertical = RadixTheme.dimensions.paddingLarge),
                 color = RadixTheme.colors.gray4
             )
-            if (poolUnit.poolUnitResource.description.isNotBlank()) {
+            if (!validatorDetail.description.isNullOrBlank()) {
                 Text(
-                    text = poolUnit.poolUnitResource.description,
+                    text = lsuUnit.fungibleResource.description,
                     style = RadixTheme.typography.body2Regular,
                     color = RadixTheme.colors.gray1
                 )
@@ -117,10 +122,10 @@ fun PoolUnitBottomSheetDetails(
             }
             AddressRow(
                 modifier = Modifier.fillMaxWidth(),
-                address = poolUnit.poolUnitResource.resourceAddress
+                address = lsuUnit.fungibleResource.resourceAddress,
             )
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
-            if (poolUnit.poolUnitResource.displayTitle.isNotEmpty()) {
+            if (lsuUnit.fungibleResource.displayTitle.isNotEmpty()) {
                 Row(
                     modifier = Modifier,
                     verticalAlignment = Alignment.CenterVertically,
@@ -133,7 +138,7 @@ fun PoolUnitBottomSheetDetails(
                     )
                     Spacer(modifier = Modifier.weight(1f))
                     Text(
-                        text = poolUnit.poolUnitResource.displayTitle,
+                        text = lsuUnit.fungibleResource.displayTitle,
                         style = RadixTheme.typography.body1HighImportance,
                         color = RadixTheme.colors.gray1
                     )
@@ -153,16 +158,21 @@ fun PoolUnitBottomSheetDetails(
                 )
                 Spacer(modifier = Modifier.weight(1f))
                 Text(
-                    modifier = Modifier
-                        .padding(start = RadixTheme.dimensions.paddingDefault),
-                    text = poolUnit.poolUnitResource.currentSupplyToDisplay ?: stringResource(id = R.string.assetDetails_supplyUnkown),
+                    modifier = Modifier.padding(start = RadixTheme.dimensions.paddingDefault),
+                    text = lsuUnit.fungibleResource.currentSupplyToDisplay ?: stringResource(id = R.string.assetDetails_supplyUnkown),
                     style = RadixTheme.typography.body1HighImportance,
                     color = RadixTheme.colors.gray1,
                     textAlign = TextAlign.End
                 )
             }
+            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
+            AddressRow(
+                modifier = Modifier.fillMaxWidth(),
+                address = lsuUnit.validatorAddress,
+                label = "Validator address"
+            )
 
-            if (poolUnit.poolUnitResource.resourceBehaviours.isNotEmpty()) {
+            if (lsuUnit.fungibleResource.resourceBehaviours.isNotEmpty()) {
                 Column {
                     Text(
                         modifier = Modifier
@@ -175,7 +185,7 @@ fun PoolUnitBottomSheetDetails(
                         style = RadixTheme.typography.body1Regular,
                         color = RadixTheme.colors.gray2
                     )
-                    poolUnit.poolUnitResource.resourceBehaviours.forEach { resourceBehaviour ->
+                    lsuUnit.fungibleResource.resourceBehaviours.forEach { resourceBehaviour ->
                         Behaviour(
                             icon = resourceBehaviour.icon(),
                             name = resourceBehaviour.name()
@@ -188,13 +198,54 @@ fun PoolUnitBottomSheetDetails(
     }
 }
 
+@Composable
+private fun LSUResourceValue(resource: Resource.LiquidStakeUnitResource, validatorDetail: ValidatorDetail, modifier: Modifier = Modifier) {
+    Row(
+        modifier = modifier
+            .border(1.dp, RadixTheme.colors.gray4, RadixTheme.shapes.roundedRectMedium)
+            .padding(
+                horizontal = RadixTheme.dimensions.paddingDefault,
+                vertical = RadixTheme.dimensions.paddingLarge
+            ),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingMedium)
+    ) {
+        val placeholder = painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_xrd_token)
+        AsyncImage(
+            model = resource.fungibleResource.iconUrl,
+            placeholder = placeholder,
+            error = placeholder,
+            fallback = placeholder,
+            contentDescription = null,
+            contentScale = ContentScale.Crop,
+            modifier = Modifier
+                .size(44.dp)
+                .clip(RadixTheme.shapes.circle)
+        )
+        Text(
+            modifier = Modifier.weight(1f),
+            text = Resource.XRD_SYMBOL,
+            style = RadixTheme.typography.body2HighImportance,
+            color = RadixTheme.colors.gray1,
+            maxLines = 2
+        )
+        Text(
+            resource.stakeValueInXRD(validatorDetail.totalXrdStake)?.displayableQuantity().orEmpty(),
+            style = RadixTheme.typography.secondaryHeader,
+            color = RadixTheme.colors.gray1,
+            maxLines = 1
+        )
+    }
+}
+
 @Preview
 @Composable
-fun PoolUnitBottomSheetDetailsPreview() {
+fun LSUBottomSheetDetailsPreview() {
     RadixWalletTheme {
-        PoolUnitBottomSheetDetails(
-            poolUnit = SampleDataProvider().samplePoolUnit(),
-            onCloseClick = {}
+        LSUBottomSheetDetails(
+            lsuUnit = SampleDataProvider().sampleLSUUnit(),
+            onCloseClick = {},
+            validatorDetail = ValidatorDetail("address1", "Validator 1", null, null, BigDecimal(100000))
         )
     }
 }

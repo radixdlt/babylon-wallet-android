@@ -214,10 +214,10 @@ fun ChooseAssetsSheet(
                                             }
                                         )
                                     },
-                                    liquidStakeItem = { liquidStakeUnit, stakeValueInXRD ->
+                                    liquidStakeItem = { liquidStakeUnit, validator ->
                                         val isSelected = state.targetAccount.assets.any { it.address == liquidStakeUnit.resourceAddress }
                                         LiquidStakeUnitItem(
-                                            stakeValueInXRD = stakeValueInXRD,
+                                            stakeValueInXRD = liquidStakeUnit.stakeValueInXRD(validator.totalXrdStake),
                                             modifier = Modifier.throttleClickable {
                                                 val spendingAsset = SpendingAsset.Fungible(liquidStakeUnit.fungibleResource)
                                                 onAssetSelectionChanged(spendingAsset, !isSelected)

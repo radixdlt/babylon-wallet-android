@@ -66,14 +66,6 @@ data class StateEntityDetailsResponseComponentDetails(
 @Serializable
 data class ComponentEntityState(
 
-    @SerialName(value = "value")
-    val value: ComponentEntityStateValue? = null
-
-)
-
-@Serializable
-data class ComponentEntityStateValue(
-
     @SerialName(value = "stake_xrd_vault")
     val stakeXrdVault: StakeXrdVault? = null,
 
@@ -82,6 +74,7 @@ data class ComponentEntityStateValue(
 
     @SerialName(value = "unstake_claim_token_resource_address")
     val unstakeClaimTokenResourceAddress: String? = null
+
 )
 
 @Serializable

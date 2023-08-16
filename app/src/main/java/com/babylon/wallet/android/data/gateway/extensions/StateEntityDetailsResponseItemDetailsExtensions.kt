@@ -37,21 +37,21 @@ fun StateEntityDetailsResponseItem.getXRDVaultAmount(vaultAddress: String): BigD
 
 fun StateEntityDetailsResponseItemDetails.xrdVaultAddress(): String? {
     return when (val details = this) {
-        is StateEntityDetailsResponseComponentDetails -> details.state?.value?.stakeXrdVault?.entityAddress
+        is StateEntityDetailsResponseComponentDetails -> details.state?.stakeXrdVault?.entityAddress
         else -> null
     }
 }
 
 fun StateEntityDetailsResponseItemDetails.stakeUnitResourceAddress(): String? {
     return when (val details = this) {
-        is StateEntityDetailsResponseComponentDetails -> details.state?.value?.stakeUnitResourceAddress
+        is StateEntityDetailsResponseComponentDetails -> details.state?.stakeUnitResourceAddress
         else -> null
     }
 }
 
 fun StateEntityDetailsResponseItemDetails.unstakeClaimTokenAddress(): String? {
     return when (val details = this) {
-        is StateEntityDetailsResponseComponentDetails -> details.state?.value?.unstakeClaimTokenResourceAddress
+        is StateEntityDetailsResponseComponentDetails -> details.state?.unstakeClaimTokenResourceAddress
         else -> null
     }
 }

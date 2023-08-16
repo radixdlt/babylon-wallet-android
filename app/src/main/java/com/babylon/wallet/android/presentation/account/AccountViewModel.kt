@@ -6,6 +6,7 @@ import com.babylon.wallet.android.domain.common.onError
 import com.babylon.wallet.android.domain.common.onValue
 import com.babylon.wallet.android.domain.model.AccountWithResources
 import com.babylon.wallet.android.domain.model.Resource
+import com.babylon.wallet.android.domain.model.ValidatorDetail
 import com.babylon.wallet.android.domain.usecases.GetAccountsForSecurityPromptUseCase
 import com.babylon.wallet.android.domain.usecases.GetAccountsWithResourcesUseCase
 import com.babylon.wallet.android.presentation.common.OneOffEvent
@@ -125,6 +126,12 @@ class AccountViewModel @Inject constructor(
         }
     }
 
+    fun onLSUUnitClicked(resource: Resource.LiquidStakeUnitResource, validatorDetail: ValidatorDetail) {
+        _state.update { accountUiState ->
+            accountUiState.copy(selectedResource = SelectedResource.SelectedLSUUnit(resource, validatorDetail))
+        }
+    }
+
     fun onPoolUnitClicked(resource: Resource.PoolUnitResource) {
         _state.update { accountUiState ->
             accountUiState.copy(selectedResource = SelectedResource.SelectedPoolUnit(resource))
@@ -183,5 +190,7 @@ sealed interface SelectedResource {
         val nonFungible: Resource.NonFungibleResource,
         val item: Resource.NonFungibleResource.Item
     ) : SelectedResource
+
+    data class SelectedLSUUnit(val lsuUnit: Resource.LiquidStakeUnitResource, val validatorDetail: ValidatorDetail) : SelectedResource
     data class SelectedPoolUnit(val poolUnit: Resource.PoolUnitResource) : SelectedResource
 }

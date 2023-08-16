@@ -33,6 +33,7 @@ import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
+import com.babylon.wallet.android.domain.model.ValidatorDetail
 import com.babylon.wallet.android.domain.model.ValidatorWithStakeResources
 import com.babylon.wallet.android.domain.model.ValidatorsWithStakeResources
 import java.math.BigDecimal
@@ -84,7 +85,9 @@ fun LiquidStakeUnitResourceHeader(
         ) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.weight(1f).padding(horizontal = RadixTheme.dimensions.paddingLarge),
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(horizontal = RadixTheme.dimensions.paddingLarge),
                 horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingDefault)
             ) {
                 Icon(
@@ -148,8 +151,8 @@ fun LiquidStakeUnitResourceHeaderPreview() {
             collapsed = true,
             collection = ValidatorsWithStakeResources(
                 listOf(
-                    ValidatorWithStakeResources("address1", "Validator 1", null, BigDecimal(1000)),
-                    ValidatorWithStakeResources("address1", "Validator 1", null, BigDecimal(1000))
+                    ValidatorWithStakeResources(ValidatorDetail("address1", "Validator 1", null, null, BigDecimal(100000))),
+                    ValidatorWithStakeResources(ValidatorDetail("address1", "Validator 1", null, null, BigDecimal(100000)))
                 )
             ),
             parentSectionClick = {}

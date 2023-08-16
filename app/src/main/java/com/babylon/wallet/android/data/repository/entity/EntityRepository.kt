@@ -40,9 +40,11 @@ import com.babylon.wallet.android.domain.common.value
 import com.babylon.wallet.android.domain.model.AccountWithResources
 import com.babylon.wallet.android.domain.model.Resource
 import com.babylon.wallet.android.domain.model.Resources
+import com.babylon.wallet.android.domain.model.ValidatorDetail
 import com.babylon.wallet.android.domain.model.ValidatorWithStakeResources
 import com.babylon.wallet.android.domain.model.ValidatorsWithStakeResources
 import com.babylon.wallet.android.domain.model.metadata.ClaimAmountMetadataItem
+import com.babylon.wallet.android.domain.model.metadata.DescriptionMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.IconUrlMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.MetadataItem
 import com.babylon.wallet.android.domain.model.metadata.MetadataItem.Companion.consume
@@ -250,12 +252,16 @@ class EntityRepositoryImpl @Inject constructor(
                     val totalXrdStake = validatorDetails?.details?.xrdVaultAddress()?.let { validatorDetails.getXRDVaultAmount(it) }
                     val validatorMetadata = validatorDetails?.explicitMetadata?.asMetadataItems().orEmpty().toMutableList()
                     val nameMetadata: NameMetadataItem? = validatorMetadata.consume()
+                    val descriptionMetadataItem: DescriptionMetadataItem? = validatorMetadata.consume()
                     val iconUrlMetadataItem: IconUrlMetadataItem? = validatorMetadata.consume()
                     ValidatorWithStakeResources(
-                        address = validatorAddress,
-                        name = nameMetadata?.name.orEmpty(),
-                        url = iconUrlMetadataItem?.url,
-                        totalXrdStake = totalXrdStake,
+                        validatorDetail = ValidatorDetail(
+                            address = validatorAddress,
+                            name = nameMetadata?.name.orEmpty(),
+                            description = descriptionMetadataItem?.description.orEmpty(),
+                            url = iconUrlMetadataItem?.url,
+                            totalXrdStake = totalXrdStake
+                        ),
                         liquidStakeUnits = lsuPerValidator[validatorAddress].orEmpty(),
                         stakeClaimNft = nftPerValidator[validatorAddress].orEmpty().firstOrNull()
                     )

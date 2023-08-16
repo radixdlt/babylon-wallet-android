@@ -40,7 +40,7 @@ import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAp
 import com.babylon.wallet.android.presentation.ui.composables.icon
 import com.babylon.wallet.android.presentation.ui.composables.name
 import com.babylon.wallet.android.presentation.ui.composables.rememberImageUrl
-import com.babylon.wallet.android.presentation.ui.composables.resources.ResourceAddressRow
+import com.babylon.wallet.android.presentation.ui.composables.resources.AddressRow
 import com.google.accompanist.drawablepainter.rememberDrawablePainter
 
 @OptIn(ExperimentalLayoutApi::class)
@@ -162,7 +162,7 @@ fun NonFungibleTokenBottomSheetDetails(
                         Divider(Modifier.fillMaxWidth(), color = RadixTheme.colors.gray4)
                         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
                     }
-                    ResourceAddressRow(
+                    AddressRow(
                         modifier = Modifier.fillMaxWidth(),
                         address = nonFungibleItem.resourceAddress
                     )
