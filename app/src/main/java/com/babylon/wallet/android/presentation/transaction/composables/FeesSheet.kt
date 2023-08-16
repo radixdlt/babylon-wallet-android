@@ -228,7 +228,7 @@ fun FeesSheet(
                     ) {
                         RadixTextButton(
                             text = stringResource(
-                                id = R.string.transactionReview_customizeNetworkFeeSheet_selectFeePayerButtonTitle
+                                id = R.string.transactionReview_customizeNetworkFeeSheet_selectFeePayer_navigationTitle
                             ),
                             onClick = onSelectFeePayerClick
                         )
@@ -410,7 +410,7 @@ fun NetworkFeesAdvancedView(
             onValueChanged = onNetworkAndRoyaltyFeeChanged,
             value = transactionFees?.networkAndRoyaltyFeesToDisplay.orEmpty(),
             leftLabel = stringResource(
-                id = R.string.transactionReview_customizeNetworkFeeSheet_paddingField
+                id = R.string.transactionReview_customizeNetworkFeeSheet_paddingFieldLabel
             ),
             keyboardOptions = KeyboardOptions(
                 keyboardType = KeyboardType.Decimal,
