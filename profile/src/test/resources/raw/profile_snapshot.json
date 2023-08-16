@@ -6,15 +6,15 @@
       "ledgerHQHardwareWalletSigningDisplayMode" : "verbose"
     },
     "gateways" : {
-      "current" : "https://ansharnet-gateway.radixdlt.com",
+      "current" : "https://hammunet-gateway.radixdlt.com",
       "saved" : [
         {
           "network" : {
-            "displayDescription" : "RCnet-V2 test network",
-            "id" : 13,
-            "name" : "RCnet Gateway"
+            "displayDescription" : "Hammunet (Test Network)",
+            "id" : 34,
+            "name" : "hammunet"
           },
-          "url" : "https://ansharnet-gateway.radixdlt.com"
+          "url" : "https://hammunet-gateway.radixdlt.com"
         }
       ]
     },
@@ -63,7 +63,7 @@
           {
             "forAccount" : 3,
             "forIdentity" : 2,
-            "networkID" : 13
+            "networkID" : 34
           }
         ]
       },
@@ -217,16 +217,16 @@
     {
       "accounts" : [
         {
-          "address" : "account_tdx_d_12xxn5jkxplr3zt7qgqssy79lzywysf9sejmau9xvf8dazqzs4fr5zl",
+          "address" : "account_tdx_22_128aph4j6zjqzhslfwqvryx829dwfxfflh0vamyca3425f78uul5rxf",
           "appearanceID" : 0,
           "displayName" : "First",
-          "networkID" : 13,
+          "networkID" : 34,
           "securityState" : {
             "discriminator" : "unsecured",
             "unsecuredEntityControl" : {
               "authenticationSigning" : {
                 "derivationPath" : {
-                  "path" : "m/44H/1022H/13H/525H/1678H/0H",
+                  "path" : "m/44H/1022H/34H/525H/1678H/0H",
                   "scheme" : "cap26"
                 },
                 "publicKey" : {
@@ -243,11 +243,11 @@
               },
               "transactionSigning" : {
                 "derivationPath" : {
-                  "path" : "m/44H/1022H/13H/525H/1460H/0H",
+                  "path" : "m/44H/1022H/34H/525H/1460H/0H",
                   "scheme" : "cap26"
                 },
                 "publicKey" : {
-                  "compressedData" : "6e52ee09dafe75faf08faab3bf4919abf72ec3f95753b0b5c3963d4fedc17299",
+                  "compressedData" : "390f5d05f6f4ce18a5a049e713ad098773b7cc0ca0c530c6422742579633f9b8",
                   "curve" : "curve25519"
                 },
                 "factorSourceID" : {
@@ -262,16 +262,16 @@
           }
         },
         {
-          "address" : "account_tdx_d_128zs6vanvyrg4h0psvnsq7wv7wg6sppsepyd9yrfndkhzs04vnvxad",
+          "address" : "account_tdx_22_12yktr4z690lpn874q2zrdggqrjrcqp0zynx629kxy4gfufzw23d3f6",
           "appearanceID" : 1,
           "displayName" : "Second",
-          "networkID" : 13,
+          "networkID" : 34,
           "securityState" : {
             "discriminator" : "unsecured",
             "unsecuredEntityControl" : {
               "authenticationSigning" : {
                 "derivationPath" : {
-                  "path" : "m/44H/1022H/13H/525H/1678H/1H",
+                  "path" : "m/44H/1022H/34H/525H/1678H/1H",
                   "scheme" : "cap26"
                 },
                 "publicKey" : {
@@ -288,11 +288,11 @@
               },
               "transactionSigning" : {
                 "derivationPath" : {
-                  "path" : "m/44H/1022H/13H/525H/1460H/1H",
+                  "path" : "m/44H/1022H/34H/525H/1460H/1H",
                   "scheme" : "cap26"
                 },
                 "publicKey" : {
-                  "compressedData" : "64201607138dcd8d57ab5fd496f0844d637300f670f35bb39286dc4599ce2caa",
+                  "compressedData" : "fe12a293195513e2f0dc326521ef08a78e3ae743e34c46228bb231cc2e96dac8",
                   "curve" : "curve25519"
                 },
                 "factorSourceID" : {
@@ -307,16 +307,16 @@
           }
         },
         {
-          "address" : "account_tdx_d_129xd57thxxqne3ugen5pls2yrl6srajlt4vx0z6pgt9n9k9apwx2qq",
+          "address" : "account_tdx_22_12ya2hy3wsmrm88svkeugan753f5atlhk3dzz09n9gm46qvx69rjqcm",
           "appearanceID" : 2,
           "displayName" : "Third",
-          "networkID" : 13,
+          "networkID" : 34,
           "securityState" : {
             "discriminator" : "unsecured",
             "unsecuredEntityControl" : {
               "authenticationSigning" : {
                 "derivationPath" : {
-                  "path" : "m/44H/1022H/13H/525H/1678H/2H",
+                  "path" : "m/44H/1022H/34H/525H/1678H/2H",
                   "scheme" : "cap26"
                 },
                 "publicKey" : {
@@ -333,11 +333,11 @@
               },
               "transactionSigning" : {
                 "derivationPath" : {
-                  "path" : "m/44H/1022H/13H/525H/1460H/2H",
+                  "path" : "m/44H/1022H/34H/525H/1460H/2H",
                   "scheme" : "cap26"
                 },
                 "publicKey" : {
-                  "compressedData" : "a7882284c5569d91226b12869bef693f39724c6a41cfa10caa199f3b62d06b8c",
+                  "compressedData" : "16220c8187c43a82ebba61b2428370c6816f05e6417190185f22bb5ed214fbdf",
                   "curve" : "curve25519"
                 },
                 "factorSourceID" : {
@@ -356,15 +356,15 @@
         {
           "dAppDefinitionAddress" : "account_sim1cyvgx33089ukm2pl97pv4max0x40ruvfy4lt60yvya744cve475w0q",
           "displayName" : "RadiSwap",
-          "networkID" : 13,
+          "networkID" : 34,
           "referencesToAuthorizedPersonas" : [
             {
-              "identityAddress" : "identity_tdx_d_12fyx6mc595p3zel9vuudqnfrp7r0zu60wjz96tkuyva3tvgyp3xsw7",
+              "identityAddress" : "identity_tdx_22_12g5xajl295tda2vym7tqtw4l5ftssp97fe5j9ga9wqpy7hjpe8ncmn",
               "lastLogin" : "2001-01-01T00:00:00Z",
               "sharedAccounts" : {
                 "ids" : [
-                  "account_tdx_d_128zs6vanvyrg4h0psvnsq7wv7wg6sppsepyd9yrfndkhzs04vnvxad",
-                  "account_tdx_d_129xd57thxxqne3ugen5pls2yrl6srajlt4vx0z6pgt9n9k9apwx2qq"
+                  "account_tdx_22_12yktr4z690lpn874q2zrdggqrjrcqp0zynx629kxy4gfufzw23d3f6",
+                  "account_tdx_22_12ya2hy3wsmrm88svkeugan753f5atlhk3dzz09n9gm46qvx69rjqcm"
                 ],
                 "request" : {
                   "quantifier" : "exactly",
@@ -427,11 +427,11 @@
               }
             },
             {
-              "identityAddress" : "identity_tdx_d_12fgpys3dvly5655htqspfanytemdx5z6l7zx6dytygy0j9cs79eynx",
+              "identityAddress" : "identity_tdx_22_12tmdjpyjwr8qk2fpvzk655cga5jl54f8lzn570wga6wmfl3aulu5ju",
               "lastLogin" : "2001-01-01T00:00:00Z",
               "sharedAccounts" : {
                 "ids" : [
-                  "account_tdx_d_128zs6vanvyrg4h0psvnsq7wv7wg6sppsepyd9yrfndkhzs04vnvxad"
+                  "account_tdx_22_12yktr4z690lpn874q2zrdggqrjrcqp0zynx629kxy4gfufzw23d3f6"
                 ],
                 "request" : {
                   "quantifier" : "atLeast",
@@ -445,12 +445,12 @@
           ]
         }
       ],
-      "networkID" : 13,
+      "networkID" : 34,
       "personas" : [
         {
-          "address" : "identity_tdx_d_12fyx6mc595p3zel9vuudqnfrp7r0zu60wjz96tkuyva3tvgyp3xsw7",
+          "address" : "identity_tdx_22_12g5xajl295tda2vym7tqtw4l5ftssp97fe5j9ga9wqpy7hjpe8ncmn",
           "displayName" : "Satoshi",
-          "networkID" : 13,
+          "networkID" : 34,
           "personaData" : {
             "companyName" : {
               "id" : "2",
@@ -579,7 +579,7 @@
             "unsecuredEntityControl" : {
               "authenticationSigning" : {
                 "derivationPath" : {
-                  "path" : "m/44H/1022H/13H/618H/1678H/0H",
+                  "path" : "m/44H/1022H/34H/618H/1678H/0H",
                   "scheme" : "cap26"
                 },
                 "publicKey" : {
@@ -596,11 +596,11 @@
               },
               "transactionSigning" : {
                 "derivationPath" : {
-                  "path" : "m/44H/1022H/13H/618H/1460H/0H",
+                  "path" : "m/44H/1022H/34H/618H/1460H/0H",
                   "scheme" : "cap26"
                 },
                 "publicKey" : {
-                  "compressedData" : "d0421b7afffe7c4677a165b74321f6abb23418c0db2adad24d1d6248a2fd5faf",
+                  "compressedData" : "cb5f31fee2b66013a6476bd4bf37bf6bf229404a6db1567db317ed0ba5334358",
                   "curve" : "curve25519"
                 },
                 "factorSourceID" : {
@@ -615,9 +615,9 @@
           }
         },
         {
-          "address" : "identity_tdx_d_12fgpys3dvly5655htqspfanytemdx5z6l7zx6dytygy0j9cs79eynx",
+          "address" : "identity_tdx_22_12tmdjpyjwr8qk2fpvzk655cga5jl54f8lzn570wga6wmfl3aulu5ju",
           "displayName" : "Mrs Public",
-          "networkID" : 13,
+          "networkID" : 34,
           "personaData" : {
             "creditCards" : [
 
@@ -649,7 +649,7 @@
             "unsecuredEntityControl" : {
               "authenticationSigning" : {
                 "derivationPath" : {
-                  "path" : "m/44H/1022H/13H/618H/1678H/1H",
+                  "path" : "m/44H/1022H/34H/618H/1678H/1H",
                   "scheme" : "cap26"
                 },
                 "publicKey" : {
@@ -666,11 +666,11 @@
               },
               "transactionSigning" : {
                 "derivationPath" : {
-                  "path" : "m/44H/1022H/13H/618H/1460H/1H",
+                  "path" : "m/44H/1022H/34H/618H/1460H/1H",
                   "scheme" : "cap26"
                 },
                 "publicKey" : {
-                  "compressedData" : "89516457a22f490183aec20039ca69c3642433e2408b1a39d1a06434dec7ec39",
+                  "compressedData" : "8620fd68dd9c594ff2477ee17189d32d79751915b21aa43e3f19b72a2f4404e3",
                   "curve" : "curve25519"
                 },
                 "factorSourceID" : {
