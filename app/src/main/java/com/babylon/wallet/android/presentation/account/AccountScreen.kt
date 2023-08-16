@@ -501,9 +501,11 @@ fun AssetsContent(
                             collapsedState = collapsedState,
                         ) { collection, item ->
                             NonFungibleResourceItem(
-                                modifier = contentModifier.clickable {
-                                    onNonFungibleItemClick(collection, item)
-                                },
+                                modifier = Modifier
+                                    .padding(RadixTheme.dimensions.paddingDefault)
+                                    .clickable {
+                                        onNonFungibleItemClick(collection, item)
+                                    },
                                 item = item
                             )
                         }

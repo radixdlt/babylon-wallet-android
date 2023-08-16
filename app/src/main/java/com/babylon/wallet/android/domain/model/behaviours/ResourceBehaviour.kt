@@ -69,6 +69,14 @@ enum class ResourceBehaviour(
         title = R.string.accountSettings_behaviors_removableByAnyone,
         icon = com.babylon.wallet.android.designsystem.R.drawable.ic_change_recall
     ),
+    PERFORM_FREEZE(
+        title = R.string.accountSettings_behaviors_canFreezeInFuture,
+        icon = com.babylon.wallet.android.designsystem.R.drawable.ic_perform_recall
+    ),
+    CHANGE_FREEZE(
+        title = R.string.accountSettings_behaviors_canBeFrozeInFutureByAnyone,
+        icon = com.babylon.wallet.android.designsystem.R.drawable.ic_change_recall
+    ),
 
     PERFORM_UPDATE_NON_FUNGIBLE_DATA(
         title = R.string.accountSettings_behaviors_nftDataChangeable,
