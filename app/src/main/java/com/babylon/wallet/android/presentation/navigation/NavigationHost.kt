@@ -29,6 +29,7 @@ import com.babylon.wallet.android.presentation.main.MainUiState
 import com.babylon.wallet.android.presentation.main.main
 import com.babylon.wallet.android.presentation.navigation.Screen.Companion.ARG_ACCOUNT_ID
 import com.babylon.wallet.android.presentation.onboarding.OnboardingScreen
+import com.babylon.wallet.android.presentation.onboarding.restore.restoreFromBackupScreen
 import com.babylon.wallet.android.presentation.settings.backup.restoreMnemonicScreen
 import com.babylon.wallet.android.presentation.settings.incompatibleprofile.IncompatibleProfileContent
 import com.babylon.wallet.android.presentation.settings.incompatibleprofile.ROUTE_INCOMPATIBLE_PROFILE
@@ -67,9 +68,20 @@ fun NavigationHost(
                 onOnBoardingEnd = {
                     navController.popBackStack(MAIN_ROUTE, inclusive = false)
                 },
-                onBack = onCloseApp
+                onBack = onCloseApp,
+                onRestoreFromBackupClick = {
+                    navController.restoreFromBackupScreen()
+                }
             )
         }
+        restoreFromBackupScreen(
+            onBack = {
+                navController.popBackStack()
+            },
+            onRestored = {
+                navController.popBackStack(MAIN_ROUTE, inclusive = false)
+            }
+        )
         main(
             mainUiState = mainUiState,
             onMenuClick = {

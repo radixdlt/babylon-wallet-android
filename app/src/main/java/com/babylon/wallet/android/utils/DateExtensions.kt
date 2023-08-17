@@ -46,3 +46,8 @@ fun Instant.ledgerLastUsedDateFormat(): String {
     val formatter = DateTimeFormatter.ofPattern(format).withZone(ZoneId.systemDefault())
     return formatter.format(this)
 }
+
+fun Instant.toDateString(): String {
+    val formatter = DateTimeFormatter.ofPattern(LAST_USED_DATE_FORMAT).withZone(ZoneId.systemDefault())
+    return formatter.format(this)
+}

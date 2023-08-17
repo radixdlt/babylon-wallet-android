@@ -637,14 +637,16 @@
   <string name="encryptProfileBackup_confirmPasswordField_error">Passwords do not match</string>
   <string name="recoverProfileBackup_header_title">Recover Wallet From Backup</string>
   <string name="recoverProfileBackup_header_subtitle">Select a backup to recover your Radix Wallet. You will be asked to enter your seed phrase(s) to recover control of your Accounts and Personas.</string>
+  <string name="androidRecoverProfileBackup_choose_title">Choose a backup</string>
   <string name="iOSRecoverProfileBackup_choose_title">Choose a backup on iCloud</string>
   <string name="iOSRecoverProfileBackup_noBackupsAvailable">No wallet backups available on current iCloud account</string>
   <string name="androidRecoverProfileBackup_noBackupsAvailable">No wallet backups available</string>
   <string name="recoverProfileBackup_backupFrom">*Backup from:* %s</string>
-  <string name="recoverProfileBackup_lastModifier">*Last modified:* %s</string>
+  <string name="recoverProfileBackup_lastModified">*Last modified:* %s</string>
   <string name="recoverProfileBackup_numberOfAccounts">*Number of accounts:* %d</string>
   <string name="recoverProfileBackup_numberOfPersonas">*Number of personas:* %d</string>
   <string name="recoverProfileBackup_importFileButton_title">Import from Backup File Instead</string>
+  <string name="recoverProfileBackup_incompatibleWalletDataLabel">Incompatible Wallet data</string>
 
   <string name="androidProfileBackup_disabledText">Back up is turned off</string>
   <string name="androidProfileBackup_lastBackedUp">Last Backed up: %s</string>

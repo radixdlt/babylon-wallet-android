@@ -64,11 +64,6 @@ class OnboardingViewModel @Inject constructor(
         }
     }
 
-    fun onRestoreProfileFromBackupClicked() = viewModelScope.launch {
-        restoreProfileFromBackupUseCase()
-        sendEvent(OnBoardingEvent.EndOnBoarding)
-    }
-
     data class OnBoardingUiState(
         val currentPagerPage: Int = 0,
         val showButtons: Boolean = false,
