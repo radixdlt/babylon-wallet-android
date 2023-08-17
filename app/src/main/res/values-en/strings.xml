@@ -616,6 +616,36 @@
   <string name="addLedgerDevice_nameLedger_detectedType">Detected type: %s</string>
   <string name="addLedgerDevice_nameLedger_namePlaceholder">Green Ledger Nano S+</string>
   <string name="addLedgerDevice_nameLedger_continueButtonTitle">Save and Continue</string>
+
+  <string name="profileBackup_headerTitle">Backing up your wallet ensures that you can  recover access to your Accounts, Personas, and wallet settings on a new phone by re-entering your seed phrase(s).\n\n*For security, backups do not contain any seed phrases or private keys. You must write them down separately.*</string>
+  <string name="profileBackup_automaticBackups_title">Automatic Backups (recommended)</string>
+  <string name="profileBackup_manualBackups_title">Manual Backups</string>
+  <string name="profileBackup_manualBackups_subtitle">A manually exported wallet backup file may also be used for recovery, along with your seed phrase(s).\n\nOnly the *current configuration* of your wallet is backed up with each manual export.</string>
+  <string name="profileBackup_manualBackups_exportButtonTitle">Export Wallet Backup File</string>
+  <string name="profileBackup_manualBackups_encryptBackupDialogTitle">Encrypt this backup with a password?</string>
+  <string name="profileBackup_manualBackups_successMessage">Exported wallet backup file</string>
+  <string name="androidProfileBackup_automaticBackups_enable">Enable Backup</string>
+  <string name="androidProfileBackup_automaticBackups_disable">Disable Backup</string>
+  <string name="iOSProfileBackup_automaticBackups_enable">Enable Backup to iCloud</string>
+  <string name="iOSProfileBackup_automaticBackups_disable">Disable Backup to iCloud</string>
+  <string name="iOSProfileBackup_automaticBackups_subtitle">Automatic continuous backups</string>
+  <string name="androidProfileBackup_automaticBackups_subtitle">Periodic system backups</string>
+  <string name="encryptProfileBackup_header_title">Encrypt Wallet Backup File</string>
+  <string name="encryptProfileBackup_header_subtitle">Enter a password to encrypt this wallet backup file. You will be required to enter this password when recovering your Wallet from this file.</string>
+  <string name="encryptProfileBackup_enterPasswordField_placeholder">Enter password</string>
+  <string name="encryptProfileBackup_confirmPasswordField_placeholder">Confirm password</string>
+  <string name="encryptProfileBackup_confirmPasswordField_error">Passwords do not match</string>
+  <string name="recoverProfileBackup_header_title">Recover Wallet From Backup</string>
+  <string name="recoverProfileBackup_header_subtitle">Select a backup to recover your Radix Wallet. You will be asked to enter your seed phrase(s) to recover control of your Accounts and Personas.</string>
+  <string name="iOSRecoverProfileBackup_choose_title">Choose a backup on iCloud</string>
+  <string name="iOSRecoverProfileBackup_noBackupsAvailable">No wallet backups available on current iCloud account</string>
+  <string name="androidRecoverProfileBackup_noBackupsAvailable">No wallet backups available</string>
+  <string name="recoverProfileBackup_backupFrom">*Backup from:* %s</string>
+  <string name="recoverProfileBackup_lastModifier">*Last modified:* %s</string>
+  <string name="recoverProfileBackup_numberOfAccounts">*Number of accounts:* %d</string>
+  <string name="recoverProfileBackup_numberOfPersonas">*Number of personas:* %d</string>
+  <string name="recoverProfileBackup_importFileButton_title">Import from Backup File Instead</string>
+
   <string name="androidProfileBackup_disabledText">Back up is turned off</string>
   <string name="androidProfileBackup_lastBackedUp">Last Backed up: %s</string>
   <string name="androidProfileBackup_noLastBackUp">Not backed up yet</string>

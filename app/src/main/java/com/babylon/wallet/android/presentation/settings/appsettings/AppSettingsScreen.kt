@@ -78,7 +78,7 @@ private fun AppSettingsContent(
                                     .padding(all = RadixTheme.dimensions.paddingDefault),
                                 titleRes = settingsItem.descriptionRes(),
                                 subtitleRes = settingsItem.subtitleRes(),
-                                icon = settingsItem.getIcon(),
+                                iconResource = settingsItem.getIcon(),
                                 checked = settingsItem.enabled,
                                 onCheckedChange = onDeveloperModeToggled
                             )
