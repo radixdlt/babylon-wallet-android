@@ -360,13 +360,13 @@ fun NetworkFeesDefaultView(
             val royaltyFee = transactionFees?.defaultRoyaltyFeesDisplayed
 
             Text(
-                text = if (transactionFees?.noDefautRoyaltiesDue == true) {
+                text = if (transactionFees?.noDefaultRoyaltiesDue == true) {
                     stringResource(id = R.string.transactionReview_customizeNetworkFeeSheet_noneDue)
                 } else {
                     stringResource(id = R.string.transactionReview_xrdAmount, royaltyFee.orEmpty())
                 },
                 style = RadixTheme.typography.body1Header,
-                color = if (transactionFees?.noDefautRoyaltiesDue == true) {
+                color = if (transactionFees?.noDefaultRoyaltiesDue == true) {
                     RadixTheme.colors.gray3
                 } else {
                     RadixTheme.colors.gray1

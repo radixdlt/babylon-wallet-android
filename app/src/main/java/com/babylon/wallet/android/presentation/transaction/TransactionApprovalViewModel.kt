@@ -177,23 +177,16 @@ class TransactionApprovalViewModel @Inject constructor(
     fun onFeePaddingAmountChanged(feePaddingAmount: String) {
         fees.onFeePaddingAmountChanged(feePaddingAmount)
 
-        // Validate lock fee against available amount
-        val feePayerResult = state.value.feePayerSearchResult
-        _state.update {
-            it.copy(
-                feePayerSearchResult = feePayerResult?.copy(
-                    insufficientBalanceToPayTheFee = feePayerResult.hasInsufficientBalanceToPayTheFee(
-                        feePayerResult.feePayerAddressFromManifest.orEmpty()
-                    )
-                )
-            )
-        }
+        validateLockFee()
     }
 
     fun onTipPercentageChanged(tipPercentage: String) {
         fees.onTipPercentageChanged(tipPercentage)
 
-        // Validate lock fee against available amount
+        validateLockFee()
+    }
+
+    private fun validateLockFee() {
         val feePayerResult = state.value.feePayerSearchResult
         _state.update {
             it.copy(

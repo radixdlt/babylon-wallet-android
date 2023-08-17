@@ -42,7 +42,7 @@ data class TransactionFees(
             )
         ).displayableQuantity()
 
-    val noDefautRoyaltiesDue: Boolean
+    val noDefaultRoyaltiesDue: Boolean
         get() = defaultRoyaltyFeesDisplayed == "0"
 
     val defaultTransactionFee: BigDecimal
