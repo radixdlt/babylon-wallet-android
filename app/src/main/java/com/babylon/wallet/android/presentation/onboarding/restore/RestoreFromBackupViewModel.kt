@@ -6,11 +6,13 @@ import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiState
-import com.babylon.wallet.android.presentation.transaction.TransactionApprovalViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.profile.data.model.Header
+import rdx.works.profile.data.model.factorsources.FactorSource
+import rdx.works.profile.data.model.factorsources.FactorSourceKind
+import rdx.works.profile.data.repository.MnemonicRepository
 import rdx.works.profile.data.repository.ProfileRepository
 import rdx.works.profile.domain.backup.RestoreProfileFromBackupUseCase
 import javax.inject.Inject
@@ -18,7 +20,8 @@ import javax.inject.Inject
 @HiltViewModel
 class RestoreFromBackupViewModel @Inject constructor(
     profileRepository: ProfileRepository,
-    private val restoreProfileFromBackupUseCase: RestoreProfileFromBackupUseCase
+    private val restoreProfileFromBackupUseCase: RestoreProfileFromBackupUseCase,
+    private val mnemonicRepository: MnemonicRepository
 ) : StateViewModel<RestoreFromBackupViewModel.State>(), OneOffEventHandler<RestoreFromBackupViewModel.Event> by OneOffEventHandlerImpl() {
 
     override fun initialState(): State = State()
@@ -42,8 +45,18 @@ class RestoreFromBackupViewModel @Inject constructor(
 
     fun onSubmit() = viewModelScope.launch {
         if (state.value.isRestoringProfileChecked) {
-            restoreProfileFromBackupUseCase()
-            sendEvent(Event.OnRestored)
+            val restoredProfile = restoreProfileFromBackupUseCase()
+
+            val deviceFactorSources = restoredProfile?.factorSources?.mapNotNull {
+                val factorSourceHash = it.id as? FactorSource.FactorSourceID.FromHash ?: return@mapNotNull null
+                if (factorSourceHash.kind == FactorSourceKind.DEVICE && mnemonicRepository.readMnemonic(factorSourceHash) == null) {
+                    factorSourceHash
+                } else {
+                    null
+                }
+            }.orEmpty()
+
+            sendEvent(Event.OnRestored(needsMnemonicRecovery = deviceFactorSources.isNotEmpty()))
         }
     }
 
@@ -59,6 +72,6 @@ class RestoreFromBackupViewModel @Inject constructor(
 
     sealed interface Event : OneOffEvent {
         object OnDismiss : Event
-        object OnRestored : Event
+        data class OnRestored(val needsMnemonicRecovery: Boolean) : Event
     }
 }

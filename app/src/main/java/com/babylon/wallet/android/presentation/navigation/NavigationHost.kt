@@ -78,8 +78,12 @@ fun NavigationHost(
             onBack = {
                 navController.popBackStack()
             },
-            onRestored = {
-                navController.popBackStack(MAIN_ROUTE, inclusive = false)
+            onRestored = { needsMnemonicRecovery ->
+                if (needsMnemonicRecovery) {
+
+                } else {
+                    navController.popBackStack(MAIN_ROUTE, inclusive = false)
+                }
             }
         )
         main(

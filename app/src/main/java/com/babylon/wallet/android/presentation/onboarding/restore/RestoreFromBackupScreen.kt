@@ -47,7 +47,7 @@ import com.babylon.wallet.android.utils.toDateString
 fun RestoreFromBackupScreen(
     viewModel: RestoreFromBackupViewModel,
     onBack: () -> Unit,
-    onRestored: () -> Unit
+    onRestored: (Boolean) -> Unit
 ) {
     val state by viewModel.state.collectAsState()
 
@@ -61,8 +61,8 @@ fun RestoreFromBackupScreen(
     LaunchedEffect(Unit) {
         viewModel.oneOffEvent.collect {
             when (it) {
-                Event.OnDismiss -> onBack()
-                Event.OnRestored -> onRestored()
+                is Event.OnDismiss -> onBack()
+                is Event.OnRestored -> onRestored(it.needsMnemonicRecovery)
             }
         }
     }

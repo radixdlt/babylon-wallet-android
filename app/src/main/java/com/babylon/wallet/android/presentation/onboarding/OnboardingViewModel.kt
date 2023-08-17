@@ -11,14 +11,12 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.profile.domain.backup.DiscardRestoredProfileFromBackupUseCase
 import rdx.works.profile.domain.backup.IsProfileFromBackupExistsUseCase
-import rdx.works.profile.domain.backup.RestoreProfileFromBackupUseCase
 import javax.inject.Inject
 
 @HiltViewModel
 class OnboardingViewModel @Inject constructor(
 //    private val deviceSecurityHelper: DeviceSecurityHelper,
     private val isProfileFromBackupExistsUseCase: IsProfileFromBackupExistsUseCase,
-    private val restoreProfileFromBackupUseCase: RestoreProfileFromBackupUseCase,
     private val discardRestoredProfileFromBackupUseCase: DiscardRestoredProfileFromBackupUseCase
 ) : StateViewModel<OnboardingViewModel.OnBoardingUiState>(),
     OneOffEventHandler<OnboardingViewModel.OnBoardingEvent> by OneOffEventHandlerImpl() {
