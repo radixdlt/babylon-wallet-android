@@ -174,24 +174,57 @@ class TransactionApprovalViewModel @Inject constructor(
 
     fun onSelectFeePayerClick() = fees.onSelectFeePayerClick()
 
-    fun onNetworkAndRoyaltyFeeChanged(networkAndRoyaltyFee: String) =
-        fees.onNetworkAndRoyaltyFeeChanged(networkAndRoyaltyFee)
+    fun onFeePaddingAmountChanged(feePaddingAmount: String) {
+        fees.onFeePaddingAmountChanged(feePaddingAmount)
 
-    fun onTipPercentageChanged(tipPercentage: String) = fees.onTipPercentageChanged(tipPercentage)
+        validateLockFee()
+    }
+
+    fun onTipPercentageChanged(tipPercentage: String) {
+        fees.onTipPercentageChanged(tipPercentage)
+
+        validateLockFee()
+    }
+
+    private fun validateLockFee() {
+        val feePayerResult = state.value.feePayerSearchResult
+        _state.update {
+            it.copy(
+                feePayerSearchResult = feePayerResult?.copy(
+                    insufficientBalanceToPayTheFee = feePayerResult.hasInsufficientBalanceToPayTheFee(
+                        feePayerResult.feePayerAddressFromManifest.orEmpty()
+                    )
+                )
+            )
+        }
+    }
+
+    private fun FeePayerSearchResult.hasInsufficientBalanceToPayTheFee(candidateAddress: String): Boolean {
+        val transactionFee = state.value.transactionFees.transactionFeeToLock
+        return candidateXrdBalance(
+            candidateAddress = candidateAddress
+        ) < transactionFee
+    }
 
     fun onViewDefaultModeClick() = fees.onViewDefaultModeClick()
 
     fun onViewAdvancedModeClick() = fees.onViewAdvancedModeClick()
 
     fun onPayerSelected(selectedFeePayer: Network.Account) {
-        val feePayerResult = state.value.feePayerSearchResult
+        val feePayerSearchResult = state.value.feePayerSearchResult
+
+        val updatedFeePayerResult = feePayerSearchResult?.copy(
+            feePayerAddressFromManifest = selectedFeePayer.address,
+            candidates = feePayerSearchResult.candidates,
+            insufficientBalanceToPayTheFee = feePayerSearchResult.hasInsufficientBalanceToPayTheFee(
+                selectedFeePayer.address
+            )
+        )
+
         val customizeFeesSheet = state.value.sheetState as? State.Sheet.CustomizeFees ?: return
         _state.update {
             it.copy(
-                feePayerSearchResult = feePayerResult?.copy(
-                    feePayerAddressFromManifest = selectedFeePayer.address,
-                    candidates = feePayerResult.candidates
-                ),
+                feePayerSearchResult = updatedFeePayerResult,
                 sheetState = customizeFeesSheet.copy(
                     feePayerMode = State.Sheet.CustomizeFees.FeePayerMode.FeePayerSelected(
                         feePayerCandidate = selectedFeePayer
@@ -241,13 +274,13 @@ class TransactionApprovalViewModel @Inject constructor(
             }
 
         val isSubmitEnabled: Boolean
-            get() = previewType !is PreviewType.None
+            get() = previewType !is PreviewType.None && feePayerSearchResult?.insufficientBalanceToPayTheFee == false
 
         val noFeePayerSelected: Boolean
             get() = feePayerSearchResult?.feePayerAddressFromManifest == null
 
         val insufficientBalanceToPayTheFee: Boolean
-            get() = false // todo Will need to be added later on
+            get() = feePayerSearchResult?.insufficientBalanceToPayTheFee == true
 
         sealed class Sheet {
             object None : Sheet()
@@ -269,11 +302,11 @@ class TransactionApprovalViewModel @Inject constructor(
                     ) : FeePayerMode
 
                     data class NoFeePayerSelected(
-                        val candidates: List<Network.Account>
+                        val candidates: List<FeePayerSearchResult.FeePayerCandidate>
                     ) : FeePayerMode
 
                     data class SelectFeePayer(
-                        val candidates: List<Network.Account>
+                        val candidates: List<FeePayerSearchResult.FeePayerCandidate>
                     ) : FeePayerMode
                 }
 

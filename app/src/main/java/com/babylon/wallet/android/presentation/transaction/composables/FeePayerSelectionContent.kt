@@ -14,6 +14,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import com.babylon.wallet.android.R
+import com.babylon.wallet.android.data.transaction.model.FeePayerSearchResult
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.getAccountGradientColorsFor
 import com.babylon.wallet.android.presentation.dapp.authorized.account.AccountSelectionCard
@@ -21,14 +22,17 @@ import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import rdx.works.profile.data.model.pernetwork.Network
 
 fun LazyListScope.feePayerSelectionContent(
-    candidates: List<Network.Account>,
+    candidates: List<FeePayerSearchResult.FeePayerCandidate>,
     onPayerSelected: (Network.Account) -> Unit
 ) {
     item {
         Text(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = RadixTheme.dimensions.paddingXXLarge),
+                .padding(
+                    horizontal = RadixTheme.dimensions.paddingXXLarge,
+                    vertical = RadixTheme.dimensions.paddingDefault
+                ),
             text = stringResource(id = R.string.transactionReview_customizeNetworkFeeSheet_selectFeePayer_navigationTitle),
             style = RadixTheme.typography.body1Regular,
             color = RadixTheme.colors.gray1,
@@ -37,7 +41,7 @@ fun LazyListScope.feePayerSelectionContent(
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
     }
     items(candidates) { candidate ->
-        val gradientColor = getAccountGradientColorsFor(candidate.appearanceID)
+        val gradientColor = getAccountGradientColorsFor(candidate.account.appearanceID)
         AccountSelectionCard(
             modifier = Modifier
                 .fillMaxWidth()
@@ -48,14 +52,14 @@ fun LazyListScope.feePayerSelectionContent(
                 )
                 .clip(RadixTheme.shapes.roundedRectMedium)
                 .throttleClickable {
-                    onPayerSelected(candidate)
+                    onPayerSelected(candidate.account)
                 },
-            accountName = candidate.displayName,
-            address = candidate.address,
+            accountName = candidate.account.displayName,
+            address = candidate.account.address,
             checked = false,
             isSingleChoice = true,
             radioButtonClicked = {
-                onPayerSelected(candidate)
+                onPayerSelected(candidate.account)
             }
         )
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))

@@ -5,7 +5,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.accountOnCurrentNetwork
-import java.lang.NumberFormatException
 import java.math.BigDecimal
 
 class TransactionFeesDelegate(
@@ -74,12 +73,12 @@ class TransactionFeesDelegate(
         switchToFeePayerSelection()
     }
 
-    fun onNetworkAndRoyaltyFeeChanged(networkAndRoyaltyFee: String) {
+    fun onFeePaddingAmountChanged(feePaddingAmount: String) {
         val transactionFees = state.value.transactionFees
         state.update { state ->
             state.copy(
                 transactionFees = transactionFees.copy(
-                    networkAndRoyaltyFees = networkAndRoyaltyFee
+                    feePaddingAmount = feePaddingAmount
                 )
             )
         }
@@ -87,18 +86,12 @@ class TransactionFeesDelegate(
 
     @Suppress("MagicNumber")
     fun onTipPercentageChanged(tipPercentage: String) {
-        try {
-            if (tipPercentage.toBigDecimal() > BigDecimal(100) || tipPercentage.contains(".")) {
-                return
-            }
-        } catch (_: NumberFormatException) { }
-
         val transactionFees = state.value.transactionFees
 
         state.update { state ->
             state.copy(
                 transactionFees = transactionFees.copy(
-                    tipPercentage = tipPercentage
+                    tipPercentage = tipPercentage.toBigDecimalOrNull()
                 )
             )
         }
@@ -111,7 +104,7 @@ class TransactionFeesDelegate(
             it.copy(
                 // When switching back to default mode, reset field values that have been modified in advanced mode
                 transactionFees = transactionFees.copy(
-                    networkAndRoyaltyFees = null,
+                    feePaddingAmount = null,
                     tipPercentage = null
                 ),
                 sheetState = customizeFeesSheet.copy(
@@ -134,7 +127,7 @@ class TransactionFeesDelegate(
 
     private fun switchToFeePayerSelection() {
         val feePayerResult = state.value.feePayerSearchResult
-        val feesMode = state.value.sheetState as State.Sheet.CustomizeFees ?: return
+        val feesMode = state.value.sheetState as State.Sheet.CustomizeFees
         val transactionFees = state.value.transactionFees
         state.update { state ->
             state.copy(

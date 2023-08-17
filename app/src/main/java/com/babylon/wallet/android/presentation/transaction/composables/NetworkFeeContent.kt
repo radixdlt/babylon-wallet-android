@@ -22,7 +22,6 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.presentation.transaction.fees.TransactionFees
 import com.babylon.wallet.android.presentation.ui.composables.InfoLink
 import rdx.works.core.displayableQuantity
-import java.math.BigDecimal
 
 @Composable
 fun NetworkFeeContent(
@@ -81,16 +80,24 @@ fun NetworkFeeContent(
 
         if (noFeePayerSelected) {
             InfoLink(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(
+                        horizontal = RadixTheme.dimensions.paddingDefault,
+                        vertical = RadixTheme.dimensions.paddingSmall
+                    ),
                 text = stringResource(id = R.string.transactionReview_customizeNetworkFeeSheet_selectFeePayer_warning),
                 contentColor = RadixTheme.colors.orange1,
                 iconRes = com.babylon.wallet.android.designsystem.R.drawable.ic_warning_error
             )
-        }
-
-        if (insufficientBalanceToPayTheFee) {
+        } else if (insufficientBalanceToPayTheFee) {
             InfoLink(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(
+                        horizontal = RadixTheme.dimensions.paddingDefault,
+                        vertical = RadixTheme.dimensions.paddingSmall
+                    ),
                 text = stringResource(id = R.string.transactionReview_customizeNetworkFeeSheet_insufficientBalance_warning),
                 contentColor = RadixTheme.colors.red1,
                 iconRes = com.babylon.wallet.android.designsystem.R.drawable.ic_warning_error
@@ -108,9 +115,7 @@ fun NetworkFeeContent(
 @Composable
 fun NetworkFeeContentPreview() {
     NetworkFeeContent(
-        fees = TransactionFees(
-            networkFee = BigDecimal("10")
-        ),
+        fees = TransactionFees(),
         noFeePayerSelected = false,
         insufficientBalanceToPayTheFee = false,
         onCustomizeClick = {}

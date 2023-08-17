@@ -31,6 +31,7 @@ import com.babylon.wallet.android.presentation.transaction.AccountWithTransferab
 import com.babylon.wallet.android.presentation.transaction.TransactionApprovalViewModel
 import com.babylon.wallet.android.presentation.transaction.fees.TransactionFees
 import com.babylon.wallet.android.presentation.ui.composables.BottomDialogDragHandle
+import com.babylon.wallet.android.presentation.ui.composables.InfoLink
 import rdx.works.core.displayableQuantity
 import rdx.works.profile.data.model.pernetwork.Network
 
@@ -40,11 +41,12 @@ fun FeesSheet(
     modifier: Modifier = Modifier,
     state: TransactionApprovalViewModel.State.Sheet.CustomizeFees,
     transactionFees: TransactionFees,
+    insufficientBalanceToPayTheFee: Boolean,
     onClose: () -> Unit,
     onChangeFeePayerClick: () -> Unit,
     onSelectFeePayerClick: () -> Unit,
     onPayerSelected: (Network.Account) -> Unit,
-    onNetworkAndRoyaltyFeeChanged: (String) -> Unit,
+    onFeePaddingAmountChanged: (String) -> Unit,
     onTipPercentageChanged: (String) -> Unit,
     onViewDefaultModeClick: () -> Unit,
     onViewAdvancedModeClick: () -> Unit
@@ -110,7 +112,11 @@ fun FeesSheet(
             Divider(
                 Modifier
                     .fillMaxWidth()
-                    .padding(top = RadixTheme.dimensions.paddingLarge),
+                    .padding(
+                        top = RadixTheme.dimensions.paddingLarge,
+                        start = RadixTheme.dimensions.paddingDefault,
+                        end = RadixTheme.dimensions.paddingDefault
+                    ),
                 color = RadixTheme.colors.gray4
             )
         }
@@ -190,6 +196,20 @@ fun FeesSheet(
                         ),
                         shape = RadixTheme.shapes.roundedRectMedium
                     )
+
+                    if (insufficientBalanceToPayTheFee) {
+                        InfoLink(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(
+                                    horizontal = RadixTheme.dimensions.paddingDefault,
+                                    vertical = RadixTheme.dimensions.paddingSmall
+                                ),
+                            text = stringResource(id = R.string.transactionReview_customizeNetworkFeeSheet_insufficientBalance_warning),
+                            contentColor = RadixTheme.colors.red1,
+                            iconRes = com.babylon.wallet.android.designsystem.R.drawable.ic_warning_error
+                        )
+                    }
                 }
             }
             is TransactionApprovalViewModel.State.Sheet.CustomizeFees.FeePayerMode.NoFeePayerSelected -> {
@@ -214,13 +234,6 @@ fun FeesSheet(
                             enabled = false
                         )
                     }
-                    Text(
-                        modifier = Modifier
-                            .fillMaxWidth(),
-                        text = "No account selected",
-                        style = RadixTheme.typography.body1Link,
-                        color = RadixTheme.colors.gray2
-                    )
                     Row(
                         modifier = Modifier
                             .fillMaxWidth(),
@@ -261,7 +274,7 @@ fun FeesSheet(
                 TransactionApprovalViewModel.State.Sheet.CustomizeFees.FeesMode.Advanced -> {
                     NetworkFeesAdvancedView(
                         transactionFees = transactionFees,
-                        onNetworkAndRoyaltyFeeChanged = onNetworkAndRoyaltyFeeChanged,
+                        onFeePaddingAmountChanged = onFeePaddingAmountChanged,
                         onTipPercentageChanged = onTipPercentageChanged
                     )
                 }
@@ -344,15 +357,20 @@ fun NetworkFeesDefaultView(
                 color = RadixTheme.colors.gray2
             )
             Spacer(modifier = Modifier.weight(1f))
-            val royaltyFee = transactionFees?.royaltyFeesDisplayed
+            val royaltyFee = transactionFees?.defaultRoyaltyFeesDisplayed
+
             Text(
-                text = if (royaltyFee == "0") {
+                text = if (transactionFees?.noDefaultRoyaltiesDue == true) {
                     stringResource(id = R.string.transactionReview_customizeNetworkFeeSheet_noneDue)
                 } else {
                     stringResource(id = R.string.transactionReview_xrdAmount, royaltyFee.orEmpty())
                 },
                 style = RadixTheme.typography.body1Header,
-                color = RadixTheme.colors.gray1
+                color = if (transactionFees?.noDefaultRoyaltiesDue == true) {
+                    RadixTheme.colors.gray3
+                } else {
+                    RadixTheme.colors.gray1
+                }
             )
         }
 
@@ -393,22 +411,35 @@ fun NetworkFeesDefaultView(
 fun NetworkFeesAdvancedView(
     modifier: Modifier = Modifier,
     transactionFees: TransactionFees?,
-    onNetworkAndRoyaltyFeeChanged: (String) -> Unit,
+    onFeePaddingAmountChanged: (String) -> Unit,
     onTipPercentageChanged: (String) -> Unit
 ) {
     Column(
         modifier = modifier
             .padding(
-                vertical = RadixTheme.dimensions.paddingDefault,
-                horizontal = RadixTheme.dimensions.paddingXLarge
+                vertical = RadixTheme.dimensions.paddingMedium,
             )
     ) {
+        Divider(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(
+                    bottom = RadixTheme.dimensions.paddingDefault,
+                    start = RadixTheme.dimensions.paddingDefault,
+                    end = RadixTheme.dimensions.paddingDefault,
+                ),
+            color = RadixTheme.colors.gray4
+        )
+
         RadixTextField(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(vertical = RadixTheme.dimensions.paddingMedium),
-            onValueChanged = onNetworkAndRoyaltyFeeChanged,
-            value = transactionFees?.networkAndRoyaltyFeesToDisplay.orEmpty(),
+                .padding(
+                    vertical = RadixTheme.dimensions.paddingMedium,
+                    horizontal = RadixTheme.dimensions.paddingXLarge
+                ),
+            onValueChanged = onFeePaddingAmountChanged,
+            value = transactionFees?.feePaddingAmountToDisplay?.displayableQuantity().orEmpty(),
             leftLabel = stringResource(
                 id = R.string.transactionReview_customizeNetworkFeeSheet_paddingFieldLabel
             ),
@@ -428,10 +459,25 @@ fun NetworkFeesAdvancedView(
         RadixTextField(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(vertical = RadixTheme.dimensions.paddingMedium),
+                .padding(
+                    vertical = RadixTheme.dimensions.paddingMedium,
+                    horizontal = RadixTheme.dimensions.paddingXLarge
+                ),
             onValueChanged = onTipPercentageChanged,
             value = transactionFees?.tipPercentageToDisplay.orEmpty(),
-            leftLabel = stringResource(id = R.string.transactionReview_customizeNetworkFeeSheet_tipFieldLabel),
+            leftLabelContent = {
+                Text(
+                    text = stringResource(id = R.string.transactionReview_customizeNetworkFeeSheet_tipFieldLabel),
+                    style = RadixTheme.typography.body1HighImportance,
+                    color = RadixTheme.colors.gray1
+                )
+
+                Text(
+                    text = stringResource(id = R.string.transactionReview_customizeNetworkFeeSheet_tipFieldInfo),
+                    style = RadixTheme.typography.body1Regular,
+                    color = RadixTheme.colors.gray2
+                )
+            },
             keyboardOptions = KeyboardOptions(
                 keyboardType = KeyboardType.Decimal,
                 imeAction = ImeAction.Done
@@ -445,26 +491,218 @@ fun NetworkFeesAdvancedView(
             textStyle = RadixTheme.typography.body1Regular.copy(textAlign = TextAlign.End)
         )
 
-        Row(
+        Text(
             modifier = Modifier
-                .padding(vertical = RadixTheme.dimensions.paddingDefault)
-        ) {
-            Text(
-                modifier = Modifier
-                    .padding(end = RadixTheme.dimensions.paddingDefault),
-                text = stringResource(id = R.string.transactionReview_networkFee_heading).uppercase(),
-                style = RadixTheme.typography.body1Link,
-                color = RadixTheme.colors.gray2
-            )
-            Spacer(modifier = Modifier.weight(1f))
-            Text(
-                text = stringResource(
-                    id = R.string.transactionReview_xrdAmount,
-                    transactionFees?.transactionFeeToLock?.displayableQuantity().orEmpty()
+                .fillMaxWidth()
+                .padding(
+                    horizontal = RadixTheme.dimensions.paddingLarge,
+                    vertical = RadixTheme.dimensions.paddingDefault
                 ),
-                style = RadixTheme.typography.body1Header,
-                color = RadixTheme.colors.gray1
+            text = stringResource(id = R.string.transactionReview_customizeNetworkFeeSheet_feeBreakdownTitle).uppercase(),
+            style = RadixTheme.typography.body1Link,
+            color = RadixTheme.colors.gray2
+        )
+
+        Column(
+            modifier = Modifier
+                .background(RadixTheme.colors.gray5)
+                .padding(
+                    vertical = RadixTheme.dimensions.paddingDefault,
+                    horizontal = RadixTheme.dimensions.paddingLarge
+                )
+        ) {
+            Row(
+                modifier = Modifier
+                    .padding(vertical = RadixTheme.dimensions.paddingSmall)
+            ) {
+                Text(
+                    modifier = Modifier,
+                    text = stringResource(
+                        id = R.string.transactionReview_customizeNetworkFeeSheet_networkExecution
+                    ).uppercase(),
+                    style = RadixTheme.typography.body1Link,
+                    color = RadixTheme.colors.gray2
+                )
+                Spacer(modifier = Modifier.weight(1f))
+                Text(
+                    text = stringResource(
+                        id = R.string.transactionReview_xrdAmount,
+                        transactionFees?.networkExecutionCost.orEmpty()
+                    ),
+                    style = RadixTheme.typography.body1Header,
+                    color = RadixTheme.colors.gray1
+                )
+            }
+
+            Row(
+                modifier = Modifier
+                    .padding(vertical = RadixTheme.dimensions.paddingSmall)
+            ) {
+                Text(
+                    modifier = Modifier,
+                    text = stringResource(
+                        id = R.string.transactionReview_customizeNetworkFeeSheet_networkFinalization
+                    ).uppercase(),
+                    style = RadixTheme.typography.body1Link,
+                    color = RadixTheme.colors.gray2
+                )
+                Spacer(modifier = Modifier.weight(1f))
+                Text(
+                    text = stringResource(
+                        id = R.string.transactionReview_xrdAmount,
+                        transactionFees?.networkFinalizationCost.orEmpty()
+                    ),
+                    style = RadixTheme.typography.body1Header,
+                    color = RadixTheme.colors.gray1
+                )
+            }
+
+            Row(
+                modifier = Modifier
+                    .padding(vertical = RadixTheme.dimensions.paddingSmall)
+            ) {
+                Text(
+                    modifier = Modifier,
+                    text = stringResource(
+                        id = R.string.transactionReview_customizeNetworkFeeSheet_effectiveTip
+                    ).uppercase(),
+                    style = RadixTheme.typography.body1Link,
+                    color = RadixTheme.colors.gray2
+                )
+                Spacer(modifier = Modifier.weight(1f))
+                val effectiveTip = transactionFees?.effectiveTip?.displayableQuantity().orEmpty()
+                Text(
+                    text = stringResource(
+                        id = R.string.transactionReview_xrdAmount,
+                        effectiveTip
+                    ),
+                    style = RadixTheme.typography.body1Header,
+                    color = if (effectiveTip == "0") RadixTheme.colors.gray3 else RadixTheme.colors.gray1
+                )
+            }
+
+            Row(
+                modifier = Modifier
+                    .padding(vertical = RadixTheme.dimensions.paddingSmall)
+            ) {
+                Text(
+                    modifier = Modifier,
+                    text = stringResource(
+                        id = R.string.transactionReview_customizeNetworkFeeSheet_networkStorage
+                    ).uppercase(),
+                    style = RadixTheme.typography.body1Link,
+                    color = RadixTheme.colors.gray2
+                )
+                Spacer(modifier = Modifier.weight(1f))
+                Text(
+                    text = stringResource(
+                        id = R.string.transactionReview_xrdAmount,
+                        transactionFees?.networkStorageCost.orEmpty()
+                    ),
+                    style = RadixTheme.typography.body1Header,
+                    color = RadixTheme.colors.gray1
+                )
+            }
+
+            Row(
+                modifier = Modifier
+                    .padding(vertical = RadixTheme.dimensions.paddingSmall)
+            ) {
+                Text(
+                    modifier = Modifier,
+                    text = stringResource(id = R.string.transactionReview_customizeNetworkFeeSheet_padding).uppercase(),
+                    style = RadixTheme.typography.body1Link,
+                    color = RadixTheme.colors.gray2
+                )
+                Spacer(modifier = Modifier.weight(1f))
+                Text(
+                    text = stringResource(
+                        id = R.string.transactionReview_xrdAmount,
+                        transactionFees?.feePaddingAmountToDisplay?.displayableQuantity().orEmpty()
+                    ),
+                    style = RadixTheme.typography.body1Header,
+                    color = RadixTheme.colors.gray1
+                )
+            }
+
+            Row(
+                modifier = Modifier
+                    .padding(vertical = RadixTheme.dimensions.paddingSmall)
+            ) {
+                Text(
+                    modifier = Modifier,
+                    text = stringResource(id = R.string.transactionReview_customizeNetworkFeeSheet_royalties).uppercase(),
+                    style = RadixTheme.typography.body1Link,
+                    color = RadixTheme.colors.gray2
+                )
+                Spacer(modifier = Modifier.weight(1f))
+
+                val royaltyFee = if (transactionFees?.noRoyaltiesCostDue == true) {
+                    stringResource(id = R.string.transactionReview_customizeNetworkFeeSheet_noneDue)
+                } else {
+                    stringResource(
+                        id = R.string.transactionReview_xrdAmount,
+                        transactionFees?.royaltiesCost.orEmpty()
+                    )
+                }
+                Text(
+                    text = royaltyFee,
+                    style = RadixTheme.typography.body1Header,
+                    color = if (transactionFees?.noRoyaltiesCostDue == true) {
+                        RadixTheme.colors.gray3
+                    } else {
+                        RadixTheme.colors.gray1
+                    }
+                )
+            }
+
+            Divider(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(
+                        top = RadixTheme.dimensions.paddingDefault,
+                        bottom = RadixTheme.dimensions.paddingSmall
+                    ),
+                color = RadixTheme.colors.gray4
             )
+
+            Row(
+                modifier = Modifier
+                    .padding(
+                        top = RadixTheme.dimensions.paddingSmall,
+                        bottom = RadixTheme.dimensions.paddingDefault,
+                    )
+            ) {
+                Column {
+                    Text(
+                        modifier = Modifier
+                            .padding(end = RadixTheme.dimensions.paddingDefault),
+                        text = stringResource(
+                            id = R.string.transactionReview_customizeNetworkFeeSheet_totalFee
+                        ).uppercase(),
+                        style = RadixTheme.typography.body1Link,
+                        color = RadixTheme.colors.gray2
+                    )
+                    Text(
+                        modifier = Modifier
+                            .padding(end = RadixTheme.dimensions.paddingDefault),
+                        text = stringResource(
+                            id = R.string.transactionReview_customizeNetworkFeeSheet_totalFee_info
+                        ),
+                        style = RadixTheme.typography.body1Link,
+                        color = RadixTheme.colors.gray2
+                    )
+                }
+                Spacer(modifier = Modifier.weight(1f))
+                Text(
+                    text = stringResource(
+                        id = R.string.transactionReview_xrdAmount,
+                        transactionFees?.transactionFeeToLock?.displayableQuantity().orEmpty()
+                    ),
+                    style = RadixTheme.typography.body1Header,
+                    color = RadixTheme.colors.gray1
+                )
+            }
         }
     }
 }
