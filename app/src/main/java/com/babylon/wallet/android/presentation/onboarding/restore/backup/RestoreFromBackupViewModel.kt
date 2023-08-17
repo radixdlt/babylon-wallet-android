@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.presentation.onboarding.restore
+package com.babylon.wallet.android.presentation.onboarding.restore.backup
 
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.presentation.common.OneOffEvent

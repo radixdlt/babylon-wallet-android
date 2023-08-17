@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.presentation.onboarding.restore
+package com.babylon.wallet.android.presentation.onboarding.restore.backup
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.clickable
@@ -38,7 +38,7 @@ import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.SampleDataProvider
-import com.babylon.wallet.android.presentation.onboarding.restore.RestoreFromBackupViewModel.Event
+import com.babylon.wallet.android.presentation.onboarding.restore.backup.RestoreFromBackupViewModel.Event
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.utils.formattedSpans
 import com.babylon.wallet.android.utils.toDateString

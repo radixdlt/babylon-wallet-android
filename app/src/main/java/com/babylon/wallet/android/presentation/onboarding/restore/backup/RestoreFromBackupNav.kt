@@ -1,6 +1,6 @@
 @file:OptIn(ExperimentalAnimationApi::class)
 
-package com.babylon.wallet.android.presentation.onboarding.restore
+package com.babylon.wallet.android.presentation.onboarding.restore.backup
 
 import androidx.compose.animation.AnimatedContentScope
 import androidx.compose.animation.ExperimentalAnimationApi
