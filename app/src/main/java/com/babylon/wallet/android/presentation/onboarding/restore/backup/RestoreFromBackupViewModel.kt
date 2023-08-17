@@ -47,16 +47,16 @@ class RestoreFromBackupViewModel @Inject constructor(
         if (state.value.isRestoringProfileChecked) {
             val restoredProfile = restoreProfileFromBackupUseCase()
 
-            val deviceFactorSources = restoredProfile?.factorSources?.mapNotNull {
+            val factorSourcesNeedingRecovery = restoredProfile?.factorSources?.mapNotNull {
                 val factorSourceHash = it.id as? FactorSource.FactorSourceID.FromHash ?: return@mapNotNull null
-                if (factorSourceHash.kind == FactorSourceKind.DEVICE && mnemonicRepository.readMnemonic(factorSourceHash) == null) {
+                if (factorSourceHash.kind == FactorSourceKind.DEVICE) {
                     factorSourceHash
                 } else {
                     null
                 }
-            }.orEmpty()
+            }?.filterNot { mnemonicRepository.readMnemonic(it) == null }.orEmpty()
 
-            sendEvent(Event.OnRestored(needsMnemonicRecovery = deviceFactorSources.isNotEmpty()))
+            sendEvent(Event.OnRestored(needsMnemonicRecovery = factorSourcesNeedingRecovery.isNotEmpty()))
         }
     }
 
