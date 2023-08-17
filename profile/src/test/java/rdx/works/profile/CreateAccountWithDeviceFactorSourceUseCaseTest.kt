@@ -3,11 +3,15 @@ package rdx.works.profile
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
+import io.mockk.coEvery
+import io.mockk.every
+import io.mockk.mockk
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.runTest
+import org.junit.Before
 import org.junit.Test
 import org.mockito.Mockito
 import org.mockito.kotlin.doReturn
@@ -15,6 +19,7 @@ import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import rdx.works.profile.data.model.MnemonicWithPassphrase
+import rdx.works.profile.data.model.Profile
 import rdx.works.profile.data.model.ProfileState
 import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.data.model.pernetwork.addAccount
@@ -34,6 +39,11 @@ class CreateAccountWithDeviceFactorSourceUseCaseTest {
         mnemonic = "noodle question hungry sail type offer grocery clay nation hello mixture forum",
         bip39Passphrase = ""
     )
+
+    @Before
+    fun setUp() {
+        coEvery { ensureBabylonFactorSourceExistUseCase() } returns Profile()
+    }
 
     @Test
     fun `given profile already exists, when creating new account, verify its returned and persisted to the profile`() {

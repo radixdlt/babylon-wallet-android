@@ -682,4 +682,7 @@
   <string name="iOSProfileBackup_totalAccountsNumberLabel">Number of Accounts: %d</string>
   <string name="iOSProfileBackup_totalPersonasNumberLabel">Number of Personas: %d</string>
   <string name="iOSProfileBackup_incompatibleWalletDataLabel">Incompatible Wallet data</string>
+
+  <string name="assetDetails_behaviors_canFreezeInFuture">A third party can freeze this asset in place.</string>
+  <string name="assetDetails_behaviors_canBeFrozeInFutureByAnyone">Anyone can freeze this asset in place.</string>
 </resources>

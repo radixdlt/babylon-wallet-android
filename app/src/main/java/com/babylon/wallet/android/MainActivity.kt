@@ -36,7 +36,7 @@ class MainActivity : FragmentActivity() {
             RadixWalletTheme {
                 DevelopmentPreviewWrapper {
                     WalletApp(mainViewModel = viewModel, onCloseApp = {
-                        finish()
+                        finishAffinity()
                     })
                 }
             }

@@ -30,7 +30,6 @@ import com.babylon.wallet.android.utils.DeviceSecurityHelper
 import com.radixdlt.ret.Decimal
 import com.radixdlt.ret.ExecutionAnalysis
 import com.radixdlt.ret.FeeLocks
-import com.radixdlt.ret.TransactionType
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
@@ -45,7 +44,6 @@ import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Test
-import rdx.works.core.displayableQuantity
 import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.data.model.currentNetwork
 import rdx.works.profile.domain.GetProfileUseCase
