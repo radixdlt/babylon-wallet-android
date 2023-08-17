@@ -46,6 +46,7 @@ fun AccountPreferenceScreen(
     onBackClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val context = LocalContext.current
     val state by viewModel.state.collectAsStateWithLifecycle()
     val scope = rememberCoroutineScope()
     val sheetState = rememberModalBottomSheetState(
@@ -89,7 +90,13 @@ fun AccountPreferenceScreen(
                 .fillMaxSize()
                 .background(RadixTheme.colors.defaultBackground),
             hasAuthKey = state.hasAuthKey,
-            onCreateAndUploadAuthKey = viewModel::onCreateAndUploadAuthKey
+            onCreateAndUploadAuthKey = {
+                context.biometricAuthenticate {
+                    if (it) {
+                        viewModel.onCreateAndUploadAuthKey()
+                    }
+                }
+            }
         )
         state.interactionState?.let {
             SigningStatusBottomDialog(

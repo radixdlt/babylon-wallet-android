@@ -43,7 +43,8 @@ class EncryptedPreferencesManager @Inject constructor(
             if (encryptedValue.isNullOrEmpty()) {
                 return@map null
             }
-            encryptedValue.decrypt(KeySpec.Mnemonic())
+            val result = encryptedValue.decrypt(KeySpec.Mnemonic())
+            result
         }.first()
     }
 

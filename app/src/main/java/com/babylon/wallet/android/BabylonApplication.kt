@@ -44,6 +44,7 @@ class BabylonApplication : Application(), LifecycleEventObserver {
         when (event) {
             Lifecycle.Event.ON_RESUME -> {
                 ProcessLifecycleOwner.get().lifecycleScope.launch {
+                    // TODO this check feel a bit sketchy, still investigating if it can be done better
                     checkMnemonicIntegrityUseCase()
                     if (!deviceSecurityHelper.isDeviceSecure()) {
                         appEventBus.sendEvent(AppEvent.AppNotSecure, delayMs = 500)

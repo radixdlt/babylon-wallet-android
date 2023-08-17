@@ -17,6 +17,7 @@ class CheckMnemonicIntegrityUseCase @Inject constructor(
     suspend operator fun invoke() {
         val deviceFactorSources = getProfileUseCase.deviceFactorSources.firstOrNull().orEmpty()
         // try to encrypt random string
+        if (deviceFactorSources.isEmpty()) return
         val keyInvalid = checkIfKeyWasPermanentlyInvalidated(UUIDGenerator.uuid().toString(), KeySpec.Mnemonic())
         if (keyInvalid) {
             // if we have invalid mnemonic encryption key we delete all mnemonics which we can no longer decrypt
