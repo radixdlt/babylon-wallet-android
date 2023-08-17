@@ -21,13 +21,15 @@ class MnemonicRepository @Inject constructor(
      * We might have multiple OnDevice-HD-FactorSources, thus multiple mnemonics stored on the device.
      */
     @Suppress("SwallowedException")
-    suspend fun readMnemonic(key: FactorSource.FactorSourceID.FromHash): MnemonicWithPassphrase? {
-        val serialised = encryptedPreferencesManager.readMnemonic(key.body.value).orEmpty()
-        return try {
-            Json.decodeFromString(serialised)
-        } catch (exception: Exception) {
-            return null
+    suspend fun readMnemonic(key: FactorSource.FactorSourceID.FromHash): Result<MnemonicWithPassphrase>? {
+        return encryptedPreferencesManager.readMnemonic(key.body.value)?.map {
+            Json.decodeFromString(it)
         }
+    }
+
+    @Suppress("SwallowedException")
+    suspend fun mnemonicExist(key: FactorSource.FactorSourceID.FromHash): Boolean {
+        return encryptedPreferencesManager.keyExist(key.body.value)
     }
 
     /**
@@ -38,7 +40,13 @@ class MnemonicRepository @Inject constructor(
         mnemonicWithPassphrase: MnemonicWithPassphrase
     ) {
         val serialised = Json.encodeToString(mnemonicWithPassphrase)
-        encryptedPreferencesManager.putString("mnemonic${key.body.value}", serialised)
+        encryptedPreferencesManager.saveMnemonic("mnemonic${key.body.value}", serialised)
+    }
+
+    suspend fun deleteMnemonic(
+        key: FactorSource.FactorSourceID.FromHash
+    ) {
+        encryptedPreferencesManager.removeEntryForKey("mnemonic${key.body.value}")
     }
 
     /**
@@ -54,7 +62,7 @@ class MnemonicRepository @Inject constructor(
      *    We deserialize it properly and just return that back.
      */
     suspend operator fun invoke(mnemonicKey: FactorSource.FactorSourceID.FromHash? = null): MnemonicWithPassphrase {
-        return mnemonicKey?.let { readMnemonic(key = it) } ?: withContext(defaultDispatcher) {
+        return mnemonicKey?.let { readMnemonic(key = it)?.getOrNull() } ?: withContext(defaultDispatcher) {
             val generated = MnemonicWithPassphrase.generate(entropyStrength = ENTROPY_STRENGTH)
 
             val key = FactorSource.factorSourceId(mnemonicWithPassphrase = generated)

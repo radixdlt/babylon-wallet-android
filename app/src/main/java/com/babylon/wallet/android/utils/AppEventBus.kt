@@ -1,6 +1,7 @@
 package com.babylon.wallet.android.utils
 
 import com.babylon.wallet.android.presentation.common.UiMessage
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
@@ -15,12 +16,14 @@ class AppEventBus @Inject constructor() {
     private val _events = MutableSharedFlow<AppEvent>()
     val events: Flow<AppEvent> = _events.asSharedFlow()
 
-    suspend fun sendEvent(event: AppEvent) {
+    suspend fun sendEvent(event: AppEvent, delayMs: Long = 0L) {
+        delay(delayMs)
         _events.emit(event)
     }
 }
 
 sealed interface AppEvent {
+    object AppNotSecure : AppEvent
     object GotFreeXrd : AppEvent
     object RestoredMnemonic : AppEvent
     data class DerivedAccountPublicKeyWithLedger(

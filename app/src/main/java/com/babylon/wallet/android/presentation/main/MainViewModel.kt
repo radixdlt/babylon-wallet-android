@@ -72,6 +72,8 @@ class MainViewModel @Inject constructor(
         .events
         .filterIsInstance<AppEvent.Status>()
 
+    val appNotSecureEvent = appEventBus.events.filterIsInstance<AppEvent.AppNotSecure>()
+
     init {
         viewModelScope.launch {
             getProfileStateUseCase()

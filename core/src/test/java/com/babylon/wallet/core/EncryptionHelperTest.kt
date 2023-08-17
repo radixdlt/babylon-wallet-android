@@ -29,7 +29,7 @@ class EncryptionHelperTest {
             withEncryptionKey = encryptionKeyByteArray
         )
 
-        Assert.assertEquals(expectedDecryptedMessage, String(actualDecryptedMessage, UTF_8))
+        Assert.assertEquals(expectedDecryptedMessage, String(actualDecryptedMessage.getOrThrow(), UTF_8))
     }
 
     @Test

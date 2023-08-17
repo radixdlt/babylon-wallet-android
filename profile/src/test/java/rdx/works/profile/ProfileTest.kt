@@ -54,10 +54,8 @@ class ProfileTest {
         )
 
         val profile = Profile.init(
-            mnemonicWithPassphrase = mnemonicWithPassphrase,
             id = "BABE1442-3C98-41FF-AFB0-D0F5829B020D",
             deviceName = "Galaxy A53 5G (Samsung SM-A536B)",
-            deviceModel = "Samsung",
             creationDate = InstantGenerator()
         )
 
@@ -145,10 +143,8 @@ class ProfileTest {
         val networkId = gateway.network.networkId()
 
         var expected = Profile.init(
-            mnemonicWithPassphrase = mnemonicWithPassphrase,
-            deviceName = "unit test",
-            deviceModel = "computer",
             id = "BABE1442-3C98-41FF-AFB0-D0F5829B020D",
+            deviceName = "unit test",
             creationDate = Instant.EPOCH,
             gateway = gateway
         )

@@ -1,7 +1,6 @@
 package rdx.works.profile.domain.persona
 
 import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
 import rdx.works.profile.data.model.currentGateway
 import rdx.works.profile.data.model.pernetwork.Network
@@ -11,12 +10,13 @@ import rdx.works.profile.data.model.pernetwork.addPersona
 import rdx.works.profile.data.model.pernetwork.nextPersonaIndex
 import rdx.works.profile.data.repository.MnemonicRepository
 import rdx.works.profile.data.repository.ProfileRepository
-import rdx.works.profile.data.repository.profile
 import rdx.works.profile.di.coroutines.DefaultDispatcher
+import rdx.works.profile.domain.EnsureBabylonFactorSourceExistUseCase
 import javax.inject.Inject
 
 class CreatePersonaWithDeviceFactorSourceUseCase @Inject constructor(
     private val mnemonicRepository: MnemonicRepository,
+    private val ensureBabylonFactorSourceExistUseCase: EnsureBabylonFactorSourceExistUseCase,
     private val profileRepository: ProfileRepository,
     @DefaultDispatcher private val defaultDispatcher: CoroutineDispatcher
 ) {
@@ -26,10 +26,9 @@ class CreatePersonaWithDeviceFactorSourceUseCase @Inject constructor(
         personaData: PersonaData
     ): Network.Persona {
         return withContext(defaultDispatcher) {
-            val profile = profileRepository.profile.first()
+            val profile = ensureBabylonFactorSourceExistUseCase()
 
             val networkID = profile.currentGateway.network.networkId()
-
             val factorSource = profile.babylonDeviceFactorSource
 
             // Construct new persona

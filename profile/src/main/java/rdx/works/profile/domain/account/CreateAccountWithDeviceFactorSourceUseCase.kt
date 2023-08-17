@@ -2,7 +2,6 @@ package rdx.works.profile.domain.account
 
 import com.babylon.wallet.android.designsystem.theme.AccountGradientList
 import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
 import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.data.model.currentNetwork
@@ -12,13 +11,14 @@ import rdx.works.profile.data.model.pernetwork.addAccount
 import rdx.works.profile.data.model.pernetwork.nextAccountIndex
 import rdx.works.profile.data.repository.MnemonicRepository
 import rdx.works.profile.data.repository.ProfileRepository
-import rdx.works.profile.data.repository.profile
 import rdx.works.profile.derivation.model.NetworkId
 import rdx.works.profile.di.coroutines.DefaultDispatcher
+import rdx.works.profile.domain.EnsureBabylonFactorSourceExistUseCase
 import javax.inject.Inject
 
 class CreateAccountWithDeviceFactorSourceUseCase @Inject constructor(
     private val mnemonicRepository: MnemonicRepository,
+    private val ensureBabylonFactorSourceExistUseCase: EnsureBabylonFactorSourceExistUseCase,
     private val profileRepository: ProfileRepository,
     @DefaultDispatcher private val defaultDispatcher: CoroutineDispatcher
 ) {
@@ -27,8 +27,7 @@ class CreateAccountWithDeviceFactorSourceUseCase @Inject constructor(
         networkID: NetworkId? = null
     ): Network.Account {
         return withContext(defaultDispatcher) {
-            val profile = profileRepository.profile.first()
-
+            val profile = ensureBabylonFactorSourceExistUseCase()
             val factorSource = profile.babylonDeviceFactorSource
 
             // Construct new account

@@ -40,7 +40,7 @@ class RevealSeedPhraseViewModel @Inject constructor(
                         kind = FactorSourceKind.DEVICE,
                         body = FactorSource.HexCoded32Bytes(args.factorSourceId)
                     )
-                )?.let { mnemonicWithPassphrase ->
+                )?.getOrNull()?.let { mnemonicWithPassphrase ->
                     _state.update { state ->
                         state.copy(
                             mnemonicWords = mnemonicWithPassphrase

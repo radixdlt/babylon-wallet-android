@@ -134,7 +134,7 @@ internal class WebSocketClient(applicationContext: Context) {
         )
         val rpcMessage = RpcMessage.Offer(
             targetClientId = remoteClientId.ifEmpty { connectorExtensionId },
-            encryptedPayload = encryptedOffer.toHexString()
+            encryptedPayload = encryptedOffer.getOrThrow().toHexString()
         )
         val message = json.encodeToString(rpcMessage)
         Timber.d("🛰 sending offer to remoteClient: $remoteClientId with requestId: ${rpcMessage.requestId}")
@@ -151,7 +151,7 @@ internal class WebSocketClient(applicationContext: Context) {
         )
         val rpcMessage: RpcMessage = RpcMessage.Answer(
             targetClientId = remoteClientId.ifEmpty { connectorExtensionId },
-            encryptedPayload = encryptedAnswer.toHexString()
+            encryptedPayload = encryptedAnswer.getOrThrow().toHexString()
         )
         val message = json.encodeToString(rpcMessage)
         Timber.d("🛰 sending answer to remoteClient: $remoteClientId with requestId: ${rpcMessage.requestId}")
@@ -168,7 +168,7 @@ internal class WebSocketClient(applicationContext: Context) {
         )
         val rpcMessage: RpcMessage = RpcMessage.IceCandidate(
             targetClientId = remoteClientId.ifEmpty { connectorExtensionId },
-            encryptedPayload = encryptedIceCandidate.toHexString()
+            encryptedPayload = encryptedIceCandidate.getOrThrow().toHexString()
         )
         val message = json.encodeToString(rpcMessage)
         Timber.d("🛰 sending ice candidate to remoteClient: $remoteClientId with requestId: ${rpcMessage.requestId}")
@@ -238,7 +238,7 @@ internal class WebSocketClient(applicationContext: Context) {
     ): SignalingServerMessage.RemoteData.Offer {
         val message = offerPayload.encryptedPayload.decodeHex().toByteArray().decrypt(
             withEncryptionKey = encryptionKey
-        )
+        ).getOrThrow()
         val offer = json.decodeFromString<RpcMessage.OfferPayload>(String(message, StandardCharsets.UTF_8))
 
         return SignalingServerMessage.RemoteData.Offer(
@@ -256,7 +256,7 @@ internal class WebSocketClient(applicationContext: Context) {
     ): SignalingServerMessage.RemoteData.Answer {
         val message = answerPayload.encryptedPayload.decodeHex().toByteArray().decrypt(
             withEncryptionKey = encryptionKey
-        )
+        ).getOrThrow()
         val answer = json.decodeFromString<RpcMessage.AnswerPayload>(String(message, StandardCharsets.UTF_8))
 
         return SignalingServerMessage.RemoteData.Answer(
@@ -273,7 +273,7 @@ internal class WebSocketClient(applicationContext: Context) {
     ): SignalingServerMessage.RemoteData.IceCandidate {
         val message = iceCandidatePayload.encryptedPayload.decodeHex().toByteArray().decrypt(
             withEncryptionKey = encryptionKey
-        )
+        ).getOrThrow()
         val iceCandidate = json.decodeFromString<RpcMessage.IceCandidatePayload>(
             String(message, StandardCharsets.UTF_8)
         )

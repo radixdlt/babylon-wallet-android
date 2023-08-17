@@ -11,7 +11,6 @@ import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.presentation.createaccount.confirmation.CreateAccountRequestSource
 import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
-import com.babylon.wallet.android.utils.DeviceSecurityHelper
 import com.babylon.wallet.android.utils.decodeUtf8
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.filterIsInstance
@@ -38,7 +37,6 @@ class CreateAccountViewModel @Inject constructor(
     private val createAccountWithDeviceFactorSourceUseCase: CreateAccountWithDeviceFactorSourceUseCase,
     private val createAccountWithLedgerFactorSourceUseCase: CreateAccountWithLedgerFactorSourceUseCase,
     private val switchNetworkUseCase: SwitchNetworkUseCase,
-    private val deviceSecurityHelper: DeviceSecurityHelper,
     private val appEventBus: AppEventBus
 ) : StateViewModel<CreateAccountViewModel.CreateAccountState>(),
     OneOffEventHandler<CreateAccountEvent> by OneOffEventHandlerImpl() {
@@ -110,7 +108,6 @@ class CreateAccountViewModel @Inject constructor(
     }
 
     override fun initialState(): CreateAccountState = CreateAccountState(
-        isDeviceSecure = deviceSecurityHelper.isDeviceSecure(),
         firstTime = args.requestSource == CreateAccountRequestSource.FirstTime
     )
 
@@ -154,7 +151,6 @@ class CreateAccountViewModel @Inject constructor(
         val loading: Boolean = false,
         val accountId: String = "",
         val accountName: String = "",
-        val isDeviceSecure: Boolean = false,
         val firstTime: Boolean = false,
         val useLedgerSelected: Boolean = false
     ) : UiState

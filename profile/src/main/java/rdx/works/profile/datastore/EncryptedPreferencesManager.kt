@@ -12,6 +12,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
+import rdx.works.core.KeySpec
 import rdx.works.core.decrypt
 import rdx.works.core.encrypt
 import rdx.works.profile.di.ProfileDataStore
@@ -32,32 +33,49 @@ class EncryptedPreferencesManager @Inject constructor(
         if (encryptedValue.isNullOrEmpty()) {
             return@map null
         }
-        encryptedValue.decrypt(KEY_ALIAS_DATASTORE)
+        encryptedValue.decrypt(KeySpec.Profile())
     }.flowOn(ioDispatcher)
 
-    suspend fun readMnemonic(key: String): String? {
+    suspend fun readMnemonic(key: String): Result<String>? {
         return preferences.data.catchIOException().map { preferences ->
             val preferencesKey = stringPreferencesKey("mnemonic$key")
             val encryptedValue = preferences[preferencesKey]
             if (encryptedValue.isNullOrEmpty()) {
                 return@map null
             }
-            encryptedValue.decrypt(KEY_ALIAS_DATASTORE)
+            encryptedValue.decrypt(KeySpec.Mnemonic())
         }.first()
     }
 
-    suspend fun putString(key: String, newValue: String?) {
+    suspend fun saveMnemonic(key: String, newValue: String?) {
+        putString(key, newValue, KeySpec.Mnemonic())
+    }
+
+    suspend fun keyExist(key: String): Boolean {
+        val preferencesKey = stringPreferencesKey(key)
+        return preferences.data.map { preference ->
+            preference.contains(preferencesKey)
+        }.first()
+    }
+
+    private suspend fun putString(key: String, newValue: String?, keySpec: KeySpec) {
         val preferencesKey = stringPreferencesKey(key)
         newValue?.let { newValueNotNull ->
-            val encryptedValue = newValueNotNull.encrypt(withKeyAlias = KEY_ALIAS_DATASTORE)
+            val encryptedValue = newValueNotNull.encrypt(withKey = keySpec).getOrThrow()
             preferences.edit { mutablePreferences ->
                 mutablePreferences[preferencesKey] = encryptedValue
             }
         }
     }
 
+    suspend fun removeEntryForKey(key: String) {
+        preferences.edit {
+            it.remove(stringPreferencesKey(key))
+        }
+    }
+
     suspend fun putProfileSnapshot(snapshotSerialized: String) {
-        putString(PROFILE_PREFERENCES_KEY, snapshotSerialized)
+        putString(PROFILE_PREFERENCES_KEY, snapshotSerialized, KeySpec.Profile())
     }
 
     suspend fun getProfileSnapshotFromBackup() = preferences.data.catchIOException().map { preferences ->
@@ -66,12 +84,12 @@ class EncryptedPreferencesManager @Inject constructor(
         if (snapshotEncrypted.isNullOrEmpty()) {
             null
         } else {
-            snapshotEncrypted.decrypt(KEY_ALIAS_DATASTORE)
+            snapshotEncrypted.decrypt(KeySpec.Profile())
         }
     }.flowOn(ioDispatcher).firstOrNull()
 
     suspend fun putProfileSnapshotFromBackup(restoredSnapshotSerialized: String) {
-        putString(RESTORED_PROFILE_PREFERENCES_KEY, restoredSnapshotSerialized)
+        putString(RESTORED_PROFILE_PREFERENCES_KEY, restoredSnapshotSerialized, KeySpec.Profile())
     }
 
     suspend fun clearProfileSnapshotFromBackup() {
@@ -94,6 +112,5 @@ class EncryptedPreferencesManager @Inject constructor(
         const val DATA_STORE_NAME = "rdx_encrypted_datastore"
         private const val PROFILE_PREFERENCES_KEY = "profile_preferences_key"
         private const val RESTORED_PROFILE_PREFERENCES_KEY = "restored_preferences_key"
-        private const val KEY_ALIAS_DATASTORE = "EncryptedDataStoreAlias"
     }
 }

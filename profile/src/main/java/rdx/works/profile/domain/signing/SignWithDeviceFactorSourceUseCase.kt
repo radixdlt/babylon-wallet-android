@@ -37,7 +37,7 @@ class SignWithDeviceFactorSourceUseCase @Inject constructor(
                                 ?: securityState.unsecuredEntityControl.transactionSigning
                         SigningPurpose.SignTransaction -> securityState.unsecuredEntityControl.transactionSigning
                     }
-                    val mnemonic = requireNotNull(mnemonicRepository.readMnemonic(deviceFactorSource.id))
+                    val mnemonic = requireNotNull(mnemonicRepository.readMnemonic(deviceFactorSource.id)?.getOrNull())
                     val hierarchicalDeterministicVirtualSource = factorInstance.badge
                         as? FactorInstance.Badge.VirtualSource.HierarchicalDeterministic ?: return@forEach
                     val extendedKey = mnemonic.deriveExtendedKey(

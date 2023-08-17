@@ -8,7 +8,6 @@ import rdx.works.profile.data.model.apppreferences.Security
 import rdx.works.profile.data.model.apppreferences.Transaction
 import rdx.works.profile.data.model.factorsources.DeviceFactorSource
 import rdx.works.profile.data.model.factorsources.FactorSource
-import rdx.works.profile.data.model.factorsources.Slip10Curve
 import rdx.works.profile.data.model.factorsources.Slip10Curve.CURVE_25519
 import rdx.works.profile.data.model.pernetwork.Network
 import java.time.Instant
@@ -66,30 +65,20 @@ data class Profile(
                 it.common.cryptoParameters.supportedCurves.contains(CURVE_25519)
             }
 
-    val olympiaDeviceFactorSource: FactorSource
+    val babylonDeviceFactorSourceExist: Boolean
         get() = factorSources
             .filterIsInstance<DeviceFactorSource>()
-            .first {
-                it.common.cryptoParameters.supportedCurves.contains(Slip10Curve.SECP_256K1)
+            .any {
+                it.common.cryptoParameters.supportedCurves.contains(CURVE_25519)
             }
 
     companion object {
-        @Suppress("LongParameterList")
         fun init(
-            mnemonicWithPassphrase: MnemonicWithPassphrase,
             id: String,
-            deviceModel: String,
             deviceName: String,
             creationDate: Instant,
             gateway: Radix.Gateway = Radix.Gateway.default
         ): Profile {
-            val factorSource = DeviceFactorSource.babylon(
-                mnemonicWithPassphrase = mnemonicWithPassphrase,
-                model = deviceModel,
-                name = deviceName,
-                createdAt = creationDate
-            )
-
             val networks = listOf(
                 Network(
                     accounts = listOf(),
@@ -115,7 +104,7 @@ data class Profile(
                     numberOfNetworks = networks.size
                 ),
                 appPreferences = appPreferences,
-                factorSources = listOf(factorSource),
+                factorSources = listOf(),
                 networks = networks
             )
         }

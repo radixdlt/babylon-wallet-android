@@ -5,7 +5,7 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.filterNot
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.firstOrNull
@@ -26,6 +26,7 @@ import rdx.works.profile.di.ProfileSerializer
 import rdx.works.profile.di.RelaxedSerializer
 import rdx.works.profile.di.coroutines.ApplicationScope
 import rdx.works.profile.di.coroutines.IoDispatcher
+import timber.log.Timber
 import javax.inject.Inject
 
 interface ProfileRepository {
@@ -49,16 +50,17 @@ interface ProfileRepository {
     suspend fun discardBackedUpProfile()
 }
 
-suspend fun ProfileRepository.updateProfile(updateAction: (Profile) -> Profile) {
+suspend fun ProfileRepository.updateProfile(updateAction: suspend (Profile) -> Profile): Profile {
     val profile = profile.first()
     val updatedProfile = updateAction(profile)
     saveProfile(updatedProfile)
+    return updatedProfile
 }
 
 val ProfileRepository.profile: Flow<Profile>
     get() = profileState
-        .filter { it is ProfileState.Restored }
-        .map { (it as ProfileState.Restored).profile }
+        .filterIsInstance<ProfileState.Restored>()
+        .map { it.profile }
 
 @Suppress("LongParameterList")
 class ProfileRepositoryImpl @Inject constructor(
@@ -77,16 +79,20 @@ class ProfileRepositoryImpl @Inject constructor(
 
             if (serialised == null) {
                 // No profile exists, checking for backup data to restore
-                val profileStateFromBackup = encryptedPreferencesManager.getProfileSnapshotFromBackup()?.let {
+                val profileStateFromBackup = encryptedPreferencesManager.getProfileSnapshotFromBackup()?.getOrNull()?.let {
                     deriveProfileState(it)
                 }
 
                 profileStateFlow.update { ProfileState.None(profileStateFromBackup is ProfileState.Restored) }
                 return@launch
             }
-
-            val profileState = deriveProfileState(serialised)
-            profileStateFlow.update { profileState }
+            if (serialised.isSuccess) {
+                val profileState = deriveProfileState(serialised.getOrThrow())
+                profileStateFlow.update { profileState }
+            } else {
+                Timber.d("Profile decryption failed")
+                profileStateFlow.update { ProfileState.Incompatible }
+            }
         }
     }
 
@@ -137,7 +143,7 @@ class ProfileRepositoryImpl @Inject constructor(
 
     @Suppress("SwallowedException")
     override suspend fun getSnapshotForBackup(): String? {
-        val serialisedSnapshot = encryptedPreferencesManager.encryptedProfile.firstOrNull() ?: return null
+        val serialisedSnapshot = encryptedPreferencesManager.encryptedProfile.firstOrNull()?.getOrNull() ?: return null
 
         val isBackupEnabled = try {
             val snapshot = profileSnapshotJson.decodeFromString<ProfileSnapshot>(serialisedSnapshot)
