@@ -15,7 +15,8 @@
       },
       "hint": {
         "model": "iPhone 16",
-        "name": "New phone"
+        "name": "New phone",
+        "mnemonicWordCount" : "24"
       },
       "id": {
         "body": "e4d51786ca0fcd53af9e5b719e9bbb4dc3636df505748843e16e1138fb65ef0b",
@@ -49,7 +50,8 @@
       },
       "hint": {
         "model": "iPhone 14 Pro Max",
-        "name": "Old phone"
+        "name": "Old phone",
+        "mnemonicWordCount" : "12"
       },
       "id": {
         "body": "e4d51786ca0fcd53af9e5b719e9bbb4dc3636df505748843e16e1138fb65ef0b",

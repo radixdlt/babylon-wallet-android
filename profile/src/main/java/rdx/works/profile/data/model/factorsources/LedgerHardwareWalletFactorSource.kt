@@ -19,6 +19,14 @@ data class LedgerHardwareWalletFactorSource(
 ) : FactorSource() {
 
     @Serializable
+    data class Hint(
+        @SerialName("model")
+        val model: String,
+        @SerialName("name")
+        val name: String
+    )
+
+    @Serializable
     enum class SigningDisplayMode {
         @SerialName("verbose")
         Verbose,

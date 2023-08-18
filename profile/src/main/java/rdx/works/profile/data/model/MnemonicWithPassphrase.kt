@@ -20,7 +20,14 @@ import rdx.works.profile.olympiaimport.OlympiaAccountDetails
 data class MnemonicWithPassphrase(
     val mnemonic: String,
     val bip39Passphrase: String
-)
+) {
+    val wordCount: Int
+        get() = mnemonic.split(mnemonicWordsDelimiter).size
+
+    companion object {
+        const val mnemonicWordsDelimiter = " "
+    }
+}
 
 /**
  * Generates a mnemonic based on the [WORDLIST_ENGLISH]. Used only when no mnemonic
