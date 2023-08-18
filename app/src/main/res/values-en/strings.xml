@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-  <string name="homePage_applySecuritySettings">Please back up your seed phrase</string>
-  <string name="homePage_recoverSeedPhrase">Please recover your seed phrase</string>
+  <string name="homePage_securityPromptBackup">Please back up your seed phrase</string>
+  <string name="homePage_securityPromptRecover">Please recover your seed phrase</string>
   <string name="homePage_backedUpMnemonicHeading">I have backed up this seed phrase</string>
   <string name="homePage_createNewAccount">Create a New Account</string>
   <string name="homePage_legacyAccountHeading">Legacy</string>

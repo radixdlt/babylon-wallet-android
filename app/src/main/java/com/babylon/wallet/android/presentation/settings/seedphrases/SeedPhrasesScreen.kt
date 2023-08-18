@@ -20,7 +20,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -31,9 +30,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
-import com.babylon.wallet.android.designsystem.theme.getAccountGradientColorsFor
 import com.babylon.wallet.android.domain.SampleDataProvider
-import com.babylon.wallet.android.presentation.ui.composables.ApplySecuritySettingsLabel
 import com.babylon.wallet.android.presentation.ui.composables.BackIconType
 import com.babylon.wallet.android.presentation.ui.composables.GrayBackgroundWrapper
 import com.babylon.wallet.android.presentation.ui.composables.InfoLink
@@ -81,11 +78,7 @@ fun SeedPhrasesScreen(
                 }
 
                 is SeedPhrasesViewModel.Effect.OnRequestToRecoverMnemonic -> {
-                    context.biometricAuthenticate { authenticated ->
-                        if (authenticated) {
-                            onNavigateToRecoverMnemonic(it.factorSourceID)
-                        }
-                    }
+                    onNavigateToRecoverMnemonic(it.factorSourceID)
                 }
             }
         }
@@ -209,17 +202,11 @@ private fun SeedPhraseCard(
         when (mnemonicState) {
             DeviceFactorSourceData.MnemonicState.NotBackedUp -> {
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXSmall))
-                RedWarningText(text = AnnotatedString("Please backup this seed phrase")) // TODO crowdin
+                RedWarningText(text = AnnotatedString(stringResource(id = R.string.homePage_securityPromptBackup)))
             }
             DeviceFactorSourceData.MnemonicState.NeedRecover -> {
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXSmall))
-                ApplySecuritySettingsLabel(
-                    modifier = Modifier.fillMaxWidth(),
-                    onClick = null,
-                    text = stringResource(id = R.string.homePage_applySecuritySettings),
-                    labelColor = RadixTheme.colors.gray4.copy(alpha = 0.6f),
-                    contentColor = RadixTheme.colors.gray1
-                )
+                RedWarningText(text = AnnotatedString(stringResource(id = R.string.homePage_securityPromptRecover)))
             }
             else -> {}
         }

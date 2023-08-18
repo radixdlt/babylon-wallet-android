@@ -32,7 +32,6 @@ import com.babylon.wallet.android.presentation.onboarding.OnboardingScreen
 import com.babylon.wallet.android.presentation.onboarding.restore.backup.restoreFromBackupScreen
 import com.babylon.wallet.android.presentation.onboarding.restore.mnemonics.restoreMnemonics
 import com.babylon.wallet.android.presentation.onboarding.restore.mnemonics.restoreMnemonicsScreen
-import com.babylon.wallet.android.presentation.settings.backup.restoreMnemonicScreen
 import com.babylon.wallet.android.presentation.settings.incompatibleprofile.IncompatibleProfileContent
 import com.babylon.wallet.android.presentation.settings.incompatibleprofile.ROUTE_INCOMPATIBLE_PROFILE
 import com.babylon.wallet.android.presentation.settings.personadetail.personaDetailScreen
@@ -182,9 +181,6 @@ fun NavigationHost(
             onFinishAccountCreation = {
                 navController.popBackStack(ROUTE_CREATE_ACCOUNT, inclusive = true)
             }
-        )
-        restoreMnemonicScreen(
-            onBackClick = { navController.navigateUp() }
         )
         createPersonaScreen(
             onBackClick = { navController.navigateUp() },
