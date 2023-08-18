@@ -121,7 +121,10 @@ fun NavigationHost(
             },
             onNavigateToMnemonicBackup = {
                 navController.seedPhrases()
-            }
+            },
+            onNavigateToMnemonicRestore = {
+                navController.restoreMnemonics(deviceFactorSourceId = it)
+            },
         )
         composable(
             route = Screen.AccountDestination.route + "/{$ARG_ACCOUNT_ID}",
@@ -139,6 +142,9 @@ fun NavigationHost(
                 },
                 onNavigateToMnemonicBackup = {
                     navController.seedPhrases()
+                },
+                onNavigateToMnemonicRestore = {
+                    navController.restoreMnemonics(deviceFactorSourceId = it)
                 },
                 onTransferClick = { accountId ->
                     navController.transfer(accountId = accountId)

@@ -8,15 +8,15 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavType
 import androidx.navigation.navArgument
 import com.google.accompanist.navigation.animation.composable
-import rdx.works.profile.data.model.factorsources.DeviceFactorSource
+import rdx.works.profile.data.model.factorsources.FactorSource
 
 private const val ARG_FACTOR_SOURCE_ID = "factorSourceId"
 private const val ROUTE = "restore_mnemonics?factorSourceId={$ARG_FACTOR_SOURCE_ID}"
 
-fun NavController.restoreMnemonics(deviceFactorSource: DeviceFactorSource? = null) {
+fun NavController.restoreMnemonics(deviceFactorSourceId: FactorSource.FactorSourceID.FromHash? = null) {
     navigate(
-        route = deviceFactorSource?.let {
-            "restore_mnemonics?factorSourceId=${it.id.body.value}"
+        route = deviceFactorSourceId?.let {
+            "restore_mnemonics?factorSourceId=${it.body.value}"
         } ?: "restore_mnemonics"
     )
 }

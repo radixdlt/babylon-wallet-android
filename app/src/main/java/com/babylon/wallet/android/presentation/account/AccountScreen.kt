@@ -74,6 +74,7 @@ import com.babylon.wallet.android.domain.model.Resource
 import com.babylon.wallet.android.domain.model.Resources
 import com.babylon.wallet.android.domain.model.ValidatorDetail
 import com.babylon.wallet.android.domain.model.ValidatorsWithStakeResources
+import com.babylon.wallet.android.domain.usecases.SecurityPromptType
 import com.babylon.wallet.android.presentation.account.composable.FungibleTokenBottomSheetDetails
 import com.babylon.wallet.android.presentation.account.composable.LSUBottomSheetDetails
 import com.babylon.wallet.android.presentation.account.composable.NonFungibleTokenBottomSheetDetails
@@ -92,6 +93,7 @@ import com.babylon.wallet.android.presentation.ui.composables.resources.StakeCla
 import com.babylon.wallet.android.presentation.ui.composables.resources.fungibleResources
 import com.babylon.wallet.android.presentation.ui.composables.resources.nonFungibleResources
 import com.babylon.wallet.android.presentation.ui.composables.resources.poolUnitsResources
+import com.babylon.wallet.android.presentation.ui.composables.toText
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toPersistentList
@@ -106,6 +108,7 @@ fun AccountScreen(
     modifier: Modifier = Modifier,
     onBackClick: () -> Unit,
     onNavigateToMnemonicBackup: (FactorSource.FactorSourceID.FromHash) -> Unit,
+    onNavigateToMnemonicRestore: (FactorSource.FactorSourceID.FromHash) -> Unit,
     onTransferClick: (String) -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -113,9 +116,8 @@ fun AccountScreen(
     LaunchedEffect(Unit) {
         viewModel.oneOffEvent.collect {
             when (it) {
-                is AccountEvent.NavigateToMnemonicBackup -> {
-                    onNavigateToMnemonicBackup(it.factorSourceId)
-                }
+                is AccountEvent.NavigateToMnemonicBackup -> onNavigateToMnemonicBackup(it.factorSourceId)
+                is AccountEvent.NavigateToMnemonicRestore -> onNavigateToMnemonicRestore(it.factorSourceId)
             }
         }
     }
@@ -151,7 +153,7 @@ private fun AccountScreenContent(
     onMessageShown: () -> Unit,
     onFungibleResourceClicked: (Resource.FungibleResource) -> Unit,
     onNonFungibleItemClicked: (Resource.NonFungibleResource, Resource.NonFungibleResource.Item) -> Unit,
-    onApplySecuritySettings: () -> Unit,
+    onApplySecuritySettings: (SecurityPromptType) -> Unit,
     onPoolUnitClick: (Resource.PoolUnitResource) -> Unit,
     onLSUUnitClicked: (Resource.LiquidStakeUnitResource, ValidatorDetail) -> Unit
 ) {
@@ -239,18 +241,18 @@ private fun AccountScreenContent(
                     }
                 }
             }, containerColor = Color.Transparent, floatingActionButton = {
-                    if (state.isHistoryEnabled) {
-                        HistoryButton(
-                            modifier = Modifier.size(174.dp, 50.dp),
-                            onHistoryClick
-                        )
-                    }
-                }, floatingActionButtonPosition = FabPosition.Center, snackbarHost = {
-                    RadixSnackbarHost(
-                        modifier = Modifier.padding(RadixTheme.dimensions.paddingDefault),
-                        hostState = snackBarHostState
+                if (state.isHistoryEnabled) {
+                    HistoryButton(
+                        modifier = Modifier.size(174.dp, 50.dp),
+                        onHistoryClick
                     )
-                }) { innerPadding ->
+                }
+            }, floatingActionButtonPosition = FabPosition.Center, snackbarHost = {
+                RadixSnackbarHost(
+                    modifier = Modifier.padding(RadixTheme.dimensions.paddingDefault),
+                    hostState = snackBarHostState
+                )
+            }) { innerPadding ->
                 AssetsContent(
                     modifier = Modifier.padding(innerPadding),
                     state = state,
@@ -376,7 +378,7 @@ fun AssetsContent(
     onPoolUnitClick: (Resource.PoolUnitResource) -> Unit,
     gradient: ImmutableList<Color>,
     onTransferClick: (String) -> Unit,
-    onApplySecuritySettings: () -> Unit,
+    onApplySecuritySettings: (SecurityPromptType) -> Unit,
     onLSUUnitClicked: (Resource.LiquidStakeUnitResource, ValidatorDetail) -> Unit
 ) {
     Surface(
@@ -447,14 +449,16 @@ fun AssetsContent(
 
                         androidx.compose.animation.AnimatedVisibility(
                             modifier = Modifier.padding(bottom = RadixTheme.dimensions.paddingLarge),
-                            visible = state.isSecurityPromptVisible,
+                            visible = state.visiblePrompt != null,
                             enter = fadeIn(),
                             exit = fadeOut()
                         ) {
                             ApplySecuritySettingsLabel(
                                 modifier = Modifier.fillMaxWidth(),
-                                onClick = onApplySecuritySettings,
-                                text = stringResource(id = R.string.homePage_applySecuritySettings)
+                                onClick = {
+                                    state.visiblePrompt?.let(onApplySecuritySettings)
+                                },
+                                text = state.visiblePrompt?.toText().orEmpty()
                             )
                         }
                     }

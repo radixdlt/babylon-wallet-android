@@ -16,6 +16,7 @@ fun NavGraphBuilder.main(
     onMenuClick: () -> Unit,
     onAccountClick: (Network.Account) -> Unit,
     onNavigateToMnemonicBackup: (FactorSourceID.FromHash) -> Unit,
+    onNavigateToMnemonicRestore: (FactorSourceID.FromHash) -> Unit,
     onAccountCreationClick: () -> Unit,
     onNavigateToCreateAccount: () -> Unit,
     onNavigateToOnBoarding: () -> Unit,
@@ -30,7 +31,8 @@ fun NavGraphBuilder.main(
             onNavigateToCreateAccount = onNavigateToCreateAccount,
             onNavigateToOnBoarding = onNavigateToOnBoarding,
             onNavigateToIncompatibleProfile = onNavigateToIncompatibleProfile,
-            onNavigateToMnemonicBackup = onNavigateToMnemonicBackup
+            onNavigateToMnemonicBackup = onNavigateToMnemonicBackup,
+            onNavigateToMnemonicRestore = onNavigateToMnemonicRestore
         )
     }
 }

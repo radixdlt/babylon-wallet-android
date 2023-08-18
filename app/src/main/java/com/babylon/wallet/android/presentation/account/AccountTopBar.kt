@@ -30,8 +30,10 @@ import androidx.constraintlayout.compose.MotionScene
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixSecondaryButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
+import com.babylon.wallet.android.domain.usecases.SecurityPromptType
 import com.babylon.wallet.android.presentation.ui.composables.ActionableAddressView
 import com.babylon.wallet.android.presentation.ui.composables.ApplySecuritySettingsLabel
+import com.babylon.wallet.android.presentation.ui.composables.toText
 
 /**
  * TODO
@@ -45,7 +47,7 @@ fun AccountTopBar(
     onBackClick: () -> Unit,
     onAccountPreferenceClick: (String) -> Unit,
     onTransferClick: (String) -> Unit,
-    onApplySecuritySettings: () -> Unit
+    onApplySecuritySettings: (SecurityPromptType) -> Unit
 ) {
     val accountAddress = remember(state.accountWithResources) {
         state.accountWithResources?.account?.address.orEmpty()
@@ -138,14 +140,16 @@ fun AccountTopBar(
                 modifier = Modifier
                     .layoutId("securityPrompt")
                     .padding(bottom = RadixTheme.dimensions.paddingLarge),
-                visible = state.isSecurityPromptVisible,
+                visible = state.visiblePrompt != null,
                 enter = fadeIn(),
                 exit = fadeOut()
             ) {
                 ApplySecuritySettingsLabel(
                     modifier = Modifier.fillMaxWidth(),
-                    onClick = onApplySecuritySettings,
-                    text = stringResource(id = R.string.homePage_applySecuritySettings)
+                    onClick = {
+                        state.visiblePrompt?.let(onApplySecuritySettings)
+                    },
+                    text = state.visiblePrompt?.toText().orEmpty()
                 )
             }
         }

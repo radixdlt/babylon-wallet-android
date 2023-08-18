@@ -3,8 +3,11 @@ package com.babylon.wallet.android.domain.usecases
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import rdx.works.core.preferences.PreferencesManager
+import rdx.works.profile.data.model.factorsources.DeviceFactorSource
 import rdx.works.profile.data.model.factorsources.FactorSource.FactorSourceID
 import rdx.works.profile.data.model.factorsources.FactorSourceKind
+import rdx.works.profile.data.model.pernetwork.Network
+import rdx.works.profile.data.repository.MnemonicRepository
 import rdx.works.profile.data.utils.factorSourceId
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.accountsOnCurrentNetwork
@@ -13,7 +16,8 @@ import javax.inject.Inject
 
 class GetAccountsForSecurityPromptUseCase @Inject constructor(
     private val getProfileUseCase: GetProfileUseCase,
-    private val preferencesManager: PreferencesManager
+    private val preferencesManager: PreferencesManager,
+    private val mnemonicRepository: MnemonicRepository
 ) {
 
     operator fun invoke() = combine(
@@ -21,15 +25,33 @@ class GetAccountsForSecurityPromptUseCase @Inject constructor(
         preferencesManager.getBackedUpFactorSourceIds().distinctUntilChanged()
     ) { accounts, backedUpFactorSourceIds ->
 
-        accounts.filter { account ->
-            val factorSourceId = account.factorSourceId() as FactorSourceID.FromHash
+        accounts.mapNotNull { account ->
+            val factorSourceId = account.factorSourceId() as? FactorSourceID.FromHash ?: return@mapNotNull null
+            val factorSource = getProfileUseCase.factorSourceById(factorSourceId) as? DeviceFactorSource ?: return@mapNotNull null
 
-            if (backedUpFactorSourceIds.contains(factorSourceId.body.value)) {
-                return@filter false
+            if (mnemonicRepository.readMnemonic(factorSource.id) == null) {
+                AccountWithSecurityPrompt(
+                    account = account,
+                    prompt = SecurityPromptType.NEEDS_RESTORE
+                )
+            } else if (!backedUpFactorSourceIds.contains(factorSourceId.body.value)) {
+                AccountWithSecurityPrompt(
+                    account = account,
+                    prompt = SecurityPromptType.NEEDS_BACKUP
+                )
+            } else {
+                null
             }
-
-            val factorSource = getProfileUseCase.factorSourceById(factorSourceId) ?: return@filter false
-            factorSource.id.kind == FactorSourceKind.DEVICE
         }
     }
+}
+
+data class AccountWithSecurityPrompt(
+    val account: Network.Account,
+    val prompt: SecurityPromptType
+)
+
+enum class SecurityPromptType {
+    NEEDS_BACKUP,
+    NEEDS_RESTORE
 }

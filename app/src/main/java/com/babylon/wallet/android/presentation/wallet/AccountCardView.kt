@@ -31,8 +31,10 @@ import com.babylon.wallet.android.domain.model.Resources
 import com.babylon.wallet.android.domain.model.ValidatorsWithStakeResources
 import com.babylon.wallet.android.domain.model.metadata.NameMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.SymbolMetadataItem
+import com.babylon.wallet.android.domain.usecases.SecurityPromptType
 import com.babylon.wallet.android.presentation.ui.composables.ActionableAddressView
 import com.babylon.wallet.android.presentation.ui.composables.ApplySecuritySettingsLabel
+import com.babylon.wallet.android.presentation.ui.composables.toText
 import java.math.BigDecimal
 
 @Suppress("DestructuringDeclarationWithTooManyEntries")
@@ -41,9 +43,9 @@ fun AccountCardView(
     accountWithResources: AccountWithResources,
     accountTag: WalletUiState.AccountTag?,
     isLoadingResources: Boolean,
-    isPromptVisible: Boolean,
+    securityPromptType: SecurityPromptType?,
     modifier: Modifier = Modifier,
-    onApplySecuritySettings: () -> Unit
+    onApplySecuritySettings: (SecurityPromptType) -> Unit
 ) {
     val gradient = remember(accountWithResources.account.appearanceID) {
         AccountGradientList[accountWithResources.account.appearanceID % AccountGradientList.size]
@@ -117,8 +119,8 @@ fun AccountCardView(
                     start = parent.start,
                     end = parent.end,
                     top = spacer.bottom,
-                    bottom = if (isPromptVisible) promptsContainer.top else parent.bottom,
-                    bottomMargin = if (isPromptVisible) 18.dp else 0.dp
+                    bottom = if (securityPromptType != null) promptsContainer.top else parent.bottom,
+                    bottomMargin = if (securityPromptType != null) 18.dp else 0.dp
                 )
                 width = Dimension.fillToConstraints
             },
@@ -137,11 +139,13 @@ fun AccountCardView(
                 )
             }
         ) {
-            if (isPromptVisible) {
+            securityPromptType?.let {
                 ApplySecuritySettingsLabel(
                     modifier = Modifier.fillMaxWidth(),
-                    onClick = onApplySecuritySettings,
-                    text = stringResource(id = R.string.homePage_applySecuritySettings)
+                    onClick = {
+                        onApplySecuritySettings(it)
+                    },
+                    text = securityPromptType.toText()
                 )
             }
         }
@@ -209,7 +213,7 @@ fun AccountCardPreview() {
                 ),
                 accountTag = WalletUiState.AccountTag.DAPP_DEFINITION,
                 isLoadingResources = false,
-                isPromptVisible = true,
+                securityPromptType = SecurityPromptType.NEEDS_RESTORE,
                 onApplySecuritySettings = {}
             )
         }
