@@ -1,6 +1,12 @@
 package com.babylon.wallet.android.presentation.onboarding.restore.mnemonics
 
 import androidx.activity.compose.BackHandler
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOut
+import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -172,15 +178,25 @@ private fun RestoreMnemonicsContent(
         },
         containerColor = RadixTheme.colors.defaultBackground
     ) { padding ->
-        if (state.isShowingEntities) {
+        AnimatedVisibility(
+            modifier = Modifier.padding(padding),
+            visible = state.isShowingEntities,
+            enter = slideInHorizontally(initialOffsetX = { -it }),
+            exit = slideOutHorizontally(targetOffsetX = { -it })
+        ) {
             EntitiesView(
-                modifier = Modifier.padding(padding),
                 state = state,
                 onSkipClicked = onSkipClicked
             )
-        } else {
+        }
+
+        AnimatedVisibility(
+            modifier = Modifier.padding(padding),
+            visible = !state.isShowingEntities,
+            enter = slideInHorizontally(initialOffsetX = { it }),
+            exit = slideOutHorizontally(targetOffsetX = { it })
+        ) {
             SeedPhraseView(
-                modifier = Modifier.padding(padding),
                 state = state,
                 onWordChanged = onWordChanged,
                 onPassphraseChanged = onPassphraseChanged,
