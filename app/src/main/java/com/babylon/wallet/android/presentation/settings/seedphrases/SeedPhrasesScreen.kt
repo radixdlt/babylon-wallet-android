@@ -226,16 +226,7 @@ private fun SeedPhraseCard(
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXSmall))
         accounts.forEachIndexed { index, account ->
             SimpleAccountCard(
-                Modifier
-                    .fillMaxWidth()
-                    .background(
-                        Brush.horizontalGradient(getAccountGradientColorsFor(account.appearanceID)),
-                        RadixTheme.shapes.roundedRectSmall
-                    )
-                    .padding(
-                        horizontal = RadixTheme.dimensions.paddingLarge,
-                        vertical = RadixTheme.dimensions.paddingDefault
-                    ),
+                modifier = Modifier.fillMaxWidth(),
                 account = account
             )
         }

@@ -10,6 +10,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.profile.data.model.Header
+import rdx.works.profile.data.model.factorsources.DeviceFactorSource
 import rdx.works.profile.data.model.factorsources.FactorSource
 import rdx.works.profile.data.model.factorsources.FactorSourceKind
 import rdx.works.profile.data.repository.MnemonicRepository
@@ -47,14 +48,11 @@ class RestoreFromBackupViewModel @Inject constructor(
         if (state.value.isRestoringProfileChecked) {
             val restoredProfile = restoreProfileFromBackupUseCase()
 
-            val factorSourcesNeedingRecovery = restoredProfile?.factorSources?.mapNotNull {
-                val factorSourceHash = it.id as? FactorSource.FactorSourceID.FromHash ?: return@mapNotNull null
-                if (factorSourceHash.kind == FactorSourceKind.DEVICE) {
-                    factorSourceHash
-                } else {
-                    null
-                }
-            }?.filterNot { mnemonicRepository.readMnemonic(it) == null }.orEmpty()
+            val factorSourcesNeedingRecovery = restoredProfile
+                ?.factorSources
+                ?.filterIsInstance<DeviceFactorSource>()
+                ?.filterNot { mnemonicRepository.readMnemonic(it.id) != null }
+                .orEmpty()
 
             sendEvent(Event.OnRestored(needsMnemonicRecovery = factorSourcesNeedingRecovery.isNotEmpty()))
         }

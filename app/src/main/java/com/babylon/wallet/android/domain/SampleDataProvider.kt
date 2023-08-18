@@ -62,17 +62,35 @@ class SampleDataProvider {
         )
     )
 
+    fun deviceFactorSource() = DeviceFactorSource(
+        id = FactorSource.FactorSourceID.FromHash(
+            kind = FactorSourceKind.DEVICE,
+            body = FactorSource.HexCoded32Bytes("5f07ec336e9e7891bff04004c817201e73c097b6b1e1b3a26bc205e0010196f5")
+        ),
+        common = FactorSource.Common(
+            cryptoParameters = FactorSource.Common.CryptoParameters.babylon,
+            addedOn = InstantGenerator(),
+            lastUsedOn = InstantGenerator(),
+            flags = listOf()
+        ),
+        hint = FactorSource.Hint(
+            model = "Model",
+            name = "Name"
+        )
+    )
+
     fun sampleAccount(
         address: String = "fj3489fj348f",
         name: String = "my account",
         factorSourceId: FactorSource.FactorSourceID.FromHash = FactorSource.FactorSourceID.FromHash(
             kind = FactorSourceKind.DEVICE,
             body = FactorSource.HexCoded32Bytes("5f07ec336e9e7891bff04004c817201e73c097b6b1e1b3a26bc205e0010196f5")
-        )
+        ),
+        appearanceId: Int = 0
     ): Network.Account {
         return Network.Account(
             address = address,
-            appearanceID = 123,
+            appearanceID = appearanceId,
             displayName = name,
             networkID = Radix.Gateway.default.network.id,
             securityState = SecurityState.Unsecured(

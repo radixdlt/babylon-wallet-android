@@ -262,18 +262,7 @@ fun TransferContent(
                         )
 
                         SimpleAccountCard(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .background(
-                                    Brush.horizontalGradient(
-                                        AccountGradientList[account.appearanceID % AccountGradientList.size]
-                                    ),
-                                    RadixTheme.shapes.roundedRectSmall
-                                )
-                                .padding(
-                                    horizontal = RadixTheme.dimensions.paddingLarge,
-                                    vertical = RadixTheme.dimensions.paddingDefault
-                                ),
+                            modifier = Modifier.fillMaxWidth(),
                             account = account
                         )
                     }

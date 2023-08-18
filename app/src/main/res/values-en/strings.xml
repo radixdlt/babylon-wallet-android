@@ -647,6 +647,13 @@
   <string name="recoverProfileBackup_numberOfPersonas">*Number of personas:* %d</string>
   <string name="recoverProfileBackup_importFileButton_title">Import from Backup File Instead</string>
   <string name="recoverProfileBackup_incompatibleWalletDataLabel">Incompatible Wallet data</string>
+  <string name="recoverSeedPhrase_header_title">Seed Phrase Required</string>
+  <string name="recoverSeedPhrase_header_subtitleAccounts">The following *Accounts* are controlled by a seed phrase. To recover control, you must re-enter it.</string>
+  <string name="recoverSeedPhrase_header_subtitleAccountsPersonas">The following *Accounts* and *Personas* are controlled by a seed phrase. To recover control, you must re-enter it.</string>
+  <string name="recoverSeedPhrase_skipButton">Skip This Seed Phrase For Now</string>
+  <string name="recoverSeedPhrase_enterButton">Enter This Seed Phrase</string>
+  <string name="enterSeedPhrase_header_title">Enter Seed Phrase</string>
+  <string name="enterSeedPhrase_warning">For your safety, make sure no one is looking at your screen. Never give your seed phrase to anyone for any reason.</string>
 
   <string name="androidProfileBackup_disabledText">Back up is turned off</string>
   <string name="androidProfileBackup_lastBackedUp">Last Backed up: %s</string>

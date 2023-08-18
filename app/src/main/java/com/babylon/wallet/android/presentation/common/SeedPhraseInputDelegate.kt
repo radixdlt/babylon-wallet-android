@@ -103,6 +103,10 @@ class SeedPhraseInputDelegate(
         validateMnemonic()
     }
 
+    fun reset() {
+        _state.update { State() }
+    }
+
     private fun validateMnemonic() {
         _state.update { state ->
             state.copy(seedPhraseValid = _state.value.seedPhraseWords.all { it.state == SeedPhraseWord.State.Valid })
@@ -121,11 +125,15 @@ class SeedPhraseInputDelegate(
     }
 
     data class State(
-        val seedPhraseValid: Boolean = true,
+        val seedPhraseValid: Boolean = false,
         val bip39Passphrase: String = "",
         val seedPhraseWords: ImmutableList<SeedPhraseWord> = persistentListOf(),
         val wordAutocompleteCandidates: ImmutableList<String> = persistentListOf()
-    ) : UiState
+    ) : UiState {
+
+        val wordsPhrase: String
+            get() = seedPhraseWords.joinToString(separator = " ") { it.value }
+    }
 
     override fun initialState(): State {
         return State()
