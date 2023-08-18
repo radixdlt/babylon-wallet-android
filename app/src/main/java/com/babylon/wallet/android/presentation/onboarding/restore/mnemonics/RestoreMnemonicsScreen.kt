@@ -124,7 +124,7 @@ private fun RestoreMnemonicsContent(
     }
 
     Scaffold(
-        modifier = modifier.navigationBarsPadding().imePadding(),
+        modifier = modifier.navigationBarsPadding(),
         topBar = {
             RadixCenteredTopAppBar(title = "", onBackClick = onBackClick)
         },
@@ -134,6 +134,7 @@ private fun RestoreMnemonicsContent(
                     wordAutocompleteCandidates = state.seedPhraseState.wordAutocompleteCandidates,
                     modifier = Modifier
                         .fillMaxWidth()
+                        .imePadding()
                         .height(56.dp)
                         .padding(RadixTheme.dimensions.paddingSmall),
                     onCandidateClick = { candidate ->
@@ -147,6 +148,7 @@ private fun RestoreMnemonicsContent(
                 RadixPrimaryButton(
                     modifier = Modifier
                         .fillMaxWidth()
+                        .imePadding()
                         .padding(RadixTheme.dimensions.paddingDefault),
                     text = stringResource(
                         id = if (state.isShowingEntities) {
