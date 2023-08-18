@@ -8,7 +8,6 @@ import com.babylon.wallet.android.domain.usecases.AccountWithSecurityPrompt
 import com.babylon.wallet.android.domain.usecases.GetAccountsForSecurityPromptUseCase
 import com.babylon.wallet.android.domain.usecases.GetAccountsWithResourcesUseCase
 import com.babylon.wallet.android.domain.usecases.SecurityPromptType
-import com.babylon.wallet.android.domain.usecases.SecurityPromptType.*
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
@@ -141,8 +140,8 @@ class WalletViewModel @Inject constructor(
                 ?.factorSourceId() as? FactorSourceID.FromHash ?: return@launch
 
             when (securityPromptType) {
-                NEEDS_BACKUP -> sendEvent(WalletEvent.NavigateToMnemonicBackup(factorSourceId))
-                NEEDS_RESTORE -> sendEvent(WalletEvent.NavigateToMnemonicRestore(factorSourceId))
+                SecurityPromptType.NEEDS_BACKUP -> sendEvent(WalletEvent.NavigateToMnemonicBackup(factorSourceId))
+                SecurityPromptType.NEEDS_RESTORE -> sendEvent(WalletEvent.NavigateToMnemonicRestore(factorSourceId))
             }
         }
     }
@@ -187,8 +186,8 @@ data class WalletUiState(
         }?.resources ?: return null
 
         val accountWithSecurityPrompt = accountsNeedSecurityPrompt.find { it.account.address == forAccount.address } ?: return null
-        return if (accountWithSecurityPrompt.prompt == NEEDS_BACKUP) {
-            if (resourcesForAccount.hasXrd()) NEEDS_BACKUP else null
+        return if (accountWithSecurityPrompt.prompt == SecurityPromptType.NEEDS_BACKUP) {
+            if (resourcesForAccount.hasXrd()) SecurityPromptType.NEEDS_BACKUP else null
         } else {
             accountWithSecurityPrompt.prompt
         }

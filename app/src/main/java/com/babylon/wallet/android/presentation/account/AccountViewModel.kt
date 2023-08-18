@@ -19,8 +19,7 @@ import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.presentation.navigation.Screen.Companion.ARG_ACCOUNT_ID
-import com.babylon.wallet.android.presentation.wallet.WalletEvent
-import com.babylon.wallet.android.utils.AppEvent.*
+import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.filter
@@ -58,9 +57,9 @@ class AccountViewModel @Inject constructor(
 
         viewModelScope.launch {
             appEventBus.events.filter { event ->
-                event is GotFreeXrd || event is Status.Transaction.Success || event is RestoredMnemonic
+                event is AppEvent.GotFreeXrd || event is AppEvent.Status.Transaction.Success || event is AppEvent.RestoredMnemonic
             }.collect {
-                refresh(fetchNewData = it !is RestoredMnemonic)
+                refresh(fetchNewData = it !is AppEvent.RestoredMnemonic)
             }
         }
 
@@ -146,7 +145,7 @@ class AccountViewModel @Inject constructor(
 
     fun onApplySecuritySettings(securityPromptType: SecurityPromptType) {
         viewModelScope.launch {
-            val factorSourceId =  _state.value.accountWithResources?.account
+            val factorSourceId = _state.value.accountWithResources?.account
                 ?.factorSourceId() as? FactorSourceID.FromHash ?: return@launch
 
             when (securityPromptType) {
@@ -185,7 +184,6 @@ data class AccountUiState(
             }
             else -> null
         }
-
 
     val isRefreshing: Boolean
         get() = !isLoading && refreshing

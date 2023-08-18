@@ -142,8 +142,8 @@ fun NavigationHost(
                 onNavigateToMnemonicBackup = {
                     navController.seedPhrases()
                 },
-                onNavigateToMnemonicRestore = {
-                    navController.restoreMnemonics(deviceFactorSourceId = it)
+                onNavigateToMnemonicRestore = { factorSourceId ->
+                    navController.restoreMnemonics(deviceFactorSourceId = factorSourceId)
                 },
                 onTransferClick = { accountId ->
                     navController.transfer(accountId = accountId)

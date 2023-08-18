@@ -11,8 +11,6 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.profile.data.model.Header
 import rdx.works.profile.data.model.factorsources.DeviceFactorSource
-import rdx.works.profile.data.model.factorsources.FactorSource
-import rdx.works.profile.data.model.factorsources.FactorSourceKind
 import rdx.works.profile.data.repository.MnemonicRepository
 import rdx.works.profile.data.repository.ProfileRepository
 import rdx.works.profile.domain.backup.RestoreProfileFromBackupUseCase
@@ -65,7 +63,6 @@ class RestoreFromBackupViewModel @Inject constructor(
 
         val isContinueEnabled: Boolean
             get() = isRestoringProfileChecked
-
     }
 
     sealed interface Event : OneOffEvent {

@@ -33,6 +33,7 @@ import rdx.works.profile.domain.deviceFactorSources
 import rdx.works.profile.domain.personasOnCurrentNetwork
 import javax.inject.Inject
 
+@Suppress("TooManyFunctions")
 @HiltViewModel
 class RestoreMnemonicsViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
@@ -139,7 +140,7 @@ class RestoreMnemonicsViewModel @Inject constructor(
 
         val factorSourceIDFromHash = (factorInstance.factorSourceId as FactorSource.FactorSourceID.FromHash)
         val isFactorSourceIdValid = FactorSource.factorSourceId(mnemonicWithPassphrase = mnemonicWithPassphrase) ==
-                factorSourceIDFromHash.body.value
+            factorSourceIDFromHash.body.value
 
         val isPublicKeyValid = mnemonicWithPassphrase.compressedPublicKey(derivationPath = derivationPath)
             .removeLeadingZero()
@@ -189,7 +190,6 @@ class RestoreMnemonicsViewModel @Inject constructor(
             selectedIndex = selectedIndex + 1,
             isShowingEntities = true
         )
-
     }
 
     sealed interface Event : OneOffEvent {
@@ -203,5 +203,3 @@ data class RecoverableFactorSource(
     val associatedPersonas: List<Network.Persona>,
     val factorSource: DeviceFactorSource
 )
-
-

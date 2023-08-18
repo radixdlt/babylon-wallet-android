@@ -2,10 +2,7 @@ package com.babylon.wallet.android.presentation.onboarding.restore.mnemonics
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
-import androidx.compose.animation.slideOut
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -168,7 +165,6 @@ private fun RestoreMnemonicsContent(
                     onClick = onSubmitClick
                 )
             }
-
         },
         snackbarHost = {
             RadixSnackbarHost(
@@ -342,7 +338,7 @@ private fun isSuggestionsVisible(state: RestoreMnemonicsViewModel.State): Boolea
 
 @Preview
 @Composable
-private fun RestoreMnemonicsIntroContent() {
+fun RestoreMnemonicsIntroContent() {
     RadixWalletTheme {
         RestoreMnemonicsContent(
             state = RestoreMnemonicsViewModel.State(
@@ -371,7 +367,7 @@ private fun RestoreMnemonicsIntroContent() {
 
 @Preview
 @Composable
-private fun RestoreMnemonicsSeedPhraseContent() {
+fun RestoreMnemonicsSeedPhraseContent() {
     RadixWalletTheme {
         RestoreMnemonicsContent(
             state = RestoreMnemonicsViewModel.State(

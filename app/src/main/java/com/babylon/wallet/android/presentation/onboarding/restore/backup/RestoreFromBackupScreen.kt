@@ -227,14 +227,13 @@ private fun RestoreFromBackupContent(
                     )
                 }
             }
-
         }
     }
 }
 
 @Preview
 @Composable
-private fun RestoreFromBackupPreviewBackupExists() {
+fun RestoreFromBackupPreviewBackupExists() {
     RadixWalletTheme {
         var state by remember {
             mutableStateOf(
@@ -256,7 +255,7 @@ private fun RestoreFromBackupPreviewBackupExists() {
 
 @Preview
 @Composable
-private fun RestoreFromBackupPreviewNoBackupExists() {
+fun RestoreFromBackupPreviewNoBackupExists() {
     RadixWalletTheme {
         RestoreFromBackupContent(
             state = RestoreFromBackupViewModel.State(

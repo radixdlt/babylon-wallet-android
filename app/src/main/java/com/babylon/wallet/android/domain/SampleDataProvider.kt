@@ -73,9 +73,10 @@ class SampleDataProvider {
             lastUsedOn = InstantGenerator(),
             flags = listOf()
         ),
-        hint = FactorSource.Hint(
+        hint = DeviceFactorSource.Hint(
             model = "Model",
-            name = "Name"
+            name = "Name",
+            mnemonicWordCount = 24
         )
     )
 

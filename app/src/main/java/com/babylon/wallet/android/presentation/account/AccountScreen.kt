@@ -241,18 +241,18 @@ private fun AccountScreenContent(
                     }
                 }
             }, containerColor = Color.Transparent, floatingActionButton = {
-                if (state.isHistoryEnabled) {
-                    HistoryButton(
-                        modifier = Modifier.size(174.dp, 50.dp),
-                        onHistoryClick
+                    if (state.isHistoryEnabled) {
+                        HistoryButton(
+                            modifier = Modifier.size(174.dp, 50.dp),
+                            onHistoryClick
+                        )
+                    }
+                }, floatingActionButtonPosition = FabPosition.Center, snackbarHost = {
+                    RadixSnackbarHost(
+                        modifier = Modifier.padding(RadixTheme.dimensions.paddingDefault),
+                        hostState = snackBarHostState
                     )
-                }
-            }, floatingActionButtonPosition = FabPosition.Center, snackbarHost = {
-                RadixSnackbarHost(
-                    modifier = Modifier.padding(RadixTheme.dimensions.paddingDefault),
-                    hostState = snackBarHostState
-                )
-            }) { innerPadding ->
+                }) { innerPadding ->
                 AssetsContent(
                     modifier = Modifier.padding(innerPadding),
                     state = state,

@@ -127,15 +127,13 @@ private fun BackupScreenContent(
                     }
                 }
             }
-
-
         }
     }
 }
 
 @Preview
 @Composable
-private fun BackupScreenPreview() {
+fun BackupScreenPreview() {
     RadixWalletTheme {
         BackupScreenContent(
             state = BackupViewModel.State(backupState = BackupState.Closed),
