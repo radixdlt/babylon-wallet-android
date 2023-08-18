@@ -250,6 +250,7 @@ class TransactionApprovalViewModel @Inject constructor(
         val transactionFees: TransactionFees = TransactionFees(),
         val feePayerSearchResult: FeePayerSearchResult? = null,
         val sheetState: Sheet = Sheet.None,
+        val feesMode: Sheet.CustomizeFees.FeesMode = Sheet.CustomizeFees.FeesMode.Default,
         val error: UiMessage? = null,
         val ephemeralNotaryPrivateKey: PrivateKey = PrivateKey.EddsaEd25519.newRandom(),
         val interactionState: InteractionState? = null
@@ -290,8 +291,7 @@ class TransactionApprovalViewModel @Inject constructor(
             ) : Sheet()
 
             data class CustomizeFees(
-                val feePayerMode: FeePayerMode = FeePayerMode.NoFeePayerRequired,
-                val feesMode: FeesMode = FeesMode.Default
+                val feePayerMode: FeePayerMode = FeePayerMode.NoFeePayerRequired
             ) : Sheet() {
 
                 sealed interface FeePayerMode {

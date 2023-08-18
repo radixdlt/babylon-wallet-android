@@ -14,20 +14,15 @@ class TransactionFeesDelegate(
 
     @Suppress("NestedBlockDepth")
     suspend fun onCustomizeClick() {
-        val hasNetworkOrTipBeenSetup = state.value.transactionFees.hasNetworkOrTipBeenSetup
-        val feesMode = if (hasNetworkOrTipBeenSetup) {
-            State.Sheet.CustomizeFees.FeesMode.Advanced
-        } else {
-            State.Sheet.CustomizeFees.FeesMode.Default
-        }
+        val mostRecentFeesMode = state.value.feesMode
 
         if (state.value.transactionFees.defaultTransactionFee == BigDecimal.ZERO) {
             // None required
             state.update { state ->
                 state.copy(
+                    feesMode = mostRecentFeesMode,
                     sheetState = State.Sheet.CustomizeFees(
-                        feePayerMode = State.Sheet.CustomizeFees.FeePayerMode.NoFeePayerRequired,
-                        feesMode = feesMode
+                        feePayerMode = State.Sheet.CustomizeFees.FeePayerMode.NoFeePayerRequired
                     )
                 )
             }
@@ -39,11 +34,11 @@ class TransactionFeesDelegate(
                         ?.let { feePayerCandidate ->
                             state.update { state ->
                                 state.copy(
+                                    feesMode = mostRecentFeesMode,
                                     sheetState = State.Sheet.CustomizeFees(
                                         feePayerMode = State.Sheet.CustomizeFees.FeePayerMode.FeePayerSelected(
                                             feePayerCandidate = feePayerCandidate
-                                        ),
-                                        feesMode = feesMode
+                                        )
                                     )
                                 )
                             }
@@ -52,11 +47,11 @@ class TransactionFeesDelegate(
                     // No candidate selected
                     state.update { state ->
                         state.copy(
+                            feesMode = mostRecentFeesMode,
                             sheetState = State.Sheet.CustomizeFees(
                                 feePayerMode = State.Sheet.CustomizeFees.FeePayerMode.NoFeePayerSelected(
                                     candidates = feePayerResult.candidates
-                                ),
-                                feesMode = feesMode
+                                )
                             )
                         )
                     }
@@ -98,36 +93,29 @@ class TransactionFeesDelegate(
     }
 
     fun onViewDefaultModeClick() {
-        val customizeFeesSheet = state.value.sheetState as? State.Sheet.CustomizeFees ?: return
         val transactionFees = state.value.transactionFees
         state.update {
             it.copy(
+                feesMode = State.Sheet.CustomizeFees.FeesMode.Default,
                 // When switching back to default mode, reset field values that have been modified in advanced mode
                 transactionFees = transactionFees.copy(
                     feePaddingAmount = null,
                     tipPercentage = null
-                ),
-                sheetState = customizeFeesSheet.copy(
-                    feesMode = State.Sheet.CustomizeFees.FeesMode.Default
                 )
             )
         }
     }
 
     fun onViewAdvancedModeClick() {
-        val customizeFeesSheet = state.value.sheetState as? State.Sheet.CustomizeFees ?: return
         state.update {
             it.copy(
-                sheetState = customizeFeesSheet.copy(
-                    feesMode = State.Sheet.CustomizeFees.FeesMode.Advanced
-                )
+                feesMode = State.Sheet.CustomizeFees.FeesMode.Advanced,
             )
         }
     }
 
     private fun switchToFeePayerSelection() {
         val feePayerResult = state.value.feePayerSearchResult
-        val feesMode = state.value.sheetState as State.Sheet.CustomizeFees
         val transactionFees = state.value.transactionFees
         state.update { state ->
             state.copy(
@@ -135,8 +123,7 @@ class TransactionFeesDelegate(
                 sheetState = State.Sheet.CustomizeFees(
                     feePayerMode = State.Sheet.CustomizeFees.FeePayerMode.SelectFeePayer(
                         candidates = feePayerResult?.candidates.orEmpty()
-                    ),
-                    feesMode = feesMode.feesMode
+                    )
                 )
             )
         }

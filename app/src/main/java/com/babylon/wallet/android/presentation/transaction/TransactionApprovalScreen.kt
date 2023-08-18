@@ -205,6 +205,7 @@ private fun TransactionPreviewContent(
             BottomSheetContent(
                 modifier = Modifier.navigationBarsPadding(),
                 sheetState = state.sheetState,
+                feesMode = state.feesMode,
                 transactionFees = state.transactionFees,
                 insufficientBalanceToPayTheFee = state.feePayerSearchResult?.insufficientBalanceToPayTheFee ?: false,
                 onGuaranteesCloseClick = onGuaranteesCloseClick,
@@ -338,6 +339,7 @@ private fun BottomSheetContent(
     modifier: Modifier = Modifier,
     sheetState: State.Sheet,
     transactionFees: TransactionFees,
+    feesMode: State.Sheet.CustomizeFees.FeesMode,
     insufficientBalanceToPayTheFee: Boolean,
     onGuaranteesCloseClick: () -> Unit,
     onGuaranteesApplyClick: () -> Unit,
@@ -369,6 +371,7 @@ private fun BottomSheetContent(
             FeesSheet(
                 modifier = modifier,
                 state = sheetState,
+                feesMode = feesMode,
                 transactionFees = transactionFees,
                 insufficientBalanceToPayTheFee = insufficientBalanceToPayTheFee,
                 onClose = onGuaranteesCloseClick,

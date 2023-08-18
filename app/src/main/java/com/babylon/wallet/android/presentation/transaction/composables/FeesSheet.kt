@@ -40,6 +40,7 @@ import rdx.works.profile.data.model.pernetwork.Network
 fun FeesSheet(
     modifier: Modifier = Modifier,
     state: TransactionApprovalViewModel.State.Sheet.CustomizeFees,
+    feesMode: TransactionApprovalViewModel.State.Sheet.CustomizeFees.FeesMode,
     transactionFees: TransactionFees,
     insufficientBalanceToPayTheFee: Boolean,
     onClose: () -> Unit,
@@ -67,7 +68,7 @@ fun FeesSheet(
         }
 
         item {
-            val title = when (state.feesMode) {
+            val title = when (feesMode) {
                 TransactionApprovalViewModel.State.Sheet.CustomizeFees.FeesMode.Default -> {
                     stringResource(id = R.string.transactionReview_customizeNetworkFeeSheet_normalMode_title)
                 }
@@ -88,7 +89,7 @@ fun FeesSheet(
         }
 
         item {
-            val body = when (state.feesMode) {
+            val body = when (feesMode) {
                 TransactionApprovalViewModel.State.Sheet.CustomizeFees.FeesMode.Default -> {
                     stringResource(id = R.string.transactionReview_customizeNetworkFeeSheet_normalMode_subtitle)
                 }
@@ -264,7 +265,7 @@ fun FeesSheet(
         }
 
         item {
-            when (state.feesMode) {
+            when (feesMode) {
                 TransactionApprovalViewModel.State.Sheet.CustomizeFees.FeesMode.Default -> {
                     NetworkFeesDefaultView(
                         transactionFees = transactionFees
@@ -288,7 +289,7 @@ fun FeesSheet(
                     .padding(bottom = RadixTheme.dimensions.paddingDefault),
                 horizontalArrangement = Arrangement.Center
             ) {
-                when (state.feesMode) {
+                when (feesMode) {
                     TransactionApprovalViewModel.State.Sheet.CustomizeFees.FeesMode.Default -> {
                         RadixTextButton(
                             text = stringResource(
@@ -439,7 +440,7 @@ fun NetworkFeesAdvancedView(
                     horizontal = RadixTheme.dimensions.paddingXLarge
                 ),
             onValueChanged = onFeePaddingAmountChanged,
-            value = transactionFees?.feePaddingAmountToDisplay?.displayableQuantity().orEmpty(),
+            value = transactionFees?.feePaddingAmountToDisplay.orEmpty(),
             leftLabel = stringResource(
                 id = R.string.transactionReview_customizeNetworkFeeSheet_paddingFieldLabel
             ),
@@ -473,7 +474,8 @@ fun NetworkFeesAdvancedView(
                 )
 
                 Text(
-                    text = stringResource(id = R.string.transactionReview_customizeNetworkFeeSheet_tipFieldInfo),
+                    text = stringResource(id = R.string.transactionReview_customizeNetworkFeeSheet_tipFieldInfo)
+                        .replace("%%", "%"),
                     style = RadixTheme.typography.body1Regular,
                     color = RadixTheme.colors.gray2
                 )
@@ -618,7 +620,7 @@ fun NetworkFeesAdvancedView(
                 Text(
                     text = stringResource(
                         id = R.string.transactionReview_xrdAmount,
-                        transactionFees?.feePaddingAmountToDisplay?.displayableQuantity().orEmpty()
+                        transactionFees?.feePaddingAmountForCalculation?.displayableQuantity().orEmpty()
                     ),
                     style = RadixTheme.typography.body1Header,
                     color = RadixTheme.colors.gray1
