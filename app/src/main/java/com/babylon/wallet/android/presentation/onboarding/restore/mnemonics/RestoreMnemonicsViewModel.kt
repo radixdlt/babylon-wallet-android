@@ -128,6 +128,7 @@ class RestoreMnemonicsViewModel @Inject constructor(
         }
 
     private suspend fun restoreMnemonic() {
+        _state.update { it.copy(isRestoring = true) }
         val account = state.value.recoverableFactorSource?.associatedAccounts?.firstOrNull() ?: return
         val factorInstance = (account.securityState as? SecurityState.Unsecured)?.unsecuredEntityControl?.transactionSigning ?: return
         val derivationPath = factorInstance.derivationPath ?: return
@@ -145,14 +146,14 @@ class RestoreMnemonicsViewModel @Inject constructor(
             .toHexString() == factorInstance.publicKey.compressedData
 
         if (!isFactorSourceIdValid || !isPublicKeyValid) {
-            _state.update { it.copy(uiMessage = UiMessage.InfoMessage.InvalidMnemonic) }
+            _state.update { it.copy(uiMessage = UiMessage.InfoMessage.InvalidMnemonic, isRestoring = false) }
         } else {
             restoreMnemonicUseCase(
                 factorSourceId = factorSourceIDFromHash,
                 mnemonicWithPassphrase = mnemonicWithPassphrase
             )
             appEventBus.sendEvent(AppEvent.RestoredMnemonic)
-
+            _state.update { it.copy(isRestoring = false) }
             showNextRecoverableFactorSourceOrFinish()
         }
     }
@@ -174,6 +175,7 @@ class RestoreMnemonicsViewModel @Inject constructor(
         private val selectedIndex: Int = -1,
         val isShowingEntities: Boolean = true,
         val uiMessage: UiMessage? = null,
+        val isRestoring: Boolean = false,
         val seedPhraseState: SeedPhraseInputDelegate.State = SeedPhraseInputDelegate.State()
     ) : UiState {
 
