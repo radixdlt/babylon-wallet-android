@@ -27,7 +27,7 @@ internal class RestoreMnemonicsArgs(val factorSourceIdHex: String?) {
 
 @OptIn(ExperimentalAnimationApi::class)
 fun NavGraphBuilder.restoreMnemonicsScreen(
-    onFinish: () -> Unit
+    onFinish: (Boolean) -> Unit
 ) {
     composable(
         route = ROUTE,

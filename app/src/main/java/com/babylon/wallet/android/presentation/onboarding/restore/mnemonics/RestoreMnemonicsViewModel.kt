@@ -67,7 +67,7 @@ class RestoreMnemonicsViewModel @Inject constructor(
         if (!state.value.isShowingEntities) {
             _state.update { it.copy(isShowingEntities = true) }
         } else {
-            viewModelScope.launch { sendEvent(Event.FinishRestoration) }
+            viewModelScope.launch { sendEvent(Event.FinishRestoration(isMovingToMain = args.factorSourceIdHex == null)) }
         }
     }
 
@@ -165,7 +165,7 @@ class RestoreMnemonicsViewModel @Inject constructor(
         if (state.value.nextRecoverableFactorSource != null) {
             _state.update { it.proceedToNextRecoverable() }
         } else {
-            sendEvent(Event.FinishRestoration)
+            sendEvent(Event.FinishRestoration(isMovingToMain = args.factorSourceIdHex == null))
         }
     }
 
@@ -191,7 +191,7 @@ class RestoreMnemonicsViewModel @Inject constructor(
     }
 
     sealed interface Event : OneOffEvent {
-        object FinishRestoration : Event
+        data class FinishRestoration(val isMovingToMain: Boolean) : Event
         object MoveToNextWord : Event
     }
 }

@@ -62,7 +62,7 @@ import com.babylon.wallet.android.utils.formattedSpans
 @Composable
 fun RestoreMnemonicsScreen(
     viewModel: RestoreMnemonicsViewModel,
-    onFinish: () -> Unit
+    onFinish: (Boolean) -> Unit
 ) {
     val state by viewModel.state.collectAsState()
 
@@ -91,7 +91,7 @@ fun RestoreMnemonicsScreen(
     LaunchedEffect(Unit) {
         viewModel.oneOffEvent.collect {
             when (it) {
-                is Event.FinishRestoration -> onFinish()
+                is Event.FinishRestoration -> onFinish(it.isMovingToMain)
                 is Event.MoveToNextWord -> focusManager.moveFocus(FocusDirection.Next)
             }
         }

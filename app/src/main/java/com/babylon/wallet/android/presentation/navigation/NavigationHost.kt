@@ -89,8 +89,12 @@ fun NavigationHost(
             }
         )
         restoreMnemonicsScreen(
-            onFinish = {
-                navController.popBackStack(MAIN_ROUTE, inclusive = false)
+            onFinish = { isMovingToMain ->
+                if (isMovingToMain) {
+                    navController.popBackStack(MAIN_ROUTE, inclusive = false)
+                } else {
+                    navController.popBackStack()
+                }
             }
         )
         main(
