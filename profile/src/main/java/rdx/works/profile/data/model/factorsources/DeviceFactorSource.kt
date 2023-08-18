@@ -18,6 +18,16 @@ data class DeviceFactorSource(
     val nextDerivationIndicesPerNetwork: List<Network.NextDerivationIndices>? = null
 ) : FactorSource() {
 
+    @Serializable
+    data class Hint(
+        @SerialName("model")
+        val model: String,
+        @SerialName("name")
+        val name: String,
+        @SerialName("mnemonicWordCount")
+        val mnemonicWordCount: Int
+    )
+
     companion object {
 
         fun babylon(
@@ -70,7 +80,8 @@ data class DeviceFactorSource(
             ),
             hint = Hint(
                 model = model,
-                name = name
+                name = name,
+                mnemonicWordCount = mnemonicWithPassphrase.wordCount
             ),
             nextDerivationIndicesPerNetwork = if (isOlympiaCompatible) null else listOf()
         )

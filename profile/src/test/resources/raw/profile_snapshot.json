@@ -53,7 +53,8 @@
         },
         "hint" : {
           "model" : "computer",
-          "name" : "unit test"
+          "name" : "unit test",
+          "mnemonicWordCount" : "24"
         },
         "id" : {
           "body" : "6facb00a836864511fdf8f181382209e64e83ad462288ea1bc7868f236fb8033",
@@ -90,7 +91,8 @@
         },
         "hint" : {
           "model" : "computer",
-          "name" : "unit test"
+          "name" : "unit test",
+          "mnemonicWordCount" : "12"
         },
         "id" : {
           "body" : "c23c47a8a37b79298878506692e42f3a1a11967ff1239bb344ad6ab0c21ddda8",
@@ -211,7 +213,7 @@
       "description" : "unit test",
       "id" : "BABE1442-3C98-41FF-AFB0-D0F5829B020D"
     },
-    "snapshotVersion" : 40
+    "snapshotVersion" : 41
   },
   "networks" : [
     {

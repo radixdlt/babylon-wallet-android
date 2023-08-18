@@ -67,14 +67,6 @@ sealed class FactorSource {
     value class AccountAddress(val value: String)
 
     @Serializable
-    data class Hint(
-        @SerialName("model")
-        val model: String,
-        @SerialName("name")
-        val name: String
-    )
-
-    @Serializable
     data class Common(
         @SerialName("cryptoParameters")
         val cryptoParameters: CryptoParameters,
