@@ -574,6 +574,8 @@
   <string name="displayMnemonics_cautionAlert_revealButtonLabel">Reveal Seed Phrase</string>
   <string name="displayMnemonics_cautionAlert_message">A seed phrase provides full control of its Accounts. Do not view in a public area. Back up the seed phrase words securely. Screenshots are disabled.</string>
   <string name="displayMnemonics_seedPhrases">Seed Phrases</string>
+  <string name="displayMnemonics_connectedAccountsPersonasLabel_one">Connected to Personas and %d account</string>
+  <string name="displayMnemonics_connectedAccountsPersonasLabel_many">Connected to Personas and to %d accounts</string>
   <string name="displayMnemonics_connectedAccountsLabel_one">Connected to %d account</string>
   <string name="displayMnemonics_connectedAccountsLabel_many">Connected to %d accounts</string>
   <string name="displayMnemonics_seedPhraseSecurityInfo">You are responsible for the security of your Seed Phrase</string>

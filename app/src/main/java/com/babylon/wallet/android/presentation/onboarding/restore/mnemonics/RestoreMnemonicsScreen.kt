@@ -341,7 +341,7 @@ fun RestoreMnemonicsIntroContent() {
                         associatedAccounts = List(5) { index ->
                             SampleDataProvider().sampleAccount(address = "rdx_abcdefg$index", name = "Account $index", appearanceId = index)
                         },
-                        factorSource = SampleDataProvider().deviceFactorSource()
+                        factorSource = SampleDataProvider().babylonDeviceFactorSource()
                     )
                 ),
                 isShowingEntities = true
@@ -367,7 +367,7 @@ fun RestoreMnemonicsSeedPhraseContent() {
                         associatedAccounts = List(5) { index ->
                             SampleDataProvider().sampleAccount(address = "rdx_abcdefg$index", name = "Account $index", appearanceId = index)
                         },
-                        factorSource = SampleDataProvider().deviceFactorSource()
+                        factorSource = SampleDataProvider().babylonDeviceFactorSource()
                     )
                 ),
                 isShowingEntities = false

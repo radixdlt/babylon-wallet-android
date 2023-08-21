@@ -62,7 +62,7 @@ class SampleDataProvider {
         )
     )
 
-    fun deviceFactorSource() = DeviceFactorSource(
+    fun babylonDeviceFactorSource() = DeviceFactorSource(
         id = FactorSource.FactorSourceID.FromHash(
             kind = FactorSourceKind.DEVICE,
             body = FactorSource.HexCoded32Bytes("5f07ec336e9e7891bff04004c817201e73c097b6b1e1b3a26bc205e0010196f5")
@@ -77,6 +77,24 @@ class SampleDataProvider {
             model = "Model",
             name = "Name",
             mnemonicWordCount = 24
+        )
+    )
+
+    fun olympiaDeviceFactorSource() = DeviceFactorSource(
+        id = FactorSource.FactorSourceID.FromHash(
+            kind = FactorSourceKind.DEVICE,
+            body = FactorSource.HexCoded32Bytes("5f07ec336e9e7891bff04004c817201e73c097b6b1e1b3a26bc205e0010196f5")
+        ),
+        common = FactorSource.Common(
+            cryptoParameters = FactorSource.Common.CryptoParameters.olympiaBackwardsCompatible,
+            addedOn = InstantGenerator(),
+            lastUsedOn = InstantGenerator(),
+            flags = listOf()
+        ),
+        hint = DeviceFactorSource.Hint(
+            model = "Model",
+            name = "Name",
+            mnemonicWordCount = 12
         )
     )
 

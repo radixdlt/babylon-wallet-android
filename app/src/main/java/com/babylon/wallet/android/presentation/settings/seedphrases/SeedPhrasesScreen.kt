@@ -39,12 +39,9 @@ import com.babylon.wallet.android.presentation.ui.composables.RedWarningText
 import com.babylon.wallet.android.presentation.ui.composables.SimpleAccountCard
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import com.babylon.wallet.android.utils.biometricAuthenticate
-import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.persistentListOf
 import rdx.works.profile.data.model.factorsources.FactorSource
-import rdx.works.profile.data.model.factorsources.FactorSourceKind
-import rdx.works.profile.data.model.pernetwork.Network
 
 @Composable
 fun SeedPhrasesScreen(
@@ -133,8 +130,7 @@ private fun SeedPhraseContent(
                         }
                         .padding(horizontal = RadixTheme.dimensions.paddingDefault, vertical = RadixTheme.dimensions.paddingMedium)
                         .fillMaxWidth(),
-                    accounts = deviceFactorSourceItem.accounts,
-                    mnemonicState = deviceFactorSourceItem.mnemonicState
+                    data = deviceFactorSourceItem
                 )
                 if (index != deviceFactorSourceData.size - 1) {
                     Divider(
@@ -150,8 +146,7 @@ private fun SeedPhraseContent(
 @Composable
 private fun SeedPhraseCard(
     modifier: Modifier,
-    accounts: ImmutableList<Network.Account>,
-    mnemonicState: DeviceFactorSourceData.MnemonicState
+    data: DeviceFactorSourceData
 ) {
     Column(
         modifier = modifier,
@@ -178,12 +173,20 @@ private fun SeedPhraseCard(
                 )
                 Text(
                     text = stringResource(
-                        id = if (accounts.size == 1) {
-                            R.string.displayMnemonics_connectedAccountsLabel_one
+                        id = if (data.deviceFactorSource.isBabylon) {
+                            if (data.accounts.size == 1) {
+                                R.string.displayMnemonics_connectedAccountsPersonasLabel_one
+                            } else {
+                                R.string.displayMnemonics_connectedAccountsPersonasLabel_many
+                            }
                         } else {
-                            R.string.displayMnemonics_connectedAccountsLabel_many
+                            if (data.accounts.size == 1) {
+                                R.string.displayMnemonics_connectedAccountsLabel_one
+                            } else {
+                                R.string.displayMnemonics_connectedAccountsLabel_many
+                            }
                         },
-                        accounts.size
+                        data.accounts.size
                     ),
                     style = RadixTheme.typography.body2Regular,
                     color = RadixTheme.colors.gray2,
@@ -199,7 +202,7 @@ private fun SeedPhraseCard(
                 tint = RadixTheme.colors.gray1
             )
         }
-        when (mnemonicState) {
+        when (data.mnemonicState) {
             DeviceFactorSourceData.MnemonicState.NotBackedUp -> {
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXSmall))
                 RedWarningText(text = AnnotatedString(stringResource(id = R.string.homePage_securityPromptBackup)))
@@ -211,7 +214,7 @@ private fun SeedPhraseCard(
             else -> {}
         }
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXSmall))
-        accounts.forEachIndexed { index, account ->
+        data.accounts.forEachIndexed { index, account ->
             SimpleAccountCard(
                 modifier = Modifier.fillMaxWidth(),
                 account = account
@@ -228,22 +231,16 @@ fun AccountPreferencePreview() {
             onBackClick = {},
             deviceFactorSourceData = persistentListOf(
                 DeviceFactorSourceData(
-                    FactorSource.FactorSourceID.FromHash(
-                        kind = FactorSourceKind.DEVICE,
-                        body = FactorSource.HexCoded32Bytes("5f07ec336e9e7891bff04004c817201e73c097b6b1e1b3a26bc205e0010196f5")
-                    ),
-                    persistentListOf(
+                    deviceFactorSource = SampleDataProvider().babylonDeviceFactorSource(),
+                    accounts = persistentListOf(
                         SampleDataProvider().sampleAccount(),
                         SampleDataProvider().sampleAccount(),
                         SampleDataProvider().sampleAccount()
                     )
                 ),
                 DeviceFactorSourceData(
-                    FactorSource.FactorSourceID.FromHash(
-                        kind = FactorSourceKind.DEVICE,
-                        body = FactorSource.HexCoded32Bytes("5f07ec336e9e7891bff04004c817201e73c097b6b1e1b3a26bc501e0010196f5")
-                    ),
-                    persistentListOf(SampleDataProvider().sampleAccount())
+                    deviceFactorSource = SampleDataProvider().olympiaDeviceFactorSource(),
+                    accounts = persistentListOf(SampleDataProvider().sampleAccount())
                 )
             ),
             onSeedPhraseClick = {}
