@@ -124,17 +124,24 @@ class RestoreMnemonicsViewModel @Inject constructor(
 
     private suspend fun restoreMnemonic() {
         _state.update { it.copy(isRestoring = true) }
-        val account = state.value.recoverableFactorSource?.associatedAccounts?.firstOrNull() ?: return
-        val factorInstance = (account.securityState as? SecurityState.Unsecured)?.unsecuredEntityControl?.transactionSigning ?: return
+
+        val storedSecurityState = state.value
+            .recoverableFactorSource
+            ?.associatedAccounts
+            ?.firstOrNull()
+            ?.securityState as? SecurityState.Unsecured ?: return
+        val factorInstance = storedSecurityState.unsecuredEntityControl.transactionSigning
         val derivationPath = factorInstance.derivationPath ?: return
+
         val mnemonicWithPassphrase = MnemonicWithPassphrase(
             mnemonic = _state.value.seedPhraseState.wordsPhrase,
             bip39Passphrase = _state.value.seedPhraseState.bip39Passphrase
         )
 
-        val factorSourceIDFromHash = (factorInstance.factorSourceId as FactorSource.FactorSourceID.FromHash)
-        val isFactorSourceIdValid = FactorSource.factorSourceId(mnemonicWithPassphrase = mnemonicWithPassphrase) ==
-                factorSourceIDFromHash.body.value
+        val factorSourceId = (factorInstance.factorSourceId as FactorSource.FactorSourceID.FromHash)
+        val isFactorSourceIdValid = FactorSource.factorSourceId(
+            mnemonicWithPassphrase = mnemonicWithPassphrase
+        ) == factorSourceId.body.value
 
         val isPublicKeyValid = mnemonicWithPassphrase.compressedPublicKey(
             derivationPath = derivationPath,
@@ -145,7 +152,7 @@ class RestoreMnemonicsViewModel @Inject constructor(
             _state.update { it.copy(uiMessage = UiMessage.InfoMessage.InvalidMnemonic, isRestoring = false) }
         } else {
             restoreMnemonicUseCase(
-                factorSourceId = factorSourceIDFromHash,
+                factorSourceId = factorSourceId,
                 mnemonicWithPassphrase = mnemonicWithPassphrase
             )
             appEventBus.sendEvent(AppEvent.RestoredMnemonic)

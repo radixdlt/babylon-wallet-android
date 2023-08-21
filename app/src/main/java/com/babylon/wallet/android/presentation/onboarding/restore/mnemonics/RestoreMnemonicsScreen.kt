@@ -218,7 +218,13 @@ private fun EntitiesView(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = RadixTheme.dimensions.paddingLarge),
-            text = stringResource(id = R.string.recoverSeedPhrase_header_titleOther),
+            text = stringResource(
+                id = if (state.isMainSeedPhrase) {
+                    R.string.recoverSeedPhrase_header_titleMain
+                } else {
+                    R.string.recoverSeedPhrase_header_titleOther
+                }
+            ),
             textAlign = TextAlign.Center,
             style = RadixTheme.typography.title
         )
