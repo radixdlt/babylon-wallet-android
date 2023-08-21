@@ -25,7 +25,7 @@ class SeedPhraseInputDelegate(
                 seedPhraseWords = (0 until size).map {
                     SeedPhraseWord(
                         it,
-                        lastWord = it == size
+                        lastWord = it == size - 1
                     )
                 }.toPersistentList()
             )
@@ -91,7 +91,9 @@ class SeedPhraseInputDelegate(
                 _state.update {
                     it.copy(wordAutocompleteCandidates = persistentListOf())
                 }
-                onMoveToNextWord()
+                if (index != _state.value.seedPhraseWords.lastIndex) {
+                    onMoveToNextWord()
+                }
             }
         }
     }

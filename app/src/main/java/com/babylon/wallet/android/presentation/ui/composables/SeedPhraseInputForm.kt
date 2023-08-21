@@ -184,7 +184,13 @@ private fun SeedPhraseWordInput(
             }
         },
         keyboardActions = KeyboardActions(onNext = { focusManager.moveFocus(FocusDirection.Next) }),
-        keyboardOptions = KeyboardOptions(imeAction = if (word.lastWord) ImeAction.Done else ImeAction.Next),
+        keyboardOptions = KeyboardOptions(imeAction =
+            if (word.lastWord) {
+                ImeAction.Done
+            } else {
+                ImeAction.Next
+            }
+        ),
         error = if (word.state == SeedPhraseWord.State.Invalid) stringResource(id = R.string.common_invalid) else null,
         onFocusChanged = onFocusChanged,
         errorFixedSize = true,
