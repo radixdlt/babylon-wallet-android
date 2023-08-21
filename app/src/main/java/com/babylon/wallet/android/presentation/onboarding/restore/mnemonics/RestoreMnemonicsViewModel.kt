@@ -64,7 +64,7 @@ class RestoreMnemonicsViewModel @Inject constructor(
 
     fun onBackClick() {
         if (!state.value.isShowingEntities) {
-            _state.update { it.copy(isShowingEntities = true) }
+            _state.update { it.copy(isShowingEntities = true, isMovingForward = false) }
         } else if (!state.value.isMainSeedPhrase) {
             viewModelScope.launch { sendEvent(Event.FinishRestoration(isMovingToMain = args.factorSourceIdHex == null)) }
         }
@@ -90,7 +90,7 @@ class RestoreMnemonicsViewModel @Inject constructor(
 
     fun onSubmit() {
         if (state.value.isShowingEntities) {
-            _state.update { it.copy(isShowingEntities = false) }
+            _state.update { it.copy(isShowingEntities = false, isMovingForward = false) }
         } else {
             viewModelScope.launch { restoreMnemonic() }
         }
@@ -177,6 +177,7 @@ class RestoreMnemonicsViewModel @Inject constructor(
         private val recoverableFactorSources: List<RecoverableFactorSource> = emptyList(),
         private val selectedIndex: Int = -1,
         val isShowingEntities: Boolean = true,
+        val isMovingForward: Boolean = false,
         val uiMessage: UiMessage? = null,
         val isRestoring: Boolean = false,
         val seedPhraseState: SeedPhraseInputDelegate.State = SeedPhraseInputDelegate.State()
@@ -193,6 +194,7 @@ class RestoreMnemonicsViewModel @Inject constructor(
 
         fun proceedToNextRecoverable() = copy(
             selectedIndex = selectedIndex + 1,
+            isMovingForward = true,
             isShowingEntities = true
         )
     }

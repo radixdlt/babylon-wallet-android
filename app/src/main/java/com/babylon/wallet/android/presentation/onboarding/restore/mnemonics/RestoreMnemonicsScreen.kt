@@ -180,8 +180,8 @@ private fun RestoreMnemonicsContent(
         AnimatedVisibility(
             modifier = Modifier.padding(padding),
             visible = state.isShowingEntities,
-            enter = slideInHorizontally(initialOffsetX = { -it }),
-            exit = slideOutHorizontally(targetOffsetX = { -it })
+            enter = slideInHorizontally(initialOffsetX = { if (state.isMovingForward) it else -it }),
+            exit = slideOutHorizontally(targetOffsetX = { if (state.isMovingForward) it else -it })
         ) {
             EntitiesView(
                 state = state,
@@ -192,8 +192,8 @@ private fun RestoreMnemonicsContent(
         AnimatedVisibility(
             modifier = Modifier.padding(padding),
             visible = !state.isShowingEntities,
-            enter = slideInHorizontally(initialOffsetX = { it }),
-            exit = slideOutHorizontally(targetOffsetX = { it })
+            enter = slideInHorizontally(initialOffsetX = { if (state.isMovingForward) -it else it }),
+            exit = slideOutHorizontally(targetOffsetX = { if (state.isMovingForward) -it else it })
         ) {
             SeedPhraseView(
                 state = state,
