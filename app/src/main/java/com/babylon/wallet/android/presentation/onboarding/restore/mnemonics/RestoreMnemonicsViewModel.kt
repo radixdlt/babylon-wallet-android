@@ -136,9 +136,10 @@ class RestoreMnemonicsViewModel @Inject constructor(
         val isFactorSourceIdValid = FactorSource.factorSourceId(mnemonicWithPassphrase = mnemonicWithPassphrase) ==
                 factorSourceIDFromHash.body.value
 
-        val isPublicKeyValid = mnemonicWithPassphrase.compressedPublicKey(derivationPath = derivationPath)
-            .removeLeadingZero()
-            .toHexString() == factorInstance.publicKey.compressedData
+        val isPublicKeyValid = mnemonicWithPassphrase.compressedPublicKey(
+            derivationPath = derivationPath,
+            curve = factorInstance.publicKey.curve
+        ).removeLeadingZero().toHexString() == factorInstance.publicKey.compressedData
 
         if (!isFactorSourceIdValid || !isPublicKeyValid) {
             _state.update { it.copy(uiMessage = UiMessage.InfoMessage.InvalidMnemonic, isRestoring = false) }
