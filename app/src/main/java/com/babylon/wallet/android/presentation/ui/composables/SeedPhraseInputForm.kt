@@ -45,12 +45,13 @@ import kotlinx.collections.immutable.ImmutableList
 
 @Composable
 fun SeedPhraseInputForm(
+    modifier: Modifier = Modifier,
     seedPhraseWords: ImmutableList<SeedPhraseWord>,
     onWordChanged: (Int, String) -> Unit,
     onPassphraseChanged: (String) -> Unit,
     bip39Passphrase: String,
     onFocusedWordIndexChanged: (Int) -> Unit,
-    modifier: Modifier = Modifier
+    advancedSectionHidden: Boolean = false
 ) {
     val focusManager = LocalFocusManager.current
     Column(
@@ -94,20 +95,23 @@ fun SeedPhraseInputForm(
 
             )
         }
-        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingMedium))
-        RadixTextButton(
-            modifier = Modifier.fillMaxWidth(),
-            text = stringResource(
-                id = if (advancedMode) {
-                    R.string.importMnemonic_regularModeButton
-                } else {
-                    R.string.importMnemonic_advancedModeButton
+
+        if (!advancedSectionHidden) {
+            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingMedium))
+            RadixTextButton(
+                modifier = Modifier.fillMaxWidth(),
+                text = stringResource(
+                    id = if (advancedMode) {
+                        R.string.importMnemonic_regularModeButton
+                    } else {
+                        R.string.importMnemonic_advancedModeButton
+                    }
+                ),
+                onClick = {
+                    advancedMode = !advancedMode
                 }
-            ),
-            onClick = {
-                advancedMode = !advancedMode
-            }
-        )
+            )
+        }
     }
 }
 

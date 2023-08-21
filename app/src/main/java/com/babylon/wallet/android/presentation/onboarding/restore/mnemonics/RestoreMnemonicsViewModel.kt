@@ -160,11 +160,11 @@ class RestoreMnemonicsViewModel @Inject constructor(
     }
 
     private suspend fun showNextRecoverableFactorSourceOrFinish() {
-        seedPhraseInputDelegate.reset()
-        // This may need to change according to the length saved in profile
-        seedPhraseInputDelegate.setSeedPhraseSize(SeedPhraseLength.TWENTY_FOUR.words)
+        val nextRecoverableFactorSource = state.value.nextRecoverableFactorSource
+        if (nextRecoverableFactorSource != null) {
+            seedPhraseInputDelegate.reset()
+            seedPhraseInputDelegate.setSeedPhraseSize(nextRecoverableFactorSource.factorSource.hint.mnemonicWordCount)
 
-        if (state.value.nextRecoverableFactorSource != null) {
             _state.update { it.proceedToNextRecoverable() }
         } else {
             sendEvent(Event.FinishRestoration(isMovingToMain = args.factorSourceIdHex == null))
