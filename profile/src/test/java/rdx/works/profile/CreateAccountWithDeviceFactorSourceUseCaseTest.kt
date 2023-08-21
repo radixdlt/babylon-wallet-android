@@ -1,14 +1,13 @@
 package rdx.works.profile
 
 import io.mockk.coEvery
-import io.mockk.every
+import io.mockk.coVerify
 import io.mockk.mockk
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.runTest
-import org.junit.Before
 import org.junit.Test
 import org.mockito.Mockito
 import org.mockito.kotlin.doReturn
@@ -16,7 +15,6 @@ import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import rdx.works.profile.data.model.MnemonicWithPassphrase
-import rdx.works.profile.data.model.Profile
 import rdx.works.profile.data.model.ProfileState
 import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.data.model.pernetwork.addAccount
@@ -32,20 +30,15 @@ class CreateAccountWithDeviceFactorSourceUseCaseTest {
     private val testDispatcher = StandardTestDispatcher()
     private val testScope = TestScope(testDispatcher)
     private val ensureBabylonFactorSourceExistUseCase = mockk<EnsureBabylonFactorSourceExistUseCase>()
-
-    @Before
-    fun setUp() {
-        coEvery { ensureBabylonFactorSourceExistUseCase() } returns Profile()
-    }
+    private val mnemonicWithPassphrase = MnemonicWithPassphrase(
+        mnemonic = "noodle question hungry sail type offer grocery clay nation hello mixture forum",
+        bip39Passphrase = ""
+    )
 
     @Test
     fun `given profile already exists, when creating new account, verify its returned and persisted to the profile`() {
         testScope.runTest {
             // given
-            val mnemonicWithPassphrase = MnemonicWithPassphrase(
-                mnemonic = "noodle question hungry sail type offer grocery clay nation hello mixture forum",
-                bip39Passphrase = ""
-            )
             val accountName = "First account"
             val network = Radix.Gateway.hammunet
             val profile = TestData.testProfile2Networks2AccountsEach(mnemonicWithPassphrase)
@@ -58,6 +51,7 @@ class CreateAccountWithDeviceFactorSourceUseCaseTest {
 
             val profileRepository = Mockito.mock(ProfileRepository::class.java)
             whenever(profileRepository.profileState).thenReturn(flowOf(ProfileState.Restored(profile)))
+            coEvery { ensureBabylonFactorSourceExistUseCase() } returns profile
 
             val createAccountWithDeviceFactorSourceUseCase = CreateAccountWithDeviceFactorSourceUseCase(
                 mnemonicRepository = mnemonicRepository,
@@ -76,6 +70,7 @@ class CreateAccountWithDeviceFactorSourceUseCaseTest {
             )
 
             verify(profileRepository).saveProfile(updatedProfile)
+            coVerify(exactly = 1) { ensureBabylonFactorSourceExistUseCase() }
         }
     }
 }

@@ -109,7 +109,7 @@ internal class AddOlympiaFactorSourceUseCaseTest {
             )
         )
 
-        coEvery { mnemonicRepository.readMnemonic(any()) } returns null
+        coEvery { mnemonicRepository.mnemonicExist(any()) } returns false
         coEvery { mnemonicRepository.saveMnemonic(any(), any()) } just Runs
         coEvery { profileRepository.profileState } returns flowOf(ProfileState.Restored(profile))
         coEvery { profileRepository.saveProfile(any()) } just Runs
@@ -120,7 +120,7 @@ internal class AddOlympiaFactorSourceUseCaseTest {
         coVerify(exactly = 1) { profileRepository.saveProfile(capture(capturedProfile)) }
         assert(capturedProfile.captured.factorSources.size == 2)
 
-        coEvery { mnemonicRepository.readMnemonic(any()) } returns olympiaMnemonic
+        coEvery { mnemonicRepository.mnemonicExist(any()) } returns true
         usecase(olympiaMnemonic)
         coVerify(exactly = 1) { mnemonicRepository.saveMnemonic(any(), any()) }
         coVerify(exactly = 1) { profileRepository.saveProfile(any()) }
