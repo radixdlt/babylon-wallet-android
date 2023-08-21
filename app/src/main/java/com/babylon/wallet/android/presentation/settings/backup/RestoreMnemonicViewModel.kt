@@ -30,6 +30,7 @@ import rdx.works.profile.data.utils.factorSourceId
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.accountsOnCurrentNetwork
 import rdx.works.profile.domain.backup.RestoreMnemonicUseCase
+import timber.log.Timber
 import javax.inject.Inject
 
 @HiltViewModel
@@ -70,6 +71,7 @@ class RestoreMnemonicViewModel @Inject constructor(
         viewModelScope.launch {
             seedPhraseInputDelegate.state.collect { delegateState ->
                 _state.update { uiState ->
+                    Timber.d("Autocomplete candidates: ${uiState.wordAutocompleteCandidates.size}")
                     uiState.copy(
                         seedPhraseValid = delegateState.seedPhraseValid,
                         bip39Passphrase = delegateState.bip39Passphrase,

@@ -1,5 +1,6 @@
 package com.babylon.wallet.android.presentation.common
 
+import com.babylon.wallet.android.utils.toMnemonicWords
 import com.radixdlt.bip39.wordlists.WORDLIST_ENGLISH
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
@@ -10,6 +11,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.mapWhen
+import timber.log.Timber
 
 class SeedPhraseInputDelegate(
     private val scope: CoroutineScope
@@ -30,8 +32,9 @@ class SeedPhraseInputDelegate(
         }
     }
 
-    @Suppress("MagicNumber")
+    @Suppress("MagicNumber", "LongMethod")
     fun onWordChanged(index: Int, value: String, onMoveToNextWord: suspend () -> Unit) {
+        Timber.d("On word changed $value")
         val isDeleting = (_state.value.seedPhraseWords.firstOrNull { it.index == index }?.value?.length ?: 0) > value.length
         _state.update { state ->
             val updatedWords = state.seedPhraseWords.mapWhen(predicate = { it.index == index }, mutation = {
@@ -44,6 +47,17 @@ class SeedPhraseInputDelegate(
         debounceJob?.cancel()
         debounceJob = scope.launch {
             delay(75L)
+            val pastedMnemonic = value.toMnemonicWords(state.value.seedPhraseWords.size)
+            if (pastedMnemonic.isNotEmpty()) {
+                _state.update { state ->
+                    state.copy(
+                        seedPhraseWords = state.seedPhraseWords.mapIndexed { index, word ->
+                            word.copy(value = pastedMnemonic[index], state = SeedPhraseWord.State.Valid)
+                        }.toPersistentList()
+                    )
+                }
+                return@launch
+            }
             var shouldMoveToNextWord = false
             val wordCandidates = if (value.isEmpty()) {
                 emptyList()

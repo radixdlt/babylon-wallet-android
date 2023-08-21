@@ -1,6 +1,7 @@
 package com.babylon.wallet.android.presentation.settings.backup
 
 import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -18,7 +19,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -42,7 +42,6 @@ import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.presentation.common.SeedPhraseInputDelegate
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
-import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
 import com.babylon.wallet.android.presentation.ui.composables.SecureScreen
 import com.babylon.wallet.android.presentation.ui.composables.SeedPhraseInputForm
 import com.babylon.wallet.android.presentation.ui.composables.SeedPhraseSuggestions
@@ -50,6 +49,7 @@ import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
 import com.babylon.wallet.android.presentation.ui.composables.UnderlineTextButton
 import com.babylon.wallet.android.utils.biometricAuthenticate
 import kotlinx.collections.immutable.ImmutableList
+import timber.log.Timber
 
 @Composable
 fun RestoreMnemonicScreen(
@@ -131,45 +131,24 @@ private fun RestoreMnemonicContent(
         onMessageShown = onMessageShown
     )
 
-    Scaffold(
-        modifier = modifier.navigationBarsPadding(),
-        topBar = {
+    Box(
+        modifier
+            .background(RadixTheme.colors.defaultBackground)
+            .navigationBarsPadding()
+    ) {
+        var isSeedPhraseMenuExpanded by remember { mutableStateOf(false) }
+        Column(modifier = Modifier.fillMaxSize()) {
             RadixCenteredTopAppBar(
                 title = stringResource(id = R.string.importMnemonic_tempAndroid_heading),
                 onBackClick = onBackClick
             )
-        },
-        bottomBar = {
-            RadixPrimaryButton(
-                text = stringResource(R.string.common_continue),
-                onClick = onRestore,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(all = RadixTheme.dimensions.paddingDefault),
-                enabled = state.seedPhraseValid,
-                throttleClicks = true
-            )
-        },
-        snackbarHost = {
-            RadixSnackbarHost(
-                hostState = snackBarHostState,
-                modifier = Modifier.padding(RadixTheme.dimensions.paddingLarge)
-            )
-        },
-        containerColor = RadixTheme.colors.defaultBackground
-    ) { padding ->
-        Box(
-            Modifier
-                .padding(padding)
-                .padding(horizontal = RadixTheme.dimensions.paddingDefault)
-        ) {
-            var isSeedPhraseMenuExpanded by remember { mutableStateOf(false) }
             Column(
                 modifier = Modifier
                     .imePadding()
                     .padding(bottom = stripHeight)
                     .verticalScroll(rememberScrollState())
-                    .fillMaxSize(),
+                    .fillMaxSize()
+                    .padding(horizontal = RadixTheme.dimensions.paddingDefault),
             ) {
                 Text(
                     text = state.factorSourceLabel,
@@ -228,22 +207,42 @@ private fun RestoreMnemonicContent(
                         }
                     }
                 }
+                Spacer(modifier = Modifier.height(height = 80.dp))
             }
-            if (isSeedPhraseSuggestionsVisible) {
-                SeedPhraseSuggestions(
-                    wordAutocompleteCandidates = wordAutocompleteCandidates,
-                    modifier = Modifier
-                        .imePadding()
-                        .align(Alignment.BottomCenter)
-                        .fillMaxWidth()
-                        .height(56.dp)
-                        .padding(RadixTheme.dimensions.paddingSmall),
-                    onCandidateClick = { candidate ->
-                        focusedWordIndex?.let {
-                            onWordChanged(it, candidate)
-                            focusedWordIndex = null
-                        }
+        }
+        if (isSeedPhraseSuggestionsVisible) {
+            Timber.d("Autocomplete candidates: visible")
+            SeedPhraseSuggestions(
+                wordAutocompleteCandidates = wordAutocompleteCandidates,
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .imePadding()
+                    .fillMaxWidth()
+                    .height(56.dp)
+                    .padding(RadixTheme.dimensions.paddingSmall),
+                onCandidateClick = { candidate ->
+                    focusedWordIndex?.let {
+                        onWordChanged(it, candidate)
+                        focusedWordIndex = null
                     }
+                }
+            )
+        } else {
+            Box(
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .fillMaxWidth()
+                    .background(RadixTheme.colors.defaultBackground)
+                    .padding(RadixTheme.dimensions.paddingDefault)
+            ) {
+                RadixPrimaryButton(
+                    text = stringResource(R.string.common_continue),
+                    onClick = onRestore,
+                    modifier = Modifier
+                        .align(Alignment.BottomCenter)
+                        .fillMaxWidth(),
+                    enabled = state.seedPhraseValid,
+                    throttleClicks = true
                 )
             }
         }

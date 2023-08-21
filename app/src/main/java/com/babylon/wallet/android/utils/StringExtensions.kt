@@ -8,6 +8,7 @@ import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.withStyle
+import com.radixdlt.bip39.wordlists.WORDLIST_ENGLISH
 import java.net.URLDecoder
 import java.net.URLEncoder
 import java.text.DecimalFormat
@@ -19,6 +20,16 @@ fun String.truncatedHash(): String {
     val first = substring(IntRange(0, 3))
     val last = substring(IntRange(length - 6, length - 1))
     return "$first...$last"
+}
+
+fun String.toMnemonicWords(expectedWordCount: Int): List<String> {
+    val words = trim().split(" ").map { it.trim() }.filter { it.isNotEmpty() }
+    if (words.size != expectedWordCount) return emptyList()
+    return if (words.all { WORDLIST_ENGLISH.contains(it) }) {
+        words
+    } else {
+        emptyList()
+    }
 }
 
 fun String.formattedSpans(
