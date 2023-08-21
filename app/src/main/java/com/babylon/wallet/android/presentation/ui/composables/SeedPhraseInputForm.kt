@@ -50,8 +50,7 @@ fun SeedPhraseInputForm(
     onWordChanged: (Int, String) -> Unit,
     onPassphraseChanged: (String) -> Unit,
     bip39Passphrase: String,
-    onFocusedWordIndexChanged: (Int) -> Unit,
-    advancedSectionHidden: Boolean = false
+    onFocusedWordIndexChanged: (Int) -> Unit
 ) {
     val focusManager = LocalFocusManager.current
     Column(
@@ -96,22 +95,20 @@ fun SeedPhraseInputForm(
             )
         }
 
-        if (!advancedSectionHidden) {
-            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingMedium))
-            RadixTextButton(
-                modifier = Modifier.fillMaxWidth(),
-                text = stringResource(
-                    id = if (advancedMode) {
-                        R.string.importMnemonic_regularModeButton
-                    } else {
-                        R.string.importMnemonic_advancedModeButton
-                    }
-                ),
-                onClick = {
-                    advancedMode = !advancedMode
+        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingMedium))
+        RadixTextButton(
+            modifier = Modifier.fillMaxWidth(),
+            text = stringResource(
+                id = if (advancedMode) {
+                    R.string.importMnemonic_regularModeButton
+                } else {
+                    R.string.importMnemonic_advancedModeButton
                 }
-            )
-        }
+            ),
+            onClick = {
+                advancedMode = !advancedMode
+            }
+        )
     }
 }
 

@@ -314,8 +314,7 @@ private fun SeedPhraseView(
             bip39Passphrase = state.seedPhraseState.bip39Passphrase,
             onWordChanged = onWordChanged,
             onPassphraseChanged = onPassphraseChanged,
-            onFocusedWordIndexChanged = onFocusedWordIndexChanged,
-            advancedSectionHidden = true
+            onFocusedWordIndexChanged = onFocusedWordIndexChanged
         )
     }
 }
