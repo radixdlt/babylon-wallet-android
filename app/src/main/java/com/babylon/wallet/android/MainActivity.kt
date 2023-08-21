@@ -58,6 +58,11 @@ class MainActivity : FragmentActivity() {
         }
     }
 
+    override fun onResume() {
+        super.onResume()
+        viewModel.checkMnemonicIntegrity()
+    }
+
     companion object {
         private const val splashExitAnimDurationMs = 300L
     }
