@@ -13,43 +13,83 @@ import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
 import com.radixdlt.extensions.removeLeadingZero
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.toHexString
 import rdx.works.profile.data.model.MnemonicWithPassphrase
 import rdx.works.profile.data.model.compressedPublicKey
+import rdx.works.profile.data.model.currentNetwork
 import rdx.works.profile.data.model.factorsources.DeviceFactorSource
 import rdx.works.profile.data.model.factorsources.FactorSource
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.data.model.pernetwork.SecurityState
 import rdx.works.profile.data.repository.MnemonicRepository
+import rdx.works.profile.data.repository.ProfileRepository
 import rdx.works.profile.data.utils.factorSourceId
 import rdx.works.profile.domain.GetProfileUseCase
-import rdx.works.profile.domain.accountsOnCurrentNetwork
 import rdx.works.profile.domain.backup.RestoreMnemonicUseCase
-import rdx.works.profile.domain.deviceFactorSources
+import rdx.works.profile.domain.backup.RestoreProfileFromBackupUseCase
 import javax.inject.Inject
 
-@Suppress("TooManyFunctions")
+@Suppress("TooManyFunctions", "LongParameterList")
 @HiltViewModel
 class RestoreMnemonicsViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     private val getProfileUseCase: GetProfileUseCase,
+    private val profileRepository: ProfileRepository,
     private val mnemonicRepository: MnemonicRepository,
     private val restoreMnemonicUseCase: RestoreMnemonicUseCase,
+    private val restoreProfileFromBackupUseCase: RestoreProfileFromBackupUseCase,
     private val appEventBus: AppEventBus
 ) : StateViewModel<RestoreMnemonicsViewModel.State>(),
     OneOffEventHandler<RestoreMnemonicsViewModel.Event> by OneOffEventHandlerImpl() {
 
-    private val args = RestoreMnemonicsArgs(savedStateHandle)
+    private val args = RestoreMnemonicsArgs.from(savedStateHandle)
     private val seedPhraseInputDelegate = SeedPhraseInputDelegate(viewModelScope)
 
     override fun initialState(): State = State()
 
     init {
         viewModelScope.launch {
-            val factorSources = args.deviceFactorSource()?.let { listOf(it) } ?: getAllRecoverableFactorSources()
+            val factorSources = when (args) {
+                is RestoreMnemonicsArgs.RestoreProfile -> {
+                    val profile = profileRepository.getRestoredProfileFromBackup()
+                    val allAccounts = profile?.currentNetwork?.accounts.orEmpty()
+                    profile?.factorSources
+                        ?.filterIsInstance<DeviceFactorSource>()
+                        ?.filter { mnemonicRepository.readMnemonic(it.id) == null }
+                        ?.mapNotNull { factorSource ->
+                            val associatedAccounts = allAccounts.filter { it.factorSourceId() == factorSource.id }
+
+                            if (associatedAccounts.isEmpty() && !factorSource.isBabylon) return@mapNotNull null
+
+                            RecoverableFactorSource(
+                                associatedAccounts = associatedAccounts,
+                                factorSource = factorSource
+                            )
+                        }
+                        .orEmpty()
+                }
+
+                is RestoreMnemonicsArgs.RestoreSpecificMnemonic -> {
+                    val profile = getProfileUseCase().firstOrNull() ?: return@launch
+                    val allAccounts = profile.currentNetwork.accounts
+                    profile.factorSources.filterIsInstance<DeviceFactorSource>().find { factorSource ->
+                        factorSource.id.body.value == args.factorSourceIdHex && mnemonicRepository.readMnemonic(factorSource.id) == null
+                    }?.let { factorSource ->
+                        val associatedAccounts = allAccounts.filter { it.factorSourceId() == factorSource.id }
+
+                        listOf(
+                            RecoverableFactorSource(
+                                associatedAccounts = associatedAccounts,
+                                factorSource = factorSource
+                            )
+                        )
+                    }.orEmpty()
+                }
+            }
+
             _state.update { it.copy(recoverableFactorSources = factorSources) }
 
             showNextRecoverableFactorSourceOrFinish()
@@ -65,8 +105,8 @@ class RestoreMnemonicsViewModel @Inject constructor(
     fun onBackClick() {
         if (!state.value.isShowingEntities) {
             _state.update { it.copy(isShowingEntities = true, isMovingForward = false) }
-        } else if (!state.value.isMainSeedPhrase) {
-            viewModelScope.launch { sendEvent(Event.FinishRestoration(isMovingToMain = args.factorSourceIdHex == null)) }
+        } else {
+            viewModelScope.launch { sendEvent(Event.FinishRestoration(isMovingToMain = false)) }
         }
     }
 
@@ -95,32 +135,6 @@ class RestoreMnemonicsViewModel @Inject constructor(
             viewModelScope.launch { restoreMnemonic() }
         }
     }
-
-    private suspend fun RestoreMnemonicsArgs.deviceFactorSource(): RecoverableFactorSource? {
-        if (factorSourceIdHex == null) return null
-
-        val factorSource = getProfileUseCase.deviceFactorSources.first().find { it.id.body.value == factorSourceIdHex }
-        return factorSource?.toRecoverableFactorSource()
-    }
-
-    private suspend fun DeviceFactorSource.toRecoverableFactorSource(): RecoverableFactorSource? {
-        val associatedAccounts = getProfileUseCase.accountsOnCurrentNetwork()
-            .filter { it.factorSourceId() == id }
-
-        if (associatedAccounts.isEmpty() && !isBabylon) return null
-
-        return RecoverableFactorSource(
-            associatedAccounts = associatedAccounts,
-            factorSource = this
-        )
-    }
-
-    private suspend fun getAllRecoverableFactorSources(): List<RecoverableFactorSource> =
-        getProfileUseCase.deviceFactorSources.first().filterNot {
-            mnemonicRepository.readMnemonic(it.id) != null
-        }.mapNotNull { deviceFactorSource ->
-            deviceFactorSource.toRecoverableFactorSource()
-        }
 
     private suspend fun restoreMnemonic() {
         _state.update { it.copy(isRestoring = true) }
@@ -155,6 +169,11 @@ class RestoreMnemonicsViewModel @Inject constructor(
                 factorSourceId = factorSourceId,
                 mnemonicWithPassphrase = mnemonicWithPassphrase
             )
+
+            if (args is RestoreMnemonicsArgs.RestoreProfile && _state.value.isMainSeedPhrase) {
+                restoreProfileFromBackupUseCase()
+            }
+
             appEventBus.sendEvent(AppEvent.RestoredMnemonic)
             _state.update { it.copy(isRestoring = false) }
             showNextRecoverableFactorSourceOrFinish()
@@ -169,7 +188,7 @@ class RestoreMnemonicsViewModel @Inject constructor(
 
             _state.update { it.proceedToNextRecoverable() }
         } else {
-            sendEvent(Event.FinishRestoration(isMovingToMain = args.factorSourceIdHex == null))
+            sendEvent(Event.FinishRestoration(isMovingToMain = args is RestoreMnemonicsArgs.RestoreProfile))
         }
     }
 

@@ -21,8 +21,20 @@ fun NavController.restoreMnemonics(deviceFactorSourceId: FactorSource.FactorSour
     )
 }
 
-internal class RestoreMnemonicsArgs(val factorSourceIdHex: String?) {
-    constructor(savedStateHandle: SavedStateHandle) : this(savedStateHandle[ARG_FACTOR_SOURCE_ID])
+sealed class RestoreMnemonicsArgs {
+    object RestoreProfile : RestoreMnemonicsArgs()
+    data class RestoreSpecificMnemonic(val factorSourceIdHex: String) : RestoreMnemonicsArgs()
+
+    companion object {
+        fun from(savedStateHandle: SavedStateHandle): RestoreMnemonicsArgs {
+            val factorSourceIdHex: String? = savedStateHandle[ARG_FACTOR_SOURCE_ID]
+            return if (factorSourceIdHex != null) {
+                RestoreSpecificMnemonic(factorSourceIdHex)
+            } else {
+                RestoreProfile
+            }
+        }
+    }
 }
 
 @OptIn(ExperimentalAnimationApi::class)

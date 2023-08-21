@@ -9,18 +9,13 @@ import com.babylon.wallet.android.presentation.common.UiState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import rdx.works.profile.data.model.Header
-import rdx.works.profile.data.model.factorsources.DeviceFactorSource
-import rdx.works.profile.data.repository.MnemonicRepository
+import rdx.works.profile.data.model.Profile
 import rdx.works.profile.data.repository.ProfileRepository
-import rdx.works.profile.domain.backup.RestoreProfileFromBackupUseCase
 import javax.inject.Inject
 
 @HiltViewModel
 class RestoreFromBackupViewModel @Inject constructor(
-    profileRepository: ProfileRepository,
-    private val restoreProfileFromBackupUseCase: RestoreProfileFromBackupUseCase,
-    private val mnemonicRepository: MnemonicRepository
+    profileRepository: ProfileRepository
 ) : StateViewModel<RestoreFromBackupViewModel.State>(), OneOffEventHandler<RestoreFromBackupViewModel.Event> by OneOffEventHandlerImpl() {
 
     override fun initialState(): State = State()
@@ -28,12 +23,12 @@ class RestoreFromBackupViewModel @Inject constructor(
     init {
         viewModelScope.launch {
             val profileToRestore = profileRepository.getRestoredProfileFromBackup()
-            _state.update { it.copy(restoringProfileHeader = profileToRestore?.header) }
+            _state.update { it.copy(restoringProfile = profileToRestore) }
         }
     }
 
     fun toggleRestoringProfileCheck(isChecked: Boolean) {
-        if (state.value.restoringProfileHeader?.isCompatible == true) {
+        if (state.value.restoringProfile?.header?.isCompatible == true) {
             _state.update { it.copy(isRestoringProfileChecked = isChecked) }
         }
     }
@@ -44,20 +39,12 @@ class RestoreFromBackupViewModel @Inject constructor(
 
     fun onSubmit() = viewModelScope.launch {
         if (state.value.isRestoringProfileChecked) {
-            val restoredProfile = restoreProfileFromBackupUseCase()
-
-            val factorSourcesNeedingRecovery = restoredProfile
-                ?.factorSources
-                ?.filterIsInstance<DeviceFactorSource>()
-                ?.filterNot { mnemonicRepository.readMnemonic(it.id) != null }
-                .orEmpty()
-
-            sendEvent(Event.OnRestored(needsMnemonicRecovery = factorSourcesNeedingRecovery.isNotEmpty()))
+            sendEvent(Event.OnRestoreConfirm)
         }
     }
 
     data class State(
-        val restoringProfileHeader: Header? = null,
+        val restoringProfile: Profile? = null,
         val isRestoringProfileChecked: Boolean = false
     ) : UiState {
 
@@ -67,6 +54,6 @@ class RestoreFromBackupViewModel @Inject constructor(
 
     sealed interface Event : OneOffEvent {
         object OnDismiss : Event
-        data class OnRestored(val needsMnemonicRecovery: Boolean) : Event
+        object OnRestoreConfirm : Event
     }
 }

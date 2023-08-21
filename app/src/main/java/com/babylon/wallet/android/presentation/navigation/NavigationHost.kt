@@ -79,12 +79,8 @@ fun NavigationHost(
             onBack = {
                 navController.popBackStack()
             },
-            onRestored = { needsMnemonicRecovery ->
-                if (needsMnemonicRecovery) {
-                    navController.restoreMnemonics()
-                } else {
-                    navController.popBackStack(MAIN_ROUTE, inclusive = false)
-                }
+            onRestoreConfirmed = {
+                navController.restoreMnemonics()
             }
         )
         restoreMnemonicsScreen(

@@ -47,7 +47,7 @@ import com.babylon.wallet.android.utils.toDateString
 fun RestoreFromBackupScreen(
     viewModel: RestoreFromBackupViewModel,
     onBack: () -> Unit,
-    onRestored: (Boolean) -> Unit
+    onRestoreConfirmed: () -> Unit
 ) {
     val state by viewModel.state.collectAsState()
 
@@ -62,7 +62,7 @@ fun RestoreFromBackupScreen(
         viewModel.oneOffEvent.collect {
             when (it) {
                 is Event.OnDismiss -> onBack()
-                is Event.OnRestored -> onRestored(it.needsMnemonicRecovery)
+                is Event.OnRestoreConfirm -> onRestoreConfirmed()
             }
         }
     }
@@ -142,14 +142,14 @@ private fun RestoreFromBackupContent(
             Surface(
                 modifier = Modifier
                     .padding(horizontal = RadixTheme.dimensions.paddingDefault)
-                    .clickable(enabled = state.restoringProfileHeader != null) {
+                    .clickable(enabled = state.restoringProfile != null) {
                         onRestoringProfileCheckChanged(!state.isRestoringProfileChecked)
                     },
                 color = RadixTheme.colors.gray5,
-                elevation = if (state.restoringProfileHeader != null) 8.dp else 0.dp,
+                elevation = if (state.restoringProfile != null) 8.dp else 0.dp,
                 shape = RadixTheme.shapes.roundedRectMedium,
             ) {
-                if (state.restoringProfileHeader != null) {
+                if (state.restoringProfile != null) {
                     Row(
                         modifier = Modifier
                             .padding(RadixTheme.dimensions.paddingDefault),
@@ -163,7 +163,7 @@ private fun RestoreFromBackupContent(
                             Text(
                                 text = stringResource(
                                     id = R.string.recoverProfileBackup_backupFrom,
-                                    state.restoringProfileHeader.lastUsedOnDevice.description
+                                    state.restoringProfile.header.lastUsedOnDevice.description
                                 ).formattedSpans(SpanStyle(fontWeight = FontWeight.Bold)),
                                 color = RadixTheme.colors.gray2,
                                 style = RadixTheme.typography.body2Regular
@@ -172,7 +172,7 @@ private fun RestoreFromBackupContent(
                             Text(
                                 text = stringResource(
                                     id = R.string.recoverProfileBackup_lastModified,
-                                    state.restoringProfileHeader.lastUsedOnDevice.date.toDateString()
+                                    state.restoringProfile.header.lastUsedOnDevice.date.toDateString()
                                 ).formattedSpans(SpanStyle(fontWeight = FontWeight.Bold)),
                                 color = RadixTheme.colors.gray2,
                                 style = RadixTheme.typography.body2Regular
@@ -181,7 +181,7 @@ private fun RestoreFromBackupContent(
                             Text(
                                 text = stringResource(
                                     id = R.string.recoverProfileBackup_numberOfAccounts,
-                                    state.restoringProfileHeader.contentHint.numberOfAccountsOnAllNetworksInTotal
+                                    state.restoringProfile.header.contentHint.numberOfAccountsOnAllNetworksInTotal
                                 ).formattedSpans(SpanStyle(fontWeight = FontWeight.Bold)),
                                 color = RadixTheme.colors.gray2,
                                 style = RadixTheme.typography.body2Regular
@@ -190,13 +190,13 @@ private fun RestoreFromBackupContent(
                             Text(
                                 text = stringResource(
                                     id = R.string.recoverProfileBackup_numberOfPersonas,
-                                    state.restoringProfileHeader.contentHint.numberOfPersonasOnAllNetworksInTotal
+                                    state.restoringProfile.header.contentHint.numberOfPersonasOnAllNetworksInTotal
                                 ).formattedSpans(SpanStyle(fontWeight = FontWeight.Bold)),
                                 color = RadixTheme.colors.gray2,
                                 style = RadixTheme.typography.body2Regular
                             )
 
-                            if (!state.restoringProfileHeader.isCompatible) {
+                            if (!state.restoringProfile.header.isCompatible) {
                                 Text(
                                     text = stringResource(id = R.string.recoverProfileBackup_incompatibleWalletDataLabel),
                                     color = RadixTheme.colors.red1,
@@ -238,7 +238,7 @@ fun RestoreFromBackupPreviewBackupExists() {
         var state by remember {
             mutableStateOf(
                 RestoreFromBackupViewModel.State(
-                    restoringProfileHeader = SampleDataProvider().sampleProfile().header
+                    restoringProfile = SampleDataProvider().sampleProfile()
                 )
             )
         }
@@ -259,7 +259,7 @@ fun RestoreFromBackupPreviewNoBackupExists() {
     RadixWalletTheme {
         RestoreFromBackupContent(
             state = RestoreFromBackupViewModel.State(
-                restoringProfileHeader = null
+                restoringProfile = null
             ),
             onBackClick = {},
             onRestoringProfileCheckChanged = {},

@@ -184,7 +184,8 @@ private fun SeedPhraseWordInput(
             }
         },
         keyboardActions = KeyboardActions(onNext = { focusManager.moveFocus(FocusDirection.Next) }),
-        keyboardOptions = KeyboardOptions(imeAction =
+        keyboardOptions = KeyboardOptions(
+            imeAction =
             if (word.lastWord) {
                 ImeAction.Done
             } else {

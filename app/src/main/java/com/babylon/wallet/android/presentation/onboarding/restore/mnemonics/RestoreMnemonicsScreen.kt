@@ -49,7 +49,6 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.presentation.onboarding.restore.mnemonics.RestoreMnemonicsViewModel.Event
-import com.babylon.wallet.android.presentation.ui.composables.BackIconType
 import com.babylon.wallet.android.presentation.ui.composables.InfoLink
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
@@ -130,8 +129,7 @@ private fun RestoreMnemonicsContent(
         topBar = {
             RadixCenteredTopAppBar(
                 title = "",
-                onBackClick = onBackClick,
-                backIconType = if (state.isMainSeedPhrase && state.isShowingEntities) BackIconType.None else BackIconType.Back
+                onBackClick = onBackClick
             )
         },
         bottomBar = {

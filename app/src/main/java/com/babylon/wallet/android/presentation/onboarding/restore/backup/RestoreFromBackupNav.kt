@@ -17,7 +17,7 @@ fun NavController.restoreFromBackupScreen() {
 
 fun NavGraphBuilder.restoreFromBackupScreen(
     onBack: () -> Unit,
-    onRestored: (Boolean) -> Unit
+    onRestoreConfirmed: () -> Unit
 ) {
     composable(
         route = ROUTE_RESTORE_FROM_BACKUP,
@@ -31,7 +31,7 @@ fun NavGraphBuilder.restoreFromBackupScreen(
         RestoreFromBackupScreen(
             viewModel = hiltViewModel(),
             onBack = onBack,
-            onRestored = onRestored
+            onRestoreConfirmed = onRestoreConfirmed
         )
     }
 }
