@@ -648,9 +648,10 @@
   <string name="recoverProfileBackup_numberOfPersonas">*Number of personas:* %d</string>
   <string name="recoverProfileBackup_importFileButton_title">Import from Backup File Instead</string>
   <string name="recoverProfileBackup_incompatibleWalletDataLabel">Incompatible Wallet data</string>
-  <string name="recoverSeedPhrase_header_title">Seed Phrase Required</string>
-  <string name="recoverSeedPhrase_header_subtitleAccounts">The following *Accounts* are controlled by a seed phrase. To recover control, you must re-enter it.</string>
-  <string name="recoverSeedPhrase_header_subtitleAccountsPersonas">The following *Accounts* and *Personas* are controlled by a seed phrase. To recover control, you must re-enter it.</string>
+  <string name="recoverSeedPhrase_header_titleMain">Main Seed Phrase Required</string>
+  <string name="recoverSeedPhrase_header_titleOther">Seed Phrase Required</string>
+  <string name="recoverSeedPhrase_header_subtitleMainSeedPhrase">Your *Personas* and the following *Accounts* are controlled by your main seed phrase. To recover control, you must re-enter it.</string>
+  <string name="recoverSeedPhrase_header_subtitleOtherSeedPhrase">The following *Accounts* are controlled by a seed phrase. To recover control, you must re-enter it.</string>
   <string name="recoverSeedPhrase_skipButton">Skip This Seed Phrase For Now</string>
   <string name="recoverSeedPhrase_enterButton">Enter This Seed Phrase</string>
   <string name="enterSeedPhrase_header_title">Enter Seed Phrase</string>

@@ -25,6 +25,9 @@ data class DeviceFactorSource(
         val mnemonicWordCount: Int
     )
 
+    val isBabylon: Boolean
+        get() = common.cryptoParameters == Common.CryptoParameters.babylon
+
     companion object {
 
         fun babylon(

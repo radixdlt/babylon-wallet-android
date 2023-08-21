@@ -18,7 +18,6 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.toHexString
 import rdx.works.profile.data.model.MnemonicWithPassphrase
-import rdx.works.profile.data.model.SeedPhraseLength
 import rdx.works.profile.data.model.compressedPublicKey
 import rdx.works.profile.data.model.factorsources.DeviceFactorSource
 import rdx.works.profile.data.model.factorsources.FactorSource
@@ -30,7 +29,6 @@ import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.accountsOnCurrentNetwork
 import rdx.works.profile.domain.backup.RestoreMnemonicUseCase
 import rdx.works.profile.domain.deviceFactorSources
-import rdx.works.profile.domain.personasOnCurrentNetwork
 import javax.inject.Inject
 
 @Suppress("TooManyFunctions")
@@ -67,7 +65,7 @@ class RestoreMnemonicsViewModel @Inject constructor(
     fun onBackClick() {
         if (!state.value.isShowingEntities) {
             _state.update { it.copy(isShowingEntities = true) }
-        } else {
+        } else if (!state.value.isMainSeedPhrase) {
             viewModelScope.launch { sendEvent(Event.FinishRestoration(isMovingToMain = args.factorSourceIdHex == null)) }
         }
     }
@@ -109,14 +107,10 @@ class RestoreMnemonicsViewModel @Inject constructor(
         val associatedAccounts = getProfileUseCase.accountsOnCurrentNetwork()
             .filter { it.factorSourceId() == id }
 
-        val associatedPersonas = getProfileUseCase.personasOnCurrentNetwork()
-            .filter { it.factorSourceId() == id }
-
-        if (associatedAccounts.isEmpty() && associatedPersonas.isEmpty()) return null
+        if (associatedAccounts.isEmpty() && !isBabylon) return null
 
         return RecoverableFactorSource(
             associatedAccounts = associatedAccounts,
-            associatedPersonas = associatedPersonas,
             factorSource = this
         )
     }
@@ -140,7 +134,7 @@ class RestoreMnemonicsViewModel @Inject constructor(
 
         val factorSourceIDFromHash = (factorInstance.factorSourceId as FactorSource.FactorSourceID.FromHash)
         val isFactorSourceIdValid = FactorSource.factorSourceId(mnemonicWithPassphrase = mnemonicWithPassphrase) ==
-            factorSourceIDFromHash.body.value
+                factorSourceIDFromHash.body.value
 
         val isPublicKeyValid = mnemonicWithPassphrase.compressedPublicKey(derivationPath = derivationPath)
             .removeLeadingZero()
@@ -186,6 +180,9 @@ class RestoreMnemonicsViewModel @Inject constructor(
         val recoverableFactorSource: RecoverableFactorSource?
             get() = if (selectedIndex == -1) null else recoverableFactorSources.getOrNull(selectedIndex)
 
+        val isMainSeedPhrase: Boolean
+            get() = recoverableFactorSource?.factorSource?.isBabylon == true
+
         fun proceedToNextRecoverable() = copy(
             selectedIndex = selectedIndex + 1,
             isShowingEntities = true
@@ -200,6 +197,5 @@ class RestoreMnemonicsViewModel @Inject constructor(
 
 data class RecoverableFactorSource(
     val associatedAccounts: List<Network.Account>,
-    val associatedPersonas: List<Network.Persona>,
     val factorSource: DeviceFactorSource
 )

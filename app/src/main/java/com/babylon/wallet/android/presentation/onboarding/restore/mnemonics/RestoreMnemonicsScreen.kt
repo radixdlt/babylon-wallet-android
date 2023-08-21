@@ -4,7 +4,6 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -50,6 +49,7 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.presentation.onboarding.restore.mnemonics.RestoreMnemonicsViewModel.Event
+import com.babylon.wallet.android.presentation.ui.composables.BackIconType
 import com.babylon.wallet.android.presentation.ui.composables.InfoLink
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
@@ -58,7 +58,6 @@ import com.babylon.wallet.android.presentation.ui.composables.SeedPhraseInputFor
 import com.babylon.wallet.android.presentation.ui.composables.SeedPhraseSuggestions
 import com.babylon.wallet.android.presentation.ui.composables.SimpleAccountCard
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
-import com.babylon.wallet.android.presentation.ui.composables.StandardOneLineCard
 import com.babylon.wallet.android.utils.biometricAuthenticate
 import com.babylon.wallet.android.utils.formattedSpans
 
@@ -129,7 +128,11 @@ private fun RestoreMnemonicsContent(
     Scaffold(
         modifier = modifier.navigationBarsPadding(),
         topBar = {
-            RadixCenteredTopAppBar(title = "", onBackClick = onBackClick)
+            RadixCenteredTopAppBar(
+                title = "",
+                onBackClick = onBackClick,
+                backIconType = if (state.isMainSeedPhrase && state.isShowingEntities) BackIconType.None else BackIconType.Back
+            )
         },
         bottomBar = {
             if (!state.isShowingEntities && isSuggestionsVisible(state = state)) {
@@ -215,7 +218,7 @@ private fun EntitiesView(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = RadixTheme.dimensions.paddingLarge),
-            text = stringResource(id = R.string.recoverSeedPhrase_header_title),
+            text = stringResource(id = R.string.recoverSeedPhrase_header_titleOther),
             textAlign = TextAlign.Center,
             style = RadixTheme.typography.title
         )
@@ -226,10 +229,10 @@ private fun EntitiesView(
                 .fillMaxWidth()
                 .padding(horizontal = RadixTheme.dimensions.paddingLarge),
             text = stringResource(
-                id = if (state.recoverableFactorSource?.associatedPersonas?.isNotEmpty() == true) {
-                    R.string.recoverSeedPhrase_header_subtitleAccountsPersonas
+                id = if (state.isMainSeedPhrase) {
+                    R.string.recoverSeedPhrase_header_subtitleMainSeedPhrase
                 } else {
-                    R.string.recoverSeedPhrase_header_subtitleAccounts
+                    R.string.recoverSeedPhrase_header_subtitleOtherSeedPhrase
                 }
             ).formattedSpans(SpanStyle(fontWeight = FontWeight.Bold)),
             textAlign = TextAlign.Center,
@@ -237,13 +240,15 @@ private fun EntitiesView(
         )
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
 
-        RadixTextButton(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = RadixTheme.dimensions.paddingLarge),
-            text = stringResource(id = R.string.recoverSeedPhrase_skipButton),
-            onClick = onSkipClicked
-        )
+        if (!state.isMainSeedPhrase) {
+            RadixTextButton(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = RadixTheme.dimensions.paddingLarge),
+                text = stringResource(id = R.string.recoverSeedPhrase_skipButton),
+                onClick = onSkipClicked
+            )
+        }
 
         state.recoverableFactorSource?.let { recoverable ->
             LazyColumn(
@@ -254,24 +259,6 @@ private fun EntitiesView(
                     SimpleAccountCard(
                         modifier = Modifier.fillMaxWidth(),
                         account = account
-                    )
-                }
-
-                items(recoverable.associatedPersonas) { persona ->
-                    StandardOneLineCard(
-                        "",
-                        persona.displayName,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .background(
-                                RadixTheme.colors.gray5,
-                                shape = RadixTheme.shapes.roundedRectMedium
-                            )
-                            .padding(
-                                horizontal = RadixTheme.dimensions.paddingLarge,
-                                vertical = RadixTheme.dimensions.paddingDefault
-                            ),
-                        showChevron = false
                     )
                 }
             }
@@ -348,9 +335,6 @@ fun RestoreMnemonicsIntroContent() {
                         associatedAccounts = List(5) { index ->
                             SampleDataProvider().sampleAccount(address = "rdx_abcdefg$index", name = "Account $index", appearanceId = index)
                         },
-                        associatedPersonas = List(2) { index ->
-                            SampleDataProvider().samplePersona(personaAddress = "rdx_abcdefg$index", "Persona $index")
-                        },
                         factorSource = SampleDataProvider().deviceFactorSource()
                     )
                 ),
@@ -376,9 +360,6 @@ fun RestoreMnemonicsSeedPhraseContent() {
                     RecoverableFactorSource(
                         associatedAccounts = List(5) { index ->
                             SampleDataProvider().sampleAccount(address = "rdx_abcdefg$index", name = "Account $index", appearanceId = index)
-                        },
-                        associatedPersonas = List(2) { index ->
-                            SampleDataProvider().samplePersona(personaAddress = "rdx_abcdefg$index", "Persona $index")
                         },
                         factorSource = SampleDataProvider().deviceFactorSource()
                     )
