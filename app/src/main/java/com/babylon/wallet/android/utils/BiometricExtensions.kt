@@ -16,7 +16,10 @@ fun FragmentActivity.biometricAuthenticate(
 ) {
     val biometricManager = BiometricManager.from(this)
     val canAuthenticate = biometricManager.canAuthenticate(ALLOWED_AUTHENTICATORS) == BiometricManager.BIOMETRIC_SUCCESS
-    if (!canAuthenticate) return
+    if (!canAuthenticate) {
+        authenticationCallback(false)
+        return
+    }
 
     val authCallback = object : BiometricPrompt.AuthenticationCallback() {
         override fun onAuthenticationSucceeded(result: BiometricPrompt.AuthenticationResult) {
