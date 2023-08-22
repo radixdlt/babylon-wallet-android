@@ -22,7 +22,7 @@ class RestoreFromBackupViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            val profileToRestore = profileRepository.getRestoredProfileFromBackup()
+            val profileToRestore = profileRepository.getRestoringProfileFromBackup()
             _state.update { it.copy(restoringProfile = profileToRestore) }
         }
     }

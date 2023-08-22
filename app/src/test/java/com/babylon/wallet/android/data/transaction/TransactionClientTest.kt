@@ -195,7 +195,7 @@ internal class TransactionClientTest {
             error("Not needed")
         }
 
-        override suspend fun getRestoredProfileFromBackup(): Profile? {
+        override suspend fun getRestoringProfileFromBackup(): Profile? {
             error("Not needed")
         }
 

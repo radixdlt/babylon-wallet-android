@@ -11,23 +11,19 @@ import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
-import com.radixdlt.extensions.removeLeadingZero
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import rdx.works.core.toHexString
 import rdx.works.profile.data.model.MnemonicWithPassphrase
-import rdx.works.profile.data.model.compressedPublicKey
 import rdx.works.profile.data.model.currentNetwork
 import rdx.works.profile.data.model.factorsources.DeviceFactorSource
-import rdx.works.profile.data.model.factorsources.FactorSource
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.data.model.pernetwork.SecurityState
 import rdx.works.profile.data.repository.MnemonicRepository
-import rdx.works.profile.data.repository.ProfileRepository
 import rdx.works.profile.data.utils.factorSourceId
 import rdx.works.profile.domain.GetProfileUseCase
+import rdx.works.profile.domain.backup.GetRestoringProfileFromBackupUseCase
 import rdx.works.profile.domain.backup.RestoreMnemonicUseCase
 import rdx.works.profile.domain.backup.RestoreProfileFromBackupUseCase
 import javax.inject.Inject
@@ -37,7 +33,7 @@ import javax.inject.Inject
 class RestoreMnemonicsViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     private val getProfileUseCase: GetProfileUseCase,
-    private val profileRepository: ProfileRepository,
+    private val getRestoringProfileFromBackupUseCase: GetRestoringProfileFromBackupUseCase,
     private val mnemonicRepository: MnemonicRepository,
     private val restoreMnemonicUseCase: RestoreMnemonicUseCase,
     private val restoreProfileFromBackupUseCase: RestoreProfileFromBackupUseCase,
@@ -54,7 +50,7 @@ class RestoreMnemonicsViewModel @Inject constructor(
         viewModelScope.launch {
             val factorSources = when (args) {
                 is RestoreMnemonicsArgs.RestoreProfile -> {
-                    val profile = profileRepository.getRestoredProfileFromBackup()
+                    val profile = getRestoringProfileFromBackupUseCase()
                     val allAccounts = profile?.currentNetwork?.accounts.orEmpty()
                     profile?.factorSources
                         ?.filterIsInstance<DeviceFactorSource>()
@@ -137,46 +133,29 @@ class RestoreMnemonicsViewModel @Inject constructor(
     }
 
     private suspend fun restoreMnemonic() {
-        _state.update { it.copy(isRestoring = true) }
-
         val storedSecurityState = state.value
             .recoverableFactorSource
             ?.associatedAccounts
             ?.firstOrNull()
             ?.securityState as? SecurityState.Unsecured ?: return
-        val factorInstance = storedSecurityState.unsecuredEntityControl.transactionSigning
-        val derivationPath = factorInstance.derivationPath ?: return
 
-        val mnemonicWithPassphrase = MnemonicWithPassphrase(
-            mnemonic = _state.value.seedPhraseState.wordsPhrase,
-            bip39Passphrase = _state.value.seedPhraseState.bip39Passphrase
-        )
-
-        val factorSourceId = (factorInstance.factorSourceId as FactorSource.FactorSourceID.FromHash)
-        val isFactorSourceIdValid = FactorSource.factorSourceId(
-            mnemonicWithPassphrase = mnemonicWithPassphrase
-        ) == factorSourceId.body.value
-
-        val isPublicKeyValid = mnemonicWithPassphrase.compressedPublicKey(
-            derivationPath = derivationPath,
-            curve = factorInstance.publicKey.curve
-        ).removeLeadingZero().toHexString() == factorInstance.publicKey.compressedData
-
-        if (!isFactorSourceIdValid || !isPublicKeyValid) {
-            _state.update { it.copy(uiMessage = UiMessage.InfoMessage.InvalidMnemonic, isRestoring = false) }
-        } else {
-            restoreMnemonicUseCase(
-                factorSourceId = factorSourceId,
-                mnemonicWithPassphrase = mnemonicWithPassphrase
+        _state.update { it.copy(isRestoring = true) }
+        restoreMnemonicUseCase(
+            factorInstance = storedSecurityState.unsecuredEntityControl.transactionSigning,
+            mnemonicWithPassphrase = MnemonicWithPassphrase(
+                mnemonic = _state.value.seedPhraseState.wordsPhrase,
+                bip39Passphrase = _state.value.seedPhraseState.bip39Passphrase
             )
-
+        ).onSuccess {
             if (args is RestoreMnemonicsArgs.RestoreProfile && _state.value.isMainSeedPhrase) {
                 restoreProfileFromBackupUseCase()
             }
 
             appEventBus.sendEvent(AppEvent.RestoredMnemonic)
-            _state.update { it.copy(isRestoring = false) }
+            _state.update { state -> state.copy(isRestoring = false) }
             showNextRecoverableFactorSourceOrFinish()
+        }.onFailure {
+            _state.update { state -> state.copy(uiMessage = UiMessage.InfoMessage.InvalidMnemonic, isRestoring = false) }
         }
     }
 
