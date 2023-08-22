@@ -24,6 +24,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.Icon
 import androidx.compose.material.ModalBottomSheetValue
 import androidx.compose.material.rememberModalBottomSheetState
 import androidx.compose.material3.Button
@@ -64,6 +65,7 @@ import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.domain.model.DAppWithMetadata
 import com.babylon.wallet.android.domain.model.RequiredPersonaFields
 import com.babylon.wallet.android.domain.model.Resource
+import com.babylon.wallet.android.domain.model.metadata.ClaimedWebsitesMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.DescriptionMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.NameMetadataItem
 import com.babylon.wallet.android.presentation.account.composable.FungibleTokenBottomSheetDetails
@@ -216,6 +218,7 @@ private fun DappDetailContent(
                                     )
                                 }
                             }
+
                             is SelectedSheetState.SelectedFungibleResource -> {
                                 FungibleTokenBottomSheetDetails(
                                     modifier = Modifier.fillMaxSize(),
@@ -227,6 +230,7 @@ private fun DappDetailContent(
                                     }
                                 )
                             }
+
                             is SelectedSheetState.SelectedNonFungibleResource -> {
                                 NonFungibleTokenBottomSheetDetails(
                                     modifier = Modifier.fillMaxSize(),
@@ -238,6 +242,7 @@ private fun DappDetailContent(
                                     }
                                 )
                             }
+
                             else -> {}
                         }
                     }
@@ -375,10 +380,10 @@ fun DappDetails(
                     Spacer(modifier = Modifier.height(dimensions.paddingDefault))
                 }
             }
-            dappWithMetadata?.firstClaimedWebsite?.let {
+            dappWithMetadata?.claimedWebsites?.let {
                 item {
                     DAppWebsiteAddressRow(
-                        websiteAddress = it,
+                        websiteAddresses = it,
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(horizontal = dimensions.paddingDefault)
@@ -561,13 +566,12 @@ fun DappDefinitionAddressRow(
 
 @Composable
 fun DAppWebsiteAddressRow(
-    websiteAddress: String,
+    websiteAddresses: ImmutableList<String>,
     modifier: Modifier = Modifier
 ) {
-    Row(
+    Column(
         modifier = modifier,
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween
+        verticalArrangement = Arrangement.spacedBy(dimensions.paddingSmall)
     ) {
         Text(
             text = stringResource(id = R.string.authorizedDapps_dAppDetails_website).replaceFirstChar {
@@ -576,12 +580,25 @@ fun DAppWebsiteAddressRow(
             style = RadixTheme.typography.body1Regular,
             color = RadixTheme.colors.gray2
         )
-
-        Text(
-            text = websiteAddress,
-            style = RadixTheme.typography.body1Regular,
-            color = RadixTheme.colors.gray1
-        )
+        websiteAddresses.forEach { address ->
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(dimensions.paddingSmall)
+            ) {
+                Text(
+                    modifier = Modifier.weight(1f),
+                    text = address,
+                    style = RadixTheme.typography.body1HighImportance,
+                    color = RadixTheme.colors.blue1
+                )
+                Icon(
+                    painter = painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_link_out),
+                    tint = RadixTheme.colors.gray3,
+                    contentDescription = null
+                )
+            }
+        }
     }
 }
 
@@ -810,7 +827,13 @@ fun DappDetailContentPreview() {
             dappWithMetadata = DAppWithMetadata(
                 dAppAddress = "account_tdx_abc",
                 nameItem = NameMetadataItem("Dapp"),
-                descriptionItem = DescriptionMetadataItem("Description")
+                descriptionItem = DescriptionMetadataItem("Description"),
+                claimedWebsitesItem = ClaimedWebsitesMetadataItem(
+                    websites = listOf(
+                        "https://hammunet-dashboard.rdx-works-main.extratools.works",
+                        "https://ansharnet-dashboard.rdx-works-main.extratools.works"
+                    )
+                )
             ),
             associatedFungibleTokens = persistentListOf(),
             associatedNonFungibleTokens = persistentListOf(),

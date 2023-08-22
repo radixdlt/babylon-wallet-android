@@ -12,6 +12,8 @@ import com.babylon.wallet.android.domain.model.metadata.MetadataItem.Companion.c
 import com.babylon.wallet.android.domain.model.metadata.NameMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.RelatedWebsitesMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.StringMetadataItem
+import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.toPersistentList
 
 data class DAppWithMetadata(
     val dAppAddress: String,
@@ -44,8 +46,8 @@ data class DAppWithMetadata(
     val definitionAddresses: List<String>
         get() = dAppDefinitionsMetadataItem?.addresses.orEmpty()
 
-    val claimedWebsites: List<String>
-        get() = claimedWebsitesItem?.websites.orEmpty()
+    val claimedWebsites: ImmutableList<String>
+        get() = claimedWebsitesItem?.websites.orEmpty().toPersistentList()
 
     val firstClaimedWebsite: String?
         get() = claimedWebsites.firstOrNull()
