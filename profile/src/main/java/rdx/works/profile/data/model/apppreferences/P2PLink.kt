@@ -44,6 +44,7 @@ fun Profile.addP2PLink(
     )
 
     val newAppPreferences = AppPreferences(
+        transaction = appPreferences.transaction,
         display = appPreferences.display,
         security = appPreferences.security,
         gateways = appPreferences.gateways,
@@ -63,6 +64,7 @@ fun Profile.deleteP2PLink(connectionPassword: String): Profile {
     }
 
     val newAppPreferences = AppPreferences(
+        transaction = appPreferences.transaction,
         display = appPreferences.display,
         security = appPreferences.security,
         gateways = appPreferences.gateways,

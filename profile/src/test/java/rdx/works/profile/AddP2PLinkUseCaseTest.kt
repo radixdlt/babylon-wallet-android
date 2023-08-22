@@ -15,6 +15,7 @@ import rdx.works.profile.data.model.apppreferences.Gateways
 import rdx.works.profile.data.model.apppreferences.P2PLink
 import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.data.model.apppreferences.Security
+import rdx.works.profile.data.model.apppreferences.Transaction
 import rdx.works.profile.data.repository.ProfileRepository
 import rdx.works.profile.data.repository.profile
 import rdx.works.profile.domain.p2plink.AddP2PLinkUseCase
@@ -40,6 +41,7 @@ class AddP2PLinkUseCaseTest {
                 numberOfNetworks = 0
             ),
             appPreferences = AppPreferences(
+                transaction = Transaction.default,
                 display = Display.default,
                 security = Security.default,
                 gateways = Gateways(Radix.Gateway.hammunet.url, listOf(Radix.Gateway.hammunet)),

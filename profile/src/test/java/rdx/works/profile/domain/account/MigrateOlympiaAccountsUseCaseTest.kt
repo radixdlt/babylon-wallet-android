@@ -33,6 +33,7 @@ import rdx.works.profile.data.model.apppreferences.Gateways
 import rdx.works.profile.data.model.apppreferences.P2PLink
 import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.data.model.apppreferences.Security
+import rdx.works.profile.data.model.apppreferences.Transaction
 import rdx.works.profile.data.model.currentNetwork
 import rdx.works.profile.data.model.factorsources.DeviceFactorSource
 import rdx.works.profile.data.model.factorsources.FactorSourceKind
@@ -73,6 +74,7 @@ internal class MigrateOlympiaAccountsUseCaseTest {
                 numberOfAccounts = 1
             ),
             appPreferences = AppPreferences(
+                transaction = Transaction.default,
                 display = Display.default,
                 security = Security.default,
                 gateways = Gateways(network.url, listOf(network)),
