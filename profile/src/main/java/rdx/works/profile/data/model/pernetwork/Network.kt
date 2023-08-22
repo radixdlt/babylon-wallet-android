@@ -19,7 +19,6 @@ import rdx.works.profile.data.model.factorsources.LedgerHardwareWalletFactorSour
 import rdx.works.profile.data.model.factorsources.Slip10Curve
 import rdx.works.profile.derivation.model.KeyType
 import rdx.works.profile.derivation.model.NetworkId
-import timber.log.Timber
 
 @Serializable
 data class Network(
@@ -483,16 +482,12 @@ fun Profile.addNetworkIfDoesNotExist(
 fun Profile.nextAccountIndex(
     forNetworkId: NetworkId
 ): Int {
-    val nextIndex = networks.first { it.networkID == forNetworkId.value }.accounts.size
-    Timber.d("Entity index: account next index $nextIndex")
     return networks.first { it.networkID == forNetworkId.value }.accounts.size
 }
 
 fun Profile.nextPersonaIndex(
     forNetworkId: NetworkId
 ): Int {
-    val nextIndex = networks.first { it.networkID == forNetworkId.value }.personas.size
-    Timber.d("Entity index: persona next index $nextIndex")
     return networks.first { it.networkID == forNetworkId.value }.personas.size
 }
 

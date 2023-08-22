@@ -1,5 +1,6 @@
 package rdx.works.profile.domain.account
 
+import com.babylon.wallet.android.designsystem.theme.AccountGradientList
 import com.radixdlt.ret.Address
 import com.radixdlt.ret.OlympiaAddress
 import kotlinx.coroutines.CoroutineDispatcher
@@ -38,14 +39,14 @@ class MigrateOlympiaAccountsUseCase @Inject constructor(
                     olympiaAccountAddress = OlympiaAddress(olympiaAccount.address),
                     networkId = networkId.value.toUByte()
                 ).addressString()
-
+                val nextAccountIndex = accountOffset + index
                 Network.Account(
                     displayName = olympiaAccount.accountName.ifEmpty { "Unnamed olympia account ${olympiaAccount.index}" },
                     address = babylonAddress,
-                    appearanceID = accountOffset + olympiaAccount.index,
+                    appearanceID = nextAccountIndex % AccountGradientList.count(),
                     networkID = networkId.value,
                     securityState = SecurityState.unsecured(
-                        entityIndex = accountOffset + index,
+                        entityIndex = nextAccountIndex,
                         publicKey = FactorInstance.PublicKey(olympiaAccount.publicKey, Slip10Curve.SECP_256K1),
                         derivationPath = DerivationPath.forLegacyOlympia(olympiaAccount.index),
                         factorSourceId = factorSourceId
