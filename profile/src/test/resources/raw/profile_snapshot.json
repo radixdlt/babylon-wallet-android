@@ -59,14 +59,7 @@
         "id" : {
           "body" : "6facb00a836864511fdf8f181382209e64e83ad462288ea1bc7868f236fb8033",
           "kind" : "device"
-        },
-        "nextDerivationIndicesPerNetwork" : [
-          {
-            "forAccount" : 3,
-            "forIdentity" : 2,
-            "networkID" : 34
-          }
-        ]
+        }
       },
       "discriminator" : "device"
     },
@@ -188,10 +181,7 @@
         "id" : {
           "body" : "deadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef",
           "kind" : "ledgerHQHardwareWallet"
-        },
-        "nextDerivationIndicesPerNetwork" : [
-
-        ]
+        }
       }
     }
   ],
@@ -226,6 +216,7 @@
           "securityState" : {
             "discriminator" : "unsecured",
             "unsecuredEntityControl" : {
+              "entityIndex" : 0,
               "authenticationSigning" : {
                 "derivationPath" : {
                   "path" : "m/44H/1022H/34H/525H/1678H/0H",
@@ -271,6 +262,7 @@
           "securityState" : {
             "discriminator" : "unsecured",
             "unsecuredEntityControl" : {
+              "entityIndex" : 1,
               "authenticationSigning" : {
                 "derivationPath" : {
                   "path" : "m/44H/1022H/34H/525H/1678H/1H",
@@ -316,6 +308,7 @@
           "securityState" : {
             "discriminator" : "unsecured",
             "unsecuredEntityControl" : {
+              "entityIndex" : 2,
               "authenticationSigning" : {
                 "derivationPath" : {
                   "path" : "m/44H/1022H/34H/525H/1678H/2H",
@@ -579,6 +572,7 @@
           "securityState" : {
             "discriminator" : "unsecured",
             "unsecuredEntityControl" : {
+              "entityIndex" : 0,
               "authenticationSigning" : {
                 "derivationPath" : {
                   "path" : "m/44H/1022H/34H/618H/1678H/0H",
@@ -649,6 +643,7 @@
           "securityState" : {
             "discriminator" : "unsecured",
             "unsecuredEntityControl" : {
+              "entityIndex" : 1,
               "authenticationSigning" : {
                 "derivationPath" : {
                   "path" : "m/44H/1022H/34H/618H/1678H/1H",

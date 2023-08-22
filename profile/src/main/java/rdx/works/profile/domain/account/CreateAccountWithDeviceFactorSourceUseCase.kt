@@ -9,6 +9,7 @@ import rdx.works.profile.data.model.currentNetwork
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.data.model.pernetwork.Network.Account.Companion.initAccountWithDeviceFactorSource
 import rdx.works.profile.data.model.pernetwork.addAccount
+import rdx.works.profile.data.model.pernetwork.nextAccountIndex
 import rdx.works.profile.data.repository.MnemonicRepository
 import rdx.works.profile.data.repository.ProfileRepository
 import rdx.works.profile.data.repository.profile
@@ -34,6 +35,7 @@ class CreateAccountWithDeviceFactorSourceUseCase @Inject constructor(
             val networkId = networkID ?: profile.currentNetwork.knownNetworkId ?: Radix.Gateway.default.network.networkId()
             val totalAccountsOnNetwork = profile.currentNetwork.accounts.size
             val newAccount = initAccountWithDeviceFactorSource(
+                entityIndex = profile.nextAccountIndex(networkId),
                 displayName = displayName,
                 mnemonicWithPassphrase = mnemonicRepository(mnemonicKey = factorSource.id),
                 deviceFactorSource = factorSource,
@@ -43,7 +45,6 @@ class CreateAccountWithDeviceFactorSourceUseCase @Inject constructor(
             // Add account to the profile
             val updatedProfile = profile.addAccount(
                 account = newAccount,
-                withFactorSourceId = factorSource.id,
                 onNetwork = networkId
             )
             // Save updated profile

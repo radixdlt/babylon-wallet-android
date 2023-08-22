@@ -13,10 +13,11 @@ import rdx.works.profile.data.model.factorsources.FactorSource
 import rdx.works.profile.data.model.factorsources.FactorSourceKind
 import rdx.works.profile.data.model.factorsources.LedgerHardwareWalletFactorSource
 import rdx.works.profile.data.model.pernetwork.DerivationPath
+import rdx.works.profile.data.model.pernetwork.nextAccountIndex
 import rdx.works.profile.data.repository.ProfileRepository
 import rdx.works.profile.data.repository.profile
 import rdx.works.profile.data.utils.factorSourceId
-import rdx.works.profile.data.utils.getNextDerivationPathForAccount
+import rdx.works.profile.derivation.model.KeyType
 import javax.inject.Inject
 
 class GetProfileUseCase @Inject constructor(private val profileRepository: ProfileRepository) {
@@ -59,11 +60,14 @@ suspend fun GetProfileUseCase.accountOnCurrentNetwork(
     account.address == withAddress
 }
 
-suspend fun GetProfileUseCase.nextDerivationPathForAccountOnCurrentNetworkWithLedger(
-    ledgerHardwareWalletFactorSource: LedgerHardwareWalletFactorSource,
-): DerivationPath {
-    val currentNetwork = requireNotNull(invoke().first().currentNetwork.knownNetworkId)
-    return ledgerHardwareWalletFactorSource.getNextDerivationPathForAccount(currentNetwork)
+suspend fun GetProfileUseCase.nextDerivationPathForAccountOnCurrentNetworkWithLedger(): DerivationPath {
+    val profile = invoke().first()
+    val currentNetwork = requireNotNull(profile.currentNetwork.knownNetworkId)
+    return DerivationPath.forAccount(
+        networkId = currentNetwork,
+        accountIndex = profile.nextAccountIndex(currentNetwork),
+        keyType = KeyType.TRANSACTION_SIGNING
+    )
 }
 
 suspend fun GetProfileUseCase.currentNetworkAccountHashes(): Set<ByteArray> {

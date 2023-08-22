@@ -59,7 +59,6 @@ class CreateAccountWithDeviceFactorSourceUseCaseTest {
 
             val updatedProfile = profile.addAccount(
                 account = account,
-                withFactorSourceId = profile.babylonDeviceFactorSource.id,
                 onNetwork = network.network.networkId()
             )
 

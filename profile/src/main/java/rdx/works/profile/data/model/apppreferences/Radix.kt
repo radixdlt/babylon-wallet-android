@@ -51,7 +51,7 @@ object Radix {
             )
             val ansharnet = Network(
                 id = NetworkId.Ansharnet.value,
-                name = "RCnet Gateway",
+                name = "ansharnet",
                 displayDescription = "RCnet-V2 test network"
             )
 

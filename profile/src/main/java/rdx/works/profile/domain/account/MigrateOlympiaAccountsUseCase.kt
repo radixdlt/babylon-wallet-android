@@ -14,6 +14,7 @@ import rdx.works.profile.data.model.pernetwork.FactorInstance
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.data.model.pernetwork.SecurityState
 import rdx.works.profile.data.model.pernetwork.addAccount
+import rdx.works.profile.data.model.pernetwork.nextAccountIndex
 import rdx.works.profile.data.repository.ProfileRepository
 import rdx.works.profile.data.repository.profile
 import rdx.works.profile.di.coroutines.DefaultDispatcher
@@ -31,8 +32,8 @@ class MigrateOlympiaAccountsUseCase @Inject constructor(
         return withContext(defaultDispatcher) {
             val profile = profileRepository.profile.first()
             val networkId = profile.currentNetwork.knownNetworkId ?: Radix.Gateway.default.network.networkId()
-            val accountOffset = profile.currentNetwork.accounts.size
-            val migratedAccounts = olympiaAccounts.map { olympiaAccount ->
+            val accountOffset = profile.nextAccountIndex(networkId)
+            val migratedAccounts = olympiaAccounts.mapIndexed { index, olympiaAccount ->
                 val babylonAddress = Address.virtualAccountAddressFromOlympiaAddress(
                     olympiaAccountAddress = OlympiaAddress(olympiaAccount.address),
                     networkId = networkId.value.toUByte()
@@ -44,6 +45,7 @@ class MigrateOlympiaAccountsUseCase @Inject constructor(
                     appearanceID = accountOffset + olympiaAccount.index,
                     networkID = networkId.value,
                     securityState = SecurityState.unsecured(
+                        entityIndex = accountOffset + index,
                         publicKey = FactorInstance.PublicKey(olympiaAccount.publicKey, Slip10Curve.SECP_256K1),
                         derivationPath = DerivationPath.forLegacyOlympia(olympiaAccount.index),
                         factorSourceId = factorSourceId
@@ -54,7 +56,6 @@ class MigrateOlympiaAccountsUseCase @Inject constructor(
             migratedAccounts.forEach { account ->
                 updatedProfile = updatedProfile.addAccount(
                     account = account,
-                    withFactorSourceId = factorSourceId,
                     onNetwork = networkId
                 )
             }
