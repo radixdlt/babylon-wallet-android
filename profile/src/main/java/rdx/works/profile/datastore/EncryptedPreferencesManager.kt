@@ -38,7 +38,7 @@ class EncryptedPreferencesManager @Inject constructor(
 
     suspend fun readMnemonic(key: String): Result<String>? {
         return preferences.data.catchIOException().map { preferences ->
-            val preferencesKey = stringPreferencesKey("mnemonic$key")
+            val preferencesKey = stringPreferencesKey(key)
             val encryptedValue = preferences[preferencesKey]
             if (encryptedValue.isNullOrEmpty()) {
                 return@map null

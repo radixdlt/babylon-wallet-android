@@ -22,14 +22,14 @@ class MnemonicRepository @Inject constructor(
      */
     @Suppress("SwallowedException")
     suspend fun readMnemonic(key: FactorSource.FactorSourceID.FromHash): Result<MnemonicWithPassphrase>? {
-        return encryptedPreferencesManager.readMnemonic(key.body.value)?.map {
+        return encryptedPreferencesManager.readMnemonic("mnemonic${key.body.value}")?.map {
             Json.decodeFromString(it)
         }
     }
 
     @Suppress("SwallowedException")
     suspend fun mnemonicExist(key: FactorSource.FactorSourceID.FromHash): Boolean {
-        return encryptedPreferencesManager.keyExist(key.body.value)
+        return encryptedPreferencesManager.keyExist("mnemonic${key.body.value}")
     }
 
     /**
