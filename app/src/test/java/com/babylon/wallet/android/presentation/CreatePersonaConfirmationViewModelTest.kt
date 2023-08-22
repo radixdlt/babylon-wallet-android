@@ -45,6 +45,7 @@ class CreatePersonaConfirmationViewModelTest : StateViewModelTest<CreatePersonaC
         personaData = PersonaData(),
         securityState = SecurityState.Unsecured(
             unsecuredEntityControl = SecurityState.UnsecuredEntityControl(
+                entityIndex = 0,
                 transactionSigning = FactorInstance(
                     derivationPath = DerivationPath.forIdentity(
                         networkId = Radix.Gateway.default.network.networkId(),
