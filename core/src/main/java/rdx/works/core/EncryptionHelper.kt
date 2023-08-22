@@ -154,7 +154,8 @@ fun checkIfKeyWasPermanentlyInvalidated(input: String, key: KeySpec): Boolean {
     // on pixel 6 pro when I remove lock screen entirely, key entry for an alias is null
     val secretKeyResult = getSecretKey(key.alias)
     if (secretKeyResult.isFailure || secretKeyResult.getOrNull() == null) return true
-    val result = encryptData(input.toByteArray(), secretKeyResult.getOrThrow()!!)
+    val secretKey = requireNotNull(secretKeyResult.getOrNull())
+    val result = encryptData(input.toByteArray(), secretKey)
     // according to documentation this is exception that should be thrown if we try to use invalidated key, but behavior I saw
     // when removing lock screen is that key is automatically deleted from the keystore
     return result.exceptionOrNull() is KeyPermanentlyInvalidatedException

@@ -30,12 +30,12 @@ class CreatePersonaWithDeviceFactorSourceUseCase @Inject constructor(
 
             val networkID = profile.currentGateway.network.networkId()
             val factorSource = profile.babylonDeviceFactorSource
-
+            val mnemonicWithPassphrase = requireNotNull(mnemonicRepository.readMnemonic(factorSource.id)?.getOrNull())
             // Construct new persona
             val newPersona = init(
                 entityIndex = profile.nextPersonaIndex(networkID),
                 displayName = displayName,
-                mnemonicWithPassphrase = mnemonicRepository(mnemonicKey = factorSource.id),
+                mnemonicWithPassphrase = mnemonicWithPassphrase,
                 factorSource = factorSource,
                 networkId = networkID,
                 personaData = personaData
