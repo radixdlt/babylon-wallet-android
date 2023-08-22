@@ -56,7 +56,6 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
 import com.babylon.wallet.android.designsystem.composable.RadixSecondaryButton
-import com.babylon.wallet.android.designsystem.composable.RadixTextButton
 import com.babylon.wallet.android.designsystem.composable.RadixTextField
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
@@ -65,6 +64,7 @@ import com.babylon.wallet.android.presentation.ui.composables.NotBackedUpWarning
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.SwitchSettingsItem
 import com.babylon.wallet.android.utils.formattedSpans
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import rdx.works.profile.data.model.BackupState
 
@@ -73,7 +73,7 @@ fun BackupScreen(
     viewModel: BackupViewModel,
     modifier: Modifier = Modifier,
     onSystemBackupSettingsClick: () -> Unit,
-    onBackClick: () -> Unit
+    onClose: () -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
 
@@ -94,6 +94,14 @@ fun BackupScreen(
         onEncryptSubmitClick = viewModel::onEncryptSubmitClick,
         onBackClick = viewModel::onBackClick
     )
+
+    LaunchedEffect(Unit) {
+        viewModel.oneOffEvent.collect {
+            when (it) {
+                BackupViewModel.Event.Dismiss -> onClose()
+            }
+        }
+    }
 }
 
 @Composable

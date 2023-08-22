@@ -48,7 +48,7 @@ fun NavGraphBuilder.settingsNavGraph(
             onSystemBackupSettingsClick = {
                 navController.systemBackupSettingsScreen()
             },
-            onBackClick = {
+            onClose = {
                 navController.popBackStack()
             }
         )
