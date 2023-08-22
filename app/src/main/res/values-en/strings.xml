@@ -627,6 +627,13 @@
   <string name="profileBackup_manualBackups_subtitle">A manually exported wallet backup file may also be used for recovery, along with your seed phrase(s).\n\nOnly the *current configuration* of your wallet is backed up with each manual export.</string>
   <string name="profileBackup_manualBackups_exportButtonTitle">Export Wallet Backup File</string>
   <string name="profileBackup_manualBackups_encryptBackupDialogTitle">Encrypt this backup with a password?</string>
+  <string name="profileBackup_manualBackups_encryptBackupDialogConfirm">Yes</string>
+  <string name="profileBackup_manualBackups_encryptBackupDialogDeny">No</string>
+  <string name="profileBackup_manualBackups_encryptBackupTitle">Encrypt Wallet Backup File</string>
+  <string name="profileBackup_manualBackups_encryptBackupSubtitle">Enter a password to encrypt this wallet backup file. You will be required to enter this password when recovering your Wallet from this file.</string>
+  <string name="profileBackup_manualBackups_enterPasswordPlaceholder">Enter password</string>
+  <string name="profileBackup_manualBackups_confirmPasswordPlaceholder">Enter password</string>
+  <string name="profileBackup_manualBackups_passwordsMissmatchError">Passwords do not match</string>
   <string name="profileBackup_manualBackups_successMessage">Exported wallet backup file</string>
   <string name="androidProfileBackup_automaticBackups_enable">Enable Backup</string>
   <string name="androidProfileBackup_automaticBackups_disable">Disable Backup</string>
