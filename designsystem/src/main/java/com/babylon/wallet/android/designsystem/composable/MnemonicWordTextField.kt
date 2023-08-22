@@ -12,10 +12,13 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.text.selection.LocalTextSelectionColors
+import androidx.compose.foundation.text.selection.TextSelectionColors
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextFieldColors
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -61,49 +64,55 @@ fun MnemonicWordTextField(
             style = RadixTheme.typography.body1HighImportance,
             color = hintColor ?: RadixTheme.colors.gray1
         )
-        BasicTextField(
-            modifier = Modifier.onFocusChanged {
-                focused = it.hasFocus
-                onFocusChanged?.invoke(it)
-            },
-            value = value,
-            onValueChange = onValueChanged,
-            textStyle = textStyle.copy(color = if (error != null) RadixTheme.colors.red1 else RadixTheme.colors.gray1),
-            keyboardActions = keyboardActions,
-            keyboardOptions = keyboardOptions,
-            singleLine = singleLine,
-            decorationBox = { innerTextField ->
-                Row(
-                    modifier = Modifier
-                        .border(
-                            width = 1.dp,
-                            color = when {
-                                error != null -> RadixTheme.colors.red1
-                                focused -> RadixTheme.colors.gray1
-                                else -> RadixTheme.colors.gray4
-                            },
-                            shape = RadixTheme.shapes.roundedRectSmall
-                        )
-                        .background(RadixTheme.colors.gray5, RadixTheme.shapes.roundedRectSmall)
-                        .padding(RadixTheme.dimensions.paddingMedium),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    if (value.isEmpty() && hint != null) {
-                        Text(
-                            text = hint,
-                            style = RadixTheme.typography.body1Regular,
-                            color = hintColor ?: RadixTheme.colors.gray1
-                        )
-                    } else {
-                        Box(modifier = Modifier.weight(1f)) {
-                            innerTextField()
+        val selectionColors = TextSelectionColors(
+            handleColor = RadixTheme.colors.gray1,
+            backgroundColor = RadixTheme.colors.gray1.copy(alpha = 0.4f)
+        )
+        CompositionLocalProvider(LocalTextSelectionColors provides selectionColors) {
+            BasicTextField(
+                modifier = Modifier.onFocusChanged {
+                    focused = it.hasFocus
+                    onFocusChanged?.invoke(it)
+                },
+                value = value,
+                onValueChange = onValueChanged,
+                textStyle = textStyle.copy(color = if (error != null) RadixTheme.colors.red1 else RadixTheme.colors.gray1),
+                keyboardActions = keyboardActions,
+                keyboardOptions = keyboardOptions,
+                singleLine = singleLine,
+                decorationBox = { innerTextField ->
+                    Row(
+                        modifier = Modifier
+                            .border(
+                                width = 1.dp,
+                                color = when {
+                                    error != null -> RadixTheme.colors.red1
+                                    focused -> RadixTheme.colors.gray1
+                                    else -> RadixTheme.colors.gray4
+                                },
+                                shape = RadixTheme.shapes.roundedRectSmall
+                            )
+                            .background(RadixTheme.colors.gray5, RadixTheme.shapes.roundedRectSmall)
+                            .padding(RadixTheme.dimensions.paddingMedium),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        if (value.isEmpty() && hint != null) {
+                            Text(
+                                text = hint,
+                                style = RadixTheme.typography.body1Regular,
+                                color = hintColor ?: RadixTheme.colors.gray1
+                            )
+                        } else {
+                            Box(modifier = Modifier.weight(1f)) {
+                                innerTextField()
+                            }
+                            trailingIcon?.invoke()
                         }
-                        trailingIcon?.invoke()
                     }
                 }
-            }
-        )
+            )
+        }
         if (error != null || errorFixedSize) {
             Row(
                 horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingXSmall),
