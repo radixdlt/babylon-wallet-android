@@ -11,9 +11,11 @@ class KeystoreManager @Inject constructor() {
         keyStore.deleteEntry(KEY_ALIAS_PROFILE)
     }
 
-    fun removeMnemonicEncryptionKey() {
-        val keyStore = KeyStore.getInstance(PROVIDER).apply { load(null) }
-        keyStore.deleteEntry(KEY_ALIAS_MNEMONIC)
+    fun removeMnemonicEncryptionKey(): Result<Unit> {
+        return runCatching {
+            val keyStore = KeyStore.getInstance(PROVIDER).apply { load(null) }
+            keyStore.deleteEntry(KEY_ALIAS_MNEMONIC)
+        }
     }
 
     companion object {

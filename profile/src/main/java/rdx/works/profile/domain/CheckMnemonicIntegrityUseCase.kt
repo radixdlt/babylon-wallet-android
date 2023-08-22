@@ -6,6 +6,7 @@ import rdx.works.core.KeystoreManager
 import rdx.works.core.UUIDGenerator
 import rdx.works.core.checkIfKeyWasPermanentlyInvalidated
 import rdx.works.profile.data.repository.MnemonicRepository
+import timber.log.Timber
 import javax.inject.Inject
 
 class CheckMnemonicIntegrityUseCase @Inject constructor(
@@ -25,7 +26,9 @@ class CheckMnemonicIntegrityUseCase @Inject constructor(
                 mnemonicRepository.deleteMnemonic(deviceFactorSource.id)
             }
             // just for safety, removing key, although it seem that Android system delete it so it is always null
-            keystoreManager.removeMnemonicEncryptionKey()
+            keystoreManager.removeMnemonicEncryptionKey().onFailure {
+                Timber.d(it, "Failed to delete encryption key")
+            }
         }
     }
 }
