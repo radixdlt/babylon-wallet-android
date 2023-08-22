@@ -380,10 +380,10 @@ fun DappDetails(
                     Spacer(modifier = Modifier.height(dimensions.paddingDefault))
                 }
             }
-            dappWithMetadata?.firstClaimedWebsite?.let {
+            dappWithMetadata?.claimedWebsites?.let {
                 item {
                     DAppWebsiteAddressRow(
-                        websiteAddress = it,
+                        websiteAddresses = it,
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(horizontal = dimensions.paddingDefault)
@@ -566,7 +566,7 @@ fun DappDefinitionAddressRow(
 
 @Composable
 fun DAppWebsiteAddressRow(
-    websiteAddress: String,
+    websiteAddresses: ImmutableList<String>,
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -580,22 +580,24 @@ fun DAppWebsiteAddressRow(
             style = RadixTheme.typography.body1Regular,
             color = RadixTheme.colors.gray2
         )
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(dimensions.paddingSmall)
-        ) {
-            Text(
-                modifier = Modifier.weight(1f),
-                text = websiteAddress,
-                style = RadixTheme.typography.body1HighImportance,
-                color = RadixTheme.colors.blue1
-            )
-            Icon(
-                painter = painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_link_out),
-                tint = RadixTheme.colors.gray3,
-                contentDescription = null
-            )
+        websiteAddresses.forEach { address ->
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(dimensions.paddingSmall)
+            ) {
+                Text(
+                    modifier = Modifier.weight(1f),
+                    text = address,
+                    style = RadixTheme.typography.body1HighImportance,
+                    color = RadixTheme.colors.blue1
+                )
+                Icon(
+                    painter = painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_link_out),
+                    tint = RadixTheme.colors.gray3,
+                    contentDescription = null
+                )
+            }
         }
     }
 }
@@ -827,7 +829,10 @@ fun DappDetailContentPreview() {
                 nameItem = NameMetadataItem("Dapp"),
                 descriptionItem = DescriptionMetadataItem("Description"),
                 claimedWebsitesItem = ClaimedWebsitesMetadataItem(
-                    websites = listOf("https://hammunet-dashboard.rdx-works-main.extratools.works")
+                    websites = listOf(
+                        "https://hammunet-dashboard.rdx-works-main.extratools.works",
+                        "https://ansharnet-dashboard.rdx-works-main.extratools.works"
+                    )
                 )
             ),
             associatedFungibleTokens = persistentListOf(),
