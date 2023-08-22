@@ -6,7 +6,6 @@ import rdx.works.core.KeystoreManager
 import rdx.works.core.UUIDGenerator
 import rdx.works.core.checkIfKeyWasPermanentlyInvalidated
 import rdx.works.profile.data.repository.MnemonicRepository
-import timber.log.Timber
 import javax.inject.Inject
 
 class CheckMnemonicIntegrityUseCase @Inject constructor(
@@ -21,7 +20,6 @@ class CheckMnemonicIntegrityUseCase @Inject constructor(
         if (deviceFactorSources.isEmpty()) return
         val keyInvalid = checkIfKeyWasPermanentlyInvalidated(UUIDGenerator.uuid().toString(), KeySpec.Mnemonic())
         if (keyInvalid) {
-            Timber.d("Mnemonic security: invalid key")
             // if we have invalid mnemonic encryption key we delete all mnemonics which we can no longer decrypt
             deviceFactorSources.forEach { deviceFactorSource ->
                 mnemonicRepository.deleteMnemonic(deviceFactorSource.id)

@@ -13,7 +13,6 @@ import android.security.keystore.KeyProperties.PURPOSE_DECRYPT
 import android.security.keystore.KeyProperties.PURPOSE_ENCRYPT
 import android.security.keystore.StrongBoxUnavailableException
 import android.util.Base64
-import android.util.Log
 import rdx.works.core.KeystoreManager.Companion.KEY_ALIAS_MNEMONIC
 import rdx.works.core.KeystoreManager.Companion.KEY_ALIAS_PROFILE
 import rdx.works.core.KeystoreManager.Companion.PROVIDER
@@ -36,7 +35,7 @@ import javax.crypto.spec.SecretKeySpec
  */
 
 private fun getOrCreateSecretKey(keySpec: KeySpec): SecretKey {
-    return getSecretKey(keySpec.alias) ?: generateAesKey(keySpec)
+    return getSecretKey(keySpec.alias).getOrNull() ?: generateAesKey(keySpec)
 }
 
 @Suppress("SwallowedException")
@@ -92,9 +91,11 @@ private fun generateAesKey(keySpec: KeySpec): SecretKey {
     }
 }
 
-private fun getSecretKey(keyAlias: String): SecretKey? {
-    val keyStore = KeyStore.getInstance(PROVIDER).apply { load(null) }
-    return (keyStore.getEntry(keyAlias, null) as? KeyStore.SecretKeyEntry)?.secretKey
+private fun getSecretKey(keyAlias: String): Result<SecretKey?> {
+    return runCatching {
+        val keyStore = KeyStore.getInstance(PROVIDER).apply { load(null) }
+        (keyStore.getEntry(keyAlias, null) as? KeyStore.SecretKeyEntry)?.secretKey
+    }
 }
 
 fun decryptData(
@@ -151,11 +152,9 @@ fun String.decrypt(
 
 fun checkIfKeyWasPermanentlyInvalidated(input: String, key: KeySpec): Boolean {
     // on pixel 6 pro when I remove lock screen entirely, key entry for an alias is null
-    val secretKey = getSecretKey(key.alias) ?: run {
-        Log.d("Mnemonic security", "no key")
-        return true
-    }
-    val result = encryptData(input.toByteArray(), secretKey)
+    val secretKeyResult = getSecretKey(key.alias)
+    if (secretKeyResult.isFailure || secretKeyResult.getOrNull() == null) return true
+    val result = encryptData(input.toByteArray(), secretKeyResult.getOrThrow()!!)
     // according to documentation this is exception that should be thrown if we try to use invalidated key, but behavior I saw
     // when removing lock screen is that key is automatically deleted from the keystore
     return result.exceptionOrNull() is KeyPermanentlyInvalidatedException

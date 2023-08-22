@@ -186,7 +186,6 @@ class MainViewModel @Inject constructor(
 
     fun checkMnemonicIntegrity() {
         viewModelScope.launch {
-            Timber.d("Mnemonic security: onResume")
             checkMnemonicIntegrityUseCase()
             if (!deviceSecurityHelper.isDeviceSecure()) {
                 appEventBus.sendEvent(AppEvent.AppNotSecure, delayMs = 500L)
