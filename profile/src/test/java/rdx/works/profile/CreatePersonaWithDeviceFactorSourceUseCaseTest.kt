@@ -84,6 +84,7 @@ class CreatePersonaWithDeviceFactorSourceUseCaseTest {
                                 networkID = network.network.networkId().value,
                                 securityState = SecurityState.Unsecured(
                                     unsecuredEntityControl = SecurityState.UnsecuredEntityControl(
+                                        entityIndex = 0,
                                         transactionSigning = FactorInstance(
                                             derivationPath = DerivationPath.forAccount(
                                                 networkId = network.network.networkId(),
@@ -125,7 +126,6 @@ class CreatePersonaWithDeviceFactorSourceUseCaseTest {
 
             val updatedProfile = profile.addPersona(
                 persona = newPersona,
-                withFactorSourceId = profile.babylonDeviceFactorSource.id,
                 onNetwork = network.network.networkId()
             )
 

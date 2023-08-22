@@ -8,6 +8,7 @@ import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.data.model.pernetwork.Network.Persona.Companion.init
 import rdx.works.profile.data.model.pernetwork.PersonaData
 import rdx.works.profile.data.model.pernetwork.addPersona
+import rdx.works.profile.data.model.pernetwork.nextPersonaIndex
 import rdx.works.profile.data.repository.MnemonicRepository
 import rdx.works.profile.data.repository.ProfileRepository
 import rdx.works.profile.data.repository.profile
@@ -33,6 +34,7 @@ class CreatePersonaWithDeviceFactorSourceUseCase @Inject constructor(
 
             // Construct new persona
             val newPersona = init(
+                entityIndex = profile.nextPersonaIndex(networkID),
                 displayName = displayName,
                 mnemonicWithPassphrase = mnemonicRepository(mnemonicKey = factorSource.id),
                 factorSource = factorSource,
@@ -43,7 +45,6 @@ class CreatePersonaWithDeviceFactorSourceUseCase @Inject constructor(
             // Add persona to the profile
             val updatedProfile = profile.addPersona(
                 persona = newPersona,
-                withFactorSourceId = factorSource.id,
                 onNetwork = networkID
             )
             profileRepository.saveProfile(updatedProfile)

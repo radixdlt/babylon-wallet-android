@@ -4,23 +4,18 @@ import com.radixdlt.bip39.model.MnemonicWords
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import rdx.works.profile.data.model.MnemonicWithPassphrase
-import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.data.model.factorsources.DeviceFactorSource
 import rdx.works.profile.data.model.factorsources.FactorSource
 import rdx.works.profile.data.model.factorsources.FactorSourceKind
 import rdx.works.profile.data.model.factorsources.LedgerHardwareWalletFactorSource
 import rdx.works.profile.data.model.factorsources.OffDeviceMnemonicFactorSource
 import rdx.works.profile.data.model.factorsources.TrustedContactFactorSource
-import rdx.works.profile.data.model.pernetwork.incrementAccountIndex
 import rdx.works.profile.domain.TestData
 import java.io.File
 import kotlin.test.Test
-import kotlin.test.assertNull
 
 
 class FactorSourceTest {
-
-    private val defaultNetwork = Radix.Gateway.default.network
 
     @Test
     fun `test generate vector`() {
@@ -36,23 +31,16 @@ class FactorSourceTest {
             model = "Pixel 8",
             name = "new phone"
         )
-        babylon.nextDerivationIndicesPerNetwork?.incrementAccountIndex(forNetworkId = defaultNetwork.networkId())
-        babylon.nextDerivationIndicesPerNetwork?.incrementAccountIndex(forNetworkId = defaultNetwork.networkId())
-        babylon.nextDerivationIndicesPerNetwork?.incrementAccountIndex(forNetworkId = defaultNetwork.networkId())
-
         val olympia = DeviceFactorSource.olympia(
             mnemonicWithPassphrase = mnemonicWithPassphrase,
             model = "Nokia 3310",
             name = "old phone"
         )
-        assertNull(olympia.nextDerivationIndicesPerNetwork)
-
         val ledger = LedgerHardwareWalletFactorSource.newSource(
             model = LedgerHardwareWalletFactorSource.DeviceModel.NANO_S,
             name = "my ledger",
             deviceID = TestData.ledgerFactorSource.id.body
         )
-        ledger.nextDerivationIndicesPerNetwork?.incrementAccountIndex(forNetworkId = defaultNetwork.networkId())
 
         val offDeviceMnemonicFactorSource = OffDeviceMnemonicFactorSource.newSource(
             mnemonicWithPassphrase = mnemonicWithPassphrase,

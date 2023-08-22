@@ -12,6 +12,7 @@ import rdx.works.profile.data.model.pernetwork.DerivationPath
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.data.model.pernetwork.Network.Account.Companion.initAccountWithLedgerFactorSource
 import rdx.works.profile.data.model.pernetwork.addAccount
+import rdx.works.profile.data.model.pernetwork.nextAccountIndex
 import rdx.works.profile.data.repository.ProfileRepository
 import rdx.works.profile.data.repository.profile
 import rdx.works.profile.derivation.model.NetworkId
@@ -40,6 +41,7 @@ class CreateAccountWithLedgerFactorSourceUseCase @Inject constructor(
             val networkId = networkID ?: profile.currentNetwork.knownNetworkId ?: Radix.Gateway.default.network.networkId()
             val totalAccountsOnNetwork = profile.currentNetwork.accounts.size
             val newAccount = initAccountWithLedgerFactorSource(
+                entityIndex = profile.nextAccountIndex(networkId),
                 displayName = displayName,
                 derivedPublicKeyHex = derivedPublicKeyHex,
                 ledgerFactorSource = ledgerHardwareWalletFactorSource,
@@ -50,7 +52,6 @@ class CreateAccountWithLedgerFactorSourceUseCase @Inject constructor(
             // Add account to the profile
             val updatedProfile = profile.addAccount(
                 account = newAccount,
-                withFactorSourceId = ledgerHardwareWalletFactorSource.id,
                 onNetwork = networkId
             )
             // Save updated profile

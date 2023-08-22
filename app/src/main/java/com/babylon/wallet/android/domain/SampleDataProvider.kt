@@ -76,6 +76,7 @@ class SampleDataProvider {
             networkID = Radix.Gateway.default.network.id,
             securityState = SecurityState.Unsecured(
                 unsecuredEntityControl = SecurityState.UnsecuredEntityControl(
+                    entityIndex = 0,
                     transactionSigning = FactorInstance(
                         derivationPath = DerivationPath.forAccount(
                             networkId = Radix.Gateway.default.network.networkId(),
@@ -106,6 +107,7 @@ class SampleDataProvider {
             networkID = NetworkId.Nebunet.value,
             securityState = SecurityState.Unsecured(
                 unsecuredEntityControl = SecurityState.UnsecuredEntityControl(
+                    entityIndex = 0,
                     transactionSigning = FactorInstance(
                         derivationPath = DerivationPath.forIdentity(
                             networkId = NetworkId.Nebunet,

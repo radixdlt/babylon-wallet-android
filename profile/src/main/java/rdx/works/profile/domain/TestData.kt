@@ -66,6 +66,7 @@ object TestData {
                             networkID = network1.network.networkId().value,
                             securityState = SecurityState.Unsecured(
                                 unsecuredEntityControl = SecurityState.UnsecuredEntityControl(
+                                    entityIndex = 0,
                                     transactionSigning = FactorInstance(
                                         derivationPath = DerivationPath.forAccount(
                                             networkId = network1.network.networkId(),
@@ -90,10 +91,11 @@ object TestData {
                             networkID = network1.network.networkId().value,
                             securityState = SecurityState.Unsecured(
                                 unsecuredEntityControl = SecurityState.UnsecuredEntityControl(
+                                    entityIndex = 1,
                                     transactionSigning = FactorInstance(
                                         derivationPath = DerivationPath.forAccount(
                                             networkId = network1.network.networkId(),
-                                            accountIndex = 0,
+                                            accountIndex = 1,
                                             keyType = KeyType.TRANSACTION_SIGNING
                                         ),
                                         factorSourceId = FactorSource.FactorSourceID.FromHash(
@@ -121,10 +123,11 @@ object TestData {
                             networkID = network2.network.networkId().value,
                             securityState = SecurityState.Unsecured(
                                 unsecuredEntityControl = SecurityState.UnsecuredEntityControl(
+                                    entityIndex = 2,
                                     transactionSigning = FactorInstance(
                                         derivationPath = DerivationPath.forAccount(
                                             networkId = network2.network.networkId(),
-                                            accountIndex = 0,
+                                            accountIndex = 2,
                                             keyType = KeyType.TRANSACTION_SIGNING
                                         ),
                                         factorSourceId = FactorSource.FactorSourceID.FromHash(
@@ -145,10 +148,11 @@ object TestData {
                             networkID = network2.network.networkId().value,
                             securityState = SecurityState.Unsecured(
                                 unsecuredEntityControl = SecurityState.UnsecuredEntityControl(
+                                    entityIndex = 3,
                                     transactionSigning = FactorInstance(
                                         derivationPath = DerivationPath.forAccount(
                                             networkId = network2.network.networkId(),
-                                            accountIndex = 0,
+                                            accountIndex = 3,
                                             keyType = KeyType.TRANSACTION_SIGNING
                                         ),
                                         factorSourceId = FactorSource.FactorSourceID.FromHash(

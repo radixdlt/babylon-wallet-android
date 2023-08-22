@@ -29,10 +29,10 @@ import rdx.works.profile.data.model.pernetwork.SecurityState
 import rdx.works.profile.data.model.pernetwork.Shared
 import rdx.works.profile.data.model.pernetwork.addAccount
 import rdx.works.profile.data.model.pernetwork.addPersona
+import rdx.works.profile.data.model.pernetwork.nextAccountIndex
+import rdx.works.profile.data.model.pernetwork.nextPersonaIndex
 import rdx.works.profile.data.model.serialisers.InstantSerializer
 import rdx.works.profile.data.repository.createOrUpdateAuthorizedDapp
-import rdx.works.profile.data.utils.getNextAccountDerivationIndex
-import rdx.works.profile.data.utils.getNextIdentityDerivationIndex
 import java.io.File
 import java.time.Instant
 
@@ -68,12 +68,13 @@ class ProfileTest {
         assertEquals(
             "Next derivation index for first account",
             0,
-            (profile.factorSources.first() as DeviceFactorSource).nextDerivationIndicesPerNetwork.getNextAccountDerivationIndex(forNetworkId = defaultNetwork.networkId())
+            (profile.nextAccountIndex(defaultNetwork.networkId()))
         )
 
         println("Profile generated $profile")
 
         val firstAccount = initAccountWithDeviceFactorSource(
+            entityIndex = 0,
             displayName = "first account",
             mnemonicWithPassphrase = mnemonicWithPassphrase,
             deviceFactorSource = (profile.factorSources.first() as DeviceFactorSource),
@@ -83,7 +84,6 @@ class ProfileTest {
 
         var updatedProfile = profile.addAccount(
             account = firstAccount,
-            withFactorSourceId = (profile.factorSources.first() as DeviceFactorSource).id,
             onNetwork = defaultNetwork.networkId()
         )
 
@@ -92,12 +92,11 @@ class ProfileTest {
         assertEquals(
             "Next derivation index for second account",
             1,
-            (updatedProfile.factorSources.first() as DeviceFactorSource).nextDerivationIndicesPerNetwork.getNextAccountDerivationIndex(
-                forNetworkId = defaultNetwork.networkId()
-            ),
+            updatedProfile.nextAccountIndex(defaultNetwork.networkId()),
         )
 
         val firstPersona = init(
+            entityIndex = 0,
             displayName = "First",
             mnemonicWithPassphrase = mnemonicWithPassphrase,
             factorSource = (profile.factorSources.first() as DeviceFactorSource),
@@ -106,7 +105,6 @@ class ProfileTest {
 
         updatedProfile = updatedProfile.addPersona(
             persona = firstPersona,
-            withFactorSourceId = (profile.factorSources.first() as DeviceFactorSource).id,
             onNetwork = defaultNetwork.networkId()
         )
 
@@ -114,9 +112,7 @@ class ProfileTest {
         assertEquals(
             "Next derivation index for second persona",
             1,
-            (updatedProfile.factorSources.first() as DeviceFactorSource).nextDerivationIndicesPerNetwork.getNextIdentityDerivationIndex(
-                forNetworkId = defaultNetwork.networkId()
-            )
+            updatedProfile.nextPersonaIndex(defaultNetwork.networkId())
         )
 
         val p2pLink = P2PLink.init(
@@ -179,6 +175,7 @@ class ProfileTest {
         )
 
         val firstAccount = initAccountWithDeviceFactorSource(
+            entityIndex = 0,
             displayName = "First",
             mnemonicWithPassphrase = mnemonicWithPassphrase,
             deviceFactorSource = expected.babylonDeviceFactorSource,
@@ -187,37 +184,37 @@ class ProfileTest {
         )
         expected = expected.addAccount(
             account = firstAccount,
-            withFactorSourceId = expected.babylonDeviceFactorSource.id,
             onNetwork = networkId
         )
 
         val secondAccount = initAccountWithDeviceFactorSource(
+            entityIndex = 1,
             displayName = "Second",
+            mnemonicWithPassphrase = mnemonicWithPassphrase,
+            deviceFactorSource = expected.babylonDeviceFactorSource,
+            networkId = networkId,
+            appearanceID = 1
+        )
+        expected = expected.addAccount(
+            account = secondAccount,
+            onNetwork = networkId
+        )
+
+        val thirdAccount = initAccountWithDeviceFactorSource(
+            entityIndex = 2,
+            displayName = "Third",
             mnemonicWithPassphrase = mnemonicWithPassphrase,
             deviceFactorSource = expected.babylonDeviceFactorSource,
             networkId = networkId,
             appearanceID = 2
         )
         expected = expected.addAccount(
-            account = secondAccount,
-            withFactorSourceId = expected.babylonDeviceFactorSource.id,
-            onNetwork = networkId
-        )
-
-        val thirdAccount = initAccountWithDeviceFactorSource(
-            displayName = "Third",
-            mnemonicWithPassphrase = mnemonicWithPassphrase,
-            deviceFactorSource = expected.babylonDeviceFactorSource,
-            networkId = networkId,
-            appearanceID = 3
-        )
-        expected = expected.addAccount(
             account = thirdAccount,
-            withFactorSourceId = expected.babylonDeviceFactorSource.id,
             onNetwork = networkId
         )
 
         val firstPersona = init(
+            entityIndex = 0,
             displayName = "Satoshi",
             mnemonicWithPassphrase = mnemonicWithPassphrase,
             factorSource = expected.babylonDeviceFactorSource,
@@ -226,11 +223,11 @@ class ProfileTest {
         )
         expected = expected.addPersona(
             persona = firstPersona,
-            withFactorSourceId = expected.babylonDeviceFactorSource.id,
             onNetwork = networkId
         )
 
         val secondPersona = init(
+            entityIndex = 1,
             displayName = "Mrs Public",
             mnemonicWithPassphrase = mnemonicWithPassphrase,
             factorSource = expected.babylonDeviceFactorSource,
@@ -249,7 +246,6 @@ class ProfileTest {
         )
         expected = expected.addPersona(
             persona = secondPersona,
-            withFactorSourceId = expected.babylonDeviceFactorSource.id,
             onNetwork = networkId
         )
 
@@ -394,14 +390,14 @@ class ProfileTest {
 
         assertEquals(
             "The next id for creating an account in this factor source",
-            (expected.factorSources.first() as DeviceFactorSource).nextDerivationIndicesPerNetwork.getNextAccountDerivationIndex(networkId),
-            (actual.factorSources.first() as DeviceFactorSource).nextDerivationIndicesPerNetwork.getNextAccountDerivationIndex(networkId)
+            expected.nextAccountIndex(networkId),
+            actual.nextAccountIndex(networkId)
         )
 
         assertEquals(
             "The next id for creating an identity in this factor source",
-            (expected.factorSources.first() as DeviceFactorSource).nextDerivationIndicesPerNetwork.getNextIdentityDerivationIndex(networkId),
-            (actual.factorSources.first() as DeviceFactorSource).nextDerivationIndicesPerNetwork.getNextIdentityDerivationIndex(networkId)
+            expected.nextPersonaIndex(networkId),
+            actual.nextPersonaIndex(networkId)
         )
 
         // Per Network count

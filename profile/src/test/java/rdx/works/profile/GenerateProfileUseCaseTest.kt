@@ -24,8 +24,8 @@ import rdx.works.profile.data.model.apppreferences.P2PLink
 import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.data.model.apppreferences.Security
 import rdx.works.profile.data.model.factorsources.DeviceFactorSource
-import rdx.works.profile.data.model.factorsources.FactorSourceKind
 import rdx.works.profile.data.model.factorsources.FactorSource
+import rdx.works.profile.data.model.factorsources.FactorSourceKind
 import rdx.works.profile.data.model.pernetwork.DerivationPath
 import rdx.works.profile.data.model.pernetwork.FactorInstance
 import rdx.works.profile.data.model.pernetwork.Network
@@ -88,6 +88,7 @@ class GenerateProfileUseCaseTest {
                                 networkID = Radix.Gateway.hammunet.network.id,
                                 securityState = SecurityState.Unsecured(
                                     unsecuredEntityControl = SecurityState.UnsecuredEntityControl(
+                                        entityIndex = 0,
                                         transactionSigning = FactorInstance(
                                             derivationPath = DerivationPath.forAccount(
                                                 networkId = Radix.Gateway.hammunet.network.networkId(),
