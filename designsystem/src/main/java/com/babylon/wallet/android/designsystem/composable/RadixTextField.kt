@@ -85,13 +85,14 @@ fun RadixTextField(
                     focusedPlaceholderColor = RadixTheme.colors.gray2,
                     focusedTextColor = RadixTheme.colors.gray1,
                     focusedBorderColor = RadixTheme.colors.gray1,
-                    unfocusedBorderColor = RadixTheme.colors.gray3,
+                    unfocusedBorderColor = RadixTheme.colors.gray4,
                     errorBorderColor = RadixTheme.colors.red1,
                     cursorColor = RadixTheme.colors.gray1,
                     selectionColors = TextSelectionColors(
                         RadixTheme.colors.gray1,
                         LocalTextSelectionColors.current.backgroundColor
-                    )
+                    ),
+                    unfocusedContainerColor = RadixTheme.colors.gray5
                 ),
                 placeholder = {
                     hint?.let {

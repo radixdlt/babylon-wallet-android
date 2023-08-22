@@ -1,5 +1,7 @@
 package com.babylon.wallet.android.presentation.common
 
+import com.babylon.wallet.android.BuildConfig
+import com.babylon.wallet.android.utils.toMnemonicWords
 import com.radixdlt.bip39.wordlists.WORDLIST_ENGLISH
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
@@ -30,7 +32,7 @@ class SeedPhraseInputDelegate(
         }
     }
 
-    @Suppress("MagicNumber")
+    @Suppress("MagicNumber", "LongMethod")
     fun onWordChanged(index: Int, value: String, onMoveToNextWord: suspend () -> Unit) {
         val isDeleting = (_state.value.seedPhraseWords.firstOrNull { it.index == index }?.value?.length ?: 0) > value.length
         _state.update { state ->
@@ -44,6 +46,19 @@ class SeedPhraseInputDelegate(
         debounceJob?.cancel()
         debounceJob = scope.launch {
             delay(75L)
+            if (BuildConfig.DEBUG_MODE) {
+                val pastedMnemonic = value.toMnemonicWords(state.value.seedPhraseWords.size)
+                if (pastedMnemonic.isNotEmpty()) {
+                    _state.update { state ->
+                        state.copy(
+                            seedPhraseWords = state.seedPhraseWords.mapIndexed { index, word ->
+                                word.copy(value = pastedMnemonic[index], state = SeedPhraseWord.State.Valid)
+                            }.toPersistentList()
+                        )
+                    }
+                    return@launch
+                }
+            }
             var shouldMoveToNextWord = false
             val wordCandidates = if (value.isEmpty()) {
                 emptyList()
