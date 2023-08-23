@@ -5,6 +5,9 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class AppPreferences(
+    @SerialName("transaction")
+    val transaction: Transaction,
+
     @SerialName("display")
     val display: Display,
 

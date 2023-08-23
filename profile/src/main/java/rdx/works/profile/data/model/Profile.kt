@@ -5,6 +5,7 @@ import rdx.works.profile.data.model.apppreferences.Display
 import rdx.works.profile.data.model.apppreferences.Gateways
 import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.data.model.apppreferences.Security
+import rdx.works.profile.data.model.apppreferences.Transaction
 import rdx.works.profile.data.model.factorsources.DeviceFactorSource
 import rdx.works.profile.data.model.factorsources.FactorSource
 import rdx.works.profile.data.model.factorsources.Slip10Curve
@@ -99,6 +100,7 @@ data class Profile(
             )
 
             val appPreferences = AppPreferences(
+                transaction = Transaction.default,
                 display = Display.default,
                 security = Security.default,
                 gateways = Gateways.fromCurrent(current = gateway),
