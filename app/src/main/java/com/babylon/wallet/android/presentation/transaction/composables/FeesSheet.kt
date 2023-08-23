@@ -439,7 +439,7 @@ fun NetworkFeesAdvancedView(
                     horizontal = RadixTheme.dimensions.paddingXLarge
                 ),
             onValueChanged = onFeePaddingAmountChanged,
-            value = transactionFees?.feePaddingAmountToDisplay?.displayableQuantity().orEmpty(),
+            value = transactionFees?.feePaddingAmountToDisplay.orEmpty(),
             leftLabel = stringResource(
                 id = R.string.transactionReview_customizeNetworkFeeSheet_paddingFieldLabel
             ),
@@ -473,7 +473,8 @@ fun NetworkFeesAdvancedView(
                 )
 
                 Text(
-                    text = stringResource(id = R.string.transactionReview_customizeNetworkFeeSheet_tipFieldInfo),
+                    text = stringResource(id = R.string.transactionReview_customizeNetworkFeeSheet_tipFieldInfo)
+                        .replace("%%", "%"),
                     style = RadixTheme.typography.body1Regular,
                     color = RadixTheme.colors.gray2
                 )
@@ -618,7 +619,7 @@ fun NetworkFeesAdvancedView(
                 Text(
                     text = stringResource(
                         id = R.string.transactionReview_xrdAmount,
-                        transactionFees?.feePaddingAmountToDisplay?.displayableQuantity().orEmpty()
+                        transactionFees?.feePaddingAmountForCalculation?.displayableQuantity().orEmpty()
                     ),
                     style = RadixTheme.typography.body1Header,
                     color = RadixTheme.colors.gray1

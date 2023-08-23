@@ -108,26 +108,6 @@ fun FungibleTokenBottomSheetDetails(
                 address = fungible.resourceAddress
             )
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
-            if (fungible.displayTitle.isNotEmpty()) {
-                Row(
-                    modifier = Modifier,
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Text(
-                        text = stringResource(id = R.string.assetDetails_name),
-                        style = RadixTheme.typography.body1Regular,
-                        color = RadixTheme.colors.gray2
-                    )
-                    Spacer(modifier = Modifier.weight(1f))
-                    Text(
-                        text = fungible.displayTitle,
-                        style = RadixTheme.typography.body1Regular,
-                        color = RadixTheme.colors.gray1
-                    )
-                }
-                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
-            }
 
             Row(
                 modifier = Modifier,

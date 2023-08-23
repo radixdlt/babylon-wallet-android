@@ -250,10 +250,66 @@ class TransactionApprovalViewModel @Inject constructor(
         val transactionFees: TransactionFees = TransactionFees(),
         val feePayerSearchResult: FeePayerSearchResult? = null,
         val sheetState: Sheet = Sheet.None,
+        private val latestFeesMode: Sheet.CustomizeFees.FeesMode = Sheet.CustomizeFees.FeesMode.Default,
         val error: UiMessage? = null,
         val ephemeralNotaryPrivateKey: PrivateKey = PrivateKey.EddsaEd25519.newRandom(),
         val interactionState: InteractionState? = null
     ) : UiState {
+
+        fun noneRequiredState(): State = copy(
+            sheetState = Sheet.CustomizeFees(
+                feePayerMode = Sheet.CustomizeFees.FeePayerMode.NoFeePayerRequired,
+                feesMode = latestFeesMode
+            )
+        )
+
+        fun candidateSelectedState(feePayerCandidate: Network.Account): State = copy(
+            sheetState = Sheet.CustomizeFees(
+                feePayerMode = Sheet.CustomizeFees.FeePayerMode.FeePayerSelected(
+                    feePayerCandidate = feePayerCandidate
+                ),
+                feesMode = latestFeesMode
+            )
+        )
+
+        fun noCandidateSelectedState(): State = copy(
+            sheetState = Sheet.CustomizeFees(
+                feePayerMode = Sheet.CustomizeFees.FeePayerMode.NoFeePayerSelected(
+                    candidates = feePayerSearchResult?.candidates.orEmpty()
+                ),
+                feesMode = latestFeesMode
+            )
+        )
+
+        fun feePayerSelectionState(): State = copy(
+            transactionFees = transactionFees,
+            sheetState = Sheet.CustomizeFees(
+                feePayerMode = Sheet.CustomizeFees.FeePayerMode.SelectFeePayer(
+                    candidates = feePayerSearchResult?.candidates.orEmpty()
+                ),
+                feesMode = latestFeesMode
+            )
+        )
+
+        fun defaultModeState(): State = copy(
+            transactionFees = transactionFees.copy(
+                feePaddingAmount = null,
+                tipPercentage = null
+            ),
+            latestFeesMode = Sheet.CustomizeFees.FeesMode.Default,
+            sheetState = Sheet.CustomizeFees(
+                feePayerMode = (sheetState as Sheet.CustomizeFees).feePayerMode,
+                feesMode = Sheet.CustomizeFees.FeesMode.Default
+            )
+        )
+
+        fun advancedModeState(): State = copy(
+            latestFeesMode = Sheet.CustomizeFees.FeesMode.Advanced,
+            sheetState = Sheet.CustomizeFees(
+                feePayerMode = (sheetState as Sheet.CustomizeFees).feePayerMode,
+                feesMode = Sheet.CustomizeFees.FeesMode.Advanced
+            )
+        )
 
         val isRawManifestToggleVisible: Boolean
             get() = previewType is PreviewType.Transaction
@@ -290,8 +346,8 @@ class TransactionApprovalViewModel @Inject constructor(
             ) : Sheet()
 
             data class CustomizeFees(
-                val feePayerMode: FeePayerMode = FeePayerMode.NoFeePayerRequired,
-                val feesMode: FeesMode = FeesMode.Default
+                val feePayerMode: FeePayerMode,
+                val feesMode: FeesMode
             ) : Sheet() {
 
                 sealed interface FeePayerMode {

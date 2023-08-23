@@ -179,6 +179,8 @@ private fun ColumnScope.FungibleSpendingAsset(
         )
         Spacer(modifier = Modifier.width(RadixTheme.dimensions.paddingSmall))
         Text(
+            modifier = Modifier
+                .weight(1f),
             text = resource.displayTitle.ifEmpty { stringResource(id = com.babylon.wallet.android.R.string.transactionReview_unknown) },
             style = RadixTheme.typography.body2HighImportance,
             color = RadixTheme.colors.gray1,
@@ -190,7 +192,10 @@ private fun ColumnScope.FungibleSpendingAsset(
             backgroundColor = RadixTheme.colors.gray1.copy(alpha = 0.4f)
         )
         CompositionLocalProvider(LocalTextSelectionColors provides selectionColors) {
-            Box(modifier = Modifier.weight(1f)) {
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+            ) {
                 if (amount.isBlank()) {
                     Text(
                         modifier = Modifier.fillMaxWidth(),
