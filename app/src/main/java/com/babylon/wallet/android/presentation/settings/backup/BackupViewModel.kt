@@ -1,10 +1,12 @@
 package com.babylon.wallet.android.presentation.settings.backup
 
+import android.net.Uri
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.presentation.common.StateViewModel
+import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.update
@@ -12,11 +14,13 @@ import kotlinx.coroutines.launch
 import rdx.works.profile.data.model.BackupState
 import rdx.works.profile.domain.backup.ChangeBackupSettingUseCase
 import rdx.works.profile.domain.backup.GetBackupStateUseCase
+import rdx.works.profile.domain.backup.ExportProfileUseCase
 import javax.inject.Inject
 
 @HiltViewModel
 class BackupViewModel @Inject constructor(
     private val changeBackupSettingUseCase: ChangeBackupSettingUseCase,
+    private val exportProfileUseCase: ExportProfileUseCase,
     getBackupStateUseCase: GetBackupStateUseCase
 ) : StateViewModel<BackupViewModel.State>(), OneOffEventHandler<BackupViewModel.Event> by OneOffEventHandlerImpl() {
 
@@ -53,6 +57,10 @@ class BackupViewModel @Inject constructor(
                 encryptSheet = if (isEncrypted) State.EncryptSheet.Open() else State.EncryptSheet.Closed
             )
         }
+
+        if (!isEncrypted) {
+            viewModelScope.launch { sendEvent(Event.ChooseExportFile(State.FILE_NAME_NON_ENCRYPTED)) }
+        }
     }
 
     fun onFileBackupDeny() {
@@ -81,12 +89,33 @@ class BackupViewModel @Inject constructor(
 
     fun onEncryptSubmitClick() {
         val encryptSheet = state.value.encryptSheet as? State.EncryptSheet.Open ?: return
+        if (encryptSheet.isSubmitEnabled) {
+            viewModelScope.launch { sendEvent(Event.ChooseExportFile(State.FILE_NAME_ENCRYPTED)) }
+        }
+    }
+
+    fun onFileChosen(uri: Uri) = viewModelScope.launch {
+        val exportType = when (val sheet = state.value.encryptSheet) {
+            is State.EncryptSheet.Closed -> ExportProfileUseCase.ExportType.Json
+            is State.EncryptSheet.Open -> ExportProfileUseCase.ExportType.EncodedJson(sheet.password)
+        }
+
+        exportProfileUseCase(exportType = exportType, file = uri).onSuccess {
+            _state.update { it.copy(uiMessage = UiMessage.InfoMessage.WalletExported) }
+        }.onFailure { error ->
+            _state.update { it.copy(uiMessage = UiMessage.ErrorMessage.from(error)) }
+        }
+    }
+
+    fun onMessageShown() {
+        _state.update { it.copy(uiMessage = null) }
     }
 
     data class State(
         val backupState: BackupState,
         val isExportFileDialogVisible: Boolean = false,
-        val encryptSheet: EncryptSheet = EncryptSheet.Closed
+        val encryptSheet: EncryptSheet = EncryptSheet.Closed,
+        val uiMessage: UiMessage? = null
     ) : UiState {
 
         val isBackupEnabled: Boolean
@@ -111,9 +140,15 @@ class BackupViewModel @Inject constructor(
                     get() = password.isNotBlank() && passwordsMatch
             }
         }
+
+        companion object {
+            const val FILE_NAME_NON_ENCRYPTED = "radix_wallet_backup_file.plaintext.json"
+            const val FILE_NAME_ENCRYPTED = "radix_wallet_backup_file.encrypted.json"
+        }
     }
 
     sealed interface Event: OneOffEvent {
         object Dismiss: Event
+        data class ChooseExportFile(val fileName: String): Event
     }
 }

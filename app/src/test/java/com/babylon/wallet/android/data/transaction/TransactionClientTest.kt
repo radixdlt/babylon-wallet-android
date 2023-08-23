@@ -176,18 +176,22 @@ internal class TransactionClientTest {
             get() = profile
 
         override suspend fun saveProfile(profile: Profile) {
-            TODO("Not yet implemented")
+            error("Not needed")
         }
 
         override suspend fun clear() {
-            TODO("Not yet implemented")
+            error("Not needed")
         }
 
         override suspend fun saveRestoringSnapshot(snapshotSerialised: String): Boolean {
             error("Not needed")
         }
 
-        override suspend fun getSnapshotForBackup(): String? {
+        override suspend fun getSnapshotForCloudBackup(): String? {
+            error("Not needed")
+        }
+
+        override suspend fun getSnapshotForFileBackup(): String? {
             error("Not needed")
         }
 

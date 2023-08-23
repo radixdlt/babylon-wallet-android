@@ -32,7 +32,7 @@ class ProfileSnapshotBackupHelper(context: Context) : BackupHelper {
 
     override fun performBackup(oldState: ParcelFileDescriptor?, data: BackupDataOutput?, newState: ParcelFileDescriptor) {
         val snapshotSerialised = runBlocking {
-            profileRepository.getSnapshotForBackup()
+            profileRepository.getSnapshotForCloudBackup()
         }
         log("Backup started for snapshot: $snapshotSerialised")
 

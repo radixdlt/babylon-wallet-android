@@ -41,7 +41,9 @@ interface ProfileRepository {
 
     suspend fun saveRestoringSnapshot(snapshotSerialised: String): Boolean
 
-    suspend fun getSnapshotForBackup(): String?
+    suspend fun getSnapshotForCloudBackup(): String?
+
+    suspend fun getSnapshotForFileBackup(): String?
 
     suspend fun isRestoredProfileFromBackupExists(): Boolean
 
@@ -142,7 +144,7 @@ class ProfileRepositoryImpl @Inject constructor(
         }
 
     @Suppress("SwallowedException")
-    override suspend fun getSnapshotForBackup(): String? {
+    override suspend fun getSnapshotForCloudBackup(): String? {
         val serialisedSnapshot = encryptedPreferencesManager.encryptedProfile.firstOrNull()?.getOrNull() ?: return null
 
         val isBackupEnabled = try {
@@ -158,6 +160,10 @@ class ProfileRepositoryImpl @Inject constructor(
         } else {
             null
         }
+    }
+
+    override suspend fun getSnapshotForFileBackup(): String? {
+        return encryptedPreferencesManager.encryptedProfile.firstOrNull().getOrNull()
     }
 
     override suspend fun isRestoredProfileFromBackupExists(): Boolean {

@@ -3,6 +3,8 @@
 package com.babylon.wallet.android.presentation.settings.backup
 
 import androidx.activity.compose.BackHandler
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -27,6 +29,7 @@ import androidx.compose.material.rememberModalBottomSheetState
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -62,9 +65,10 @@ import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.presentation.ui.composables.DefaultModalSheetLayout
 import com.babylon.wallet.android.presentation.ui.composables.NotBackedUpWarning
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
+import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
+import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
 import com.babylon.wallet.android.presentation.ui.composables.SwitchSettingsItem
 import com.babylon.wallet.android.utils.formattedSpans
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import rdx.works.profile.data.model.BackupState
 
@@ -92,13 +96,23 @@ fun BackupScreen(
         onEncryptConfirmPasswordTyped = viewModel::onEncryptConfirmPasswordTyped,
         onEncryptPasswordConfirmRevealToggle = viewModel::onEncryptConfirmPasswordRevealChange,
         onEncryptSubmitClick = viewModel::onEncryptSubmitClick,
+        onUiMessageShown = viewModel::onMessageShown,
         onBackClick = viewModel::onBackClick
     )
+
+    val filePickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.CreateDocument(mimeType = "application/json")
+    ) { uri ->
+        if (uri != null) {
+            viewModel.onFileChosen(uri)
+        }
+    }
 
     LaunchedEffect(Unit) {
         viewModel.oneOffEvent.collect {
             when (it) {
-                BackupViewModel.Event.Dismiss -> onClose()
+                is BackupViewModel.Event.Dismiss -> onClose()
+                is BackupViewModel.Event.ChooseExportFile -> filePickerLauncher.launch(it.fileName)
             }
         }
     }
@@ -118,6 +132,7 @@ private fun BackupScreenContent(
     onEncryptConfirmPasswordTyped: (String) -> Unit,
     onEncryptPasswordConfirmRevealToggle: () -> Unit,
     onEncryptSubmitClick: () -> Unit,
+    onUiMessageShown: () -> Unit,
     onBackClick: () -> Unit
 ) {
     BackHandler(onBack = onBackClick)
@@ -144,6 +159,14 @@ private fun BackupScreenContent(
         }
     )
 
+    val snackBarHostState = remember { SnackbarHostState() }
+
+    SnackbarUIMessage(
+        message = state.uiMessage,
+        snackbarHostState = snackBarHostState,
+        onMessageShown = onUiMessageShown
+    )
+
     DefaultModalSheetLayout(
         modifier = modifier.fillMaxSize(),
         sheetState = modalBottomSheetState,
@@ -167,6 +190,12 @@ private fun BackupScreenContent(
                 RadixCenteredTopAppBar(
                     title = stringResource(R.string.settings_backups),
                     onBackClick = onBackClick
+                )
+            },
+            snackbarHost = {
+                RadixSnackbarHost(
+                    hostState = snackBarHostState,
+                    modifier = Modifier.padding(RadixTheme.dimensions.paddingLarge)
                 )
             },
             containerColor = RadixTheme.colors.gray5
@@ -500,6 +529,7 @@ fun BackupScreenPreview() {
             onEncryptConfirmPasswordTyped = {},
             onEncryptPasswordConfirmRevealToggle = {},
             onEncryptSubmitClick = {},
+            onUiMessageShown = {},
             onBackClick = {}
         )
     }

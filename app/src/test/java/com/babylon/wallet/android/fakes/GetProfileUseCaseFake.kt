@@ -37,7 +37,12 @@ private fun fakeProfileDataSource(initialProfileState: ProfileState) = object : 
         return true
     }
 
-    override suspend fun getSnapshotForBackup(): String? {
+    override suspend fun getSnapshotForCloudBackup(): String? {
+        // Not needed
+        return null
+    }
+
+    override suspend fun getSnapshotForFileBackup(): String? {
         // Not needed
         return null
     }
@@ -53,7 +58,7 @@ private fun fakeProfileDataSource(initialProfileState: ProfileState) = object : 
     }
 
     override suspend fun discardBackedUpProfile() {
-        TODO("Not yet implemented")
+        // Not needed
     }
 
 }
