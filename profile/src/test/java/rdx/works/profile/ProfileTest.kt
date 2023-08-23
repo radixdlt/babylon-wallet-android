@@ -19,6 +19,7 @@ import rdx.works.profile.data.model.factorsources.LedgerHardwareWalletFactorSour
 import rdx.works.profile.data.model.factorsources.OffDeviceMnemonicFactorSource
 import rdx.works.profile.data.model.factorsources.TrustedContactFactorSource
 import rdx.works.profile.data.model.pernetwork.CountryOrRegion
+import rdx.works.profile.data.model.pernetwork.FactorInstance
 import rdx.works.profile.data.model.pernetwork.IdentifiedEntry
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.data.model.pernetwork.Network.Account.Companion.initAccountWithDeviceFactorSource
@@ -47,7 +48,8 @@ class ProfileTest {
     @Test
     fun `test profile generation`() {
         val mnemonicWithPassphrase = MnemonicWithPassphrase(
-            mnemonic = "bright club bacon dinner achieve pull grid save ramp cereal blush woman " + "humble limb repeat video sudden possible story mask neutral prize goose mandate",
+            mnemonic = "bright club bacon dinner achieve pull grid save ramp cereal blush woman " +
+                    "humble limb repeat video sudden possible story mask neutral prize goose mandate",
             bip39Passphrase = ""
         )
 
@@ -65,7 +67,9 @@ class ProfileTest {
         assertEquals(profile.networks.first().accounts.count(), 0)
         assertEquals(profile.networks.first().personas.count(), 0)
         assertEquals(
-            "Next derivation index for first account", 0, (profile.nextAccountIndex(defaultNetwork.networkId()))
+            "Next derivation index for first account",
+            0,
+            (profile.nextAccountIndex(defaultNetwork.networkId()))
         )
 
         println("Profile generated $profile")
@@ -80,7 +84,8 @@ class ProfileTest {
         )
 
         var updatedProfile = profile.addAccount(
-            account = firstAccount, onNetwork = defaultNetwork.networkId()
+            account = firstAccount,
+            onNetwork = defaultNetwork.networkId()
         )
 
         println("Profile updated generated $updatedProfile")
@@ -100,12 +105,15 @@ class ProfileTest {
         )
 
         updatedProfile = updatedProfile.addPersona(
-            persona = firstPersona, onNetwork = defaultNetwork.networkId()
+            persona = firstPersona,
+            onNetwork = defaultNetwork.networkId()
         )
 
         assertEquals(updatedProfile.networks.first().personas.count(), 1)
         assertEquals(
-            "Next derivation index for second persona", 1, updatedProfile.nextPersonaIndex(defaultNetwork.networkId())
+            "Next derivation index for second persona",
+            1,
+            updatedProfile.nextPersonaIndex(defaultNetwork.networkId())
         )
 
         val p2pLink = P2PLink.init(
@@ -128,7 +136,8 @@ class ProfileTest {
         val actual = json.decodeFromString<ProfileSnapshot>(profileTestVector).toProfile()
 
         val mnemonicWithPassphrase = MnemonicWithPassphrase(
-            mnemonic = "bright club bacon dinner achieve pull grid save ramp cereal blush woman humble limb repeat video " + "sudden possible story mask neutral prize goose mandate",
+            mnemonic = "bright club bacon dinner achieve pull grid save ramp cereal blush woman humble limb repeat video " +
+                    "sudden possible story mask neutral prize goose mandate",
             bip39Passphrase = ""
         )
 
@@ -145,14 +154,18 @@ class ProfileTest {
         )
         expected = expected.copy(
             factorSources = expected.factorSources + listOf(
-                DeviceFactorSource.olympia(mnemonicWithPassphrase), TrustedContactFactorSource.newSource(
+                DeviceFactorSource.olympia(mnemonicWithPassphrase),
+                TrustedContactFactorSource.newSource(
                     accountAddress = FactorSource.AccountAddress("account_rdx1283u6e8r2jnz4a3jwv0hnrqfr5aq50yc9ts523sd96hzfjxqqcs89q"),
                     emailAddress = "hi@rdx.works",
                     name = "My friend",
                     createdAt = Instant.EPOCH
-                ), OffDeviceMnemonicFactorSource.newSource(
-                    mnemonicWithPassphrase = mnemonicWithPassphrase, label = "Zoo"
-                ), LedgerHardwareWalletFactorSource.newSource(
+                ),
+                OffDeviceMnemonicFactorSource.newSource(
+                    mnemonicWithPassphrase = mnemonicWithPassphrase,
+                    label = "Zoo"
+                ),
+                LedgerHardwareWalletFactorSource.newSource(
                     model = LedgerHardwareWalletFactorSource.DeviceModel.NANO_S_PLUS,
                     name = "Orange",
                     deviceID = FactorSource.HexCoded32Bytes(
@@ -171,7 +184,8 @@ class ProfileTest {
             appearanceID = 0
         )
         expected = expected.addAccount(
-            account = firstAccount, onNetwork = networkId
+            account = firstAccount,
+            onNetwork = networkId
         )
 
         val secondAccount = initAccountWithDeviceFactorSource(
@@ -202,7 +216,8 @@ class ProfileTest {
             )
         )
         expected = expected.addAccount(
-            account = secondAccount, onNetwork = networkId
+            account = secondAccount,
+            onNetwork = networkId
         )
 
         val thirdAccount = initAccountWithDeviceFactorSource(
@@ -233,7 +248,8 @@ class ProfileTest {
             )
         )
         expected = expected.addAccount(
-            account = thirdAccount, onNetwork = networkId
+            account = thirdAccount,
+            onNetwork = networkId
         )
 
         val firstPersona = init(
@@ -245,7 +261,8 @@ class ProfileTest {
             personaData = satoshiPersona()
         )
         expected = expected.addPersona(
-            persona = firstPersona, onNetwork = networkId
+            persona = firstPersona,
+            onNetwork = networkId
         )
 
         val secondPersona = init(
@@ -257,13 +274,18 @@ class ProfileTest {
             personaData = PersonaData(
                 name = IdentifiedEntry.init(
                     PersonaData.PersonaDataField.Name(
-                        variant = PersonaData.PersonaDataField.Name.Variant.Western, given = "Maria", family = "Publicson", nickname = "MP"
-                    ), id = "0"
+                        variant = PersonaData.PersonaDataField.Name.Variant.Western,
+                        given = "Maria",
+                        family = "Publicson",
+                        nickname = "MP"
+                    ),
+                    id = "0"
                 )
             )
         )
         expected = expected.addPersona(
-            persona = secondPersona, onNetwork = networkId
+            persona = secondPersona,
+            onNetwork = networkId
         )
 
         val p2pLink = P2PLink.init(
@@ -276,12 +298,14 @@ class ProfileTest {
         )
         expected = expected.addP2PLink(
             p2pLink = P2PLink.init(
-                connectionPassword = "beefbeeffadedeafdeadbeeffadedeafdeadbeeffadedeafdeadbeeffadebeef", displayName = "iPhone 13"
+                connectionPassword = "beefbeeffadedeafdeadbeeffadedeafdeadbeeffadedeafdeadbeeffadebeef",
+                displayName = "iPhone 13"
             )
         )
 
         val firstRequest = RequestedNumber(
-            RequestedNumber.Quantifier.AtLeast, 1
+            RequestedNumber.Quantifier.AtLeast,
+            1
         )
         val authorizedDapp = Network.AuthorizedDapp(
             networkID = networkId.value,
@@ -290,25 +314,33 @@ class ProfileTest {
             referencesToAuthorizedPersonas = listOf(
                 Network.AuthorizedDapp.AuthorizedPersonaSimple(
                     identityAddress = firstPersona.address,
-                    sharedAccounts = Shared(
+                    sharedAccounts =
+                    Shared(
                         ids = listOf(
-                            secondAccount.address, thirdAccount.address
-                        ), request = RequestedNumber(
-                            RequestedNumber.Quantifier.Exactly, 2
+                            secondAccount.address,
+                            thirdAccount.address
+                        ),
+                        request = RequestedNumber(
+                            RequestedNumber.Quantifier.Exactly,
+                            2
                         )
                     ),
                     lastLogin = Instant.EPOCH.toString(),
                     sharedPersonaData = Network.AuthorizedDapp.SharedPersonaData.init(firstPersona.personaData, firstRequest)
-                ), Network.AuthorizedDapp.AuthorizedPersonaSimple(
+                ),
+                Network.AuthorizedDapp.AuthorizedPersonaSimple(
                     identityAddress = secondPersona.address,
                     sharedPersonaData = Network.AuthorizedDapp.SharedPersonaData(
                         name = secondPersona.personaData.name?.id
                     ),
-                    sharedAccounts = Shared(
+                    sharedAccounts =
+                    Shared(
                         ids = listOf(
                             secondAccount.address
-                        ), request = RequestedNumber(
-                            RequestedNumber.Quantifier.AtLeast, 1
+                        ),
+                        request = RequestedNumber(
+                            RequestedNumber.Quantifier.AtLeast,
+                            1
                         )
                     ),
                     lastLogin = Instant.EPOCH.toString(),
@@ -321,7 +353,9 @@ class ProfileTest {
 
         // Network and gateway
         assertEquals(
-            "Gateways are the same", expected.appPreferences.gateways, actual.appPreferences.gateways
+            "Gateways are the same",
+            expected.appPreferences.gateways,
+            actual.appPreferences.gateways
         )
 
         // Display
@@ -353,7 +387,9 @@ class ProfileTest {
 
         // P2P clients
         assertEquals(
-            "P2P clients count is the same", expected.appPreferences.p2pLinks.count(), actual.appPreferences.p2pLinks.count()
+            "P2P clients count is the same",
+            expected.appPreferences.p2pLinks.count(),
+            actual.appPreferences.p2pLinks.count()
         )
         assertEquals(
             "Connection password is the same for the first p2p client",
@@ -368,7 +404,9 @@ class ProfileTest {
 
         // Factor Sources
         assertEquals(
-            "The factor sources count are the same", expected.factorSources.count(), actual.factorSources.count()
+            "The factor sources count are the same",
+            expected.factorSources.count(),
+            actual.factorSources.count()
         )
 
         assertEquals(
@@ -384,7 +422,9 @@ class ProfileTest {
         )
 
         assertEquals(
-            "The id of the first factor source is the same", expected.factorSources.first().id, actual.factorSources.first().id
+            "The id of the first factor source is the same",
+            expected.factorSources.first().id,
+            actual.factorSources.first().id
         )
 
         assertEquals(
@@ -401,12 +441,16 @@ class ProfileTest {
 
         // Per Network count
         assertEquals(
-            "The networks count is the same", expected.networks.count(), actual.networks.count()
+            "The networks count is the same",
+            expected.networks.count(),
+            actual.networks.count()
         )
 
         // Network ID
         assertEquals(
-            "The first network id is the same", expected.networks.first().networkID, actual.networks.first().networkID
+            "The first network id is the same",
+            expected.networks.first().networkID,
+            actual.networks.first().networkID
         )
 
         // Connected Dapp
@@ -454,65 +498,101 @@ class ProfileTest {
 
         assertEquals(
             "The first dApps' references to the first authorised persona shared accounts requests is the same",
-            expected.networks.first().authorizedDapps.first().referencesToAuthorizedPersonas.first().sharedAccounts.request,
-            actual.networks.first().authorizedDapps.first().referencesToAuthorizedPersonas.first().sharedAccounts.request
+            expected.networks.first().authorizedDapps.first()
+                .referencesToAuthorizedPersonas.first().sharedAccounts.request,
+            actual.networks.first().authorizedDapps.first()
+                .referencesToAuthorizedPersonas.first().sharedAccounts.request
         )
 
         assertEquals(
             "The first dApps' references to the first authorised persona shared accounts referenced by address count is the same",
-            expected.networks.first().authorizedDapps.first().referencesToAuthorizedPersonas.first().sharedAccounts.ids.size,
-            actual.networks.first().authorizedDapps.first().referencesToAuthorizedPersonas.first().sharedAccounts.ids.size
+            expected.networks.first().authorizedDapps.first()
+                .referencesToAuthorizedPersonas.first().sharedAccounts.ids.size,
+            actual.networks.first().authorizedDapps.first()
+                .referencesToAuthorizedPersonas.first().sharedAccounts.ids.size
         )
 
         assertEquals(
             "The first dApps' references to the first authorised persona shared accounts referenced by address first element is the same",
-            expected.networks.first().authorizedDapps.first().referencesToAuthorizedPersonas.first().sharedAccounts.ids.elementAt(0),
-            actual.networks.first().authorizedDapps.first().referencesToAuthorizedPersonas.first().sharedAccounts.ids.elementAt(0)
+            expected.networks.first().authorizedDapps.first()
+                .referencesToAuthorizedPersonas.first().sharedAccounts.ids.elementAt(0),
+            actual.networks.first().authorizedDapps.first()
+                .referencesToAuthorizedPersonas.first().sharedAccounts.ids.elementAt(0)
         )
 
         assertEquals(
             "The first dApps' references to the first authorised persona shared accounts referenced by address second element is the same",
-            expected.networks.first().authorizedDapps.first().referencesToAuthorizedPersonas.first().sharedAccounts.ids.elementAt(1),
-            actual.networks.first().authorizedDapps.first().referencesToAuthorizedPersonas.first().sharedAccounts.ids.elementAt(1)
+            expected.networks.first().authorizedDapps.first()
+                .referencesToAuthorizedPersonas.first().sharedAccounts.ids.elementAt(1),
+            actual.networks.first().authorizedDapps.first()
+                .referencesToAuthorizedPersonas.first().sharedAccounts.ids.elementAt(1)
         )
 
         assertEquals(
             "The first dApps' references to the first authorised dApp first reference to authorised persona identity address is the same",
-            expected.networks.first().authorizedDapps.first().referencesToAuthorizedPersonas.elementAt(1).identityAddress,
-            actual.networks.first().authorizedDapps.first().referencesToAuthorizedPersonas.elementAt(1).identityAddress
+            expected.networks.first().authorizedDapps.first().referencesToAuthorizedPersonas
+                .elementAt(1).identityAddress,
+            actual.networks.first().authorizedDapps.first().referencesToAuthorizedPersonas
+                .elementAt(1).identityAddress
         )
 
         assertEquals(
             "The first dApps' references to the first authorised dApp first reference to authorised persona field ids is the same",
-            expected.networks.first().authorizedDapps.first().referencesToAuthorizedPersonas.elementAt(1).sharedPersonaData,
-            actual.networks.first().authorizedDapps.first().referencesToAuthorizedPersonas.elementAt(1).sharedPersonaData
+            expected.networks.first().authorizedDapps.first().referencesToAuthorizedPersonas
+                .elementAt(1).sharedPersonaData,
+            actual.networks.first().authorizedDapps.first().referencesToAuthorizedPersonas
+                .elementAt(1).sharedPersonaData
         )
 
         assertEquals(
             "The first dApps' references to the first authorised dApp first reference to authorised persona identity address is the same",
-            expected.networks.first().authorizedDapps.first().referencesToAuthorizedPersonas.elementAt(1).sharedAccounts.request,
-            actual.networks.first().authorizedDapps.first().referencesToAuthorizedPersonas.elementAt(1).sharedAccounts.request
+            expected.networks.first().authorizedDapps.first()
+                .referencesToAuthorizedPersonas.elementAt(1).sharedAccounts.request,
+            actual.networks.first().authorizedDapps.first()
+                .referencesToAuthorizedPersonas.elementAt(1).sharedAccounts.request
         )
 
         assertEquals(
             "The first dApps' references to the first authorised dApp first reference to authorised persona shared accounts reference by address are the same",
-            expected.networks.first().authorizedDapps.first().referencesToAuthorizedPersonas.elementAt(1).sharedAccounts.ids.size,
-            actual.networks.first().authorizedDapps.first().referencesToAuthorizedPersonas.elementAt(1).sharedAccounts.ids.size
+            expected.networks.first().authorizedDapps.first()
+                .referencesToAuthorizedPersonas.elementAt(1).sharedAccounts.ids.size,
+            actual.networks.first().authorizedDapps.first()
+                .referencesToAuthorizedPersonas.elementAt(1).sharedAccounts.ids.size
         )
 
         assertEquals(
             "The first dApps' references to the first authorised dApp first reference to authorised persona first shared account reference by address is the same",
-            expected.networks.first().authorizedDapps.first().referencesToAuthorizedPersonas.elementAt(1).sharedAccounts.ids.elementAt(0),
-            actual.networks.first().authorizedDapps.first().referencesToAuthorizedPersonas.elementAt(1).sharedAccounts.ids.elementAt(0)
+            expected.networks.first().authorizedDapps.first()
+                .referencesToAuthorizedPersonas.elementAt(1).sharedAccounts.ids.elementAt(0),
+            actual.networks.first().authorizedDapps.first()
+                .referencesToAuthorizedPersonas.elementAt(1).sharedAccounts.ids.elementAt(0)
         )
 
 
         // Accounts
         assertEquals(
-            "The accounts' count is the same", expected.networks.first().accounts.count(), actual.networks.first().accounts.count()
+            "The accounts' count is the same",
+            expected.networks.first().accounts.count(),
+            actual.networks.first().accounts.count()
         )
 
         repeat(3) { accountIndex ->
+            assertEquals(
+                "The account entity index is the same",
+                (expected.networks.first().accounts[accountIndex].securityState as SecurityState.Unsecured)
+                    .unsecuredEntityControl.entityIndex,
+                (actual.networks.first().accounts[accountIndex].securityState as SecurityState.Unsecured)
+                    .unsecuredEntityControl.entityIndex
+            )
+
+            assertEquals(
+                "The transaction signing badge is the same",
+                (expected.networks.first().accounts[accountIndex].securityState as SecurityState.Unsecured)
+                    .unsecuredEntityControl.transactionSigning.badge as FactorInstance.Badge.VirtualSource.HierarchicalDeterministic,
+                (actual.networks.first().accounts[accountIndex].securityState as SecurityState.Unsecured)
+                    .unsecuredEntityControl.transactionSigning.badge as FactorInstance.Badge.VirtualSource.HierarchicalDeterministic
+            )
+
             assertEquals(
                 "The accounts[$accountIndex] addresses are the same",
                 expected.networks.first().accounts[accountIndex].address,
@@ -526,22 +606,36 @@ class ProfileTest {
             )
 
             // Security State
+            val expectedTransactionSigning = (expected.networks.first().accounts[accountIndex].securityState as SecurityState.Unsecured)
+                .unsecuredEntityControl.transactionSigning
+            val expectedDerivationPath = (expectedTransactionSigning.badge as FactorInstance.Badge.VirtualSource.HierarchicalDeterministic)
+                .derivationPath
+            val actualTransactionSigning = (actual.networks.first().accounts[accountIndex].securityState as SecurityState.Unsecured)
+                .unsecuredEntityControl.transactionSigning
+            val actualDerivationPath = (actualTransactionSigning.badge as FactorInstance.Badge.VirtualSource.HierarchicalDeterministic)
+                .derivationPath
             assertEquals(
                 "The accounts[$accountIndex] derivation path are the same",
-                (expected.networks.first().accounts[accountIndex].securityState as SecurityState.Unsecured).unsecuredEntityControl.transactionSigning.derivationPath,
-                (actual.networks.first().accounts[accountIndex].securityState as SecurityState.Unsecured).unsecuredEntityControl.transactionSigning.derivationPath
+                expectedDerivationPath,
+                actualDerivationPath
             )
 
+            val expectedPublicKey = (expectedTransactionSigning.badge as FactorInstance.Badge.VirtualSource.HierarchicalDeterministic)
+                .publicKey
+            val actualPublicKey = (actualTransactionSigning.badge as FactorInstance.Badge.VirtualSource.HierarchicalDeterministic)
+                .publicKey
             assertEquals(
                 "The accounts[$accountIndex] public key are the same",
-                (expected.networks.first().accounts[accountIndex].securityState as SecurityState.Unsecured).unsecuredEntityControl.transactionSigning.publicKey,
-                (actual.networks.first().accounts[accountIndex].securityState as SecurityState.Unsecured).unsecuredEntityControl.transactionSigning.publicKey
+                expectedPublicKey,
+                actualPublicKey
             )
 
             assertEquals(
                 "The accounts[$accountIndex] factor source ids are the same",
-                (expected.networks.first().accounts[accountIndex].securityState as SecurityState.Unsecured).unsecuredEntityControl.transactionSigning.factorSourceId,
-                (actual.networks.first().accounts[accountIndex].securityState as SecurityState.Unsecured).unsecuredEntityControl.transactionSigning.factorSourceId
+                (expected.networks.first().accounts[accountIndex].securityState as SecurityState.Unsecured)
+                    .unsecuredEntityControl.transactionSigning.factorSourceId,
+                (actual.networks.first().accounts[accountIndex].securityState as SecurityState.Unsecured)
+                    .unsecuredEntityControl.transactionSigning.factorSourceId
             )
 
             assertEquals(
@@ -553,10 +647,27 @@ class ProfileTest {
 
         // Personas
         assertEquals(
-            expected.networks.first().personas.count(), actual.networks.first().personas.count()
+            expected.networks.first().personas.count(),
+            actual.networks.first().personas.count()
         )
 
         repeat(2) { personaIndex ->
+            assertEquals(
+                "The persona entity index is the same",
+                (expected.networks.first().personas[personaIndex].securityState as SecurityState.Unsecured)
+                    .unsecuredEntityControl.entityIndex,
+                (actual.networks.first().personas[personaIndex].securityState as SecurityState.Unsecured)
+                    .unsecuredEntityControl.entityIndex
+            )
+
+            assertEquals(
+                "The transaction signing badge is the same",
+                (expected.networks.first().personas[personaIndex].securityState as SecurityState.Unsecured)
+                    .unsecuredEntityControl.transactionSigning.badge as FactorInstance.Badge.VirtualSource.HierarchicalDeterministic,
+                (actual.networks.first().personas[personaIndex].securityState as SecurityState.Unsecured)
+                    .unsecuredEntityControl.transactionSigning.badge as FactorInstance.Badge.VirtualSource.HierarchicalDeterministic
+            )
+
             assertEquals(
                 "The persona[$personaIndex] address is the same",
                 expected.networks.first().personas[personaIndex].address,
@@ -593,31 +704,47 @@ class ProfileTest {
 
             assertEquals(
                 "The persona[$personaIndex] factor source id is the same",
-                (expected.networks.first().personas[personaIndex].securityState as SecurityState.Unsecured).unsecuredEntityControl.transactionSigning.factorSourceId,
-                (actual.networks.first().personas[personaIndex].securityState as SecurityState.Unsecured).unsecuredEntityControl.transactionSigning.factorSourceId
+                (expected.networks.first().personas[personaIndex].securityState as SecurityState.Unsecured)
+                    .unsecuredEntityControl.transactionSigning.factorSourceId,
+                (actual.networks.first().personas[personaIndex].securityState as SecurityState.Unsecured)
+                    .unsecuredEntityControl.transactionSigning.factorSourceId
             )
 
+            val expectedTransactionSigning = (expected.networks.first().personas[personaIndex].securityState as SecurityState.Unsecured)
+                .unsecuredEntityControl.transactionSigning
+            val expectedDerivationPath = (expectedTransactionSigning.badge as FactorInstance.Badge.VirtualSource.HierarchicalDeterministic)
+                .derivationPath
+            val actualTransactionSigning = (actual.networks.first().personas[personaIndex].securityState as SecurityState.Unsecured)
+                .unsecuredEntityControl.transactionSigning
+            val actualDerivationPath = (actualTransactionSigning.badge as FactorInstance.Badge.VirtualSource.HierarchicalDeterministic)
+                .derivationPath
             assertEquals(
                 "The persona[$personaIndex] derivation path is the same",
-                (expected.networks.first().personas[personaIndex].securityState as SecurityState.Unsecured).unsecuredEntityControl.transactionSigning.derivationPath,
-                (actual.networks.first().personas[personaIndex].securityState as SecurityState.Unsecured).unsecuredEntityControl.transactionSigning.derivationPath
+                expectedDerivationPath,
+                actualDerivationPath
             )
 
+            val expectedPublicKey = (expectedTransactionSigning.badge as FactorInstance.Badge.VirtualSource.HierarchicalDeterministic)
+                .publicKey
+            val actualPublicKey = (actualTransactionSigning.badge as FactorInstance.Badge.VirtualSource.HierarchicalDeterministic)
+                .publicKey
             assertEquals(
                 "The persona[$personaIndex] public key is the same",
-                (expected.networks.first().personas[personaIndex].securityState as SecurityState.Unsecured).unsecuredEntityControl.transactionSigning.publicKey,
-                (actual.networks.first().personas[personaIndex].securityState as SecurityState.Unsecured).unsecuredEntityControl.transactionSigning.publicKey
+                expectedPublicKey,
+                actualPublicKey
             )
         }
 
         // Profile header
         assertEquals(
-            "Profile header is the same", expected.header, actual.header
+            "Profile header is the same",
+            expected.header,
+            actual.header
         )
     }
 
 
-    fun satoshiPersona(): PersonaData {
+    private fun satoshiPersona(): PersonaData {
         return PersonaData(
             name = IdentifiedEntry.init(
                 PersonaData.PersonaDataField.Name(
@@ -625,7 +752,8 @@ class ProfileTest {
                     given = "Satoshi",
                     family = "Nakamoto",
                     nickname = "Creator of Bitcoin"
-                ), "0"
+                ),
+                "0"
             ),
             dateOfBirth = IdentifiedEntry.init(PersonaData.PersonaDataField.DateOfBirth(Instant.parse("2009-01-03T12:00:00Z")), "1"),
             companyName = IdentifiedEntry.init(PersonaData.PersonaDataField.CompanyName("Bitcoin"), "2"),
@@ -653,7 +781,8 @@ class ProfileTest {
                             PersonaData.PersonaDataField.PostalAddress.Field.CountryOrRegion(CountryOrRegion.Japan)
                         )
                     ), "9"
-                ), IdentifiedEntry.init(
+                ),
+                IdentifiedEntry.init(
                     PersonaData.PersonaDataField.PostalAddress(
                         listOf(
                             PersonaData.PersonaDataField.PostalAddress.Field.StreetLine0("Copthall House"),
