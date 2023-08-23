@@ -206,7 +206,7 @@
       "description" : "unit test",
       "id" : "BABE1442-3C98-41FF-AFB0-D0F5829B020D"
     },
-    "snapshotVersion" : 43
+    "snapshotVersion" : 44
   },
   "networks" : [
     {
@@ -339,27 +339,6 @@
                   }
                 }
               }
-            }
-          },
-          "onLedgerSettings": {
-            "thirdPartyDeposits": {
-              "depositRule": "acceptKnown",
-              "assetsExceptionList": [
-                {
-                  "address": "resource_tdx_21_1tknxxxxxxxxxradxrdxxxxxxxxx009923554798xxxxxxxxxsmgder",
-                  "exceptionRule": "deny"
-                }
-              ],
-              "depositorsAllowList": [
-                {
-                  "discriminator": "resourceAddress",
-                  "value": "resource_tdx_21_1tknxxxxxxxxxradxrdxxxxxxxxx009923554798xxxxxxxxxsmgder"
-                },
-                {
-                  "discriminator": "nonFungibleGlobalID",
-                  "value": "resource_tdx_21_1tknxxxxxxxxxradxrdxxxxxxxxx009923554798xxxxxxxxxsmgder:#2#"
-                }
-              ]
             }
           }
         },
