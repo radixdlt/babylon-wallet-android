@@ -36,12 +36,12 @@ class EncryptedPreferencesManager @Inject constructor(
         encryptedValue.decrypt(KeySpec.Profile())
     }.flowOn(ioDispatcher)
 
-    suspend fun readMnemonic(key: String): Result<String>? {
+    suspend fun readMnemonic(key: String): Result<String> {
         return preferences.data.catchIOException().map { preferences ->
             val preferencesKey = stringPreferencesKey(key)
             val encryptedValue = preferences[preferencesKey]
             if (encryptedValue.isNullOrEmpty()) {
-                return@map null
+                return@map Result.failure(IllegalStateException("Mnemonic not present in encrypted keystore"))
             }
             val result = encryptedValue.decrypt(KeySpec.Mnemonic())
             result

@@ -45,8 +45,8 @@ class CreateAccountWithDeviceFactorSourceUseCaseTest {
 
             val mnemonicRepository = mock<MnemonicRepository> {
                 onBlocking {
-                    invoke(profile.babylonDeviceFactorSource.id)
-                } doReturn mnemonicWithPassphrase
+                    readMnemonic(profile.babylonDeviceFactorSource.id)
+                } doReturn Result.success(mnemonicWithPassphrase)
             }
 
             val profileRepository = Mockito.mock(ProfileRepository::class.java)

@@ -21,8 +21,8 @@ class MnemonicRepository @Inject constructor(
      * We might have multiple OnDevice-HD-FactorSources, thus multiple mnemonics stored on the device.
      */
     @Suppress("SwallowedException")
-    suspend fun readMnemonic(key: FactorSource.FactorSourceID.FromHash): Result<MnemonicWithPassphrase>? {
-        return encryptedPreferencesManager.readMnemonic("mnemonic${key.body.value}")?.map {
+    suspend fun readMnemonic(key: FactorSource.FactorSourceID.FromHash): Result<MnemonicWithPassphrase> {
+        return encryptedPreferencesManager.readMnemonic("mnemonic${key.body.value}").map {
             Json.decodeFromString(it)
         }
     }
@@ -62,7 +62,7 @@ class MnemonicRepository @Inject constructor(
      *    We deserialize it properly and just return that back.
      */
     suspend operator fun invoke(mnemonicKey: FactorSource.FactorSourceID.FromHash? = null): MnemonicWithPassphrase {
-        return mnemonicKey?.let { readMnemonic(key = it)?.getOrNull() } ?: withContext(defaultDispatcher) {
+        return mnemonicKey?.let { readMnemonic(key = it).getOrNull() } ?: withContext(defaultDispatcher) {
             val generated = MnemonicWithPassphrase.generate(entropyStrength = ENTROPY_STRENGTH)
 
             val key = FactorSource.factorSourceId(mnemonicWithPassphrase = generated)

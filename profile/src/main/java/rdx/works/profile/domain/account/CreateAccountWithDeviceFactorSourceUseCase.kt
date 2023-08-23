@@ -33,7 +33,7 @@ class CreateAccountWithDeviceFactorSourceUseCase @Inject constructor(
             // Construct new account
             val networkId = networkID ?: profile.currentNetwork.knownNetworkId ?: Radix.Gateway.default.network.networkId()
             val nextAccountIndex = profile.nextAccountIndex(networkId)
-            val mnemonicWithPassphrase = requireNotNull(mnemonicRepository.readMnemonic(factorSource.id)?.getOrNull())
+            val mnemonicWithPassphrase = requireNotNull(mnemonicRepository.readMnemonic(factorSource.id).getOrNull())
             val newAccount = initAccountWithDeviceFactorSource(
                 entityIndex = profile.nextAccountIndex(networkId),
                 displayName = displayName,
