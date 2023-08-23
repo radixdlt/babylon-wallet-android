@@ -41,19 +41,30 @@ class ROLAClient @Inject constructor(
         entity: Entity,
         authSigningFactorInstance: FactorInstance
     ): Result<TransactionManifest> {
-        val transactionSigningKey = when (val state = entity.securityState) {
-            is SecurityState.Unsecured -> state.unsecuredEntityControl.transactionSigning.publicKey
+        val transactionSigningPublicKey = when (val state = entity.securityState) {
+            is SecurityState.Unsecured -> {
+                when (val badge = state.unsecuredEntityControl.transactionSigning.badge) {
+                    is FactorInstance.Badge.VirtualSource.HierarchicalDeterministic -> {
+                        badge.publicKey
+                    }
+                }
+            }
         }
         val ownerKeys = entityRepository.getEntityOwnerKeyHashes(entity.address, true).value()
         val publicKeyHashes = mutableListOf<FactorInstance.PublicKey>()
         val ownerKeysHashes = ownerKeys?.keyHashes.orEmpty()
-        val authSigningKeyHash = authSigningFactorInstance.publicKey.compressedData.compressedPublicKeyHash()
-        val transactionSigningKeyHash = transactionSigningKey.compressedData.compressedPublicKeyHash()
+        val authSigningPublicKey = when (val badge = authSigningFactorInstance.badge) {
+            is FactorInstance.Badge.VirtualSource.HierarchicalDeterministic -> {
+                badge.publicKey
+            }
+        }
+        val authSigningKeyHash = authSigningPublicKey.compressedData.compressedPublicKeyHash()
+        val transactionSigningKeyHash = transactionSigningPublicKey.compressedData.compressedPublicKeyHash()
         if (ownerKeysHashes.none { it.hex == authSigningKeyHash }) {
-            publicKeyHashes.add(authSigningFactorInstance.publicKey)
+            publicKeyHashes.add(authSigningPublicKey)
         }
         if (ownerKeysHashes.none { it.hex == transactionSigningKeyHash }) {
-            publicKeyHashes.add(transactionSigningKey)
+            publicKeyHashes.add(transactionSigningPublicKey)
         }
         return BabylonManifestBuilder()
             .addSetMetadataInstructionForOwnerKeys(entity.address, publicKeyHashes)
