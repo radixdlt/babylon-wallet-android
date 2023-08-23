@@ -40,7 +40,6 @@ import rdx.works.profile.data.model.pernetwork.Network
 fun FeesSheet(
     modifier: Modifier = Modifier,
     state: TransactionApprovalViewModel.State.Sheet.CustomizeFees,
-    feesMode: TransactionApprovalViewModel.State.Sheet.CustomizeFees.FeesMode,
     transactionFees: TransactionFees,
     insufficientBalanceToPayTheFee: Boolean,
     onClose: () -> Unit,
@@ -68,7 +67,7 @@ fun FeesSheet(
         }
 
         item {
-            val title = when (feesMode) {
+            val title = when (state.feesMode) {
                 TransactionApprovalViewModel.State.Sheet.CustomizeFees.FeesMode.Default -> {
                     stringResource(id = R.string.transactionReview_customizeNetworkFeeSheet_normalMode_title)
                 }
@@ -89,7 +88,7 @@ fun FeesSheet(
         }
 
         item {
-            val body = when (feesMode) {
+            val body = when (state.feesMode) {
                 TransactionApprovalViewModel.State.Sheet.CustomizeFees.FeesMode.Default -> {
                     stringResource(id = R.string.transactionReview_customizeNetworkFeeSheet_normalMode_subtitle)
                 }
@@ -265,7 +264,7 @@ fun FeesSheet(
         }
 
         item {
-            when (feesMode) {
+            when (state.feesMode) {
                 TransactionApprovalViewModel.State.Sheet.CustomizeFees.FeesMode.Default -> {
                     NetworkFeesDefaultView(
                         transactionFees = transactionFees
@@ -289,7 +288,7 @@ fun FeesSheet(
                     .padding(bottom = RadixTheme.dimensions.paddingDefault),
                 horizontalArrangement = Arrangement.Center
             ) {
-                when (feesMode) {
+                when (state.feesMode) {
                     TransactionApprovalViewModel.State.Sheet.CustomizeFees.FeesMode.Default -> {
                         RadixTextButton(
                             text = stringResource(

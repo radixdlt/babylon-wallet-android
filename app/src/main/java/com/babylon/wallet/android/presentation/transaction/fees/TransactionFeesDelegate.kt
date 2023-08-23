@@ -14,17 +14,10 @@ class TransactionFeesDelegate(
 
     @Suppress("NestedBlockDepth")
     suspend fun onCustomizeClick() {
-        val mostRecentFeesMode = state.value.feesMode
-
         if (state.value.transactionFees.defaultTransactionFee == BigDecimal.ZERO) {
             // None required
             state.update { state ->
-                state.copy(
-                    feesMode = mostRecentFeesMode,
-                    sheetState = State.Sheet.CustomizeFees(
-                        feePayerMode = State.Sheet.CustomizeFees.FeePayerMode.NoFeePayerRequired
-                    )
-                )
+                state.noneRequiredState()
             }
         } else {
             state.value.feePayerSearchResult?.let { feePayerResult ->
@@ -33,27 +26,13 @@ class TransactionFeesDelegate(
                     getProfileUseCase.accountOnCurrentNetwork(withAddress = feePayerResult.feePayerAddressFromManifest)
                         ?.let { feePayerCandidate ->
                             state.update { state ->
-                                state.copy(
-                                    feesMode = mostRecentFeesMode,
-                                    sheetState = State.Sheet.CustomizeFees(
-                                        feePayerMode = State.Sheet.CustomizeFees.FeePayerMode.FeePayerSelected(
-                                            feePayerCandidate = feePayerCandidate
-                                        )
-                                    )
-                                )
+                                state.candidateSelectedState(feePayerCandidate)
                             }
                         }
                 } else {
                     // No candidate selected
                     state.update { state ->
-                        state.copy(
-                            feesMode = mostRecentFeesMode,
-                            sheetState = State.Sheet.CustomizeFees(
-                                feePayerMode = State.Sheet.CustomizeFees.FeePayerMode.NoFeePayerSelected(
-                                    candidates = feePayerResult.candidates
-                                )
-                            )
-                        )
+                        state.noCandidateSelectedState()
                     }
                 }
             }
@@ -93,39 +72,20 @@ class TransactionFeesDelegate(
     }
 
     fun onViewDefaultModeClick() {
-        val transactionFees = state.value.transactionFees
-        state.update {
-            it.copy(
-                feesMode = State.Sheet.CustomizeFees.FeesMode.Default,
-                // When switching back to default mode, reset field values that have been modified in advanced mode
-                transactionFees = transactionFees.copy(
-                    feePaddingAmount = null,
-                    tipPercentage = null
-                )
-            )
+        state.update { state ->
+            state.defaultModeState()
         }
     }
 
     fun onViewAdvancedModeClick() {
-        state.update {
-            it.copy(
-                feesMode = State.Sheet.CustomizeFees.FeesMode.Advanced,
-            )
+        state.update { state ->
+            state.advancedModeState()
         }
     }
 
     private fun switchToFeePayerSelection() {
-        val feePayerResult = state.value.feePayerSearchResult
-        val transactionFees = state.value.transactionFees
         state.update { state ->
-            state.copy(
-                transactionFees = transactionFees,
-                sheetState = State.Sheet.CustomizeFees(
-                    feePayerMode = State.Sheet.CustomizeFees.FeePayerMode.SelectFeePayer(
-                        candidates = feePayerResult?.candidates.orEmpty()
-                    )
-                )
-            )
+            state.feePayerSelectionState()
         }
     }
 }
