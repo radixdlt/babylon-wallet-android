@@ -11,6 +11,7 @@ import rdx.works.core.ret.toEnginePublicKeyModel
 import rdx.works.core.toUByteList
 import rdx.works.profile.data.model.factorsources.Slip10Curve
 import rdx.works.profile.data.model.pernetwork.Entity
+import rdx.works.profile.data.model.pernetwork.FactorInstance
 import rdx.works.profile.data.model.pernetwork.SecurityState
 import com.radixdlt.model.PrivateKey as SLIP10PrivateKey
 
@@ -30,7 +31,11 @@ data class NotaryAndSigners(
     fun signersPublicKeys() = signers.map { signer ->
         when (val securityState = signer.securityState) {
             is SecurityState.Unsecured -> {
-                val publicKey = securityState.unsecuredEntityControl.transactionSigning.publicKey
+                val publicKey = when (val badge = securityState.unsecuredEntityControl.transactionSigning.badge) {
+                    is FactorInstance.Badge.VirtualSource.HierarchicalDeterministic -> {
+                        badge.publicKey
+                    }
+                }
                 when (publicKey.curve) {
                     Slip10Curve.CURVE_25519 -> PublicKey.Ed25519(
                         value = HexString(publicKey.compressedData).hexToByteArray().toUByteList()
