@@ -35,5 +35,6 @@ fun account(
                 publicKey = FactorInstance.PublicKey.curve25519PublicKey("")
             )
         )
-    )
+    ),
+    onLedgerSettings = Network.Account.OnLedgerSettings.init()
 )
