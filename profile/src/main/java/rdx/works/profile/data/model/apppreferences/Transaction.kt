@@ -6,11 +6,11 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class Transaction(
     @SerialName("defaultDepositGuarantee")
-    val defaultDepositGuarantee: String
+    val defaultDepositGuarantee: Float
 ) {
     companion object {
         val default = Transaction(
-            defaultDepositGuarantee = "1"
+            defaultDepositGuarantee = 1F
         )
     }
 }
