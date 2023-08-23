@@ -110,6 +110,7 @@ fun ImportLegacyWalletScreen(
     onCloseScreen: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val context = LocalContext.current
     val state by viewModel.state.collectAsStateWithLifecycle()
     val addLinkConnectorState by addLinkConnectorViewModel.state.collectAsStateWithLifecycle()
     val coroutineScope = rememberCoroutineScope()
@@ -131,7 +132,13 @@ fun ImportLegacyWalletScreen(
         bip39Passphrase = state.bip39Passphrase,
         onWordChanged = viewModel::onWordChanged,
         onPassphraseChanged = viewModel::onPassphraseChanged,
-        onImportSoftwareAccounts = viewModel::onImportSoftwareAccounts,
+        onImportSoftwareAccounts = {
+            context.biometricAuthenticate { authenticated ->
+                if (authenticated) {
+                    viewModel.onImportSoftwareAccounts()
+                }
+            }
+        },
         uiMessage = state.uiMessage,
         onMessageShown = viewModel::onMessageShown,
         migratedAccounts = state.migratedAccounts,
