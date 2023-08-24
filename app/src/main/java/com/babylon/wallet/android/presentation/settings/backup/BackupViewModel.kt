@@ -13,8 +13,9 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.profile.data.model.BackupState
 import rdx.works.profile.domain.backup.ChangeBackupSettingUseCase
-import rdx.works.profile.domain.backup.GetBackupStateUseCase
 import rdx.works.profile.domain.backup.ExportProfileUseCase
+import rdx.works.profile.domain.backup.ExportType
+import rdx.works.profile.domain.backup.GetBackupStateUseCase
 import javax.inject.Inject
 
 @HiltViewModel
@@ -96,8 +97,8 @@ class BackupViewModel @Inject constructor(
 
     fun onFileChosen(uri: Uri) = viewModelScope.launch {
         val exportType = when (val sheet = state.value.encryptSheet) {
-            is State.EncryptSheet.Closed -> ExportProfileUseCase.ExportType.Json
-            is State.EncryptSheet.Open -> ExportProfileUseCase.ExportType.EncodedJson(sheet.password)
+            is State.EncryptSheet.Closed -> ExportType.Json
+            is State.EncryptSheet.Open -> ExportType.EncodedJson(sheet.password)
         }
 
         exportProfileUseCase(exportType = exportType, file = uri).onSuccess {

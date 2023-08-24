@@ -1,13 +1,11 @@
 package rdx.works.profile
 
-import kotlinx.serialization.encodeToString
 import org.junit.Assert.assertEquals
 import org.junit.Ignore
 import org.junit.Test
 import rdx.works.profile.data.model.EncryptedProfileSnapshot
 import rdx.works.profile.data.model.MnemonicWithPassphrase
 import rdx.works.profile.data.model.Profile
-import rdx.works.profile.data.model.ProfileSnapshot
 import rdx.works.profile.di.SerializerModule
 import java.time.Instant
 
@@ -33,8 +31,7 @@ class EncryptedProfileTest {
 
         val serializer = SerializerModule.provideProfileSerializer()
         val encryptedSnapshot = serializer.decodeFromString<EncryptedProfileSnapshot>(encryptedIOSSnapshot)
-        val decryptedSnapshot = encryptedSnapshot.decrypt("foo")
-        val decryptedProfile = serializer.decodeFromString<ProfileSnapshot>(decryptedSnapshot).toProfile()
+        val decryptedProfile = encryptedSnapshot.decrypt(serializer, "foo").toProfile()
 
         assertEquals("iPhone (iPhone)", decryptedProfile.header.creatingDevice.description)
     }
@@ -55,11 +52,8 @@ class EncryptedProfileTest {
         )
 
 
-        val snapshot = serializer.encodeToString(profile.snapshot())
-        val encryptedSnapshot = EncryptedProfileSnapshot.from(snapshot, "super secret")
-
-        val decryptedSnapshot = encryptedSnapshot.decrypt("super secret")
-        val decryptedProfile = serializer.decodeFromString<ProfileSnapshot>(decryptedSnapshot).toProfile()
+        val encryptedSnapshot = EncryptedProfileSnapshot.from(serializer, profile.snapshot(), "super secret")
+        val decryptedProfile = encryptedSnapshot.decrypt(serializer, "super secret").toProfile()
 
         assertEquals(profile, decryptedProfile)
     }

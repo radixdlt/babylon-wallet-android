@@ -17,6 +17,7 @@ import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import rdx.works.core.InstantGenerator
 import rdx.works.core.preferences.PreferencesManager
+import rdx.works.profile.data.model.EncryptedProfileSnapshot
 import rdx.works.profile.data.model.Profile
 import rdx.works.profile.data.model.ProfileSnapshot
 import rdx.works.profile.data.model.ProfileSnapshotRelaxed
@@ -27,6 +28,7 @@ import rdx.works.profile.di.RelaxedSerializer
 import rdx.works.profile.di.coroutines.ApplicationScope
 import rdx.works.profile.di.coroutines.IoDispatcher
 import timber.log.Timber
+import rdx.works.profile.domain.backup.ExportType
 import javax.inject.Inject
 
 interface ProfileRepository {
@@ -43,7 +45,7 @@ interface ProfileRepository {
 
     suspend fun getSnapshotForCloudBackup(): String?
 
-    suspend fun getSnapshotForFileBackup(): String?
+    suspend fun getSnapshotForFileBackup(exportType: ExportType): String?
 
     suspend fun isRestoredProfileFromBackupExists(): Boolean
 
@@ -162,8 +164,15 @@ class ProfileRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun getSnapshotForFileBackup(): String? {
-        return encryptedPreferencesManager.encryptedProfile.firstOrNull().getOrNull()
+    override suspend fun getSnapshotForFileBackup(exportType: ExportType): String? {
+        val snapshot = encryptedPreferencesManager.encryptedProfile.firstOrNull().getOrNull() ?: return null
+        return when (exportType) {
+            is ExportType.EncodedJson -> {
+                val encryptedSnapshot = EncryptedProfileSnapshot.from(snapshot, exportType.password)
+                profileSnapshotJson.encodeToString(encryptedSnapshot)
+            }
+            is ExportType.Json -> snapshot
+        }
     }
 
     override suspend fun isRestoredProfileFromBackupExists(): Boolean {
