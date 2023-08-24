@@ -1,5 +1,6 @@
 package com.babylon.wallet.android.presentation.onboarding.restore.backup
 
+import android.net.Uri
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
@@ -31,6 +32,10 @@ class RestoreFromBackupViewModel @Inject constructor(
         if (state.value.restoringProfile?.header?.isCompatible == true) {
             _state.update { it.copy(isRestoringProfileChecked = isChecked) }
         }
+    }
+
+    fun onRestoreFromFile(uri: Uri) {
+
     }
 
     fun onBackClick() = viewModelScope.launch {

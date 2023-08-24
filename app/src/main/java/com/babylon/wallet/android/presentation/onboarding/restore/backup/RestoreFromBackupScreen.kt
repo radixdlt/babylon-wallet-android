@@ -1,6 +1,8 @@
 package com.babylon.wallet.android.presentation.onboarding.restore.backup
 
 import androidx.activity.compose.BackHandler
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -35,6 +37,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
+import com.babylon.wallet.android.designsystem.composable.RadixTextButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.SampleDataProvider
@@ -50,11 +53,21 @@ fun RestoreFromBackupScreen(
     onRestoreConfirmed: () -> Unit
 ) {
     val state by viewModel.state.collectAsState()
+    val openDocument = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.OpenDocument()
+    ) { uri ->
+        if (uri != null) {
+            viewModel.onRestoreFromFile(uri)
+        }
+    }
 
     RestoreFromBackupContent(
         state = state,
         onBackClick = viewModel::onBackClick,
         onRestoringProfileCheckChanged = viewModel::toggleRestoringProfileCheck,
+        onRestoreFromFileClick = {
+            openDocument.launch(arrayOf("application/json"))
+        },
         onSubmitClick = viewModel::onSubmitClick
     )
 
@@ -74,6 +87,7 @@ private fun RestoreFromBackupContent(
     state: RestoreFromBackupViewModel.State,
     onBackClick: () -> Unit,
     onRestoringProfileCheckChanged: (Boolean) -> Unit,
+    onRestoreFromFileClick: () -> Unit,
     onSubmitClick: () -> Unit
 ) {
     BackHandler(onBack = onBackClick)
@@ -227,6 +241,14 @@ private fun RestoreFromBackupContent(
                     )
                 }
             }
+
+            RadixTextButton(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(RadixTheme.dimensions.paddingDefault),
+                text = stringResource(id = R.string.recoverProfileBackup_importFileButton_title),
+                onClick = onRestoreFromFileClick
+            )
         }
     }
 }
@@ -248,6 +270,7 @@ fun RestoreFromBackupPreviewBackupExists() {
             onRestoringProfileCheckChanged = {
                 state = state.copy(isRestoringProfileChecked = it)
             },
+            onRestoreFromFileClick = {},
             onSubmitClick = {}
         )
     }
@@ -263,6 +286,7 @@ fun RestoreFromBackupPreviewNoBackupExists() {
             ),
             onBackClick = {},
             onRestoringProfileCheckChanged = {},
+            onRestoreFromFileClick = {},
             onSubmitClick = {}
         )
     }
