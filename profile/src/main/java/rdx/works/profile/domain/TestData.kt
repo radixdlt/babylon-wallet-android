@@ -84,7 +84,8 @@ object TestData {
                                         publicKey = FactorInstance.PublicKey.curve25519PublicKey("")
                                     )
                                 )
-                            )
+                            ),
+                            onLedgerSettings = Network.Account.OnLedgerSettings.init()
                         ),
                         Network.Account(
                             address = "fj3489fj348f",
@@ -109,7 +110,8 @@ object TestData {
                                         publicKey = FactorInstance.PublicKey.curve25519PublicKey("")
                                     )
                                 )
-                            )
+                            ),
+                            onLedgerSettings = Network.Account.OnLedgerSettings.init()
                         )
                     ),
                     authorizedDapps = emptyList(),
@@ -141,7 +143,8 @@ object TestData {
                                         publicKey = FactorInstance.PublicKey.curve25519PublicKey("")
                                     )
                                 )
-                            )
+                            ),
+                            onLedgerSettings = Network.Account.OnLedgerSettings.init()
                         ),
                         Network.Account(
                             address = "fj3489fj348f",
@@ -166,7 +169,8 @@ object TestData {
                                         publicKey = FactorInstance.PublicKey.curve25519PublicKey("")
                                     )
                                 )
-                            )
+                            ),
+                            onLedgerSettings = Network.Account.OnLedgerSettings.init()
                         )
                     ),
                     authorizedDapps = emptyList(),

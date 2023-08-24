@@ -110,7 +110,8 @@ internal class MigrateOlympiaAccountsUseCaseTest {
                                         publicKey = FactorInstance.PublicKey.curveSecp256k1PublicKey("")
                                     )
                                 )
-                            )
+                            ),
+                            onLedgerSettings = Network.Account.OnLedgerSettings.init()
                         )
                     ),
                     authorizedDapps = emptyList(),
