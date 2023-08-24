@@ -2,6 +2,7 @@
 
 package rdx.works.core.encryption
 
+import kotlinx.serialization.EncodeDefault
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -12,7 +13,7 @@ import javax.crypto.SecretKey
 
 @Serializable
 @JsonClassDiscriminator("version")
-sealed interface EncryptionScheme: VersionedAlgorithm {
+sealed interface EncryptionScheme {
 
     fun encrypt(data: ByteArray, key: SecretKey): ByteArray
     fun decrypt(data: ByteArray, key: SecretKey): ByteArray
@@ -20,8 +21,8 @@ sealed interface EncryptionScheme: VersionedAlgorithm {
     @Serializable
     @SerialName("1")
     class Version1: EncryptionScheme {
-        override val version: Int = 1
-        override val description: String = "AESGCM-256"
+        @EncodeDefault
+        val description: String = "AESGCM-256"
 
         override fun encrypt(data: ByteArray, key: SecretKey): ByteArray = data.encrypt(secretKey = key)
 

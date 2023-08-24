@@ -1,5 +1,6 @@
 package rdx.works.profile
 
+import kotlinx.serialization.encodeToString
 import org.junit.Assert.assertEquals
 import org.junit.Ignore
 import org.junit.Test
@@ -53,7 +54,12 @@ class EncryptedProfileTest {
 
 
         val encryptedSnapshot = EncryptedProfileSnapshot.from(serializer, profile.snapshot(), "super secret")
-        val decryptedProfile = encryptedSnapshot.decrypt(serializer, "super secret").toProfile()
+        val encryptedSnapshotSerialized = serializer.encodeToString(encryptedSnapshot)
+
+        val decryptedProfile = serializer
+            .decodeFromString<EncryptedProfileSnapshot>(encryptedSnapshotSerialized)
+            .decrypt(serializer, "super secret")
+            .toProfile()
 
         assertEquals(profile, decryptedProfile)
     }

@@ -102,9 +102,13 @@ class BackupViewModel @Inject constructor(
         }
 
         exportProfileUseCase(exportType = exportType, file = uri).onSuccess {
-            _state.update { it.copy(uiMessage = UiMessage.InfoMessage.WalletExported) }
+            _state.update {
+                it.copy(uiMessage = UiMessage.InfoMessage.WalletExported, encryptSheet = State.EncryptSheet.Closed)
+            }
         }.onFailure { error ->
-            _state.update { it.copy(uiMessage = UiMessage.ErrorMessage.from(error)) }
+            _state.update {
+                it.copy(uiMessage = UiMessage.ErrorMessage.from(error), encryptSheet = State.EncryptSheet.Closed)
+            }
         }
     }
 

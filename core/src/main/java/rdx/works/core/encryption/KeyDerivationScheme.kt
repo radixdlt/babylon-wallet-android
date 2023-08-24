@@ -2,6 +2,7 @@
 
 package rdx.works.core.encryption
 
+import kotlinx.serialization.EncodeDefault
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -14,15 +15,15 @@ import javax.crypto.spec.SecretKeySpec
 
 @Serializable
 @JsonClassDiscriminator("version")
-sealed interface KeyDerivationScheme : VersionedAlgorithm {
+sealed interface KeyDerivationScheme {
 
     fun derive(password: String): SecretKey
 
     @Serializable
     @SerialName("1")
     class Version1 : KeyDerivationScheme {
-        override val version: Int = 1
-        override val description: String = "HKDFSHA256-with-UTF8-encoding-of-password-no-salt-no-info"
+        @EncodeDefault
+        val description: String = "HKDFSHA256-with-UTF8-encoding-of-password-no-salt-no-info"
 
         override fun derive(password: String): SecretKey {
             val generator = HKDFBytesGenerator(SHA256Digest()).apply {
