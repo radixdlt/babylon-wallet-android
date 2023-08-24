@@ -14,7 +14,6 @@ import org.junit.Rule
 import org.junit.Test
 import org.mockito.Mockito
 import rdx.works.profile.domain.backup.DiscardRestoredProfileFromBackupUseCase
-import rdx.works.profile.domain.backup.IsProfileFromBackupExistsUseCase
 import rdx.works.profile.domain.backup.RestoreProfileFromBackupUseCase
 
 @ExperimentalCoroutinesApi
@@ -24,7 +23,6 @@ class OnboardingViewModelTest {
     val coroutineRule = TestDispatcherRule()
 
     //private val deviceSecurityHelper = Mockito.mock(DeviceSecurityHelper::class.java)
-    private val isProfileFromBackupExistsUseCase = Mockito.mock(IsProfileFromBackupExistsUseCase::class.java)
     private val restoreProfileFromBackupUseCase = Mockito.mock(RestoreProfileFromBackupUseCase::class.java)
     private val discardRestoredProfileFromBackupUseCase = Mockito.mock(DiscardRestoredProfileFromBackupUseCase::class.java)
 
@@ -34,7 +32,6 @@ class OnboardingViewModelTest {
         val event = mutableListOf<OnboardingViewModel.OnBoardingUiState>()
         val viewModel = OnboardingViewModel(
             //deviceSecurityHelper = deviceSecurityHelper,
-            isProfileFromBackupExistsUseCase = isProfileFromBackupExistsUseCase,
             discardRestoredProfileFromBackupUseCase = discardRestoredProfileFromBackupUseCase
         )
 
@@ -55,7 +52,6 @@ class OnboardingViewModelTest {
         val event = mutableListOf<OnboardingViewModel.OnBoardingUiState>()
         val viewModel = OnboardingViewModel(
             //deviceSecurityHelper = deviceSecurityHelper,
-            isProfileFromBackupExistsUseCase = isProfileFromBackupExistsUseCase,
             discardRestoredProfileFromBackupUseCase = discardRestoredProfileFromBackupUseCase
         )
 
@@ -79,7 +75,6 @@ class OnboardingViewModelTest {
         val event = mutableListOf<OnboardingViewModel.OnBoardingUiState>()
         val viewModel = OnboardingViewModel(
             //deviceSecurityHelper = deviceSecurityHelper,
-            isProfileFromBackupExistsUseCase = isProfileFromBackupExistsUseCase,
             discardRestoredProfileFromBackupUseCase = discardRestoredProfileFromBackupUseCase
         )
 
@@ -103,7 +98,6 @@ class OnboardingViewModelTest {
         val event = mutableListOf<OnboardingViewModel.OnBoardingUiState>()
         val viewModel = OnboardingViewModel(
             //deviceSecurityHelper = deviceSecurityHelper,
-            isProfileFromBackupExistsUseCase = isProfileFromBackupExistsUseCase,
             discardRestoredProfileFromBackupUseCase = discardRestoredProfileFromBackupUseCase
         )
 

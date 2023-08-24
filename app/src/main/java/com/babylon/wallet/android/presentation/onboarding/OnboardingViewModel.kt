@@ -10,25 +10,16 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.profile.domain.backup.DiscardRestoredProfileFromBackupUseCase
-import rdx.works.profile.domain.backup.IsProfileFromBackupExistsUseCase
 import javax.inject.Inject
 
 @HiltViewModel
 class OnboardingViewModel @Inject constructor(
 //    private val deviceSecurityHelper: DeviceSecurityHelper,
-    private val isProfileFromBackupExistsUseCase: IsProfileFromBackupExistsUseCase,
     private val discardRestoredProfileFromBackupUseCase: DiscardRestoredProfileFromBackupUseCase
 ) : StateViewModel<OnboardingViewModel.OnBoardingUiState>(),
     OneOffEventHandler<OnboardingViewModel.OnBoardingEvent> by OneOffEventHandlerImpl() {
 
     override fun initialState(): OnBoardingUiState = OnBoardingUiState()
-
-    init {
-        viewModelScope.launch {
-            val profileFromBackupExists = isProfileFromBackupExistsUseCase()
-            _state.update { it.copy(profileFromBackupExists = profileFromBackupExists) }
-        }
-    }
 
     fun onProceedClick() {
         viewModelScope.launch {
@@ -66,8 +57,7 @@ class OnboardingViewModel @Inject constructor(
         val currentPagerPage: Int = 0,
         val showButtons: Boolean = false,
         val authenticateWithBiometric: Boolean = false,
-        val showWarning: Boolean = false,
-        val profileFromBackupExists: Boolean = false
+        val showWarning: Boolean = false
     ) : UiState
 
     sealed interface OnBoardingEvent : OneOffEvent {
