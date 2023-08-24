@@ -317,6 +317,19 @@ fun NetworkFeesDefaultView(
     modifier: Modifier = Modifier,
     transactionFees: TransactionFees?
 ) {
+    Text(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(
+                start = RadixTheme.dimensions.paddingLarge,
+                end = RadixTheme.dimensions.paddingLarge,
+                bottom = RadixTheme.dimensions.paddingDefault
+            ),
+        text = stringResource(id = R.string.transactionReview_customizeNetworkFeeSheet_feeBreakdownTitle).uppercase(),
+        style = RadixTheme.typography.body1Link,
+        color = RadixTheme.colors.gray2
+    )
+
     Column(
         modifier = modifier
             .background(RadixTheme.colors.gray5)
@@ -654,6 +667,25 @@ fun NetworkFeesAdvancedView(
                     } else {
                         RadixTheme.colors.gray1
                     }
+                )
+            }
+
+            Row(
+                modifier = Modifier
+                    .padding(vertical = RadixTheme.dimensions.paddingSmall)
+            ) {
+                Text(
+                    modifier = Modifier,
+                    text = "Paid by dApps".uppercase(),
+                    style = RadixTheme.typography.body1Link,
+                    color = RadixTheme.colors.gray2
+                )
+                Spacer(modifier = Modifier.weight(1f))
+
+                Text(
+                    text = transactionFees?.paidByDApps.orEmpty(),
+                    style = RadixTheme.typography.body1Header,
+                    color = RadixTheme.colors.gray1
                 )
             }
 

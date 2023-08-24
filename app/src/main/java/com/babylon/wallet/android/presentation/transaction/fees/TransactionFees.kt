@@ -8,6 +8,7 @@ import java.math.RoundingMode
 data class TransactionFees(
     private val nonContingentFeeLock: BigDecimal = BigDecimal.ZERO,
     private val networkExecution: BigDecimal = BigDecimal.ZERO,
+    private val walletAddedFee: BigDecimal = BigDecimal.ZERO,// TODO This will be updated later on
     private val networkFinalization: BigDecimal = BigDecimal.ZERO,
     private val networkStorage: BigDecimal = BigDecimal.ZERO,
     private val royalties: BigDecimal = BigDecimal.ZERO,
@@ -17,10 +18,15 @@ data class TransactionFees(
 ) {
     // ********* DEFAULT *********
     private val networkFee: BigDecimal
-        get() = networkExecution
+        get() = networkExecutionFee
             .add(networkFinalization)
             .add(networkStorage)
 
+    /**
+     * Wallet added fee should be added to Execution cost
+     */
+    private val networkExecutionFee: BigDecimal
+        get() = networkExecution.add(walletAddedFee)
     /**
      * Network Fee displayed = Network Fee - Non-contingent lock or null if negative or 0 fee applicable
      */
@@ -58,7 +64,7 @@ data class TransactionFees(
     // ********* ADVANCED *********
 
     val networkExecutionCost: String
-        get() = networkExecution.displayableQuantity()
+        get() = networkExecutionFee.displayableQuantity()
 
     val networkFinalizationCost: String
         get() = networkFinalization.displayableQuantity()
@@ -73,6 +79,12 @@ data class TransactionFees(
         get() = royaltiesCost == "0"
 
     /**
+     * This is negative amount (if greater than zero) representation of nonContingentLock for Paid by dApps section
+     */
+    val paidByDApps: String
+        get() = nonContingentFeeLock.negate()?.displayableQuantity().orEmpty()
+
+    /**
      * (tip % entered by the user) x (NETWORK EXECUTION + NETWORK FINALIZATION)
      */
     @Suppress("MagicNumber")
@@ -80,8 +92,10 @@ data class TransactionFees(
         get() = tipPercentage?.divide(
             BigDecimal(100)
         )?.multiply(
-            networkExecution.add(
-                networkFinalization
+            networkExecutionFee.add(
+                networkFinalization.add(
+                    networkStorage
+                )
             )
         ) ?: BigDecimal.ZERO
 
@@ -89,19 +103,22 @@ data class TransactionFees(
      * Finalized fee to lock for the transaction
      **/
     val transactionFeeToLock: BigDecimal
-        get() = networkExecution
+        get() = networkExecutionFee
             .add(networkFinalization)
             .add(effectiveTip)
             .add(networkStorage)
             .add(feePaddingAmountForCalculation)
             .add(royalties)
+            .subtract(nonContingentFeeLock)
 
     /**
      * default should be the XRD amount corresponding to 15% of (EXECUTION + FINALIZATION
      */
     private val defaultPadding: BigDecimal = PERCENT_15
         .multiply(
-            networkExecution.add(networkFinalization)
+            networkExecutionFee.add(
+                networkFinalization.add(networkStorage)
+            )
         )
 
     @Suppress("MagicNumber")
