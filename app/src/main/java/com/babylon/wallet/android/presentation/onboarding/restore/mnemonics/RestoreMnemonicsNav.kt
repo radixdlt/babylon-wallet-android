@@ -1,5 +1,6 @@
 package com.babylon.wallet.android.presentation.onboarding.restore.mnemonics
 
+import androidx.compose.animation.AnimatedContentScope
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.SavedStateHandle
@@ -50,7 +51,13 @@ fun NavGraphBuilder.restoreMnemonicsScreen(
                 nullable = true
                 type = NavType.StringType
             }
-        )
+        ),
+        enterTransition = {
+            slideIntoContainer(AnimatedContentScope.SlideDirection.Up)
+        },
+        exitTransition = {
+            slideOutOfContainer(AnimatedContentScope.SlideDirection.Down)
+        }
     ) {
         RestoreMnemonicsScreen(
             viewModel = hiltViewModel(),
