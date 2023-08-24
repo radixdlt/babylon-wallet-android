@@ -70,11 +70,11 @@ enum class ResourceBehaviour(
         icon = com.babylon.wallet.android.designsystem.R.drawable.ic_change_recall
     ),
     PERFORM_FREEZE(
-        title = R.string.accountSettings_behaviors_canFreezeInFuture,
+        title = R.string.assetDetails_behaviors_canFreezeInFuture,
         icon = com.babylon.wallet.android.designsystem.R.drawable.ic_perform_recall
     ),
     CHANGE_FREEZE(
-        title = R.string.accountSettings_behaviors_canBeFrozeInFutureByAnyone,
+        title = R.string.assetDetails_behaviors_canBeFrozeInFutureByAnyone,
         icon = com.babylon.wallet.android.designsystem.R.drawable.ic_change_recall
     ),
 
