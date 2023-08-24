@@ -21,7 +21,7 @@ fun SwitchSettingsItem(
     checked: Boolean,
     onCheckedChange: (Boolean) -> Unit,
     modifier: Modifier = Modifier,
-    @DrawableRes icon: Int? = null,
+    icon: @Composable (() -> Unit)? = null,
     @StringRes subtitleRes: Int? = null,
 ) {
     Row(
@@ -29,13 +29,11 @@ fun SwitchSettingsItem(
         verticalAlignment = CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingMedium)
     ) {
-        icon?.let {
-            Icon(painter = painterResource(id = it), contentDescription = null)
-        }
+        icon?.invoke()
         Column(Modifier.weight(1f)) {
             Text(
                 text = stringResource(id = titleRes),
-                style = RadixTheme.typography.body2Header,
+                style = RadixTheme.typography.body1HighImportance,
                 color = RadixTheme.colors.gray1
             )
             subtitleRes?.let {
@@ -49,4 +47,25 @@ fun SwitchSettingsItem(
 
         RadixSwitch(checked = checked, onCheckedChange = onCheckedChange)
     }
+}
+
+@Composable
+fun SwitchSettingsItem(
+    @StringRes titleRes: Int,
+    checked: Boolean,
+    onCheckedChange: (Boolean) -> Unit,
+    modifier: Modifier = Modifier,
+    @DrawableRes iconResource: Int? = null,
+    @StringRes subtitleRes: Int? = null,
+) {
+    SwitchSettingsItem(
+        modifier = modifier,
+        titleRes = titleRes,
+        checked = checked,
+        onCheckedChange = onCheckedChange,
+        icon = iconResource?.let {
+            { Icon(painter = painterResource(id = iconResource), contentDescription = null) }
+        },
+        subtitleRes = subtitleRes
+    )
 }

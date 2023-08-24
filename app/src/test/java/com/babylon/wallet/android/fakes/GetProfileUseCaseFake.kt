@@ -47,7 +47,7 @@ private fun fakeProfileDataSource(initialProfileState: ProfileState) = object : 
         return false
     }
 
-    override suspend fun getRestoredProfileFromBackup(): Profile? {
+    override suspend fun getRestoringProfileFromBackup(): Profile? {
         // Not needed
         return null
     }

@@ -5,6 +5,7 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import rdx.works.profile.data.model.Header.Companion.equals
 import rdx.works.profile.data.model.Profile.Companion.equals
+import rdx.works.profile.data.model.ProfileSnapshot.Companion.MINIMUM
 import rdx.works.profile.data.model.serialisers.InstantSerializer
 import java.time.Instant
 
@@ -49,6 +50,9 @@ data class Header(
      */
     val creationDate: Instant
         get() = creatingDevice.date
+
+    val isCompatible: Boolean
+        get() = snapshotVersion >= MINIMUM
 
     companion object {
         private const val GENERIC_ANDROID_DEVICE_PLACEHOLDER = "Android Phone"

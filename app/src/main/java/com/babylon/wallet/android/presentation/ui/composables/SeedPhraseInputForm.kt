@@ -45,12 +45,12 @@ import kotlinx.collections.immutable.ImmutableList
 
 @Composable
 fun SeedPhraseInputForm(
+    modifier: Modifier = Modifier,
     seedPhraseWords: ImmutableList<SeedPhraseWord>,
     onWordChanged: (Int, String) -> Unit,
     onPassphraseChanged: (String) -> Unit,
     bip39Passphrase: String,
-    onFocusedWordIndexChanged: (Int) -> Unit,
-    modifier: Modifier = Modifier
+    onFocusedWordIndexChanged: (Int) -> Unit
 ) {
     val focusManager = LocalFocusManager.current
     Column(
@@ -94,6 +94,7 @@ fun SeedPhraseInputForm(
 
             )
         }
+
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingMedium))
         RadixTextButton(
             modifier = Modifier.fillMaxWidth(),
@@ -183,7 +184,14 @@ private fun SeedPhraseWordInput(
             }
         },
         keyboardActions = KeyboardActions(onNext = { focusManager.moveFocus(FocusDirection.Next) }),
-        keyboardOptions = KeyboardOptions(imeAction = if (word.lastWord) ImeAction.Done else ImeAction.Next),
+        keyboardOptions = KeyboardOptions(
+            imeAction =
+            if (word.lastWord) {
+                ImeAction.Done
+            } else {
+                ImeAction.Next
+            }
+        ),
         error = if (word.state == SeedPhraseWord.State.Invalid) stringResource(id = R.string.common_invalid) else null,
         onFocusChanged = onFocusChanged,
         errorFixedSize = true,

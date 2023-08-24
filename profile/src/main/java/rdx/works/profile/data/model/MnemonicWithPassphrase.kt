@@ -29,6 +29,15 @@ data class MnemonicWithPassphrase(
     }
 }
 
+@Suppress("MagicNumber")
+enum class SeedPhraseLength(val words: Int) {
+    TWELVE(12),
+    FIFTEEN(15),
+    EIGHTEEN(18),
+    TWENTY_ONE(21),
+    TWENTY_FOUR(24)
+}
+
 /**
  * Generates a mnemonic based on the [WORDLIST_ENGLISH]. Used only when no mnemonic
  * exists.

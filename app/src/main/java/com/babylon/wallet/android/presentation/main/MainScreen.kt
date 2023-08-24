@@ -19,6 +19,7 @@ fun MainScreen(
     onMenuClick: () -> Unit,
     onAccountClick: (Network.Account) -> Unit = { },
     onNavigateToMnemonicBackup: (FactorSourceID.FromHash) -> Unit,
+    onNavigateToMnemonicRestore: (FactorSourceID.FromHash) -> Unit,
     onAccountCreationClick: () -> Unit,
     onNavigateToCreateAccount: () -> Unit,
     onNavigateToOnBoarding: () -> Unit,
@@ -34,6 +35,7 @@ fun MainScreen(
                 onAccountClick = onAccountClick,
                 onAccountCreationClick = onAccountCreationClick,
                 onNavigateToMnemonicBackup = onNavigateToMnemonicBackup,
+                onNavigateToMnemonicRestore = onNavigateToMnemonicRestore
             )
         }
         is AppState.IncompatibleProfile -> {

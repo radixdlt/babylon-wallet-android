@@ -14,10 +14,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.designsystem.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.Red1
+import com.babylon.wallet.android.domain.usecases.SecurityPromptType
 import com.babylon.wallet.android.presentation.ui.modifier.applyIf
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 
@@ -52,10 +54,15 @@ fun ApplySecuritySettingsLabel(
         Text(
             text = text,
             style = RadixTheme.typography.body2HighImportance,
-            maxLines = 1,
             modifier = Modifier.weight(1f),
             color = contentColor
         )
         Badge(backgroundColor = Red1)
     }
+}
+
+@Composable
+fun SecurityPromptType.toText() = when (this) {
+    SecurityPromptType.NEEDS_BACKUP -> stringResource(id = com.babylon.wallet.android.R.string.homePage_securityPromptBackup)
+    SecurityPromptType.NEEDS_RESTORE -> stringResource(id = com.babylon.wallet.android.R.string.homePage_securityPromptRecover)
 }

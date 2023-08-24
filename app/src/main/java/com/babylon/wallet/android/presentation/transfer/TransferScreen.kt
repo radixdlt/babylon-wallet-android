@@ -31,7 +31,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalFocusManager
@@ -44,7 +43,6 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
 import com.babylon.wallet.android.designsystem.composable.RadixTextButton
-import com.babylon.wallet.android.designsystem.theme.AccountGradientList
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.SampleDataProvider
@@ -262,18 +260,7 @@ fun TransferContent(
                         )
 
                         SimpleAccountCard(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .background(
-                                    Brush.horizontalGradient(
-                                        AccountGradientList[account.appearanceID % AccountGradientList.size]
-                                    ),
-                                    RadixTheme.shapes.roundedRectSmall
-                                )
-                                .padding(
-                                    horizontal = RadixTheme.dimensions.paddingLarge,
-                                    vertical = RadixTheme.dimensions.paddingDefault
-                                ),
+                            modifier = Modifier.fillMaxWidth(),
                             account = account
                         )
                     }

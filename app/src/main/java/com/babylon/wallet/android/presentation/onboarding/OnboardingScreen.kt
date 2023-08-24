@@ -54,7 +54,8 @@ fun OnboardingScreen(
     viewModel: OnboardingViewModel,
     modifier: Modifier = Modifier,
     onOnBoardingEnd: () -> Unit,
-    onBack: () -> Unit
+    onBack: () -> Unit,
+    onRestoreFromBackupClick: () -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
 
@@ -63,7 +64,7 @@ fun OnboardingScreen(
     OnboardingScreenContent(
         currentPage = state.currentPagerPage,
         onProceedClick = viewModel::onProceedClick,
-        onRestoreWalletClick = viewModel::onRestoreProfileFromBackupClicked,
+        onRestoreWalletClick = onRestoreFromBackupClick,
 //        showWarning = state.showWarning,
 //        authenticateWithBiometric = state.authenticateWithBiometric,
 //        onUserAuthenticated = viewModel::onUserAuthenticated,

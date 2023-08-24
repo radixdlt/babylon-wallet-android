@@ -20,7 +20,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -31,9 +30,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
-import com.babylon.wallet.android.designsystem.theme.getAccountGradientColorsFor
 import com.babylon.wallet.android.domain.SampleDataProvider
-import com.babylon.wallet.android.presentation.ui.composables.ApplySecuritySettingsLabel
 import com.babylon.wallet.android.presentation.ui.composables.BackIconType
 import com.babylon.wallet.android.presentation.ui.composables.GrayBackgroundWrapper
 import com.babylon.wallet.android.presentation.ui.composables.InfoLink
@@ -42,12 +39,9 @@ import com.babylon.wallet.android.presentation.ui.composables.RedWarningText
 import com.babylon.wallet.android.presentation.ui.composables.SimpleAccountCard
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import com.babylon.wallet.android.utils.biometricAuthenticate
-import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.persistentListOf
 import rdx.works.profile.data.model.factorsources.FactorSource
-import rdx.works.profile.data.model.factorsources.FactorSourceKind
-import rdx.works.profile.data.model.pernetwork.Network
 
 @Composable
 fun SeedPhrasesScreen(
@@ -81,11 +75,7 @@ fun SeedPhrasesScreen(
                 }
 
                 is SeedPhrasesViewModel.Effect.OnRequestToRecoverMnemonic -> {
-                    context.biometricAuthenticate { authenticated ->
-                        if (authenticated) {
-                            onNavigateToRecoverMnemonic(it.factorSourceID)
-                        }
-                    }
+                    onNavigateToRecoverMnemonic(it.factorSourceID)
                 }
             }
         }
@@ -140,8 +130,7 @@ private fun SeedPhraseContent(
                         }
                         .padding(horizontal = RadixTheme.dimensions.paddingDefault, vertical = RadixTheme.dimensions.paddingMedium)
                         .fillMaxWidth(),
-                    accounts = deviceFactorSourceItem.accounts,
-                    mnemonicState = deviceFactorSourceItem.mnemonicState
+                    data = deviceFactorSourceItem
                 )
                 if (index != deviceFactorSourceData.size - 1) {
                     Divider(
@@ -157,8 +146,7 @@ private fun SeedPhraseContent(
 @Composable
 private fun SeedPhraseCard(
     modifier: Modifier,
-    accounts: ImmutableList<Network.Account>,
-    mnemonicState: DeviceFactorSourceData.MnemonicState
+    data: DeviceFactorSourceData
 ) {
     Column(
         modifier = modifier,
@@ -185,12 +173,20 @@ private fun SeedPhraseCard(
                 )
                 Text(
                     text = stringResource(
-                        id = if (accounts.size == 1) {
-                            R.string.displayMnemonics_connectedAccountsLabel_one
+                        id = if (data.deviceFactorSource.isBabylon) {
+                            if (data.accounts.size == 1) {
+                                R.string.displayMnemonics_connectedAccountsPersonasLabel_one
+                            } else {
+                                R.string.displayMnemonics_connectedAccountsPersonasLabel_many
+                            }
                         } else {
-                            R.string.displayMnemonics_connectedAccountsLabel_many
+                            if (data.accounts.size == 1) {
+                                R.string.displayMnemonics_connectedAccountsLabel_one
+                            } else {
+                                R.string.displayMnemonics_connectedAccountsLabel_many
+                            }
                         },
-                        accounts.size
+                        data.accounts.size
                     ),
                     style = RadixTheme.typography.body2Regular,
                     color = RadixTheme.colors.gray2,
@@ -206,36 +202,21 @@ private fun SeedPhraseCard(
                 tint = RadixTheme.colors.gray1
             )
         }
-        when (mnemonicState) {
+        when (data.mnemonicState) {
             DeviceFactorSourceData.MnemonicState.NotBackedUp -> {
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXSmall))
-                RedWarningText(text = AnnotatedString("Please backup this seed phrase")) // TODO crowdin
+                RedWarningText(text = AnnotatedString(stringResource(id = R.string.homePage_securityPromptBackup)))
             }
             DeviceFactorSourceData.MnemonicState.NeedRecover -> {
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXSmall))
-                ApplySecuritySettingsLabel(
-                    modifier = Modifier.fillMaxWidth(),
-                    onClick = null,
-                    text = stringResource(id = R.string.homePage_applySecuritySettings),
-                    labelColor = RadixTheme.colors.gray4.copy(alpha = 0.6f),
-                    contentColor = RadixTheme.colors.gray1
-                )
+                RedWarningText(text = AnnotatedString(stringResource(id = R.string.homePage_securityPromptRecover)))
             }
             else -> {}
         }
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXSmall))
-        accounts.forEachIndexed { index, account ->
+        data.accounts.forEachIndexed { index, account ->
             SimpleAccountCard(
-                Modifier
-                    .fillMaxWidth()
-                    .background(
-                        Brush.horizontalGradient(getAccountGradientColorsFor(account.appearanceID)),
-                        RadixTheme.shapes.roundedRectSmall
-                    )
-                    .padding(
-                        horizontal = RadixTheme.dimensions.paddingLarge,
-                        vertical = RadixTheme.dimensions.paddingDefault
-                    ),
+                modifier = Modifier.fillMaxWidth(),
                 account = account
             )
         }
@@ -250,22 +231,16 @@ fun AccountPreferencePreview() {
             onBackClick = {},
             deviceFactorSourceData = persistentListOf(
                 DeviceFactorSourceData(
-                    FactorSource.FactorSourceID.FromHash(
-                        kind = FactorSourceKind.DEVICE,
-                        body = FactorSource.HexCoded32Bytes("5f07ec336e9e7891bff04004c817201e73c097b6b1e1b3a26bc205e0010196f5")
-                    ),
-                    persistentListOf(
+                    deviceFactorSource = SampleDataProvider().babylonDeviceFactorSource(),
+                    accounts = persistentListOf(
                         SampleDataProvider().sampleAccount(),
                         SampleDataProvider().sampleAccount(),
                         SampleDataProvider().sampleAccount()
                     )
                 ),
                 DeviceFactorSourceData(
-                    FactorSource.FactorSourceID.FromHash(
-                        kind = FactorSourceKind.DEVICE,
-                        body = FactorSource.HexCoded32Bytes("5f07ec336e9e7891bff04004c817201e73c097b6b1e1b3a26bc501e0010196f5")
-                    ),
-                    persistentListOf(SampleDataProvider().sampleAccount())
+                    deviceFactorSource = SampleDataProvider().olympiaDeviceFactorSource(),
+                    accounts = persistentListOf(SampleDataProvider().sampleAccount())
                 )
             ),
             onSeedPhraseClick = {}

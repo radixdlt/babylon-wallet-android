@@ -9,6 +9,9 @@ import com.babylon.wallet.android.domain.model.Resource
 import com.babylon.wallet.android.domain.model.ValidatorDetail
 import com.babylon.wallet.android.domain.usecases.GetAccountsForSecurityPromptUseCase
 import com.babylon.wallet.android.domain.usecases.GetAccountsWithResourcesUseCase
+import com.babylon.wallet.android.domain.usecases.SecurityPromptType
+import com.babylon.wallet.android.presentation.account.AccountEvent.NavigateToMnemonicBackup
+import com.babylon.wallet.android.presentation.account.AccountEvent.NavigateToMnemonicRestore
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
@@ -54,30 +57,32 @@ class AccountViewModel @Inject constructor(
 
         viewModelScope.launch {
             appEventBus.events.filter { event ->
-                event is AppEvent.GotFreeXrd || event is AppEvent.Status.Transaction.Success
+                event is AppEvent.GotFreeXrd || event is AppEvent.Status.Transaction.Success || event is AppEvent.RestoredMnemonic
             }.collect {
-                refresh()
+                refresh(fetchNewData = it !is AppEvent.RestoredMnemonic)
             }
         }
 
-        observeBackedUpMnemonics()
+        observeSecurityPrompt()
     }
 
-    private fun observeBackedUpMnemonics() {
+    private fun observeSecurityPrompt() {
         viewModelScope.launch {
             getAccountsForSecurityPromptUseCase().collect { accounts ->
+                val securityPrompt = accounts.find { it.account.address == accountId }?.prompt
+
                 _state.update { state ->
-                    state.copy(usesNotBackedUpMnemonic = accounts.any { it.address == accountId })
+                    state.copy(securityPromptType = securityPrompt)
                 }
             }
         }
     }
 
-    fun refresh() {
+    fun refresh(fetchNewData: Boolean = true) {
         _state.update { state ->
-            state.copy(refreshing = true)
+            state.copy(refreshing = fetchNewData)
         }
-        loadAccountData(isRefreshing = true)
+        loadAccountData(isRefreshing = fetchNewData)
     }
 
     private fun loadAccountData(isRefreshing: Boolean) {
@@ -138,15 +143,15 @@ class AccountViewModel @Inject constructor(
         }
     }
 
-    fun onApplySecuritySettings() {
+    fun onApplySecuritySettings(securityPromptType: SecurityPromptType) {
         viewModelScope.launch {
-            _state.value.accountWithResources
-                ?.account
-                ?.factorSourceId()
-                ?.let {
-                    it as FactorSourceID.FromHash
-                    sendEvent(AccountEvent.NavigateToMnemonicBackup(it))
-                }
+            val factorSourceId = _state.value.accountWithResources?.account
+                ?.factorSourceId() as? FactorSourceID.FromHash ?: return@launch
+
+            when (securityPromptType) {
+                SecurityPromptType.NEEDS_BACKUP -> sendEvent(NavigateToMnemonicBackup(factorSourceId))
+                SecurityPromptType.NEEDS_RESTORE -> sendEvent(NavigateToMnemonicRestore(factorSourceId))
+            }
         }
     }
 
@@ -157,22 +162,27 @@ class AccountViewModel @Inject constructor(
 
 internal sealed interface AccountEvent : OneOffEvent {
     data class NavigateToMnemonicBackup(val factorSourceId: FactorSourceID.FromHash) : AccountEvent
+    data class NavigateToMnemonicRestore(val factorSourceId: FactorSourceID.FromHash) : AccountEvent
 }
 
 data class AccountUiState(
     val accountWithResources: AccountWithResources? = null,
-    private val usesNotBackedUpMnemonic: Boolean = false,
+    private val securityPromptType: SecurityPromptType? = null,
     val isLoading: Boolean = true,
     private val refreshing: Boolean = false,
     val selectedResource: SelectedResource? = null,
     val uiMessage: UiMessage? = null,
 ) : UiState {
 
-    val isSecurityPromptVisible: Boolean
-        get() {
-            val resources = accountWithResources?.resources ?: return false
-
-            return usesNotBackedUpMnemonic && resources.hasXrd() && !isLoading
+    val visiblePrompt: SecurityPromptType?
+        get() = when (securityPromptType) {
+            SecurityPromptType.NEEDS_RESTORE -> securityPromptType
+            SecurityPromptType.NEEDS_BACKUP -> if (accountWithResources?.resources?.hasXrd() == true && !isLoading) {
+                SecurityPromptType.NEEDS_BACKUP
+            } else {
+                null
+            }
+            else -> null
         }
 
     val isRefreshing: Boolean

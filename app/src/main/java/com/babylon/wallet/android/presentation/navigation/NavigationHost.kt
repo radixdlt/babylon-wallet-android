@@ -29,7 +29,9 @@ import com.babylon.wallet.android.presentation.main.MainUiState
 import com.babylon.wallet.android.presentation.main.main
 import com.babylon.wallet.android.presentation.navigation.Screen.Companion.ARG_ACCOUNT_ID
 import com.babylon.wallet.android.presentation.onboarding.OnboardingScreen
-import com.babylon.wallet.android.presentation.settings.backup.restoreMnemonicScreen
+import com.babylon.wallet.android.presentation.onboarding.restore.backup.restoreFromBackupScreen
+import com.babylon.wallet.android.presentation.onboarding.restore.mnemonics.restoreMnemonics
+import com.babylon.wallet.android.presentation.onboarding.restore.mnemonics.restoreMnemonicsScreen
 import com.babylon.wallet.android.presentation.settings.incompatibleprofile.IncompatibleProfileContent
 import com.babylon.wallet.android.presentation.settings.incompatibleprofile.ROUTE_INCOMPATIBLE_PROFILE
 import com.babylon.wallet.android.presentation.settings.personadetail.personaDetailScreen
@@ -67,9 +69,29 @@ fun NavigationHost(
                 onOnBoardingEnd = {
                     navController.popBackStack(MAIN_ROUTE, inclusive = false)
                 },
-                onBack = onCloseApp
+                onBack = onCloseApp,
+                onRestoreFromBackupClick = {
+                    navController.restoreFromBackupScreen()
+                }
             )
         }
+        restoreFromBackupScreen(
+            onBack = {
+                navController.popBackStack()
+            },
+            onRestoreConfirmed = {
+                navController.restoreMnemonics()
+            }
+        )
+        restoreMnemonicsScreen(
+            onFinish = { isMovingToMain ->
+                if (isMovingToMain) {
+                    navController.popBackStack(MAIN_ROUTE, inclusive = false)
+                } else {
+                    navController.popBackStack()
+                }
+            }
+        )
         main(
             mainUiState = mainUiState,
             onMenuClick = {
@@ -94,7 +116,10 @@ fun NavigationHost(
             },
             onNavigateToMnemonicBackup = {
                 navController.seedPhrases()
-            }
+            },
+            onNavigateToMnemonicRestore = {
+                navController.restoreMnemonics(deviceFactorSourceId = it)
+            },
         )
         composable(
             route = Screen.AccountDestination.route + "/{$ARG_ACCOUNT_ID}",
@@ -112,6 +137,9 @@ fun NavigationHost(
                 },
                 onNavigateToMnemonicBackup = {
                     navController.seedPhrases()
+                },
+                onNavigateToMnemonicRestore = { factorSourceId ->
+                    navController.restoreMnemonics(deviceFactorSourceId = factorSourceId)
                 },
                 onTransferClick = { accountId ->
                     navController.transfer(accountId = accountId)
@@ -149,9 +177,6 @@ fun NavigationHost(
             onFinishAccountCreation = {
                 navController.popBackStack(ROUTE_CREATE_ACCOUNT, inclusive = true)
             }
-        )
-        restoreMnemonicScreen(
-            onBackClick = { navController.navigateUp() }
         )
         createPersonaScreen(
             onBackClick = { navController.navigateUp() },

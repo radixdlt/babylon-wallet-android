@@ -25,7 +25,7 @@ class SeedPhraseInputDelegate(
                 seedPhraseWords = (0 until size).map {
                     SeedPhraseWord(
                         it,
-                        lastWord = it == size
+                        lastWord = it == size - 1
                     )
                 }.toPersistentList()
             )
@@ -91,7 +91,9 @@ class SeedPhraseInputDelegate(
                 _state.update {
                     it.copy(wordAutocompleteCandidates = persistentListOf())
                 }
-                onMoveToNextWord()
+                if (index != _state.value.seedPhraseWords.lastIndex) {
+                    onMoveToNextWord()
+                }
             }
         }
     }
@@ -101,6 +103,10 @@ class SeedPhraseInputDelegate(
             state.copy(bip39Passphrase = value)
         }
         validateMnemonic()
+    }
+
+    fun reset() {
+        _state.update { State() }
     }
 
     private fun validateMnemonic() {
@@ -121,11 +127,15 @@ class SeedPhraseInputDelegate(
     }
 
     data class State(
-        val seedPhraseValid: Boolean = true,
+        val seedPhraseValid: Boolean = false,
         val bip39Passphrase: String = "",
         val seedPhraseWords: ImmutableList<SeedPhraseWord> = persistentListOf(),
         val wordAutocompleteCandidates: ImmutableList<String> = persistentListOf()
-    ) : UiState
+    ) : UiState {
+
+        val wordsPhrase: String
+            get() = seedPhraseWords.joinToString(separator = " ") { it.value }
+    }
 
     override fun initialState(): State {
         return State()
