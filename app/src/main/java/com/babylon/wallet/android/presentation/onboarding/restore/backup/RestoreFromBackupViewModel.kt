@@ -37,7 +37,7 @@ class RestoreFromBackupViewModel @Inject constructor(
         sendEvent(Event.OnDismiss)
     }
 
-    fun onSubmit() = viewModelScope.launch {
+    fun onSubmitClick() = viewModelScope.launch {
         if (state.value.isRestoringProfileChecked) {
             sendEvent(Event.OnRestoreConfirm)
         }

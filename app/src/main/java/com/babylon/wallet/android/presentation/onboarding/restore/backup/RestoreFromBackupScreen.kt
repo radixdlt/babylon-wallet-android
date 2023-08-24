@@ -55,7 +55,7 @@ fun RestoreFromBackupScreen(
         state = state,
         onBackClick = viewModel::onBackClick,
         onRestoringProfileCheckChanged = viewModel::toggleRestoringProfileCheck,
-        onSubmit = viewModel::onSubmit
+        onSubmitClick = viewModel::onSubmitClick
     )
 
     LaunchedEffect(Unit) {
@@ -74,7 +74,7 @@ private fun RestoreFromBackupContent(
     state: RestoreFromBackupViewModel.State,
     onBackClick: () -> Unit,
     onRestoringProfileCheckChanged: (Boolean) -> Unit,
-    onSubmit: () -> Unit
+    onSubmitClick: () -> Unit
 ) {
     BackHandler(onBack = onBackClick)
     Scaffold(
@@ -94,7 +94,7 @@ private fun RestoreFromBackupContent(
                         .fillMaxWidth()
                         .padding(RadixTheme.dimensions.paddingDefault),
                     text = stringResource(id = R.string.common_continue),
-                    onClick = onSubmit,
+                    onClick = onSubmitClick,
                     enabled = state.isContinueEnabled
                 )
             }
@@ -248,7 +248,7 @@ fun RestoreFromBackupPreviewBackupExists() {
             onRestoringProfileCheckChanged = {
                 state = state.copy(isRestoringProfileChecked = it)
             },
-            onSubmit = {}
+            onSubmitClick = {}
         )
     }
 }
@@ -263,7 +263,7 @@ fun RestoreFromBackupPreviewNoBackupExists() {
             ),
             onBackClick = {},
             onRestoringProfileCheckChanged = {},
-            onSubmit = {}
+            onSubmitClick = {}
         )
     }
 }
