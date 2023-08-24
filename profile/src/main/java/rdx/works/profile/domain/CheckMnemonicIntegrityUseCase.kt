@@ -5,6 +5,7 @@ import rdx.works.core.KeySpec
 import rdx.works.core.KeystoreManager
 import rdx.works.core.UUIDGenerator
 import rdx.works.core.checkIfKeyWasPermanentlyInvalidated
+import rdx.works.profile.data.model.factorsources.FactorSource
 import rdx.works.profile.data.repository.MnemonicRepository
 import timber.log.Timber
 import javax.inject.Inject
@@ -29,6 +30,17 @@ class CheckMnemonicIntegrityUseCase @Inject constructor(
             keystoreManager.removeMnemonicEncryptionKey().onFailure {
                 Timber.d(it, "Failed to delete encryption key")
             }
+        }
+    }
+
+    suspend fun babylonMnemonicNeedsRecovery(): FactorSource.FactorSourceID.FromHash? {
+        val babylonFactorSource = getProfileUseCase.deviceFactorSources.firstOrNull()?.find {
+            it.isBabylon
+        } ?: return null
+        return if (!mnemonicRepository.mnemonicExist(babylonFactorSource.id)) {
+            babylonFactorSource.id
+        } else {
+            null
         }
     }
 }

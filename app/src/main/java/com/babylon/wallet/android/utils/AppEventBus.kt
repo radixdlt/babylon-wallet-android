@@ -26,6 +26,7 @@ sealed interface AppEvent {
     object AppNotSecure : AppEvent
     object GotFreeXrd : AppEvent
     object RestoredMnemonic : AppEvent
+    data class BabylonFactorSourceNeedsRecovery(val factorSourceID: FactorSource.FactorSourceID.FromHash) : AppEvent
     data class DerivedAccountPublicKeyWithLedger(
         val factorSourceID: FactorSource.FactorSourceID.FromHash,
         val derivationPath: DerivationPath,

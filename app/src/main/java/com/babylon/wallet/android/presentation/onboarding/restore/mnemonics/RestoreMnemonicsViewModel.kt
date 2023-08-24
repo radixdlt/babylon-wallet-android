@@ -54,7 +54,7 @@ class RestoreMnemonicsViewModel @Inject constructor(
                     val allAccounts = profile?.currentNetwork?.accounts.orEmpty()
                     profile?.factorSources
                         ?.filterIsInstance<DeviceFactorSource>()
-                        ?.filter { mnemonicRepository.readMnemonic(it.id) == null }
+                        ?.filter { !mnemonicRepository.mnemonicExist(it.id) }
                         ?.mapNotNull { factorSource ->
                             val associatedAccounts = allAccounts.filter { it.factorSourceId() == factorSource.id }
 
@@ -69,10 +69,11 @@ class RestoreMnemonicsViewModel @Inject constructor(
                 }
 
                 is RestoreMnemonicsArgs.RestoreSpecificMnemonic -> {
+                    _state.update { it.copy(recoverIsMandatory = args.recoverMandatory) }
                     val profile = getProfileUseCase().firstOrNull() ?: return@launch
                     val allAccounts = profile.currentNetwork.accounts
                     profile.factorSources.filterIsInstance<DeviceFactorSource>().find { factorSource ->
-                        factorSource.id.body.value == args.factorSourceIdHex && mnemonicRepository.readMnemonic(factorSource.id) == null
+                        factorSource.id.body.value == args.factorSourceIdHex && !mnemonicRepository.mnemonicExist(factorSource.id)
                     }?.let { factorSource ->
                         val associatedAccounts = allAccounts.filter { it.factorSourceId() == factorSource.id }
 
@@ -102,7 +103,13 @@ class RestoreMnemonicsViewModel @Inject constructor(
         if (!state.value.isShowingEntities) {
             _state.update { it.copy(isShowingEntities = true, isMovingForward = false) }
         } else {
-            viewModelScope.launch { sendEvent(Event.FinishRestoration(isMovingToMain = false)) }
+            viewModelScope.launch {
+                if (state.value.recoverIsMandatory) {
+                    sendEvent(Event.CloseApp)
+                } else {
+                    sendEvent(Event.FinishRestoration(isMovingToMain = false))
+                }
+            }
         }
     }
 
@@ -178,6 +185,7 @@ class RestoreMnemonicsViewModel @Inject constructor(
         val isMovingForward: Boolean = false,
         val uiMessage: UiMessage? = null,
         val isRestoring: Boolean = false,
+        val recoverIsMandatory: Boolean = false,
         val seedPhraseState: SeedPhraseInputDelegate.State = SeedPhraseInputDelegate.State()
     ) : UiState {
 
@@ -200,6 +208,7 @@ class RestoreMnemonicsViewModel @Inject constructor(
     sealed interface Event : OneOffEvent {
         data class FinishRestoration(val isMovingToMain: Boolean) : Event
         object MoveToNextWord : Event
+        object CloseApp : Event
     }
 }
 

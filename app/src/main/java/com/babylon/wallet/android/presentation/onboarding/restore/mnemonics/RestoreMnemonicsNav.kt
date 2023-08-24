@@ -12,25 +12,26 @@ import com.google.accompanist.navigation.animation.composable
 import rdx.works.profile.data.model.factorsources.FactorSource
 
 private const val ARG_FACTOR_SOURCE_ID = "factorSourceId"
-private const val ROUTE = "restore_mnemonics?factorSourceId={$ARG_FACTOR_SOURCE_ID}"
+private const val ARG_RECOVER_MANDATORY = "mandatory"
+private const val ROUTE = "restore_mnemonics?$ARG_FACTOR_SOURCE_ID={$ARG_FACTOR_SOURCE_ID}&$ARG_RECOVER_MANDATORY={$ARG_RECOVER_MANDATORY}"
 
-fun NavController.restoreMnemonics(deviceFactorSourceId: FactorSource.FactorSourceID.FromHash? = null) {
-    navigate(
-        route = deviceFactorSourceId?.let {
-            "restore_mnemonics?factorSourceId=${it.body.value}"
-        } ?: "restore_mnemonics"
-    )
+fun NavController.restoreMnemonics(deviceFactorSourceId: FactorSource.FactorSourceID.FromHash? = null, recoverMandatory: Boolean = false) {
+    var route = "restore_mnemonics"
+    route += "?$ARG_FACTOR_SOURCE_ID=${deviceFactorSourceId?.body?.value}"
+    route += "&$ARG_RECOVER_MANDATORY=$recoverMandatory"
+    navigate(route = route)
 }
 
 sealed class RestoreMnemonicsArgs {
     object RestoreProfile : RestoreMnemonicsArgs()
-    data class RestoreSpecificMnemonic(val factorSourceIdHex: String) : RestoreMnemonicsArgs()
+    data class RestoreSpecificMnemonic(val factorSourceIdHex: String, val recoverMandatory: Boolean) : RestoreMnemonicsArgs()
 
     companion object {
         fun from(savedStateHandle: SavedStateHandle): RestoreMnemonicsArgs {
             val factorSourceIdHex: String? = savedStateHandle[ARG_FACTOR_SOURCE_ID]
+            val recoverMandatory: Boolean = savedStateHandle[ARG_RECOVER_MANDATORY] ?: false
             return if (factorSourceIdHex != null) {
-                RestoreSpecificMnemonic(factorSourceIdHex)
+                RestoreSpecificMnemonic(factorSourceIdHex, recoverMandatory)
             } else {
                 RestoreProfile
             }
@@ -40,7 +41,8 @@ sealed class RestoreMnemonicsArgs {
 
 @OptIn(ExperimentalAnimationApi::class)
 fun NavGraphBuilder.restoreMnemonicsScreen(
-    onFinish: (Boolean) -> Unit
+    onFinish: (Boolean) -> Unit,
+    onCloseApp: () -> Unit
 ) {
     composable(
         route = ROUTE,
@@ -50,6 +52,12 @@ fun NavGraphBuilder.restoreMnemonicsScreen(
             ) {
                 nullable = true
                 type = NavType.StringType
+            },
+            navArgument(
+                name = ARG_RECOVER_MANDATORY,
+            ) {
+                nullable = false
+                type = NavType.BoolType
             }
         ),
         enterTransition = {
@@ -61,7 +69,8 @@ fun NavGraphBuilder.restoreMnemonicsScreen(
     ) {
         RestoreMnemonicsScreen(
             viewModel = hiltViewModel(),
-            onFinish = onFinish
+            onFinish = onFinish,
+            onCloseApp = onCloseApp
         )
     }
 }
