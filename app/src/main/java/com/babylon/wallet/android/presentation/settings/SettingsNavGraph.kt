@@ -70,7 +70,7 @@ fun NavGraphBuilder.settingsNavGraph(
         settingsGatewayEdit(navController)
         seedPhrases(
             onBackClick = { navController.popBackStack() },
-            onNavigateToRecoverMnemonic = { navController.restoreMnemonics(it) },
+            onNavigateToRecoverMnemonic = { navController.restoreMnemonics(deviceFactorSourceId = it) },
             onNavigateToSeedPhrase = { navController.revealSeedPhrase(it.body.value) }
         )
         importLegacyWalletScreen(

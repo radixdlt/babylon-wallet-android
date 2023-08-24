@@ -13,7 +13,6 @@ import rdx.works.profile.di.ProfileSerializer
 import rdx.works.profile.domain.InvalidPasswordException
 import rdx.works.profile.domain.InvalidSnapshotException
 import rdx.works.profile.domain.backup.ExportType
-import java.lang.Exception
 import javax.inject.Inject
 
 interface BackupProfileRepository {
@@ -26,9 +25,13 @@ interface BackupProfileRepository {
 
     suspend fun getSnapshotForFileBackup(exportType: ExportType): String?
 
-    suspend fun getRestoringProfileFromBackup(): Profile?
+    suspend fun getRestoringProfileFromCloudBackup(): Profile?
 
-    suspend fun discardBackedUpProfile()
+    suspend fun getRestoringProfileFromFileBackup(): Profile?
+
+    suspend fun discardCloudBackedUpProfile()
+
+    suspend fun discardFileBackedUpProfile()
 }
 
 class BackupProfileRepositoryImpl @Inject constructor(
@@ -40,7 +43,7 @@ class BackupProfileRepositoryImpl @Inject constructor(
 
     override suspend fun saveRestoringSnapshotFromCloudBackup(snapshotSerialised: String): Result<Unit> =
         if (profileRepository.deriveProfileState(snapshotSerialised) is ProfileState.Restored) {
-            encryptedPreferencesManager.putProfileSnapshotFromBackup(snapshotSerialised)
+            encryptedPreferencesManager.putProfileSnapshotFromCloudBackup(snapshotSerialised)
             preferencesManager.updateLastBackupInstant(InstantGenerator())
             Result.success(Unit)
         } else {
@@ -62,7 +65,7 @@ class BackupProfileRepositoryImpl @Inject constructor(
                 }.getOrNull()
 
                 if (snapshot != null) {
-                    encryptedPreferencesManager.putProfileSnapshotFromBackup(snapshot)
+                    encryptedPreferencesManager.putProfileSnapshotFromFileBackup(snapshot)
                     Result.success(Unit)
                 } else {
                     Result.failure(InvalidPasswordException)
@@ -71,7 +74,7 @@ class BackupProfileRepositoryImpl @Inject constructor(
         } else {
             val profileState = profileRepository.deriveProfileState(content)
             if (profileState is ProfileState.Restored) {
-                encryptedPreferencesManager.putProfileSnapshotFromBackup(content)
+                encryptedPreferencesManager.putProfileSnapshotFromFileBackup(content)
                 Result.success(Unit)
             } else {
                 val encryptedProfileSnapshot = runCatching {
@@ -114,17 +117,29 @@ class BackupProfileRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun getRestoringProfileFromBackup(): Profile? {
-        val state = encryptedPreferencesManager.getProfileSnapshotFromBackup()?.let { snapshot ->
+    override suspend fun getRestoringProfileFromCloudBackup(): Profile? {
+        val state = encryptedPreferencesManager.getProfileSnapshotFromCloudBackup()?.let { snapshot ->
             profileRepository.deriveProfileState(snapshot)
         }
 
         return (state as? ProfileState.Restored)?.profile
     }
 
-    override suspend fun discardBackedUpProfile() {
-        encryptedPreferencesManager.clearProfileSnapshotFromBackup()
+    override suspend fun getRestoringProfileFromFileBackup(): Profile? {
+        val state = encryptedPreferencesManager.getProfileSnapshotFromFileBackup()?.let { snapshot ->
+            profileRepository.deriveProfileState(snapshot)
+        }
+
+        return (state as? ProfileState.Restored)?.profile
+    }
+
+    override suspend fun discardCloudBackedUpProfile() {
+        encryptedPreferencesManager.clearProfileSnapshotFromCloudBackup()
         preferencesManager.removeLastBackupInstant()
+    }
+
+    override suspend fun discardFileBackedUpProfile() {
+        encryptedPreferencesManager.clearProfileSnapshotFromFileBackup()
     }
 
 }

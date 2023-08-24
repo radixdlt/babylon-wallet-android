@@ -13,8 +13,7 @@ import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import org.mockito.Mockito
-import rdx.works.profile.domain.backup.DiscardRestoredProfileFromBackupUseCase
-import rdx.works.profile.domain.backup.RestoreProfileFromCloudBackupUseCase
+import rdx.works.profile.domain.backup.DiscardRestoredProfileFromCloudBackupUseCase
 
 @ExperimentalCoroutinesApi
 class OnboardingViewModelTest {
@@ -23,7 +22,7 @@ class OnboardingViewModelTest {
     val coroutineRule = TestDispatcherRule()
 
     //private val deviceSecurityHelper = Mockito.mock(DeviceSecurityHelper::class.java)
-    private val discardRestoredProfileFromBackupUseCase = Mockito.mock(DiscardRestoredProfileFromBackupUseCase::class.java)
+    private val discardRestoredProfileFromCloudBackupUseCase = Mockito.mock(DiscardRestoredProfileFromCloudBackupUseCase::class.java)
 
     @Test
     fun `when alert not accepted, do not show external warning`() = runTest {
@@ -31,7 +30,7 @@ class OnboardingViewModelTest {
         val event = mutableListOf<OnboardingViewModel.OnBoardingUiState>()
         val viewModel = OnboardingViewModel(
             //deviceSecurityHelper = deviceSecurityHelper,
-            discardRestoredProfileFromBackupUseCase = discardRestoredProfileFromBackupUseCase
+            discardRestoredProfileFromCloudBackupUseCase = discardRestoredProfileFromCloudBackupUseCase
         )
 
         // when
@@ -51,7 +50,7 @@ class OnboardingViewModelTest {
         val event = mutableListOf<OnboardingViewModel.OnBoardingUiState>()
         val viewModel = OnboardingViewModel(
             //deviceSecurityHelper = deviceSecurityHelper,
-            discardRestoredProfileFromBackupUseCase = discardRestoredProfileFromBackupUseCase
+            discardRestoredProfileFromCloudBackupUseCase = discardRestoredProfileFromCloudBackupUseCase
         )
 
         // when
@@ -74,7 +73,7 @@ class OnboardingViewModelTest {
         val event = mutableListOf<OnboardingViewModel.OnBoardingUiState>()
         val viewModel = OnboardingViewModel(
             //deviceSecurityHelper = deviceSecurityHelper,
-            discardRestoredProfileFromBackupUseCase = discardRestoredProfileFromBackupUseCase
+            discardRestoredProfileFromCloudBackupUseCase = discardRestoredProfileFromCloudBackupUseCase
         )
 
         // when
@@ -97,7 +96,7 @@ class OnboardingViewModelTest {
         val event = mutableListOf<OnboardingViewModel.OnBoardingUiState>()
         val viewModel = OnboardingViewModel(
             //deviceSecurityHelper = deviceSecurityHelper,
-            discardRestoredProfileFromBackupUseCase = discardRestoredProfileFromBackupUseCase
+            discardRestoredProfileFromCloudBackupUseCase = discardRestoredProfileFromCloudBackupUseCase
         )
 
         // when

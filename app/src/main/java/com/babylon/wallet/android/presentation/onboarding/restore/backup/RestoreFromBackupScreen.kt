@@ -77,7 +77,7 @@ import kotlinx.coroutines.launch
 fun RestoreFromBackupScreen(
     viewModel: RestoreFromBackupViewModel,
     onBack: () -> Unit,
-    onRestoreConfirmed: () -> Unit
+    onRestoreConfirmed: (Boolean) -> Unit
 ) {
     val state by viewModel.state.collectAsState()
     val openDocument = rememberLauncherForActivityResult(
@@ -106,7 +106,7 @@ fun RestoreFromBackupScreen(
         viewModel.oneOffEvent.collect {
             when (it) {
                 is Event.OnDismiss -> onBack()
-                is Event.OnRestoreConfirm -> onRestoreConfirmed()
+                is Event.OnRestoreConfirm -> onRestoreConfirmed(it.fromCloud)
             }
         }
     }

@@ -13,7 +13,7 @@ class RestoreProfileFromCloudBackupUseCase @Inject constructor(
 ) {
 
     suspend operator fun invoke() {
-        val profile = backupProfileRepository.getRestoringProfileFromBackup()
+        val profile = backupProfileRepository.getRestoringProfileFromCloudBackup()
 
         if (profile != null) {
             val newDeviceName = deviceInfoRepository.getDeviceInfo().displayName

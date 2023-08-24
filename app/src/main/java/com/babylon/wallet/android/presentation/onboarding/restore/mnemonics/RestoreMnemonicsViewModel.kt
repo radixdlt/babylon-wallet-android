@@ -23,7 +23,9 @@ import rdx.works.profile.data.model.pernetwork.SecurityState
 import rdx.works.profile.data.repository.MnemonicRepository
 import rdx.works.profile.data.utils.factorSourceId
 import rdx.works.profile.domain.GetProfileUseCase
-import rdx.works.profile.domain.backup.GetRestoringProfileFromBackupUseCase
+import rdx.works.profile.domain.backup.DiscardRestoredProfileFromFileBackupUseCase
+import rdx.works.profile.domain.backup.GetRestoringProfileFromCloudBackupUseCase
+import rdx.works.profile.domain.backup.GetRestoringProfileFromFileBackupUseCase
 import rdx.works.profile.domain.backup.RestoreMnemonicUseCase
 import rdx.works.profile.domain.backup.RestoreProfileFromCloudBackupUseCase
 import javax.inject.Inject
@@ -33,10 +35,12 @@ import javax.inject.Inject
 class RestoreMnemonicsViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     private val getProfileUseCase: GetProfileUseCase,
-    private val getRestoringProfileFromBackupUseCase: GetRestoringProfileFromBackupUseCase,
+    private val getRestoringProfileFromCloudBackupUseCase: GetRestoringProfileFromCloudBackupUseCase,
+    private val getRestoringProfileFromFileBackupUseCase: GetRestoringProfileFromFileBackupUseCase,
     private val mnemonicRepository: MnemonicRepository,
     private val restoreMnemonicUseCase: RestoreMnemonicUseCase,
     private val restoreProfileFromCloudBackupUseCase: RestoreProfileFromCloudBackupUseCase,
+    private val discardRestoredProfileFromFileBackupUseCase: DiscardRestoredProfileFromFileBackupUseCase,
     private val appEventBus: AppEventBus
 ) : StateViewModel<RestoreMnemonicsViewModel.State>(),
     OneOffEventHandler<RestoreMnemonicsViewModel.Event> by OneOffEventHandlerImpl() {
@@ -50,7 +54,10 @@ class RestoreMnemonicsViewModel @Inject constructor(
         viewModelScope.launch {
             val factorSources = when (args) {
                 is RestoreMnemonicsArgs.RestoreProfile -> {
-                    val profile = getRestoringProfileFromBackupUseCase()
+                    val profile = when (args.backupType) {
+                        RestoreMnemonicsArgs.BackupType.CLOUD -> getRestoringProfileFromCloudBackupUseCase()
+                        RestoreMnemonicsArgs.BackupType.FILE -> getRestoringProfileFromFileBackupUseCase()
+                    }
                     val allAccounts = profile?.currentNetwork?.accounts.orEmpty()
                     profile?.factorSources
                         ?.filterIsInstance<DeviceFactorSource>()
@@ -69,7 +76,6 @@ class RestoreMnemonicsViewModel @Inject constructor(
                 }
 
                 is RestoreMnemonicsArgs.RestoreSpecificMnemonic -> {
-                    _state.update { it.copy(recoverIsMandatory = args.recoverMandatory) }
                     val profile = getProfileUseCase().firstOrNull() ?: return@launch
                     val allAccounts = profile.currentNetwork.accounts
                     profile.factorSources.filterIsInstance<DeviceFactorSource>().find { factorSource ->
@@ -104,11 +110,11 @@ class RestoreMnemonicsViewModel @Inject constructor(
             _state.update { it.copy(isShowingEntities = true, isMovingForward = false) }
         } else {
             viewModelScope.launch {
-                if (state.value.recoverIsMandatory) {
-                    sendEvent(Event.CloseApp)
-                } else {
-                    sendEvent(Event.FinishRestoration(isMovingToMain = false))
+                if (args is RestoreMnemonicsArgs.RestoreProfile && args.backupType == RestoreMnemonicsArgs.BackupType.FILE) {
+                    discardRestoredProfileFromFileBackupUseCase()
                 }
+
+                sendEvent(Event.FinishRestoration(isMovingToMain = false))
             }
         }
     }
@@ -185,7 +191,6 @@ class RestoreMnemonicsViewModel @Inject constructor(
         val isMovingForward: Boolean = false,
         val uiMessage: UiMessage? = null,
         val isRestoring: Boolean = false,
-        val recoverIsMandatory: Boolean = false,
         val seedPhraseState: SeedPhraseInputDelegate.State = SeedPhraseInputDelegate.State()
     ) : UiState {
 
@@ -208,7 +213,6 @@ class RestoreMnemonicsViewModel @Inject constructor(
     sealed interface Event : OneOffEvent {
         data class FinishRestoration(val isMovingToMain: Boolean) : Event
         object MoveToNextWord : Event
-        object CloseApp : Event
     }
 }
 

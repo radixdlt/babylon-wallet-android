@@ -9,13 +9,13 @@ import com.babylon.wallet.android.presentation.common.UiState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import rdx.works.profile.domain.backup.DiscardRestoredProfileFromBackupUseCase
+import rdx.works.profile.domain.backup.DiscardRestoredProfileFromCloudBackupUseCase
 import javax.inject.Inject
 
 @HiltViewModel
 class OnboardingViewModel @Inject constructor(
 //    private val deviceSecurityHelper: DeviceSecurityHelper,
-    private val discardRestoredProfileFromBackupUseCase: DiscardRestoredProfileFromBackupUseCase
+    private val discardRestoredProfileFromCloudBackupUseCase: DiscardRestoredProfileFromCloudBackupUseCase
 ) : StateViewModel<OnboardingViewModel.OnBoardingUiState>(),
     OneOffEventHandler<OnboardingViewModel.OnBoardingEvent> by OneOffEventHandlerImpl() {
 
@@ -32,7 +32,7 @@ class OnboardingViewModel @Inject constructor(
 //                    it.copy(showWarning = true)
 //                }
 //            }
-            discardRestoredProfileFromBackupUseCase()
+            discardRestoredProfileFromCloudBackupUseCase()
             sendEvent(OnBoardingEvent.CreateNewWallet)
         }
     }
