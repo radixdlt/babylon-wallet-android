@@ -6,18 +6,22 @@ import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.presentation.common.StateViewModel
+import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.profile.data.model.Profile
 import rdx.works.profile.data.repository.BackupProfileRepository
-import rdx.works.profile.data.repository.ProfileRepository
+import rdx.works.profile.domain.InvalidPasswordException
+import rdx.works.profile.domain.InvalidSnapshotException
+import rdx.works.profile.domain.backup.RestoreProfileFromFileBackupUseCase
 import javax.inject.Inject
 
 @HiltViewModel
 class RestoreFromBackupViewModel @Inject constructor(
-    backupProfileRepository: BackupProfileRepository
+    backupProfileRepository: BackupProfileRepository,
+    private val restoreProfileFromFileBackupUseCase: RestoreProfileFromFileBackupUseCase
 ) : StateViewModel<RestoreFromBackupViewModel.State>(), OneOffEventHandler<RestoreFromBackupViewModel.Event> by OneOffEventHandlerImpl() {
 
     override fun initialState(): State = State()
@@ -35,12 +39,24 @@ class RestoreFromBackupViewModel @Inject constructor(
         }
     }
 
-    fun onRestoreFromFile(uri: Uri) {
-
+    fun onRestoreFromFile(uri: Uri) = viewModelScope.launch {
+        restoreProfileFromFileBackupUseCase(uri = uri, password = null)
+            .onSuccess {
+                sendEvent(Event.OnRestoreConfirm)
+            }.onFailure { error ->
+                when (error) {
+                    is InvalidPasswordException -> _state.update { it.copy(passwordSheetState = State.PasswordSheet.Open(file = uri)) }
+                    is InvalidSnapshotException -> _state.update { it.copy(uiMessage = UiMessage.InfoMessage.InvalidSnapshot) }
+                }
+            }
     }
 
-    fun onBackClick() = viewModelScope.launch {
-        sendEvent(Event.OnDismiss)
+    fun onBackClick() {
+        if (!state.value.isPasswordSheetVisible) {
+            viewModelScope.launch { sendEvent(Event.OnDismiss) }
+        } else {
+            _state.update { it.copy(passwordSheetState = State.PasswordSheet.Closed) }
+        }
     }
 
     fun onSubmitClick() = viewModelScope.launch {
@@ -49,13 +65,72 @@ class RestoreFromBackupViewModel @Inject constructor(
         }
     }
 
+    fun onPasswordTyped(password: String) {
+        val sheet = state.value.passwordSheetState as? State.PasswordSheet.Open ?: return
+        _state.update {
+            it.copy(passwordSheetState = sheet.copy(password = password, isPasswordInvalid = false))
+        }
+    }
+
+    fun onPasswordRevealToggle() {
+        val sheet = state.value.passwordSheetState as? State.PasswordSheet.Open ?: return
+        _state.update {
+            it.copy(passwordSheetState = sheet.copy(isPasswordRevealed = !sheet.isPasswordRevealed))
+        }
+    }
+
+    fun onPasswordSubmitted() {
+        val sheet = state.value.passwordSheetState as? State.PasswordSheet.Open ?: return
+        if (sheet.isSubmitEnabled) {
+            viewModelScope.launch {
+                restoreProfileFromFileBackupUseCase(uri = sheet.file, password = sheet.password)
+                    .onSuccess {
+                        sendEvent(Event.OnRestoreConfirm)
+                    }.onFailure { error ->
+                        when (error) {
+                            is InvalidPasswordException -> _state.update {
+                                it.copy(passwordSheetState = sheet.copy(isPasswordInvalid = true))
+                            }
+                            is InvalidSnapshotException -> _state.update {
+                                it.copy(
+                                    passwordSheetState = State.PasswordSheet.Closed,
+                                    uiMessage = UiMessage.InfoMessage.InvalidSnapshot
+                                )
+                            }
+                        }
+                    }
+            }
+        }
+    }
+
+    fun onMessageShown() = _state.update { it.copy(uiMessage = null) }
+
     data class State(
         val restoringProfile: Profile? = null,
-        val isRestoringProfileChecked: Boolean = false
+        val isRestoringProfileChecked: Boolean = false,
+        val passwordSheetState: PasswordSheet = PasswordSheet.Closed,
+        val uiMessage: UiMessage? = null
     ) : UiState {
+
+        val isPasswordSheetVisible: Boolean
+            get() = passwordSheetState is PasswordSheet.Open
 
         val isContinueEnabled: Boolean
             get() = isRestoringProfileChecked
+
+        sealed interface PasswordSheet {
+            object Closed: PasswordSheet
+            data class Open(
+                val password: String = "",
+                val isPasswordInvalid: Boolean = false,
+                val isPasswordRevealed: Boolean = false,
+                val file: Uri
+            ): PasswordSheet {
+
+                val isSubmitEnabled: Boolean
+                    get() = password.isNotBlank() && !isPasswordInvalid
+            }
+        }
     }
 
     sealed interface Event : OneOffEvent {

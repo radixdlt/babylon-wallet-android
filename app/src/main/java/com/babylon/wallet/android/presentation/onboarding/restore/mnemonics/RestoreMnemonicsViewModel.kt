@@ -25,7 +25,7 @@ import rdx.works.profile.data.utils.factorSourceId
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.backup.GetRestoringProfileFromBackupUseCase
 import rdx.works.profile.domain.backup.RestoreMnemonicUseCase
-import rdx.works.profile.domain.backup.RestoreProfileFromBackupUseCase
+import rdx.works.profile.domain.backup.RestoreProfileFromCloudBackupUseCase
 import javax.inject.Inject
 
 @Suppress("TooManyFunctions", "LongParameterList")
@@ -36,7 +36,7 @@ class RestoreMnemonicsViewModel @Inject constructor(
     private val getRestoringProfileFromBackupUseCase: GetRestoringProfileFromBackupUseCase,
     private val mnemonicRepository: MnemonicRepository,
     private val restoreMnemonicUseCase: RestoreMnemonicUseCase,
-    private val restoreProfileFromBackupUseCase: RestoreProfileFromBackupUseCase,
+    private val restoreProfileFromCloudBackupUseCase: RestoreProfileFromCloudBackupUseCase,
     private val appEventBus: AppEventBus
 ) : StateViewModel<RestoreMnemonicsViewModel.State>(),
     OneOffEventHandler<RestoreMnemonicsViewModel.Event> by OneOffEventHandlerImpl() {
@@ -155,7 +155,7 @@ class RestoreMnemonicsViewModel @Inject constructor(
             )
         ).onSuccess {
             if (args is RestoreMnemonicsArgs.RestoreProfile && _state.value.isMainSeedPhrase) {
-                restoreProfileFromBackupUseCase()
+                restoreProfileFromCloudBackupUseCase()
             }
 
             appEventBus.sendEvent(AppEvent.RestoredMnemonic)

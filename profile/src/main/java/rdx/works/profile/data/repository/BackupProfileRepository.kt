@@ -10,12 +10,17 @@ import rdx.works.profile.data.model.Profile
 import rdx.works.profile.data.model.ProfileState
 import rdx.works.profile.datastore.EncryptedPreferencesManager
 import rdx.works.profile.di.ProfileSerializer
+import rdx.works.profile.domain.InvalidPasswordException
+import rdx.works.profile.domain.InvalidSnapshotException
 import rdx.works.profile.domain.backup.ExportType
+import java.lang.Exception
 import javax.inject.Inject
 
 interface BackupProfileRepository {
 
-    suspend fun saveRestoringSnapshotFromCloud(snapshotSerialised: String): Boolean
+    suspend fun saveRestoringSnapshotFromCloudBackup(snapshotSerialised: String): Result<Unit>
+
+    suspend fun saveRestoringSnapshotFromFileBackup(content: String, password: String?): Result<Unit>
 
     suspend fun getSnapshotForCloudBackup(): String?
 
@@ -24,7 +29,6 @@ interface BackupProfileRepository {
     suspend fun getRestoringProfileFromBackup(): Profile?
 
     suspend fun discardBackedUpProfile()
-
 }
 
 class BackupProfileRepositoryImpl @Inject constructor(
@@ -32,16 +36,56 @@ class BackupProfileRepositoryImpl @Inject constructor(
     private val preferencesManager: PreferencesManager,
     @ProfileSerializer private val profileSnapshotJson: Json,
     private val profileRepository: ProfileRepository
-): BackupProfileRepository {
+) : BackupProfileRepository {
 
-    override suspend fun saveRestoringSnapshotFromCloud(snapshotSerialised: String): Boolean =
+    override suspend fun saveRestoringSnapshotFromCloudBackup(snapshotSerialised: String): Result<Unit> =
         if (profileRepository.deriveProfileState(snapshotSerialised) is ProfileState.Restored) {
             encryptedPreferencesManager.putProfileSnapshotFromBackup(snapshotSerialised)
             preferencesManager.updateLastBackupInstant(InstantGenerator())
-            true
+            Result.success(Unit)
         } else {
-            false
+            Result.failure(InvalidSnapshotException)
         }
+
+    override suspend fun saveRestoringSnapshotFromFileBackup(content: String, password: String?): Result<Unit> {
+        return if (password != null) {
+            val encryptedProfileSnapshot = runCatching {
+                profileSnapshotJson.decodeFromString<EncryptedProfileSnapshot>(content)
+            }.getOrNull()
+
+            if (encryptedProfileSnapshot == null) {
+                Result.failure(InvalidSnapshotException)
+            } else {
+                val snapshot = runCatching {
+                    val decrypted = encryptedProfileSnapshot.decrypt(profileSnapshotJson, password)
+                    profileSnapshotJson.encodeToString(decrypted)
+                }.getOrNull()
+
+                if (snapshot != null) {
+                    encryptedPreferencesManager.putProfileSnapshotFromBackup(snapshot)
+                    Result.success(Unit)
+                } else {
+                    Result.failure(InvalidPasswordException)
+                }
+            }
+        } else {
+            val profileState = profileRepository.deriveProfileState(content)
+            if (profileState is ProfileState.Restored) {
+                encryptedPreferencesManager.putProfileSnapshotFromBackup(content)
+                Result.success(Unit)
+            } else {
+                val encryptedProfileSnapshot = runCatching {
+                    profileSnapshotJson.decodeFromString<EncryptedProfileSnapshot>(content)
+                }.getOrNull()
+
+                if (encryptedProfileSnapshot != null) {
+                    Result.failure(InvalidPasswordException)
+                } else {
+                    Result.failure(InvalidSnapshotException)
+                }
+            }
+        }
+    }
 
     override suspend fun getSnapshotForCloudBackup(): String? {
         val profile = profileRepository.profile.firstOrNull() ?: return null
@@ -65,6 +109,7 @@ class BackupProfileRepositoryImpl @Inject constructor(
                 val encryptedSnapshot = EncryptedProfileSnapshot.from(snapshotString, exportType.password)
                 runCatching { profileSnapshotJson.encodeToString(encryptedSnapshot) }.getOrNull()
             }
+
             is ExportType.Json -> snapshotString
         }
     }

@@ -6,7 +6,7 @@ import rdx.works.profile.data.repository.DeviceInfoRepository
 import rdx.works.profile.data.repository.ProfileRepository
 import javax.inject.Inject
 
-class RestoreProfileFromBackupUseCase @Inject constructor(
+class RestoreProfileFromCloudBackupUseCase @Inject constructor(
     private val backupProfileRepository: BackupProfileRepository,
     private val profileRepository: ProfileRepository,
     private val deviceInfoRepository: DeviceInfoRepository,

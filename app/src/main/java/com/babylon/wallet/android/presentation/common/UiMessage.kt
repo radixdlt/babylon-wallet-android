@@ -24,6 +24,14 @@ sealed class UiMessage(val id: String = UUIDGenerator.uuid().toString()) {
         object InvalidMnemonic : InfoMessage()
 
         @Serializable
+        @SerialName("invalid_snapshot")
+        object InvalidSnapshot : InfoMessage()
+
+        @Serializable
+        @SerialName("invalid_password")
+        object InvalidPassword : InfoMessage()
+
+        @Serializable
         @SerialName("invalid_payload")
         object InvalidPayload : InfoMessage()
 
@@ -52,6 +60,8 @@ sealed class UiMessage(val id: String = UUIDGenerator.uuid().toString()) {
                     "to any accounts to be imported, or has already been used."
             is LedgerAlreadyExist -> context.getString(R.string.addLedgerDevice_alreadyAddedAlert_message, label)
             WalletExported -> context.getString(R.string.profileBackup_manualBackups_successMessage)
+            InvalidSnapshot -> context.getString(R.string.recoverProfileBackup_incompatibleWalletDataLabel)
+            InvalidPassword -> context.getString(R.string.recoverProfileBackup_passwordWrong)
         }
     }
 

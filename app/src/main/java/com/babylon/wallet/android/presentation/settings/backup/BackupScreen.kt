@@ -458,6 +458,7 @@ private fun EncryptSheet(
                         )
                     }
                 },
+                singleLine = true,
                 keyboardOptions = KeyboardOptions(
                     imeAction = ImeAction.Next,
                     capitalization = KeyboardCapitalization.None,
@@ -498,6 +499,7 @@ private fun EncryptSheet(
                         )
                     }
                 },
+                singleLine = true,
                 keyboardOptions = KeyboardOptions(
                     imeAction = ImeAction.Done,
                     capitalization = KeyboardCapitalization.None,

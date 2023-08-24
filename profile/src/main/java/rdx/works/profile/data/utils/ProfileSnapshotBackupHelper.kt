@@ -14,7 +14,6 @@ import dagger.hilt.components.SingletonComponent
 import kotlinx.coroutines.runBlocking
 import rdx.works.profile.BuildConfig
 import rdx.works.profile.data.repository.BackupProfileRepository
-import rdx.works.profile.data.repository.ProfileRepository
 import java.io.DataOutputStream
 import java.io.FileOutputStream
 import java.util.Date
@@ -58,11 +57,9 @@ class ProfileSnapshotBackupHelper(context: Context) : BackupHelper {
             val snapshot = byteArray.toString(Charsets.UTF_8)
 
             runBlocking {
-                val isRestored = backupProfileRepository.saveRestoringSnapshotFromCloud(snapshot)
-
-                if (isRestored) {
+                backupProfileRepository.saveRestoringSnapshotFromCloudBackup(snapshot).onSuccess {
                     log("Saved restored profile")
-                } else {
+                }.onFailure {
                     log("Restored profile discarded or incompatible")
                 }
             }
