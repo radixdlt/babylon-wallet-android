@@ -1,8 +1,8 @@
 package com.babylon.wallet.android.mockdata
 
 import rdx.works.profile.data.model.apppreferences.Radix
-import rdx.works.profile.data.model.factorsources.FactorSourceKind
 import rdx.works.profile.data.model.factorsources.FactorSource
+import rdx.works.profile.data.model.factorsources.FactorSourceKind
 import rdx.works.profile.data.model.pernetwork.DerivationPath
 import rdx.works.profile.data.model.pernetwork.FactorInstance
 import rdx.works.profile.data.model.pernetwork.Network
@@ -21,18 +21,22 @@ fun account(
     networkID = networkId.value,
     securityState = SecurityState.Unsecured(
         unsecuredEntityControl = SecurityState.UnsecuredEntityControl(
+            entityIndex = 0,
             transactionSigning = FactorInstance(
-                derivationPath = DerivationPath.forAccount(
-                    networkId = NetworkId.Mainnet,
-                    accountIndex = 0,
-                    keyType = KeyType.TRANSACTION_SIGNING
+                badge = FactorInstance.Badge.VirtualSource.HierarchicalDeterministic(
+                    derivationPath = DerivationPath.forAccount(
+                        networkId = NetworkId.Mainnet,
+                        accountIndex = 0,
+                        keyType = KeyType.TRANSACTION_SIGNING
+                    ),
+                    publicKey = FactorInstance.PublicKey.curve25519PublicKey("")
                 ),
                 factorSourceId = FactorSource.FactorSourceID.FromHash(
                     kind = FactorSourceKind.DEVICE,
                     body = FactorSource.HexCoded32Bytes("5f07ec336e9e7891bff04004c817201e73c097b6b1e1b3a26bc501e0010196f5")
-                ),
-                publicKey = FactorInstance.PublicKey.curve25519PublicKey("")
+                )
             )
         )
-    )
+    ),
+    onLedgerSettings = Network.Account.OnLedgerSettings.init()
 )

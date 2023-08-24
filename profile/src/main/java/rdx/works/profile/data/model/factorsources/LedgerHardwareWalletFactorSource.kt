@@ -3,7 +3,6 @@ package rdx.works.profile.data.model.factorsources
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import rdx.works.core.InstantGenerator
-import rdx.works.profile.data.model.pernetwork.Network
 import java.time.Instant
 
 @Serializable
@@ -12,11 +11,16 @@ data class LedgerHardwareWalletFactorSource(
     override val id: FactorSourceID.FromHash,
     override val common: Common,
     @SerialName("hint")
-    val hint: Hint,
-    // TODO MFA remove (should not be able to create accounts using ledger when MFA)
-    @SerialName("nextDerivationIndicesPerNetwork")
-    val nextDerivationIndicesPerNetwork: List<Network.NextDerivationIndices>? = null
+    val hint: Hint
 ) : FactorSource() {
+
+    @Serializable
+    data class Hint(
+        @SerialName("model")
+        val model: String,
+        @SerialName("name")
+        val name: String
+    )
 
     @Serializable
     enum class SigningDisplayMode {
@@ -54,8 +58,7 @@ data class LedgerHardwareWalletFactorSource(
                 hint = Hint(
                     name = name,
                     model = model.value
-                ),
-                nextDerivationIndicesPerNetwork = listOf()
+                )
             )
         }
     }

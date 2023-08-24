@@ -10,10 +10,10 @@ import com.babylon.wallet.android.presentation.createaccount.createAccountScreen
 import com.babylon.wallet.android.presentation.createpersona.personaScreen
 import com.babylon.wallet.android.presentation.main.MAIN_ROUTE
 import com.babylon.wallet.android.presentation.navigation.Screen
+import com.babylon.wallet.android.presentation.onboarding.restore.mnemonics.restoreMnemonics
 import com.babylon.wallet.android.presentation.settings.appsettings.appSettingsScreen
 import com.babylon.wallet.android.presentation.settings.authorizeddapps.authorizedDAppsScreen
 import com.babylon.wallet.android.presentation.settings.backup.backupScreen
-import com.babylon.wallet.android.presentation.settings.backup.restoreMnemonic
 import com.babylon.wallet.android.presentation.settings.backup.systemBackupSettingsScreen
 import com.babylon.wallet.android.presentation.settings.dappdetail.dAppDetailScreen
 import com.babylon.wallet.android.presentation.settings.editgateway.SettingsEditGatewayScreen
@@ -70,7 +70,7 @@ fun NavGraphBuilder.settingsNavGraph(
         settingsGatewayEdit(navController)
         seedPhrases(
             onBackClick = { navController.popBackStack() },
-            onNavigateToRecoverMnemonic = { navController.restoreMnemonic(it.body.value) },
+            onNavigateToRecoverMnemonic = { navController.restoreMnemonics(it) },
             onNavigateToSeedPhrase = { navController.revealSeedPhrase(it.body.value) }
         )
         importLegacyWalletScreen(

@@ -4,7 +4,6 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import rdx.works.core.InstantGenerator
 import rdx.works.profile.data.model.MnemonicWithPassphrase
-import rdx.works.profile.data.model.pernetwork.Network
 import java.time.Instant
 
 @Serializable
@@ -13,10 +12,21 @@ data class DeviceFactorSource(
     override val id: FactorSourceID.FromHash,
     override val common: Common,
     @SerialName("hint")
-    val hint: Hint,
-    @SerialName("nextDerivationIndicesPerNetwork")
-    val nextDerivationIndicesPerNetwork: List<Network.NextDerivationIndices>? = null
+    val hint: Hint
 ) : FactorSource() {
+
+    @Serializable
+    data class Hint(
+        @SerialName("model")
+        val model: String,
+        @SerialName("name")
+        val name: String,
+        @SerialName("mnemonicWordCount")
+        val mnemonicWordCount: Int
+    )
+
+    val isBabylon: Boolean
+        get() = common.cryptoParameters == Common.CryptoParameters.babylon
 
     companion object {
 
@@ -70,9 +80,9 @@ data class DeviceFactorSource(
             ),
             hint = Hint(
                 model = model,
-                name = name
-            ),
-            nextDerivationIndicesPerNetwork = if (isOlympiaCompatible) null else listOf()
+                name = name,
+                mnemonicWordCount = mnemonicWithPassphrase.wordCount
+            )
         )
     }
 }

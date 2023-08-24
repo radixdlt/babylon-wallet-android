@@ -44,7 +44,7 @@ interface ProfileRepository {
 
     suspend fun isRestoredProfileFromBackupExists(): Boolean
 
-    suspend fun getRestoredProfileFromBackup(): Profile?
+    suspend fun getRestoringProfileFromBackup(): Profile?
 
     suspend fun discardBackedUpProfile()
 }
@@ -155,10 +155,10 @@ class ProfileRepositoryImpl @Inject constructor(
     }
 
     override suspend fun isRestoredProfileFromBackupExists(): Boolean {
-        return getRestoredProfileFromBackup() != null
+        return getRestoringProfileFromBackup() != null
     }
 
-    override suspend fun getRestoredProfileFromBackup(): Profile? {
+    override suspend fun getRestoringProfileFromBackup(): Profile? {
         val state = encryptedPreferencesManager.getProfileSnapshotFromBackup()?.let { snapshot ->
             deriveProfileState(snapshot)
         }

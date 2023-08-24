@@ -11,6 +11,7 @@ import rdx.works.profile.data.model.apppreferences.Gateways
 import rdx.works.profile.data.model.apppreferences.P2PLink
 import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.data.model.apppreferences.Security
+import rdx.works.profile.data.model.apppreferences.Transaction
 import rdx.works.profile.data.model.factorsources.DeviceFactorSource
 import rdx.works.profile.data.model.factorsources.FactorSource
 import rdx.works.profile.data.model.factorsources.LedgerHardwareWalletFactorSource
@@ -29,6 +30,7 @@ fun profile(
         numberOfNetworks = 1
     ),
     appPreferences = AppPreferences(
+        transaction = Transaction.default,
         display = Display.default,
         security = Security.default,
         gateways = Gateways(Radix.Gateway.default.url, listOf(Radix.Gateway.default)),

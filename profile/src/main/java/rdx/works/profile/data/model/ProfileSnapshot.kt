@@ -2,7 +2,6 @@ package rdx.works.profile.data.model
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import rdx.works.profile.data.model.ProfileSnapshot.Companion.MINIMUM
 import rdx.works.profile.data.model.apppreferences.AppPreferences
 import rdx.works.profile.data.model.factorsources.FactorSource
 import rdx.works.profile.data.model.pernetwork.Network
@@ -45,7 +44,7 @@ internal data class ProfileSnapshot(
         /**
          * The minimum accepted snapshot version format. Lower versions are currently discarded.
          */
-        const val MINIMUM = 40
+        const val MINIMUM = 44
     }
 }
 
@@ -56,5 +55,5 @@ internal data class ProfileSnapshotRelaxed(
 ) {
 
     val isValid: Boolean
-        get() = header.snapshotVersion >= MINIMUM
+        get() = header.isCompatible
 }

@@ -21,6 +21,7 @@ import rdx.works.profile.data.model.apppreferences.Gateways
 import rdx.works.profile.data.model.apppreferences.P2PLink
 import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.data.model.apppreferences.Security
+import rdx.works.profile.data.model.apppreferences.Transaction
 import rdx.works.profile.data.model.factorsources.DeviceFactorSource
 import rdx.works.profile.data.model.factorsources.FactorSource
 import rdx.works.profile.data.model.factorsources.FactorSourceKind
@@ -61,32 +62,73 @@ class SampleDataProvider {
         )
     )
 
+    fun babylonDeviceFactorSource() = DeviceFactorSource(
+        id = FactorSource.FactorSourceID.FromHash(
+            kind = FactorSourceKind.DEVICE,
+            body = FactorSource.HexCoded32Bytes("5f07ec336e9e7891bff04004c817201e73c097b6b1e1b3a26bc205e0010196f5")
+        ),
+        common = FactorSource.Common(
+            cryptoParameters = FactorSource.Common.CryptoParameters.babylon,
+            addedOn = InstantGenerator(),
+            lastUsedOn = InstantGenerator(),
+            flags = listOf()
+        ),
+        hint = DeviceFactorSource.Hint(
+            model = "Model",
+            name = "Name",
+            mnemonicWordCount = 24
+        )
+    )
+
+    fun olympiaDeviceFactorSource() = DeviceFactorSource(
+        id = FactorSource.FactorSourceID.FromHash(
+            kind = FactorSourceKind.DEVICE,
+            body = FactorSource.HexCoded32Bytes("5f07ec336e9e7891bff04004c817201e73c097b6b1e1b3a26bc205e0010196f5")
+        ),
+        common = FactorSource.Common(
+            cryptoParameters = FactorSource.Common.CryptoParameters.olympiaBackwardsCompatible,
+            addedOn = InstantGenerator(),
+            lastUsedOn = InstantGenerator(),
+            flags = listOf()
+        ),
+        hint = DeviceFactorSource.Hint(
+            model = "Model",
+            name = "Name",
+            mnemonicWordCount = 12
+        )
+    )
+
     fun sampleAccount(
         address: String = "fj3489fj348f",
         name: String = "my account",
         factorSourceId: FactorSource.FactorSourceID.FromHash = FactorSource.FactorSourceID.FromHash(
             kind = FactorSourceKind.DEVICE,
             body = FactorSource.HexCoded32Bytes("5f07ec336e9e7891bff04004c817201e73c097b6b1e1b3a26bc205e0010196f5")
-        )
+        ),
+        appearanceId: Int = 0
     ): Network.Account {
         return Network.Account(
             address = address,
-            appearanceID = 123,
+            appearanceID = appearanceId,
             displayName = name,
             networkID = Radix.Gateway.default.network.id,
             securityState = SecurityState.Unsecured(
                 unsecuredEntityControl = SecurityState.UnsecuredEntityControl(
+                    entityIndex = 0,
                     transactionSigning = FactorInstance(
-                        derivationPath = DerivationPath.forAccount(
-                            networkId = Radix.Gateway.default.network.networkId(),
-                            accountIndex = 0,
-                            keyType = KeyType.TRANSACTION_SIGNING
+                        badge = FactorInstance.Badge.VirtualSource.HierarchicalDeterministic(
+                            derivationPath = DerivationPath.forAccount(
+                                networkId = Radix.Gateway.default.network.networkId(),
+                                accountIndex = 0,
+                                keyType = KeyType.TRANSACTION_SIGNING
+                            ),
+                            publicKey = FactorInstance.PublicKey.curve25519PublicKey("")
                         ),
-                        factorSourceId = factorSourceId,
-                        publicKey = FactorInstance.PublicKey.curve25519PublicKey("")
+                        factorSourceId = factorSourceId
                     )
                 )
-            )
+            ),
+            onLedgerSettings = Network.Account.OnLedgerSettings.init()
         )
     }
 
@@ -106,17 +148,20 @@ class SampleDataProvider {
             networkID = NetworkId.Nebunet.value,
             securityState = SecurityState.Unsecured(
                 unsecuredEntityControl = SecurityState.UnsecuredEntityControl(
+                    entityIndex = 0,
                     transactionSigning = FactorInstance(
-                        derivationPath = DerivationPath.forIdentity(
-                            networkId = NetworkId.Nebunet,
-                            identityIndex = 0,
-                            keyType = KeyType.TRANSACTION_SIGNING
+                        badge = FactorInstance.Badge.VirtualSource.HierarchicalDeterministic(
+                            derivationPath = DerivationPath.forIdentity(
+                                networkId = NetworkId.Nebunet,
+                                identityIndex = 0,
+                                keyType = KeyType.TRANSACTION_SIGNING
+                            ),
+                            publicKey = FactorInstance.PublicKey.curve25519PublicKey("")
                         ),
                         factorSourceId = FactorSource.FactorSourceID.FromHash(
                             kind = FactorSourceKind.DEVICE,
                             body = FactorSource.HexCoded32Bytes("5f07ec336e9e7891bff04004c817201e73c097b6b1e1b3a26bc205e0010196f5")
                         ),
-                        publicKey = FactorInstance.PublicKey.curve25519PublicKey("")
                     )
                 )
             ),
@@ -164,6 +209,7 @@ class SampleDataProvider {
                 numberOfNetworks = 0
             ),
             appPreferences = AppPreferences(
+                transaction = Transaction.default,
                 display = Display.default,
                 security = Security.default,
                 gateways = Gateways(Radix.Gateway.default.url, listOf(Radix.Gateway.default)),

@@ -6,6 +6,7 @@ import com.radixdlt.ret.deriveVirtualAccountAddressFromPublicKey
 import com.radixdlt.ret.deriveVirtualIdentityAddressFromPublicKey
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.JsonClassDiscriminator
 import rdx.works.core.decodeHex
 import rdx.works.core.mapWhen
 import rdx.works.core.toHexString
@@ -15,14 +16,8 @@ import rdx.works.profile.data.model.Profile
 import rdx.works.profile.data.model.compressedPublicKey
 import rdx.works.profile.data.model.currentGateway
 import rdx.works.profile.data.model.factorsources.DeviceFactorSource
-import rdx.works.profile.data.model.factorsources.FactorSource
 import rdx.works.profile.data.model.factorsources.LedgerHardwareWalletFactorSource
-import rdx.works.profile.data.model.factorsources.OffDeviceMnemonicFactorSource
 import rdx.works.profile.data.model.factorsources.Slip10Curve
-import rdx.works.profile.data.model.factorsources.TrustedContactFactorSource
-import rdx.works.profile.data.model.factorsources.WasNotDeviceFactorSource
-import rdx.works.profile.data.utils.getNextAccountDerivationIndex
-import rdx.works.profile.data.utils.getNextIdentityDerivationIndex
 import rdx.works.profile.derivation.model.KeyType
 import rdx.works.profile.derivation.model.NetworkId
 
@@ -92,23 +87,101 @@ data class Network(
          * Security of this account
          */
         @SerialName("securityState")
-        override val securityState: SecurityState
+        override val securityState: SecurityState,
+
+        /**
+         * The on ledger synced settings for this account
+         */
+        @SerialName("onLedgerSettings")
+        val onLedgerSettings: OnLedgerSettings
+
     ) : Entity {
 
+        @Serializable
+        data class OnLedgerSettings(
+            @SerialName("thirdPartyDeposits")
+            val thirdPartyDeposits: ThirdPartyDeposits
+        ) {
+
+            @Serializable
+            data class ThirdPartyDeposits(
+                @SerialName("depositRule")
+                val depositRule: DepositRule = DepositRule.AcceptAll,
+                @SerialName("assetsExceptionList")
+                val assetsExceptionList: List<AssetException> = emptyList(),
+                @SerialName("depositorsAllowList")
+                val depositorsAllowList: List<DepositorAddress> = emptyList(),
+            ) {
+                @Serializable
+                enum class DepositRule {
+                    @SerialName("acceptAll")
+                    AcceptAll,
+
+                    @SerialName("acceptKnown")
+                    AcceptKnown,
+
+                    @SerialName("denyAll")
+                    DenyAll
+                }
+
+                @Serializable
+                enum class DepositAddressExceptionRule {
+                    @SerialName("allow")
+                    Allow,
+
+                    @SerialName("deny")
+                    Deny
+                }
+
+                @Serializable
+                @JsonClassDiscriminator(discriminator = "discriminator")
+                sealed interface DepositorAddress {
+
+                    @Serializable
+                    @SerialName("resourceAddress")
+                    data class ResourceAddress(
+                        @SerialName("value")
+                        val value: String
+                    ) : DepositorAddress
+
+                    @Serializable
+                    @SerialName("nonFungibleGlobalID")
+                    data class NonFungibleGlobalID(
+                        @SerialName("value")
+                        val value: String
+                    ) : DepositorAddress
+                }
+
+                @Serializable
+                data class AssetException(
+                    @SerialName("address")
+                    val address: String,
+                    @SerialName("exceptionRule")
+                    val exceptionRule: DepositAddressExceptionRule,
+                )
+            }
+
+            companion object {
+                fun init(): OnLedgerSettings {
+                    return OnLedgerSettings(thirdPartyDeposits = ThirdPartyDeposits())
+                }
+            }
+        }
+
         companion object {
+            @Suppress("LongParameterList")
             fun initAccountWithDeviceFactorSource(
+                entityIndex: Int,
                 displayName: String,
                 mnemonicWithPassphrase: MnemonicWithPassphrase,
                 deviceFactorSource: DeviceFactorSource,
                 networkId: NetworkId,
-                appearanceID: Int
+                appearanceID: Int,
+                onLedgerSettings: OnLedgerSettings = OnLedgerSettings.init()
             ): Account {
-                val index =
-                    deviceFactorSource.nextDerivationIndicesPerNetwork.getNextAccountDerivationIndex(forNetworkId = networkId)
-
                 val derivationPath = DerivationPath.forAccount(
                     networkId = networkId,
-                    accountIndex = index,
+                    accountIndex = entityIndex,
                     keyType = KeyType.TRANSACTION_SIGNING
                 )
 
@@ -120,6 +193,7 @@ data class Network(
                 )
 
                 val unsecuredSecurityState = SecurityState.unsecured(
+                    entityIndex = entityIndex,
                     publicKey = FactorInstance.PublicKey(compressedPublicKey.toHexString(), Slip10Curve.CURVE_25519),
                     derivationPath = derivationPath,
                     factorSourceId = deviceFactorSource.id
@@ -130,25 +204,26 @@ data class Network(
                     appearanceID = appearanceID,
                     displayName = displayName,
                     networkID = networkId.value,
-                    securityState = unsecuredSecurityState
+                    securityState = unsecuredSecurityState,
+                    onLedgerSettings = onLedgerSettings
+
                 )
             }
 
             @Suppress("LongParameterList")
             fun initAccountWithLedgerFactorSource(
+                entityIndex: Int,
                 displayName: String,
                 derivedPublicKeyHex: String,
                 ledgerFactorSource: LedgerHardwareWalletFactorSource,
                 networkId: NetworkId,
                 derivationPath: DerivationPath,
-                appearanceID: Int
+                appearanceID: Int,
+                onLedgerSettings: OnLedgerSettings = OnLedgerSettings.init()
             ): Account {
-                val index =
-                    ledgerFactorSource.nextDerivationIndicesPerNetwork.getNextAccountDerivationIndex(forNetworkId = networkId)
-
                 val derivationPathToCheck = DerivationPath.forAccount(
                     networkId = networkId,
-                    accountIndex = index,
+                    accountIndex = entityIndex,
                     keyType = KeyType.TRANSACTION_SIGNING
                 )
                 require(derivationPathToCheck.path == derivationPath.path)
@@ -159,6 +234,7 @@ data class Network(
                 )
 
                 val unsecuredSecurityState = SecurityState.unsecured(
+                    entityIndex = entityIndex,
                     publicKey = FactorInstance.PublicKey(derivedPublicKeyHex, Slip10Curve.CURVE_25519),
                     derivationPath = derivationPath,
                     factorSourceId = ledgerFactorSource.id
@@ -169,7 +245,8 @@ data class Network(
                     appearanceID = appearanceID,
                     displayName = displayName,
                     networkID = networkId.value,
-                    securityState = unsecuredSecurityState
+                    securityState = unsecuredSecurityState,
+                    onLedgerSettings = onLedgerSettings
                 )
             }
 
@@ -220,18 +297,16 @@ data class Network(
         companion object {
             @Suppress("LongParameterList") // TODO refine this later on
             fun init(
+                entityIndex: Int,
                 displayName: String,
                 mnemonicWithPassphrase: MnemonicWithPassphrase,
                 factorSource: DeviceFactorSource,
                 networkId: NetworkId,
                 personaData: PersonaData = PersonaData()
             ): Persona {
-                val index =
-                    factorSource.nextDerivationIndicesPerNetwork.getNextIdentityDerivationIndex(forNetworkId = networkId)
-
                 val derivationPath = DerivationPath.forIdentity(
                     networkId = networkId,
-                    identityIndex = index,
+                    identityIndex = entityIndex,
                     keyType = KeyType.TRANSACTION_SIGNING
                 )
 
@@ -244,6 +319,7 @@ data class Network(
                 )
 
                 val unsecuredSecurityState = SecurityState.unsecured(
+                    entityIndex = entityIndex,
                     publicKey = FactorInstance.PublicKey(compressedPublicKey.toHexString(), Slip10Curve.CURVE_25519),
                     derivationPath = derivationPath,
                     factorSourceId = factorSource.id
@@ -359,16 +435,6 @@ data class Network(
             }
         }
     }
-
-    @Serializable
-    data class NextDerivationIndices(
-        @SerialName("networkID")
-        val networkId: Int,
-        @SerialName("forAccount")
-        val forAccount: Int,
-        @SerialName("forIdentity")
-        val forIdentity: Int
-    )
 }
 
 @Serializable
@@ -410,7 +476,6 @@ data class Shared<T>(
 
 fun Profile.addAccount(
     account: Network.Account,
-    withFactorSourceId: FactorSource.FactorSourceID.FromHash,
     onNetwork: NetworkId
 ): Profile {
     val networkExist = this.networks.any { onNetwork.value == it.networkID }
@@ -433,12 +498,8 @@ fun Profile.addAccount(
             personas = listOf()
         )
     }
-    var updatedProfile = copy(
+    val updatedProfile = copy(
         networks = newNetworks,
-    )
-    updatedProfile = updatedProfile.incrementFactorSourceNextAccountIndex(
-        forNetworkId = onNetwork,
-        withFactorSourceId = withFactorSourceId
     )
     return updatedProfile.withUpdatedContentHint()
 }
@@ -502,60 +563,16 @@ fun Profile.addNetworkIfDoesNotExist(
     }
 }
 
-fun Profile.incrementFactorSourceNextAccountIndex(
-    forNetworkId: NetworkId,
-    withFactorSourceId: FactorSource.FactorSourceID
-): Profile {
-    return copy(
-        factorSources = factorSources.mapWhen(
-            predicate = { factorSource ->
-                factorSource.id == withFactorSourceId
-            }
-        ) { factorSource ->
-            when (factorSource) {
-                is DeviceFactorSource -> {
-                    val nextDerivationIndices = factorSource.nextDerivationIndicesPerNetwork
-                    factorSource.copy(
-                        nextDerivationIndicesPerNetwork = nextDerivationIndices?.incrementAccountIndex(forNetworkId = forNetworkId)
-                    )
-                }
-
-                is LedgerHardwareWalletFactorSource -> {
-                    val nextDerivationIndices = factorSource.nextDerivationIndicesPerNetwork
-                    factorSource.copy(
-                        nextDerivationIndicesPerNetwork = nextDerivationIndices?.incrementAccountIndex(forNetworkId = forNetworkId)
-                    )
-                }
-
-                is OffDeviceMnemonicFactorSource -> throw WasNotDeviceFactorSource()
-                is TrustedContactFactorSource -> throw WasNotDeviceFactorSource()
-            }
-        }
-    )
+fun Profile.nextAccountIndex(
+    forNetworkId: NetworkId
+): Int {
+    return networks.first { it.networkID == forNetworkId.value }.accounts.size
 }
 
-fun List<Network.NextDerivationIndices>.incrementAccountIndex(forNetworkId: NetworkId): List<Network.NextDerivationIndices> {
-    val indicesForNetwork = find {
-        it.networkId == forNetworkId.value
-    }
-
-    val mutatedList = if (indicesForNetwork == null) {
-        this + Network.NextDerivationIndices(
-            networkId = forNetworkId.value,
-            forAccount = 1,
-            forIdentity = 0
-        )
-    } else {
-        map {
-            if (it.networkId == forNetworkId.value) {
-                it.copy(forAccount = it.forAccount + 1)
-            } else {
-                it
-            }
-        }
-    }
-
-    return mutatedList
+fun Profile.nextPersonaIndex(
+    forNetworkId: NetworkId
+): Int {
+    return networks.first { it.networkID == forNetworkId.value }.personas.size
 }
 
 fun Profile.updatePersona(
@@ -580,7 +597,6 @@ fun Profile.updatePersona(
 
 fun Profile.addPersona(
     persona: Network.Persona,
-    withFactorSourceId: FactorSource.FactorSourceID.FromHash,
     onNetwork: NetworkId,
 ): Profile {
     val personaExists = this.networks.find {
@@ -597,54 +613,8 @@ fun Profile.addPersona(
             mutation = { network ->
                 network.copy(personas = network.personas + persona)
             }
-        ),
-        factorSources = factorSources.mapWhen(
-            predicate = { it.id == withFactorSourceId }
-        ) { factorSource ->
-            when (factorSource) {
-                is DeviceFactorSource -> {
-                    val nextDerivationIndices = factorSource.nextDerivationIndicesPerNetwork
-                    factorSource.copy(
-                        nextDerivationIndicesPerNetwork = nextDerivationIndices?.incrementPersonaIndex(forNetworkId = onNetwork)
-                    )
-                }
-
-                is LedgerHardwareWalletFactorSource -> {
-                    val nextDerivationIndices = factorSource.nextDerivationIndicesPerNetwork
-                    factorSource.copy(
-                        nextDerivationIndicesPerNetwork = nextDerivationIndices?.incrementPersonaIndex(forNetworkId = onNetwork)
-                    )
-                }
-
-                is OffDeviceMnemonicFactorSource -> throw WasNotDeviceFactorSource()
-                is TrustedContactFactorSource -> throw WasNotDeviceFactorSource()
-            }
-        }
-    ).withUpdatedContentHint()
-}
-
-fun List<Network.NextDerivationIndices>.incrementPersonaIndex(forNetworkId: NetworkId): List<Network.NextDerivationIndices> {
-    val indicesForNetwork = find {
-        it.networkId == forNetworkId.value
-    }
-
-    val mutatedList = if (indicesForNetwork == null) {
-        this + Network.NextDerivationIndices(
-            networkId = forNetworkId.value,
-            forAccount = 0,
-            forIdentity = 1
         )
-    } else {
-        map {
-            if (it.networkId == forNetworkId.value) {
-                it.copy(forIdentity = it.forIdentity + 1)
-            } else {
-                it
-            }
-        }
-    }
-
-    return mutatedList
+    ).withUpdatedContentHint()
 }
 
 fun Network.AuthorizedDapp.AuthorizedPersonaSimple.ensurePersonaDataExist(

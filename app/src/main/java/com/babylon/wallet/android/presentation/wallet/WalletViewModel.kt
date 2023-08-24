@@ -4,15 +4,19 @@ import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.domain.common.onError
 import com.babylon.wallet.android.domain.common.onValue
 import com.babylon.wallet.android.domain.model.AccountWithResources
+import com.babylon.wallet.android.domain.usecases.AccountWithSecurityPrompt
 import com.babylon.wallet.android.domain.usecases.GetAccountsForSecurityPromptUseCase
 import com.babylon.wallet.android.domain.usecases.GetAccountsWithResourcesUseCase
+import com.babylon.wallet.android.domain.usecases.SecurityPromptType
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
-import com.babylon.wallet.android.utils.AppEvent
+import com.babylon.wallet.android.utils.AppEvent.GotFreeXrd
+import com.babylon.wallet.android.utils.AppEvent.RestoredMnemonic
+import com.babylon.wallet.android.utils.AppEvent.Status
 import com.babylon.wallet.android.utils.AppEventBus
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -110,9 +114,9 @@ class WalletViewModel @Inject constructor(
     private fun observeGlobalAppEvents() {
         viewModelScope.launch {
             appEventBus.events.filter { event ->
-                event is AppEvent.GotFreeXrd || event is AppEvent.Status.Transaction.Success
+                event is GotFreeXrd || event is Status.Transaction.Success || event is RestoredMnemonic
             }.collect {
-                loadResources(withRefresh = true)
+                loadResources(withRefresh = it !is RestoredMnemonic)
             }
         }
     }
@@ -130,27 +134,29 @@ class WalletViewModel @Inject constructor(
         _state.update { it.copy(error = null) }
     }
 
-    fun onApplyMnemonicBackup(account: Network.Account) {
+    fun onApplySecuritySettings(account: Network.Account, securityPromptType: SecurityPromptType) {
         viewModelScope.launch {
-            getProfileUseCase.accountOnCurrentNetwork(account.address)
-                ?.factorSourceId()
-                ?.let {
-                    it as FactorSourceID.FromHash
-                    sendEvent(WalletEvent.NavigateToMnemonicBackup(it))
-                }
+            val factorSourceId = getProfileUseCase.accountOnCurrentNetwork(account.address)
+                ?.factorSourceId() as? FactorSourceID.FromHash ?: return@launch
+
+            when (securityPromptType) {
+                SecurityPromptType.NEEDS_BACKUP -> sendEvent(WalletEvent.NavigateToMnemonicBackup(factorSourceId))
+                SecurityPromptType.NEEDS_RESTORE -> sendEvent(WalletEvent.NavigateToMnemonicRestore(factorSourceId))
+            }
         }
     }
 }
 
 internal sealed interface WalletEvent : OneOffEvent {
     data class NavigateToMnemonicBackup(val factorSourceId: FactorSourceID.FromHash) : WalletEvent
+    data class NavigateToMnemonicRestore(val factorSourceId: FactorSourceID.FromHash) : WalletEvent
 }
 
 data class WalletUiState(
     private val accountsWithResources: List<AccountWithResources>? = null,
     private val loading: Boolean = true,
     private val refreshing: Boolean = false,
-    private val accountsNeedSecurityPrompt: List<Network.Account> = emptyList(),
+    private val accountsNeedSecurityPrompt: List<AccountWithSecurityPrompt> = emptyList(),
     private val factorSources: List<FactorSource> = emptyList(),
     val isSettingsWarningVisible: Boolean = false,
     val error: UiMessage? = null,
@@ -174,13 +180,16 @@ data class WalletUiState(
     val isRefreshing: Boolean
         get() = refreshing
 
-    fun isSecurityPromptVisible(forAccount: Network.Account): Boolean {
+    fun securityPrompt(forAccount: Network.Account): SecurityPromptType? {
         val resourcesForAccount = accountsWithResources?.find {
             it.account.address == forAccount.address
-        }?.resources ?: return false
+        }?.resources ?: return null
 
-        return accountsNeedSecurityPrompt.any {
-            it.address == forAccount.address && resourcesForAccount.hasXrd()
+        val accountWithSecurityPrompt = accountsNeedSecurityPrompt.find { it.account.address == forAccount.address } ?: return null
+        return if (accountWithSecurityPrompt.prompt == SecurityPromptType.NEEDS_BACKUP) {
+            if (resourcesForAccount.hasXrd()) SecurityPromptType.NEEDS_BACKUP else null
+        } else {
+            accountWithSecurityPrompt.prompt
         }
     }
 

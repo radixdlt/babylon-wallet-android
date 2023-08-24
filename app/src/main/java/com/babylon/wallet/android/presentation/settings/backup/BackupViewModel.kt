@@ -33,5 +33,9 @@ class BackupViewModel @Inject constructor(
 
     data class State(
         val backupState: BackupState
-    ) : UiState
+    ) : UiState {
+
+        val isBackupEnabled: Boolean
+            get() = backupState is BackupState.Open
+    }
 }

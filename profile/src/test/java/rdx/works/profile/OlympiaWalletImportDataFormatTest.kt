@@ -11,6 +11,7 @@ import okio.ByteString.Companion.decodeBase64
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
+import rdx.works.profile.data.model.MnemonicWithPassphrase
 import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.domain.gateway.GetCurrentGatewayUseCase
 import rdx.works.profile.olympiaimport.OlympiaWalletDataParser
@@ -38,7 +39,7 @@ internal class OlympiaWalletExportFormatTest {
         testVectors.forEach { testVector ->
             val parsedOlympiaAccountData = parser.parseOlympiaWalletAccountData(testVector.payloads)
             Assert.assertNotNull(parsedOlympiaAccountData)
-            assert(testVector.olympiaWallet.mnemonic.split(" ").size == parsedOlympiaAccountData!!.mnemonicWordCount)
+            assert(testVector.olympiaWallet.mnemonic.split(MnemonicWithPassphrase.mnemonicWordsDelimiter).size == parsedOlympiaAccountData!!.mnemonicWordCount)
             parsedOlympiaAccountData.accountData.forEach { olympiaAccountDetail ->
                 val correspondingTestVector = testVector.olympiaWallet.accounts[olympiaAccountDetail.index]
                 assert(

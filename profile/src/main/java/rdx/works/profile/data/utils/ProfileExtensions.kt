@@ -4,19 +4,15 @@ import rdx.works.core.InstantGenerator
 import rdx.works.core.mapWhen
 import rdx.works.profile.data.model.Profile
 import rdx.works.profile.data.model.factorsources.FactorSource
-import rdx.works.profile.data.model.factorsources.LedgerHardwareWalletFactorSource
 import rdx.works.profile.data.model.factorsources.Slip10Curve
-import rdx.works.profile.data.model.factorsources.WasNotDeviceFactorSource
-import rdx.works.profile.data.model.pernetwork.DerivationPath
 import rdx.works.profile.data.model.pernetwork.Entity
+import rdx.works.profile.data.model.pernetwork.FactorInstance
 import rdx.works.profile.data.model.pernetwork.IdentifiedEntry
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.data.model.pernetwork.PersonaData
 import rdx.works.profile.data.model.pernetwork.RequestedNumber
 import rdx.works.profile.data.model.pernetwork.SecurityState
 import rdx.works.profile.data.model.pernetwork.Shared
-import rdx.works.profile.derivation.model.KeyType
-import rdx.works.profile.derivation.model.NetworkId
 
 fun Profile.updateLastUsed(id: FactorSource.FactorSourceID): Profile {
     return copy(
@@ -28,8 +24,13 @@ fun Profile.updateLastUsed(id: FactorSource.FactorSourceID): Profile {
 }
 
 fun Network.Account.isOlympiaAccount(): Boolean {
-    return (securityState as? SecurityState.Unsecured)?.unsecuredEntityControl
-        ?.transactionSigning?.publicKey?.curve == Slip10Curve.SECP_256K1
+    val unsecuredEntityControl = (securityState as? SecurityState.Unsecured)?.unsecuredEntityControl
+    return when (val virtualBadge = unsecuredEntityControl?.transactionSigning?.badge) {
+        is FactorInstance.Badge.VirtualSource.HierarchicalDeterministic -> {
+            virtualBadge.publicKey.curve == Slip10Curve.SECP_256K1
+        }
+        null -> false
+    }
 }
 
 fun Entity.factorSourceId(): FactorSource.FactorSourceID {
@@ -46,36 +47,6 @@ fun Entity.hasAuthSigning(): Boolean {
 
 fun Entity.networkId() {
     this.networkID
-}
-
-fun List<Network.NextDerivationIndices>?.getNextAccountDerivationIndex(forNetworkId: NetworkId): Int {
-    if (this == null) throw WasNotDeviceFactorSource()
-
-    return this.find {
-        it.networkId == forNetworkId.value
-    }?.forAccount ?: 0
-}
-
-fun List<Network.NextDerivationIndices>?.getNextIdentityDerivationIndex(forNetworkId: NetworkId): Int {
-    if (this == null) throw WasNotDeviceFactorSource()
-
-    return this.find {
-        it.networkId == forNetworkId.value
-    }?.forIdentity ?: 0
-}
-
-fun LedgerHardwareWalletFactorSource.getNextDerivationPathForAccount(
-    networkId: NetworkId
-): DerivationPath {
-    val index = nextDerivationIndicesPerNetwork?.find {
-        it.networkId == networkId.value
-    }?.forAccount ?: 0
-
-    return DerivationPath.forAccount(
-        networkId = networkId,
-        accountIndex = index,
-        keyType = KeyType.TRANSACTION_SIGNING
-    )
 }
 
 fun PersonaData.PersonaDataField.sortOrderInt(): Int {

@@ -1,5 +1,7 @@
 package com.babylon.wallet.android.presentation.common
 
+import com.babylon.wallet.android.BuildConfig
+import com.babylon.wallet.android.utils.toMnemonicWords
 import com.radixdlt.bip39.wordlists.WORDLIST_ENGLISH
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
@@ -23,14 +25,14 @@ class SeedPhraseInputDelegate(
                 seedPhraseWords = (0 until size).map {
                     SeedPhraseWord(
                         it,
-                        lastWord = it == size
+                        lastWord = it == size - 1
                     )
                 }.toPersistentList()
             )
         }
     }
 
-    @Suppress("MagicNumber")
+    @Suppress("MagicNumber", "LongMethod")
     fun onWordChanged(index: Int, value: String, onMoveToNextWord: suspend () -> Unit) {
         val isDeleting = (_state.value.seedPhraseWords.firstOrNull { it.index == index }?.value?.length ?: 0) > value.length
         _state.update { state ->
@@ -44,6 +46,19 @@ class SeedPhraseInputDelegate(
         debounceJob?.cancel()
         debounceJob = scope.launch {
             delay(75L)
+            if (BuildConfig.DEBUG_MODE) {
+                val pastedMnemonic = value.toMnemonicWords(state.value.seedPhraseWords.size)
+                if (pastedMnemonic.isNotEmpty()) {
+                    _state.update { state ->
+                        state.copy(
+                            seedPhraseWords = state.seedPhraseWords.mapIndexed { index, word ->
+                                word.copy(value = pastedMnemonic[index], state = SeedPhraseWord.State.Valid)
+                            }.toPersistentList()
+                        )
+                    }
+                    return@launch
+                }
+            }
             var shouldMoveToNextWord = false
             val wordCandidates = if (value.isEmpty()) {
                 emptyList()
@@ -76,7 +91,9 @@ class SeedPhraseInputDelegate(
                 _state.update {
                     it.copy(wordAutocompleteCandidates = persistentListOf())
                 }
-                onMoveToNextWord()
+                if (index != _state.value.seedPhraseWords.lastIndex) {
+                    onMoveToNextWord()
+                }
             }
         }
     }
@@ -86,6 +103,10 @@ class SeedPhraseInputDelegate(
             state.copy(bip39Passphrase = value)
         }
         validateMnemonic()
+    }
+
+    fun reset() {
+        _state.update { State() }
     }
 
     private fun validateMnemonic() {
@@ -106,11 +127,15 @@ class SeedPhraseInputDelegate(
     }
 
     data class State(
-        val seedPhraseValid: Boolean = true,
+        val seedPhraseValid: Boolean = false,
         val bip39Passphrase: String = "",
         val seedPhraseWords: ImmutableList<SeedPhraseWord> = persistentListOf(),
         val wordAutocompleteCandidates: ImmutableList<String> = persistentListOf()
-    ) : UiState
+    ) : UiState {
+
+        val wordsPhrase: String
+            get() = seedPhraseWords.joinToString(separator = " ") { it.value }
+    }
 
     override fun initialState(): State {
         return State()

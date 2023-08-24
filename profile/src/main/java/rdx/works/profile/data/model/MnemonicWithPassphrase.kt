@@ -20,7 +20,23 @@ import rdx.works.profile.olympiaimport.OlympiaAccountDetails
 data class MnemonicWithPassphrase(
     val mnemonic: String,
     val bip39Passphrase: String
-)
+) {
+    val wordCount: Int
+        get() = mnemonic.split(mnemonicWordsDelimiter).size
+
+    companion object {
+        const val mnemonicWordsDelimiter = " "
+    }
+}
+
+@Suppress("MagicNumber")
+enum class SeedPhraseLength(val words: Int) {
+    TWELVE(12),
+    FIFTEEN(15),
+    EIGHTEEN(18),
+    TWENTY_ONE(21),
+    TWENTY_FOUR(24)
+}
 
 /**
  * Generates a mnemonic based on the [WORDLIST_ENGLISH]. Used only when no mnemonic
@@ -56,10 +72,10 @@ fun MnemonicWithPassphrase.compressedPublicKey(
 
 @Suppress("UnsafeCallOnNullableType")
 fun MnemonicWithPassphrase.deriveExtendedKey(
-    factorInstance: FactorInstance
+    virtualSource: FactorInstance.Badge.VirtualSource.HierarchicalDeterministic
 ): ExtendedKey = toExtendedKey(
-    curve = factorInstance.publicKey.curve,
-    derivationPath = factorInstance.derivationPath!!
+    curve = virtualSource.publicKey.curve,
+    derivationPath = virtualSource.derivationPath
 )
 
 fun MnemonicWithPassphrase.validatePublicKeysOf(accounts: List<OlympiaAccountDetails>): Boolean {

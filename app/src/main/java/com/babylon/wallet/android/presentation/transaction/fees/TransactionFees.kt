@@ -3,6 +3,7 @@ package com.babylon.wallet.android.presentation.transaction.fees
 import com.babylon.wallet.android.data.transaction.TransactionConfig
 import rdx.works.core.displayableQuantity
 import java.math.BigDecimal
+import java.math.RoundingMode
 
 data class TransactionFees(
     private val nonContingentFeeLock: BigDecimal = BigDecimal.ZERO,
@@ -92,20 +93,30 @@ data class TransactionFees(
             .add(networkFinalization)
             .add(effectiveTip)
             .add(networkStorage)
-            .add(feePaddingAmountToDisplay)
+            .add(feePaddingAmountForCalculation)
             .add(royalties)
 
     /**
      * default should be the XRD amount corresponding to 15% of (EXECUTION + FINALIZATION
      */
-    val feePaddingAmountToDisplay: BigDecimal
+    private val defaultPadding: BigDecimal = PERCENT_15
+        .multiply(
+            networkExecution.add(networkFinalization)
+        )
+
+    @Suppress("MagicNumber")
+    val feePaddingAmountToDisplay: String
+        get() = feePaddingAmount
+            ?: defaultPadding
+                .setScale(8, RoundingMode.HALF_UP)
+                .stripTrailingZeros()
+                .toPlainString()
+
+    val feePaddingAmountForCalculation: BigDecimal
         get() = if (feePaddingAmount.isNullOrEmpty()) {
-            PERCENT_15
-                .multiply(
-                    networkExecution.add(networkFinalization)
-                )
+            defaultPadding
         } else {
-            feePaddingAmount.toBigDecimal()
+            feePaddingAmount.toBigDecimalOrNull() ?: BigDecimal.ZERO
         }
 
     val tipPercentageToDisplay: String
@@ -114,9 +125,6 @@ data class TransactionFees(
     val tipPercentageForTransaction: UShort
         get() = tipPercentage?.toLong()?.toUShort()
             ?: TransactionConfig.TIP_PERCENTAGE
-
-    val hasNetworkOrTipBeenSetup: Boolean
-        get() = feePaddingAmount != null || tipPercentage != null
 
     companion object {
         private val PERCENT_15 = BigDecimal(0.15)

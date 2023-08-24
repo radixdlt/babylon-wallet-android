@@ -32,6 +32,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.R
+import com.babylon.wallet.android.designsystem.composable.MnemonicWordTextField
 import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
 import com.babylon.wallet.android.designsystem.composable.RadixTextButton
 import com.babylon.wallet.android.designsystem.composable.RadixTextField
@@ -44,12 +45,12 @@ import kotlinx.collections.immutable.ImmutableList
 
 @Composable
 fun SeedPhraseInputForm(
+    modifier: Modifier = Modifier,
     seedPhraseWords: ImmutableList<SeedPhraseWord>,
     onWordChanged: (Int, String) -> Unit,
     onPassphraseChanged: (String) -> Unit,
     bip39Passphrase: String,
-    onFocusedWordIndexChanged: (Int) -> Unit,
-    modifier: Modifier = Modifier
+    onFocusedWordIndexChanged: (Int) -> Unit
 ) {
     val focusManager = LocalFocusManager.current
     Column(
@@ -89,9 +90,11 @@ fun SeedPhraseInputForm(
                 onValueChanged = onPassphraseChanged,
                 value = bip39Passphrase,
                 leftLabel = stringResource(id = R.string.importMnemonic_passphrase),
-                optionalHint = stringResource(id = R.string.importMnemonic_passphraseHint)
+                optionalHint = stringResource(id = R.string.importMnemonic_passphraseHint),
+
             )
         }
+
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingMedium))
         RadixTextButton(
             modifier = Modifier.fillMaxWidth(),
@@ -138,13 +141,13 @@ private fun SeedPhraseWordInput(
     modifier: Modifier = Modifier,
     onFocusChanged: ((FocusState) -> Unit)?
 ) {
-    RadixTextField(
+    MnemonicWordTextField(
         modifier = modifier,
         onValueChanged = {
             onWordChanged(word.index, it)
         },
         value = word.value,
-        leftLabel = stringResource(id = R.string.importMnemonic_wordHeading, word.index + 1),
+        label = stringResource(id = R.string.importMnemonic_wordHeading, word.index + 1),
         trailingIcon = when (word.state) {
             SeedPhraseWord.State.Valid -> {
                 {
@@ -181,7 +184,14 @@ private fun SeedPhraseWordInput(
             }
         },
         keyboardActions = KeyboardActions(onNext = { focusManager.moveFocus(FocusDirection.Next) }),
-        keyboardOptions = KeyboardOptions(imeAction = if (word.lastWord) ImeAction.Done else ImeAction.Next),
+        keyboardOptions = KeyboardOptions(
+            imeAction =
+            if (word.lastWord) {
+                ImeAction.Done
+            } else {
+                ImeAction.Next
+            }
+        ),
         error = if (word.state == SeedPhraseWord.State.Invalid) stringResource(id = R.string.common_invalid) else null,
         onFocusChanged = onFocusChanged,
         errorFixedSize = true,

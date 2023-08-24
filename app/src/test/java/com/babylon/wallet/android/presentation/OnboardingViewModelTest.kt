@@ -1,7 +1,6 @@
 package com.babylon.wallet.android.presentation
 
 import com.babylon.wallet.android.presentation.onboarding.OnboardingViewModel
-import com.babylon.wallet.android.utils.DeviceSecurityHelper
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.launchIn
@@ -14,7 +13,6 @@ import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import org.mockito.Mockito
-import org.mockito.kotlin.whenever
 import rdx.works.profile.domain.backup.DiscardRestoredProfileFromBackupUseCase
 import rdx.works.profile.domain.backup.IsProfileFromBackupExistsUseCase
 import rdx.works.profile.domain.backup.RestoreProfileFromBackupUseCase
@@ -37,7 +35,6 @@ class OnboardingViewModelTest {
         val viewModel = OnboardingViewModel(
             //deviceSecurityHelper = deviceSecurityHelper,
             isProfileFromBackupExistsUseCase = isProfileFromBackupExistsUseCase,
-            restoreProfileFromBackupUseCase = restoreProfileFromBackupUseCase,
             discardRestoredProfileFromBackupUseCase = discardRestoredProfileFromBackupUseCase
         )
 
@@ -59,7 +56,6 @@ class OnboardingViewModelTest {
         val viewModel = OnboardingViewModel(
             //deviceSecurityHelper = deviceSecurityHelper,
             isProfileFromBackupExistsUseCase = isProfileFromBackupExistsUseCase,
-            restoreProfileFromBackupUseCase = restoreProfileFromBackupUseCase,
             discardRestoredProfileFromBackupUseCase = discardRestoredProfileFromBackupUseCase
         )
 
@@ -84,7 +80,6 @@ class OnboardingViewModelTest {
         val viewModel = OnboardingViewModel(
             //deviceSecurityHelper = deviceSecurityHelper,
             isProfileFromBackupExistsUseCase = isProfileFromBackupExistsUseCase,
-            restoreProfileFromBackupUseCase = restoreProfileFromBackupUseCase,
             discardRestoredProfileFromBackupUseCase = discardRestoredProfileFromBackupUseCase
         )
 
@@ -109,7 +104,6 @@ class OnboardingViewModelTest {
         val viewModel = OnboardingViewModel(
             //deviceSecurityHelper = deviceSecurityHelper,
             isProfileFromBackupExistsUseCase = isProfileFromBackupExistsUseCase,
-            restoreProfileFromBackupUseCase = restoreProfileFromBackupUseCase,
             discardRestoredProfileFromBackupUseCase = discardRestoredProfileFromBackupUseCase
         )
 

@@ -45,6 +45,7 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.designsystem.theme.Red1
 import com.babylon.wallet.android.domain.SampleDataProvider
+import com.babylon.wallet.android.domain.usecases.SecurityPromptType
 import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
@@ -58,6 +59,7 @@ fun WalletScreen(
     onMenuClick: () -> Unit,
     onAccountClick: (Network.Account) -> Unit = { },
     onNavigateToMnemonicBackup: (FactorSourceID.FromHash) -> Unit,
+    onNavigateToMnemonicRestore: (FactorSourceID.FromHash) -> Unit,
     onAccountCreationClick: () -> Unit
 ) {
     val walletState by viewModel.state.collectAsStateWithLifecycle()
@@ -71,13 +73,14 @@ fun WalletScreen(
         onAccountCreationClick = onAccountCreationClick,
         onRefresh = viewModel::onRefresh,
         onMessageShown = viewModel::onMessageShown,
-        onApplySecuritySettings = viewModel::onApplyMnemonicBackup
+        onApplySecuritySettings = viewModel::onApplySecuritySettings
     )
 
     LaunchedEffect(Unit) {
         viewModel.oneOffEvent.collect {
             when (it) {
                 is WalletEvent.NavigateToMnemonicBackup -> onNavigateToMnemonicBackup(it.factorSourceId)
+                is WalletEvent.NavigateToMnemonicRestore -> onNavigateToMnemonicRestore(it.factorSourceId)
             }
         }
     }
@@ -93,7 +96,7 @@ private fun WalletContent(
     onAccountCreationClick: () -> Unit,
     onRefresh: () -> Unit,
     onMessageShown: () -> Unit,
-    onApplySecuritySettings: (Network.Account) -> Unit
+    onApplySecuritySettings: (Network.Account, SecurityPromptType) -> Unit
 ) {
     val snackBarHostState = remember { SnackbarHostState() }
 
@@ -184,7 +187,7 @@ private fun WalletAccountList(
     state: WalletUiState,
     onAccountClick: (Network.Account) -> Unit,
     onAccountCreationClick: () -> Unit,
-    onApplySecuritySettings: (Network.Account) -> Unit,
+    onApplySecuritySettings: (Network.Account, SecurityPromptType) -> Unit,
 ) {
     LazyColumn(modifier = modifier, horizontalAlignment = Alignment.CenterHorizontally) {
         item {
@@ -208,9 +211,9 @@ private fun WalletAccountList(
                 accountWithResources = accountWithResources,
                 accountTag = state.getTag(accountWithResources.account),
                 isLoadingResources = state.isLoadingResources,
-                isPromptVisible = state.isSecurityPromptVisible(accountWithResources.account),
+                securityPromptType = state.securityPrompt(accountWithResources.account),
                 onApplySecuritySettings = {
-                    onApplySecuritySettings(accountWithResources.account)
+                    onApplySecuritySettings(accountWithResources.account, it)
                 }
             )
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
@@ -246,7 +249,7 @@ fun WalletContentPreview() {
                 onAccountCreationClick = { },
                 onRefresh = { },
                 onMessageShown = {},
-                onApplySecuritySettings = {}
+                onApplySecuritySettings = { _, _ -> }
             )
         }
     }

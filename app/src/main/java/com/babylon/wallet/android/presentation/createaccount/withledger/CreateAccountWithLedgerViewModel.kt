@@ -92,9 +92,7 @@ class CreateAccountWithLedgerViewModel @Inject constructor(
                     return@launch
                 }
 
-                val derivationPath = getProfileUseCase.nextDerivationPathForAccountOnCurrentNetworkWithLedger(
-                    ledgerHardwareWalletFactorSource = ledgerFactorSource.data
-                )
+                val derivationPath = getProfileUseCase.nextDerivationPathForAccountOnCurrentNetworkWithLedger()
                 val deviceModel = requireNotNull(ledgerFactorSource.data.getLedgerDeviceModel())
                 val result = ledgerMessenger.sendDerivePublicKeyRequest(
                     interactionId = UUIDGenerator.uuid().toString(),

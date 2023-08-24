@@ -48,10 +48,13 @@ class GenerateAuthSigningFactorInstanceUseCase @Inject constructor(
                     throw ProfileException.AuthenticationSigningAlreadyExist(entity)
                 }
                 val transactionSigning = securityState.unsecuredEntityControl.transactionSigning
-                val signingEntityDerivationPath = transactionSigning.derivationPath
-                requireNotNull(signingEntityDerivationPath)
+                val (signingEntityDerivationPath, publicKey) = when (val badge = transactionSigning.badge) {
+                    is FactorInstance.Badge.VirtualSource.HierarchicalDeterministic -> {
+                        Pair(badge.derivationPath, badge.publicKey)
+                    }
+                }
                 factorSourceId = transactionSigning.factorSourceId as FactorSourceID.FromHash
-                if (transactionSigning.publicKey.curve == Slip10Curve.CURVE_25519) {
+                if (publicKey.curve == Slip10Curve.CURVE_25519) {
                     DerivationPath.authSigningDerivationPathFromCap26Path(signingEntityDerivationPath)
                 } else {
                     val profile = getProfileUseCase.invoke().first()
@@ -106,9 +109,11 @@ class GenerateAuthSigningFactorInstanceUseCase @Inject constructor(
             _interactionState.update { null }
             Result.success(
                 FactorInstance(
-                    derivationPath = authSigningDerivationPath,
+                    badge = FactorInstance.Badge.VirtualSource.HierarchicalDeterministic(
+                        derivationPath = authSigningDerivationPath,
+                        publicKey = FactorInstance.PublicKey.curve25519PublicKey(deriveResult.getOrThrow())
+                    ),
                     factorSourceId = ledgerHardwareWalletFactorSource.id,
-                    publicKey = FactorInstance.PublicKey.curve25519PublicKey(deriveResult.getOrThrow())
                 )
             )
         } else {
@@ -129,9 +134,11 @@ class GenerateAuthSigningFactorInstanceUseCase @Inject constructor(
         ).removeLeadingZero().toHexString()
         return Result.success(
             FactorInstance(
-                derivationPath = authSigningDerivationPath,
-                factorSourceId = deviceFactorSource.id,
-                publicKey = FactorInstance.PublicKey.curve25519PublicKey(authSigningPublicKey)
+                badge = FactorInstance.Badge.VirtualSource.HierarchicalDeterministic(
+                    derivationPath = authSigningDerivationPath,
+                    publicKey = FactorInstance.PublicKey.curve25519PublicKey(authSigningPublicKey)
+                ),
+                factorSourceId = deviceFactorSource.id
             )
         )
     }
