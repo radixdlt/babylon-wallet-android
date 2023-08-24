@@ -33,7 +33,7 @@ class OnboardingViewModel @Inject constructor(
 //                }
 //            }
             discardRestoredProfileFromBackupUseCase()
-            sendEvent(OnBoardingEvent.EndOnBoarding)
+            sendEvent(OnBoardingEvent.CreateNewWallet)
         }
     }
 
@@ -61,6 +61,6 @@ class OnboardingViewModel @Inject constructor(
     ) : UiState
 
     sealed interface OnBoardingEvent : OneOffEvent {
-        object EndOnBoarding : OnBoardingEvent
+        object CreateNewWallet : OnBoardingEvent
     }
 }

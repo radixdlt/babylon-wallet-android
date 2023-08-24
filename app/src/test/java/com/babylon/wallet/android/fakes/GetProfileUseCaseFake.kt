@@ -8,6 +8,7 @@ import rdx.works.profile.data.model.Profile
 import rdx.works.profile.data.model.ProfileState
 import rdx.works.profile.data.repository.ProfileRepository
 import rdx.works.profile.domain.GetProfileUseCase
+import rdx.works.profile.domain.backup.ExportType
 
 fun fakeGetProfileUseCase(
     initialProfileState: ProfileState = ProfileState.Restored(profile = profile())
@@ -29,36 +30,11 @@ private fun fakeProfileDataSource(initialProfileState: ProfileState) = object : 
     }
 
     override suspend fun clear() {
-        profileStateSource.update { ProfileState.None() }
+        profileStateSource.update { ProfileState.None }
     }
 
-    override suspend fun saveRestoringSnapshot(snapshotSerialised: String): Boolean {
-        // Not needed
-        return true
-    }
-
-    override suspend fun getSnapshotForCloudBackup(): String? {
-        // Not needed
-        return null
-    }
-
-    override suspend fun getSnapshotForFileBackup(): String? {
-        // Not needed
-        return null
-    }
-
-    override suspend fun isRestoredProfileFromBackupExists(): Boolean {
-        // Not needed
-        return false
-    }
-
-    override suspend fun getRestoringProfileFromBackup(): Profile? {
-        // Not needed
-        return null
-    }
-
-    override suspend fun discardBackedUpProfile() {
-        // Not needed
+    override fun deriveProfileState(content: String): ProfileState {
+        error("Not needed")
     }
 
 }

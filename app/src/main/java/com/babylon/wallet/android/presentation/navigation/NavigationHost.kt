@@ -66,8 +66,8 @@ fun NavigationHost(
         ) {
             OnboardingScreen(
                 viewModel = hiltViewModel(),
-                onOnBoardingEnd = {
-                    navController.popBackStack(MAIN_ROUTE, inclusive = false)
+                onCreateNewWalletClick = {
+                    navController.createAccountScreen(CreateAccountRequestSource.FirstTime)
                 },
                 onBack = onCloseApp,
                 onRestoreFromBackupClick = {

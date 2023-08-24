@@ -13,6 +13,7 @@ import dagger.hilt.android.EntryPointAccessors
 import dagger.hilt.components.SingletonComponent
 import kotlinx.coroutines.runBlocking
 import rdx.works.profile.BuildConfig
+import rdx.works.profile.data.repository.BackupProfileRepository
 import rdx.works.profile.data.repository.ProfileRepository
 import java.io.DataOutputStream
 import java.io.FileOutputStream
@@ -20,19 +21,19 @@ import java.util.Date
 
 class ProfileSnapshotBackupHelper(context: Context) : BackupHelper {
 
-    private val profileRepository: ProfileRepository
+    private val backupProfileRepository: BackupProfileRepository
 
     init {
         val entryPoint = EntryPointAccessors.fromApplication(
             context.applicationContext,
             BackupHelperEntryPoint::class.java
         )
-        profileRepository = entryPoint.profileRepository()
+        backupProfileRepository = entryPoint.backupProfileRepository()
     }
 
     override fun performBackup(oldState: ParcelFileDescriptor?, data: BackupDataOutput?, newState: ParcelFileDescriptor) {
         val snapshotSerialised = runBlocking {
-            profileRepository.getSnapshotForCloudBackup()
+            backupProfileRepository.getSnapshotForCloudBackup()
         }
         log("Backup started for snapshot: $snapshotSerialised")
 
@@ -57,7 +58,7 @@ class ProfileSnapshotBackupHelper(context: Context) : BackupHelper {
             val snapshot = byteArray.toString(Charsets.UTF_8)
 
             runBlocking {
-                val isRestored = profileRepository.saveRestoringSnapshot(snapshot)
+                val isRestored = backupProfileRepository.saveRestoringSnapshotFromCloud(snapshot)
 
                 if (isRestored) {
                     log("Saved restored profile")
@@ -94,7 +95,7 @@ class ProfileSnapshotBackupHelper(context: Context) : BackupHelper {
     @EntryPoint
     @InstallIn(SingletonComponent::class)
     interface BackupHelperEntryPoint {
-        fun profileRepository(): ProfileRepository
+        fun backupProfileRepository(): BackupProfileRepository
     }
 
     companion object {

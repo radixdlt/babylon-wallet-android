@@ -1,17 +1,19 @@
 package rdx.works.profile.domain.backup
 
 import rdx.works.core.InstantGenerator
+import rdx.works.profile.data.repository.BackupProfileRepository
 import rdx.works.profile.data.repository.DeviceInfoRepository
 import rdx.works.profile.data.repository.ProfileRepository
 import javax.inject.Inject
 
 class RestoreProfileFromBackupUseCase @Inject constructor(
-    private val repository: ProfileRepository,
+    private val backupProfileRepository: BackupProfileRepository,
+    private val profileRepository: ProfileRepository,
     private val deviceInfoRepository: DeviceInfoRepository,
 ) {
 
     suspend operator fun invoke() {
-        val profile = repository.getRestoringProfileFromBackup()
+        val profile = backupProfileRepository.getRestoringProfileFromBackup()
 
         if (profile != null) {
             val newDeviceName = deviceInfoRepository.getDeviceInfo().displayName
@@ -21,7 +23,7 @@ class RestoreProfileFromBackupUseCase @Inject constructor(
                     claimedDate = InstantGenerator()
                 )
             )
-            repository.saveProfile(profileWithRestoredHeader)
+            profileRepository.saveProfile(profileWithRestoredHeader)
         }
     }
 }

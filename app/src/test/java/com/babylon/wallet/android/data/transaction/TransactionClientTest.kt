@@ -183,29 +183,8 @@ internal class TransactionClientTest {
             error("Not needed")
         }
 
-        override suspend fun saveRestoringSnapshot(snapshotSerialised: String): Boolean {
+        override fun deriveProfileState(content: String): ProfileState {
             error("Not needed")
         }
-
-        override suspend fun getSnapshotForCloudBackup(): String? {
-            error("Not needed")
-        }
-
-        override suspend fun getSnapshotForFileBackup(): String? {
-            error("Not needed")
-        }
-
-        override suspend fun isRestoredProfileFromBackupExists(): Boolean {
-            error("Not needed")
-        }
-
-        override suspend fun getRestoringProfileFromBackup(): Profile? {
-            error("Not needed")
-        }
-
-        override suspend fun discardBackedUpProfile() {
-            error("Not needed")
-        }
-
     }
 }

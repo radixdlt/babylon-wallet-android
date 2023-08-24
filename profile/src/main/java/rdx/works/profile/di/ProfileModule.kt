@@ -4,6 +4,8 @@ import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
+import rdx.works.profile.data.repository.BackupProfileRepository
+import rdx.works.profile.data.repository.BackupProfileRepositoryImpl
 import rdx.works.profile.data.repository.DAppConnectionRepository
 import rdx.works.profile.data.repository.DAppConnectionRepositoryImpl
 import rdx.works.profile.data.repository.DeviceInfoRepository
@@ -18,9 +20,15 @@ interface ProfileModule {
 
     @Binds
     @Singleton
-    fun bindProfileDataSource(
-        profileDataSourceImpl: ProfileRepositoryImpl
+    fun bindProfileRepository(
+        profileRepositoryImpl: ProfileRepositoryImpl
     ): ProfileRepository
+
+    @Binds
+    @Singleton
+    fun bindBackupProfileRepository(
+        backupProfileRepositoryImpl: BackupProfileRepositoryImpl
+    ): BackupProfileRepository
 
     @Binds
     fun bindDAppConnectionRepository(

@@ -17,7 +17,6 @@ import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import rdx.works.core.InstantGenerator
 import rdx.works.core.preferences.PreferencesManager
-import rdx.works.profile.data.model.EncryptedProfileSnapshot
 import rdx.works.profile.data.model.Profile
 import rdx.works.profile.data.model.ProfileSnapshot
 import rdx.works.profile.data.model.ProfileSnapshotRelaxed
@@ -27,8 +26,6 @@ import rdx.works.profile.di.ProfileSerializer
 import rdx.works.profile.di.RelaxedSerializer
 import rdx.works.profile.di.coroutines.ApplicationScope
 import rdx.works.profile.di.coroutines.IoDispatcher
-import timber.log.Timber
-import rdx.works.profile.domain.backup.ExportType
 import javax.inject.Inject
 
 interface ProfileRepository {
@@ -41,17 +38,8 @@ interface ProfileRepository {
 
     suspend fun clear()
 
-    suspend fun saveRestoringSnapshot(snapshotSerialised: String): Boolean
+    fun deriveProfileState(content: String): ProfileState
 
-    suspend fun getSnapshotForCloudBackup(): String?
-
-    suspend fun getSnapshotForFileBackup(exportType: ExportType): String?
-
-    suspend fun isRestoredProfileFromBackupExists(): Boolean
-
-    suspend fun getRestoringProfileFromBackup(): Profile?
-
-    suspend fun discardBackedUpProfile()
 }
 
 suspend fun ProfileRepository.updateProfile(updateAction: suspend (Profile) -> Profile): Profile {
@@ -79,23 +67,13 @@ class ProfileRepositoryImpl @Inject constructor(
 
     init {
         applicationScope.launch {
-            val serialised = encryptedPreferencesManager.encryptedProfile.firstOrNull()
+            val snapshotResult = encryptedPreferencesManager.encryptedProfile.firstOrNull()
 
-            if (serialised == null) {
-                // No profile exists, checking for backup data to restore
-                val profileStateFromBackup = encryptedPreferencesManager.getProfileSnapshotFromBackup()?.getOrNull()?.let {
-                    deriveProfileState(it)
-                }
-
-                profileStateFlow.update { ProfileState.None(profileStateFromBackup is ProfileState.Restored) }
-                return@launch
-            }
-            if (serialised.isSuccess) {
-                val profileState = deriveProfileState(serialised.getOrThrow())
-                profileStateFlow.update { profileState }
+            if (snapshotResult == null) {
+                profileStateFlow.update { ProfileState.None }
             } else {
-                Timber.d("Profile decryption failed")
-                profileStateFlow.update { ProfileState.Incompatible }
+                val snapshot = snapshotResult.getOrNull().orEmpty()
+                profileStateFlow.update { deriveProfileState(snapshot) }
             }
         }
     }
@@ -132,77 +110,20 @@ class ProfileRepositoryImpl @Inject constructor(
     override suspend fun clear() {
         encryptedPreferencesManager.clear()
         preferencesManager.clear()
-        profileStateFlow.update { ProfileState.None() }
+        profileStateFlow.update { ProfileState.None }
         backupManager.dataChanged()
     }
 
-    override suspend fun saveRestoringSnapshot(snapshotSerialised: String): Boolean =
-        if (deriveProfileState(snapshotSerialised) is ProfileState.Restored) {
-            encryptedPreferencesManager.putProfileSnapshotFromBackup(snapshotSerialised)
-            preferencesManager.updateLastBackupInstant(InstantGenerator())
-            true
-        } else {
-            false
-        }
-
     @Suppress("SwallowedException")
-    override suspend fun getSnapshotForCloudBackup(): String? {
-        val serialisedSnapshot = encryptedPreferencesManager.encryptedProfile.firstOrNull()?.getOrNull() ?: return null
-
-        val isBackupEnabled = try {
-            val snapshot = profileSnapshotJson.decodeFromString<ProfileSnapshot>(serialisedSnapshot)
-            snapshot.toProfile().appPreferences.security.isCloudProfileSyncEnabled
-        } catch (exception: Exception) {
-            false
-        }
-
-        return if (isBackupEnabled) {
-            preferencesManager.updateLastBackupInstant(InstantGenerator())
-            serialisedSnapshot
-        } else {
-            null
-        }
-    }
-
-    override suspend fun getSnapshotForFileBackup(exportType: ExportType): String? {
-        val snapshot = encryptedPreferencesManager.encryptedProfile.firstOrNull().getOrNull() ?: return null
-        return when (exportType) {
-            is ExportType.EncodedJson -> {
-                val encryptedSnapshot = EncryptedProfileSnapshot.from(snapshot, exportType.password)
-                profileSnapshotJson.encodeToString(encryptedSnapshot)
-            }
-            is ExportType.Json -> snapshot
-        }
-    }
-
-    override suspend fun isRestoredProfileFromBackupExists(): Boolean {
-        return getRestoringProfileFromBackup() != null
-    }
-
-    override suspend fun getRestoringProfileFromBackup(): Profile? {
-        val state = encryptedPreferencesManager.getProfileSnapshotFromBackup()?.getOrNull()?.let { snapshot ->
-            deriveProfileState(snapshot)
-        }
-
-        return (state as? ProfileState.Restored)?.profile
-    }
-
-    override suspend fun discardBackedUpProfile() {
-        encryptedPreferencesManager.clearProfileSnapshotFromBackup()
-        preferencesManager.removeLastBackupInstant()
-        profileStateFlow.update { ProfileState.None() }
-    }
-
-    @Suppress("SwallowedException")
-    private fun deriveProfileState(snapshotSerialised: String): ProfileState {
+    override fun deriveProfileState(content: String): ProfileState {
         val snapshotRelaxed = try {
-            relaxedJson.decodeFromString<ProfileSnapshotRelaxed>(snapshotSerialised)
+            relaxedJson.decodeFromString<ProfileSnapshotRelaxed>(content)
         } catch (exception: IllegalArgumentException) {
             return ProfileState.Incompatible
         }
 
         return if (snapshotRelaxed.isValid) {
-            val snapshot = profileSnapshotJson.decodeFromString<ProfileSnapshot>(snapshotSerialised)
+            val snapshot = profileSnapshotJson.decodeFromString<ProfileSnapshot>(content)
             ProfileState.Restored(snapshot.toProfile())
         } else {
             ProfileState.Incompatible

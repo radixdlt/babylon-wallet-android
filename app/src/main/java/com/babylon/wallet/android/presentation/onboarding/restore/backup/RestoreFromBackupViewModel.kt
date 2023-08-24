@@ -11,19 +11,20 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.profile.data.model.Profile
+import rdx.works.profile.data.repository.BackupProfileRepository
 import rdx.works.profile.data.repository.ProfileRepository
 import javax.inject.Inject
 
 @HiltViewModel
 class RestoreFromBackupViewModel @Inject constructor(
-    profileRepository: ProfileRepository
+    backupProfileRepository: BackupProfileRepository
 ) : StateViewModel<RestoreFromBackupViewModel.State>(), OneOffEventHandler<RestoreFromBackupViewModel.Event> by OneOffEventHandlerImpl() {
 
     override fun initialState(): State = State()
 
     init {
         viewModelScope.launch {
-            val profileToRestore = profileRepository.getRestoringProfileFromBackup()
+            val profileToRestore = backupProfileRepository.getRestoringProfileFromBackup()
             _state.update { it.copy(restoringProfile = profileToRestore) }
         }
     }
