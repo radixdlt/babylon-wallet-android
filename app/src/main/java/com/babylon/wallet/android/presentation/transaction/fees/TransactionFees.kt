@@ -8,7 +8,7 @@ import java.math.RoundingMode
 data class TransactionFees(
     private val nonContingentFeeLock: BigDecimal = BigDecimal.ZERO,
     private val networkExecution: BigDecimal = BigDecimal.ZERO,
-    private val walletAddedFee: BigDecimal = BigDecimal.ZERO,// TODO This will be updated later on
+    private val walletAddedFee: BigDecimal = BigDecimal.ZERO, // TODO This will be updated later on
     private val networkFinalization: BigDecimal = BigDecimal.ZERO,
     private val networkStorage: BigDecimal = BigDecimal.ZERO,
     private val royalties: BigDecimal = BigDecimal.ZERO,
@@ -27,6 +27,7 @@ data class TransactionFees(
      */
     private val networkExecutionFee: BigDecimal
         get() = networkExecution.add(walletAddedFee)
+
     /**
      * Network Fee displayed = Network Fee - Non-contingent lock or null if negative or 0 fee applicable
      */
