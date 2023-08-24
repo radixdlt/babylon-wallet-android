@@ -18,6 +18,7 @@ class EncryptedProfileTest {
     fun crossPlatformCompatibility() {
         val encryptedIOSSnapshot = """
             {
+              "version": 1,
               "encryptionScheme": {
                 "version": 1,
                 "description": "AESGCM-256"

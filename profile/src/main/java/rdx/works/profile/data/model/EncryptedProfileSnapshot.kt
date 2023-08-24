@@ -11,6 +11,8 @@ import rdx.works.core.toHexString
 
 @Serializable
 data class EncryptedProfileSnapshot(
+    @SerialName("version")
+    val version: Version,
     @SerialName("encryptedSnapshot")
     val encryptedSnapshot: String,
     @SerialName("encryptionScheme")
@@ -18,6 +20,16 @@ data class EncryptedProfileSnapshot(
     @SerialName("keyDerivationScheme")
     val keyDerivationScheme: KeyDerivationScheme
 ) {
+
+    @JvmInline
+    @Serializable
+    value class Version(val version: Int) {
+
+        companion object {
+            val CURRENT = Version(version = 1)
+        }
+
+    }
 
     internal fun decrypt(deserializer: Json, password: String): ProfileSnapshot {
         val key = keyDerivationScheme.derive(password)
@@ -36,6 +48,7 @@ data class EncryptedProfileSnapshot(
             val encryptionScheme = EncryptionScheme.default
 
             return EncryptedProfileSnapshot(
+                version = Version.CURRENT,
                 encryptedSnapshot = encryptionScheme.encrypt(
                     data = snapshotString.toByteArray(),
                     key = keyDerivationScheme.derive(password)
