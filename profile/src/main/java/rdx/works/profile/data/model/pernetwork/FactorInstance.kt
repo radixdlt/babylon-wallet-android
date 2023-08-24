@@ -9,15 +9,39 @@ import rdx.works.profile.data.model.factorsources.Slip10Curve.SECP_256K1
 
 @Serializable
 data class FactorInstance(
-    @SerialName("derivationPath")
-    val derivationPath: DerivationPath?,
+    @SerialName("badge")
+    val badge: Badge,
 
     @SerialName("factorSourceID")
-    val factorSourceId: FactorSource.FactorSourceID,
-
-    @SerialName("publicKey")
-    val publicKey: PublicKey
+    val factorSourceId: FactorSource.FactorSourceID
 ) {
+
+    @Serializable(with = BadgeSerializer::class)
+    sealed class Badge {
+
+        @Serializable(with = VirtualSourceSerializer::class)
+        sealed class VirtualSource : Badge() {
+
+            @Serializable
+            @SerialName(hierarchicalDeterministicPublicKey)
+            data class HierarchicalDeterministic(
+                @SerialName("derivationPath")
+                val derivationPath: DerivationPath,
+
+                @SerialName("publicKey")
+                val publicKey: PublicKey
+            ) : VirtualSource()
+
+            companion object {
+                const val hierarchicalDeterministicPublicKey = "hierarchicalDeterministicPublicKey"
+            }
+        }
+
+        companion object {
+            const val virtualSource = "virtualSource"
+        }
+    }
+
     @Serializable
     data class PublicKey(
         @SerialName("compressedData")

@@ -70,18 +70,20 @@ object TestData {
                                 unsecuredEntityControl = SecurityState.UnsecuredEntityControl(
                                     entityIndex = 0,
                                     transactionSigning = FactorInstance(
-                                        derivationPath = DerivationPath.forAccount(
-                                            networkId = network1.network.networkId(),
-                                            accountIndex = 0,
-                                            keyType = KeyType.TRANSACTION_SIGNING
+                                        badge = FactorInstance.Badge.VirtualSource.HierarchicalDeterministic(
+                                            derivationPath = DerivationPath.forAccount(
+                                                networkId = network1.network.networkId(),
+                                                accountIndex = 0,
+                                                keyType = KeyType.TRANSACTION_SIGNING
+                                            ),
+                                            publicKey = FactorInstance.PublicKey.curve25519PublicKey("")
                                         ),
                                         factorSourceId = FactorSource.FactorSourceID.FromHash(
                                             kind = FactorSourceKind.DEVICE,
                                             body = FactorSource.HexCoded32Bytes(
                                                 "5f07ec336e9e7891bff04004c817201e73c097b6b1e1b3a26bc501e0010196f5"
                                             )
-                                        ),
-                                        publicKey = FactorInstance.PublicKey.curve25519PublicKey("")
+                                        )
                                     )
                                 )
                             ),
@@ -96,18 +98,20 @@ object TestData {
                                 unsecuredEntityControl = SecurityState.UnsecuredEntityControl(
                                     entityIndex = 1,
                                     transactionSigning = FactorInstance(
-                                        derivationPath = DerivationPath.forAccount(
-                                            networkId = network1.network.networkId(),
-                                            accountIndex = 1,
-                                            keyType = KeyType.TRANSACTION_SIGNING
+                                        badge = FactorInstance.Badge.VirtualSource.HierarchicalDeterministic(
+                                            derivationPath = DerivationPath.forAccount(
+                                                networkId = network1.network.networkId(),
+                                                accountIndex = 1,
+                                                keyType = KeyType.TRANSACTION_SIGNING
+                                            ),
+                                            publicKey = FactorInstance.PublicKey.curve25519PublicKey("")
                                         ),
                                         factorSourceId = FactorSource.FactorSourceID.FromHash(
                                             kind = FactorSourceKind.DEVICE,
                                             body = FactorSource.HexCoded32Bytes(
                                                 "5f07ec336e9e7891bff04004c817201e73c097b6b1e1b3a26bc501e0010196f5"
                                             )
-                                        ),
-                                        publicKey = FactorInstance.PublicKey.curve25519PublicKey("")
+                                        )
                                     )
                                 )
                             ),
@@ -129,18 +133,20 @@ object TestData {
                                 unsecuredEntityControl = SecurityState.UnsecuredEntityControl(
                                     entityIndex = 2,
                                     transactionSigning = FactorInstance(
-                                        derivationPath = DerivationPath.forAccount(
-                                            networkId = network2.network.networkId(),
-                                            accountIndex = 2,
-                                            keyType = KeyType.TRANSACTION_SIGNING
+                                        badge = FactorInstance.Badge.VirtualSource.HierarchicalDeterministic(
+                                            derivationPath = DerivationPath.forAccount(
+                                                networkId = network2.network.networkId(),
+                                                accountIndex = 2,
+                                                keyType = KeyType.TRANSACTION_SIGNING
+                                            ),
+                                            publicKey = FactorInstance.PublicKey.curve25519PublicKey("")
                                         ),
                                         factorSourceId = FactorSource.FactorSourceID.FromHash(
                                             kind = FactorSourceKind.DEVICE,
                                             body = FactorSource.HexCoded32Bytes(
                                                 "5f07ec336e9e7891bff04004c817201e73c097b6b1e1b3a26bc501e0010196f5"
                                             )
-                                        ),
-                                        publicKey = FactorInstance.PublicKey.curve25519PublicKey("")
+                                        )
                                     )
                                 )
                             ),
@@ -155,18 +161,20 @@ object TestData {
                                 unsecuredEntityControl = SecurityState.UnsecuredEntityControl(
                                     entityIndex = 3,
                                     transactionSigning = FactorInstance(
-                                        derivationPath = DerivationPath.forAccount(
-                                            networkId = network2.network.networkId(),
-                                            accountIndex = 3,
-                                            keyType = KeyType.TRANSACTION_SIGNING
+                                        badge = FactorInstance.Badge.VirtualSource.HierarchicalDeterministic(
+                                            derivationPath = DerivationPath.forAccount(
+                                                networkId = network2.network.networkId(),
+                                                accountIndex = 3,
+                                                keyType = KeyType.TRANSACTION_SIGNING
+                                            ),
+                                            publicKey = FactorInstance.PublicKey.curve25519PublicKey("")
                                         ),
                                         factorSourceId = FactorSource.FactorSourceID.FromHash(
                                             kind = FactorSourceKind.DEVICE,
                                             body = FactorSource.HexCoded32Bytes(
                                                 "5f07ec336e9e7891bff04004c817201e73c097b6b1e1b3a26bc501e0010196f5"
                                             )
-                                        ),
-                                        publicKey = FactorInstance.PublicKey.curve25519PublicKey("")
+                                        )
                                     )
                                 )
                             ),

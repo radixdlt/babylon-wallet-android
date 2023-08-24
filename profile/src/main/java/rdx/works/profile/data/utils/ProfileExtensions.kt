@@ -6,6 +6,7 @@ import rdx.works.profile.data.model.Profile
 import rdx.works.profile.data.model.factorsources.FactorSource
 import rdx.works.profile.data.model.factorsources.Slip10Curve
 import rdx.works.profile.data.model.pernetwork.Entity
+import rdx.works.profile.data.model.pernetwork.FactorInstance
 import rdx.works.profile.data.model.pernetwork.IdentifiedEntry
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.data.model.pernetwork.PersonaData
@@ -23,8 +24,13 @@ fun Profile.updateLastUsed(id: FactorSource.FactorSourceID): Profile {
 }
 
 fun Network.Account.isOlympiaAccount(): Boolean {
-    return (securityState as? SecurityState.Unsecured)?.unsecuredEntityControl
-        ?.transactionSigning?.publicKey?.curve == Slip10Curve.SECP_256K1
+    val unsecuredEntityControl = (securityState as? SecurityState.Unsecured)?.unsecuredEntityControl
+    return when (val virtualBadge = unsecuredEntityControl?.transactionSigning?.badge) {
+        is FactorInstance.Badge.VirtualSource.HierarchicalDeterministic -> {
+            virtualBadge.publicKey.curve == Slip10Curve.SECP_256K1
+        }
+        null -> false
+    }
 }
 
 fun Entity.factorSourceId(): FactorSource.FactorSourceID {
