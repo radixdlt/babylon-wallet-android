@@ -22,6 +22,13 @@ fun StateEntityDetailsResponseItemDetails.totalSupply(): String? {
     }
 }
 
+fun StateEntityDetailsResponseItemDetails.divisibility(): Int? {
+    return when (val details = this) {
+        is StateEntityDetailsResponseFungibleResourceDetails -> details.divisibility
+        else -> null
+    }
+}
+
 fun StateEntityDetailsResponseItem.getXRDVaultAmount(vaultAddress: String): BigDecimal? {
     return when (
         val resource = fungibleResources?.items?.find {

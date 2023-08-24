@@ -5,6 +5,7 @@ import com.babylon.wallet.android.data.gateway.apis.StateApi
 import com.babylon.wallet.android.data.gateway.extensions.allResourceAddresses
 import com.babylon.wallet.android.data.gateway.extensions.asMetadataItems
 import com.babylon.wallet.android.data.gateway.extensions.calculateResourceBehaviours
+import com.babylon.wallet.android.data.gateway.extensions.divisibility
 import com.babylon.wallet.android.data.gateway.extensions.getXRDVaultAmount
 import com.babylon.wallet.android.data.gateway.extensions.stakeUnitResourceAddress
 import com.babylon.wallet.android.data.gateway.extensions.totalSupply
@@ -345,7 +346,8 @@ class EntityRepositoryImpl @Inject constructor(
             behaviours = resourceBehaviours,
             currentSupply = currentSupply,
             validatorMetadataItem = metaDataItems.toMutableList().consume(),
-            poolMetadataItem = metaDataItems.toMutableList().consume()
+            poolMetadataItem = metaDataItems.toMutableList().consume(),
+            divisibility = fungibleDetails?.details?.divisibility()
         )
     }
 

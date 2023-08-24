@@ -13,10 +13,10 @@ import com.babylon.wallet.android.domain.model.metadata.ValidatorMetadataItem
 import com.radixdlt.ret.NonFungibleLocalId
 import com.radixdlt.ret.knownAddresses
 import com.radixdlt.ret.nonFungibleLocalIdFromStr
+import rdx.works.core.configurePrecision
 import rdx.works.core.displayableQuantity
 import rdx.works.profile.data.model.apppreferences.Radix
 import java.math.BigDecimal
-import java.math.RoundingMode
 
 sealed class Resource {
     abstract val resourceAddress: String
@@ -32,7 +32,8 @@ sealed class Resource {
         private val behaviours: List<ResourceBehaviour> = emptyList(),
         val currentSupply: BigDecimal? = null,
         private val validatorMetadataItem: ValidatorMetadataItem? = null,
-        private val poolMetadataItem: PoolMetadataItem? = null
+        private val poolMetadataItem: PoolMetadataItem? = null,
+        val divisibility: Int? = null
     ) : Resource(), Comparable<FungibleResource> {
         val name: String
             get() = nameMetadataItem?.name.orEmpty()
@@ -284,10 +285,10 @@ sealed class Resource {
             get() = fungibleResource.resourceAddress
 
         private val percentageOwned: BigDecimal?
-            get() = fungibleResource.amount?.divide(fungibleResource.currentSupply, RoundingMode.HALF_UP)
+            get() = fungibleResource.amount?.divide(fungibleResource.currentSupply, configurePrecision(fungibleResource.divisibility))
 
         fun stakeValueInXRD(totalXrdStake: BigDecimal?): BigDecimal? {
-            return percentageOwned?.multiply(totalXrdStake)
+            return percentageOwned?.multiply(totalXrdStake, configurePrecision(fungibleResource.divisibility))
         }
     }
 
@@ -313,7 +314,8 @@ sealed class Resource {
 
         fun resourceRedemptionValue(resourceAddress: String): BigDecimal? {
             val resourceVaultBalance = poolResources.find { it.resourceAddress == resourceAddress }?.amount
-            return poolUnitResource.amount?.multiply(resourceVaultBalance)?.divide(poolUnitResource.currentSupply)
+            return poolUnitResource.amount?.multiply(resourceVaultBalance)
+                ?.divide(poolUnitResource.currentSupply, configurePrecision(poolUnitResource.divisibility))
         }
     }
 
