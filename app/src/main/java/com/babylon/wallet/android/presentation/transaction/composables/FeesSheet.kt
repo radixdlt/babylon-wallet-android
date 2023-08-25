@@ -680,7 +680,9 @@ fun NetworkFeesAdvancedView(
             ) {
                 Text(
                     modifier = Modifier,
-                    text = "Paid by dApps".uppercase(),
+                    text = stringResource(
+                        id = R.string.transactionReview_customizeNetworkFeeSheet_paidByDApps
+                    ).uppercase(),
                     style = RadixTheme.typography.body1Link,
                     color = RadixTheme.colors.gray2
                 )
