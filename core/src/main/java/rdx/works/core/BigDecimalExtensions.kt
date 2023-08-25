@@ -3,7 +3,6 @@ package rdx.works.core
 import com.radixdlt.ret.Decimal
 import java.math.BigDecimal
 import java.math.BigInteger
-import java.math.MathContext
 import java.math.RoundingMode
 import java.text.DecimalFormat
 import java.util.Locale
@@ -72,14 +71,6 @@ fun BigDecimal.displayableQuantity(): String {
     } else {
         decimalFormat.maximumFractionDigits = MAX_TOKEN_DIGITS_LENGTH - integralPartLength
         decimalFormat.format(this)
-    }
-}
-
-fun configurePrecision(divisibility: Int?): MathContext {
-    return if (divisibility == null) {
-        MathContext.UNLIMITED
-    } else {
-        MathContext(divisibility, RoundingMode.HALF_UP)
     }
 }
 
