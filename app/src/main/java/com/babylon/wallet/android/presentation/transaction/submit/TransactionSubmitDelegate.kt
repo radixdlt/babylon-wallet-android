@@ -72,7 +72,7 @@ class TransactionSubmitDelegate(
             val request = state.value.request
             if (!request.isInternal) {
                 dAppMessenger.sendWalletInteractionResponseFailure(
-                    dappId = request.dappId,
+                    remoteConnectorId = request.remoteConnectorId,
                     requestId = request.id,
                     error = failure.toWalletErrorType(),
                     message = failure.getDappMessage()
@@ -153,7 +153,7 @@ class TransactionSubmitDelegate(
             // Send confirmation to the dApp that tx was submitted before status polling
             if (!transactionRequest.isInternal) {
                 dAppMessenger.sendTransactionWriteResponseSuccess(
-                    dappId = transactionRequest.dappId,
+                    remoteConnectorId = transactionRequest.remoteConnectorId,
                     requestId = transactionRequest.requestId,
                     txId = txId
                 )
@@ -219,7 +219,7 @@ class TransactionSubmitDelegate(
         val currentState = state.value
         if (error is DappRequestException && !currentState.request.isInternal) {
             dAppMessenger.sendWalletInteractionResponseFailure(
-                dappId = currentState.request.dappId,
+                remoteConnectorId = currentState.request.remoteConnectorId,
                 requestId = currentState.request.requestId,
                 error = error.failure.toWalletErrorType(),
                 message = error.failure.getDappMessage()

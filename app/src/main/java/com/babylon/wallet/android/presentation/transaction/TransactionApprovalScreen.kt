@@ -400,7 +400,7 @@ fun TransactionPreviewContentPreview() {
             onBackClick = {},
             state = State(
                 request = MessageFromDataChannel.IncomingRequest.TransactionRequest(
-                    dappId = "",
+                    remoteConnectorId = "",
                     requestId = "",
                     transactionManifestData = TransactionManifestData(
                         instructions = "",
