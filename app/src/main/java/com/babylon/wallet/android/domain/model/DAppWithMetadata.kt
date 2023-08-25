@@ -40,17 +40,11 @@ data class DAppWithMetadata(
     val isDappDefinition: Boolean
         get() = accountTypeItem?.type == AccountTypeMetadataItem.AccountType.DAPP_DEFINITION
 
-    val displayableMetadata: List<StringMetadataItem>
-        get() = nonExplicitMetadataItems
-
     val definitionAddresses: List<String>
         get() = dAppDefinitionsMetadataItem?.addresses.orEmpty()
 
     val claimedWebsites: ImmutableList<String>
         get() = claimedWebsitesItem?.websites.orEmpty().toPersistentList()
-
-    val firstClaimedWebsite: String?
-        get() = claimedWebsites.firstOrNull()
 
     val claimedEntities: List<String>
         get() = claimedEntitiesItem?.entities.orEmpty()

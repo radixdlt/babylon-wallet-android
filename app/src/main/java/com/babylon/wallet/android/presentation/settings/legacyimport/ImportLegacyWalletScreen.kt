@@ -82,7 +82,6 @@ import com.babylon.wallet.android.presentation.ui.composables.AddLinkConnectorSc
 import com.babylon.wallet.android.presentation.ui.composables.BackIconType
 import com.babylon.wallet.android.presentation.ui.composables.InfoLink
 import com.babylon.wallet.android.presentation.ui.composables.LedgerListItem
-import com.babylon.wallet.android.presentation.ui.composables.NotSecureAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.SecureScreen
 import com.babylon.wallet.android.presentation.ui.composables.SeedPhraseInputForm
@@ -111,6 +110,7 @@ fun ImportLegacyWalletScreen(
     onCloseScreen: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val context = LocalContext.current
     val state by viewModel.state.collectAsStateWithLifecycle()
     val addLinkConnectorState by addLinkConnectorViewModel.state.collectAsStateWithLifecycle()
     val coroutineScope = rememberCoroutineScope()
@@ -132,14 +132,19 @@ fun ImportLegacyWalletScreen(
         bip39Passphrase = state.bip39Passphrase,
         onWordChanged = viewModel::onWordChanged,
         onPassphraseChanged = viewModel::onPassphraseChanged,
-        onImportSoftwareAccounts = viewModel::onImportSoftwareAccounts,
+        onImportSoftwareAccounts = {
+            context.biometricAuthenticate { authenticated ->
+                if (authenticated) {
+                    viewModel.onImportSoftwareAccounts()
+                }
+            }
+        },
         uiMessage = state.uiMessage,
         onMessageShown = viewModel::onMessageShown,
         migratedAccounts = state.migratedAccounts,
         onContinue = onCloseScreen,
         currentPage = state.currentPage,
         qrChunkInfo = state.qrChunkInfo,
-        isDeviceSecure = state.isDeviceSecure,
         hardwareAccountsLeft = state.hardwareAccountsLeftToImport,
         waitingForLedgerResponse = state.waitingForLedgerResponse,
         onConfirmLedgerName = viewModel::onConfirmLedgerName,
@@ -190,7 +195,6 @@ private fun ImportLegacyWalletContent(
     onContinue: () -> Unit,
     currentPage: ImportLegacyWalletUiState.Page,
     qrChunkInfo: ChunkInfo?,
-    isDeviceSecure: Boolean,
     hardwareAccountsLeft: Int,
     waitingForLedgerResponse: Boolean,
     onConfirmLedgerName: (String) -> Unit,
@@ -215,7 +219,6 @@ private fun ImportLegacyWalletContent(
     var cameraVisible by remember {
         mutableStateOf(false)
     }
-    var showNotSecuredDialog by remember { mutableStateOf(false) }
     val context = LocalContext.current
     BackHandler {
         when (currentPage) {
@@ -255,14 +258,10 @@ private fun ImportLegacyWalletContent(
                 }
 
                 OlympiaImportEvent.BiometricPrompt -> {
-                    if (isDeviceSecure) {
-                        context.biometricAuthenticate { authenticatedSuccessfully ->
-                            if (authenticatedSuccessfully) {
-                                onImportSoftwareAccounts()
-                            }
+                    context.biometricAuthenticate { authenticatedSuccessfully ->
+                        if (authenticatedSuccessfully) {
+                            onImportSoftwareAccounts()
                         }
-                    } else {
-                        showNotSecuredDialog = true
                     }
                 }
 
@@ -271,14 +270,6 @@ private fun ImportLegacyWalletContent(
                 }
             }
         }
-    }
-    if (showNotSecuredDialog) {
-        NotSecureAlertDialog(finish = {
-            showNotSecuredDialog = false
-            if (it) {
-                onImportSoftwareAccounts()
-            }
-        })
     }
     Box(modifier = modifier) {
         Column(modifier = Modifier.fillMaxSize()) {

@@ -17,10 +17,7 @@ import androidx.compose.material.Text
 import androidx.compose.material.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -37,7 +34,6 @@ import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.status.signing.SigningStatusBottomDialog
 import com.babylon.wallet.android.presentation.ui.composables.AccountQRCodeView
 import com.babylon.wallet.android.presentation.ui.composables.BottomDialogDragHandle
-import com.babylon.wallet.android.presentation.ui.composables.NotSecureAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUiMessageHandler
 import com.babylon.wallet.android.utils.biometricAuthenticate
@@ -50,6 +46,7 @@ fun AccountPreferenceScreen(
     onBackClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val context = LocalContext.current
     val state by viewModel.state.collectAsStateWithLifecycle()
     val scope = rememberCoroutineScope()
     val sheetState = rememberModalBottomSheetState(
@@ -87,14 +84,19 @@ fun AccountPreferenceScreen(
             },
             canUseFaucet = state.canUseFaucet,
             loading = state.isLoading,
-            isDeviceSecure = state.isDeviceSecure,
             onMessageShown = viewModel::onMessageShown,
             error = state.error,
             modifier = Modifier
                 .fillMaxSize()
                 .background(RadixTheme.colors.defaultBackground),
             hasAuthKey = state.hasAuthKey,
-            onCreateAndUploadAuthKey = viewModel::onCreateAndUploadAuthKey
+            onCreateAndUploadAuthKey = {
+                context.biometricAuthenticate {
+                    if (it) {
+                        viewModel.onCreateAndUploadAuthKey()
+                    }
+                }
+            }
         )
         state.interactionState?.let {
             SigningStatusBottomDialog(
@@ -113,14 +115,12 @@ private fun AccountPreferenceContent(
     onShowQRCodeClick: () -> Unit,
     canUseFaucet: Boolean,
     loading: Boolean,
-    isDeviceSecure: Boolean,
     onMessageShown: () -> Unit,
     error: UiMessage?,
     modifier: Modifier = Modifier,
     hasAuthKey: Boolean,
     onCreateAndUploadAuthKey: () -> Unit,
 ) {
-    var showNotSecuredDialog by remember { mutableStateOf(false) }
     Column(
         modifier = modifier,
         horizontalAlignment = Alignment.Start
@@ -147,14 +147,10 @@ private fun AccountPreferenceContent(
                     modifier = Modifier.fillMaxWidth(),
                     text = stringResource(R.string.accountSettings_getXrdTestTokens),
                     onClick = {
-                        if (isDeviceSecure) {
-                            context.biometricAuthenticate { authenticatedSuccessfully ->
-                                if (authenticatedSuccessfully) {
-                                    onGetFreeXrdClick()
-                                }
+                        context.biometricAuthenticate { authenticatedSuccessfully ->
+                            if (authenticatedSuccessfully) {
+                                onGetFreeXrdClick()
                             }
-                        } else {
-                            showNotSecuredDialog = true
                         }
                     },
                     enabled = !loading && canUseFaucet
@@ -192,15 +188,6 @@ private fun AccountPreferenceContent(
                 onMessageShown = onMessageShown
             )
         }
-
-        if (showNotSecuredDialog) {
-            NotSecureAlertDialog(finish = {
-                showNotSecuredDialog = false
-                if (it) {
-                    onGetFreeXrdClick()
-                }
-            })
-        }
     }
 }
 
@@ -214,7 +201,6 @@ fun AccountPreferencePreview() {
             onShowQRCodeClick = {},
             canUseFaucet = true,
             loading = false,
-            isDeviceSecure = true,
             onMessageShown = {},
             error = null,
             hasAuthKey = false,

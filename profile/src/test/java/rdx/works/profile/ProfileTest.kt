@@ -1,5 +1,7 @@
 package rdx.works.profile
 
+import io.mockk.coEvery
+import io.mockk.mockk
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.modules.SerializersModule
 import org.junit.Assert
@@ -33,6 +35,7 @@ import rdx.works.profile.data.model.pernetwork.addPersona
 import rdx.works.profile.data.model.pernetwork.nextAccountIndex
 import rdx.works.profile.data.model.pernetwork.nextPersonaIndex
 import rdx.works.profile.data.model.serialisers.InstantSerializer
+import rdx.works.profile.data.repository.MnemonicRepository
 import rdx.works.profile.data.repository.createOrUpdateAuthorizedDapp
 import java.io.File
 import java.time.Instant
@@ -52,14 +55,18 @@ class ProfileTest {
                     "humble limb repeat video sudden possible story mask neutral prize goose mandate",
             bip39Passphrase = ""
         )
+        val babylonFactorSource = DeviceFactorSource.babylon(
+            mnemonicWithPassphrase, model = "Galaxy A53 5G (Samsung SM-A536B)",
+            name = "Samsung"
+        )
+        val mnemonicRepository = mockk<MnemonicRepository>()
+        coEvery { mnemonicRepository() } returns mnemonicWithPassphrase
 
         val profile = Profile.init(
-            mnemonicWithPassphrase = mnemonicWithPassphrase,
             id = "BABE1442-3C98-41FF-AFB0-D0F5829B020D",
             deviceName = "Galaxy A53 5G (Samsung SM-A536B)",
-            deviceModel = "Samsung",
             creationDate = InstantGenerator()
-        )
+        ).copy(factorSources = listOf(babylonFactorSource))
 
         val defaultNetwork = Radix.Gateway.default.network
         assertEquals(profile.networks.count(), 1)
@@ -143,15 +150,17 @@ class ProfileTest {
 
         val gateway = Radix.Gateway.default
         val networkId = gateway.network.networkId()
-
+        val babylonFactorSource = DeviceFactorSource.babylon(
+            mnemonicWithPassphrase, model = "computer",
+            name = "unit test",
+            createdAt = Instant.EPOCH
+        )
         var expected = Profile.init(
-            mnemonicWithPassphrase = mnemonicWithPassphrase,
-            deviceName = "unit test",
-            deviceModel = "computer",
             id = "BABE1442-3C98-41FF-AFB0-D0F5829B020D",
+            deviceName = "unit test",
             creationDate = Instant.EPOCH,
             gateway = gateway
-        )
+        ).copy(factorSources = listOf(babylonFactorSource))
         expected = expected.copy(
             factorSources = expected.factorSources + listOf(
                 DeviceFactorSource.olympia(mnemonicWithPassphrase),

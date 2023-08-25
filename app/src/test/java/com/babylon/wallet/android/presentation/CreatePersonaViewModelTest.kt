@@ -84,14 +84,13 @@ class CreatePersonaViewModelTest : StateViewModelTest<CreatePersonaViewModel>() 
     @Test
     fun `when view model init, verify persona info are empty`() = runTest {
         // when
-        val viewModel = CreatePersonaViewModel(createPersonaWithDeviceFactorSourceUseCase, preferencesManager, deviceSecurityHelper)
+        val viewModel = CreatePersonaViewModel(createPersonaWithDeviceFactorSourceUseCase, preferencesManager)
         advanceUntilIdle()
 
         // then
         val state = viewModel.state.first()
         Assert.assertEquals(state.loading, false)
         Assert.assertEquals(state.personaDisplayName, PersonaDisplayNameFieldWrapper())
-        Assert.assertEquals(state.isDeviceSecure, true)
     }
 
     @Test
@@ -99,7 +98,7 @@ class CreatePersonaViewModelTest : StateViewModelTest<CreatePersonaViewModel>() 
         runTest {
 
             val event = mutableListOf<CreatePersonaEvent>()
-            val viewModel = CreatePersonaViewModel(createPersonaWithDeviceFactorSourceUseCase, preferencesManager, deviceSecurityHelper)
+            val viewModel = CreatePersonaViewModel(createPersonaWithDeviceFactorSourceUseCase, preferencesManager)
 
             viewModel.onDisplayNameChanged(personaName.value)
 
@@ -112,7 +111,6 @@ class CreatePersonaViewModelTest : StateViewModelTest<CreatePersonaViewModel>() 
             val state = viewModel.state.first()
             Assert.assertEquals(state.loading, true)
             Assert.assertEquals(state.personaDisplayName, personaName)
-            Assert.assertEquals(state.isDeviceSecure, true)
 
             advanceUntilIdle()
 
@@ -124,6 +122,6 @@ class CreatePersonaViewModelTest : StateViewModelTest<CreatePersonaViewModel>() 
         }
 
     override fun initVM(): CreatePersonaViewModel {
-        return CreatePersonaViewModel(createPersonaWithDeviceFactorSourceUseCase, preferencesManager, deviceSecurityHelper)
+        return CreatePersonaViewModel(createPersonaWithDeviceFactorSourceUseCase, preferencesManager)
     }
 }

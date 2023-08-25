@@ -16,8 +16,8 @@ class AddOlympiaFactorSourceUseCase @Inject constructor(
     suspend operator fun invoke(mnemonicWithPassphrase: MnemonicWithPassphrase): FactorSource.FactorSourceID.FromHash {
         val olympiaFactorSource = DeviceFactorSource.olympia(mnemonicWithPassphrase)
 
-        val existingMnemonic = mnemonicRepository.readMnemonic(olympiaFactorSource.id)
-        if (existingMnemonic != null) {
+        val mnemonicExist = mnemonicRepository.mnemonicExist(olympiaFactorSource.id)
+        if (mnemonicExist) {
             return olympiaFactorSource.id
         }
 

@@ -3,10 +3,10 @@ package com.babylon.wallet.android.presentation.accountpreference
 import androidx.lifecycle.SavedStateHandle
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.data.transaction.ROLAClient
+import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.domain.usecases.GetFreeXrdUseCase
 import com.babylon.wallet.android.presentation.StateViewModelTest
 import com.babylon.wallet.android.utils.AppEventBus
-import com.babylon.wallet.android.utils.DeviceSecurityHelper
 import io.mockk.Runs
 import io.mockk.coEvery
 import io.mockk.coVerify
@@ -16,6 +16,7 @@ import io.mockk.mockk
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
@@ -28,7 +29,6 @@ import rdx.works.profile.domain.account.AddAuthSigningFactorInstanceUseCase
 internal class AccountPreferenceViewModelTest : StateViewModelTest<AccountPreferenceViewModel>() {
 
     private val getFreeXrdUseCase = mockk<GetFreeXrdUseCase>()
-    private val deviceSecurityHelper = mockk<DeviceSecurityHelper>()
     private val savedStateHandle = mockk<SavedStateHandle>()
     private val getProfileUseCase = mockk<GetProfileUseCase>()
     private val incomingRequestRepository = mockk<IncomingRequestRepository>()
@@ -41,7 +41,6 @@ internal class AccountPreferenceViewModelTest : StateViewModelTest<AccountPrefer
     override fun initVM(): AccountPreferenceViewModel {
         return AccountPreferenceViewModel(
             getFreeXrdUseCase,
-            deviceSecurityHelper,
             getProfileUseCase,
             rolaClient,
             incomingRequestRepository,
@@ -55,8 +54,8 @@ internal class AccountPreferenceViewModelTest : StateViewModelTest<AccountPrefer
     @Before
     override fun setUp() {
         super.setUp()
-        every { deviceSecurityHelper.isDeviceSecure() } returns true
         every { getFreeXrdUseCase.isAllowedToUseFaucet(any()) } returns flow { emit(true) }
+        every { getProfileUseCase() } returns flowOf(SampleDataProvider().sampleProfile())
         coEvery { getFreeXrdUseCase(any()) } returns Result.success(sampleTxId)
         every { savedStateHandle.get<String>(ARG_ADDRESS) } returns sampleAddress
         coEvery { eventBus.sendEvent(any()) } just Runs
@@ -67,7 +66,6 @@ internal class AccountPreferenceViewModelTest : StateViewModelTest<AccountPrefer
         val vm = vm.value
         advanceUntilIdle()
         val state = vm.state.first()
-        assert(state.isDeviceSecure)
         assert(state.canUseFaucet)
     }
 
@@ -77,7 +75,6 @@ internal class AccountPreferenceViewModelTest : StateViewModelTest<AccountPrefer
         val vm = vm.value
         advanceUntilIdle()
         val state = vm.state.first()
-        assert(state.isDeviceSecure)
         assert(!state.canUseFaucet)
     }
 

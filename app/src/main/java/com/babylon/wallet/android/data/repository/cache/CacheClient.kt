@@ -8,6 +8,7 @@ import okhttp3.internal.concurrent.TaskRunner
 import okio.FileSystem
 import okio.Path.Companion.toOkioPath
 import okio.buffer
+import rdx.works.core.KeySpec
 import rdx.works.core.decrypt
 import rdx.works.core.encrypt
 import timber.log.Timber
@@ -52,7 +53,7 @@ class EncryptedDiskCacheClient(
             editor.newSink(0)
                 .buffer()
                 .use {
-                    it.writeUtf8(serialized.encrypt(HTTP_CACHE_KEY_ALIAS))
+                    it.writeUtf8(serialized.encrypt(KeySpec.Cache(HTTP_CACHE_KEY_ALIAS)).getOrThrow())
                 }
             editor.commit()
         }
@@ -64,7 +65,7 @@ class EncryptedDiskCacheClient(
             snapshot.use {
                 it.getSource(0).buffer().readUtf8()
             }
-        }?.decrypt(HTTP_CACHE_KEY_ALIAS)
+        }?.decrypt(KeySpec.Cache(HTTP_CACHE_KEY_ALIAS))?.getOrNull()
 
         return restored?.let { saved ->
             try {

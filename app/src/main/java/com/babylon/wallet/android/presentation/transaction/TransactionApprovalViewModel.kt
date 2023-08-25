@@ -35,7 +35,6 @@ import com.babylon.wallet.android.presentation.transaction.fees.TransactionFeesD
 import com.babylon.wallet.android.presentation.transaction.guarantees.TransactionGuaranteesDelegate
 import com.babylon.wallet.android.presentation.transaction.submit.TransactionSubmitDelegate
 import com.babylon.wallet.android.utils.AppEventBus
-import com.babylon.wallet.android.utils.DeviceSecurityHelper
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.update
@@ -63,7 +62,6 @@ class TransactionApprovalViewModel @Inject constructor(
     dAppMessenger: DappMessenger,
     appEventBus: AppEventBus,
     private val incomingRequestRepository: IncomingRequestRepository,
-    private val deviceSecurityHelper: DeviceSecurityHelper,
     @ApplicationScope private val appScope: CoroutineScope,
     savedStateHandle: SavedStateHandle,
 ) : StateViewModel<State>(),
@@ -75,8 +73,7 @@ class TransactionApprovalViewModel @Inject constructor(
     override fun initialState(): State = State(
         request = incomingRequestRepository.getTransactionWriteRequest(args.requestId),
         isLoading = true,
-        previewType = PreviewType.None,
-        isDeviceSecure = deviceSecurityHelper.isDeviceSecure()
+        previewType = PreviewType.None
     )
 
     private val analysis: TransactionAnalysisDelegate = TransactionAnalysisDelegate(
@@ -242,7 +239,6 @@ class TransactionApprovalViewModel @Inject constructor(
 
     data class State(
         val request: MessageFromDataChannel.IncomingRequest.TransactionRequest,
-        val isDeviceSecure: Boolean,
         val isLoading: Boolean,
         val isSubmitting: Boolean = false,
         val isRawManifestVisible: Boolean = false,

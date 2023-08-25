@@ -13,7 +13,6 @@ import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
-import com.babylon.wallet.android.utils.DeviceSecurityHelper
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
@@ -36,7 +35,6 @@ import javax.inject.Inject
 @HiltViewModel
 class AccountPreferenceViewModel @Inject constructor(
     private val getFreeXrdUseCase: GetFreeXrdUseCase,
-    private val deviceSecurityHelper: DeviceSecurityHelper,
     private val getProfileUseCase: GetProfileUseCase,
     private val rolaClient: ROLAClient,
     private val incomingRequestRepository: IncomingRequestRepository,
@@ -85,8 +83,7 @@ class AccountPreferenceViewModel @Inject constructor(
             getFreeXrdUseCase.isAllowedToUseFaucet(args.address).collect { isAllowed ->
                 _state.update {
                     it.copy(
-                        canUseFaucet = isAllowed,
-                        isDeviceSecure = deviceSecurityHelper.isDeviceSecure()
+                        canUseFaucet = isAllowed
                     )
                 }
             }
@@ -100,7 +97,6 @@ class AccountPreferenceViewModel @Inject constructor(
                     _state.update {
                         it.copy(
                             account = account,
-                            isDeviceSecure = deviceSecurityHelper.isDeviceSecure(),
                             hasAuthKey = account.hasAuthSigning()
                         )
                     }
@@ -173,7 +169,6 @@ data class AccountPreferenceUiState(
     val accountAddress: String,
     val canUseFaucet: Boolean = false,
     val isLoading: Boolean = false,
-    val isDeviceSecure: Boolean = false,
     val gotFreeXrd: Boolean = false,
     val error: UiMessage? = null,
     val hasAuthKey: Boolean = false,

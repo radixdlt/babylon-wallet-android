@@ -202,7 +202,6 @@ internal class TransactionApprovalViewModelTest : StateViewModelTest<Transaction
             dAppMessenger = dAppMessenger,
             appEventBus = appEventBus,
             incomingRequestRepository = incomingRequestRepository,
-            deviceSecurityHelper = deviceSecurityHelper,
             appScope = TestScope(),
             savedStateHandle = savedStateHandle
         )

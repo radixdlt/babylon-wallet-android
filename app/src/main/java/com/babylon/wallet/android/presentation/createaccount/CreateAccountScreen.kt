@@ -20,9 +20,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -40,7 +37,6 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.presentation.common.FullscreenCircularProgressContent
 import com.babylon.wallet.android.presentation.createaccount.confirmation.CreateAccountRequestSource
-import com.babylon.wallet.android.presentation.ui.composables.NotSecureAlertDialog
 import com.babylon.wallet.android.utils.biometricAuthenticate
 
 @Composable
@@ -79,13 +75,11 @@ fun CreateAccountScreen(
             cancelable = cancelable,
             onBackClick = backHandler,
             modifier = modifier,
-            isDeviceSecure = state.isDeviceSecure,
             firstTime = state.firstTime,
             useLedgerSelected = state.useLedgerSelected,
             onUseLedgerSelectionChanged = viewModel::onUseLedgerSelectionChanged
         )
     }
-
     LaunchedEffect(Unit) {
         viewModel.oneOffEvent.collect { event ->
             when (event) {
@@ -93,6 +87,7 @@ fun CreateAccountScreen(
                     event.accountId,
                     event.requestSource
                 )
+
                 CreateAccountEvent.AddLedgerDevice -> onAddLedgerDevice()
             }
         }
@@ -107,11 +102,10 @@ fun CreateAccountContent(
     buttonEnabled: Boolean,
     onBackClick: () -> Unit,
     cancelable: Boolean,
-    isDeviceSecure: Boolean,
     modifier: Modifier,
     firstTime: Boolean,
     useLedgerSelected: Boolean,
-    onUseLedgerSelectionChanged: (Boolean) -> Unit,
+    onUseLedgerSelectionChanged: (Boolean) -> Unit
 ) {
     Column(
         modifier = modifier
@@ -120,7 +114,6 @@ fun CreateAccountContent(
             .background(RadixTheme.colors.defaultBackground)
             .fillMaxSize()
     ) {
-        var showNotSecuredDialog by remember { mutableStateOf(false) }
         val context = LocalContext.current
 
         if (cancelable) {
@@ -193,12 +186,11 @@ fun CreateAccountContent(
                 onClick = {
                     when {
                         useLedgerSelected -> onAccountCreateClick()
-                        isDeviceSecure -> context.biometricAuthenticate { authenticatedSuccessfully ->
+                        else -> context.biometricAuthenticate { authenticatedSuccessfully ->
                             if (authenticatedSuccessfully) {
                                 onAccountCreateClick()
                             }
                         }
-                        else -> showNotSecuredDialog = true
                     }
                 },
                 modifier = Modifier
@@ -208,15 +200,6 @@ fun CreateAccountContent(
                 enabled = buttonEnabled,
                 throttleClicks = true
             )
-        }
-
-        if (showNotSecuredDialog) {
-            NotSecureAlertDialog(finish = {
-                showNotSecuredDialog = false
-                if (it) {
-                    onAccountCreateClick()
-                }
-            })
         }
     }
 }
@@ -256,7 +239,6 @@ fun CreateAccountContentPreview() {
             buttonEnabled = false,
             onBackClick = {},
             cancelable = true,
-            isDeviceSecure = true,
             modifier = Modifier,
             firstTime = false,
             useLedgerSelected = false,
