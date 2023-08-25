@@ -93,7 +93,7 @@ fun RestoreFromBackupScreen(
         onBackClick = viewModel::onBackClick,
         onRestoringProfileCheckChanged = viewModel::toggleRestoringProfileCheck,
         onRestoreFromFileClick = {
-            openDocument.launch(arrayOf("application/json"))
+            openDocument.launch(arrayOf("*/*"))
         },
         onMessageShown = viewModel::onMessageShown,
         onPasswordTyped = viewModel::onPasswordTyped,
