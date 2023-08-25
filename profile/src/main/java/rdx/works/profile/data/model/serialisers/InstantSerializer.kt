@@ -7,6 +7,7 @@ import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 import java.time.Instant
+import java.time.temporal.ChronoUnit
 
 object InstantSerializer : KSerializer<Instant> {
 
@@ -18,10 +19,11 @@ object InstantSerializer : KSerializer<Instant> {
     )
 
     override fun serialize(encoder: Encoder, value: Instant) {
-        encoder.encodeString(value.toString())
+        val truncated = value.truncatedTo(ChronoUnit.SECONDS)
+        encoder.encodeString(truncated.toString())
     }
 
     override fun deserialize(decoder: Decoder): Instant {
-        return Instant.parse(decoder.decodeString())
+        return Instant.parse(decoder.decodeString()).truncatedTo(ChronoUnit.SECONDS)
     }
 }

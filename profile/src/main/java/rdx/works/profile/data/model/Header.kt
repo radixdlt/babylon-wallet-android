@@ -120,8 +120,8 @@ data class Header(
         /**
          * The [Instant] on which this profile was generated/claimed
          */
-        @Serializable(with = InstantSerializer::class)
         @SerialName("date")
+        @Contextual
         val date: Instant
     )
 
