@@ -1,5 +1,6 @@
 package rdx.works.profile.domain.backup
 
+import android.app.backup.BackupDataInputStream
 import android.net.Uri
 import rdx.works.core.storage.FileRepository
 import rdx.works.core.then
@@ -11,8 +12,12 @@ class SaveTemporaryRestoringSnapshotUseCase @Inject constructor(
     private val fileRepository: FileRepository
 ) {
 
-    suspend fun forCloud(snapshot: String): Result<Unit> {
-        return backupProfileRepository.saveTemporaryRestoringSnapshot(snapshot, BackupType.Cloud)
+    suspend fun forCloud(data: BackupDataInputStream): Result<Unit> = runCatching {
+        val byteArray = ByteArray(data.size())
+        data.read(byteArray)
+        byteArray.toString(Charsets.UTF_8)
+    }.then { snapshot ->
+        backupProfileRepository.saveTemporaryRestoringSnapshot(snapshot, BackupType.Cloud)
     }
 
     suspend fun forFile(uri: Uri, fileBackupType: BackupType.File): Result<Unit> {

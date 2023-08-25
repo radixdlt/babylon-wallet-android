@@ -13,36 +13,31 @@ import dagger.hilt.android.EntryPointAccessors
 import dagger.hilt.components.SingletonComponent
 import kotlinx.coroutines.runBlocking
 import rdx.works.profile.BuildConfig
-import rdx.works.profile.data.repository.BackupProfileRepository
-import rdx.works.profile.domain.backup.BackupType
+import rdx.works.profile.domain.backup.BackupProfileToCloudUseCase
+import rdx.works.profile.domain.backup.SaveTemporaryRestoringSnapshotUseCase
 import java.io.DataOutputStream
 import java.io.FileOutputStream
 import java.util.Date
 
 class ProfileSnapshotBackupHelper(context: Context) : BackupHelper {
 
-    private val backupProfileRepository: BackupProfileRepository
+    private val backupProfileToCloudUseCase: BackupProfileToCloudUseCase
+    private val saveTemporaryRestoringSnapshotUseCase: SaveTemporaryRestoringSnapshotUseCase
 
     init {
         val entryPoint = EntryPointAccessors.fromApplication(
             context.applicationContext,
             BackupHelperEntryPoint::class.java
         )
-        backupProfileRepository = entryPoint.backupProfileRepository()
+        backupProfileToCloudUseCase = entryPoint.backupProfileToCloudUseCase()
+        saveTemporaryRestoringSnapshotUseCase = entryPoint.saveTemporaryRestoringSnapshotUseCase()
     }
 
     override fun performBackup(oldState: ParcelFileDescriptor?, data: BackupDataOutput?, newState: ParcelFileDescriptor) {
-        val snapshotSerialised = runBlocking {
-            backupProfileRepository.getSnapshotForBackup(BackupType.Cloud)
-        }
-        log("Backup started for snapshot: $snapshotSerialised")
+        log("Backup started")
 
-        data?.apply {
-            val byteArray = snapshotSerialised?.toByteArray(Charsets.UTF_8) ?: byteArrayOf()
-            val len: Int = byteArray.size
-
-            writeEntityHeader(ENTITY_HEADER, len)
-            writeEntityData(byteArray, len)
+        runBlocking {
+            backupProfileToCloudUseCase(data, ENTITY_HEADER)
         }
 
         FileOutputStream(newState.fileDescriptor).also {
@@ -51,21 +46,13 @@ class ProfileSnapshotBackupHelper(context: Context) : BackupHelper {
     }
 
     override fun restoreEntity(data: BackupDataInputStream) {
-        try {
-            log("Restoring for key: ${data.key}")
-            val byteArray = ByteArray(data.size())
-            data.read(byteArray)
-            val snapshot = byteArray.toString(Charsets.UTF_8)
-
-            runBlocking {
-                backupProfileRepository.saveTemporaryRestoringSnapshot(snapshot, BackupType.Cloud).onSuccess {
-                    log("Saved restored profile")
-                }.onFailure {
-                    log("Restored profile discarded or incompatible")
-                }
+        log("Restoring for key: ${data.key}")
+        runBlocking {
+            saveTemporaryRestoringSnapshotUseCase.forCloud(data).onSuccess {
+                log("Saved restored profile")
+            }.onFailure { error ->
+                log("Restored profile discarded or incompatible: ${error.message}")
             }
-        } catch (exception: Exception) {
-            log(exception)
         }
     }
 
@@ -93,7 +80,8 @@ class ProfileSnapshotBackupHelper(context: Context) : BackupHelper {
     @EntryPoint
     @InstallIn(SingletonComponent::class)
     interface BackupHelperEntryPoint {
-        fun backupProfileRepository(): BackupProfileRepository
+        fun backupProfileToCloudUseCase(): BackupProfileToCloudUseCase
+        fun saveTemporaryRestoringSnapshotUseCase(): SaveTemporaryRestoringSnapshotUseCase
     }
 
     companion object {

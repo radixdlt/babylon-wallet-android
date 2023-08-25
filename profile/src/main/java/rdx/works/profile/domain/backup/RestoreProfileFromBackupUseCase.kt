@@ -1,6 +1,7 @@
 package rdx.works.profile.domain.backup
 
 import rdx.works.core.InstantGenerator
+import rdx.works.core.preferences.PreferencesManager
 import rdx.works.profile.data.repository.BackupProfileRepository
 import rdx.works.profile.data.repository.DeviceInfoRepository
 import rdx.works.profile.data.repository.ProfileRepository
@@ -10,6 +11,7 @@ class RestoreProfileFromBackupUseCase @Inject constructor(
     private val backupProfileRepository: BackupProfileRepository,
     private val profileRepository: ProfileRepository,
     private val deviceInfoRepository: DeviceInfoRepository,
+    private val preferencesManager: PreferencesManager
 ) {
 
     suspend operator fun invoke(backupType: BackupType) {
@@ -24,6 +26,10 @@ class RestoreProfileFromBackupUseCase @Inject constructor(
                 )
             )
             profileRepository.saveProfile(profileWithRestoredHeader)
+
+            if (backupType is BackupType.Cloud) {
+                preferencesManager.updateLastBackupInstant(InstantGenerator())
+            }
             backupProfileRepository.discardTemporaryRestoringSnapshot(backupType)
         }
     }
