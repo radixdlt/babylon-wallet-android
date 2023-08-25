@@ -48,10 +48,10 @@ internal fun DataChannel.eventFlow(): Flow<DataChannelMessage> = callbackFlow {
                     DataChannelMessage.Message.Chunk(packageMessageDto)
                 }
                 is PackageDto.ReceiveMessageConfirmation -> {
-                    DataChannelMessage.RemoteClientReceivedMessage.Confirmation(messageId = packageMessageDto.messageId)
+                    DataChannelMessage.RemoteConnectorReceivedMessage.Confirmation(messageId = packageMessageDto.messageId)
                 }
                 is PackageDto.ReceiveMessageError -> {
-                    DataChannelMessage.RemoteClientReceivedMessage.Error(messageId = packageMessageDto.messageId)
+                    DataChannelMessage.RemoteConnectorReceivedMessage.Error(messageId = packageMessageDto.messageId)
                 }
             }
         }
