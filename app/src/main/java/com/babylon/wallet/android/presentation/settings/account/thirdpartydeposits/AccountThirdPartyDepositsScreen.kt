@@ -184,9 +184,9 @@ private fun AccountThirdPartyDepositsContent(
             if (loading) {
                 FullscreenCircularProgressContent()
             }
-            SnackbarUiMessageHandler(message = error) {
+            SnackbarUiMessageHandler(message = error, onMessageShown = {
                 onMessageShown()
-            }
+            })
         }
 
         if (showNotSecuredDialog) {

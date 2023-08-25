@@ -1,7 +1,5 @@
 package com.babylon.wallet.android.data.gateway
 
-import com.babylon.wallet.android.data.gateway.generated.models.AccessRulesChain
-import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponseComponentDetails
 import com.babylon.wallet.android.data.gateway.generated.models.TransactionStatus
 
 fun TransactionStatus.isComplete(): Boolean {
@@ -17,8 +15,4 @@ fun TransactionStatus.isFailed(): Boolean {
         TransactionStatus.committedFailure,
         TransactionStatus.rejected
     ).contains(this)
-}
-
-fun StateEntityDetailsResponseComponentDetails.accessRulesChain(): AccessRulesChain? {
-    return accessRulesChain.firstOrNull()
 }

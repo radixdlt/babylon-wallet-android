@@ -2,6 +2,7 @@
 
 package com.babylon.wallet.android.presentation.settings.account.specificassets
 
+import android.net.Uri
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
@@ -14,6 +15,7 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -144,7 +146,9 @@ fun AddAssetSheet(
     onDismiss: () -> Unit,
 ) {
     Column(
-        modifier = modifier.verticalScroll(rememberScrollState()),
+        modifier = modifier.background(RadixTheme.colors.defaultBackground, shape = RadixTheme.shapes.roundedRectTopDefault).verticalScroll(
+            rememberScrollState()
+        ).imePadding(),
         verticalArrangement = Arrangement.Center,
     ) {
         BottomDialogDragHandle(
@@ -197,7 +201,7 @@ fun AddAssetSheet(
                 )
                 LabeledRadioButton(
                     modifier = Modifier.weight(1f),
-                    label = stringResource(id = R.string.accountSettings_specificAssetsDeposits_addAnAssetAllow),
+                    label = stringResource(id = R.string.accountSettings_specificAssetsDeposits_addAnAssetDeny),
                     selected = false,
                     onSelected = {}
                 )
@@ -350,9 +354,9 @@ private fun SpecificAssetsDepositsContent(
             if (loading) {
                 FullscreenCircularProgressContent()
             }
-            SnackbarUiMessageHandler(message = error) {
+            SnackbarUiMessageHandler(message = error, onMessageShown = {
                 onMessageShown()
-            }
+            })
         }
         Column(
             modifier = Modifier
@@ -415,7 +419,7 @@ private fun AssetItem(
     ) {
         AsyncImage(
             model = rememberImageUrl(
-                fromUrl = asset.iconUrl,
+                fromUrl = Uri.parse(asset.iconUrl),
                 size = ImageSize.SMALL
             ),
             placeholder = painterResource(id = R.drawable.img_placeholder),

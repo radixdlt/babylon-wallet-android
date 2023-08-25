@@ -54,8 +54,6 @@ import com.babylon.wallet.android.presentation.settings.personas.personaedit.per
 import com.babylon.wallet.android.presentation.settings.account.AccountSettingItem
 import com.babylon.wallet.android.presentation.settings.account.accountSettings
 import com.babylon.wallet.android.presentation.settings.account.thirdpartydeposits.accountThirdPartyDeposits
-import com.babylon.wallet.android.presentation.settings.backup.restoreMnemonicScreen
-import com.babylon.wallet.android.presentation.settings.connector.settingsConnectorScreen
 import com.babylon.wallet.android.presentation.settings.incompatibleprofile.IncompatibleProfileContent
 import com.babylon.wallet.android.presentation.settings.incompatibleprofile.ROUTE_INCOMPATIBLE_PROFILE
 import com.babylon.wallet.android.presentation.settings.personadetail.personaDetailScreen

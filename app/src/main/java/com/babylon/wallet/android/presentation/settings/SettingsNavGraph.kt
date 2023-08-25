@@ -106,20 +106,14 @@ private fun NavGraphBuilder.settingsAll(navController: NavController) {
                         navController.linkedConnectorsScreen()
                     }
 
-
                     SettingsItem.TopLevelSettings.Gateways -> {
                         navController.navigate(Screen.SettingsEditGatewayApiDestination.route) {
                             launchSingleTop = true
                         }
                     }
 
-
                     SettingsItem.TopLevelSettings.Personas -> {
                         navController.personaScreen()
-                    }
-
-                    SettingsItem.TopLevelSettings.LinkedConnector -> {
-                        navController.settingsConnectorScreen()
                     }
 
                     SettingsItem.TopLevelSettings.AuthorizedDapps -> {
@@ -144,11 +138,6 @@ private fun NavGraphBuilder.settingsAll(navController: NavController) {
                         navController.seedPhrases()
                     }
 
-                    SettingsItem.TopLevelSettings.ImportFromLegacyWallet -> {
-                        navController.settingsImportOlympiaAccounts()
-                    }
-
-
                     is SettingsItem.TopLevelSettings.Backups -> {
                         navController.backupScreen()
                     }
@@ -156,7 +145,6 @@ private fun NavGraphBuilder.settingsAll(navController: NavController) {
                     SettingsItem.TopLevelSettings.LedgerHardwareWallets -> {
                         navController.ledgerHardwareWalletsScreen()
                     }
-
 
                     SettingsItem.TopLevelSettings.ImportFromLegacyWallet -> {
                         navController.importLegacyWalletScreen()

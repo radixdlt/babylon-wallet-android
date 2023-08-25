@@ -140,7 +140,7 @@ class AccountSettingsViewModel @Inject constructor(
             state.value.account?.let { account ->
                 _state.update { it.copy(isAuthSigningLoading = true) }
                 rolaClient.generateAuthSigningFactorInstance(account).onSuccess { authSigningFactorInstance ->
-                    this@AccountPreferenceViewModel.authSigningFactorInstance = authSigningFactorInstance
+                    this@AccountSettingsViewModel.authSigningFactorInstance = authSigningFactorInstance
                     val manifest = rolaClient
                         .createAuthKeyManifestWithStringInstructions(account, authSigningFactorInstance)
                         .getOrElse {
