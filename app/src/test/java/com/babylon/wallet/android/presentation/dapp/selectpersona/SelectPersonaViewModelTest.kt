@@ -33,7 +33,7 @@ internal class SelectPersonaViewModelTest : StateViewModelTest<SelectPersonaView
     private val dAppConnectionRepository = DAppConnectionRepositoryFake()
 
     private val requestWithNonExistingDappAddress = MessageFromDataChannel.IncomingRequest.AuthorizedRequest(
-        dappId = "1",
+        remoteConnectorId = "1",
         interactionId = "1",
         requestMetadata = MessageFromDataChannel.IncomingRequest.RequestMetadata(
             11,

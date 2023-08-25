@@ -71,7 +71,7 @@ internal class TransactionApprovalViewModelTest : StateViewModelTest<Transaction
     private val sampleTxId = "txId1"
     private val sampleRequestId = "requestId1"
     private val sampleRequest = MessageFromDataChannel.IncomingRequest.TransactionRequest(
-        dappId = "dappId",
+        remoteConnectorId = "remoteConnectorId",
         requestId = sampleRequestId,
         transactionManifestData = TransactionManifestData("", 1, 11),
         requestMetadata = MessageFromDataChannel.IncomingRequest.RequestMetadata(
@@ -123,14 +123,14 @@ internal class TransactionApprovalViewModelTest : StateViewModelTest<Transaction
         )
         coEvery {
             dAppMessenger.sendTransactionWriteResponseSuccess(
-                dappId = "dappId",
+                remoteConnectorId = "remoteConnectorId",
                 requestId = sampleRequestId,
                 txId = sampleTxId
             )
         } returns ResultInternal.Success(Unit)
         coEvery {
             dAppMessenger.sendWalletInteractionResponseFailure(
-                dappId = "dappId",
+                remoteConnectorId = "remoteConnectorId",
                 requestId = sampleRequestId,
                 error = any(),
                 message = any()
@@ -215,7 +215,7 @@ internal class TransactionApprovalViewModelTest : StateViewModelTest<Transaction
         advanceUntilIdle()
         coVerify(exactly = 1) {
             dAppMessenger.sendTransactionWriteResponseSuccess(
-                dappId = "dappId",
+                remoteConnectorId = "remoteConnectorId",
                 requestId = sampleRequestId,
                 txId = sampleTxId
             )
@@ -232,7 +232,7 @@ internal class TransactionApprovalViewModelTest : StateViewModelTest<Transaction
         val errorSlot = slot<WalletErrorType>()
         coVerify(exactly = 1) {
             dAppMessenger.sendWalletInteractionResponseFailure(
-                dappId = "dappId",
+                remoteConnectorId = "remoteConnectorId",
                 requestId = sampleRequestId,
                 error = capture(errorSlot),
                 message = any()
@@ -257,7 +257,7 @@ internal class TransactionApprovalViewModelTest : StateViewModelTest<Transaction
         val errorSlot = slot<WalletErrorType>()
         coVerify(exactly = 1) {
             dAppMessenger.sendWalletInteractionResponseFailure(
-                dappId = "dappId",
+                remoteConnectorId = "remoteConnectorId",
                 requestId = sampleRequestId,
                 error = capture(errorSlot),
                 message = any()

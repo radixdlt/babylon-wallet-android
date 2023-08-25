@@ -8,7 +8,7 @@ import com.babylon.wallet.android.domain.common.Result
 class DappMessengerFake : DappMessenger {
 
     override suspend fun sendWalletInteractionResponseFailure(
-        dappId: String,
+        remoteConnectorId: String,
         requestId: String,
         error: WalletErrorType,
         message: String?
@@ -17,14 +17,17 @@ class DappMessengerFake : DappMessenger {
     }
 
     override suspend fun sendTransactionWriteResponseSuccess(
-        dappId: String,
+        remoteConnectorId: String,
         requestId: String,
         txId: String
     ): Result<Unit> {
         return Result.Success(Unit)
     }
 
-    override suspend fun sendWalletInteractionSuccessResponse(dappId: String, response: WalletInteractionResponse): Result<Unit> {
+    override suspend fun sendWalletInteractionSuccessResponse(
+        remoteConnectorId: String,
+        response: WalletInteractionResponse
+    ): Result<Unit> {
         return Result.Success(Unit)
     }
 
