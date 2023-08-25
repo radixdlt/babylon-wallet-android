@@ -2,25 +2,29 @@
 
 package rdx.works.core.encryption
 
+import kotlinx.serialization.DeserializationStrategy
 import kotlinx.serialization.EncodeDefault
 import kotlinx.serialization.ExperimentalSerializationApi
-import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.json.JsonClassDiscriminator
+import kotlinx.serialization.json.JsonContentPolymorphicSerializer
+import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.intOrNull
+import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.jsonPrimitive
 import rdx.works.core.decryptData
 import rdx.works.core.encryptData
 import javax.crypto.SecretKey
 
-@Serializable
-@JsonClassDiscriminator("version")
+@Serializable(with = EncryptionSchemeSerializer::class)
 sealed interface EncryptionScheme {
 
     fun encrypt(data: ByteArray, key: SecretKey): ByteArray
     fun decrypt(data: ByteArray, key: SecretKey): ByteArray
 
     @Serializable
-    @SerialName("1")
     class Version1 : EncryptionScheme {
+        @EncodeDefault
+        val version: Int = 1
         @EncodeDefault
         val description: String = "AESGCM-256"
 
@@ -31,5 +35,16 @@ sealed interface EncryptionScheme {
 
     companion object {
         val default: EncryptionScheme = Version1()
+    }
+}
+
+internal class EncryptionSchemeSerializer: JsonContentPolymorphicSerializer<EncryptionScheme>(
+    EncryptionScheme::class
+) {
+    override fun selectDeserializer(element: JsonElement): DeserializationStrategy<EncryptionScheme> {
+        return when (val version = element.jsonObject["version"]?.jsonPrimitive?.intOrNull) {
+            1 -> EncryptionScheme.Version1.serializer()
+            else -> error("Not supported EncryptionScheme version $version")
+        }
     }
 }

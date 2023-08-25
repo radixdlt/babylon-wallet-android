@@ -2,26 +2,30 @@
 
 package rdx.works.core.encryption
 
+import kotlinx.serialization.DeserializationStrategy
 import kotlinx.serialization.EncodeDefault
 import kotlinx.serialization.ExperimentalSerializationApi
-import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.json.JsonClassDiscriminator
+import kotlinx.serialization.json.JsonContentPolymorphicSerializer
+import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.intOrNull
+import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.jsonPrimitive
 import org.bouncycastle.crypto.digests.SHA256Digest
 import org.bouncycastle.crypto.generators.HKDFBytesGenerator
 import org.bouncycastle.crypto.params.HKDFParameters
 import javax.crypto.SecretKey
 import javax.crypto.spec.SecretKeySpec
 
-@Serializable
-@JsonClassDiscriminator("version")
+@Serializable(with = KeyDerivationSchemeSerializer::class)
 sealed interface KeyDerivationScheme {
 
     fun derive(password: String): SecretKey
 
     @Serializable
-    @SerialName("1")
     class Version1 : KeyDerivationScheme {
+        @EncodeDefault
+        val version: Int = 1
         @EncodeDefault
         val description: String = "HKDFSHA256-with-UTF8-encoding-of-password-no-salt-no-info"
 
@@ -42,5 +46,16 @@ sealed interface KeyDerivationScheme {
 
     companion object {
         val default: KeyDerivationScheme = Version1()
+    }
+}
+
+internal class KeyDerivationSchemeSerializer: JsonContentPolymorphicSerializer<KeyDerivationScheme>(
+    KeyDerivationScheme::class
+) {
+    override fun selectDeserializer(element: JsonElement): DeserializationStrategy<KeyDerivationScheme> {
+        return when (val version = element.jsonObject["version"]?.jsonPrimitive?.intOrNull) {
+            1 -> KeyDerivationScheme.Version1.serializer()
+            else -> error("Not supported KeyDerivationScheme version $version")
+        }
     }
 }
