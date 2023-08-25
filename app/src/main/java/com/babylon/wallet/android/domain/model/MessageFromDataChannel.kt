@@ -11,7 +11,7 @@ import rdx.works.profile.data.model.pernetwork.RequestedNumber
 sealed interface MessageFromDataChannel {
 
     sealed class IncomingRequest(
-        val remoteClientId: String, // from which dapp comes the message
+        open val remoteConnectorId: String, // from which remote CE comes the message
         val id: String, // the id of the request
         val metadata: RequestMetadata
     ) : MessageFromDataChannel {
@@ -22,7 +22,7 @@ sealed interface MessageFromDataChannel {
             }
 
         data class AuthorizedRequest(
-            val dappId: String, // from which dapp comes the message
+            override val remoteConnectorId: String, // from which remote CE comes the message
             val interactionId: String,
             val requestMetadata: RequestMetadata,
             val authRequest: AuthRequest,
@@ -31,7 +31,7 @@ sealed interface MessageFromDataChannel {
             val oneTimePersonaDataRequestItem: PersonaRequestItem? = null,
             val ongoingPersonaDataRequestItem: PersonaRequestItem? = null,
             val resetRequestItem: ResetRequestItem? = null
-        ) : IncomingRequest(dappId, interactionId, requestMetadata) {
+        ) : IncomingRequest(remoteConnectorId, interactionId, requestMetadata) {
 
             fun needSignatures(): Boolean {
                 return authRequest is AuthRequest.LoginRequest.WithChallenge ||
@@ -45,7 +45,7 @@ sealed interface MessageFromDataChannel {
             }
 
             fun isInternalRequest(): Boolean {
-                return dappId.isEmpty()
+                return remoteConnectorId.isEmpty()
             }
 
             private fun isUsePersonaAuth(): Boolean {
@@ -81,12 +81,12 @@ sealed interface MessageFromDataChannel {
         }
 
         data class UnauthorizedRequest(
-            val dappId: String, // from which dapp comes the message
+            override val remoteConnectorId: String, // from which remote CE comes the message
             val interactionId: String,
             val requestMetadata: RequestMetadata,
             val oneTimeAccountsRequestItem: AccountsRequestItem? = null,
             val oneTimePersonaDataRequestItem: PersonaRequestItem? = null
-        ) : IncomingRequest(dappId, interactionId, requestMetadata) {
+        ) : IncomingRequest(remoteConnectorId, interactionId, requestMetadata) {
             fun isValidRequest(): Boolean {
                 return oneTimeAccountsRequestItem?.isValidRequestItem() != false
             }
@@ -97,11 +97,11 @@ sealed interface MessageFromDataChannel {
         }
 
         data class TransactionRequest(
-            val dappId: String, // from which dapp comes the message
+            override val remoteConnectorId: String, // from which remote CE comes the message
             val requestId: String,
             val transactionManifestData: TransactionManifestData,
             val requestMetadata: RequestMetadata,
-        ) : IncomingRequest(dappId, requestId, requestMetadata)
+        ) : IncomingRequest(remoteConnectorId, requestId, requestMetadata)
 
         data class RequestMetadata(
             val networkId: Int,

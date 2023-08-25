@@ -11,6 +11,7 @@ import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import org.webrtc.DataChannel
 import rdx.works.peerdroid.data.PackageDto
+import rdx.works.peerdroid.domain.ConnectionIdHolder
 import rdx.works.peerdroid.domain.DataChannelWrapperEvent
 import rdx.works.peerdroid.helpers.Result
 import rdx.works.peerdroid.messagechunking.assembleChunks
@@ -22,13 +23,13 @@ import kotlin.collections.ArrayList
 
 @Suppress("InjectDispatcher")
 data class DataChannelWrapper(
-    private val remoteClientId: String,
+    private val connectionIdHolder: ConnectionIdHolder,
     private val webRtcDataChannel: DataChannel
 ) {
 
     init {
         Timber.d(
-            "📯 init DataChannelWrapper for remote client: $remoteClientId " +
+            "📯 init DataChannelWrapper for remote connector: ${connectionIdHolder.id} " +
                 "with label the remote client id ${this.webRtcDataChannel.label()}",
         )
     }
@@ -39,7 +40,7 @@ data class DataChannelWrapper(
             listOfPackages.forEachIndexed { index, packageDto ->
                 if (index == 0) {
                     val metadata = packageDto as PackageDto.MetaData
-                    Timber.d("📯 send message 📦 with messageId = ${metadata.messageId} to remote client: $remoteClientId")
+                    Timber.d("📯 send message 📦 with messageId = ${metadata.messageId} to remote connector: ${connectionIdHolder.id}")
                     send(packageDto = metadata)
                 } else {
                     val chunk = packageDto as PackageDto.Chunk
@@ -94,12 +95,12 @@ data class DataChannelWrapper(
                             )
                         }
                     }
-                    is DataChannelMessage.RemoteClientReceivedMessage.Confirmation -> {
-                        Timber.d("📯 remote client $remoteClientId received the message❕ ⬅️️")
+                    is DataChannelMessage.RemoteConnectorReceivedMessage.Confirmation -> {
+                        Timber.d("📯 remote connector ${connectionIdHolder.id} received the message❕ ⬅️️")
                         emit(DataChannelEvent.ReceiveMessage.Confirmation(messageId = dataChannelMessage.messageId))
                     }
-                    is DataChannelMessage.RemoteClientReceivedMessage.Error -> {
-                        Timber.d("📯 remote client $remoteClientId failed to receive the message❗️ ⬅️️")
+                    is DataChannelMessage.RemoteConnectorReceivedMessage.Error -> {
+                        Timber.d("📯 remote connector ${connectionIdHolder.id} failed to receive the message❗️ ⬅️️")
                         emit(DataChannelEvent.ReceiveMessage.Error(messageId = dataChannelMessage.messageId))
                     }
                     is DataChannelMessage.StateChanged -> {
@@ -122,33 +123,33 @@ data class DataChannelWrapper(
                             is Result.Success -> {
                                 val incomingMessageByteArray = result.data
                                 emit(
-                                    DataChannelWrapperEvent.MessageFromRemoteClient(
-                                        remoteClientId = remoteClientId,
+                                    DataChannelWrapperEvent.MessageFromRemoteConnectionId(
+                                        connectionIdHolder = connectionIdHolder,
                                         messageInJsonString = incomingMessageByteArray.decodeToString()
                                     )
                                 )
                                 Timber.d(
                                     "📯 forward the complete message with messageId = ${dataChannelEvent.messageId} " +
-                                        "from remote client $remoteClientId to the wallet ✅"
+                                        "from remote connector ${connectionIdHolder.id} to the wallet ✅"
                                 )
                             }
                             is Result.Error -> {
-                                emit(DataChannelWrapperEvent.Error(remoteClientId))
+                                emit(DataChannelWrapperEvent.Error(connectionIdHolder))
                             }
                         }
                     }
                     is DataChannelEvent.StateChanged -> {
-                        Timber.d("📯 state for remote client: $remoteClientId changed: ${dataChannelEvent.state} 📶️")
+                        Timber.d("📯 state for remote connector: ${connectionIdHolder.id} changed: ${dataChannelEvent.state} 📶️")
                         emit(
-                            DataChannelWrapperEvent.StateChangedForRemoteClient(
-                                remoteClientId = remoteClientId,
+                            DataChannelWrapperEvent.StateChangedForRemoteConnector(
+                                connectionIdHolder = connectionIdHolder,
                                 state = dataChannelEvent.state
                             )
                         )
                     }
                     is DataChannelEvent.Error -> {
                         // TODO handle this on the wallet by showing a snackbar message error?
-                        emit(DataChannelWrapperEvent.Error(remoteClientId = remoteClientId))
+                        emit(DataChannelWrapperEvent.Error(connectionIdHolder = connectionIdHolder))
                     }
                     else -> {
                         // it's the ReceiveMessage - do nothing at the moment
@@ -178,12 +179,12 @@ data class DataChannelWrapper(
 
         return when (result) {
             is Result.Error -> {
-                sendReceiveMessageError(messageId = currentMessageId) // inform remote client
+                sendReceiveMessageError(messageId = currentMessageId) // inform remote connector
                 clearMetaDataFromMemory()
                 Result.Error("failed to assemble and verify incoming message")
             }
             is Result.Success -> {
-                sendReceiveMessageConfirmation(messageId = currentMessageId) // inform remote client
+                sendReceiveMessageConfirmation(messageId = currentMessageId) // inform remote connector
                 clearMetaDataFromMemory()
                 Result.Success(assembledMessageInByteArray)
             }
@@ -202,7 +203,7 @@ data class DataChannelWrapper(
         val confirmationDto = PackageDto.ReceiveMessageConfirmation(
             messageId = messageId
         )
-        Timber.d("📯 send ReceiveMessageConfirmation ❕ for messageId = $messageId to remote client $remoteClientId ➡️")
+        Timber.d("📯 send ReceiveMessageConfirmation ❕ for messageId = $messageId to remote connector ${connectionIdHolder.id} ➡️")
         return send(packageDto = confirmationDto)
     }
 
@@ -211,7 +212,7 @@ data class DataChannelWrapper(
         val errorDto = PackageDto.ReceiveMessageError(
             messageId = messageId
         )
-        Timber.d("📯 send sendReceiveMessageError ❗️ or messageId = $messageId to remote client $remoteClientId ➡️")
+        Timber.d("📯 send sendReceiveMessageError ❗️ or messageId = $messageId to remote connector ${connectionIdHolder.id} ➡️")
         return send(errorDto)
     }
 
@@ -225,8 +226,8 @@ data class DataChannelWrapper(
     }
 
     fun close() {
-        Timber.d("📯 DataChannelWrapper of ${this.webRtcDataChannel} close for remote client: $remoteClientId 🔻")
+        Timber.d("📯 DataChannelWrapper of ${this.webRtcDataChannel} close for remote connector: ${connectionIdHolder.id} 🔻")
         webRtcDataChannel.close()
-        Timber.d("📯 ${this.webRtcDataChannel} state: ${this.webRtcDataChannel.state()}, for remote client: $remoteClientId")
+        Timber.d("📯 ${this.webRtcDataChannel} state: ${this.webRtcDataChannel.state()}, for remote connector: ${connectionIdHolder.id}")
     }
 }

@@ -85,7 +85,7 @@ class TransactionStatusDialogViewModel @Inject constructor(
                 (error as? DappRequestException)?.let { exception ->
                     val request = incomingRequestRepository.getTransactionWriteRequest(status.requestId)
                     dAppMessenger.sendWalletInteractionResponseFailure(
-                        dappId = request.dappId,
+                        remoteConnectorId = request.remoteConnectorId,
                         requestId = status.requestId,
                         error = exception.failure.toWalletErrorType(),
                         message = exception.failure.getDappMessage()

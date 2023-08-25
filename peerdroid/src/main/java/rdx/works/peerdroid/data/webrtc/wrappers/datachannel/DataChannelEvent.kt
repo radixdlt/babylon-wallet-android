@@ -2,7 +2,7 @@ package rdx.works.peerdroid.data.webrtc.wrappers.datachannel
 
 import org.webrtc.DataChannel
 import rdx.works.peerdroid.data.PackageDto
-import rdx.works.peerdroid.domain.DataChannelWrapperEvent.StateChangedForRemoteClient
+import rdx.works.peerdroid.domain.DataChannelWrapperEvent.StateChangedForRemoteConnector
 
 // Data model that is used for the DataChannel.eventFlow wrapper:
 // 1. it encapsulates the native DataChannel.State
@@ -19,13 +19,13 @@ internal sealed interface DataChannelMessage {
         data class Chunk(val chunkDto: PackageDto.Chunk) : Message
     }
 
-    // a notification from the other peer to confirm that:
-    sealed interface RemoteClientReceivedMessage : DataChannelMessage {
+    // a notification from the other peer (CE) to confirm that:
+    sealed interface RemoteConnectorReceivedMessage : DataChannelMessage {
         // complete message received and assembled successfully
-        data class Confirmation(val messageId: String) : RemoteClientReceivedMessage
+        data class Confirmation(val messageId: String) : RemoteConnectorReceivedMessage
 
         // failed to assemble complete message
-        data class Error(val messageId: String) : RemoteClientReceivedMessage
+        data class Error(val messageId: String) : RemoteConnectorReceivedMessage
     }
 
     // when something unexpected happens ...
@@ -51,7 +51,7 @@ internal sealed interface DataChannelEvent {
     }
 
     data class StateChanged(
-        val state: StateChangedForRemoteClient.State
+        val state: StateChangedForRemoteConnector.State
     ) : DataChannelEvent
 
     object Error : DataChannelEvent
@@ -61,22 +61,22 @@ internal fun DataChannel.State.toDomainModel(): DataChannelEvent.StateChanged {
     return when (this) {
         DataChannel.State.CONNECTING -> {
             DataChannelEvent.StateChanged(
-                state = StateChangedForRemoteClient.State.CONNECTING
+                state = StateChangedForRemoteConnector.State.CONNECTING
             )
         }
         DataChannel.State.OPEN -> {
             DataChannelEvent.StateChanged(
-                state = StateChangedForRemoteClient.State.OPEN
+                state = StateChangedForRemoteConnector.State.OPEN
             )
         }
         DataChannel.State.CLOSING -> {
             DataChannelEvent.StateChanged(
-                state = StateChangedForRemoteClient.State.CLOSING
+                state = StateChangedForRemoteConnector.State.CLOSING
             )
         }
         DataChannel.State.CLOSED -> {
             DataChannelEvent.StateChanged(
-                state = StateChangedForRemoteClient.State.CLOSED
+                state = StateChangedForRemoteConnector.State.CLOSED
             )
         }
     }
