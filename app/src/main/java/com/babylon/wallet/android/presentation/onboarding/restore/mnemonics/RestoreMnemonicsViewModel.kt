@@ -54,7 +54,7 @@ class RestoreMnemonicsViewModel @Inject constructor(
                     val allAccounts = profile?.currentNetwork?.accounts.orEmpty()
                     profile?.factorSources
                         ?.filterIsInstance<DeviceFactorSource>()
-                        ?.filter { mnemonicRepository.readMnemonic(it.id) == null }
+                        ?.filter { !mnemonicRepository.mnemonicExist(it.id) }
                         ?.mapNotNull { factorSource ->
                             val associatedAccounts = allAccounts.filter { it.factorSourceId() == factorSource.id }
 
@@ -72,7 +72,7 @@ class RestoreMnemonicsViewModel @Inject constructor(
                     val profile = getProfileUseCase().firstOrNull() ?: return@launch
                     val allAccounts = profile.currentNetwork.accounts
                     profile.factorSources.filterIsInstance<DeviceFactorSource>().find { factorSource ->
-                        factorSource.id.body.value == args.factorSourceIdHex && mnemonicRepository.readMnemonic(factorSource.id) == null
+                        factorSource.id.body.value == args.factorSourceIdHex && !mnemonicRepository.mnemonicExist(factorSource.id)
                     }?.let { factorSource ->
                         val associatedAccounts = allAccounts.filter { it.factorSourceId() == factorSource.id }
 

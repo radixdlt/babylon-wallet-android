@@ -11,7 +11,6 @@ import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.presentation.model.PersonaDisplayNameFieldWrapper
 import com.babylon.wallet.android.presentation.model.PersonaFieldWrapper
 import com.babylon.wallet.android.presentation.model.toPersonaData
-import com.babylon.wallet.android.utils.DeviceSecurityHelper
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
@@ -24,15 +23,12 @@ import javax.inject.Inject
 @HiltViewModel
 class CreatePersonaViewModel @Inject constructor(
     private val createPersonaWithDeviceFactorSourceUseCase: CreatePersonaWithDeviceFactorSourceUseCase,
-    private val preferencesManager: PreferencesManager,
-    private val deviceSecurityHelper: DeviceSecurityHelper,
+    private val preferencesManager: PreferencesManager
 ) : StateViewModel<CreatePersonaViewModel.CreatePersonaUiState>(),
     OneOffEventHandler<CreatePersonaEvent> by OneOffEventHandlerImpl(),
     PersonaEditable by PersonaEditableImpl() {
 
-    override fun initialState(): CreatePersonaUiState = CreatePersonaUiState(
-        isDeviceSecure = deviceSecurityHelper.isDeviceSecure()
-    )
+    override fun initialState(): CreatePersonaUiState = CreatePersonaUiState()
 
     init {
         viewModelScope.launch {
@@ -79,8 +75,7 @@ class CreatePersonaViewModel @Inject constructor(
         val fieldsToAdd: ImmutableList<PersonaFieldWrapper> = persistentListOf(),
         val personaDisplayName: PersonaDisplayNameFieldWrapper = PersonaDisplayNameFieldWrapper(),
         val continueButtonEnabled: Boolean = false,
-        val anyFieldSelected: Boolean = false,
-        val isDeviceSecure: Boolean = false
+        val anyFieldSelected: Boolean = false
     ) : UiState
 }
 

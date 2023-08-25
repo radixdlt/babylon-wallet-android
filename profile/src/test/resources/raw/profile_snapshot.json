@@ -206,7 +206,7 @@
       "description" : "unit test",
       "id" : "BABE1442-3C98-41FF-AFB0-D0F5829B020D"
     },
-    "snapshotVersion" : 42
+    "snapshotVersion" : 44
   },
   "networks" : [
     {
@@ -221,13 +221,21 @@
             "unsecuredEntityControl" : {
               "entityIndex" : 0,
               "authenticationSigning" : {
-                "derivationPath" : {
-                  "path" : "m/44H/1022H/34H/525H/1678H/0H",
-                  "scheme" : "cap26"
-                },
-                "publicKey" : {
-                  "compressedData" : "7c0d862503c6662374e131b735d7a1fffc053820a5bc7674515fb24c8d97f25c",
-                  "curve" : "curve25519"
+                "badge" : {
+                  "discriminator" : "virtualSource",
+                  "virtualSource" : {
+                    "discriminator" : "hierarchicalDeterministicPublicKey",
+                    "hierarchicalDeterministicPublicKey" : {
+                      "derivationPath" : {
+                        "path" : "m/44H/1022H/34H/525H/1678H/0H",
+                        "scheme" : "cap26"
+                      },
+                      "publicKey" : {
+                        "compressedData" : "7c0d862503c6662374e131b735d7a1fffc053820a5bc7674515fb24c8d97f25c",
+                        "curve" : "curve25519"
+                      }
+                    }
+                  }
                 },
                 "factorSourceID" : {
                   "discriminator" : "fromHash",
@@ -238,13 +246,21 @@
                 }
               },
               "transactionSigning" : {
-                "derivationPath" : {
-                  "path" : "m/44H/1022H/34H/525H/1460H/0H",
-                  "scheme" : "cap26"
-                },
-                "publicKey" : {
-                  "compressedData" : "390f5d05f6f4ce18a5a049e713ad098773b7cc0ca0c530c6422742579633f9b8",
-                  "curve" : "curve25519"
+                "badge" : {
+                  "discriminator" : "virtualSource",
+                  "virtualSource" : {
+                    "discriminator" : "hierarchicalDeterministicPublicKey",
+                    "hierarchicalDeterministicPublicKey" : {
+                      "derivationPath" : {
+                        "path" : "m/44H/1022H/34H/525H/1460H/0H",
+                        "scheme" : "cap26"
+                      },
+                      "publicKey" : {
+                        "compressedData" : "390f5d05f6f4ce18a5a049e713ad098773b7cc0ca0c530c6422742579633f9b8",
+                        "curve" : "curve25519"
+                      }
+                    }
+                  }
                 },
                 "factorSourceID" : {
                   "discriminator" : "fromHash",
@@ -254,6 +270,13 @@
                   }
                 }
               }
+            }
+          },
+          "onLedgerSettings": {
+            "thirdPartyDeposits": {
+              "depositRule": "acceptAll",
+              "assetsExceptionList": [],
+              "depositorsAllowList": []
             }
           }
         },
@@ -267,13 +290,21 @@
             "unsecuredEntityControl" : {
               "entityIndex" : 1,
               "authenticationSigning" : {
-                "derivationPath" : {
-                  "path" : "m/44H/1022H/34H/525H/1678H/1H",
-                  "scheme" : "cap26"
-                },
-                "publicKey" : {
-                  "compressedData" : "5cfab91eed77cc5952de5e29d963b15a61925194bb05757b083190cabdf59080",
-                  "curve" : "curve25519"
+                "badge" : {
+                  "discriminator" : "virtualSource",
+                  "virtualSource" : {
+                    "discriminator" : "hierarchicalDeterministicPublicKey",
+                    "hierarchicalDeterministicPublicKey" : {
+                      "derivationPath" : {
+                        "path" : "m/44H/1022H/34H/525H/1678H/1H",
+                        "scheme" : "cap26"
+                      },
+                      "publicKey" : {
+                        "compressedData" : "5cfab91eed77cc5952de5e29d963b15a61925194bb05757b083190cabdf59080",
+                        "curve" : "curve25519"
+                      }
+                    }
+                  }
                 },
                 "factorSourceID" : {
                   "discriminator" : "fromHash",
@@ -284,13 +315,21 @@
                 }
               },
               "transactionSigning" : {
-                "derivationPath" : {
-                  "path" : "m/44H/1022H/34H/525H/1460H/1H",
-                  "scheme" : "cap26"
-                },
-                "publicKey" : {
-                  "compressedData" : "fe12a293195513e2f0dc326521ef08a78e3ae743e34c46228bb231cc2e96dac8",
-                  "curve" : "curve25519"
+                "badge" : {
+                  "discriminator" : "virtualSource",
+                  "virtualSource" : {
+                    "discriminator" : "hierarchicalDeterministicPublicKey",
+                    "hierarchicalDeterministicPublicKey" : {
+                      "derivationPath" : {
+                        "path" : "m/44H/1022H/34H/525H/1460H/1H",
+                        "scheme" : "cap26"
+                      },
+                      "publicKey" : {
+                        "compressedData" : "fe12a293195513e2f0dc326521ef08a78e3ae743e34c46228bb231cc2e96dac8",
+                        "curve" : "curve25519"
+                      }
+                    }
+                  }
                 },
                 "factorSourceID" : {
                   "discriminator" : "fromHash",
@@ -300,6 +339,27 @@
                   }
                 }
               }
+            }
+          },
+          "onLedgerSettings": {
+            "thirdPartyDeposits": {
+              "depositRule": "acceptKnown",
+              "assetsExceptionList": [
+                {
+                  "address": "resource_tdx_21_1tknxxxxxxxxxradxrdxxxxxxxxx009923554798xxxxxxxxxsmgder",
+                  "exceptionRule": "deny"
+                }
+              ],
+              "depositorsAllowList": [
+                {
+                  "discriminator": "resourceAddress",
+                  "value": "resource_tdx_21_1tknxxxxxxxxxradxrdxxxxxxxxx009923554798xxxxxxxxxsmgder"
+                },
+                {
+                  "discriminator": "nonFungibleGlobalID",
+                  "value": "resource_tdx_21_1tknxxxxxxxxxradxrdxxxxxxxxx009923554798xxxxxxxxxsmgder:#2#"
+                }
+              ]
             }
           }
         },
@@ -313,13 +373,21 @@
             "unsecuredEntityControl" : {
               "entityIndex" : 2,
               "authenticationSigning" : {
-                "derivationPath" : {
-                  "path" : "m/44H/1022H/34H/525H/1678H/2H",
-                  "scheme" : "cap26"
-                },
-                "publicKey" : {
-                  "compressedData" : "1cb848d3487b4cec061535a5ebaa9f83d0fd3ec845917fae372896e454618a9c",
-                  "curve" : "curve25519"
+                "badge" : {
+                  "discriminator" : "virtualSource",
+                  "virtualSource" : {
+                    "discriminator" : "hierarchicalDeterministicPublicKey",
+                    "hierarchicalDeterministicPublicKey" : {
+                      "derivationPath" : {
+                        "path" : "m/44H/1022H/34H/525H/1678H/2H",
+                        "scheme" : "cap26"
+                      },
+                      "publicKey" : {
+                        "compressedData" : "1cb848d3487b4cec061535a5ebaa9f83d0fd3ec845917fae372896e454618a9c",
+                        "curve" : "curve25519"
+                      }
+                    }
+                  }
                 },
                 "factorSourceID" : {
                   "discriminator" : "fromHash",
@@ -330,13 +398,21 @@
                 }
               },
               "transactionSigning" : {
-                "derivationPath" : {
-                  "path" : "m/44H/1022H/34H/525H/1460H/2H",
-                  "scheme" : "cap26"
-                },
-                "publicKey" : {
-                  "compressedData" : "16220c8187c43a82ebba61b2428370c6816f05e6417190185f22bb5ed214fbdf",
-                  "curve" : "curve25519"
+                "badge" : {
+                  "discriminator" : "virtualSource",
+                  "virtualSource" : {
+                    "discriminator" : "hierarchicalDeterministicPublicKey",
+                    "hierarchicalDeterministicPublicKey" : {
+                      "derivationPath" : {
+                        "path" : "m/44H/1022H/34H/525H/1460H/2H",
+                        "scheme" : "cap26"
+                      },
+                      "publicKey" : {
+                        "compressedData" : "16220c8187c43a82ebba61b2428370c6816f05e6417190185f22bb5ed214fbdf",
+                        "curve" : "curve25519"
+                      }
+                    }
+                  }
                 },
                 "factorSourceID" : {
                   "discriminator" : "fromHash",
@@ -346,6 +422,27 @@
                   }
                 }
               }
+            }
+          },
+          "onLedgerSettings": {
+            "thirdPartyDeposits": {
+              "depositRule": "denyAll",
+              "assetsExceptionList": [
+                {
+                  "address": "resource_tdx_21_1tknxxxxxxxxxradxrdxxxxxxxxx009923554798xxxxxxxxxsmgder",
+                  "exceptionRule": "allow"
+                }
+              ],
+              "depositorsAllowList": [
+                {
+                  "discriminator": "resourceAddress",
+                  "value": "resource_tdx_21_1tknxxxxxxxxxradxrdxxxxxxxxx009923554798xxxxxxxxxsmgder"
+                },
+                {
+                  "discriminator": "nonFungibleGlobalID",
+                  "value": "resource_tdx_21_1tknxxxxxxxxxradxrdxxxxxxxxx009923554798xxxxxxxxxsmgder:#2#"
+                }
+              ]
             }
           }
         }
@@ -577,13 +674,21 @@
             "unsecuredEntityControl" : {
               "entityIndex" : 0,
               "authenticationSigning" : {
-                "derivationPath" : {
-                  "path" : "m/44H/1022H/34H/618H/1678H/0H",
-                  "scheme" : "cap26"
-                },
-                "publicKey" : {
-                  "compressedData" : "82248fcd9d9d1923729634231d288b6b5c6a5d3dd0cd52d5c06d998c057b0460",
-                  "curve" : "curve25519"
+                "badge" : {
+                  "discriminator" : "virtualSource",
+                  "virtualSource" : {
+                    "discriminator" : "hierarchicalDeterministicPublicKey",
+                    "hierarchicalDeterministicPublicKey" : {
+                      "derivationPath" : {
+                        "path" : "m/44H/1022H/34H/618H/1678H/0H",
+                        "scheme" : "cap26"
+                      },
+                      "publicKey" : {
+                        "compressedData" : "82248fcd9d9d1923729634231d288b6b5c6a5d3dd0cd52d5c06d998c057b0460",
+                        "curve" : "curve25519"
+                      }
+                    }
+                  }
                 },
                 "factorSourceID" : {
                   "discriminator" : "fromHash",
@@ -594,13 +699,21 @@
                 }
               },
               "transactionSigning" : {
-                "derivationPath" : {
-                  "path" : "m/44H/1022H/34H/618H/1460H/0H",
-                  "scheme" : "cap26"
-                },
-                "publicKey" : {
-                  "compressedData" : "cb5f31fee2b66013a6476bd4bf37bf6bf229404a6db1567db317ed0ba5334358",
-                  "curve" : "curve25519"
+                "badge" : {
+                  "discriminator" : "virtualSource",
+                  "virtualSource" : {
+                    "discriminator" : "hierarchicalDeterministicPublicKey",
+                    "hierarchicalDeterministicPublicKey" : {
+                      "derivationPath" : {
+                        "path" : "m/44H/1022H/34H/618H/1460H/0H",
+                        "scheme" : "cap26"
+                      },
+                      "publicKey" : {
+                        "compressedData" : "cb5f31fee2b66013a6476bd4bf37bf6bf229404a6db1567db317ed0ba5334358",
+                        "curve" : "curve25519"
+                      }
+                    }
+                  }
                 },
                 "factorSourceID" : {
                   "discriminator" : "fromHash",
@@ -648,13 +761,21 @@
             "unsecuredEntityControl" : {
               "entityIndex" : 1,
               "authenticationSigning" : {
-                "derivationPath" : {
-                  "path" : "m/44H/1022H/34H/618H/1678H/1H",
-                  "scheme" : "cap26"
-                },
-                "publicKey" : {
-                  "compressedData" : "133801ad4b98bd8925cd5d93fdfc3cae1965b48af51bbfe191e08d6a6911274b",
-                  "curve" : "curve25519"
+                "badge" : {
+                  "discriminator" : "virtualSource",
+                  "virtualSource" : {
+                    "discriminator" : "hierarchicalDeterministicPublicKey",
+                    "hierarchicalDeterministicPublicKey" : {
+                      "derivationPath" : {
+                        "path" : "m/44H/1022H/34H/618H/1678H/1H",
+                        "scheme" : "cap26"
+                      },
+                      "publicKey" : {
+                        "compressedData" : "133801ad4b98bd8925cd5d93fdfc3cae1965b48af51bbfe191e08d6a6911274b",
+                        "curve" : "curve25519"
+                      }
+                    }
+                  }
                 },
                 "factorSourceID" : {
                   "discriminator" : "fromHash",
@@ -665,13 +786,21 @@
                 }
               },
               "transactionSigning" : {
-                "derivationPath" : {
-                  "path" : "m/44H/1022H/34H/618H/1460H/1H",
-                  "scheme" : "cap26"
-                },
-                "publicKey" : {
-                  "compressedData" : "8620fd68dd9c594ff2477ee17189d32d79751915b21aa43e3f19b72a2f4404e3",
-                  "curve" : "curve25519"
+                "badge" : {
+                  "discriminator" : "virtualSource",
+                  "virtualSource" : {
+                    "discriminator" : "hierarchicalDeterministicPublicKey",
+                    "hierarchicalDeterministicPublicKey" : {
+                      "derivationPath" : {
+                        "path" : "m/44H/1022H/34H/618H/1460H/1H",
+                        "scheme" : "cap26"
+                      },
+                      "publicKey" : {
+                        "compressedData" : "8620fd68dd9c594ff2477ee17189d32d79751915b21aa43e3f19b72a2f4404e3",
+                        "curve" : "curve25519"
+                      }
+                    }
+                  }
                 },
                 "factorSourceID" : {
                   "discriminator" : "fromHash",

@@ -380,15 +380,17 @@ fun DappDetails(
                     Spacer(modifier = Modifier.height(dimensions.paddingDefault))
                 }
             }
-            dappWithMetadata?.claimedWebsites?.let {
-                item {
-                    DAppWebsiteAddressRow(
-                        websiteAddresses = it,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = dimensions.paddingDefault)
-                    )
-                    Spacer(modifier = Modifier.height(dimensions.paddingDefault))
+            dappWithMetadata?.claimedWebsites?.let { websites ->
+                if (websites.isNotEmpty()) {
+                    item {
+                        DAppWebsiteAddressRow(
+                            websiteAddresses = websites,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = dimensions.paddingDefault)
+                        )
+                        Spacer(modifier = Modifier.height(dimensions.paddingDefault))
+                    }
                 }
             }
             if (associatedFungibleTokens.isNotEmpty()) {

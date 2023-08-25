@@ -26,10 +26,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
@@ -56,7 +53,6 @@ import com.babylon.wallet.android.presentation.model.PersonaDisplayNameFieldWrap
 import com.babylon.wallet.android.presentation.model.PersonaFieldWrapper
 import com.babylon.wallet.android.presentation.model.toDisplayResource
 import com.babylon.wallet.android.presentation.ui.composables.DefaultModalSheetLayout
-import com.babylon.wallet.android.presentation.ui.composables.NotSecureAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.UnderlineTextButton
 import com.babylon.wallet.android.presentation.ui.composables.persona.AddFieldSheet
 import com.babylon.wallet.android.presentation.ui.composables.persona.PersonaDataFieldInput
@@ -88,7 +84,6 @@ fun CreatePersonaScreen(
             personaName = state.personaDisplayName,
             continueButtonEnabled = state.continueButtonEnabled,
             onBackClick = onBackClick,
-            isDeviceSecure = state.isDeviceSecure,
             modifier = modifier,
             fieldsToAdd = state.fieldsToAdd,
             currentFields = state.currentFields,
@@ -121,7 +116,6 @@ fun CreatePersonaContent(
     personaName: PersonaDisplayNameFieldWrapper,
     continueButtonEnabled: Boolean,
     onBackClick: () -> Unit,
-    isDeviceSecure: Boolean,
     modifier: Modifier,
     fieldsToAdd: ImmutableList<PersonaFieldWrapper>,
     currentFields: ImmutableList<PersonaFieldWrapper>,
@@ -170,7 +164,6 @@ fun CreatePersonaContent(
         Column(
             modifier = Modifier.fillMaxSize()
         ) {
-            var showNotSecuredDialog by remember { mutableStateOf(false) }
             val context = LocalContext.current
 
             IconButton(onClick = onBackClick) {
@@ -204,16 +197,12 @@ fun CreatePersonaContent(
             RadixPrimaryButton(
                 text = stringResource(id = R.string.createPersona_saveAndContinueButtonTitle),
                 onClick = {
-                    if (isDeviceSecure) {
-                        context.findFragmentActivity()?.let { activity ->
-                            activity.biometricAuthenticate(true) { authenticatedSuccessfully ->
-                                if (authenticatedSuccessfully) {
-                                    onPersonaCreateClick()
-                                }
+                    context.findFragmentActivity()?.let { activity ->
+                        activity.biometricAuthenticate { authenticatedSuccessfully ->
+                            if (authenticatedSuccessfully) {
+                                onPersonaCreateClick()
                             }
                         }
-                    } else {
-                        showNotSecuredDialog = true
                     }
                 },
                 modifier = Modifier
@@ -222,14 +211,6 @@ fun CreatePersonaContent(
                     .imePadding(),
                 enabled = continueButtonEnabled
             )
-            if (showNotSecuredDialog) {
-                NotSecureAlertDialog(finish = {
-                    showNotSecuredDialog = false
-                    if (it) {
-                        onPersonaCreateClick()
-                    }
-                })
-            }
         }
     }
 }
@@ -366,7 +347,6 @@ fun CreateAccountContentPreview() {
             personaName = PersonaDisplayNameFieldWrapper("Name"),
             continueButtonEnabled = false,
             onBackClick = {},
-            isDeviceSecure = true,
             modifier = Modifier,
             fieldsToAdd = persistentListOf(),
             currentFields = persistentListOf(),

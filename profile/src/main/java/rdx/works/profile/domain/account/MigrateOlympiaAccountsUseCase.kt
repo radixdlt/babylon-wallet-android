@@ -50,7 +50,8 @@ class MigrateOlympiaAccountsUseCase @Inject constructor(
                         publicKey = FactorInstance.PublicKey(olympiaAccount.publicKey, Slip10Curve.SECP_256K1),
                         derivationPath = DerivationPath.forLegacyOlympia(olympiaAccount.index),
                         factorSourceId = factorSourceId
-                    )
+                    ),
+                    onLedgerSettings = Network.Account.OnLedgerSettings.init()
                 )
             }
             var updatedProfile = profile

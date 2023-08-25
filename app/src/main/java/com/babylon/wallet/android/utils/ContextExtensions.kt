@@ -7,7 +7,7 @@ import androidx.navigation.NavController
 
 fun Context.biometricAuthenticate(authenticationCallback: (successful: Boolean) -> Unit) {
     findFragmentActivity()?.let { activity ->
-        activity.biometricAuthenticate(true) { authenticatedSuccessfully ->
+        activity.biometricAuthenticate { authenticatedSuccessfully ->
             authenticationCallback(authenticatedSuccessfully)
         }
     }

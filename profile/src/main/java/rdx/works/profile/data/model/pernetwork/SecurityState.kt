@@ -48,9 +48,11 @@ sealed class SecurityState {
             unsecuredEntityControl = UnsecuredEntityControl(
                 entityIndex = entityIndex,
                 transactionSigning = FactorInstance(
-                    derivationPath = derivationPath,
-                    factorSourceId = factorSourceId,
-                    publicKey = publicKey
+                    badge = FactorInstance.Badge.VirtualSource.HierarchicalDeterministic(
+                        derivationPath = derivationPath,
+                        publicKey = publicKey
+                    ),
+                    factorSourceId = factorSourceId
                 )
             )
         )

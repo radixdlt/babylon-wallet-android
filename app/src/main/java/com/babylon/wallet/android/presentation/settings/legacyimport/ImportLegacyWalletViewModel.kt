@@ -21,7 +21,6 @@ import com.babylon.wallet.android.presentation.dapp.authorized.account.AccountIt
 import com.babylon.wallet.android.presentation.dapp.authorized.account.toUiModel
 import com.babylon.wallet.android.presentation.model.LedgerDeviceUiModel
 import com.babylon.wallet.android.presentation.settings.ledgerhardwarewallets.AddLedgerDeviceUiState
-import com.babylon.wallet.android.utils.DeviceSecurityHelper
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.PersistentList
@@ -62,7 +61,6 @@ class ImportLegacyWalletViewModel @Inject constructor(
     private val migrateOlympiaAccountsUseCase: MigrateOlympiaAccountsUseCase,
     private val getFactorSourceIdForOlympiaAccountsUseCase: GetFactorSourceIdForOlympiaAccountsUseCase,
     private val getProfileUseCase: GetProfileUseCase,
-    private val deviceSecurityHelper: DeviceSecurityHelper,
     private val olympiaWalletDataParser: OlympiaWalletDataParser
 ) : StateViewModel<ImportLegacyWalletUiState>(), OneOffEventHandler<OlympiaImportEvent> by OneOffEventHandlerImpl() {
 
@@ -410,8 +408,7 @@ class ImportLegacyWalletViewModel @Inject constructor(
     override fun initialState(): ImportLegacyWalletUiState {
         return ImportLegacyWalletUiState(
             seedPhraseWords = persistentListOf(),
-            pages = initialPages.toPersistentList(),
-            isDeviceSecure = deviceSecurityHelper.isDeviceSecure()
+            pages = initialPages.toPersistentList()
         )
     }
 
@@ -425,7 +422,7 @@ class ImportLegacyWalletViewModel @Inject constructor(
                 useLedgerDelegate.onSendAddLedgerRequest()
             } else if (getProfileUseCase.p2pLinks.first().isEmpty()) {
                 _state.update {
-                    it.copy(shouldShowAddLinkConnectorScreen = true,)
+                    it.copy(shouldShowAddLinkConnectorScreen = true)
                 }
             } else {
                 _state.update {
@@ -484,7 +481,6 @@ data class ImportLegacyWalletUiState(
     val migratedAccounts: ImmutableList<AccountItemUiModel> = persistentListOf(),
     val hideBack: Boolean = false,
     val qrChunkInfo: ChunkInfo? = null,
-    val isDeviceSecure: Boolean = true,
     val hardwareAccountsLeftToImport: Int = 0,
     val waitingForLedgerResponse: Boolean = false,
     val verifiedLedgerDevices: ImmutableList<LedgerHardwareWalletFactorSource> = persistentListOf(),

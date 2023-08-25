@@ -6,6 +6,7 @@ import com.radixdlt.ret.deriveVirtualAccountAddressFromPublicKey
 import com.radixdlt.ret.deriveVirtualIdentityAddressFromPublicKey
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.JsonClassDiscriminator
 import rdx.works.core.decodeHex
 import rdx.works.core.mapWhen
 import rdx.works.core.toHexString
@@ -86,8 +87,86 @@ data class Network(
          * Security of this account
          */
         @SerialName("securityState")
-        override val securityState: SecurityState
+        override val securityState: SecurityState,
+
+        /**
+         * The on ledger synced settings for this account
+         */
+        @SerialName("onLedgerSettings")
+        val onLedgerSettings: OnLedgerSettings
+
     ) : Entity {
+
+        @Serializable
+        data class OnLedgerSettings(
+            @SerialName("thirdPartyDeposits")
+            val thirdPartyDeposits: ThirdPartyDeposits
+        ) {
+
+            @Serializable
+            data class ThirdPartyDeposits(
+                @SerialName("depositRule")
+                val depositRule: DepositRule = DepositRule.AcceptAll,
+                @SerialName("assetsExceptionList")
+                val assetsExceptionList: List<AssetException> = emptyList(),
+                @SerialName("depositorsAllowList")
+                val depositorsAllowList: List<DepositorAddress> = emptyList(),
+            ) {
+                @Serializable
+                enum class DepositRule {
+                    @SerialName("acceptAll")
+                    AcceptAll,
+
+                    @SerialName("acceptKnown")
+                    AcceptKnown,
+
+                    @SerialName("denyAll")
+                    DenyAll
+                }
+
+                @Serializable
+                enum class DepositAddressExceptionRule {
+                    @SerialName("allow")
+                    Allow,
+
+                    @SerialName("deny")
+                    Deny
+                }
+
+                @Serializable
+                @JsonClassDiscriminator(discriminator = "discriminator")
+                sealed interface DepositorAddress {
+
+                    @Serializable
+                    @SerialName("resourceAddress")
+                    data class ResourceAddress(
+                        @SerialName("value")
+                        val value: String
+                    ) : DepositorAddress
+
+                    @Serializable
+                    @SerialName("nonFungibleGlobalID")
+                    data class NonFungibleGlobalID(
+                        @SerialName("value")
+                        val value: String
+                    ) : DepositorAddress
+                }
+
+                @Serializable
+                data class AssetException(
+                    @SerialName("address")
+                    val address: String,
+                    @SerialName("exceptionRule")
+                    val exceptionRule: DepositAddressExceptionRule,
+                )
+            }
+
+            companion object {
+                fun init(): OnLedgerSettings {
+                    return OnLedgerSettings(thirdPartyDeposits = ThirdPartyDeposits())
+                }
+            }
+        }
 
         companion object {
             @Suppress("LongParameterList")
@@ -97,7 +176,8 @@ data class Network(
                 mnemonicWithPassphrase: MnemonicWithPassphrase,
                 deviceFactorSource: DeviceFactorSource,
                 networkId: NetworkId,
-                appearanceID: Int
+                appearanceID: Int,
+                onLedgerSettings: OnLedgerSettings = OnLedgerSettings.init()
             ): Account {
                 val derivationPath = DerivationPath.forAccount(
                     networkId = networkId,
@@ -124,7 +204,9 @@ data class Network(
                     appearanceID = appearanceID,
                     displayName = displayName,
                     networkID = networkId.value,
-                    securityState = unsecuredSecurityState
+                    securityState = unsecuredSecurityState,
+                    onLedgerSettings = onLedgerSettings
+
                 )
             }
 
@@ -136,7 +218,8 @@ data class Network(
                 ledgerFactorSource: LedgerHardwareWalletFactorSource,
                 networkId: NetworkId,
                 derivationPath: DerivationPath,
-                appearanceID: Int
+                appearanceID: Int,
+                onLedgerSettings: OnLedgerSettings = OnLedgerSettings.init()
             ): Account {
                 val derivationPathToCheck = DerivationPath.forAccount(
                     networkId = networkId,
@@ -162,7 +245,8 @@ data class Network(
                     appearanceID = appearanceID,
                     displayName = displayName,
                     networkID = networkId.value,
-                    securityState = unsecuredSecurityState
+                    securityState = unsecuredSecurityState,
+                    onLedgerSettings = onLedgerSettings
                 )
             }
 

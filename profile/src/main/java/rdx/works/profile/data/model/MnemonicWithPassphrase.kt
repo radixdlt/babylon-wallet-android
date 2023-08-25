@@ -72,10 +72,10 @@ fun MnemonicWithPassphrase.compressedPublicKey(
 
 @Suppress("UnsafeCallOnNullableType")
 fun MnemonicWithPassphrase.deriveExtendedKey(
-    factorInstance: FactorInstance
+    virtualSource: FactorInstance.Badge.VirtualSource.HierarchicalDeterministic
 ): ExtendedKey = toExtendedKey(
-    curve = factorInstance.publicKey.curve,
-    derivationPath = factorInstance.derivationPath!!
+    curve = virtualSource.publicKey.curve,
+    derivationPath = virtualSource.derivationPath
 )
 
 fun MnemonicWithPassphrase.validatePublicKeysOf(accounts: List<OlympiaAccountDetails>): Boolean {

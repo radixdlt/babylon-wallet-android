@@ -1,5 +1,7 @@
 package rdx.works.profile
 
+import io.mockk.coEvery
+import io.mockk.mockk
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.modules.SerializersModule
 import org.junit.Assert
@@ -19,6 +21,7 @@ import rdx.works.profile.data.model.factorsources.LedgerHardwareWalletFactorSour
 import rdx.works.profile.data.model.factorsources.OffDeviceMnemonicFactorSource
 import rdx.works.profile.data.model.factorsources.TrustedContactFactorSource
 import rdx.works.profile.data.model.pernetwork.CountryOrRegion
+import rdx.works.profile.data.model.pernetwork.FactorInstance
 import rdx.works.profile.data.model.pernetwork.IdentifiedEntry
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.data.model.pernetwork.Network.Account.Companion.initAccountWithDeviceFactorSource
@@ -32,6 +35,7 @@ import rdx.works.profile.data.model.pernetwork.addPersona
 import rdx.works.profile.data.model.pernetwork.nextAccountIndex
 import rdx.works.profile.data.model.pernetwork.nextPersonaIndex
 import rdx.works.profile.data.model.serialisers.InstantSerializer
+import rdx.works.profile.data.repository.MnemonicRepository
 import rdx.works.profile.data.repository.createOrUpdateAuthorizedDapp
 import java.io.File
 import java.time.Instant
@@ -51,14 +55,18 @@ class ProfileTest {
                     "humble limb repeat video sudden possible story mask neutral prize goose mandate",
             bip39Passphrase = ""
         )
+        val babylonFactorSource = DeviceFactorSource.babylon(
+            mnemonicWithPassphrase, model = "Galaxy A53 5G (Samsung SM-A536B)",
+            name = "Samsung"
+        )
+        val mnemonicRepository = mockk<MnemonicRepository>()
+        coEvery { mnemonicRepository() } returns mnemonicWithPassphrase
 
         val profile = Profile.init(
-            mnemonicWithPassphrase = mnemonicWithPassphrase,
             id = "BABE1442-3C98-41FF-AFB0-D0F5829B020D",
             deviceName = "Galaxy A53 5G (Samsung SM-A536B)",
-            deviceModel = "Samsung",
             creationDate = InstantGenerator()
-        )
+        ).copy(factorSources = listOf(babylonFactorSource))
 
         val defaultNetwork = Radix.Gateway.default.network
         assertEquals(profile.networks.count(), 1)
@@ -142,15 +150,17 @@ class ProfileTest {
 
         val gateway = Radix.Gateway.default
         val networkId = gateway.network.networkId()
-
+        val babylonFactorSource = DeviceFactorSource.babylon(
+            mnemonicWithPassphrase, model = "computer",
+            name = "unit test",
+            createdAt = Instant.EPOCH
+        )
         var expected = Profile.init(
-            mnemonicWithPassphrase = mnemonicWithPassphrase,
-            deviceName = "unit test",
-            deviceModel = "computer",
             id = "BABE1442-3C98-41FF-AFB0-D0F5829B020D",
+            deviceName = "unit test",
             creationDate = Instant.EPOCH,
             gateway = gateway
-        )
+        ).copy(factorSources = listOf(babylonFactorSource))
         expected = expected.copy(
             factorSources = expected.factorSources + listOf(
                 DeviceFactorSource.olympia(mnemonicWithPassphrase),
@@ -193,7 +203,26 @@ class ProfileTest {
             mnemonicWithPassphrase = mnemonicWithPassphrase,
             deviceFactorSource = expected.babylonDeviceFactorSource,
             networkId = networkId,
-            appearanceID = 1
+            appearanceID = 1,
+            onLedgerSettings = Network.Account.OnLedgerSettings(
+                thirdPartyDeposits = Network.Account.OnLedgerSettings.ThirdPartyDeposits(
+                    depositRule = Network.Account.OnLedgerSettings.ThirdPartyDeposits.DepositRule.AcceptKnown,
+                    assetsExceptionList = listOf(
+                        Network.Account.OnLedgerSettings.ThirdPartyDeposits.AssetException(
+                            "resource_tdx_21_1tknxxxxxxxxxradxrdxxxxxxxxx009923554798xxxxxxxxxsmgder",
+                            exceptionRule = Network.Account.OnLedgerSettings.ThirdPartyDeposits.DepositAddressExceptionRule.Deny
+                        )
+                    ),
+                    depositorsAllowList = listOf(
+                        Network.Account.OnLedgerSettings.ThirdPartyDeposits.DepositorAddress.ResourceAddress(
+                            "resource_tdx_21_1tknxxxxxxxxxradxrdxxxxxxxxx009923554798xxxxxxxxxsmgder"
+                        ),
+                        Network.Account.OnLedgerSettings.ThirdPartyDeposits.DepositorAddress.NonFungibleGlobalID(
+                            "resource_tdx_21_1tknxxxxxxxxxradxrdxxxxxxxxx009923554798xxxxxxxxxsmgder:#2#"
+                        ),
+                    )
+                )
+            )
         )
         expected = expected.addAccount(
             account = secondAccount,
@@ -206,7 +235,26 @@ class ProfileTest {
             mnemonicWithPassphrase = mnemonicWithPassphrase,
             deviceFactorSource = expected.babylonDeviceFactorSource,
             networkId = networkId,
-            appearanceID = 2
+            appearanceID = 2,
+            onLedgerSettings = Network.Account.OnLedgerSettings(
+                thirdPartyDeposits = Network.Account.OnLedgerSettings.ThirdPartyDeposits(
+                    depositRule = Network.Account.OnLedgerSettings.ThirdPartyDeposits.DepositRule.DenyAll,
+                    assetsExceptionList = listOf(
+                        Network.Account.OnLedgerSettings.ThirdPartyDeposits.AssetException(
+                            "resource_tdx_21_1tknxxxxxxxxxradxrdxxxxxxxxx009923554798xxxxxxxxxsmgder",
+                            exceptionRule = Network.Account.OnLedgerSettings.ThirdPartyDeposits.DepositAddressExceptionRule.Allow
+                        )
+                    ),
+                    depositorsAllowList = listOf(
+                        Network.Account.OnLedgerSettings.ThirdPartyDeposits.DepositorAddress.ResourceAddress(
+                            "resource_tdx_21_1tknxxxxxxxxxradxrdxxxxxxxxx009923554798xxxxxxxxxsmgder"
+                        ),
+                        Network.Account.OnLedgerSettings.ThirdPartyDeposits.DepositorAddress.NonFungibleGlobalID(
+                            "resource_tdx_21_1tknxxxxxxxxxradxrdxxxxxxxxx009923554798xxxxxxxxxsmgder:#2#"
+                        ),
+                    )
+                )
+            )
         )
         expected = expected.addAccount(
             account = thirdAccount,
@@ -546,6 +594,22 @@ class ProfileTest {
 
         repeat(3) { accountIndex ->
             assertEquals(
+                "The account entity index is the same",
+                (expected.networks.first().accounts[accountIndex].securityState as SecurityState.Unsecured)
+                    .unsecuredEntityControl.entityIndex,
+                (actual.networks.first().accounts[accountIndex].securityState as SecurityState.Unsecured)
+                    .unsecuredEntityControl.entityIndex
+            )
+
+            assertEquals(
+                "The transaction signing badge is the same",
+                (expected.networks.first().accounts[accountIndex].securityState as SecurityState.Unsecured)
+                    .unsecuredEntityControl.transactionSigning.badge as FactorInstance.Badge.VirtualSource.HierarchicalDeterministic,
+                (actual.networks.first().accounts[accountIndex].securityState as SecurityState.Unsecured)
+                    .unsecuredEntityControl.transactionSigning.badge as FactorInstance.Badge.VirtualSource.HierarchicalDeterministic
+            )
+
+            assertEquals(
                 "The accounts[$accountIndex] addresses are the same",
                 expected.networks.first().accounts[accountIndex].address,
                 actual.networks.first().accounts[accountIndex].address
@@ -558,20 +622,28 @@ class ProfileTest {
             )
 
             // Security State
+            val expectedTransactionSigning = (expected.networks.first().accounts[accountIndex].securityState as SecurityState.Unsecured)
+                .unsecuredEntityControl.transactionSigning
+            val expectedDerivationPath = (expectedTransactionSigning.badge as FactorInstance.Badge.VirtualSource.HierarchicalDeterministic)
+                .derivationPath
+            val actualTransactionSigning = (actual.networks.first().accounts[accountIndex].securityState as SecurityState.Unsecured)
+                .unsecuredEntityControl.transactionSigning
+            val actualDerivationPath = (actualTransactionSigning.badge as FactorInstance.Badge.VirtualSource.HierarchicalDeterministic)
+                .derivationPath
             assertEquals(
                 "The accounts[$accountIndex] derivation path are the same",
-                (expected.networks.first().accounts[accountIndex].securityState as SecurityState.Unsecured)
-                    .unsecuredEntityControl.transactionSigning.derivationPath,
-                (actual.networks.first().accounts[accountIndex].securityState as SecurityState.Unsecured)
-                    .unsecuredEntityControl.transactionSigning.derivationPath
+                expectedDerivationPath,
+                actualDerivationPath
             )
 
+            val expectedPublicKey = (expectedTransactionSigning.badge as FactorInstance.Badge.VirtualSource.HierarchicalDeterministic)
+                .publicKey
+            val actualPublicKey = (actualTransactionSigning.badge as FactorInstance.Badge.VirtualSource.HierarchicalDeterministic)
+                .publicKey
             assertEquals(
                 "The accounts[$accountIndex] public key are the same",
-                (expected.networks.first().accounts[accountIndex].securityState as SecurityState.Unsecured)
-                    .unsecuredEntityControl.transactionSigning.publicKey,
-                (actual.networks.first().accounts[accountIndex].securityState as SecurityState.Unsecured)
-                    .unsecuredEntityControl.transactionSigning.publicKey
+                expectedPublicKey,
+                actualPublicKey
             )
 
             assertEquals(
@@ -580,6 +652,12 @@ class ProfileTest {
                     .unsecuredEntityControl.transactionSigning.factorSourceId,
                 (actual.networks.first().accounts[accountIndex].securityState as SecurityState.Unsecured)
                     .unsecuredEntityControl.transactionSigning.factorSourceId
+            )
+
+            assertEquals(
+                "The accounts[$accountIndex] onLedgerSettings are the same",
+                expected.networks.first().accounts[accountIndex].onLedgerSettings,
+                actual.networks.first().accounts[accountIndex].onLedgerSettings
             )
         }
 
@@ -590,6 +668,22 @@ class ProfileTest {
         )
 
         repeat(2) { personaIndex ->
+            assertEquals(
+                "The persona entity index is the same",
+                (expected.networks.first().personas[personaIndex].securityState as SecurityState.Unsecured)
+                    .unsecuredEntityControl.entityIndex,
+                (actual.networks.first().personas[personaIndex].securityState as SecurityState.Unsecured)
+                    .unsecuredEntityControl.entityIndex
+            )
+
+            assertEquals(
+                "The transaction signing badge is the same",
+                (expected.networks.first().personas[personaIndex].securityState as SecurityState.Unsecured)
+                    .unsecuredEntityControl.transactionSigning.badge as FactorInstance.Badge.VirtualSource.HierarchicalDeterministic,
+                (actual.networks.first().personas[personaIndex].securityState as SecurityState.Unsecured)
+                    .unsecuredEntityControl.transactionSigning.badge as FactorInstance.Badge.VirtualSource.HierarchicalDeterministic
+            )
+
             assertEquals(
                 "The persona[$personaIndex] address is the same",
                 expected.networks.first().personas[personaIndex].address,
@@ -632,20 +726,28 @@ class ProfileTest {
                     .unsecuredEntityControl.transactionSigning.factorSourceId
             )
 
+            val expectedTransactionSigning = (expected.networks.first().personas[personaIndex].securityState as SecurityState.Unsecured)
+                .unsecuredEntityControl.transactionSigning
+            val expectedDerivationPath = (expectedTransactionSigning.badge as FactorInstance.Badge.VirtualSource.HierarchicalDeterministic)
+                .derivationPath
+            val actualTransactionSigning = (actual.networks.first().personas[personaIndex].securityState as SecurityState.Unsecured)
+                .unsecuredEntityControl.transactionSigning
+            val actualDerivationPath = (actualTransactionSigning.badge as FactorInstance.Badge.VirtualSource.HierarchicalDeterministic)
+                .derivationPath
             assertEquals(
                 "The persona[$personaIndex] derivation path is the same",
-                (expected.networks.first().personas[personaIndex].securityState as SecurityState.Unsecured)
-                    .unsecuredEntityControl.transactionSigning.derivationPath,
-                (actual.networks.first().personas[personaIndex].securityState as SecurityState.Unsecured)
-                    .unsecuredEntityControl.transactionSigning.derivationPath
+                expectedDerivationPath,
+                actualDerivationPath
             )
 
+            val expectedPublicKey = (expectedTransactionSigning.badge as FactorInstance.Badge.VirtualSource.HierarchicalDeterministic)
+                .publicKey
+            val actualPublicKey = (actualTransactionSigning.badge as FactorInstance.Badge.VirtualSource.HierarchicalDeterministic)
+                .publicKey
             assertEquals(
                 "The persona[$personaIndex] public key is the same",
-                (expected.networks.first().personas[personaIndex].securityState as SecurityState.Unsecured)
-                    .unsecuredEntityControl.transactionSigning.publicKey,
-                (actual.networks.first().personas[personaIndex].securityState as SecurityState.Unsecured)
-                    .unsecuredEntityControl.transactionSigning.publicKey
+                expectedPublicKey,
+                actualPublicKey
             )
         }
 
@@ -658,7 +760,7 @@ class ProfileTest {
     }
 
 
-    fun satoshiPersona(): PersonaData {
+    private fun satoshiPersona(): PersonaData {
         return PersonaData(
             name = IdentifiedEntry.init(
                 PersonaData.PersonaDataField.Name(

@@ -27,10 +27,8 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
@@ -58,7 +56,6 @@ import com.babylon.wallet.android.presentation.transaction.composables.Transacti
 import com.babylon.wallet.android.presentation.transaction.composables.TransactionPreviewTypeContent
 import com.babylon.wallet.android.presentation.transaction.fees.TransactionFees
 import com.babylon.wallet.android.presentation.ui.composables.DefaultModalSheetLayout
-import com.babylon.wallet.android.presentation.ui.composables.NotSecureAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
 import com.babylon.wallet.android.utils.biometricAuthenticateSuspend
@@ -72,20 +69,15 @@ fun TransactionApprovalScreen(
     viewModel: TransactionApprovalViewModel,
     onDismiss: () -> Unit
 ) {
-    var notSecuredDialogContext by remember { mutableStateOf<SecureDialogContext?>(null) }
     val state by viewModel.state.collectAsStateWithLifecycle()
     val context = LocalContext.current
     TransactionPreviewContent(
         onBackClick = viewModel::onBackClick,
         state = state,
         onApproveTransaction = {
-            if (state.isDeviceSecure) {
-                viewModel.approveTransaction(deviceBiometricAuthenticationProvider = {
-                    context.biometricAuthenticateSuspend()
-                })
-            } else {
-                notSecuredDialogContext = SecureDialogContext.ApproveTransaction
-            }
+            viewModel.approveTransaction(deviceBiometricAuthenticationProvider = {
+                context.biometricAuthenticateSuspend()
+            })
         },
         onRawManifestToggle = viewModel::onRawManifestToggle,
         onMessageShown = viewModel::onMessageShown,
@@ -125,24 +117,6 @@ fun TransactionApprovalScreen(
                 }
             }
         }
-    }
-    if (notSecuredDialogContext != null) {
-        NotSecureAlertDialog(
-            finish = { accepted ->
-                if (accepted) {
-                    when (notSecuredDialogContext) {
-                        SecureDialogContext.ApproveTransaction -> {
-                            viewModel.approveTransaction(deviceBiometricAuthenticationProvider = {
-                                context.biometricAuthenticateSuspend(allowIfDeviceIsNotSecure = true)
-                            })
-                        }
-
-                        else -> {}
-                    }
-                }
-                notSecuredDialogContext = null
-            }
-        )
     }
 }
 
@@ -365,6 +339,7 @@ private fun BottomSheetContent(
                 onGuaranteeValueDecreased = onGuaranteeValueDecreased
             )
         }
+
         is State.Sheet.CustomizeFees -> {
             FeesSheet(
                 modifier = modifier,
@@ -417,10 +392,6 @@ private fun SyncSheetState(
     }
 }
 
-private enum class SecureDialogContext {
-    ApproveTransaction
-}
-
 @Preview(showBackground = true)
 @Composable
 fun TransactionPreviewContentPreview() {
@@ -440,7 +411,6 @@ fun TransactionPreviewContentPreview() {
                     requestMetadata = MessageFromDataChannel.IncomingRequest.RequestMetadata.internal(Radix.Gateway.default.network.id)
                 ),
                 isLoading = false,
-                isDeviceSecure = true,
                 previewType = PreviewType.NonConforming
             ),
             onApproveTransaction = {},

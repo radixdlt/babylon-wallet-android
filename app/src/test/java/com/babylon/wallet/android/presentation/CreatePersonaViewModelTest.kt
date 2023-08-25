@@ -63,16 +63,18 @@ class CreatePersonaViewModelTest : StateViewModelTest<CreatePersonaViewModel>() 
                 unsecuredEntityControl = SecurityState.UnsecuredEntityControl(
                     entityIndex = 0,
                     transactionSigning = FactorInstance(
-                        derivationPath = DerivationPath.forIdentity(
-                            networkId = Radix.Gateway.default.network.networkId(),
-                            identityIndex = 0,
-                            keyType = KeyType.TRANSACTION_SIGNING
+                        badge = FactorInstance.Badge.VirtualSource.HierarchicalDeterministic(
+                            derivationPath = DerivationPath.forIdentity(
+                                networkId = Radix.Gateway.default.network.networkId(),
+                                identityIndex = 0,
+                                keyType = KeyType.TRANSACTION_SIGNING
+                            ),
+                            publicKey = FactorInstance.PublicKey.curve25519PublicKey("")
                         ),
                         factorSourceId = FactorSource.FactorSourceID.FromHash(
                             kind = FactorSourceKind.DEVICE,
                             body = FactorSource.HexCoded32Bytes("5f07ec336e9e7891bff04004c817201e73c097b6b1e1b3a26bc501e0010196f5")
-                        ),
-                        publicKey = FactorInstance.PublicKey.curve25519PublicKey("")
+                        )
                     )
                 )
             )
@@ -82,14 +84,13 @@ class CreatePersonaViewModelTest : StateViewModelTest<CreatePersonaViewModel>() 
     @Test
     fun `when view model init, verify persona info are empty`() = runTest {
         // when
-        val viewModel = CreatePersonaViewModel(createPersonaWithDeviceFactorSourceUseCase, preferencesManager, deviceSecurityHelper)
+        val viewModel = CreatePersonaViewModel(createPersonaWithDeviceFactorSourceUseCase, preferencesManager)
         advanceUntilIdle()
 
         // then
         val state = viewModel.state.first()
         Assert.assertEquals(state.loading, false)
         Assert.assertEquals(state.personaDisplayName, PersonaDisplayNameFieldWrapper())
-        Assert.assertEquals(state.isDeviceSecure, true)
     }
 
     @Test
@@ -97,7 +98,7 @@ class CreatePersonaViewModelTest : StateViewModelTest<CreatePersonaViewModel>() 
         runTest {
 
             val event = mutableListOf<CreatePersonaEvent>()
-            val viewModel = CreatePersonaViewModel(createPersonaWithDeviceFactorSourceUseCase, preferencesManager, deviceSecurityHelper)
+            val viewModel = CreatePersonaViewModel(createPersonaWithDeviceFactorSourceUseCase, preferencesManager)
 
             viewModel.onDisplayNameChanged(personaName.value)
 
@@ -110,7 +111,6 @@ class CreatePersonaViewModelTest : StateViewModelTest<CreatePersonaViewModel>() 
             val state = viewModel.state.first()
             Assert.assertEquals(state.loading, true)
             Assert.assertEquals(state.personaDisplayName, personaName)
-            Assert.assertEquals(state.isDeviceSecure, true)
 
             advanceUntilIdle()
 
@@ -122,6 +122,6 @@ class CreatePersonaViewModelTest : StateViewModelTest<CreatePersonaViewModel>() 
         }
 
     override fun initVM(): CreatePersonaViewModel {
-        return CreatePersonaViewModel(createPersonaWithDeviceFactorSourceUseCase, preferencesManager, deviceSecurityHelper)
+        return CreatePersonaViewModel(createPersonaWithDeviceFactorSourceUseCase, preferencesManager)
     }
 }

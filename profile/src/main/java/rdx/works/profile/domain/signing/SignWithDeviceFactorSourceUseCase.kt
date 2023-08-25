@@ -6,6 +6,7 @@ import rdx.works.core.ret.toEngineModel
 import rdx.works.profile.data.model.deriveExtendedKey
 import rdx.works.profile.data.model.factorsources.DeviceFactorSource
 import rdx.works.profile.data.model.pernetwork.Entity
+import rdx.works.profile.data.model.pernetwork.FactorInstance
 import rdx.works.profile.data.model.pernetwork.SecurityState
 import rdx.works.profile.data.model.pernetwork.SigningPurpose
 import rdx.works.profile.data.repository.MnemonicRepository
@@ -36,9 +37,11 @@ class SignWithDeviceFactorSourceUseCase @Inject constructor(
                                 ?: securityState.unsecuredEntityControl.transactionSigning
                         SigningPurpose.SignTransaction -> securityState.unsecuredEntityControl.transactionSigning
                     }
-                    val mnemonic = requireNotNull(mnemonicRepository.readMnemonic(deviceFactorSource.id))
+                    val mnemonic = requireNotNull(mnemonicRepository.readMnemonic(deviceFactorSource.id).getOrNull())
+                    val hierarchicalDeterministicVirtualSource = factorInstance.badge
+                        as? FactorInstance.Badge.VirtualSource.HierarchicalDeterministic ?: return@forEach
                     val extendedKey = mnemonic.deriveExtendedKey(
-                        factorInstance = factorInstance
+                        virtualSource = hierarchicalDeterministicVirtualSource
                     )
                     val privateKeyRET = extendedKey.keyPair.privateKey.toEngineModel()
                     val signatureWithPublicKey = privateKeyRET.signToSignatureWithPublicKey(dataToSign)

@@ -14,6 +14,7 @@ import rdx.works.core.toUByteList
 import rdx.works.profile.data.model.factorsources.LedgerHardwareWalletFactorSource
 import rdx.works.profile.data.model.factorsources.Slip10Curve
 import rdx.works.profile.data.model.pernetwork.Entity
+import rdx.works.profile.data.model.pernetwork.FactorInstance
 import rdx.works.profile.data.model.pernetwork.SecurityState
 import rdx.works.profile.data.model.pernetwork.SigningPurpose
 import rdx.works.profile.data.repository.ProfileRepository
@@ -124,8 +125,11 @@ class SignWithLedgerFactorSourceUseCase @Inject constructor(
                                 ?: securityState.unsecuredEntityControl.transactionSigning
                         SigningPurpose.SignTransaction -> securityState.unsecuredEntityControl.transactionSigning
                     }
-                    val derivationPath = checkNotNull(factorInstance.derivationPath)
-                    val curve = factorInstance.publicKey.curve
+                    val (derivationPath, curve) = when (val badge = factorInstance.badge) {
+                        is FactorInstance.Badge.VirtualSource.HierarchicalDeterministic -> {
+                            Pair(badge.derivationPath, badge.publicKey.curve)
+                        }
+                    }
                     derivationPath.path to curve
                 }
             }

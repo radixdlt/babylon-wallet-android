@@ -18,9 +18,11 @@ class RestoreMnemonicUseCase @Inject constructor(
         factorInstance: FactorInstance,
         mnemonicWithPassphrase: MnemonicWithPassphrase
     ): Result<Unit> {
-        val derivationPath = factorInstance.derivationPath ?: return Result.failure(
-            Exception("Factor instance is not related to a device factor source")
-        )
+        val (derivationPath, publicKey) = when (val badge = factorInstance.badge) {
+            is FactorInstance.Badge.VirtualSource.HierarchicalDeterministic -> {
+                Pair(badge.derivationPath, badge.publicKey)
+            }
+        }
 
         val factorSourceId = (factorInstance.factorSourceId as FactorSource.FactorSourceID.FromHash)
         val isFactorSourceIdValid = FactorSource.factorSourceId(
@@ -29,8 +31,8 @@ class RestoreMnemonicUseCase @Inject constructor(
 
         val isPublicKeyValid = mnemonicWithPassphrase.compressedPublicKey(
             derivationPath = derivationPath,
-            curve = factorInstance.publicKey.curve
-        ).removeLeadingZero().toHexString() == factorInstance.publicKey.compressedData
+            curve = publicKey.curve
+        ).removeLeadingZero().toHexString() == publicKey.compressedData
 
         return if (!isFactorSourceIdValid || !isPublicKeyValid) {
             Result.failure(Exception("Invalid mnemonic with passphrase"))

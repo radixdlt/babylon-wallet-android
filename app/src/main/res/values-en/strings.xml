@@ -360,6 +360,7 @@
   <string name="transactionReview_customizeNetworkFeeSheet_padding">Padding</string>
   <string name="transactionReview_customizeNetworkFeeSheet_royalties">Royalties</string>
   <string name="transactionReview_customizeNetworkFeeSheet_royaltyFee">Royalty fee</string>
+  <string name="transactionReview_customizeNetworkFeeSheet_paidByDApps">Paid by dApps</string>
   <string name="transactionReview_customizeNetworkFeeSheet_paddingFieldLabel">Adjust Fee Padding Amount (XRD)</string>
   <string name="transactionReview_customizeNetworkFeeSheet_tipFieldLabel">Adjust Tip to Lock</string>
   <string name="transactionReview_customizeNetworkFeeSheet_tipFieldInfo">(%% of Execution + Finalization Fees)</string>
@@ -403,8 +404,8 @@
   <string name="biometrics_prompt_importOlympiaAccounts">Check if seed phrase already exists.</string>
   <string name="biometrics_prompt_checkingAccounts">Checking accounts.</string>
   <string name="biometrics_prompt_updateAccountMetadata">Update account metadata.</string>
-  <string name="biometrics_deviceNotSecureAlert_title">Your device is not secured</string>
-  <string name="biometrics_deviceNotSecureAlert_message">Do you want to continue?</string>
+  <string name="biometrics_deviceNotSecureAlert_title">Your device is not secured.</string>
+  <string name="biometrics_deviceNotSecureAlert_message">Please set up secure lock screen before using this app.</string>
   <string name="common_account">Account</string>
   <string name="common_cancel">Cancel</string>
   <string name="common_continue">Continue</string>
@@ -681,7 +682,4 @@
   <string name="iOSProfileBackup_totalAccountsNumberLabel">Number of Accounts: %d</string>
   <string name="iOSProfileBackup_totalPersonasNumberLabel">Number of Personas: %d</string>
   <string name="iOSProfileBackup_incompatibleWalletDataLabel">Incompatible Wallet data</string>
-
-  <string name="accountSettings_behaviors_canFreezeInFuture">A third party can freeze this asset in place.</string>
-  <string name="accountSettings_behaviors_canBeFrozeInFutureByAnyone">Anyone can freeze this asset in place.</string>
 </resources>
