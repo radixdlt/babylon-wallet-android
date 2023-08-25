@@ -367,6 +367,13 @@ class ProfileTest {
             actual.appPreferences.gateways
         )
 
+        // defaultDepositGuarantee
+        assertEquals(
+            "Default deposit guarantees are the same",
+            expected.appPreferences.transaction.defaultDepositGuarantee,
+            actual.appPreferences.transaction.defaultDepositGuarantee
+        )
+
         // Display
         assertEquals(
             "Fiat currency is the same",
