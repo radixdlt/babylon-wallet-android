@@ -25,6 +25,7 @@ sealed interface KeyDerivationScheme {
         @EncodeDefault
         val description: String = "HKDFSHA256-with-UTF8-encoding-of-password-no-salt-no-info"
 
+        @Suppress("MagicNumber")
         override fun derive(password: String): SecretKey {
             val generator = HKDFBytesGenerator(SHA256Digest()).apply {
                 init(HKDFParameters.defaultParameters(password.toByteArray(Charsets.UTF_8)))

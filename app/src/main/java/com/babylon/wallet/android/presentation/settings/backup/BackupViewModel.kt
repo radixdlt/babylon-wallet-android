@@ -12,12 +12,13 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.profile.data.model.BackupState
+import rdx.works.profile.domain.backup.BackupProfileToFileUseCase
 import rdx.works.profile.domain.backup.BackupType
 import rdx.works.profile.domain.backup.ChangeBackupSettingUseCase
-import rdx.works.profile.domain.backup.BackupProfileToFileUseCase
 import rdx.works.profile.domain.backup.GetBackupStateUseCase
 import javax.inject.Inject
 
+@Suppress("TooManyFunctions")
 @HiltViewModel
 class BackupViewModel @Inject constructor(
     private val changeBackupSettingUseCase: ChangeBackupSettingUseCase,
@@ -102,8 +103,8 @@ class BackupViewModel @Inject constructor(
         }
 
         backupProfileToFileUseCase(fileBackupType = fileBackupType, file = uri).onSuccess {
-            _state.update {
-                it.copy(uiMessage = UiMessage.InfoMessage.WalletExported, encryptSheet = State.EncryptSheet.Closed)
+            _state.update { state ->
+                state.copy(uiMessage = UiMessage.InfoMessage.WalletExported, encryptSheet = State.EncryptSheet.Closed)
             }
         }.onFailure { error ->
             _state.update {
@@ -130,13 +131,13 @@ class BackupViewModel @Inject constructor(
             get() = encryptSheet is EncryptSheet.Open
 
         sealed interface EncryptSheet {
-            object Closed: EncryptSheet
+            object Closed : EncryptSheet
             data class Open(
                 val password: String = "",
                 val isPasswordRevealed: Boolean = false,
                 val confirm: String = "",
                 val isConfirmPasswordRevealed: Boolean = false,
-            ): EncryptSheet {
+            ) : EncryptSheet {
 
                 val passwordsMatch: Boolean
                     get() = password == confirm
@@ -152,8 +153,8 @@ class BackupViewModel @Inject constructor(
         }
     }
 
-    sealed interface Event: OneOffEvent {
-        object Dismiss: Event
-        data class ChooseExportFile(val fileName: String): Event
+    sealed interface Event : OneOffEvent {
+        object Dismiss : Event
+        data class ChooseExportFile(val fileName: String) : Event
     }
 }

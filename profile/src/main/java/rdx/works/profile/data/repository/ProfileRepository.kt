@@ -39,7 +39,6 @@ interface ProfileRepository {
     suspend fun clear()
 
     fun deriveProfileState(content: String): ProfileState
-
 }
 
 suspend fun ProfileRepository.updateProfile(updateAction: suspend (Profile) -> Profile): Profile {

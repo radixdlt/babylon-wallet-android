@@ -16,10 +16,10 @@ class Display private constructor(
 
     override fun toString(): String {
         return "Display(" +
-                "fiatCurrencyPriceTarget='$fiatCurrencyPriceTarget', " +
-                "isCurrencyAmountVisible=$isCurrencyAmountVisible, " +
-                "ledgerHQHardwareWalletSigningDisplayMode=$ledgerHQHardwareWalletSigningDisplayMode" +
-                ")"
+            "fiatCurrencyPriceTarget='$fiatCurrencyPriceTarget', " +
+            "isCurrencyAmountVisible=$isCurrencyAmountVisible, " +
+            "ledgerHQHardwareWalletSigningDisplayMode=$ledgerHQHardwareWalletSigningDisplayMode" +
+            ")"
     }
 
     override fun equals(other: Any?): Boolean {

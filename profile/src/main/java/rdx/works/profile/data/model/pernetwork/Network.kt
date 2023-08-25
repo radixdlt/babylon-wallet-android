@@ -1,9 +1,12 @@
+@file:OptIn(ExperimentalSerializationApi::class)
+
 package rdx.works.profile.data.model.pernetwork
 
 import com.radixdlt.extensions.removeLeadingZero
 import com.radixdlt.ret.PublicKey
 import com.radixdlt.ret.deriveVirtualAccountAddressFromPublicKey
 import com.radixdlt.ret.deriveVirtualIdentityAddressFromPublicKey
+import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonClassDiscriminator

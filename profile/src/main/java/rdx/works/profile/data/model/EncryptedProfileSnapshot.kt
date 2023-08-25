@@ -28,7 +28,6 @@ data class EncryptedProfileSnapshot(
         companion object {
             val CURRENT = Version(version = 1)
         }
-
     }
 
     internal fun decrypt(deserializer: Json, password: String): ProfileSnapshot {
@@ -58,5 +57,4 @@ data class EncryptedProfileSnapshot(
             )
         }
     }
-
 }

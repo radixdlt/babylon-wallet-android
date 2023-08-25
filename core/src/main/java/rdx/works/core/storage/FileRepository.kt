@@ -13,12 +13,11 @@ interface FileRepository {
     fun save(toFile: Uri, data: String): Result<Unit>
 
     fun read(fromFile: Uri): Result<String>
-
 }
 
 class FileRepositoryImpl @Inject constructor(
     @ApplicationContext val context: Context
-): FileRepository {
+) : FileRepository {
 
     override fun save(toFile: Uri, data: String): Result<Unit> {
         return try {
@@ -36,12 +35,11 @@ class FileRepositoryImpl @Inject constructor(
         return try {
             val fileContent = context.contentResolver.openInputStream(fromFile)?.use { stream ->
                 stream.source().buffer().readUtf8()
-            } ?: return Result.failure(NullPointerException())
+            } ?: return Result.failure(NullPointerException("File not found"))
 
             Result.success(fileContent)
         } catch (exception: Exception) {
             Result.failure(exception)
         }
     }
-
 }

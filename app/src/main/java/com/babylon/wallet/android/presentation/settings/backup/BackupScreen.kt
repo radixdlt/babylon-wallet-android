@@ -185,7 +185,6 @@ private fun BackupScreenContent(
         }
     ) {
         Scaffold(
-            modifier = modifier,
             topBar = {
                 RadixCenteredTopAppBar(
                     title = stringResource(R.string.settings_backups),
@@ -305,7 +304,6 @@ private fun BackupScreenContent(
             }
         }
     }
-
 }
 
 @Composable

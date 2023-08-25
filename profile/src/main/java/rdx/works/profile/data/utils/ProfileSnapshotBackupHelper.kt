@@ -70,13 +70,6 @@ class ProfileSnapshotBackupHelper(context: Context) : BackupHelper {
         }
     }
 
-    @SuppressLint("LogNotTimber")
-    private fun log(exception: Exception) {
-        if (BuildConfig.DEBUG) {
-            Log.w(TAG, exception)
-        }
-    }
-
     @EntryPoint
     @InstallIn(SingletonComponent::class)
     interface BackupHelperEntryPoint {

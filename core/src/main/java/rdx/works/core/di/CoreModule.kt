@@ -17,5 +17,4 @@ interface CoreModule {
     fun bindFileRepository(
         fileRepositoryImpl: FileRepositoryImpl
     ): FileRepository
-
 }

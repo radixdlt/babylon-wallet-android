@@ -20,7 +20,7 @@ sealed interface EncryptionScheme {
 
     @Serializable
     @SerialName("1")
-    class Version1: EncryptionScheme {
+    class Version1 : EncryptionScheme {
         @EncodeDefault
         val description: String = "AESGCM-256"
 

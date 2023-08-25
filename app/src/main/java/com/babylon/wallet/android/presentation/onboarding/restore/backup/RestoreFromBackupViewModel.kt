@@ -88,7 +88,7 @@ class RestoreFromBackupViewModel @Inject constructor(
             viewModelScope.launch {
                 saveTemporaryRestoringSnapshotUseCase.forFile(uri = sheet.file, BackupType.File.Encrypted(sheet.password))
                     .onSuccess {
-                        _state.update { it.copy(passwordSheetState = State.PasswordSheet.Closed) }
+                        _state.update { state -> state.copy(passwordSheetState = State.PasswordSheet.Closed) }
                         delay(AppConstants.DELAY_300_MS)
                         sendEvent(Event.OnRestoreConfirm(fromCloud = false))
                     }.onFailure { error ->
@@ -124,13 +124,13 @@ class RestoreFromBackupViewModel @Inject constructor(
             get() = isRestoringProfileChecked
 
         sealed interface PasswordSheet {
-            object Closed: PasswordSheet
+            object Closed : PasswordSheet
             data class Open(
                 val password: String = "",
                 val isPasswordInvalid: Boolean = false,
                 val isPasswordRevealed: Boolean = false,
                 val file: Uri
-            ): PasswordSheet {
+            ) : PasswordSheet {
 
                 val isSubmitEnabled: Boolean
                     get() = password.isNotBlank() && !isPasswordInvalid

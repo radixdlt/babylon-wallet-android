@@ -5,14 +5,14 @@ import kotlinx.serialization.Serializable
 @Serializable
 sealed interface BackupType {
     @Serializable
-    object Cloud: BackupType
+    object Cloud : BackupType
 
     @Serializable
-    sealed interface File: BackupType {
+    sealed interface File : BackupType {
         @Serializable
-        object PlainText: File
+        object PlainText : File
 
         @Serializable
-        data class Encrypted(val password: String): File
+        data class Encrypted(val password: String) : File
     }
 }

@@ -8,7 +8,6 @@ import rdx.works.profile.data.model.Profile
 import rdx.works.profile.data.model.ProfileState
 import rdx.works.profile.data.repository.ProfileRepository
 import rdx.works.profile.domain.GetProfileUseCase
-import rdx.works.profile.domain.backup.ExportType
 
 fun fakeGetProfileUseCase(
     initialProfileState: ProfileState = ProfileState.Restored(profile = profile())

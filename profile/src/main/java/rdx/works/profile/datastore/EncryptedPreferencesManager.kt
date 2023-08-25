@@ -21,6 +21,7 @@ import java.io.IOException
 import javax.inject.Inject
 import javax.inject.Singleton
 
+@Suppress("TooManyFunctions")
 @Singleton
 class EncryptedPreferencesManager @Inject constructor(
     @ProfileDataStore private val preferences: DataStore<Preferences>,

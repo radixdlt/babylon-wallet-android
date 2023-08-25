@@ -1,6 +1,9 @@
+@file:OptIn(ExperimentalSerializationApi::class)
+
 package rdx.works.profile.data.model.pernetwork
 
 import kotlinx.serialization.Contextual
+import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable

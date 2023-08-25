@@ -24,7 +24,6 @@ interface BackupProfileRepository {
     suspend fun discardTemporaryRestoringSnapshot(backupType: BackupType)
 
     suspend fun getSnapshotForBackup(backupType: BackupType): String?
-
 }
 
 class BackupProfileRepositoryImpl @Inject constructor(
@@ -125,5 +124,4 @@ class BackupProfileRepositoryImpl @Inject constructor(
             }
         }
     }
-
 }
