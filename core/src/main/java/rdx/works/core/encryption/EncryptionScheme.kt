@@ -7,8 +7,8 @@ import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonClassDiscriminator
-import rdx.works.core.decrypt
-import rdx.works.core.encrypt
+import rdx.works.core.decryptData
+import rdx.works.core.encryptData
 import javax.crypto.SecretKey
 
 @Serializable
@@ -24,9 +24,9 @@ sealed interface EncryptionScheme {
         @EncodeDefault
         val description: String = "AESGCM-256"
 
-        override fun encrypt(data: ByteArray, key: SecretKey): ByteArray = data.encrypt(secretKey = key)
+        override fun encrypt(data: ByteArray, key: SecretKey): ByteArray = encryptData(data, key).getOrThrow()
 
-        override fun decrypt(data: ByteArray, key: SecretKey): ByteArray = data.decrypt(secretKey = key)
+        override fun decrypt(data: ByteArray, key: SecretKey): ByteArray = decryptData(data, key).getOrThrow()
     }
 
     companion object {

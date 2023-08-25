@@ -87,7 +87,7 @@ class EncryptedPreferencesManager @Inject constructor(
         } else {
             snapshotEncrypted.decrypt(KeySpec.Profile())
         }
-    }.flowOn(ioDispatcher).firstOrNull()
+    }.flowOn(ioDispatcher).firstOrNull()?.getOrNull()
 
     suspend fun putProfileSnapshotFromCloudBackup(restoredSnapshotSerialized: String) {
         putString(RESTORED_PROFILE_CLOUD_PREFERENCES_KEY, restoredSnapshotSerialized, KeySpec.Profile())
@@ -107,7 +107,7 @@ class EncryptedPreferencesManager @Inject constructor(
         } else {
             snapshotEncrypted.decrypt(KeySpec.Profile())
         }
-    }.flowOn(ioDispatcher).firstOrNull()
+    }.flowOn(ioDispatcher).firstOrNull()?.getOrNull()
 
     suspend fun putProfileSnapshotFromFileBackup(restoredSnapshotSerialized: String) {
         putString(RESTORED_PROFILE_FILE_PREFERENCES_KEY, restoredSnapshotSerialized, KeySpec.Profile())
