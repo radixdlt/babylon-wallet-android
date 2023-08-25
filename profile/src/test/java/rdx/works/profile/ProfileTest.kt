@@ -34,7 +34,7 @@ import rdx.works.profile.data.model.pernetwork.addAccount
 import rdx.works.profile.data.model.pernetwork.addPersona
 import rdx.works.profile.data.model.pernetwork.nextAccountIndex
 import rdx.works.profile.data.model.pernetwork.nextPersonaIndex
-import rdx.works.profile.data.model.serialisers.InstantSerializer
+import rdx.works.core.serializers.InstantSerializer
 import rdx.works.profile.data.repository.MnemonicRepository
 import rdx.works.profile.data.repository.createOrUpdateAuthorizedDapp
 import java.io.File

@@ -6,7 +6,7 @@ import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.modules.SerializersModule
-import rdx.works.profile.data.model.serialisers.InstantSerializer
+import rdx.works.core.serializers.InstantSerializer
 import java.time.Instant
 import javax.inject.Qualifier
 

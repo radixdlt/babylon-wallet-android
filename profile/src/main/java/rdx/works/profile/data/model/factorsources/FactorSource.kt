@@ -1,6 +1,10 @@
+@file:OptIn(ExperimentalSerializationApi::class)
+
 package rdx.works.profile.data.model.factorsources
 
 import kotlinx.serialization.Contextual
+import kotlinx.serialization.EncodeDefault
+import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import okio.ByteString.Companion.decodeHex
@@ -86,6 +90,7 @@ sealed class FactorSource {
         var lastUsedOn: Instant,
 
         @SerialName("flags")
+        @EncodeDefault
         var flags: List<FactorSourceFlag> = emptyList()
     ) {
 

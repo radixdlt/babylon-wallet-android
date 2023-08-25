@@ -6,7 +6,6 @@ import kotlinx.serialization.Serializable
 import rdx.works.profile.data.model.Header.Companion.equals
 import rdx.works.profile.data.model.Profile.Companion.equals
 import rdx.works.profile.data.model.ProfileSnapshot.Companion.MINIMUM
-import rdx.works.profile.data.model.serialisers.InstantSerializer
 import java.time.Instant
 
 @Serializable

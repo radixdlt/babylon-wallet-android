@@ -1,4 +1,4 @@
-package rdx.works.profile.data.model.serialisers
+package rdx.works.core.serializers
 
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.descriptors.PrimitiveKind
