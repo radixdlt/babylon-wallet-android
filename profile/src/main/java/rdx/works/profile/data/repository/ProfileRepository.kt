@@ -165,7 +165,7 @@ class ProfileRepositoryImpl @Inject constructor(
     }
 
     override suspend fun getRestoringProfileFromBackup(): Profile? {
-        val state = encryptedPreferencesManager.getProfileSnapshotFromBackup()?.let { snapshot ->
+        val state = encryptedPreferencesManager.getProfileSnapshotFromBackup()?.getOrNull()?.let { snapshot ->
             deriveProfileState(snapshot)
         }
 
