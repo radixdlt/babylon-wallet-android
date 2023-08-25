@@ -23,11 +23,11 @@ import rdx.works.profile.data.model.pernetwork.SecurityState
 import rdx.works.profile.data.repository.MnemonicRepository
 import rdx.works.profile.data.utils.factorSourceId
 import rdx.works.profile.domain.GetProfileUseCase
-import rdx.works.profile.domain.backup.DiscardRestoredProfileFromFileBackupUseCase
-import rdx.works.profile.domain.backup.GetRestoringProfileFromCloudBackupUseCase
-import rdx.works.profile.domain.backup.GetRestoringProfileFromFileBackupUseCase
+import rdx.works.profile.domain.backup.BackupType
+import rdx.works.profile.domain.backup.DiscardTemporaryRestoredFileForBackupUseCase
+import rdx.works.profile.domain.backup.GetTemporaryRestoringProfileForBackupUseCase
 import rdx.works.profile.domain.backup.RestoreMnemonicUseCase
-import rdx.works.profile.domain.backup.RestoreProfileFromCloudBackupUseCase
+import rdx.works.profile.domain.backup.RestoreProfileFromBackupUseCase
 import javax.inject.Inject
 
 @Suppress("TooManyFunctions", "LongParameterList")
@@ -35,12 +35,11 @@ import javax.inject.Inject
 class RestoreMnemonicsViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     private val getProfileUseCase: GetProfileUseCase,
-    private val getRestoringProfileFromCloudBackupUseCase: GetRestoringProfileFromCloudBackupUseCase,
-    private val getRestoringProfileFromFileBackupUseCase: GetRestoringProfileFromFileBackupUseCase,
+    private val getTemporaryRestoringProfileForBackupUseCase: GetTemporaryRestoringProfileForBackupUseCase,
     private val mnemonicRepository: MnemonicRepository,
     private val restoreMnemonicUseCase: RestoreMnemonicUseCase,
-    private val restoreProfileFromCloudBackupUseCase: RestoreProfileFromCloudBackupUseCase,
-    private val discardRestoredProfileFromFileBackupUseCase: DiscardRestoredProfileFromFileBackupUseCase,
+    private val restoreProfileFromBackupUseCase: RestoreProfileFromBackupUseCase,
+    private val discardTemporaryRestoredFileForBackupUseCase: DiscardTemporaryRestoredFileForBackupUseCase,
     private val appEventBus: AppEventBus
 ) : StateViewModel<RestoreMnemonicsViewModel.State>(),
     OneOffEventHandler<RestoreMnemonicsViewModel.Event> by OneOffEventHandlerImpl() {
@@ -54,11 +53,9 @@ class RestoreMnemonicsViewModel @Inject constructor(
         viewModelScope.launch {
             val factorSources = when (args) {
                 is RestoreMnemonicsArgs.RestoreProfile -> {
-                    val profile = when (args.backupType) {
-                        RestoreMnemonicsArgs.BackupType.CLOUD -> getRestoringProfileFromCloudBackupUseCase()
-                        RestoreMnemonicsArgs.BackupType.FILE -> getRestoringProfileFromFileBackupUseCase()
-                    }
+                    val profile = getTemporaryRestoringProfileForBackupUseCase(args.backupType)
                     val allAccounts = profile?.currentNetwork?.accounts.orEmpty()
+
                     profile?.factorSources
                         ?.filterIsInstance<DeviceFactorSource>()
                         ?.filter { !mnemonicRepository.mnemonicExist(it.id) }
@@ -110,8 +107,8 @@ class RestoreMnemonicsViewModel @Inject constructor(
             _state.update { it.copy(isShowingEntities = true, isMovingForward = false) }
         } else {
             viewModelScope.launch {
-                if (args is RestoreMnemonicsArgs.RestoreProfile && args.backupType == RestoreMnemonicsArgs.BackupType.FILE) {
-                    discardRestoredProfileFromFileBackupUseCase()
+                if (args is RestoreMnemonicsArgs.RestoreProfile && args.backupType is BackupType.File) {
+                    discardTemporaryRestoredFileForBackupUseCase(BackupType.File.PlainText)
                 }
 
                 sendEvent(Event.FinishRestoration(isMovingToMain = false))
@@ -161,7 +158,7 @@ class RestoreMnemonicsViewModel @Inject constructor(
             )
         ).onSuccess {
             if (args is RestoreMnemonicsArgs.RestoreProfile && _state.value.isMainSeedPhrase) {
-                restoreProfileFromCloudBackupUseCase()
+                restoreProfileFromBackupUseCase(args.backupType)
             }
 
             appEventBus.sendEvent(AppEvent.RestoredMnemonic)

@@ -3,9 +3,9 @@ package rdx.works.profile.domain.backup
 import rdx.works.profile.data.repository.BackupProfileRepository
 import javax.inject.Inject
 
-class GetRestoringProfileFromFileBackupUseCase @Inject constructor(
+class GetTemporaryRestoringProfileForBackupUseCase @Inject constructor(
     private val backupProfileRepository: BackupProfileRepository
 ) {
 
-    suspend operator fun invoke() = backupProfileRepository.getRestoringProfileFromFileBackup()
+    suspend operator fun invoke(backupType: BackupType) = backupProfileRepository.getTemporaryRestoringProfile(backupType)
 }

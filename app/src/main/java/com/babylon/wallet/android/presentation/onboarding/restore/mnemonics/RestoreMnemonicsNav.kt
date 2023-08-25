@@ -9,7 +9,10 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavType
 import androidx.navigation.navArgument
 import com.google.accompanist.navigation.animation.composable
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 import rdx.works.profile.data.model.factorsources.FactorSource
+import rdx.works.profile.domain.backup.BackupType
 
 private const val ARG_FACTOR_SOURCE_ID = "factorSourceId"
 private const val ARG_BACKUP_TYPE = "backupType"
@@ -17,13 +20,13 @@ private const val ROUTE = "restore_mnemonics?factorSourceId={$ARG_FACTOR_SOURCE_
 
 fun NavController.restoreMnemonics(
     deviceFactorSourceId: FactorSource.FactorSourceID.FromHash? = null,
-    backupType: RestoreMnemonicsArgs.BackupType? = null
+    backupType: BackupType? = null
 ) {
     navigate(
         route = if (deviceFactorSourceId != null) {
             "restore_mnemonics?factorSourceId=${deviceFactorSourceId.body.value}"
         } else if (backupType != null) {
-            "restore_mnemonics?backupType=${backupType.name}"
+            "restore_mnemonics?backupType=${Json.encodeToString(backupType)}"
         } else {
             error("Need to specify the type of backup which we are restoring from")
         }
@@ -34,11 +37,6 @@ sealed class RestoreMnemonicsArgs {
     data class RestoreProfile(val backupType: BackupType) : RestoreMnemonicsArgs()
     data class RestoreSpecificMnemonic(val factorSourceIdHex: String) : RestoreMnemonicsArgs()
 
-    enum class BackupType {
-        CLOUD,
-        FILE
-    }
-
     companion object {
         fun from(savedStateHandle: SavedStateHandle): RestoreMnemonicsArgs {
             val factorSourceIdHex: String? = savedStateHandle[ARG_FACTOR_SOURCE_ID]
@@ -46,7 +44,7 @@ sealed class RestoreMnemonicsArgs {
                 RestoreSpecificMnemonic(factorSourceIdHex)
             } else {
                 val type: String = requireNotNull(savedStateHandle[ARG_BACKUP_TYPE])
-                RestoreProfile(BackupType.valueOf(type))
+                RestoreProfile(Json.decodeFromString(type))
             }
         }
     }

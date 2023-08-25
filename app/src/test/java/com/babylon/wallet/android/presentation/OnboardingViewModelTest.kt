@@ -13,7 +13,7 @@ import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import org.mockito.Mockito
-import rdx.works.profile.domain.backup.DiscardRestoredProfileFromCloudBackupUseCase
+import rdx.works.profile.domain.backup.DiscardTemporaryRestoredFileForBackupUseCase
 
 @ExperimentalCoroutinesApi
 class OnboardingViewModelTest {
@@ -22,7 +22,7 @@ class OnboardingViewModelTest {
     val coroutineRule = TestDispatcherRule()
 
     //private val deviceSecurityHelper = Mockito.mock(DeviceSecurityHelper::class.java)
-    private val discardRestoredProfileFromCloudBackupUseCase = Mockito.mock(DiscardRestoredProfileFromCloudBackupUseCase::class.java)
+    private val discardTemporaryRestoredFileForBackupUseCase = Mockito.mock(DiscardTemporaryRestoredFileForBackupUseCase::class.java)
 
     @Test
     fun `when alert not accepted, do not show external warning`() = runTest {
@@ -30,7 +30,7 @@ class OnboardingViewModelTest {
         val event = mutableListOf<OnboardingViewModel.OnBoardingUiState>()
         val viewModel = OnboardingViewModel(
             //deviceSecurityHelper = deviceSecurityHelper,
-            discardRestoredProfileFromCloudBackupUseCase = discardRestoredProfileFromCloudBackupUseCase
+            discardTemporaryRestoredFileForBackupUseCase = discardTemporaryRestoredFileForBackupUseCase
         )
 
         // when
@@ -50,7 +50,7 @@ class OnboardingViewModelTest {
         val event = mutableListOf<OnboardingViewModel.OnBoardingUiState>()
         val viewModel = OnboardingViewModel(
             //deviceSecurityHelper = deviceSecurityHelper,
-            discardRestoredProfileFromCloudBackupUseCase = discardRestoredProfileFromCloudBackupUseCase
+            discardTemporaryRestoredFileForBackupUseCase = discardTemporaryRestoredFileForBackupUseCase
         )
 
         // when
@@ -73,7 +73,7 @@ class OnboardingViewModelTest {
         val event = mutableListOf<OnboardingViewModel.OnBoardingUiState>()
         val viewModel = OnboardingViewModel(
             //deviceSecurityHelper = deviceSecurityHelper,
-            discardRestoredProfileFromCloudBackupUseCase = discardRestoredProfileFromCloudBackupUseCase
+            discardTemporaryRestoredFileForBackupUseCase = discardTemporaryRestoredFileForBackupUseCase
         )
 
         // when
@@ -96,7 +96,7 @@ class OnboardingViewModelTest {
         val event = mutableListOf<OnboardingViewModel.OnBoardingUiState>()
         val viewModel = OnboardingViewModel(
             //deviceSecurityHelper = deviceSecurityHelper,
-            discardRestoredProfileFromCloudBackupUseCase = discardRestoredProfileFromCloudBackupUseCase
+            discardTemporaryRestoredFileForBackupUseCase = discardTemporaryRestoredFileForBackupUseCase
         )
 
         // when

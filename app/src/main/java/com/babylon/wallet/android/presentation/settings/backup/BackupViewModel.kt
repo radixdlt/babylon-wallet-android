@@ -12,16 +12,16 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.profile.data.model.BackupState
+import rdx.works.profile.domain.backup.BackupType
 import rdx.works.profile.domain.backup.ChangeBackupSettingUseCase
-import rdx.works.profile.domain.backup.ExportProfileUseCase
-import rdx.works.profile.domain.backup.ExportType
+import rdx.works.profile.domain.backup.BackupProfileToFileUseCase
 import rdx.works.profile.domain.backup.GetBackupStateUseCase
 import javax.inject.Inject
 
 @HiltViewModel
 class BackupViewModel @Inject constructor(
     private val changeBackupSettingUseCase: ChangeBackupSettingUseCase,
-    private val exportProfileUseCase: ExportProfileUseCase,
+    private val backupProfileToFileUseCase: BackupProfileToFileUseCase,
     getBackupStateUseCase: GetBackupStateUseCase
 ) : StateViewModel<BackupViewModel.State>(), OneOffEventHandler<BackupViewModel.Event> by OneOffEventHandlerImpl() {
 
@@ -96,12 +96,12 @@ class BackupViewModel @Inject constructor(
     }
 
     fun onFileChosen(uri: Uri) = viewModelScope.launch {
-        val exportType = when (val sheet = state.value.encryptSheet) {
-            is State.EncryptSheet.Closed -> ExportType.Json
-            is State.EncryptSheet.Open -> ExportType.EncodedJson(sheet.password)
+        val fileBackupType = when (val sheet = state.value.encryptSheet) {
+            is State.EncryptSheet.Closed -> BackupType.File.PlainText
+            is State.EncryptSheet.Open -> BackupType.File.Encrypted(sheet.password)
         }
 
-        exportProfileUseCase(exportType = exportType, file = uri).onSuccess {
+        backupProfileToFileUseCase(fileBackupType = fileBackupType, file = uri).onSuccess {
             _state.update {
                 it.copy(uiMessage = UiMessage.InfoMessage.WalletExported, encryptSheet = State.EncryptSheet.Closed)
             }

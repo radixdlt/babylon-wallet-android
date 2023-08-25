@@ -16,21 +16,22 @@ import kotlinx.coroutines.launch
 import rdx.works.profile.data.model.Profile
 import rdx.works.profile.domain.InvalidPasswordException
 import rdx.works.profile.domain.InvalidSnapshotException
-import rdx.works.profile.domain.backup.GetRestoringProfileFromCloudBackupUseCase
-import rdx.works.profile.domain.backup.RestoreProfileFromFileBackupUseCase
+import rdx.works.profile.domain.backup.BackupType
+import rdx.works.profile.domain.backup.GetTemporaryRestoringProfileForBackupUseCase
+import rdx.works.profile.domain.backup.SaveTemporaryRestoringSnapshotUseCase
 import javax.inject.Inject
 
 @HiltViewModel
 class RestoreFromBackupViewModel @Inject constructor(
-    getRestoringProfileFromCloudBackupUseCase: GetRestoringProfileFromCloudBackupUseCase,
-    private val restoreProfileFromFileBackupUseCase: RestoreProfileFromFileBackupUseCase
+    getTemporaryRestoringProfileForBackupUseCase: GetTemporaryRestoringProfileForBackupUseCase,
+    private val saveTemporaryRestoringSnapshotUseCase: SaveTemporaryRestoringSnapshotUseCase
 ) : StateViewModel<RestoreFromBackupViewModel.State>(), OneOffEventHandler<RestoreFromBackupViewModel.Event> by OneOffEventHandlerImpl() {
 
     override fun initialState(): State = State()
 
     init {
         viewModelScope.launch {
-            val profileToRestore = getRestoringProfileFromCloudBackupUseCase()
+            val profileToRestore = getTemporaryRestoringProfileForBackupUseCase(BackupType.Cloud)
             _state.update { it.copy(restoringProfile = profileToRestore) }
         }
     }
@@ -42,7 +43,7 @@ class RestoreFromBackupViewModel @Inject constructor(
     }
 
     fun onRestoreFromFile(uri: Uri) = viewModelScope.launch {
-        restoreProfileFromFileBackupUseCase(uri = uri, password = null)
+        saveTemporaryRestoringSnapshotUseCase.forFile(uri = uri, BackupType.File.PlainText)
             .onSuccess {
                 sendEvent(Event.OnRestoreConfirm(fromCloud = false))
             }.onFailure { error ->
@@ -85,7 +86,7 @@ class RestoreFromBackupViewModel @Inject constructor(
         val sheet = state.value.passwordSheetState as? State.PasswordSheet.Open ?: return
         if (sheet.isSubmitEnabled) {
             viewModelScope.launch {
-                restoreProfileFromFileBackupUseCase(uri = sheet.file, password = sheet.password)
+                saveTemporaryRestoringSnapshotUseCase.forFile(uri = sheet.file, BackupType.File.Encrypted(sheet.password))
                     .onSuccess {
                         _state.update { it.copy(passwordSheetState = State.PasswordSheet.Closed) }
                         delay(AppConstants.DELAY_300_MS)

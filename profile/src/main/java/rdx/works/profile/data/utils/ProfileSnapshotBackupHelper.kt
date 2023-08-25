@@ -14,6 +14,7 @@ import dagger.hilt.components.SingletonComponent
 import kotlinx.coroutines.runBlocking
 import rdx.works.profile.BuildConfig
 import rdx.works.profile.data.repository.BackupProfileRepository
+import rdx.works.profile.domain.backup.BackupType
 import java.io.DataOutputStream
 import java.io.FileOutputStream
 import java.util.Date
@@ -32,7 +33,7 @@ class ProfileSnapshotBackupHelper(context: Context) : BackupHelper {
 
     override fun performBackup(oldState: ParcelFileDescriptor?, data: BackupDataOutput?, newState: ParcelFileDescriptor) {
         val snapshotSerialised = runBlocking {
-            backupProfileRepository.getSnapshotForCloudBackup()
+            backupProfileRepository.getSnapshotForBackup(BackupType.Cloud)
         }
         log("Backup started for snapshot: $snapshotSerialised")
 
@@ -57,7 +58,7 @@ class ProfileSnapshotBackupHelper(context: Context) : BackupHelper {
             val snapshot = byteArray.toString(Charsets.UTF_8)
 
             runBlocking {
-                backupProfileRepository.saveRestoringSnapshotFromCloudBackup(snapshot).onSuccess {
+                backupProfileRepository.saveTemporaryRestoringSnapshot(snapshot, BackupType.Cloud).onSuccess {
                     log("Saved restored profile")
                 }.onFailure {
                     log("Restored profile discarded or incompatible")

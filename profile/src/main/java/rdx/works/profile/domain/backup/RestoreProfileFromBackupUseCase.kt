@@ -6,14 +6,14 @@ import rdx.works.profile.data.repository.DeviceInfoRepository
 import rdx.works.profile.data.repository.ProfileRepository
 import javax.inject.Inject
 
-class RestoreProfileFromCloudBackupUseCase @Inject constructor(
+class RestoreProfileFromBackupUseCase @Inject constructor(
     private val backupProfileRepository: BackupProfileRepository,
     private val profileRepository: ProfileRepository,
     private val deviceInfoRepository: DeviceInfoRepository,
 ) {
 
-    suspend operator fun invoke() {
-        val profile = backupProfileRepository.getRestoringProfileFromCloudBackup()
+    suspend operator fun invoke(backupType: BackupType) {
+        val profile = backupProfileRepository.getTemporaryRestoringProfile(backupType)
 
         if (profile != null) {
             val newDeviceName = deviceInfoRepository.getDeviceInfo().displayName
@@ -24,6 +24,7 @@ class RestoreProfileFromCloudBackupUseCase @Inject constructor(
                 )
             )
             profileRepository.saveProfile(profileWithRestoredHeader)
+            backupProfileRepository.discardTemporaryRestoringSnapshot(backupType)
         }
     }
 }

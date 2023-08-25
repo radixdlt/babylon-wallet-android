@@ -12,26 +12,19 @@ import rdx.works.profile.datastore.EncryptedPreferencesManager
 import rdx.works.profile.di.ProfileSerializer
 import rdx.works.profile.domain.InvalidPasswordException
 import rdx.works.profile.domain.InvalidSnapshotException
-import rdx.works.profile.domain.backup.ExportType
+import rdx.works.profile.domain.backup.BackupType
 import javax.inject.Inject
 
 interface BackupProfileRepository {
 
-    suspend fun saveRestoringSnapshotFromCloudBackup(snapshotSerialised: String): Result<Unit>
+    suspend fun saveTemporaryRestoringSnapshot(snapshotSerialised: String, backupType: BackupType): Result<Unit>
 
-    suspend fun saveRestoringSnapshotFromFileBackup(content: String, password: String?): Result<Unit>
+    suspend fun getTemporaryRestoringProfile(backupType: BackupType): Profile?
 
-    suspend fun getSnapshotForCloudBackup(): String?
+    suspend fun discardTemporaryRestoringSnapshot(backupType: BackupType)
 
-    suspend fun getSnapshotForFileBackup(exportType: ExportType): String?
+    suspend fun getSnapshotForBackup(backupType: BackupType): String?
 
-    suspend fun getRestoringProfileFromCloudBackup(): Profile?
-
-    suspend fun getRestoringProfileFromFileBackup(): Profile?
-
-    suspend fun discardCloudBackedUpProfile()
-
-    suspend fun discardFileBackedUpProfile()
 }
 
 class BackupProfileRepositoryImpl @Inject constructor(
@@ -41,26 +34,48 @@ class BackupProfileRepositoryImpl @Inject constructor(
     private val profileRepository: ProfileRepository
 ) : BackupProfileRepository {
 
-    override suspend fun saveRestoringSnapshotFromCloudBackup(snapshotSerialised: String): Result<Unit> =
-        if (profileRepository.deriveProfileState(snapshotSerialised) is ProfileState.Restored) {
-            encryptedPreferencesManager.putProfileSnapshotFromCloudBackup(snapshotSerialised)
-            preferencesManager.updateLastBackupInstant(InstantGenerator())
-            Result.success(Unit)
-        } else {
-            Result.failure(InvalidSnapshotException)
+    override suspend fun saveTemporaryRestoringSnapshot(
+        snapshotSerialised: String,
+        backupType: BackupType
+    ): Result<Unit> = when (backupType) {
+        is BackupType.Cloud -> {
+            if (profileRepository.deriveProfileState(snapshotSerialised) is ProfileState.Restored) {
+                encryptedPreferencesManager.putProfileSnapshotFromCloudBackup(snapshotSerialised)
+                preferencesManager.updateLastBackupInstant(InstantGenerator())
+                Result.success(Unit)
+            } else {
+                Result.failure(InvalidSnapshotException)
+            }
         }
 
-    override suspend fun saveRestoringSnapshotFromFileBackup(content: String, password: String?): Result<Unit> {
-        return if (password != null) {
+        is BackupType.File.PlainText -> {
+            val profileState = profileRepository.deriveProfileState(snapshotSerialised)
+            if (profileState is ProfileState.Restored) {
+                encryptedPreferencesManager.putProfileSnapshotFromFileBackup(snapshotSerialised)
+                Result.success(Unit)
+            } else {
+                val encryptedProfileSnapshot = runCatching {
+                    profileSnapshotJson.decodeFromString<EncryptedProfileSnapshot>(snapshotSerialised)
+                }.getOrNull()
+
+                if (encryptedProfileSnapshot != null) {
+                    Result.failure(InvalidPasswordException)
+                } else {
+                    Result.failure(InvalidSnapshotException)
+                }
+            }
+        }
+
+        is BackupType.File.Encrypted -> {
             val encryptedProfileSnapshot = runCatching {
-                profileSnapshotJson.decodeFromString<EncryptedProfileSnapshot>(content)
+                profileSnapshotJson.decodeFromString<EncryptedProfileSnapshot>(snapshotSerialised)
             }.getOrNull()
 
             if (encryptedProfileSnapshot == null) {
                 Result.failure(InvalidSnapshotException)
             } else {
                 val snapshot = runCatching {
-                    val decrypted = encryptedProfileSnapshot.decrypt(profileSnapshotJson, password)
+                    val decrypted = encryptedProfileSnapshot.decrypt(profileSnapshotJson, snapshotSerialised)
                     profileSnapshotJson.encodeToString(decrypted)
                 }.getOrNull()
 
@@ -71,75 +86,44 @@ class BackupProfileRepositoryImpl @Inject constructor(
                     Result.failure(InvalidPasswordException)
                 }
             }
-        } else {
-            val profileState = profileRepository.deriveProfileState(content)
-            if (profileState is ProfileState.Restored) {
-                encryptedPreferencesManager.putProfileSnapshotFromFileBackup(content)
-                Result.success(Unit)
-            } else {
-                val encryptedProfileSnapshot = runCatching {
-                    profileSnapshotJson.decodeFromString<EncryptedProfileSnapshot>(content)
-                }.getOrNull()
-
-                if (encryptedProfileSnapshot != null) {
-                    Result.failure(InvalidPasswordException)
-                } else {
-                    Result.failure(InvalidSnapshotException)
-                }
-            }
         }
     }
 
-    override suspend fun getSnapshotForCloudBackup(): String? {
+    override suspend fun getTemporaryRestoringProfile(backupType: BackupType): Profile? = when (backupType) {
+        is BackupType.Cloud -> encryptedPreferencesManager.getProfileSnapshotFromCloudBackup()
+        is BackupType.File -> encryptedPreferencesManager.getProfileSnapshotFromFileBackup()
+    }?.let { snapshot ->
+        profileRepository.deriveProfileState(snapshot) as? ProfileState.Restored
+    }?.profile
+
+    override suspend fun discardTemporaryRestoringSnapshot(backupType: BackupType) = when (backupType) {
+        is BackupType.Cloud -> {
+            encryptedPreferencesManager.clearProfileSnapshotFromCloudBackup()
+            preferencesManager.removeLastBackupInstant()
+        }
+        is BackupType.File -> {
+            encryptedPreferencesManager.clearProfileSnapshotFromFileBackup()
+        }
+    }
+
+    override suspend fun getSnapshotForBackup(backupType: BackupType): String? {
         val profile = profileRepository.profile.firstOrNull() ?: return null
+        val snapshotSerialised = runCatching { profileSnapshotJson.encodeToString(profile.snapshot()) }.getOrNull() ?: return null
 
-        return if (profile.appPreferences.security.isCloudProfileSyncEnabled) {
-            runCatching { profileSnapshotJson.encodeToString(profile.snapshot()) }.onSuccess {
+        return when (backupType) {
+            is BackupType.Cloud -> if (profile.appPreferences.security.isCloudProfileSyncEnabled) {
                 preferencesManager.updateLastBackupInstant(InstantGenerator())
-            }.getOrNull()
-        } else {
-            null
-        }
-    }
+                snapshotSerialised
+            } else {
+                null
+            }
 
-    override suspend fun getSnapshotForFileBackup(exportType: ExportType): String? {
-        val profileSnapshot = profileRepository.profile.firstOrNull()?.snapshot() ?: return null
-
-        val snapshotString = runCatching { profileSnapshotJson.encodeToString(profileSnapshot) }.getOrNull() ?: return null
-
-        return when (exportType) {
-            is ExportType.EncodedJson -> {
-                val encryptedSnapshot = EncryptedProfileSnapshot.from(snapshotString, exportType.password)
+            is BackupType.File.PlainText -> snapshotSerialised
+            is BackupType.File.Encrypted -> {
+                val encryptedSnapshot = EncryptedProfileSnapshot.from(snapshotSerialised, backupType.password)
                 runCatching { profileSnapshotJson.encodeToString(encryptedSnapshot) }.getOrNull()
             }
-
-            is ExportType.Json -> snapshotString
         }
-    }
-
-    override suspend fun getRestoringProfileFromCloudBackup(): Profile? {
-        val state = encryptedPreferencesManager.getProfileSnapshotFromCloudBackup()?.let { snapshot ->
-            profileRepository.deriveProfileState(snapshot)
-        }
-
-        return (state as? ProfileState.Restored)?.profile
-    }
-
-    override suspend fun getRestoringProfileFromFileBackup(): Profile? {
-        val state = encryptedPreferencesManager.getProfileSnapshotFromFileBackup()?.let { snapshot ->
-            profileRepository.deriveProfileState(snapshot)
-        }
-
-        return (state as? ProfileState.Restored)?.profile
-    }
-
-    override suspend fun discardCloudBackedUpProfile() {
-        encryptedPreferencesManager.clearProfileSnapshotFromCloudBackup()
-        preferencesManager.removeLastBackupInstant()
-    }
-
-    override suspend fun discardFileBackedUpProfile() {
-        encryptedPreferencesManager.clearProfileSnapshotFromFileBackup()
     }
 
 }

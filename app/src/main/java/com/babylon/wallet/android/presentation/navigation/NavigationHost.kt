@@ -30,7 +30,6 @@ import com.babylon.wallet.android.presentation.main.main
 import com.babylon.wallet.android.presentation.navigation.Screen.Companion.ARG_ACCOUNT_ID
 import com.babylon.wallet.android.presentation.onboarding.OnboardingScreen
 import com.babylon.wallet.android.presentation.onboarding.restore.backup.restoreFromBackupScreen
-import com.babylon.wallet.android.presentation.onboarding.restore.mnemonics.RestoreMnemonicsArgs.BackupType
 import com.babylon.wallet.android.presentation.onboarding.restore.mnemonics.restoreMnemonics
 import com.babylon.wallet.android.presentation.onboarding.restore.mnemonics.restoreMnemonicsScreen
 import com.babylon.wallet.android.presentation.settings.incompatibleprofile.IncompatibleProfileContent
@@ -47,6 +46,7 @@ import com.babylon.wallet.android.presentation.transfer.transferScreen
 import com.google.accompanist.navigation.animation.AnimatedNavHost
 import com.google.accompanist.navigation.animation.composable
 import kotlinx.coroutines.flow.StateFlow
+import rdx.works.profile.domain.backup.BackupType
 
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
@@ -81,7 +81,7 @@ fun NavigationHost(
                 navController.popBackStack()
             },
             onRestoreConfirmed = { fromCloud ->
-                navController.restoreMnemonics(backupType = if (fromCloud) BackupType.CLOUD else BackupType.FILE)
+                navController.restoreMnemonics(backupType = if (fromCloud) BackupType.Cloud else BackupType.File.PlainText)
             }
         )
         restoreMnemonicsScreen(
