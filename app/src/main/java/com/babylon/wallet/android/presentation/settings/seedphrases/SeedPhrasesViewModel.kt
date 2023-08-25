@@ -40,11 +40,9 @@ class SeedPhrasesViewModel @Inject constructor(
                 preferencesManager.getBackedUpFactorSourceIds()
             ) { factorSources, backedUpFactorSourceIds ->
                 factorSources.map { entry ->
-                    val mnemonic = mnemonicRepository.readMnemonic(entry.key.id)
-                    val factorSourceIdFromHash = entry.key as FactorSourceID.FromHash
-                    val mnemonicExist = mnemonicRepository.mnemonicExist(factorSourceIdFromHash)
+                    val mnemonicExist = mnemonicRepository.mnemonicExist(entry.key.id)
                     val mnemonicState = when {
-                        mnemonic == null -> DeviceFactorSourceData.MnemonicState.NeedRecover
+                        !mnemonicExist -> DeviceFactorSourceData.MnemonicState.NeedRecover
                         backedUpFactorSourceIds.contains(entry.key.id.body.value) -> DeviceFactorSourceData.MnemonicState.BackedUp
                         else -> DeviceFactorSourceData.MnemonicState.NotBackedUp
                     }
