@@ -63,7 +63,7 @@ fun OnboardingScreen(
 
     OnboardingScreenContent(
         currentPage = state.currentPagerPage,
-        onProceedClick = viewModel::onProceedClick,
+        onProceedClick = viewModel::onCreateNewWalletClick,
         onRestoreWalletClick = onRestoreFromBackupClick,
 //        showWarning = state.showWarning,
 //        authenticateWithBiometric = state.authenticateWithBiometric,

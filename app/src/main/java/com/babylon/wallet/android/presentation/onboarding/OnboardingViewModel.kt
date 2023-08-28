@@ -22,7 +22,7 @@ class OnboardingViewModel @Inject constructor(
 
     override fun initialState(): OnBoardingUiState = OnBoardingUiState()
 
-    fun onProceedClick() {
+    fun onCreateNewWalletClick() {
         viewModelScope.launch {
 //            if (deviceSecurityHelper.isDeviceSecure()) {
 //                _state.update {

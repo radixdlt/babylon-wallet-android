@@ -77,7 +77,7 @@ class OnboardingViewModelTest {
         )
 
         // when
-        viewModel.onProceedClick()
+        viewModel.onCreateNewWalletClick()
         viewModel.state
             .onEach { event.add(it) }
             .launchIn(CoroutineScope(UnconfinedTestDispatcher(testScheduler)))
@@ -100,7 +100,7 @@ class OnboardingViewModelTest {
         )
 
         // when
-        viewModel.onProceedClick()
+        viewModel.onCreateNewWalletClick()
         viewModel.state
             .onEach { event.add(it) }
             .launchIn(CoroutineScope(UnconfinedTestDispatcher(testScheduler)))
