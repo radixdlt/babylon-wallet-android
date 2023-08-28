@@ -340,7 +340,7 @@ private fun BackupScreenContent(
                         verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingDefault)
                     ) {
                         Text(
-                            text = stringResource(id = R.string.profileBackup_deleteWallet_subtitleAndroid)
+                            text = stringResource(id = R.string.androidProfileBackup_deleteWallet_subtitle)
                                 .formattedSpans(boldStyle = SpanStyle(fontWeight = FontWeight.Bold)),
                             color = RadixTheme.colors.gray2,
                             style = RadixTheme.typography.body1HighImportance
@@ -356,7 +356,7 @@ private fun BackupScreenContent(
                             )
                         ) {
                             Text(
-                                text = stringResource(R.string.profileBackup_deleteWallet_confirmButtonAndroid),
+                                text = stringResource(R.string.androidProfileBackup_deleteWallet_confirmButton),
                                 style = RadixTheme.typography.body1Header,
                                 maxLines = 1,
                             )
