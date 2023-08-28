@@ -7,7 +7,7 @@ import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import com.babylon.wallet.android.presentation.createaccount.confirmation.CreateAccountRequestSource
 import com.babylon.wallet.android.presentation.createaccount.createAccountScreen
-import com.babylon.wallet.android.presentation.createpersona.personaScreen
+import com.babylon.wallet.android.presentation.createpersona.personasScreen
 import com.babylon.wallet.android.presentation.main.MAIN_ROUTE
 import com.babylon.wallet.android.presentation.navigation.Screen
 import com.babylon.wallet.android.presentation.onboarding.restore.mnemonics.restoreMnemonics
@@ -112,7 +112,9 @@ private fun NavGraphBuilder.settingsAll(navController: NavController) {
                     }
 
                     SettingsItem.TopLevelSettings.Gateways -> {
-                        navController.navigate(Screen.SettingsEditGatewayApiDestination.route)
+                        navController.navigate(Screen.SettingsEditGatewayApiDestination.route) {
+                            launchSingleTop = true
+                        }
                     }
 
                     SettingsItem.TopLevelSettings.AuthorizedDapps -> {
@@ -120,7 +122,7 @@ private fun NavGraphBuilder.settingsAll(navController: NavController) {
                     }
 
                     SettingsItem.TopLevelSettings.Personas -> {
-                        navController.personaScreen()
+                        navController.personasScreen()
                     }
 
                     SettingsItem.TopLevelSettings.AppSettings -> {

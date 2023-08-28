@@ -12,7 +12,9 @@ import rdx.works.profile.data.model.factorsources.FactorSource
 const val ROUTE_SETTINGS_SHOW_MNEMONIC = "settings_seed_phrases"
 
 fun NavController.seedPhrases() {
-    navigate(ROUTE_SETTINGS_SHOW_MNEMONIC)
+    navigate(ROUTE_SETTINGS_SHOW_MNEMONIC) {
+        launchSingleTop = true
+    }
 }
 
 @OptIn(ExperimentalAnimationApi::class)

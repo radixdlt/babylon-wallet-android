@@ -47,7 +47,9 @@ fun NavController.systemBackupSettingsScreen() {
 }
 
 fun NavController.backupScreen() {
-    navigate("settings_backup")
+    navigate("settings_backup") {
+        launchSingleTop = true
+    }
 }
 
 @OptIn(ExperimentalAnimationApi::class)
