@@ -86,11 +86,11 @@ fun LazyListScope.poolUnitsResources(
             )
         }
     } else {
-        validatorsWithStakeResources?.let { validatorWithStakeResources ->
+        if (validatorsWithStakeResources != null && !validatorsWithStakeResources.isEmpty) {
             item {
                 LiquidStakeUnitResourceHeader(
                     modifier = modifier,
-                    collection = validatorWithStakeResources,
+                    collection = validatorsWithStakeResources,
                     collapsed = collapsedState,
                     parentSectionClick = parentSectionClick
                 )
@@ -99,8 +99,8 @@ fun LazyListScope.poolUnitsResources(
                 }
             }
             if (!collapsedState) {
-                val validatorsSize = validatorWithStakeResources.validators.size
-                validatorWithStakeResources.validators.forEachIndexed { index, validator ->
+                val validatorsSize = validatorsWithStakeResources.validators.size
+                validatorsWithStakeResources.validators.forEachIndexed { index, validator ->
                     val lastValidator = validatorsSize - 1 == index
                     item(key = validator.validatorDetail.address) {
                         CardWrapper(modifier) {

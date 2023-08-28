@@ -16,6 +16,7 @@ import com.radixdlt.ret.nonFungibleLocalIdFromStr
 import rdx.works.core.displayableQuantity
 import rdx.works.profile.data.model.apppreferences.Radix
 import java.math.BigDecimal
+import java.math.MathContext
 import java.math.RoundingMode
 
 sealed class Resource {
@@ -32,7 +33,8 @@ sealed class Resource {
         private val behaviours: List<ResourceBehaviour> = emptyList(),
         val currentSupply: BigDecimal? = null,
         private val validatorMetadataItem: ValidatorMetadataItem? = null,
-        private val poolMetadataItem: PoolMetadataItem? = null
+        private val poolMetadataItem: PoolMetadataItem? = null,
+        val divisibility: Int? = null
     ) : Resource(), Comparable<FungibleResource> {
         val name: String
             get() = nameMetadataItem?.name.orEmpty()
@@ -54,8 +56,7 @@ sealed class Resource {
 
         val tags: List<Tag>
             get() = if (isXrd) {
-                tagsMetadataItem?.tags?.map { Tag.Dynamic(name = it) }
-                    ?.plus(Tag.Official).orEmpty()
+                tagsMetadataItem?.tags?.map { Tag.Dynamic(name = it) }?.plus(Tag.Official).orEmpty()
             } else {
                 tagsMetadataItem?.tags?.map { Tag.Dynamic(name = it) }.orEmpty()
             }
@@ -77,6 +78,13 @@ sealed class Resource {
 
         val isXrd: Boolean = officialXrdResourceAddresses().contains(resourceAddress)
 
+        val mathContext: MathContext
+            get() = if (divisibility == null) {
+                MathContext.UNLIMITED
+            } else {
+                MathContext(divisibility, RoundingMode.HALF_DOWN)
+            }
+
         @Suppress("CyclomaticComplexMethod")
         override fun compareTo(other: FungibleResource): Int {
             // XRD should always be first
@@ -89,14 +97,16 @@ sealed class Resource {
             val symbolDiff = when {
                 symbolMetadataItem == null && other.symbolMetadataItem != null -> 1
                 symbolMetadataItem != null && other.symbolMetadataItem == null -> -1
-                symbolMetadataItem != null && other.symbolMetadataItem != null ->
-                    symbolMetadataItem.symbol.compareTo(other.symbolMetadataItem.symbol)
+                symbolMetadataItem != null && other.symbolMetadataItem != null -> symbolMetadataItem.symbol.compareTo(
+                    other.symbolMetadataItem.symbol
+                )
 
                 else -> when {
                     nameMetadataItem == null && other.nameMetadataItem != null -> 1
                     nameMetadataItem != null && other.nameMetadataItem == null -> -1
-                    nameMetadataItem != null && other.nameMetadataItem != null ->
-                        nameMetadataItem.name.compareTo(other.nameMetadataItem.name)
+                    nameMetadataItem != null && other.nameMetadataItem != null -> nameMetadataItem.name.compareTo(
+                        other.nameMetadataItem.name
+                    )
 
                     else -> 0
                 }
@@ -284,10 +294,10 @@ sealed class Resource {
             get() = fungibleResource.resourceAddress
 
         private val percentageOwned: BigDecimal?
-            get() = fungibleResource.amount?.divide(fungibleResource.currentSupply, RoundingMode.HALF_UP)
+            get() = fungibleResource.amount?.divide(fungibleResource.currentSupply, fungibleResource.mathContext)
 
         fun stakeValueInXRD(totalXrdStake: BigDecimal?): BigDecimal? {
-            return percentageOwned?.multiply(totalXrdStake)
+            return percentageOwned?.multiply(totalXrdStake, fungibleResource.mathContext)
         }
     }
 
@@ -313,7 +323,8 @@ sealed class Resource {
 
         fun resourceRedemptionValue(resourceAddress: String): BigDecimal? {
             val resourceVaultBalance = poolResources.find { it.resourceAddress == resourceAddress }?.amount
-            return poolUnitResource.amount?.multiply(resourceVaultBalance)?.divide(poolUnitResource.currentSupply)
+            return poolUnitResource.amount?.multiply(resourceVaultBalance)
+                ?.divide(poolUnitResource.currentSupply, poolUnitResource.mathContext)
         }
     }
 
