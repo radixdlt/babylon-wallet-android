@@ -53,6 +53,7 @@ import com.babylon.wallet.android.domain.model.metadata.NameMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.OwnerKeyHashesMetadataItem
 import rdx.works.profile.data.model.pernetwork.Network
 import java.io.IOException
+import java.lang.Exception
 import java.math.BigDecimal
 import javax.inject.Inject
 
@@ -83,6 +84,8 @@ class EntityRepositoryImpl @Inject constructor(
         explicitMetadataForAssets: Set<ExplicitMetadataKey>,
         isRefreshing: Boolean
     ): Result<List<AccountWithResources>> {
+        if (accounts.isEmpty()) return Result.Success(emptyList())
+
         val listOfEntityDetailsResponsesResult = getStateEntityDetailsResponse(
             addresses = accounts.map { it.address },
             explicitMetadata = explicitMetadataForAssets,
