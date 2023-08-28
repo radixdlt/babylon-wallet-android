@@ -158,7 +158,9 @@ fun NotSecureAlertDialog(
                 style = RadixTheme.typography.body2Regular,
                 color = RadixTheme.colors.gray2
             )
-        }
+        },
+        confirmText = stringResource(id = R.string.biometrics_deviceNotSecureAlert_openSettings),
+        dismissText = stringResource(id = R.string.biometrics_deviceNotSecureAlert_quit)
     )
 }
 
