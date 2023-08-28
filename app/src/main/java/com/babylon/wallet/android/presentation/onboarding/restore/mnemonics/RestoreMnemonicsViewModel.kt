@@ -76,7 +76,7 @@ class RestoreMnemonicsViewModel @Inject constructor(
                     val profile = getProfileUseCase().firstOrNull() ?: return@launch
                     val allAccounts = profile.currentNetwork.accounts
                     profile.factorSources.filterIsInstance<DeviceFactorSource>().find { factorSource ->
-                        factorSource.id.body.value == args.factorSourceIdHex && !mnemonicRepository.mnemonicExist(factorSource.id)
+                        factorSource.id.body == args.factorSourceId && !mnemonicRepository.mnemonicExist(factorSource.id)
                     }?.let { factorSource ->
                         val associatedAccounts = allAccounts.filter { it.factorSourceId() == factorSource.id }
 
@@ -107,11 +107,22 @@ class RestoreMnemonicsViewModel @Inject constructor(
             _state.update { it.copy(isShowingEntities = true, isMovingForward = false) }
         } else {
             viewModelScope.launch {
-                if (args is RestoreMnemonicsArgs.RestoreProfile && args.backupType is BackupType.File) {
-                    discardTemporaryRestoredFileForBackupUseCase(BackupType.File.PlainText)
-                }
+                when (args) {
+                    is RestoreMnemonicsArgs.RestoreProfile -> {
+                        if (args.backupType is BackupType.File) {
+                            discardTemporaryRestoredFileForBackupUseCase(BackupType.File.PlainText)
+                        }
 
-                sendEvent(Event.FinishRestoration(isMovingToMain = false))
+                        sendEvent(Event.FinishRestoration(isMovingToMain = false))
+                    }
+                    is RestoreMnemonicsArgs.RestoreSpecificMnemonic -> {
+                        if (args.isMandatory) {
+                            sendEvent(Event.CloseApp)
+                        } else {
+                            sendEvent(Event.FinishRestoration(isMovingToMain = false))
+                        }
+                    }
+                }
             }
         }
     }
@@ -209,6 +220,7 @@ class RestoreMnemonicsViewModel @Inject constructor(
 
     sealed interface Event : OneOffEvent {
         data class FinishRestoration(val isMovingToMain: Boolean) : Event
+        object CloseApp : Event
         object MoveToNextWord : Event
     }
 }
