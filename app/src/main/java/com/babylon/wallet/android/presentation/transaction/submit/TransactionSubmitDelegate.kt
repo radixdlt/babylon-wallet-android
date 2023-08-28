@@ -159,14 +159,6 @@ class TransactionSubmitDelegate(
                     txId = txId
                 )
             }
-
-            appEventBus.sendEvent(
-                AppEvent.Status.Transaction.InProgress(
-                    requestId = transactionRequest.requestId,
-                    transactionId = txId,
-                    isInternal = transactionRequest.isInternal
-                )
-            )
         }.onFailure { error ->
             val exception = error as? DappRequestException
             val cancelled = exception?.e is SignatureCancelledException

@@ -1,13 +1,17 @@
 package rdx.works.core.ret
 
+import com.radixdlt.ret.AccountDefaultDepositRule
 import com.radixdlt.ret.Address
 import com.radixdlt.ret.Decimal
 import com.radixdlt.ret.ManifestBuilder
+import com.radixdlt.ret.ManifestBuilderAddress
 import com.radixdlt.ret.ManifestBuilderBucket
+import com.radixdlt.ret.ManifestBuilderValue
 import com.radixdlt.ret.MetadataValue
 import com.radixdlt.ret.NonFungibleGlobalId
 import com.radixdlt.ret.NonFungibleLocalId
 import com.radixdlt.ret.PublicKeyHash
+import com.radixdlt.ret.ResourcePreference
 import com.radixdlt.ret.TransactionManifest
 import rdx.works.core.toByteArray
 
@@ -110,6 +114,57 @@ class BabylonManifestBuilder {
             key = "owner_keys",
             value = MetadataValue.PublicKeyHashArrayValue(
                 value = ownerKeyHashes
+            )
+        )
+        return this
+    }
+
+    fun setDefaultDepositRule(
+        accountAddress: Address,
+        accountDefaultDepositRule: AccountDefaultDepositRule
+    ): BabylonManifestBuilder {
+        val value = when (accountDefaultDepositRule) {
+            AccountDefaultDepositRule.ACCEPT -> ManifestBuilderValue.EnumValue(0u, emptyList())
+            AccountDefaultDepositRule.REJECT -> ManifestBuilderValue.EnumValue(1u, emptyList())
+            AccountDefaultDepositRule.ALLOW_EXISTING -> ManifestBuilderValue.EnumValue(2u, emptyList())
+        }
+        manifestBuilder = manifestBuilder.callMethod(
+            address = ManifestBuilderAddress.Static(accountAddress),
+            methodName = "set_default_deposit_rule",
+            args = listOf(value)
+        )
+        return this
+    }
+
+    fun setResourcePreference(
+        accountAddress: Address,
+        resourceAddress: Address,
+        preference: ResourcePreference
+    ): BabylonManifestBuilder {
+        val value = when (preference) {
+            ResourcePreference.ALLOWED -> ManifestBuilderValue.EnumValue(0u, emptyList())
+            ResourcePreference.DISALLOWED -> ManifestBuilderValue.EnumValue(1u, emptyList())
+        }
+        manifestBuilder = manifestBuilder.callMethod(
+            address = ManifestBuilderAddress.Static(accountAddress),
+            methodName = "set_resource_preference",
+            args = listOf(
+                ManifestBuilderValue.AddressValue(ManifestBuilderAddress.Static(resourceAddress)),
+                value
+            )
+        )
+        return this
+    }
+
+    fun removeResourcePreference(
+        accountAddress: Address,
+        resourceAddress: Address
+    ): BabylonManifestBuilder {
+        manifestBuilder = manifestBuilder.callMethod(
+            address = ManifestBuilderAddress.Static(accountAddress),
+            methodName = "remove1_resource_preference",
+            args = listOf(
+                ManifestBuilderValue.AddressValue(ManifestBuilderAddress.Static(resourceAddress))
             )
         )
         return this

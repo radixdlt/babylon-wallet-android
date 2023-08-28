@@ -45,7 +45,6 @@ import com.babylon.wallet.android.presentation.status.signing.SigningStatusBotto
 import com.babylon.wallet.android.presentation.ui.composables.AccountQRCodeView
 import com.babylon.wallet.android.presentation.ui.composables.BottomDialogDragHandle
 import com.babylon.wallet.android.presentation.ui.composables.DefaultSettingsItem
-import com.babylon.wallet.android.presentation.ui.composables.NotSecureAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
@@ -264,14 +263,10 @@ private fun AccountSettingsContent(
                             .padding(horizontal = RadixTheme.dimensions.paddingDefault),
                         text = stringResource(R.string.accountSettings_getXrdTestTokens),
                         onClick = {
-                            if (isDeviceSecure) {
-                                context.biometricAuthenticate { authenticatedSuccessfully ->
-                                    if (authenticatedSuccessfully) {
-                                        onGetFreeXrdClick()
-                                    }
+                            context.biometricAuthenticate { authenticatedSuccessfully ->
+                                if (authenticatedSuccessfully) {
+                                    onGetFreeXrdClick()
                                 }
-                            } else {
-                                showNotSecuredDialog = true
                             }
                         },
                         enabled = !loading && canUseFaucet

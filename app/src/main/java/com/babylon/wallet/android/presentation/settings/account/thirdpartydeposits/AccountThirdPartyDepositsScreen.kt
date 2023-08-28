@@ -22,10 +22,7 @@ import androidx.compose.material.rememberModalBottomSheetState
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
@@ -39,11 +36,11 @@ import com.babylon.wallet.android.presentation.common.FullscreenCircularProgress
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.ui.composables.AccountQRCodeView
 import com.babylon.wallet.android.presentation.ui.composables.BottomDialogDragHandle
-import com.babylon.wallet.android.presentation.ui.composables.NotSecureAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUiMessageHandler
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import kotlinx.coroutines.launch
+import rdx.works.profile.data.model.pernetwork.Network
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
@@ -93,7 +90,8 @@ fun AccountThirdPartyDepositsScreen(
             onAllowAll = viewModel::onAllowAll,
             onAcceptKnown = viewModel::onAcceptKnown,
             onDenyAll = viewModel::onDenyAll,
-            onAssetSpecificRulesClick = { onAssetSpecificRulesClick(state.accountAddress) }
+            onAssetSpecificRulesClick = { onAssetSpecificRulesClick(state.accountAddress) },
+            accountDepositRule = state.accountDepositRule
         )
     }
 }
@@ -108,9 +106,9 @@ private fun AccountThirdPartyDepositsContent(
     onAllowAll: () -> Unit,
     onAcceptKnown: () -> Unit,
     onDenyAll: () -> Unit,
-    onAssetSpecificRulesClick: () -> Unit
+    onAssetSpecificRulesClick: () -> Unit,
+    accountDepositRule: Network.Account.OnLedgerSettings.ThirdPartyDeposits.DepositRule?
 ) {
-    var showNotSecuredDialog by remember { mutableStateOf(false) }
     Column(
         modifier = modifier,
         horizontalAlignment = Alignment.Start
@@ -138,35 +136,46 @@ private fun AccountThirdPartyDepositsContent(
                     style = RadixTheme.typography.body1HighImportance,
                     color = RadixTheme.colors.gray2
                 )
+                var titleSubtitleAndIcon = getDepositRuleCopiesAndIcon(
+                    depositRule = Network.Account.OnLedgerSettings.ThirdPartyDeposits.DepositRule.AcceptAll
+                )
                 DepositOptionItem(
                     modifier = Modifier.padding(vertical = RadixTheme.dimensions.paddingLarge),
                     onClick = onAllowAll,
-                    icon = com.babylon.wallet.android.designsystem.R.drawable.ic_accept_all,
-                    title = stringResource(id = R.string.accountSettings_thirdPartyDeposits_acceptAll),
-                    subtitle = stringResource(id = R.string.accountSettings_thirdPartyDeposits_acceptAllSubtitle)
+                    icon = titleSubtitleAndIcon.third,
+                    title = titleSubtitleAndIcon.first,
+                    subtitle = titleSubtitleAndIcon.second,
+                    selected = accountDepositRule == Network.Account.OnLedgerSettings.ThirdPartyDeposits.DepositRule.AcceptAll
                 )
                 Divider(
                     modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingDefault),
                     color = RadixTheme.colors.gray5
+                )
+                titleSubtitleAndIcon = getDepositRuleCopiesAndIcon(
+                    depositRule = Network.Account.OnLedgerSettings.ThirdPartyDeposits.DepositRule.AcceptKnown
                 )
                 DepositOptionItem(
                     modifier = Modifier.padding(vertical = RadixTheme.dimensions.paddingLarge),
                     onClick = onAcceptKnown,
-                    icon = com.babylon.wallet.android.designsystem.R.drawable.ic_accept_known,
-                    title = stringResource(id = R.string.accountSettings_thirdPartyDeposits_onlyKnown),
-                    subtitle = stringResource(id = R.string.accountSettings_thirdPartyDeposits_onlyKnownSubtitle)
+                    icon = titleSubtitleAndIcon.third,
+                    title = titleSubtitleAndIcon.first,
+                    subtitle = titleSubtitleAndIcon.second,
+                    selected = accountDepositRule == Network.Account.OnLedgerSettings.ThirdPartyDeposits.DepositRule.AcceptKnown
                 )
                 Divider(
                     modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingDefault),
                     color = RadixTheme.colors.gray5
                 )
+                titleSubtitleAndIcon = getDepositRuleCopiesAndIcon(
+                    depositRule = Network.Account.OnLedgerSettings.ThirdPartyDeposits.DepositRule.DenyAll
+                )
                 DepositOptionItem(
                     modifier = Modifier.padding(vertical = RadixTheme.dimensions.paddingLarge),
                     onClick = onDenyAll,
-                    icon = com.babylon.wallet.android.designsystem.R.drawable.ic_deny_all,
-                    title = stringResource(id = R.string.accountSettings_thirdPartyDeposits_denyAll),
-                    subtitle = stringResource(id = R.string.accountSettings_thirdPartyDeposits_denyAllSubtitle),
-                    warning = stringResource(id = R.string.accountSettings_thirdPartyDeposits_denyAllWarning)
+                    icon = titleSubtitleAndIcon.third,
+                    title = titleSubtitleAndIcon.first,
+                    subtitle = titleSubtitleAndIcon.second,
+                    selected = accountDepositRule == Network.Account.OnLedgerSettings.ThirdPartyDeposits.DepositRule.DenyAll
                 )
                 Spacer(
                     modifier = Modifier
@@ -188,11 +197,34 @@ private fun AccountThirdPartyDepositsContent(
                 onMessageShown()
             })
         }
+    }
+}
 
-        if (showNotSecuredDialog) {
-            NotSecureAlertDialog(finish = {
-                showNotSecuredDialog = false
-            })
+@Composable
+fun getDepositRuleCopiesAndIcon(depositRule: Network.Account.OnLedgerSettings.ThirdPartyDeposits.DepositRule): Triple<String, String, Int> {
+    return when (depositRule) {
+        Network.Account.OnLedgerSettings.ThirdPartyDeposits.DepositRule.AcceptAll -> {
+            Triple(
+                stringResource(id = R.string.accountSettings_thirdPartyDeposits_acceptAll),
+                stringResource(id = R.string.accountSettings_thirdPartyDeposits_acceptAllSubtitle),
+                com.babylon.wallet.android.designsystem.R.drawable.ic_accept_all,
+            )
+        }
+
+        Network.Account.OnLedgerSettings.ThirdPartyDeposits.DepositRule.AcceptKnown -> {
+            Triple(
+                stringResource(id = R.string.accountSettings_thirdPartyDeposits_onlyKnown),
+                stringResource(id = R.string.accountSettings_thirdPartyDeposits_onlyKnownSubtitle),
+                com.babylon.wallet.android.designsystem.R.drawable.ic_accept_all,
+            )
+        }
+
+        Network.Account.OnLedgerSettings.ThirdPartyDeposits.DepositRule.DenyAll -> {
+            Triple(
+                stringResource(id = R.string.accountSettings_thirdPartyDeposits_denyAll),
+                stringResource(id = R.string.accountSettings_thirdPartyDeposits_denyAllSubtitle),
+                com.babylon.wallet.android.designsystem.R.drawable.ic_deny_all,
+            )
         }
     }
 }
@@ -264,7 +296,9 @@ fun AccountThirdPartyDepositsPreview() {
             error = null,
             onAllowAll = {},
             onAcceptKnown = {},
-            onDenyAll = {}
-        ) {}
+            onDenyAll = {},
+            onAssetSpecificRulesClick = {},
+            accountDepositRule = Network.Account.OnLedgerSettings.ThirdPartyDeposits.DepositRule.AcceptKnown
+        )
     }
 }
