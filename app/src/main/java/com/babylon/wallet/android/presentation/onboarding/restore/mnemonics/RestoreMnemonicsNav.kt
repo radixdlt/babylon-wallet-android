@@ -22,13 +22,14 @@ private const val ROUTE = "restore_mnemonics?restoreMnemonicsArgs={$ARGS_RESTORE
 fun NavController.restoreMnemonics(
     args: RestoreMnemonicsArgs
 ) {
-    navigate(route = "restore_mnemonics?restoreMnemonicsArgs={${Json.encodeToString(args)}}")
+    navigate(route = "restore_mnemonics?restoreMnemonicsArgs=${Json.encodeToString(args)}")
 }
 
 @Serializable
 sealed interface RestoreMnemonicsArgs {
     @Serializable
     data class RestoreProfile(val backupType: BackupType) : RestoreMnemonicsArgs
+
     @Serializable
     data class RestoreSpecificMnemonic(
         val factorSourceId: FactorSource.HexCoded32Bytes,
