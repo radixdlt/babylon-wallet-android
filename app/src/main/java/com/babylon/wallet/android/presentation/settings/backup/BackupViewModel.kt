@@ -178,7 +178,7 @@ class BackupViewModel @Inject constructor(
 
     sealed interface Event : OneOffEvent {
         object Dismiss : Event
-        object ProfileDeleted: Event
+        object ProfileDeleted : Event
         data class ChooseExportFile(val fileName: String) : Event
     }
 }

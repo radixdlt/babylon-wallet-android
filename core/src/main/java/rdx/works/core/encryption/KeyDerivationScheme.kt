@@ -26,6 +26,7 @@ sealed interface KeyDerivationScheme {
     class Version1 : KeyDerivationScheme {
         @EncodeDefault
         val version: Int = 1
+
         @EncodeDefault
         val description: String = "HKDFSHA256-with-UTF8-encoding-of-password-no-salt-no-info"
 
@@ -49,7 +50,7 @@ sealed interface KeyDerivationScheme {
     }
 }
 
-internal class KeyDerivationSchemeSerializer: JsonContentPolymorphicSerializer<KeyDerivationScheme>(
+internal class KeyDerivationSchemeSerializer : JsonContentPolymorphicSerializer<KeyDerivationScheme>(
     KeyDerivationScheme::class
 ) {
     override fun selectDeserializer(element: JsonElement): DeserializationStrategy<KeyDerivationScheme> {

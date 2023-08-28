@@ -11,6 +11,7 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest
 import org.junit.Test
 import rdx.works.core.InstantGenerator
+import rdx.works.core.preferences.PreferencesManager
 import rdx.works.profile.data.model.Header
 import rdx.works.profile.data.model.MnemonicWithPassphrase
 import rdx.works.profile.data.model.Profile
@@ -38,6 +39,7 @@ internal class AddOlympiaFactorSourceUseCaseTest {
 
     private val profileRepository = mockk<ProfileRepository>()
     private val mnemonicRepository = mockk<MnemonicRepository>()
+    private val preferencesManager = mockk<PreferencesManager>()
 
     @Test
     fun `new factor source is added to a profile, if it does not already exist`() = runTest {
@@ -113,8 +115,9 @@ internal class AddOlympiaFactorSourceUseCaseTest {
         coEvery { mnemonicRepository.saveMnemonic(any(), any()) } just Runs
         coEvery { profileRepository.profileState } returns flowOf(ProfileState.Restored(profile))
         coEvery { profileRepository.saveProfile(any()) } just Runs
+        coEvery { preferencesManager.markFactorSourceBackedUp(any()) } just Runs
 
-        val usecase = AddOlympiaFactorSourceUseCase(profileRepository, mnemonicRepository)
+        val usecase = AddOlympiaFactorSourceUseCase(profileRepository, mnemonicRepository, preferencesManager)
         val capturedProfile = slot<Profile>()
         usecase(olympiaMnemonic)
         coVerify(exactly = 1) { profileRepository.saveProfile(capture(capturedProfile)) }

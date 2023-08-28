@@ -25,6 +25,7 @@ sealed interface EncryptionScheme {
     class Version1 : EncryptionScheme {
         @EncodeDefault
         val version: Int = 1
+
         @EncodeDefault
         val description: String = "AESGCM-256"
 
@@ -38,7 +39,7 @@ sealed interface EncryptionScheme {
     }
 }
 
-internal class EncryptionSchemeSerializer: JsonContentPolymorphicSerializer<EncryptionScheme>(
+internal class EncryptionSchemeSerializer : JsonContentPolymorphicSerializer<EncryptionScheme>(
     EncryptionScheme::class
 ) {
     override fun selectDeserializer(element: JsonElement): DeserializationStrategy<EncryptionScheme> {
