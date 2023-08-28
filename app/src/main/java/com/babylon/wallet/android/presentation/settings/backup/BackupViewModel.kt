@@ -2,6 +2,7 @@ package com.babylon.wallet.android.presentation.settings.backup
 
 import android.net.Uri
 import androidx.lifecycle.viewModelScope
+import com.babylon.wallet.android.data.dapp.PeerdroidClient
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
@@ -12,6 +13,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.profile.data.model.BackupState
+import rdx.works.profile.domain.DeleteProfileUseCase
 import rdx.works.profile.domain.backup.BackupProfileToFileUseCase
 import rdx.works.profile.domain.backup.BackupType
 import rdx.works.profile.domain.backup.ChangeBackupSettingUseCase
@@ -23,6 +25,8 @@ import javax.inject.Inject
 class BackupViewModel @Inject constructor(
     private val changeBackupSettingUseCase: ChangeBackupSettingUseCase,
     private val backupProfileToFileUseCase: BackupProfileToFileUseCase,
+    private val deleteProfileUseCase: DeleteProfileUseCase,
+    private val peerdroidClient: PeerdroidClient,
     getBackupStateUseCase: GetBackupStateUseCase
 ) : StateViewModel<BackupViewModel.State>(), OneOffEventHandler<BackupViewModel.Event> by OneOffEventHandlerImpl() {
 
@@ -113,6 +117,24 @@ class BackupViewModel @Inject constructor(
         }
     }
 
+    fun onDeleteWalletClick() {
+        _state.update { it.copy(deleteWalletDialogVisible = true) }
+    }
+
+    fun onDeleteWalletConfirm() {
+        _state.update { it.copy(deleteWalletDialogVisible = false) }
+
+        viewModelScope.launch {
+            deleteProfileUseCase()
+            peerdroidClient.terminate()
+            sendEvent(Event.ProfileDeleted)
+        }
+    }
+
+    fun onDeleteWalletDeny() {
+        _state.update { it.copy(deleteWalletDialogVisible = false) }
+    }
+
     fun onMessageShown() {
         _state.update { it.copy(uiMessage = null) }
     }
@@ -121,6 +143,7 @@ class BackupViewModel @Inject constructor(
         val backupState: BackupState,
         val isExportFileDialogVisible: Boolean = false,
         val encryptSheet: EncryptSheet = EncryptSheet.Closed,
+        val deleteWalletDialogVisible: Boolean = false,
         val uiMessage: UiMessage? = null
     ) : UiState {
 
@@ -155,6 +178,7 @@ class BackupViewModel @Inject constructor(
 
     sealed interface Event : OneOffEvent {
         object Dismiss : Event
+        object ProfileDeleted: Event
         data class ChooseExportFile(val fileName: String) : Event
     }
 }

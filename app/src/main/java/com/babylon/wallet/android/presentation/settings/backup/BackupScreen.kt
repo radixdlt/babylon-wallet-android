@@ -27,6 +27,8 @@ import androidx.compose.material.ModalBottomSheetState
 import androidx.compose.material.ModalBottomSheetValue
 import androidx.compose.material.rememberModalBottomSheetState
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHostState
@@ -41,6 +43,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -77,6 +80,7 @@ fun BackupScreen(
     viewModel: BackupViewModel,
     modifier: Modifier = Modifier,
     onSystemBackupSettingsClick: () -> Unit,
+    onProfileDeleted: () -> Unit,
     onClose: () -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -97,6 +101,9 @@ fun BackupScreen(
         onEncryptPasswordConfirmRevealToggle = viewModel::onEncryptConfirmPasswordRevealChange,
         onEncryptSubmitClick = viewModel::onEncryptSubmitClick,
         onUiMessageShown = viewModel::onMessageShown,
+        onDeleteWalletClick = viewModel::onDeleteWalletClick,
+        onDeleteWalletConfirm = viewModel::onDeleteWalletConfirm,
+        onDeleteWalletDeny = viewModel::onDeleteWalletDeny,
         onBackClick = viewModel::onBackClick
     )
 
@@ -113,6 +120,7 @@ fun BackupScreen(
             when (it) {
                 is BackupViewModel.Event.Dismiss -> onClose()
                 is BackupViewModel.Event.ChooseExportFile -> filePickerLauncher.launch(it.fileName)
+                is BackupViewModel.Event.ProfileDeleted -> onProfileDeleted()
             }
         }
     }
@@ -133,6 +141,9 @@ private fun BackupScreenContent(
     onEncryptPasswordConfirmRevealToggle: () -> Unit,
     onEncryptSubmitClick: () -> Unit,
     onUiMessageShown: () -> Unit,
+    onDeleteWalletClick: () -> Unit,
+    onDeleteWalletConfirm: () -> Unit,
+    onDeleteWalletDeny: () -> Unit,
     onBackClick: () -> Unit
 ) {
     BackHandler(onBack = onBackClick)
@@ -141,6 +152,13 @@ private fun BackupScreenContent(
         ExportWalletBackupFileDialog(
             onConfirm = onFileBackupConfirm,
             onDeny = onFileBackupDeny
+        )
+    }
+
+    if (state.deleteWalletDialogVisible) {
+        DeleteWalletDialog(
+            onConfirm = onDeleteWalletConfirm,
+            onDeny = onDeleteWalletDeny
         )
     }
 
@@ -160,7 +178,6 @@ private fun BackupScreenContent(
     )
 
     val snackBarHostState = remember { SnackbarHostState() }
-
     SnackbarUIMessage(
         message = state.uiMessage,
         snackbarHostState = snackBarHostState,
@@ -203,6 +220,7 @@ private fun BackupScreenContent(
                 modifier = Modifier
                     .padding(padding)
                     .verticalScroll(rememberScrollState())
+                    .navigationBarsPadding()
             ) {
                 Text(
                     modifier = Modifier.padding(RadixTheme.dimensions.paddingDefault),
@@ -301,6 +319,52 @@ private fun BackupScreenContent(
                 }
 
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
+
+                Text(
+                    modifier = Modifier.padding(RadixTheme.dimensions.paddingDefault),
+                    text = stringResource(id = R.string.profileBackup_deleteWallet_title),
+                    color = RadixTheme.colors.gray2,
+                    style = RadixTheme.typography.body1HighImportance
+                )
+
+                Surface(
+                    color = RadixTheme.colors.defaultBackground,
+                    shadowElevation = 1.dp
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .padding(
+                                horizontal = RadixTheme.dimensions.paddingDefault,
+                                vertical = RadixTheme.dimensions.paddingLarge
+                            ),
+                        verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingDefault)
+                    ) {
+                        Text(
+                            text = stringResource(id = R.string.profileBackup_deleteWallet_subtitleAndroid)
+                                .formattedSpans(boldStyle = SpanStyle(fontWeight = FontWeight.Bold)),
+                            color = RadixTheme.colors.gray2,
+                            style = RadixTheme.typography.body1HighImportance
+                        )
+
+                        Button(
+                            modifier = Modifier.fillMaxWidth(),
+                            onClick = onDeleteWalletClick,
+                            shape = RadixTheme.shapes.roundedRectSmall,
+                            colors = ButtonDefaults.buttonColors(
+                                contentColor = Color.White,
+                                containerColor = RadixTheme.colors.red1
+                            )
+                        ) {
+                            Text(
+                                text = stringResource(R.string.profileBackup_deleteWallet_confirmButtonAndroid),
+                                style = RadixTheme.typography.body1Header,
+                                maxLines = 1,
+                            )
+                        }
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
             }
         }
     }
@@ -344,6 +408,45 @@ private fun ExportWalletBackupFileDialog(
                     color = RadixTheme.colors.red1
                 )
             }
+        },
+        dismissButton = {
+            Text(
+                modifier = modifier
+                    .clickable(role = Role.Button) { onDeny() }
+                    .padding(horizontal = RadixTheme.dimensions.paddingSmall, vertical = RadixTheme.dimensions.paddingXSmall),
+                text = stringResource(id = R.string.common_cancel),
+                color = RadixTheme.colors.blue2
+            )
+        }
+    )
+}
+
+@Composable
+private fun DeleteWalletDialog(
+    modifier: Modifier = Modifier,
+    onConfirm: () -> Unit,
+    onDeny: () -> Unit
+) {
+    AlertDialog(
+        modifier = modifier,
+        onDismissRequest = onDeny,
+        shape = RadixTheme.shapes.roundedRectSmall,
+        containerColor = RadixTheme.colors.defaultBackground,
+        text = {
+            Text(
+                text = stringResource(id = R.string.profileBackup_deleteWalletDialog_message),
+                style = RadixTheme.typography.body2Header,
+                color = RadixTheme.colors.gray1
+            )
+        },
+        confirmButton = {
+            Text(
+                modifier = modifier
+                    .clickable(role = Role.Button) { onConfirm() }
+                    .padding(horizontal = RadixTheme.dimensions.paddingSmall, vertical = RadixTheme.dimensions.paddingXSmall),
+                text = stringResource(id = R.string.profileBackup_deleteWalletDialog_confirm),
+                color = RadixTheme.colors.red1
+            )
         },
         dismissButton = {
             Text(
@@ -530,6 +633,9 @@ fun BackupScreenPreview() {
             onEncryptPasswordConfirmRevealToggle = {},
             onEncryptSubmitClick = {},
             onUiMessageShown = {},
+            onDeleteWalletClick = {},
+            onDeleteWalletConfirm = {},
+            onDeleteWalletDeny = {},
             onBackClick = {}
         )
     }

@@ -118,7 +118,6 @@
   <string name="settings_ledgerHardwareWallets">Ledger Hardware Wallets</string>
   <string name="settings_multiFactor">Multi-Factor Setup</string>
   <string name="settings_appVersion">Version: %s build #%s</string>
-  <string name="settings_deleteWalletData">Delete Wallet Data</string>
   <string name="settings_noProfileText">No Wallet Data Found</string>
   <string name="settings_linkToConnectorHeader_title">Link your Wallet to a Desktop Browser</string>
   <string name="settings_linkToConnectorHeader_subtitle">Scan the QR code in the Radix Wallet Connector extension</string>
@@ -635,6 +634,13 @@
   <string name="profileBackup_manualBackups_confirmPasswordPlaceholder">Enter password</string>
   <string name="profileBackup_manualBackups_passwordsMissmatchError">Passwords do not match</string>
   <string name="profileBackup_manualBackups_successMessage">Exported wallet backup file</string>
+  <string name="profileBackup_deleteWallet_title">Delete Wallet</string>
+  <string name="profileBackup_deleteWallet_subtitleAndroid">You may delete your wallet. This will clear the Radix Wallet app, clears its contents, and delete any cloud backup.\n\n*Access to any Accounts or Personas will be permanently lost unless you have a manual backup file.*</string>
+  <string name="profileBackup_deleteWallet_subtitleIOS">You may delete your wallet. This will clear the Radix Wallet app, clears its contents, and delete any iCloud backup.\n\n*Access to any Accounts or Personas will be permanently lost unless you have a manual backup file.*</string>
+  <string name="profileBackup_deleteWallet_confirmButtonAndroid">Delete Wallet</string>
+  <string name="profileBackup_deleteWallet_confirmButtonIOS">Delete Wallet and iCloud Backup</string>
+  <string name="profileBackup_deleteWalletDialog_message">WARNING. This will clear all contents of your Wallet. If you have no backup, you will lose access to your Accounts and Personas permanently.</string>
+  <string name="profileBackup_deleteWalletDialog_confirm">Delete Wallet</string>
   <string name="androidProfileBackup_automaticBackups_enable">Enable Backup</string>
   <string name="androidProfileBackup_automaticBackups_disable">Disable Backup</string>
   <string name="iOSProfileBackup_automaticBackups_enable">Enable Backup to iCloud</string>

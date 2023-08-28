@@ -53,6 +53,7 @@ fun NavController.backupScreen() {
 @OptIn(ExperimentalAnimationApi::class)
 fun NavGraphBuilder.backupScreen(
     onSystemBackupSettingsClick: () -> Unit,
+    onProfileDeleted: () -> Unit,
     onClose: () -> Unit
 ) {
     composable(
@@ -67,6 +68,7 @@ fun NavGraphBuilder.backupScreen(
         BackupScreen(
             viewModel = hiltViewModel(),
             onSystemBackupSettingsClick = onSystemBackupSettingsClick,
+            onProfileDeleted = onProfileDeleted,
             onClose = onClose
         )
     }

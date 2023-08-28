@@ -16,7 +16,6 @@ sealed interface SettingsItem {
         object SeedPhrases : TopLevelSettings
         object LedgerHardwareWallets : TopLevelSettings
         object ImportFromLegacyWallet : TopLevelSettings
-        object DeleteAll : TopLevelSettings
         object Personas : TopLevelSettings
         data class Backups(
             val backupState: BackupState
@@ -26,7 +25,6 @@ sealed interface SettingsItem {
         fun descriptionRes(): Int {
             return when (this) {
                 LinkToConnector -> R.string.empty
-                DeleteAll -> R.string.settings_deleteWalletData
                 Gateways -> R.string.settings_gateways
                 LinkedConnectors -> R.string.settings_linkedConnectors
                 Personas -> R.string.settings_personas

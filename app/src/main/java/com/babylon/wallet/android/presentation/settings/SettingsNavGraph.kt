@@ -48,6 +48,9 @@ fun NavGraphBuilder.settingsNavGraph(
             onSystemBackupSettingsClick = {
                 navController.systemBackupSettingsScreen()
             },
+            onProfileDeleted = {
+                navController.popBackStack(MAIN_ROUTE, false)
+            },
             onClose = {
                 navController.popBackStack()
             }
@@ -142,12 +145,7 @@ private fun NavGraphBuilder.settingsAll(navController: NavController) {
                     SettingsItem.TopLevelSettings.ImportFromLegacyWallet -> {
                         navController.importLegacyWalletScreen()
                     }
-
-                    else -> {}
                 }
-            },
-            onProfileDeleted = {
-                navController.popBackStack(MAIN_ROUTE, false)
             }
         )
     }

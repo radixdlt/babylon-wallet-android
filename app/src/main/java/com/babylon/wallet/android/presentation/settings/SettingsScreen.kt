@@ -43,13 +43,11 @@ fun SettingsScreen(
     viewModel: SettingsViewModel,
     onBackClick: () -> Unit,
     onSettingClick: (SettingsItem.TopLevelSettings) -> Unit,
-    onProfileDeleted: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     SettingsContent(
         onBackClick = onBackClick,
-        onDeleteWalletClick = viewModel::onDeleteWalletClick,
         appSettings = state.settings,
         onSettingClick = onSettingClick,
         modifier = modifier
@@ -57,19 +55,11 @@ fun SettingsScreen(
             .fillMaxSize()
             .background(RadixTheme.colors.defaultBackground)
     )
-    LaunchedEffect(Unit) {
-        viewModel.oneOffEvent.collect { event ->
-            when (event) {
-                SettingsEvent.ProfileDeleted -> onProfileDeleted()
-            }
-        }
-    }
 }
 
 @Composable
 private fun SettingsContent(
     onBackClick: () -> Unit,
-    onDeleteWalletClick: () -> Unit,
     appSettings: ImmutableList<SettingsItem.TopLevelSettings>,
     onSettingClick: (SettingsItem.TopLevelSettings) -> Unit,
     modifier: Modifier = Modifier,
@@ -104,19 +94,6 @@ private fun SettingsContent(
                                 onSettingClick = onSettingClick,
                                 settingsItem = settingsItem
                             )
-                        }
-                    }
-
-                    SettingsItem.TopLevelSettings.DeleteAll -> {
-                        settingsItem.descriptionRes().let {
-                            item {
-                                RadixSecondaryButton(
-                                    modifier = Modifier.padding(vertical = RadixTheme.dimensions.paddingDefault),
-                                    text = stringResource(id = it),
-                                    onClick = onDeleteWalletClick,
-                                    contentColor = RadixTheme.colors.red1
-                                )
-                            }
                         }
                     }
 
@@ -287,14 +264,12 @@ fun SettingsScreenWithoutActiveConnectionPreview() {
     RadixWalletTheme {
         SettingsContent(
             onBackClick = {},
-            onDeleteWalletClick = {},
             appSettings = persistentListOf(
                 SettingsItem.TopLevelSettings.LinkToConnector,
                 SettingsItem.TopLevelSettings.LinkedConnectors,
                 SettingsItem.TopLevelSettings.Gateways,
                 SettingsItem.TopLevelSettings.AuthorizedDapps,
-                SettingsItem.TopLevelSettings.Personas,
-                SettingsItem.TopLevelSettings.DeleteAll
+                SettingsItem.TopLevelSettings.Personas
             ),
             onSettingClick = {}
         )
