@@ -69,7 +69,7 @@ class MainViewModel @Inject constructor(
         }
         .shareIn(
             viewModelScope,
-            SharingStarted.WhileSubscribed(PEERDROID_STOP_TIMEOUT) // TODO https://radixdlt.atlassian.net/browse/ABW-1421
+            SharingStarted.WhileSubscribed(PEERDROID_STOP_TIMEOUT)
         )
 
     val statusEvents = appEventBus
