@@ -8,6 +8,7 @@ import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavType
 import androidx.navigation.navArgument
+import com.babylon.wallet.android.presentation.navigation.markAsHighPriority
 import com.google.accompanist.navigation.animation.composable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
@@ -54,6 +55,7 @@ sealed class RestoreMnemonicsArgs {
 fun NavGraphBuilder.restoreMnemonicsScreen(
     onFinish: (Boolean) -> Unit
 ) {
+    markAsHighPriority(ROUTE)
     composable(
         route = ROUTE,
         arguments = listOf(
