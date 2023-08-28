@@ -1,2 +1,2 @@
 configurations.maybeCreate("default")
-artifacts.add("default", file('libwebrtc-m110.aar'))
+artifacts.add("default", file('libwebrtc-m116.aar'))
