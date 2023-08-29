@@ -1,9 +1,13 @@
+@file:OptIn(ExperimentalSerializationApi::class)
+
 package rdx.works.profile.data.model.pernetwork
 
 import com.radixdlt.extensions.removeLeadingZero
 import com.radixdlt.ret.PublicKey
 import com.radixdlt.ret.deriveVirtualAccountAddressFromPublicKey
 import com.radixdlt.ret.deriveVirtualIdentityAddressFromPublicKey
+import kotlinx.serialization.EncodeDefault
+import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonClassDiscriminator
@@ -100,16 +104,20 @@ data class Network(
         @Serializable
         data class OnLedgerSettings(
             @SerialName("thirdPartyDeposits")
+            @EncodeDefault
             val thirdPartyDeposits: ThirdPartyDeposits
         ) {
 
             @Serializable
             data class ThirdPartyDeposits(
                 @SerialName("depositRule")
+                @EncodeDefault
                 val depositRule: DepositRule = DepositRule.AcceptAll,
                 @SerialName("assetsExceptionList")
+                @EncodeDefault
                 val assetsExceptionList: List<AssetException> = emptyList(),
                 @SerialName("depositorsAllowList")
+                @EncodeDefault
                 val depositorsAllowList: List<DepositorAddress> = emptyList(),
             ) {
                 @Serializable

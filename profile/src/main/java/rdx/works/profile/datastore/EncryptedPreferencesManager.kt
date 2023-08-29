@@ -21,6 +21,7 @@ import java.io.IOException
 import javax.inject.Inject
 import javax.inject.Singleton
 
+@Suppress("TooManyFunctions")
 @Singleton
 class EncryptedPreferencesManager @Inject constructor(
     @ProfileDataStore private val preferences: DataStore<Preferences>,
@@ -79,23 +80,43 @@ class EncryptedPreferencesManager @Inject constructor(
         putString(PROFILE_PREFERENCES_KEY, snapshotSerialized, KeySpec.Profile())
     }
 
-    suspend fun getProfileSnapshotFromBackup() = preferences.data.catchIOException().map { preferences ->
-        val snapshotEncrypted = preferences[stringPreferencesKey(RESTORED_PROFILE_PREFERENCES_KEY)]
+    suspend fun getProfileSnapshotFromCloudBackup() = preferences.data.catchIOException().map { preferences ->
+        val snapshotEncrypted = preferences[stringPreferencesKey(RESTORED_PROFILE_CLOUD_PREFERENCES_KEY)]
 
         if (snapshotEncrypted.isNullOrEmpty()) {
             null
         } else {
             snapshotEncrypted.decrypt(KeySpec.Profile())
         }
-    }.flowOn(ioDispatcher).firstOrNull()
+    }.flowOn(ioDispatcher).firstOrNull()?.getOrNull()
 
-    suspend fun putProfileSnapshotFromBackup(restoredSnapshotSerialized: String) {
-        putString(RESTORED_PROFILE_PREFERENCES_KEY, restoredSnapshotSerialized, KeySpec.Profile())
+    suspend fun putProfileSnapshotFromCloudBackup(restoredSnapshotSerialized: String) {
+        putString(RESTORED_PROFILE_CLOUD_PREFERENCES_KEY, restoredSnapshotSerialized, KeySpec.Profile())
     }
 
-    suspend fun clearProfileSnapshotFromBackup() {
+    suspend fun clearProfileSnapshotFromCloudBackup() {
         preferences.edit {
-            it.remove(stringPreferencesKey(RESTORED_PROFILE_PREFERENCES_KEY))
+            it.remove(stringPreferencesKey(RESTORED_PROFILE_CLOUD_PREFERENCES_KEY))
+        }
+    }
+
+    suspend fun getProfileSnapshotFromFileBackup() = preferences.data.catchIOException().map { preferences ->
+        val snapshotEncrypted = preferences[stringPreferencesKey(RESTORED_PROFILE_FILE_PREFERENCES_KEY)]
+
+        if (snapshotEncrypted.isNullOrEmpty()) {
+            null
+        } else {
+            snapshotEncrypted.decrypt(KeySpec.Profile())
+        }
+    }.flowOn(ioDispatcher).firstOrNull()?.getOrNull()
+
+    suspend fun putProfileSnapshotFromFileBackup(restoredSnapshotSerialized: String) {
+        putString(RESTORED_PROFILE_FILE_PREFERENCES_KEY, restoredSnapshotSerialized, KeySpec.Profile())
+    }
+
+    suspend fun clearProfileSnapshotFromFileBackup() {
+        preferences.edit {
+            it.remove(stringPreferencesKey(RESTORED_PROFILE_FILE_PREFERENCES_KEY))
         }
     }
 
@@ -112,6 +133,7 @@ class EncryptedPreferencesManager @Inject constructor(
     companion object {
         const val DATA_STORE_NAME = "rdx_encrypted_datastore"
         private const val PROFILE_PREFERENCES_KEY = "profile_preferences_key"
-        private const val RESTORED_PROFILE_PREFERENCES_KEY = "restored_preferences_key"
+        private const val RESTORED_PROFILE_CLOUD_PREFERENCES_KEY = "restored_cloud_profile_key"
+        private const val RESTORED_PROFILE_FILE_PREFERENCES_KEY = "restored_file_profile_key"
     }
 }

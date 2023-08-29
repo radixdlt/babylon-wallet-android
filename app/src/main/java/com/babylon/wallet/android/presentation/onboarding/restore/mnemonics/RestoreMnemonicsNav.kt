@@ -8,56 +8,57 @@ import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavType
 import androidx.navigation.navArgument
+import com.babylon.wallet.android.presentation.navigation.markAsHighPriority
 import com.google.accompanist.navigation.animation.composable
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 import rdx.works.profile.data.model.factorsources.FactorSource
+import rdx.works.profile.domain.backup.BackupType
 
-private const val ARG_FACTOR_SOURCE_ID = "factorSourceId"
-private const val ARG_RECOVER_MANDATORY = "mandatory"
-private const val ROUTE = "restore_mnemonics?$ARG_FACTOR_SOURCE_ID={$ARG_FACTOR_SOURCE_ID}&$ARG_RECOVER_MANDATORY={$ARG_RECOVER_MANDATORY}"
+private const val ARGS_RESTORE_MNEMONICS = "restoreMnemonicsArgs"
+private const val ROUTE = "restore_mnemonics?restoreMnemonicsArgs={$ARGS_RESTORE_MNEMONICS}"
 
-fun NavController.restoreMnemonics(deviceFactorSourceId: FactorSource.FactorSourceID.FromHash? = null, recoverMandatory: Boolean = false) {
-    var route = "restore_mnemonics"
-    route += "?$ARG_FACTOR_SOURCE_ID=${deviceFactorSourceId?.body?.value}"
-    route += "&$ARG_RECOVER_MANDATORY=$recoverMandatory"
-    navigate(route = route)
+fun NavController.restoreMnemonics(
+    args: RestoreMnemonicsArgs
+) {
+    navigate(route = "restore_mnemonics?restoreMnemonicsArgs=${Json.encodeToString(args)}")
 }
 
-sealed class RestoreMnemonicsArgs {
-    object RestoreProfile : RestoreMnemonicsArgs()
-    data class RestoreSpecificMnemonic(val factorSourceIdHex: String, val recoverMandatory: Boolean) : RestoreMnemonicsArgs()
+@Serializable
+sealed interface RestoreMnemonicsArgs {
+    @Serializable
+    data class RestoreProfile(val backupType: BackupType) : RestoreMnemonicsArgs
+
+    @Serializable
+    data class RestoreSpecificMnemonic(
+        val factorSourceId: FactorSource.HexCoded32Bytes,
+        val isMandatory: Boolean = false
+    ) : RestoreMnemonicsArgs
 
     companion object {
         fun from(savedStateHandle: SavedStateHandle): RestoreMnemonicsArgs {
-            val factorSourceIdHex: String? = savedStateHandle[ARG_FACTOR_SOURCE_ID]
-            val recoverMandatory: Boolean = savedStateHandle[ARG_RECOVER_MANDATORY] ?: false
-            return if (factorSourceIdHex != null) {
-                RestoreSpecificMnemonic(factorSourceIdHex, recoverMandatory)
-            } else {
-                RestoreProfile
-            }
+            val serialised: String = requireNotNull(savedStateHandle[ARGS_RESTORE_MNEMONICS])
+
+            return Json.decodeFromString(serialised)
         }
     }
 }
 
 @OptIn(ExperimentalAnimationApi::class)
 fun NavGraphBuilder.restoreMnemonicsScreen(
-    onFinish: (Boolean) -> Unit,
-    onCloseApp: () -> Unit
+    onCloseApp: () -> Unit,
+    onDismiss: (Boolean) -> Unit
 ) {
+    markAsHighPriority(ROUTE)
     composable(
         route = ROUTE,
         arguments = listOf(
             navArgument(
-                name = ARG_FACTOR_SOURCE_ID,
-            ) {
-                nullable = true
-                type = NavType.StringType
-            },
-            navArgument(
-                name = ARG_RECOVER_MANDATORY,
+                name = ARGS_RESTORE_MNEMONICS,
             ) {
                 nullable = false
-                type = NavType.BoolType
+                type = NavType.StringType
             }
         ),
         enterTransition = {
@@ -69,8 +70,8 @@ fun NavGraphBuilder.restoreMnemonicsScreen(
     ) {
         RestoreMnemonicsScreen(
             viewModel = hiltViewModel(),
-            onFinish = onFinish,
-            onCloseApp = onCloseApp
+            onCloseApp = onCloseApp,
+            onDismiss = onDismiss
         )
     }
 }

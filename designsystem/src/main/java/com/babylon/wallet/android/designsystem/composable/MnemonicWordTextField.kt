@@ -16,7 +16,6 @@ import androidx.compose.foundation.text.selection.LocalTextSelectionColors
 import androidx.compose.foundation.text.selection.TextSelectionColors
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextFieldColors
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
@@ -42,7 +41,6 @@ fun MnemonicWordTextField(
     onValueChanged: (String) -> Unit,
     value: String,
     label: String,
-    colors: TextFieldColors? = null,
     hint: String? = null,
     hintColor: Color? = RadixTheme.colors.defaultText,
     error: String? = null,

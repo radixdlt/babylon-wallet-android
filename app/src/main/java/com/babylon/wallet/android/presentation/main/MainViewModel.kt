@@ -230,14 +230,8 @@ sealed interface AppState {
             } else {
                 NewProfile
             }
-
-            is ProfileState.None -> if (profileState.profileBackupExists) {
-                OnBoarding
-            } else {
-                NewProfile
-            }
-
-            else -> NewProfile
+            is ProfileState.None -> OnBoarding
+            is ProfileState.NotInitialised -> OnBoarding
         }
     }
 }

@@ -1,12 +1,16 @@
+@file:OptIn(ExperimentalSerializationApi::class)
+
 package rdx.works.profile.data.model.factorsources
 
+import kotlinx.serialization.Contextual
+import kotlinx.serialization.EncodeDefault
+import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import okio.ByteString.Companion.decodeHex
 import rdx.works.profile.data.model.MnemonicWithPassphrase
 import rdx.works.profile.data.model.compressedPublicKey
 import rdx.works.profile.data.model.pernetwork.DerivationPath
-import rdx.works.profile.data.model.serialisers.InstantSerializer
 import rdx.works.profile.data.utils.hashToFactorId
 import java.time.Instant
 
@@ -74,18 +78,19 @@ sealed class FactorSource {
         /**
          * When this factor source for originally added by the user.
          */
-        @Serializable(with = InstantSerializer::class)
         @SerialName("addedOn")
+        @Contextual
         val addedOn: Instant,
 
         /**
          * Date of last usage of this factor source
          */
-        @Serializable(with = InstantSerializer::class)
         @SerialName("lastUsedOn")
+        @Contextual
         var lastUsedOn: Instant,
 
         @SerialName("flags")
+        @EncodeDefault
         var flags: List<FactorSourceFlag> = emptyList()
     ) {
 

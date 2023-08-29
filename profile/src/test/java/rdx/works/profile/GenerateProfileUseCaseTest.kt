@@ -141,7 +141,7 @@ class GenerateProfileUseCaseTest {
                 defaultDispatcher = testDispatcher
             )
 
-            whenever(profileRepository.profileState).thenReturn(flowOf(ProfileState.None()))
+            whenever(profileRepository.profileState).thenReturn(flowOf(ProfileState.None))
 
             val profile = generateProfileUseCase().copy(factorSources = listOf(babylonFactorSource))
 
@@ -170,7 +170,7 @@ class GenerateProfileUseCaseTest {
                 defaultDispatcher = testDispatcher
             )
 
-            whenever(profileRepository.profileState).thenReturn(flowOf(ProfileState.None()))
+            whenever(profileRepository.profileState).thenReturn(flowOf(ProfileState.None))
             val profile = generateProfileUseCase().copy(factorSources = listOf(babylonFactorSource))
 
             Assert.assertEquals(

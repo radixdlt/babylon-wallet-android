@@ -53,7 +53,8 @@ fun NavController.backupScreen() {
 @OptIn(ExperimentalAnimationApi::class)
 fun NavGraphBuilder.backupScreen(
     onSystemBackupSettingsClick: () -> Unit,
-    onBackClick: () -> Unit
+    onProfileDeleted: () -> Unit,
+    onClose: () -> Unit
 ) {
     composable(
         route = "settings_backup",
@@ -67,7 +68,8 @@ fun NavGraphBuilder.backupScreen(
         BackupScreen(
             viewModel = hiltViewModel(),
             onSystemBackupSettingsClick = onSystemBackupSettingsClick,
-            onBackClick = onBackClick
+            onProfileDeleted = onProfileDeleted,
+            onClose = onClose
         )
     }
 }

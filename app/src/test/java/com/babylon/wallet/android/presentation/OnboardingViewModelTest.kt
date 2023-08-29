@@ -13,9 +13,7 @@ import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import org.mockito.Mockito
-import rdx.works.profile.domain.backup.DiscardRestoredProfileFromBackupUseCase
-import rdx.works.profile.domain.backup.IsProfileFromBackupExistsUseCase
-import rdx.works.profile.domain.backup.RestoreProfileFromBackupUseCase
+import rdx.works.profile.domain.backup.DiscardTemporaryRestoredFileForBackupUseCase
 
 @ExperimentalCoroutinesApi
 class OnboardingViewModelTest {
@@ -24,9 +22,7 @@ class OnboardingViewModelTest {
     val coroutineRule = TestDispatcherRule()
 
     //private val deviceSecurityHelper = Mockito.mock(DeviceSecurityHelper::class.java)
-    private val isProfileFromBackupExistsUseCase = Mockito.mock(IsProfileFromBackupExistsUseCase::class.java)
-    private val restoreProfileFromBackupUseCase = Mockito.mock(RestoreProfileFromBackupUseCase::class.java)
-    private val discardRestoredProfileFromBackupUseCase = Mockito.mock(DiscardRestoredProfileFromBackupUseCase::class.java)
+    private val discardTemporaryRestoredFileForBackupUseCase = Mockito.mock(DiscardTemporaryRestoredFileForBackupUseCase::class.java)
 
     @Test
     fun `when alert not accepted, do not show external warning`() = runTest {
@@ -34,8 +30,7 @@ class OnboardingViewModelTest {
         val event = mutableListOf<OnboardingViewModel.OnBoardingUiState>()
         val viewModel = OnboardingViewModel(
             //deviceSecurityHelper = deviceSecurityHelper,
-            isProfileFromBackupExistsUseCase = isProfileFromBackupExistsUseCase,
-            discardRestoredProfileFromBackupUseCase = discardRestoredProfileFromBackupUseCase
+            discardTemporaryRestoredFileForBackupUseCase = discardTemporaryRestoredFileForBackupUseCase
         )
 
         // when
@@ -55,8 +50,7 @@ class OnboardingViewModelTest {
         val event = mutableListOf<OnboardingViewModel.OnBoardingUiState>()
         val viewModel = OnboardingViewModel(
             //deviceSecurityHelper = deviceSecurityHelper,
-            isProfileFromBackupExistsUseCase = isProfileFromBackupExistsUseCase,
-            discardRestoredProfileFromBackupUseCase = discardRestoredProfileFromBackupUseCase
+            discardTemporaryRestoredFileForBackupUseCase = discardTemporaryRestoredFileForBackupUseCase
         )
 
         // when
@@ -79,12 +73,11 @@ class OnboardingViewModelTest {
         val event = mutableListOf<OnboardingViewModel.OnBoardingUiState>()
         val viewModel = OnboardingViewModel(
             //deviceSecurityHelper = deviceSecurityHelper,
-            isProfileFromBackupExistsUseCase = isProfileFromBackupExistsUseCase,
-            discardRestoredProfileFromBackupUseCase = discardRestoredProfileFromBackupUseCase
+            discardTemporaryRestoredFileForBackupUseCase = discardTemporaryRestoredFileForBackupUseCase
         )
 
         // when
-        viewModel.onProceedClick()
+        viewModel.onCreateNewWalletClick()
         viewModel.state
             .onEach { event.add(it) }
             .launchIn(CoroutineScope(UnconfinedTestDispatcher(testScheduler)))
@@ -103,12 +96,11 @@ class OnboardingViewModelTest {
         val event = mutableListOf<OnboardingViewModel.OnBoardingUiState>()
         val viewModel = OnboardingViewModel(
             //deviceSecurityHelper = deviceSecurityHelper,
-            isProfileFromBackupExistsUseCase = isProfileFromBackupExistsUseCase,
-            discardRestoredProfileFromBackupUseCase = discardRestoredProfileFromBackupUseCase
+            discardTemporaryRestoredFileForBackupUseCase = discardTemporaryRestoredFileForBackupUseCase
         )
 
         // when
-        viewModel.onProceedClick()
+        viewModel.onCreateNewWalletClick()
         viewModel.state
             .onEach { event.add(it) }
             .launchIn(CoroutineScope(UnconfinedTestDispatcher(testScheduler)))

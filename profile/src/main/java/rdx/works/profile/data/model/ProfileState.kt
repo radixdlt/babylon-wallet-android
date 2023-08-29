@@ -12,10 +12,8 @@ sealed class ProfileState {
     /**
      * The repository has tried to query the [ProfileSnapshot] from internal storage, but
      * there is nothing there. The user has not created a [Profile] yet.
-     *
-     * If a restored profile from backup exists, it will be stored in [profileBackupExists]
      */
-    data class None(val profileBackupExists: Boolean = false) : ProfileState()
+    object None : ProfileState()
 
     /**
      * The [ProfileSnapshot]'s version saved in the internal storage is lower than the

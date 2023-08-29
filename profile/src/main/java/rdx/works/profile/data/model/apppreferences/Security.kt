@@ -8,6 +8,8 @@ import rdx.works.profile.data.model.Profile
 data class Security(
     @SerialName("isDeveloperModeEnabled")
     val isDeveloperModeEnabled: Boolean,
+    @SerialName("structureConfigurationReferences")
+    val structureConfigurationReferences: List<Boolean>,
     @SerialName("isCloudProfileSyncEnabled")
     val isCloudProfileSyncEnabled: Boolean
 ) {
@@ -15,6 +17,8 @@ data class Security(
     companion object {
         val default = Security(
             isDeveloperModeEnabled = true,
+            // Will be fixed later: https://rdxworks.slack.com/archives/C03Q8QK1GLW/p1692805178941029
+            structureConfigurationReferences = emptyList(),
             isCloudProfileSyncEnabled = true
         )
     }
