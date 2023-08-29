@@ -81,7 +81,7 @@ data class StreamTransactionsRequest (
     val order: StreamTransactionsRequest.Order? = null,
 
     @SerialName(value = "opt_ins")
-    val optIns: TransactionCommittedDetailsOptIns? = null
+    val optIns: TransactionDetailsOptIns? = null
 
 ) {
 

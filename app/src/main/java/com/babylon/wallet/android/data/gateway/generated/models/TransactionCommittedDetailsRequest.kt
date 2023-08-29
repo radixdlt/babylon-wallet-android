@@ -16,7 +16,7 @@
 package com.babylon.wallet.android.data.gateway.generated.models
 
 import com.babylon.wallet.android.data.gateway.generated.models.LedgerStateSelector
-import com.babylon.wallet.android.data.gateway.generated.models.TransactionCommittedDetailsOptIns
+import com.babylon.wallet.android.data.gateway.generated.models.TransactionDetailsOptIns
 
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerialName
@@ -25,7 +25,7 @@ import kotlinx.serialization.Contextual
 /**
  * 
  *
- * @param intentHashHex Hex-encoded SHA-256 hash.
+ * @param intentHash Bech32m-encoded hash.
  * @param atLedgerState 
  * @param optIns 
  */
@@ -33,15 +33,15 @@ import kotlinx.serialization.Contextual
 
 data class TransactionCommittedDetailsRequest (
 
-    /* Hex-encoded SHA-256 hash. */
-    @SerialName(value = "intent_hash_hex")
-    val intentHashHex: kotlin.String,
+    /* Bech32m-encoded hash. */
+    @SerialName(value = "intent_hash")
+    val intentHash: kotlin.String,
 
     @SerialName(value = "at_ledger_state")
     val atLedgerState: LedgerStateSelector? = null,
 
     @SerialName(value = "opt_ins")
-    val optIns: TransactionCommittedDetailsOptIns? = null
+    val optIns: TransactionDetailsOptIns? = null
 
 )
 

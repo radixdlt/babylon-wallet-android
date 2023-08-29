@@ -30,15 +30,15 @@ import kotlinx.serialization.Contextual
  * @param round 
  * @param roundTimestamp 
  * @param transactionStatus 
- * @param payloadHashHex Hex-encoded SHA-256 hash.
- * @param intentHashHex Hex-encoded SHA-256 hash.
+ * @param payloadHash Bech32m-encoded hash.
+ * @param intentHash Bech32m-encoded hash.
  * @param feePaid String-encoded decimal representing the amount of a related fungible resource.
  * @param affectedGlobalEntities 
  * @param confirmedAt 
  * @param errorMessage 
  * @param rawHex Hex-encoded binary blob.
  * @param receipt 
- * @param messageHex Hex-encoded binary blob.
+ * @param message defined in core api specs.
  */
 @Serializable
 
@@ -59,13 +59,13 @@ data class CommittedTransactionInfo (
     @Contextual @SerialName(value = "transaction_status")
     val transactionStatus: TransactionStatus,
 
-    /* Hex-encoded SHA-256 hash. */
-    @SerialName(value = "payload_hash_hex")
-    val payloadHashHex: kotlin.String? = null,
+    /* Bech32m-encoded hash. */
+    @SerialName(value = "payload_hash")
+    val payloadHash: kotlin.String? = null,
 
-    /* Hex-encoded SHA-256 hash. */
-    @SerialName(value = "intent_hash_hex")
-    val intentHashHex: kotlin.String? = null,
+    /* Bech32m-encoded hash. */
+    @SerialName(value = "intent_hash")
+    val intentHash: kotlin.String? = null,
 
     /* String-encoded decimal representing the amount of a related fungible resource. */
     @SerialName(value = "fee_paid")
@@ -87,9 +87,9 @@ data class CommittedTransactionInfo (
     @SerialName(value = "receipt")
     val receipt: TransactionReceipt? = null,
 
-    /* Hex-encoded binary blob. */
-    @SerialName(value = "message_hex")
-    val messageHex: kotlin.String? = null
+    /* defined in core api specs. */
+//    @Contextual @SerialName(value = "message")
+//    val message: kotlin.Any? = null
 
 )
 

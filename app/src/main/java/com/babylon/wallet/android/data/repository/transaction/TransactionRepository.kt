@@ -36,7 +36,7 @@ class TransactionRepositoryImpl @Inject constructor(private val transactionApi: 
     }
 
     override suspend fun getTransactionStatus(identifier: String): Result<TransactionStatusResponse> {
-        return transactionApi.transactionStatus(TransactionStatusRequest(intentHashHex = identifier))
+        return transactionApi.transactionStatus(TransactionStatusRequest(intentHash = identifier))
             .execute(map = { it })
     }
 

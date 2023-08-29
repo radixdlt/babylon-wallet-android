@@ -590,11 +590,11 @@ class EntityRepositoryImpl @Inject constructor(
         }
     }
 
-    private fun StateNonFungibleDetailsResponseItem.claimAmount(): String? = data?.rawJson?.fields?.find { element ->
+    private fun StateNonFungibleDetailsResponseItem.claimAmount(): String? = data?.programmaticJson?.fields?.find { element ->
         element.kind == "Decimal"
     }?.value
 
-    private fun StateNonFungibleDetailsResponseItem.claimEpoch(): String? = data?.rawJson?.fields?.find { element ->
+    private fun StateNonFungibleDetailsResponseItem.claimEpoch(): String? = data?.programmaticJson?.fields?.find { element ->
         element.kind == "U64"
     }?.value
 
