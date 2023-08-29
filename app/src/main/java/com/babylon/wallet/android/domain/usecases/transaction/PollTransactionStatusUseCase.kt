@@ -21,7 +21,7 @@ class PollTransactionStatusUseCase @Inject constructor(
     }
 
     @Suppress("MagicNumber", "ReturnCount")
-    suspend fun pollTransactionStatus(txID: String): Result<String> {
+    private suspend fun pollTransactionStatus(txID: String): Result<String> {
         var transactionStatus = TransactionStatus.pending
         var tryCount = 0
         var errorCount = 0

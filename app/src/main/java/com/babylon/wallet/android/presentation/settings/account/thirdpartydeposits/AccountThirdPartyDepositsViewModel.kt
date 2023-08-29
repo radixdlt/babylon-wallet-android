@@ -3,8 +3,8 @@ package com.babylon.wallet.android.presentation.settings.account.thirdpartydepos
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
+import com.babylon.wallet.android.data.dapp.model.TransactionType
 import com.babylon.wallet.android.data.manifest.prepareInternalTransactionRequest
-import com.babylon.wallet.android.data.manifest.toPrettyString
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
@@ -22,7 +22,6 @@ import rdx.works.profile.data.utils.toRETDepositRule
 import rdx.works.profile.data.utils.toRETResourcePreference
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.accountsOnCurrentNetwork
-import timber.log.Timber
 import javax.inject.Inject
 
 @Suppress("LongParameterList")
@@ -109,9 +108,13 @@ class AccountThirdPartyDepositsViewModel @Inject constructor(
                 )
             }
             manifestBuilder.buildSafely(networkId).onSuccess { manifest ->
-                Timber.d("Approving: \n${manifest.toPrettyString()}")
+                val updatedThirdPartyDepositSettings = state.value.updatedThirdPartyDepositSettings ?: return@onSuccess
                 incomingRequestRepository.add(
-                    manifest.prepareInternalTransactionRequest(networkId)
+                    manifest.prepareInternalTransactionRequest(
+                        networkId,
+                        transactionType = TransactionType.UpdateThirdPartyDeposits(updatedThirdPartyDepositSettings),
+                        blockUntilCompleted = true
+                    )
                 )
             }.onFailure { t ->
                 _state.update { state ->

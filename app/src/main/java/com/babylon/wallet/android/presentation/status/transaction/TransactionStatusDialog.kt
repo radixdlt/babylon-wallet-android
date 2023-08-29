@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -31,10 +30,8 @@ import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.presentation.common.getMessage
 import com.babylon.wallet.android.presentation.ui.composables.ActionableAddressView
 import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDialog
-import com.babylon.wallet.android.presentation.ui.composables.BottomSheetWrapper
 import com.babylon.wallet.android.presentation.ui.composables.SomethingWentWrongDialogContent
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TransactionStatusDialog(
     modifier: Modifier = Modifier,
@@ -54,29 +51,25 @@ fun TransactionStatusDialog(
         }
     }
 
-    BottomSheetWrapper(
-        modifier = modifier,
-        onDismissRequest = dismissHandler
-    ) {
-        Box(modifier = Modifier.animateContentSize()) {
-            androidx.compose.animation.AnimatedVisibility(
-                visible = state.isCompleting,
-                enter = fadeIn(),
-                exit = fadeOut()
-            ) {
-                CompletingContent()
-            }
+    Box(modifier = Modifier.animateContentSize()) {
+        androidx.compose.animation.AnimatedVisibility(
+            visible = state.isCompleting,
+            enter = fadeIn(),
+            exit = fadeOut()
+        ) {
+            CompletingContent()
+        }
 
-            androidx.compose.animation.AnimatedVisibility(
-                visible = state.isFailed,
-                enter = fadeIn(),
-                exit = fadeOut()
-            ) {
-                SomethingWentWrongDialogContent(
-                    title = stringResource(id = R.string.common_somethingWentWrong),
-                    subtitle = state.failureError?.getMessage()
-                )
-            }
+        androidx.compose.animation.AnimatedVisibility(
+            visible = state.isFailed,
+            enter = fadeIn(),
+            exit = fadeOut()
+        ) {
+            SomethingWentWrongDialogContent(
+                title = stringResource(id = R.string.common_somethingWentWrong),
+                subtitle = state.failureError?.getMessage()
+            )
+        }
 
             androidx.compose.animation.AnimatedVisibility(
                 visible = state.isSuccess,
@@ -88,22 +81,21 @@ fun TransactionStatusDialog(
             }
         }
 
-        if (state.isIgnoreTransactionModalShowing) {
-            BasicPromptAlertDialog(
-                finish = { accepted ->
-                    if (accepted) {
-                        viewModel.onDismissConfirmed()
-                    } else {
-                        viewModel.onDismissCanceled()
-                    }
-                },
-                text = {
-                    Text(text = stringResource(id = R.string.transaction_status_dismiss_dialog_message))
-                },
-                confirmText = stringResource(id = R.string.common_ok),
-                dismissText = null
-            )
-        }
+    if (state.isIgnoreTransactionModalShowing) {
+        BasicPromptAlertDialog(
+            finish = { accepted ->
+                if (accepted) {
+                    viewModel.onDismissConfirmed()
+                } else {
+                    viewModel.onDismissCanceled()
+                }
+            },
+            text = {
+                Text(text = stringResource(id = R.string.transaction_status_dismiss_dialog_message))
+            },
+            confirmText = stringResource(id = R.string.common_ok),
+            dismissText = null
+        )
     }
 }
 
