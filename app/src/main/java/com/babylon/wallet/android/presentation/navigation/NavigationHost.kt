@@ -90,7 +90,8 @@ fun NavigationHost(
                 } else {
                     navController.popBackStack()
                 }
-            }
+            },
+            onCloseApp = onCloseApp
         )
         main(
             mainUiState = mainUiState,

@@ -682,4 +682,7 @@
   <string name="iOSProfileBackup_totalAccountsNumberLabel">Number of Accounts: %d</string>
   <string name="iOSProfileBackup_totalPersonasNumberLabel">Number of Personas: %d</string>
   <string name="iOSProfileBackup_incompatibleWalletDataLabel">Incompatible Wallet data</string>
+
+  <string name="biometrics_deviceNotSecureAlert_openSettings">Open Settings</string>
+  <string name="biometrics_deviceNotSecureAlert_quit">Quit</string>
 </resources>

@@ -8,6 +8,7 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.runTest
+import org.junit.Before
 import org.junit.Test
 import org.mockito.Mockito
 import org.mockito.kotlin.doReturn
@@ -34,6 +35,11 @@ class CreateAccountWithDeviceFactorSourceUseCaseTest {
         mnemonic = "noodle question hungry sail type offer grocery clay nation hello mixture forum",
         bip39Passphrase = ""
     )
+
+    @Before
+    fun setUp() {
+        coEvery { ensureBabylonFactorSourceExistUseCase() } returns TestData.testProfile2Networks2AccountsEach(mnemonicWithPassphrase)
+    }
 
     @Test
     fun `given profile already exists, when creating new account, verify its returned and persisted to the profile`() {

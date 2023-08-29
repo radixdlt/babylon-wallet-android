@@ -77,6 +77,7 @@ class MainViewModel @Inject constructor(
         .filterIsInstance<AppEvent.Status>()
 
     val appNotSecureEvent = appEventBus.events.filterIsInstance<AppEvent.AppNotSecure>()
+    val babylonMnemonicNeedsRecoveryEvent = appEventBus.events.filterIsInstance<AppEvent.BabylonFactorSourceNeedsRecovery>()
 
     init {
         viewModelScope.launch {
@@ -191,6 +192,10 @@ class MainViewModel @Inject constructor(
             checkMnemonicIntegrityUseCase()
             if (!deviceSecurityHelper.isDeviceSecure()) {
                 appEventBus.sendEvent(AppEvent.AppNotSecure, delayMs = 500L)
+            } else {
+                checkMnemonicIntegrityUseCase.babylonMnemonicNeedsRecovery()?.let { factorSourceId ->
+                    appEventBus.sendEvent(AppEvent.BabylonFactorSourceNeedsRecovery(factorSourceId), delayMs = 500L)
+                }
             }
         }
     }
