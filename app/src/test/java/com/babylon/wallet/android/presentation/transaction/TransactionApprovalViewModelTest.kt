@@ -567,16 +567,6 @@ internal class TransactionApprovalViewModelTest : StateViewModelTest<Transaction
         encodedReceipt = "",
         receipt = TransactionReceipt(
             status = "",
-            feeSummary = FeeSummary(
-                cost_unit_limit = 1,
-                cost_unit_price = "",
-                cost_units_consumed = 1,
-                tip_percentage = 1,
-                xrd_royalty_receivers = emptyList(),
-                xrd_total_execution_cost = "",
-                xrd_total_royalty_cost = "",
-                xrd_total_tipped = "",
-            ),
             errorMessage = ""
         ),
         logs = emptyList()

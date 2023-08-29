@@ -12,15 +12,8 @@ class SubmitTransactionUseCase @Inject constructor(
 ) {
 
     suspend operator fun invoke(
-        txID: String,
+        txIDHash: String,
         notarizedTransactionHex: String
-    ): Result<String> {
-        return submitNotarizedTransaction(txID, notarizedTransactionHex)
-    }
-
-    private suspend fun submitNotarizedTransaction(
-        txID: String,
-        notarizedTransactionHex: String,
     ): Result<String> {
         val submitResult = transactionRepository.submitTransaction(
             notarizedTransaction = notarizedTransactionHex
@@ -43,12 +36,12 @@ class SubmitTransactionUseCase @Inject constructor(
                     Result.failure(
                         DappRequestException(
                             DappRequestFailure.TransactionApprovalFailure.InvalidTXDuplicate(
-                                txID
+                                txIDHash
                             )
                         )
                     )
                 } else {
-                    Result.success(txID)
+                    Result.success(txIDHash)
                 }
             }
         }

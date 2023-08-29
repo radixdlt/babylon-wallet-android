@@ -83,7 +83,7 @@ fun TransactionStatusDialog(
                 exit = fadeOut()
             ) {
                 // Need to send the correct transaction id
-                SuccessContent(transactionAddress = "")
+                SuccessContent(transactionAddress = state.transactionId)
             }
         }
 
@@ -109,7 +109,7 @@ fun TransactionStatusDialog(
 @Composable
 private fun SuccessContent(
     modifier: Modifier = Modifier,
-    transactionAddress: String = ""
+    transactionAddress: String
 ) {
     Column(
         modifier
@@ -179,7 +179,7 @@ private fun CompletingContent(
 @Composable
 fun SuccessBottomDialogPreview() {
     RadixWalletTheme {
-        SuccessContent()
+        SuccessContent(transactionAddress = "txid_tdx_21_1nsdfruuw5gd6tsh07ur5mgq4tjpns9vxj0nnaahaxpxmxapjzrfqmfzr4s")
     }
 }
 

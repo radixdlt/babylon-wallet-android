@@ -18,7 +18,6 @@ package com.babylon.wallet.android.data.gateway.generated.models
 
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerialName
-import kotlinx.serialization.Contextual
 
 /**
  * 
@@ -46,8 +45,8 @@ data class TransactionReceipt (
     @SerialName(value = "fee_summary")
     val feeSummary: FeeSummary? = null,
 
-//    @Contextual @SerialName(value = "costing_parameters")
-//    val costingParameters: kotlin.Any? = null,
+    @SerialName(value = "costing_parameters")
+    val costingParameters: CostingParameters? = null,
 //
 //    /* Only present if the `status` is not `Rejected`. */
 //    @Contextual @SerialName(value = "fee_destination")
@@ -85,20 +84,38 @@ data class TransactionReceipt (
 
 @Serializable
 data class FeeSummary(
-    @SerialName("cost_unit_limit")
-    val cost_unit_limit: Int,
-    @SerialName("cost_unit_price")
-    val cost_unit_price: String,
-    @SerialName("cost_units_consumed")
-    val cost_units_consumed: Int,
-    @SerialName("tip_percentage")
-    val tip_percentage: Int,
-    @SerialName("xrd_royalty_receivers")
-    val xrd_royalty_receivers: List<String>,
+    @SerialName("execution_cost_units_consumed")
+    val execution_cost_units_consumed: Long,
+    @SerialName("finalization_cost_units_consumed")
+    val finalization_cost_units_consumed: Long,
     @SerialName("xrd_total_execution_cost")
     val xrd_total_execution_cost: String,
+    @SerialName("xrd_total_finalization_cost")
+    val xrd_total_finalization_cost: String,
     @SerialName("xrd_total_royalty_cost")
     val xrd_total_royalty_cost: String,
-    @SerialName("xrd_total_tipped")
-    val xrd_total_tipped: String
+    @SerialName("xrd_total_storage_cost")
+    val xrd_total_storage_cost: String,
+    @SerialName("xrd_total_tipping_cost")
+    val xrd_total_tipping_cost: String
+)
+
+@Serializable
+data class CostingParameters(
+    @SerialName("execution_cost_unit_price")
+    val execution_cost_unit_price: String,
+    @SerialName("execution_cost_unit_limit")
+    val execution_cost_unit_limit: Long,
+    @SerialName("execution_cost_unit_loan")
+    val execution_cost_unit_loan: Long,
+    @SerialName("finalization_cost_unit_price")
+    val finalization_cost_unit_price: String,
+    @SerialName("finalization_cost_unit_limit")
+    val finalization_cost_unit_limit: Long,
+    @SerialName("xrd_usd_price")
+    val xrd_usd_price: String,
+    @SerialName("xrd_storage_price")
+    val xrd_storage_price: String,
+    @SerialName("tip_percentage")
+    val tip_percentage: Int
 )
