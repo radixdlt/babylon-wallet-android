@@ -371,7 +371,8 @@ class ProfileTest {
         assertEquals(
             "Default deposit guarantees are the same",
             expected.appPreferences.transaction.defaultDepositGuarantee,
-            actual.appPreferences.transaction.defaultDepositGuarantee
+            actual.appPreferences.transaction.defaultDepositGuarantee,
+            0.0
         )
 
         // Display
