@@ -13,4 +13,6 @@ object AddressValidator {
     fun getValidNetworkId(address: String) = runCatching {
         Address(address)
     }.getOrNull()?.networkId()?.toInt()
+
+    fun hasResourcePrefix(address: String): Boolean = address.lowercase().startsWith("resource_")
 }

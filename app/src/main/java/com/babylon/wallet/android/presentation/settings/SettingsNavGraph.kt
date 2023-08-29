@@ -12,6 +12,7 @@ import com.babylon.wallet.android.presentation.settings.appsettings.appSettingsN
 import com.babylon.wallet.android.presentation.onboarding.restore.mnemonics.RestoreMnemonicsArgs
 import com.babylon.wallet.android.presentation.onboarding.restore.mnemonics.restoreMnemonics
 import com.babylon.wallet.android.presentation.settings.account.specificassets.specificAssets
+import com.babylon.wallet.android.presentation.settings.account.specificdepositor.specificDepositor
 import com.babylon.wallet.android.presentation.settings.account.thirdpartydeposits.accountThirdPartyDeposits
 import com.babylon.wallet.android.presentation.settings.appsettings.appSettingsScreen
 import com.babylon.wallet.android.presentation.settings.appsettings.linkedconnectors.linkedConnectorsScreen
@@ -71,14 +72,21 @@ fun NavGraphBuilder.settingsNavGraph(
             }
         )
         accountThirdPartyDeposits(
+            navController = navController,
             onBackClick = {
                 navController.navigateUp()
             },
             onAssetSpecificRulesClick = {
                 navController.specificAssets(it)
+            },
+            onSpecificDepositorsClick = {
+                navController.specificDepositor()
             }
         )
-        specificAssets(onBackClick = {
+        specificAssets(navController = navController, onBackClick = {
+            navController.navigateUp()
+        })
+        specificDepositor(navController = navController, onBackClick = {
             navController.navigateUp()
         })
     }

@@ -145,19 +145,27 @@ data class Network(
                 @JsonClassDiscriminator(discriminator = "discriminator")
                 sealed interface DepositorAddress {
 
+                    val address: String
+
                     @Serializable
                     @SerialName("resourceAddress")
                     data class ResourceAddress(
                         @SerialName("value")
                         val value: String
-                    ) : DepositorAddress
+                    ) : DepositorAddress {
+                        override val address: String
+                            get() = value
+                    }
 
                     @Serializable
                     @SerialName("nonFungibleGlobalID")
                     data class NonFungibleGlobalID(
                         @SerialName("value")
                         val value: String
-                    ) : DepositorAddress
+                    ) : DepositorAddress {
+                        override val address: String
+                            get() = value
+                    }
                 }
 
                 @Serializable

@@ -338,4 +338,15 @@ class SampleDataProvider {
             )
         )
     }
+
+    fun sampleAssetException(): Network.Account.OnLedgerSettings.ThirdPartyDeposits.AssetException {
+        return Network.Account.OnLedgerSettings.ThirdPartyDeposits.AssetException(
+            randomAddress(),
+            Network.Account.OnLedgerSettings.ThirdPartyDeposits.DepositAddressExceptionRule.Allow
+        )
+    }
+
+    fun sampleDepositorAddress(): Network.Account.OnLedgerSettings.ThirdPartyDeposits.DepositorAddress {
+        return Network.Account.OnLedgerSettings.ThirdPartyDeposits.DepositorAddress.ResourceAddress(randomAddress())
+    }
 }

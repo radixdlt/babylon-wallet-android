@@ -15,6 +15,7 @@ import com.radixdlt.ret.ResourcePreference
 import com.radixdlt.ret.TransactionManifest
 import rdx.works.core.toByteArray
 
+@Suppress("TooManyFunctions")
 class BabylonManifestBuilder {
     private var latestBucketIndex: Int = 0
     private var manifestBuilder = ManifestBuilder()
@@ -132,6 +133,34 @@ class BabylonManifestBuilder {
             address = ManifestBuilderAddress.Static(accountAddress),
             methodName = "set_default_deposit_rule",
             args = listOf(value)
+        )
+        return this
+    }
+
+    fun addAuthorizedDepositor(
+        accountAddress: Address,
+        depositorAddress: Address
+    ): BabylonManifestBuilder {
+        manifestBuilder = manifestBuilder.callMethod(
+            address = ManifestBuilderAddress.Static(accountAddress),
+            methodName = "add_authorized_depositor",
+            args = listOf(
+                ManifestBuilderValue.AddressValue(ManifestBuilderAddress.Static(depositorAddress))
+            )
+        )
+        return this
+    }
+
+    fun removeAuthorizedDepositor(
+        accountAddress: Address,
+        depositorAddress: Address
+    ): BabylonManifestBuilder {
+        manifestBuilder = manifestBuilder.callMethod(
+            address = ManifestBuilderAddress.Static(accountAddress),
+            methodName = "remove_authorized_depositor",
+            args = listOf(
+                ManifestBuilderValue.AddressValue(ManifestBuilderAddress.Static(depositorAddress))
+            )
         )
         return this
     }

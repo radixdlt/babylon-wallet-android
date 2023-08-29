@@ -6,6 +6,7 @@ import android.net.Uri
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -35,6 +36,8 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.RadioButtonDefaults
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
 import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
@@ -47,10 +50,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
@@ -64,33 +69,38 @@ import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
 import com.babylon.wallet.android.designsystem.composable.RadixTextField
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
-import com.babylon.wallet.android.presentation.common.FullscreenCircularProgressContent
+import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.presentation.common.UiMessage
+import com.babylon.wallet.android.presentation.settings.account.thirdpartydeposits.AccountThirdPartyDepositsViewModel
+import com.babylon.wallet.android.presentation.settings.account.thirdpartydeposits.AssetType
 import com.babylon.wallet.android.presentation.ui.composables.BottomDialogDragHandle
 import com.babylon.wallet.android.presentation.ui.composables.ImageSize
-import com.babylon.wallet.android.presentation.ui.composables.NotSecureAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
-import com.babylon.wallet.android.presentation.ui.composables.SnackbarUiMessageHandler
+import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
 import com.babylon.wallet.android.presentation.ui.composables.rememberImageUrl
 import com.babylon.wallet.android.utils.truncatedHash
-import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.launch
+import rdx.works.profile.data.model.pernetwork.Network
 
-@OptIn(ExperimentalMaterialApi::class)
+@OptIn(ExperimentalMaterialApi::class, ExperimentalComposeUiApi::class)
 @Composable
 fun SpecificAssetsDepositsScreen(
-    viewModel: SpecificAssetsDepositsViewModel,
+    sharedViewModel: AccountThirdPartyDepositsViewModel,
     onBackClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val state by viewModel.state.collectAsStateWithLifecycle()
+    val state by sharedViewModel.state.collectAsStateWithLifecycle()
     val scope = rememberCoroutineScope()
     val sheetState = rememberModalBottomSheetState(
         initialValue = ModalBottomSheetValue.Hidden,
         skipHalfExpanded = true
     )
-    val hideCallback = { scope.launch { sheetState.hide() } }
+    val kb = LocalSoftwareKeyboardController.current
+    val hideCallback = {
+        kb?.hide()
+        scope.launch { sheetState.hide() }
+    }
     BackHandler {
         if (sheetState.isVisible) {
             hideCallback()
@@ -104,14 +114,18 @@ fun SpecificAssetsDepositsScreen(
             .navigationBarsPadding(),
         sheetContent = {
             AddAssetSheet(
-                onResourceAddressChanged = {},
-                resourceAddress = "",
-                resourceAddressValid = true,
-                onAddAsset = {},
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                hideCallback()
-            }
+                onResourceAddressChanged = sharedViewModel::assetExceptionAddressTyped,
+                asset = state.assetExceptionToAdd,
+                onAddAsset = {
+                    hideCallback()
+                    sharedViewModel.onAddAssetException()
+                },
+                modifier = Modifier.fillMaxWidth(),
+                onAssetExceptionRuleChanged = sharedViewModel::onAssetExceptionRuleChanged,
+                onDismiss = {
+                    hideCallback()
+                }
+            )
         },
         sheetState = sheetState,
         sheetBackgroundColor = RadixTheme.colors.gray4,
@@ -119,19 +133,20 @@ fun SpecificAssetsDepositsScreen(
     ) {
         SpecificAssetsDepositsContent(
             onBackClick = onBackClick,
-            loading = state.isLoading,
-            onMessageShown = viewModel::onMessageShown,
+            canUpdate = state.canUpdate,
+            onMessageShown = sharedViewModel::onMessageShown,
             error = state.error,
-            modifier = Modifier
-                .fillMaxSize()
-                .background(RadixTheme.colors.gray5),
             onShowAddAssetSheet = {
                 scope.launch {
                     sheetState.show()
                 }
             },
+            modifier = Modifier
+                .fillMaxSize()
+                .background(RadixTheme.colors.gray5),
             allowedAssets = state.allowedAssets,
-            deniedAssets = state.deniedAssets
+            deniedAssets = state.deniedAssets,
+            onDeleteAsset = sharedViewModel::onDeleteAsset
         )
     }
 }
@@ -139,16 +154,19 @@ fun SpecificAssetsDepositsScreen(
 @Composable
 fun AddAssetSheet(
     onResourceAddressChanged: (String) -> Unit,
-    resourceAddress: String,
-    resourceAddressValid: Boolean,
+    asset: AssetType.Exception,
     onAddAsset: () -> Unit,
     modifier: Modifier = Modifier,
     onDismiss: () -> Unit,
+    onAssetExceptionRuleChanged: (Network.Account.OnLedgerSettings.ThirdPartyDeposits.DepositAddressExceptionRule) -> Unit
 ) {
     Column(
-        modifier = modifier.background(RadixTheme.colors.defaultBackground, shape = RadixTheme.shapes.roundedRectTopDefault).verticalScroll(
-            rememberScrollState()
-        ).imePadding(),
+        modifier = modifier
+            .background(RadixTheme.colors.defaultBackground, shape = RadixTheme.shapes.roundedRectTopDefault)
+            .verticalScroll(
+                rememberScrollState()
+            )
+            .imePadding(),
         verticalArrangement = Arrangement.Center,
     ) {
         BottomDialogDragHandle(
@@ -186,7 +204,7 @@ fun AddAssetSheet(
                     .fillMaxWidth()
                     .padding(horizontal = RadixTheme.dimensions.paddingDefault),
                 onValueChanged = onResourceAddressChanged,
-                value = resourceAddress,
+                value = asset.assetException.address,
                 hint = stringResource(id = R.string.accountSettings_specificAssetsDeposits_addAnAssetInputHint),
                 singleLine = true,
                 error = null
@@ -196,14 +214,18 @@ fun AddAssetSheet(
                 LabeledRadioButton(
                     modifier = Modifier.weight(1f),
                     label = stringResource(id = R.string.accountSettings_specificAssetsDeposits_addAnAssetAllow),
-                    selected = false,
-                    onSelected = {}
+                    selected = asset.assetException.exceptionRule == Network.Account.OnLedgerSettings.ThirdPartyDeposits.DepositAddressExceptionRule.Allow,
+                    onSelected = {
+                        onAssetExceptionRuleChanged(Network.Account.OnLedgerSettings.ThirdPartyDeposits.DepositAddressExceptionRule.Allow)
+                    }
                 )
                 LabeledRadioButton(
                     modifier = Modifier.weight(1f),
                     label = stringResource(id = R.string.accountSettings_specificAssetsDeposits_addAnAssetDeny),
-                    selected = false,
-                    onSelected = {}
+                    selected = asset.assetException.exceptionRule == Network.Account.OnLedgerSettings.ThirdPartyDeposits.DepositAddressExceptionRule.Deny,
+                    onSelected = {
+                        onAssetExceptionRuleChanged(Network.Account.OnLedgerSettings.ThirdPartyDeposits.DepositAddressExceptionRule.Deny)
+                    }
                 )
             }
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXLarge))
@@ -213,7 +235,7 @@ fun AddAssetSheet(
                     onAddAsset()
                 },
                 modifier = Modifier.fillMaxWidth(),
-                enabled = resourceAddressValid,
+                enabled = asset.addressValid,
                 isLoading = false
             )
         }
@@ -222,7 +244,9 @@ fun AddAssetSheet(
 
 @Composable
 private fun LabeledRadioButton(modifier: Modifier, label: String, selected: Boolean, onSelected: () -> Unit) {
-    Row(modifier = modifier, verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceAround) {
+    Row(modifier = modifier.clickable {
+        onSelected()
+    }, verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceAround) {
         RadioButton(
             selected = selected,
             colors = RadioButtonDefaults.colors(
@@ -246,55 +270,81 @@ private fun LabeledRadioButton(modifier: Modifier, label: String, selected: Bool
 @Composable
 private fun SpecificAssetsDepositsContent(
     onBackClick: () -> Unit,
-    loading: Boolean,
+    canUpdate: Boolean,
     onMessageShown: () -> Unit,
     error: UiMessage?,
     onShowAddAssetSheet: () -> Unit,
     modifier: Modifier = Modifier,
-    allowedAssets: ImmutableList<Asset>,
-    deniedAssets: ImmutableList<Asset>
+    allowedAssets: List<Network.Account.OnLedgerSettings.ThirdPartyDeposits.AssetException>,
+    deniedAssets: List<Network.Account.OnLedgerSettings.ThirdPartyDeposits.AssetException>,
+    onDeleteAsset: (Network.Account.OnLedgerSettings.ThirdPartyDeposits.AssetException) -> Unit
 ) {
     var selectedTab by remember {
         mutableStateOf(SpecificAssetsTab.Allowed)
     }
     val scope = rememberCoroutineScope()
     val pagerState = rememberPagerState()
-    var showNotSecuredDialog by remember { mutableStateOf(false) }
-    Column(
+    val snackBarHostState = remember { SnackbarHostState() }
+
+    SnackbarUIMessage(
+        message = error,
+        snackbarHostState = snackBarHostState,
+        onMessageShown = onMessageShown
+    )
+    Scaffold(
         modifier = modifier,
-        horizontalAlignment = Alignment.CenterHorizontally,
-    ) {
-        RadixCenteredTopAppBar(
-            title = stringResource(R.string.accountSettings_specificAssetsDeposits),
-            onBackClick = onBackClick,
-            containerColor = RadixTheme.colors.defaultBackground
-        )
-        SpecificAssetsTabs(
-            modifier = Modifier
-                .padding(vertical = RadixTheme.dimensions.paddingDefault)
-                .fillMaxWidth(0.8f)
-                .background(RadixTheme.colors.gray4, shape = RadixTheme.shapes.roundedRectSmall),
-            pagerState = pagerState,
-            selectedTab = selectedTab,
-            onTabSelected = { tab ->
-                scope.launch {
-                    pagerState.animateScrollToPage(SpecificAssetsTab.values().indexOf(tab))
-                }
-                selectedTab = tab
+        topBar = {
+            RadixCenteredTopAppBar(
+                title = stringResource(R.string.accountSettings_specificAssetsDeposits),
+                onBackClick = onBackClick,
+                containerColor = RadixTheme.colors.defaultBackground
+            )
+        },
+        bottomBar = {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(RadixTheme.colors.defaultBackground)
+            ) {
+                RadixPrimaryButton(
+                    text = stringResource(R.string.accountSettings_specificAssetsDeposits_addAnAssetButton),
+                    onClick = onShowAddAssetSheet,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(RadixTheme.dimensions.paddingDefault)
+                )
             }
-        )
-        Box(
-            modifier = Modifier
+        }
+    ) { paddingValues ->
+        Column(
+            Modifier
                 .fillMaxWidth()
-                .weight(1f)
+                .padding(paddingValues),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
+            SpecificAssetsTabs(
+                modifier = Modifier
+                    .padding(vertical = RadixTheme.dimensions.paddingDefault)
+                    .fillMaxWidth(0.8f)
+                    .background(RadixTheme.colors.gray4, shape = RadixTheme.shapes.roundedRectSmall),
+                pagerState = pagerState,
+                selectedTab = selectedTab,
+                onTabSelected = { tab ->
+                    scope.launch {
+                        pagerState.animateScrollToPage(SpecificAssetsTab.values().indexOf(tab))
+                    }
+                    selectedTab = tab
+                }
+            )
             HorizontalPager(
-                modifier = Modifier.fillMaxSize(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f),
                 pageCount = SpecificAssetsTab.values().size,
                 state = pagerState,
                 userScrollEnabled = false
             ) { tabIndex ->
-                val tab = SpecificAssetsTab.values().get(tabIndex)
+                val tab = SpecificAssetsTab.values()[tabIndex]
                 when (tab) {
                     SpecificAssetsTab.Allowed -> {
                         if (allowedAssets.isEmpty()) {
@@ -318,7 +368,7 @@ private fun SpecificAssetsDepositsContent(
                                     color = RadixTheme.colors.gray2
                                 )
                                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
-                                AssetsList(allowedAssets)
+                                AssetsList(assets = allowedAssets, onDeleteAsset = onDeleteAsset)
                             }
                         }
                     }
@@ -345,45 +395,21 @@ private fun SpecificAssetsDepositsContent(
                                     color = RadixTheme.colors.gray2
                                 )
                                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
-                                AssetsList(deniedAssets)
+                                AssetsList(assets = deniedAssets, onDeleteAsset = onDeleteAsset)
                             }
                         }
                     }
                 }
             }
-            if (loading) {
-                FullscreenCircularProgressContent()
-            }
-            SnackbarUiMessageHandler(message = error, onMessageShown = {
-                onMessageShown()
-            })
-        }
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(RadixTheme.colors.defaultBackground)
-        ) {
-            RadixPrimaryButton(
-                text = stringResource(R.string.accountSettings_specificAssetsDeposits_addAnAssetButton),
-                onClick = onShowAddAssetSheet,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(RadixTheme.dimensions.paddingDefault)
-            )
-        }
-
-        if (showNotSecuredDialog) {
-            NotSecureAlertDialog(finish = {
-                showNotSecuredDialog = false
-            })
         }
     }
 }
 
 @Composable
 private fun AssetsList(
-    assets: ImmutableList<Asset>,
-    modifier: Modifier = Modifier
+    assets: List<Network.Account.OnLedgerSettings.ThirdPartyDeposits.AssetException>,
+    modifier: Modifier = Modifier,
+    onDeleteAsset: (Network.Account.OnLedgerSettings.ThirdPartyDeposits.AssetException) -> Unit
 ) {
     val lastItem = assets.last()
     LazyColumn(modifier = modifier) {
@@ -393,7 +419,8 @@ private fun AssetsList(
                     .fillMaxWidth()
                     .background(RadixTheme.colors.defaultBackground)
                     .padding(RadixTheme.dimensions.paddingDefault),
-                asset
+                asset = asset,
+                onDeleteAsset = onDeleteAsset
             )
             if (lastItem != asset) {
                 Divider(
@@ -410,7 +437,8 @@ private fun AssetsList(
 @Composable
 private fun AssetItem(
     modifier: Modifier,
-    asset: Asset
+    asset: Network.Account.OnLedgerSettings.ThirdPartyDeposits.AssetException,
+    onDeleteAsset: (Network.Account.OnLedgerSettings.ThirdPartyDeposits.AssetException) -> Unit
 ) {
     Row(
         modifier = modifier,
@@ -419,7 +447,7 @@ private fun AssetItem(
     ) {
         AsyncImage(
             model = rememberImageUrl(
-                fromUrl = Uri.parse(asset.iconUrl),
+                fromUrl = Uri.parse(""),
                 size = ImageSize.SMALL
             ),
             placeholder = painterResource(id = R.drawable.img_placeholder),
@@ -434,13 +462,13 @@ private fun AssetItem(
         Column(
             modifier = Modifier.weight(1f)
         ) {
-            Text(
-                text = asset.name,
-                textAlign = TextAlign.Start,
-                maxLines = 1,
-                style = RadixTheme.typography.body1HighImportance,
-                color = RadixTheme.colors.gray1
-            )
+//            Text(
+//                text = asset.name,
+//                textAlign = TextAlign.Start,
+//                maxLines = 1,
+//                style = RadixTheme.typography.body1HighImportance,
+//                color = RadixTheme.colors.gray1
+//            )
             Text(
                 text = asset.address.truncatedHash(),
                 textAlign = TextAlign.Start,
@@ -451,7 +479,7 @@ private fun AssetItem(
         }
         IconButton(
             onClick = {
-//                onDeleteAsset(asset)
+                onDeleteAsset(asset)
             }
         ) {
             Icon(
@@ -549,15 +577,18 @@ enum class SpecificAssetsTab {
 @Composable
 fun SpecificAssetsDepositsPreview() {
     RadixWalletTheme {
-        SpecificAssetsDepositsContent(
-            onBackClick = {},
-            loading = false,
-            onMessageShown = {},
-            error = null,
-            onShowAddAssetSheet = {},
-            allowedAssets = persistentListOf(Asset.sampleAsset(), Asset.sampleAsset(), Asset.sampleAsset()),
-            deniedAssets = persistentListOf(Asset.sampleAsset(), Asset.sampleAsset(), Asset.sampleAsset())
-        )
+        with(SampleDataProvider()) {
+            SpecificAssetsDepositsContent(
+                onBackClick = {},
+                canUpdate = false,
+                onMessageShown = {},
+                error = null,
+                onShowAddAssetSheet = {},
+                allowedAssets = persistentListOf(sampleAssetException(), sampleAssetException(), sampleAssetException()),
+                deniedAssets = persistentListOf(sampleAssetException(), sampleAssetException(), sampleAssetException()),
+                onDeleteAsset = {}
+            )
+        }
     }
 }
 
@@ -567,9 +598,10 @@ fun AddAssetSheetPreview() {
     RadixWalletTheme {
         AddAssetSheet(
             onResourceAddressChanged = {},
-            resourceAddress = "res1",
-            resourceAddressValid = true,
-            onAddAsset = {}
-        ) {}
+            asset = AssetType.Exception(),
+            onAddAsset = {},
+            onAssetExceptionRuleChanged = {},
+            onDismiss = {}
+        )
     }
 }

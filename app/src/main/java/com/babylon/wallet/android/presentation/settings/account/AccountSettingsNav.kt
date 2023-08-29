@@ -20,7 +20,9 @@ internal class AccountSettingsArgs(val address: String) {
 }
 
 fun NavController.accountSettings(address: String) {
-    navigate("account_settings_route/$address")
+    navigate("account_settings_route/$address") {
+        launchSingleTop
+    }
 }
 
 @OptIn(ExperimentalAnimationApi::class)
