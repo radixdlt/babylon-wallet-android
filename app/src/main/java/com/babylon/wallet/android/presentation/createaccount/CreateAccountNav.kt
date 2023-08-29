@@ -74,7 +74,6 @@ fun NavGraphBuilder.createAccountScreen(
     startDestination: String,
     onBackClick: () -> Unit,
     onContinueClick: (accountId: String, requestSource: CreateAccountRequestSource?) -> Unit,
-    onCloseApp: () -> Unit,
     onAddLedgerDevice: () -> Unit
 ) {
     markAsHighPriority(route = ROUTE_CREATE_ACCOUNT)
@@ -110,8 +109,7 @@ fun NavGraphBuilder.createAccountScreen(
             onBackClick = onBackClick,
             cancelable = startDestination != ROUTE_CREATE_ACCOUNT,
             onContinueClick = onContinueClick,
-            onAddLedgerDevice = onAddLedgerDevice,
-            onCloseApp = onCloseApp
+            onAddLedgerDevice = onAddLedgerDevice
         )
     }
 }

@@ -49,18 +49,10 @@ fun CreateAccountScreen(
         accountId: String,
         requestSource: CreateAccountRequestSource?,
     ) -> Unit = { _: String, _: CreateAccountRequestSource? -> },
-    onAddLedgerDevice: () -> Unit,
-    onCloseApp: () -> Unit
+    onAddLedgerDevice: () -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
-    val backHandler = {
-        if (state.firstTime) {
-            onCloseApp()
-        } else {
-            onBackClick()
-        }
-    }
-    BackHandler(onBack = backHandler)
+    BackHandler(onBack = viewModel::onBackClick)
     if (state.loading) {
         FullscreenCircularProgressContent()
     } else {
@@ -73,7 +65,7 @@ fun CreateAccountScreen(
             accountName = accountName,
             buttonEnabled = buttonEnabled,
             cancelable = cancelable,
-            onBackClick = backHandler,
+            onBackClick = viewModel::onBackClick,
             modifier = modifier,
             firstTime = state.firstTime,
             useLedgerSelected = state.useLedgerSelected,
@@ -88,7 +80,8 @@ fun CreateAccountScreen(
                     event.requestSource
                 )
 
-                CreateAccountEvent.AddLedgerDevice -> onAddLedgerDevice()
+                is CreateAccountEvent.AddLedgerDevice -> onAddLedgerDevice()
+                is CreateAccountEvent.Dismiss -> onBackClick()
             }
         }
     }

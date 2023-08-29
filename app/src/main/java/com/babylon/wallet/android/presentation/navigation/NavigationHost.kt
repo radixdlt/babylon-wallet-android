@@ -112,9 +112,6 @@ fun NavigationHost(
             onAccountCreationClick = {
                 navController.createAccountScreen(CreateAccountRequestSource.AccountsList)
             },
-            onNavigateToCreateAccount = {
-                navController.createAccountScreen(CreateAccountRequestSource.FirstTime)
-            },
             onNavigateToOnBoarding = {
                 navController.navigate(Screen.OnboardingDestination.route)
             },
@@ -166,7 +163,6 @@ fun NavigationHost(
                     requestSource ?: CreateAccountRequestSource.FirstTime
                 )
             },
-            onCloseApp = onCloseApp,
             onAddLedgerDevice = {
                 navController.createAccountWithLedger()
             }

@@ -217,7 +217,6 @@ data class MainUiState(
 
 sealed interface AppState {
     object OnBoarding : AppState
-    object NewProfile : AppState
     object Wallet : AppState
     object IncompatibleProfile : AppState
     object Loading : AppState
@@ -225,10 +224,10 @@ sealed interface AppState {
     companion object {
         fun from(profileState: ProfileState) = when (profileState) {
             is ProfileState.Incompatible -> IncompatibleProfile
-            is ProfileState.Restored -> if (profileState.hasAnyAccount()) {
+            is ProfileState.Restored -> if (profileState.hasAnyAccounts()) {
                 Wallet
             } else {
-                NewProfile
+                OnBoarding
             }
             is ProfileState.None -> OnBoarding
             is ProfileState.NotInitialised -> OnBoarding
