@@ -32,7 +32,6 @@ fun CreatePersonaConfirmationScreen(
     modifier: Modifier = Modifier,
     finishPersonaCreation: () -> Unit
 ) {
-    SetStatusBarColor(color = RadixTheme.colors.orange2, useDarkIcons = !isSystemInDarkTheme())
     val state by viewModel.state.collectAsStateWithLifecycle()
     CreatePersonaConfirmationContent(
         modifier = modifier,

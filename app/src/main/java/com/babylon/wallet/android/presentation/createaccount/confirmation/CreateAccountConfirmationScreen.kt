@@ -35,7 +35,6 @@ fun CreateAccountConfirmationScreen(
     finishAccountCreation: () -> Unit,
 ) {
     val accountState by viewModel.state.collectAsStateWithLifecycle()
-    SetStatusBarColor(color = RadixTheme.colors.orange2, useDarkIcons = !isSystemInDarkTheme())
     CreateAccountConfirmationContent(
         modifier = modifier,
         accountName = accountState.accountName,

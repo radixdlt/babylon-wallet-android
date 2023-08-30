@@ -20,6 +20,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import com.babylon.wallet.android.R
+import com.babylon.wallet.android.designsystem.SetStatusBarColor
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 
@@ -35,6 +36,7 @@ fun DevelopmentPreviewWrapper(
         content(if (isInDevMode) PaddingValues(top = RadixTheme.dimensions.paddingLarge) else PaddingValues())
 
         if (isInDevMode) {
+            SetStatusBarColor(color = Color.Transparent, useDarkIcons = false)
             Text(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -46,6 +48,8 @@ fun DevelopmentPreviewWrapper(
                 color = Color.Black,
                 textAlign = TextAlign.Center,
             )
+        } else {
+            SetStatusBarColor(color = Color.Transparent, useDarkIcons = true)
         }
 
         // TODO to remove

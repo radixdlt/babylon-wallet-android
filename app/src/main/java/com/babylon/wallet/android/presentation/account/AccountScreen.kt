@@ -112,7 +112,6 @@ fun AccountScreen(
     onTransferClick: (String) -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
-    SetStatusBarColor(color = Color.Transparent, useDarkIcons = !isSystemInDarkTheme())
     LaunchedEffect(Unit) {
         viewModel.oneOffEvent.collect {
             when (it) {
