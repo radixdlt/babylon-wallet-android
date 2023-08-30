@@ -8,25 +8,46 @@ import java.math.RoundingMode
 data class TransactionFees(
     private val nonContingentFeeLock: BigDecimal = BigDecimal.ZERO,
     private val networkExecution: BigDecimal = BigDecimal.ZERO,
-    private val walletAddedFee: BigDecimal = BigDecimal.ZERO, // TODO This will be updated later on
     private val networkFinalization: BigDecimal = BigDecimal.ZERO,
     private val networkStorage: BigDecimal = BigDecimal.ZERO,
     private val royalties: BigDecimal = BigDecimal.ZERO,
+    private val guaranteesCount: Int = 0,
+    private val notaryIsSignatory: Boolean = true,
+    private val includeLockFee: Boolean = false,
+    private val signersCount: Int = 0,
     private val feePaddingAmount: String? = null,
     private val tipPercentage: BigDecimal? = null,
     val isNetworkCongested: Boolean = false
 ) {
+
+    // ********* WALLET ADDED FEES *********
+    private val guaranteesCost: BigDecimal
+        get() = BigDecimal(guaranteesCount).multiply(FUNGIBLE_GUARANTEE_INSTRUCTION_COST)
+
+    private val notarizingCost: BigDecimal
+        get() = if (notaryIsSignatory) NOTARIZING_COST_WHEN_NOTARY_IS_SIGNATORY else NOTARIZING_COST
+
+    private val lockFeeCost: BigDecimal
+        get() = if (includeLockFee) LOCK_FEE_INSTRUCTION_COST else BigDecimal.ZERO
+
+    private val signaturesCost: BigDecimal
+        get() = BigDecimal(signersCount).multiply(SIGNATURE_COST)
+
     // ********* DEFAULT *********
     private val networkFee: BigDecimal
-        get() = networkExecutionFee
+        get() = totalExecutionCost
             .add(networkFinalization)
             .add(networkStorage)
 
     /**
      * Wallet added fee should be added to Execution cost
      */
-    private val networkExecutionFee: BigDecimal
-        get() = networkExecution.add(walletAddedFee)
+    private val totalExecutionCost: BigDecimal
+        get() = networkExecution
+            .add(guaranteesCost)
+            .add(signaturesCost)
+            .add(lockFeeCost)
+            .add(notarizingCost)
 
     /**
      * Network Fee displayed = Network Fee - Non-contingent lock or null if negative or 0 fee applicable
@@ -65,7 +86,7 @@ data class TransactionFees(
     // ********* ADVANCED *********
 
     val networkExecutionCost: String
-        get() = networkExecutionFee.displayableQuantity()
+        get() = totalExecutionCost.displayableQuantity()
 
     val networkFinalizationCost: String
         get() = networkFinalization.displayableQuantity()
@@ -93,7 +114,7 @@ data class TransactionFees(
         get() = tipPercentage?.divide(
             BigDecimal(100)
         )?.multiply(
-            networkExecutionFee.add(
+            totalExecutionCost.add(
                 networkFinalization.add(
                     networkStorage
                 )
@@ -104,7 +125,7 @@ data class TransactionFees(
      * Finalized fee to lock for the transaction
      **/
     val transactionFeeToLock: BigDecimal
-        get() = networkExecutionFee
+        get() = totalExecutionCost
             .add(networkFinalization)
             .add(effectiveTip)
             .add(networkStorage)
@@ -117,7 +138,7 @@ data class TransactionFees(
      */
     private val defaultPadding: BigDecimal = PERCENT_15
         .multiply(
-            networkExecutionFee.add(
+            totalExecutionCost.add(
                 networkFinalization.add(networkStorage)
             )
         )
@@ -146,5 +167,11 @@ data class TransactionFees(
 
     companion object {
         private val PERCENT_15 = BigDecimal(0.15)
+
+        private val LOCK_FEE_INSTRUCTION_COST: BigDecimal = BigDecimal("0.095483092333982841")
+        private val FUNGIBLE_GUARANTEE_INSTRUCTION_COST: BigDecimal = BigDecimal("0.012001947444660947")
+        private val SIGNATURE_COST: BigDecimal = BigDecimal("0.017839046256509498")
+        private val NOTARIZING_COST: BigDecimal = BigDecimal("0.01322565755208264")
+        private val NOTARIZING_COST_WHEN_NOTARY_IS_SIGNATORY: BigDecimal = BigDecimal("0.01351365755208264")
     }
 }

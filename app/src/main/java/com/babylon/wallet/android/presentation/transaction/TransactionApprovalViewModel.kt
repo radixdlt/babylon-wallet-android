@@ -209,6 +209,8 @@ class TransactionApprovalViewModel @Inject constructor(
 
     fun onPayerSelected(selectedFeePayer: Network.Account) {
         val feePayerSearchResult = state.value.feePayerSearchResult
+        val transactionFees = state.value.transactionFees
+        val signersCount = state.value.signersCount
 
         val updatedFeePayerResult = feePayerSearchResult?.copy(
             feePayerAddressFromManifest = selectedFeePayer.address,
@@ -219,8 +221,19 @@ class TransactionApprovalViewModel @Inject constructor(
         )
 
         val customizeFeesSheet = state.value.sheetState as? State.Sheet.CustomizeFees ?: return
+
+        val selectedFeePayerInvolvedInTransaction = state.value.request.transactionManifestData.toTransactionManifest()
+            .getOrNull()?.let {
+                it.accountsWithdrawnFrom() + it.accountsDepositedInto() + it.accountsRequiringAuth()
+            }.orEmpty().any { it.addressString() == selectedFeePayer.address }
+
+        val updatedSignersCount = if (selectedFeePayerInvolvedInTransaction) signersCount else signersCount + 1
+
         _state.update {
             it.copy(
+                transactionFees = transactionFees.copy(
+                    signersCount = updatedSignersCount
+                ),
                 feePayerSearchResult = updatedFeePayerResult,
                 sheetState = customizeFeesSheet.copy(
                     feePayerMode = State.Sheet.CustomizeFees.FeePayerMode.FeePayerSelected(
@@ -245,6 +258,7 @@ class TransactionApprovalViewModel @Inject constructor(
         val previewType: PreviewType,
         val transactionFees: TransactionFees = TransactionFees(),
         val feePayerSearchResult: FeePayerSearchResult? = null,
+        val signersCount: Int = 0,
         val sheetState: Sheet = Sheet.None,
         private val latestFeesMode: Sheet.CustomizeFees.FeesMode = Sheet.CustomizeFees.FeesMode.Default,
         val error: UiMessage? = null,
@@ -509,3 +523,9 @@ sealed interface AccountWithTransferableResources {
 fun List<AccountWithTransferableResources>.hasCustomizableGuarantees() = any { accountWithTransferableResources ->
     accountWithTransferableResources.resources.any { it.guaranteeAssertion is GuaranteeAssertion.ForAmount }
 }
+
+fun List<AccountWithTransferableResources>.guaranteesCount(): Int = map { accountWithTransferableResources ->
+    accountWithTransferableResources.resources.filter { transferable ->
+        transferable.guaranteeAssertion is GuaranteeAssertion.ForAmount
+    }
+}.flatten().count()

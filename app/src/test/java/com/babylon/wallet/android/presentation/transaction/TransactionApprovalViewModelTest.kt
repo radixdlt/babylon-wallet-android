@@ -9,8 +9,10 @@ import com.babylon.wallet.android.data.gateway.generated.models.TransactionPrevi
 import com.babylon.wallet.android.data.gateway.generated.models.TransactionReceipt
 import com.babylon.wallet.android.data.transaction.DappRequestException
 import com.babylon.wallet.android.data.transaction.DappRequestFailure
+import com.babylon.wallet.android.data.transaction.NotaryAndSigners
 import com.babylon.wallet.android.data.transaction.TransactionClient
 import com.babylon.wallet.android.data.transaction.model.FeePayerSearchResult
+import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.domain.model.AccountWithResources
 import com.babylon.wallet.android.domain.model.Badge
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
@@ -46,6 +48,7 @@ import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Test
 import rdx.works.core.displayableQuantity
+import rdx.works.core.ret.crypto.PrivateKey
 import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.data.model.currentNetwork
 import rdx.works.profile.domain.GetProfileUseCase
@@ -116,6 +119,7 @@ internal class TransactionApprovalViewModelTest : StateViewModelTest<Transaction
             Badge(address = "", nameMetadataItem = null, iconMetadataItem = null)
         )
         coEvery { transactionClient.signAndSubmitTransaction(any(), any(), any(), any()) } returns Result.success(sampleTxId)
+        coEvery { transactionClient.getNotaryAndSigners(any(), any()) } returns NotaryAndSigners(emptyList(), PrivateKey.EddsaEd25519.newRandom())
         coEvery { transactionClient.findFeePayerInManifest(any(), any()) } returns Result.success(FeePayerSearchResult("feePayer"))
         coEvery { transactionClient.signingState } returns emptyFlow()
         coEvery { transactionClient.getTransactionPreview(any(), any()) } returns Result.success(
@@ -297,9 +301,9 @@ internal class TransactionApprovalViewModelTest : StateViewModelTest<Transaction
         )
         val vm = vm.value
         advanceUntilIdle()
-        assert(vm.state.value.transactionFees.networkFeeDisplayed == null)
+        assert(vm.state.value.transactionFees.networkFeeDisplayed == "0.1089967")
         assert(vm.state.value.transactionFees.defaultRoyaltyFeesDisplayed == "0")
-        assert(vm.state.value.transactionFees.defaultTransactionFee.displayableQuantity() == "0")
+        assert(vm.state.value.transactionFees.defaultTransactionFee.displayableQuantity() == "0.1253463")
     }
 
     @Test
@@ -332,9 +336,9 @@ internal class TransactionApprovalViewModelTest : StateViewModelTest<Transaction
         )
         val vm = vm.value
         advanceUntilIdle()
-        assert(vm.state.value.transactionFees.networkFeeDisplayed == null)
-        assert(vm.state.value.transactionFees.defaultRoyaltyFeesDisplayed == "0.1")
-        assert(vm.state.value.transactionFees.defaultTransactionFee.displayableQuantity() == "0.22")
+        assert(vm.state.value.transactionFees.networkFeeDisplayed == "0.0089967")
+        assert(vm.state.value.transactionFees.defaultRoyaltyFeesDisplayed == "0.2")
+        assert(vm.state.value.transactionFees.defaultTransactionFee.displayableQuantity() == "0.3453463")
     }
 
     @Test
@@ -367,9 +371,9 @@ internal class TransactionApprovalViewModelTest : StateViewModelTest<Transaction
         )
         val vm = vm.value
         advanceUntilIdle()
-        assert(vm.state.value.transactionFees.networkFeeDisplayed == "0.3")
+        assert(vm.state.value.transactionFees.networkFeeDisplayed == "0.4089967")
         assert(vm.state.value.transactionFees.defaultRoyaltyFeesDisplayed == "0.2")
-        assert(vm.state.value.transactionFees.defaultTransactionFee.displayableQuantity() == "0.62")
+        assert(vm.state.value.transactionFees.defaultTransactionFee.displayableQuantity() == "0.7453463")
     }
 
     @Test
@@ -403,8 +407,8 @@ internal class TransactionApprovalViewModelTest : StateViewModelTest<Transaction
         val vm = vm.value
         advanceUntilIdle()
         assert(vm.state.value.transactionFees.networkFeeDisplayed == null)
-        assert(vm.state.value.transactionFees.defaultRoyaltyFeesDisplayed == "0")
-        assert(vm.state.value.transactionFees.defaultTransactionFee.displayableQuantity() == "0.12")
+        assert(vm.state.value.transactionFees.defaultRoyaltyFeesDisplayed == "0.1089967")
+        assert(vm.state.value.transactionFees.defaultTransactionFee.displayableQuantity() == "0.2453463")
     }
 
     @Test
@@ -443,11 +447,58 @@ internal class TransactionApprovalViewModelTest : StateViewModelTest<Transaction
     }
 
     @Test
+    fun `verify network fee royalty and total fee is displayed correctly on default screen 4 with one signer account`()
+        = runTest {
+        coEvery { transactionClient.analyzeExecution(any(), any()) } returns Result.success(
+            ExecutionAnalysis(
+                feeLocks = FeeLocks(
+                    lock = Decimal.zero(),
+                    contingentLock = Decimal.zero()
+                ),
+                feeSummary = com.radixdlt.ret.FeeSummary(
+                    executionCost = Decimal("0.3"),
+                    finalizationCost = Decimal("0.3"),
+                    storageExpansionCost = Decimal("0.2"),
+                    royaltyCost = Decimal("0.2")
+                ),
+                transactionTypes = listOf(
+                    TransactionType.GeneralTransaction(
+                        accountProofs = listOf(),
+                        accountWithdraws = mapOf(),
+                        accountDeposits = mapOf(),
+                        addressesInManifest = mapOf(),
+                        metadataOfNewlyCreatedEntities = mapOf(),
+                        dataOfNewlyMintedNonFungibles = mapOf(),
+                        addressesOfNewlyCreatedEntities = listOf()
+                    )
+                ),
+                reservedInstructions = emptyList()
+            )
+        )
+
+        coEvery { transactionClient.getNotaryAndSigners(any(), any()) } returns NotaryAndSigners(
+            listOf(
+                SampleDataProvider().sampleAccount(
+                    address = "rdx_t_12382918379821",
+                    name = "Savings account"
+                )
+            ),
+            PrivateKey.EddsaEd25519.newRandom()
+        )
+
+        val vm = vm.value
+        advanceUntilIdle()
+        assert(vm.state.value.transactionFees.networkFeeDisplayed == "0.9265478")//0.9265478
+        assert(vm.state.value.transactionFees.defaultRoyaltyFeesDisplayed == "0.2")
+        assert(vm.state.value.transactionFees.defaultTransactionFee.displayableQuantity() == "1.26553")//1.26553
+    }
+
+    @Test
     fun `verify transaction fee to lock is correct on advanced screen 1`() = runTest {
         val feePaddingAmount = "1.6"
 
         // Sum of executionCost finalizationCost storageExpansionCost royaltyCost padding and tip minus noncontingentlock
-        val expectedFeeLock = "1.1"
+        val expectedFeeLock = "1.113513657552082640"
         coEvery { transactionClient.analyzeExecution(any(), any()) } returns Result.success(
             ExecutionAnalysis(
                 feeLocks = FeeLocks(
@@ -486,7 +537,7 @@ internal class TransactionApprovalViewModelTest : StateViewModelTest<Transaction
         val tipPercentage = "25"
 
         // Sum of executionCost finalizationCost storageExpansionCost royaltyCost padding and tip minus noncontingentlock
-        val expectedFeeLock = "0.82"
+        val expectedFeeLock = "0.9725954"
 
         coEvery { transactionClient.analyzeExecution(any(), any()) } returns Result.success(
             ExecutionAnalysis(
@@ -527,7 +578,7 @@ internal class TransactionApprovalViewModelTest : StateViewModelTest<Transaction
         val tipPercentage = "25"
 
         // Sum of executionCost finalizationCost storageExpansionCost royaltyCost padding and tip minus noncontingentlock
-        val expectedFeeLock = "2.300"
+        val expectedFeeLock = "2.4362459"
 
         coEvery { transactionClient.analyzeExecution(any(), any()) } returns Result.success(
             ExecutionAnalysis(

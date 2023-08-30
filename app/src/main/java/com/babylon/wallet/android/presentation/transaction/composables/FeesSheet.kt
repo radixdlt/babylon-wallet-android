@@ -689,7 +689,10 @@ fun NetworkFeesAdvancedView(
                 Spacer(modifier = Modifier.weight(1f))
 
                 Text(
-                    text = transactionFees?.paidByDApps.orEmpty(),
+                    text = stringResource(
+                        id = R.string.transactionReview_xrdAmount,
+                        transactionFees?.paidByDApps.orEmpty()
+                    ),
                     style = RadixTheme.typography.body1Header,
                     color = RadixTheme.colors.gray1
                 )

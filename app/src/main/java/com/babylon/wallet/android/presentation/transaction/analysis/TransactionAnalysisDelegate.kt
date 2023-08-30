@@ -1,5 +1,6 @@
 package com.babylon.wallet.android.presentation.transaction.analysis
 
+import com.babylon.wallet.android.data.transaction.NotaryAndSigners
 import com.babylon.wallet.android.data.transaction.TransactionClient
 import com.babylon.wallet.android.domain.usecases.GetAccountsWithResourcesUseCase
 import com.babylon.wallet.android.domain.usecases.GetResourcesMetadataUseCase
@@ -9,6 +10,7 @@ import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.transaction.PreviewType
 import com.babylon.wallet.android.presentation.transaction.TransactionApprovalViewModel.State
 import com.babylon.wallet.android.presentation.transaction.fees.TransactionFees
+import com.babylon.wallet.android.presentation.transaction.guaranteesCount
 import com.radixdlt.ret.ExecutionAnalysis
 import com.radixdlt.ret.TransactionManifest
 import com.radixdlt.ret.TransactionType
@@ -17,6 +19,7 @@ import kotlinx.coroutines.flow.update
 import rdx.works.core.then
 import rdx.works.profile.domain.GetProfileUseCase
 import timber.log.Timber
+import java.math.BigDecimal
 
 @Suppress("LongParameterList")
 class TransactionAnalysisDelegate(
@@ -38,19 +41,24 @@ class TransactionAnalysisDelegate(
         }
     }
 
-    private suspend fun startAnalysis(manifest: TransactionManifest) = getTransactionPreview(manifest)
-        .then { preview ->
+    private suspend fun startAnalysis(manifest: TransactionManifest) {
+        val notaryAndSigners = transactionClient.getNotaryAndSigners(
+            manifest = manifest,
+            ephemeralNotaryPrivateKey = state.value.ephemeralNotaryPrivateKey
+        )
+        transactionClient.getTransactionPreview(
+            manifest = manifest,
+            notaryAndSigners = notaryAndSigners
+        ).then { preview ->
             transactionClient.analyzeExecution(manifest, preview)
-        }.resolve(manifest)
+        }.resolve(manifest, notaryAndSigners)
+    }
 
-    private suspend fun getTransactionPreview(manifest: TransactionManifest) = transactionClient.getTransactionPreview(
-        manifest = manifest,
-        ephemeralNotaryPrivateKey = state.value.ephemeralNotaryPrivateKey
-    )
-
-    private suspend fun Result<ExecutionAnalysis>.resolve(manifest: TransactionManifest) = this.onSuccess { analysis ->
-        val transactionTypes = analysis.transactionTypes
-        val previewType = if (transactionTypes.isEmpty()) {
+    private suspend fun Result<ExecutionAnalysis>.resolve(
+        manifest: TransactionManifest,
+        notaryAndSigners: NotaryAndSigners
+    ) = this.onSuccess { analysis ->
+        val previewType = if (analysis.transactionTypes.isEmpty()) {
             PreviewType.NonConforming
         } else {
             when (val type = analysis.transactionTypes[0]) {
@@ -76,20 +84,29 @@ class TransactionAnalysisDelegate(
             }
         }
 
-        val transactionFees = TransactionFees(
+        var transactionFees = TransactionFees(
             nonContingentFeeLock = analysis.feeLocks.lock.asStr().toBigDecimal(),
             networkExecution = analysis.feeSummary.executionCost.asStr().toBigDecimal(),
             networkFinalization = analysis.feeSummary.finalizationCost.asStr().toBigDecimal(),
             networkStorage = analysis.feeSummary.storageExpansionCost.asStr().toBigDecimal(),
             royalties = analysis.feeSummary.royaltyCost.asStr().toBigDecimal(),
+            guaranteesCount = (previewType as? PreviewType.Transaction)?.to?.guaranteesCount() ?: 0,
+            notaryIsSignatory = notaryAndSigners.notaryIsSignatory,
+            includeLockFee = false, // First its false because we don't know if lock fee is applicable or not yet
+            signersCount = notaryAndSigners.signers.count()
         )
+
+        if (transactionFees.defaultTransactionFee > BigDecimal.ZERO) {
+            // There will be a lock fee so update lock fee cost
+            transactionFees = transactionFees.copy(
+                includeLockFee = true
+            )
+        }
 
         transactionClient.findFeePayerInManifest(
             manifest = manifest,
             lockFee = transactionFees.defaultTransactionFee
         ).onSuccess { feePayerResult ->
-            val candidateXrdBalance = feePayerResult.candidateXrdBalance()
-
             state.update {
                 it.copy(
                     isRawManifestVisible = previewType == PreviewType.NonConforming,
@@ -97,8 +114,9 @@ class TransactionAnalysisDelegate(
                     isLoading = false,
                     previewType = previewType,
                     feePayerSearchResult = feePayerResult.copy(
-                        insufficientBalanceToPayTheFee = candidateXrdBalance < transactionFees.defaultTransactionFee
-                    )
+                        insufficientBalanceToPayTheFee = feePayerResult.candidateXrdBalance() < transactionFees.defaultTransactionFee
+                    ),
+                    signersCount = notaryAndSigners.signers.count()
                 )
             }
         }
