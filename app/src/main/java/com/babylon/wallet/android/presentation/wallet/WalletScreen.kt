@@ -141,7 +141,7 @@ private fun WalletContent(
                         }
                     }
                 },
-                windowInsets = WindowInsets(0.dp)
+                windowInsets = WindowInsets.statusBars
             )
         },
         snackbarHost = {
