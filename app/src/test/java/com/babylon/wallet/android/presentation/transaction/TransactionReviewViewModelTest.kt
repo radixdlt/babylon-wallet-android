@@ -6,6 +6,7 @@ import com.babylon.wallet.android.data.dapp.IncomingRequestRepositoryImpl
 import com.babylon.wallet.android.data.dapp.model.WalletErrorType
 import com.babylon.wallet.android.data.gateway.generated.models.TransactionPreviewResponse
 import com.babylon.wallet.android.data.gateway.generated.models.TransactionReceipt
+import com.babylon.wallet.android.data.repository.TransactionStatusClient
 import com.babylon.wallet.android.data.transaction.DappRequestException
 import com.babylon.wallet.android.data.transaction.DappRequestFailure
 import com.babylon.wallet.android.data.transaction.NotaryAndSigners
@@ -67,6 +68,7 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
     private val getResourcesMetadataUseCase = mockk<GetResourcesMetadataUseCase>()
     private val getProfileUseCase = mockk<GetProfileUseCase>()
     private val getTransactionBadgesUseCase = mockk<GetTransactionBadgesUseCase>()
+    private val transactionStatusClient = mockk<TransactionStatusClient>()
     private val resolveDAppsUseCase = mockk<ResolveDAppsUseCase>()
     private val incomingRequestRepository = IncomingRequestRepositoryImpl()
     private val dAppMessenger = mockk<DappMessenger>()
@@ -209,7 +211,8 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
             appEventBus = appEventBus,
             incomingRequestRepository = incomingRequestRepository,
             appScope = TestScope(),
-            savedStateHandle = savedStateHandle
+            savedStateHandle = savedStateHandle,
+            transactionStatusClient = transactionStatusClient
         )
     }
 

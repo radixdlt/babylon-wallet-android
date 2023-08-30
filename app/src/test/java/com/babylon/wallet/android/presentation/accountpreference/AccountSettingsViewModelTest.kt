@@ -2,6 +2,7 @@ package com.babylon.wallet.android.presentation.accountpreference
 
 import androidx.lifecycle.SavedStateHandle
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
+import com.babylon.wallet.android.data.repository.TransactionStatusClient
 import com.babylon.wallet.android.data.transaction.ROLAClient
 import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.domain.usecases.GetFreeXrdUseCase
@@ -35,6 +36,7 @@ internal class AccountSettingsViewModelTest : StateViewModelTest<AccountSettings
     private val getProfileUseCase = mockk<GetProfileUseCase>()
     private val incomingRequestRepository = mockk<IncomingRequestRepository>()
     private val addAuthSigningFactorInstanceUseCase = mockk<AddAuthSigningFactorInstanceUseCase>()
+    private val transactionStatusClient = mockk<TransactionStatusClient>()
     private val rolaClient = mockk<ROLAClient>()
     private val eventBus = mockk<AppEventBus>()
     private val sampleTxId = "txId1"
@@ -47,6 +49,7 @@ internal class AccountSettingsViewModelTest : StateViewModelTest<AccountSettings
             rolaClient,
             incomingRequestRepository,
             addAuthSigningFactorInstanceUseCase,
+            transactionStatusClient,
             TestScope(),
             savedStateHandle,
             eventBus
