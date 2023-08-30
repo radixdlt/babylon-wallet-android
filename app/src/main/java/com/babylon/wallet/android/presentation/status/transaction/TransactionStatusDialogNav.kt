@@ -66,10 +66,10 @@ fun NavController.transactionStatusDialog(transactionEvent: AppEvent.Status.Tran
     val requestId = transactionEvent.requestId.ifBlank { error("Transaction id cannot be empty") }
     navigate(
         route = "$ROUTE/${transactionEvent.toType()}/$requestId" +
-                "?txId=${transactionEvent.transactionId}" +
-                "&isInternal=${transactionEvent.isInternal}" +
-                "&error=$errorSerialized" +
-                "&${ARG_BLOCK_UNTIL_COMPLETE}=${transactionEvent.blockUntilComplete}"
+            "?txId=${transactionEvent.transactionId}" +
+            "&isInternal=${transactionEvent.isInternal}" +
+            "&error=$errorSerialized" +
+            "&$ARG_BLOCK_UNTIL_COMPLETE=${transactionEvent.blockUntilComplete}"
     ) {
         val popUpToRoute = if (this@transactionStatusDialog.routeExist(ROUTE_TRANSFER)) {
             ROUTE_TRANSFER
@@ -87,7 +87,8 @@ fun NavGraphBuilder.transactionStatusDialog(
     onClose: () -> Unit
 ) {
     dialog(
-        route = "$ROUTE/{$ARG_STATUS}/{$ARG_REQUEST_ID}?txId={$ARG_TX_ID}&isInternal={$ARG_IS_INTERNAL}&error={$ARG_ERROR}&${ARG_BLOCK_UNTIL_COMPLETE}={${ARG_BLOCK_UNTIL_COMPLETE}}",
+        route = "$ROUTE/{$ARG_STATUS}/{$ARG_REQUEST_ID}?txId={$ARG_TX_ID}&isInternal={$ARG_IS_INTERNAL}" +
+            "&error={$ARG_ERROR}&$ARG_BLOCK_UNTIL_COMPLETE={$ARG_BLOCK_UNTIL_COMPLETE}",
         arguments = listOf(
             navArgument(ARG_STATUS) {
                 type = NavType.StringType

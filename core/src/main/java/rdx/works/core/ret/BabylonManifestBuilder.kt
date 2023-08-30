@@ -139,28 +139,24 @@ class BabylonManifestBuilder {
 
     fun addAuthorizedDepositor(
         accountAddress: Address,
-        depositorAddress: Address
+        depositorAddress: ManifestBuilderValue
     ): BabylonManifestBuilder {
         manifestBuilder = manifestBuilder.callMethod(
             address = ManifestBuilderAddress.Static(accountAddress),
             methodName = "add_authorized_depositor",
-            args = listOf(
-                ManifestBuilderValue.AddressValue(ManifestBuilderAddress.Static(depositorAddress))
-            )
+            args = listOf(depositorAddress)
         )
         return this
     }
 
     fun removeAuthorizedDepositor(
         accountAddress: Address,
-        depositorAddress: Address
+        depositorAddress: ManifestBuilderValue
     ): BabylonManifestBuilder {
         manifestBuilder = manifestBuilder.callMethod(
             address = ManifestBuilderAddress.Static(accountAddress),
             methodName = "remove_authorized_depositor",
-            args = listOf(
-                ManifestBuilderValue.AddressValue(ManifestBuilderAddress.Static(depositorAddress))
-            )
+            args = listOf(depositorAddress)
         )
         return this
     }

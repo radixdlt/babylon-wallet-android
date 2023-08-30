@@ -1,9 +1,11 @@
 package com.babylon.wallet.android.presentation.settings.account.specificdepositor
 
+import android.graphics.drawable.ColorDrawable
 import android.net.Uri
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -36,6 +38,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
@@ -60,6 +64,8 @@ import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAp
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
 import com.babylon.wallet.android.presentation.ui.composables.rememberImageUrl
 import com.babylon.wallet.android.utils.truncatedHash
+import com.google.accompanist.drawablepainter.rememberDrawablePainter
+import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.launch
 import rdx.works.profile.data.model.pernetwork.Network
@@ -94,19 +100,12 @@ fun SpecificDepositorScreen(
 //            .systemBarsPadding()
             .navigationBarsPadding(),
         sheetContent = {
-            AddDepositorSheet(
-                onResourceAddressChanged = sharedViewModel::depositorAddressTyped,
-                onAddDepositor = {
+            AddDepositorSheet(onResourceAddressChanged = sharedViewModel::depositorAddressTyped, onAddDepositor = {
+                hideCallback()
+                sharedViewModel.onAddDepositor()
+            }, modifier = Modifier.fillMaxWidth(), depositor = state.depositorToAdd, onDismiss = {
                     hideCallback()
-                    sharedViewModel.onAddDepositor()
-
-                },
-                modifier = Modifier.fillMaxWidth(),
-                depositor = state.depositorToAdd,
-                onDismiss = {
-                    hideCallback()
-                }
-            )
+                })
         },
         sheetState = sheetState,
         sheetBackgroundColor = RadixTheme.colors.gray4,
@@ -187,7 +186,7 @@ fun AddDepositorSheet(
                 singleLine = true,
                 error = null
             )
-            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXLarge))
+            Spacer(modifier = Modifier.height(60.dp))
             RadixPrimaryButton(
                 text = stringResource(R.string.accountSettings_thirdPartyDeposits_allowSpecificDepositorsButton),
                 onClick = {
@@ -208,7 +207,7 @@ private fun SpecificDepositorContent(
     error: UiMessage?,
     onShowAddAssetSheet: () -> Unit,
     modifier: Modifier = Modifier,
-    allowedDepositors: List<Network.Account.OnLedgerSettings.ThirdPartyDeposits.DepositorAddress>,
+    allowedDepositors: ImmutableList<Network.Account.OnLedgerSettings.ThirdPartyDeposits.DepositorAddress>,
     onDeleteDepositor: (Network.Account.OnLedgerSettings.ThirdPartyDeposits.DepositorAddress) -> Unit
 ) {
     val snackBarHostState = remember { SnackbarHostState() }
@@ -218,16 +217,13 @@ private fun SpecificDepositorContent(
         snackbarHostState = snackBarHostState,
         onMessageShown = onMessageShown
     )
-    Scaffold(
-        modifier = modifier,
-        topBar = {
-            RadixCenteredTopAppBar(
-                title = stringResource(R.string.accountSettings_thirdPartyDeposits_allowSpecificDepositors),
-                onBackClick = onBackClick,
-                containerColor = RadixTheme.colors.defaultBackground
-            )
-        },
-        bottomBar = {
+    Scaffold(modifier = modifier, topBar = {
+        RadixCenteredTopAppBar(
+            title = stringResource(R.string.accountSettings_thirdPartyDeposits_allowSpecificDepositors),
+            onBackClick = onBackClick,
+            containerColor = RadixTheme.colors.defaultBackground
+        )
+    }, bottomBar = {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -241,8 +237,7 @@ private fun SpecificDepositorContent(
                         .padding(RadixTheme.dimensions.paddingDefault)
                 )
             }
-        }
-    ) { paddingValues ->
+        }) { paddingValues ->
         Column(
             Modifier
                 .fillMaxWidth()
@@ -279,7 +274,7 @@ private fun SpecificDepositorContent(
 
 @Composable
 private fun DepositorList(
-    depositors: List<Network.Account.OnLedgerSettings.ThirdPartyDeposits.DepositorAddress>,
+    depositors: ImmutableList<Network.Account.OnLedgerSettings.ThirdPartyDeposits.DepositorAddress>,
     modifier: Modifier = Modifier,
     onDeleteDepositor: (Network.Account.OnLedgerSettings.ThirdPartyDeposits.DepositorAddress) -> Unit
 ) {
@@ -317,40 +312,53 @@ private fun DepositorItem(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingDefault)
     ) {
-        AsyncImage(
-            model = rememberImageUrl(
-                fromUrl = Uri.parse(""),
-                size = ImageSize.SMALL
-            ),
-            placeholder = painterResource(id = R.drawable.img_placeholder),
-            fallback = painterResource(id = R.drawable.img_placeholder),
-            error = painterResource(id = R.drawable.img_placeholder),
-            contentDescription = null,
-            contentScale = ContentScale.Crop,
-            modifier = Modifier
-                .size(44.dp)
-                .clip(RadixTheme.shapes.roundedRectSmall)
-        )
+        when (depositor) {
+            is Network.Account.OnLedgerSettings.ThirdPartyDeposits.DepositorAddress.NonFungibleGlobalID -> {
+                Box(
+                    modifier = Modifier
+                        .size(44.dp)
+                        .background(RadixTheme.colors.gray3, RadixTheme.shapes.roundedRectSmall)
+                ) {
+                    Icon(
+                        painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_nfts),
+                        modifier = Modifier.align(Alignment.Center),
+                        tint = Color.Unspecified,
+                        contentDescription = null
+                    )
+                }
+            }
+
+            is Network.Account.OnLedgerSettings.ThirdPartyDeposits.DepositorAddress.ResourceAddress -> {
+                AsyncImage(
+                    model = rememberImageUrl(
+                        fromUrl = Uri.parse(""),
+                        size = ImageSize.SMALL
+                    ),
+                    placeholder = rememberDrawablePainter(drawable = ColorDrawable(RadixTheme.colors.gray3.toArgb())),
+                    fallback = rememberDrawablePainter(drawable = ColorDrawable(RadixTheme.colors.gray3.toArgb())),
+                    error = rememberDrawablePainter(drawable = ColorDrawable(RadixTheme.colors.gray3.toArgb())),
+                    contentDescription = null,
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier
+                        .size(44.dp)
+                        .clip(RadixTheme.shapes.roundedRectSmall)
+                )
+            }
+        }
         Column(
             modifier = Modifier.weight(1f)
         ) {
-            val address = when (depositor) {
-                is Network.Account.OnLedgerSettings.ThirdPartyDeposits.DepositorAddress.NonFungibleGlobalID -> depositor.value
-                is Network.Account.OnLedgerSettings.ThirdPartyDeposits.DepositorAddress.ResourceAddress -> depositor.value
-            }
             Text(
-                text = address.truncatedHash(),
+                text = depositor.address.truncatedHash(),
                 textAlign = TextAlign.Start,
                 maxLines = 1,
                 style = RadixTheme.typography.body2Regular,
                 color = RadixTheme.colors.gray2
             )
         }
-        IconButton(
-            onClick = {
-                onDeleteDepositor(depositor)
-            }
-        ) {
+        IconButton(onClick = {
+            onDeleteDepositor(depositor)
+        }) {
             Icon(
                 painter = painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_delete_outline),
                 contentDescription = null,
@@ -370,7 +378,11 @@ fun SpecificDepositorPreview() {
                 onMessageShown = {},
                 error = null,
                 onShowAddAssetSheet = {},
-                allowedDepositors = persistentListOf(sampleDepositorAddress(), sampleDepositorAddress(), sampleDepositorAddress()),
+                allowedDepositors = persistentListOf(
+                    sampleDepositorResourceAddress(),
+                    sampleDepositorNftAddress(),
+                    sampleDepositorResourceAddress()
+                ),
                 onDeleteDepositor = {}
             )
         }
@@ -381,10 +393,6 @@ fun SpecificDepositorPreview() {
 @Composable
 fun AddDepositorSheetPreview() {
     RadixWalletTheme {
-        AddDepositorSheet(
-            onResourceAddressChanged = {},
-            depositor = AssetType.Depositor(),
-            onAddDepositor = {}
-        ) {}
+        AddDepositorSheet(onResourceAddressChanged = {}, depositor = AssetType.Depositor(), onAddDepositor = {}) {}
     }
 }

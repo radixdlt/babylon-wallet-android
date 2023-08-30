@@ -55,7 +55,7 @@ fun AccountThirdPartyDepositsScreen(
         canUpdate = state.canUpdate,
         onMessageShown = viewModel::onMessageShown,
         error = state.error,
-        modifier = Modifier
+        modifier = modifier
             .fillMaxSize()
             .background(RadixTheme.colors.defaultBackground)
             .navigationBarsPadding(),
@@ -231,6 +231,12 @@ private fun AccountThirdPartyDepositsContent(
                         tint = RadixTheme.colors.gray1
                     )
                 }
+            )
+            Spacer(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(RadixTheme.dimensions.paddingLarge)
+                    .background(RadixTheme.colors.gray4)
             )
         }
     }

@@ -1,4 +1,4 @@
-@file:Suppress("MagicNumber")
+@file:Suppress("MagicNumber", "TooManyFunctions")
 
 package com.babylon.wallet.android.domain
 
@@ -346,7 +346,11 @@ class SampleDataProvider {
         )
     }
 
-    fun sampleDepositorAddress(): Network.Account.OnLedgerSettings.ThirdPartyDeposits.DepositorAddress {
+    fun sampleDepositorResourceAddress(): Network.Account.OnLedgerSettings.ThirdPartyDeposits.DepositorAddress {
         return Network.Account.OnLedgerSettings.ThirdPartyDeposits.DepositorAddress.ResourceAddress(randomAddress())
+    }
+
+    fun sampleDepositorNftAddress(): Network.Account.OnLedgerSettings.ThirdPartyDeposits.DepositorAddress {
+        return Network.Account.OnLedgerSettings.ThirdPartyDeposits.DepositorAddress.NonFungibleGlobalID(randomAddress())
     }
 }

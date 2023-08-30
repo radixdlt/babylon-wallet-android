@@ -85,10 +85,8 @@ class AccountSettingsViewModel @Inject constructor(
 
                         else -> {}
                     }
-
                 }
                 _state.update { it.copy(isLoading = false) }
-
             }
         }
     }
@@ -168,7 +166,6 @@ class AccountSettingsViewModel @Inject constructor(
             }
         }
     }
-
 }
 
 data class AccountPreferenceUiState(

@@ -1,13 +1,15 @@
 package rdx.works.core
 
 import com.radixdlt.ret.Address
+import com.radixdlt.ret.EntityType
 
 object AddressValidator {
 
-    fun isValid(address: String, networkId: Int): Boolean = runCatching {
+    fun isValid(address: String, networkId: Int, allowedEntityTypes: Set<EntityType> = emptySet()): Boolean = runCatching {
         Address(address)
     }.getOrNull()?.let {
-        it.networkId() == networkId.toUByte()
+        val allowedEntity = allowedEntityTypes.isNotEmpty() && allowedEntityTypes.contains(it.entityType())
+        it.networkId() == networkId.toUByte() && allowedEntity
     } ?: false
 
     fun getValidNetworkId(address: String) = runCatching {

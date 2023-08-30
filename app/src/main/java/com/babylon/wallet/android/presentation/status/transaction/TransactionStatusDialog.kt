@@ -52,7 +52,9 @@ import kotlin.math.roundToInt
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun TransactionStatusDialog(
-    modifier: Modifier = Modifier, viewModel: TransactionStatusDialogViewModel, onClose: () -> Unit
+    modifier: Modifier = Modifier,
+    viewModel: TransactionStatusDialogViewModel,
+    onClose: () -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val dismissHandler = {
@@ -85,7 +87,8 @@ fun TransactionStatusDialog(
             }
             Column(
                 modifier = Modifier
-                    .applyIf(!state.blockUntilComplete,
+                    .applyIf(
+                        !state.blockUntilComplete,
                         Modifier
                             .swipeable(
                                 state = swipeableState,
@@ -95,7 +98,7 @@ fun TransactionStatusDialog(
                                 ),
                                 orientation = Orientation.Vertical,
 
-                                )
+                            )
                             .offset {
                                 IntOffset(
                                     x = 0,
@@ -122,16 +125,21 @@ fun TransactionStatusDialog(
                 }
                 Box {
                     androidx.compose.animation.AnimatedVisibility(
-                        visible = state.isCompleting, enter = fadeIn(), exit = fadeOut()
+                        visible = state.isCompleting,
+                        enter = fadeIn(),
+                        exit = fadeOut()
                     ) {
                         CompletingContent()
                     }
 
                     androidx.compose.animation.AnimatedVisibility(
-                        visible = state.isFailed, enter = fadeIn(), exit = fadeOut()
+                        visible = state.isFailed,
+                        enter = fadeIn(),
+                        exit = fadeOut()
                     ) {
                         SomethingWentWrongDialogContent(
-                            title = stringResource(id = R.string.common_somethingWentWrong), subtitle = state.failureError?.getMessage()
+                            title = stringResource(id = R.string.common_somethingWentWrong),
+                            subtitle = state.failureError?.getMessage()
                         )
                     }
 
@@ -146,15 +154,19 @@ fun TransactionStatusDialog(
         }
 
     if (state.isIgnoreTransactionModalShowing) {
-        BasicPromptAlertDialog(finish = { accepted ->
-            if (accepted) {
-                viewModel.onDismissConfirmed()
-            } else {
-                viewModel.onDismissCanceled()
-            }
-        }, text = {
-            Text(text = stringResource(id = R.string.transaction_status_dismiss_dialog_message))
-        }, confirmText = stringResource(id = R.string.common_ok), dismissText = null
+        BasicPromptAlertDialog(
+            finish = { accepted ->
+                if (accepted) {
+                    viewModel.onDismissConfirmed()
+                } else {
+                    viewModel.onDismissCanceled()
+                }
+            },
+            text = {
+                Text(text = stringResource(id = R.string.transaction_status_dismiss_dialog_message))
+            },
+            confirmText = stringResource(id = R.string.common_ok),
+            dismissText = null
         )
     }
 }
@@ -179,7 +191,8 @@ private fun SuccessContent(
         Image(
             painter = painterResource(
                 id = com.babylon.wallet.android.designsystem.R.drawable.check_circle_outline
-            ), contentDescription = null
+            ),
+            contentDescription = null
         )
         Text(
             text = stringResource(id = R.string.transaction_status_success_title),
@@ -196,7 +209,9 @@ private fun SuccessContent(
 
         if (transactionAddress.isNotEmpty()) {
             ActionableAddressView(
-                address = transactionAddress, textStyle = RadixTheme.typography.body1Regular, textColor = RadixTheme.colors.gray1
+                address = transactionAddress,
+                textStyle = RadixTheme.typography.body1Regular,
+                textColor = RadixTheme.colors.gray1
             )
         }
     }
@@ -217,7 +232,9 @@ private fun CompletingContent(
         Image(
             painter = painterResource(
                 id = com.babylon.wallet.android.designsystem.R.drawable.check_circle_outline
-            ), alpha = 0.2F, contentDescription = null
+            ),
+            alpha = 0.2F,
+            contentDescription = null
         )
         Text(
             text = stringResource(R.string.transaction_status_completing_text),

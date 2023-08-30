@@ -79,9 +79,10 @@ import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAp
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
 import com.babylon.wallet.android.presentation.ui.composables.rememberImageUrl
 import com.babylon.wallet.android.utils.truncatedHash
+import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.launch
-import rdx.works.profile.data.model.pernetwork.Network
+import rdx.works.profile.data.model.pernetwork.Network.Account.OnLedgerSettings.ThirdPartyDeposits
 
 @OptIn(ExperimentalMaterialApi::class, ExperimentalComposeUiApi::class)
 @Composable
@@ -133,7 +134,6 @@ fun SpecificAssetsDepositsScreen(
     ) {
         SpecificAssetsDepositsContent(
             onBackClick = onBackClick,
-            canUpdate = state.canUpdate,
             onMessageShown = sharedViewModel::onMessageShown,
             error = state.error,
             onShowAddAssetSheet = {
@@ -154,11 +154,11 @@ fun SpecificAssetsDepositsScreen(
 @Composable
 fun AddAssetSheet(
     onResourceAddressChanged: (String) -> Unit,
-    asset: AssetType.Exception,
+    asset: AssetType.AssetException,
     onAddAsset: () -> Unit,
     modifier: Modifier = Modifier,
     onDismiss: () -> Unit,
-    onAssetExceptionRuleChanged: (Network.Account.OnLedgerSettings.ThirdPartyDeposits.DepositAddressExceptionRule) -> Unit
+    onAssetExceptionRuleChanged: (ThirdPartyDeposits.DepositAddressExceptionRule) -> Unit
 ) {
     Column(
         modifier = modifier
@@ -214,17 +214,17 @@ fun AddAssetSheet(
                 LabeledRadioButton(
                     modifier = Modifier.weight(1f),
                     label = stringResource(id = R.string.accountSettings_specificAssetsDeposits_addAnAssetAllow),
-                    selected = asset.assetException.exceptionRule == Network.Account.OnLedgerSettings.ThirdPartyDeposits.DepositAddressExceptionRule.Allow,
+                    selected = asset.assetException.exceptionRule == ThirdPartyDeposits.DepositAddressExceptionRule.Allow,
                     onSelected = {
-                        onAssetExceptionRuleChanged(Network.Account.OnLedgerSettings.ThirdPartyDeposits.DepositAddressExceptionRule.Allow)
+                        onAssetExceptionRuleChanged(ThirdPartyDeposits.DepositAddressExceptionRule.Allow)
                     }
                 )
                 LabeledRadioButton(
                     modifier = Modifier.weight(1f),
                     label = stringResource(id = R.string.accountSettings_specificAssetsDeposits_addAnAssetDeny),
-                    selected = asset.assetException.exceptionRule == Network.Account.OnLedgerSettings.ThirdPartyDeposits.DepositAddressExceptionRule.Deny,
+                    selected = asset.assetException.exceptionRule == ThirdPartyDeposits.DepositAddressExceptionRule.Deny,
                     onSelected = {
-                        onAssetExceptionRuleChanged(Network.Account.OnLedgerSettings.ThirdPartyDeposits.DepositAddressExceptionRule.Deny)
+                        onAssetExceptionRuleChanged(ThirdPartyDeposits.DepositAddressExceptionRule.Deny)
                     }
                 )
             }
@@ -244,9 +244,13 @@ fun AddAssetSheet(
 
 @Composable
 private fun LabeledRadioButton(modifier: Modifier, label: String, selected: Boolean, onSelected: () -> Unit) {
-    Row(modifier = modifier.clickable {
-        onSelected()
-    }, verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceAround) {
+    Row(
+        modifier = modifier.clickable {
+            onSelected()
+        },
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceAround
+    ) {
         RadioButton(
             selected = selected,
             colors = RadioButtonDefaults.colors(
@@ -270,14 +274,13 @@ private fun LabeledRadioButton(modifier: Modifier, label: String, selected: Bool
 @Composable
 private fun SpecificAssetsDepositsContent(
     onBackClick: () -> Unit,
-    canUpdate: Boolean,
     onMessageShown: () -> Unit,
     error: UiMessage?,
     onShowAddAssetSheet: () -> Unit,
     modifier: Modifier = Modifier,
-    allowedAssets: List<Network.Account.OnLedgerSettings.ThirdPartyDeposits.AssetException>,
-    deniedAssets: List<Network.Account.OnLedgerSettings.ThirdPartyDeposits.AssetException>,
-    onDeleteAsset: (Network.Account.OnLedgerSettings.ThirdPartyDeposits.AssetException) -> Unit
+    allowedAssets: ImmutableList<ThirdPartyDeposits.AssetException>,
+    deniedAssets: ImmutableList<ThirdPartyDeposits.AssetException>,
+    onDeleteAsset: (ThirdPartyDeposits.AssetException) -> Unit
 ) {
     var selectedTab by remember {
         mutableStateOf(SpecificAssetsTab.Allowed)
@@ -344,8 +347,7 @@ private fun SpecificAssetsDepositsContent(
                 state = pagerState,
                 userScrollEnabled = false
             ) { tabIndex ->
-                val tab = SpecificAssetsTab.values()[tabIndex]
-                when (tab) {
+                when (SpecificAssetsTab.values()[tabIndex]) {
                     SpecificAssetsTab.Allowed -> {
                         if (allowedAssets.isEmpty()) {
                             Text(
@@ -407,9 +409,9 @@ private fun SpecificAssetsDepositsContent(
 
 @Composable
 private fun AssetsList(
-    assets: List<Network.Account.OnLedgerSettings.ThirdPartyDeposits.AssetException>,
+    assets: ImmutableList<ThirdPartyDeposits.AssetException>,
     modifier: Modifier = Modifier,
-    onDeleteAsset: (Network.Account.OnLedgerSettings.ThirdPartyDeposits.AssetException) -> Unit
+    onDeleteAsset: (ThirdPartyDeposits.AssetException) -> Unit
 ) {
     val lastItem = assets.last()
     LazyColumn(modifier = modifier) {
@@ -437,8 +439,8 @@ private fun AssetsList(
 @Composable
 private fun AssetItem(
     modifier: Modifier,
-    asset: Network.Account.OnLedgerSettings.ThirdPartyDeposits.AssetException,
-    onDeleteAsset: (Network.Account.OnLedgerSettings.ThirdPartyDeposits.AssetException) -> Unit
+    asset: ThirdPartyDeposits.AssetException,
+    onDeleteAsset: (ThirdPartyDeposits.AssetException) -> Unit
 ) {
     Row(
         modifier = modifier,
@@ -580,7 +582,6 @@ fun SpecificAssetsDepositsPreview() {
         with(SampleDataProvider()) {
             SpecificAssetsDepositsContent(
                 onBackClick = {},
-                canUpdate = false,
                 onMessageShown = {},
                 error = null,
                 onShowAddAssetSheet = {},
@@ -598,7 +599,7 @@ fun AddAssetSheetPreview() {
     RadixWalletTheme {
         AddAssetSheet(
             onResourceAddressChanged = {},
-            asset = AssetType.Exception(),
+            asset = AssetType.AssetException(),
             onAddAsset = {},
             onAssetExceptionRuleChanged = {},
             onDismiss = {}

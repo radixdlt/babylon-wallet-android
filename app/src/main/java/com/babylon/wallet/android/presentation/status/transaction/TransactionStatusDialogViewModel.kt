@@ -148,7 +148,6 @@ class TransactionStatusDialogViewModel @Inject constructor(
 
         val failureError: UiMessage.ErrorMessage?
             get() = (status as? TransactionStatus.Failed)?.errorMessage
-
     }
 
     sealed interface Event : OneOffEvent {
