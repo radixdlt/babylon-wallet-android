@@ -1,5 +1,6 @@
 package com.babylon.wallet.android.presentation.settings.account.thirdpartydeposits
 
+import androidx.activity.compose.BackHandler
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -23,7 +24,9 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
@@ -36,6 +39,7 @@ import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.presentation.common.UiMessage
+import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
@@ -50,8 +54,44 @@ fun AccountThirdPartyDepositsScreen(
     onSpecificDepositorsClick: () -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
+    var showCancelPrompt by remember { mutableStateOf(false) }
+    val backClick = {
+        if (state.canUpdate) {
+            showCancelPrompt = true
+        } else {
+            onBackClick()
+        }
+    }
+    BackHandler {
+        backClick()
+    }
+    if (showCancelPrompt) {
+        BasicPromptAlertDialog(
+            finish = {
+                if (it) {
+                    onBackClick()
+                }
+                showCancelPrompt = false
+            },
+            text = {
+                androidx.compose.material3.Text(
+                    text = stringResource(
+                        R.string.accountSettings_thirdPartyDeposits_discardMessage
+                    ),
+                    style = RadixTheme.typography.body2Regular,
+                    color = RadixTheme.colors.gray1
+                )
+            },
+            confirmText = stringResource(
+                id = R.string.accountSettings_thirdPartyDeposits_discardChanges
+            ),
+            dismissText = stringResource(
+                id = R.string.accountSettings_thirdPartyDeposits_keepEditing
+            )
+        )
+    }
     AccountThirdPartyDepositsContent(
-        onBackClick = onBackClick,
+        onBackClick = backClick,
         canUpdate = state.canUpdate,
         onMessageShown = viewModel::onMessageShown,
         error = state.error,

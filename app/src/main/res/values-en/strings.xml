@@ -768,6 +768,9 @@ Only the **current configuration** of your wallet is backed up with each manual 
     <string name="iOSProfileBackup_totalPersonasNumberLabel">Number of Personas: %d</string>
     <string name="iOSProfileBackup_incompatibleWalletDataLabel">Incompatible Wallet data</string>
 
+    <string name="accountSettings_thirdPartyDeposits_discardChanges">Discard Changes</string>
+    <string name="accountSettings_thirdPartyDeposits_keepEditing">Keep Editing</string>
+    <string name="accountSettings_thirdPartyDeposits_discardMessage">Are you sure you want to discard changes?</string>
     <string name="accountSettings_thirdPartyDeposits_allowDenySpecific">Allow/Deny specific assets</string>
     <string name="accountSettings_thirdPartyDeposits_allowDenySpecificSubtitle">Deny or allow third-party deposits of specific assets, ignoring the setting above</string>
     <string name="accountSettings_thirdPartyDeposits_addDepositorTitle">Add a Depositor Badge</string>
@@ -790,6 +793,6 @@ Only the **current configuration** of your wallet is backed up with each manual 
     <string name="accountSettings_specificAssetsDeposits_allowInfo">The following resource addresses may always be deposited to this account by third parties.</string>
     <string name="accountSettings_specificAssetsDeposits_denyInfo">The following resource addresses may never be deposited to this account by third parties.</string>
 
-  <string name="biometrics_deviceNotSecureAlert_openSettings">Open Settings</string>
-  <string name="biometrics_deviceNotSecureAlert_quit">Quit</string>
+    <string name="biometrics_deviceNotSecureAlert_openSettings">Open Settings</string>
+    <string name="biometrics_deviceNotSecureAlert_quit">Quit</string>
 </resources>
