@@ -53,7 +53,7 @@ data class ActionableAddress(
     }
     companion object {
         private const val NFT_DELIMITER = ":"
-        private const val DASHBOARD_BASE_URL = "https://rcnet-v2-dashboard.radixdlt.com"
+        private const val DASHBOARD_BASE_URL = "https://rcnet-v3-dashboard.radixdlt.com/"
 
         fun from(address: String) = ActionableAddress(
             address = address,
