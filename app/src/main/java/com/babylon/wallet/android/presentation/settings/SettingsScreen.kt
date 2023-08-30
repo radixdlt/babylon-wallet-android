@@ -6,14 +6,16 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.Divider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -39,102 +41,108 @@ import kotlinx.collections.immutable.persistentListOf
 
 @Composable
 fun SettingsScreen(
+    modifier: Modifier = Modifier,
     viewModel: SettingsViewModel,
     onBackClick: () -> Unit,
-    onSettingClick: (SettingsItem.TopLevelSettings) -> Unit,
-    modifier: Modifier = Modifier,
+    onSettingClick: (SettingsItem.TopLevelSettings) -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     SettingsContent(
+        modifier = modifier,
         onBackClick = onBackClick,
         appSettings = state.settings,
-        onSettingClick = onSettingClick,
-        modifier = modifier
-            .navigationBarsPadding()
-            .fillMaxSize()
-            .background(RadixTheme.colors.defaultBackground)
+        onSettingClick = onSettingClick
     )
 }
 
 @Composable
 private fun SettingsContent(
+    modifier: Modifier = Modifier,
     onBackClick: () -> Unit,
     appSettings: ImmutableList<SettingsItem.TopLevelSettings>,
     onSettingClick: (SettingsItem.TopLevelSettings) -> Unit,
-    modifier: Modifier = Modifier,
 ) {
-    Column(
+    Scaffold(
         modifier = modifier,
-        horizontalAlignment = Alignment.Start
-    ) {
-        RadixCenteredTopAppBar(
-            title = stringResource(R.string.settings_title),
-            onBackClick = onBackClick,
-            contentColor = RadixTheme.colors.gray1,
-            titleIcon = {
-                Icon(
-                    painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_settings),
-                    tint = RadixTheme.colors.gray1,
-                    contentDescription = "settings gear"
-                )
-            }
-        )
-        Divider(color = RadixTheme.colors.gray4)
-        LazyColumn(modifier = Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally) {
-            appSettings.forEach { settingsItem ->
-                when (settingsItem) {
-                    SettingsItem.TopLevelSettings.LinkToConnector -> {
-                        item {
-                            ConnectionSettingItem(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .background(RadixTheme.colors.gray5)
-                                    .padding(RadixTheme.dimensions.paddingDefault),
-                                onSettingClick = onSettingClick,
-                                settingsItem = settingsItem
-                            )
-                        }
-                    }
-
-                    else -> {
-                        item {
-                            if (settingsItem is SettingsItem.TopLevelSettings.Backups) {
-                                BackupSettingsItem(
-                                    backupSettingsItem = settingsItem,
-                                    onClick = {
-                                        onSettingClick(settingsItem)
-                                    }
-                                )
-                            } else {
-                                DefaultSettingsItem(
-                                    settingsItem = settingsItem,
-                                    onClick = {
-                                        onSettingClick(settingsItem)
-                                    }
+        topBar = {
+            RadixCenteredTopAppBar(
+                title = stringResource(R.string.settings_title),
+                onBackClick = onBackClick,
+                contentColor = RadixTheme.colors.gray1,
+                titleIcon = {
+                    Icon(
+                        painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_settings),
+                        tint = RadixTheme.colors.gray1,
+                        contentDescription = "settings gear"
+                    )
+                },
+                windowInsets = WindowInsets.statusBars
+            )
+        },
+        containerColor = RadixTheme.colors.defaultBackground
+    ) { padding ->
+        Column(
+            modifier = Modifier.padding(padding),
+            horizontalAlignment = Alignment.Start
+        ) {
+            Divider(color = RadixTheme.colors.gray4)
+            LazyColumn(modifier = Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally) {
+                appSettings.forEach { settingsItem ->
+                    when (settingsItem) {
+                        SettingsItem.TopLevelSettings.LinkToConnector -> {
+                            item {
+                                ConnectionSettingItem(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .background(RadixTheme.colors.gray5)
+                                        .padding(RadixTheme.dimensions.paddingDefault),
+                                    onSettingClick = onSettingClick,
+                                    settingsItem = settingsItem
                                 )
                             }
                         }
-                        item {
-                            Divider(color = RadixTheme.colors.gray5)
+
+                        else -> {
+                            item {
+                                if (settingsItem is SettingsItem.TopLevelSettings.Backups) {
+                                    BackupSettingsItem(
+                                        backupSettingsItem = settingsItem,
+                                        onClick = {
+                                            onSettingClick(settingsItem)
+                                        }
+                                    )
+                                } else {
+                                    DefaultSettingsItem(
+                                        settingsItem = settingsItem,
+                                        onClick = {
+                                            onSettingClick(settingsItem)
+                                        }
+                                    )
+                                }
+                            }
+                            item {
+                                Divider(color = RadixTheme.colors.gray5)
+                            }
                         }
                     }
                 }
-            }
-            item {
-                Text(
-                    text = stringResource(
-                        R.string.settings_appVersion,
-                        BuildConfig.VERSION_NAME,
-                        BuildConfig.VERSION_CODE.toString()
-                    ),
-                    style = RadixTheme.typography.body2Link,
-                    color = RadixTheme.colors.gray2,
-                    textAlign = TextAlign.Center
-                )
-                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
+                item {
+                    Text(
+                        text = stringResource(
+                            R.string.settings_appVersion,
+                            BuildConfig.VERSION_NAME,
+                            BuildConfig.VERSION_CODE.toString()
+                        ),
+                        style = RadixTheme.typography.body2Link,
+                        color = RadixTheme.colors.gray2,
+                        textAlign = TextAlign.Center
+                    )
+                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
+                }
             }
         }
     }
+
 }
 
 @Composable
