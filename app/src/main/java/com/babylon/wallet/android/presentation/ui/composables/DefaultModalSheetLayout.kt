@@ -19,7 +19,7 @@ import com.babylon.wallet.android.presentation.ui.modifier.applyIf
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun DefaultModalSheetLayout(
-    modifier: Modifier,
+    modifier: Modifier = Modifier,
     sheetState: ModalBottomSheetState,
     heightFraction: Float = 0.9f,
     enableImePadding: Boolean = false,

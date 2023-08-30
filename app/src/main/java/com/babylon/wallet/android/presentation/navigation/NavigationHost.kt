@@ -4,6 +4,7 @@ import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
@@ -52,12 +53,14 @@ import rdx.works.profile.domain.backup.BackupType
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
 fun NavigationHost(
+    modifier: Modifier = Modifier,
     startDestination: String,
     navController: NavHostController,
     mainUiState: StateFlow<MainUiState>,
     onCloseApp: () -> Unit,
 ) {
     AnimatedNavHost(
+        modifier = modifier,
         navController = navController,
         startDestination = startDestination
     ) {

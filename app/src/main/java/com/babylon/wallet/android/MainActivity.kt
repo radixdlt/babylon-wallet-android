@@ -6,6 +6,8 @@ import android.view.View
 import android.view.animation.AnticipateInterpolator
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
+import androidx.compose.foundation.layout.padding
+import androidx.compose.ui.Modifier
 import androidx.core.animation.doOnEnd
 import androidx.core.splashscreen.SplashScreen
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
@@ -34,10 +36,12 @@ class MainActivity : FragmentActivity() {
 
         setContent {
             RadixWalletTheme {
-                DevelopmentPreviewWrapper {
-                    WalletApp(mainViewModel = viewModel, onCloseApp = {
-                        finish()
-                    })
+                DevelopmentPreviewWrapper { padding ->
+                    WalletApp(
+                        modifier = Modifier.padding(padding),
+                        mainViewModel = viewModel,
+                        onCloseApp = { finish() }
+                    )
                 }
             }
         }
