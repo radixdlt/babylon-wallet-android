@@ -35,7 +35,7 @@ interface PeerdroidClient {
     suspend fun connect(encryptionKey: ByteArray): Result<Unit>
 
     suspend fun sendMessage(
-        remoteClientId: String,
+        remoteConnectorId: String,
         message: String
     ): Result<Unit>
 
@@ -61,11 +61,11 @@ class PeerdroidClientImpl @Inject constructor(
     }
 
     override suspend fun sendMessage(
-        remoteClientId: String,
+        remoteConnectorId: String,
         message: String
     ): Result<Unit> {
         return peerdroidConnector.sendDataChannelMessageToRemoteClient(
-            remoteClientId = remoteClientId,
+            remoteConnectorId = remoteConnectorId,
             message = message
         )
     }
@@ -77,10 +77,10 @@ class PeerdroidClientImpl @Inject constructor(
     private fun listenForIncomingMessages(): Flow<MessageFromDataChannel> {
         return peerdroidConnector
             .dataChannelMessagesFromRemoteClients
-            .filterIsInstance<DataChannelWrapperEvent.MessageFromRemoteClient>()
+            .filterIsInstance<DataChannelWrapperEvent.MessageFromRemoteConnectionId>()
             .map { messageFromRemoteClient ->
                 parseIncomingMessage(
-                    remoteClientId = messageFromRemoteClient.remoteClientId,
+                    remoteConnectorId = messageFromRemoteClient.connectionIdHolder.id,
                     messageInJsonString = messageFromRemoteClient.messageInJsonString
                 )
             }.catch { exception ->
@@ -114,13 +114,13 @@ class PeerdroidClientImpl @Inject constructor(
 
     @Suppress("SwallowedException")
     private suspend fun parseIncomingMessage(
-        remoteClientId: String,
+        remoteConnectorId: String,
         messageInJsonString: String
     ): MessageFromDataChannel {
         return try {
             val payload = peerdroidRequestJson.decodeFromString<ConnectorExtensionInteraction>(messageInJsonString)
             when (payload) {
-                is WalletInteraction -> payload.toDomainModel(dappId = remoteClientId)
+                is WalletInteraction -> payload.toDomainModel(remoteConnectorId = remoteConnectorId)
                 else -> (payload as LedgerInteractionResponse).toDomainModel()
             }
         } catch (serializationException: SerializationException) {
@@ -133,7 +133,7 @@ class PeerdroidClientImpl @Inject constructor(
             Timber.e("The version of the request: $requestVersion is incompatible. Wallet version: $currentVersion")
             sendIncompatibleVersionRequestToDapp(
                 requestId = incompatibleRequestVersionException.requestId,
-                remoteClientId = remoteClientId
+                remoteConnectorId = remoteConnectorId
             )
             MessageFromDataChannel.ParsingError
         } catch (exception: Exception) {
@@ -143,8 +143,8 @@ class PeerdroidClientImpl @Inject constructor(
     }
 
     private suspend fun sendIncompatibleVersionRequestToDapp(
-        requestId: String,
-        remoteClientId: String
+        remoteConnectorId: String,
+        requestId: String
     ) {
         val messageJson = Json.encodeToString(
             WalletInteractionFailureResponse(
@@ -152,6 +152,6 @@ class PeerdroidClientImpl @Inject constructor(
                 error = WalletErrorType.IncompatibleVersion
             )
         )
-        sendMessage(remoteClientId, messageJson)
+        sendMessage(remoteConnectorId, messageJson)
     }
 }

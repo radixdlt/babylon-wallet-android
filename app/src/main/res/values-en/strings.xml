@@ -118,7 +118,6 @@
   <string name="settings_ledgerHardwareWallets">Ledger Hardware Wallets</string>
   <string name="settings_multiFactor">Multi-Factor Setup</string>
   <string name="settings_appVersion">Version: %s build #%s</string>
-  <string name="settings_deleteWalletData">Delete Wallet Data</string>
   <string name="settings_noProfileText">No Wallet Data Found</string>
   <string name="settings_linkToConnectorHeader_title">Link your Wallet to a Desktop Browser</string>
   <string name="settings_linkToConnectorHeader_subtitle">Scan the QR code in the Radix Wallet Connector extension</string>
@@ -404,8 +403,8 @@
   <string name="biometrics_prompt_importOlympiaAccounts">Check if seed phrase already exists.</string>
   <string name="biometrics_prompt_checkingAccounts">Checking accounts.</string>
   <string name="biometrics_prompt_updateAccountMetadata">Update account metadata.</string>
-  <string name="biometrics_deviceNotSecureAlert_title">Your device is not secured</string>
-  <string name="biometrics_deviceNotSecureAlert_message">Do you want to continue?</string>
+  <string name="biometrics_deviceNotSecureAlert_title">Your device is not secured.</string>
+  <string name="biometrics_deviceNotSecureAlert_message">Please set up secure lock screen before using this app.</string>
   <string name="common_account">Account</string>
   <string name="common_cancel">Cancel</string>
   <string name="common_continue">Continue</string>
@@ -630,6 +629,13 @@
 Only the *current configuration* of your wallet is backed up with each manual export.</string>
   <string name="profileBackup_manualBackups_exportButtonTitle">Export Wallet Backup File</string>
   <string name="profileBackup_manualBackups_encryptBackupDialogTitle">Encrypt this backup with a password?</string>
+  <string name="profileBackup_manualBackups_encryptBackupDialogConfirm">Yes</string>
+  <string name="profileBackup_manualBackups_encryptBackupDialogDeny">No</string>
+  <string name="profileBackup_manualBackups_encryptBackupTitle">Encrypt Wallet Backup File</string>
+  <string name="profileBackup_manualBackups_encryptBackupSubtitle">Enter a password to encrypt this wallet backup file. You will be required to enter this password when recovering your Wallet from this file.</string>
+  <string name="profileBackup_manualBackups_enterPasswordPlaceholder">Enter password</string>
+  <string name="profileBackup_manualBackups_confirmPasswordPlaceholder">Enter password</string>
+  <string name="profileBackup_manualBackups_passwordsMissmatchError">Passwords do not match</string>
   <string name="profileBackup_manualBackups_successMessage">Exported wallet backup file</string>
   <string name="profileBackup_manualBackups_encryptBackupDialogConfirm">Yes</string>
   <string name="profileBackup_manualBackups_encryptBackupDialogDeny">No</string>
@@ -703,4 +709,6 @@ Only the *current configuration* of your wallet is backed up with each manual ex
   <string name="recoverSeedPhrase_enterButton">Enter This Seed Phrase</string>
   <string name="enterSeedPhrase_header_title">Enter Seed Phrase</string>
   <string name="enterSeedPhrase_warning">For your safety, make sure no one is looking at your screen. Never give your seed phrase to anyone for any reason.</string>
+  <string name="biometrics_deviceNotSecureAlert_openSettings">Open Settings</string>
+  <string name="biometrics_deviceNotSecureAlert_quit">Quit</string>
 </resources>

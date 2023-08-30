@@ -1,5 +1,6 @@
 package rdx.works.profile.domain
 
+import rdx.works.core.preferences.PreferencesManager
 import rdx.works.profile.data.model.MnemonicWithPassphrase
 import rdx.works.profile.data.model.factorsources.DeviceFactorSource
 import rdx.works.profile.data.model.factorsources.FactorSource
@@ -10,14 +11,15 @@ import javax.inject.Inject
 
 class AddOlympiaFactorSourceUseCase @Inject constructor(
     private val profileRepository: ProfileRepository,
-    private val mnemonicRepository: MnemonicRepository
+    private val mnemonicRepository: MnemonicRepository,
+    private val preferencesManager: PreferencesManager
 ) {
 
     suspend operator fun invoke(mnemonicWithPassphrase: MnemonicWithPassphrase): FactorSource.FactorSourceID.FromHash {
         val olympiaFactorSource = DeviceFactorSource.olympia(mnemonicWithPassphrase)
 
-        val existingMnemonic = mnemonicRepository.readMnemonic(olympiaFactorSource.id)
-        if (existingMnemonic != null) {
+        val mnemonicExist = mnemonicRepository.mnemonicExist(olympiaFactorSource.id)
+        if (mnemonicExist) {
             return olympiaFactorSource.id
         }
 
@@ -25,6 +27,9 @@ class AddOlympiaFactorSourceUseCase @Inject constructor(
             key = olympiaFactorSource.id,
             mnemonicWithPassphrase = mnemonicWithPassphrase
         )
+        // Seed phrase was just typed by the user, mark it as backed up
+        preferencesManager.markFactorSourceBackedUp(olympiaFactorSource.id.body.value)
+
         profileRepository.updateProfile { profile ->
             profile.copy(
                 factorSources = profile.factorSources + listOf(olympiaFactorSource)

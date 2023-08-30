@@ -71,7 +71,7 @@ internal class TransactionApprovalViewModelTest : StateViewModelTest<Transaction
     private val sampleTxId = "txId1"
     private val sampleRequestId = "requestId1"
     private val sampleRequest = MessageFromDataChannel.IncomingRequest.TransactionRequest(
-        dappId = "dappId",
+        remoteConnectorId = "remoteConnectorId",
         requestId = sampleRequestId,
         transactionManifestData = TransactionManifestData("", 1, 11),
         requestMetadata = MessageFromDataChannel.IncomingRequest.RequestMetadata(
@@ -123,14 +123,14 @@ internal class TransactionApprovalViewModelTest : StateViewModelTest<Transaction
         )
         coEvery {
             dAppMessenger.sendTransactionWriteResponseSuccess(
-                dappId = "dappId",
+                remoteConnectorId = "remoteConnectorId",
                 requestId = sampleRequestId,
                 txId = sampleTxId
             )
         } returns ResultInternal.Success(Unit)
         coEvery {
             dAppMessenger.sendWalletInteractionResponseFailure(
-                dappId = "dappId",
+                remoteConnectorId = "remoteConnectorId",
                 requestId = sampleRequestId,
                 error = any(),
                 message = any()
@@ -202,7 +202,6 @@ internal class TransactionApprovalViewModelTest : StateViewModelTest<Transaction
             dAppMessenger = dAppMessenger,
             appEventBus = appEventBus,
             incomingRequestRepository = incomingRequestRepository,
-            deviceSecurityHelper = deviceSecurityHelper,
             appScope = TestScope(),
             savedStateHandle = savedStateHandle
         )
@@ -216,7 +215,7 @@ internal class TransactionApprovalViewModelTest : StateViewModelTest<Transaction
         advanceUntilIdle()
         coVerify(exactly = 1) {
             dAppMessenger.sendTransactionWriteResponseSuccess(
-                dappId = "dappId",
+                remoteConnectorId = "remoteConnectorId",
                 requestId = sampleRequestId,
                 txId = sampleTxId
             )
@@ -233,7 +232,7 @@ internal class TransactionApprovalViewModelTest : StateViewModelTest<Transaction
         val errorSlot = slot<WalletErrorType>()
         coVerify(exactly = 1) {
             dAppMessenger.sendWalletInteractionResponseFailure(
-                dappId = "dappId",
+                remoteConnectorId = "remoteConnectorId",
                 requestId = sampleRequestId,
                 error = capture(errorSlot),
                 message = any()
@@ -258,7 +257,7 @@ internal class TransactionApprovalViewModelTest : StateViewModelTest<Transaction
         val errorSlot = slot<WalletErrorType>()
         coVerify(exactly = 1) {
             dAppMessenger.sendWalletInteractionResponseFailure(
-                dappId = "dappId",
+                remoteConnectorId = "remoteConnectorId",
                 requestId = sampleRequestId,
                 error = capture(errorSlot),
                 message = any()
@@ -447,8 +446,8 @@ internal class TransactionApprovalViewModelTest : StateViewModelTest<Transaction
     fun `verify transaction fee to lock is correct on advanced screen 1`() = runTest {
         val feePaddingAmount = "1.6"
 
-        // Sum of executionCost finalizationCost storageExpansionCost royaltyCost padding and tip
-        val expectedFeeLock = "2.6"
+        // Sum of executionCost finalizationCost storageExpansionCost royaltyCost padding and tip minus noncontingentlock
+        val expectedFeeLock = "1.1"
         coEvery { transactionClient.analyzeExecution(any(), any()) } returns Result.success(
             ExecutionAnalysis(
                 feeLocks = FeeLocks(
@@ -486,8 +485,8 @@ internal class TransactionApprovalViewModelTest : StateViewModelTest<Transaction
     fun `verify transaction fee to lock is correct on advanced screen 2`() = runTest {
         val tipPercentage = "25"
 
-        // Sum of executionCost finalizationCost storageExpansionCost royaltyCost padding and tip
-        val expectedFeeLock = "1.24"
+        // Sum of executionCost finalizationCost storageExpansionCost royaltyCost padding and tip minus noncontingentlock
+        val expectedFeeLock = "0.82"
 
         coEvery { transactionClient.analyzeExecution(any(), any()) } returns Result.success(
             ExecutionAnalysis(
@@ -527,8 +526,8 @@ internal class TransactionApprovalViewModelTest : StateViewModelTest<Transaction
         val feePaddingAmount = "1.6"
         val tipPercentage = "25"
 
-        // Sum of executionCost finalizationCost storageExpansionCost royaltyCost padding and tip
-        val expectedFeeLock = "2.750"
+        // Sum of executionCost finalizationCost storageExpansionCost royaltyCost padding and tip minus noncontingentlock
+        val expectedFeeLock = "2.300"
 
         coEvery { transactionClient.analyzeExecution(any(), any()) } returns Result.success(
             ExecutionAnalysis(

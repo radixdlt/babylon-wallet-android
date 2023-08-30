@@ -5,6 +5,7 @@ import org.junit.Test
 import rdx.works.core.decodeHex
 import rdx.works.core.decrypt
 import rdx.works.core.encrypt
+import rdx.works.core.toHexString
 import java.nio.ByteBuffer
 import java.nio.charset.StandardCharsets.UTF_8
 
@@ -29,7 +30,7 @@ class EncryptionHelperTest {
             withEncryptionKey = encryptionKeyByteArray
         )
 
-        Assert.assertEquals(expectedDecryptedMessage, String(actualDecryptedMessage, UTF_8))
+        Assert.assertEquals(expectedDecryptedMessage, String(actualDecryptedMessage.getOrThrow(), UTF_8))
     }
 
     @Test
@@ -61,6 +62,4 @@ class EncryptionHelperTest {
         get(copy)
         return copy
     }
-
-    private fun ByteArray.toHexString(): String = joinToString(separator = "") { eachByte -> "%02x".format(eachByte) }
 }

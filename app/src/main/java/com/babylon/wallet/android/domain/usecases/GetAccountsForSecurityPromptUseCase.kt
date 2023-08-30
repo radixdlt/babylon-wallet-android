@@ -28,7 +28,7 @@ class GetAccountsForSecurityPromptUseCase @Inject constructor(
             val factorSourceId = account.factorSourceId() as? FactorSourceID.FromHash ?: return@mapNotNull null
             val factorSource = getProfileUseCase.factorSourceById(factorSourceId) as? DeviceFactorSource ?: return@mapNotNull null
 
-            if (mnemonicRepository.readMnemonic(factorSource.id) == null) {
+            if (!mnemonicRepository.mnemonicExist(factorSource.id)) {
                 AccountWithSecurityPrompt(
                     account = account,
                     prompt = SecurityPromptType.NEEDS_RESTORE

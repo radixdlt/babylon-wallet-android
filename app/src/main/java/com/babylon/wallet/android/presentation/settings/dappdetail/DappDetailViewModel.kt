@@ -204,7 +204,7 @@ class DappDetailViewModel @Inject constructor(
                         }?.sharedAccounts
                     )
                     val request = MessageFromDataChannel.IncomingRequest.AuthorizedRequest(
-                        dappId = "",
+                        remoteConnectorId = "",
                         interactionId = UUIDGenerator.uuid().toString(),
                         requestMetadata = MessageFromDataChannel.IncomingRequest.RequestMetadata(
                             authorizedDapp.networkID,

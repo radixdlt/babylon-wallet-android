@@ -142,19 +142,26 @@ fun NotSecureAlertDialog(
     finish: (accepted: Boolean) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    BasicPromptAlertDialog(modifier = modifier, finish = finish, title = {
-        Text(
-            text = stringResource(id = R.string.biometrics_deviceNotSecureAlert_title),
-            style = RadixTheme.typography.body2Header,
-            color = RadixTheme.colors.gray1
-        )
-    }, text = {
+    BasicPromptAlertDialog(
+        modifier = modifier,
+        finish = finish,
+        title = {
+            Text(
+                text = stringResource(id = R.string.biometrics_deviceNotSecureAlert_title),
+                style = RadixTheme.typography.body2Header,
+                color = RadixTheme.colors.gray1
+            )
+        },
+        text = {
             Text(
                 text = stringResource(id = R.string.biometrics_deviceNotSecureAlert_message),
                 style = RadixTheme.typography.body2Regular,
                 color = RadixTheme.colors.gray2
             )
-        })
+        },
+        confirmText = stringResource(id = R.string.biometrics_deviceNotSecureAlert_openSettings),
+        dismissText = stringResource(id = R.string.biometrics_deviceNotSecureAlert_quit)
+    )
 }
 
 @Composable

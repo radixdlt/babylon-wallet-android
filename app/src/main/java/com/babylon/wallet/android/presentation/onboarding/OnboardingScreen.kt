@@ -53,8 +53,8 @@ import kotlin.math.sign
 fun OnboardingScreen(
     viewModel: OnboardingViewModel,
     modifier: Modifier = Modifier,
-    onOnBoardingEnd: () -> Unit,
     onBack: () -> Unit,
+    onCreateNewWalletClick: () -> Unit,
     onRestoreFromBackupClick: () -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -63,7 +63,7 @@ fun OnboardingScreen(
 
     OnboardingScreenContent(
         currentPage = state.currentPagerPage,
-        onProceedClick = viewModel::onProceedClick,
+        onProceedClick = viewModel::onCreateNewWalletClick,
         onRestoreWalletClick = onRestoreFromBackupClick,
 //        showWarning = state.showWarning,
 //        authenticateWithBiometric = state.authenticateWithBiometric,
@@ -75,8 +75,8 @@ fun OnboardingScreen(
     LaunchedEffect(Unit) {
         viewModel.oneOffEvent.collect { event ->
             when (event) {
-                is OnboardingViewModel.OnBoardingEvent.EndOnBoarding -> {
-                    onOnBoardingEnd()
+                is OnboardingViewModel.OnBoardingEvent.CreateNewWallet -> {
+                    onCreateNewWalletClick()
                 }
             }
         }

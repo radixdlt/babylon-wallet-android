@@ -29,31 +29,11 @@ private fun fakeProfileDataSource(initialProfileState: ProfileState) = object : 
     }
 
     override suspend fun clear() {
-        profileStateSource.update { ProfileState.None() }
+        profileStateSource.update { ProfileState.None }
     }
 
-    override suspend fun saveRestoringSnapshot(snapshotSerialised: String): Boolean {
-        // Not needed
-        return true
-    }
-
-    override suspend fun getSnapshotForBackup(): String? {
-        // Not needed
-        return null
-    }
-
-    override suspend fun isRestoredProfileFromBackupExists(): Boolean {
-        // Not needed
-        return false
-    }
-
-    override suspend fun getRestoringProfileFromBackup(): Profile? {
-        // Not needed
-        return null
-    }
-
-    override suspend fun discardBackedUpProfile() {
-        TODO("Not yet implemented")
+    override fun deriveProfileState(content: String): ProfileState {
+        error("Not needed")
     }
 
 }

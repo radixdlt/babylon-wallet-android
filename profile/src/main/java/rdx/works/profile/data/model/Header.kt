@@ -6,7 +6,6 @@ import kotlinx.serialization.Serializable
 import rdx.works.profile.data.model.Header.Companion.equals
 import rdx.works.profile.data.model.Profile.Companion.equals
 import rdx.works.profile.data.model.ProfileSnapshot.Companion.MINIMUM
-import rdx.works.profile.data.model.serialisers.InstantSerializer
 import java.time.Instant
 
 @Serializable
@@ -120,8 +119,8 @@ data class Header(
         /**
          * The [Instant] on which this profile was generated/claimed
          */
-        @Serializable(with = InstantSerializer::class)
         @SerialName("date")
+        @Contextual
         val date: Instant
     )
 

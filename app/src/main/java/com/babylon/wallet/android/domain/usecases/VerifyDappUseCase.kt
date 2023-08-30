@@ -25,7 +25,7 @@ class VerifyDappUseCase @Inject constructor(
         val decodeResult = runCatching { Address(request.metadata.dAppDefinitionAddress) }
         if (decodeResult.isFailure) {
             dAppMessenger.sendWalletInteractionResponseFailure(
-                dappId = request.remoteClientId,
+                remoteConnectorId = request.remoteConnectorId,
                 requestId = request.id,
                 error = WalletErrorType.InvalidRequest
             )
@@ -41,7 +41,7 @@ class VerifyDappUseCase @Inject constructor(
             validationResult.onError { e ->
                 (e as? DappRequestException)?.let {
                     dAppMessenger.sendWalletInteractionResponseFailure(
-                        dappId = request.remoteClientId,
+                        remoteConnectorId = request.remoteConnectorId,
                         requestId = request.id,
                         error = it.failure.toWalletErrorType(),
                         message = it.failure.getDappMessage()

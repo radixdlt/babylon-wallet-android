@@ -30,6 +30,7 @@ import com.babylon.wallet.android.presentation.main.main
 import com.babylon.wallet.android.presentation.navigation.Screen.Companion.ARG_ACCOUNT_ID
 import com.babylon.wallet.android.presentation.onboarding.OnboardingScreen
 import com.babylon.wallet.android.presentation.onboarding.restore.backup.restoreFromBackupScreen
+import com.babylon.wallet.android.presentation.onboarding.restore.mnemonics.RestoreMnemonicsArgs
 import com.babylon.wallet.android.presentation.onboarding.restore.mnemonics.restoreMnemonics
 import com.babylon.wallet.android.presentation.onboarding.restore.mnemonics.restoreMnemonicsScreen
 import com.babylon.wallet.android.presentation.settings.incompatibleprofile.IncompatibleProfileContent
@@ -46,6 +47,7 @@ import com.babylon.wallet.android.presentation.transfer.transferScreen
 import com.google.accompanist.navigation.animation.AnimatedNavHost
 import com.google.accompanist.navigation.animation.composable
 import kotlinx.coroutines.flow.StateFlow
+import rdx.works.profile.domain.backup.BackupType
 
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
@@ -66,8 +68,8 @@ fun NavigationHost(
         ) {
             OnboardingScreen(
                 viewModel = hiltViewModel(),
-                onOnBoardingEnd = {
-                    navController.popBackStack(MAIN_ROUTE, inclusive = false)
+                onCreateNewWalletClick = {
+                    navController.createAccountScreen(CreateAccountRequestSource.FirstTime)
                 },
                 onBack = onCloseApp,
                 onRestoreFromBackupClick = {
@@ -79,12 +81,17 @@ fun NavigationHost(
             onBack = {
                 navController.popBackStack()
             },
-            onRestoreConfirmed = {
-                navController.restoreMnemonics()
+            onRestoreConfirmed = { fromCloud ->
+                navController.restoreMnemonics(
+                    args = RestoreMnemonicsArgs.RestoreProfile(
+                        backupType = if (fromCloud) BackupType.Cloud else BackupType.File.PlainText
+                    )
+                )
             }
         )
         restoreMnemonicsScreen(
-            onFinish = { isMovingToMain ->
+            onCloseApp = onCloseApp,
+            onDismiss = { isMovingToMain ->
                 if (isMovingToMain) {
                     navController.popBackStack(MAIN_ROUTE, inclusive = false)
                 } else {
@@ -118,7 +125,7 @@ fun NavigationHost(
                 navController.seedPhrases()
             },
             onNavigateToMnemonicRestore = {
-                navController.restoreMnemonics(deviceFactorSourceId = it)
+                navController.restoreMnemonics(args = RestoreMnemonicsArgs.RestoreSpecificMnemonic(factorSourceId = it.body))
             },
         )
         composable(
@@ -139,7 +146,9 @@ fun NavigationHost(
                     navController.seedPhrases()
                 },
                 onNavigateToMnemonicRestore = { factorSourceId ->
-                    navController.restoreMnemonics(deviceFactorSourceId = factorSourceId)
+                    navController.restoreMnemonics(
+                        args = RestoreMnemonicsArgs.RestoreSpecificMnemonic(factorSourceId = factorSourceId.body)
+                    )
                 },
                 onTransferClick = { accountId ->
                     navController.transfer(accountId = accountId)

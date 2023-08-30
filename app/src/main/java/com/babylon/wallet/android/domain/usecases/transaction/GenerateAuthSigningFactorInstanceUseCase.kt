@@ -126,7 +126,7 @@ class GenerateAuthSigningFactorInstanceUseCase @Inject constructor(
         deviceFactorSource: DeviceFactorSource,
         authSigningDerivationPath: DerivationPath
     ): Result<FactorInstance> {
-        val mnemonic = mnemonicRepository.readMnemonic(deviceFactorSource.id)
+        val mnemonic = mnemonicRepository.readMnemonic(deviceFactorSource.id).getOrNull()
         requireNotNull(mnemonic)
         val authSigningPublicKey = mnemonic.compressedPublicKey(
             curve = Slip10Curve.CURVE_25519,

@@ -151,10 +151,10 @@ class DAppUnauthorizedLoginViewModel @Inject constructor(
         val failure = exception.failure
         _state.update { it.copy(uiMessage = UiMessage.ErrorMessage.from(DappRequestException(failure))) }
         dAppMessenger.sendWalletInteractionResponseFailure(
-            request.dappId,
-            args.requestId,
-            failure.toWalletErrorType(),
-            failure.getDappMessage()
+            remoteConnectorId = request.remoteConnectorId,
+            requestId = args.requestId,
+            error = failure.toWalletErrorType(),
+            message = failure.getDappMessage()
         )
         delay(2000)
         sendEvent(Event.RejectLogin)
@@ -185,8 +185,8 @@ class DAppUnauthorizedLoginViewModel @Inject constructor(
     fun onRejectRequest() {
         viewModelScope.launch {
             dAppMessenger.sendWalletInteractionResponseFailure(
-                request.dappId,
-                args.requestId,
+                remoteConnectorId = request.remoteConnectorId,
+                requestId = args.requestId,
                 error = WalletErrorType.RejectedByUser
             )
             sendEvent(Event.RejectLogin)
@@ -222,8 +222,8 @@ class DAppUnauthorizedLoginViewModel @Inject constructor(
                 deviceBiometricAuthenticationProvider = deviceBiometricAuthenticationProvider
             ).onSuccess {
                 dAppMessenger.sendWalletInteractionSuccessResponse(
-                    request.dappId,
-                    it
+                    remoteConnectorId = request.remoteConnectorId,
+                    response = it
                 )
                 sendEvent(Event.LoginFlowCompleted)
                 appEventBus.sendEvent(

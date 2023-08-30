@@ -108,6 +108,7 @@ fun TransactionPreviewHeader(
     )
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Preview(showBackground = true)
 @Composable
 fun TransactionPreviewHeaderPreview() {
@@ -116,7 +117,7 @@ fun TransactionPreviewHeaderPreview() {
             onBackClick = {},
             state = State(
                 request = MessageFromDataChannel.IncomingRequest.TransactionRequest(
-                    dappId = "",
+                    remoteConnectorId = "",
                     requestId = "",
                     transactionManifestData = TransactionManifestData(
                         instructions = "",
@@ -126,7 +127,6 @@ fun TransactionPreviewHeaderPreview() {
                     ),
                     requestMetadata = MessageFromDataChannel.IncomingRequest.RequestMetadata.internal(Radix.Gateway.default.network.id)
                 ),
-                isDeviceSecure = true,
                 isLoading = false,
                 previewType = PreviewType.None
             ),

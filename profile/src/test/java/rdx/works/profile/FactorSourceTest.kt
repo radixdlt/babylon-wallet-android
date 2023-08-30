@@ -10,12 +10,16 @@ import rdx.works.profile.data.model.factorsources.FactorSourceKind
 import rdx.works.profile.data.model.factorsources.LedgerHardwareWalletFactorSource
 import rdx.works.profile.data.model.factorsources.OffDeviceMnemonicFactorSource
 import rdx.works.profile.data.model.factorsources.TrustedContactFactorSource
+import rdx.works.profile.di.ProfileModule
+import rdx.works.profile.di.SerializerModule
 import rdx.works.profile.domain.TestData
 import java.io.File
 import kotlin.test.Test
 
 
 class FactorSourceTest {
+
+    private val profileSerializer = SerializerModule.provideProfileSerializer()
 
     @Test
     fun `test generate vector`() {
@@ -61,14 +65,14 @@ class FactorSourceTest {
             trustedContactFactorSource
         )
 
-        val result = Json.encodeToString(listOfFactorSources)
+        val result = profileSerializer.encodeToString(listOfFactorSources)
         println(result)
     }
 
     @Test
     fun `test factor sources`() {
         val factorSourcesJson = File("src/test/resources/raw/factor_sources.json").readText()
-        val factorSources = Json.decodeFromString<List<FactorSource>>(factorSourcesJson)
+        val factorSources = profileSerializer.decodeFromString<List<FactorSource>>(factorSourcesJson)
         assert(factorSources.count() == 5)
 
         val babylon = factorSources[0] as DeviceFactorSource

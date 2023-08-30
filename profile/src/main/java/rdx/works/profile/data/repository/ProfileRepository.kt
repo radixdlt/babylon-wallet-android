@@ -5,7 +5,7 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.filterNot
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.firstOrNull
@@ -38,27 +38,20 @@ interface ProfileRepository {
 
     suspend fun clear()
 
-    suspend fun saveRestoringSnapshot(snapshotSerialised: String): Boolean
-
-    suspend fun getSnapshotForBackup(): String?
-
-    suspend fun isRestoredProfileFromBackupExists(): Boolean
-
-    suspend fun getRestoringProfileFromBackup(): Profile?
-
-    suspend fun discardBackedUpProfile()
+    fun deriveProfileState(content: String): ProfileState
 }
 
-suspend fun ProfileRepository.updateProfile(updateAction: (Profile) -> Profile) {
+suspend fun ProfileRepository.updateProfile(updateAction: suspend (Profile) -> Profile): Profile {
     val profile = profile.first()
     val updatedProfile = updateAction(profile)
     saveProfile(updatedProfile)
+    return updatedProfile
 }
 
 val ProfileRepository.profile: Flow<Profile>
     get() = profileState
-        .filter { it is ProfileState.Restored }
-        .map { (it as ProfileState.Restored).profile }
+        .filterIsInstance<ProfileState.Restored>()
+        .map { it.profile }
 
 @Suppress("LongParameterList")
 class ProfileRepositoryImpl @Inject constructor(
@@ -73,20 +66,14 @@ class ProfileRepositoryImpl @Inject constructor(
 
     init {
         applicationScope.launch {
-            val serialised = encryptedPreferencesManager.encryptedProfile.firstOrNull()
+            val snapshotResult = encryptedPreferencesManager.encryptedProfile.firstOrNull()
 
-            if (serialised == null) {
-                // No profile exists, checking for backup data to restore
-                val profileStateFromBackup = encryptedPreferencesManager.getProfileSnapshotFromBackup()?.let {
-                    deriveProfileState(it)
-                }
-
-                profileStateFlow.update { ProfileState.None(profileStateFromBackup is ProfileState.Restored) }
-                return@launch
+            if (snapshotResult == null) {
+                profileStateFlow.update { ProfileState.None }
+            } else {
+                val snapshot = snapshotResult.getOrNull().orEmpty()
+                profileStateFlow.update { deriveProfileState(snapshot) }
             }
-
-            val profileState = deriveProfileState(serialised)
-            profileStateFlow.update { profileState }
         }
     }
 
@@ -110,7 +97,7 @@ class ProfileRepositoryImpl @Inject constructor(
             // Store profile
             encryptedPreferencesManager.putProfileSnapshot(profileContent)
             // Remove any previous restored profile from backup restoration
-            encryptedPreferencesManager.clearProfileSnapshotFromBackup()
+            encryptedPreferencesManager.clearProfileSnapshotFromCloudBackup()
 
             // Update the flow and notify Backup Manager that it needs to backup
             profileStateFlow.update { ProfileState.Restored(profileToSave) }
@@ -122,66 +109,20 @@ class ProfileRepositoryImpl @Inject constructor(
     override suspend fun clear() {
         encryptedPreferencesManager.clear()
         preferencesManager.clear()
-        profileStateFlow.update { ProfileState.None() }
+        profileStateFlow.update { ProfileState.None }
         backupManager.dataChanged()
     }
 
-    override suspend fun saveRestoringSnapshot(snapshotSerialised: String): Boolean =
-        if (deriveProfileState(snapshotSerialised) is ProfileState.Restored) {
-            encryptedPreferencesManager.putProfileSnapshotFromBackup(snapshotSerialised)
-            preferencesManager.updateLastBackupInstant(InstantGenerator())
-            true
-        } else {
-            false
-        }
-
     @Suppress("SwallowedException")
-    override suspend fun getSnapshotForBackup(): String? {
-        val serialisedSnapshot = encryptedPreferencesManager.encryptedProfile.firstOrNull() ?: return null
-
-        val isBackupEnabled = try {
-            val snapshot = profileSnapshotJson.decodeFromString<ProfileSnapshot>(serialisedSnapshot)
-            snapshot.toProfile().appPreferences.security.isCloudProfileSyncEnabled
-        } catch (exception: Exception) {
-            false
-        }
-
-        return if (isBackupEnabled) {
-            preferencesManager.updateLastBackupInstant(InstantGenerator())
-            serialisedSnapshot
-        } else {
-            null
-        }
-    }
-
-    override suspend fun isRestoredProfileFromBackupExists(): Boolean {
-        return getRestoringProfileFromBackup() != null
-    }
-
-    override suspend fun getRestoringProfileFromBackup(): Profile? {
-        val state = encryptedPreferencesManager.getProfileSnapshotFromBackup()?.let { snapshot ->
-            deriveProfileState(snapshot)
-        }
-
-        return (state as? ProfileState.Restored)?.profile
-    }
-
-    override suspend fun discardBackedUpProfile() {
-        encryptedPreferencesManager.clearProfileSnapshotFromBackup()
-        preferencesManager.removeLastBackupInstant()
-        profileStateFlow.update { ProfileState.None() }
-    }
-
-    @Suppress("SwallowedException")
-    private fun deriveProfileState(snapshotSerialised: String): ProfileState {
+    override fun deriveProfileState(content: String): ProfileState {
         val snapshotRelaxed = try {
-            relaxedJson.decodeFromString<ProfileSnapshotRelaxed>(snapshotSerialised)
+            relaxedJson.decodeFromString<ProfileSnapshotRelaxed>(content)
         } catch (exception: IllegalArgumentException) {
             return ProfileState.Incompatible
         }
 
         return if (snapshotRelaxed.isValid) {
-            val snapshot = profileSnapshotJson.decodeFromString<ProfileSnapshot>(snapshotSerialised)
+            val snapshot = profileSnapshotJson.decodeFromString<ProfileSnapshot>(content)
             ProfileState.Restored(snapshot.toProfile())
         } else {
             ProfileState.Incompatible

@@ -61,7 +61,8 @@ interface PeerdroidConnector {
 
     val dataChannelMessagesFromRemoteClients: SharedFlow<DataChannelWrapperEvent>
 
-    suspend fun sendDataChannelMessageToRemoteClient(remoteClientId: String, message: String): Result<Unit>
+    suspend fun sendDataChannelMessageToRemoteClient(remoteConnectorId: String, message: String): Result<Unit>
+
     suspend fun sendDataChannelMessageToAllRemoteClients(message: String): Result<Unit>
 }
 
@@ -71,14 +72,17 @@ internal class PeerdroidConnectorImpl(
     @IoDispatcher private val ioDispatcher: CoroutineDispatcher
 ) : PeerdroidConnector {
 
-    // one per CE. One CE can have multiple remote clients
+    // one per CE. One CE can host multiple remote clients (dApps)
     private val mapOfWebSockets = ConcurrentHashMap<ConnectionIdHolder, WebSocketHolder>()
 
-    // one per remote client (dapp)
+    // TODO change key of the map to ConnectionIdHolder and remove the ConnectionIdHolder from the PeerConnectionHolder
+    // one per remote client (dApp)
     private val mapOfPeerConnections = ConcurrentHashMap<RemoteClientHolder, PeerConnectionHolder>()
 
-    // one per remote client (dapp)
-    private val mapOfDataChannels = ConcurrentHashMap<RemoteClientHolder, DataChannelHolder>()
+    // TODO remove the ConnectionIdHolder from the DataChannelHolder
+    // One per CE:
+    // One DataChannel for each CE (browser) and CE will forward the messages to the right client (dApp) based on the request id.
+    private val mapOfDataChannels = ConcurrentHashMap<ConnectionIdHolder, DataChannelHolder>()
 
     // every time a new data channel opens it will be added in the dataChannelMessagesFromRemoteClients
     private val dataChannelObserver = MutableStateFlow<DataChannelWrapper?>(null)
@@ -189,16 +193,16 @@ internal class PeerdroidConnectorImpl(
     ).flowOn(ioDispatcher).shareIn(scope = applicationScope, started = SharingStarted.WhileSubscribed())
 
     override suspend fun sendDataChannelMessageToRemoteClient(
-        remoteClientId: String,
+        remoteConnectorId: String,
         message: String
     ): Result<Unit> {
         return withContext(ioDispatcher) {
-            val remoteClientHolder = RemoteClientHolder(id = remoteClientId)
-            if (mapOfDataChannels.contains(key = remoteClientHolder)) {
-                mapOfDataChannels.getValue(remoteClientHolder).dataChannel.sendMessage(message)
+            val connectionIdHolder = ConnectionIdHolder(id = remoteConnectorId)
+            if (mapOfDataChannels.contains(key = connectionIdHolder)) {
+                mapOfDataChannels.getValue(connectionIdHolder).dataChannel.sendMessage(message)
             } else {
-                Timber.e("📯 failed to send message to remote client: $remoteClientId because its data channel is closed")
-                Result.Error("failed to send message to remote client")
+                Timber.e("📯 failed to send message to CE: $connectionIdHolder because its data channel is closed")
+                Result.Error("failed to send message to CE")
             }
         }
     }
@@ -259,8 +263,7 @@ internal class PeerdroidConnectorImpl(
                                 }
                             }
                             if (signalingServerMessage is RemoteData.IceCandidate) {
-                                val remoteClientHolder = RemoteClientHolder(id = signalingServerMessage.remoteClientId)
-                                Timber.d("⚙️ ⬇️ ice candidate received from remote client: $remoteClientHolder")
+                                Timber.d("⚙️ ⬇️ ice candidate received from remote client: ${signalingServerMessage.remoteClientId}")
                                 addRemoteIceCandidateInWebRtc(signalingServerMessage)
                             }
                         }
@@ -307,11 +310,11 @@ internal class PeerdroidConnectorImpl(
                     is PeerConnectionEvent.Connected -> {
                         Timber.d("⚙️ ⚡ peer connection connected 🟢 for remote client: $remoteClientHolder")
                         val dataChannel = DataChannelWrapper(
-                            remoteClientId = remoteClientHolder.id,
+                            connectionIdHolder = connectionIdHolder,
                             webRtcDataChannel = webRtcManager.getDataChannel()
                         )
                         dataChannelObserver.value = dataChannel
-                        mapOfDataChannels[remoteClientHolder] = DataChannelHolder(
+                        mapOfDataChannels[connectionIdHolder] = DataChannelHolder(
                             connectionIdHolder = connectionIdHolder,
                             dataChannel = dataChannel
                         )
@@ -319,11 +322,11 @@ internal class PeerdroidConnectorImpl(
                     }
                     is PeerConnectionEvent.Disconnected -> {
                         Timber.d("⚙️ ⚡ peer connection disconnected 🔴 for remote client: $remoteClientHolder")
-                        terminatePeerConnectionAndDataChannel(remoteClientHolder)
+                        terminatePeerConnectionAndDataChannel(remoteClientHolder, connectionIdHolder)
                     }
                     is PeerConnectionEvent.Failed -> {
                         Timber.d("⚙️ ⚡ peer connection failed ❌ for remote client: $remoteClientHolder")
-                        terminatePeerConnectionAndDataChannel(remoteClientHolder)
+                        terminatePeerConnectionAndDataChannel(remoteClientHolder, connectionIdHolder)
                     }
                 }
             }
@@ -341,13 +344,16 @@ internal class PeerdroidConnectorImpl(
         )
     }
 
-    private fun terminatePeerConnectionAndDataChannel(remoteClientHolder: RemoteClientHolder) {
+    private fun terminatePeerConnectionAndDataChannel(
+        remoteClientHolder: RemoteClientHolder,
+        connectionIdHolder: ConnectionIdHolder
+    ) {
         val peerConnectionHolder = mapOfPeerConnections.remove(remoteClientHolder)
         peerConnectionHolder?.let {
             peerConnectionHolder.observePeerConnectionJob.cancel()
             peerConnectionHolder.webRtcManager.close()
         }
-        val dataChannelHolder = mapOfDataChannels.remove(remoteClientHolder)
+        val dataChannelHolder = mapOfDataChannels.remove(connectionIdHolder)
         dataChannelHolder?.let {
             dataChannelHolder.dataChannel.close()
         }

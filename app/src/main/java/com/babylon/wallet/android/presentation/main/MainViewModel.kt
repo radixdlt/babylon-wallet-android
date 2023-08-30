@@ -14,6 +14,7 @@ import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
+import com.babylon.wallet.android.utils.DeviceSecurityHelper
 import com.babylon.wallet.android.utils.parseEncryptionKeyFromConnectionPassword
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
@@ -29,6 +30,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.peerdroid.helpers.Result
 import rdx.works.profile.data.model.ProfileState
+import rdx.works.profile.domain.CheckMnemonicIntegrityUseCase
 import rdx.works.profile.domain.GetProfileStateUseCase
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.p2pLinks
@@ -45,7 +47,9 @@ class MainViewModel @Inject constructor(
     private val authorizeSpecifiedPersonaUseCase: AuthorizeSpecifiedPersonaUseCase,
     private val verifyDappUseCase: VerifyDappUseCase,
     private val appEventBus: AppEventBus,
-    getProfileStateUseCase: GetProfileStateUseCase
+    getProfileStateUseCase: GetProfileStateUseCase,
+    private var deviceSecurityHelper: DeviceSecurityHelper,
+    private var checkMnemonicIntegrityUseCase: CheckMnemonicIntegrityUseCase,
 ) : StateViewModel<MainUiState>(), OneOffEventHandler<MainEvent> by OneOffEventHandlerImpl() {
 
     private var incomingDappRequestsJob: Job? = null
@@ -65,12 +69,15 @@ class MainViewModel @Inject constructor(
         }
         .shareIn(
             viewModelScope,
-            SharingStarted.WhileSubscribed(PEERDROID_STOP_TIMEOUT) // TODO https://radixdlt.atlassian.net/browse/ABW-1421
+            SharingStarted.WhileSubscribed(PEERDROID_STOP_TIMEOUT)
         )
 
     val statusEvents = appEventBus
         .events
         .filterIsInstance<AppEvent.Status>()
+
+    val appNotSecureEvent = appEventBus.events.filterIsInstance<AppEvent.AppNotSecure>()
+    val babylonMnemonicNeedsRecoveryEvent = appEventBus.events.filterIsInstance<AppEvent.BabylonFactorSourceNeedsRecovery>()
 
     init {
         viewModelScope.launch {
@@ -113,17 +120,21 @@ class MainViewModel @Inject constructor(
                                 .listenForIncomingRequests()
                                 .cancellable()
                                 .collect { incomingRequest ->
-                                    val remoteClient = incomingRequest.remoteClientId
+                                    val remoteConnectorId = incomingRequest.remoteConnectorId
                                     val requestId = incomingRequest.id
-                                    Timber.d("📯 wallet received incoming request from remote client $remoteClient with id $requestId")
+                                    Timber.d(
+                                        "📯 wallet received incoming request from remote connector $remoteConnectorId with id $requestId"
+                                    )
                                     processIncomingRequest(incomingRequest)
                                 }
                         }
                     }
                 }
+
                 is Result.Error -> {
                     Timber.e("Failed to establish link connection: ${result.message}")
                 }
+
                 else -> {}
             }
         }
@@ -176,6 +187,19 @@ class MainViewModel @Inject constructor(
         Timber.d("Peerdroid terminated")
     }
 
+    fun checkMnemonicIntegrity() {
+        viewModelScope.launch {
+            checkMnemonicIntegrityUseCase()
+            if (!deviceSecurityHelper.isDeviceSecure()) {
+                appEventBus.sendEvent(AppEvent.AppNotSecure, delayMs = 500L)
+            } else {
+                checkMnemonicIntegrityUseCase.babylonMnemonicNeedsRecovery()?.let { factorSourceId ->
+                    appEventBus.sendEvent(AppEvent.BabylonFactorSourceNeedsRecovery(factorSourceId), delayMs = 500L)
+                }
+            }
+        }
+    }
+
     companion object {
         private val PEERDROID_STOP_TIMEOUT = 60.seconds
         private const val REQUEST_HANDLING_DELAY = 300L
@@ -206,12 +230,8 @@ sealed interface AppState {
             } else {
                 NewProfile
             }
-            is ProfileState.None -> if (profileState.profileBackupExists) {
-                OnBoarding
-            } else {
-                NewProfile
-            }
-            else -> NewProfile
+            is ProfileState.None -> OnBoarding
+            is ProfileState.NotInitialised -> OnBoarding
         }
     }
 }

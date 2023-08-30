@@ -21,7 +21,7 @@ class IncomingRequestRepositoryTest {
     private val incomingRequestRepository = IncomingRequestRepositoryImpl()
     private val amountOfIncomingRequests = 100
     private val sampleIncomingRequest = MessageFromDataChannel.IncomingRequest.AuthorizedRequest(
-        dappId = "dappId",
+        remoteConnectorId = "remoteConnectorId",
         interactionId = UUIDGenerator.uuid().toString(),
         requestMetadata = MessageFromDataChannel.IncomingRequest.RequestMetadata(1, "", "", false),
         authRequest = MessageFromDataChannel.IncomingRequest.AuthorizedRequest.AuthRequest.LoginRequest.WithoutChallenge,

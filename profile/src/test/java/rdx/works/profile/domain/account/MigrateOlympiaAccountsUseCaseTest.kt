@@ -123,7 +123,7 @@ internal class MigrateOlympiaAccountsUseCaseTest {
             )
         )
 
-        coEvery { mnemonicRepository.readMnemonic(any()) } returns olympiaMnemonic
+        coEvery { mnemonicRepository.readMnemonic(any()) } returns Result.success(olympiaMnemonic)
         coEvery { mnemonicRepository.saveMnemonic(any(), any()) } just Runs
         coEvery { profileRepository.profileState } returns flowOf(ProfileState.Restored(profile))
         coEvery { profileRepository.saveProfile(any()) } just Runs
