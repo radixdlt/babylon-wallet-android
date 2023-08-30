@@ -5,15 +5,18 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material3.Divider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -54,10 +57,7 @@ fun SeedPhrasesScreen(
     val state by viewModel.state.collectAsStateWithLifecycle()
     SeedPhraseContent(
         deviceFactorSourceData = state.deviceFactorSourcesWithAccounts,
-        modifier = modifier
-            .navigationBarsPadding()
-            .fillMaxSize()
-            .background(RadixTheme.colors.defaultBackground),
+        modifier = modifier,
         onBackClick = onBackClick,
         onSeedPhraseClick = viewModel::onSeedPhraseClick,
     )
@@ -89,54 +89,59 @@ private fun SeedPhraseContent(
     onSeedPhraseClick: (DeviceFactorSourceData) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Column(
-        modifier = Modifier.background(RadixTheme.colors.defaultBackground),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        RadixCenteredTopAppBar(
-            title = stringResource(id = R.string.displayMnemonics_seedPhrases),
-            onBackClick = onBackClick,
-            contentColor = RadixTheme.colors.gray1,
-            backIconType = BackIconType.Back
-        )
-        Divider(color = RadixTheme.colors.gray5)
-        LazyColumn(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = modifier
+    Scaffold(
+        topBar = {
+            RadixCenteredTopAppBar(
+                title = stringResource(id = R.string.displayMnemonics_seedPhrases),
+                onBackClick = onBackClick,
+                windowInsets = WindowInsets.statusBars
+            )
+        },
+        containerColor = RadixTheme.colors.defaultBackground
+    ) { padding ->
+        Column(
+            modifier = Modifier.padding(padding),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            item {
-                GrayBackgroundWrapper {
-                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingMedium))
-                    Text(
-                        text = stringResource(id = R.string.seedPhrases_message),
-                        style = RadixTheme.typography.body1HighImportance,
-                        color = RadixTheme.colors.gray2
-                    )
-                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
-                    InfoLink(
-                        modifier = Modifier.fillMaxWidth(),
-                        text = stringResource(R.string.displayMnemonics_seedPhraseSecurityInfo),
-                        contentColor = RadixTheme.colors.orange1,
-                        iconRes = com.babylon.wallet.android.designsystem.R.drawable.ic_warning_error
-                    )
-                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
+            Divider(color = RadixTheme.colors.gray5)
+            LazyColumn(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = modifier
+            ) {
+                item {
+                    GrayBackgroundWrapper {
+                        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingMedium))
+                        Text(
+                            text = stringResource(id = R.string.seedPhrases_message),
+                            style = RadixTheme.typography.body1HighImportance,
+                            color = RadixTheme.colors.gray2
+                        )
+                        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
+                        InfoLink(
+                            modifier = Modifier.fillMaxWidth(),
+                            text = stringResource(R.string.displayMnemonics_seedPhraseSecurityInfo),
+                            contentColor = RadixTheme.colors.orange1,
+                            iconRes = com.babylon.wallet.android.designsystem.R.drawable.ic_warning_error
+                        )
+                        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
+                    }
                 }
-            }
-            itemsIndexed(items = deviceFactorSourceData.toList()) { index, deviceFactorSourceItem ->
-                SeedPhraseCard(
-                    modifier = Modifier
-                        .throttleClickable {
-                            onSeedPhraseClick(deviceFactorSourceItem)
-                        }
-                        .padding(horizontal = RadixTheme.dimensions.paddingDefault, vertical = RadixTheme.dimensions.paddingMedium)
-                        .fillMaxWidth(),
-                    data = deviceFactorSourceItem
-                )
-                if (index != deviceFactorSourceData.size - 1) {
-                    Divider(
-                        Modifier.fillMaxWidth(),
-                        color = RadixTheme.colors.gray5
+                itemsIndexed(items = deviceFactorSourceData.toList()) { index, deviceFactorSourceItem ->
+                    SeedPhraseCard(
+                        modifier = Modifier
+                            .throttleClickable {
+                                onSeedPhraseClick(deviceFactorSourceItem)
+                            }
+                            .padding(horizontal = RadixTheme.dimensions.paddingDefault, vertical = RadixTheme.dimensions.paddingMedium)
+                            .fillMaxWidth(),
+                        data = deviceFactorSourceItem
                     )
+                    if (index != deviceFactorSourceData.size - 1) {
+                        Divider(
+                            Modifier.fillMaxWidth(),
+                            color = RadixTheme.colors.gray5
+                        )
+                    }
                 }
             }
         }
