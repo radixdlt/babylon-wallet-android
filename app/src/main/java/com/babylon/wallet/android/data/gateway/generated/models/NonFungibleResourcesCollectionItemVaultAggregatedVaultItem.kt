@@ -26,7 +26,6 @@ import kotlinx.serialization.Contextual
  * @param totalCount 
  * @param vaultAddress Bech32m-encoded human readable version of the address.
  * @param lastUpdatedAtStateVersion TBD
- * @param previousCursor If specified, contains a cursor to query previous page of the `items` collection.
  * @param nextCursor If specified, contains a cursor to query next page of the `items` collection.
  * @param items 
  */
@@ -44,10 +43,6 @@ data class NonFungibleResourcesCollectionItemVaultAggregatedVaultItem (
     /* TBD */
     @SerialName(value = "last_updated_at_state_version")
     val lastUpdatedAtStateVersion: kotlin.Long,
-
-    /* If specified, contains a cursor to query previous page of the `items` collection. */
-    @SerialName(value = "previous_cursor")
-    val previousCursor: kotlin.String? = null,
 
     /* If specified, contains a cursor to query next page of the `items` collection. */
     @SerialName(value = "next_cursor")
