@@ -406,6 +406,8 @@
   <string name="biometrics_prompt_updateAccountMetadata">Update account metadata.</string>
   <string name="biometrics_deviceNotSecureAlert_title">Your device is not secured</string>
   <string name="biometrics_deviceNotSecureAlert_message">Do you want to continue?</string>
+  <string name="biometrics_deviceNotSecureAlert_openSettings">Open Settings</string>
+  <string name="biometrics_deviceNotSecureAlert_quit">Quit</string>
   <string name="common_account">Account</string>
   <string name="common_cancel">Cancel</string>
   <string name="common_continue">Continue</string>
