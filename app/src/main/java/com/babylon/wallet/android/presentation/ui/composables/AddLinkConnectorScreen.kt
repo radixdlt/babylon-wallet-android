@@ -5,12 +5,15 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -82,42 +85,45 @@ private fun AddLinkConnectorContent(
     onContinueClick: () -> Unit,
     onCloseClick: () -> Unit
 ) {
-    val keyboardController = LocalSoftwareKeyboardController.current
-    Column(
-        modifier = modifier
-            .fillMaxSize()
-            .background(RadixTheme.colors.defaultBackground)
-    ) {
-        RadixCenteredTopAppBar(
-            title = stringResource(id = R.string.empty),
-            onBackClick = onCloseClick,
-            contentColor = RadixTheme.colors.gray1,
-            modifier = Modifier.background(RadixTheme.colors.defaultBackground),
-            backIconType = BackIconType.Close
-        )
-        if (isLoading) {
-            FullscreenCircularProgressContent()
-        }
-        when (showContent) {
-            AddLinkConnectorUiState.ShowContent.ScanQrCode -> {
-                if (isCameraPermissionGranted) {
-                    ScanQrCode(onQrCodeScanned = onQrCodeScanned)
-                }
+    Scaffold(
+        modifier = modifier,
+        topBar = {
+            RadixCenteredTopAppBar(
+                title = stringResource(id = R.string.empty),
+                onBackClick = onCloseClick,
+                backIconType = BackIconType.Close,
+                windowInsets = WindowInsets.statusBars
+            )
+        },
+        containerColor = RadixTheme.colors.defaultBackground,
+    ) { padding ->
+        val keyboardController = LocalSoftwareKeyboardController.current
+        Column(modifier = Modifier.padding(padding)) {
+            if (isLoading) {
+                FullscreenCircularProgressContent()
             }
+            when (showContent) {
+                AddLinkConnectorUiState.ShowContent.ScanQrCode -> {
+                    if (isCameraPermissionGranted) {
+                        ScanQrCode(onQrCodeScanned = onQrCodeScanned)
+                    }
+                }
 
-            AddLinkConnectorUiState.ShowContent.NameLinkConnector -> {
-                NameNewConnector(
-                    connectorDisplayName = connectorDisplayName,
-                    onConnectorDisplayNameChanged = onConnectorDisplayNameChanged,
-                    isContinueButtonEnabled = isContinueButtonEnabled,
-                    onContinueClick = {
-                        keyboardController?.hide()
-                        onContinueClick()
-                    },
-                )
+                AddLinkConnectorUiState.ShowContent.NameLinkConnector -> {
+                    NameNewConnector(
+                        connectorDisplayName = connectorDisplayName,
+                        onConnectorDisplayNameChanged = onConnectorDisplayNameChanged,
+                        isContinueButtonEnabled = isContinueButtonEnabled,
+                        onContinueClick = {
+                            keyboardController?.hide()
+                            onContinueClick()
+                        },
+                    )
+                }
             }
         }
     }
+
 }
 
 @Composable
