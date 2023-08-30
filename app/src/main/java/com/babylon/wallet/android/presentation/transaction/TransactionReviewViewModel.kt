@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.dapp.DappMessenger
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.data.manifest.toPrettyString
+import com.babylon.wallet.android.data.repository.TransactionStatusClient
 import com.babylon.wallet.android.data.transaction.DappRequestFailure
 import com.babylon.wallet.android.data.transaction.InteractionState
 import com.babylon.wallet.android.data.transaction.TransactionClient
@@ -63,6 +64,7 @@ class TransactionReviewViewModel @Inject constructor(
     getCurrentGatewayUseCase: GetCurrentGatewayUseCase,
     dAppMessenger: DappMessenger,
     appEventBus: AppEventBus,
+    transactionStatusClient: TransactionStatusClient,
     private val incomingRequestRepository: IncomingRequestRepository,
     @ApplicationScope private val appScope: CoroutineScope,
     savedStateHandle: SavedStateHandle,
@@ -107,6 +109,7 @@ class TransactionReviewViewModel @Inject constructor(
         appScope = appScope,
         appEventBus = appEventBus,
         logger = logger,
+        transactionStatusClient = transactionStatusClient,
         onSendScreenEvent = {
             viewModelScope.launch { sendEvent(it) }
         }

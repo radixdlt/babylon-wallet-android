@@ -22,6 +22,11 @@ sealed interface MessageFromDataChannel {
                 return metadata.isInternal
             }
 
+        val blockUntilComplete: Boolean
+            get() {
+                return metadata.blockUntilCompleted
+            }
+
         data class AuthorizedRequest(
             override val remoteConnectorId: String, // from which remote CE comes the message
             val interactionId: String,

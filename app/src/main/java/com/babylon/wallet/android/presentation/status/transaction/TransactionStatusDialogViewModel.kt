@@ -4,10 +4,8 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.dapp.DappMessenger
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
+import com.babylon.wallet.android.data.repository.TransactionStatusClient
 import com.babylon.wallet.android.data.transaction.DappRequestException
-import com.babylon.wallet.android.domain.common.onError
-import com.babylon.wallet.android.domain.common.onValue
-import com.babylon.wallet.android.domain.usecases.transaction.PollTransactionStatusUseCase
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
@@ -26,7 +24,7 @@ import javax.inject.Inject
 @HiltViewModel
 class TransactionStatusDialogViewModel @Inject constructor(
     private val incomingRequestRepository: IncomingRequestRepository,
-    private val pollTransactionStatusUseCase: PollTransactionStatusUseCase,
+    private val transactionStatusClient: TransactionStatusClient,
     private val dAppMessenger: DappMessenger,
     private val appEventBus: AppEventBus,
     savedStateHandle: SavedStateHandle
@@ -34,7 +32,7 @@ class TransactionStatusDialogViewModel @Inject constructor(
     OneOffEventHandler<TransactionStatusDialogViewModel.Event> by OneOffEventHandlerImpl() {
 
     override fun initialState(): State {
-        return State(status = TransactionStatus.from(args.event))
+        return State(status = TransactionStatus.from(args.event), blockUntilComplete = args.event.blockUntilComplete)
     }
 
     private val args = TransactionStatusDialogArgs(savedStateHandle)
@@ -70,42 +68,50 @@ class TransactionStatusDialogViewModel @Inject constructor(
         }
     }
 
-    private fun pollTransactionStatus(status: TransactionStatus.Completing) = viewModelScope.launch {
-        pollTransactionStatusUseCase(status.transactionId).onValue {
-            // Notify the system and this particular dialog that the transaction is completed
-            appEventBus.sendEvent(
-                AppEvent.Status.Transaction.Success(
-                    requestId = status.requestId,
-                    transactionId = status.transactionId,
-                    isInternal = status.isInternal
-                )
-            )
-        }.onError { error ->
-            if (!status.isInternal) {
-                (error as? DappRequestException)?.let { exception ->
-                    val request = incomingRequestRepository.getTransactionWriteRequest(status.requestId)
-                    dAppMessenger.sendWalletInteractionResponseFailure(
-                        remoteConnectorId = request.remoteConnectorId,
-                        requestId = status.requestId,
-                        error = exception.failure.toWalletErrorType(),
-                        message = exception.failure.getDappMessage()
+    private fun pollTransactionStatus(status: TransactionStatus.Completing) {
+        viewModelScope.launch {
+            transactionStatusClient.listenForPollStatus(status.transactionId).collect { pollResult ->
+                pollResult.result.onSuccess {
+                    // Notify the system and this particular dialog that the transaction is completed
+                    appEventBus.sendEvent(
+                        AppEvent.Status.Transaction.Success(
+                            requestId = status.requestId,
+                            transactionId = status.transactionId,
+                            isInternal = status.isInternal,
+                            blockUntilComplete = status.blockUntilComplete
+                        )
+                    )
+                }.onFailure { error ->
+                    if (!status.isInternal) {
+                        (error as? DappRequestException)?.let { exception ->
+                            val request = incomingRequestRepository.getTransactionWriteRequest(status.requestId)
+                            dAppMessenger.sendWalletInteractionResponseFailure(
+                                remoteConnectorId = request.remoteConnectorId,
+                                requestId = status.requestId,
+                                error = exception.failure.toWalletErrorType(),
+                                message = exception.failure.getDappMessage()
+                            )
+                        }
+                    }
+
+                    // Notify the system and this particular dialog that an error has occurred
+                    appEventBus.sendEvent(
+                        AppEvent.Status.Transaction.Fail(
+                            requestId = status.requestId,
+                            transactionId = status.transactionId,
+                            isInternal = status.isInternal,
+                            errorMessage = UiMessage.ErrorMessage.from(error),
+                            blockUntilComplete = status.blockUntilComplete
+                        )
                     )
                 }
+                transactionStatusClient.statusHandled(status.transactionId)
             }
-
-            // Notify the system and this particular dialog that an error has occurred
-            appEventBus.sendEvent(
-                AppEvent.Status.Transaction.Fail(
-                    requestId = status.requestId,
-                    transactionId = status.transactionId,
-                    isInternal = status.isInternal,
-                    errorMessage = UiMessage.ErrorMessage.from(error)
-                )
-            )
         }
     }
 
     fun onDismiss() {
+        if (state.value.isCompleting && args.event.blockUntilComplete) return
         if (state.value.isCompleting) {
             _state.update { it.copy(isIgnoreTransactionModalShowing = true) }
         } else {
@@ -127,6 +133,7 @@ class TransactionStatusDialogViewModel @Inject constructor(
 
     data class State(
         val status: TransactionStatus,
+        val blockUntilComplete: Boolean,
         val isIgnoreTransactionModalShowing: Boolean = false
     ) : UiState {
 
@@ -142,8 +149,6 @@ class TransactionStatusDialogViewModel @Inject constructor(
         val failureError: UiMessage.ErrorMessage?
             get() = (status as? TransactionStatus.Failed)?.errorMessage
 
-        val transactionId: String
-            get() = status.transactionId
     }
 
     sealed interface Event : OneOffEvent {
@@ -156,23 +161,27 @@ sealed interface TransactionStatus {
     val requestId: String
     val transactionId: String
     val isInternal: Boolean
+    val blockUntilComplete: Boolean
 
     data class Completing(
         override val requestId: String,
         override val transactionId: String,
-        override val isInternal: Boolean
+        override val isInternal: Boolean,
+        override val blockUntilComplete: Boolean
     ) : TransactionStatus
 
     data class Success(
         override val requestId: String,
         override val transactionId: String,
-        override val isInternal: Boolean
+        override val isInternal: Boolean,
+        override val blockUntilComplete: Boolean
     ) : TransactionStatus
 
     data class Failed(
         override val requestId: String,
         override val transactionId: String,
         override val isInternal: Boolean,
+        override val blockUntilComplete: Boolean,
         val errorMessage: UiMessage.ErrorMessage?
     ) : TransactionStatus
 
@@ -182,19 +191,22 @@ sealed interface TransactionStatus {
                 requestId = event.requestId,
                 transactionId = event.transactionId,
                 isInternal = event.isInternal,
-                errorMessage = event.errorMessage
+                errorMessage = event.errorMessage,
+                blockUntilComplete = event.blockUntilComplete
             )
 
             is AppEvent.Status.Transaction.InProgress -> Completing(
                 requestId = event.requestId,
                 transactionId = event.transactionId,
                 isInternal = event.isInternal,
+                blockUntilComplete = event.blockUntilComplete
             )
 
             is AppEvent.Status.Transaction.Success -> Success(
                 requestId = event.requestId,
                 transactionId = event.transactionId,
                 isInternal = event.isInternal,
+                blockUntilComplete = event.blockUntilComplete
             )
         }
     }

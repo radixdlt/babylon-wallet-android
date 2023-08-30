@@ -1,27 +1,39 @@
 package com.babylon.wallet.android.presentation.status.transaction
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.rememberSwipeableState
+import androidx.compose.material.swipeable
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
@@ -30,19 +42,25 @@ import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.presentation.common.getMessage
 import com.babylon.wallet.android.presentation.ui.composables.ActionableAddressView
 import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDialog
+import com.babylon.wallet.android.presentation.ui.composables.BottomDialogDragHandle
 import com.babylon.wallet.android.presentation.ui.composables.SomethingWentWrongDialogContent
+import com.babylon.wallet.android.presentation.ui.modifier.applyIf
+import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlin.math.roundToInt
 
+@OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun TransactionStatusDialog(
-    modifier: Modifier = Modifier,
-    viewModel: TransactionStatusDialogViewModel,
-    onClose: () -> Unit
+    modifier: Modifier = Modifier, viewModel: TransactionStatusDialogViewModel, onClose: () -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val dismissHandler = {
         viewModel.onDismiss()
     }
-
+    BackHandler {
+        dismissHandler()
+    }
     LaunchedEffect(Unit) {
         viewModel.oneOffEvent.collect { event ->
             when (event) {
@@ -50,26 +68,72 @@ fun TransactionStatusDialog(
             }
         }
     }
+    Box(modifier = modifier.fillMaxSize().throttleClickable { dismissHandler() }) {
+        BoxWithConstraints(Modifier.align(Alignment.BottomCenter)) {
+            val maxHeight = with(LocalDensity.current) {
+                maxHeight.toPx()
+            }
+            val swipeableState = rememberSwipeableState(initialValue = SwipeState.Expanded)
+            LaunchedEffect(swipeableState) {
+                snapshotFlow {
+                    swipeableState.currentValue
+                }.distinctUntilChanged().collect {
+                    if (it == SwipeState.Collapsed) {
+                        dismissHandler()
+                    }
+                }
+            }
+            Column(
+                modifier = Modifier
+                    .applyIf(!state.blockUntilComplete,
+                        Modifier
+                            .swipeable(
+                                state = swipeableState,
+                                anchors = mapOf(
+                                    0f to SwipeState.Expanded,
+                                    maxHeight to SwipeState.Collapsed
+                                ),
+                                orientation = Orientation.Vertical,
 
-    Box(modifier = Modifier.animateContentSize()) {
-        androidx.compose.animation.AnimatedVisibility(
-            visible = state.isCompleting,
-            enter = fadeIn(),
-            exit = fadeOut()
-        ) {
-            CompletingContent()
-        }
+                                )
+                            .offset {
+                                IntOffset(
+                                    x = 0,
+                                    y = swipeableState.offset.value
+                                        .roundToInt()
+                                        .coerceIn(0, maxHeight.roundToInt())
+                                )
+                            }
+                    )
+                    .animateContentSize()
+                    .background(RadixTheme.colors.defaultBackground, shape = RadixTheme.shapes.roundedRectTopMedium)
+                    .clip(RadixTheme.shapes.roundedRectTopMedium)
 
-        androidx.compose.animation.AnimatedVisibility(
-            visible = state.isFailed,
-            enter = fadeIn(),
-            exit = fadeOut()
-        ) {
-            SomethingWentWrongDialogContent(
-                title = stringResource(id = R.string.common_somethingWentWrong),
-                subtitle = state.failureError?.getMessage()
-            )
-        }
+            ) {
+                if (!state.blockUntilComplete) {
+                    BottomDialogDragHandle(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = RadixTheme.dimensions.paddingSmall),
+                        onDismissRequest = {
+                            dismissHandler()
+                        }
+                    )
+                }
+                Box {
+                    androidx.compose.animation.AnimatedVisibility(
+                        visible = state.isCompleting, enter = fadeIn(), exit = fadeOut()
+                    ) {
+                        CompletingContent()
+                    }
+
+                    androidx.compose.animation.AnimatedVisibility(
+                        visible = state.isFailed, enter = fadeIn(), exit = fadeOut()
+                    ) {
+                        SomethingWentWrongDialogContent(
+                            title = stringResource(id = R.string.common_somethingWentWrong), subtitle = state.failureError?.getMessage()
+                        )
+                    }
 
             androidx.compose.animation.AnimatedVisibility(
                 visible = state.isSuccess,
@@ -82,21 +146,21 @@ fun TransactionStatusDialog(
         }
 
     if (state.isIgnoreTransactionModalShowing) {
-        BasicPromptAlertDialog(
-            finish = { accepted ->
-                if (accepted) {
-                    viewModel.onDismissConfirmed()
-                } else {
-                    viewModel.onDismissCanceled()
-                }
-            },
-            text = {
-                Text(text = stringResource(id = R.string.transaction_status_dismiss_dialog_message))
-            },
-            confirmText = stringResource(id = R.string.common_ok),
-            dismissText = null
+        BasicPromptAlertDialog(finish = { accepted ->
+            if (accepted) {
+                viewModel.onDismissConfirmed()
+            } else {
+                viewModel.onDismissCanceled()
+            }
+        }, text = {
+            Text(text = stringResource(id = R.string.transaction_status_dismiss_dialog_message))
+        }, confirmText = stringResource(id = R.string.common_ok), dismissText = null
         )
     }
+}
+
+enum class SwipeState {
+    Expanded, Collapsed
 }
 
 @Composable
@@ -115,8 +179,7 @@ private fun SuccessContent(
         Image(
             painter = painterResource(
                 id = com.babylon.wallet.android.designsystem.R.drawable.check_circle_outline
-            ),
-            contentDescription = null
+            ), contentDescription = null
         )
         Text(
             text = stringResource(id = R.string.transaction_status_success_title),
@@ -133,9 +196,7 @@ private fun SuccessContent(
 
         if (transactionAddress.isNotEmpty()) {
             ActionableAddressView(
-                address = transactionAddress,
-                textStyle = RadixTheme.typography.body1Regular,
-                textColor = RadixTheme.colors.gray1
+                address = transactionAddress, textStyle = RadixTheme.typography.body1Regular, textColor = RadixTheme.colors.gray1
             )
         }
     }
@@ -156,9 +217,7 @@ private fun CompletingContent(
         Image(
             painter = painterResource(
                 id = com.babylon.wallet.android.designsystem.R.drawable.check_circle_outline
-            ),
-            alpha = 0.2F,
-            contentDescription = null
+            ), alpha = 0.2F, contentDescription = null
         )
         Text(
             text = stringResource(R.string.transaction_status_completing_text),

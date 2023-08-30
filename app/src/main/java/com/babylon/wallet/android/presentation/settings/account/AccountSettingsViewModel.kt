@@ -7,7 +7,9 @@ package com.babylon.wallet.android.presentation.settings.account
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
+import com.babylon.wallet.android.data.dapp.model.TransactionType
 import com.babylon.wallet.android.data.manifest.prepareInternalTransactionRequest
+import com.babylon.wallet.android.data.repository.TransactionStatusClient
 import com.babylon.wallet.android.data.transaction.InteractionState
 import com.babylon.wallet.android.data.transaction.ROLAClient
 import com.babylon.wallet.android.di.coroutines.ApplicationScope
@@ -23,13 +25,10 @@ import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.flow.filter
-import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.UUIDGenerator
-import rdx.works.profile.data.model.pernetwork.FactorInstance
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.data.utils.hasAuthSigning
 import rdx.works.profile.domain.GetProfileUseCase
@@ -46,14 +45,13 @@ class AccountSettingsViewModel @Inject constructor(
     private val rolaClient: ROLAClient,
     private val incomingRequestRepository: IncomingRequestRepository,
     private val addAuthSigningFactorInstanceUseCase: AddAuthSigningFactorInstanceUseCase,
+    private val transactionStatusClient: TransactionStatusClient,
     @ApplicationScope private val appScope: CoroutineScope,
     savedStateHandle: SavedStateHandle,
     private val appEventBus: AppEventBus
 ) : StateViewModel<AccountPreferenceUiState>() {
 
     private val args = AccountSettingsArgs(savedStateHandle)
-    private var authSigningFactorInstance: FactorInstance? = null
-    private var uploadAuthKeyRequestId: String? = null
     private var job: Job? = null
 
     override fun initialState(): AccountPreferenceUiState = AccountPreferenceUiState(accountAddress = args.address)
@@ -68,27 +66,29 @@ class AccountSettingsViewModel @Inject constructor(
             }
         }
         viewModelScope.launch {
-            appEventBus.events.filterIsInstance<AppEvent.Status.Transaction>().filter { it.requestId == uploadAuthKeyRequestId }
-                .collect { event ->
-                    when (event) {
-                        is AppEvent.Status.Transaction.Fail -> {
-                            _state.update { it.copy(isAuthSigningLoading = false) }
-                        }
+            getFreeXrdUseCase.getFaucetState(args.address).collect { faucetState ->
+                _state.update { it.copy(faucetState = faucetState) }
+            }
+        }
+    }
 
-                        is AppEvent.Status.Transaction.Success -> {
+    private fun listenForRolaKeyUploadTransactionResult(requestId: String) {
+        viewModelScope.launch {
+            transactionStatusClient.listenForPollStatusByRequestId(requestId).collect { status ->
+                status.result.onSuccess {
+                    transactionStatusClient.statusHandled(status.txId)
+                    when (val type = status.transactionType) {
+                        is TransactionType.CreateRolaKey -> {
                             val account = requireNotNull(state.value.account)
-                            val authSigningFactorInstance = requireNotNull(authSigningFactorInstance)
-                            addAuthSigningFactorInstanceUseCase(account, authSigningFactorInstance)
-                            _state.update { it.copy(isAuthSigningLoading = false) }
+                            addAuthSigningFactorInstanceUseCase(account, type.factorInstance)
                         }
 
                         else -> {}
                     }
+
                 }
-        }
-        viewModelScope.launch {
-            getFreeXrdUseCase.getFaucetState(args.address).collect { faucetState ->
-                _state.update { it.copy(faucetState = faucetState) }
+                _state.update { it.copy(isLoading = false) }
+
             }
         }
     }
@@ -140,7 +140,6 @@ class AccountSettingsViewModel @Inject constructor(
             state.value.account?.let { account ->
                 _state.update { it.copy(isAuthSigningLoading = true) }
                 rolaClient.generateAuthSigningFactorInstance(account).onSuccess { authSigningFactorInstance ->
-                    this@AccountSettingsViewModel.authSigningFactorInstance = authSigningFactorInstance
                     val manifest = rolaClient
                         .createAuthKeyManifestWithStringInstructions(account, authSigningFactorInstance)
                         .getOrElse {
@@ -151,14 +150,16 @@ class AccountSettingsViewModel @Inject constructor(
                         }
                     Timber.d("Approving: \n$manifest")
                     val interactionId = UUIDGenerator.uuid().toString()
-                    uploadAuthKeyRequestId = interactionId
                     incomingRequestRepository.add(
                         manifest.prepareInternalTransactionRequest(
                             networkId = account.networkID,
-                            requestId = interactionId
+                            requestId = interactionId,
+                            blockUntilCompleted = true,
+                            transactionType = TransactionType.CreateRolaKey(authSigningFactorInstance)
                         )
                     )
-                    _state.update { it.copy(isAuthSigningLoading = false) }
+                    _state.update { it.copy(isLoading = false) }
+                    listenForRolaKeyUploadTransactionResult(interactionId)
                 }.onFailure {
                     _state.update { state ->
                         state.copy(isAuthSigningLoading = false)
@@ -167,6 +168,7 @@ class AccountSettingsViewModel @Inject constructor(
             }
         }
     }
+
 }
 
 data class AccountPreferenceUiState(

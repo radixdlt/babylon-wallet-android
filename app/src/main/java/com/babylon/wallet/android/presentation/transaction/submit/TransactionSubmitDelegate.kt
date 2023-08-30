@@ -3,6 +3,7 @@ package com.babylon.wallet.android.presentation.transaction.submit
 import com.babylon.wallet.android.data.dapp.DappMessenger
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.data.manifest.addGuaranteeInstructionToManifest
+import com.babylon.wallet.android.data.repository.TransactionStatusClient
 import com.babylon.wallet.android.data.transaction.DappRequestException
 import com.babylon.wallet.android.data.transaction.DappRequestFailure
 import com.babylon.wallet.android.data.transaction.TransactionClient
@@ -38,7 +39,8 @@ class TransactionSubmitDelegate(
     private val appScope: CoroutineScope,
     private val appEventBus: AppEventBus,
     private val logger: Timber.Tree,
-    private val onSendScreenEvent: (Event) -> Unit
+    private val transactionStatusClient: TransactionStatusClient,
+    private val onSendScreenEvent: (Event) -> Unit,
 ) {
     private var approvalJob: Job? = null
 
@@ -148,9 +150,11 @@ class TransactionSubmitDelegate(
                 AppEvent.Status.Transaction.InProgress(
                     requestId = transactionRequest.requestId,
                     transactionId = txId,
-                    isInternal = transactionRequest.isInternal
+                    isInternal = transactionRequest.isInternal,
+                    blockUntilComplete = transactionRequest.blockUntilComplete
                 )
             )
+            transactionStatusClient.pollTransactionStatus(txId, transactionRequest.requestId, transactionRequest.transactionType)
             // Send confirmation to the dApp that tx was submitted before status polling
             if (!transactionRequest.isInternal) {
                 dAppMessenger.sendTransactionWriteResponseSuccess(
@@ -174,7 +178,8 @@ class TransactionSubmitDelegate(
                     requestId = transactionRequest.requestId,
                     transactionId = "",
                     isInternal = transactionRequest.isInternal,
-                    errorMessage = UiMessage.ErrorMessage.from((error as? DappRequestException)?.failure)
+                    errorMessage = UiMessage.ErrorMessage.from((error as? DappRequestException)?.failure),
+                    blockUntilComplete = transactionRequest.blockUntilComplete
                 )
             )
         }

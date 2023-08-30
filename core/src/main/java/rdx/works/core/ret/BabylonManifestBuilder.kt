@@ -191,7 +191,7 @@ class BabylonManifestBuilder {
     ): BabylonManifestBuilder {
         manifestBuilder = manifestBuilder.callMethod(
             address = ManifestBuilderAddress.Static(accountAddress),
-            methodName = "remove1_resource_preference",
+            methodName = "remove_resource_preference",
             args = listOf(
                 ManifestBuilderValue.AddressValue(ManifestBuilderAddress.Static(resourceAddress))
             )

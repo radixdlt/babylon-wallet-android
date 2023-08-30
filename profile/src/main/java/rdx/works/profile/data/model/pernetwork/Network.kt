@@ -31,26 +31,22 @@ data class Network(
      * The ID of the network that has been used to generate the accounts, to which personas
      * have been added and dApps connected.
      */
-    @SerialName("networkID")
-    val networkID: Int,
+    @SerialName("networkID") val networkID: Int,
 
     /**
      * Accounts created by the user for this network.
      */
-    @SerialName("accounts")
-    val accounts: List<Account>,
+    @SerialName("accounts") val accounts: List<Account>,
 
     /**
      * Personas created by the user for this network.
      */
-    @SerialName("personas")
-    val personas: List<Persona>,
+    @SerialName("personas") val personas: List<Persona>,
 
     /**
      * AuthorizedDapp the user has connected with on this network.
      */
-    @SerialName("authorizedDapps")
-    val authorizedDapps: List<AuthorizedDapp>
+    @SerialName("authorizedDapps") val authorizedDapps: List<AuthorizedDapp>
 ) {
 
     val knownNetworkId: NetworkId?
@@ -64,40 +60,34 @@ data class Network(
          * the `DeviceFactorSource` (and typically the same public key as an instance of the device factor
          * typically used in the primary role of this account).
          */
-        @SerialName("address")
-        override val address: String,
+        @SerialName("address") override val address: String,
 
         /**
          * An identifier for the gradient for this account, to be displayed in wallet
          * and possibly by dApps.
          */
-        @SerialName("appearanceID")
-        val appearanceID: Int,
+        @SerialName("appearanceID") val appearanceID: Int,
 
         /**
          * An optional displayName or label, used by presentation layer only.
          */
-        @SerialName("displayName")
-        val displayName: String,
+        @SerialName("displayName") val displayName: String,
 
         /**
          * The ID of the network that has been used to generate the accounts, to which personas
          * have been added and dApps connected.
          */
-        @SerialName("networkID")
-        override val networkID: Int,
+        @SerialName("networkID") override val networkID: Int,
 
         /**
          * Security of this account
          */
-        @SerialName("securityState")
-        override val securityState: SecurityState,
+        @SerialName("securityState") override val securityState: SecurityState,
 
         /**
          * The on ledger synced settings for this account
          */
-        @SerialName("onLedgerSettings")
-        val onLedgerSettings: OnLedgerSettings
+        @SerialName("onLedgerSettings") val onLedgerSettings: OnLedgerSettings
 
     ) : Entity {
 
@@ -150,8 +140,7 @@ data class Network(
                     @Serializable
                     @SerialName("resourceAddress")
                     data class ResourceAddress(
-                        @SerialName("value")
-                        val value: String
+                        @SerialName("value") val value: String
                     ) : DepositorAddress {
                         override val address: String
                             get() = value
@@ -160,8 +149,7 @@ data class Network(
                     @Serializable
                     @SerialName("nonFungibleGlobalID")
                     data class NonFungibleGlobalID(
-                        @SerialName("value")
-                        val value: String
+                        @SerialName("value") val value: String
                     ) : DepositorAddress {
                         override val address: String
                             get() = value
@@ -170,10 +158,8 @@ data class Network(
 
                 @Serializable
                 data class AssetException(
-                    @SerialName("address")
-                    val address: String,
-                    @SerialName("exceptionRule")
-                    val exceptionRule: DepositAddressExceptionRule,
+                    @SerialName("address") val address: String,
+                    @SerialName("exceptionRule") val exceptionRule: DepositAddressExceptionRule,
                 )
             }
 
@@ -196,16 +182,12 @@ data class Network(
                 onLedgerSettings: OnLedgerSettings = OnLedgerSettings.init()
             ): Account {
                 val derivationPath = DerivationPath.forAccount(
-                    networkId = networkId,
-                    accountIndex = entityIndex,
-                    keyType = KeyType.TRANSACTION_SIGNING
+                    networkId = networkId, accountIndex = entityIndex, keyType = KeyType.TRANSACTION_SIGNING
                 )
 
-                val compressedPublicKey =
-                    mnemonicWithPassphrase.compressedPublicKey(derivationPath = derivationPath).removeLeadingZero()
+                val compressedPublicKey = mnemonicWithPassphrase.compressedPublicKey(derivationPath = derivationPath).removeLeadingZero()
                 val address = deriveAccountAddress(
-                    networkID = networkId,
-                    publicKey = PublicKey.Ed25519(compressedPublicKey.toUByteList())
+                    networkID = networkId, publicKey = PublicKey.Ed25519(compressedPublicKey.toUByteList())
                 )
 
                 val unsecuredSecurityState = SecurityState.unsecured(
@@ -238,15 +220,12 @@ data class Network(
                 onLedgerSettings: OnLedgerSettings = OnLedgerSettings.init()
             ): Account {
                 val derivationPathToCheck = DerivationPath.forAccount(
-                    networkId = networkId,
-                    accountIndex = entityIndex,
-                    keyType = KeyType.TRANSACTION_SIGNING
+                    networkId = networkId, accountIndex = entityIndex, keyType = KeyType.TRANSACTION_SIGNING
                 )
                 require(derivationPathToCheck.path == derivationPath.path)
 
                 val address = deriveAccountAddress(
-                    networkID = networkId,
-                    publicKey = PublicKey.Ed25519(derivedPublicKeyHex.decodeHex().toUByteList())
+                    networkID = networkId, publicKey = PublicKey.Ed25519(derivedPublicKeyHex.decodeHex().toUByteList())
                 )
 
                 val unsecuredSecurityState = SecurityState.unsecured(
@@ -267,8 +246,7 @@ data class Network(
             }
 
             private fun deriveAccountAddress(
-                networkID: NetworkId,
-                publicKey: PublicKey
+                networkID: NetworkId, publicKey: PublicKey
             ): String {
                 val response = deriveVirtualAccountAddressFromPublicKey(publicKey, networkID.value.toUByte())
                 return response.addressString()
@@ -284,30 +262,25 @@ data class Network(
          * the `DeviceFactorSource` (and typically the same public key as an instance of the device factor
          * typically used in the primary role of this persona).
          */
-        @SerialName("address")
-        override val address: String,
+        @SerialName("address") override val address: String,
 
         /**
          * An optional displayName or label, used by presentation layer only.
          */
-        @SerialName("displayName")
-        val displayName: String,
+        @SerialName("displayName") val displayName: String,
 
-        @SerialName("personaData")
-        val personaData: PersonaData,
+        @SerialName("personaData") val personaData: PersonaData,
 
         /**
          * The ID of the network that has been used to generate the accounts, to which personas
          * have been added and dApps connected.
          */
-        @SerialName("networkID")
-        override val networkID: Int,
+        @SerialName("networkID") override val networkID: Int,
 
         /**
          * Security of this persona
          */
-        @SerialName("securityState")
-        override val securityState: SecurityState
+        @SerialName("securityState") override val securityState: SecurityState
     ) : Entity {
 
         companion object {
@@ -321,17 +294,13 @@ data class Network(
                 personaData: PersonaData = PersonaData()
             ): Persona {
                 val derivationPath = DerivationPath.forIdentity(
-                    networkId = networkId,
-                    identityIndex = entityIndex,
-                    keyType = KeyType.TRANSACTION_SIGNING
+                    networkId = networkId, identityIndex = entityIndex, keyType = KeyType.TRANSACTION_SIGNING
                 )
 
-                val compressedPublicKey =
-                    mnemonicWithPassphrase.compressedPublicKey(derivationPath = derivationPath).removeLeadingZero()
+                val compressedPublicKey = mnemonicWithPassphrase.compressedPublicKey(derivationPath = derivationPath).removeLeadingZero()
 
                 val address = deriveIdentityAddress(
-                    networkID = networkId,
-                    publicKey = PublicKey.Ed25519(compressedPublicKey.toUByteList())
+                    networkID = networkId, publicKey = PublicKey.Ed25519(compressedPublicKey.toUByteList())
                 )
 
                 val unsecuredSecurityState = SecurityState.unsecured(
@@ -351,8 +320,7 @@ data class Network(
             }
 
             private fun deriveIdentityAddress(
-                networkID: NetworkId,
-                publicKey: PublicKey
+                networkID: NetworkId, publicKey: PublicKey
             ): String {
                 return deriveVirtualIdentityAddressFromPublicKey(publicKey, networkID.value.toUByte()).addressString()
             }
@@ -362,17 +330,13 @@ data class Network(
     @Serializable
     data class AuthorizedDapp(
 
-        @SerialName("networkID")
-        val networkID: Int,
+        @SerialName("networkID") val networkID: Int,
 
-        @SerialName("dAppDefinitionAddress")
-        val dAppDefinitionAddress: String,
+        @SerialName("dAppDefinitionAddress") val dAppDefinitionAddress: String,
 
-        @SerialName("displayName")
-        val displayName: String,
+        @SerialName("displayName") val displayName: String,
 
-        @SerialName("referencesToAuthorizedPersonas")
-        val referencesToAuthorizedPersonas: List<AuthorizedPersonaSimple>
+        @SerialName("referencesToAuthorizedPersonas") val referencesToAuthorizedPersonas: List<AuthorizedPersonaSimple>
     ) {
 
         fun hasAuthorizedPersona(personaAddress: String): Boolean {
@@ -384,55 +348,42 @@ data class Network(
             /**
              * The globally unique identifier of a Persona is its address, used to lookup persona
              */
-            @SerialName("identityAddress")
-            val identityAddress: String,
+            @SerialName("identityAddress") val identityAddress: String,
 
-            @SerialName("lastLogin")
-            val lastLogin: String,
+            @SerialName("lastLogin") val lastLogin: String,
 
             /**
              * List of shared accounts that user given the dApp access to.
              */
-            @SerialName("sharedAccounts")
-            val sharedAccounts: Shared<String>,
+            @SerialName("sharedAccounts") val sharedAccounts: Shared<String>,
 
-            @SerialName("sharedPersonaData")
-            val sharedPersonaData: SharedPersonaData
+            @SerialName("sharedPersonaData") val sharedPersonaData: SharedPersonaData
         )
 
         @Serializable
         data class SharedPersonaData(
-            @SerialName("name")
-            val name: PersonaDataEntryID? = null,
+            @SerialName("name") val name: PersonaDataEntryID? = null,
 
-            @SerialName("dateOfBirth")
-            val dateOfBirth: PersonaDataEntryID? = null,
+            @SerialName("dateOfBirth") val dateOfBirth: PersonaDataEntryID? = null,
 
-            @SerialName("companyName")
-            val companyName: PersonaDataEntryID? = null,
+            @SerialName("companyName") val companyName: PersonaDataEntryID? = null,
 
-            @SerialName("emailAddresses")
-            val emailAddresses: Shared<PersonaDataEntryID>? = null,
+            @SerialName("emailAddresses") val emailAddresses: Shared<PersonaDataEntryID>? = null,
 
-            @SerialName("phoneNumbers")
-            val phoneNumbers: Shared<PersonaDataEntryID>? = null,
+            @SerialName("phoneNumbers") val phoneNumbers: Shared<PersonaDataEntryID>? = null,
 
-            @SerialName("urls")
-            val urls: Shared<PersonaDataEntryID>? = null,
+            @SerialName("urls") val urls: Shared<PersonaDataEntryID>? = null,
 
-            @SerialName("postalAddresses")
-            val postalAddresses: Shared<PersonaDataEntryID>? = null,
+            @SerialName("postalAddresses") val postalAddresses: Shared<PersonaDataEntryID>? = null,
 
-            @SerialName("creditCards")
-            val creditCards: Shared<PersonaDataEntryID>? = null
+            @SerialName("creditCards") val creditCards: Shared<PersonaDataEntryID>? = null
         ) {
             fun alreadyGrantedIds(): List<PersonaDataEntryID> {
-                return listOfNotNull(name, dateOfBirth, companyName) +
-                    emailAddresses?.ids.orEmpty() +
-                    phoneNumbers?.ids.orEmpty() +
-                    urls?.ids.orEmpty() +
-                    postalAddresses?.ids.orEmpty() +
-                    creditCards?.ids.orEmpty()
+                return listOfNotNull(
+                    name,
+                    dateOfBirth,
+                    companyName
+                ) + emailAddresses?.ids.orEmpty() + phoneNumbers?.ids.orEmpty() + urls?.ids.orEmpty() + postalAddresses?.ids.orEmpty() + creditCards?.ids.orEmpty()
             }
 
             companion object {
@@ -455,11 +406,9 @@ data class Network(
 
 @Serializable
 data class RequestedNumber(
-    @SerialName("quantifier")
-    val quantifier: Quantifier,
+    @SerialName("quantifier") val quantifier: Quantifier,
 
-    @SerialName("quantity")
-    val quantity: Int
+    @SerialName("quantity") val quantity: Int
 ) {
 
     enum class Quantifier {
@@ -483,16 +432,13 @@ data class RequestedNumber(
 
 @Serializable
 data class Shared<T>(
-    @SerialName("ids")
-    val ids: List<T>,
+    @SerialName("ids") val ids: List<T>,
 
-    @SerialName("request")
-    val request: RequestedNumber
+    @SerialName("request") val request: RequestedNumber
 )
 
 fun Profile.addAccount(
-    account: Network.Account,
-    onNetwork: NetworkId
+    account: Network.Account, onNetwork: NetworkId
 ): Profile {
     val networkExist = this.networks.any { onNetwork.value == it.networkID }
     val newNetworks = if (networkExist) {
@@ -508,10 +454,7 @@ fun Profile.addAccount(
         }
     } else {
         this.networks + Network(
-            accounts = listOf(account),
-            authorizedDapps = listOf(),
-            networkID = onNetwork.value,
-            personas = listOf()
+            accounts = listOf(account), authorizedDapps = listOf(), networkID = onNetwork.value, personas = listOf()
         )
     }
     val updatedProfile = copy(
@@ -521,44 +464,57 @@ fun Profile.addAccount(
 }
 
 fun Profile.addAuthSigningFactorInstanceForEntity(
-    entity: Entity,
-    authSigningFactorInstance: FactorInstance
+    entity: Entity, authSigningFactorInstance: FactorInstance
 ): Profile {
-    val updatedNetworks =
-        networks.mapWhen(predicate = { network -> network.networkID == entity.networkID }) { network ->
-            when (entity) {
-                is Network.Account -> network.copy(
-                    accounts = network.accounts.mapWhen(predicate = { it.address == entity.address }) { account ->
-                        val updatedSecurityState = when (val state = account.securityState) {
-                            is SecurityState.Unsecured -> state.copy(
-                                unsecuredEntityControl = state.unsecuredEntityControl.copy(
-                                    authenticationSigning = authSigningFactorInstance
-                                )
-                            )
-                        }
-                        account.copy(securityState = updatedSecurityState)
-                    }
-                )
-
-                is Network.Persona -> {
-                    network.copy(
-                        personas = network.personas.mapWhen(predicate = { it.address == entity.address }) { persona ->
-                            val updatedSecurityState = when (val state = persona.securityState) {
-                                is SecurityState.Unsecured -> state.copy(
-                                    unsecuredEntityControl = state.unsecuredEntityControl.copy(
-                                        authenticationSigning = authSigningFactorInstance
-                                    )
-                                )
-                            }
-                            persona.copy(securityState = updatedSecurityState)
-                        }
+    val updatedNetworks = networks.mapWhen(predicate = { network -> network.networkID == entity.networkID }) { network ->
+        when (entity) {
+            is Network.Account -> network.copy(accounts = network.accounts.mapWhen(predicate = { it.address == entity.address }) { account ->
+                val updatedSecurityState = when (val state = account.securityState) {
+                    is SecurityState.Unsecured -> state.copy(
+                        unsecuredEntityControl = state.unsecuredEntityControl.copy(
+                            authenticationSigning = authSigningFactorInstance
+                        )
                     )
                 }
+                account.copy(securityState = updatedSecurityState)
+            })
+
+            is Network.Persona -> {
+                network.copy(personas = network.personas.mapWhen(predicate = { it.address == entity.address }) { persona ->
+                    val updatedSecurityState = when (val state = persona.securityState) {
+                        is SecurityState.Unsecured -> state.copy(
+                            unsecuredEntityControl = state.unsecuredEntityControl.copy(
+                                authenticationSigning = authSigningFactorInstance
+                            )
+                        )
+                    }
+                    persona.copy(securityState = updatedSecurityState)
+                })
             }
         }
+    }
     return copy(
         networks = updatedNetworks
     )
+}
+
+fun Profile.updateThirdPartyDepositSettings(
+    account: Network.Account,
+    thirdPartyDeposits: Network.Account.OnLedgerSettings.ThirdPartyDeposits
+): Profile {
+    val updatedNetworks = networks.mapWhen(predicate = { network -> network.networkID == account.networkID }) { network ->
+        val updatedAccounts = network.accounts.mapWhen(predicate = { it.address == account.address }) { account ->
+            account.updateThirdPartyDeposits(thirdPartyDeposits = thirdPartyDeposits)
+        }
+        network.copy(accounts = updatedAccounts)
+    }
+    return copy(
+        networks = updatedNetworks
+    )
+}
+
+fun Network.Account.updateThirdPartyDeposits(thirdPartyDeposits: Network.Account.OnLedgerSettings.ThirdPartyDeposits): Network.Account {
+    return copy(onLedgerSettings = onLedgerSettings.copy(thirdPartyDeposits = thirdPartyDeposits))
 }
 
 fun Profile.addNetworkIfDoesNotExist(
@@ -568,10 +524,7 @@ fun Profile.addNetworkIfDoesNotExist(
     return if (!networkExist) {
         copy(
             networks = networks + Network(
-                accounts = listOf(),
-                authorizedDapps = listOf(),
-                networkID = onNetwork.value,
-                personas = listOf()
+                accounts = listOf(), authorizedDapps = listOf(), networkID = onNetwork.value, personas = listOf()
             )
         ).withUpdatedContentHint()
     } else {
@@ -596,19 +549,9 @@ fun Profile.updatePersona(
 ): Profile {
     val networkId = currentGateway.network.networkId()
 
-    return copy(
-        networks = networks.mapWhen(
-            predicate = { it.networkID == networkId.value },
-            mutation = { network ->
-                network.copy(
-                    personas = network.personas.mapWhen(
-                        predicate = { it.address == persona.address },
-                        mutation = { persona }
-                    )
-                )
-            }
-        )
-    )
+    return copy(networks = networks.mapWhen(predicate = { it.networkID == networkId.value }, mutation = { network ->
+        network.copy(personas = network.personas.mapWhen(predicate = { it.address == persona.address }, mutation = { persona }))
+    }))
 }
 
 fun Profile.addPersona(
@@ -623,22 +566,16 @@ fun Profile.addPersona(
         return this
     }
 
-    return copy(
-        networks = this.networks.mapWhen(
-            predicate = { it.networkID == onNetwork.value },
-            mutation = { network ->
-                network.copy(personas = network.personas + persona)
-            }
-        )
-    ).withUpdatedContentHint()
+    return copy(networks = this.networks.mapWhen(predicate = { it.networkID == onNetwork.value }, mutation = { network ->
+        network.copy(personas = network.personas + persona)
+    })).withUpdatedContentHint()
 }
 
 fun Network.AuthorizedDapp.AuthorizedPersonaSimple.ensurePersonaDataExist(
     existingFieldIds: List<PersonaDataEntryID>
 ): Network.AuthorizedDapp.AuthorizedPersonaSimple {
     return copy(
-        sharedPersonaData = sharedPersonaData.copy(
-            name = if (existingFieldIds.contains(sharedPersonaData.name)) sharedPersonaData.name else null,
+        sharedPersonaData = sharedPersonaData.copy(name = if (existingFieldIds.contains(sharedPersonaData.name)) sharedPersonaData.name else null,
             dateOfBirth = if (existingFieldIds.contains(sharedPersonaData.dateOfBirth)) sharedPersonaData.dateOfBirth else null,
             companyName = if (existingFieldIds.contains(sharedPersonaData.companyName)) sharedPersonaData.companyName else null,
             emailAddresses = sharedPersonaData.emailAddresses?.removeNonExisting(existingFieldIds)?.let {
@@ -675,8 +612,7 @@ fun Network.AuthorizedDapp.AuthorizedPersonaSimple.ensurePersonaDataExist(
                 } else {
                     it
                 }
-            }
-        )
+            })
     )
 }
 

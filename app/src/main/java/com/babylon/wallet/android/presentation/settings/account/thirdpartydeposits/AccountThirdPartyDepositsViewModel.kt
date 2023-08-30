@@ -5,15 +5,18 @@ import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.data.dapp.model.TransactionType
 import com.babylon.wallet.android.data.manifest.prepareInternalTransactionRequest
+import com.babylon.wallet.android.data.repository.TransactionStatusClient
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
 import com.radixdlt.ret.Address
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.AddressValidator
+import rdx.works.core.UUIDGenerator
 import rdx.works.core.ret.BabylonManifestBuilder
 import rdx.works.core.ret.buildSafely
 import rdx.works.profile.data.model.pernetwork.Network
@@ -21,6 +24,7 @@ import rdx.works.profile.data.model.pernetwork.Network.Account.OnLedgerSettings.
 import rdx.works.profile.data.utils.toRETDepositRule
 import rdx.works.profile.data.utils.toRETResourcePreference
 import rdx.works.profile.domain.GetProfileUseCase
+import rdx.works.profile.domain.UpdateProfileThirdPartySettingsUseCase
 import rdx.works.profile.domain.accountsOnCurrentNetwork
 import javax.inject.Inject
 
@@ -29,15 +33,36 @@ import javax.inject.Inject
 class AccountThirdPartyDepositsViewModel @Inject constructor(
     private val getProfileUseCase: GetProfileUseCase,
     private val incomingRequestRepository: IncomingRequestRepository,
+    private val transactionStatusClient: TransactionStatusClient,
+    private val updateProfileThirdPartySettingsUseCase: UpdateProfileThirdPartySettingsUseCase,
     savedStateHandle: SavedStateHandle
 ) : StateViewModel<AccountThirdPartyDepositsUiState>() {
 
+    private var pollJob: Job? = null
     private val args = AccountThirdPartyDepositsArgs(savedStateHandle)
 
     override fun initialState(): AccountThirdPartyDepositsUiState = AccountThirdPartyDepositsUiState(accountAddress = args.address)
 
     init {
         loadAccount()
+    }
+
+    private fun handleRequestStatus(requestId: String) {
+        pollJob?.cancel()
+        pollJob = viewModelScope.launch {
+            transactionStatusClient.listenForPollStatusByRequestId(requestId).collect { status ->
+                status.result.onSuccess {
+                    when (val type = status.transactionType) {
+                        is TransactionType.UpdateThirdPartyDeposits -> {
+                            val account = requireNotNull(state.value.account)
+                            updateProfileThirdPartySettingsUseCase(account, type.thirdPartyDeposits)
+                        }
+
+                        else -> {}
+                    }
+                }
+            }
+        }
     }
 
     fun onAllowAll() {
@@ -109,13 +134,16 @@ class AccountThirdPartyDepositsViewModel @Inject constructor(
             }
             manifestBuilder.buildSafely(networkId).onSuccess { manifest ->
                 val updatedThirdPartyDepositSettings = state.value.updatedThirdPartyDepositSettings ?: return@onSuccess
+                val requestId = UUIDGenerator.uuid().toString()
                 incomingRequestRepository.add(
                     manifest.prepareInternalTransactionRequest(
                         networkId,
+                        requestId = requestId,
                         transactionType = TransactionType.UpdateThirdPartyDeposits(updatedThirdPartyDepositSettings),
                         blockUntilCompleted = true
                     )
                 )
+                handleRequestStatus(requestId)
             }.onFailure { t ->
                 _state.update { state ->
                     state.copy(error = UiMessage.ErrorMessage.from(t))

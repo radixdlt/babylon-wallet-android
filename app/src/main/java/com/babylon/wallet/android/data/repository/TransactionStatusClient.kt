@@ -14,6 +14,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.flow.cancellable
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
@@ -21,24 +22,32 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import javax.inject.Inject
+import javax.inject.Singleton
 
+@Singleton
 class TransactionStatusClient @Inject constructor(
     private val transactionRepository: TransactionRepository,
     @ApplicationScope private val appScope: CoroutineScope
 ) {
 
-    private val _transactionStatuses = MutableStateFlow<List<TransactionData>>(emptyList())
-    private val transactionStatuses = _transactionStatuses.asSharedFlow()
+    private val _transactionPollResult = MutableStateFlow(emptyList<TransactionData>())
+    private val transactionStatuses = _transactionPollResult.asSharedFlow()
     private val mutex = Mutex()
 
     fun listenForPollStatus(txId: String): Flow<TransactionData> {
         return transactionStatuses.map { statuses ->
             statuses.find { it.txId == txId }
-        }.filterNotNull()
+        }.filterNotNull().cancellable()
+    }
+
+    fun listenForPollStatusByRequestId(requestId: String): Flow<TransactionData> {
+        return transactionStatuses.map { statuses ->
+            statuses.find { it.requestId == requestId }
+        }.filterNotNull().cancellable()
     }
 
     @Suppress("MagicNumber")
-    fun pollTransactionStatus(txID: String) {
+    fun pollTransactionStatus(txID: String, requestId: String, transactionType: TransactionType = TransactionType.Generic) {
         appScope.launch {
             var transactionStatus = TransactionStatus.pending
             var tryCount = 0
@@ -54,53 +63,55 @@ class TransactionStatusClient @Inject constructor(
                     errorCount++
                 }
                 if (tryCount > maxTries) {
-                    updateStatus(
+                    updateTransactionStatus(
                         TransactionData(
-                            txID, kotlin.Result.failure(
+                            txID, requestId, kotlin.Result.failure(
                                 DappRequestException(
                                     DappRequestFailure.TransactionApprovalFailure.FailedToPollTXStatus(
                                         txID
                                     )
                                 )
-                            )
+                            ), transactionType = transactionType
                         )
                     )
+                    break
                 }
                 delay(delayBetweenTriesMs)
             }
             if (transactionStatus.isFailed()) {
                 when (transactionStatus) {
                     TransactionStatus.committedFailure -> {
-                        updateStatus(
+                        updateTransactionStatus(
                             TransactionData(
-                                txID, kotlin.Result.failure(
+                                txID, requestId, kotlin.Result.failure(
                                     DappRequestException(
                                         DappRequestFailure.TransactionApprovalFailure.GatewayCommittedFailure(
                                             txID
                                         )
                                     )
-                                )
+                                ), transactionType = transactionType
                             )
                         )
                     }
 
                     TransactionStatus.rejected -> {
-                        updateStatus(
+                        updateTransactionStatus(
                             TransactionData(
-                                txID, kotlin.Result.failure(
+                                txID, requestId, kotlin.Result.failure(
                                     DappRequestException(
                                         DappRequestFailure.TransactionApprovalFailure.GatewayRejected(txID)
                                     )
-                                )
+                                ), transactionType = transactionType
                             )
                         )
                     }
+
                     else -> {}
                 }
             }
-            updateStatus(
+            updateTransactionStatus(
                 TransactionData(
-                    txID, kotlin.Result.success(Unit)
+                    txID, requestId, kotlin.Result.success(Unit), transactionType = transactionType
                 )
             )
         }
@@ -109,18 +120,26 @@ class TransactionStatusClient @Inject constructor(
     fun statusHandled(txId: String) {
         appScope.launch {
             mutex.withLock {
-                _transactionStatuses.update { state ->
-                    state.filter { it.txId != txId }
+                _transactionPollResult.update { statuses ->
+                    statuses.filter { it.txId != txId }
                 }
             }
         }
     }
 
-    private fun updateStatus(data: TransactionData) {
-        appScope.launch {
-            mutex.withLock {
-                _transactionStatuses.update { state ->
-                    (state + listOf(data)).distinctBy { it.txId }
+    private suspend fun updateTransactionStatus(data: TransactionData) {
+        mutex.withLock {
+            _transactionPollResult.update { statuses ->
+                if (statuses.find { data.txId == it.txId } != null) {
+                    statuses.map {
+                        if (data.txId == it.txId) {
+                            data
+                        } else {
+                            it
+                        }
+                    }
+                } else {
+                    statuses + listOf(data)
                 }
             }
         }
@@ -130,6 +149,7 @@ class TransactionStatusClient @Inject constructor(
 
 data class TransactionData(
     val txId: String,
+    val requestId: String,
     val result: kotlin.Result<Unit>,
     val transactionType: TransactionType = TransactionType.Generic
 )

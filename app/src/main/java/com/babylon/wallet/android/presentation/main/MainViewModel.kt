@@ -78,12 +78,7 @@ class MainViewModel @Inject constructor(
 
     val statusEvents = appEventBus
         .events
-        .filterIsInstance<AppEvent.Status>().map {
-//            _state.update { state ->
-//                state.copy(showTransactionStatus = true)
-//            }
-            it
-        }
+        .filterIsInstance<AppEvent.Status>()
 
     val isDevBannerVisible = combine(
         getProfileStateUseCase(),
@@ -235,12 +230,6 @@ class MainViewModel @Inject constructor(
         }
     }
 
-//    fun hideTransactionStatus() {
-//        _state.update { state ->
-//            state.copy(showTransactionStatus = true)
-//        }
-//    }
-
     companion object {
         private val PEERDROID_STOP_TIMEOUT = 60.seconds
         private const val REQUEST_HANDLING_DELAY = 300L
@@ -253,8 +242,7 @@ sealed class MainEvent : OneOffEvent {
 }
 
 data class MainUiState(
-    val initialAppState: AppState = AppState.Loading,
-//    val showTransactionStatus: Boolean = false
+    val initialAppState: AppState = AppState.Loading
 ) : UiState
 
 sealed interface AppState {
