@@ -13,9 +13,12 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material3.Divider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -33,7 +36,6 @@ import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixSecondaryButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
-import com.babylon.wallet.android.presentation.ui.composables.NotBackedUpWarning
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import kotlinx.collections.immutable.ImmutableList
@@ -43,24 +45,26 @@ import kotlinx.collections.immutable.persistentListOf
 fun SettingsScreen(
     modifier: Modifier = Modifier,
     viewModel: SettingsViewModel,
-    onBackClick: () -> Unit,
-    onSettingClick: (SettingsItem.TopLevelSettings) -> Unit
+    onSettingClick: (SettingsItem.TopLevelSettings) -> Unit,
+    onBackClick: () -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     SettingsContent(
         modifier = modifier,
-        onBackClick = onBackClick,
         appSettings = state.settings,
-        onSettingClick = onSettingClick
+        onSettingClick = onSettingClick,
+        onHideImportOlympiaWalletSettingBox = viewModel::hideImportOlympiaWalletSettingBox,
+        onBackClick = onBackClick
     )
 }
 
 @Composable
 private fun SettingsContent(
     modifier: Modifier = Modifier,
-    onBackClick: () -> Unit,
     appSettings: ImmutableList<SettingsItem.TopLevelSettings>,
     onSettingClick: (SettingsItem.TopLevelSettings) -> Unit,
+    onHideImportOlympiaWalletSettingBox: () -> Unit,
+    onBackClick: () -> Unit
 ) {
     Scaffold(
         modifier = modifier,
@@ -85,40 +89,66 @@ private fun SettingsContent(
             modifier = Modifier.padding(padding),
             horizontalAlignment = Alignment.Start
         ) {
-            Divider(color = RadixTheme.colors.gray4)
-            LazyColumn(modifier = Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally) {
-                appSettings.forEach { settingsItem ->
-                    when (settingsItem) {
-                        SettingsItem.TopLevelSettings.LinkToConnector -> {
-                            item {
-                                ConnectionSettingItem(
+        Divider(color = RadixTheme.colors.gray4)
+        LazyColumn(
+            modifier = Modifier.fillMaxSize(),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            appSettings.forEach { settingsItem ->
+                when (settingsItem) {
+                    SettingsItem.TopLevelSettings.LinkToConnector -> {
+                        item {
+                            ConnectorSettingBox(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .background(RadixTheme.colors.gray5)
+                                    .padding(RadixTheme.dimensions.paddingDefault),
+                                onSettingClick = onSettingClick,
+                                settingsItem = settingsItem
+                            )
+                            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXSmall))
+                        }
+                    }
+                    SettingsItem.TopLevelSettings.ImportOlympiaWallet -> {
+                        item {
+                            ImportOlympiaWalletSettingBox(
                                     modifier = Modifier
                                         .fillMaxWidth()
                                         .background(RadixTheme.colors.gray5)
-                                        .padding(RadixTheme.dimensions.paddingDefault),
-                                    onSettingClick = onSettingClick,
-                                    settingsItem = settingsItem
+                                        .padding(horizontal = RadixTheme.dimensions.paddingDefault)
+                                    .padding(bottom = RadixTheme.dimensions.paddingDefault),
+                                onSettingClick = onSettingClick,
+                                settingsItem = settingsItem,
+                                onDismissClick = onHideImportOlympiaWalletSettingBox
                                 )
                             }
                         }
 
                         else -> {
-                            item {
-                                if (settingsItem is SettingsItem.TopLevelSettings.Backups) {
-                                    BackupSettingsItem(
-                                        backupSettingsItem = settingsItem,
-                                        onClick = {
-                                            onSettingClick(settingsItem)
-                                        }
-                                    )
-                                } else {
-                                    DefaultSettingsItem(
-                                        settingsItem = settingsItem,
-                                        onClick = {
-                                            onSettingClick(settingsItem)
-                                        }
-                                    )
-                                }
+    //                        item {
+    //                            if (settingsItem is SettingsItem.TopLevelSettings.AppSettingsLevel.Backups) {
+    //                                BackupSettingsItem(
+    //                                    backupSettingsItem = settingsItem,
+    //                                    onClick = {
+    //                                        onSettingClick(settingsItem)
+    //                                    }
+    //                                )
+    //                            } else {
+    //                                DefaultSettingsItem(
+    //                                    settingsItem = settingsItem,
+    //                                    onClick = {
+    //                                        onSettingClick(settingsItem)
+    //                                    }
+//                                )
+//                            }
+//                        }
+                        item {
+                            DefaultSettingsItem(
+                                settingsItem = settingsItem,
+                                onClick = {
+                                    onSettingClick(settingsItem)
+                                    }
+                                )
                             }
                             item {
                                 Divider(color = RadixTheme.colors.gray5)
@@ -178,45 +208,7 @@ private fun DefaultSettingsItem(
 }
 
 @Composable
-private fun BackupSettingsItem(
-    backupSettingsItem: SettingsItem.TopLevelSettings.Backups,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    Row(
-        modifier = modifier
-            .fillMaxWidth()
-            .height(72.dp)
-            .background(RadixTheme.colors.defaultBackground)
-            .throttleClickable(onClick = onClick)
-            .padding(horizontal = RadixTheme.dimensions.paddingDefault),
-        verticalAlignment = CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingMedium)
-    ) {
-        backupSettingsItem.getIcon()?.let {
-            Icon(painter = painterResource(id = it), contentDescription = null)
-        }
-
-        Column {
-            Text(
-                text = stringResource(id = backupSettingsItem.descriptionRes()),
-                style = RadixTheme.typography.body2Header,
-                color = RadixTheme.colors.gray1
-            )
-
-            NotBackedUpWarning(backupState = backupSettingsItem.backupState)
-        }
-        Spacer(modifier = Modifier.weight(1f))
-        Icon(
-            painter = painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_chevron_right),
-            contentDescription = null,
-            tint = RadixTheme.colors.gray1
-        )
-    }
-}
-
-@Composable
-private fun ConnectionSettingItem(
+private fun ConnectorSettingBox(
     onSettingClick: (SettingsItem.TopLevelSettings) -> Unit,
     settingsItem: SettingsItem.TopLevelSettings,
     modifier: Modifier = Modifier,
@@ -264,20 +256,82 @@ private fun ConnectionSettingItem(
     }
 }
 
+@Composable
+private fun ImportOlympiaWalletSettingBox(
+    modifier: Modifier = Modifier,
+    settingsItem: SettingsItem.TopLevelSettings,
+    onSettingClick: (SettingsItem.TopLevelSettings) -> Unit,
+    onDismissClick: () -> Unit,
+) {
+    Column(modifier = modifier) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.End,
+            verticalAlignment = CenterVertically
+        ) {
+            IconButton(onClick = onDismissClick) {
+                Icon(
+                    imageVector = Icons.Filled.Clear,
+                    contentDescription = "dismiss"
+                )
+            }
+        }
+        Column(
+            modifier = Modifier,
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingMedium)
+        ) {
+            Text(
+                text = "Radix Olympia Desktop Wallet user?",
+                style = RadixTheme.typography.body1Header,
+                color = RadixTheme.colors.gray1,
+                textAlign = TextAlign.Center
+            )
+            Text(
+                text = "Get started importing your Olympia accounts into your new Radix Wallet",
+                style = RadixTheme.typography.body2Regular,
+                color = RadixTheme.colors.gray2,
+                textAlign = TextAlign.Center
+            )
+            RadixSecondaryButton(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = RadixTheme.dimensions.paddingDefault),
+                text = "Import Legacy Accounts",
+                onClick = {
+                    onSettingClick(settingsItem)
+                },
+                containerColor = RadixTheme.colors.gray3,
+                contentColor = RadixTheme.colors.gray1,
+                icon = {
+                    Icon(
+                        painter = painterResource(
+                            id = com.babylon.wallet.android.designsystem.R.drawable.ic_qr_code_scanner
+                        ),
+                        contentDescription = null
+                    )
+                }
+            )
+        }
+    }
+}
+
 @Preview(showBackground = true)
 @Composable
 fun SettingsScreenWithoutActiveConnectionPreview() {
     RadixWalletTheme {
         SettingsContent(
-            onBackClick = {},
             appSettings = persistentListOf(
                 SettingsItem.TopLevelSettings.LinkToConnector,
-                SettingsItem.TopLevelSettings.LinkedConnectors,
-                SettingsItem.TopLevelSettings.Gateways,
+                SettingsItem.TopLevelSettings.ImportOlympiaWallet,
                 SettingsItem.TopLevelSettings.AuthorizedDapps,
-                SettingsItem.TopLevelSettings.Personas
+                SettingsItem.TopLevelSettings.Personas,
+                SettingsItem.TopLevelSettings.AccountSecurityAndSettings,
+                SettingsItem.TopLevelSettings.AppSettings
             ),
-            onSettingClick = {}
+            onSettingClick = {},
+            onHideImportOlympiaWalletSettingBox = {},
+            onBackClick = {}
         )
     }
 }

@@ -12,6 +12,9 @@ import com.babylon.wallet.android.presentation.main.MAIN_ROUTE
 import com.babylon.wallet.android.presentation.navigation.Screen
 import com.babylon.wallet.android.presentation.onboarding.restore.mnemonics.RestoreMnemonicsArgs
 import com.babylon.wallet.android.presentation.onboarding.restore.mnemonics.restoreMnemonics
+import com.babylon.wallet.android.presentation.settings.accountsecurity.accountSecurityNavGraph
+import com.babylon.wallet.android.presentation.settings.accountsecurity.accountSecurityScreen
+import com.babylon.wallet.android.presentation.settings.appsettings.appSettingsNavGraph
 import com.babylon.wallet.android.presentation.settings.appsettings.appSettingsScreen
 import com.babylon.wallet.android.presentation.settings.authorizeddapps.authorizedDAppsScreen
 import com.babylon.wallet.android.presentation.settings.backup.backupScreen
@@ -40,11 +43,8 @@ fun NavGraphBuilder.settingsNavGraph(
         linkedConnectorsScreen(onBackClick = {
             navController.popBackStack()
         })
-        appSettingsScreen(
-            onBackClick = {
-                navController.popBackStack()
-            }
-        )
+        appSettingsNavGraph(navController)
+        accountSecurityNavGraph(navController)
         backupScreen(
             onSystemBackupSettingsClick = {
                 navController.systemBackupSettingsScreen()
@@ -111,14 +111,8 @@ private fun NavGraphBuilder.settingsAll(navController: NavController) {
                         navController.linkedConnectorsScreen(shouldShowAddLinkConnectorScreen = true)
                     }
 
-                    SettingsItem.TopLevelSettings.LinkedConnectors -> {
-                        navController.linkedConnectorsScreen()
-                    }
-
-                    SettingsItem.TopLevelSettings.Gateways -> {
-                        navController.navigate(Screen.SettingsEditGatewayApiDestination.route) {
-                            launchSingleTop = true
-                        }
+                    SettingsItem.TopLevelSettings.ImportOlympiaWallet -> {
+                        navController.importLegacyWalletScreen()
                     }
 
                     SettingsItem.TopLevelSettings.AuthorizedDapps -> {
@@ -129,24 +123,12 @@ private fun NavGraphBuilder.settingsAll(navController: NavController) {
                         navController.personasScreen()
                     }
 
-                    SettingsItem.TopLevelSettings.AppSettings -> {
+                    SettingsItem.TopLevelSettings.AccountSecurityAndSettings -> {
+                        navController.accountSecurityScreen()
+                    }
+
+                    is SettingsItem.TopLevelSettings.AppSettings -> {
                         navController.appSettingsScreen()
-                    }
-
-                    SettingsItem.TopLevelSettings.SeedPhrases -> {
-                        navController.seedPhrases()
-                    }
-
-                    is SettingsItem.TopLevelSettings.Backups -> {
-                        navController.backupScreen()
-                    }
-
-                    SettingsItem.TopLevelSettings.LedgerHardwareWallets -> {
-                        navController.ledgerHardwareWalletsScreen()
-                    }
-
-                    SettingsItem.TopLevelSettings.ImportFromLegacyWallet -> {
-                        navController.importLegacyWalletScreen()
                     }
                 }
             }
