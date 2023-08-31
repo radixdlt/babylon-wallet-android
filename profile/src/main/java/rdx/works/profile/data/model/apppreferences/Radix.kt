@@ -91,7 +91,7 @@ object Radix {
 
         companion object {
             val default: Gateway
-                get() = zabanet
+                get() = rcnetV3
 
             val nebunet = Gateway(
                 url = "https://betanet.radixdlt.com",
@@ -117,8 +117,8 @@ object Radix {
                 url = "https://ansharnet-gateway.radixdlt.com",
                 network = Network.ansharnet
             )
-            val zabanet = Gateway(
-                url = "https://zabanet-gateway.radixdlt.com",
+            val rcnetV3 = Gateway(
+                url = "https://rcnet-v3.radixdlt.com",
                 network = Network.zabanet
             )
         }

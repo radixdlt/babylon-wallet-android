@@ -378,15 +378,9 @@ class ProfileTest {
 
         // Display
         assertEquals(
-            "Fiat currency is the same",
-            expected.appPreferences.display.fiatCurrencyPriceTarget,
-            actual.appPreferences.display.fiatCurrencyPriceTarget
-        )
-
-        assertEquals(
-            "Currency amount visible is the same",
-            expected.appPreferences.display.isCurrencyAmountVisible,
-            actual.appPreferences.display.isCurrencyAmountVisible
+            "Display properties are the same",
+            expected.appPreferences.display,
+            actual.appPreferences.display
         )
 
         // Security

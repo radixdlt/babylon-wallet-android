@@ -46,7 +46,7 @@ class Display private constructor(
         val default = Display(
             fiatCurrencyPriceTarget = "usd",
             isCurrencyAmountVisible = true,
-            ledgerHQHardwareWalletSigningDisplayMode = LedgerHardwareWalletFactorSource.SigningDisplayMode.Verbose
+            ledgerHQHardwareWalletSigningDisplayMode = LedgerHardwareWalletFactorSource.SigningDisplayMode.Summary
         )
     }
 }
