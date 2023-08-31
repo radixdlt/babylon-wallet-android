@@ -24,7 +24,7 @@ import kotlinx.serialization.Contextual
 /**
  * 
  *
- * @param payloadHashHex Hex-encoded SHA-256 hash.
+ * @param payloadHash Bech32m-encoded hash.
  * @param status 
  * @param errorMessage 
  */
@@ -32,9 +32,9 @@ import kotlinx.serialization.Contextual
 
 data class TransactionStatusResponseKnownPayloadItem (
 
-    /* Hex-encoded SHA-256 hash. */
-    @SerialName(value = "payload_hash_hex")
-    val payloadHashHex: kotlin.String,
+    /* Bech32m-encoded hash. */
+    @SerialName(value = "payload_hash")
+    val payloadHash: kotlin.String,
 
     @Contextual @SerialName(value = "status")
     val status: TransactionStatus,

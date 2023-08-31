@@ -23,15 +23,15 @@ import kotlinx.serialization.Contextual
 /**
  * 
  *
- * @param intentHashHex Hex-encoded SHA-256 hash.
+ * @param intentHash Bech32m-encoded hash.
  */
 @Serializable
 
 data class TransactionStatusRequest (
 
-    /* Hex-encoded SHA-256 hash. */
-    @SerialName(value = "intent_hash_hex")
-    val intentHashHex: kotlin.String
+    /* Bech32m-encoded hash. */
+    @SerialName(value = "intent_hash")
+    val intentHash: kotlin.String
 
 )
 

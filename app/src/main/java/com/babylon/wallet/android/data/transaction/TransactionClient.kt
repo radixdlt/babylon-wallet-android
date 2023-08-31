@@ -163,8 +163,12 @@ class TransactionClient @Inject constructor(
                     )
                 )
             }
-            val txId = transactionIntentHash.bytes().toByteArray().toHexString()
-            Result.success(NotarizedTransactionResult(txId, compiledNotarizedIntent.toByteArray().toHexString()))
+            Result.success(
+                NotarizedTransactionResult(
+                    txIdHash = transactionIntentHash.asStr(),
+                    notarizedTransactionIntentHex = compiledNotarizedIntent.toByteArray().toHexString()
+                )
+            )
         }.onFailure {
             logger.w(it)
         }
@@ -183,7 +187,7 @@ class TransactionClient @Inject constructor(
             deviceBiometricAuthenticationProvider = deviceBiometricAuthenticationProvider
         ).mapCatching { notarizedTransactionResult ->
             submitTransactionUseCase(
-                notarizedTransactionResult.txIdHex,
+                notarizedTransactionResult.txIdHash,
                 notarizedTransactionResult.notarizedTransactionIntentHex
             ).getOrThrow()
         }
@@ -407,6 +411,6 @@ class TransactionClient @Inject constructor(
 }
 
 data class NotarizedTransactionResult(
-    val txIdHex: String,
+    val txIdHash: String,
     val notarizedTransactionIntentHex: String
 )

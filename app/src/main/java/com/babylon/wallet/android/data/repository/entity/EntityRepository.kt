@@ -83,6 +83,8 @@ class EntityRepositoryImpl @Inject constructor(
         explicitMetadataForAssets: Set<ExplicitMetadataKey>,
         isRefreshing: Boolean
     ): Result<List<AccountWithResources>> {
+        if (accounts.isEmpty()) return Result.Success(emptyList())
+
         val listOfEntityDetailsResponsesResult = getStateEntityDetailsResponse(
             addresses = accounts.map { it.address },
             explicitMetadata = explicitMetadataForAssets,
@@ -590,11 +592,11 @@ class EntityRepositoryImpl @Inject constructor(
         }
     }
 
-    private fun StateNonFungibleDetailsResponseItem.claimAmount(): String? = data?.rawJson?.fields?.find { element ->
+    private fun StateNonFungibleDetailsResponseItem.claimAmount(): String? = data?.programmaticJson?.fields?.find { element ->
         element.kind == "Decimal"
     }?.value
 
-    private fun StateNonFungibleDetailsResponseItem.claimEpoch(): String? = data?.rawJson?.fields?.find { element ->
+    private fun StateNonFungibleDetailsResponseItem.claimEpoch(): String? = data?.programmaticJson?.fields?.find { element ->
         element.kind == "U64"
     }?.value
 

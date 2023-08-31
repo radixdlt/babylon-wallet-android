@@ -21,8 +21,10 @@ fun NavController.createPersonaScreen() {
     navigate(ROUTE_CREATE_PERSONA)
 }
 
-fun NavController.personaScreen() {
-    navigate(ROUTE_PERSONAS)
+fun NavController.personasScreen() {
+    navigate(ROUTE_PERSONAS) {
+        launchSingleTop = true
+    }
 }
 
 fun NavController.personaInfoScreen() {

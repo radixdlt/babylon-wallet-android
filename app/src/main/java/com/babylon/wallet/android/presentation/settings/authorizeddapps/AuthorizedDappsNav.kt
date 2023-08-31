@@ -12,7 +12,9 @@ import com.google.accompanist.navigation.animation.composable
 const val ROUTE_AUTHORIZED_DAPPS = "settings_authorized_dapps"
 
 fun NavController.authorizedDAppsScreen() {
-    navigate(ROUTE_AUTHORIZED_DAPPS)
+    navigate(ROUTE_AUTHORIZED_DAPPS) {
+        launchSingleTop = true
+    }
 }
 
 @OptIn(ExperimentalAnimationApi::class)

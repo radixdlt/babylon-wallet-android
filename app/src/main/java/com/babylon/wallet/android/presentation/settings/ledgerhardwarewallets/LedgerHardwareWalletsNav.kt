@@ -10,7 +10,9 @@ import com.google.accompanist.navigation.animation.composable
 private const val ROUTE = "ledger_hardware_wallets_route"
 
 fun NavController.ledgerHardwareWalletsScreen() {
-    navigate(ROUTE)
+    navigate(ROUTE) {
+        launchSingleTop = true
+    }
 }
 
 @OptIn(ExperimentalAnimationApi::class)

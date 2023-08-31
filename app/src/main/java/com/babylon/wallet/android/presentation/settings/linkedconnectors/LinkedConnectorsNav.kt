@@ -27,7 +27,9 @@ internal class LinkedConnectorsScreenArgs(
 fun NavController.linkedConnectorsScreen(
     shouldShowAddLinkConnectorScreen: Boolean = false
 ) {
-    navigate("$ROUTE/$shouldShowAddLinkConnectorScreen")
+    navigate("$ROUTE/$shouldShowAddLinkConnectorScreen") {
+        launchSingleTop = true
+    }
 }
 
 @OptIn(ExperimentalAnimationApi::class)

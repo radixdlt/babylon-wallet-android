@@ -54,9 +54,14 @@ object Radix {
                 name = "ansharnet",
                 displayDescription = "RCnet-V2 test network"
             )
+            val zabanet = Network(
+                id = NetworkId.Zabanet.value,
+                name = "zabanet",
+                displayDescription = "RCnet-V3 test network"
+            )
 
             fun allKnownNetworks(): List<Network> {
-                return listOf(hammunet, nebunet, kisharnet, mardunet, enkinet, ansharnet)
+                return listOf(hammunet, nebunet, kisharnet, mardunet, enkinet, ansharnet, zabanet)
             }
 
             fun forName(name: String): Network {
@@ -86,7 +91,7 @@ object Radix {
 
         companion object {
             val default: Gateway
-                get() = hammunet
+                get() = zabanet
 
             val nebunet = Gateway(
                 url = "https://betanet.radixdlt.com",
@@ -111,6 +116,10 @@ object Radix {
             val ansharnet = Gateway(
                 url = "https://ansharnet-gateway.radixdlt.com",
                 network = Network.ansharnet
+            )
+            val zabanet = Gateway(
+                url = "https://zabanet-gateway.radixdlt.com",
+                network = Network.zabanet
             )
         }
     }
