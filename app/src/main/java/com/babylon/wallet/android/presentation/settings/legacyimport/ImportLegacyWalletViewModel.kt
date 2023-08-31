@@ -10,6 +10,7 @@ import com.babylon.wallet.android.data.dapp.model.LedgerDeviceModel.Companion.ge
 import com.babylon.wallet.android.domain.model.AppConstants.ACCOUNT_NAME_MAX_LENGTH
 import com.babylon.wallet.android.domain.model.AppConstants.DELAY_300_MS
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
+import com.babylon.wallet.android.domain.usecases.settings.MarkImportOlympiaWalletCompleteUseCase
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
@@ -61,7 +62,8 @@ class ImportLegacyWalletViewModel @Inject constructor(
     private val migrateOlympiaAccountsUseCase: MigrateOlympiaAccountsUseCase,
     private val getFactorSourceIdForOlympiaAccountsUseCase: GetFactorSourceIdForOlympiaAccountsUseCase,
     private val getProfileUseCase: GetProfileUseCase,
-    private val olympiaWalletDataParser: OlympiaWalletDataParser
+    private val olympiaWalletDataParser: OlympiaWalletDataParser,
+    private val markImportOlympiaWalletCompleteUseCase: MarkImportOlympiaWalletCompleteUseCase
 ) : StateViewModel<ImportLegacyWalletUiState>(), OneOffEventHandler<OlympiaImportEvent> by OneOffEventHandlerImpl() {
 
     private var mnemonicWithPassphrase: MnemonicWithPassphrase? = null
@@ -220,6 +222,9 @@ class ImportLegacyWalletViewModel @Inject constructor(
                         sendEvent(OlympiaImportEvent.BiometricPrompt)
                         return@launch
                     }
+                }
+                if (nextPage == ImportLegacyWalletUiState.Page.ImportComplete) {
+                    markImportOlympiaWalletCompleteUseCase()
                 }
                 sendEvent(OlympiaImportEvent.NextPage(nextPage))
             }
