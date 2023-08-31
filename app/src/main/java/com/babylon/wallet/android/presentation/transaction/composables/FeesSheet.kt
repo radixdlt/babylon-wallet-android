@@ -346,6 +346,10 @@ fun NetworkFeesDefaultView(
                     .padding(vertical = RadixTheme.dimensions.paddingSmall)
             ) {
                 Text(
+                    modifier = Modifier
+                        .padding(
+                            end = RadixTheme.dimensions.paddingMedium
+                        ),
                     text = stringResource(id = R.string.transactionReview_customizeNetworkFeeSheet_networkFee).uppercase(),
                     style = RadixTheme.typography.body1Link,
                     color = RadixTheme.colors.gray2
@@ -367,7 +371,10 @@ fun NetworkFeesDefaultView(
                     .padding(vertical = RadixTheme.dimensions.paddingSmall)
             ) {
                 Text(
-                    modifier = Modifier,
+                    modifier = Modifier
+                        .padding(
+                            end = RadixTheme.dimensions.paddingMedium
+                        ),
                     text = stringResource(id = R.string.transactionReview_customizeNetworkFeeSheet_royaltyFee).uppercase(),
                     style = RadixTheme.typography.body1Link,
                     color = RadixTheme.colors.gray2
@@ -405,7 +412,10 @@ fun NetworkFeesDefaultView(
                     .padding(vertical = RadixTheme.dimensions.paddingSmall)
             ) {
                 Text(
-                    modifier = Modifier,
+                    modifier = Modifier
+                        .padding(
+                            end = RadixTheme.dimensions.paddingMedium
+                        ),
                     text = stringResource(id = R.string.transactionReview_networkFee_heading).uppercase(),
                     style = RadixTheme.typography.body1Link,
                     color = RadixTheme.colors.gray2
@@ -534,7 +544,10 @@ fun NetworkFeesAdvancedView(
                     .padding(vertical = RadixTheme.dimensions.paddingSmall)
             ) {
                 Text(
-                    modifier = Modifier,
+                    modifier = Modifier
+                        .padding(
+                            end = RadixTheme.dimensions.paddingMedium
+                        ),
                     text = stringResource(
                         id = R.string.transactionReview_customizeNetworkFeeSheet_networkExecution
                     ).uppercase(),
@@ -557,7 +570,10 @@ fun NetworkFeesAdvancedView(
                     .padding(vertical = RadixTheme.dimensions.paddingSmall)
             ) {
                 Text(
-                    modifier = Modifier,
+                    modifier = Modifier
+                        .padding(
+                            end = RadixTheme.dimensions.paddingMedium
+                        ),
                     text = stringResource(
                         id = R.string.transactionReview_customizeNetworkFeeSheet_networkFinalization
                     ).uppercase(),
@@ -580,7 +596,10 @@ fun NetworkFeesAdvancedView(
                     .padding(vertical = RadixTheme.dimensions.paddingSmall)
             ) {
                 Text(
-                    modifier = Modifier,
+                    modifier = Modifier
+                        .padding(
+                            end = RadixTheme.dimensions.paddingMedium
+                        ),
                     text = stringResource(
                         id = R.string.transactionReview_customizeNetworkFeeSheet_effectiveTip
                     ).uppercase(),
@@ -604,7 +623,10 @@ fun NetworkFeesAdvancedView(
                     .padding(vertical = RadixTheme.dimensions.paddingSmall)
             ) {
                 Text(
-                    modifier = Modifier,
+                    modifier = Modifier
+                        .padding(
+                            end = RadixTheme.dimensions.paddingMedium
+                        ),
                     text = stringResource(
                         id = R.string.transactionReview_customizeNetworkFeeSheet_networkStorage
                     ).uppercase(),
@@ -627,7 +649,10 @@ fun NetworkFeesAdvancedView(
                     .padding(vertical = RadixTheme.dimensions.paddingSmall)
             ) {
                 Text(
-                    modifier = Modifier,
+                    modifier = Modifier
+                        .padding(
+                            end = RadixTheme.dimensions.paddingMedium
+                        ),
                     text = stringResource(id = R.string.transactionReview_customizeNetworkFeeSheet_padding).uppercase(),
                     style = RadixTheme.typography.body1Link,
                     color = RadixTheme.colors.gray2
@@ -648,7 +673,10 @@ fun NetworkFeesAdvancedView(
                     .padding(vertical = RadixTheme.dimensions.paddingSmall)
             ) {
                 Text(
-                    modifier = Modifier,
+                    modifier = Modifier
+                        .padding(
+                            end = RadixTheme.dimensions.paddingMedium
+                        ),
                     text = stringResource(id = R.string.transactionReview_customizeNetworkFeeSheet_royalties).uppercase(),
                     style = RadixTheme.typography.body1Link,
                     color = RadixTheme.colors.gray2
@@ -679,7 +707,10 @@ fun NetworkFeesAdvancedView(
                     .padding(vertical = RadixTheme.dimensions.paddingSmall)
             ) {
                 Text(
-                    modifier = Modifier,
+                    modifier = Modifier
+                        .padding(
+                            end = RadixTheme.dimensions.paddingMedium
+                        ),
                     text = stringResource(
                         id = R.string.transactionReview_customizeNetworkFeeSheet_paidByDApps
                     ).uppercase(),
@@ -715,7 +746,12 @@ fun NetworkFeesAdvancedView(
                         bottom = RadixTheme.dimensions.paddingDefault,
                     )
             ) {
-                Column {
+                Column(
+                    modifier = Modifier
+                        .padding(
+                            end = RadixTheme.dimensions.paddingMedium
+                        )
+                ) {
                     Text(
                         modifier = Modifier
                             .padding(end = RadixTheme.dimensions.paddingDefault),

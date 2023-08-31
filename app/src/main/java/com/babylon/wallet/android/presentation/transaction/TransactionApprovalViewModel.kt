@@ -210,7 +210,7 @@ class TransactionApprovalViewModel @Inject constructor(
     fun onPayerSelected(selectedFeePayer: Network.Account) {
         val feePayerSearchResult = state.value.feePayerSearchResult
         val transactionFees = state.value.transactionFees
-        val signersCount = state.value.signersCount
+        val signersCount = state.value.defaultSignersCount
 
         val updatedFeePayerResult = feePayerSearchResult?.copy(
             feePayerAddressFromManifest = selectedFeePayer.address,
@@ -258,7 +258,7 @@ class TransactionApprovalViewModel @Inject constructor(
         val previewType: PreviewType,
         val transactionFees: TransactionFees = TransactionFees(),
         val feePayerSearchResult: FeePayerSearchResult? = null,
-        val signersCount: Int = 0,
+        val defaultSignersCount: Int = 0,
         val sheetState: Sheet = Sheet.None,
         private val latestFeesMode: Sheet.CustomizeFees.FeesMode = Sheet.CustomizeFees.FeesMode.Default,
         val error: UiMessage? = null,
