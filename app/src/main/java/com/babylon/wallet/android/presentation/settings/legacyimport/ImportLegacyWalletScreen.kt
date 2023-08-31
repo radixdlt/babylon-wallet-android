@@ -157,7 +157,6 @@ fun ImportLegacyWalletScreen(
         addLinkConnectorState = addLinkConnectorState,
         onLinkConnectorQrCodeScanned = addLinkConnectorViewModel::onQrCodeScanned,
         onConnectorDisplayNameChanged = addLinkConnectorViewModel::onConnectorDisplayNameChanged,
-        shouldShowAddLedgerDeviceScreen = state.shouldShowAddLedgerDeviceScreen,
         onNewConnectorContinueClick = {
             coroutineScope.launch {
                 addLinkConnectorViewModel.onContinueClick()
@@ -168,11 +167,13 @@ fun ImportLegacyWalletScreen(
             addLinkConnectorViewModel.onCloseClick()
             viewModel.onNewConnectorCloseClick()
         },
-        onCloseSettings = viewModel::onCloseSettings
+        shouldShowAddLedgerDeviceScreen = state.shouldShowAddLedgerDeviceScreen,
+        onCloseSettings = viewModel::onCloseSettings,
+        onWordSelected = viewModel::onWordSelected
     )
 }
 
-@OptIn(ExperimentalPermissionsApi::class)
+@OptIn(ExperimentalPermissionsApi::class, ExperimentalFoundationApi::class)
 @Composable
 private fun ImportLegacyWalletContent(
     modifier: Modifier = Modifier,
@@ -210,7 +211,8 @@ private fun ImportLegacyWalletContent(
     onNewConnectorContinueClick: () -> Unit,
     onNewConnectorCloseClick: () -> Unit,
     shouldShowAddLedgerDeviceScreen: Boolean,
-    onCloseSettings: () -> Unit
+    onCloseSettings: () -> Unit,
+    onWordSelected: (Int, String) -> Unit
 ) {
     val focusManager = LocalFocusManager.current
     val cameraPermissionState = rememberPermissionState(permission = Manifest.permission.CAMERA)
@@ -346,7 +348,8 @@ private fun ImportLegacyWalletContent(
                             onWordChanged = onWordChanged,
                             onPassphraseChanged = onPassphraseChanged,
                             onImportSoftwareAccounts = onImportSoftwareAccounts,
-                            wordAutocompleteCandidates = wordAutocompleteCandidates
+                            wordAutocompleteCandidates = wordAutocompleteCandidates,
+                            onWordSelected = onWordSelected
                         )
                     }
 
@@ -719,6 +722,7 @@ private fun VerifyWithYourSeedPhrasePage(
     seedPhraseWords: ImmutableList<SeedPhraseInputDelegate.SeedPhraseWord>,
     bip39Passphrase: String,
     onWordChanged: (Int, String) -> Unit,
+    onWordSelected: (Int, String) -> Unit,
     onPassphraseChanged: (String) -> Unit,
     onImportSoftwareAccounts: () -> Unit,
     wordAutocompleteCandidates: ImmutableList<String>
@@ -802,7 +806,7 @@ private fun VerifyWithYourSeedPhrasePage(
                     .padding(RadixTheme.dimensions.paddingSmall),
                 onCandidateClick = { candidate ->
                     focusedWordIndex?.let {
-                        onWordChanged(it, candidate)
+                        onWordSelected(it, candidate)
                         focusedWordIndex = null
                     }
                 }
@@ -834,7 +838,8 @@ fun InputSeedPhrasePagePreview() {
             onWordChanged = { _, _ -> },
             onPassphraseChanged = {},
             onImportSoftwareAccounts = {},
-            wordAutocompleteCandidates = persistentListOf()
+            wordAutocompleteCandidates = persistentListOf(),
+            onWordSelected = { _, _ -> }
         )
     }
 }
