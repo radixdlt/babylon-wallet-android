@@ -90,9 +90,10 @@ class EntityRepositoryImpl @Inject constructor(
             explicitMetadata = explicitMetadataForAssets,
             isRefreshing = isRefreshing
         )
-        val stateVersion = listOfEntityDetailsResponsesResult.value()?.firstOrNull()?.ledgerState?.stateVersion
-            ?: return Result.Error()
+
         return listOfEntityDetailsResponsesResult.switchMap { accountDetailsResponses ->
+            val stateVersion = accountDetailsResponses.firstOrNull()?.ledgerState?.stateVersion ?: return Result.Error()
+
             val resourceAddresses = accountDetailsResponses.map { stateEntityDetailsResponse ->
                 stateEntityDetailsResponse.items.map { stateEntityDetailsResponseItem ->
                     stateEntityDetailsResponseItem.allResourceAddresses
