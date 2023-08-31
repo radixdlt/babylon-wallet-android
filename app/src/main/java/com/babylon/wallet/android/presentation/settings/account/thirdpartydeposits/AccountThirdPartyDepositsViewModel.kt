@@ -9,6 +9,7 @@ import com.babylon.wallet.android.data.repository.TransactionStatusClient
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
+import com.babylon.wallet.android.presentation.settings.account.specificassets.DeleteDialogState
 import com.radixdlt.ret.Address
 import com.radixdlt.ret.EntityType
 import com.radixdlt.ret.ManifestBuilderAddress
@@ -175,12 +176,11 @@ class AccountThirdPartyDepositsViewModel @Inject constructor(
 
     fun onAddAssetException() {
         _state.update { state ->
-            val updatedAssetExceptions =
-                (
-                    state.updatedThirdPartyDepositSettings?.assetsExceptionList.orEmpty() + listOf(
-                        state.assetExceptionToAdd.assetException
-                    )
-                    ).distinct()
+            val updatedAssetExceptions = (
+                state.updatedThirdPartyDepositSettings?.assetsExceptionList.orEmpty() + listOf(
+                    state.assetExceptionToAdd.assetException
+                )
+                ).distinct()
             state.copy(
                 updatedThirdPartyDepositSettings = state.updatedThirdPartyDepositSettings?.copy(
                     assetsExceptionList = updatedAssetExceptions
@@ -197,9 +197,11 @@ class AccountThirdPartyDepositsViewModel @Inject constructor(
                 EntityType.GLOBAL_FUNGIBLE_RESOURCE_MANAGER -> ThirdPartyDeposits.DepositorAddress.ResourceAddress(
                     state.depositorToAdd.address
                 )
+
                 EntityType.GLOBAL_NON_FUNGIBLE_RESOURCE_MANAGER -> ThirdPartyDeposits.DepositorAddress.NonFungibleGlobalID(
                     state.depositorToAdd.address
                 )
+
                 else -> null
             }?.let { depositorAddress ->
                 val updatedDepositors =
@@ -228,7 +230,19 @@ class AccountThirdPartyDepositsViewModel @Inject constructor(
         checkIfSettingsChanged()
     }
 
-    fun onDeleteAsset(asset: ThirdPartyDeposits.AssetException) {
+    fun showDeletePrompt(asset: ThirdPartyDeposits.AssetException) {
+        _state.update { state ->
+            state.copy(deleteDialogState = DeleteDialogState.AboutToDelete(asset))
+        }
+    }
+
+    fun hideDeletePrompt() {
+        _state.update { state ->
+            state.copy(deleteDialogState = DeleteDialogState.None)
+        }
+    }
+
+    fun onDeleteAsset(asset: ThirdPartyDeposits.AssetException?) {
         _state.update { state ->
             val updatedAssetExceptions = state.updatedThirdPartyDepositSettings?.assetsExceptionList?.filter {
                 it != asset
@@ -236,7 +250,8 @@ class AccountThirdPartyDepositsViewModel @Inject constructor(
             state.copy(
                 updatedThirdPartyDepositSettings = state.updatedThirdPartyDepositSettings?.copy(
                     assetsExceptionList = updatedAssetExceptions
-                )
+                ),
+                deleteDialogState = DeleteDialogState.None
             )
         }
         checkIfSettingsChanged()
@@ -320,6 +335,7 @@ data class AccountThirdPartyDepositsUiState(
     val accountAddress: String,
     val updatedThirdPartyDepositSettings: ThirdPartyDeposits? = null,
     val canUpdate: Boolean = false,
+    val deleteDialogState: DeleteDialogState = DeleteDialogState.None,
     val error: UiMessage? = null,
     val assetExceptionToAdd: AssetType.AssetException = AssetType.AssetException(
         ThirdPartyDeposits.AssetException(

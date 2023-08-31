@@ -73,6 +73,7 @@ import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.settings.account.thirdpartydeposits.AccountThirdPartyDepositsViewModel
 import com.babylon.wallet.android.presentation.settings.account.thirdpartydeposits.AssetType
+import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.BottomDialogDragHandle
 import com.babylon.wallet.android.presentation.ui.composables.ImageSize
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
@@ -108,6 +109,46 @@ fun SpecificAssetsDepositsScreen(
         } else {
             onBackClick()
         }
+    }
+    val dialogState = state.deleteDialogState
+    if (dialogState is DeleteDialogState.AboutToDelete) {
+        BasicPromptAlertDialog(
+            finish = {
+                if (it) {
+                    sharedViewModel.onDeleteAsset(dialogState.assetException)
+                } else {
+                    sharedViewModel.hideDeletePrompt()
+                }
+            },
+            title = {
+                Text(
+                    text = stringResource(id = R.string.accountSettings_specificAssetsDeposits_removeAsset),
+                    style = RadixTheme.typography.body1Header,
+                    color = RadixTheme.colors.gray1
+                )
+            },
+            text = {
+                Text(
+                    text = when (dialogState.assetException.exceptionRule) {
+                        ThirdPartyDeposits.DepositAddressExceptionRule.Allow -> {
+                            stringResource(id = R.string.accountSettings_specificAssetsDeposits_removeAssetMessageAllow)
+                        }
+
+                        ThirdPartyDeposits.DepositAddressExceptionRule.Deny -> {
+                            stringResource(id = R.string.accountSettings_specificAssetsDeposits_removeAssetMessageDeny)
+                        }
+                    },
+                    style = RadixTheme.typography.body2Regular,
+                    color = RadixTheme.colors.gray1
+                )
+            },
+            confirmText = stringResource(
+                id = R.string.common_remove
+            ),
+            dismissText = stringResource(
+                id = R.string.common_cancel
+            )
+        )
     }
     ModalBottomSheetLayout(
         modifier = modifier
@@ -146,7 +187,7 @@ fun SpecificAssetsDepositsScreen(
                 .background(RadixTheme.colors.gray5),
             allowedAssets = state.allowedAssets,
             deniedAssets = state.deniedAssets,
-            onDeleteAsset = sharedViewModel::onDeleteAsset
+            onDeleteAsset = sharedViewModel::showDeletePrompt
         )
     }
 }
@@ -573,6 +614,11 @@ private fun SpecificAssetsTab.name(): String = when (this) {
 enum class SpecificAssetsTab {
     Allowed,
     Denied
+}
+
+sealed interface DeleteDialogState {
+    object None : DeleteDialogState
+    data class AboutToDelete(val assetException: ThirdPartyDeposits.AssetException) : DeleteDialogState
 }
 
 @Preview(showBackground = true)
