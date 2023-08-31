@@ -15,10 +15,6 @@
 
 package com.babylon.wallet.android.data.gateway.generated.models
 
-import com.babylon.wallet.android.data.gateway.generated.models.LedgerStateSelector
-import com.babylon.wallet.android.data.gateway.generated.models.StreamTransactionsRequestEventFilterItem
-import com.babylon.wallet.android.data.gateway.generated.models.TransactionCommittedDetailsOptIns
-
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Contextual
@@ -81,7 +77,7 @@ data class StreamTransactionsRequest (
     val order: StreamTransactionsRequest.Order? = null,
 
     @SerialName(value = "opt_ins")
-    val optIns: TransactionCommittedDetailsOptIns? = null
+    val optIns: TransactionDetailsOptIns? = null
 
 ) {
 

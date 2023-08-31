@@ -100,10 +100,10 @@ data class PersonaData(
             @SerialName("variant")
             val variant: Variant,
 
-            @SerialName("given")
+            @SerialName("givenNames")
             val given: String,
 
-            @SerialName("family")
+            @SerialName("familyName")
             val family: String,
 
             @SerialName("nickname")

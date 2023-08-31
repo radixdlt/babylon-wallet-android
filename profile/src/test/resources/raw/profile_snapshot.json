@@ -1,23 +1,20 @@
 {
   "appPreferences" : {
-    "transaction" : {
-      "defaultDepositGuarantee" : "1"
-    },
     "display" : {
       "fiatCurrencyPriceTarget" : "usd",
       "isCurrencyAmountVisible" : true,
       "ledgerHQHardwareWalletSigningDisplayMode" : "verbose"
     },
     "gateways" : {
-      "current" : "https://hammunet-gateway.radixdlt.com",
+      "current" : "https://zabanet-gateway.radixdlt.com",
       "saved" : [
         {
           "network" : {
-            "displayDescription" : "Hammunet (Test Network)",
-            "id" : 34,
-            "name" : "hammunet"
+            "displayDescription" : "RCnet-V3 test network",
+            "id" : 14,
+            "name" : "zabanet"
           },
-          "url" : "https://hammunet-gateway.radixdlt.com"
+          "url" : "https://zabanet-gateway.radixdlt.com"
         }
       ]
     },
@@ -33,8 +30,13 @@
     ],
     "security" : {
       "isCloudProfileSyncEnabled" : true,
-      "structureConfigurationReferences": [],
-      "isDeveloperModeEnabled" : true
+      "isDeveloperModeEnabled" : true,
+      "structureConfigurationReferences" : [
+
+      ]
+    },
+    "transaction" : {
+      "defaultDepositGuarantee" : "1"
     }
   },
   "factorSources" : [
@@ -56,9 +58,9 @@
           "lastUsedOn" : "1970-01-01T00:00:00Z"
         },
         "hint" : {
+          "mnemonicWordCount" : 24,
           "model" : "computer",
-          "name" : "unit test",
-          "mnemonicWordCount" : "24"
+          "name" : "unit test"
         },
         "id" : {
           "body" : "6facb00a836864511fdf8f181382209e64e83ad462288ea1bc7868f236fb8033",
@@ -87,9 +89,9 @@
           "lastUsedOn" : "1970-01-01T00:00:00Z"
         },
         "hint" : {
+          "mnemonicWordCount" : 12,
           "model" : "computer",
-          "name" : "unit test",
-          "mnemonicWordCount" : "12"
+          "name" : "unit test"
         },
         "id" : {
           "body" : "c23c47a8a37b79298878506692e42f3a1a11967ff1239bb344ad6ab0c21ddda8",
@@ -197,30 +199,40 @@
     },
     "creatingDevice" : {
       "date" : "1970-01-01T00:00:00Z",
-      "description" : "unit test",
+      "description" : "computer unit test",
       "id" : "BABE1442-3C98-41FF-AFB0-D0F5829B020D"
     },
     "id" : "BABE1442-3C98-41FF-AFB0-D0F5829B020D",
     "lastModified" : "1970-01-01T00:00:00Z",
     "lastUsedOnDevice" : {
       "date" : "1970-01-01T00:00:00Z",
-      "description" : "unit test",
+      "description" : "computer unit test",
       "id" : "BABE1442-3C98-41FF-AFB0-D0F5829B020D"
     },
-    "snapshotVersion" : 45
+    "snapshotVersion" : 46
   },
   "networks" : [
     {
       "accounts" : [
         {
-          "address" : "account_tdx_22_128aph4j6zjqzhslfwqvryx829dwfxfflh0vamyca3425f78uul5rxf",
+          "address" : "account_tdx_e_12ypd8nyhsej537x3am8nnjzsef45ttmua5tf7f8lz2zds78dgg5qzx",
           "appearanceID" : 0,
           "displayName" : "First",
-          "networkID" : 34,
+          "networkID" : 14,
+          "onLedgerSettings" : {
+            "thirdPartyDeposits" : {
+              "assetsExceptionList" : [
+
+              ],
+              "depositorsAllowList" : [
+
+              ],
+              "depositRule" : "acceptAll"
+            }
+          },
           "securityState" : {
             "discriminator" : "unsecured",
             "unsecuredEntityControl" : {
-              "entityIndex" : 0,
               "authenticationSigning" : {
                 "badge" : {
                   "discriminator" : "virtualSource",
@@ -228,11 +240,11 @@
                     "discriminator" : "hierarchicalDeterministicPublicKey",
                     "hierarchicalDeterministicPublicKey" : {
                       "derivationPath" : {
-                        "path" : "m/44H/1022H/34H/525H/1678H/0H",
+                        "path" : "m/44H/1022H/14H/525H/1678H/0H",
                         "scheme" : "cap26"
                       },
                       "publicKey" : {
-                        "compressedData" : "7c0d862503c6662374e131b735d7a1fffc053820a5bc7674515fb24c8d97f25c",
+                        "compressedData" : "b009d846640efbe214c993898f9bb91db774f3eec07b8b93f73b5eb5671e7c90",
                         "curve" : "curve25519"
                       }
                     }
@@ -246,6 +258,7 @@
                   }
                 }
               },
+              "entityIndex" : 0,
               "transactionSigning" : {
                 "badge" : {
                   "discriminator" : "virtualSource",
@@ -253,11 +266,11 @@
                     "discriminator" : "hierarchicalDeterministicPublicKey",
                     "hierarchicalDeterministicPublicKey" : {
                       "derivationPath" : {
-                        "path" : "m/44H/1022H/34H/525H/1460H/0H",
+                        "path" : "m/44H/1022H/14H/525H/1460H/0H",
                         "scheme" : "cap26"
                       },
                       "publicKey" : {
-                        "compressedData" : "390f5d05f6f4ce18a5a049e713ad098773b7cc0ca0c530c6422742579633f9b8",
+                        "compressedData" : "f56e430cad47b779ba9aeda3069beed7080362598e9db31463c0bda03aebf901",
                         "curve" : "curve25519"
                       }
                     }
@@ -272,24 +285,37 @@
                 }
               }
             }
-          },
-          "onLedgerSettings": {
-            "thirdPartyDeposits": {
-              "depositRule": "acceptAll",
-              "assetsExceptionList": [],
-              "depositorsAllowList": []
-            }
           }
         },
         {
-          "address" : "account_tdx_22_12yktr4z690lpn874q2zrdggqrjrcqp0zynx629kxy4gfufzw23d3f6",
+          "address" : "account_tdx_e_1297s57xd0uurnguqga98negg7ffhlp4k9s7sy7w4xrt5dr0t53hny8",
           "appearanceID" : 1,
           "displayName" : "Second",
-          "networkID" : 34,
+          "networkID" : 14,
+          "onLedgerSettings" : {
+            "thirdPartyDeposits" : {
+              "assetsExceptionList" : [
+                {
+                  "address" : "resource_tdx_21_1tknxxxxxxxxxradxrdxxxxxxxxx009923554798xxxxxxxxxsmgder",
+                  "exceptionRule" : "deny"
+                }
+              ],
+              "depositorsAllowList" : [
+                {
+                  "discriminator" : "resourceAddress",
+                  "value" : "resource_tdx_21_1tknxxxxxxxxxradxrdxxxxxxxxx009923554798xxxxxxxxxsmgder"
+                },
+                {
+                  "discriminator" : "nonFungibleGlobalID",
+                  "value" : "resource_tdx_21_1tknxxxxxxxxxradxrdxxxxxxxxx009923554798xxxxxxxxxsmgder:#2#"
+                }
+              ],
+              "depositRule" : "acceptKnown"
+            }
+          },
           "securityState" : {
             "discriminator" : "unsecured",
             "unsecuredEntityControl" : {
-              "entityIndex" : 1,
               "authenticationSigning" : {
                 "badge" : {
                   "discriminator" : "virtualSource",
@@ -297,11 +323,11 @@
                     "discriminator" : "hierarchicalDeterministicPublicKey",
                     "hierarchicalDeterministicPublicKey" : {
                       "derivationPath" : {
-                        "path" : "m/44H/1022H/34H/525H/1678H/1H",
+                        "path" : "m/44H/1022H/14H/525H/1678H/1H",
                         "scheme" : "cap26"
                       },
                       "publicKey" : {
-                        "compressedData" : "5cfab91eed77cc5952de5e29d963b15a61925194bb05757b083190cabdf59080",
+                        "compressedData" : "18ad44b7784117e446bc262d8793fc930cad6c3dbaec153488a473c05cc753ff",
                         "curve" : "curve25519"
                       }
                     }
@@ -315,6 +341,7 @@
                   }
                 }
               },
+              "entityIndex" : 1,
               "transactionSigning" : {
                 "badge" : {
                   "discriminator" : "virtualSource",
@@ -322,11 +349,11 @@
                     "discriminator" : "hierarchicalDeterministicPublicKey",
                     "hierarchicalDeterministicPublicKey" : {
                       "derivationPath" : {
-                        "path" : "m/44H/1022H/34H/525H/1460H/1H",
+                        "path" : "m/44H/1022H/14H/525H/1460H/1H",
                         "scheme" : "cap26"
                       },
                       "publicKey" : {
-                        "compressedData" : "fe12a293195513e2f0dc326521ef08a78e3ae743e34c46228bb231cc2e96dac8",
+                        "compressedData" : "410300fb542b9713058bab5bcf44cc423fe8264063c875285ef29bfaefee4c49",
                         "curve" : "curve25519"
                       }
                     }
@@ -340,39 +367,38 @@
                   }
                 }
               }
-            }
-          },
-          "onLedgerSettings": {
-            "thirdPartyDeposits": {
-              "depositRule": "acceptKnown",
-              "assetsExceptionList": [
-                {
-                  "address": "resource_tdx_21_1tknxxxxxxxxxradxrdxxxxxxxxx009923554798xxxxxxxxxsmgder",
-                  "exceptionRule": "deny"
-                }
-              ],
-              "depositorsAllowList": [
-                {
-                  "discriminator": "resourceAddress",
-                  "value": "resource_tdx_21_1tknxxxxxxxxxradxrdxxxxxxxxx009923554798xxxxxxxxxsmgder"
-                },
-                {
-                  "discriminator": "nonFungibleGlobalID",
-                  "value": "resource_tdx_21_1tknxxxxxxxxxradxrdxxxxxxxxx009923554798xxxxxxxxxsmgder:#2#"
-                }
-              ]
             }
           }
         },
         {
-          "address" : "account_tdx_22_12ya2hy3wsmrm88svkeugan753f5atlhk3dzz09n9gm46qvx69rjqcm",
+          "address" : "account_tdx_e_128vf0zqkezy053hxkfq3g6x8x05mst7lq2q8fqlltm0l2d3tytk848",
           "appearanceID" : 2,
           "displayName" : "Third",
-          "networkID" : 34,
+          "networkID" : 14,
+          "onLedgerSettings" : {
+            "thirdPartyDeposits" : {
+              "assetsExceptionList" : [
+                {
+                  "address" : "resource_tdx_21_1tknxxxxxxxxxradxrdxxxxxxxxx009923554798xxxxxxxxxsmgder",
+                  "exceptionRule" : "allow"
+                }
+              ],
+              "depositorsAllowList" : [
+                {
+                  "discriminator" : "resourceAddress",
+                  "value" : "resource_tdx_21_1tknxxxxxxxxxradxrdxxxxxxxxx009923554798xxxxxxxxxsmgder"
+                },
+                {
+                  "discriminator" : "nonFungibleGlobalID",
+                  "value" : "resource_tdx_21_1tknxxxxxxxxxradxrdxxxxxxxxx009923554798xxxxxxxxxsmgder:#2#"
+                }
+              ],
+              "depositRule" : "denyAll"
+            }
+          },
           "securityState" : {
             "discriminator" : "unsecured",
             "unsecuredEntityControl" : {
-              "entityIndex" : 2,
               "authenticationSigning" : {
                 "badge" : {
                   "discriminator" : "virtualSource",
@@ -380,11 +406,11 @@
                     "discriminator" : "hierarchicalDeterministicPublicKey",
                     "hierarchicalDeterministicPublicKey" : {
                       "derivationPath" : {
-                        "path" : "m/44H/1022H/34H/525H/1678H/2H",
+                        "path" : "m/44H/1022H/14H/525H/1678H/2H",
                         "scheme" : "cap26"
                       },
                       "publicKey" : {
-                        "compressedData" : "1cb848d3487b4cec061535a5ebaa9f83d0fd3ec845917fae372896e454618a9c",
+                        "compressedData" : "6891f60631cdf1f19ea07b5feff4473ea740c9a5fada93811e5443b8aa96301e",
                         "curve" : "curve25519"
                       }
                     }
@@ -398,6 +424,7 @@
                   }
                 }
               },
+              "entityIndex" : 2,
               "transactionSigning" : {
                 "badge" : {
                   "discriminator" : "virtualSource",
@@ -405,11 +432,11 @@
                     "discriminator" : "hierarchicalDeterministicPublicKey",
                     "hierarchicalDeterministicPublicKey" : {
                       "derivationPath" : {
-                        "path" : "m/44H/1022H/34H/525H/1460H/2H",
+                        "path" : "m/44H/1022H/14H/525H/1460H/2H",
                         "scheme" : "cap26"
                       },
                       "publicKey" : {
-                        "compressedData" : "16220c8187c43a82ebba61b2428370c6816f05e6417190185f22bb5ed214fbdf",
+                        "compressedData" : "e8a91229c7278a716eb29993ec64df52f886b1afa4b9401cd76cac03db29357d",
                         "curve" : "curve25519"
                       }
                     }
@@ -423,27 +450,6 @@
                   }
                 }
               }
-            }
-          },
-          "onLedgerSettings": {
-            "thirdPartyDeposits": {
-              "depositRule": "denyAll",
-              "assetsExceptionList": [
-                {
-                  "address": "resource_tdx_21_1tknxxxxxxxxxradxrdxxxxxxxxx009923554798xxxxxxxxxsmgder",
-                  "exceptionRule": "allow"
-                }
-              ],
-              "depositorsAllowList": [
-                {
-                  "discriminator": "resourceAddress",
-                  "value": "resource_tdx_21_1tknxxxxxxxxxradxrdxxxxxxxxx009923554798xxxxxxxxxsmgder"
-                },
-                {
-                  "discriminator": "nonFungibleGlobalID",
-                  "value": "resource_tdx_21_1tknxxxxxxxxxradxrdxxxxxxxxx009923554798xxxxxxxxxsmgder:#2#"
-                }
-              ]
             }
           }
         }
@@ -452,15 +458,15 @@
         {
           "dAppDefinitionAddress" : "account_sim1cyvgx33089ukm2pl97pv4max0x40ruvfy4lt60yvya744cve475w0q",
           "displayName" : "RadiSwap",
-          "networkID" : 34,
+          "networkID" : 14,
           "referencesToAuthorizedPersonas" : [
             {
-              "identityAddress" : "identity_tdx_22_12g5xajl295tda2vym7tqtw4l5ftssp97fe5j9ga9wqpy7hjpe8ncmn",
+              "identityAddress" : "identity_tdx_e_12fkwy8ydrxznewf2q6a2c774fxa4e2kv5rs8mmd0r8p3k4s8f8d3mp",
               "lastLogin" : "2001-01-01T00:00:00Z",
               "sharedAccounts" : {
                 "ids" : [
-                  "account_tdx_22_12yktr4z690lpn874q2zrdggqrjrcqp0zynx629kxy4gfufzw23d3f6",
-                  "account_tdx_22_12ya2hy3wsmrm88svkeugan753f5atlhk3dzz09n9gm46qvx69rjqcm"
+                  "account_tdx_e_1297s57xd0uurnguqga98negg7ffhlp4k9s7sy7w4xrt5dr0t53hny8",
+                  "account_tdx_e_128vf0zqkezy053hxkfq3g6x8x05mst7lq2q8fqlltm0l2d3tytk848"
                 ],
                 "request" : {
                   "quantifier" : "exactly",
@@ -468,32 +474,32 @@
                 }
               },
               "sharedPersonaData" : {
-                "companyName" : "2",
+                "companyName" : "00000000-0000-0000-0000-000000000002",
                 "creditCards" : {
                   "ids" : [
-                    "11"
+                    "00000000-0000-0000-0000-00000000000B"
                   ],
                   "request" : {
                     "quantifier" : "atLeast",
                     "quantity" : 1
                   }
                 },
-                "dateOfBirth" : "1",
+                "dateOfBirth" : "00000000-0000-0000-0000-000000000001",
                 "emailAddresses" : {
                   "ids" : [
-                    "3",
-                    "4"
+                    "00000000-0000-0000-0000-000000000003",
+                    "00000000-0000-0000-0000-000000000004"
                   ],
                   "request" : {
                     "quantifier" : "atLeast",
                     "quantity" : 1
                   }
                 },
-                "name" : "0",
+                "name" : "00000000-0000-0000-0000-000000000000",
                 "phoneNumbers" : {
                   "ids" : [
-                    "5",
-                    "6"
+                    "00000000-0000-0000-0000-000000000005",
+                    "00000000-0000-0000-0000-000000000006"
                   ],
                   "request" : {
                     "quantifier" : "atLeast",
@@ -502,8 +508,8 @@
                 },
                 "postalAddresses" : {
                   "ids" : [
-                    "9",
-                    "10"
+                    "00000000-0000-0000-0000-000000000009",
+                    "00000000-0000-0000-0000-00000000000A"
                   ],
                   "request" : {
                     "quantifier" : "atLeast",
@@ -512,8 +518,8 @@
                 },
                 "urls" : {
                   "ids" : [
-                    "7",
-                    "8"
+                    "00000000-0000-0000-0000-000000000007",
+                    "00000000-0000-0000-0000-000000000008"
                   ],
                   "request" : {
                     "quantifier" : "atLeast",
@@ -523,11 +529,11 @@
               }
             },
             {
-              "identityAddress" : "identity_tdx_22_12tmdjpyjwr8qk2fpvzk655cga5jl54f8lzn570wga6wmfl3aulu5ju",
+              "identityAddress" : "identity_tdx_e_122m2mlkm25fleaprd2lz3ed02q2auggw0d7cs9zeyafsng8dl3qcu0",
               "lastLogin" : "2001-01-01T00:00:00Z",
               "sharedAccounts" : {
                 "ids" : [
-                  "account_tdx_22_12yktr4z690lpn874q2zrdggqrjrcqp0zynx629kxy4gfufzw23d3f6"
+                  "account_tdx_e_1297s57xd0uurnguqga98negg7ffhlp4k9s7sy7w4xrt5dr0t53hny8"
                 ],
                 "request" : {
                   "quantifier" : "atLeast",
@@ -535,26 +541,26 @@
                 }
               },
               "sharedPersonaData" : {
-                "name" : "0"
+                "name" : "00000000-0000-0000-0000-0000000000FF"
               }
             }
           ]
         }
       ],
-      "networkID" : 34,
+      "networkID" : 14,
       "personas" : [
         {
-          "address" : "identity_tdx_22_12g5xajl295tda2vym7tqtw4l5ftssp97fe5j9ga9wqpy7hjpe8ncmn",
+          "address" : "identity_tdx_e_12fkwy8ydrxznewf2q6a2c774fxa4e2kv5rs8mmd0r8p3k4s8f8d3mp",
           "displayName" : "Satoshi",
-          "networkID" : 34,
+          "networkID" : 14,
           "personaData" : {
             "companyName" : {
-              "id" : "2",
+              "id" : "00000000-0000-0000-0000-000000000002",
               "value" : "Bitcoin"
             },
             "creditCards" : [
               {
-                "id" : "11",
+                "id" : "00000000-0000-0000-0000-00000000000B",
                 "value" : {
                   "cvc" : 512,
                   "expiry" : {
@@ -567,41 +573,41 @@
               }
             ],
             "dateOfBirth" : {
-              "id" : "1",
+              "id" : "00000000-0000-0000-0000-000000000001",
               "value" : "2009-01-03T12:00:00Z"
             },
             "emailAddresses" : [
               {
-                "id" : "3",
+                "id" : "00000000-0000-0000-0000-000000000003",
                 "value" : "satoshi@nakamoto.bitcoin"
               },
               {
-                "id" : "4",
+                "id" : "00000000-0000-0000-0000-000000000004",
                 "value" : "be.your@own.bank"
               }
             ],
             "name" : {
-              "id" : "0",
+              "id" : "00000000-0000-0000-0000-000000000000",
               "value" : {
-                "family" : "Nakamoto",
-                "given" : "Satoshi",
-                "nickname" : "Creator of Bitcoin",
+                "familyName" : "Nakamoto",
+                "givenNames" : "Satoshi",
+                "nickname" : "Bitcoin",
                 "variant" : "eastern"
               }
             },
             "phoneNumbers" : [
               {
-                "id" : "5",
+                "id" : "00000000-0000-0000-0000-000000000005",
                 "value" : "21000000"
               },
               {
-                "id" : "6",
+                "id" : "00000000-0000-0000-0000-000000000006",
                 "value" : "123456789"
               }
             ],
             "postalAddresses" : [
               {
-                "id" : "9",
+                "id" : "00000000-0000-0000-0000-000000000009",
                 "value" : [
                   {
                     "discriminator" : "postalCode",
@@ -630,7 +636,7 @@
                 ]
               },
               {
-                "id" : "10",
+                "id" : "00000000-0000-0000-0000-00000000000A",
                 "value" : [
                   {
                     "discriminator" : "streetLine0",
@@ -661,11 +667,11 @@
             ],
             "urls" : [
               {
-                "id" : "7",
+                "id" : "00000000-0000-0000-0000-000000000007",
                 "value" : "bitcoin.org"
               },
               {
-                "id" : "8",
+                "id" : "00000000-0000-0000-0000-000000000008",
                 "value" : "https://github.com/bitcoin-core/secp256k1"
               }
             ]
@@ -673,7 +679,6 @@
           "securityState" : {
             "discriminator" : "unsecured",
             "unsecuredEntityControl" : {
-              "entityIndex" : 0,
               "authenticationSigning" : {
                 "badge" : {
                   "discriminator" : "virtualSource",
@@ -681,11 +686,11 @@
                     "discriminator" : "hierarchicalDeterministicPublicKey",
                     "hierarchicalDeterministicPublicKey" : {
                       "derivationPath" : {
-                        "path" : "m/44H/1022H/34H/618H/1678H/0H",
+                        "path" : "m/44H/1022H/14H/618H/1678H/0H",
                         "scheme" : "cap26"
                       },
                       "publicKey" : {
-                        "compressedData" : "82248fcd9d9d1923729634231d288b6b5c6a5d3dd0cd52d5c06d998c057b0460",
+                        "compressedData" : "1309188a0c42704e4a911f16f6a658513cee290d9e3a4f033875b55504221eeb",
                         "curve" : "curve25519"
                       }
                     }
@@ -699,6 +704,7 @@
                   }
                 }
               },
+              "entityIndex" : 0,
               "transactionSigning" : {
                 "badge" : {
                   "discriminator" : "virtualSource",
@@ -706,11 +712,11 @@
                     "discriminator" : "hierarchicalDeterministicPublicKey",
                     "hierarchicalDeterministicPublicKey" : {
                       "derivationPath" : {
-                        "path" : "m/44H/1022H/34H/618H/1460H/0H",
+                        "path" : "m/44H/1022H/14H/618H/1460H/0H",
                         "scheme" : "cap26"
                       },
                       "publicKey" : {
-                        "compressedData" : "cb5f31fee2b66013a6476bd4bf37bf6bf229404a6db1567db317ed0ba5334358",
+                        "compressedData" : "22b66d9a894d31efc7fc316e80d31a48d0cf8aebd9bfb8d3ed692d25bf994666",
                         "curve" : "curve25519"
                       }
                     }
@@ -728,9 +734,9 @@
           }
         },
         {
-          "address" : "identity_tdx_22_12tmdjpyjwr8qk2fpvzk655cga5jl54f8lzn570wga6wmfl3aulu5ju",
+          "address" : "identity_tdx_e_122m2mlkm25fleaprd2lz3ed02q2auggw0d7cs9zeyafsng8dl3qcu0",
           "displayName" : "Mrs Public",
-          "networkID" : 34,
+          "networkID" : 14,
           "personaData" : {
             "creditCards" : [
 
@@ -739,12 +745,12 @@
 
             ],
             "name" : {
-              "id" : "0",
+              "id" : "00000000-0000-0000-0000-0000000000FF",
               "value" : {
-                "family" : "Publicson",
-                "given" : "Maria",
-                "variant" : "western",
-                "nickname" : "MP"
+                "familyName" : "Publicson",
+                "givenNames" : "Maria",
+                "nickname" : "Publy",
+                "variant" : "western"
               }
             },
             "phoneNumbers" : [
@@ -760,7 +766,6 @@
           "securityState" : {
             "discriminator" : "unsecured",
             "unsecuredEntityControl" : {
-              "entityIndex" : 1,
               "authenticationSigning" : {
                 "badge" : {
                   "discriminator" : "virtualSource",
@@ -768,11 +773,11 @@
                     "discriminator" : "hierarchicalDeterministicPublicKey",
                     "hierarchicalDeterministicPublicKey" : {
                       "derivationPath" : {
-                        "path" : "m/44H/1022H/34H/618H/1678H/1H",
+                        "path" : "m/44H/1022H/14H/618H/1678H/1H",
                         "scheme" : "cap26"
                       },
                       "publicKey" : {
-                        "compressedData" : "133801ad4b98bd8925cd5d93fdfc3cae1965b48af51bbfe191e08d6a6911274b",
+                        "compressedData" : "c00858697875ea3eb6e2d8334d7a7f1a215269cb8097d08da30649d5eba9285b",
                         "curve" : "curve25519"
                       }
                     }
@@ -786,6 +791,7 @@
                   }
                 }
               },
+              "entityIndex" : 1,
               "transactionSigning" : {
                 "badge" : {
                   "discriminator" : "virtualSource",
@@ -793,11 +799,11 @@
                     "discriminator" : "hierarchicalDeterministicPublicKey",
                     "hierarchicalDeterministicPublicKey" : {
                       "derivationPath" : {
-                        "path" : "m/44H/1022H/34H/618H/1460H/1H",
+                        "path" : "m/44H/1022H/14H/618H/1460H/1H",
                         "scheme" : "cap26"
                       },
                       "publicKey" : {
-                        "compressedData" : "8620fd68dd9c594ff2477ee17189d32d79751915b21aa43e3f19b72a2f4404e3",
+                        "compressedData" : "68104bf832b5bb83600b51ddaf0701a13bdb2b55d625bc0ef14c74932340b2bc",
                         "curve" : "curve25519"
                       }
                     }

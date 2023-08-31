@@ -35,8 +35,8 @@ data class EntityMetadataItemValue (
     @SerialName(value = "raw_hex")
     val rawHex: kotlin.String,
 
-//    @SerialName(value = "programmatic_json")
-//    val programmaticJson: ProgrammaticJson,
+//    @Contextual @SerialName(value = "programmatic_json")
+//    val programmaticJson: kotlin.Any,
 
     @SerialName(value = "typed")
     val typed: MetadataTypedValue

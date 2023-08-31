@@ -35,6 +35,7 @@ import rdx.works.profile.data.model.pernetwork.addPersona
 import rdx.works.profile.data.model.pernetwork.nextAccountIndex
 import rdx.works.profile.data.model.pernetwork.nextPersonaIndex
 import rdx.works.core.serializers.InstantSerializer
+import rdx.works.profile.data.model.pernetwork.PersonaData.*
 import rdx.works.profile.data.repository.MnemonicRepository
 import rdx.works.profile.data.repository.createOrUpdateAuthorizedDapp
 import java.io.File
@@ -157,7 +158,7 @@ class ProfileTest {
         )
         var expected = Profile.init(
             id = "BABE1442-3C98-41FF-AFB0-D0F5829B020D",
-            deviceName = "unit test",
+            deviceName = "computer unit test",
             creationDate = Instant.EPOCH,
             gateway = gateway
         ).copy(factorSources = listOf(babylonFactorSource))
@@ -282,13 +283,13 @@ class ProfileTest {
             networkId = networkId,
             personaData = PersonaData(
                 name = IdentifiedEntry.init(
-                    PersonaData.PersonaDataField.Name(
-                        variant = PersonaData.PersonaDataField.Name.Variant.Western,
+                    PersonaDataField.Name(
+                        variant = PersonaDataField.Name.Variant.Western,
                         given = "Maria",
                         family = "Publicson",
-                        nickname = "MP"
+                        nickname = "Publy"
                     ),
-                    id = "0"
+                    id = "00000000-0000-0000-0000-0000000000FF"
                 )
             )
         )
@@ -764,62 +765,89 @@ class ProfileTest {
     private fun satoshiPersona(): PersonaData {
         return PersonaData(
             name = IdentifiedEntry.init(
-                PersonaData.PersonaDataField.Name(
-                    variant = PersonaData.PersonaDataField.Name.Variant.Eastern,
+                PersonaDataField.Name(
+                    variant = PersonaDataField.Name.Variant.Eastern,
                     given = "Satoshi",
                     family = "Nakamoto",
-                    nickname = "Creator of Bitcoin"
+                    nickname = "Bitcoin"
                 ),
-                "0"
+                "00000000-0000-0000-0000-000000000000"
             ),
-            dateOfBirth = IdentifiedEntry.init(PersonaData.PersonaDataField.DateOfBirth(Instant.parse("2009-01-03T12:00:00Z")), "1"),
-            companyName = IdentifiedEntry.init(PersonaData.PersonaDataField.CompanyName("Bitcoin"), "2"),
+            dateOfBirth = IdentifiedEntry.init(
+                value = PersonaDataField.DateOfBirth(dateOfBirth = Instant.parse("2009-01-03T12:00:00Z")),
+                id = "00000000-0000-0000-0000-000000000001"
+            ),
+            companyName = IdentifiedEntry.init(
+                value = PersonaDataField.CompanyName("Bitcoin"),
+                id = "00000000-0000-0000-0000-000000000002"
+            ),
             emailAddresses = listOf(
-                IdentifiedEntry.init(PersonaData.PersonaDataField.Email("satoshi@nakamoto.bitcoin"), "3"),
-                IdentifiedEntry.init(PersonaData.PersonaDataField.Email("be.your@own.bank"), "4")
+                IdentifiedEntry.init(
+                    value = PersonaDataField.Email("satoshi@nakamoto.bitcoin"),
+                    id = "00000000-0000-0000-0000-000000000003"
+                ),
+                IdentifiedEntry.init(
+                    value = PersonaDataField.Email("be.your@own.bank"),
+                    id = "00000000-0000-0000-0000-000000000004"
+                )
             ),
             phoneNumbers = listOf(
-                IdentifiedEntry.init(PersonaData.PersonaDataField.PhoneNumber("21000000"), "5"),
-                IdentifiedEntry.init(PersonaData.PersonaDataField.PhoneNumber("123456789"), "6")
+                IdentifiedEntry.init(
+                    value = PersonaDataField.PhoneNumber("21000000"),
+                    id = "00000000-0000-0000-0000-000000000005"
+                ),
+                IdentifiedEntry.init(
+                    value = PersonaDataField.PhoneNumber("123456789"),
+                    id = "00000000-0000-0000-0000-000000000006"
+                )
             ),
             urls = listOf(
-                IdentifiedEntry.init(PersonaData.PersonaDataField.Url("bitcoin.org"), "7"),
-                IdentifiedEntry.init(PersonaData.PersonaDataField.Url("https://github.com/bitcoin-core/secp256k1"), "8"),
+                IdentifiedEntry.init(
+                    value = PersonaDataField.Url("bitcoin.org"),
+                    id = "00000000-0000-0000-0000-000000000007"
+                ),
+                IdentifiedEntry.init(
+                    value = PersonaDataField.Url("https://github.com/bitcoin-core/secp256k1"),
+                    id = "00000000-0000-0000-0000-000000000008"
+                ),
             ),
             postalAddresses = listOf(
                 IdentifiedEntry.init(
-                    PersonaData.PersonaDataField.PostalAddress(
+                    value = PersonaDataField.PostalAddress(
                         listOf(
-                            PersonaData.PersonaDataField.PostalAddress.Field.PostalCode("21 000 000"),
-                            PersonaData.PersonaDataField.PostalAddress.Field.Prefecture("SHA256"),
-                            PersonaData.PersonaDataField.PostalAddress.Field.CountySlashCity("HashTown"),
-                            PersonaData.PersonaDataField.PostalAddress.Field.FurtherDivisionsLine0("Sound money street"),
-                            PersonaData.PersonaDataField.PostalAddress.Field.FurtherDivisionsLine1(""),
-                            PersonaData.PersonaDataField.PostalAddress.Field.CountryOrRegion(CountryOrRegion.Japan)
+                            PersonaDataField.PostalAddress.Field.PostalCode("21 000 000"),
+                            PersonaDataField.PostalAddress.Field.Prefecture("SHA256"),
+                            PersonaDataField.PostalAddress.Field.CountySlashCity("HashTown"),
+                            PersonaDataField.PostalAddress.Field.FurtherDivisionsLine0("Sound money street"),
+                            PersonaDataField.PostalAddress.Field.FurtherDivisionsLine1(""),
+                            PersonaDataField.PostalAddress.Field.CountryOrRegion(CountryOrRegion.Japan)
                         )
-                    ), "9"
+                    ),
+                    id = "00000000-0000-0000-0000-000000000009"
                 ),
                 IdentifiedEntry.init(
-                    PersonaData.PersonaDataField.PostalAddress(
+                    value = PersonaDataField.PostalAddress(
                         listOf(
-                            PersonaData.PersonaDataField.PostalAddress.Field.StreetLine0("Copthall House"),
-                            PersonaData.PersonaDataField.PostalAddress.Field.StreetLine1("King Street"),
-                            PersonaData.PersonaDataField.PostalAddress.Field.TownSlashCity("Newcastle-under-Lyme"),
-                            PersonaData.PersonaDataField.PostalAddress.Field.County("Newcastle"),
-                            PersonaData.PersonaDataField.PostalAddress.Field.Postcode("ST5 1UE"),
-                            PersonaData.PersonaDataField.PostalAddress.Field.CountryOrRegion(CountryOrRegion.UnitedKingdom)
+                            PersonaDataField.PostalAddress.Field.StreetLine0("Copthall House"),
+                            PersonaDataField.PostalAddress.Field.StreetLine1("King Street"),
+                            PersonaDataField.PostalAddress.Field.TownSlashCity("Newcastle-under-Lyme"),
+                            PersonaDataField.PostalAddress.Field.County("Newcastle"),
+                            PersonaDataField.PostalAddress.Field.Postcode("ST5 1UE"),
+                            PersonaDataField.PostalAddress.Field.CountryOrRegion(CountryOrRegion.UnitedKingdom)
                         )
-                    ), "10"
+                    ),
+                    id = "00000000-0000-0000-0000-00000000000A"
                 )
             ),
             creditCards = listOf(
                 IdentifiedEntry.init(
-                    PersonaData.PersonaDataField.CreditCard(
-                        expiry = PersonaData.PersonaDataField.CreditCard.Expiry(2142, 12),
+                    value = PersonaDataField.CreditCard(
+                        expiry = PersonaDataField.CreditCard.Expiry(2142, 12),
                         holder = "Satoshi Nakamoto",
                         number = "0000 0000 2100 0000",
                         cvc = 512
-                    ), "11"
+                    ),
+                    id = "00000000-0000-0000-0000-00000000000B"
                 )
             )
         )

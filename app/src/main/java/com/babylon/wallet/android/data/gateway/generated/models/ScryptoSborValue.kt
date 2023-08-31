@@ -36,9 +36,6 @@ data class ScryptoSborValue (
     @SerialName(value = "programmatic_json")
     val programmaticJson: ProgrammaticJson? = null,
 
-    @SerialName(value = "raw_json")
-    val rawJson: RawJson? = null // todo to be removed
-
 ) {
     @Serializable
     data class ProgrammaticJson(
