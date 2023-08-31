@@ -53,7 +53,6 @@ import com.babylon.wallet.android.domain.model.metadata.NameMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.OwnerKeyHashesMetadataItem
 import rdx.works.profile.data.model.pernetwork.Network
 import java.io.IOException
-import java.lang.Exception
 import java.math.BigDecimal
 import javax.inject.Inject
 
