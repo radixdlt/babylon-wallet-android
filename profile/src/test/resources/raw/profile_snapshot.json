@@ -1,8 +1,5 @@
 {
   "appPreferences" : {
-    "transaction" : {
-      "defaultDepositGuarantee" : "1"
-    },
     "display" : {
       "fiatCurrencyPriceTarget" : "usd",
       "isCurrencyAmountVisible" : true,
@@ -33,8 +30,13 @@
     ],
     "security" : {
       "isCloudProfileSyncEnabled" : true,
-      "structureConfigurationReferences": [],
-      "isDeveloperModeEnabled" : true
+      "isDeveloperModeEnabled" : true,
+      "structureConfigurationReferences" : [
+
+      ]
+    },
+    "transaction" : {
+      "defaultDepositGuarantee" : "1"
     }
   },
   "factorSources" : [
@@ -56,9 +58,9 @@
           "lastUsedOn" : "1970-01-01T00:00:00Z"
         },
         "hint" : {
+          "mnemonicWordCount" : 24,
           "model" : "computer",
-          "name" : "unit test",
-          "mnemonicWordCount" : "24"
+          "name" : "unit test"
         },
         "id" : {
           "body" : "6facb00a836864511fdf8f181382209e64e83ad462288ea1bc7868f236fb8033",
@@ -87,9 +89,9 @@
           "lastUsedOn" : "1970-01-01T00:00:00Z"
         },
         "hint" : {
+          "mnemonicWordCount" : 12,
           "model" : "computer",
-          "name" : "unit test",
-          "mnemonicWordCount" : "12"
+          "name" : "unit test"
         },
         "id" : {
           "body" : "c23c47a8a37b79298878506692e42f3a1a11967ff1239bb344ad6ab0c21ddda8",
@@ -197,14 +199,14 @@
     },
     "creatingDevice" : {
       "date" : "1970-01-01T00:00:00Z",
-      "description" : "unit test",
+      "description" : "computer unit test",
       "id" : "BABE1442-3C98-41FF-AFB0-D0F5829B020D"
     },
     "id" : "BABE1442-3C98-41FF-AFB0-D0F5829B020D",
     "lastModified" : "1970-01-01T00:00:00Z",
     "lastUsedOnDevice" : {
       "date" : "1970-01-01T00:00:00Z",
-      "description" : "unit test",
+      "description" : "computer unit test",
       "id" : "BABE1442-3C98-41FF-AFB0-D0F5829B020D"
     },
     "snapshotVersion" : 46
@@ -217,10 +219,20 @@
           "appearanceID" : 0,
           "displayName" : "First",
           "networkID" : 14,
+          "onLedgerSettings" : {
+            "thirdPartyDeposits" : {
+              "assetsExceptionList" : [
+
+              ],
+              "depositorsAllowList" : [
+
+              ],
+              "depositRule" : "acceptAll"
+            }
+          },
           "securityState" : {
             "discriminator" : "unsecured",
             "unsecuredEntityControl" : {
-              "entityIndex" : 0,
               "authenticationSigning" : {
                 "badge" : {
                   "discriminator" : "virtualSource",
@@ -232,7 +244,7 @@
                         "scheme" : "cap26"
                       },
                       "publicKey" : {
-                        "compressedData" : "7c0d862503c6662374e131b735d7a1fffc053820a5bc7674515fb24c8d97f25c",
+                        "compressedData" : "b009d846640efbe214c993898f9bb91db774f3eec07b8b93f73b5eb5671e7c90",
                         "curve" : "curve25519"
                       }
                     }
@@ -246,6 +258,7 @@
                   }
                 }
               },
+              "entityIndex" : 0,
               "transactionSigning" : {
                 "badge" : {
                   "discriminator" : "virtualSource",
@@ -272,13 +285,6 @@
                 }
               }
             }
-          },
-          "onLedgerSettings": {
-            "thirdPartyDeposits": {
-              "depositRule": "acceptAll",
-              "assetsExceptionList": [],
-              "depositorsAllowList": []
-            }
           }
         },
         {
@@ -286,10 +292,30 @@
           "appearanceID" : 1,
           "displayName" : "Second",
           "networkID" : 14,
+          "onLedgerSettings" : {
+            "thirdPartyDeposits" : {
+              "assetsExceptionList" : [
+                {
+                  "address" : "resource_tdx_21_1tknxxxxxxxxxradxrdxxxxxxxxx009923554798xxxxxxxxxsmgder",
+                  "exceptionRule" : "deny"
+                }
+              ],
+              "depositorsAllowList" : [
+                {
+                  "discriminator" : "resourceAddress",
+                  "value" : "resource_tdx_21_1tknxxxxxxxxxradxrdxxxxxxxxx009923554798xxxxxxxxxsmgder"
+                },
+                {
+                  "discriminator" : "nonFungibleGlobalID",
+                  "value" : "resource_tdx_21_1tknxxxxxxxxxradxrdxxxxxxxxx009923554798xxxxxxxxxsmgder:#2#"
+                }
+              ],
+              "depositRule" : "acceptKnown"
+            }
+          },
           "securityState" : {
             "discriminator" : "unsecured",
             "unsecuredEntityControl" : {
-              "entityIndex" : 1,
               "authenticationSigning" : {
                 "badge" : {
                   "discriminator" : "virtualSource",
@@ -301,7 +327,7 @@
                         "scheme" : "cap26"
                       },
                       "publicKey" : {
-                        "compressedData" : "5cfab91eed77cc5952de5e29d963b15a61925194bb05757b083190cabdf59080",
+                        "compressedData" : "18ad44b7784117e446bc262d8793fc930cad6c3dbaec153488a473c05cc753ff",
                         "curve" : "curve25519"
                       }
                     }
@@ -315,6 +341,7 @@
                   }
                 }
               },
+              "entityIndex" : 1,
               "transactionSigning" : {
                 "badge" : {
                   "discriminator" : "virtualSource",
@@ -341,27 +368,6 @@
                 }
               }
             }
-          },
-          "onLedgerSettings": {
-            "thirdPartyDeposits": {
-              "depositRule": "acceptKnown",
-              "assetsExceptionList": [
-                {
-                  "address": "resource_tdx_21_1tknxxxxxxxxxradxrdxxxxxxxxx009923554798xxxxxxxxxsmgder",
-                  "exceptionRule": "deny"
-                }
-              ],
-              "depositorsAllowList": [
-                {
-                  "discriminator": "resourceAddress",
-                  "value": "resource_tdx_21_1tknxxxxxxxxxradxrdxxxxxxxxx009923554798xxxxxxxxxsmgder"
-                },
-                {
-                  "discriminator": "nonFungibleGlobalID",
-                  "value": "resource_tdx_21_1tknxxxxxxxxxradxrdxxxxxxxxx009923554798xxxxxxxxxsmgder:#2#"
-                }
-              ]
-            }
           }
         },
         {
@@ -369,10 +375,30 @@
           "appearanceID" : 2,
           "displayName" : "Third",
           "networkID" : 14,
+          "onLedgerSettings" : {
+            "thirdPartyDeposits" : {
+              "assetsExceptionList" : [
+                {
+                  "address" : "resource_tdx_21_1tknxxxxxxxxxradxrdxxxxxxxxx009923554798xxxxxxxxxsmgder",
+                  "exceptionRule" : "allow"
+                }
+              ],
+              "depositorsAllowList" : [
+                {
+                  "discriminator" : "resourceAddress",
+                  "value" : "resource_tdx_21_1tknxxxxxxxxxradxrdxxxxxxxxx009923554798xxxxxxxxxsmgder"
+                },
+                {
+                  "discriminator" : "nonFungibleGlobalID",
+                  "value" : "resource_tdx_21_1tknxxxxxxxxxradxrdxxxxxxxxx009923554798xxxxxxxxxsmgder:#2#"
+                }
+              ],
+              "depositRule" : "denyAll"
+            }
+          },
           "securityState" : {
             "discriminator" : "unsecured",
             "unsecuredEntityControl" : {
-              "entityIndex" : 2,
               "authenticationSigning" : {
                 "badge" : {
                   "discriminator" : "virtualSource",
@@ -384,7 +410,7 @@
                         "scheme" : "cap26"
                       },
                       "publicKey" : {
-                        "compressedData" : "1cb848d3487b4cec061535a5ebaa9f83d0fd3ec845917fae372896e454618a9c",
+                        "compressedData" : "6891f60631cdf1f19ea07b5feff4473ea740c9a5fada93811e5443b8aa96301e",
                         "curve" : "curve25519"
                       }
                     }
@@ -398,6 +424,7 @@
                   }
                 }
               },
+              "entityIndex" : 2,
               "transactionSigning" : {
                 "badge" : {
                   "discriminator" : "virtualSource",
@@ -424,27 +451,6 @@
                 }
               }
             }
-          },
-          "onLedgerSettings": {
-            "thirdPartyDeposits": {
-              "depositRule": "denyAll",
-              "assetsExceptionList": [
-                {
-                  "address": "resource_tdx_21_1tknxxxxxxxxxradxrdxxxxxxxxx009923554798xxxxxxxxxsmgder",
-                  "exceptionRule": "allow"
-                }
-              ],
-              "depositorsAllowList": [
-                {
-                  "discriminator": "resourceAddress",
-                  "value": "resource_tdx_21_1tknxxxxxxxxxradxrdxxxxxxxxx009923554798xxxxxxxxxsmgder"
-                },
-                {
-                  "discriminator": "nonFungibleGlobalID",
-                  "value": "resource_tdx_21_1tknxxxxxxxxxradxrdxxxxxxxxx009923554798xxxxxxxxxsmgder:#2#"
-                }
-              ]
-            }
           }
         }
       ],
@@ -468,32 +474,32 @@
                 }
               },
               "sharedPersonaData" : {
-                "companyName" : "2",
+                "companyName" : "00000000-0000-0000-0000-000000000002",
                 "creditCards" : {
                   "ids" : [
-                    "11"
+                    "00000000-0000-0000-0000-00000000000B"
                   ],
                   "request" : {
                     "quantifier" : "atLeast",
                     "quantity" : 1
                   }
                 },
-                "dateOfBirth" : "1",
+                "dateOfBirth" : "00000000-0000-0000-0000-000000000001",
                 "emailAddresses" : {
                   "ids" : [
-                    "3",
-                    "4"
+                    "00000000-0000-0000-0000-000000000003",
+                    "00000000-0000-0000-0000-000000000004"
                   ],
                   "request" : {
                     "quantifier" : "atLeast",
                     "quantity" : 1
                   }
                 },
-                "name" : "0",
+                "name" : "00000000-0000-0000-0000-000000000000",
                 "phoneNumbers" : {
                   "ids" : [
-                    "5",
-                    "6"
+                    "00000000-0000-0000-0000-000000000005",
+                    "00000000-0000-0000-0000-000000000006"
                   ],
                   "request" : {
                     "quantifier" : "atLeast",
@@ -502,8 +508,8 @@
                 },
                 "postalAddresses" : {
                   "ids" : [
-                    "9",
-                    "10"
+                    "00000000-0000-0000-0000-000000000009",
+                    "00000000-0000-0000-0000-00000000000A"
                   ],
                   "request" : {
                     "quantifier" : "atLeast",
@@ -512,8 +518,8 @@
                 },
                 "urls" : {
                   "ids" : [
-                    "7",
-                    "8"
+                    "00000000-0000-0000-0000-000000000007",
+                    "00000000-0000-0000-0000-000000000008"
                   ],
                   "request" : {
                     "quantifier" : "atLeast",
@@ -535,7 +541,7 @@
                 }
               },
               "sharedPersonaData" : {
-                "name" : "0"
+                "name" : "00000000-0000-0000-0000-0000000000FF"
               }
             }
           ]
@@ -549,12 +555,12 @@
           "networkID" : 14,
           "personaData" : {
             "companyName" : {
-              "id" : "2",
+              "id" : "00000000-0000-0000-0000-000000000002",
               "value" : "Bitcoin"
             },
             "creditCards" : [
               {
-                "id" : "11",
+                "id" : "00000000-0000-0000-0000-00000000000B",
                 "value" : {
                   "cvc" : 512,
                   "expiry" : {
@@ -567,41 +573,41 @@
               }
             ],
             "dateOfBirth" : {
-              "id" : "1",
+              "id" : "00000000-0000-0000-0000-000000000001",
               "value" : "2009-01-03T12:00:00Z"
             },
             "emailAddresses" : [
               {
-                "id" : "3",
+                "id" : "00000000-0000-0000-0000-000000000003",
                 "value" : "satoshi@nakamoto.bitcoin"
               },
               {
-                "id" : "4",
+                "id" : "00000000-0000-0000-0000-000000000004",
                 "value" : "be.your@own.bank"
               }
             ],
             "name" : {
-              "id" : "0",
+              "id" : "00000000-0000-0000-0000-000000000000",
               "value" : {
-                "family" : "Nakamoto",
-                "given" : "Satoshi",
-                "nickname" : "Creator of Bitcoin",
+                "familyName" : "Nakamoto",
+                "givenNames" : "Satoshi",
+                "nickname" : "Bitcoin",
                 "variant" : "eastern"
               }
             },
             "phoneNumbers" : [
               {
-                "id" : "5",
+                "id" : "00000000-0000-0000-0000-000000000005",
                 "value" : "21000000"
               },
               {
-                "id" : "6",
+                "id" : "00000000-0000-0000-0000-000000000006",
                 "value" : "123456789"
               }
             ],
             "postalAddresses" : [
               {
-                "id" : "9",
+                "id" : "00000000-0000-0000-0000-000000000009",
                 "value" : [
                   {
                     "discriminator" : "postalCode",
@@ -630,7 +636,7 @@
                 ]
               },
               {
-                "id" : "10",
+                "id" : "00000000-0000-0000-0000-00000000000A",
                 "value" : [
                   {
                     "discriminator" : "streetLine0",
@@ -661,11 +667,11 @@
             ],
             "urls" : [
               {
-                "id" : "7",
+                "id" : "00000000-0000-0000-0000-000000000007",
                 "value" : "bitcoin.org"
               },
               {
-                "id" : "8",
+                "id" : "00000000-0000-0000-0000-000000000008",
                 "value" : "https://github.com/bitcoin-core/secp256k1"
               }
             ]
@@ -673,7 +679,6 @@
           "securityState" : {
             "discriminator" : "unsecured",
             "unsecuredEntityControl" : {
-              "entityIndex" : 0,
               "authenticationSigning" : {
                 "badge" : {
                   "discriminator" : "virtualSource",
@@ -685,7 +690,7 @@
                         "scheme" : "cap26"
                       },
                       "publicKey" : {
-                        "compressedData" : "82248fcd9d9d1923729634231d288b6b5c6a5d3dd0cd52d5c06d998c057b0460",
+                        "compressedData" : "1309188a0c42704e4a911f16f6a658513cee290d9e3a4f033875b55504221eeb",
                         "curve" : "curve25519"
                       }
                     }
@@ -699,6 +704,7 @@
                   }
                 }
               },
+              "entityIndex" : 0,
               "transactionSigning" : {
                 "badge" : {
                   "discriminator" : "virtualSource",
@@ -739,12 +745,12 @@
 
             ],
             "name" : {
-              "id" : "0",
+              "id" : "00000000-0000-0000-0000-0000000000FF",
               "value" : {
-                "family" : "Publicson",
-                "given" : "Maria",
-                "variant" : "western",
-                "nickname" : "MP"
+                "familyName" : "Publicson",
+                "givenNames" : "Maria",
+                "nickname" : "Publy",
+                "variant" : "western"
               }
             },
             "phoneNumbers" : [
@@ -760,7 +766,6 @@
           "securityState" : {
             "discriminator" : "unsecured",
             "unsecuredEntityControl" : {
-              "entityIndex" : 1,
               "authenticationSigning" : {
                 "badge" : {
                   "discriminator" : "virtualSource",
@@ -772,7 +777,7 @@
                         "scheme" : "cap26"
                       },
                       "publicKey" : {
-                        "compressedData" : "133801ad4b98bd8925cd5d93fdfc3cae1965b48af51bbfe191e08d6a6911274b",
+                        "compressedData" : "c00858697875ea3eb6e2d8334d7a7f1a215269cb8097d08da30649d5eba9285b",
                         "curve" : "curve25519"
                       }
                     }
@@ -786,6 +791,7 @@
                   }
                 }
               },
+              "entityIndex" : 1,
               "transactionSigning" : {
                 "badge" : {
                   "discriminator" : "virtualSource",
