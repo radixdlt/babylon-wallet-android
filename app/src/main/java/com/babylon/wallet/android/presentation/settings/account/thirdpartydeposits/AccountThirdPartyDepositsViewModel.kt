@@ -293,6 +293,7 @@ class AccountThirdPartyDepositsViewModel @Inject constructor(
                             updatedThirdPartyDepositSettings = account.onLedgerSettings.thirdPartyDeposits
                         )
                     }
+                    checkIfSettingsChanged()
                 }
         }
     }
