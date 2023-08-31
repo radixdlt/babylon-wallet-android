@@ -42,6 +42,11 @@ class PreferencesManager @Inject constructor(
             preferences[KEY_FIRST_PERSONA_CREATED] ?: false
         }
 
+    val isImportFromOlympiaSettingDismissed: Flow<Boolean> = dataStore.data
+        .map { preferences ->
+            preferences[KEY_IMPORT_OLYMPIA_WALLET_SETTING_DISMISSED] ?: false
+        }
+
     suspend fun markFactorSourceBackedUp(id: String) {
         dataStore.edit { preferences ->
             val current = preferences[KEY_BACKED_UP_FACTOR_SOURCE_IDS]
@@ -62,6 +67,12 @@ class PreferencesManager @Inject constructor(
     suspend fun markFirstPersonaCreated() {
         dataStore.edit { preferences ->
             preferences[KEY_FIRST_PERSONA_CREATED] = true
+        }
+    }
+
+    suspend fun markImportFromOlympiaComplete() {
+        dataStore.edit { preferences ->
+            preferences[KEY_IMPORT_OLYMPIA_WALLET_SETTING_DISMISSED] = true
         }
     }
 
@@ -94,5 +105,6 @@ class PreferencesManager @Inject constructor(
         private val KEY_ACCOUNT_TO_EPOCH_MAP = stringPreferencesKey("account_to_epoch_map")
         private val KEY_LAST_BACKUP_INSTANT = stringPreferencesKey("last_backup_instant")
         private val KEY_BACKED_UP_FACTOR_SOURCE_IDS = stringPreferencesKey("backed_up_factor_source_ids")
+        private val KEY_IMPORT_OLYMPIA_WALLET_SETTING_DISMISSED = booleanPreferencesKey("import_olympia_wallet_setting_dismissed")
     }
 }
