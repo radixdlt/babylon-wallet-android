@@ -111,7 +111,7 @@ fun SpecificAssetsDepositsScreen(
         }
     }
     val dialogState = state.deleteDialogState
-    if (dialogState is DeleteDialogState.AboutToDelete) {
+    if (dialogState is DeleteDialogState.AboutToDeleteAssetException) {
         BasicPromptAlertDialog(
             finish = {
                 if (it) {
@@ -618,7 +618,8 @@ enum class SpecificAssetsTab {
 
 sealed interface DeleteDialogState {
     object None : DeleteDialogState
-    data class AboutToDelete(val assetException: ThirdPartyDeposits.AssetException) : DeleteDialogState
+    data class AboutToDeleteAssetException(val assetException: ThirdPartyDeposits.AssetException) : DeleteDialogState
+    data class AboutToDeleteAssetDepositor(val depositor: ThirdPartyDeposits.DepositorAddress) : DeleteDialogState
 }
 
 @Preview(showBackground = true)

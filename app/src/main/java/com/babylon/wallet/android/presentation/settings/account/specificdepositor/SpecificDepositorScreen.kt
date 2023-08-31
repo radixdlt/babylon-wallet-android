@@ -56,8 +56,10 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.presentation.common.UiMessage
+import com.babylon.wallet.android.presentation.settings.account.specificassets.DeleteDialogState
 import com.babylon.wallet.android.presentation.settings.account.thirdpartydeposits.AccountThirdPartyDepositsViewModel
 import com.babylon.wallet.android.presentation.settings.account.thirdpartydeposits.AssetType
+import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.BottomDialogDragHandle
 import com.babylon.wallet.android.presentation.ui.composables.ImageSize
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
@@ -94,6 +96,38 @@ fun SpecificDepositorScreen(
         } else {
             onBackClick()
         }
+    }
+    val dialogState = state.deleteDialogState
+    if (dialogState is DeleteDialogState.AboutToDeleteAssetDepositor) {
+        BasicPromptAlertDialog(
+            finish = {
+                if (it) {
+                    sharedViewModel.onDeleteDepositor(dialogState.depositor)
+                } else {
+                    sharedViewModel.hideDeletePrompt()
+                }
+            },
+            title = {
+                Text(
+                    text = stringResource(id = R.string.accountSettings_specificAssetsDeposits_removeDepositor),
+                    style = RadixTheme.typography.body1Header,
+                    color = RadixTheme.colors.gray1
+                )
+            },
+            text = {
+                Text(
+                    text = stringResource(id = R.string.accountSettings_specificAssetsDeposits_removeDepositorMessage),
+                    style = RadixTheme.typography.body2Regular,
+                    color = RadixTheme.colors.gray1
+                )
+            },
+            confirmText = stringResource(
+                id = R.string.common_remove
+            ),
+            dismissText = stringResource(
+                id = R.string.common_cancel
+            )
+        )
     }
     ModalBottomSheetLayout(
         modifier = modifier

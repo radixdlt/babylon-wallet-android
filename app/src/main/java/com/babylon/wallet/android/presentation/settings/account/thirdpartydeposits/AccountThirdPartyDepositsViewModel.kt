@@ -168,7 +168,8 @@ class AccountThirdPartyDepositsViewModel @Inject constructor(
             state.copy(
                 updatedThirdPartyDepositSettings = state.updatedThirdPartyDepositSettings?.copy(
                     depositorsAllowList = updatedDepositors
-                )
+                ),
+                deleteDialogState = DeleteDialogState.None
             )
         }
         checkIfSettingsChanged()
@@ -232,7 +233,13 @@ class AccountThirdPartyDepositsViewModel @Inject constructor(
 
     fun showDeletePrompt(asset: ThirdPartyDeposits.AssetException) {
         _state.update { state ->
-            state.copy(deleteDialogState = DeleteDialogState.AboutToDelete(asset))
+            state.copy(deleteDialogState = DeleteDialogState.AboutToDeleteAssetException(asset))
+        }
+    }
+
+    fun showDeletePrompt(depositor: ThirdPartyDeposits.DepositorAddress) {
+        _state.update { state ->
+            state.copy(deleteDialogState = DeleteDialogState.AboutToDeleteAssetDepositor(depositor))
         }
     }
 
