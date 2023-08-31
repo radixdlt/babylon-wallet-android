@@ -83,6 +83,8 @@ class EntityRepositoryImpl @Inject constructor(
         explicitMetadataForAssets: Set<ExplicitMetadataKey>,
         isRefreshing: Boolean
     ): Result<List<AccountWithResources>> {
+        if (accounts.isEmpty()) return Result.Success(emptyList())
+
         val listOfEntityDetailsResponsesResult = getStateEntityDetailsResponse(
             addresses = accounts.map { it.address },
             explicitMetadata = explicitMetadataForAssets,

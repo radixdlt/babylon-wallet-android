@@ -8,7 +8,9 @@ import androidx.navigation.NavGraphBuilder
 import com.google.accompanist.navigation.animation.composable
 
 fun NavController.appSettingsScreen() {
-    navigate("settings_app_settings")
+    navigate("settings_app_settings") {
+        launchSingleTop = true
+    }
 }
 
 @OptIn(ExperimentalAnimationApi::class)

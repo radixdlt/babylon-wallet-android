@@ -11,7 +11,9 @@ import com.google.accompanist.navigation.animation.composable
 private const val ROUTE = "import_legacy_wallet_route"
 
 fun NavController.importLegacyWalletScreen() {
-    navigate(ROUTE)
+    navigate(ROUTE) {
+        launchSingleTop = true
+    }
 }
 
 @OptIn(ExperimentalAnimationApi::class)

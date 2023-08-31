@@ -19,7 +19,9 @@ internal class AccountPreferencesArgs(val address: String) {
 }
 
 fun NavController.accountPreferences(address: String) {
-    navigate("account_preference_route/$address")
+    navigate("account_preference_route/$address") {
+        launchSingleTop = true
+    }
 }
 
 @OptIn(ExperimentalAnimationApi::class)
