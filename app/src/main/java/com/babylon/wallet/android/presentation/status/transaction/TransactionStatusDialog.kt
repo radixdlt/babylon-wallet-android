@@ -70,7 +70,11 @@ fun TransactionStatusDialog(
             }
         }
     }
-    Box(modifier = modifier.fillMaxSize().throttleClickable { dismissHandler() }) {
+    Box(
+        modifier = modifier
+            .fillMaxSize()
+            .throttleClickable { dismissHandler() }
+    ) {
         BoxWithConstraints(Modifier.align(Alignment.BottomCenter)) {
             val maxHeight = with(LocalDensity.current) {
                 maxHeight.toPx()
@@ -143,31 +147,34 @@ fun TransactionStatusDialog(
                         )
                     }
 
-            androidx.compose.animation.AnimatedVisibility(
-                visible = state.isSuccess,
-                enter = fadeIn(),
-                exit = fadeOut()
-            ) {
-                // Need to send the correct transaction id
-                SuccessContent(transactionAddress = state.transactionId)
+                    androidx.compose.animation.AnimatedVisibility(
+                        visible = state.isSuccess,
+                        enter = fadeIn(),
+                        exit = fadeOut()
+                    ) {
+                        // Need to send the correct transaction id
+                        SuccessContent(transactionAddress = state.transactionId)
+                    }
+                }
+
+                if (state.isIgnoreTransactionModalShowing) {
+                    BasicPromptAlertDialog(
+                        finish = { accepted ->
+                            if (accepted) {
+                                viewModel.onDismissConfirmed()
+                            } else {
+                                viewModel.onDismissCanceled()
+                            }
+                        },
+                        text = {
+                            Text(text = stringResource(id = R.string.transaction_status_dismiss_dialog_message))
+                        },
+                        confirmText = stringResource(id = R.string.common_ok),
+                        dismissText = null
+                    )
+                }
             }
         }
-
-    if (state.isIgnoreTransactionModalShowing) {
-        BasicPromptAlertDialog(
-            finish = { accepted ->
-                if (accepted) {
-                    viewModel.onDismissConfirmed()
-                } else {
-                    viewModel.onDismissCanceled()
-                }
-            },
-            text = {
-                Text(text = stringResource(id = R.string.transaction_status_dismiss_dialog_message))
-            },
-            confirmText = stringResource(id = R.string.common_ok),
-            dismissText = null
-        )
     }
 }
 

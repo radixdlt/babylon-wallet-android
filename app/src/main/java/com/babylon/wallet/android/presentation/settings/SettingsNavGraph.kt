@@ -120,10 +120,6 @@ private fun NavGraphBuilder.settingsAll(navController: NavController) {
                         }
                     }
 
-                    SettingsItem.TopLevelSettings.Personas -> {
-                        navController.personaScreen()
-                    }
-
                     SettingsItem.TopLevelSettings.AuthorizedDapps -> {
                         navController.authorizedDAppsScreen()
                     }
