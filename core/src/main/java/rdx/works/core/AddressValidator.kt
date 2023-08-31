@@ -8,7 +8,7 @@ object AddressValidator {
     fun isValid(address: String, networkId: Int, allowedEntityTypes: Set<EntityType> = emptySet()): Boolean = runCatching {
         Address(address)
     }.getOrNull()?.let {
-        val allowedEntity = allowedEntityTypes.isNotEmpty() && allowedEntityTypes.contains(it.entityType())
+        val allowedEntity = allowedEntityTypes.isEmpty() || allowedEntityTypes.contains(it.entityType())
         it.networkId() == networkId.toUByte() && allowedEntity
     } ?: false
 
