@@ -6,15 +6,18 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Divider
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -63,9 +66,6 @@ fun LedgerHardwareWalletsScreen(
 
     Box(
         modifier = modifier
-            .navigationBarsPadding()
-            .fillMaxSize()
-            .background(RadixTheme.colors.gray5)
     ) {
         when (state.showContent) {
             LedgerHardwareWalletsUiState.ShowContent.Details -> {
@@ -77,34 +77,27 @@ fun LedgerHardwareWalletsScreen(
             }
 
             LedgerHardwareWalletsUiState.ShowContent.AddLedger -> {
-                Box {
-                    AddLedgerDeviceScreen(
-                        modifier = Modifier,
-                        showContent = addLedgerDeviceState.showContent,
-                        deviceModel = addLedgerDeviceState.newConnectedLedgerDevice?.model?.toProfileLedgerDeviceModel()?.value,
-                        onSendAddLedgerRequestClick = addLedgerDeviceViewModel::onSendAddLedgerRequestClick,
-                        onConfirmLedgerNameClick = {
-                            coroutineScope.launch {
-                                addLedgerDeviceViewModel.onConfirmLedgerNameClick(it)
-                                viewModel.onCloseClick()
-                            }
-                        },
-                        backIconType = BackIconType.Back,
-                        onClose = {
-                            addLedgerDeviceViewModel.initState()
-                            viewModel.onCloseClick()
-                        },
-                        waitingForLedgerResponse = false,
-                        onBackClick = {
-                            addLedgerDeviceViewModel.initState()
+                AddLedgerDeviceScreen(
+                    showContent = addLedgerDeviceState.showContent,
+                    deviceModel = addLedgerDeviceState.newConnectedLedgerDevice?.model?.toProfileLedgerDeviceModel()?.value,
+                    onSendAddLedgerRequestClick = addLedgerDeviceViewModel::onSendAddLedgerRequestClick,
+                    onConfirmLedgerNameClick = {
+                        coroutineScope.launch {
+                            addLedgerDeviceViewModel.onConfirmLedgerNameClick(it)
                             viewModel.onCloseClick()
                         }
-                    )
-                    SnackbarUiMessageHandler(
-                        message = addLedgerDeviceState.uiMessage,
-                        onMessageShown = addLedgerDeviceViewModel::onMessageShown
-                    )
-                }
+                    },
+                    backIconType = BackIconType.Back,
+                    onClose = {
+                        addLedgerDeviceViewModel.initState()
+                        viewModel.onCloseClick()
+                    },
+                    waitingForLedgerResponse = false,
+                    onBackClick = {
+                        addLedgerDeviceViewModel.initState()
+                        viewModel.onCloseClick()
+                    }
+                )
             }
 
             LedgerHardwareWalletsUiState.ShowContent.LinkNewConnector -> {
@@ -148,19 +141,24 @@ private fun LedgerHardwareWalletsContent(
 ) {
     BackHandler(onBack = onBackClick)
 
-    Column {
-        RadixCenteredTopAppBar(
-            title = stringResource(R.string.settings_ledgerHardwareWallets),
-            onBackClick = onBackClick,
-            contentColor = RadixTheme.colors.gray1,
-            modifier = Modifier.background(RadixTheme.colors.defaultBackground)
-        )
-        Divider(color = RadixTheme.colors.gray5)
-        LedgerDeviceDetails(
-            modifier = Modifier.fillMaxWidth(),
-            ledgerFactorSources = ledgerDevices,
-            onAddLedgerDeviceClick = onAddLedgerDeviceClick
-        )
+    Scaffold(
+        topBar = {
+            RadixCenteredTopAppBar(
+                title = stringResource(R.string.settings_ledgerHardwareWallets),
+                onBackClick = onBackClick,
+                windowInsets = WindowInsets.statusBars
+            )
+        },
+        containerColor = RadixTheme.colors.gray5
+    ) { padding ->
+        Column(modifier = Modifier.padding(padding)) {
+            Divider(color = RadixTheme.colors.gray5)
+            LedgerDeviceDetails(
+                modifier = Modifier.fillMaxWidth(),
+                ledgerFactorSources = ledgerDevices,
+                onAddLedgerDeviceClick = onAddLedgerDeviceClick
+            )
+        }
     }
 }
 

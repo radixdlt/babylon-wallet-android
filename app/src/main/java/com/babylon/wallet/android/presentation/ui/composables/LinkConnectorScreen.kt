@@ -4,12 +4,15 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBars
 import androidx.compose.material3.Icon
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -27,24 +30,29 @@ import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 
 @Composable
 fun LinkConnectorScreen(
-    modifier: Modifier,
+    modifier: Modifier = Modifier,
     backIconType: BackIconType = BackIconType.Back,
     onLinkConnectorClick: () -> Unit,
     onCloseClick: () -> Unit
 ) {
     BackHandler(onBack = onCloseClick)
 
-    Column(modifier = modifier.background(RadixTheme.colors.defaultBackground)) {
-        RadixCenteredTopAppBar(
-            title = stringResource(id = com.babylon.wallet.android.R.string.empty),
-            onBackClick = onCloseClick,
-            contentColor = RadixTheme.colors.gray1,
-            modifier = Modifier.background(RadixTheme.colors.defaultBackground),
-            backIconType = backIconType
-        )
+    Scaffold(
+        modifier = modifier,
+        topBar = {
+            RadixCenteredTopAppBar(
+                title = stringResource(id = com.babylon.wallet.android.R.string.empty),
+                onBackClick = onCloseClick,
+                backIconType = backIconType,
+                windowInsets = WindowInsets.statusBars
+            )
+        },
+        containerColor = RadixTheme.colors.defaultBackground
+    ) { padding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
+                .padding(padding)
                 .padding(
                     horizontal = RadixTheme.dimensions.paddingDefault,
                     vertical = RadixTheme.dimensions.paddingXLarge
@@ -82,6 +90,7 @@ fun LinkConnectorScreen(
             )
         }
     }
+
 }
 
 @Preview(showBackground = true)
