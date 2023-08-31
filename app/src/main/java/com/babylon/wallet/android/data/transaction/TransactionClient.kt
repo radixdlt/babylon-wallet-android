@@ -75,8 +75,10 @@ class TransactionClient @Inject constructor(
             )
         }
 
-        val signers = getSigningEntities(manifestWithTransactionFee)
-        val notaryAndSigners = NotaryAndSigners(signers, request.ephemeralNotaryPrivateKey)
+        val notaryAndSigners = getNotaryAndSigners(
+            manifest = manifestWithTransactionFee,
+            ephemeralNotaryPrivateKey = request.ephemeralNotaryPrivateKey
+        )
         return buildTransactionHeader(
             networkId = request.networkId.value,
             notaryAndSigners = notaryAndSigners,
@@ -105,7 +107,7 @@ class TransactionClient @Inject constructor(
             }
 
             val signatures = collectSignersSignaturesUseCase(
-                signers = signers,
+                signers = notaryAndSigners.signers,
                 signRequest = SignRequest.SignTransactionRequest(
                     dataToSign = compiledTransactionIntent.toByteArray(),
                     hashedDataToSign = transactionIntentHash.bytes().toByteArray()
@@ -340,20 +342,25 @@ class TransactionClient @Inject constructor(
         }
     }
 
+    suspend fun getNotaryAndSigners(
+        manifest: TransactionManifest,
+        ephemeralNotaryPrivateKey: PrivateKey
+    ): NotaryAndSigners {
+        return NotaryAndSigners(
+            signers = getSigningEntities(manifest),
+            ephemeralNotaryPrivateKey = ephemeralNotaryPrivateKey
+        )
+    }
+
     suspend fun getTransactionPreview(
         manifest: TransactionManifest,
-        ephemeralNotaryPrivateKey: PrivateKey,
+        notaryAndSigners: NotaryAndSigners
     ): Result<TransactionPreviewResponse> {
         val (startEpochInclusive, endEpochExclusive) = with(transactionRepository.getLedgerEpoch()) {
             val epoch = this.value() ?: return@with (0L to 0L)
 
             (epoch to epoch + 1L)
         }
-
-        val notaryAndSigners = NotaryAndSigners(
-            signers = getSigningEntities(manifest),
-            ephemeralNotaryPrivateKey = ephemeralNotaryPrivateKey
-        )
 
         return transactionRepository.getTransactionPreview(
             TransactionPreviewRequest(

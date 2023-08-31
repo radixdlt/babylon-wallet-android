@@ -346,6 +346,10 @@ fun NetworkFeesDefaultView(
                     .padding(vertical = RadixTheme.dimensions.paddingSmall)
             ) {
                 Text(
+                    modifier = Modifier
+                        .padding(
+                            end = RadixTheme.dimensions.paddingMedium
+                        ),
                     text = stringResource(id = R.string.transactionReview_customizeNetworkFeeSheet_networkFee).uppercase(),
                     style = RadixTheme.typography.body1Link,
                     color = RadixTheme.colors.gray2
@@ -358,7 +362,8 @@ fun NetworkFeesDefaultView(
                         stringResource(id = R.string.transactionReview_customizeNetworkFeeSheet_noneDue)
                     },
                     style = RadixTheme.typography.body1Header,
-                    color = RadixTheme.colors.gray1
+                    color = RadixTheme.colors.gray1,
+                    textAlign = TextAlign.End
                 )
             }
 
@@ -367,7 +372,10 @@ fun NetworkFeesDefaultView(
                     .padding(vertical = RadixTheme.dimensions.paddingSmall)
             ) {
                 Text(
-                    modifier = Modifier,
+                    modifier = Modifier
+                        .padding(
+                            end = RadixTheme.dimensions.paddingMedium
+                        ),
                     text = stringResource(id = R.string.transactionReview_customizeNetworkFeeSheet_royaltyFee).uppercase(),
                     style = RadixTheme.typography.body1Link,
                     color = RadixTheme.colors.gray2
@@ -386,7 +394,8 @@ fun NetworkFeesDefaultView(
                         RadixTheme.colors.gray3
                     } else {
                         RadixTheme.colors.gray1
-                    }
+                    },
+                    textAlign = TextAlign.End
                 )
             }
 
@@ -405,7 +414,10 @@ fun NetworkFeesDefaultView(
                     .padding(vertical = RadixTheme.dimensions.paddingSmall)
             ) {
                 Text(
-                    modifier = Modifier,
+                    modifier = Modifier
+                        .padding(
+                            end = RadixTheme.dimensions.paddingMedium
+                        ),
                     text = stringResource(id = R.string.transactionReview_networkFee_heading).uppercase(),
                     style = RadixTheme.typography.body1Link,
                     color = RadixTheme.colors.gray2
@@ -417,7 +429,8 @@ fun NetworkFeesDefaultView(
                         transactionFees?.defaultTransactionFee?.displayableQuantity().orEmpty()
                     ),
                     style = RadixTheme.typography.body1Header,
-                    color = RadixTheme.colors.gray1
+                    color = RadixTheme.colors.gray1,
+                    textAlign = TextAlign.End
                 )
             }
         }
@@ -534,7 +547,10 @@ fun NetworkFeesAdvancedView(
                     .padding(vertical = RadixTheme.dimensions.paddingSmall)
             ) {
                 Text(
-                    modifier = Modifier,
+                    modifier = Modifier
+                        .padding(
+                            end = RadixTheme.dimensions.paddingMedium
+                        ),
                     text = stringResource(
                         id = R.string.transactionReview_customizeNetworkFeeSheet_networkExecution
                     ).uppercase(),
@@ -548,7 +564,8 @@ fun NetworkFeesAdvancedView(
                         transactionFees?.networkExecutionCost.orEmpty()
                     ),
                     style = RadixTheme.typography.body1Header,
-                    color = RadixTheme.colors.gray1
+                    color = RadixTheme.colors.gray1,
+                    textAlign = TextAlign.End
                 )
             }
 
@@ -557,7 +574,10 @@ fun NetworkFeesAdvancedView(
                     .padding(vertical = RadixTheme.dimensions.paddingSmall)
             ) {
                 Text(
-                    modifier = Modifier,
+                    modifier = Modifier
+                        .padding(
+                            end = RadixTheme.dimensions.paddingMedium
+                        ),
                     text = stringResource(
                         id = R.string.transactionReview_customizeNetworkFeeSheet_networkFinalization
                     ).uppercase(),
@@ -571,7 +591,8 @@ fun NetworkFeesAdvancedView(
                         transactionFees?.networkFinalizationCost.orEmpty()
                     ),
                     style = RadixTheme.typography.body1Header,
-                    color = RadixTheme.colors.gray1
+                    color = RadixTheme.colors.gray1,
+                    textAlign = TextAlign.End
                 )
             }
 
@@ -580,7 +601,10 @@ fun NetworkFeesAdvancedView(
                     .padding(vertical = RadixTheme.dimensions.paddingSmall)
             ) {
                 Text(
-                    modifier = Modifier,
+                    modifier = Modifier
+                        .padding(
+                            end = RadixTheme.dimensions.paddingMedium
+                        ),
                     text = stringResource(
                         id = R.string.transactionReview_customizeNetworkFeeSheet_effectiveTip
                     ).uppercase(),
@@ -595,7 +619,8 @@ fun NetworkFeesAdvancedView(
                         effectiveTip
                     ),
                     style = RadixTheme.typography.body1Header,
-                    color = if (effectiveTip == "0") RadixTheme.colors.gray3 else RadixTheme.colors.gray1
+                    color = if (effectiveTip == "0") RadixTheme.colors.gray3 else RadixTheme.colors.gray1,
+                    textAlign = TextAlign.End
                 )
             }
 
@@ -604,7 +629,10 @@ fun NetworkFeesAdvancedView(
                     .padding(vertical = RadixTheme.dimensions.paddingSmall)
             ) {
                 Text(
-                    modifier = Modifier,
+                    modifier = Modifier
+                        .padding(
+                            end = RadixTheme.dimensions.paddingMedium
+                        ),
                     text = stringResource(
                         id = R.string.transactionReview_customizeNetworkFeeSheet_networkStorage
                     ).uppercase(),
@@ -618,7 +646,8 @@ fun NetworkFeesAdvancedView(
                         transactionFees?.networkStorageCost.orEmpty()
                     ),
                     style = RadixTheme.typography.body1Header,
-                    color = RadixTheme.colors.gray1
+                    color = RadixTheme.colors.gray1,
+                    textAlign = TextAlign.End
                 )
             }
 
@@ -627,7 +656,10 @@ fun NetworkFeesAdvancedView(
                     .padding(vertical = RadixTheme.dimensions.paddingSmall)
             ) {
                 Text(
-                    modifier = Modifier,
+                    modifier = Modifier
+                        .padding(
+                            end = RadixTheme.dimensions.paddingMedium
+                        ),
                     text = stringResource(id = R.string.transactionReview_customizeNetworkFeeSheet_padding).uppercase(),
                     style = RadixTheme.typography.body1Link,
                     color = RadixTheme.colors.gray2
@@ -639,7 +671,8 @@ fun NetworkFeesAdvancedView(
                         transactionFees?.feePaddingAmountForCalculation?.displayableQuantity().orEmpty()
                     ),
                     style = RadixTheme.typography.body1Header,
-                    color = RadixTheme.colors.gray1
+                    color = RadixTheme.colors.gray1,
+                    textAlign = TextAlign.End
                 )
             }
 
@@ -648,7 +681,10 @@ fun NetworkFeesAdvancedView(
                     .padding(vertical = RadixTheme.dimensions.paddingSmall)
             ) {
                 Text(
-                    modifier = Modifier,
+                    modifier = Modifier
+                        .padding(
+                            end = RadixTheme.dimensions.paddingMedium
+                        ),
                     text = stringResource(id = R.string.transactionReview_customizeNetworkFeeSheet_royalties).uppercase(),
                     style = RadixTheme.typography.body1Link,
                     color = RadixTheme.colors.gray2
@@ -670,7 +706,8 @@ fun NetworkFeesAdvancedView(
                         RadixTheme.colors.gray3
                     } else {
                         RadixTheme.colors.gray1
-                    }
+                    },
+                    textAlign = TextAlign.End
                 )
             }
 
@@ -679,7 +716,10 @@ fun NetworkFeesAdvancedView(
                     .padding(vertical = RadixTheme.dimensions.paddingSmall)
             ) {
                 Text(
-                    modifier = Modifier,
+                    modifier = Modifier
+                        .padding(
+                            end = RadixTheme.dimensions.paddingMedium
+                        ),
                     text = stringResource(
                         id = R.string.transactionReview_customizeNetworkFeeSheet_paidByDApps
                     ).uppercase(),
@@ -689,9 +729,13 @@ fun NetworkFeesAdvancedView(
                 Spacer(modifier = Modifier.weight(1f))
 
                 Text(
-                    text = transactionFees?.paidByDApps.orEmpty(),
+                    text = stringResource(
+                        id = R.string.transactionReview_xrdAmount,
+                        transactionFees?.paidByDApps.orEmpty()
+                    ),
                     style = RadixTheme.typography.body1Header,
-                    color = RadixTheme.colors.gray1
+                    color = RadixTheme.colors.gray1,
+                    textAlign = TextAlign.End
                 )
             }
 
@@ -712,7 +756,12 @@ fun NetworkFeesAdvancedView(
                         bottom = RadixTheme.dimensions.paddingDefault,
                     )
             ) {
-                Column {
+                Column(
+                    modifier = Modifier
+                        .padding(
+                            end = RadixTheme.dimensions.paddingMedium
+                        )
+                ) {
                     Text(
                         modifier = Modifier
                             .padding(end = RadixTheme.dimensions.paddingDefault),
@@ -739,7 +788,8 @@ fun NetworkFeesAdvancedView(
                         transactionFees?.transactionFeeToLock?.displayableQuantity().orEmpty()
                     ),
                     style = RadixTheme.typography.body1Header,
-                    color = RadixTheme.colors.gray1
+                    color = RadixTheme.colors.gray1,
+                    textAlign = TextAlign.End
                 )
             }
         }
