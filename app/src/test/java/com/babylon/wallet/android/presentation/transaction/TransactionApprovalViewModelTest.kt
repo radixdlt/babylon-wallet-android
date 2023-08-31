@@ -535,8 +535,8 @@ internal class TransactionApprovalViewModelTest : StateViewModelTest<Transaction
     fun `verify transaction fee to lock is correct on advanced screen 2`() = runTest {
         val tipPercentage = "25"
 
-        // Sum of executionCost finalizationCost storageExpansionCost royaltyCost padding and tip minus noncontingentlock
-        val expectedFeeLock = "0.9725954"
+        // Sum of executionCost finalizationCost royaltyCost padding and tip minus noncontingentlock
+        val expectedFeeLock = "0.9225954"
 
         coEvery { transactionClient.analyzeExecution(any(), any()) } returns Result.success(
             ExecutionAnalysis(
@@ -576,8 +576,8 @@ internal class TransactionApprovalViewModelTest : StateViewModelTest<Transaction
         val feePaddingAmount = "1.6"
         val tipPercentage = "25"
 
-        // Sum of executionCost finalizationCost storageExpansionCost royaltyCost padding and tip minus noncontingentlock
-        val expectedFeeLock = "2.4362459"
+        // Sum of executionCost finalizationCost royaltyCost padding and tip minus noncontingentlock
+        val expectedFeeLock = "2.3862459"
 
         coEvery { transactionClient.analyzeExecution(any(), any()) } returns Result.success(
             ExecutionAnalysis(

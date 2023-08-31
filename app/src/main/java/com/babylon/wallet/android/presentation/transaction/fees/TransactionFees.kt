@@ -115,9 +115,7 @@ data class TransactionFees(
             BigDecimal(100)
         )?.multiply(
             totalExecutionCost.add(
-                networkFinalization.add(
-                    networkStorage
-                )
+                networkFinalization
             )
         ) ?: BigDecimal.ZERO
 
