@@ -362,7 +362,8 @@ fun NetworkFeesDefaultView(
                         stringResource(id = R.string.transactionReview_customizeNetworkFeeSheet_noneDue)
                     },
                     style = RadixTheme.typography.body1Header,
-                    color = RadixTheme.colors.gray1
+                    color = RadixTheme.colors.gray1,
+                    textAlign = TextAlign.End
                 )
             }
 
@@ -393,7 +394,8 @@ fun NetworkFeesDefaultView(
                         RadixTheme.colors.gray3
                     } else {
                         RadixTheme.colors.gray1
-                    }
+                    },
+                    textAlign = TextAlign.End
                 )
             }
 
@@ -427,7 +429,8 @@ fun NetworkFeesDefaultView(
                         transactionFees?.defaultTransactionFee?.displayableQuantity().orEmpty()
                     ),
                     style = RadixTheme.typography.body1Header,
-                    color = RadixTheme.colors.gray1
+                    color = RadixTheme.colors.gray1,
+                    textAlign = TextAlign.End
                 )
             }
         }
@@ -561,7 +564,8 @@ fun NetworkFeesAdvancedView(
                         transactionFees?.networkExecutionCost.orEmpty()
                     ),
                     style = RadixTheme.typography.body1Header,
-                    color = RadixTheme.colors.gray1
+                    color = RadixTheme.colors.gray1,
+                    textAlign = TextAlign.End
                 )
             }
 
@@ -587,7 +591,8 @@ fun NetworkFeesAdvancedView(
                         transactionFees?.networkFinalizationCost.orEmpty()
                     ),
                     style = RadixTheme.typography.body1Header,
-                    color = RadixTheme.colors.gray1
+                    color = RadixTheme.colors.gray1,
+                    textAlign = TextAlign.End
                 )
             }
 
@@ -614,7 +619,8 @@ fun NetworkFeesAdvancedView(
                         effectiveTip
                     ),
                     style = RadixTheme.typography.body1Header,
-                    color = if (effectiveTip == "0") RadixTheme.colors.gray3 else RadixTheme.colors.gray1
+                    color = if (effectiveTip == "0") RadixTheme.colors.gray3 else RadixTheme.colors.gray1,
+                    textAlign = TextAlign.End
                 )
             }
 
@@ -640,7 +646,8 @@ fun NetworkFeesAdvancedView(
                         transactionFees?.networkStorageCost.orEmpty()
                     ),
                     style = RadixTheme.typography.body1Header,
-                    color = RadixTheme.colors.gray1
+                    color = RadixTheme.colors.gray1,
+                    textAlign = TextAlign.End
                 )
             }
 
@@ -664,7 +671,8 @@ fun NetworkFeesAdvancedView(
                         transactionFees?.feePaddingAmountForCalculation?.displayableQuantity().orEmpty()
                     ),
                     style = RadixTheme.typography.body1Header,
-                    color = RadixTheme.colors.gray1
+                    color = RadixTheme.colors.gray1,
+                    textAlign = TextAlign.End
                 )
             }
 
@@ -698,7 +706,8 @@ fun NetworkFeesAdvancedView(
                         RadixTheme.colors.gray3
                     } else {
                         RadixTheme.colors.gray1
-                    }
+                    },
+                    textAlign = TextAlign.End
                 )
             }
 
@@ -725,7 +734,8 @@ fun NetworkFeesAdvancedView(
                         transactionFees?.paidByDApps.orEmpty()
                     ),
                     style = RadixTheme.typography.body1Header,
-                    color = RadixTheme.colors.gray1
+                    color = RadixTheme.colors.gray1,
+                    textAlign = TextAlign.End
                 )
             }
 
@@ -778,7 +788,8 @@ fun NetworkFeesAdvancedView(
                         transactionFees?.transactionFeeToLock?.displayableQuantity().orEmpty()
                     ),
                     style = RadixTheme.typography.body1Header,
-                    color = RadixTheme.colors.gray1
+                    color = RadixTheme.colors.gray1,
+                    textAlign = TextAlign.End
                 )
             }
         }
