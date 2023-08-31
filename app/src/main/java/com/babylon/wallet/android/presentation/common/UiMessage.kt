@@ -75,7 +75,7 @@ sealed class UiMessage(val id: String = UUIDGenerator.uuid().toString()) {
 
         override fun getMessage(context: Context): String = userFriendlyDescription?.let {
             context.getString(it)
-        } ?: nonUserFriendlyDescription.orEmpty()
+        } ?: nonUserFriendlyDescription ?: context.getString(R.string.common_somethingWentWrong)
 
         companion object {
             fun from(error: Throwable?) = ErrorMessage(
