@@ -3,10 +3,10 @@ package com.babylon.wallet.android.presentation.createpersona
 import android.graphics.drawable.ColorDrawable
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -14,14 +14,14 @@ import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.ModalBottomSheetValue
 import androidx.compose.material.rememberModalBottomSheetState
 import androidx.compose.material3.Divider
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -35,7 +35,6 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -53,6 +52,7 @@ import com.babylon.wallet.android.presentation.model.PersonaDisplayNameFieldWrap
 import com.babylon.wallet.android.presentation.model.PersonaFieldWrapper
 import com.babylon.wallet.android.presentation.model.toDisplayResource
 import com.babylon.wallet.android.presentation.ui.composables.DefaultModalSheetLayout
+import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.UnderlineTextButton
 import com.babylon.wallet.android.presentation.ui.composables.persona.AddFieldSheet
 import com.babylon.wallet.android.presentation.ui.composables.persona.PersonaDataFieldInput
@@ -138,10 +138,7 @@ fun CreatePersonaContent(
         }
     }
     DefaultModalSheetLayout(
-        modifier = modifier
-            .navigationBarsPadding()
-            .background(RadixTheme.colors.defaultBackground)
-            .fillMaxSize(),
+        modifier = modifier,
         sheetState = bottomSheetState,
         sheetContent = {
             AddFieldSheet(
@@ -156,25 +153,48 @@ fun CreatePersonaContent(
                     onAddFields()
                 },
                 onSelectionChanged = onSelectionChanged,
-                modifier = Modifier.fillMaxSize(),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .navigationBarsPadding(),
                 anyFieldSelected = anyFieldSelected
             )
         }
     ) {
-        Column(
-            modifier = Modifier.fillMaxSize()
-        ) {
-            val context = LocalContext.current
-
-            IconButton(onClick = onBackClick) {
-                Icon(
-                    painterResource(
-                        id = com.babylon.wallet.android.designsystem.R.drawable.ic_arrow_back
-                    ),
-                    tint = RadixTheme.colors.gray1,
-                    contentDescription = "navigate back"
+        Scaffold(
+            topBar = {
+                RadixCenteredTopAppBar(
+                    title = stringResource(id = R.string.empty),
+                    onBackClick = onBackClick,
+                    windowInsets = WindowInsets.statusBars
                 )
-            }
+            },
+            bottomBar = {
+                Column {
+                    val context = LocalContext.current
+
+                    Divider(color = RadixTheme.colors.gray5)
+                    RadixPrimaryButton(
+                        text = stringResource(id = R.string.createPersona_saveAndContinueButtonTitle),
+                        onClick = {
+                            context.findFragmentActivity()?.let { activity ->
+                                activity.biometricAuthenticate { authenticatedSuccessfully ->
+                                    if (authenticatedSuccessfully) {
+                                        onPersonaCreateClick()
+                                    }
+                                }
+                            }
+                        },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(dimensions.paddingDefault)
+                            .navigationBarsPadding()
+                            .imePadding(),
+                        enabled = continueButtonEnabled
+                    )
+                }
+            },
+            containerColor = RadixTheme.colors.defaultBackground
+        ) { padding ->
             CreatePersonaContentList(
                 onPersonaNameChange = onPersonaNameChange,
                 personaName = personaName,
@@ -182,7 +202,7 @@ fun CreatePersonaContent(
                 onValueChanged = onValueChanged,
                 onDeleteField = onDeleteField,
                 addButtonEnabled = fieldsToAdd.isNotEmpty(),
-                modifier = Modifier.weight(1f),
+                modifier = Modifier.padding(padding),
                 onAddFieldClick = {
                     scope.launch {
                         bottomSheetState.show()
@@ -191,25 +211,6 @@ fun CreatePersonaContent(
                 onPersonaDisplayNameFocusChanged = onPersonaDisplayNameFocusChanged,
                 onFieldFocusChanged = onFieldFocusChanged,
                 onEditAvatar = {}
-            )
-            Spacer(modifier = Modifier.height(dimensions.paddingDefault))
-            Divider(color = RadixTheme.colors.gray5)
-            RadixPrimaryButton(
-                text = stringResource(id = R.string.createPersona_saveAndContinueButtonTitle),
-                onClick = {
-                    context.findFragmentActivity()?.let { activity ->
-                        activity.biometricAuthenticate { authenticatedSuccessfully ->
-                            if (authenticatedSuccessfully) {
-                                onPersonaCreateClick()
-                            }
-                        }
-                    }
-                },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(dimensions.paddingDefault)
-                    .imePadding(),
-                enabled = continueButtonEnabled
             )
         }
     }
