@@ -44,7 +44,8 @@ fun TransactionPreviewTypeContent(
             ConnectedDAppsContent(
                 modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingDefault),
                 connectedDApps = preview.dApps.toPersistentList(),
-                onDAppClick = onDappClick
+                onDAppClick = onDappClick,
+                showStrokeLine = preview.dApps.toPersistentList().isNotEmpty()
             )
 
             DepositAccountContent(
