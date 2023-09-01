@@ -7,8 +7,8 @@ import com.babylon.wallet.android.data.transaction.ROLAClient
 import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.domain.usecases.GetFreeXrdUseCase
 import com.babylon.wallet.android.presentation.StateViewModelTest
-import com.babylon.wallet.android.presentation.settings.account.ARG_ADDRESS
-import com.babylon.wallet.android.presentation.settings.account.AccountSettingsViewModel
+import com.babylon.wallet.android.presentation.account.settings.ARG_ADDRESS
+import com.babylon.wallet.android.presentation.account.settings.AccountSettingsViewModel
 import com.babylon.wallet.android.utils.AppEventBus
 import io.mockk.Runs
 import io.mockk.coEvery

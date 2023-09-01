@@ -5,8 +5,13 @@ import com.radixdlt.ret.EntityType
 import com.radixdlt.ret.NonFungibleGlobalId
 
 object AddressValidator {
+    fun isValid(address: String, networkId: Int): Boolean = runCatching {
+        Address(address)
+    }.getOrNull()?.let {
+        it.networkId() == networkId.toUByte()
+    } ?: false
 
-    fun isValid(address: String, networkId: Int, allowedEntityTypes: Set<EntityType> = emptySet()): Boolean = runCatching {
+    fun isValidForTypes(address: String, networkId: Int, allowedEntityTypes: Set<EntityType>): Boolean = runCatching {
         Address(address)
     }.getOrNull()?.let {
         val allowedEntity = allowedEntityTypes.isEmpty() || allowedEntityTypes.contains(it.entityType())
@@ -21,5 +26,4 @@ object AddressValidator {
         Address(address)
     }.getOrNull()?.networkId()?.toInt()
 
-    fun hasResourcePrefix(address: String): Boolean = address.lowercase().startsWith("resource_")
 }

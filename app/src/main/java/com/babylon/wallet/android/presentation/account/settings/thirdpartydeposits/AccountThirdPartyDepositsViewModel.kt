@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.presentation.settings.account.thirdpartydeposits
+package com.babylon.wallet.android.presentation.account.settings.thirdpartydeposits
 
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
@@ -6,10 +6,10 @@ import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.data.dapp.model.TransactionType
 import com.babylon.wallet.android.data.manifest.prepareInternalTransactionRequest
 import com.babylon.wallet.android.data.repository.TransactionStatusClient
+import com.babylon.wallet.android.presentation.account.settings.specificassets.DeleteDialogState
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
-import com.babylon.wallet.android.presentation.settings.account.specificassets.DeleteDialogState
 import com.radixdlt.ret.Address
 import com.radixdlt.ret.EntityType
 import com.radixdlt.ret.ManifestBuilderAddress
@@ -256,7 +256,7 @@ class AccountThirdPartyDepositsViewModel @Inject constructor(
 
     fun assetExceptionAddressTyped(address: String) {
         val currentNetworkId = state.value.account?.networkID ?: return
-        val valid = AddressValidator.isValid(
+        val valid = AddressValidator.isValidForTypes(
             address = address,
             networkId = currentNetworkId,
             allowedEntityTypes = setOf(EntityType.GLOBAL_FUNGIBLE_RESOURCE_MANAGER, EntityType.GLOBAL_NON_FUNGIBLE_RESOURCE_MANAGER)
@@ -274,7 +274,7 @@ class AccountThirdPartyDepositsViewModel @Inject constructor(
 
     fun depositorAddressTyped(address: String) {
         val currentNetworkId = state.value.account?.networkID ?: return
-        val validAddress = AddressValidator.isValid(
+        val validAddress = AddressValidator.isValidForTypes(
             address = address,
             networkId = currentNetworkId,
             allowedEntityTypes = setOf(EntityType.GLOBAL_FUNGIBLE_RESOURCE_MANAGER, EntityType.GLOBAL_NON_FUNGIBLE_RESOURCE_MANAGER)

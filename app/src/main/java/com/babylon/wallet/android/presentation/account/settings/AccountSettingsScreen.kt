@@ -1,8 +1,4 @@
-<<<<<<<< HEAD:app/src/main/java/com/babylon/wallet/android/presentation/account/accountpreference/AccountPreferencesScreen.kt
-package com.babylon.wallet.android.presentation.account.accountpreference
-========
-package com.babylon.wallet.android.presentation.settings.account
->>>>>>>> 6c886c7c9 (third party deposits UI):app/src/main/java/com/babylon/wallet/android/presentation/settings/account/AccountSettingsScreen.kt
+package com.babylon.wallet.android.presentation.account.settings
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column

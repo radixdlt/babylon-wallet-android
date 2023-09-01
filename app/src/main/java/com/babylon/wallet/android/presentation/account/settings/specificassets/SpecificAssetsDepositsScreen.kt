@@ -1,6 +1,6 @@
 @file:OptIn(ExperimentalFoundationApi::class)
 
-package com.babylon.wallet.android.presentation.settings.account.specificassets
+package com.babylon.wallet.android.presentation.account.settings.specificassets
 
 import android.net.Uri
 import androidx.activity.compose.BackHandler
@@ -70,9 +70,9 @@ import com.babylon.wallet.android.designsystem.composable.RadixTextField
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.SampleDataProvider
+import com.babylon.wallet.android.presentation.account.settings.thirdpartydeposits.AccountThirdPartyDepositsViewModel
+import com.babylon.wallet.android.presentation.account.settings.thirdpartydeposits.AssetType
 import com.babylon.wallet.android.presentation.common.UiMessage
-import com.babylon.wallet.android.presentation.settings.account.thirdpartydeposits.AccountThirdPartyDepositsViewModel
-import com.babylon.wallet.android.presentation.settings.account.thirdpartydeposits.AssetType
 import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.BottomDialogDragHandle
 import com.babylon.wallet.android.presentation.ui.composables.ImageSize
@@ -178,6 +178,12 @@ fun SpecificAssetsDepositsScreen(
             onMessageShown = sharedViewModel::onMessageShown,
             error = state.error,
             onShowAddAssetSheet = {
+                sharedViewModel.onAssetExceptionRuleChanged(
+                    when (it) {
+                        SpecificAssetsTab.Allowed -> ThirdPartyDeposits.DepositAddressExceptionRule.Allow
+                        SpecificAssetsTab.Denied -> ThirdPartyDeposits.DepositAddressExceptionRule.Deny
+                    }
+                )
                 scope.launch {
                     sheetState.show()
                 }
@@ -201,14 +207,13 @@ fun AddAssetSheet(
     onDismiss: () -> Unit,
     onAssetExceptionRuleChanged: (ThirdPartyDeposits.DepositAddressExceptionRule) -> Unit
 ) {
-    Column(
+    Scaffold(
         modifier = modifier
             .background(RadixTheme.colors.defaultBackground, shape = RadixTheme.shapes.roundedRectTopDefault)
             .verticalScroll(
                 rememberScrollState()
             )
             .imePadding(),
-        verticalArrangement = Arrangement.Center,
     ) {
         BottomDialogDragHandle(
             modifier = Modifier
@@ -317,7 +322,7 @@ private fun SpecificAssetsDepositsContent(
     onBackClick: () -> Unit,
     onMessageShown: () -> Unit,
     error: UiMessage?,
-    onShowAddAssetSheet: () -> Unit,
+    onShowAddAssetSheet: (SpecificAssetsTab) -> Unit,
     modifier: Modifier = Modifier,
     allowedAssets: ImmutableList<ThirdPartyDeposits.AssetException>,
     deniedAssets: ImmutableList<ThirdPartyDeposits.AssetException>,
@@ -352,7 +357,9 @@ private fun SpecificAssetsDepositsContent(
             ) {
                 RadixPrimaryButton(
                     text = stringResource(R.string.accountSettings_specificAssetsDeposits_addAnAssetButton),
-                    onClick = onShowAddAssetSheet,
+                    onClick = {
+                        onShowAddAssetSheet(selectedTab)
+                    },
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(RadixTheme.dimensions.paddingDefault)

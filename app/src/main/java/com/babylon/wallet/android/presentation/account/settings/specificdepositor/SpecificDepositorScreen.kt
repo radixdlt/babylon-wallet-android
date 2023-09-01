@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.presentation.settings.account.specificdepositor
+package com.babylon.wallet.android.presentation.account.settings.specificdepositor
 
 import android.graphics.drawable.ColorDrawable
 import android.net.Uri
@@ -55,10 +55,10 @@ import com.babylon.wallet.android.designsystem.composable.RadixTextField
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.SampleDataProvider
+import com.babylon.wallet.android.presentation.account.settings.specificassets.DeleteDialogState
+import com.babylon.wallet.android.presentation.account.settings.thirdpartydeposits.AccountThirdPartyDepositsViewModel
+import com.babylon.wallet.android.presentation.account.settings.thirdpartydeposits.AssetType
 import com.babylon.wallet.android.presentation.common.UiMessage
-import com.babylon.wallet.android.presentation.settings.account.specificassets.DeleteDialogState
-import com.babylon.wallet.android.presentation.settings.account.thirdpartydeposits.AccountThirdPartyDepositsViewModel
-import com.babylon.wallet.android.presentation.settings.account.thirdpartydeposits.AssetType
 import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.BottomDialogDragHandle
 import com.babylon.wallet.android.presentation.ui.composables.ImageSize

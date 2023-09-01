@@ -1,8 +1,4 @@
-<<<<<<<< HEAD:app/src/main/java/com/babylon/wallet/android/presentation/account/accountpreference/AccountPreferencesNav.kt
-package com.babylon.wallet.android.presentation.account.accountpreference
-========
-package com.babylon.wallet.android.presentation.settings.account.specificassets
->>>>>>>> 6c886c7c9 (third party deposits UI):app/src/main/java/com/babylon/wallet/android/presentation/settings/account/specificassets/SpecificAssetsDepositsNav.kt
+package com.babylon.wallet.android.presentation.account.settings.thirdpartydeposits
 
 import androidx.annotation.VisibleForTesting
 import androidx.compose.animation.AnimatedContentScope
@@ -15,25 +11,31 @@ import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavType
 import androidx.navigation.navArgument
-import com.babylon.wallet.android.presentation.settings.account.thirdpartydeposits.AccountThirdPartyDepositsViewModel
-import com.babylon.wallet.android.presentation.settings.account.thirdpartydeposits.ROUTE_ACCOUNT_THIRD_PARTY_DEPOSITS
 import com.google.accompanist.navigation.animation.composable
 
 @VisibleForTesting
 internal const val ARG_ADDRESS = "arg_address"
 
-internal class SpecificAssetsArgs(val address: String) {
+const val ROUTE_ACCOUNT_THIRD_PARTY_DEPOSITS =
+    "account_third_party_deposits_route/{$ARG_ADDRESS}"
+
+internal class AccountThirdPartyDepositsArgs(val address: String) {
     constructor(savedStateHandle: SavedStateHandle) : this(checkNotNull(savedStateHandle[ARG_ADDRESS]) as String)
 }
 
-fun NavController.specificAssets(address: String) {
-    navigate("account_specific_assets_route/$address")
+fun NavController.accountThirdPartyDeposits(address: String) {
+    navigate("account_third_party_deposits_route/$address")
 }
 
 @OptIn(ExperimentalAnimationApi::class)
-fun NavGraphBuilder.specificAssets(navController: NavController, onBackClick: () -> Unit) {
+fun NavGraphBuilder.accountThirdPartyDeposits(
+    navController: NavController,
+    onBackClick: () -> Unit,
+    onAssetSpecificRulesClick: (String) -> Unit,
+    onSpecificDepositorsClick: () -> Unit
+) {
     composable(
-        route = "account_specific_assets_route/{$ARG_ADDRESS}",
+        route = ROUTE_ACCOUNT_THIRD_PARTY_DEPOSITS,
         arguments = listOf(
             navArgument(ARG_ADDRESS) { type = NavType.StringType }
         ),
@@ -50,13 +52,15 @@ fun NavGraphBuilder.specificAssets(navController: NavController, onBackClick: ()
             EnterTransition.None
         }
     ) {
-        val parentEntry = remember(it) {
+        val backstackEntry = remember(it) {
             navController.getBackStackEntry(ROUTE_ACCOUNT_THIRD_PARTY_DEPOSITS)
         }
-        val sharedVM = hiltViewModel<AccountThirdPartyDepositsViewModel>(parentEntry)
-        SpecificAssetsDepositsScreen(
-            sharedViewModel = sharedVM,
+        val viewModel = hiltViewModel<AccountThirdPartyDepositsViewModel>(backstackEntry)
+        AccountThirdPartyDepositsScreen(
+            viewModel = viewModel,
             onBackClick = onBackClick,
+            onAssetSpecificRulesClick = onAssetSpecificRulesClick,
+            onSpecificDepositorsClick = onSpecificDepositorsClick
         )
     }
 }

@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.presentation.settings.account
+package com.babylon.wallet.android.presentation.account.settings
 
 import androidx.annotation.VisibleForTesting
 import androidx.compose.animation.AnimatedContentScope

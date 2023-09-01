@@ -10,6 +10,11 @@ import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.navArgument
 import com.babylon.wallet.android.presentation.account.AccountScreen
+import com.babylon.wallet.android.presentation.account.settings.AccountSettingItem
+import com.babylon.wallet.android.presentation.account.settings.accountSettings
+import com.babylon.wallet.android.presentation.account.settings.specificassets.specificAssets
+import com.babylon.wallet.android.presentation.account.settings.specificdepositor.specificDepositor
+import com.babylon.wallet.android.presentation.account.settings.thirdpartydeposits.accountThirdPartyDeposits
 import com.babylon.wallet.android.presentation.account.accountpreference.accountPreferences
 import com.babylon.wallet.android.presentation.account.accountpreference.accountPreferencesScreen
 import com.babylon.wallet.android.presentation.account.createaccount.ROUTE_CREATE_ACCOUNT
@@ -273,6 +278,24 @@ fun NavigationHost(
                 }
             }
         )
+        accountThirdPartyDeposits(
+            navController = navController,
+            onBackClick = {
+                navController.navigateUp()
+            },
+            onAssetSpecificRulesClick = {
+                navController.specificAssets()
+            },
+            onSpecificDepositorsClick = {
+                navController.specificDepositor()
+            }
+        )
+        specificAssets(navController = navController, onBackClick = {
+            navController.navigateUp()
+        })
+        specificDepositor(navController = navController, onBackClick = {
+            navController.navigateUp()
+        })
         dappLoginAuthorizedNavGraph(navController = navController)
         dappLoginUnauthorizedNavGraph(navController = navController)
         settingsNavGraph(navController)

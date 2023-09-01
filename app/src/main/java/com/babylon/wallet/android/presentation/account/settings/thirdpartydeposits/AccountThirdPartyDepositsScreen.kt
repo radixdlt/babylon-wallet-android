@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.presentation.settings.account.thirdpartydeposits
+package com.babylon.wallet.android.presentation.account.settings.thirdpartydeposits
 
 import androidx.activity.compose.BackHandler
 import androidx.annotation.DrawableRes
