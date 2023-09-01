@@ -6,23 +6,24 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.calculateEndPadding
+import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.ExperimentalMaterialApi
-import androidx.compose.material.IconButton
 import androidx.compose.material.ModalBottomSheetState
 import androidx.compose.material.ModalBottomSheetValue
 import androidx.compose.material.rememberModalBottomSheetState
 import androidx.compose.material3.Icon
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -34,6 +35,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
@@ -50,7 +52,9 @@ import com.babylon.wallet.android.presentation.transaction.composables.StrokeLin
 import com.babylon.wallet.android.presentation.transfer.TransferViewModel.State
 import com.babylon.wallet.android.presentation.transfer.accounts.ChooseAccountSheet
 import com.babylon.wallet.android.presentation.transfer.assets.ChooseAssetsSheet
+import com.babylon.wallet.android.presentation.ui.composables.BackIconType
 import com.babylon.wallet.android.presentation.ui.composables.DefaultModalSheetLayout
+import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.SimpleAccountCard
 import kotlinx.coroutines.launch
 import rdx.works.profile.data.model.pernetwork.Network
@@ -130,11 +134,7 @@ fun TransferContent(
     )
 
     DefaultModalSheetLayout(
-        modifier = modifier
-            .background(RadixTheme.colors.defaultBackground)
-            .fillMaxSize()
-            .navigationBarsPadding()
-            .imePadding(),
+        modifier = modifier,
         sheetState = bottomSheetState,
         sheetContent = {
             when (val sheetState = state.sheet) {
@@ -164,40 +164,27 @@ fun TransferContent(
             }
         }
     ) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .pointerInput(Unit) {
-                    detectTapGestures(
-                        onTap = {
-                            focusManager.clearFocus()
-                        }
-                    )
-                }
-                .background(color = RadixTheme.colors.white),
-            horizontalAlignment = Alignment.Start
-        ) {
-            Row(
-                modifier = Modifier
-                    .padding(
-                        start = RadixTheme.dimensions.paddingMedium,
-                        top = RadixTheme.dimensions.paddingMedium
-                    ),
-                horizontalArrangement = Arrangement.Start
-            ) {
-                IconButton(
-                    onClick = onBackClick
-                ) {
-                    Icon(
-                        painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_close),
-                        tint = RadixTheme.colors.gray1,
-                        contentDescription = "close"
-                    )
-                }
-            }
-
+        Scaffold(
+            modifier = modifier.imePadding(),
+            topBar = {
+                RadixCenteredTopAppBar(
+                    title = stringResource(id = R.string.empty),
+                    onBackClick = onBackClick,
+                    backIconType = BackIconType.Close,
+                    windowInsets = WindowInsets.statusBars
+                )
+            },
+            containerColor = RadixTheme.colors.defaultBackground
+        ) { padding ->
+            val layoutDirection = LocalLayoutDirection.current
             LazyColumn(
-                contentPadding = PaddingValues(horizontal = RadixTheme.dimensions.paddingDefault)
+                modifier = Modifier.pointerInput(Unit) { detectTapGestures(onTap = { focusManager.clearFocus() }) },
+                contentPadding = PaddingValues(
+                    start = padding.calculateStartPadding(layoutDirection) + RadixTheme.dimensions.paddingDefault,
+                    end = padding.calculateEndPadding(layoutDirection) + RadixTheme.dimensions.paddingDefault,
+                    top = padding.calculateTopPadding(),
+                    bottom = padding.calculateBottomPadding()
+                )
             ) {
                 item {
                     Row(
