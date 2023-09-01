@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -51,6 +50,7 @@ import kotlinx.collections.immutable.persistentListOf
 fun ConnectedDAppsContent(
     connectedDApps: ImmutableList<DAppWithMetadataAndAssociatedResources>,
     onDAppClick: (DAppWithMetadataAndAssociatedResources) -> Unit,
+    showStrokeLine: Boolean,
     modifier: Modifier = Modifier
 ) {
     if (connectedDApps.isEmpty()) return
@@ -65,7 +65,6 @@ fun ConnectedDAppsContent(
     Box(
         modifier = modifier
             .padding(
-                top = RadixTheme.dimensions.paddingXSmall,
                 bottom = RadixTheme.dimensions.paddingMedium
             )
             .fillMaxWidth(),
@@ -152,9 +151,12 @@ fun ConnectedDAppsContent(
                         overflow = TextOverflow.Ellipsis
                     )
                 }
-                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingMedium))
             }
         }
+    }
+
+    if (showStrokeLine) {
+        StrokeLine(height = 20.dp)
     }
 }
 
@@ -173,6 +175,7 @@ fun ConnectedDAppsContentPreview() {
                 )
             )
         ),
-        onDAppClick = {}
+        onDAppClick = {},
+        showStrokeLine = true
     )
 }
