@@ -18,6 +18,7 @@ import com.babylon.wallet.android.domain.model.metadata.DescriptionMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.NameMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.SymbolMetadataItem
 import com.babylon.wallet.android.presentation.transaction.AccountWithTransferableResources
+import com.babylon.wallet.android.presentation.account.settings.thirdpartydeposits.AssetType
 import rdx.works.core.InstantGenerator
 import rdx.works.profile.data.model.Header
 import rdx.works.profile.data.model.MnemonicWithPassphrase
@@ -339,10 +340,13 @@ class SampleDataProvider {
         )
     }
 
-    fun sampleAssetException(): Network.Account.OnLedgerSettings.ThirdPartyDeposits.AssetException {
-        return Network.Account.OnLedgerSettings.ThirdPartyDeposits.AssetException(
-            randomAddress(),
-            Network.Account.OnLedgerSettings.ThirdPartyDeposits.DepositAddressExceptionRule.Allow
+    fun sampleAssetException(isNft: Boolean = false): AssetType.AssetException {
+        return AssetType.AssetException(
+            assetException = Network.Account.OnLedgerSettings.ThirdPartyDeposits.AssetException(
+                address = randomAddress(),
+                exceptionRule = Network.Account.OnLedgerSettings.ThirdPartyDeposits.DepositAddressExceptionRule.Allow
+            ),
+            isNft = isNft
         )
     }
 

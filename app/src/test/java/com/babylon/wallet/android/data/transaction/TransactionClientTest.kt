@@ -152,6 +152,14 @@ internal class TransactionClientTest {
             }
         })
 
+        override suspend fun getResources(
+            resourceAddresses: List<String>,
+            explicitMetadataForAssets: Set<ExplicitMetadataKey>,
+            isRefreshing: Boolean
+        ): kotlin.Result<List<Resource>> {
+            return kotlin.Result.success(emptyList())
+        }
+
         override suspend fun getEntityOwnerKeyHashes(
             entityAddress: String,
             isRefreshing: Boolean

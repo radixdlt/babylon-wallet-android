@@ -2,7 +2,6 @@
 
 package com.babylon.wallet.android.presentation.account.settings.specificassets
 
-import android.net.Uri
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
@@ -79,8 +78,9 @@ import com.babylon.wallet.android.presentation.ui.composables.ImageSize
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
 import com.babylon.wallet.android.presentation.ui.composables.rememberImageUrl
+import com.babylon.wallet.android.presentation.ui.modifier.applyIf
 import com.babylon.wallet.android.utils.truncatedHash
-import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.launch
 import rdx.works.profile.data.model.pernetwork.Network.Account.OnLedgerSettings.ThirdPartyDeposits
@@ -207,13 +207,14 @@ fun AddAssetSheet(
     onDismiss: () -> Unit,
     onAssetExceptionRuleChanged: (ThirdPartyDeposits.DepositAddressExceptionRule) -> Unit
 ) {
-    Scaffold(
+    Column(
         modifier = modifier
             .background(RadixTheme.colors.defaultBackground, shape = RadixTheme.shapes.roundedRectTopDefault)
             .verticalScroll(
                 rememberScrollState()
             )
             .imePadding(),
+        verticalArrangement = Arrangement.Center,
     ) {
         BottomDialogDragHandle(
             modifier = Modifier
@@ -324,8 +325,8 @@ private fun SpecificAssetsDepositsContent(
     error: UiMessage?,
     onShowAddAssetSheet: (SpecificAssetsTab) -> Unit,
     modifier: Modifier = Modifier,
-    allowedAssets: ImmutableList<ThirdPartyDeposits.AssetException>,
-    deniedAssets: ImmutableList<ThirdPartyDeposits.AssetException>,
+    allowedAssets: PersistentList<AssetType.AssetException>,
+    deniedAssets: PersistentList<AssetType.AssetException>,
     onDeleteAsset: (ThirdPartyDeposits.AssetException) -> Unit
 ) {
     var selectedTab by remember {
@@ -457,7 +458,7 @@ private fun SpecificAssetsDepositsContent(
 
 @Composable
 private fun AssetsList(
-    assets: ImmutableList<ThirdPartyDeposits.AssetException>,
+    assets: PersistentList<AssetType.AssetException>,
     modifier: Modifier = Modifier,
     onDeleteAsset: (ThirdPartyDeposits.AssetException) -> Unit
 ) {
@@ -487,7 +488,7 @@ private fun AssetsList(
 @Composable
 private fun AssetItem(
     modifier: Modifier,
-    asset: ThirdPartyDeposits.AssetException,
+    asset: AssetType.AssetException,
     onDeleteAsset: (ThirdPartyDeposits.AssetException) -> Unit
 ) {
     Row(
@@ -495,32 +496,40 @@ private fun AssetItem(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingDefault)
     ) {
+        val placeholder = if (asset.isNft) {
+            painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_nfts)
+        } else {
+            painterResource(id = R.drawable.img_placeholder)
+        }
         AsyncImage(
             model = rememberImageUrl(
-                fromUrl = Uri.parse(""),
+                fromUrl = asset.assetIcon,
                 size = ImageSize.SMALL
             ),
-            placeholder = painterResource(id = R.drawable.img_placeholder),
-            fallback = painterResource(id = R.drawable.img_placeholder),
-            error = painterResource(id = R.drawable.img_placeholder),
+            placeholder = placeholder,
+            fallback = placeholder,
+            error = placeholder,
             contentDescription = null,
-            contentScale = ContentScale.Crop,
+            contentScale = if (asset.isNft) ContentScale.Inside else ContentScale.Crop,
             modifier = Modifier
                 .size(44.dp)
-                .clip(RadixTheme.shapes.circle)
+                .clip(if (asset.isNft) RadixTheme.shapes.roundedRectSmall else RadixTheme.shapes.circle)
+                .applyIf(asset.isNft, Modifier.background(RadixTheme.colors.gray3, RadixTheme.shapes.roundedRectSmall))
         )
         Column(
             modifier = Modifier.weight(1f)
         ) {
-//            Text(
-//                text = asset.name,
-//                textAlign = TextAlign.Start,
-//                maxLines = 1,
-//                style = RadixTheme.typography.body1HighImportance,
-//                color = RadixTheme.colors.gray1
-//            )
+            if (asset.assetName.isNotBlank()) {
+                Text(
+                    text = asset.assetName,
+                    textAlign = TextAlign.Start,
+                    maxLines = 1,
+                    style = RadixTheme.typography.body1HighImportance,
+                    color = RadixTheme.colors.gray1
+                )
+            }
             Text(
-                text = asset.address.truncatedHash(),
+                text = asset.assetException.address.truncatedHash(),
                 textAlign = TextAlign.Start,
                 maxLines = 1,
                 style = RadixTheme.typography.body2Regular,
@@ -529,7 +538,7 @@ private fun AssetItem(
         }
         IconButton(
             onClick = {
-                onDeleteAsset(asset)
+                onDeleteAsset(asset.assetException)
             }
         ) {
             Icon(
@@ -639,10 +648,9 @@ fun SpecificAssetsDepositsPreview() {
                 onMessageShown = {},
                 error = null,
                 onShowAddAssetSheet = {},
-                allowedAssets = persistentListOf(sampleAssetException(), sampleAssetException(), sampleAssetException()),
-                deniedAssets = persistentListOf(sampleAssetException(), sampleAssetException(), sampleAssetException()),
-                onDeleteAsset = {}
-            )
+                allowedAssets = persistentListOf(sampleAssetException(), sampleAssetException(true), sampleAssetException()),
+                deniedAssets = persistentListOf(sampleAssetException(), sampleAssetException(true), sampleAssetException())
+            ) {}
         }
     }
 }

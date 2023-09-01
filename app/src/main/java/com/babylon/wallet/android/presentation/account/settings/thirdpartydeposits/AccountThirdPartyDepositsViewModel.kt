@@ -1,11 +1,14 @@
 package com.babylon.wallet.android.presentation.account.settings.thirdpartydeposits
 
+import android.net.Uri
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.data.dapp.model.TransactionType
 import com.babylon.wallet.android.data.manifest.prepareInternalTransactionRequest
 import com.babylon.wallet.android.data.repository.TransactionStatusClient
+import com.babylon.wallet.android.data.repository.entity.EntityRepository
+import com.babylon.wallet.android.domain.model.Resource
 import com.babylon.wallet.android.presentation.account.settings.specificassets.DeleteDialogState
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiMessage
@@ -17,6 +20,8 @@ import com.radixdlt.ret.ManifestBuilderValue
 import com.radixdlt.ret.NonFungibleGlobalId
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.PersistentList
+import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.map
@@ -24,6 +29,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.AddressValidator
 import rdx.works.core.UUIDGenerator
+import rdx.works.core.mapWhen
 import rdx.works.core.ret.BabylonManifestBuilder
 import rdx.works.core.ret.buildSafely
 import rdx.works.profile.data.model.pernetwork.Network
@@ -33,6 +39,7 @@ import rdx.works.profile.data.utils.toRETResourcePreference
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.UpdateProfileThirdPartySettingsUseCase
 import rdx.works.profile.domain.accountsOnCurrentNetwork
+import timber.log.Timber
 import javax.inject.Inject
 
 @Suppress("LongParameterList", "TooManyFunctions")
@@ -42,6 +49,7 @@ class AccountThirdPartyDepositsViewModel @Inject constructor(
     private val incomingRequestRepository: IncomingRequestRepository,
     private val transactionStatusClient: TransactionStatusClient,
     private val updateProfileThirdPartySettingsUseCase: UpdateProfileThirdPartySettingsUseCase,
+    private val entityRepository: EntityRepository,
     savedStateHandle: SavedStateHandle
 ) : StateViewModel<AccountThirdPartyDepositsUiState>() {
 
@@ -176,20 +184,54 @@ class AccountThirdPartyDepositsViewModel @Inject constructor(
     }
 
     fun onAddAssetException() {
+        val updatedAssetExceptionsUiModels = (
+            state.value.assetExceptionsUiModels +
+                listOf(AssetType.AssetException(state.value.assetExceptionToAdd.assetException))
+            ).toPersistentList()
         _state.update { state ->
-            val updatedAssetExceptions = (
-                state.updatedThirdPartyDepositSettings?.assetsExceptionList.orEmpty() + listOf(
-                    state.assetExceptionToAdd.assetException
-                )
-                ).distinct()
             state.copy(
                 updatedThirdPartyDepositSettings = state.updatedThirdPartyDepositSettings?.copy(
-                    assetsExceptionList = updatedAssetExceptions
+                    assetsExceptionList = updatedAssetExceptionsUiModels.map { it.assetException }
                 ),
+                assetExceptionsUiModels = updatedAssetExceptionsUiModels,
                 assetExceptionToAdd = AssetType.AssetException()
             )
         }
+        loadAssets(updatedAssetExceptionsUiModels.map { it.assetException.address })
         checkIfSettingsChanged()
+    }
+
+    private fun loadAssets(addresses: List<String>) {
+        viewModelScope.launch {
+            entityRepository.getResources(addresses).onSuccess { resources ->
+                val loadedResourcesAddresses = resources.map { it.resourceAddress }.toSet()
+                _state.update { state ->
+                    state.copy(
+                        assetExceptionsUiModels = state.assetExceptionsUiModels.mapWhen(
+                            predicate = {
+                                loadedResourcesAddresses.contains(it.assetException.address)
+                            }
+                        ) { assetException ->
+                            when (val resource = resources.first { it.resourceAddress == assetException.assetException.address }) {
+                                is Resource.FungibleResource -> assetException.copy(
+                                    assetName = resource.name,
+                                    assetIcon = resource.iconUrl
+                                )
+
+                                is Resource.NonFungibleResource -> assetException.copy(
+                                    assetName = resource.name,
+                                    assetIcon = resource.iconUrl
+                                )
+
+                                else -> assetException
+                            }
+                        }.toPersistentList()
+                    )
+                }
+            }.onFailure {
+                Timber.d("Load assets fail: $it")
+            }
+        }
     }
 
     fun onAddDepositor() {
@@ -261,11 +303,12 @@ class AccountThirdPartyDepositsViewModel @Inject constructor(
             networkId = currentNetworkId,
             allowedEntityTypes = setOf(EntityType.GLOBAL_FUNGIBLE_RESOURCE_MANAGER, EntityType.GLOBAL_NON_FUNGIBLE_RESOURCE_MANAGER)
         )
+        val alreadyAdded = state.value.assetExceptionsUiModels.any { it.assetException.address == address }
 
         _state.update { state ->
             val updatedException = state.assetExceptionToAdd.copy(
                 assetException = state.assetExceptionToAdd.assetException.copy(address = address),
-                addressValid = valid
+                addressValid = valid && !alreadyAdded
             )
             state.copy(assetExceptionToAdd = updatedException)
         }
@@ -305,13 +348,17 @@ class AccountThirdPartyDepositsViewModel @Inject constructor(
         viewModelScope.launch {
             getProfileUseCase.accountsOnCurrentNetwork.map { accounts -> accounts.first { it.address == args.address } }
                 .collect { account ->
-                    _state.update {
-                        it.copy(
+                    _state.update { state ->
+                        state.copy(
                             account = account,
-                            updatedThirdPartyDepositSettings = account.onLedgerSettings.thirdPartyDeposits
+                            updatedThirdPartyDepositSettings = account.onLedgerSettings.thirdPartyDeposits,
+                            assetExceptionsUiModels = account.onLedgerSettings.thirdPartyDeposits.assetsExceptionList.map {
+                                AssetType.AssetException(assetException = it)
+                            }.toPersistentList()
                         )
                     }
                     checkIfSettingsChanged()
+                    loadAssets(account.onLedgerSettings.thirdPartyDeposits.assetsExceptionList.map { it.address })
                 }
         }
     }
@@ -327,7 +374,10 @@ sealed class AssetType {
             address = "",
             exceptionRule = ThirdPartyDeposits.DepositAddressExceptionRule.Allow
         ),
-        val addressValid: Boolean = false
+        val assetName: String = "",
+        val assetIcon: Uri? = null,
+        val addressValid: Boolean = false,
+        val isNft: Boolean = false
     )
 
     data class Depositor(
@@ -350,17 +400,18 @@ data class AccountThirdPartyDepositsUiState(
             ThirdPartyDeposits.DepositAddressExceptionRule.Allow
         )
     ),
-    val depositorToAdd: AssetType.Depositor = AssetType.Depositor()
+    val depositorToAdd: AssetType.Depositor = AssetType.Depositor(),
+    val assetExceptionsUiModels: ImmutableList<AssetType.AssetException> = persistentListOf()
 ) : UiState {
-    val allowedAssets: ImmutableList<ThirdPartyDeposits.AssetException>
-        get() = updatedThirdPartyDepositSettings?.assetsExceptionList?.filter {
-            it.exceptionRule == ThirdPartyDeposits.DepositAddressExceptionRule.Allow
-        }.orEmpty().toPersistentList()
+    val allowedAssets: PersistentList<AssetType.AssetException>
+        get() = assetExceptionsUiModels.filter {
+            it.assetException.exceptionRule == ThirdPartyDeposits.DepositAddressExceptionRule.Allow
+        }.toPersistentList()
 
-    val deniedAssets: ImmutableList<ThirdPartyDeposits.AssetException>
-        get() = updatedThirdPartyDepositSettings?.assetsExceptionList?.filter {
-            it.exceptionRule == ThirdPartyDeposits.DepositAddressExceptionRule.Deny
-        }.orEmpty().toPersistentList()
+    val deniedAssets: PersistentList<AssetType.AssetException>
+        get() = assetExceptionsUiModels.filter {
+            it.assetException.exceptionRule == ThirdPartyDeposits.DepositAddressExceptionRule.Deny
+        }.toPersistentList()
 
     val allowedDepositors: ImmutableList<ThirdPartyDeposits.DepositorAddress>
         get() = updatedThirdPartyDepositSettings?.depositorsAllowList.orEmpty().toPersistentList()
