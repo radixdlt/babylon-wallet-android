@@ -21,7 +21,8 @@ import kotlinx.collections.immutable.ImmutableList
 @Composable
 fun WithdrawAccountContent(
     modifier: Modifier = Modifier,
-    from: ImmutableList<AccountWithTransferableResources>
+    from: ImmutableList<AccountWithTransferableResources>,
+    showStrokeLine: Boolean
 ) {
     if (from.isNotEmpty()) {
         Text(
@@ -53,6 +54,8 @@ fun WithdrawAccountContent(
                 }
             }
         }
+    }
+    if (showStrokeLine) {
         StrokeLine(height = 40.dp)
     } else {
         Spacer(modifier = Modifier.height(40.dp))

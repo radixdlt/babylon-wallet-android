@@ -33,7 +33,7 @@ fun DepositAccountContent(
     modifier: Modifier = Modifier,
     to: ImmutableList<AccountWithTransferableResources>,
     promptForGuarantees: () -> Unit,
-    showStrokeLine: (Boolean)
+    showStrokeLine: Boolean
 ) {
     if (to.isNotEmpty()) {
         Row(verticalAlignment = Alignment.Bottom) {

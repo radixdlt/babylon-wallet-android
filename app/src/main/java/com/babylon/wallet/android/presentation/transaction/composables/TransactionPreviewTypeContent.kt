@@ -36,7 +36,9 @@ fun TransactionPreviewTypeContent(
 
             WithdrawAccountContent(
                 modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingDefault),
-                from = preview.from.toPersistentList()
+                from = preview.from.toPersistentList(),
+                showStrokeLine = preview.from.toPersistentList().isNotEmpty() ||
+                    preview.dApps.toPersistentList().isNotEmpty()
             )
 
             ConnectedDAppsContent(
@@ -49,7 +51,8 @@ fun TransactionPreviewTypeContent(
                 modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingDefault),
                 to = preview.to.toPersistentList(),
                 promptForGuarantees = onPromptForGuarantees,
-                showStrokeLine = preview.from.toPersistentList().isNotEmpty()
+                showStrokeLine = preview.from.toPersistentList().isNotEmpty() ||
+                    preview.dApps.toPersistentList().isNotEmpty()
             )
 
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
