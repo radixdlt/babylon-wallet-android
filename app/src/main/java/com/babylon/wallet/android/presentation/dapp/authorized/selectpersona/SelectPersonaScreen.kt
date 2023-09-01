@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -16,12 +17,14 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -49,9 +52,11 @@ import com.babylon.wallet.android.presentation.common.FullscreenCircularProgress
 import com.babylon.wallet.android.presentation.dapp.authorized.login.DAppAuthorizedLoginViewModel
 import com.babylon.wallet.android.presentation.dapp.authorized.login.Event
 import com.babylon.wallet.android.presentation.status.signing.SigningStatusBottomDialog
+import com.babylon.wallet.android.presentation.ui.composables.BackIconType
 import com.babylon.wallet.android.presentation.ui.composables.BottomPrimaryButton
 import com.babylon.wallet.android.presentation.ui.composables.ImageSize
 import com.babylon.wallet.android.presentation.ui.composables.PersonaCard
+import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.rememberImageUrl
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import com.babylon.wallet.android.utils.biometricAuthenticate
@@ -148,126 +153,127 @@ private fun SelectPersonaContent(
     modifier: Modifier = Modifier,
     isLoading: Boolean,
 ) {
-    Box(
-        modifier = modifier
-//            .systemBarsPadding()
-            .navigationBarsPadding()
-            .fillMaxSize()
-            .background(RadixTheme.colors.defaultBackground)
-    ) {
-        Box(modifier = Modifier.fillMaxSize()) {
-            AnimatedVisibility(
-                visible = isLoading,
-                modifier = Modifier.fillMaxSize(),
-                enter = fadeIn(),
-                exit = fadeOut()
-            ) {
-                FullscreenCircularProgressContent()
-            }
-            AnimatedVisibility(
-                visible = !isLoading,
-                modifier = Modifier.fillMaxSize(),
-                enter = fadeIn(),
-                exit = fadeOut()
-            ) {
-                Column(modifier = Modifier.fillMaxSize()) {
-                    IconButton(onClick = onCancelClick) {
-                        Icon(
-                            imageVector = Icons.Filled.Clear,
-                            contentDescription = "clear"
-                        )
-                    }
-                    LazyColumn(
-                        contentPadding = PaddingValues(RadixTheme.dimensions.paddingLarge),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        modifier = Modifier.fillMaxSize()
-                    ) {
-                        item {
-                            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
-                            AsyncImage(
-                                model = rememberImageUrl(fromUrl = dappWithMetadata?.iconUrl, size = ImageSize.MEDIUM),
-                                placeholder = painterResource(id = R.drawable.img_placeholder),
-                                fallback = painterResource(id = R.drawable.img_placeholder),
-                                error = painterResource(id = R.drawable.img_placeholder),
-                                contentDescription = null,
-                                contentScale = ContentScale.Crop,
-                                modifier = Modifier
-                                    .size(104.dp)
-                                    .background(
-                                        RadixTheme.colors.gray3,
-                                        RadixTheme.shapes.roundedRectDefault
-                                    )
-                                    .clip(RadixTheme.shapes.roundedRectDefault)
-                            )
-                            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
-                            Text(
-                                text = stringResource(
-                                    id = if (firstTimeLogin) {
-                                        R.string.dAppRequest_login_titleNewDapp
-                                    } else {
-                                        R.string.dAppRequest_login_titleKnownDapp
-                                    }
-                                ),
-                                textAlign = TextAlign.Center,
-                                style = RadixTheme.typography.title,
-                                color = RadixTheme.colors.gray1
-                            )
-                            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
-                            LoginRequestHeader(
-                                dappName = dappWithMetadata?.name.orEmpty().ifEmpty {
-                                    stringResource(
-                                        id = R.string.dAppRequest_metadata_unknownName
-                                    )
-                                },
-                                firstTimeLogin = firstTimeLogin,
-                                modifier = Modifier.padding(RadixTheme.dimensions.paddingLarge)
-                            )
-                            if (personas.isNotEmpty()) {
-                                Text(
-                                    modifier = Modifier.padding(vertical = RadixTheme.dimensions.paddingDefault),
-                                    text = stringResource(R.string.dAppRequest_login_choosePersona),
-                                    textAlign = TextAlign.Center,
-                                    style = RadixTheme.typography.body1Header,
-                                    color = RadixTheme.colors.gray1
-                                )
-                            }
-                        }
-                        itemsIndexed(items = personas) { _, personaItem ->
-                            PersonaCard(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .background(
-                                        RadixTheme.colors.gray5,
-                                        shape = RadixTheme.shapes.roundedRectMedium
-                                    )
-                                    .clip(RadixTheme.shapes.roundedRectMedium)
-                                    .throttleClickable {
-                                        onSelectPersona(personaItem.persona)
-                                    },
-                                persona = personaItem,
-                                onSelectPersona = onSelectPersona
-                            )
-                            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
-                        }
-                        item {
-                            RadixSecondaryButton(
-                                text = stringResource(id = R.string.personas_createNewPersona),
-                                onClick = createNewPersona
-                            )
-                            Spacer(modifier = Modifier.height(100.dp))
-                        }
-                    }
-                }
-            }
+    Scaffold(
+        modifier = modifier,
+        topBar = {
+            RadixCenteredTopAppBar(
+                title = stringResource(id = R.string.empty),
+                backIconType = BackIconType.Close,
+                onBackClick = onCancelClick,
+                windowInsets = WindowInsets.statusBars
+            )
+        },
+        bottomBar = {
             BottomPrimaryButton(
                 onClick = onContinueClick,
                 enabled = continueButtonEnabled,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(RadixTheme.colors.defaultBackground)
-                    .align(Alignment.BottomCenter),
+                    .navigationBarsPadding(),
                 text = stringResource(id = R.string.dAppRequest_login_continue)
             )
+        },
+        containerColor = RadixTheme.colors.defaultBackground
+    ) { padding ->
+        AnimatedVisibility(
+            visible = isLoading,
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(padding),
+            enter = fadeIn(),
+            exit = fadeOut()
+        ) {
+            FullscreenCircularProgressContent()
+        }
+
+        AnimatedVisibility(
+            visible = !isLoading,
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(padding),
+            enter = fadeIn(),
+            exit = fadeOut()
+        ) {
+            LazyColumn(
+                contentPadding = PaddingValues(RadixTheme.dimensions.paddingLarge),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier.fillMaxSize()
+            ) {
+                item {
+                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
+                    AsyncImage(
+                        model = rememberImageUrl(fromUrl = dappWithMetadata?.iconUrl, size = ImageSize.MEDIUM),
+                        placeholder = painterResource(id = R.drawable.img_placeholder),
+                        fallback = painterResource(id = R.drawable.img_placeholder),
+                        error = painterResource(id = R.drawable.img_placeholder),
+                        contentDescription = null,
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier
+                            .size(104.dp)
+                            .background(
+                                RadixTheme.colors.gray3,
+                                RadixTheme.shapes.roundedRectDefault
+                            )
+                            .clip(RadixTheme.shapes.roundedRectDefault)
+                    )
+                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
+                    Text(
+                        text = stringResource(
+                            id = if (firstTimeLogin) {
+                                R.string.dAppRequest_login_titleNewDapp
+                            } else {
+                                R.string.dAppRequest_login_titleKnownDapp
+                            }
+                        ),
+                        textAlign = TextAlign.Center,
+                        style = RadixTheme.typography.title,
+                        color = RadixTheme.colors.gray1
+                    )
+                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
+                    LoginRequestHeader(
+                        dappName = dappWithMetadata?.name.orEmpty().ifEmpty {
+                            stringResource(
+                                id = R.string.dAppRequest_metadata_unknownName
+                            )
+                        },
+                        firstTimeLogin = firstTimeLogin,
+                        modifier = Modifier.padding(RadixTheme.dimensions.paddingLarge)
+                    )
+                    if (personas.isNotEmpty()) {
+                        Text(
+                            modifier = Modifier.padding(vertical = RadixTheme.dimensions.paddingDefault),
+                            text = stringResource(R.string.dAppRequest_login_choosePersona),
+                            textAlign = TextAlign.Center,
+                            style = RadixTheme.typography.body1Header,
+                            color = RadixTheme.colors.gray1
+                        )
+                    }
+                }
+                itemsIndexed(items = personas) { _, personaItem ->
+                    PersonaCard(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(
+                                RadixTheme.colors.gray5,
+                                shape = RadixTheme.shapes.roundedRectMedium
+                            )
+                            .clip(RadixTheme.shapes.roundedRectMedium)
+                            .throttleClickable {
+                                onSelectPersona(personaItem.persona)
+                            },
+                        persona = personaItem,
+                        onSelectPersona = onSelectPersona
+                    )
+                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
+                }
+                item {
+                    RadixSecondaryButton(
+                        text = stringResource(id = R.string.personas_createNewPersona),
+                        onClick = createNewPersona
+                    )
+                    Spacer(modifier = Modifier.height(100.dp))
+                }
+            }
         }
     }
 }
