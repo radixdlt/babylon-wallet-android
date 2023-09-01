@@ -1,24 +1,26 @@
 package com.babylon.wallet.android.presentation.accountpreference
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBars
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.ModalBottomSheetLayout
 import androidx.compose.material.ModalBottomSheetValue
 import androidx.compose.material.Text
 import androidx.compose.material.rememberModalBottomSheetState
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -29,13 +31,13 @@ import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixSecondaryButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
-import com.babylon.wallet.android.presentation.common.FullscreenCircularProgressContent
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.status.signing.SigningStatusBottomDialog
 import com.babylon.wallet.android.presentation.ui.composables.AccountQRCodeView
 import com.babylon.wallet.android.presentation.ui.composables.BottomDialogDragHandle
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
-import com.babylon.wallet.android.presentation.ui.composables.SnackbarUiMessageHandler
+import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
+import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
 import com.babylon.wallet.android.utils.biometricAuthenticate
 import kotlinx.coroutines.launch
 
@@ -54,11 +56,9 @@ fun AccountPreferenceScreen(
         skipHalfExpanded = true
     )
     ModalBottomSheetLayout(
-        modifier = modifier
-//            .systemBarsPadding()
-            .navigationBarsPadding(),
+        modifier = modifier,
         sheetContent = {
-            Column {
+            Column(modifier = Modifier.navigationBarsPadding()) {
                 BottomDialogDragHandle(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -83,12 +83,10 @@ fun AccountPreferenceScreen(
                 scope.launch { sheetState.show() }
             },
             canUseFaucet = state.canUseFaucet,
-            loading = state.isLoading,
+            isXrdLoading = state.isXrdLoading,
+            isAuthSigningLoading = state.isAuthSigningLoading,
             onMessageShown = viewModel::onMessageShown,
             error = state.error,
-            modifier = Modifier
-                .fillMaxSize()
-                .background(RadixTheme.colors.defaultBackground),
             hasAuthKey = state.hasAuthKey,
             onCreateAndUploadAuthKey = {
                 context.biometricAuthenticate {
@@ -114,79 +112,81 @@ private fun AccountPreferenceContent(
     onGetFreeXrdClick: () -> Unit,
     onShowQRCodeClick: () -> Unit,
     canUseFaucet: Boolean,
-    loading: Boolean,
+    isXrdLoading: Boolean,
+    isAuthSigningLoading: Boolean,
     onMessageShown: () -> Unit,
     error: UiMessage?,
     modifier: Modifier = Modifier,
     hasAuthKey: Boolean,
     onCreateAndUploadAuthKey: () -> Unit,
 ) {
-    Column(
+    val snackBarHostState = remember { SnackbarHostState() }
+    SnackbarUIMessage(
+        message = error,
+        snackbarHostState = snackBarHostState,
+        onMessageShown = onMessageShown
+    )
+    Scaffold(
         modifier = modifier,
-        horizontalAlignment = Alignment.Start
-    ) {
-        RadixCenteredTopAppBar(
-            title = stringResource(R.string.accountSettings_title),
-            onBackClick = onBackClick,
-            containerColor = RadixTheme.colors.gray5
-        )
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .weight(1f)
-        ) {
-            Column(
-                Modifier
-                    .fillMaxSize()
-                    .background(RadixTheme.colors.gray5)
-                    .padding(RadixTheme.dimensions.paddingLarge)
-
-            ) {
-                val context = LocalContext.current
-                RadixSecondaryButton(
-                    modifier = Modifier.fillMaxWidth(),
-                    text = stringResource(R.string.accountSettings_getXrdTestTokens),
-                    onClick = {
-                        context.biometricAuthenticate { authenticatedSuccessfully ->
-                            if (authenticatedSuccessfully) {
-                                onGetFreeXrdClick()
-                            }
-                        }
-                    },
-                    enabled = !loading && canUseFaucet
-                )
-                if (BuildConfig.EXPERIMENTAL_FEATURES_ENABLED && !hasAuthKey) {
-                    RadixSecondaryButton(
-                        modifier = Modifier.fillMaxWidth(),
-                        text = stringResource(id = R.string.biometrics_prompt_createSignAuthKey),
-                        onClick = onCreateAndUploadAuthKey,
-                        enabled = !loading,
-                        throttleClicks = true
-                    )
-                }
-                RadixSecondaryButton(
-                    modifier = Modifier.fillMaxWidth(),
-                    text = stringResource(R.string.addressAction_showAccountQR),
-                    onClick = onShowQRCodeClick,
-                    enabled = !loading
-                )
-
-                if (loading) {
-                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXSmall))
-                    Text(
-                        text = stringResource(R.string.accountSettings_loadingPrompt),
-                        style = RadixTheme.typography.body2Regular,
-                        color = RadixTheme.colors.gray1,
-                    )
-                }
-            }
-            if (loading) {
-                FullscreenCircularProgressContent()
-            }
-            SnackbarUiMessageHandler(
-                message = error,
-                onMessageShown = onMessageShown
+        topBar = {
+            RadixCenteredTopAppBar(
+                title = stringResource(R.string.accountSettings_title),
+                onBackClick = onBackClick,
+                windowInsets = WindowInsets.statusBars
             )
+        },
+        snackbarHost = {
+            RadixSnackbarHost(
+                modifier = Modifier.padding(RadixTheme.dimensions.paddingDefault),
+                hostState = snackBarHostState
+            )
+        },
+        containerColor = RadixTheme.colors.gray5
+    ) { padding ->
+        Column(
+            Modifier
+                .padding(padding)
+                .padding(RadixTheme.dimensions.paddingLarge)
+        ) {
+            val context = LocalContext.current
+            RadixSecondaryButton(
+                modifier = Modifier.fillMaxWidth(),
+                text = stringResource(R.string.accountSettings_getXrdTestTokens),
+                onClick = {
+                    context.biometricAuthenticate { authenticatedSuccessfully ->
+                        if (authenticatedSuccessfully) {
+                            onGetFreeXrdClick()
+                        }
+                    }
+                },
+                isLoading = isXrdLoading,
+                enabled = !isXrdLoading && canUseFaucet
+            )
+            if (BuildConfig.EXPERIMENTAL_FEATURES_ENABLED && !hasAuthKey) {
+                RadixSecondaryButton(
+                    modifier = Modifier.fillMaxWidth(),
+                    text = stringResource(id = R.string.biometrics_prompt_createSignAuthKey),
+                    onClick = onCreateAndUploadAuthKey,
+                    isLoading = isAuthSigningLoading,
+                    enabled = !isAuthSigningLoading,
+                    throttleClicks = true
+                )
+            }
+            RadixSecondaryButton(
+                modifier = Modifier.fillMaxWidth(),
+                text = stringResource(R.string.addressAction_showAccountQR),
+                onClick = onShowQRCodeClick,
+                enabled = !isXrdLoading
+            )
+
+            if (isXrdLoading) {
+                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXSmall))
+                Text(
+                    text = stringResource(R.string.accountSettings_loadingPrompt),
+                    style = RadixTheme.typography.body2Regular,
+                    color = RadixTheme.colors.gray1,
+                )
+            }
         }
     }
 }
@@ -200,7 +200,8 @@ fun AccountPreferencePreview() {
             onGetFreeXrdClick = {},
             onShowQRCodeClick = {},
             canUseFaucet = true,
-            loading = false,
+            isXrdLoading = false,
+            isAuthSigningLoading = false,
             onMessageShown = {},
             error = null,
             hasAuthKey = false,

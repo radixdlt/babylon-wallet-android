@@ -5,6 +5,7 @@ import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.size
+import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
@@ -34,6 +35,7 @@ fun RadixSecondaryButton(
     containerColor: Color = RadixTheme.colors.gray4,
     contentColor: Color = RadixTheme.colors.gray1,
     shape: Shape = RadixTheme.shapes.roundedRectSmall,
+    isLoading: Boolean = false,
     enabled: Boolean = true,
     throttleClicks: Boolean = false,
     icon: @Composable (() -> Unit)? = null
@@ -67,8 +69,16 @@ fun RadixSecondaryButton(
             horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingSmall),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            icon?.invoke()
-            Text(text = text, style = RadixTheme.typography.button)
+            if (isLoading) {
+                CircularProgressIndicator(
+                    modifier = Modifier.size(20.dp),
+                    color = RadixTheme.colors.white,
+                    strokeWidth = 2.dp
+                )
+            } else {
+                icon?.invoke()
+                Text(text = text, style = RadixTheme.typography.button)
+            }
         }
     }
 }

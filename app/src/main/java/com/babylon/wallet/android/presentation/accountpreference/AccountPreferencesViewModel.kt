@@ -65,14 +65,14 @@ class AccountPreferenceViewModel @Inject constructor(
                 .collect { event ->
                     when (event) {
                         is AppEvent.Status.Transaction.Fail -> {
-                            _state.update { it.copy(isLoading = false) }
+                            _state.update { it.copy(isXrdLoading = false) }
                         }
 
                         is AppEvent.Status.Transaction.Success -> {
                             val account = requireNotNull(state.value.account)
                             val authSigningFactorInstance = requireNotNull(authSigningFactorInstance)
                             addAuthSigningFactorInstanceUseCase(account, authSigningFactorInstance)
-                            _state.update { it.copy(isLoading = false) }
+                            _state.update { it.copy(isXrdLoading = false) }
                         }
 
                         else -> {}
@@ -106,14 +106,14 @@ class AccountPreferenceViewModel @Inject constructor(
 
     fun onGetFreeXrdClick() {
         appScope.launch {
-            _state.update { it.copy(isLoading = true) }
+            _state.update { it.copy(isXrdLoading = true) }
             getFreeXrdUseCase(address = args.address).onSuccess { _ ->
-                _state.update { it.copy(isLoading = false, gotFreeXrd = true) }
+                _state.update { it.copy(isXrdLoading = false, gotFreeXrd = true) }
                 appEventBus.sendEvent(AppEvent.GotFreeXrd)
             }.onFailure { error ->
                 _state.update {
                     it.copy(
-                        isLoading = false,
+                        isXrdLoading = false,
                         error = UiMessage.ErrorMessage.from(error = error)
                     )
                 }
@@ -133,14 +133,14 @@ class AccountPreferenceViewModel @Inject constructor(
     fun onCreateAndUploadAuthKey() {
         job = viewModelScope.launch {
             state.value.account?.let { account ->
-                _state.update { it.copy(isLoading = true) }
+                _state.update { it.copy(isAuthSigningLoading = true) }
                 rolaClient.generateAuthSigningFactorInstance(account).onSuccess { authSigningFactorInstance ->
                     this@AccountPreferenceViewModel.authSigningFactorInstance = authSigningFactorInstance
                     val manifest = rolaClient
                         .createAuthKeyManifestWithStringInstructions(account, authSigningFactorInstance)
                         .getOrElse {
                             _state.update { state ->
-                                state.copy(isLoading = false)
+                                state.copy(isAuthSigningLoading = false)
                             }
                             return@launch
                         }
@@ -153,10 +153,10 @@ class AccountPreferenceViewModel @Inject constructor(
                             requestId = interactionId
                         )
                     )
-                    _state.update { it.copy(isLoading = false) }
+                    _state.update { it.copy(isAuthSigningLoading = false) }
                 }.onFailure {
                     _state.update { state ->
-                        state.copy(isLoading = false)
+                        state.copy(isAuthSigningLoading = false)
                     }
                 }
             }
@@ -168,7 +168,8 @@ data class AccountPreferenceUiState(
     val account: Network.Account? = null,
     val accountAddress: String,
     val canUseFaucet: Boolean = false,
-    val isLoading: Boolean = false,
+    val isXrdLoading: Boolean = false,
+    val isAuthSigningLoading: Boolean = false,
     val gotFreeXrd: Boolean = false,
     val error: UiMessage? = null,
     val hasAuthKey: Boolean = false,
