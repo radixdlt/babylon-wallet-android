@@ -22,6 +22,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -184,7 +185,9 @@ private fun AccountScreenContent(
     )
 
     ModalBottomSheetLayout(
-        modifier = modifier,
+        modifier = modifier
+            .background(Brush.horizontalGradient(gradient))
+            .statusBarsPadding(),
         sheetState = bottomSheetState,
         sheetBackgroundColor = RadixTheme.colors.defaultBackground,
         scrimColor = Color.Black.copy(alpha = 0.3f),
@@ -207,51 +210,58 @@ private fun AccountScreenContent(
         Box(
             modifier = Modifier.pullRefresh(pullToRefreshState)
         ) {
-            Scaffold(modifier = Modifier.background(Brush.horizontalGradient(gradient)), topBar = {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    IconButton(
-                        onClick = onBackClick
+            Scaffold(
+                modifier = Modifier,
+                topBar = {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Icon(
-                            painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_arrow_back),
-                            tint = RadixTheme.colors.white,
-                            contentDescription = "navigate back"
+                        IconButton(
+                            onClick = onBackClick
+                        ) {
+                            Icon(
+                                painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_arrow_back),
+                                tint = RadixTheme.colors.white,
+                                contentDescription = "navigate back"
+                            )
+                        }
+                        Spacer(modifier = Modifier.weight(1f))
+                        Text(
+                            modifier = Modifier,
+                            text = state.accountWithResources?.account?.displayName.orEmpty(),
+                            style = RadixTheme.typography.body1Header.copy(textAlign = TextAlign.Center),
+                            color = RadixTheme.colors.white,
+                            maxLines = 2,
+                            overflow = TextOverflow.Ellipsis
                         )
+                        Spacer(modifier = Modifier.weight(1f))
+                        IconButton(onClick = { onAccountPreferenceClick(state.accountWithResources?.account?.address.orEmpty()) }) {
+                            Icon(
+                                painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_more_horiz),
+                                tint = RadixTheme.colors.white,
+                                contentDescription = "account settings"
+                            )
+                        }
                     }
-                    Spacer(modifier = Modifier.weight(1f))
-                    Text(
-                        modifier = Modifier,
-                        text = state.accountWithResources?.account?.displayName.orEmpty(),
-                        style = RadixTheme.typography.body1Header.copy(textAlign = TextAlign.Center),
-                        color = RadixTheme.colors.white,
-                        maxLines = 2,
-                        overflow = TextOverflow.Ellipsis
-                    )
-                    Spacer(modifier = Modifier.weight(1f))
-                    IconButton(onClick = { onAccountPreferenceClick(state.accountWithResources?.account?.address.orEmpty()) }) {
-                        Icon(
-                            painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_more_horiz),
-                            tint = RadixTheme.colors.white,
-                            contentDescription = "account settings"
-                        )
-                    }
-                }
-            }, containerColor = Color.Transparent, floatingActionButton = {
+                },
+                containerColor = Color.Transparent,
+                floatingActionButton = {
                     if (state.isHistoryEnabled) {
                         HistoryButton(
                             modifier = Modifier.size(174.dp, 50.dp),
                             onHistoryClick
                         )
                     }
-                }, floatingActionButtonPosition = FabPosition.Center, snackbarHost = {
+                },
+                floatingActionButtonPosition = FabPosition.Center,
+                snackbarHost = {
                     RadixSnackbarHost(
                         modifier = Modifier.padding(RadixTheme.dimensions.paddingDefault),
                         hostState = snackBarHostState
                     )
-                }) { innerPadding ->
+                }
+            ) { innerPadding ->
                 AssetsContent(
                     modifier = Modifier.padding(innerPadding),
                     state = state,
