@@ -5,6 +5,9 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.calculateEndPadding
+import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -12,6 +15,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.IconButton
@@ -20,6 +24,7 @@ import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material3.Divider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -30,6 +35,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
@@ -44,6 +50,7 @@ import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
 import com.babylon.wallet.android.designsystem.composable.RadixSecondaryButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
+import com.babylon.wallet.android.designsystem.theme.plus
 import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.domain.model.DAppWithMetadata
 import com.babylon.wallet.android.domain.model.metadata.NameMetadataItem
@@ -52,7 +59,10 @@ import com.babylon.wallet.android.presentation.dapp.authorized.login.DAppAuthori
 import com.babylon.wallet.android.presentation.dapp.authorized.login.Event
 import com.babylon.wallet.android.presentation.dapp.authorized.selectpersona.PersonaUiModel
 import com.babylon.wallet.android.presentation.status.signing.SigningStatusBottomDialog
+import com.babylon.wallet.android.presentation.ui.composables.BackIconType
+import com.babylon.wallet.android.presentation.ui.composables.BottomPrimaryButton
 import com.babylon.wallet.android.presentation.ui.composables.ImageSize
+import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.persona.PersonaDetailCard
 import com.babylon.wallet.android.presentation.ui.composables.rememberImageUrl
 import com.babylon.wallet.android.presentation.ui.modifier.applyIf
@@ -158,22 +168,31 @@ private fun PersonaDataOnetimeContent(
     onEditClick: (String) -> Unit,
     continueButtonEnabled: Boolean,
 ) {
-    Column(
-        modifier = modifier
-//            .systemBarsPadding()
-            .navigationBarsPadding()
-            .fillMaxSize()
-            .background(RadixTheme.colors.defaultBackground)
-    ) {
-        IconButton(onClick = onBackClick) {
-            Icon(
-                imageVector = if (isFirstScreenInFlow) Icons.Filled.Clear else Icons.Filled.ArrowBack,
-                contentDescription = "clear"
+    Scaffold(
+        modifier = modifier,
+        topBar = {
+            RadixCenteredTopAppBar(
+                title = stringResource(id = R.string.empty),
+                onBackClick = onBackClick,
+                backIconType = if (isFirstScreenInFlow) BackIconType.Close else BackIconType.Back,
+                windowInsets = WindowInsets.statusBars
             )
-        }
+        },
+        bottomBar = {
+            BottomPrimaryButton(
+                onClick = onContinueClick,
+                enabled = continueButtonEnabled,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .navigationBarsPadding()
+                    .background(RadixTheme.colors.defaultBackground),
+                text = stringResource(id = R.string.dAppRequest_personalDataPermission_continue)
+            )
+        },
+        containerColor = RadixTheme.colors.defaultBackground
+    ) { padding ->
         LazyColumn(
-            modifier = Modifier.weight(1f),
-            contentPadding = PaddingValues(RadixTheme.dimensions.paddingDefault),
+            contentPadding = padding + PaddingValues(RadixTheme.dimensions.paddingDefault),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             item {
@@ -242,18 +261,6 @@ private fun PersonaDataOnetimeContent(
                 Spacer(modifier = Modifier.height(40.dp))
             }
         }
-        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSmall))
-        Divider(color = RadixTheme.colors.gray5)
-        RadixPrimaryButton(
-            text = stringResource(
-                id = R.string.dAppRequest_personalDataOneTime_continue
-            ),
-            onClick = onContinueClick,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(RadixTheme.dimensions.paddingDefault),
-            enabled = continueButtonEnabled
-        )
     }
 }
 

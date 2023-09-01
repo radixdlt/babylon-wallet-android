@@ -47,6 +47,7 @@ import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
 import com.babylon.wallet.android.designsystem.composable.RadixTextButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
+import com.babylon.wallet.android.designsystem.theme.plus
 import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.presentation.transaction.composables.StrokeLine
 import com.babylon.wallet.android.presentation.transfer.TransferViewModel.State
@@ -150,6 +151,7 @@ fun TransferContent(
                         onAddressChanged = onAddressTyped
                     )
                 }
+
                 is State.Sheet.ChooseAssets -> {
                     ChooseAssetsSheet(
                         state = sheetState,
@@ -160,6 +162,7 @@ fun TransferContent(
                         onChooseAssetsSubmitted = onChooseAssetsSubmitted
                     )
                 }
+
                 is State.Sheet.None -> {}
             }
         }
@@ -176,15 +179,9 @@ fun TransferContent(
             },
             containerColor = RadixTheme.colors.defaultBackground
         ) { padding ->
-            val layoutDirection = LocalLayoutDirection.current
             LazyColumn(
                 modifier = Modifier.pointerInput(Unit) { detectTapGestures(onTap = { focusManager.clearFocus() }) },
-                contentPadding = PaddingValues(
-                    start = padding.calculateStartPadding(layoutDirection) + RadixTheme.dimensions.paddingDefault,
-                    end = padding.calculateEndPadding(layoutDirection) + RadixTheme.dimensions.paddingDefault,
-                    top = padding.calculateTopPadding(),
-                    bottom = padding.calculateBottomPadding()
-                )
+                contentPadding = padding + PaddingValues(horizontal = RadixTheme.dimensions.paddingDefault),
             ) {
                 item {
                     Row(

@@ -42,6 +42,7 @@ import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixTextButton
 import com.babylon.wallet.android.designsystem.theme.AccountGradientList
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
+import com.babylon.wallet.android.designsystem.theme.plus
 import com.babylon.wallet.android.domain.model.DAppWithMetadata
 import com.babylon.wallet.android.presentation.dapp.authorized.account.AccountItemUiModel
 import com.babylon.wallet.android.presentation.dapp.authorized.account.AccountSelectionCard
@@ -86,14 +87,8 @@ fun ChooseAccountContent(
         },
         containerColor = RadixTheme.colors.defaultBackground
     ) { padding ->
-        val layoutDirection = LocalLayoutDirection.current
         LazyColumn(
-            contentPadding = PaddingValues(
-                start = padding.calculateStartPadding(layoutDirection) + RadixTheme.dimensions.paddingLarge,
-                end = padding.calculateEndPadding(layoutDirection) + RadixTheme.dimensions.paddingLarge,
-                top = padding.calculateTopPadding() + RadixTheme.dimensions.paddingLarge,
-                bottom = padding.calculateBottomPadding() + RadixTheme.dimensions.paddingLarge
-            ),
+            contentPadding = padding + PaddingValues(RadixTheme.dimensions.paddingLarge),
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier.fillMaxSize()
         ) {
