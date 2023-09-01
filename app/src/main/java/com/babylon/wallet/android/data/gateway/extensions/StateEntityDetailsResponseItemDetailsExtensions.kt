@@ -64,7 +64,7 @@ fun StateEntityDetailsResponseItemDetails.unstakeClaimTokenAddress(): String? {
     }
 }
 
-@Suppress("ComplexCondition", "TooManyFunctions", "LongMethod", "CyclomaticComplexMethod")
+@Suppress("ComplexCondition", "TooManyFunctions", "LongMethod", "CyclomaticComplexMethod", "NestedBlockDepth")
 fun StateEntityDetailsResponseItemDetails.calculateResourceBehaviours(): List<ResourceBehaviour> {
     return if (isUsingDefaultRules()) {
         listOf(ResourceBehaviour.DEFAULT_RESOURCE)
