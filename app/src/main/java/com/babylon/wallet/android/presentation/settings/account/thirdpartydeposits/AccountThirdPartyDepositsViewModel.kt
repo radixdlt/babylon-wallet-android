@@ -194,17 +194,7 @@ class AccountThirdPartyDepositsViewModel @Inject constructor(
 
     fun onAddDepositor() {
         _state.update { state ->
-            when (Address(state.depositorToAdd.address).entityType()) {
-                EntityType.GLOBAL_FUNGIBLE_RESOURCE_MANAGER -> ThirdPartyDeposits.DepositorAddress.ResourceAddress(
-                    state.depositorToAdd.address
-                )
-
-                EntityType.GLOBAL_NON_FUNGIBLE_RESOURCE_MANAGER -> ThirdPartyDeposits.DepositorAddress.NonFungibleGlobalID(
-                    state.depositorToAdd.address
-                )
-
-                else -> null
-            }?.let { depositorAddress ->
+            state.depositorToAdd.depositorAddress?.let { depositorAddress ->
                 val updatedDepositors =
                     (state.updatedThirdPartyDepositSettings?.depositorsAllowList.orEmpty() + listOf(depositorAddress)).distinct()
                 state.copy(
@@ -284,15 +274,21 @@ class AccountThirdPartyDepositsViewModel @Inject constructor(
 
     fun depositorAddressTyped(address: String) {
         val currentNetworkId = state.value.account?.networkID ?: return
-        val valid = AddressValidator.isValid(
+        val validAddress = AddressValidator.isValid(
             address = address,
             networkId = currentNetworkId,
             allowedEntityTypes = setOf(EntityType.GLOBAL_FUNGIBLE_RESOURCE_MANAGER, EntityType.GLOBAL_NON_FUNGIBLE_RESOURCE_MANAGER)
         )
+        val validNft = AddressValidator.isValidNft(address)
         _state.update { state ->
             val updatedDepositor = state.depositorToAdd.copy(
-                address = address,
-                addressValid = valid
+                depositorAddress = when {
+                    validAddress -> ThirdPartyDeposits.DepositorAddress.ResourceAddress(address)
+                    validNft -> ThirdPartyDeposits.DepositorAddress.NonFungibleGlobalID(address)
+                    else -> null
+                },
+                addressValid = validAddress || validNft,
+                addressToDisplay = address
             )
             state.copy(depositorToAdd = updatedDepositor)
         }
@@ -334,7 +330,11 @@ sealed class AssetType {
         val addressValid: Boolean = false
     )
 
-    data class Depositor(val address: String = "", val addressValid: Boolean = false)
+    data class Depositor(
+        val depositorAddress: ThirdPartyDeposits.DepositorAddress? = null,
+        val addressToDisplay: String = "",
+        val addressValid: Boolean = false
+    )
 }
 
 data class AccountThirdPartyDepositsUiState(
@@ -350,7 +350,7 @@ data class AccountThirdPartyDepositsUiState(
             ThirdPartyDeposits.DepositAddressExceptionRule.Allow
         )
     ),
-    val depositorToAdd: AssetType.Depositor = AssetType.Depositor("")
+    val depositorToAdd: AssetType.Depositor = AssetType.Depositor()
 ) : UiState {
     val allowedAssets: ImmutableList<ThirdPartyDeposits.AssetException>
         get() = updatedThirdPartyDepositSettings?.assetsExceptionList?.filter {

@@ -215,7 +215,7 @@ fun AddDepositorSheet(
                     .fillMaxWidth()
                     .padding(horizontal = RadixTheme.dimensions.paddingDefault),
                 onValueChanged = onResourceAddressChanged,
-                value = depositor.address,
+                value = depositor.addressToDisplay,
                 hint = stringResource(id = R.string.accountSettings_specificAssetsDeposits_addAnAssetInputHint),
                 singleLine = true,
                 error = null
