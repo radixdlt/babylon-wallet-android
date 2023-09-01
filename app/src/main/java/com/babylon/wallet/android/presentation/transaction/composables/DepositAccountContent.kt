@@ -32,7 +32,8 @@ import kotlinx.collections.immutable.ImmutableList
 fun DepositAccountContent(
     modifier: Modifier = Modifier,
     to: ImmutableList<AccountWithTransferableResources>,
-    promptForGuarantees: () -> Unit
+    promptForGuarantees: () -> Unit,
+    showStrokeLine: (Boolean)
 ) {
     if (to.isNotEmpty()) {
         Row(verticalAlignment = Alignment.Bottom) {
@@ -45,7 +46,9 @@ fun DepositAccountContent(
                 color = RadixTheme.colors.gray2,
                 overflow = TextOverflow.Ellipsis,
             )
-            StrokeLine()
+            if (showStrokeLine) {
+                StrokeLine()
+            }
         }
 
         Column(

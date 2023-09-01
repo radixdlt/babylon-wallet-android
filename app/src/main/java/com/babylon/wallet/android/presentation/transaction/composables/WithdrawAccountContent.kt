@@ -53,5 +53,8 @@ fun WithdrawAccountContent(
                 }
             }
         }
+        StrokeLine(height = 40.dp)
+    } else {
+        Spacer(modifier = Modifier.height(40.dp))
     }
 }

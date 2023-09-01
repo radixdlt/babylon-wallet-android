@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.domain.model.DAppWithMetadataAndAssociatedResources
 import com.babylon.wallet.android.presentation.transaction.PreviewType
@@ -40,8 +39,6 @@ fun TransactionPreviewTypeContent(
                 from = preview.from.toPersistentList()
             )
 
-            StrokeLine(height = 40.dp)
-
             ConnectedDAppsContent(
                 modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingDefault),
                 connectedDApps = preview.dApps.toPersistentList(),
@@ -51,7 +48,8 @@ fun TransactionPreviewTypeContent(
             DepositAccountContent(
                 modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingDefault),
                 to = preview.to.toPersistentList(),
-                promptForGuarantees = onPromptForGuarantees
+                promptForGuarantees = onPromptForGuarantees,
+                showStrokeLine = preview.from.toPersistentList().isNotEmpty()
             )
 
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
