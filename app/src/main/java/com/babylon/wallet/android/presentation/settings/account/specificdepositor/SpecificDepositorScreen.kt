@@ -158,7 +158,7 @@ fun SpecificDepositorScreen(
                 .fillMaxSize()
                 .background(RadixTheme.colors.gray5),
             allowedDepositors = state.allowedDepositors,
-            onDeleteDepositor = sharedViewModel::onDeleteDepositor
+            onDeleteDepositor = sharedViewModel::showDeletePrompt
         )
     }
 }
@@ -282,7 +282,7 @@ private fun SpecificDepositorContent(
                 Text(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = RadixTheme.dimensions.paddingLarge),
+                        .padding(horizontal = RadixTheme.dimensions.paddingLarge, vertical = RadixTheme.dimensions.paddingDefault),
                     text = stringResource(id = R.string.accountSettings_specificAssetsDeposits_emptyAllowAll),
                     textAlign = TextAlign.Center,
                     style = RadixTheme.typography.body1HighImportance,
