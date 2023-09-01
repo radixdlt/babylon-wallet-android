@@ -6,11 +6,15 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.calculateEndPadding
+import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.Icon
@@ -18,6 +22,7 @@ import androidx.compose.material.IconButton
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -25,6 +30,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
@@ -58,100 +64,104 @@ fun ChooseAccountContent(
     isExactAccountsCount: Boolean,
     showBackButton: Boolean,
 ) {
-    Box(
-        modifier = modifier
-//            .systemBarsPadding()
-            .navigationBarsPadding()
-            .fillMaxSize()
-            .background(RadixTheme.colors.defaultBackground)
-    ) {
-        Column(modifier = Modifier.fillMaxSize()) {
-            IconButton(onClick = onBackClick) {
-                Icon(
-                    imageVector = if (showBackButton) Icons.Filled.ArrowBack else Icons.Filled.Clear,
-                    contentDescription = "clear"
+    Scaffold(
+        modifier = modifier,
+        topBar = {
+            RadixCenteredTopAppBar(
+                title = stringResource(id = R.string.empty),
+                onBackClick = onBackClick,
+                backIconType = if (showBackButton) BackIconType.Back else BackIconType.Close,
+                windowInsets = WindowInsets.statusBars
+            )
+        },
+        bottomBar = {
+            BottomPrimaryButton(
+                onClick = onContinueClick,
+                enabled = isContinueButtonEnabled,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .navigationBarsPadding(),
+                text = stringResource(id = R.string.dAppRequest_chooseAccounts_continue)
+            )
+        },
+        containerColor = RadixTheme.colors.defaultBackground
+    ) { padding ->
+        val layoutDirection = LocalLayoutDirection.current
+        LazyColumn(
+            contentPadding = PaddingValues(
+                start = padding.calculateStartPadding(layoutDirection) + RadixTheme.dimensions.paddingLarge,
+                end = padding.calculateEndPadding(layoutDirection) + RadixTheme.dimensions.paddingLarge,
+                top = padding.calculateTopPadding() + RadixTheme.dimensions.paddingLarge,
+                bottom = padding.calculateBottomPadding() + RadixTheme.dimensions.paddingLarge
+            ),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier.fillMaxSize()
+        ) {
+            item {
+                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
+                AsyncImage(
+                    model = rememberImageUrl(fromUrl = dappWithMetadata?.iconUrl, size = ImageSize.MEDIUM),
+                    placeholder = painterResource(id = R.drawable.img_placeholder),
+                    fallback = painterResource(id = R.drawable.img_placeholder),
+                    error = painterResource(id = R.drawable.img_placeholder),
+                    contentDescription = null,
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier
+                        .size(104.dp)
+                        .background(RadixTheme.colors.gray3, RadixTheme.shapes.roundedRectDefault)
+                        .clip(RadixTheme.shapes.roundedRectDefault)
                 )
+                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
+                Text(
+                    text = if (isOneTime) {
+                        stringResource(id = R.string.dAppRequest_chooseAccountsOneTime_title)
+                    } else {
+                        stringResource(id = R.string.dAppRequest_chooseAccountsOngoing_title)
+                    },
+                    textAlign = TextAlign.Center,
+                    style = RadixTheme.typography.title,
+                    color = RadixTheme.colors.gray1
+                )
+                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
+                ChooseAccountsSubtitle(
+                    dappName = dappWithMetadata?.name.orEmpty()
+                        .ifEmpty { stringResource(id = R.string.dAppRequest_metadata_unknownName) },
+                    isOneTime = isOneTime,
+                    numberOfAccounts = numberOfAccounts,
+                    isExactAccountsCount = isExactAccountsCount
+                )
+                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
             }
-            LazyColumn(
-                contentPadding = PaddingValues(RadixTheme.dimensions.paddingLarge),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = Modifier.fillMaxSize()
-            ) {
-                item {
-                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
-                    AsyncImage(
-                        model = rememberImageUrl(fromUrl = dappWithMetadata?.iconUrl, size = ImageSize.MEDIUM),
-                        placeholder = painterResource(id = R.drawable.img_placeholder),
-                        fallback = painterResource(id = R.drawable.img_placeholder),
-                        error = painterResource(id = R.drawable.img_placeholder),
-                        contentDescription = null,
-                        contentScale = ContentScale.Crop,
-                        modifier = Modifier
-                            .size(104.dp)
-                            .background(RadixTheme.colors.gray3, RadixTheme.shapes.roundedRectDefault)
-                            .clip(RadixTheme.shapes.roundedRectDefault)
-                    )
-                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
-                    Text(
-                        text = if (isOneTime) {
-                            stringResource(id = R.string.dAppRequest_chooseAccountsOneTime_title)
-                        } else {
-                            stringResource(id = R.string.dAppRequest_chooseAccountsOngoing_title)
-                        },
-                        textAlign = TextAlign.Center,
-                        style = RadixTheme.typography.title,
-                        color = RadixTheme.colors.gray1
-                    )
-                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
-                    ChooseAccountsSubtitle(
-                        dappName = dappWithMetadata?.name.orEmpty()
-                            .ifEmpty { stringResource(id = R.string.dAppRequest_metadata_unknownName) },
-                        isOneTime = isOneTime,
-                        numberOfAccounts = numberOfAccounts,
-                        isExactAccountsCount = isExactAccountsCount
-                    )
-                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
-                }
-                itemsIndexed(accountItems) { index, accountItem ->
-                    val gradientColor = AccountGradientList[accountItem.appearanceID % AccountGradientList.size]
-                    AccountSelectionCard(
-                        modifier = Modifier
-                            .background(
-                                Brush.horizontalGradient(gradientColor),
-                                shape = RadixTheme.shapes.roundedRectSmall
-                            )
-                            .clip(RadixTheme.shapes.roundedRectSmall)
-                            .clickable {
-                                onAccountSelect(index)
-                            },
-                        accountName = accountItem.displayName.orEmpty(),
-                        address = accountItem.address,
-                        checked = accountItem.isSelected,
-                        isSingleChoice = isSingleChoice,
-                        radioButtonClicked = {
+            itemsIndexed(accountItems) { index, accountItem ->
+                val gradientColor = AccountGradientList[accountItem.appearanceID % AccountGradientList.size]
+                AccountSelectionCard(
+                    modifier = Modifier
+                        .background(
+                            Brush.horizontalGradient(gradientColor),
+                            shape = RadixTheme.shapes.roundedRectSmall
+                        )
+                        .clip(RadixTheme.shapes.roundedRectSmall)
+                        .clickable {
                             onAccountSelect(index)
-                        }
-                    )
-                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
-                }
-                item {
-                    RadixTextButton(
-                        text = stringResource(id = R.string.dAppRequest_chooseAccounts_createNewAccount),
-                        onClick = onCreateNewAccount
-                    )
-                    Spacer(Modifier.height(100.dp))
-                }
+                        },
+                    accountName = accountItem.displayName.orEmpty(),
+                    address = accountItem.address,
+                    checked = accountItem.isSelected,
+                    isSingleChoice = isSingleChoice,
+                    radioButtonClicked = {
+                        onAccountSelect(index)
+                    }
+                )
+                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
+            }
+            item {
+                RadixTextButton(
+                    text = stringResource(id = R.string.dAppRequest_chooseAccounts_createNewAccount),
+                    onClick = onCreateNewAccount
+                )
+                Spacer(Modifier.height(100.dp))
             }
         }
-        BottomPrimaryButton(
-            onClick = onContinueClick,
-            enabled = isContinueButtonEnabled,
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(RadixTheme.colors.defaultBackground)
-                .align(Alignment.BottomCenter),
-            text = stringResource(id = R.string.dAppRequest_chooseAccounts_continue)
-        )
     }
 }
 
