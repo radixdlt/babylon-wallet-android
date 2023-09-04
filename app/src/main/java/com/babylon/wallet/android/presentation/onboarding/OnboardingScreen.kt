@@ -62,13 +62,8 @@ fun OnboardingScreen(
     BackHandler { onBack() }
 
     OnboardingScreenContent(
-        currentPage = state.currentPagerPage,
         onProceedClick = viewModel::onCreateNewWalletClick,
         onRestoreWalletClick = onRestoreFromBackupClick,
-//        showWarning = state.showWarning,
-//        authenticateWithBiometric = state.authenticateWithBiometric,
-//        onUserAuthenticated = viewModel::onUserAuthenticated,
-//        onAlertClicked = viewModel::onAlertClicked,
         modifier = modifier
     )
 
@@ -85,13 +80,8 @@ fun OnboardingScreen(
 
 @Composable
 private fun OnboardingScreenContent(
-    currentPage: Int,
     onProceedClick: () -> Unit,
     onRestoreWalletClick: () -> Unit,
-//    showWarning: Boolean,
-//    authenticateWithBiometric: Boolean,
-//    onUserAuthenticated: (Boolean) -> Unit,
-//    onAlertClicked: (Boolean) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Scaffold(
@@ -103,109 +93,24 @@ private fun OnboardingScreenContent(
                 .padding(padding)
                 .fillMaxSize()
         ) {
-
-            val pagerState = rememberPagerState(initialPage = currentPage)
-            RadixOnboardingPagerIndicator(
-                pagerState = pagerState,
-                pageCount = 5,
-                modifier = Modifier
-                    .wrapContentSize()
-                    .align(Alignment.CenterHorizontally),
-                indicatorWidth = 48.dp,
-                indicatorHeight = 4.dp,
-            )
-
             Spacer(modifier = Modifier.weight(1f))
-            AnimatedVisibility(
-                visible = /*!pagerState.canScrollForward*/true
-            ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = RadixTheme.dimensions.paddingDefault),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    RadixPrimaryButton(
-                        text = stringResource(id = R.string.onboarding_newUser),
-                        onClick = onProceedClick,
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                    RadixTextButton(
-                        text = stringResource(id = R.string.onboarding_restoreFromBackup),
-                        modifier = Modifier.fillMaxWidth(),
-                        onClick = onRestoreWalletClick
-                    )
-                    Spacer(Modifier.height(RadixTheme.dimensions.paddingXXLarge))
-                }
-            }
+
+            RadixPrimaryButton(
+                text = stringResource(id = R.string.onboarding_newUser),
+                onClick = onProceedClick,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = RadixTheme.dimensions.paddingDefault)
+            )
+            RadixTextButton(
+                text = stringResource(id = R.string.onboarding_restoreFromBackup),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = RadixTheme.dimensions.paddingDefault),
+                onClick = onRestoreWalletClick
+            )
+            Spacer(Modifier.height(RadixTheme.dimensions.paddingXXLarge))
         }
-    }
-}
-
-@OptIn(ExperimentalFoundationApi::class)
-@Composable
-fun RadixOnboardingPagerIndicator(
-    pagerState: PagerState,
-    pageCount: Int,
-    modifier: Modifier = Modifier,
-    pageIndexMapping: (Int) -> Int = { it },
-    inactiveColor: Color = RadixTheme.colors.gray4,
-    indicatorWidth: Dp = 8.dp,
-    indicatorHeight: Dp = indicatorWidth,
-    spacing: Dp = RadixTheme.dimensions.paddingSmall,
-    indicatorShape: Shape = CircleShape,
-) {
-    val indicatorWidthPx = LocalDensity.current.run { indicatorWidth.roundToPx() }
-    val spacingPx = LocalDensity.current.run { spacing.roundToPx() }
-
-    Box(
-        modifier = modifier,
-        contentAlignment = Alignment.CenterStart
-    ) {
-        Row(
-            horizontalArrangement = Arrangement.spacedBy(spacing),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            val indicatorModifier = Modifier
-                .size(width = indicatorWidth, height = indicatorHeight)
-                .background(color = inactiveColor, shape = indicatorShape)
-
-            repeat(pageCount) {
-                Box(indicatorModifier)
-            }
-        }
-
-        Box(
-            Modifier
-                .offset {
-                    val position = pageIndexMapping(pagerState.currentPage)
-                    val offset = pagerState.currentPageOffsetFraction
-                    val next = pageIndexMapping(pagerState.currentPage + offset.sign.toInt())
-                    val scrollPosition = ((next - position) * offset.absoluteValue + position)
-                        .coerceIn(
-                            0f,
-                            (pageCount - 1)
-                                .coerceAtLeast(0)
-                                .toFloat()
-                        )
-
-                    IntOffset(
-                        x = ((spacingPx + indicatorWidthPx) * scrollPosition).toInt(),
-                        y = 0
-                    )
-                }
-                .size(width = indicatorWidth / 2, height = indicatorHeight)
-                .then(
-                    if (pageCount > 0) {
-                        Modifier.background(
-                            brush = GradientBrand2,
-                            shape = indicatorShape,
-                        )
-                    } else {
-                        Modifier
-                    }
-                )
-        )
     }
 }
 
@@ -214,14 +119,8 @@ fun RadixOnboardingPagerIndicator(
 fun OnboardingScreenPreview() {
     RadixWalletTheme {
         OnboardingScreenContent(
-            currentPage = 0,
             onProceedClick = {},
-            onRestoreWalletClick = {},
-//            showWarning = false,
-//            authenticateWithBiometric = true,
-//            onUserAuthenticated = {},
-//            onAlertClicked = {},
-            Modifier.fillMaxSize()
+            onRestoreWalletClick = {}
         )
     }
 }
