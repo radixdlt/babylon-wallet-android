@@ -84,9 +84,10 @@ fun RestoreMnemonicsScreen(
                 viewModel.onSubmit()
             }
         },
-        onWordChanged = viewModel::onWordChanged,
+        onWordTyped = viewModel::onWordChanged,
         onPassphraseChanged = viewModel::onPassphraseChanged,
-        onMessageShown = viewModel::onMessageShown
+        onMessageShown = viewModel::onMessageShown,
+        onWordSelected = viewModel::onWordSelected
     )
 
     val focusManager = LocalFocusManager.current
@@ -108,7 +109,8 @@ private fun RestoreMnemonicsContent(
     onBackClick: () -> Unit,
     onSkipClicked: () -> Unit,
     onSubmitClick: () -> Unit,
-    onWordChanged: (Int, String) -> Unit,
+    onWordTyped: (Int, String) -> Unit,
+    onWordSelected: (Int, String) -> Unit,
     onPassphraseChanged: (String) -> Unit,
     onMessageShown: () -> Unit
 ) {
@@ -145,7 +147,7 @@ private fun RestoreMnemonicsContent(
                         .padding(RadixTheme.dimensions.paddingSmall),
                     onCandidateClick = { candidate ->
                         focusedWordIndex?.let {
-                            onWordChanged(it, candidate)
+                            onWordSelected(it, candidate)
                             focusedWordIndex = null
                         }
                     }
@@ -197,7 +199,7 @@ private fun RestoreMnemonicsContent(
         ) {
             SeedPhraseView(
                 state = state,
-                onWordChanged = onWordChanged,
+                onWordChanged = onWordTyped,
                 onPassphraseChanged = onPassphraseChanged,
                 onFocusedWordIndexChanged = { focusedWordIndex = it }
             )
@@ -348,9 +350,10 @@ fun RestoreMnemonicsIntroContent() {
             onBackClick = {},
             onSkipClicked = {},
             onSubmitClick = {},
-            onWordChanged = { _, _ -> },
+            onWordTyped = { _, _ -> },
             onPassphraseChanged = {},
-            onMessageShown = {}
+            onMessageShown = {},
+            onWordSelected = { _, _ -> }
         )
     }
 }
@@ -374,9 +377,10 @@ fun RestoreMnemonicsSeedPhraseContent() {
             onBackClick = {},
             onSkipClicked = {},
             onSubmitClick = {},
-            onWordChanged = { _, _ -> },
+            onWordTyped = { _, _ -> },
             onPassphraseChanged = {},
-            onMessageShown = {}
+            onMessageShown = {},
+            onWordSelected = { _, _ -> }
         )
     }
 }

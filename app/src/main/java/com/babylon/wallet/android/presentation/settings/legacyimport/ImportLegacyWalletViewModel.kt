@@ -266,6 +266,13 @@ class ImportLegacyWalletViewModel @Inject constructor(
         }
     }
 
+    fun onWordSelected(index: Int, value: String) {
+        seedPhraseInputDelegate.onWordSelected(index, value)
+        viewModelScope.launch {
+            sendEvent(OlympiaImportEvent.MoveFocusToNextWord)
+        }
+    }
+
     fun onPassphraseChanged(value: String) {
         seedPhraseInputDelegate.onPassphraseChanged(value)
     }

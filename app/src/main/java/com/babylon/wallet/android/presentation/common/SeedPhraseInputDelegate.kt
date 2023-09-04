@@ -32,6 +32,19 @@ class SeedPhraseInputDelegate(
         }
     }
 
+    fun onWordSelected(index: Int, value: String) {
+        _state.update { state ->
+            val updatedWords = state.seedPhraseWords.mapWhen(predicate = { it.index == index }, mutation = {
+                it.copy(value = value, state = SeedPhraseWord.State.Valid)
+            }).toPersistentList()
+            state.copy(
+                seedPhraseWords = updatedWords,
+                seedPhraseValid = updatedWords.all { it.state == SeedPhraseWord.State.Valid },
+                wordAutocompleteCandidates = persistentListOf()
+            )
+        }
+    }
+
     @Suppress("MagicNumber", "LongMethod")
     fun onWordChanged(index: Int, value: String, onMoveToNextWord: suspend () -> Unit) {
         val isDeleting = (_state.value.seedPhraseWords.firstOrNull { it.index == index }?.value?.length ?: 0) > value.length
