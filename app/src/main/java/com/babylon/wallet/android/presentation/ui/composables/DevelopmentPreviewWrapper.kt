@@ -4,11 +4,9 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.compositionLocalOf
@@ -16,7 +14,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.onGloballyPositioned
@@ -26,16 +23,15 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.R
-import com.babylon.wallet.android.designsystem.SetStatusBarColor
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 
 @Composable
 fun DevelopmentPreviewWrapper(
     modifier: Modifier = Modifier,
+    devBannerState: DevBannerState = DevBannerState(false),
     content: @Composable (PaddingValues) -> Unit
 ) {
-    var devBannerState by remember { mutableStateOf(DevBannerState(isVisible = false)) }
     Box(modifier = modifier) {
         var bannerHeight by remember { mutableStateOf(0.dp) }
         CompositionLocalProvider(LocalDevBannerState provides devBannerState) {
@@ -59,16 +55,6 @@ fun DevelopmentPreviewWrapper(
                 textAlign = TextAlign.Center,
             )
         }
-
-        // TODO to remove
-        TextButton(
-            modifier = Modifier
-                .align(Alignment.TopCenter)
-                .statusBarsPadding(),
-            onClick = { devBannerState = DevBannerState(isVisible = !devBannerState.isVisible) }
-        ) {
-            Text(text = if (devBannerState.isVisible) "Dev" else "Prod")
-        }
     }
 }
 
@@ -80,6 +66,6 @@ val LocalDevBannerState = compositionLocalOf { DevBannerState() }
 @Composable
 fun DevelopmentBannerPreview() {
     RadixWalletTheme {
-        DevelopmentPreviewWrapper(modifier = Modifier, content = {})
+        DevelopmentPreviewWrapper(modifier = Modifier, DevBannerState(isVisible = true), content = {})
     }
 }

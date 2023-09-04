@@ -30,6 +30,8 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.peerdroid.helpers.Result
 import rdx.works.profile.data.model.ProfileState
+import rdx.works.profile.data.model.apppreferences.Radix
+import rdx.works.profile.data.model.currentGateway
 import rdx.works.profile.domain.CheckMnemonicIntegrityUseCase
 import rdx.works.profile.domain.GetProfileStateUseCase
 import rdx.works.profile.domain.GetProfileUseCase
@@ -75,6 +77,10 @@ class MainViewModel @Inject constructor(
     val statusEvents = appEventBus
         .events
         .filterIsInstance<AppEvent.Status>()
+
+    val usesMainnetGateway = getProfileStateUseCase()
+        .filterIsInstance<ProfileState.Restored>()
+        .map { it.profile.currentGateway == Radix.Gateway.mainnet }
 
     val appNotSecureEvent = appEventBus.events.filterIsInstance<AppEvent.AppNotSecure>()
     val babylonMnemonicNeedsRecoveryEvent = appEventBus.events.filterIsInstance<AppEvent.BabylonFactorSourceNeedsRecovery>()
