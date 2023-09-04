@@ -199,7 +199,8 @@ class SampleDataProvider {
         mnemonicWithPassphrase: MnemonicWithPassphrase = MnemonicWithPassphrase(
             mnemonic = "zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo vote",
             bip39Passphrase = ""
-        )
+        ),
+        sampleNetwork: (networkId: Int) -> Network? = { null }
     ): Profile {
         return Profile(
             header = Header.init(
@@ -218,7 +219,7 @@ class SampleDataProvider {
             factorSources = listOf(
                 DeviceFactorSource.babylon(mnemonicWithPassphrase = mnemonicWithPassphrase)
             ),
-            networks = emptyList()
+            networks = sampleNetwork(Radix.Gateway.default.network.id)?.let { listOf(it) } ?: emptyList()
         )
     }
 

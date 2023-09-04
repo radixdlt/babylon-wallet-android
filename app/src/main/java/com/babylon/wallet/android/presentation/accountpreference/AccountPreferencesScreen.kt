@@ -31,6 +31,7 @@ import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixSecondaryButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
+import com.babylon.wallet.android.domain.usecases.FaucetState
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.status.signing.SigningStatusBottomDialog
 import com.babylon.wallet.android.presentation.ui.composables.AccountQRCodeView
@@ -82,8 +83,8 @@ fun AccountPreferenceScreen(
             onShowQRCodeClick = {
                 scope.launch { sheetState.show() }
             },
-            canUseFaucet = state.canUseFaucet,
-            isXrdLoading = state.isXrdLoading,
+            faucetState = state.faucetState,
+            isXrdLoading = state.isFreeXRDLoading,
             isAuthSigningLoading = state.isAuthSigningLoading,
             onMessageShown = viewModel::onMessageShown,
             error = state.error,
@@ -111,7 +112,7 @@ private fun AccountPreferenceContent(
     onBackClick: () -> Unit,
     onGetFreeXrdClick: () -> Unit,
     onShowQRCodeClick: () -> Unit,
-    canUseFaucet: Boolean,
+    faucetState: FaucetState,
     isXrdLoading: Boolean,
     isAuthSigningLoading: Boolean,
     onMessageShown: () -> Unit,
@@ -149,19 +150,30 @@ private fun AccountPreferenceContent(
                 .padding(RadixTheme.dimensions.paddingLarge)
         ) {
             val context = LocalContext.current
-            RadixSecondaryButton(
-                modifier = Modifier.fillMaxWidth(),
-                text = stringResource(R.string.accountSettings_getXrdTestTokens),
-                onClick = {
-                    context.biometricAuthenticate { authenticatedSuccessfully ->
-                        if (authenticatedSuccessfully) {
-                            onGetFreeXrdClick()
+            if (faucetState is FaucetState.Available) {
+                RadixSecondaryButton(
+                    modifier = Modifier.fillMaxWidth(),
+                    text = stringResource(R.string.accountSettings_getXrdTestTokens),
+                    onClick = {
+                        context.biometricAuthenticate { authenticatedSuccessfully ->
+                            if (authenticatedSuccessfully) {
+                                onGetFreeXrdClick()
+                            }
                         }
-                    }
-                },
-                isLoading = isXrdLoading,
-                enabled = !isXrdLoading && canUseFaucet
-            )
+                    },
+                    isLoading = isXrdLoading,
+                    enabled = !isXrdLoading && faucetState.isEnabled
+                )
+            }
+            if (isXrdLoading) {
+                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXSmall))
+                Text(
+                    text = stringResource(R.string.accountSettings_loadingPrompt),
+                    style = RadixTheme.typography.body2Regular,
+                    color = RadixTheme.colors.gray1,
+                )
+            }
+
             if (BuildConfig.EXPERIMENTAL_FEATURES_ENABLED && !hasAuthKey) {
                 RadixSecondaryButton(
                     modifier = Modifier.fillMaxWidth(),
@@ -178,15 +190,6 @@ private fun AccountPreferenceContent(
                 onClick = onShowQRCodeClick,
                 enabled = !isXrdLoading
             )
-
-            if (isXrdLoading) {
-                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXSmall))
-                Text(
-                    text = stringResource(R.string.accountSettings_loadingPrompt),
-                    style = RadixTheme.typography.body2Regular,
-                    color = RadixTheme.colors.gray1,
-                )
-            }
         }
     }
 }
@@ -199,7 +202,7 @@ fun AccountPreferencePreview() {
             onBackClick = {},
             onGetFreeXrdClick = {},
             onShowQRCodeClick = {},
-            canUseFaucet = true,
+            faucetState = FaucetState.Available(isEnabled = true),
             isXrdLoading = false,
             isAuthSigningLoading = false,
             onMessageShown = {},

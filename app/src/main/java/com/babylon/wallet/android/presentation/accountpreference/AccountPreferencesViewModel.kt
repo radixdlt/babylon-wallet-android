@@ -7,6 +7,7 @@ import com.babylon.wallet.android.data.manifest.prepareInternalTransactionReques
 import com.babylon.wallet.android.data.transaction.InteractionState
 import com.babylon.wallet.android.data.transaction.ROLAClient
 import com.babylon.wallet.android.di.coroutines.ApplicationScope
+import com.babylon.wallet.android.domain.usecases.FaucetState
 import com.babylon.wallet.android.domain.usecases.GetFreeXrdUseCase
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiMessage
@@ -65,14 +66,14 @@ class AccountPreferenceViewModel @Inject constructor(
                 .collect { event ->
                     when (event) {
                         is AppEvent.Status.Transaction.Fail -> {
-                            _state.update { it.copy(isXrdLoading = false) }
+                            _state.update { it.copy(isAuthSigningLoading = false) }
                         }
 
                         is AppEvent.Status.Transaction.Success -> {
                             val account = requireNotNull(state.value.account)
                             val authSigningFactorInstance = requireNotNull(authSigningFactorInstance)
                             addAuthSigningFactorInstanceUseCase(account, authSigningFactorInstance)
-                            _state.update { it.copy(isXrdLoading = false) }
+                            _state.update { it.copy(isAuthSigningLoading = false) }
                         }
 
                         else -> {}
@@ -80,12 +81,8 @@ class AccountPreferenceViewModel @Inject constructor(
                 }
         }
         viewModelScope.launch {
-            getFreeXrdUseCase.isAllowedToUseFaucet(args.address).collect { isAllowed ->
-                _state.update {
-                    it.copy(
-                        canUseFaucet = isAllowed
-                    )
-                }
+            getFreeXrdUseCase.getFaucetState(args.address).collect { faucetState ->
+                _state.update { it.copy(faucetState = faucetState) }
             }
         }
     }
@@ -105,15 +102,17 @@ class AccountPreferenceViewModel @Inject constructor(
     }
 
     fun onGetFreeXrdClick() {
+        if (state.value.faucetState !is FaucetState.Available) return
+
         appScope.launch {
-            _state.update { it.copy(isXrdLoading = true) }
+            _state.update { it.copy(isFreeXRDLoading = true) }
             getFreeXrdUseCase(address = args.address).onSuccess { _ ->
-                _state.update { it.copy(isXrdLoading = false, gotFreeXrd = true) }
+                _state.update { it.copy(isFreeXRDLoading = false) }
                 appEventBus.sendEvent(AppEvent.GotFreeXrd)
             }.onFailure { error ->
                 _state.update {
                     it.copy(
-                        isXrdLoading = false,
+                        isFreeXRDLoading = false,
                         error = UiMessage.ErrorMessage.from(error = error)
                     )
                 }
@@ -167,10 +166,9 @@ class AccountPreferenceViewModel @Inject constructor(
 data class AccountPreferenceUiState(
     val account: Network.Account? = null,
     val accountAddress: String,
-    val canUseFaucet: Boolean = false,
-    val isXrdLoading: Boolean = false,
+    val faucetState: FaucetState = FaucetState.Unavailable,
+    val isFreeXRDLoading: Boolean = false,
     val isAuthSigningLoading: Boolean = false,
-    val gotFreeXrd: Boolean = false,
     val error: UiMessage? = null,
     val hasAuthKey: Boolean = false,
     val interactionState: InteractionState? = null
