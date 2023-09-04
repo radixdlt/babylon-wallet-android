@@ -64,7 +64,7 @@ fun StateEntityDetailsResponseItemDetails.unstakeClaimTokenAddress(): String? {
     }
 }
 
-@Suppress("ComplexCondition", "TooManyFunctions", "LongMethod", "CyclomaticComplexMethod")
+@Suppress("ComplexCondition", "TooManyFunctions", "LongMethod", "CyclomaticComplexMethod", "NestedBlockDepth")
 fun StateEntityDetailsResponseItemDetails.calculateResourceBehaviours(): List<ResourceBehaviour> {
     return if (isUsingDefaultRules()) {
         listOf(ResourceBehaviour.DEFAULT_RESOURCE)
@@ -72,20 +72,26 @@ fun StateEntityDetailsResponseItemDetails.calculateResourceBehaviours(): List<Re
         val roleAssignments = toEntityRoleAssignments()
         val behaviors = mutableListOf<ResourceBehaviour>()
 
-        if (roleAssignments?.isDefaultPerform(ResourceRole.Mint) == false && !roleAssignments.isDefaultPerform(ResourceRole.Burn)) {
-            behaviors.add(ResourceBehaviour.PERFORM_MINT_BURN)
-        } else if (roleAssignments?.isDefaultPerform(ResourceRole.Mint) == false) {
-            behaviors.add(ResourceBehaviour.PERFORM_MINT)
-        } else if (roleAssignments?.isDefaultPerform(ResourceRole.Burn) == false) {
-            behaviors.add(ResourceBehaviour.PERFORM_BURN)
-        }
-
         if (roleAssignments?.isDefaultUpdate(ResourceRole.Mint) == false && !roleAssignments.isDefaultUpdate(ResourceRole.Burn)) {
             behaviors.add(ResourceBehaviour.CHANGE_MINT_BURN)
         } else if (roleAssignments?.isDefaultUpdate(ResourceRole.Mint) == false) {
             behaviors.add(ResourceBehaviour.CHANGE_MINT)
         } else if (roleAssignments?.isDefaultUpdate(ResourceRole.Burn) == false) {
             behaviors.add(ResourceBehaviour.CHANGE_BURN)
+        }
+
+        if (roleAssignments?.isDefaultPerform(ResourceRole.Mint) == false && !roleAssignments.isDefaultPerform(ResourceRole.Burn)) {
+            if (behaviors.contains(ResourceBehaviour.CHANGE_MINT_BURN).not()) {
+                behaviors.add(ResourceBehaviour.PERFORM_MINT_BURN)
+            }
+        } else if (roleAssignments?.isDefaultPerform(ResourceRole.Mint) == false) {
+            if (behaviors.contains(ResourceBehaviour.CHANGE_MINT).not()) {
+                behaviors.add(ResourceBehaviour.PERFORM_MINT)
+            }
+        } else if (roleAssignments?.isDefaultPerform(ResourceRole.Burn) == false) {
+            if (behaviors.contains(ResourceBehaviour.CHANGE_BURN).not()) {
+                behaviors.add(ResourceBehaviour.PERFORM_BURN)
+            }
         }
 
         if (roleAssignments?.isDefaultPerform(ResourceRole.Withdraw) == false && !roleAssignments.isDefaultPerform(ResourceRole.Deposit)) {
@@ -116,33 +122,41 @@ fun StateEntityDetailsResponseItemDetails.calculateResourceBehaviours(): List<Re
             behaviors.add(ResourceBehaviour.FUTURE_MOVEMENT_WITHDRAW_DEPOSIT)
         }
 
-        if (roleAssignments?.isDefaultPerform(ResourceRole.UpdateMetadata) == false) {
-            behaviors.add(ResourceBehaviour.PERFORM_UPDATE_METADATA)
-        }
         if (roleAssignments?.isDefaultUpdate(ResourceRole.UpdateMetadata) == false) {
             behaviors.add(ResourceBehaviour.CHANGE_UPDATE_METADATA)
         }
-
-        if (roleAssignments?.isDefaultPerform(ResourceRole.Recall) == false) {
-            behaviors.add(ResourceBehaviour.PERFORM_RECALL)
+        if (roleAssignments?.isDefaultPerform(ResourceRole.UpdateMetadata) == false) {
+            if (behaviors.contains(ResourceBehaviour.CHANGE_UPDATE_METADATA).not()) {
+                behaviors.add(ResourceBehaviour.PERFORM_UPDATE_METADATA)
+            }
         }
+
         if (roleAssignments?.isDefaultUpdate(ResourceRole.Recall) == false) {
             behaviors.add(ResourceBehaviour.CHANGE_RECALL)
         }
-
-        if (roleAssignments?.isDefaultPerform(ResourceRole.Freeze) == false) {
-            behaviors.add(ResourceBehaviour.PERFORM_FREEZE)
+        if (roleAssignments?.isDefaultPerform(ResourceRole.Recall) == false) {
+            if (behaviors.contains(ResourceBehaviour.CHANGE_RECALL).not()) {
+                behaviors.add(ResourceBehaviour.PERFORM_RECALL)
+            }
         }
+
         if (roleAssignments?.isDefaultUpdate(ResourceRole.Freeze) == false) {
             behaviors.add(ResourceBehaviour.CHANGE_FREEZE)
         }
+        if (roleAssignments?.isDefaultPerform(ResourceRole.Freeze) == false) {
+            if (behaviors.contains(ResourceBehaviour.CHANGE_FREEZE).not()) {
+                behaviors.add(ResourceBehaviour.PERFORM_FREEZE)
+            }
+        }
 
         if (type == StateEntityDetailsResponseItemDetailsType.nonFungibleResource) {
-            if (roleAssignments?.isDefaultPerform(ResourceRole.UpdateNonFungibleData) == false) {
-                behaviors.add(ResourceBehaviour.PERFORM_UPDATE_NON_FUNGIBLE_DATA)
-            }
             if (roleAssignments?.isDefaultUpdate(ResourceRole.UpdateNonFungibleData) == false) {
                 behaviors.add(ResourceBehaviour.CHANGE_UPDATE_NON_FUNGIBLE_DATA)
+            }
+            if (roleAssignments?.isDefaultPerform(ResourceRole.UpdateNonFungibleData) == false) {
+                if (behaviors.contains(ResourceBehaviour.CHANGE_UPDATE_NON_FUNGIBLE_DATA).not()) {
+                    behaviors.add(ResourceBehaviour.PERFORM_UPDATE_NON_FUNGIBLE_DATA)
+                }
             }
         }
 

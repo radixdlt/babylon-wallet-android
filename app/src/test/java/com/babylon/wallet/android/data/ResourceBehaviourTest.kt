@@ -97,7 +97,6 @@ class ResourceBehaviourTest {
     fun `given update_non_fungible_data perform and change rules set to NON defaults, verify PERFORM and CHANGE update_non_fungible_data behavior`() {
         // given
         val expectedBehaviours = listOf(
-            ResourceBehaviour.PERFORM_UPDATE_NON_FUNGIBLE_DATA,
             ResourceBehaviour.CHANGE_UPDATE_NON_FUNGIBLE_DATA
         )
         val response = StateEntityDetailsResponseNonFungibleResourceDetails(
@@ -180,7 +179,6 @@ class ResourceBehaviourTest {
     fun `given recall perform and change rules set to NON defaults, verify PERFORM and CHANGE recall behaviors`() {
         // given
         val expectedBehaviours = listOf(
-            ResourceBehaviour.PERFORM_RECALL,
             ResourceBehaviour.CHANGE_RECALL
         )
         val fungibleResource = StateEntityDetailsResponseFungibleResourceDetails(
@@ -263,7 +261,6 @@ class ResourceBehaviourTest {
     fun `given freeze perform and change rules set to NON defaults, verify PERFORM and CHANGE freeze behaviors`() {
         // given
         val expectedBehaviours = listOf(
-            ResourceBehaviour.PERFORM_FREEZE,
             ResourceBehaviour.CHANGE_FREEZE
         )
         val fungibleResource = StateEntityDetailsResponseFungibleResourceDetails(
@@ -346,7 +343,6 @@ class ResourceBehaviourTest {
     fun `given update_metadata perform and change rules set to NON defaults, verify PERFORM and CHANGE update_metadata behaviors`() {
         // given
         val expectedBehaviours = listOf(
-            ResourceBehaviour.PERFORM_UPDATE_METADATA,
             ResourceBehaviour.CHANGE_UPDATE_METADATA
         )
         val fungibleResource = StateEntityDetailsResponseFungibleResourceDetails(
@@ -429,7 +425,6 @@ class ResourceBehaviourTest {
     fun `given mint perform and change rules set to NON defaults, verify PERFORM and CHANGE mint behaviors`() {
         // given
         val expectedBehaviours = listOf(
-            ResourceBehaviour.PERFORM_MINT,
             ResourceBehaviour.CHANGE_MINT
         )
         val fungibleResource = StateEntityDetailsResponseFungibleResourceDetails(
@@ -512,7 +507,6 @@ class ResourceBehaviourTest {
     fun `given burn perform and change rules set to NON defaults, verify PERFORM and CHANGE burn behaviors`() {
         // given
         val expectedBehaviours = listOf(
-            ResourceBehaviour.PERFORM_BURN,
             ResourceBehaviour.CHANGE_BURN
         )
         val fungibleResource = StateEntityDetailsResponseFungibleResourceDetails(
