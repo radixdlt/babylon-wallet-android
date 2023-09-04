@@ -57,7 +57,9 @@ class MainActivity : FragmentActivity() {
             )
             fadeIn.interpolator = AnticipateInterpolator()
             fadeIn.duration = splashExitAnimDurationMs
-            fadeIn.doOnEnd { splashScreenView.remove() }
+            fadeIn.doOnEnd {
+                splashScreenView.remove()
+            }
             fadeIn.start()
         }
     }

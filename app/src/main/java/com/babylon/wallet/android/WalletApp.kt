@@ -10,10 +10,12 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
+import androidx.navigation.NavHostController
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.babylon.wallet.android.presentation.dapp.authorized.login.dAppLoginAuthorized
 import com.babylon.wallet.android.presentation.dapp.unauthorized.login.dAppLoginUnauthorized
@@ -27,9 +29,11 @@ import com.babylon.wallet.android.presentation.onboarding.restore.mnemonics.rest
 import com.babylon.wallet.android.presentation.status.dapp.dappInteractionDialog
 import com.babylon.wallet.android.presentation.status.transaction.transactionStatusDialog
 import com.babylon.wallet.android.presentation.transaction.transactionApproval
+import com.babylon.wallet.android.presentation.ui.composables.LocalDevBannerState
 import com.babylon.wallet.android.presentation.ui.composables.NotSecureAlertDialog
 import com.babylon.wallet.android.utils.AppEvent
 import com.google.accompanist.navigation.animation.rememberAnimatedNavController
+import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import kotlinx.coroutines.flow.Flow
 
 @OptIn(ExperimentalAnimationApi::class)
@@ -72,6 +76,8 @@ fun WalletApp(
             }
         }
     }
+    SyncStatusBarWithScreenChanges(navController)
+
     LaunchedEffect(Unit) {
         mainViewModel.appNotSecureEvent.collect {
             showNotSecuredDialog = true
@@ -108,6 +114,20 @@ fun WalletApp(
             showNotSecuredDialog = false
             onCloseApp()
         })
+    }
+}
+
+@Composable
+private fun SyncStatusBarWithScreenChanges(navController: NavHostController) {
+    val devBannerState = LocalDevBannerState.current
+    val systemUiController = rememberSystemUiController()
+    LaunchedEffect(navController, devBannerState) {
+        // When a new screen is appeared we might need to reset the status bar's icons appearance.
+        // Each screen composable can override the darkIcons parameter (such as AccountScreen), since
+        // their invocation comes later.
+        navController.currentBackStackEntryFlow.collect {
+            systemUiController.setStatusBarColor(color = Color.Transparent, darkIcons = !devBannerState.isVisible)
+        }
     }
 }
 

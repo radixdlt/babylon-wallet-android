@@ -84,6 +84,7 @@ import com.babylon.wallet.android.presentation.transfer.assets.ResourceTab
 import com.babylon.wallet.android.presentation.transfer.assets.ResourcesTabs
 import com.babylon.wallet.android.presentation.ui.composables.ActionableAddressView
 import com.babylon.wallet.android.presentation.ui.composables.ApplySecuritySettingsLabel
+import com.babylon.wallet.android.presentation.ui.composables.LocalDevBannerState
 import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
 import com.babylon.wallet.android.presentation.ui.composables.resources.FungibleResourceItem
@@ -121,6 +122,12 @@ fun AccountScreen(
             }
         }
     }
+
+    val devBannerState = LocalDevBannerState.current
+    if (!devBannerState.isVisible) {
+        SetStatusBarColor(useDarkIcons = false)
+    }
+
     AccountScreenContent(
         modifier = modifier,
         state = state,
