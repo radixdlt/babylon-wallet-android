@@ -35,9 +35,13 @@ data class TransactionFees(
 
     // ********* DEFAULT *********
     private val networkFee: BigDecimal
-        get() = totalExecutionCost
-            .add(networkFinalization)
-            .add(networkStorage)
+        get() {
+            val cost = totalExecutionCost
+                .add(networkFinalization)
+                .add(networkStorage)
+
+            return cost.add(PERCENT_15.multiply(cost))
+        }
 
     /**
      * Wallet added fee should be added to Execution cost
@@ -77,7 +81,6 @@ data class TransactionFees(
     val defaultTransactionFee: BigDecimal
         get() = BigDecimal.ZERO.max(
             networkFee
-                .add(PERCENT_15.multiply(networkFee))
                 .add(royalties)
                 .subtract(nonContingentFeeLock)
         )

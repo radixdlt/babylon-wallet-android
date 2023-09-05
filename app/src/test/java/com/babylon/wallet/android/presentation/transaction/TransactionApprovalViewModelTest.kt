@@ -45,6 +45,7 @@ import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
 import org.junit.Before
 import org.junit.Test
@@ -243,8 +244,8 @@ internal class TransactionApprovalViewModelTest : StateViewModelTest<Transaction
                 message = any()
             )
         }
-        assert(errorSlot.captured == WalletErrorType.WrongNetwork)
-        assert(vm.oneOffEvent.first() is TransactionApprovalViewModel.Event.Dismiss)
+        assertEquals(WalletErrorType.WrongNetwork, errorSlot.captured)
+        assertEquals(TransactionApprovalViewModel.Event.Dismiss, vm.oneOffEvent.first())
     }
 
     @Test
@@ -268,8 +269,8 @@ internal class TransactionApprovalViewModelTest : StateViewModelTest<Transaction
                 message = any()
             )
         }
-        assert(errorSlot.captured == WalletErrorType.FailedToSubmitTransaction)
-        assert(state.error != null)
+        assertEquals(WalletErrorType.FailedToSubmitTransaction, errorSlot.captured)
+        assertNotNull(state.error)
     }
 
     @Test
