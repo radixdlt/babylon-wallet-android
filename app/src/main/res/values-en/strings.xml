@@ -45,7 +45,7 @@
   <string name="assetDetails_NFTDetails_name">Name</string>
   <string name="assetDetails_NFTDetails_resourceName">Name</string>
   <string name="assetDetails_NFTDetails_nftPlural">%d NFTs</string>
-  <string name="assetDetails_NFTDetails_ownedOfTotal">%d of %d</string>
+  <string name="assetDetails_NFTDetails_ownedOfTotal">%d NFTs of total supply %d</string>
   <string name="assetDetails_poolUnitDetails_noPoolUnits">You have no Pool units</string>
   <string name="assetDetails_poolUnitDetails_whatArePoolUnits">What are Pool units?</string>
   <string name="assetDetails_badgeDetails_noBadges">You have no badges</string>
@@ -262,7 +262,7 @@
   <string name="createEntity_ledger_createPersona">Create Ledger Persona</string>
   <string name="createEntity_nameNewEntity_explanation">Your Account lives on the Radix Network and you can access it any time in your Wallet.</string>
   <string name="createEntity_nameNewEntity_ledgerTitle">Create with Ledger Hardware Wallet</string>
-  <string name="createEntity_nameNewEntity_ledgerSubtitle">You will be asked to sign transactions with the Ledger device you select</string>
+  <string name="createEntity_nameNewEntity_ledgerSubtitle">You will be asked to sign transactions with the Ledger device you select.</string>
   <string name="createPersona_emptyDisplayName">Empty display name</string>
   <string name="createPersona_completion_subtitleFirst">You’ve created your first Persona!</string>
   <string name="createPersona_completion_subtitleNotFirst">Your Persona has been created.</string>
