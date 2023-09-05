@@ -76,9 +76,8 @@ data class TransactionFees(
 
     val defaultTransactionFee: BigDecimal
         get() = BigDecimal.ZERO.max(
-            networkFee.add(
-                PERCENT_15.multiply(networkFee)
-            )
+            networkFee
+                .add(PERCENT_15.multiply(networkFee))
                 .add(royalties)
                 .subtract(nonContingentFeeLock)
         )

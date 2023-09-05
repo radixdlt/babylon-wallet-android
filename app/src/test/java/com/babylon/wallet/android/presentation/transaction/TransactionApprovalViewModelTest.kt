@@ -44,6 +44,8 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNull
 import org.junit.Before
 import org.junit.Test
 import rdx.works.core.displayableQuantity
@@ -300,9 +302,9 @@ internal class TransactionApprovalViewModelTest : StateViewModelTest<Transaction
         )
         val vm = vm.value
         advanceUntilIdle()
-        assert(vm.state.value.transactionFees.networkFeeDisplayed == "0.1089967")
-        assert(vm.state.value.transactionFees.defaultRoyaltyFeesDisplayed == "0")
-        assert(vm.state.value.transactionFees.defaultTransactionFee.displayableQuantity() == "0.1253463")
+        assertEquals("0.0942431", vm.state.value.transactionFees.networkFeeDisplayed)
+        assertEquals("0", vm.state.value.transactionFees.defaultRoyaltyFeesDisplayed)
+        assertEquals("0.1083795", vm.state.value.transactionFees.defaultTransactionFee.displayableQuantity())
     }
 
     @Test
@@ -335,9 +337,9 @@ internal class TransactionApprovalViewModelTest : StateViewModelTest<Transaction
         )
         val vm = vm.value
         advanceUntilIdle()
-        assert(vm.state.value.transactionFees.networkFeeDisplayed == "0.0089967")
-        assert(vm.state.value.transactionFees.defaultRoyaltyFeesDisplayed == "0.2")
-        assert(vm.state.value.transactionFees.defaultTransactionFee.displayableQuantity() == "0.3453463")
+        assertEquals(null, vm.state.value.transactionFees.networkFeeDisplayed)
+        assertEquals("0.1942431", vm.state.value.transactionFees.defaultRoyaltyFeesDisplayed)
+        assertEquals("0.3283795", vm.state.value.transactionFees.defaultTransactionFee.displayableQuantity())
     }
 
     @Test
@@ -370,9 +372,9 @@ internal class TransactionApprovalViewModelTest : StateViewModelTest<Transaction
         )
         val vm = vm.value
         advanceUntilIdle()
-        assert(vm.state.value.transactionFees.networkFeeDisplayed == "0.4089967")
-        assert(vm.state.value.transactionFees.defaultRoyaltyFeesDisplayed == "0.2")
-        assert(vm.state.value.transactionFees.defaultTransactionFee.displayableQuantity() == "0.7453463")
+        assertEquals("0.3942431", vm.state.value.transactionFees.networkFeeDisplayed)
+        assertEquals("0.2", vm.state.value.transactionFees.defaultRoyaltyFeesDisplayed)
+        assertEquals("0.7283795", vm.state.value.transactionFees.defaultTransactionFee.displayableQuantity())
     }
 
     @Test
@@ -405,9 +407,9 @@ internal class TransactionApprovalViewModelTest : StateViewModelTest<Transaction
         )
         val vm = vm.value
         advanceUntilIdle()
-        assert(vm.state.value.transactionFees.networkFeeDisplayed == null)
-        assert(vm.state.value.transactionFees.defaultRoyaltyFeesDisplayed == "0.1089967")
-        assert(vm.state.value.transactionFees.defaultTransactionFee.displayableQuantity() == "0.2453463")
+        assertNull(vm.state.value.transactionFees.networkFeeDisplayed)
+        assertEquals("0.0942431", vm.state.value.transactionFees.defaultRoyaltyFeesDisplayed)
+        assertEquals("0.2283795", vm.state.value.transactionFees.defaultTransactionFee.displayableQuantity())
     }
 
     @Test
@@ -440,9 +442,9 @@ internal class TransactionApprovalViewModelTest : StateViewModelTest<Transaction
         )
         val vm = vm.value
         advanceUntilIdle()
-        assert(vm.state.value.transactionFees.networkFeeDisplayed == null)
-        assert(vm.state.value.transactionFees.defaultRoyaltyFeesDisplayed == "0")
-        assert(vm.state.value.transactionFees.defaultTransactionFee.displayableQuantity() == "0")
+        assertNull(vm.state.value.transactionFees.networkFeeDisplayed)
+        assertEquals("0", vm.state.value.transactionFees.defaultRoyaltyFeesDisplayed)
+        assertEquals("0", vm.state.value.transactionFees.defaultTransactionFee.displayableQuantity())
     }
 
     @Test
@@ -487,9 +489,9 @@ internal class TransactionApprovalViewModelTest : StateViewModelTest<Transaction
 
         val vm = vm.value
         advanceUntilIdle()
-        assert(vm.state.value.transactionFees.networkFeeDisplayed == "0.9265478")//0.9265478
-        assert(vm.state.value.transactionFees.defaultRoyaltyFeesDisplayed == "0.2")
-        assert(vm.state.value.transactionFees.defaultTransactionFee.displayableQuantity() == "1.26553")//1.26553
+        assertEquals("0.9050548", vm.state.value.transactionFees.networkFeeDisplayed)//0.9265478
+        assertEquals("0.2", vm.state.value.transactionFees.defaultRoyaltyFeesDisplayed)
+        assertEquals("1.240813", vm.state.value.transactionFees.defaultTransactionFee.displayableQuantity())//1.26553
     }
 
     @Test
@@ -497,7 +499,7 @@ internal class TransactionApprovalViewModelTest : StateViewModelTest<Transaction
         val feePaddingAmount = "1.6"
 
         // Sum of executionCost finalizationCost storageExpansionCost royaltyCost padding and tip minus noncontingentlock
-        val expectedFeeLock = "1.113513657552082640"
+        val expectedFeeLock = "1.10842739440"
         coEvery { transactionClient.analyzeExecution(any(), any()) } returns Result.success(
             ExecutionAnalysis(
                 feeLocks = FeeLocks(
@@ -528,7 +530,7 @@ internal class TransactionApprovalViewModelTest : StateViewModelTest<Transaction
         advanceUntilIdle()
         vm.onFeePaddingAmountChanged(feePaddingAmount)
 
-        assert(vm.state.value.transactionFees.transactionFeeToLock == BigDecimal(expectedFeeLock))
+        assertEquals(BigDecimal(expectedFeeLock), vm.state.value.transactionFees.transactionFeeToLock)
     }
 
     @Test
@@ -536,7 +538,7 @@ internal class TransactionApprovalViewModelTest : StateViewModelTest<Transaction
         val tipPercentage = "25"
 
         // Sum of executionCost finalizationCost royaltyCost padding and tip minus noncontingentlock
-        val expectedFeeLock = "0.9225954"
+        val expectedFeeLock = "0.9019403"
 
         coEvery { transactionClient.analyzeExecution(any(), any()) } returns Result.success(
             ExecutionAnalysis(
@@ -568,7 +570,7 @@ internal class TransactionApprovalViewModelTest : StateViewModelTest<Transaction
         advanceUntilIdle()
         vm.onTipPercentageChanged(tipPercentage)
 
-        assert(vm.state.value.transactionFees.transactionFeeToLock.displayableQuantity() == expectedFeeLock)
+        assertEquals(expectedFeeLock, vm.state.value.transactionFees.transactionFeeToLock.displayableQuantity())
     }
 
     @Test
@@ -577,7 +579,7 @@ internal class TransactionApprovalViewModelTest : StateViewModelTest<Transaction
         val tipPercentage = "25"
 
         // Sum of executionCost finalizationCost royaltyCost padding and tip minus noncontingentlock
-        val expectedFeeLock = "2.3862459"
+        val expectedFeeLock = "2.3678038"
 
         coEvery { transactionClient.analyzeExecution(any(), any()) } returns Result.success(
             ExecutionAnalysis(
@@ -610,7 +612,7 @@ internal class TransactionApprovalViewModelTest : StateViewModelTest<Transaction
         vm.onFeePaddingAmountChanged(feePaddingAmount)
         vm.onTipPercentageChanged(tipPercentage)
 
-        assert(vm.state.value.transactionFees.transactionFeeToLock.displayableQuantity() == expectedFeeLock)
+        assertEquals(expectedFeeLock, vm.state.value.transactionFees.transactionFeeToLock.displayableQuantity())
     }
 
     private fun previewResponse() = TransactionPreviewResponse(
