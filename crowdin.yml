@@ -1,6 +1,2 @@
-targets:
-  - name: Andorid
-    sources:
-      - Content/**/*.json
-    file: /app/src/main/res/values-%two_letters_code%/strings.xml
-    format: android
+bundles:
+  - 3
