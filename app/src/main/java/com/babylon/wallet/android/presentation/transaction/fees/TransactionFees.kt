@@ -166,10 +166,10 @@ data class TransactionFees(
     companion object {
         private val PERCENT_15 = BigDecimal(0.15)
 
-        private val LOCK_FEE_INSTRUCTION_COST: BigDecimal = BigDecimal("0.095483092333982841")
-        private val FUNGIBLE_GUARANTEE_INSTRUCTION_COST: BigDecimal = BigDecimal("0.012001947444660947")
-        private val SIGNATURE_COST: BigDecimal = BigDecimal("0.017839046256509498")
-        private val NOTARIZING_COST: BigDecimal = BigDecimal("0.01322565755208264")
-        private val NOTARIZING_COST_WHEN_NOTARY_IS_SIGNATORY: BigDecimal = BigDecimal("0.01351365755208264")
+        private val LOCK_FEE_INSTRUCTION_COST: BigDecimal = BigDecimal("0.08581566997")
+        private val FUNGIBLE_GUARANTEE_INSTRUCTION_COST: BigDecimal = BigDecimal("0.00908532837")
+        private val SIGNATURE_COST: BigDecimal = BigDecimal("0.01109974758")
+        private val NOTARIZING_COST: BigDecimal = BigDecimal("0.0081393944")
+        private val NOTARIZING_COST_WHEN_NOTARY_IS_SIGNATORY: BigDecimal = BigDecimal("0.0084273944")
     }
 }
