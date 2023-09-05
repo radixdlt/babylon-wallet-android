@@ -1,3 +1,5 @@
+@file:Suppress("CompositionLocalAllowlist")
+
 package com.babylon.wallet.android.presentation.ui.composables
 
 import androidx.compose.foundation.background

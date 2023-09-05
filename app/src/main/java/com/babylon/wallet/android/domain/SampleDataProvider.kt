@@ -219,7 +219,7 @@ class SampleDataProvider {
             factorSources = listOf(
                 DeviceFactorSource.babylon(mnemonicWithPassphrase = mnemonicWithPassphrase)
             ),
-            networks = sampleNetwork(Radix.Gateway.default.network.id)?.let { listOf(it) } ?: emptyList()
+            networks = sampleNetwork(Radix.Gateway.default.network.id)?.let { listOf(it) }.orEmpty()
         )
     }
 

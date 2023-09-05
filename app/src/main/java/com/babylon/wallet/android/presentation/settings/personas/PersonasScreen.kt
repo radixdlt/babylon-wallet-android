@@ -95,7 +95,6 @@ fun PersonasContent(
             LazyColumn(
                 contentPadding = PaddingValues(RadixTheme.dimensions.paddingMedium),
                 horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = modifier
             ) {
                 item {
                     Text(

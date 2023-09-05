@@ -149,6 +149,7 @@ private fun RestoreFromBackupContent(
     )
 
     DefaultModalSheetLayout(
+        modifier = modifier,
         sheetState = modalBottomSheetState,
         enableImePadding = true,
         wrapContent = true,

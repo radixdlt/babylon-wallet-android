@@ -1,11 +1,9 @@
 package com.babylon.wallet.android.presentation.settings.appsettings
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.lazy.LazyColumn
@@ -61,7 +59,7 @@ private fun AppSettingsContent(
         containerColor = RadixTheme.colors.defaultBackground
     ) { padding ->
         Column(
-            modifier = modifier.padding(padding),
+            modifier = Modifier.padding(padding),
             horizontalAlignment = Alignment.Start
         ) {
             Divider(color = RadixTheme.colors.gray5)

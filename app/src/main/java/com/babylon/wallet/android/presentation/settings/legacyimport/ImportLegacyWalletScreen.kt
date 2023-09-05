@@ -8,7 +8,6 @@ package com.babylon.wallet.android.presentation.settings.legacyimport
 
 import android.Manifest
 import androidx.activity.compose.BackHandler
-import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -741,13 +740,6 @@ private fun VerifyWithYourSeedPhrasePage(
         derivedStateOf { imeInsets.getBottom(density) > 0 }
     }
     val isSeedPhraseSuggestionsVisible = wordAutocompleteCandidates.isNotEmpty() && kbVisible
-    val stripHeight by animateDpAsState(
-        targetValue = if (isSeedPhraseSuggestionsVisible) {
-            candidatesStripHeight
-        } else {
-            0.dp
-        }
-    )
     SecureScreen()
     Box(modifier = modifier) {
         Column(
@@ -898,5 +890,3 @@ fun ImportCompletePagePreview() {
         )
     }
 }
-
-private val candidatesStripHeight = 56.dp
