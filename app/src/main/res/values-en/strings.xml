@@ -45,7 +45,7 @@
   <string name="assetDetails_NFTDetails_name">Name</string>
   <string name="assetDetails_NFTDetails_resourceName">Name</string>
   <string name="assetDetails_NFTDetails_nftPlural">%d NFTs</string>
-  <string name="assetDetails_NFTDetails_ownedOfTotal">%d NFTs of total supply %d</string>
+  <string name="assetDetails_NFTDetails_ownedOfTotal">%d of %d</string>
   <string name="assetDetails_poolUnitDetails_noPoolUnits">You have no Pool units</string>
   <string name="assetDetails_poolUnitDetails_whatArePoolUnits">What are Pool units?</string>
   <string name="assetDetails_badgeDetails_noBadges">You have no badges</string>
