@@ -75,9 +75,7 @@ fun PersonaDetailScreen(
         persona = state.persona,
         onEditPersona = onEditPersona,
         authorizedDapps = state.authorizedDapps,
-        selectedDAppWithMetadata = state.selectedDAppWithMetadata,
-        selectedDAppAssociatedFungibleTokens = state.selectedDAppAssociatedFungibleTokens,
-        selectedDAppAssociatedNonFungibleTokens = state.selectedDAppAssociatedNonFungibleTokens,
+        selectedDApp = state.selectedDApp,
         onDAppClick = viewModel::onDAppClick,
         hasAuthKey = state.hasAuthKey,
         loading = state.loading,
@@ -93,9 +91,7 @@ private fun PersonaDetailContent(
     persona: Network.Persona?,
     onEditPersona: (String) -> Unit,
     authorizedDapps: ImmutableList<DAppWithMetadataAndAssociatedResources>,
-    selectedDAppWithMetadata: DAppWithMetadata?,
-    selectedDAppAssociatedFungibleTokens: ImmutableList<Resource.FungibleResource>,
-    selectedDAppAssociatedNonFungibleTokens: ImmutableList<Resource.NonFungibleResource.Item>,
+    selectedDApp: DAppWithMetadataAndAssociatedResources?,
     onDAppClick: (DAppWithMetadataAndAssociatedResources) -> Unit,
     hasAuthKey: Boolean,
     onCreateAndUploadAuthKey: () -> Unit,
@@ -123,20 +119,14 @@ private fun PersonaDetailContent(
                         .fillMaxSize(),
                     sheetState = bottomSheetState,
                     sheetContent = {
-                        selectedDAppWithMetadata?.let {
+                        selectedDApp?.let {
                             DAppDetailsSheetContent(
                                 onBackClick = {
                                     scope.launch {
                                         bottomSheetState.hide()
                                     }
                                 },
-                                dApp = DAppWithMetadataAndAssociatedResources(
-                                    dAppWithMetadata = it,
-                                    resources = DAppResources(
-                                        fungibleResources = selectedDAppAssociatedFungibleTokens,
-                                        nonFungibleResources = selectedDAppAssociatedNonFungibleTokens
-                                    )
-                                )
+                                dApp = it
                             )
                         }
                     }
@@ -300,9 +290,7 @@ fun DappDetailContentPreview() {
             persona = SampleDataProvider().samplePersona(),
             onEditPersona = {},
             authorizedDapps = persistentListOf(),
-            selectedDAppWithMetadata = null,
-            selectedDAppAssociatedFungibleTokens = persistentListOf(),
-            selectedDAppAssociatedNonFungibleTokens = persistentListOf(),
+            selectedDApp = null,
             onDAppClick = {},
             hasAuthKey = false,
             onCreateAndUploadAuthKey = {},

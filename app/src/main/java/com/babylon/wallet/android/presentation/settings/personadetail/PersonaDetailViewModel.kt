@@ -6,9 +6,7 @@ import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.data.manifest.prepareInternalTransactionRequest
 import com.babylon.wallet.android.data.transaction.ROLAClient
 import com.babylon.wallet.android.domain.common.value
-import com.babylon.wallet.android.domain.model.DAppWithMetadata
 import com.babylon.wallet.android.domain.model.DAppWithMetadataAndAssociatedResources
-import com.babylon.wallet.android.domain.model.Resource
 import com.babylon.wallet.android.domain.usecases.GetDAppWithMetadataAndAssociatedResourcesUseCase
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiState
@@ -18,7 +16,6 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
-import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.filterIsInstance
@@ -100,11 +97,7 @@ class PersonaDetailViewModel @Inject constructor(
 
     fun onDAppClick(dApp: DAppWithMetadataAndAssociatedResources) {
         _state.update { state ->
-            state.copy(
-                selectedDAppWithMetadata = dApp.dAppWithMetadata,
-                selectedDAppAssociatedFungibleTokens = dApp.fungibleResources.toPersistentList(),
-                selectedDAppAssociatedNonFungibleTokens = dApp.nonFungibleResources.toPersistentList()
-            )
+            state.copy(selectedDApp = dApp)
         }
     }
 
@@ -142,7 +135,5 @@ data class PersonaDetailUiState(
     val authorizedDapps: ImmutableList<DAppWithMetadataAndAssociatedResources> = persistentListOf(),
     val persona: Network.Persona? = null,
     val hasAuthKey: Boolean = false,
-    val selectedDAppWithMetadata: DAppWithMetadata? = null,
-    val selectedDAppAssociatedFungibleTokens: ImmutableList<Resource.FungibleResource> = persistentListOf(),
-    val selectedDAppAssociatedNonFungibleTokens: ImmutableList<Resource.NonFungibleResource.Item> = persistentListOf(),
+    val selectedDApp: DAppWithMetadataAndAssociatedResources? = null
 ) : UiState

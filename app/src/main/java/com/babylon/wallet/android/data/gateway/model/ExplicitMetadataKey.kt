@@ -87,7 +87,7 @@ enum class ExplicitMetadataKey(val key: String) {
             websites = value.typed<MetadataOriginArrayValue>()?.propertyValues.orEmpty()
         )
         CLAIMED_ENTITIES -> ClaimedEntitiesMetadataItem(
-            entities = value.typed<MetadataStringArrayValue>()?.propertyValues.orEmpty()
+            entities = value.typed<MetadataGlobalAddressArrayValue>()?.propertyValues.orEmpty()
         )
         TAGS -> TagsMetadataItem(
             tags = value.typed<MetadataStringArrayValue>()?.propertyValues.orEmpty()
