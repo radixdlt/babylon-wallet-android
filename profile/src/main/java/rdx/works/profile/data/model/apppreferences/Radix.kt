@@ -123,10 +123,10 @@ object Radix {
                 url = "https://rcnet-v3.radixdlt.com",
                 network = Network.zabanet
             )
-            val mainnet = /*Gateway(
+            val mainnet = Gateway(
                 url = "https://mainnet.radixdlt.com",
                 network = Network.mainnet
-            )*/ hammunet
+            )
 
             var default: Gateway = rcnetV3
                 set(value) {
