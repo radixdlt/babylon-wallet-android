@@ -12,6 +12,7 @@ import com.babylon.wallet.android.domain.model.metadata.TagsMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.ValidatorMetadataItem
 import com.radixdlt.ret.NonFungibleLocalId
 import com.radixdlt.ret.knownAddresses
+import com.radixdlt.ret.nonFungibleLocalIdAsStr
 import com.radixdlt.ret.nonFungibleLocalIdFromStr
 import rdx.works.core.displayableQuantity
 import rdx.works.profile.data.model.apppreferences.Radix
@@ -267,7 +268,7 @@ sealed class Resource {
                     private const val RUID_SUFFIX = "}"
 
                     /**
-                     * Infers the type of the [Item].[ID] from its surrounding delimiters
+                     * Infers the type of the [Item].[ID] from its surrounding delimiter
                      *
                      * More info https://docs-babylon.radixdlt.com/main/reference-materials/resource-addressing.html
                      * #_non_fungibles_individual_units_of_non_fungible_resources
@@ -277,6 +278,17 @@ sealed class Resource {
                         is NonFungibleLocalId.Str -> StringType(id = id.value)
                         is NonFungibleLocalId.Bytes -> BytesType(id = value.removeSurrounding(BYTES_PREFIX, BYTES_SUFFIX))
                         is NonFungibleLocalId.Ruid -> RUIDType(id = value.removeSurrounding(RUID_PREFIX, RUID_SUFFIX))
+                    }
+
+                    fun from(id: NonFungibleLocalId): ID = when (id) {
+                        is NonFungibleLocalId.Integer -> IntegerType(id = id.value)
+                        is NonFungibleLocalId.Str -> StringType(id = id.value)
+                        is NonFungibleLocalId.Bytes -> BytesType(
+                            id = nonFungibleLocalIdAsStr(id).removeSurrounding(BYTES_PREFIX, BYTES_SUFFIX)
+                        )
+                        is NonFungibleLocalId.Ruid -> RUIDType(
+                            id = nonFungibleLocalIdAsStr(id).removeSurrounding(RUID_PREFIX, RUID_SUFFIX)
+                        )
                     }
                 }
             }

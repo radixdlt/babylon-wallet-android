@@ -20,7 +20,6 @@ import com.radixdlt.ret.NonFungibleLocalId
 import com.radixdlt.ret.NonFungibleLocalIdVecSource
 import com.radixdlt.ret.ResourceSpecifier
 import com.radixdlt.ret.ResourceTracker
-import rdx.works.core.ret.asStr
 import java.math.BigDecimal
 
 typealias RETResources = com.radixdlt.ret.Resources
@@ -57,7 +56,7 @@ fun RETResources.toTransferableResource(resourceAddress: String, allResources: L
                 items = ids.map { id ->
                     Resource.NonFungibleResource.Item(
                         collectionAddress = resourceAddress,
-                        localId = Resource.NonFungibleResource.Item.ID.from(id.asStr())
+                        localId = Resource.NonFungibleResource.Item.ID.from(id)
                     )
                 }
             )
@@ -166,7 +165,7 @@ fun ResourceSpecifier.toTransferableResource(
                     it.localId.toRetId() == id
                 } ?: Resource.NonFungibleResource.Item(
                     collectionAddress = this.resourceAddress.addressString(),
-                    localId = Resource.NonFungibleResource.Item.ID.from(id.asStr())
+                    localId = Resource.NonFungibleResource.Item.ID.from(id)
                 )
             }
             TransferableResource.NFTs(
@@ -262,7 +261,7 @@ private fun ResourceTracker.NonFungible.toTransferableResource(
             it.localId.toRetId() == id
         } ?: Resource.NonFungibleResource.Item(
             collectionAddress = this.resourceAddress.addressString(),
-            localId = Resource.NonFungibleResource.Item.ID.from(id.asStr())
+            localId = Resource.NonFungibleResource.Item.ID.from(id)
         )
     }
 
