@@ -3,6 +3,9 @@ package com.babylon.wallet.android.data.repository.dappmetadata
 import com.babylon.wallet.android.data.gateway.apis.DAppDefinitionApi
 import com.babylon.wallet.android.data.gateway.apis.StateApi
 import com.babylon.wallet.android.data.gateway.extensions.asMetadataItems
+import com.babylon.wallet.android.data.gateway.extensions.calculateResourceBehaviours
+import com.babylon.wallet.android.data.gateway.extensions.divisibility
+import com.babylon.wallet.android.data.gateway.extensions.totalSupply
 import com.babylon.wallet.android.data.gateway.generated.models.ResourceAggregationLevel
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsOptIns
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsRequest
@@ -206,20 +209,29 @@ class DAppRepositoryImpl @Inject constructor(
                     nameMetadataItem = metadataItems.consume(),
                     symbolMetadataItem = metadataItems.consume(),
                     descriptionMetadataItem = metadataItems.consume(),
-                    iconUrlMetadataItem = metadataItems.consume()
+                    iconUrlMetadataItem = metadataItems.consume(),
+                    behaviours = fungibleItem.details?.calculateResourceBehaviours().orEmpty(),
+                    currentSupply = fungibleItem.details?.totalSupply()?.toBigDecimal(),
+                    validatorMetadataItem = metadataItems.toMutableList().consume(),
+                    poolMetadataItem = metadataItems.toMutableList().consume(),
+                    divisibility = fungibleItem.details?.divisibility()
                 )
             }
 
             val nonFungibleResource = nonFungibleItems.map { nonFungibleItem ->
                 val metadataItems = nonFungibleItem.metadata.asMetadataItems().toMutableList()
 
-                Resource.NonFungibleResource.Item(
-                    collectionAddress = nonFungibleItem.address,
-                    localId = Resource.NonFungibleResource.Item.ID.from(
-                        nonFungibleItem.ancestorIdentities?.globalAddress.orEmpty()
-                    ),
-                    nameMetadataItem = null,
-                    iconMetadataItem = metadataItems.consume()
+                Resource.NonFungibleResource(
+                    resourceAddress = nonFungibleItem.address,
+                    amount = 0L,
+                    nameMetadataItem = metadataItems.consume(),
+                    descriptionMetadataItem = metadataItems.consume(),
+                    iconMetadataItem = metadataItems.consume(),
+                    tagsMetadataItem = metadataItems.consume(),
+                    validatorMetadataItem = metadataItems.consume(),
+                    items = emptyList(),
+                    behaviours = nonFungibleItem.details?.calculateResourceBehaviours().orEmpty(),
+                    currentSupply = nonFungibleItem.details?.totalSupply()?.toBigDecimal()
                 )
             }
 

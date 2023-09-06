@@ -38,10 +38,7 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixTheme.dimensions
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.SampleDataProvider
-import com.babylon.wallet.android.domain.model.DAppResources
-import com.babylon.wallet.android.domain.model.DAppWithMetadata
 import com.babylon.wallet.android.domain.model.DAppWithMetadataAndAssociatedResources
-import com.babylon.wallet.android.domain.model.Resource
 import com.babylon.wallet.android.presentation.common.FullscreenCircularProgressContent
 import com.babylon.wallet.android.presentation.settings.dappdetail.DAppDetailsSheetContent
 import com.babylon.wallet.android.presentation.ui.composables.DefaultModalSheetLayout
@@ -75,9 +72,7 @@ fun PersonaDetailScreen(
         persona = state.persona,
         onEditPersona = onEditPersona,
         authorizedDapps = state.authorizedDapps,
-        selectedDAppWithMetadata = state.selectedDAppWithMetadata,
-        selectedDAppAssociatedFungibleTokens = state.selectedDAppAssociatedFungibleTokens,
-        selectedDAppAssociatedNonFungibleTokens = state.selectedDAppAssociatedNonFungibleTokens,
+        selectedDApp = state.selectedDApp,
         onDAppClick = viewModel::onDAppClick,
         hasAuthKey = state.hasAuthKey,
         loading = state.loading,
@@ -93,9 +88,7 @@ private fun PersonaDetailContent(
     persona: Network.Persona?,
     onEditPersona: (String) -> Unit,
     authorizedDapps: ImmutableList<DAppWithMetadataAndAssociatedResources>,
-    selectedDAppWithMetadata: DAppWithMetadata?,
-    selectedDAppAssociatedFungibleTokens: ImmutableList<Resource.FungibleResource>,
-    selectedDAppAssociatedNonFungibleTokens: ImmutableList<Resource.NonFungibleResource.Item>,
+    selectedDApp: DAppWithMetadataAndAssociatedResources?,
     onDAppClick: (DAppWithMetadataAndAssociatedResources) -> Unit,
     hasAuthKey: Boolean,
     onCreateAndUploadAuthKey: () -> Unit,
@@ -123,20 +116,14 @@ private fun PersonaDetailContent(
                         .fillMaxSize(),
                     sheetState = bottomSheetState,
                     sheetContent = {
-                        selectedDAppWithMetadata?.let {
+                        selectedDApp?.let {
                             DAppDetailsSheetContent(
                                 onBackClick = {
                                     scope.launch {
                                         bottomSheetState.hide()
                                     }
                                 },
-                                dApp = DAppWithMetadataAndAssociatedResources(
-                                    dAppWithMetadata = it,
-                                    resources = DAppResources(
-                                        fungibleResources = selectedDAppAssociatedFungibleTokens,
-                                        nonFungibleResources = selectedDAppAssociatedNonFungibleTokens
-                                    )
-                                )
+                                dApp = it
                             )
                         }
                     }
@@ -300,9 +287,7 @@ fun DappDetailContentPreview() {
             persona = SampleDataProvider().samplePersona(),
             onEditPersona = {},
             authorizedDapps = persistentListOf(),
-            selectedDAppWithMetadata = null,
-            selectedDAppAssociatedFungibleTokens = persistentListOf(),
-            selectedDAppAssociatedNonFungibleTokens = persistentListOf(),
+            selectedDApp = null,
             onDAppClick = {},
             hasAuthKey = false,
             onCreateAndUploadAuthKey = {},

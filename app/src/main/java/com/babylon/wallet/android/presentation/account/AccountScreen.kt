@@ -308,11 +308,9 @@ private fun SheetContent(
     when (val selected = state.selectedResource) {
         is SelectedResource.SelectedNonFungibleResource -> {
             NonFungibleTokenBottomSheetDetails(
-                modifier = modifier
-                    .fillMaxWidth()
-                    .verticalScroll(rememberScrollState()),
+                modifier = modifier.fillMaxWidth(),
                 item = selected.item,
-                nonFungibleItem = selected.nonFungible,
+                nonFungibleResource = selected.nonFungible,
                 onCloseClick = {
                     scope.launch {
                         bottomSheetState.hide()
@@ -323,9 +321,7 @@ private fun SheetContent(
 
         is SelectedResource.SelectedFungibleResource -> {
             FungibleTokenBottomSheetDetails(
-                modifier = modifier
-                    .fillMaxWidth()
-                    .verticalScroll(rememberScrollState()),
+                modifier = modifier.fillMaxWidth(),
                 fungible = selected.fungible,
                 onCloseClick = {
                     scope.launch {

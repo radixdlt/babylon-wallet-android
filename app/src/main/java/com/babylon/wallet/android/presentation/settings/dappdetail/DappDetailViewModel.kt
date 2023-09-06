@@ -5,7 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.domain.common.onError
 import com.babylon.wallet.android.domain.common.onValue
-import com.babylon.wallet.android.domain.model.DAppWithMetadata
+import com.babylon.wallet.android.domain.model.DAppWithMetadataAndAssociatedResources
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.babylon.wallet.android.domain.model.RequiredPersonaField
 import com.babylon.wallet.android.domain.model.RequiredPersonaFields
@@ -57,9 +57,7 @@ class DappDetailViewModel @Inject constructor(
             metadataResult.onValue { dAppWithAssociatedResources ->
                 _state.update { state ->
                     state.copy(
-                        dappWithMetadata = dAppWithAssociatedResources.dAppWithMetadata,
-                        associatedTokens = dAppWithAssociatedResources.fungibleResources.toPersistentList(),
-                        associatedNfts = dAppWithAssociatedResources.nonFungibleResources.toPersistentList(),
+                        dappWithMetadata = dAppWithAssociatedResources,
                         loading = false
                     )
                 }
@@ -114,12 +112,12 @@ class DappDetailViewModel @Inject constructor(
         }
     }
 
-    fun onNftClick(nftItem: Resource.NonFungibleResource.Item) {
+    fun onNftClick(nftItem: Resource.NonFungibleResource) {
         viewModelScope.launch {
             _state.update {
                 it.copy(
                     selectedSheetState = SelectedSheetState.SelectedNonFungibleResource(
-                        nftItem = nftItem
+                        nonFungibleResource = nftItem
                     )
                 )
             }
@@ -241,9 +239,7 @@ sealed interface DappDetailEvent : OneOffEvent {
 data class DappDetailUiState(
     val loading: Boolean = true,
     val dapp: Network.AuthorizedDapp? = null,
-    val dappWithMetadata: DAppWithMetadata? = null,
-    val associatedTokens: ImmutableList<Resource.FungibleResource> = persistentListOf(),
-    val associatedNfts: ImmutableList<Resource.NonFungibleResource.Item> = persistentListOf(),
+    val dappWithMetadata: DAppWithMetadataAndAssociatedResources? = null,
     val personas: ImmutableList<Network.Persona> = persistentListOf(),
     val sharedPersonaAccounts: ImmutableList<AccountItemUiModel> = persistentListOf(),
     val selectedSheetState: SelectedSheetState? = null
@@ -252,7 +248,7 @@ data class DappDetailUiState(
 sealed interface SelectedSheetState {
     data class SelectedFungibleResource(val fungible: Resource.FungibleResource) : SelectedSheetState
     data class SelectedNonFungibleResource(
-        val nftItem: Resource.NonFungibleResource.Item
+        val nonFungibleResource: Resource.NonFungibleResource
     ) : SelectedSheetState
 
     data class SelectedPersona(

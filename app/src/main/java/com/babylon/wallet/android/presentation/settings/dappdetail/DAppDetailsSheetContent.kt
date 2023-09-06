@@ -161,11 +161,11 @@ fun DAppDetailsSheetContent(
                     }
                 }
             }
-            items(dApp.nonFungibleResources) { nonFungibleToken ->
+            items(dApp.nonFungibleResources) { nonFungibleResource ->
                 GrayBackgroundWrapper {
                     StandardOneLineCard(
-                        image = nonFungibleToken.imageUrl.toString(),
-                        title = nonFungibleToken.localId.displayable,
+                        image = nonFungibleResource.iconUrl.toString(),
+                        title = nonFungibleResource.name,
                         modifier = Modifier
                             .shadow(elevation = 8.dp, shape = RadixTheme.shapes.roundedRectMedium)
                             .clip(RadixTheme.shapes.roundedRectMedium)
