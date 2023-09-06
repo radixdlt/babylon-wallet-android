@@ -262,7 +262,7 @@ private fun ResourceTracker.NonFungible.toTransferableResource(
             it.localId.toRetId() == id
         } ?: Resource.NonFungibleResource.Item(
             collectionAddress = this.resourceAddress.addressString(),
-            localId = Resource.NonFungibleResource.Item.ID.from(id.asStr())
+            localId = Resource.NonFungibleResource.Item.ID.from(id)
         )
     }
 
