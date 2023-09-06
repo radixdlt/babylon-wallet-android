@@ -39,51 +39,29 @@ data class ScryptoSborValue (
 ) {
     @Serializable
     data class ProgrammaticJson(
-        @SerialName(value = "fields")
-        val fields: List<ProgrammaticJsonField>,
-
-        @SerialName(value = "kind")
-        val kind: String,
-
-        @SerialName(value = "type_name")
-        val type_name: String
-    )
-
-    @Serializable
-    data class ProgrammaticJsonField(
-        @SerialName(value = "field_name")
-        val field_name: String,
-
         @SerialName(value = "kind")
         val kind: String,
 
         @SerialName(value = "type_name")
         val type_name: String? = null,
 
-        @SerialName(value = "value")
-        val value: String
-    )
-
-    @Serializable
-    data class RawJson(
-        @SerialName(value = "field_name")
-        val fieldName: String? = null,
-        @SerialName(value = "kind")
-        val kind: String,
         @SerialName(value = "fields")
-        val fields: List<RawJsonElement>
+        val fields: List<Field>
     ) {
 
         @Serializable
-        data class RawJsonElement(
-            @SerialName(value = "type_name")
-            val typeName: String? = null,
-
+        data class Field(
             @SerialName(value = "kind")
-            val kind: String,
+            val kind: String? = null,
+
+            @SerialName(value = "type_name")
+            val type_name: String? = null,
+
+            @SerialName(value = "field_name")
+            val field_name: String? = null,
 
             @SerialName(value = "value")
-            val value: String
+            val value: String? = null,
         )
     }
 }
