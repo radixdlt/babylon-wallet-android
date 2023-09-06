@@ -2048,10 +2048,13 @@ components:
         - type: object
           required:
             - blueprint_name
+            - blueprint_version
           properties:
             package_address:
               $ref: "#/components/schemas/Address"
             blueprint_name:
+              type: string
+            blueprint_version:
               type: string
             state:
               type: object
