@@ -25,6 +25,7 @@ import kotlinx.serialization.Contextual
  * 
  *
  * @param blueprintName 
+ * @param blueprintVersion 
  * @param packageAddress Bech32m-encoded human readable version of the address.
  * @param state 
  * @param roleAssignments 
@@ -36,6 +37,9 @@ data class StateEntityDetailsResponseComponentDetailsAllOf (
 
     @SerialName(value = "blueprint_name")
     val blueprintName: kotlin.String,
+
+    @SerialName(value = "blueprint_version")
+    val blueprintVersion: kotlin.String,
 
     /* Bech32m-encoded human readable version of the address. */
     @SerialName(value = "package_address")

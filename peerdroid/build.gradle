@@ -26,7 +26,7 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
 
             buildConfigField "boolean", "DEBUG_MODE", "false"
-            buildConfigField "String", "SIGNALING_SERVER_URL", '"wss://signaling-server-rcnet.radixdlt.com/"'
+            buildConfigField "String", "SIGNALING_SERVER_URL", '"wss://signaling-server.radixdlt.com/"'
         }
     }
     compileOptions {

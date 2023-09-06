@@ -35,8 +35,8 @@ private val TURN_DEV_SERVERS_LIST = listOf(
     "turn:turn-dev-tcp.rdx-works-main.extratools.works:80?transport=tcp"
 )
 private val TURN_SERVERS_LIST = listOf(
-    "turn:turn-rcnet-udp.radixdlt.com:80?transport=udp",
-    "turn:turn-rcnet-tcp.radixdlt.com:80?transport=tcp"
+    "turn:turn-udp.radixdlt.com:80?transport=udp",
+    "turn:turn-tcp.radixdlt.com:80?transport=tcp"
 )
 private const val TURN_SERVER_USERNAME = "username"
 private const val TURN_SERVER_PASSWORD = "password"
