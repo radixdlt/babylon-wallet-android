@@ -6,7 +6,7 @@ buildscript {
         compileSdk = 33
         targetSdk = 33
         versionName = "1.0.0"
-        internalVersionName = "rcnetv3"
+        internalVersionName = "rcnetv3.1"
         kotlinCompilerExtensionVersion = "1.4.7"
     }
     dependencies {
