@@ -20,7 +20,6 @@ import com.radixdlt.ret.NonFungibleLocalId
 import com.radixdlt.ret.NonFungibleLocalIdVecSource
 import com.radixdlt.ret.ResourceSpecifier
 import com.radixdlt.ret.ResourceTracker
-import rdx.works.core.ret.asStr
 import java.math.BigDecimal
 
 typealias RETResources = com.radixdlt.ret.Resources
