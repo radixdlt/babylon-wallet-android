@@ -45,6 +45,7 @@ import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
 import org.junit.Before
 import org.junit.Test
@@ -243,8 +244,8 @@ internal class TransactionApprovalViewModelTest : StateViewModelTest<Transaction
                 message = any()
             )
         }
-        assert(errorSlot.captured == WalletErrorType.WrongNetwork)
-        assert(vm.oneOffEvent.first() is TransactionApprovalViewModel.Event.Dismiss)
+        assertEquals(WalletErrorType.WrongNetwork, errorSlot.captured)
+        assertEquals(TransactionApprovalViewModel.Event.Dismiss, vm.oneOffEvent.first())
     }
 
     @Test
@@ -268,8 +269,8 @@ internal class TransactionApprovalViewModelTest : StateViewModelTest<Transaction
                 message = any()
             )
         }
-        assert(errorSlot.captured == WalletErrorType.FailedToSubmitTransaction)
-        assert(state.error != null)
+        assertEquals(WalletErrorType.FailedToSubmitTransaction, errorSlot.captured)
+        assertNotNull(state.error)
     }
 
     @Test
@@ -302,7 +303,7 @@ internal class TransactionApprovalViewModelTest : StateViewModelTest<Transaction
         )
         val vm = vm.value
         advanceUntilIdle()
-        assertEquals("0.0942431", vm.state.value.transactionFees.networkFeeDisplayed)
+        assertEquals("0.1083795", vm.state.value.transactionFees.networkFeeDisplayed)
         assertEquals("0", vm.state.value.transactionFees.defaultRoyaltyFeesDisplayed)
         assertEquals("0.1083795", vm.state.value.transactionFees.defaultTransactionFee.displayableQuantity())
     }
@@ -337,8 +338,8 @@ internal class TransactionApprovalViewModelTest : StateViewModelTest<Transaction
         )
         val vm = vm.value
         advanceUntilIdle()
-        assertEquals(null, vm.state.value.transactionFees.networkFeeDisplayed)
-        assertEquals("0.1942431", vm.state.value.transactionFees.defaultRoyaltyFeesDisplayed)
+        assertEquals("0.1283795", vm.state.value.transactionFees.networkFeeDisplayed)
+        assertEquals("0.2", vm.state.value.transactionFees.defaultRoyaltyFeesDisplayed)
         assertEquals("0.3283795", vm.state.value.transactionFees.defaultTransactionFee.displayableQuantity())
     }
 
@@ -372,7 +373,7 @@ internal class TransactionApprovalViewModelTest : StateViewModelTest<Transaction
         )
         val vm = vm.value
         advanceUntilIdle()
-        assertEquals("0.3942431", vm.state.value.transactionFees.networkFeeDisplayed)
+        assertEquals("0.5283795", vm.state.value.transactionFees.networkFeeDisplayed)
         assertEquals("0.2", vm.state.value.transactionFees.defaultRoyaltyFeesDisplayed)
         assertEquals("0.7283795", vm.state.value.transactionFees.defaultTransactionFee.displayableQuantity())
     }
@@ -407,8 +408,8 @@ internal class TransactionApprovalViewModelTest : StateViewModelTest<Transaction
         )
         val vm = vm.value
         advanceUntilIdle()
-        assertNull(vm.state.value.transactionFees.networkFeeDisplayed)
-        assertEquals("0.0942431", vm.state.value.transactionFees.defaultRoyaltyFeesDisplayed)
+        assertEquals("0.0283795", vm.state.value.transactionFees.networkFeeDisplayed)
+        assertEquals("0.2", vm.state.value.transactionFees.defaultRoyaltyFeesDisplayed)
         assertEquals("0.2283795", vm.state.value.transactionFees.defaultTransactionFee.displayableQuantity())
     }
 
@@ -489,7 +490,7 @@ internal class TransactionApprovalViewModelTest : StateViewModelTest<Transaction
 
         val vm = vm.value
         advanceUntilIdle()
-        assertEquals("0.9050548", vm.state.value.transactionFees.networkFeeDisplayed)//0.9265478
+        assertEquals("1.040813", vm.state.value.transactionFees.networkFeeDisplayed)//0.9265478
         assertEquals("0.2", vm.state.value.transactionFees.defaultRoyaltyFeesDisplayed)
         assertEquals("1.240813", vm.state.value.transactionFees.defaultTransactionFee.displayableQuantity())//1.26553
     }
