@@ -57,7 +57,7 @@ fun RETResources.toTransferableResource(resourceAddress: String, allResources: L
                 items = ids.map { id ->
                     Resource.NonFungibleResource.Item(
                         collectionAddress = resourceAddress,
-                        localId = Resource.NonFungibleResource.Item.ID.from(id.asStr())
+                        localId = Resource.NonFungibleResource.Item.ID.from(id)
                     )
                 }
             )
@@ -166,7 +166,7 @@ fun ResourceSpecifier.toTransferableResource(
                     it.localId.toRetId() == id
                 } ?: Resource.NonFungibleResource.Item(
                     collectionAddress = this.resourceAddress.addressString(),
-                    localId = Resource.NonFungibleResource.Item.ID.from(id.asStr())
+                    localId = Resource.NonFungibleResource.Item.ID.from(id)
                 )
             }
             TransferableResource.NFTs(
