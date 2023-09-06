@@ -14,6 +14,7 @@ import com.babylon.wallet.android.data.gateway.extensions.xrdVaultAddress
 import com.babylon.wallet.android.data.gateway.generated.models.FungibleResourcesCollection
 import com.babylon.wallet.android.data.gateway.generated.models.FungibleResourcesCollectionItemVaultAggregated
 import com.babylon.wallet.android.data.gateway.generated.models.LedgerStateSelector
+import com.babylon.wallet.android.data.gateway.generated.models.MetadataValueType
 import com.babylon.wallet.android.data.gateway.generated.models.NonFungibleResourcesCollection
 import com.babylon.wallet.android.data.gateway.generated.models.NonFungibleResourcesCollectionItemVaultAggregated
 import com.babylon.wallet.android.data.gateway.generated.models.ResourceAggregationLevel
@@ -52,6 +53,7 @@ import com.babylon.wallet.android.domain.model.metadata.MetadataItem.Companion.c
 import com.babylon.wallet.android.domain.model.metadata.NameMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.OwnerKeyHashesMetadataItem
 import rdx.works.profile.data.model.pernetwork.Network
+import timber.log.Timber
 import java.io.IOException
 import java.math.BigDecimal
 import javax.inject.Inject
@@ -448,6 +450,7 @@ class EntityRepositoryImpl @Inject constructor(
             val errorResponse = responses.first { response -> response is Result.Error }.map {
                 listOf(it)
             }
+            Timber.e("Found errors when requesting entity details")
             errorResponse
         } else { // otherwise all StateEntityDetailsResponses are success so return the list
             Result.Success(responses.mapNotNull { it.value() })
@@ -563,6 +566,7 @@ class EntityRepositoryImpl @Inject constructor(
 
         // if you find any error response in the list of StateNonFungibleDataResponse then return error
         return if (nonFungibleDataResponsesListResult.any { response -> response is Result.Error }) {
+            Timber.e("Found errors when requesting NonFungibleIds")
             Result.Error(IOException("Failed to fetch the nonFungibleData"))
         } else {
             val nonFungibleResourceItemsList =
@@ -594,11 +598,11 @@ class EntityRepositoryImpl @Inject constructor(
     }
 
     private fun StateNonFungibleDetailsResponseItem.claimAmount(): String? = data?.programmaticJson?.fields?.find { element ->
-        element.kind == "Decimal"
+        element.kind == MetadataValueType.decimal.value
     }?.value
 
     private fun StateNonFungibleDetailsResponseItem.claimEpoch(): String? = data?.programmaticJson?.fields?.find { element ->
-        element.kind == "U64"
+        element.kind == MetadataValueType.u64.value
     }?.value
 
     private suspend fun nextFungiblesPage(
