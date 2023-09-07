@@ -8,6 +8,9 @@ import com.babylon.wallet.android.domain.model.RequiredPersonaField
 import com.babylon.wallet.android.domain.model.RequiredPersonaFields
 import com.babylon.wallet.android.mockdata.profile
 import com.babylon.wallet.android.presentation.StateViewModelTest
+import com.babylon.wallet.android.presentation.settings.personas.personaedit.ARG_PERSONA_ADDRESS
+import com.babylon.wallet.android.presentation.settings.personas.personaedit.ARG_REQUIRED_FIELDS
+import com.babylon.wallet.android.presentation.settings.personas.personaedit.PersonaEditViewModel
 import com.babylon.wallet.android.utils.isValidEmail
 import io.mockk.Runs
 import io.mockk.coEvery

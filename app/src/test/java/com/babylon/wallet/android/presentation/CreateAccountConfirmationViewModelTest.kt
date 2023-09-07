@@ -3,11 +3,11 @@ package com.babylon.wallet.android.presentation
 import androidx.lifecycle.SavedStateHandle
 import com.babylon.wallet.android.mockdata.account
 import com.babylon.wallet.android.mockdata.profile
-import com.babylon.wallet.android.presentation.createaccount.confirmation.ARG_ACCOUNT_ID
-import com.babylon.wallet.android.presentation.createaccount.confirmation.ARG_REQUEST_SOURCE
-import com.babylon.wallet.android.presentation.createaccount.confirmation.CreateAccountConfirmationEvent
-import com.babylon.wallet.android.presentation.createaccount.confirmation.CreateAccountConfirmationViewModel
-import com.babylon.wallet.android.presentation.createaccount.confirmation.CreateAccountRequestSource
+import com.babylon.wallet.android.presentation.account.createaccount.confirmation.ARG_ACCOUNT_ID
+import com.babylon.wallet.android.presentation.account.createaccount.confirmation.ARG_REQUEST_SOURCE
+import com.babylon.wallet.android.presentation.account.createaccount.confirmation.CreateAccountConfirmationEvent
+import com.babylon.wallet.android.presentation.account.createaccount.confirmation.CreateAccountConfirmationViewModel
+import com.babylon.wallet.android.presentation.account.createaccount.confirmation.CreateAccountRequestSource
 import com.babylon.wallet.android.presentation.navigation.Screen
 import io.mockk.every
 import io.mockk.mockk

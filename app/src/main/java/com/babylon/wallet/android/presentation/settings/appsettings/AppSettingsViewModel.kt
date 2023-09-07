@@ -3,7 +3,7 @@ package com.babylon.wallet.android.presentation.settings.appsettings
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiState
-import com.babylon.wallet.android.presentation.settings.SettingsItem.AppSettings
+import com.babylon.wallet.android.presentation.settings.SettingsItem
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableSet
 import kotlinx.collections.immutable.persistentSetOf
@@ -14,6 +14,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.mapWhen
 import rdx.works.profile.domain.GetProfileUseCase
+import rdx.works.profile.domain.backup.GetBackupStateUseCase
 import rdx.works.profile.domain.security
 import rdx.works.profile.domain.security.UpdateDeveloperModeUseCase
 import javax.inject.Inject
@@ -21,10 +22,11 @@ import javax.inject.Inject
 @HiltViewModel
 class AppSettingsViewModel @Inject constructor(
     private val getProfileUseCase: GetProfileUseCase,
+    private val getBackupStateUseCase: GetBackupStateUseCase,
     private val updateDeveloperModeUseCase: UpdateDeveloperModeUseCase
-) : StateViewModel<SettingsUiState>() {
+) : StateViewModel<AppSettingsUiState>() {
 
-    override fun initialState(): SettingsUiState = SettingsUiState.default
+    override fun initialState(): AppSettingsUiState = AppSettingsUiState.default
 
     init {
         readSettings()
@@ -36,10 +38,28 @@ class AppSettingsViewModel @Inject constructor(
                 .security
                 .map { it.isDeveloperModeEnabled }
                 .collect { isInDeveloperMode ->
-                    _state.updateSetting<AppSettings.DeveloperMode> {
-                        AppSettings.DeveloperMode(isInDeveloperMode)
+                    _state.updateSetting<SettingsItem.AppSettingsItem.DeveloperMode> {
+                        SettingsItem.AppSettingsItem.DeveloperMode(isInDeveloperMode)
                     }
                 }
+        }
+        viewModelScope.launch {
+            getBackupStateUseCase().collect { backupState ->
+                _state.update { settingsUiState ->
+                    val settingsList = settingsUiState.settings.toMutableList()
+                    if (settingsList.any { it is SettingsItem.AppSettingsItem.Backups }) {
+                        settingsList.mapWhen(
+                            predicate = { it is SettingsItem.AppSettingsItem.Backups },
+                            mutation = { SettingsItem.AppSettingsItem.Backups(backupState = backupState) }
+                        )
+                    } else {
+                        settingsList.add(2, SettingsItem.AppSettingsItem.Backups(backupState))
+                    }
+                    settingsUiState.copy(
+                        settings = settingsList.toPersistentSet()
+                    )
+                }
+            }
         }
     }
 
@@ -47,7 +67,7 @@ class AppSettingsViewModel @Inject constructor(
         updateDeveloperModeUseCase(isEnabled = enabled)
     }
 
-    private inline fun <reified S : AppSettings> MutableStateFlow<SettingsUiState>.updateSetting(
+    private inline fun <reified S : SettingsItem.AppSettingsItem> MutableStateFlow<AppSettingsUiState>.updateSetting(
         mutation: (S) -> S
     ) = update { uiState ->
         uiState.copy(
@@ -59,13 +79,17 @@ class AppSettingsViewModel @Inject constructor(
     }
 }
 
-data class SettingsUiState(
-    val settings: ImmutableSet<AppSettings>
+data class AppSettingsUiState(
+    val settings: ImmutableSet<SettingsItem.AppSettingsItem>
 ) : UiState {
 
     companion object {
-        val default = SettingsUiState(
-            settings = persistentSetOf(AppSettings.DeveloperMode(false))
+        val default = AppSettingsUiState(
+            settings = persistentSetOf(
+                SettingsItem.AppSettingsItem.LinkedConnectors,
+                SettingsItem.AppSettingsItem.Gateways,
+                SettingsItem.AppSettingsItem.DeveloperMode(false)
+            )
         )
     }
 }

@@ -6,7 +6,7 @@ import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
-import com.babylon.wallet.android.presentation.settings.dappdetail.ROUTE_DAPP_DETAIL
+import com.babylon.wallet.android.presentation.settings.authorizeddapps.dappdetail.ROUTE_DAPP_DETAIL
 import com.google.accompanist.navigation.animation.composable
 
 const val ROUTE_AUTHORIZED_DAPPS = "settings_authorized_dapps"

@@ -29,8 +29,8 @@ import com.babylon.wallet.android.designsystem.composable.RadixTextField
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.presentation.common.FullscreenCircularProgressContent
-import com.babylon.wallet.android.presentation.settings.linkedconnectors.AddLinkConnectorUiState
-import com.babylon.wallet.android.presentation.settings.linkedconnectors.qrcode.CameraPreview
+import com.babylon.wallet.android.presentation.settings.appsettings.linkedconnectors.AddLinkConnectorUiState
+import com.babylon.wallet.android.presentation.settings.appsettings.linkedconnectors.qrcode.CameraPreview
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState

@@ -10,6 +10,10 @@ import com.babylon.wallet.android.fakes.DAppConnectionRepositoryFake
 import com.babylon.wallet.android.mockdata.profile
 import com.babylon.wallet.android.presentation.StateViewModelTest
 import com.babylon.wallet.android.presentation.dapp.authorized.selectpersona.toUiModel
+import com.babylon.wallet.android.presentation.settings.authorizeddapps.dappdetail.ARG_DAPP_ADDRESS
+import com.babylon.wallet.android.presentation.settings.authorizeddapps.dappdetail.DappDetailEvent
+import com.babylon.wallet.android.presentation.settings.authorizeddapps.dappdetail.DappDetailViewModel
+import com.babylon.wallet.android.presentation.settings.authorizeddapps.dappdetail.SelectedSheetState
 import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk

@@ -3,16 +3,16 @@ package com.babylon.wallet.android.presentation.dapp.unauthorized
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
-import com.babylon.wallet.android.presentation.createaccount.confirmation.CreateAccountRequestSource
-import com.babylon.wallet.android.presentation.createaccount.createAccountScreen
-import com.babylon.wallet.android.presentation.createpersona.createPersonaScreen
-import com.babylon.wallet.android.presentation.createpersona.personaInfoScreen
+import com.babylon.wallet.android.presentation.account.createaccount.confirmation.CreateAccountRequestSource
+import com.babylon.wallet.android.presentation.account.createaccount.createAccountScreen
 import com.babylon.wallet.android.presentation.dapp.unauthorized.accountonetime.chooseAccountsOneTime
 import com.babylon.wallet.android.presentation.dapp.unauthorized.login.ROUTE_DAPP_LOGIN_UNAUTHORIZED_GRAPH
 import com.babylon.wallet.android.presentation.dapp.unauthorized.login.ROUTE_DAPP_LOGIN_UNAUTHORIZED_SCREEN
 import com.babylon.wallet.android.presentation.dapp.unauthorized.login.dAppLoginUnauthorized
 import com.babylon.wallet.android.presentation.dapp.unauthorized.personaonetime.personaDataOnetimeUnauthorized
-import com.babylon.wallet.android.presentation.settings.personaedit.personaEditScreen
+import com.babylon.wallet.android.presentation.settings.personas.createpersona.createPersonaScreen
+import com.babylon.wallet.android.presentation.settings.personas.createpersona.personaInfoScreen
+import com.babylon.wallet.android.presentation.settings.personas.personaedit.personaEditScreen
 import com.google.accompanist.navigation.animation.navigation
 
 @Suppress("LongMethod")
