@@ -32,6 +32,7 @@ import com.babylon.wallet.android.presentation.settings.SettingsItem
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import kotlinx.collections.immutable.ImmutableSet
+import kotlinx.collections.immutable.persistentSetOf
 
 @Composable
 fun AccountSecurityScreen(
@@ -131,7 +132,7 @@ fun AccountSecurityScreenPreview() {
     RadixWalletTheme {
         AccountSecurityContent(
             modifier = Modifier,
-            appSettings = AccountSecurityUiState.default.settings,
+            appSettings = persistentSetOf(),
             onAccountSecuritySettingItemClick = {},
             onBackClick = {}
         )

@@ -6,9 +6,14 @@ import com.babylon.wallet.android.BuildConfig.EXPERIMENTAL_FEATURES_ENABLED
 import com.babylon.wallet.android.domain.model.AppConstants
 import com.babylon.wallet.android.domain.usecases.settings.GetImportOlympiaSettingVisibilityUseCase
 import com.babylon.wallet.android.domain.usecases.settings.MarkImportOlympiaWalletCompleteUseCase
+import com.babylon.wallet.android.presentation.settings.SettingsItem.TopLevelSettings.AccountSecurityAndSettings
+import com.babylon.wallet.android.presentation.settings.SettingsItem.TopLevelSettings.AppSettings
+import com.babylon.wallet.android.presentation.settings.SettingsItem.TopLevelSettings.AuthorizedDapps
+import com.babylon.wallet.android.presentation.settings.SettingsItem.TopLevelSettings.ImportOlympiaWallet
+import com.babylon.wallet.android.presentation.settings.SettingsItem.TopLevelSettings.LinkToConnector
+import com.babylon.wallet.android.presentation.settings.SettingsItem.TopLevelSettings.Personas
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
-import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -26,52 +31,31 @@ class SettingsViewModel @Inject constructor(
     private val markImportOlympiaWalletCompleteUseCase: MarkImportOlympiaWalletCompleteUseCase
 ) : ViewModel() {
 
-    private val defaultSettings = if (EXPERIMENTAL_FEATURES_ENABLED) {
-        persistentListOf(
-            SettingsItem.TopLevelSettings.AuthorizedDapps,
-            SettingsItem.TopLevelSettings.Personas,
-            SettingsItem.TopLevelSettings.AccountSecurityAndSettings,
-            SettingsItem.TopLevelSettings.AppSettings
-        )
-    } else {
-        persistentListOf(
-            SettingsItem.TopLevelSettings.AuthorizedDapps,
-            SettingsItem.TopLevelSettings.Personas,
-            SettingsItem.TopLevelSettings.AccountSecurityAndSettings,
-            SettingsItem.TopLevelSettings.AppSettings
-        )
-    }
+    private val defaultSettings = listOf(
+        AuthorizedDapps,
+        Personas,
+        AccountSecurityAndSettings,
+        AppSettings
+    )
 
     val state: StateFlow<SettingsUiState> = combine(
         getProfileUseCase(),
         getImportOlympiaSettingVisibilityUseCase()
     ) { profile: Profile, isImportFromOlympiaSettingDismissed ->
-        val showConnectionSetting = profile.appPreferences.p2pLinks.isEmpty()
-
-        // Update connection settings based on p2p links
-        val visibleSettings = if (showConnectionSetting) {
-            defaultSettings.toMutableList().apply {
-                if (!contains(SettingsItem.TopLevelSettings.LinkToConnector)) {
-                    add(0, SettingsItem.TopLevelSettings.LinkToConnector)
-                }
-                if (isImportFromOlympiaSettingDismissed.not()) {
-                    if (!contains(SettingsItem.TopLevelSettings.ImportOlympiaWallet)) {
-                        add(1, SettingsItem.TopLevelSettings.ImportOlympiaWallet)
-                    }
-                }
-            }
-        } else {
-            defaultSettings.toMutableList().apply {
-                if (isImportFromOlympiaSettingDismissed.not()) {
-                    add(0, SettingsItem.TopLevelSettings.ImportOlympiaWallet)
-                }
-            }
+        val mutated = defaultSettings.toMutableList()
+        var topIndex = 0
+        if (profile.appPreferences.p2pLinks.isEmpty() && !defaultSettings.contains(LinkToConnector)) {
+            mutated.add(topIndex, LinkToConnector)
+            topIndex += 1
         }
-        SettingsUiState(visibleSettings.toPersistentList())
+        if (isImportFromOlympiaSettingDismissed.not() && EXPERIMENTAL_FEATURES_ENABLED && !defaultSettings.contains(ImportOlympiaWallet)) {
+            mutated.add(topIndex, ImportOlympiaWallet)
+        }
+        SettingsUiState(mutated.toPersistentList())
     }.stateIn(
         viewModelScope,
         SharingStarted.WhileSubscribed(AppConstants.VM_STOP_TIMEOUT_MS),
-        SettingsUiState(defaultSettings)
+        SettingsUiState(defaultSettings.toPersistentList())
     )
 
     fun hideImportOlympiaWalletSettingBox() {
