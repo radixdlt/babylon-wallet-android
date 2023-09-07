@@ -30,13 +30,13 @@ class PersonasViewModel @Inject constructor(
     init {
         viewModelScope.launch {
             getProfileUseCase.personasOnCurrentNetwork.collect { personas ->
-                val vv = personas.map { persona ->
+                val personaUiModels = personas.map { persona ->
                     PersonasUiState.PersonaUiModel(
                         address = persona.address,
                         displayName = persona.displayName
                     )
                 }
-                updateUiState(vv)
+                updateUiState(personaUiModels)
             }
         }
     }
