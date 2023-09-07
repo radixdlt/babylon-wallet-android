@@ -31,7 +31,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
-import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
 import com.babylon.wallet.android.designsystem.composable.RadixSecondaryButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
@@ -45,6 +44,7 @@ import com.babylon.wallet.android.presentation.ui.composables.LedgerListItem
 import com.babylon.wallet.android.presentation.ui.composables.LinkConnectorScreen
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.launch
 import rdx.works.profile.data.model.factorsources.LedgerHardwareWalletFactorSource
@@ -197,7 +197,7 @@ private fun LedgerDeviceDetails(
                 textAlign = TextAlign.Center
             )
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
-            RadixPrimaryButton(
+            RadixSecondaryButton(
                 text = stringResource(id = R.string.ledgerHardwareDevices_addNewLedger),
                 onClick = onAddLedgerDeviceClick,
                 modifier = Modifier
@@ -248,6 +248,18 @@ private fun LedgerDevicesListContent(
                 throttleClicks = true
             )
         }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun LedgerHardwareWalletsScreenEmptyPreview() {
+    RadixWalletTheme {
+        LedgerHardwareWalletsContent(
+            ledgerDevices = persistentListOf(),
+            onAddLedgerDeviceClick = {},
+            onBackClick = {},
+        )
     }
 }
 
