@@ -11,6 +11,7 @@ import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.preferences.PreferencesManager
@@ -29,15 +30,18 @@ class PersonasViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            getProfileUseCase.personasOnCurrentNetwork.collect { personas ->
-                val personaUiModels = personas.map { persona ->
-                    PersonasUiState.PersonaUiModel(
-                        address = persona.address,
-                        displayName = persona.displayName
-                    )
+            getProfileUseCase.personasOnCurrentNetwork
+                .map { personas ->
+                    personas.map { persona ->
+                        PersonasUiState.PersonaUiModel(
+                            address = persona.address,
+                            displayName = persona.displayName
+                        )
+                    }
                 }
-                updateUiState(personaUiModels)
-            }
+                .collect { personaUiModels ->
+                    updateUiState(personaUiModels)
+                }
         }
     }
 
