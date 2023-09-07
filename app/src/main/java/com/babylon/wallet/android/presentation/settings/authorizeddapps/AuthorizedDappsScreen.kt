@@ -28,6 +28,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
+import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.domain.model.DAppWithMetadataAndAssociatedResources
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.StandardOneLineCard
@@ -35,6 +36,7 @@ import com.babylon.wallet.android.presentation.ui.composables.displayName
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
+import kotlinx.collections.immutable.toImmutableList
 
 @Composable
 fun AuthorizedDAppsScreen(
@@ -72,19 +74,20 @@ private fun AuthorizedDAppsContent(
     ) { padding ->
         Column(modifier = Modifier.padding(padding)) {
             Divider(color = RadixTheme.colors.gray5)
+            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingMedium))
+            Text(
+                modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingDefault),
+                text = stringResource(R.string.authorizedDapps_subtitle),
+                style = RadixTheme.typography.body1HighImportance,
+                color = RadixTheme.colors.gray2
+            )
+            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXLarge))
             LazyColumn(
-                contentPadding = PaddingValues(RadixTheme.dimensions.paddingDefault),
+                contentPadding = PaddingValues(horizontal = RadixTheme.dimensions.paddingDefault),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 modifier = Modifier.fillMaxSize()
             ) {
                 item {
-                    Text(
-                        modifier = Modifier.fillMaxWidth(),
-                        text = stringResource(R.string.authorizedDapps_subtitle),
-                        style = RadixTheme.typography.body1HighImportance,
-                        color = RadixTheme.colors.gray2
-                    )
-                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
                     // TODO enable it when we have the link
 //                InfoLink(stringResource(R.string.authorizedDapps_whatIsDapp), modifier = Modifier.fillMaxWidth())
 //                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
@@ -106,7 +109,7 @@ private fun AuthorizedDAppsContent(
                                 vertical = RadixTheme.dimensions.paddingDefault
                             )
                     )
-                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
+                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
                 }
             }
         }
@@ -119,7 +122,7 @@ fun AuthorizedDAppsContentPreview() {
     RadixWalletTheme {
         AuthorizedDAppsContent(
             onBackClick = {},
-            dApps = persistentListOf(),
+            dApps = listOf(SampleDataProvider().sampleDAppWithResources()).toImmutableList(),
             onDAppClick = {}
         )
     }
