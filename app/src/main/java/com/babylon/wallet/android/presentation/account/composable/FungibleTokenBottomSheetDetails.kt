@@ -213,7 +213,6 @@ fun Behaviour(
             text = name,
             style = RadixTheme.typography.body2Regular,
             color = RadixTheme.colors.gray1,
-            maxLines = 2
         )
 
         Icon(
@@ -257,6 +256,7 @@ fun Tag(
 fun FungibleTokenBottomSheetDetailsPreview() {
     RadixWalletTheme {
         FungibleTokenBottomSheetDetails(
+            modifier = Modifier.background(RadixTheme.colors.defaultBackground),
             fungible = SampleDataProvider().sampleFungibleResources().first(),
             onCloseClick = {}
         )
