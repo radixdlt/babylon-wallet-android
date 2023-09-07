@@ -207,9 +207,6 @@ fun NavigationHost(
             },
             onPersonaClick = { personaAddress ->
                 navController.personaDetailScreen(personaAddress)
-            },
-            onNavigateToMnemonicBackup = {
-                navController.seedPhrases()
             }
         )
         personaDetailScreen(

@@ -21,20 +21,21 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixSecondaryButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
-import com.babylon.wallet.android.domain.model.PersonaUiModel
-import com.babylon.wallet.android.presentation.ui.composables.ApplySecuritySettingsLabel
+import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
+import com.babylon.wallet.android.presentation.settings.personas.PersonasViewModel.PersonasEvent
+import com.babylon.wallet.android.presentation.settings.personas.PersonasViewModel.PersonasUiState
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.StandardOneLineCard
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import kotlinx.collections.immutable.ImmutableList
-import rdx.works.profile.data.model.factorsources.FactorSource.FactorSourceID
+import kotlinx.collections.immutable.toImmutableList
 
 @Composable
 fun PersonasScreen(
@@ -42,16 +43,14 @@ fun PersonasScreen(
     viewModel: PersonasViewModel,
     onBackClick: () -> Unit,
     createNewPersona: (Boolean) -> Unit,
-    onPersonaClick: (String) -> Unit,
-    onNavigateToMnemonicBackup: (FactorSourceID.FromHash) -> Unit
+    onPersonaClick: (String) -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
 
     LaunchedEffect(Unit) {
         viewModel.oneOffEvent.collect {
             when (it) {
-                is PersonasViewModel.PersonasEvent.CreatePersona -> createNewPersona(it.firstPersonaCreated)
-                is PersonasViewModel.PersonasEvent.NavigateToMnemonicBackup -> onNavigateToMnemonicBackup(it.factorSourceId)
+                is PersonasEvent.CreatePersona -> createNewPersona(it.firstPersonaCreated)
             }
         }
     }
@@ -60,21 +59,17 @@ fun PersonasScreen(
         modifier = modifier,
         onBackClick = onBackClick,
         createNewPersona = viewModel::onCreatePersona,
-        onPersonaClick = onPersonaClick,
-        displaySecurityPrompt = state.displaySecurityPrompt,
-        onApplySecuritySettings = viewModel::onApplySecuritySettings
+        onPersonaClick = onPersonaClick
     )
 }
 
 @Composable
 fun PersonasContent(
-    personas: ImmutableList<PersonaUiModel>,
+    personas: ImmutableList<PersonasUiState.PersonaUiModel>,
     modifier: Modifier,
     onBackClick: () -> Unit,
     createNewPersona: () -> Unit,
-    onPersonaClick: (String) -> Unit,
-    displaySecurityPrompt: Boolean,
-    onApplySecuritySettings: () -> Unit
+    onPersonaClick: (String) -> Unit
 ) {
     Scaffold(
         modifier = modifier,
@@ -89,36 +84,26 @@ fun PersonasContent(
     ) { padding ->
         Column(
             modifier = Modifier.padding(padding),
-            horizontalAlignment = Alignment.CenterHorizontally
+            horizontalAlignment = Alignment.Start
         ) {
             Divider(color = RadixTheme.colors.gray5)
+            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingMedium))
+            Text(
+                modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingDefault),
+                text = stringResource(id = R.string.personas_subtitle),
+                style = RadixTheme.typography.body1HighImportance,
+                color = RadixTheme.colors.gray2
+            )
+            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXLarge))
             LazyColumn(
-                contentPadding = PaddingValues(RadixTheme.dimensions.paddingMedium),
+                contentPadding = PaddingValues(horizontal = RadixTheme.dimensions.paddingDefault),
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 item {
-                    Text(
-                        text = stringResource(id = R.string.personas_subtitle),
-                        style = RadixTheme.typography.body1HighImportance,
-                        color = RadixTheme.colors.gray2
-                    )
-                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
 //                InfoLink( // TODO enable it when we have a link
 //                    stringResource(R.string.personas_whatIsPersona),
 //                    modifier = Modifier.fillMaxWidth()
 //                )
-                    if (displaySecurityPrompt) {
-                        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSmall))
-                        ApplySecuritySettingsLabel(
-                            modifier = Modifier.fillMaxWidth(),
-                            labelColor = Color.Black.copy(alpha = 0.2f),
-                            text = stringResource(id = R.string.homePage_securityPromptBackup),
-                            onClick = onApplySecuritySettings
-                        )
-                        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
-                    } else {
-                        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
-                    }
                 }
                 itemsIndexed(items = personas) { _, personaItem ->
                     StandardOneLineCard(
@@ -140,10 +125,11 @@ fun PersonasContent(
                                 vertical = RadixTheme.dimensions.paddingDefault
                             )
                     )
-                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
+                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
                 }
 
                 item {
+                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXLarge))
                     RadixSecondaryButton(
                         text = stringResource(id = R.string.personas_createNewPersona),
                         onClick = createNewPersona
@@ -152,5 +138,28 @@ fun PersonasContent(
                 }
             }
         }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun PersonasScreenPreview() {
+    RadixWalletTheme {
+        PersonasContent(
+            personas = listOf(
+                PersonasUiState.PersonaUiModel(
+                    address = "address1",
+                    displayName = "persona1"
+                ),
+                PersonasUiState.PersonaUiModel(
+                    address = "address2",
+                    displayName = "persona2"
+                )
+            ).toImmutableList(),
+            modifier = Modifier,
+            onBackClick = {},
+            createNewPersona = {},
+            onPersonaClick = {}
+        )
     }
 }
