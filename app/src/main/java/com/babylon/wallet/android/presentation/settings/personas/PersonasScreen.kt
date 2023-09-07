@@ -35,6 +35,7 @@ import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAp
 import com.babylon.wallet.android.presentation.ui.composables.StandardOneLineCard
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
 
 @Composable
@@ -96,6 +97,7 @@ fun PersonasContent(
             )
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXLarge))
             LazyColumn(
+                modifier = Modifier.fillMaxWidth(),
                 contentPadding = PaddingValues(horizontal = RadixTheme.dimensions.paddingDefault),
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
@@ -163,3 +165,18 @@ fun PersonasScreenPreview() {
         )
     }
 }
+
+@Preview(showBackground = true)
+@Composable
+fun PersonasScreenEmptyPreview() {
+    RadixWalletTheme {
+        PersonasContent(
+            personas = persistentListOf(),
+            modifier = Modifier,
+            onBackClick = {},
+            createNewPersona = {},
+            onPersonaClick = {}
+        )
+    }
+}
+

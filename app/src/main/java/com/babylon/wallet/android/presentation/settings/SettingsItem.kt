@@ -28,10 +28,11 @@ sealed interface SettingsItem {
         }
 
         @DrawableRes
-        fun getIcon(): Int? { // add rest of icons
+        fun getIcon(): Int? {
             return when (this) {
                 AuthorizedDapps -> com.babylon.wallet.android.designsystem.R.drawable.ic_authorized_dapps
                 Personas -> com.babylon.wallet.android.designsystem.R.drawable.ic_personas
+                AccountSecurityAndSettings -> com.babylon.wallet.android.designsystem.R.drawable.ic_security
                 is AppSettings -> com.babylon.wallet.android.designsystem.R.drawable.ic_app_settings
                 else -> null
             }
