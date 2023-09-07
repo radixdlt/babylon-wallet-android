@@ -6,13 +6,16 @@ import com.babylon.wallet.android.di.JsonConverterFactory
 import com.babylon.wallet.android.di.SimpleHttpClient
 import com.babylon.wallet.android.di.buildApi
 import com.babylon.wallet.android.domain.common.Result
+import com.babylon.wallet.android.domain.common.onValue
 import okhttp3.OkHttpClient
 import retrofit2.Converter
+import timber.log.Timber
 import javax.inject.Inject
 
 interface NetworkInfoRepository {
     suspend fun getNetworkInfo(networkUrl: String): Result<String>
     suspend fun getFaucetComponentAddress(networkUrl: String): Result<String>
+    suspend fun getMainnetAvailability(): Result<Boolean>
 }
 
 class NetworkInfoRepositoryImpl @Inject constructor(
@@ -40,5 +43,21 @@ class NetworkInfoRepositoryImpl @Inject constructor(
                 it.wellKnownAddresses.faucet
             }
         )
+    }
+
+    override suspend fun getMainnetAvailability(): Result<Boolean> {
+        return buildApi<StatusApi>(
+            baseUrl = MAINNET_STATUS_URL,
+            okHttpClient = okHttpClient,
+            jsonConverterFactory = jsonConverterFactory
+        ).mainnetNetworkStatus().execute(
+            map = { it.isMainnetLive }
+        ).onValue {
+            Timber.tag("Bakos").d("Mainnet: $it")
+        }
+    }
+
+    companion object {
+        private const val MAINNET_STATUS_URL = "https://mainnet-status.extratools.works"
     }
 }

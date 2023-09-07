@@ -6,6 +6,7 @@ import com.babylon.wallet.android.data.dapp.PeerdroidClient
 import com.babylon.wallet.android.domain.common.onValue
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel.IncomingRequest
 import com.babylon.wallet.android.domain.usecases.AuthorizeSpecifiedPersonaUseCase
+import com.babylon.wallet.android.domain.usecases.MainnetAvailabilityUseCase
 import com.babylon.wallet.android.domain.usecases.VerifyDappUseCase
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
@@ -50,8 +51,9 @@ class MainViewModel @Inject constructor(
     private val verifyDappUseCase: VerifyDappUseCase,
     private val appEventBus: AppEventBus,
     getProfileStateUseCase: GetProfileStateUseCase,
-    private var deviceSecurityHelper: DeviceSecurityHelper,
-    private var checkMnemonicIntegrityUseCase: CheckMnemonicIntegrityUseCase,
+    private val deviceSecurityHelper: DeviceSecurityHelper,
+    private val checkMnemonicIntegrityUseCase: CheckMnemonicIntegrityUseCase,
+    private val mainnetAvailabilityUseCase: MainnetAvailabilityUseCase
 ) : StateViewModel<MainUiState>(), OneOffEventHandler<MainEvent> by OneOffEventHandlerImpl() {
 
     private var incomingDappRequestsJob: Job? = null
@@ -193,7 +195,7 @@ class MainViewModel @Inject constructor(
         Timber.d("Peerdroid terminated")
     }
 
-    fun checkMnemonicIntegrity() {
+    fun onAppToForeground() {
         viewModelScope.launch {
             checkMnemonicIntegrityUseCase()
             if (!deviceSecurityHelper.isDeviceSecure()) {
@@ -203,6 +205,10 @@ class MainViewModel @Inject constructor(
                     appEventBus.sendEvent(AppEvent.BabylonFactorSourceNeedsRecovery(factorSourceId), delayMs = 500L)
                 }
             }
+        }
+
+        viewModelScope.launch {
+            mainnetAvailabilityUseCase()
         }
     }
 

@@ -76,7 +76,7 @@ class MainActivity : FragmentActivity() {
 
     override fun onResume() {
         super.onResume()
-        viewModel.checkMnemonicIntegrity()
+        viewModel.onAppToForeground()
     }
 
     companion object {
