@@ -1,6 +1,7 @@
 package com.babylon.wallet.android.presentation.settings.accountsecurity
 
 import androidx.compose.animation.AnimatedContentScope
+import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
@@ -42,6 +43,12 @@ fun NavGraphBuilder.accountSecurityScreen(
         },
         exitTransition = {
             slideOutOfContainer(AnimatedContentScope.SlideDirection.Right)
+        },
+        popExitTransition = {
+            slideOutOfContainer(AnimatedContentScope.SlideDirection.Right)
+        },
+        popEnterTransition = {
+            EnterTransition.None
         }
     ) {
         AccountSecurityScreen(
