@@ -37,6 +37,7 @@ import com.babylon.wallet.android.data.repository.cache.TimeoutDuration.NO_CACHE
 import com.babylon.wallet.android.data.repository.execute
 import com.babylon.wallet.android.domain.common.Result
 import com.babylon.wallet.android.domain.common.map
+import com.babylon.wallet.android.domain.common.onValue
 import com.babylon.wallet.android.domain.common.switchMap
 import com.babylon.wallet.android.domain.common.value
 import com.babylon.wallet.android.domain.model.AccountWithResources
@@ -402,6 +403,7 @@ class EntityRepositoryImpl @Inject constructor(
                             nameMetadataItem = metaDataItems.consume(),
                             descriptionMetadataItem = metaDataItems.consume(),
                             iconMetadataItem = metaDataItems.consume(),
+                            tagsMetadataItem = metaDataItems.consume(),
                             behaviours = resourceBehaviours,
                             items = nftItems,
                             currentSupply = currentSupply,
@@ -437,7 +439,7 @@ class EntityRepositoryImpl @Inject constructor(
                 ).execute(
                     cacheParameters = CacheParameters(
                         httpCache = cache,
-                        timeoutDuration = if (isRefreshing) NO_CACHE else TimeoutDuration.ONE_MINUTE
+                        timeoutDuration = if (isRefreshing) NO_CACHE else TimeoutDuration.FIVE_MINUTES
                     ),
                     map = {
                         it
@@ -526,43 +528,48 @@ class EntityRepositoryImpl @Inject constructor(
         stateVersion: Long?,
         isRefreshing: Boolean = false
     ): Result<List<Resource.NonFungibleResource.Item>> {
-        val stateEntityNonFungibleIdsPageResponse = stateApi.entityNonFungibleIdsPage(
-            StateEntityNonFungibleIdsPageRequest(
-                address = accountAddress,
-                vaultAddress = vaultAddress,
-                resourceAddress = resourceAddress,
-                atLedgerState = stateVersion?.let { LedgerStateSelector(stateVersion = it) }
-            )
-        ).execute(
-            cacheParameters = CacheParameters(
-                httpCache = cache,
-                timeoutDuration = if (isRefreshing) NO_CACHE else TimeoutDuration.ONE_MINUTE
-            ),
-            map = {
-                it
-            }
-        )
-        val epoch = stateEntityNonFungibleIdsPageResponse.value()?.ledgerState?.epoch
-        val nonFungibleIds = stateEntityNonFungibleIdsPageResponse.value()?.items
-        val nonFungibleDataResponsesListResult = nonFungibleIds
-            ?.chunked(CHUNK_SIZE_OF_ITEMS)
-            ?.map { ids ->
-                stateApi.nonFungibleData(
-                    StateNonFungibleDataRequest(
-                        resourceAddress = resourceAddress,
-                        nonFungibleIds = ids,
-                        atLedgerState = stateVersion?.let { LedgerStateSelector(stateVersion = it) }
-                    )
-                ).execute(
-                    cacheParameters = CacheParameters(
-                        httpCache = cache,
-                        timeoutDuration = if (isRefreshing) NO_CACHE else TimeoutDuration.ONE_MINUTE
-                    ),
-                    map = {
-                        it
-                    }
+        val nftIds = mutableListOf<String>()
+        var nextIdsCursor: String? = null
+        var latestEpoch: Long? = null
+        do {
+            stateApi.entityNonFungibleIdsPage(
+                StateEntityNonFungibleIdsPageRequest(
+                    address = accountAddress,
+                    vaultAddress = vaultAddress,
+                    resourceAddress = resourceAddress,
+                    cursor = nextIdsCursor,
+                    atLedgerState = stateVersion?.let { LedgerStateSelector(stateVersion = it) }
                 )
-            }.orEmpty()
+            ).execute(
+                cacheParameters = CacheParameters(
+                    httpCache = cache,
+                    timeoutDuration = if (isRefreshing) NO_CACHE else TimeoutDuration.FIVE_MINUTES
+                ),
+                map = { it }
+            ).onValue { page ->
+                nftIds.addAll(page.items)
+                nextIdsCursor = page.nextCursor
+                latestEpoch = page.ledgerState.epoch
+            }
+        } while (nextIdsCursor != null)
+
+        val nonFungibleDataResponsesListResult = nftIds.chunked(CHUNK_SIZE_OF_ITEMS).map { ids ->
+            stateApi.nonFungibleData(
+                StateNonFungibleDataRequest(
+                    resourceAddress = resourceAddress,
+                    nonFungibleIds = ids,
+                    atLedgerState = stateVersion?.let { LedgerStateSelector(stateVersion = it) }
+                )
+            ).execute(
+                cacheParameters = CacheParameters(
+                    httpCache = cache,
+                    timeoutDuration = if (isRefreshing) NO_CACHE else TimeoutDuration.FIVE_MINUTES
+                ),
+                map = {
+                    it
+                }
+            )
+        }
 
         // if you find any error response in the list of StateNonFungibleDataResponse then return error
         return if (nonFungibleDataResponsesListResult.any { response -> response is Result.Error }) {
@@ -574,7 +581,7 @@ class EntityRepositoryImpl @Inject constructor(
                     nonFungibleDataResponse.map {
                         it.nonFungibleIds.map { stateNonFungibleDetailsResponseItem ->
                             val claimEpoch = stateNonFungibleDetailsResponseItem.claimEpoch()?.toLong()
-                            val readyToClaim = claimEpoch != null && epoch != null && epoch >= claimEpoch
+                            val ledgerEpoch = latestEpoch
                             Resource.NonFungibleResource.Item(
                                 collectionAddress = resourceAddress,
                                 localId = Resource.NonFungibleResource.Item.ID.from(stateNonFungibleDetailsResponseItem.nonFungibleId),
@@ -586,7 +593,7 @@ class EntityRepositoryImpl @Inject constructor(
                                     ?.programmaticJson?.fields?.find { field ->
                                         field.field_name == ExplicitMetadataKey.KEY_IMAGE_URL.key
                                     }?.value?.let { imageUrl -> IconUrlMetadataItem(url = Uri.parse(imageUrl)) },
-                                readyToClaim = readyToClaim,
+                                readyToClaim = claimEpoch != null && ledgerEpoch != null && ledgerEpoch >= claimEpoch,
                                 claimAmountMetadataItem = stateNonFungibleDetailsResponseItem.claimAmount()
                                     ?.let { claimAmount -> ClaimAmountMetadataItem(claimAmount) }
                             )
