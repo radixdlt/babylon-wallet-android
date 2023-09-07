@@ -383,7 +383,7 @@ class EntityRepositoryImpl @Inject constructor(
                         }
 
                         val resourceBehaviours = nonFungibleDetails?.details?.calculateResourceBehaviours().orEmpty()
-                        val currentSupply = nonFungibleDetails?.details?.totalSupply()?.toBigDecimal()
+                        val currentSupply = nonFungibleDetails?.details?.totalSupply()?.toIntOrNull()
 
                         val metaDataItems = nonFungibleDetails?.explicitMetadata?.asMetadataItems().orEmpty().toMutableList()
                         val nftItems = getNonFungibleResourceItemsForAccount(

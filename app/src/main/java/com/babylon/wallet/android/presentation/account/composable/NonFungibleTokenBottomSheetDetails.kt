@@ -185,7 +185,7 @@ fun NonFungibleTokenBottomSheetDetails(
                     }
                 }
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
-                nonFungibleResource.currentSupplyToDisplay?.let { currentSupply ->
+                nonFungibleResource.currentSupply?.let { currentSupply ->
                     Row(
                         modifier = Modifier,
                         verticalAlignment = Alignment.CenterVertically,

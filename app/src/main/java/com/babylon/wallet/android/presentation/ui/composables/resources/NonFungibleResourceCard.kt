@@ -124,7 +124,7 @@ fun NonFungibleResourceCollectionHeader(
                         )
                     }
 
-                    collection.currentSupplyToDisplay?.let { currentSupply ->
+                    collection.currentSupply?.let { currentSupply ->
                         Text(
                             stringResource(
                                 id = R.string.assetDetails_NFTDetails_ownedOfTotal,
