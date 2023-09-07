@@ -126,7 +126,7 @@ fun FungibleTokenBottomSheetDetails(
                     modifier = Modifier
                         .padding(start = RadixTheme.dimensions.paddingDefault),
                     text = fungible.currentSupplyToDisplay ?: stringResource(id = R.string.assetDetails_supplyUnkown),
-                    style = RadixTheme.typography.body1Regular,
+                    style = RadixTheme.typography.body1HighImportance,
                     color = RadixTheme.colors.gray1,
                     textAlign = TextAlign.End
                 )
@@ -215,11 +215,11 @@ fun Behaviour(
             color = RadixTheme.colors.gray1,
         )
 
-        Icon(
-            painter = painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_info_outline),
-            contentDescription = null,
-            tint = RadixTheme.colors.gray3
-        )
+//        Icon(
+//            painter = painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_info_outline),
+//            contentDescription = null,
+//            tint = RadixTheme.colors.gray3
+//        )
     }
 }
 
