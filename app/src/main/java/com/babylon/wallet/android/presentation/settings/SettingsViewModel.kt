@@ -15,16 +15,13 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import rdx.works.profile.data.model.BackupState
 import rdx.works.profile.data.model.Profile
 import rdx.works.profile.domain.GetProfileUseCase
-import rdx.works.profile.domain.backup.GetBackupStateUseCase
 import javax.inject.Inject
 
 @HiltViewModel
 class SettingsViewModel @Inject constructor(
     getProfileUseCase: GetProfileUseCase,
-    getBackupStateUseCase: GetBackupStateUseCase,
     getImportOlympiaSettingVisibilityUseCase: GetImportOlympiaSettingVisibilityUseCase,
     private val markImportOlympiaWalletCompleteUseCase: MarkImportOlympiaWalletCompleteUseCase
 ) : ViewModel() {
@@ -34,31 +31,21 @@ class SettingsViewModel @Inject constructor(
             SettingsItem.TopLevelSettings.AuthorizedDapps,
             SettingsItem.TopLevelSettings.Personas,
             SettingsItem.TopLevelSettings.AccountSecurityAndSettings,
-            SettingsItem.TopLevelSettings.AppSettings,
-//            SettingsItem.TopLevelSettings.LinkedConnectors,
-//            SettingsItem.TopLevelSettings.Gateways,
-//            SettingsItem.TopLevelSettings.SeedPhrases,
-//            SettingsItem.TopLevelSettings.LedgerHardwareWallets,
-//            SettingsItem.TopLevelSettings.ImportFromLegacyWallet
+            SettingsItem.TopLevelSettings.AppSettings
         )
     } else {
         persistentListOf(
             SettingsItem.TopLevelSettings.AuthorizedDapps,
             SettingsItem.TopLevelSettings.Personas,
             SettingsItem.TopLevelSettings.AccountSecurityAndSettings,
-            SettingsItem.TopLevelSettings.AppSettings,
-//            SettingsItem.TopLevelSettings.LinkedConnectors,
-//            SettingsItem.TopLevelSettings.Gateways,
-//            SettingsItem.TopLevelSettings.SeedPhrases,
-//            SettingsItem.TopLevelSettings.LedgerHardwareWallets
+            SettingsItem.TopLevelSettings.AppSettings
         )
     }
 
     val state: StateFlow<SettingsUiState> = combine(
         getProfileUseCase(),
-        getBackupStateUseCase(),
         getImportOlympiaSettingVisibilityUseCase()
-    ) { profile: Profile, backupState: BackupState, isImportFromOlympiaSettingDismissed ->
+    ) { profile: Profile, isImportFromOlympiaSettingDismissed ->
         val showConnectionSetting = profile.appPreferences.p2pLinks.isEmpty()
 
         // Update connection settings based on p2p links
@@ -67,39 +54,19 @@ class SettingsViewModel @Inject constructor(
                 if (!contains(SettingsItem.TopLevelSettings.LinkToConnector)) {
                     add(0, SettingsItem.TopLevelSettings.LinkToConnector)
                 }
-            }.also {
                 if (isImportFromOlympiaSettingDismissed.not()) {
-                    it.apply {
-                        if (!contains(SettingsItem.TopLevelSettings.ImportOlympiaWallet)) {
-                            add(1, SettingsItem.TopLevelSettings.ImportOlympiaWallet)
-                        }
+                    if (!contains(SettingsItem.TopLevelSettings.ImportOlympiaWallet)) {
+                        add(1, SettingsItem.TopLevelSettings.ImportOlympiaWallet)
                     }
                 }
             }
         } else {
-            if (isImportFromOlympiaSettingDismissed.not()) {
-                defaultSettings.toMutableList().apply {
-                    if (!contains(SettingsItem.TopLevelSettings.ImportOlympiaWallet)) {
-                        add(0, SettingsItem.TopLevelSettings.ImportOlympiaWallet)
-                    }
+            defaultSettings.toMutableList().apply {
+                if (isImportFromOlympiaSettingDismissed.not()) {
+                    add(0, SettingsItem.TopLevelSettings.ImportOlympiaWallet)
                 }
             }
-            defaultSettings.filter { settingSectionItem ->
-                settingSectionItem != SettingsItem.TopLevelSettings.LinkToConnector
-            }.toMutableList()
         }
-
-//        if (visibleSettings.any { it is SettingsItem.TopLevelSettings.Backups }) {
-//            visibleSettings.mapWhen(
-//                predicate = { it is SettingsItem.TopLevelSettings.Backups },
-//                mutation = {
-//                    SettingsItem.TopLevelSettings.Backups(backupState)
-//                }
-//            )
-//        } else {
-//            visibleSettings.add(visibleSettings.lastIndex - 2, SettingsItem.TopLevelSettings.Backups(backupState))
-//        }
-
         SettingsUiState(visibleSettings.toPersistentList())
     }.stateIn(
         viewModelScope,
