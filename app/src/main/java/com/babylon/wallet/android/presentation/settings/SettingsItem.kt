@@ -91,27 +91,4 @@ sealed interface SettingsItem {
             }
         }
     }
-
-//    sealed interface AppSettings {
-//        data class DeveloperMode(val enabled: Boolean) : AppSettings
-//
-//        @StringRes
-//        fun descriptionRes(): Int {
-//            return when (this) {
-//                is DeveloperMode -> R.string.appSettings_developerMode_title
-//            }
-//        }
-//
-//        @StringRes
-//        fun subtitleRes(): Int {
-//            return when (this) {
-//                is DeveloperMode -> R.string.appSettings_developerMode_subtitle
-//            }
-//        }
-//
-//        @DrawableRes
-//        fun getIcon(): Int? {
-//            return null
-//        }
-//    }
 }

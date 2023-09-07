@@ -109,6 +109,7 @@ private fun SettingsContent(
                                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXSmall))
                             }
                         }
+
                         SettingsItem.TopLevelSettings.ImportOlympiaWallet -> {
                             item {
                                 ImportOlympiaWalletSettingBox(
@@ -125,23 +126,6 @@ private fun SettingsContent(
                         }
 
                         else -> {
-                            //                        item {
-                            //                            if (settingsItem is SettingsItem.TopLevelSettings.AppSettingsLevel.Backups) {
-                            //                                BackupSettingsItem(
-                            //                                    backupSettingsItem = settingsItem,
-                            //                                    onClick = {
-                            //                                        onSettingClick(settingsItem)
-                            //                                    }
-                            //                                )
-                            //                            } else {
-                            //                                DefaultSettingsItem(
-                            //                                    settingsItem = settingsItem,
-                            //                                    onClick = {
-                            //                                        onSettingClick(settingsItem)
-                            //                                    }
-//                                )
-//                            }
-//                        }
                             item {
                                 DefaultSettingsItem(
                                     settingsItem = settingsItem,
