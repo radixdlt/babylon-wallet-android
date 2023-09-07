@@ -231,7 +231,7 @@ class DAppRepositoryImpl @Inject constructor(
                     validatorMetadataItem = metadataItems.consume(),
                     items = emptyList(),
                     behaviours = nonFungibleItem.details?.calculateResourceBehaviours().orEmpty(),
-                    currentSupply = nonFungibleItem.details?.totalSupply()?.toBigDecimal()
+                    currentSupply = nonFungibleItem.details?.totalSupply()?.toIntOrNull()
                 )
             }
 

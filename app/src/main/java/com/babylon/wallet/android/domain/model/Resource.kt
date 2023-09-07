@@ -137,7 +137,7 @@ sealed class Resource {
         private val tagsMetadataItem: TagsMetadataItem? = null,
         private val behaviours: List<ResourceBehaviour> = emptyList(),
         val items: List<Item>,
-        private val currentSupply: BigDecimal? = null,
+        val currentSupply: Int? = null,
         private val validatorMetadataItem: ValidatorMetadataItem? = null
     ) : Resource(), Comparable<NonFungibleResource> {
         val name: String
@@ -157,9 +157,6 @@ sealed class Resource {
 
         val resourceBehaviours: List<ResourceBehaviour>
             get() = behaviours
-
-        val currentSupplyToDisplay: Int?
-            get() = currentSupply?.displayableQuantity()?.toIntOrNull()
 
         override fun compareTo(other: NonFungibleResource): Int = when {
             nameMetadataItem == null && other.nameMetadataItem != null -> 1

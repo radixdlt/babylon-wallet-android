@@ -179,13 +179,13 @@ fun NonFungibleTokenBottomSheetDetails(
                         Spacer(modifier = Modifier.weight(1f))
                         Text(
                             text = nonFungibleResource.name,
-                            style = RadixTheme.typography.body1Regular,
+                            style = RadixTheme.typography.body1HighImportance,
                             color = RadixTheme.colors.gray1
                         )
                     }
                 }
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
-                nonFungibleResource.currentSupplyToDisplay?.let { currentSupply ->
+                nonFungibleResource.currentSupply?.let { currentSupply ->
                     Row(
                         modifier = Modifier,
                         verticalAlignment = Alignment.CenterVertically,
@@ -201,7 +201,7 @@ fun NonFungibleTokenBottomSheetDetails(
                             modifier = Modifier
                                 .padding(start = RadixTheme.dimensions.paddingDefault),
                             text = currentSupply.toString(),
-                            style = RadixTheme.typography.body1Regular,
+                            style = RadixTheme.typography.body1HighImportance,
                             color = RadixTheme.colors.gray1,
                             textAlign = TextAlign.End
                         )
