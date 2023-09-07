@@ -157,6 +157,7 @@ private fun SettingsContent(
                     }
                 }
                 item {
+                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
                     Text(
                         text = stringResource(
                             R.string.settings_appVersion,
