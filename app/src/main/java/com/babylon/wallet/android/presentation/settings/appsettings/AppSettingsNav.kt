@@ -6,15 +6,15 @@ import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
-import com.babylon.wallet.android.presentation.createaccount.confirmation.CreateAccountRequestSource
-import com.babylon.wallet.android.presentation.createaccount.createAccountScreen
+import com.babylon.wallet.android.presentation.account.createaccount.confirmation.CreateAccountRequestSource
+import com.babylon.wallet.android.presentation.account.createaccount.createAccountScreen
 import com.babylon.wallet.android.presentation.main.MAIN_ROUTE
 import com.babylon.wallet.android.presentation.navigation.Screen
 import com.babylon.wallet.android.presentation.settings.SettingsItem
-import com.babylon.wallet.android.presentation.settings.backup.backupScreen
-import com.babylon.wallet.android.presentation.settings.backup.systemBackupSettingsScreen
-import com.babylon.wallet.android.presentation.settings.editgateway.SettingsEditGatewayScreen
-import com.babylon.wallet.android.presentation.settings.linkedconnectors.linkedConnectorsScreen
+import com.babylon.wallet.android.presentation.settings.appsettings.backup.backupScreen
+import com.babylon.wallet.android.presentation.settings.appsettings.backup.systemBackupSettingsScreen
+import com.babylon.wallet.android.presentation.settings.appsettings.gateways.GatewaysScreen
+import com.babylon.wallet.android.presentation.settings.appsettings.linkedconnectors.linkedConnectorsScreen
 import com.google.accompanist.navigation.animation.composable
 import com.google.accompanist.navigation.animation.navigation
 
@@ -107,7 +107,7 @@ private fun NavGraphBuilder.settingsGateway(navController: NavController) {
             slideOutOfContainer(AnimatedContentScope.SlideDirection.Right)
         }
     ) {
-        SettingsEditGatewayScreen(
+        GatewaysScreen(
             viewModel = hiltViewModel(),
             onBackClick = {
                 navController.popBackStack()

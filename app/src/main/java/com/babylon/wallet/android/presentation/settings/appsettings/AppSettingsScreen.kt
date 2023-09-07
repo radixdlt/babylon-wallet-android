@@ -205,7 +205,7 @@ fun AppSettingsScreenPreview() {
     RadixWalletTheme {
         AppSettingsContent(
             modifier = Modifier,
-            appSettings = SettingsUiState.default.settings,
+            appSettings = AppSettingsUiState.default.settings,
             onAppSettingItemClick = {},
             onDeveloperModeToggled = {},
             onBackClick = {}

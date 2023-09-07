@@ -10,6 +10,8 @@ import com.babylon.wallet.android.domain.usecases.GetDAppWithMetadataAndAssociat
 import com.babylon.wallet.android.fakes.DAppConnectionRepositoryFake
 import com.babylon.wallet.android.mockdata.profile
 import com.babylon.wallet.android.presentation.StateViewModelTest
+import com.babylon.wallet.android.presentation.settings.personas.personadetail.ARG_PERSONA_ADDRESS
+import com.babylon.wallet.android.presentation.settings.personas.personadetail.PersonaDetailViewModel
 import io.mockk.coEvery
 import com.babylon.wallet.android.utils.AppEventBus
 import io.mockk.every

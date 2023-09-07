@@ -4,17 +4,17 @@ import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
-import com.babylon.wallet.android.presentation.createpersona.personasScreen
 import com.babylon.wallet.android.presentation.navigation.Screen
 import com.babylon.wallet.android.presentation.settings.accountsecurity.accountSecurityNavGraph
 import com.babylon.wallet.android.presentation.settings.accountsecurity.accountSecurityScreen
+import com.babylon.wallet.android.presentation.settings.accountsecurity.importlegacywallet.importLegacyWalletScreen
 import com.babylon.wallet.android.presentation.settings.appsettings.appSettingsNavGraph
 import com.babylon.wallet.android.presentation.settings.appsettings.appSettingsScreen
+import com.babylon.wallet.android.presentation.settings.appsettings.linkedconnectors.linkedConnectorsScreen
 import com.babylon.wallet.android.presentation.settings.authorizeddapps.authorizedDAppsScreen
-import com.babylon.wallet.android.presentation.settings.dappdetail.dAppDetailScreen
-import com.babylon.wallet.android.presentation.settings.legacyimport.importLegacyWalletScreen
-import com.babylon.wallet.android.presentation.settings.linkedconnectors.linkedConnectorsScreen
-import com.babylon.wallet.android.presentation.settings.personaedit.personaEditScreen
+import com.babylon.wallet.android.presentation.settings.authorizeddapps.dappdetail.dAppDetailScreen
+import com.babylon.wallet.android.presentation.settings.personas.createpersona.personasScreen
+import com.babylon.wallet.android.presentation.settings.personas.personaedit.personaEditScreen
 import com.google.accompanist.navigation.animation.composable
 import com.google.accompanist.navigation.animation.navigation
 

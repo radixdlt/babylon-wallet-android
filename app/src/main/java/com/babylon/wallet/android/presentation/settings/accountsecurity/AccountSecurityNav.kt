@@ -9,10 +9,10 @@ import androidx.navigation.NavGraphBuilder
 import com.babylon.wallet.android.presentation.onboarding.restore.mnemonics.RestoreMnemonicsArgs
 import com.babylon.wallet.android.presentation.onboarding.restore.mnemonics.restoreMnemonics
 import com.babylon.wallet.android.presentation.settings.SettingsItem
-import com.babylon.wallet.android.presentation.settings.ledgerhardwarewallets.ledgerHardwareWalletsScreen
-import com.babylon.wallet.android.presentation.settings.legacyimport.importLegacyWalletScreen
-import com.babylon.wallet.android.presentation.settings.seedphrases.reveal.revealSeedPhrase
-import com.babylon.wallet.android.presentation.settings.seedphrases.seedPhrases
+import com.babylon.wallet.android.presentation.settings.accountsecurity.importlegacywallet.importLegacyWalletScreen
+import com.babylon.wallet.android.presentation.settings.accountsecurity.ledgerhardwarewallets.ledgerHardwareWalletsScreen
+import com.babylon.wallet.android.presentation.settings.accountsecurity.seedphrases.reveal.revealSeedPhrase
+import com.babylon.wallet.android.presentation.settings.accountsecurity.seedphrases.seedPhrases
 import com.google.accompanist.navigation.animation.composable
 import com.google.accompanist.navigation.animation.navigation
 

@@ -45,7 +45,7 @@ import com.babylon.wallet.android.domain.model.DAppWithMetadataAndAssociatedReso
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.babylon.wallet.android.domain.model.TransactionManifestData
 import com.babylon.wallet.android.presentation.common.FullscreenCircularProgressContent
-import com.babylon.wallet.android.presentation.settings.dappdetail.DAppDetailsSheetContent
+import com.babylon.wallet.android.presentation.settings.authorizeddapps.dappdetail.DAppDetailsSheetContent
 import com.babylon.wallet.android.presentation.status.signing.SigningStatusBottomDialog
 import com.babylon.wallet.android.presentation.transaction.TransactionApprovalViewModel.State
 import com.babylon.wallet.android.presentation.transaction.composables.FeesSheet

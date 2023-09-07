@@ -9,7 +9,6 @@ import kotlinx.collections.immutable.ImmutableSet
 import kotlinx.collections.immutable.persistentSetOf
 import kotlinx.collections.immutable.toPersistentSet
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -25,9 +24,9 @@ class AppSettingsViewModel @Inject constructor(
     private val getProfileUseCase: GetProfileUseCase,
     private val getBackupStateUseCase: GetBackupStateUseCase,
     private val updateDeveloperModeUseCase: UpdateDeveloperModeUseCase
-) : StateViewModel<SettingsUiState>() {
+) : StateViewModel<AppSettingsUiState>() {
 
-    override fun initialState(): SettingsUiState = SettingsUiState.default
+    override fun initialState(): AppSettingsUiState = AppSettingsUiState.default
 
     init {
         readSettings()
@@ -68,7 +67,7 @@ class AppSettingsViewModel @Inject constructor(
         updateDeveloperModeUseCase(isEnabled = enabled)
     }
 
-    private inline fun <reified S : SettingsItem.AppSettingsItem> MutableStateFlow<SettingsUiState>.updateSetting(
+    private inline fun <reified S : SettingsItem.AppSettingsItem> MutableStateFlow<AppSettingsUiState>.updateSetting(
         mutation: (S) -> S
     ) = update { uiState ->
         uiState.copy(
@@ -80,12 +79,12 @@ class AppSettingsViewModel @Inject constructor(
     }
 }
 
-data class SettingsUiState(
+data class AppSettingsUiState(
     val settings: ImmutableSet<SettingsItem.AppSettingsItem>
 ) : UiState {
 
     companion object {
-        val default = SettingsUiState(
+        val default = AppSettingsUiState(
             settings = persistentSetOf(
                 SettingsItem.AppSettingsItem.LinkedConnectors,
                 SettingsItem.AppSettingsItem.Gateways,

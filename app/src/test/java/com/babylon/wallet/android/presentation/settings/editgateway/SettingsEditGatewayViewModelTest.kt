@@ -5,6 +5,9 @@ import com.babylon.wallet.android.data.repository.networkinfo.NetworkInfoReposit
 import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.domain.common.Result
 import com.babylon.wallet.android.presentation.TestDispatcherRule
+import com.babylon.wallet.android.presentation.settings.appsettings.gateways.GatewayAddFailure
+import com.babylon.wallet.android.presentation.settings.appsettings.gateways.SettingsEditGatewayEvent
+import com.babylon.wallet.android.presentation.settings.appsettings.gateways.SettingsEditGatewayViewModel
 import com.babylon.wallet.android.utils.isValidUrl
 import io.mockk.coEvery
 import io.mockk.coVerify

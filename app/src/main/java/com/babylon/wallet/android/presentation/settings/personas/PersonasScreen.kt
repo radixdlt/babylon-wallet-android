@@ -179,4 +179,3 @@ fun PersonasScreenEmptyPreview() {
         )
     }
 }
-

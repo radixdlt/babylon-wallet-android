@@ -5,8 +5,8 @@ import com.babylon.wallet.android.data.dapp.LedgerMessenger
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.babylon.wallet.android.mockdata.profile
 import com.babylon.wallet.android.presentation.StateViewModelTest
-import com.babylon.wallet.android.presentation.settings.ledgerhardwarewallets.AddLedgerDeviceUiState
-import com.babylon.wallet.android.presentation.settings.ledgerhardwarewallets.AddLedgerDeviceViewModel
+import com.babylon.wallet.android.presentation.settings.accountsecurity.ledgerhardwarewallets.AddLedgerDeviceUiState
+import com.babylon.wallet.android.presentation.settings.accountsecurity.ledgerhardwarewallets.AddLedgerDeviceViewModel
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
