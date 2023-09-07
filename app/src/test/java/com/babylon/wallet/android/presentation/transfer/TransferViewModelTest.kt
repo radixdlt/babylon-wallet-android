@@ -107,7 +107,7 @@ class TransferViewModelTest : StateViewModelTest<TransferViewModel>() {
         viewModel.state.test {
             assertFromAccountSet()
             assertOpenSheetForSkeleton(viewModel, viewModel.state.value.targetAccounts[0] as TargetAccount.Skeleton)
-            assertOtherAccountSubmitted(viewModel, "account_tdx_e_12ypd8nyhsej537x3am8nnjzsef45ttmua5tf7f8lz2zds78dgg5qzx")
+            assertOtherAccountSubmitted(viewModel, "account_tdx_22_128aph4j6zjqzhslfwqvryx829dwfxfflh0vamyca3425f78uul5rxf")
         }
     }
 
@@ -211,8 +211,9 @@ class TransferViewModelTest : StateViewModelTest<TransferViewModel>() {
 
         val sheetState = awaitItem().sheet as TransferViewModel.State.Sheet.ChooseAccounts
         // Check that the address is passed as valid
-        assertTrue(
-            sheetState.selectedAccount == TargetAccount.Other(
+        assertEquals(
+            sheetState.selectedAccount,
+             TargetAccount.Other(
                 address = address,
                 validity = TargetAccount.Other.AddressValidity.VALID,
                 id = skeletonAccount.id
