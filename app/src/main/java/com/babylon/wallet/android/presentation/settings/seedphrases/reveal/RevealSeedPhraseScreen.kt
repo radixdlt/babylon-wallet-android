@@ -8,14 +8,14 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.material3.Divider
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -32,7 +32,6 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
-import com.babylon.wallet.android.presentation.ui.composables.BackIconType
 import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.InfoLink
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
@@ -63,14 +62,11 @@ fun RevealSeedPhraseScreen(
         backClickHandler()
     }
     RevealSeedPhraseContent(
+        modifier = modifier,
+        mnemonicWords = state.mnemonicWords,
+        passphrase = state.passphrase,
+        seedPhraseWordsPerLine = state.seedPhraseWordsPerLine,
         onBackClick = backClickHandler,
-        modifier = modifier
-            .navigationBarsPadding()
-            .fillMaxSize()
-            .background(RadixTheme.colors.defaultBackground),
-        state.mnemonicWords,
-        state.passphrase,
-        state.seedPhraseWordsPerLine
     )
     if (showWarningDialog) {
         BasicPromptAlertDialog(
@@ -110,53 +106,57 @@ fun RevealSeedPhraseScreen(
 
 @Composable
 private fun RevealSeedPhraseContent(
-    onBackClick: () -> Unit,
     modifier: Modifier = Modifier,
     mnemonicWords: PersistentList<PersistentList<String>>,
     passphrase: String,
-    seedPhraseWordsPerLine: Int
+    seedPhraseWordsPerLine: Int,
+    onBackClick: () -> Unit
 ) {
-    Column(
-        modifier = Modifier.background(RadixTheme.colors.defaultBackground),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        RadixCenteredTopAppBar(
-            title = stringResource(id = R.string.displayMnemonics_cautionAlert_revealButtonLabel),
-            onBackClick = onBackClick,
-            contentColor = RadixTheme.colors.gray1,
-            backIconType = BackIconType.Back
-        )
-        Divider(color = RadixTheme.colors.gray5)
-        LazyColumn(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = modifier,
-            contentPadding = PaddingValues(RadixTheme.dimensions.paddingDefault)
+    Scaffold(
+        modifier = modifier,
+        topBar = {
+            RadixCenteredTopAppBar(
+                title = stringResource(id = R.string.displayMnemonics_cautionAlert_revealButtonLabel),
+                onBackClick = onBackClick,
+                windowInsets = WindowInsets.statusBars
+            )
+        },
+        containerColor = RadixTheme.colors.defaultBackground
+    ) { padding ->
+        Column(
+            modifier = Modifier.padding(padding),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            item {
-                InfoLink(
-                    modifier = Modifier.fillMaxWidth(),
-                    text = stringResource(R.string.revealSeedPhrase_warning),
-                    contentColor = RadixTheme.colors.orange1,
-                    iconRes = com.babylon.wallet.android.designsystem.R.drawable.ic_warning_error
-                )
-                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
-            }
-            itemsIndexed(mnemonicWords) { outerIndex, wordsChunk ->
-                SeedPhraseRow(
-                    modifier = Modifier.fillMaxWidth(),
-                    wordsChunk = wordsChunk,
-                    seedPhraseWordsPerLine = seedPhraseWordsPerLine,
-                    outerIndex = outerIndex
-                )
-                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
-            }
-            if (passphrase.isNotEmpty()) {
+            LazyColumn(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                contentPadding = PaddingValues(RadixTheme.dimensions.paddingDefault)
+            ) {
                 item {
-                    SingleWord(
-                        modifier = Modifier.weight(1f),
-                        label = stringResource(id = R.string.revealSeedPhrase_passphrase),
-                        word = passphrase
+                    InfoLink(
+                        modifier = Modifier.fillMaxWidth(),
+                        text = stringResource(R.string.revealSeedPhrase_warning),
+                        contentColor = RadixTheme.colors.orange1,
+                        iconRes = com.babylon.wallet.android.designsystem.R.drawable.ic_warning_error
                     )
+                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
+                }
+                itemsIndexed(mnemonicWords) { outerIndex, wordsChunk ->
+                    SeedPhraseRow(
+                        modifier = Modifier.fillMaxWidth(),
+                        wordsChunk = wordsChunk,
+                        seedPhraseWordsPerLine = seedPhraseWordsPerLine,
+                        outerIndex = outerIndex
+                    )
+                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
+                }
+                if (passphrase.isNotEmpty()) {
+                    item {
+                        SingleWord(
+                            modifier = Modifier.weight(1f),
+                            label = stringResource(id = R.string.revealSeedPhrase_passphrase),
+                            word = passphrase
+                        )
+                    }
                 }
             }
         }
