@@ -27,7 +27,7 @@ object Radix {
             val mainnet = Network(
                 id = NetworkId.Mainnet.value,
                 name = "Mainnet",
-                displayDescription = "Mainnet (Official Radix Network)"
+                displayDescription = "Mainnet"
             )
             val hammunet = Network(
                 id = NetworkId.Hammunet.value,
