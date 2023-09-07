@@ -35,7 +35,6 @@ import com.babylon.wallet.android.presentation.ui.composables.StandardOneLineCar
 import com.babylon.wallet.android.presentation.ui.composables.displayName
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import kotlinx.collections.immutable.ImmutableList
-import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
 
 @Composable
