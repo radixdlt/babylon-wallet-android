@@ -17,8 +17,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material3.Divider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -89,64 +89,64 @@ private fun SettingsContent(
             modifier = Modifier.padding(padding),
             horizontalAlignment = Alignment.Start
         ) {
-        Divider(color = RadixTheme.colors.gray4)
-        LazyColumn(
-            modifier = Modifier.fillMaxSize(),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            appSettings.forEach { settingsItem ->
-                when (settingsItem) {
-                    SettingsItem.TopLevelSettings.LinkToConnector -> {
-                        item {
-                            ConnectorSettingBox(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .background(RadixTheme.colors.gray5)
-                                    .padding(RadixTheme.dimensions.paddingDefault),
-                                onSettingClick = onSettingClick,
-                                settingsItem = settingsItem
-                            )
-                            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXSmall))
+            Divider(color = RadixTheme.colors.gray4)
+            LazyColumn(
+                modifier = Modifier.fillMaxSize(),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                appSettings.forEach { settingsItem ->
+                    when (settingsItem) {
+                        SettingsItem.TopLevelSettings.LinkToConnector -> {
+                            item {
+                                ConnectorSettingBox(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .background(RadixTheme.colors.gray5)
+                                        .padding(RadixTheme.dimensions.paddingDefault),
+                                    onSettingClick = onSettingClick,
+                                    settingsItem = settingsItem
+                                )
+                                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXSmall))
+                            }
                         }
-                    }
-                    SettingsItem.TopLevelSettings.ImportOlympiaWallet -> {
-                        item {
-                            ImportOlympiaWalletSettingBox(
+                        SettingsItem.TopLevelSettings.ImportOlympiaWallet -> {
+                            item {
+                                ImportOlympiaWalletSettingBox(
                                     modifier = Modifier
                                         .fillMaxWidth()
                                         .background(RadixTheme.colors.gray5)
                                         .padding(horizontal = RadixTheme.dimensions.paddingDefault)
-                                    .padding(bottom = RadixTheme.dimensions.paddingDefault),
-                                onSettingClick = onSettingClick,
-                                settingsItem = settingsItem,
-                                onDismissClick = onHideImportOlympiaWalletSettingBox
+                                        .padding(bottom = RadixTheme.dimensions.paddingDefault),
+                                    onSettingClick = onSettingClick,
+                                    settingsItem = settingsItem,
+                                    onDismissClick = onHideImportOlympiaWalletSettingBox
                                 )
                             }
                         }
 
                         else -> {
-    //                        item {
-    //                            if (settingsItem is SettingsItem.TopLevelSettings.AppSettingsLevel.Backups) {
-    //                                BackupSettingsItem(
-    //                                    backupSettingsItem = settingsItem,
-    //                                    onClick = {
-    //                                        onSettingClick(settingsItem)
-    //                                    }
-    //                                )
-    //                            } else {
-    //                                DefaultSettingsItem(
-    //                                    settingsItem = settingsItem,
-    //                                    onClick = {
-    //                                        onSettingClick(settingsItem)
-    //                                    }
+                            //                        item {
+                            //                            if (settingsItem is SettingsItem.TopLevelSettings.AppSettingsLevel.Backups) {
+                            //                                BackupSettingsItem(
+                            //                                    backupSettingsItem = settingsItem,
+                            //                                    onClick = {
+                            //                                        onSettingClick(settingsItem)
+                            //                                    }
+                            //                                )
+                            //                            } else {
+                            //                                DefaultSettingsItem(
+                            //                                    settingsItem = settingsItem,
+                            //                                    onClick = {
+                            //                                        onSettingClick(settingsItem)
+                            //                                    }
 //                                )
 //                            }
 //                        }
-                        item {
-                            DefaultSettingsItem(
-                                settingsItem = settingsItem,
-                                onClick = {
-                                    onSettingClick(settingsItem)
+                            item {
+                                DefaultSettingsItem(
+                                    settingsItem = settingsItem,
+                                    onClick = {
+                                        onSettingClick(settingsItem)
                                     }
                                 )
                             }
