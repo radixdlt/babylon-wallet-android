@@ -4,14 +4,16 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Divider
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -47,9 +49,6 @@ fun AuthorizedDAppsScreen(
         dApps = state.dApps,
         onDAppClick = onDAppClick,
         modifier = modifier
-            .navigationBarsPadding()
-            .fillMaxSize()
-            .background(RadixTheme.colors.defaultBackground)
     )
 }
 
@@ -60,48 +59,55 @@ private fun AuthorizedDAppsContent(
     onDAppClick: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    Column(modifier = modifier) {
-        RadixCenteredTopAppBar(
-            title = stringResource(R.string.authorizedDapps_title),
-            onBackClick = onBackClick,
-            contentColor = RadixTheme.colors.gray1
-        )
-        Divider(color = RadixTheme.colors.gray5)
-        LazyColumn(
-            contentPadding = PaddingValues(RadixTheme.dimensions.paddingDefault),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier.fillMaxSize()
-        ) {
-            item {
-                Text(
-                    modifier = Modifier.fillMaxWidth(),
-                    text = stringResource(R.string.authorizedDapps_subtitle),
-                    style = RadixTheme.typography.body1HighImportance,
-                    color = RadixTheme.colors.gray2
-                )
-                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
-                // TODO enable it when we have the link
+    Scaffold(
+        modifier = modifier,
+        topBar = {
+            RadixCenteredTopAppBar(
+                title = stringResource(R.string.authorizedDapps_title),
+                onBackClick = onBackClick,
+                windowInsets = WindowInsets.statusBars
+            )
+        },
+        containerColor = RadixTheme.colors.defaultBackground
+    ) { padding ->
+        Column(modifier = Modifier.padding(padding)) {
+            Divider(color = RadixTheme.colors.gray5)
+            LazyColumn(
+                contentPadding = PaddingValues(RadixTheme.dimensions.paddingDefault),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier.fillMaxSize()
+            ) {
+                item {
+                    Text(
+                        modifier = Modifier.fillMaxWidth(),
+                        text = stringResource(R.string.authorizedDapps_subtitle),
+                        style = RadixTheme.typography.body1HighImportance,
+                        color = RadixTheme.colors.gray2
+                    )
+                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
+                    // TODO enable it when we have the link
 //                InfoLink(stringResource(R.string.authorizedDapps_whatIsDapp), modifier = Modifier.fillMaxWidth())
 //                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
-            }
-            items(dApps) { dApp ->
-                StandardOneLineCard(
-                    image = dApp.dAppWithMetadata.iconUrl.toString(),
-                    title = dApp.dAppWithMetadata.displayName(),
-                    modifier = Modifier
-                        .shadow(elevation = 8.dp, shape = RadixTheme.shapes.roundedRectMedium)
-                        .clip(RadixTheme.shapes.roundedRectMedium)
-                        .throttleClickable {
-                            onDAppClick(dApp.dAppWithMetadata.dAppAddress)
-                        }
-                        .fillMaxWidth()
-                        .background(RadixTheme.colors.white, shape = RadixTheme.shapes.roundedRectMedium)
-                        .padding(
-                            horizontal = RadixTheme.dimensions.paddingLarge,
-                            vertical = RadixTheme.dimensions.paddingDefault
-                        )
-                )
-                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
+                }
+                items(dApps) { dApp ->
+                    StandardOneLineCard(
+                        image = dApp.dAppWithMetadata.iconUrl.toString(),
+                        title = dApp.dAppWithMetadata.displayName(),
+                        modifier = Modifier
+                            .shadow(elevation = 8.dp, shape = RadixTheme.shapes.roundedRectMedium)
+                            .clip(RadixTheme.shapes.roundedRectMedium)
+                            .throttleClickable {
+                                onDAppClick(dApp.dAppWithMetadata.dAppAddress)
+                            }
+                            .fillMaxWidth()
+                            .background(RadixTheme.colors.white, shape = RadixTheme.shapes.roundedRectMedium)
+                            .padding(
+                                horizontal = RadixTheme.dimensions.paddingLarge,
+                                vertical = RadixTheme.dimensions.paddingDefault
+                            )
+                    )
+                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
+                }
             }
         }
     }

@@ -20,12 +20,13 @@ import rdx.works.profile.data.model.factorsources.FactorSource
 import rdx.works.profile.data.model.pernetwork.DerivationPath
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.derivation.model.NetworkId
+import rdx.works.profile.domain.DeleteProfileUseCase
 import rdx.works.profile.domain.GenerateProfileUseCase
 import rdx.works.profile.domain.GetProfileStateUseCase
 import rdx.works.profile.domain.account.CreateAccountWithDeviceFactorSourceUseCase
 import rdx.works.profile.domain.account.CreateAccountWithLedgerFactorSourceUseCase
 import rdx.works.profile.domain.account.SwitchNetworkUseCase
-import rdx.works.profile.domain.exists
+import rdx.works.profile.domain.isInitialized
 import javax.inject.Inject
 
 @HiltViewModel
@@ -34,6 +35,7 @@ class CreateAccountViewModel @Inject constructor(
     private val savedStateHandle: SavedStateHandle,
     private val getProfileStateUseCase: GetProfileStateUseCase,
     private val generateProfileUseCase: GenerateProfileUseCase,
+    private val deleteProfileUseCase: DeleteProfileUseCase,
     private val createAccountWithDeviceFactorSourceUseCase: CreateAccountWithDeviceFactorSourceUseCase,
     private val createAccountWithLedgerFactorSourceUseCase: CreateAccountWithLedgerFactorSourceUseCase,
     private val switchNetworkUseCase: SwitchNetworkUseCase,
@@ -47,7 +49,7 @@ class CreateAccountViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            if (!getProfileStateUseCase.exists()) {
+            if (!getProfileStateUseCase.isInitialized()) {
                 generateProfileUseCase()
             }
         }
@@ -131,6 +133,13 @@ class CreateAccountViewModel @Inject constructor(
         }
     }
 
+    fun onBackClick() = viewModelScope.launch {
+        if (!getProfileStateUseCase.isInitialized()) {
+            deleteProfileUseCase()
+        }
+        sendEvent(CreateAccountEvent.Dismiss)
+    }
+
     @Suppress("UnsafeCallOnNullableType")
     private suspend fun switchNetworkIfNeeded(): NetworkId? {
         val switchNetwork = args.switchNetwork ?: false
@@ -168,4 +177,5 @@ internal sealed interface CreateAccountEvent : OneOffEvent {
     ) : CreateAccountEvent
 
     object AddLedgerDevice : CreateAccountEvent
+    object Dismiss : CreateAccountEvent
 }

@@ -21,7 +21,6 @@ fun MainScreen(
     onNavigateToMnemonicBackup: (FactorSourceID.FromHash) -> Unit,
     onNavigateToMnemonicRestore: (FactorSourceID.FromHash) -> Unit,
     onAccountCreationClick: () -> Unit,
-    onNavigateToCreateAccount: () -> Unit,
     onNavigateToOnBoarding: () -> Unit,
     onNavigateToIncompatibleProfile: () -> Unit
 ) {
@@ -49,11 +48,6 @@ fun MainScreen(
         is AppState.OnBoarding -> {
             LaunchedEffect(state.initialAppState) {
                 onNavigateToOnBoarding()
-            }
-        }
-        is AppState.NewProfile -> {
-            LaunchedEffect(state.initialAppState) {
-                onNavigateToCreateAccount()
             }
         }
     }

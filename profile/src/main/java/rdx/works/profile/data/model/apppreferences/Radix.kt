@@ -24,6 +24,11 @@ object Radix {
         }
 
         companion object {
+            val mainnet = Network(
+                id = NetworkId.Mainnet.value,
+                name = "Mainnet",
+                displayDescription = "Mainnet"
+            )
             val hammunet = Network(
                 id = NetworkId.Hammunet.value,
                 name = "hammunet",
@@ -61,7 +66,7 @@ object Radix {
             )
 
             fun allKnownNetworks(): List<Network> {
-                return listOf(hammunet, nebunet, kisharnet, mardunet, enkinet, ansharnet, zabanet)
+                return listOf(mainnet, hammunet, nebunet, kisharnet, mardunet, enkinet, ansharnet, zabanet)
             }
 
             fun forName(name: String): Network {
@@ -90,9 +95,6 @@ object Radix {
         }
 
         companion object {
-            val default: Gateway
-                get() = rcnetV3
-
             val nebunet = Gateway(
                 url = "https://betanet.radixdlt.com",
                 network = Network.nebunet
@@ -121,6 +123,19 @@ object Radix {
                 url = "https://rcnet-v3.radixdlt.com",
                 network = Network.zabanet
             )
+            val mainnet = Gateway(
+                url = "https://mainnet.radixdlt.com",
+                network = Network.mainnet
+            )
+
+            var default: Gateway = rcnetV3
+                set(value) {
+                    // Can change default Gateway, only if the
+                    // value is Mainnet
+                    if (value == mainnet) {
+                        field = mainnet
+                    }
+                }
         }
     }
 }

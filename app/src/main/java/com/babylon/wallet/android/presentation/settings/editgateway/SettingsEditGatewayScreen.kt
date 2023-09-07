@@ -3,17 +3,18 @@
 package com.babylon.wallet.android.presentation.settings.editgateway
 
 import androidx.activity.compose.BackHandler
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -21,6 +22,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.ModalBottomSheetValue
+import androidx.compose.material.Scaffold
 import androidx.compose.material.rememberModalBottomSheetState
 import androidx.compose.material3.Divider
 import androidx.compose.material3.Icon
@@ -68,16 +70,12 @@ fun SettingsEditGatewayScreen(
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     SettingsEditGatewayContent(
+        modifier = modifier,
         onBackClick = onBackClick,
         onSwitchToClick = viewModel::onAddGateway,
         newUrl = state.newUrl,
         onNewUrlChanged = viewModel::onNewUrlChanged,
         newUrlValid = state.newUrlValid,
-        modifier = modifier
-//            .systemBarsPadding()
-            .navigationBarsPadding()
-            .fillMaxSize()
-            .background(RadixTheme.colors.defaultBackground),
         gatewayList = state.gatewayList,
         onDeleteGateway = viewModel::onDeleteGateway,
         addingGateway = state.addingGateway,
@@ -90,12 +88,12 @@ fun SettingsEditGatewayScreen(
 
 @Composable
 private fun SettingsEditGatewayContent(
+    modifier: Modifier = Modifier,
     onBackClick: () -> Unit,
     onSwitchToClick: () -> Unit,
     newUrl: String,
     onNewUrlChanged: (String) -> Unit,
     newUrlValid: Boolean,
-    modifier: Modifier = Modifier,
     gatewayList: PersistentList<GatewayWrapper>,
     onDeleteGateway: (GatewayWrapper) -> Unit,
     addingGateway: Boolean,
@@ -145,76 +143,81 @@ private fun SettingsEditGatewayContent(
                 newUrlValid = newUrlValid,
                 addingGateway = addingGateway,
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(RadixTheme.dimensions.paddingDefault),
+                    .padding(RadixTheme.dimensions.paddingDefault)
+                    .navigationBarsPadding(),
                 gatewayAddFailure = gatewayAddFailure
             )
         }
     ) {
-        Column(
-            modifier = Modifier.fillMaxSize(),
-            horizontalAlignment = Alignment.Start
-        ) {
-            RadixCenteredTopAppBar(
-                title = stringResource(R.string.gateways_title),
-                onBackClick = onBackClick,
-                contentColor = RadixTheme.colors.gray1
-            )
-            Divider(color = RadixTheme.colors.gray5)
-            LazyColumn(
-                modifier = Modifier.fillMaxSize(),
-                horizontalAlignment = Alignment.CenterHorizontally
+        Scaffold(
+            topBar = {
+                RadixCenteredTopAppBar(
+                    title = stringResource(R.string.gateways_title),
+                    onBackClick = onBackClick,
+                    windowInsets = WindowInsets.statusBars
+                )
+            }
+        ) { padding ->
+            Column(
+                modifier = Modifier.padding(padding).fillMaxSize(),
+                horizontalAlignment = Alignment.Start
             ) {
-                item {
-                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
-                    Text(
-                        modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingDefault),
-                        text = stringResource(id = R.string.gateways_subtitle),
-                        style = RadixTheme.typography.body1HighImportance,
-                        color = RadixTheme.colors.gray2
-                    )
-                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
+                Divider(color = RadixTheme.colors.gray5)
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize(),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    item {
+                        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
+                        Text(
+                            modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingDefault),
+                            text = stringResource(id = R.string.gateways_subtitle),
+                            style = RadixTheme.typography.body1HighImportance,
+                            color = RadixTheme.colors.gray2
+                        )
+                        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
 //                    InfoLink( // TODO enable it when we have a link
 //                        stringResource(R.string.gateways_whatIsAGateway),
 //                        modifier = Modifier
 //                            .fillMaxWidth()
 //                            .padding(horizontal = RadixTheme.dimensions.paddingDefault)
 //                    )
-                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
-                    Divider(
-                        color = RadixTheme.colors.gray5,
-                        modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingDefault)
-                    )
-                }
-                items(gatewayList) { gateway ->
-                    GatewayCard(
-                        gateway = gateway,
-                        onDeleteGateway = onDeleteGateway,
-                        modifier = Modifier
-                            .throttleClickable {
-                                onGatewayClick(gateway.gateway)
+                        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
+                        Divider(
+                            color = RadixTheme.colors.gray5,
+                            modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingDefault)
+                        )
+                    }
+                    items(gatewayList) { gateway ->
+                        GatewayCard(
+                            gateway = gateway,
+                            onDeleteGateway = onDeleteGateway,
+                            modifier = Modifier
+                                .throttleClickable {
+                                    onGatewayClick(gateway.gateway)
+                                }
+                                .fillMaxWidth()
+                                .padding(RadixTheme.dimensions.paddingDefault)
+                        )
+                        Divider(
+                            color = RadixTheme.colors.gray5,
+                            modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingDefault)
+                        )
+                    }
+                    item {
+                        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
+                        RadixSecondaryButton(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = RadixTheme.dimensions.paddingDefault),
+                            text = stringResource(id = R.string.gateways_addNewGatewayButtonTitle),
+                            onClick = {
+                                scope.launch {
+                                    bottomSheetState.show()
+                                }
                             }
-                            .fillMaxWidth()
-                            .padding(RadixTheme.dimensions.paddingDefault)
-                    )
-                    Divider(
-                        color = RadixTheme.colors.gray5,
-                        modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingDefault)
-                    )
-                }
-                item {
-                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
-                    RadixSecondaryButton(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = RadixTheme.dimensions.paddingDefault),
-                        text = stringResource(id = R.string.gateways_addNewGatewayButtonTitle),
-                        onClick = {
-                            scope.launch {
-                                bottomSheetState.show()
-                            }
-                        }
-                    )
+                        )
+                    }
                 }
             }
         }

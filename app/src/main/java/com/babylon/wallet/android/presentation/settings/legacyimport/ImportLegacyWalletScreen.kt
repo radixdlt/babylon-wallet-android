@@ -8,7 +8,6 @@ package com.babylon.wallet.android.presentation.settings.legacyimport
 
 import android.Manifest
 import androidx.activity.compose.BackHandler
-import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -22,8 +21,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.imePadding
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
@@ -32,6 +31,8 @@ import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -70,6 +71,7 @@ import com.babylon.wallet.android.presentation.common.SeedPhraseInputDelegate
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.dapp.authorized.account.AccountItemUiModel
 import com.babylon.wallet.android.presentation.settings.ledgerhardwarewallets.AddLedgerDeviceUiState
+import com.babylon.wallet.android.presentation.settings.legacyimport.ImportLegacyWalletUiState.Page
 import com.babylon.wallet.android.presentation.settings.linkedconnectors.AddLinkConnectorUiState
 import com.babylon.wallet.android.presentation.settings.linkedconnectors.AddLinkConnectorViewModel
 import com.babylon.wallet.android.presentation.settings.linkedconnectors.qrcode.CameraPreview
@@ -83,11 +85,12 @@ import com.babylon.wallet.android.presentation.ui.composables.BackIconType
 import com.babylon.wallet.android.presentation.ui.composables.InfoLink
 import com.babylon.wallet.android.presentation.ui.composables.LedgerListItem
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
+import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
 import com.babylon.wallet.android.presentation.ui.composables.SecureScreen
 import com.babylon.wallet.android.presentation.ui.composables.SeedPhraseInputForm
 import com.babylon.wallet.android.presentation.ui.composables.SeedPhraseSuggestions
 import com.babylon.wallet.android.presentation.ui.composables.SimpleAccountCard
-import com.babylon.wallet.android.presentation.ui.composables.SnackbarUiMessageHandler
+import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
 import com.babylon.wallet.android.presentation.ui.modifier.applyIf
 import com.babylon.wallet.android.utils.biometricAuthenticate
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
@@ -116,10 +119,7 @@ fun ImportLegacyWalletScreen(
     val coroutineScope = rememberCoroutineScope()
 
     ImportLegacyWalletContent(
-        modifier = modifier
-            .navigationBarsPadding()
-            .fillMaxSize()
-            .background(RadixTheme.colors.defaultBackground),
+        modifier = modifier,
         onBackClick = viewModel::onBackClick,
         onQrCodeScanned = viewModel::onQrCodeScanned,
         pages = state.pages,
@@ -179,7 +179,7 @@ private fun ImportLegacyWalletContent(
     modifier: Modifier = Modifier,
     onBackClick: () -> Unit,
     onQrCodeScanned: (String) -> Unit,
-    pages: ImmutableList<ImportLegacyWalletUiState.Page>,
+    pages: ImmutableList<Page>,
     oneOffEvent: Flow<OlympiaImportEvent>,
     olympiaAccountsToImport: ImmutableList<OlympiaAccountDetails>,
     onImportAccounts: () -> Unit,
@@ -194,7 +194,7 @@ private fun ImportLegacyWalletContent(
     onMessageShown: () -> Unit,
     migratedAccounts: ImmutableList<AccountItemUiModel>,
     onContinue: () -> Unit,
-    currentPage: ImportLegacyWalletUiState.Page,
+    currentPage: Page,
     qrChunkInfo: ChunkInfo?,
     hardwareAccountsLeft: Int,
     waitingForLedgerResponse: Boolean,
@@ -224,7 +224,7 @@ private fun ImportLegacyWalletContent(
     val context = LocalContext.current
     BackHandler {
         when (currentPage) {
-            ImportLegacyWalletUiState.Page.ImportComplete, ImportLegacyWalletUiState.Page.ScanQr -> {
+            Page.ImportComplete, Page.ScanQr -> {
                 onCloseScreen()
             }
 
@@ -273,55 +273,75 @@ private fun ImportLegacyWalletContent(
             }
         }
     }
-    Box(modifier = modifier) {
-        Column(modifier = Modifier.fillMaxSize()) {
-            if (shouldShowAddLinkConnectorScreen) {
-                AddLinkConnectorScreen(
-                    modifier = Modifier,
-                    showContent = addLinkConnectorState.showContent,
-                    isLoading = addLinkConnectorState.isLoading,
-                    onQrCodeScanned = onLinkConnectorQrCodeScanned,
-                    onConnectorDisplayNameChanged = onConnectorDisplayNameChanged,
-                    connectorDisplayName = addLinkConnectorState.connectorDisplayName,
-                    isNewConnectorContinueButtonEnabled = addLinkConnectorState.isContinueButtonEnabled,
-                    onNewConnectorContinueClick = onNewConnectorContinueClick,
-                    onNewConnectorCloseClick = onNewConnectorCloseClick
-                )
-            }
-            if (shouldShowAddLedgerDeviceScreen) {
-                AddLedgerDeviceScreen(
-                    modifier = Modifier
-                        .fillMaxSize(),
-                    deviceModel = deviceModel,
-                    onSendAddLedgerRequestClick = onContinueWithLedgerClick,
-                    showContent = addLedgerSheetState,
-                    onConfirmLedgerNameClick = {
-                        onConfirmLedgerName(it)
-                        onCloseSettings()
-                    },
-                    backIconType = BackIconType.Back,
-                    onClose = onCloseSettings,
-                    waitingForLedgerResponse = waitingForLedgerResponse,
-                    onBackClick = onCloseSettings
 
-                )
-            }
-            RadixCenteredTopAppBar(
-                title = stringResource(R.string.empty),
-                onBackClick = if (currentPage == ImportLegacyWalletUiState.Page.ImportComplete) onCloseScreen else onBackClick,
-                contentColor = RadixTheme.colors.gray1,
-                backIconType = if (currentPage == ImportLegacyWalletUiState.Page.ImportComplete) BackIconType.Close else BackIconType.Back
+    val snackBarHostState = remember { SnackbarHostState() }
+    SnackbarUIMessage(
+        message = uiMessage,
+        snackbarHostState = snackBarHostState,
+        onMessageShown = onMessageShown
+    )
+    Box(modifier = modifier) {
+        if (shouldShowAddLinkConnectorScreen) {
+            AddLinkConnectorScreen(
+                modifier = Modifier,
+                showContent = addLinkConnectorState.showContent,
+                isLoading = addLinkConnectorState.isLoading,
+                onQrCodeScanned = onLinkConnectorQrCodeScanned,
+                onConnectorDisplayNameChanged = onConnectorDisplayNameChanged,
+                connectorDisplayName = addLinkConnectorState.connectorDisplayName,
+                isNewConnectorContinueButtonEnabled = addLinkConnectorState.isContinueButtonEnabled,
+                onNewConnectorContinueClick = onNewConnectorContinueClick,
+                onNewConnectorCloseClick = onNewConnectorCloseClick
             )
-            HorizontalPager(
+        }
+        if (shouldShowAddLedgerDeviceScreen) {
+            AddLedgerDeviceScreen(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f),
+                    .fillMaxSize(),
+                deviceModel = deviceModel,
+                onSendAddLedgerRequestClick = onContinueWithLedgerClick,
+                showContent = addLedgerSheetState,
+                onConfirmLedgerNameClick = {
+                    onConfirmLedgerName(it)
+                    onCloseSettings()
+                },
+                backIconType = BackIconType.Back,
+                onClose = onCloseSettings,
+                waitingForLedgerResponse = waitingForLedgerResponse,
+                onBackClick = onCloseSettings
+
+            )
+        }
+
+        Scaffold(
+            topBar = {
+                RadixCenteredTopAppBar(
+                    title = stringResource(R.string.empty),
+                    onBackClick = if (currentPage == Page.ImportComplete) onCloseScreen else onBackClick,
+                    backIconType = if (currentPage == Page.ImportComplete) BackIconType.Close else BackIconType.Back,
+                    windowInsets = WindowInsets.statusBars
+                )
+            },
+            snackbarHost = {
+                RadixSnackbarHost(
+                    modifier = Modifier.padding(RadixTheme.dimensions.paddingDefault),
+                    hostState = snackBarHostState
+                ) {
+                    TextButton(onClick = onMessageShown) {
+                        Text(stringResource(id = R.string.common_ok))
+                    }
+                }
+            },
+            containerColor = RadixTheme.colors.defaultBackground
+        ) { padding ->
+            HorizontalPager(
+                modifier = Modifier.padding(padding),
                 pageCount = pages.size,
                 state = pagerState,
                 userScrollEnabled = false
             ) { page ->
                 when (pages[page]) {
-                    ImportLegacyWalletUiState.Page.ScanQr -> {
+                    Page.ScanQr -> {
                         ScanQrPage(
                             cameraPermissionGranted = cameraPermissionState.status.isGranted,
                             onQrCodeScanned = onQrCodeScanned,
@@ -331,7 +351,7 @@ private fun ImportLegacyWalletContent(
                         )
                     }
 
-                    ImportLegacyWalletUiState.Page.AccountsToImportList -> {
+                    Page.AccountsToImportList -> {
                         AccountsToImportListPage(
                             modifier = Modifier.fillMaxSize(),
                             olympiaAccountsToImport = olympiaAccountsToImport,
@@ -340,7 +360,7 @@ private fun ImportLegacyWalletContent(
                         )
                     }
 
-                    ImportLegacyWalletUiState.Page.MnemonicInput -> {
+                    Page.MnemonicInput -> {
                         VerifyWithYourSeedPhrasePage(
                             modifier = Modifier.fillMaxSize(),
                             seedPhraseWords = seedPhraseWords,
@@ -353,7 +373,7 @@ private fun ImportLegacyWalletContent(
                         )
                     }
 
-                    ImportLegacyWalletUiState.Page.HardwareAccounts -> {
+                    Page.HardwareAccounts -> {
                         VerifyWithLedgerDevicePage(
                             Modifier.fillMaxSize(),
                             hardwareAccountsLeft = hardwareAccountsLeft,
@@ -363,7 +383,7 @@ private fun ImportLegacyWalletContent(
                         )
                     }
 
-                    ImportLegacyWalletUiState.Page.ImportComplete -> {
+                    Page.ImportComplete -> {
                         ImportCompletePage(
                             modifier = Modifier.fillMaxSize(),
                             migratedAccounts = migratedAccounts,
@@ -373,26 +393,18 @@ private fun ImportLegacyWalletContent(
                 }
             }
         }
-        SnackbarUiMessageHandler(
-            message = uiMessage,
-            onMessageShown = onMessageShown
-        ) {
-            TextButton(
-                onClick = onMessageShown,
-            ) { Text(stringResource(id = R.string.common_ok)) }
-        }
     }
 }
 
 @Composable
 private fun CameraVisibilityEffect(
     pagerState: PagerState,
-    pages: ImmutableList<ImportLegacyWalletUiState.Page>,
+    pages: ImmutableList<Page>,
     onCameraVisibilityChanged: (Boolean) -> Unit
 ) {
     LaunchedEffect(pagerState, pages) {
         snapshotFlow {
-            pagerState.currentPage == pages.indexOf(ImportLegacyWalletUiState.Page.ScanQr)
+            pagerState.currentPage == pages.indexOf(Page.ScanQr)
         }.distinctUntilChanged().collect { visible ->
             onCameraVisibilityChanged(visible)
         }
@@ -407,55 +419,51 @@ private fun ScanQrPage(
     modifier: Modifier = Modifier,
     qrChunkInfo: ChunkInfo?
 ) {
-    Box(
-        modifier = modifier
-    ) {
-        if (cameraPermissionGranted) {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(
-                        start = RadixTheme.dimensions.paddingXLarge,
-                        end = RadixTheme.dimensions.paddingXLarge,
-                        bottom = RadixTheme.dimensions.paddingDefault
+    if (cameraPermissionGranted) {
+        Column(
+            modifier = modifier
+                .fillMaxSize()
+                .padding(
+                    start = RadixTheme.dimensions.paddingXLarge,
+                    end = RadixTheme.dimensions.paddingXLarge,
+                    bottom = RadixTheme.dimensions.paddingDefault
+                ),
+            verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingSemiLarge),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text(
+                text = stringResource(id = R.string.importOlympiaAccounts_scanQR_title),
+                style = RadixTheme.typography.title,
+                color = RadixTheme.colors.gray1,
+                textAlign = TextAlign.Center
+            )
+            qrChunkInfo?.let { chunkInfo ->
+                Text(
+                    text = stringResource(
+                        id = R.string.importOlympiaAccounts_scanQR_scannedLabel,
+                        chunkInfo.scanned,
+                        chunkInfo.total
                     ),
-                verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingSemiLarge),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Text(
-                    text = stringResource(id = R.string.importOlympiaAccounts_scanQR_title),
-                    style = RadixTheme.typography.title,
-                    color = RadixTheme.colors.gray1,
-                    textAlign = TextAlign.Center
-                )
-                qrChunkInfo?.let { chunkInfo ->
-                    Text(
-                        text = stringResource(
-                            id = R.string.importOlympiaAccounts_scanQR_scannedLabel,
-                            chunkInfo.scanned,
-                            chunkInfo.total
-                        ),
-                        style = RadixTheme.typography.body1Regular,
-                        color = RadixTheme.colors.gray1
-                    )
-                }
-                Text(
-                    text = stringResource(id = R.string.importOlympiaAccounts_scanQR_instructions),
                     style = RadixTheme.typography.body1Regular,
-                    color = RadixTheme.colors.gray1,
-                    overflow = TextOverflow.Ellipsis,
-                    textAlign = TextAlign.Center
-                )
-                CameraPreview(
-                    modifier = Modifier
-                        .weight(1f)
-                        .fillMaxWidth()
-                        .clip(RadixTheme.shapes.roundedRectMedium),
-                    disableBackHandler = false,
-                    isVisible = isVisible,
-                    onQrCodeDetected = onQrCodeScanned
+                    color = RadixTheme.colors.gray1
                 )
             }
+            Text(
+                text = stringResource(id = R.string.importOlympiaAccounts_scanQR_instructions),
+                style = RadixTheme.typography.body1Regular,
+                color = RadixTheme.colors.gray1,
+                overflow = TextOverflow.Ellipsis,
+                textAlign = TextAlign.Center
+            )
+            CameraPreview(
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxWidth()
+                    .clip(RadixTheme.shapes.roundedRectMedium),
+                disableBackHandler = false,
+                isVisible = isVisible,
+                onQrCodeDetected = onQrCodeScanned
+            )
         }
     }
 }
@@ -544,11 +552,7 @@ private fun VerifyWithLedgerDevicePage(
                     .fillMaxWidth()
                     .weight(1f)
                     .padding(horizontal = RadixTheme.dimensions.paddingLarge)
-                    .padding(
-                        start = RadixTheme.dimensions.paddingLarge,
-                        end = RadixTheme.dimensions.paddingLarge,
-                        bottom = RadixTheme.dimensions.paddingLarge
-                    ),
+                    .padding(bottom = RadixTheme.dimensions.paddingLarge),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
@@ -736,25 +740,15 @@ private fun VerifyWithYourSeedPhrasePage(
         derivedStateOf { imeInsets.getBottom(density) > 0 }
     }
     val isSeedPhraseSuggestionsVisible = wordAutocompleteCandidates.isNotEmpty() && kbVisible
-    val stripHeight by animateDpAsState(
-        targetValue = if (isSeedPhraseSuggestionsVisible) {
-            candidatesStripHeight
-        } else {
-            0.dp
-        }
-    )
     SecureScreen()
     Box(modifier = modifier) {
         Column(
             modifier = Modifier
                 .imePadding()
-                .padding(bottom = stripHeight)
                 .verticalScroll(rememberScrollState())
-                .fillMaxSize()
                 .padding(
                     start = RadixTheme.dimensions.paddingLarge,
-                    end = RadixTheme.dimensions.paddingLarge,
-                    bottom = RadixTheme.dimensions.paddingLarge
+                    end = RadixTheme.dimensions.paddingLarge
                 ),
             verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingSemiLarge)
         ) {
@@ -802,7 +796,6 @@ private fun VerifyWithYourSeedPhrasePage(
                     .imePadding()
                     .align(Alignment.BottomCenter)
                     .fillMaxWidth()
-                    .height(candidatesStripHeight)
                     .padding(RadixTheme.dimensions.paddingSmall),
                 onCandidateClick = { candidate ->
                     focusedWordIndex?.let {
@@ -897,5 +890,3 @@ fun ImportCompletePagePreview() {
         )
     }
 }
-
-private val candidatesStripHeight = 56.dp

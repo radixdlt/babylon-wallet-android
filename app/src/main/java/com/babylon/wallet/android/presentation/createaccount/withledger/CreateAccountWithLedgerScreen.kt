@@ -1,14 +1,13 @@
 package com.babylon.wallet.android.presentation.createaccount.withledger
 
 import androidx.activity.compose.BackHandler
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBars
+import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -32,7 +31,6 @@ import com.babylon.wallet.android.presentation.ui.composables.BackIconType
 import com.babylon.wallet.android.presentation.ui.composables.ChooseLedgerDeviceSection
 import com.babylon.wallet.android.presentation.ui.composables.LinkConnectorScreen
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
-import com.babylon.wallet.android.presentation.ui.composables.SnackbarUiMessageHandler
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.launch
@@ -109,38 +107,30 @@ fun CreateAccountWithLedgerScreen(
         }
 
         CreateAccountWithLedgerUiState.ShowContent.AddLedger -> {
-            Box(
-                modifier = modifier
-                    .navigationBarsPadding()
-                    .fillMaxSize()
-            ) {
-                AddLedgerDeviceScreen(
-                    modifier = Modifier,
-                    showContent = addLedgerDeviceState.showContent,
-                    deviceModel = addLedgerDeviceState.newConnectedLedgerDevice?.model?.toProfileLedgerDeviceModel()?.value,
-                    onSendAddLedgerRequestClick = addLedgerDeviceViewModel::onSendAddLedgerRequestClick,
-                    onConfirmLedgerNameClick = {
-                        coroutineScope.launch {
-                            addLedgerDeviceViewModel.onConfirmLedgerNameClick(it)
-                            viewModel.onCloseClick()
-                        }
-                    },
-                    backIconType = BackIconType.Back,
-                    onClose = {
-                        addLedgerDeviceViewModel.initState()
-                        viewModel.onCloseClick()
-                    },
-                    waitingForLedgerResponse = false,
-                    onBackClick = {
-                        addLedgerDeviceViewModel.initState()
+            AddLedgerDeviceScreen(
+                modifier = Modifier,
+                showContent = addLedgerDeviceState.showContent,
+                deviceModel = addLedgerDeviceState.newConnectedLedgerDevice?.model?.toProfileLedgerDeviceModel()?.value,
+                uiMessage = addLedgerDeviceState.uiMessage,
+                onSendAddLedgerRequestClick = addLedgerDeviceViewModel::onSendAddLedgerRequestClick,
+                onConfirmLedgerNameClick = {
+                    coroutineScope.launch {
+                        addLedgerDeviceViewModel.onConfirmLedgerNameClick(it)
                         viewModel.onCloseClick()
                     }
-                )
-                SnackbarUiMessageHandler(
-                    message = addLedgerDeviceState.uiMessage,
-                    onMessageShown = addLedgerDeviceViewModel::onMessageShown
-                )
-            }
+                },
+                backIconType = BackIconType.Back,
+                onClose = {
+                    addLedgerDeviceViewModel.initState()
+                    viewModel.onCloseClick()
+                },
+                waitingForLedgerResponse = false,
+                onBackClick = {
+                    addLedgerDeviceViewModel.initState()
+                    viewModel.onCloseClick()
+                },
+                onMessageShown = addLedgerDeviceViewModel::onMessageShown
+            )
         }
     }
 }
@@ -156,49 +146,44 @@ private fun ChooseLedgerDeviceContent(
 ) {
     BackHandler { onBackClick() }
 
-    Box(
-        modifier = modifier
-            .navigationBarsPadding()
-            .background(RadixTheme.colors.defaultBackground)
-            .fillMaxSize()
-    ) {
-        Column(
-            modifier = Modifier.fillMaxSize()
-        ) {
+    Scaffold(
+        modifier = modifier,
+        topBar = {
             RadixCenteredTopAppBar(
                 title = stringResource(id = R.string.empty),
                 onBackClick = onBackClick,
-                contentColor = RadixTheme.colors.gray1,
-                modifier = Modifier
-                    .background(RadixTheme.colors.defaultBackground)
-                    .padding(
-                        start = RadixTheme.dimensions.paddingMedium,
-                        top = RadixTheme.dimensions.paddingMedium
-                    ),
-                backIconType = BackIconType.Close
+                backIconType = BackIconType.Close,
+                windowInsets = WindowInsets.statusBars
             )
-            ChooseLedgerDeviceSection(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(
-                        horizontal = RadixTheme.dimensions.paddingLarge,
-                        vertical = RadixTheme.dimensions.paddingDefault
-                    )
-                    .weight(1f),
-                ledgerDevices = ledgerDevices,
-                onAddLedgerDeviceClick = onAddLedgerDeviceClick,
-                onLedgerDeviceSelected = onLedgerDeviceSelected
-            )
+        },
+        bottomBar = {
             RadixPrimaryButton(
                 text = stringResource(id = R.string.ledgerHardwareDevices_continueWithLedger),
                 onClick = onUseLedgerContinueClick,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(RadixTheme.dimensions.paddingSemiLarge)
-                    .imePadding(),
+                    .padding(
+                        horizontal = RadixTheme.dimensions.paddingSemiLarge,
+                        vertical = RadixTheme.dimensions.paddingDefault
+                    )
+                    .navigationBarsPadding(),
                 enabled = ledgerDevices.any { it.selected }
             )
-        }
+        },
+        containerColor = RadixTheme.colors.defaultBackground
+    ) { padding ->
+        ChooseLedgerDeviceSection(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(
+                    horizontal = RadixTheme.dimensions.paddingLarge,
+                    vertical = RadixTheme.dimensions.paddingDefault
+                )
+                .padding(padding),
+            ledgerDevices = ledgerDevices,
+            onAddLedgerDeviceClick = onAddLedgerDeviceClick,
+            onLedgerDeviceSelected = onLedgerDeviceSelected
+        )
     }
 }
 

@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
@@ -133,7 +134,8 @@ private fun RestoreMnemonicsContent(
         topBar = {
             RadixCenteredTopAppBar(
                 title = "",
-                onBackClick = onBackClick
+                onBackClick = onBackClick,
+                windowInsets = WindowInsets.statusBars
             )
         },
         bottomBar = {

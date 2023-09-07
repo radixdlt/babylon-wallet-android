@@ -6,6 +6,12 @@ import android.view.View
 import android.view.animation.AnticipateInterpolator
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
+import androidx.compose.foundation.layout.padding
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Modifier
 import androidx.core.animation.doOnEnd
 import androidx.core.splashscreen.SplashScreen
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
@@ -14,6 +20,7 @@ import androidx.fragment.app.FragmentActivity
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.presentation.main.AppState
 import com.babylon.wallet.android.presentation.main.MainViewModel
+import com.babylon.wallet.android.presentation.ui.composables.DevBannerState
 import com.babylon.wallet.android.presentation.ui.composables.DevelopmentPreviewWrapper
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -34,10 +41,17 @@ class MainActivity : FragmentActivity() {
 
         setContent {
             RadixWalletTheme {
-                DevelopmentPreviewWrapper {
-                    WalletApp(mainViewModel = viewModel, onCloseApp = {
-                        finish()
-                    })
+                val isMainnet = viewModel.usesMainnetGateway.collectAsState(initial = true)
+                val devBannerState by remember(isMainnet) {
+                    derivedStateOf { DevBannerState(isVisible = !isMainnet.value) }
+                }
+
+                DevelopmentPreviewWrapper(devBannerState = devBannerState) { padding ->
+                    WalletApp(
+                        modifier = Modifier.padding(padding),
+                        mainViewModel = viewModel,
+                        onCloseApp = { finish() }
+                    )
                 }
             }
         }
@@ -53,7 +67,9 @@ class MainActivity : FragmentActivity() {
             )
             fadeIn.interpolator = AnticipateInterpolator()
             fadeIn.duration = splashExitAnimDurationMs
-            fadeIn.doOnEnd { splashScreenView.remove() }
+            fadeIn.doOnEnd {
+                splashScreenView.remove()
+            }
             fadeIn.start()
         }
     }

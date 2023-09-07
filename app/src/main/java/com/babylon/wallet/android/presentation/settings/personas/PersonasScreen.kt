@@ -4,14 +4,15 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material3.Divider
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -29,7 +30,6 @@ import com.babylon.wallet.android.designsystem.composable.RadixSecondaryButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.domain.model.PersonaUiModel
 import com.babylon.wallet.android.presentation.ui.composables.ApplySecuritySettingsLabel
-import com.babylon.wallet.android.presentation.ui.composables.BackIconType
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.StandardOneLineCard
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
@@ -57,10 +57,7 @@ fun PersonasScreen(
     }
     PersonasContent(
         personas = state.personas,
-        modifier = modifier
-            .navigationBarsPadding()
-            .fillMaxSize()
-            .background(RadixTheme.colors.defaultBackground),
+        modifier = modifier,
         onBackClick = onBackClick,
         createNewPersona = viewModel::onCreatePersona,
         onPersonaClick = onPersonaClick,
@@ -79,75 +76,80 @@ fun PersonasContent(
     displaySecurityPrompt: Boolean,
     onApplySecuritySettings: () -> Unit
 ) {
-    Column(
-        modifier = Modifier.background(RadixTheme.colors.defaultBackground),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        RadixCenteredTopAppBar(
-            title = stringResource(id = R.string.personas_title),
-            onBackClick = onBackClick,
-            contentColor = RadixTheme.colors.gray1,
-            backIconType = BackIconType.Back
-        )
-        Divider(color = RadixTheme.colors.gray5)
-        LazyColumn(
-            contentPadding = PaddingValues(RadixTheme.dimensions.paddingMedium),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = modifier
+    Scaffold(
+        modifier = modifier,
+        topBar = {
+            RadixCenteredTopAppBar(
+                title = stringResource(id = R.string.personas_title),
+                onBackClick = onBackClick,
+                windowInsets = WindowInsets.statusBars
+            )
+        },
+        containerColor = RadixTheme.colors.defaultBackground
+    ) { padding ->
+        Column(
+            modifier = Modifier.padding(padding),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            item {
-                Text(
-                    text = stringResource(id = R.string.personas_subtitle),
-                    style = RadixTheme.typography.body1HighImportance,
-                    color = RadixTheme.colors.gray2
-                )
-                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
+            Divider(color = RadixTheme.colors.gray5)
+            LazyColumn(
+                contentPadding = PaddingValues(RadixTheme.dimensions.paddingMedium),
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
+                item {
+                    Text(
+                        text = stringResource(id = R.string.personas_subtitle),
+                        style = RadixTheme.typography.body1HighImportance,
+                        color = RadixTheme.colors.gray2
+                    )
+                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
 //                InfoLink( // TODO enable it when we have a link
 //                    stringResource(R.string.personas_whatIsPersona),
 //                    modifier = Modifier.fillMaxWidth()
 //                )
-                if (displaySecurityPrompt) {
-                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSmall))
-                    ApplySecuritySettingsLabel(
-                        modifier = Modifier.fillMaxWidth(),
-                        labelColor = Color.Black.copy(alpha = 0.2f),
-                        text = stringResource(id = R.string.homePage_securityPromptBackup),
-                        onClick = onApplySecuritySettings
+                    if (displaySecurityPrompt) {
+                        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSmall))
+                        ApplySecuritySettingsLabel(
+                            modifier = Modifier.fillMaxWidth(),
+                            labelColor = Color.Black.copy(alpha = 0.2f),
+                            text = stringResource(id = R.string.homePage_securityPromptBackup),
+                            onClick = onApplySecuritySettings
+                        )
+                        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
+                    } else {
+                        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
+                    }
+                }
+                itemsIndexed(items = personas) { _, personaItem ->
+                    StandardOneLineCard(
+                        "",
+                        personaItem.displayName,
+                        modifier = Modifier
+                            .shadow(elevation = 8.dp, shape = RadixTheme.shapes.roundedRectMedium)
+                            .clip(RadixTheme.shapes.roundedRectMedium)
+                            .throttleClickable {
+                                onPersonaClick(personaItem.address)
+                            }
+                            .fillMaxWidth()
+                            .background(
+                                RadixTheme.colors.white,
+                                shape = RadixTheme.shapes.roundedRectMedium
+                            )
+                            .padding(
+                                horizontal = RadixTheme.dimensions.paddingLarge,
+                                vertical = RadixTheme.dimensions.paddingDefault
+                            )
                     )
                     Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
-                } else {
-                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
                 }
-            }
-            itemsIndexed(items = personas) { _, personaItem ->
-                StandardOneLineCard(
-                    "",
-                    personaItem.displayName,
-                    modifier = Modifier
-                        .shadow(elevation = 8.dp, shape = RadixTheme.shapes.roundedRectMedium)
-                        .clip(RadixTheme.shapes.roundedRectMedium)
-                        .throttleClickable {
-                            onPersonaClick(personaItem.address)
-                        }
-                        .fillMaxWidth()
-                        .background(
-                            RadixTheme.colors.white,
-                            shape = RadixTheme.shapes.roundedRectMedium
-                        )
-                        .padding(
-                            horizontal = RadixTheme.dimensions.paddingLarge,
-                            vertical = RadixTheme.dimensions.paddingDefault
-                        )
-                )
-                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
-            }
 
-            item {
-                RadixSecondaryButton(
-                    text = stringResource(id = R.string.personas_createNewPersona),
-                    onClick = createNewPersona
-                )
-                Spacer(modifier = Modifier.height(100.dp))
+                item {
+                    RadixSecondaryButton(
+                        text = stringResource(id = R.string.personas_createNewPersona),
+                        onClick = createNewPersona
+                    )
+                    Spacer(modifier = Modifier.height(100.dp))
+                }
             }
         }
     }

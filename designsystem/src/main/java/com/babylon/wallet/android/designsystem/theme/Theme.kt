@@ -21,7 +21,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.babylon.wallet.android.designsystem.SetStatusBarColor
 
 // TODO - IMPORTANT
 //  The resource-theme of the app has been switched from Material 2 to Material 3.
@@ -350,9 +349,6 @@ fun RadixWalletTheme(
     }
     ProvideRadixThemeConfig(isDarkMode = darkTheme) {
         ProvideRadixColors(colors) {
-            // TODO status bar color when we remove dev banner
-//            SetStatusBarColor(color = colors.defaultBackground, useDarkIcons = !darkTheme)
-            SetStatusBarColor(color = colors.orange2, useDarkIcons = !darkTheme)
             ProvideRadixTypography {
                 ProvideRadixDimensions {
                     ProvideRadixShapes {

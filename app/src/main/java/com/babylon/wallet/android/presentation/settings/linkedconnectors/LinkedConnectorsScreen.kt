@@ -1,22 +1,23 @@
 package com.babylon.wallet.android.presentation.settings.linkedconnectors
 
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Divider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -38,7 +39,6 @@ import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.presentation.common.FullscreenCircularProgressContent
 import com.babylon.wallet.android.presentation.ui.composables.AddLinkConnectorScreen
-import com.babylon.wallet.android.presentation.ui.composables.BackIconType
 import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import kotlinx.collections.immutable.ImmutableList
@@ -68,7 +68,7 @@ fun LinkedConnectorsScreen(
 
     if (state.showAddLinkConnectorScreen) {
         AddLinkConnectorScreen(
-            modifier = Modifier,
+            modifier = modifier,
             showContent = addLinkConnectorState.showContent,
             isLoading = addLinkConnectorState.isLoading,
             onQrCodeScanned = addLinkConnectorViewModel::onQrCodeScanned,
@@ -88,10 +88,7 @@ fun LinkedConnectorsScreen(
         )
     } else {
         LinkedConnectorsContent(
-            modifier = modifier
-                .navigationBarsPadding()
-                .fillMaxSize()
-                .background(RadixTheme.colors.defaultBackground),
+            modifier = modifier,
             isLoading = state.isLoading,
             activeLinkedConnectorsList = state.activeConnectors,
             onLinkNewConnectorClick = viewModel::onLinkNewConnectorClick,
@@ -110,56 +107,60 @@ private fun LinkedConnectorsContent(
     onDeleteConnectorClick: (String) -> Unit,
     onBackClick: () -> Unit
 ) {
-    var connectionPasswordToDelete by remember { mutableStateOf<String?>(null) }
-
-    Column(modifier = modifier) {
-        RadixCenteredTopAppBar(
-            title = stringResource(R.string.linkedConnectors_title),
-            onBackClick = onBackClick,
-            contentColor = RadixTheme.colors.gray1,
-            backIconType = BackIconType.Back
-        )
-
-        Divider(color = RadixTheme.colors.gray5)
-
-        Box(modifier = Modifier.fillMaxSize()) {
-            if (isLoading) {
-                FullscreenCircularProgressContent()
-            }
-
-            ActiveLinkedConnectorDetails(
-                activeLinkedConnectorsList = activeLinkedConnectorsList,
-                onLinkNewConnectorClick = onLinkNewConnectorClick,
-                onDeleteConnectorClick = { connectionPasswordToDelete = it },
-                isLoading = isLoading,
-                modifier = Modifier.fillMaxWidth()
+    Scaffold(
+        modifier = modifier,
+        topBar = {
+            RadixCenteredTopAppBar(
+                title = stringResource(R.string.linkedConnectors_title),
+                onBackClick = onBackClick,
+                windowInsets = WindowInsets.statusBars
             )
+        }
+    ) { padding ->
+        var connectionPasswordToDelete by remember { mutableStateOf<String?>(null) }
 
-            if (connectionPasswordToDelete != null) {
-                @Suppress("UnsafeCallOnNullableType")
-                BasicPromptAlertDialog(
-                    finish = {
-                        if (it) {
-                            onDeleteConnectorClick(connectionPasswordToDelete!!)
-                        }
-                        connectionPasswordToDelete = null
-                    },
-                    title = {
-                        Text(
-                            text = stringResource(id = R.string.linkedConnectors_removeConnectionAlert_title),
-                            style = RadixTheme.typography.body2Header,
-                            color = RadixTheme.colors.gray1
-                        )
-                    },
-                    text = {
-                        Text(
-                            text = stringResource(id = R.string.linkedConnectors_removeConnectionAlert_message),
-                            style = RadixTheme.typography.body2Regular,
-                            color = RadixTheme.colors.gray1
-                        )
-                    },
-                    confirmText = stringResource(id = R.string.common_remove)
+        Column(modifier = Modifier.padding(padding)) {
+            Divider(color = RadixTheme.colors.gray5)
+
+            Box(modifier = Modifier.fillMaxSize()) {
+                if (isLoading) {
+                    FullscreenCircularProgressContent()
+                }
+
+                ActiveLinkedConnectorDetails(
+                    activeLinkedConnectorsList = activeLinkedConnectorsList,
+                    onLinkNewConnectorClick = onLinkNewConnectorClick,
+                    onDeleteConnectorClick = { connectionPasswordToDelete = it },
+                    isLoading = isLoading,
+                    modifier = Modifier.fillMaxWidth()
                 )
+
+                if (connectionPasswordToDelete != null) {
+                    @Suppress("UnsafeCallOnNullableType")
+                    BasicPromptAlertDialog(
+                        finish = {
+                            if (it) {
+                                onDeleteConnectorClick(connectionPasswordToDelete!!)
+                            }
+                            connectionPasswordToDelete = null
+                        },
+                        title = {
+                            Text(
+                                text = stringResource(id = R.string.linkedConnectors_removeConnectionAlert_title),
+                                style = RadixTheme.typography.body2Header,
+                                color = RadixTheme.colors.gray1
+                            )
+                        },
+                        text = {
+                            Text(
+                                text = stringResource(id = R.string.linkedConnectors_removeConnectionAlert_message),
+                                style = RadixTheme.typography.body2Regular,
+                                color = RadixTheme.colors.gray1
+                            )
+                        },
+                        confirmText = stringResource(id = R.string.common_remove)
+                    )
+                }
             }
         }
     }

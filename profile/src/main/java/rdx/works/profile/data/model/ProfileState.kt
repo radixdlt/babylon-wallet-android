@@ -26,7 +26,7 @@ sealed class ProfileState {
      * A compatible [ProfileSnapshot] exists and the user can derive the [Profile].
      */
     data class Restored(val profile: Profile) : ProfileState() {
-        fun hasAnyAccount(): Boolean {
+        fun hasAnyAccounts(): Boolean {
             return profile.currentNetwork.accounts.isNotEmpty()
         }
     }

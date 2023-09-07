@@ -29,6 +29,7 @@ fun RadixCenteredTopAppBar(
     title: String,
     onBackClick: () -> Unit,
     modifier: Modifier = Modifier,
+    windowInsets: WindowInsets = WindowInsets(0.dp),
     contentColor: Color = RadixTheme.colors.gray1,
     actions: @Composable RowScope.() -> Unit = {},
     backIconType: BackIconType = BackIconType.Back,
@@ -37,7 +38,7 @@ fun RadixCenteredTopAppBar(
 ) {
     CenterAlignedTopAppBar(
         modifier = modifier,
-        windowInsets = WindowInsets(0.dp),
+        windowInsets = windowInsets,
         navigationIcon = {
             when (backIconType) {
                 BackIconType.Back -> IconButton(onClick = onBackClick) {

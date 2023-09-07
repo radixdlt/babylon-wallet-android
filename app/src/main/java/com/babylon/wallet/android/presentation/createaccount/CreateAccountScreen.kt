@@ -1,21 +1,20 @@
 package com.babylon.wallet.android.presentation.createaccount
 
 import androidx.activity.compose.BackHandler
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -23,7 +22,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -37,6 +35,8 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.presentation.common.FullscreenCircularProgressContent
 import com.babylon.wallet.android.presentation.createaccount.confirmation.CreateAccountRequestSource
+import com.babylon.wallet.android.presentation.ui.composables.BackIconType
+import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.utils.biometricAuthenticate
 
 @Composable
@@ -49,18 +49,10 @@ fun CreateAccountScreen(
         accountId: String,
         requestSource: CreateAccountRequestSource?,
     ) -> Unit = { _: String, _: CreateAccountRequestSource? -> },
-    onAddLedgerDevice: () -> Unit,
-    onCloseApp: () -> Unit
+    onAddLedgerDevice: () -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
-    val backHandler = {
-        if (state.firstTime) {
-            onCloseApp()
-        } else {
-            onBackClick()
-        }
-    }
-    BackHandler(onBack = backHandler)
+    BackHandler(onBack = viewModel::onBackClick)
     if (state.loading) {
         FullscreenCircularProgressContent()
     } else {
@@ -73,7 +65,7 @@ fun CreateAccountScreen(
             accountName = accountName,
             buttonEnabled = buttonEnabled,
             cancelable = cancelable,
-            onBackClick = backHandler,
+            onBackClick = viewModel::onBackClick,
             modifier = modifier,
             firstTime = state.firstTime,
             useLedgerSelected = state.useLedgerSelected,
@@ -88,7 +80,8 @@ fun CreateAccountScreen(
                     event.requestSource
                 )
 
-                CreateAccountEvent.AddLedgerDevice -> onAddLedgerDevice()
+                is CreateAccountEvent.AddLedgerDevice -> onAddLedgerDevice()
+                is CreateAccountEvent.Dismiss -> onBackClick()
             }
         }
     }
@@ -107,38 +100,47 @@ fun CreateAccountContent(
     useLedgerSelected: Boolean,
     onUseLedgerSelectionChanged: (Boolean) -> Unit
 ) {
-    Column(
-        modifier = modifier
-            .navigationBarsPadding()
-            .imePadding()
-            .background(RadixTheme.colors.defaultBackground)
-            .fillMaxSize()
-    ) {
-        val context = LocalContext.current
-
-        if (cancelable) {
-            IconButton(
+    Scaffold(
+        modifier = modifier.imePadding(),
+        topBar = {
+            RadixCenteredTopAppBar(
+                title = stringResource(id = R.string.empty),
+                onBackClick = onBackClick,
+                backIconType = if (cancelable) BackIconType.Close else BackIconType.None,
+                windowInsets = WindowInsets.statusBars
+            )
+        },
+        bottomBar = {
+            val context = LocalContext.current
+            RadixPrimaryButton(
+                text = stringResource(id = R.string.createAccount_nameNewAccount_continue),
+                onClick = {
+                    when {
+                        useLedgerSelected -> onAccountCreateClick()
+                        else -> context.biometricAuthenticate { authenticatedSuccessfully ->
+                            if (authenticatedSuccessfully) {
+                                onAccountCreateClick()
+                            }
+                        }
+                    }
+                },
                 modifier = Modifier
+                    .fillMaxWidth()
                     .padding(
-                        start = RadixTheme.dimensions.paddingDefault,
-                        top = RadixTheme.dimensions.paddingDefault
-                    ),
-                onClick = onBackClick
-            ) {
-                Icon(
-                    painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_close),
-                    tint = RadixTheme.colors.gray1,
-                    contentDescription = "navigate back"
-                )
-            }
-        }
+                        horizontal = RadixTheme.dimensions.paddingLarge,
+                        vertical = RadixTheme.dimensions.paddingDefault
+                    )
+                    .navigationBarsPadding(),
+                enabled = buttonEnabled,
+                throttleClicks = true
+            )
+        },
+        containerColor = RadixTheme.colors.defaultBackground
+    ) { padding ->
         Column(
             modifier = Modifier
-                .fillMaxSize()
-                .padding(
-                    horizontal = RadixTheme.dimensions.paddingXLarge,
-                    vertical = RadixTheme.dimensions.paddingDefault
-                )
+                .padding(padding)
+                .padding(horizontal = RadixTheme.dimensions.paddingLarge)
                 .verticalScroll(rememberScrollState()),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
@@ -179,26 +181,6 @@ fun CreateAccountContent(
                 useLedgerSelected = useLedgerSelected,
                 onUseLedgerSelectionChanged = onUseLedgerSelectionChanged,
                 modifier = Modifier.fillMaxWidth()
-            )
-            Spacer(Modifier.weight(1f))
-            RadixPrimaryButton(
-                text = stringResource(id = R.string.createAccount_nameNewAccount_continue),
-                onClick = {
-                    when {
-                        useLedgerSelected -> onAccountCreateClick()
-                        else -> context.biometricAuthenticate { authenticatedSuccessfully ->
-                            if (authenticatedSuccessfully) {
-                                onAccountCreateClick()
-                            }
-                        }
-                    }
-                },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = RadixTheme.dimensions.paddingLarge)
-                    .imePadding(),
-                enabled = buttonEnabled,
-                throttleClicks = true
             )
         }
     }

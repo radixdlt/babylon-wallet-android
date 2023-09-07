@@ -7,18 +7,21 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.ModalBottomSheetValue
 import androidx.compose.material.rememberModalBottomSheetState
 import androidx.compose.material3.Divider
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -65,10 +68,7 @@ fun PersonaDetailScreen(
     val state by viewModel.state.collectAsStateWithLifecycle()
     PersonaDetailContent(
         onBackClick = onBackClick,
-        modifier = modifier
-            .navigationBarsPadding()
-            .fillMaxSize()
-            .background(RadixTheme.colors.defaultBackground),
+        modifier = modifier,
         persona = state.persona,
         onEditPersona = onEditPersona,
         authorizedDapps = state.authorizedDapps,
@@ -98,66 +98,60 @@ private fun PersonaDetailContent(
         rememberModalBottomSheetState(initialValue = ModalBottomSheetValue.Hidden, skipHalfExpanded = true)
     val scope = rememberCoroutineScope()
 
-    Box(modifier = modifier) {
-        persona?.let { persona ->
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(
-                        RadixTheme.colors.defaultBackground,
-                        shape = RadixTheme.shapes.roundedRectTopMedium
-                    )
-                    .clip(shape = RadixTheme.shapes.roundedRectTopMedium)
-            ) {
-                DefaultModalSheetLayout(
-                    modifier = Modifier
-                        .navigationBarsPadding()
-                        .background(RadixTheme.colors.defaultBackground)
-                        .fillMaxSize(),
-                    sheetState = bottomSheetState,
-                    sheetContent = {
-                        selectedDApp?.let {
-                            DAppDetailsSheetContent(
-                                onBackClick = {
-                                    scope.launch {
-                                        bottomSheetState.hide()
-                                    }
-                                },
-                                dApp = it
-                            )
+    DefaultModalSheetLayout(
+        modifier = modifier,
+        sheetState = bottomSheetState,
+        sheetContent = {
+            selectedDApp?.let {
+                DAppDetailsSheetContent(
+                    modifier = Modifier.navigationBarsPadding(),
+                    onBackClick = {
+                        scope.launch {
+                            bottomSheetState.hide()
                         }
-                    }
-                ) {
-                    Column(Modifier.fillMaxSize()) {
-                        RadixCenteredTopAppBar(
-                            title = persona.displayName,
-                            onBackClick = onBackClick,
-                            contentColor = RadixTheme.colors.gray1,
-                        )
-                        Divider(color = RadixTheme.colors.gray5)
-                        PersonaDetailList(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .weight(1f),
-                            persona = persona,
-                            authorizedDapps = authorizedDapps,
-                            onDAppClick = {
-                                onDAppClick(it)
-                                scope.launch {
-                                    bottomSheetState.show()
-                                }
-                            },
-                            onEditPersona = onEditPersona,
-                            hasAuthKey = hasAuthKey,
-                            onCreateAndUploadAuthKey = onCreateAndUploadAuthKey,
-                            loading = loading
-                        )
-                    }
-                }
+                    },
+                    dApp = it
+                )
             }
         }
-        if (persona == null) {
-            FullscreenCircularProgressContent()
+    ) {
+        Scaffold(
+            topBar = {
+                Column {
+                    RadixCenteredTopAppBar(
+                        title = persona?.displayName.orEmpty(),
+                        onBackClick = onBackClick,
+                        windowInsets = WindowInsets.statusBars
+                    )
+
+                    Divider(color = RadixTheme.colors.gray5)
+                }
+            },
+            containerColor = RadixTheme.colors.defaultBackground
+        ) { padding ->
+            Box(modifier = Modifier.padding(padding)) {
+                if (persona != null) {
+                    PersonaDetailList(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(padding),
+                        persona = persona,
+                        authorizedDapps = authorizedDapps,
+                        onDAppClick = {
+                            onDAppClick(it)
+                            scope.launch {
+                                bottomSheetState.show()
+                            }
+                        },
+                        onEditPersona = onEditPersona,
+                        hasAuthKey = hasAuthKey,
+                        onCreateAndUploadAuthKey = onCreateAndUploadAuthKey,
+                        loading = loading
+                    )
+                } else {
+                    FullscreenCircularProgressContent()
+                }
+            }
         }
     }
 }

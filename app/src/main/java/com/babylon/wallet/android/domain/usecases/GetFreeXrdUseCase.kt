@@ -12,12 +12,17 @@ import com.babylon.wallet.android.domain.usecases.transaction.PollTransactionSta
 import com.radixdlt.ret.Address
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 import rdx.works.core.preferences.PreferencesManager
 import rdx.works.core.ret.BabylonManifestBuilder
 import rdx.works.core.ret.buildSafely
-import rdx.works.profile.domain.gateway.GetCurrentGatewayUseCase
+import rdx.works.profile.data.model.apppreferences.Radix
+import rdx.works.profile.data.model.currentGateway
+import rdx.works.profile.domain.GetProfileUseCase
+import rdx.works.profile.domain.gateways
 import java.math.BigDecimal
 import javax.inject.Inject
 import kotlin.Result
@@ -27,7 +32,7 @@ import com.babylon.wallet.android.domain.common.Result as ResultInternal
 class GetFreeXrdUseCase @Inject constructor(
     private val transactionClient: TransactionClient,
     private val transactionRepository: TransactionRepository,
-    private val getCurrentGatewayUseCase: GetCurrentGatewayUseCase,
+    private val getProfileUseCase: GetProfileUseCase,
     private val preferencesManager: PreferencesManager,
     private val pollTransactionStatusUseCase: PollTransactionStatusUseCase,
     @IoDispatcher private val ioDispatcher: CoroutineDispatcher,
@@ -35,7 +40,7 @@ class GetFreeXrdUseCase @Inject constructor(
 
     suspend operator fun invoke(address: String): Result<String> {
         return withContext(ioDispatcher) {
-            val gateway = getCurrentGatewayUseCase()
+            val gateway = getProfileUseCase().map { it.currentGateway }.first()
             val manifest = BabylonManifestBuilder()
                 .lockFee()
                 .freeXrd()
@@ -73,24 +78,33 @@ class GetFreeXrdUseCase @Inject constructor(
         }
     }
 
-    fun isAllowedToUseFaucet(address: String): Flow<Boolean> {
-        return preferencesManager.getLastUsedEpochFlow(address).map { lastUsedEpoch ->
-            if (lastUsedEpoch == null) {
-                true
-            } else {
-                when (val currentEpoch = transactionRepository.getLedgerEpoch()) {
-                    is ResultInternal.Error -> false
-                    is ResultInternal.Success -> {
-                        when {
-                            currentEpoch.data < lastUsedEpoch -> true // edge case ledger was reset - allow
-                            else -> {
-                                val threshold = 1
-                                currentEpoch.data - lastUsedEpoch >= threshold
-                            }
+    fun getFaucetState(address: String): Flow<FaucetState> = combine(
+        getProfileUseCase.gateways,
+        preferencesManager.getLastUsedEpochFlow(address)
+    ) { gateways, lastUsedEpoch ->
+        if (gateways.current() == Radix.Gateway.mainnet) {
+            FaucetState.Unavailable
+        } else {
+            if (lastUsedEpoch == null) return@combine FaucetState.Available(isEnabled = true)
+
+            val isEnabled = when (val currentEpoch = transactionRepository.getLedgerEpoch()) {
+                is ResultInternal.Error -> false
+                is ResultInternal.Success -> {
+                    when {
+                        currentEpoch.data < lastUsedEpoch -> true // edge case ledger was reset - allow
+                        else -> {
+                            val threshold = 1
+                            currentEpoch.data - lastUsedEpoch >= threshold
                         }
                     }
                 }
             }
+            FaucetState.Available(isEnabled = isEnabled)
         }
     }
+}
+
+sealed interface FaucetState {
+    object Unavailable : FaucetState
+    data class Available(val isEnabled: Boolean) : FaucetState
 }

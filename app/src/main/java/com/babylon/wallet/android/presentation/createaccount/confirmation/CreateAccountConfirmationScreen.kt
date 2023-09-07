@@ -2,7 +2,6 @@ package com.babylon.wallet.android.presentation.createaccount.confirmation
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -10,6 +9,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -21,7 +21,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
-import com.babylon.wallet.android.designsystem.SetStatusBarColor
 import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
@@ -35,7 +34,6 @@ fun CreateAccountConfirmationScreen(
     finishAccountCreation: () -> Unit,
 ) {
     val accountState by viewModel.state.collectAsStateWithLifecycle()
-    SetStatusBarColor(color = RadixTheme.colors.orange2, useDarkIcons = !isSystemInDarkTheme())
     CreateAccountConfirmationContent(
         modifier = modifier,
         accountName = accountState.accountName,
@@ -67,7 +65,7 @@ fun CreateAccountConfirmationContent(
     Column(
         modifier = modifier
             .background(RadixTheme.colors.defaultBackground)
-//            .systemBarsPadding()
+            .statusBarsPadding()
             .navigationBarsPadding()
             .fillMaxSize()
             .padding(

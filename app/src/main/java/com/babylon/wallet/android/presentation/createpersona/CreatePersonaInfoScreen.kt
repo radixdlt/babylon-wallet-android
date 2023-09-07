@@ -1,20 +1,19 @@
 package com.babylon.wallet.android.presentation.createpersona
 
 import android.graphics.drawable.ColorDrawable
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -22,7 +21,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -32,6 +30,7 @@ import com.babylon.wallet.android.designsystem.R
 import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
+import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.google.accompanist.drawablepainter.rememberDrawablePainter
 
 @Composable
@@ -53,19 +52,30 @@ private fun CreatePersonaInfoContent(
     modifier: Modifier,
     onContinueClick: () -> Unit
 ) {
-    Column(
-        modifier = modifier
-            .navigationBarsPadding()
-            .background(RadixTheme.colors.defaultBackground)
-            .fillMaxSize()
-    ) {
-        IconButton(onClick = onBackClick) {
-            Icon(
-                painterResource(id = R.drawable.ic_arrow_back),
-                tint = RadixTheme.colors.gray1,
-                contentDescription = "navigate back"
+    Scaffold(
+        modifier = modifier,
+        topBar = {
+            RadixCenteredTopAppBar(
+                title = stringResource(id = com.babylon.wallet.android.R.string.empty),
+                onBackClick = onBackClick,
+                windowInsets = WindowInsets.statusBars
             )
-        }
+        },
+        bottomBar = {
+            RadixPrimaryButton(
+                text = stringResource(id = com.babylon.wallet.android.R.string.createPersona_introduction_continue),
+                onClick = onContinueClick,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .navigationBarsPadding()
+                    .padding(
+                        horizontal = RadixTheme.dimensions.paddingLarge,
+                        vertical = RadixTheme.dimensions.paddingDefault
+                    )
+            )
+        },
+        containerColor = RadixTheme.colors.defaultBackground
+    ) { padding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -73,6 +83,7 @@ private fun CreatePersonaInfoContent(
                     horizontal = RadixTheme.dimensions.paddingLarge,
                     vertical = RadixTheme.dimensions.paddingDefault
                 )
+                .padding(padding)
                 .verticalScroll(rememberScrollState()),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
@@ -111,16 +122,6 @@ private fun CreatePersonaInfoContent(
                 style = RadixTheme.typography.body1Regular,
                 color = RadixTheme.colors.gray1,
                 textAlign = TextAlign.Center
-            )
-            Spacer(Modifier.weight(1f))
-            RadixPrimaryButton(
-                text = stringResource(
-                    id = com.babylon.wallet.android.R.string.createPersona_introduction_continue
-                ),
-                onClick = onContinueClick,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .imePadding()
             )
         }
     }

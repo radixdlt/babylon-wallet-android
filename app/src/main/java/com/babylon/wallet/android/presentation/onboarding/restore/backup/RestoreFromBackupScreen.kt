@@ -10,11 +10,13 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
@@ -147,7 +149,7 @@ private fun RestoreFromBackupContent(
     )
 
     DefaultModalSheetLayout(
-        modifier = modifier.fillMaxSize(),
+        modifier = modifier,
         sheetState = modalBottomSheetState,
         enableImePadding = true,
         wrapContent = true,
@@ -164,15 +166,15 @@ private fun RestoreFromBackupContent(
         }
     ) {
         Scaffold(
-            modifier = Modifier.navigationBarsPadding(),
             topBar = {
                 RadixCenteredTopAppBar(
+                    windowInsets = WindowInsets.statusBars,
                     title = "",
                     onBackClick = onBackClick
                 )
             },
             bottomBar = {
-                Column {
+                Column(Modifier.navigationBarsPadding()) {
                     Divider(color = RadixTheme.colors.gray5)
 
                     RadixPrimaryButton(
