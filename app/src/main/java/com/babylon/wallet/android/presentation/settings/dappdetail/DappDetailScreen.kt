@@ -4,9 +4,6 @@ package com.babylon.wallet.android.presentation.settings.dappdetail
 
 import android.graphics.drawable.ColorDrawable
 import androidx.activity.compose.BackHandler
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -14,12 +11,14 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
@@ -30,7 +29,7 @@ import androidx.compose.material.rememberModalBottomSheetState
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Divider
-import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -83,7 +82,6 @@ import com.babylon.wallet.android.presentation.ui.composables.PersonaDataFieldRo
 import com.babylon.wallet.android.presentation.ui.composables.PersonaDataStringField
 import com.babylon.wallet.android.presentation.ui.composables.PersonaRoundedAvatar
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
-import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
 import com.babylon.wallet.android.presentation.ui.composables.SimpleAccountCard
 import com.babylon.wallet.android.presentation.ui.composables.StandardOneLineCard
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
@@ -117,12 +115,9 @@ fun DappDetailScreen(
     }
     DappDetailContent(
         onBackClick = onBackClick,
-        modifier = modifier
-            .navigationBarsPadding()
-            .fillMaxSize()
-            .background(RadixTheme.colors.defaultBackground),
+        modifier = modifier,
         personaList = state.personas,
-        dappWithMetadata = state.dappWithMetadata,
+        dAppWithResources = state.dappWithMetadata,
         onPersonaClick = viewModel::onPersonaClick,
         onFungibleTokenClick = viewModel::onFungibleTokenClick,
         onNftClick = viewModel::onNftClick,
@@ -143,7 +138,7 @@ private fun DappDetailContent(
     onBackClick: () -> Unit,
     modifier: Modifier = Modifier,
     personaList: ImmutableList<Network.Persona>,
-    dappWithMetadata: DAppWithMetadataAndAssociatedResources?,
+    dAppWithResources: DAppWithMetadataAndAssociatedResources?,
     onPersonaClick: (Network.Persona) -> Unit,
     onFungibleTokenClick: (Resource.FungibleResource) -> Unit,
     onNftClick: (Resource.NonFungibleResource) -> Unit,
@@ -157,7 +152,6 @@ private fun DappDetailContent(
     loading: Boolean
 ) {
     var showDeleteDappPrompt by remember { mutableStateOf(false) }
-    val snackState = remember { SnackbarHostState() }
     val bottomSheetState =
         rememberModalBottomSheetState(initialValue = ModalBottomSheetValue.Hidden, skipHalfExpanded = true)
     val scope = rememberCoroutineScope()
@@ -173,82 +167,118 @@ private fun DappDetailContent(
             bottomSheetState.hide()
         }
     }
-    Box(modifier = modifier) {
-        AnimatedVisibility(modifier = Modifier.fillMaxSize(), visible = !loading, enter = fadeIn(), exit = fadeOut()) {
-            DefaultModalSheetLayout(
-                modifier = Modifier.fillMaxSize(),
-                sheetState = bottomSheetState,
-                sheetContent = {
-                    Column(
-                        Modifier
-                            .fillMaxWidth(),
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        when (selectedSheetState) {
-                            is SelectedSheetState.SelectedPersona -> {
-                                selectedSheetState.persona?.let {
-                                    PersonaDetailsSheet(
-                                        persona = it,
-                                        sharedPersonaAccounts = selectedPersonaSharedAccounts,
-                                        onCloseClick = {
-                                            scope.launch {
-                                                bottomSheetState.hide()
-                                            }
-                                        },
-                                        modifier = Modifier
-                                            .fillMaxSize()
-                                            .background(
-                                                RadixTheme.colors.defaultBackground,
-                                                shape = RadixTheme.shapes.roundedRectTopMedium
-                                            )
-                                            .clip(shape = RadixTheme.shapes.roundedRectTopMedium),
-                                        dappName = dappWithMetadata?.dAppWithMetadata?.name.orEmpty(),
-                                        onDisconnectPersona = { persona ->
-                                            scope.launch {
-                                                bottomSheetState.hide()
-                                            }
-                                            onDisconnectPersona(persona)
-                                        },
-                                        onEditPersona = onEditPersona,
-                                        onEditAccountSharing = onEditAccountSharing
-                                    )
+
+    if (showDeleteDappPrompt) {
+        BasicPromptAlertDialog(
+            finish = {
+                if (it) {
+                    onDeleteDapp()
+                }
+                showDeleteDappPrompt = false
+            },
+            title = {
+                Text(
+                    text = stringResource(id = R.string.authorizedDapps_forgetDappAlert_title),
+                    style = RadixTheme.typography.body2Header,
+                    color = RadixTheme.colors.gray1
+                )
+            },
+            text = {
+                Text(
+                    text = stringResource(id = R.string.authorizedDapps_removeAuthorizationAlert_message),
+                    style = RadixTheme.typography.body2Regular,
+                    color = RadixTheme.colors.gray1
+                )
+            },
+            confirmText = stringResource(id = R.string.authorizedDapps_forgetDappAlert_forget)
+        )
+    }
+
+    DefaultModalSheetLayout(
+        modifier = modifier,
+        sheetState = bottomSheetState,
+        sheetContent = {
+            when (selectedSheetState) {
+                is SelectedSheetState.SelectedPersona -> {
+                    selectedSheetState.persona?.let {
+                        PersonaDetailsSheet(
+                            persona = it,
+                            sharedPersonaAccounts = selectedPersonaSharedAccounts,
+                            onCloseClick = {
+                                scope.launch {
+                                    bottomSheetState.hide()
                                 }
-                            }
-
-                            is SelectedSheetState.SelectedFungibleResource -> {
-                                FungibleTokenBottomSheetDetails(
-                                    modifier = Modifier.fillMaxSize(),
-                                    fungible = selectedSheetState.fungible,
-                                    onCloseClick = {
-                                        scope.launch {
-                                            bottomSheetState.hide()
-                                        }
-                                    }
+                            },
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .navigationBarsPadding()
+                                .background(
+                                    RadixTheme.colors.defaultBackground,
+                                    shape = RadixTheme.shapes.roundedRectTopMedium
                                 )
-                            }
-
-                            is SelectedSheetState.SelectedNonFungibleResource -> {
-                                NonFungibleTokenBottomSheetDetails(
-                                    modifier = Modifier.fillMaxSize(),
-                                    item = null,
-                                    onCloseClick = {
-                                        scope.launch {
-                                            bottomSheetState.hide()
-                                        }
-                                    },
-                                    nonFungibleResource = selectedSheetState.nonFungibleResource
-                                )
-                            }
-
-                            else -> {}
-                        }
+                                .clip(shape = RadixTheme.shapes.roundedRectTopMedium),
+                            dappName = dAppWithResources?.dAppWithMetadata?.name.orEmpty(),
+                            onDisconnectPersona = { persona ->
+                                scope.launch {
+                                    bottomSheetState.hide()
+                                }
+                                onDisconnectPersona(persona)
+                            },
+                            onEditPersona = onEditPersona,
+                            onEditAccountSharing = onEditAccountSharing
+                        )
                     }
-                },
-                content = {
+                }
+
+                is SelectedSheetState.SelectedFungibleResource -> {
+                    FungibleTokenBottomSheetDetails(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .navigationBarsPadding(),
+                        fungible = selectedSheetState.fungible,
+                        onCloseClick = {
+                            scope.launch {
+                                bottomSheetState.hide()
+                            }
+                        }
+                    )
+                }
+
+                is SelectedSheetState.SelectedNonFungibleResource -> {
+                    NonFungibleTokenBottomSheetDetails(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .navigationBarsPadding(),
+                        item = null,
+                        onCloseClick = {
+                            scope.launch {
+                                bottomSheetState.hide()
+                            }
+                        },
+                        nonFungibleResource = selectedSheetState.nonFungibleResource
+                    )
+                }
+
+                else -> {}
+            }
+        },
+        content = {
+            Scaffold(
+                topBar = {
+                    Column {
+                        RadixCenteredTopAppBar(
+                            title = dAppWithResources?.dAppWithMetadata?.name.orEmpty(),
+                            onBackClick = onBackClick,
+                            windowInsets = WindowInsets.statusBars
+                        )
+                        Divider(color = RadixTheme.colors.gray5)
+                    }
+                }
+            ) { padding ->
+                Box(modifier = Modifier.padding(padding)) {
                     DappDetails(
                         modifier = Modifier.fillMaxSize(),
-                        onBackClick = onBackClick,
-                        dAppWithResources = dappWithMetadata,
+                        dAppWithResources = dAppWithResources,
                         personaList = personaList,
                         onPersonaClick = { persona ->
                             onPersonaClick(persona)
@@ -272,45 +302,19 @@ private fun DappDetailContent(
                             showDeleteDappPrompt = true
                         }
                     )
-                }
-            )
-        }
-        if (loading) {
-            FullscreenCircularProgressContent()
-        }
-        RadixSnackbarHost(hostState = snackState, modifier = Modifier.align(Alignment.BottomCenter))
-        if (showDeleteDappPrompt) {
-            BasicPromptAlertDialog(
-                finish = {
-                    if (it) {
-                        onDeleteDapp()
+
+                    if (loading) {
+                        FullscreenCircularProgressContent()
                     }
-                    showDeleteDappPrompt = false
-                },
-                title = {
-                    Text(
-                        text = stringResource(id = R.string.authorizedDapps_forgetDappAlert_title),
-                        style = RadixTheme.typography.body2Header,
-                        color = RadixTheme.colors.gray1
-                    )
-                },
-                text = {
-                    Text(
-                        text = stringResource(id = R.string.authorizedDapps_removeAuthorizationAlert_message),
-                        style = RadixTheme.typography.body2Regular,
-                        color = RadixTheme.colors.gray1
-                    )
-                },
-                confirmText = stringResource(id = R.string.authorizedDapps_forgetDappAlert_forget)
-            )
+                }
+            }
         }
-    }
+    )
 }
 
 @Composable
 private fun DappDetails(
     modifier: Modifier,
-    onBackClick: () -> Unit,
     dAppWithResources: DAppWithMetadataAndAssociatedResources?,
     personaList: ImmutableList<Network.Persona>,
     onPersonaClick: (Network.Persona) -> Unit,
@@ -319,12 +323,6 @@ private fun DappDetails(
     onDeleteDapp: () -> Unit
 ) {
     Column(modifier = modifier) {
-        RadixCenteredTopAppBar(
-            title = dAppWithResources?.dAppWithMetadata?.name.orEmpty(),
-            onBackClick = onBackClick,
-            contentColor = RadixTheme.colors.gray1
-        )
-        Divider(color = RadixTheme.colors.gray5)
         LazyColumn(
             contentPadding = PaddingValues(vertical = dimensions.paddingDefault),
             horizontalAlignment = Alignment.CenterHorizontally,
@@ -820,7 +818,7 @@ fun DappDetailContentPreview() {
         DappDetailContent(
             onBackClick = {},
             personaList = persistentListOf(SampleDataProvider().samplePersona()),
-            dappWithMetadata = DAppWithMetadataAndAssociatedResources(
+            dAppWithResources = DAppWithMetadataAndAssociatedResources(
                 dAppWithMetadata = DAppWithMetadata(
                     dAppAddress = "account_tdx_abc",
                     nameItem = NameMetadataItem("Dapp"),

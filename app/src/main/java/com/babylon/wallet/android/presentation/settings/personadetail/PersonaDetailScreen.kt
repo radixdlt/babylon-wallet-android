@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
@@ -97,37 +98,39 @@ private fun PersonaDetailContent(
         rememberModalBottomSheetState(initialValue = ModalBottomSheetValue.Hidden, skipHalfExpanded = true)
     val scope = rememberCoroutineScope()
 
-    Box(modifier = modifier) {
-        persona?.let { persona ->
-            DefaultModalSheetLayout(
-                sheetState = bottomSheetState,
-                sheetContent = {
-                    selectedDApp?.let {
-                        DAppDetailsSheetContent(
-                            onBackClick = {
-                                scope.launch {
-                                    bottomSheetState.hide()
-                                }
-                            },
-                            dApp = it
-                        )
-                    }
-                }
-            ) {
-                Scaffold(
-                    topBar = {
-                        Column {
-                            RadixCenteredTopAppBar(
-                                title = persona.displayName,
-                                onBackClick = onBackClick,
-                                windowInsets = WindowInsets.statusBars
-                            )
-
-                            Divider(color = RadixTheme.colors.gray5)
+    DefaultModalSheetLayout(
+        modifier = modifier,
+        sheetState = bottomSheetState,
+        sheetContent = {
+            selectedDApp?.let {
+                DAppDetailsSheetContent(
+                    modifier = Modifier.navigationBarsPadding(),
+                    onBackClick = {
+                        scope.launch {
+                            bottomSheetState.hide()
                         }
                     },
-                    containerColor = RadixTheme.colors.defaultBackground
-                ) { padding ->
+                    dApp = it
+                )
+            }
+        }
+    ) {
+        Scaffold(
+            topBar = {
+                Column {
+                    RadixCenteredTopAppBar(
+                        title = persona?.displayName.orEmpty(),
+                        onBackClick = onBackClick,
+                        windowInsets = WindowInsets.statusBars
+                    )
+
+                    Divider(color = RadixTheme.colors.gray5)
+                }
+            },
+            containerColor = RadixTheme.colors.defaultBackground
+        ) { padding ->
+            Box(modifier = Modifier.padding(padding)) {
+                if (persona != null) {
                     PersonaDetailList(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -145,12 +148,10 @@ private fun PersonaDetailContent(
                         onCreateAndUploadAuthKey = onCreateAndUploadAuthKey,
                         loading = loading
                     )
+                } else {
+                    FullscreenCircularProgressContent()
                 }
             }
-        }
-
-        if (persona == null) {
-            FullscreenCircularProgressContent()
         }
     }
 }
