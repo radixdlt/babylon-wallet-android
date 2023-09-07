@@ -128,7 +128,7 @@ object Radix {
                 network = Network.mainnet
             )
 
-            var default: Gateway = hammunet
+            var default: Gateway = rcnetV3
                 set(value) {
                     // Can change default Gateway, only if the
                     // value is Mainnet
