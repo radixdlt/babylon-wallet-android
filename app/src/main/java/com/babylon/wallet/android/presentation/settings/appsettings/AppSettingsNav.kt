@@ -6,9 +6,14 @@ import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
+import com.babylon.wallet.android.presentation.createaccount.confirmation.CreateAccountRequestSource
+import com.babylon.wallet.android.presentation.createaccount.createAccountScreen
+import com.babylon.wallet.android.presentation.main.MAIN_ROUTE
 import com.babylon.wallet.android.presentation.navigation.Screen
 import com.babylon.wallet.android.presentation.settings.SettingsItem
 import com.babylon.wallet.android.presentation.settings.backup.backupScreen
+import com.babylon.wallet.android.presentation.settings.backup.systemBackupSettingsScreen
+import com.babylon.wallet.android.presentation.settings.editgateway.SettingsEditGatewayScreen
 import com.babylon.wallet.android.presentation.settings.linkedconnectors.linkedConnectorsScreen
 import com.google.accompanist.navigation.animation.composable
 import com.google.accompanist.navigation.animation.navigation
@@ -31,6 +36,21 @@ fun NavGraphBuilder.appSettingsNavGraph(
         route = ROUTE_APP_SETTINGS_GRAPH
     ) {
         appSettingsScreen(navController)
+        linkedConnectorsScreen(onBackClick = {
+            navController.popBackStack()
+        })
+        settingsGateway(navController)
+        backupScreen(
+            onSystemBackupSettingsClick = {
+                navController.systemBackupSettingsScreen()
+            },
+            onProfileDeleted = {
+                navController.popBackStack(MAIN_ROUTE, false)
+            },
+            onClose = {
+                navController.popBackStack()
+            }
+        )
     }
 }
 
@@ -71,6 +91,34 @@ fun NavGraphBuilder.appSettingsScreen(
             },
             onBackClick = {
                 navController.navigateUp()
+            }
+        )
+    }
+}
+
+@OptIn(ExperimentalAnimationApi::class)
+private fun NavGraphBuilder.settingsGateway(navController: NavController) {
+    composable(
+        route = Screen.SettingsEditGatewayApiDestination.route,
+        enterTransition = {
+            slideIntoContainer(AnimatedContentScope.SlideDirection.Left)
+        },
+        exitTransition = {
+            slideOutOfContainer(AnimatedContentScope.SlideDirection.Right)
+        }
+    ) {
+        SettingsEditGatewayScreen(
+            viewModel = hiltViewModel(),
+            onBackClick = {
+                navController.popBackStack()
+            },
+            onCreateProfile = { url, networkName ->
+                navController.createAccountScreen(
+                    CreateAccountRequestSource.Gateways,
+                    url,
+                    networkName,
+                    true
+                )
             }
         )
     }

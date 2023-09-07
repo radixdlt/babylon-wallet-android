@@ -6,9 +6,12 @@ import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
+import com.babylon.wallet.android.presentation.onboarding.restore.mnemonics.RestoreMnemonicsArgs
+import com.babylon.wallet.android.presentation.onboarding.restore.mnemonics.restoreMnemonics
 import com.babylon.wallet.android.presentation.settings.SettingsItem
 import com.babylon.wallet.android.presentation.settings.ledgerhardwarewallets.ledgerHardwareWalletsScreen
 import com.babylon.wallet.android.presentation.settings.legacyimport.importLegacyWalletScreen
+import com.babylon.wallet.android.presentation.settings.seedphrases.reveal.revealSeedPhrase
 import com.babylon.wallet.android.presentation.settings.seedphrases.seedPhrases
 import com.google.accompanist.navigation.animation.composable
 import com.google.accompanist.navigation.animation.navigation
@@ -29,6 +32,26 @@ fun NavGraphBuilder.accountSecurityNavGraph(
         route = ROUTE_ACCOUNT_SECURITY_GRAPH
     ) {
         accountSecurityScreen(navController)
+        seedPhrases(
+            onBackClick = { navController.popBackStack() },
+            onNavigateToRecoverMnemonic = { navController.restoreMnemonics(args = RestoreMnemonicsArgs.RestoreSpecificMnemonic(it.body)) },
+            onNavigateToSeedPhrase = { navController.revealSeedPhrase(it.body.value) }
+        )
+        ledgerHardwareWalletsScreen(
+            onBackClick = {
+                navController.navigateUp()
+            }
+        )
+        importLegacyWalletScreen(
+            onBackClick = {
+                navController.popBackStack()
+            }
+        )
+        revealSeedPhrase(
+            onBackClick = {
+                navController.navigateUp()
+            }
+        )
     }
 }
 
