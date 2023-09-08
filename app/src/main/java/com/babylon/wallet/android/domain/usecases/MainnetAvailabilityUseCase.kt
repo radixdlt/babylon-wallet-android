@@ -1,10 +1,7 @@
 package com.babylon.wallet.android.domain.usecases
 
-import android.content.Context
-import android.widget.Toast
 import com.babylon.wallet.android.data.repository.networkinfo.NetworkInfoRepository
 import com.babylon.wallet.android.domain.common.asKotlinResult
-import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
 import rdx.works.core.preferences.PreferencesManager
@@ -15,18 +12,18 @@ import rdx.works.profile.data.repository.ProfileRepository
 import rdx.works.profile.data.repository.profile
 import javax.inject.Inject
 
+// TODO To remove when mainnet becomes default
 class MainnetAvailabilityUseCase @Inject constructor(
     private val profileRepository: ProfileRepository,
     private val preferencesManager: PreferencesManager,
-    private val networkInfoRepository: NetworkInfoRepository,
-    @ApplicationContext private val context: Context
+    private val networkInfoRepository: NetworkInfoRepository
 ) {
 
-    fun forceToMainnetMandatory() = preferencesManager.getMainnetAvailableFlow().map { isAvailable ->
-        // If profile does not exist yet, then we don't need to force the user.
+    fun checkForceToMainnetMandatory() = preferencesManager.getMainnetMigrationOngoing().map { isOngoing ->
+        // If profile does not exist yet, then we don't need to force the user. Let onboarding do the trick
         val profile = profileRepository.profile.firstOrNull() ?: return@map false
 
-        isAvailable && !profile.mainnetNetworkExists()
+        isOngoing && !profile.mainnetNetworkExistsWithAccount()
     }
 
     suspend operator fun invoke() {
@@ -34,41 +31,31 @@ class MainnetAvailabilityUseCase @Inject constructor(
 
         if (profileState == null || profileState !is ProfileState.Restored) {
             if (isMainnetAvailable()) {
-                Radix.Gateway.default = Radix.Gateway.mainnet
-                preferencesManager.setMainnetAvailable()
-                Toast.makeText(context, "Profile does not exist, Mainnet is live", Toast.LENGTH_LONG).show()
-            } else {
-                Toast.makeText(context, "Profile does not exist, Hammunet is live", Toast.LENGTH_LONG).show()
+                preferencesManager.setMainnetMigrationOngoing(true)
             }
-        } else if (!profileState.profile.mainnetNetworkExists()){
+        } else if (!profileState.profile.mainnetNetworkExistsWithAccount()) {
             if (isMainnetAvailable()) {
-                Radix.Gateway.default = Radix.Gateway.mainnet
-                preferencesManager.setMainnetAvailable()
-                profileRepository.saveProfile(profileState.profile.addMainnetGateway())
-                Toast.makeText(context, "Profile exists, Mainnet is live", Toast.LENGTH_LONG).show()
-            } else {
-                Toast.makeText(context, "Profile exists, Hammunet is live", Toast.LENGTH_LONG).show()
+                preferencesManager.setMainnetMigrationOngoing(true)
+
+                if (profileState.profile.appPreferences.gateways.saved.none { it.network.id == Radix.Gateway.mainnet.network.id }) {
+                    profileRepository.saveProfile(profileState.profile.addMainnetGateway())
+                }
             }
         }
     }
 
-    private suspend fun isMainnetAvailable() = networkInfoRepository.getMainnetAvailability().asKotlinResult().fold(
+    suspend fun onMainnetMigrationCompleted() = preferencesManager.setMainnetMigrationOngoing(false)
+
+    fun isMainnetMigrationOngoing() = preferencesManager.getMainnetMigrationOngoing()
+
+    suspend fun isMainnetAvailable() = networkInfoRepository.getMainnetAvailability().asKotlinResult().fold(
         onSuccess = { it },
         onFailure = { false }
     )
 
-    private suspend fun isMainnetKnown() = preferencesManager.getMainnetAvailableFlow().firstOrNull() ?: false
-
-    private suspend fun changeToMainnet(profile: Profile) {
-        if (isMainnetAvailable()) {
-            Radix.Gateway.default = Radix.Gateway.mainnet
-            profileRepository.saveProfile(profile.addMainnetGateway())
-        }
-    }
-
-    private fun Profile.mainnetNetworkExists() = appPreferences.gateways.saved.any {
+    private fun Profile.mainnetNetworkExistsWithAccount() = appPreferences.gateways.saved.any {
         it.network.id == Radix.Network.mainnet.id
-    }
+    } && networks.find { it.networkID == Radix.Network.mainnet.id }?.accounts?.isNotEmpty() == true
 
     private fun Profile.addMainnetGateway() = copy(
         appPreferences = appPreferences.copy(gateways = appPreferences.gateways.add(Radix.Gateway.mainnet))

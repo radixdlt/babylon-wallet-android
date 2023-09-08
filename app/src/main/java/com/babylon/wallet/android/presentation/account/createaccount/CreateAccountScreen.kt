@@ -44,7 +44,6 @@ fun CreateAccountScreen(
     viewModel: CreateAccountViewModel,
     onBackClick: () -> Unit,
     modifier: Modifier = Modifier,
-    cancelable: Boolean,
     onContinueClick: (
         accountId: String,
         requestSource: CreateAccountRequestSource?,
@@ -64,7 +63,7 @@ fun CreateAccountScreen(
             onAccountCreateClick = viewModel::onAccountCreateClick,
             accountName = accountName,
             buttonEnabled = buttonEnabled,
-            cancelable = cancelable,
+            cancelable = state.isCancelable,
             onBackClick = viewModel::onBackClick,
             modifier = modifier,
             firstTime = state.firstTime,

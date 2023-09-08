@@ -71,7 +71,6 @@ fun NavController.createAccountScreen(
 
 @OptIn(ExperimentalAnimationApi::class)
 fun NavGraphBuilder.createAccountScreen(
-    startDestination: String,
     onBackClick: () -> Unit,
     onContinueClick: (accountId: String, requestSource: CreateAccountRequestSource?) -> Unit,
     onAddLedgerDevice: () -> Unit
@@ -107,7 +106,6 @@ fun NavGraphBuilder.createAccountScreen(
         CreateAccountScreen(
             viewModel = hiltViewModel(),
             onBackClick = onBackClick,
-            cancelable = startDestination != ROUTE_CREATE_ACCOUNT,
             onContinueClick = onContinueClick,
             onAddLedgerDevice = onAddLedgerDevice
         )

@@ -7,11 +7,16 @@ import android.view.animation.AnticipateInterpolator
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material.Text
+import androidx.compose.material.TextButton
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.dp
 import androidx.core.animation.doOnEnd
 import androidx.core.splashscreen.SplashScreen
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
@@ -23,6 +28,8 @@ import com.babylon.wallet.android.presentation.main.MainViewModel
 import com.babylon.wallet.android.presentation.ui.composables.DevBannerState
 import com.babylon.wallet.android.presentation.ui.composables.DevelopmentPreviewWrapper
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 
 // Extending from FragmentActivity because of Biometric
 @AndroidEntryPoint
@@ -41,9 +48,9 @@ class MainActivity : FragmentActivity() {
 
         setContent {
             RadixWalletTheme {
-                val isMainnet = viewModel.usesMainnetGateway.collectAsState(initial = true)
-                val devBannerState by remember(isMainnet) {
-                    derivedStateOf { DevBannerState(isVisible = !isMainnet.value) }
+                val isDevBannerVisible by viewModel.isDevBannerVisible.collectAsState(initial = true)
+                val devBannerState by remember(isDevBannerVisible) {
+                    derivedStateOf { DevBannerState(isVisible = isDevBannerVisible) }
                 }
 
                 DevelopmentPreviewWrapper(devBannerState = devBannerState) { padding ->
@@ -52,6 +59,21 @@ class MainActivity : FragmentActivity() {
                         mainViewModel = viewModel,
                         onCloseApp = { finish() }
                     )
+
+                    // TODO ONLY FOR TESTING PURPOSES
+                    val isLive by viewModel.networkInfoRepository.isMainnetLive.collectAsState()
+                    val scope = rememberCoroutineScope()
+                    TextButton(
+                        modifier = Modifier.padding(top = 60.dp),
+                        onClick = {
+                            scope.launch { viewModel.networkInfoRepository.isMainnetLive.update { !it } }
+                        }
+                    ) {
+                        Text(
+                            text = if (isLive) "\uD83D\uDFE2 Online" else "\uD83D\uDD34 Offline",
+                            color = Color.Black
+                        )
+                    }
                 }
             }
         }

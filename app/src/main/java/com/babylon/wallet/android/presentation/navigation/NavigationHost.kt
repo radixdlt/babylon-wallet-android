@@ -158,7 +158,6 @@ fun NavigationHost(
             )
         }
         createAccountScreen(
-            startDestination = startDestination,
             onBackClick = {
                 navController.navigateUp()
             },

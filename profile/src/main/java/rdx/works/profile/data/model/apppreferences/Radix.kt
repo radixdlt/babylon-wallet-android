@@ -138,6 +138,7 @@ object Radix {
             )
 
             var default: Gateway = rcnetV3
+                // TODO To remove when mainnet becomes default and change to val
                 set(value) {
                     // Can change default Gateway, only if the
                     // value is Mainnet
