@@ -6,11 +6,9 @@ import com.babylon.wallet.android.di.JsonConverterFactory
 import com.babylon.wallet.android.di.SimpleHttpClient
 import com.babylon.wallet.android.di.buildApi
 import com.babylon.wallet.android.domain.common.Result
-import com.babylon.wallet.android.domain.common.onValue
 import kotlinx.coroutines.flow.MutableStateFlow
 import okhttp3.OkHttpClient
 import retrofit2.Converter
-import timber.log.Timber
 import javax.inject.Inject
 
 interface NetworkInfoRepository {
@@ -58,9 +56,7 @@ class NetworkInfoRepositoryImpl @Inject constructor(
         ).mainnetNetworkStatus().execute(
             // TODO ONLY FOR TESTING PURPOSES
             map = { /*it.isMainnetLive*/isMainnetLive.value  }
-        ).onValue {
-            Timber.tag("Bakos").d("Mainnet: $it")
-        }
+        )
     }
 
     companion object {
