@@ -141,6 +141,7 @@
   <string name="settings_gateways">Gateways</string>
   <string name="settings_authorizedDapps">Authorized dApps</string>
   <string name="settings_personas">Personas</string>
+  <string name="settings_accountSecurityAndSettings">Account Security &amp; Settings</string>
   <string name="settings_appSettings">App Settings</string>
   <string name="settings_backups">Backups</string>
   <string name="settings_importFromLegacyWallet">Import from a Legacy Wallet</string>
@@ -152,6 +153,9 @@
   <string name="settings_linkToConnectorHeader_title">Link your Wallet to a Desktop Browser</string>
   <string name="settings_linkToConnectorHeader_subtitle">Scan the QR code in the Radix Wallet Connector extension</string>
   <string name="settings_linkToConnectorHeader_linkToConnector">Link to Connector</string>
+  <string name="settings_importFromLegacyWalletHeader_title">Radix Olympia Desktop Wallet user?</string>
+  <string name="settings_importFromLegacyWalletHeader_subtitle">Get started importing your Olympia accounts into your new Radix Wallet</string>
+  <string name="settings_importFromLegacyWalletHeader_importLegacyAccounts">Import Legacy Accounts</string>
   <string name="linkedConnectors_title">Linked Connectors</string>
   <string name="linkedConnectors_subtitle">Connect your Radix Wallet to desktop web browsers by linking to the Radix Connector browser extension. Here are your linked Connectors.</string>
   <string name="linkedConnectors_lastConnected">Last connected %s</string>
