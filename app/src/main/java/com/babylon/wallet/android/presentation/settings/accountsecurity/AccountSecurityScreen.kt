@@ -61,7 +61,7 @@ private fun AccountSecurityContent(
         modifier = modifier,
         topBar = {
             RadixCenteredTopAppBar(
-                title = stringResource(id = R.string.accountSettings_accountSecurity),
+                title = stringResource(id = R.string.settings_accountSecurityAndSettings),
                 onBackClick = onBackClick,
                 windowInsets = WindowInsets.statusBars
             )
