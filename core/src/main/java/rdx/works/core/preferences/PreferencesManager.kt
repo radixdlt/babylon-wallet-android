@@ -105,6 +105,7 @@ class PreferencesManager @Inject constructor(
         private val KEY_ACCOUNT_TO_EPOCH_MAP = stringPreferencesKey("account_to_epoch_map")
         private val KEY_LAST_BACKUP_INSTANT = stringPreferencesKey("last_backup_instant")
         private val KEY_BACKED_UP_FACTOR_SOURCE_IDS = stringPreferencesKey("backed_up_factor_source_ids")
-        private val KEY_IMPORT_OLYMPIA_WALLET_SETTING_DISMISSED = booleanPreferencesKey("import_olympia_wallet_setting_dismissed")
+        private val KEY_IMPORT_OLYMPIA_WALLET_SETTING_DISMISSED =
+            booleanPreferencesKey("import_olympia_wallet_setting_dismissed")
     }
 }

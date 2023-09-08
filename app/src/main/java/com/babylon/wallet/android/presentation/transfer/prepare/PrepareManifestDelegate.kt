@@ -74,7 +74,9 @@ class PrepareManifestDelegate(
             targetAccounts.filter { targetAccount ->
                 targetAccount.assets.any { it.address == resource.resourceAddress }
             }.forEach { targetAccount ->
-                val spendingFungibleAsset = targetAccount.assets.find { it.address == resource.resourceAddress } as? SpendingAsset.Fungible
+                val spendingFungibleAsset = targetAccount.assets.find {
+                    it.address == resource.resourceAddress
+                } as? SpendingAsset.Fungible
                 if (spendingFungibleAsset != null) {
                     val bucket = newBucket()
 

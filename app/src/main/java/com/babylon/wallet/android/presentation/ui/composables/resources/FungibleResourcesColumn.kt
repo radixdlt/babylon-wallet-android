@@ -48,7 +48,7 @@ fun FungibleResourcesColumn(
             xrdItem = xrdItem,
             restOfFungibles = restResources
         ) { index, resource ->
-            item(index = index, resource = resource)
+            item(index, resource)
         }
     }
 }
@@ -72,7 +72,7 @@ fun LazyListScope.fungibleResources(
                 FungibleResourceCard(
                     modifier = modifier
                 ) {
-                    item(index = 0, resource = xrdItem)
+                    item(0, xrdItem)
                 }
             }
         }
@@ -100,7 +100,7 @@ fun LazyListScope.fungibleResources(
                         null
                     }
                 ) {
-                    item(index = index, resource = resource)
+                    item(index, resource)
                 }
             }
         )

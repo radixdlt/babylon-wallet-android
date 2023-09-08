@@ -130,7 +130,9 @@ fun BasicPromptAlertDialog(
             RadixTextButton(text = confirmText, onClick = { finish(true) }, contentColor = confirmTextColor)
         },
         dismissButton = dismissText?.let {
-            { RadixTextButton(text = it, onClick = { finish(false) }) }
+            {
+                RadixTextButton(text = it, onClick = { finish(false) })
+            }
         },
         title = title,
         text = text

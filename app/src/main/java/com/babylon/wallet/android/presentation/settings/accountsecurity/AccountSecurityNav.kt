@@ -34,7 +34,9 @@ fun NavGraphBuilder.accountSecurityNavGraph(
         accountSecurityScreen(navController)
         seedPhrases(
             onBackClick = { navController.popBackStack() },
-            onNavigateToRecoverMnemonic = { navController.restoreMnemonics(args = RestoreMnemonicsArgs.RestoreSpecificMnemonic(it.body)) },
+            onNavigateToRecoverMnemonic = {
+                navController.restoreMnemonics(args = RestoreMnemonicsArgs.RestoreSpecificMnemonic(it.body))
+            },
             onNavigateToSeedPhrase = { navController.revealSeedPhrase(it.body.value) }
         )
         ledgerHardwareWalletsScreen(

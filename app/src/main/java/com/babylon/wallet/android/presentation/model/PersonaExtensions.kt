@@ -39,6 +39,7 @@ fun RequestedNumber.Quantifier.toQuantifierUsedInRequest():
     }
 }
 
+@Suppress("UNUSED_EXPRESSION")
 fun PersonaData.PersonaDataField.isValid(): Boolean {
     return when (this) {
         else -> true
@@ -67,8 +68,12 @@ val PersonaData.PersonaDataField.Name.fullName: String
 fun List<PersonaData.PersonaDataField>.toPersonaData(): PersonaData {
     return PersonaData(
         name = filterIsInstance<PersonaData.PersonaDataField.Name>().firstOrNull()?.let { IdentifiedEntry.init(it) },
-        dateOfBirth = filterIsInstance<PersonaData.PersonaDataField.DateOfBirth>().firstOrNull()?.let { IdentifiedEntry.init(it) },
-        companyName = filterIsInstance<PersonaData.PersonaDataField.CompanyName>().firstOrNull()?.let { IdentifiedEntry.init(it) },
+        dateOfBirth = filterIsInstance<PersonaData.PersonaDataField.DateOfBirth>().firstOrNull()?.let {
+            IdentifiedEntry.init(it)
+        },
+        companyName = filterIsInstance<PersonaData.PersonaDataField.CompanyName>().firstOrNull()?.let {
+            IdentifiedEntry.init(it)
+        },
         emailAddresses = filterIsInstance<PersonaData.PersonaDataField.Email>().let { field ->
             field.map { IdentifiedEntry.init(it) }
         },
@@ -130,7 +135,9 @@ fun Network.Persona.getPersonaDataForFieldKinds(requiredPersonaFields: List<Requ
             require(count <= personaData.urls.size)
             personaData.urls.take(count)
         }.orEmpty(),
-        postalAddresses = requiredPersonaFields.firstOrNull { it.kind == PersonaData.PersonaDataField.Kind.PostalAddress }?.let {
+        postalAddresses = requiredPersonaFields.firstOrNull {
+            it.kind == PersonaData.PersonaDataField.Kind.PostalAddress
+        }?.let {
             val count = it.numberOfValues.quantity
             require(count <= personaData.postalAddresses.size)
             personaData.postalAddresses.take(count)

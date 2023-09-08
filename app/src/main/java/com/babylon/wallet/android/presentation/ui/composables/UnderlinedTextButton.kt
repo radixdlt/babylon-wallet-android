@@ -9,7 +9,11 @@ import androidx.compose.ui.text.style.TextDecoration
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 
 @Composable
-fun UnderlineTextButton(text: String, onClick: () -> Unit, enabled: Boolean = true, modifier: Modifier = Modifier) {
+fun UnderlineTextButton(
+    modifier: Modifier = Modifier,
+    text: String, onClick: () -> Unit,
+    enabled: Boolean = true
+) {
     TextButton(
         modifier = modifier,
         onClick = onClick,

@@ -589,16 +589,16 @@ private fun VerifyWithLedgerDevicePage(
                         items(items = verifiedLedgerDevices, key = { item ->
                             item.id.body.value
                         }, itemContent = { item ->
-                                LedgerListItem(
-                                    ledgerFactorSource = item,
-                                    modifier = Modifier
-                                        .shadow(elevation = 4.dp, shape = RadixTheme.shapes.roundedRectSmall)
-                                        .fillMaxWidth()
-                                        .background(RadixTheme.colors.gray5, shape = RadixTheme.shapes.roundedRectSmall)
-                                        .padding(RadixTheme.dimensions.paddingLarge),
-                                )
-                                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingMedium))
-                            })
+                            LedgerListItem(
+                                ledgerFactorSource = item,
+                                modifier = Modifier
+                                    .shadow(elevation = 4.dp, shape = RadixTheme.shapes.roundedRectSmall)
+                                    .fillMaxWidth()
+                                    .background(RadixTheme.colors.gray5, shape = RadixTheme.shapes.roundedRectSmall)
+                                    .padding(RadixTheme.dimensions.paddingLarge),
+                            )
+                            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingMedium))
+                        })
                     }
                 }
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))

@@ -181,7 +181,9 @@ private fun ColumnScope.FungibleSpendingAsset(
         Text(
             modifier = Modifier
                 .weight(1f),
-            text = resource.displayTitle.ifEmpty { stringResource(id = com.babylon.wallet.android.R.string.transactionReview_unknown) },
+            text = resource.displayTitle.ifEmpty {
+                stringResource(id = com.babylon.wallet.android.R.string.transactionReview_unknown)
+            },
             style = RadixTheme.typography.body2HighImportance,
             color = RadixTheme.colors.gray1,
             maxLines = 2

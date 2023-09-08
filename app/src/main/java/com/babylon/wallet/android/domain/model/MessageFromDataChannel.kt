@@ -179,7 +179,7 @@ sealed interface MessageFromDataChannel {
         }
 
         enum class LedgerDeviceModel {
-            NanoS, NanoSPlus, NanoX;
+            NanoS, NanoSPlus, NanoX
         }
 
         data class SignatureOfSigner(

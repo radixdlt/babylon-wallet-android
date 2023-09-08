@@ -139,7 +139,9 @@ private fun SignatureRequestContent(
             else -> null
         }
         Text(
-            text = subtitle?.let { stringResource(it).formattedSpans(SpanStyle(fontWeight = FontWeight.Bold)) } ?: AnnotatedString(""),
+            text = subtitle?.let {
+                stringResource(it).formattedSpans(SpanStyle(fontWeight = FontWeight.Bold))
+            } ?: AnnotatedString(""),
             style = RadixTheme.typography.body1Regular,
             color = RadixTheme.colors.gray1,
             textAlign = TextAlign.Center

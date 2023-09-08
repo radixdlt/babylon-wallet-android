@@ -107,7 +107,9 @@ class BackupProfileRepositoryImpl @Inject constructor(
 
     override suspend fun getSnapshotForBackup(backupType: BackupType): String? {
         val profile = profileRepository.profile.firstOrNull() ?: return null
-        val snapshotSerialised = runCatching { profileSnapshotJson.encodeToString(profile.snapshot()) }.getOrNull() ?: return null
+        val snapshotSerialised = runCatching {
+            profileSnapshotJson.encodeToString(profile.snapshot())
+        }.getOrNull() ?: return null
 
         return when (backupType) {
             is BackupType.Cloud -> if (profile.appPreferences.security.isCloudProfileSyncEnabled) {
