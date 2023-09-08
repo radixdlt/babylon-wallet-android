@@ -22,7 +22,7 @@ sealed interface SettingsItem {
                 ImportOlympiaWallet -> R.string.settings_importFromLegacyWallet
                 AuthorizedDapps -> R.string.settings_authorizedDapps
                 Personas -> R.string.settings_personas
-                AccountSecurityAndSettings -> R.string.accountSettings_accountSecurity
+                AccountSecurityAndSettings -> R.string.settings_accountSecurityAndSettings
                 is AppSettings -> R.string.settings_appSettings
             }
         }

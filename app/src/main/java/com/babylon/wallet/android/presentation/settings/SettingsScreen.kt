@@ -267,13 +267,13 @@ private fun ImportOlympiaWalletSettingBox(
             verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingMedium)
         ) {
             Text(
-                text = "Radix Olympia Desktop Wallet user?",
+                text = stringResource(id = R.string.settings_importFromLegacyWalletHeader_title),
                 style = RadixTheme.typography.body1Header,
                 color = RadixTheme.colors.gray1,
                 textAlign = TextAlign.Center
             )
             Text(
-                text = "Get started importing your Olympia accounts into your new Radix Wallet",
+                text = stringResource(id = R.string.settings_importFromLegacyWalletHeader_subtitle),
                 style = RadixTheme.typography.body2Regular,
                 color = RadixTheme.colors.gray2,
                 textAlign = TextAlign.Center
@@ -282,7 +282,7 @@ private fun ImportOlympiaWalletSettingBox(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = RadixTheme.dimensions.paddingDefault),
-                text = "Import Legacy Accounts",
+                text = stringResource(id = R.string.settings_importFromLegacyWalletHeader_importLegacyAccounts),
                 onClick = {
                     onSettingClick(settingsItem)
                 },
