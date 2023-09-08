@@ -10,7 +10,7 @@ object AddressValidator {
         it.networkId() == networkId.toUByte()
     } ?: false
 
-    fun getValidNetworkId(address: String) = run {
+    fun getValidNetworkId(address: String) = runCatching {
         Address(address)
-    }.networkId()
+    }.getOrNull()?.networkId()?.toInt()
 }

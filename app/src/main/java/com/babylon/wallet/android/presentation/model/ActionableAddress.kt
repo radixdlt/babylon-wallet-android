@@ -2,7 +2,9 @@ package com.babylon.wallet.android.presentation.model
 
 import com.babylon.wallet.android.domain.model.Resource
 import com.babylon.wallet.android.utils.truncatedHash
-import rdx.works.profile.data.model.apppreferences.Radix
+import rdx.works.core.AddressValidator
+import rdx.works.profile.data.model.apppreferences.Radix.dashboardUrl
+import rdx.works.profile.derivation.model.NetworkId
 
 data class ActionableAddress(
     val address: String,
@@ -26,7 +28,9 @@ data class ActionableAddress(
             else -> "${type.prefix}/$address"
         }
 
-        val url = Radix.dashboardUrl(address)
+        val url = AddressValidator.getValidNetworkId(address)?.let {
+            NetworkId.from(it)
+        }?.dashboardUrl() ?: NetworkId.Mainnet.dashboardUrl()
         return "$url/$suffix"
     }
 

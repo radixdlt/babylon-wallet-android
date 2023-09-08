@@ -2,7 +2,6 @@ package rdx.works.profile.data.model.apppreferences
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import rdx.works.core.AddressValidator
 import rdx.works.profile.derivation.model.NetworkId
 
 object Radix {
@@ -149,32 +148,42 @@ object Radix {
         }
     }
 
-    fun dashboardUrl(address: String): String {
-        return when (AddressValidator.getValidNetworkId(address)) {
-            Network.mainnet.id.toUByte() -> {
+    fun NetworkId.dashboardUrl() =
+        when (this) {
+            NetworkId.Mainnet -> {
+                DASHBOARD_MAINNET_URL // TODO change it to mainnet
+            }
+
+            NetworkId.Zabanet -> {
                 DASHBOARD_RCNET_V3_URL
             }
-            Network.stokenet.id.toUByte() -> {
+
+            NetworkId.Stokenet -> {
                 DASHBOARD_STOKENET_URL
             }
-            Network.hammunet.id.toUByte() -> {
+
+            NetworkId.Hammunet -> {
                 DASHBOARD_HAMMUNET_URL
             }
-            Network.enkinet.id.toUByte() -> {
+
+            NetworkId.Enkinet -> {
                 DASHBOARD_ENKINET_URL
             }
-            Network.mardunet.id.toUByte() -> {
+
+            NetworkId.Mardunet -> {
                 DASHBOARD_MARDUNET_URL
             }
-            Network.kisharnet.id.toUByte() -> {
+
+            NetworkId.Kisharnet -> {
                 DASHBOARD_KISHARNET_URL
             }
+
             else -> {
                 DASHBOARD_RCNET_V3_URL
             }
         }
-    }
 
+    private const val DASHBOARD_MAINNET_URL = "https://rcnet-v3-dashboard.radixdlt.com"
     private const val DASHBOARD_RCNET_V3_URL = "https://rcnet-v3-dashboard.radixdlt.com"
     private const val DASHBOARD_STOKENET_URL = "https://stokenet-dashboard.radixdlt.com"
     private const val DASHBOARD_HAMMUNET_URL = "https://hammunet-dashboard.rdx-works-main.extratools.works"
