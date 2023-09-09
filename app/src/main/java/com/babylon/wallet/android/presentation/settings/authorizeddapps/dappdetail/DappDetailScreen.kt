@@ -758,7 +758,9 @@ private fun PersonaDetailList(
                         modifier = Modifier
                             .fillMaxWidth()
                             .background(
-                                Brush.horizontalGradient(AccountGradientList[account.appearanceID % AccountGradientList.size]),
+                                Brush.horizontalGradient(
+                                    AccountGradientList[account.appearanceID % AccountGradientList.size]
+                                ),
                                 RadixTheme.shapes.roundedRectSmall
                             )
                             .padding(

@@ -163,6 +163,9 @@ private fun resourceCardShape(
 ): Shape = when {
     allItemsSize == 1 -> RoundedCornerShape(cornerRadius)
     itemIndex == 0 && allItemsSize > 1 -> RoundedCornerShape(topStart = cornerRadius, topEnd = cornerRadius)
-    itemIndex == allItemsSize - 1 && allItemsSize > 1 -> RoundedCornerShape(bottomStart = cornerRadius, bottomEnd = cornerRadius)
+    itemIndex == allItemsSize - 1 && allItemsSize > 1 -> RoundedCornerShape(
+        bottomStart = cornerRadius,
+        bottomEnd = cornerRadius
+    )
     else -> RectangleShape
 }

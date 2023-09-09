@@ -164,7 +164,12 @@ private fun RevealSeedPhraseContent(
 }
 
 @Composable
-private fun SeedPhraseRow(wordsChunk: ImmutableList<String>, outerIndex: Int, seedPhraseWordsPerLine: Int, modifier: Modifier = Modifier) {
+private fun SeedPhraseRow(
+    wordsChunk: ImmutableList<String>,
+    outerIndex: Int,
+    seedPhraseWordsPerLine: Int,
+    modifier: Modifier = Modifier
+) {
     Row(
         modifier,
         verticalAlignment = Alignment.CenterVertically,
@@ -173,7 +178,10 @@ private fun SeedPhraseRow(wordsChunk: ImmutableList<String>, outerIndex: Int, se
         wordsChunk.forEachIndexed { index, word ->
             SingleWord(
                 modifier = Modifier.weight(1f),
-                label = stringResource(id = R.string.revealSeedPhrase_wordLabel, outerIndex * seedPhraseWordsPerLine + index + 1),
+                label = stringResource(
+                    id = R.string.revealSeedPhrase_wordLabel,
+                    outerIndex * seedPhraseWordsPerLine + index + 1
+                ),
                 word = word
             )
         }

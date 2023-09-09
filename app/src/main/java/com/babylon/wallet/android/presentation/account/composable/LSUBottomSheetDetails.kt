@@ -116,7 +116,10 @@ fun LSUBottomSheetDetails(
                 Divider(
                     Modifier
                         .fillMaxWidth()
-                        .padding(top = RadixTheme.dimensions.paddingLarge, bottom = RadixTheme.dimensions.paddingDefault),
+                        .padding(
+                            top = RadixTheme.dimensions.paddingLarge,
+                            bottom = RadixTheme.dimensions.paddingDefault
+                        ),
                     color = RadixTheme.colors.gray4
                 )
             }
@@ -199,7 +202,11 @@ fun LSUBottomSheetDetails(
 }
 
 @Composable
-private fun LSUResourceValue(resource: Resource.LiquidStakeUnitResource, validatorDetail: ValidatorDetail, modifier: Modifier = Modifier) {
+private fun LSUResourceValue(
+    resource: Resource.LiquidStakeUnitResource,
+    validatorDetail: ValidatorDetail,
+    modifier: Modifier = Modifier
+) {
     Row(
         modifier = modifier
             .border(1.dp, RadixTheme.colors.gray4, RadixTheme.shapes.roundedRectMedium)

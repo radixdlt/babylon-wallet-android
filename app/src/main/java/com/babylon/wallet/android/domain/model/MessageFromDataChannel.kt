@@ -220,8 +220,7 @@ sealed interface MessageFromDataChannel {
     object Error : MessageFromDataChannel
 }
 
-fun MessageFromDataChannel.IncomingRequest.NumberOfValues.toProfileShareAccountsQuantifier():
-    RequestedNumber.Quantifier {
+fun MessageFromDataChannel.IncomingRequest.NumberOfValues.toProfileShareAccountsQuantifier(): RequestedNumber.Quantifier {
     return when (this.quantifier) {
         MessageFromDataChannel.IncomingRequest.NumberOfValues.Quantifier.Exactly -> {
             RequestedNumber.Quantifier.Exactly
@@ -233,8 +232,7 @@ fun MessageFromDataChannel.IncomingRequest.NumberOfValues.toProfileShareAccounts
     }
 }
 
-fun MessageFromDataChannel.LedgerResponse.LedgerDeviceModel.toProfileLedgerDeviceModel():
-    LedgerHardwareWalletFactorSource.DeviceModel {
+fun MessageFromDataChannel.LedgerResponse.LedgerDeviceModel.toProfileLedgerDeviceModel(): LedgerHardwareWalletFactorSource.DeviceModel {
     return when (this) {
         MessageFromDataChannel.LedgerResponse.LedgerDeviceModel.NanoS -> LedgerHardwareWalletFactorSource.DeviceModel.NANO_S
         MessageFromDataChannel.LedgerResponse.LedgerDeviceModel.NanoSPlus -> LedgerHardwareWalletFactorSource.DeviceModel.NANO_S_PLUS
@@ -258,12 +256,18 @@ fun MessageFromDataChannel.IncomingRequest.PersonaRequestItem.toRequiredFields()
             }
             if (numberOfRequestedEmailAddresses != null) {
                 it.add(
-                    RequiredPersonaField(PersonaData.PersonaDataField.Kind.EmailAddress, numberOfRequestedEmailAddresses)
+                    RequiredPersonaField(
+                        kind = PersonaData.PersonaDataField.Kind.EmailAddress,
+                        numberOfValues = numberOfRequestedEmailAddresses
+                    )
                 )
             }
             if (numberOfRequestedPhoneNumbers != null) {
                 it.add(
-                    RequiredPersonaField(PersonaData.PersonaDataField.Kind.PhoneNumber, numberOfRequestedPhoneNumbers)
+                    RequiredPersonaField(
+                        kind = PersonaData.PersonaDataField.Kind.PhoneNumber,
+                        numberOfValues = numberOfRequestedPhoneNumbers
+                    )
                 )
             }
         }

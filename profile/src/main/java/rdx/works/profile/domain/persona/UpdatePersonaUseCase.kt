@@ -25,7 +25,10 @@ class UpdatePersonaUseCase @Inject constructor(
 
             val updatedProfile = profile.updatePersona(updatedPersona)
             profileRepository.saveProfile(updatedProfile)
-            dAppConnectionRepository.ensureAuthorizedPersonasFieldsExist(updatedPersona.address, updatedPersona.personaData.allFieldIds)
+            dAppConnectionRepository.ensureAuthorizedPersonasFieldsExist(
+                personaAddress = updatedPersona.address,
+                existingFieldIds = updatedPersona.personaData.allFieldIds
+            )
         }
     }
 }

@@ -17,8 +17,9 @@ data class PersonaUiModel(
 ) {
     fun missingFieldKinds(): PersistentList<PersonaData.PersonaDataField.Kind> {
         val requiredFieldKinds = requiredPersonaFields.fields.map { it.kind }
-        return requiredFieldKinds.minus(persona.personaData.allFields.map { it.value.kind }.toSet()).sortedBy { it.ordinal }
-            .toPersistentList()
+        return requiredFieldKinds.minus(
+            persona.personaData.allFields.map { it.value.kind }.toSet()
+        ).sortedBy { it.ordinal }.toPersistentList()
     }
 
     fun personalInfoFormatted(): String {

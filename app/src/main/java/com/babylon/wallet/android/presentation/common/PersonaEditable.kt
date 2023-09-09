@@ -157,7 +157,9 @@ class PersonaEditableImpl : PersonaEditable {
             state.copy(
                 currentFields = validatedFields.toPersistentList(),
                 inputValid = validatedFields.all { it.valid == true } && state.personaDisplayName.value.trim().isNotEmpty(),
-                personaDisplayName = state.personaDisplayName.copy(valid = state.personaDisplayName.value.trim().isNotEmpty())
+                personaDisplayName = state.personaDisplayName.copy(
+                    valid = state.personaDisplayName.value.trim().isNotEmpty()
+                )
             )
         }
     }
@@ -167,7 +169,13 @@ class PersonaEditableImpl : PersonaEditable {
     ): PersistentList<PersonaFieldWrapper> {
         val requiredFieldKinds = personaEditState.value.requiredFieldKinds
         return (PersonaData.PersonaDataField.Kind.supportedKinds.toSet() - existingFieldKinds)
-            .sortedBy { it.ordinal }.map { PersonaFieldWrapper(required = requiredFieldKinds.contains(it), entry = it.empty()) }
+            .sortedBy { it.ordinal }
+            .map {
+                PersonaFieldWrapper(
+                    required = requiredFieldKinds.contains(it),
+                    entry = it.empty()
+                )
+            }
             .toPersistentList()
     }
 }

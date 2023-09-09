@@ -71,7 +71,10 @@ class PersonaDataOnetimeViewModel @Inject constructor(
 }
 
 sealed interface PersonaDataOnetimeEvent : OneOffEvent {
-    data class OnEditPersona(val personaAddress: String, val requiredPersonaFields: RequiredPersonaFields) : PersonaDataOnetimeEvent
+    data class OnEditPersona(
+        val personaAddress: String,
+        val requiredPersonaFields: RequiredPersonaFields
+    ) : PersonaDataOnetimeEvent
     data class CreatePersona(val firstPersonaCreated: Boolean) : PersonaDataOnetimeEvent
 }
 

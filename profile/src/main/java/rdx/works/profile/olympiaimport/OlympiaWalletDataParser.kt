@@ -47,8 +47,15 @@ class OlympiaWalletDataParser @Inject constructor(
                     val publicKeyHash = publicKeyHex.compressedPublicKeyHashBytes()
                     val index = requireNotNull(singleAccountDataChunks[2].toInt())
                     val name = if (singleAccountDataChunks.size == 4) {
-                        singleAccountDataChunks[3].replace(EndOfAccountName, "")
-                            .replace(Regex("[$HeaderSeparator$InnerSeparator$OuterSeparator]"), AccountNameForbiddenCharsReplacement)
+                        singleAccountDataChunks[3]
+                            .replace(
+                                oldValue = EndOfAccountName,
+                                newValue = ""
+                            )
+                            .replace(
+                                regex = Regex("[$HeaderSeparator$InnerSeparator$OuterSeparator]"),
+                                replacement = AccountNameForbiddenCharsReplacement
+                            )
                     } else {
                         ""
                     }.ifEmpty { "Unnamed Olympia account $index" }

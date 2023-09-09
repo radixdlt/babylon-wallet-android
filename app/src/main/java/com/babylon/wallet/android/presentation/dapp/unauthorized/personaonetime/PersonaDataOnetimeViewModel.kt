@@ -61,7 +61,12 @@ class PersonaDataOnetimeViewModel @Inject constructor(
             it.copy(selected = it.persona.address == persona.address)
         }.toPersistentList()
         val selectedPersonaHasAllTheData = updatedPersonas.any { it.selected && it.missingFieldKinds().isEmpty() }
-        _state.update { it.copy(personaListToDisplay = updatedPersonas, continueButtonEnabled = selectedPersonaHasAllTheData) }
+        _state.update {
+            it.copy(
+                personaListToDisplay = updatedPersonas,
+                continueButtonEnabled = selectedPersonaHasAllTheData
+            )
+        }
     }
 
     fun onEditClick(personaAddress: String) {

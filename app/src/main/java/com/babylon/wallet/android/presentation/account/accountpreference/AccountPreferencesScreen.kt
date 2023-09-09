@@ -63,7 +63,10 @@ fun AccountPreferenceScreen(
                 BottomDialogDragHandle(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .background(RadixTheme.colors.defaultBackground, shape = RadixTheme.shapes.roundedRectTopDefault)
+                        .background(
+                            color = RadixTheme.colors.defaultBackground,
+                            shape = RadixTheme.shapes.roundedRectTopDefault
+                        )
                         .padding(vertical = RadixTheme.dimensions.paddingSmall),
                     onDismissRequest = {
                         scope.launch { sheetState.hide() }

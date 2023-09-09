@@ -26,8 +26,7 @@ fun List<PersonaData.PersonaDataField.Kind>.encodeToString(): String {
     return joinToString(",") { it.name }.encodeUtf8()
 }
 
-fun RequestedNumber.Quantifier.toQuantifierUsedInRequest():
-    MessageFromDataChannel.IncomingRequest.NumberOfValues.Quantifier {
+fun RequestedNumber.Quantifier.toQuantifierUsedInRequest(): MessageFromDataChannel.IncomingRequest.NumberOfValues.Quantifier {
     return when (this) {
         RequestedNumber.Quantifier.Exactly -> {
             MessageFromDataChannel.IncomingRequest.NumberOfValues.Quantifier.Exactly
@@ -94,7 +93,14 @@ fun List<PersonaData.PersonaDataField>.toPersonaData(): PersonaData {
 
 fun PersonaData.toPersonaDataRequestResponseItem(): PersonaDataRequestResponseItem {
     return PersonaDataRequestResponseItem(
-        name = name?.value?.let { name -> PersonaDataName(name.variant.toVariantDTO(), name.family, name.given, name.nickname) },
+        name = name?.value?.let { name ->
+            PersonaDataName(
+                name.variant.toVariantDTO(),
+                name.family,
+                name.given,
+                name.nickname
+            )
+        },
         emailAddresses = emailAddresses.map { it.value.value },
         phoneNumbers = phoneNumbers.map { it.value.value }
     )

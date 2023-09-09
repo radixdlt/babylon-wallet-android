@@ -83,7 +83,10 @@ fun MnemonicWithPassphrase.validatePublicKeysOf(accounts: List<OlympiaAccountDet
     val seed = words.toSeed(passphrase = bip39Passphrase)
     accounts.forEach { account ->
         val derivedPublicKey =
-            seed.toKey(account.derivationPath.path, EllipticCurveType.Secp256k1).keyPair.getCompressedPublicKey().toHexString()
+            seed.toKey(
+                pathString = account.derivationPath.path,
+                curveType = EllipticCurveType.Secp256k1
+            ).keyPair.getCompressedPublicKey().toHexString()
         if (derivedPublicKey != account.publicKey) {
             return false
         }

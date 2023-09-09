@@ -144,7 +144,9 @@ class BuildAuthorizedDappResponseUseCase @Inject constructor(
     ): Result<AuthRequestResponseItem> {
         val authResponse: Result<AuthRequestResponseItem> = when (val authRequest = request.authRequest) {
             is AuthorizedRequest.AuthRequest.LoginRequest.WithChallenge -> {
-                var response: Result<AuthRequestResponseItem> = Result.failure(DappRequestFailure.FailedToSignAuthChallenge())
+                var response: Result<AuthRequestResponseItem> = Result.failure(
+                    DappRequestFailure.FailedToSignAuthChallenge()
+                )
                 val signRequest = SignRequest.SignAuthChallengeRequest(
                     challengeHex = authRequest.challenge,
                     origin = request.metadata.origin,

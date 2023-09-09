@@ -202,7 +202,10 @@ private fun PersonaDetailList(
                 )
                 if (field != lastItem) {
                     Divider(
-                        modifier = Modifier.padding(horizontal = dimensions.paddingDefault, vertical = dimensions.paddingLarge),
+                        modifier = Modifier.padding(
+                            horizontal = dimensions.paddingDefault,
+                            vertical = dimensions.paddingLarge
+                        ),
                         color = RadixTheme.colors.gray4
                     )
                 }

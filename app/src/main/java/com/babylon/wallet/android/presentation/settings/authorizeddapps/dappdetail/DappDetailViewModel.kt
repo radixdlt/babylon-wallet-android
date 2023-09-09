@@ -221,7 +221,10 @@ class DappDetailViewModel @Inject constructor(
                             ),
                             challenge = null
                         ),
-                        resetRequestItem = MessageFromDataChannel.IncomingRequest.ResetRequestItem(accounts = true, personaData = false)
+                        resetRequestItem = MessageFromDataChannel.IncomingRequest.ResetRequestItem(
+                            accounts = true,
+                            personaData = false
+                        )
                     )
                     incomingRequestRepository.add(incomingRequest = request)
                 }

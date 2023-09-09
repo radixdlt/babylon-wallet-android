@@ -129,6 +129,7 @@ fun BackupScreen(
     }
 }
 
+@OptIn(ExperimentalMaterialApi::class)
 @Composable
 private fun BackupScreenContent(
     modifier: Modifier = Modifier,
@@ -399,7 +400,10 @@ private fun ExportWalletBackupFileDialog(
                 Text(
                     modifier = modifier
                         .clickable(role = Role.Button) { onConfirm(true) }
-                        .padding(horizontal = RadixTheme.dimensions.paddingSmall, vertical = RadixTheme.dimensions.paddingXSmall),
+                        .padding(
+                            horizontal = RadixTheme.dimensions.paddingSmall,
+                            vertical = RadixTheme.dimensions.paddingXSmall
+                        ),
                     text = stringResource(id = R.string.profileBackup_manualBackups_encryptBackupDialogConfirm),
                     color = RadixTheme.colors.red1
                 )
@@ -407,7 +411,10 @@ private fun ExportWalletBackupFileDialog(
                 Text(
                     modifier = modifier
                         .clickable(role = Role.Button) { onConfirm(false) }
-                        .padding(horizontal = RadixTheme.dimensions.paddingSmall, vertical = RadixTheme.dimensions.paddingXSmall),
+                        .padding(
+                            horizontal = RadixTheme.dimensions.paddingSmall,
+                            vertical = RadixTheme.dimensions.paddingXSmall
+                        ),
                     text = stringResource(id = R.string.profileBackup_manualBackups_encryptBackupDialogDeny),
                     color = RadixTheme.colors.red1
                 )
@@ -417,7 +424,10 @@ private fun ExportWalletBackupFileDialog(
             Text(
                 modifier = modifier
                     .clickable(role = Role.Button) { onDeny() }
-                    .padding(horizontal = RadixTheme.dimensions.paddingSmall, vertical = RadixTheme.dimensions.paddingXSmall),
+                    .padding(
+                        horizontal = RadixTheme.dimensions.paddingSmall,
+                        vertical = RadixTheme.dimensions.paddingXSmall
+                    ),
                 text = stringResource(id = R.string.common_cancel),
                 color = RadixTheme.colors.blue2
             )
@@ -447,7 +457,10 @@ private fun DeleteWalletDialog(
             Text(
                 modifier = modifier
                     .clickable(role = Role.Button) { onConfirm() }
-                    .padding(horizontal = RadixTheme.dimensions.paddingSmall, vertical = RadixTheme.dimensions.paddingXSmall),
+                    .padding(
+                        horizontal = RadixTheme.dimensions.paddingSmall,
+                        vertical = RadixTheme.dimensions.paddingXSmall
+                    ),
                 text = stringResource(id = R.string.profileBackup_deleteWalletDialog_confirm),
                 color = RadixTheme.colors.red1
             )
@@ -456,7 +469,10 @@ private fun DeleteWalletDialog(
             Text(
                 modifier = modifier
                     .clickable(role = Role.Button) { onDeny() }
-                    .padding(horizontal = RadixTheme.dimensions.paddingSmall, vertical = RadixTheme.dimensions.paddingXSmall),
+                    .padding(
+                        horizontal = RadixTheme.dimensions.paddingSmall,
+                        vertical = RadixTheme.dimensions.paddingXSmall
+                    ),
                 text = stringResource(id = R.string.common_cancel),
                 color = RadixTheme.colors.blue2
             )

@@ -125,7 +125,9 @@ fun NavigationHost(
                 navController.seedPhrases()
             },
             onNavigateToMnemonicRestore = {
-                navController.restoreMnemonics(args = RestoreMnemonicsArgs.RestoreSpecificMnemonic(factorSourceId = it.body))
+                navController.restoreMnemonics(
+                    args = RestoreMnemonicsArgs.RestoreSpecificMnemonic(factorSourceId = it.body)
+                )
             },
         )
         composable(

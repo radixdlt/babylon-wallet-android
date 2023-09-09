@@ -66,7 +66,11 @@ fun AccountTopBar(
         modifier = modifier
             .fillMaxWidth(),
         motionScene = MotionScene(
-            content = remember { context.resources.openRawResource(R.raw.account_top_bar_scene).readBytes().decodeToString() }
+            content = remember {
+                context.resources.openRawResource(
+                    R.raw.account_top_bar_scene
+                ).readBytes().decodeToString()
+            }
         ),
         progress = progress
     ) {

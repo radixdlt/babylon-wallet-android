@@ -48,8 +48,12 @@ class RestoreFromBackupViewModel @Inject constructor(
                 sendEvent(Event.OnRestoreConfirm(fromCloud = false))
             }.onFailure { error ->
                 when (error) {
-                    is InvalidPasswordException -> _state.update { it.copy(passwordSheetState = State.PasswordSheet.Open(file = uri)) }
-                    is InvalidSnapshotException -> _state.update { it.copy(uiMessage = UiMessage.InfoMessage.InvalidSnapshot) }
+                    is InvalidPasswordException -> _state.update {
+                        it.copy(passwordSheetState = State.PasswordSheet.Open(file = uri))
+                    }
+                    is InvalidSnapshotException -> _state.update {
+                        it.copy(uiMessage = UiMessage.InfoMessage.InvalidSnapshot)
+                    }
                 }
             }
     }
@@ -86,7 +90,10 @@ class RestoreFromBackupViewModel @Inject constructor(
         val sheet = state.value.passwordSheetState as? State.PasswordSheet.Open ?: return
         if (sheet.isSubmitEnabled) {
             viewModelScope.launch {
-                saveTemporaryRestoringSnapshotUseCase.forFile(uri = sheet.file, BackupType.File.Encrypted(sheet.password))
+                saveTemporaryRestoringSnapshotUseCase.forFile(
+                    uri = sheet.file,
+                    fileBackupType = BackupType.File.Encrypted(sheet.password)
+                )
                     .onSuccess {
                         _state.update { state -> state.copy(passwordSheetState = State.PasswordSheet.Closed) }
                         delay(AppConstants.DELAY_300_MS)

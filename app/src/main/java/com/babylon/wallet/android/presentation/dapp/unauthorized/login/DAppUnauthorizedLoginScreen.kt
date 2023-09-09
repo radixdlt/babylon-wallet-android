@@ -31,7 +31,10 @@ fun DappUnauthorizedLoginScreen(
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     when (val route = state.initialUnauthorizedLoginRoute) {
-        is InitialUnauthorizedLoginRoute.ChooseAccount -> navigateToChooseAccount(route.numberOfAccounts, route.isExactAccountsCount)
+        is InitialUnauthorizedLoginRoute.ChooseAccount -> navigateToChooseAccount(
+            route.numberOfAccounts,
+            route.isExactAccountsCount
+        )
         is InitialUnauthorizedLoginRoute.OnetimePersonaData -> navigateToOneTimePersonaData(route.requiredPersonaFields)
         null -> {}
     }

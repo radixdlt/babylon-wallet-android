@@ -74,7 +74,10 @@ class BackupProfileRepositoryImpl @Inject constructor(
                 Result.failure(InvalidSnapshotException)
             } else {
                 val snapshot = runCatching {
-                    val decrypted = encryptedProfileSnapshot.decrypt(deserializer = profileSnapshotJson, password = backupType.password)
+                    val decrypted = encryptedProfileSnapshot.decrypt(
+                        deserializer = profileSnapshotJson,
+                        password = backupType.password
+                    )
                     profileSnapshotJson.encodeToString(decrypted)
                 }.getOrNull()
 
