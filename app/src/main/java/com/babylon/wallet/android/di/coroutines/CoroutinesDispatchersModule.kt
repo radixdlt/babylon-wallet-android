@@ -10,7 +10,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import javax.inject.Singleton
 
-@Suppress("InjectDispatcher") // TODO check why detekt complaints although this file is the DI for dispatchers
+@Suppress("InjectDispatcher")
 @InstallIn(SingletonComponent::class)
 @Module
 object CoroutinesDispatchersModule {
