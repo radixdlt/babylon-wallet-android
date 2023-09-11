@@ -1,117 +1,99 @@
-# This file contains the fastlane.tools configuration
-# You can find the documentation at https://docs.fastlane.tools
-#
-# For a list of all available actions, check out
-#
-#     https://docs.fastlane.tools/actions
-#
-# For a list of all available plugins, check out
-#
-#     https://docs.fastlane.tools/plugins/available-plugins
-#
 
-# Uncomment the line if you want fastlane to automatically update itself
-# update_fastlane
-
-desc "Deploy merges to main and any other manual trigger"
-lane :alpha do
-
+desc "Deploy debug (alpha) variant into Firebase"
+lane :firebaseAlpha do
     branch_name = git_branch
     commit = last_git_commit
-    ENV["RELEASE_NOTES"] = "Branch: " + branch_name + "\n" + "Commit: " + commit[:message]
 
     gradle(
         task: "assemble",
         flavor: "Debug",
         build_type: "Alpha",
-        properties: {
-          "android.injected.signing.store.file" => ENV["RADIX_DEBUG_PREVIEW_KEYSTORE_FILE"],
-          "android.injected.signing.store.password" => ENV["RADIX_ANDROID_KEYSTORE_PASSWORD"],
-          "android.injected.signing.key.alias" => ENV["RADIX_ANDROID_KEYSTORE_ALIAS"],
-          "android.injected.signing.key.password" => ENV["RADIX_ANDROID_KEYSTORE_PRIVATE_KEY_PASSWORD"]
-        }
     )
     firebase_app_distribution(
         app: ENV["FIREBASE_APP_ID"],
-        release_notes: ENV["RELEASE_NOTES"],
+        release_notes: "Branch: " + branch_name + "\n" + "Commit: " + commit[:message],
         groups: ENV["GROUPS"]
     )
-
 end
 
-desc "Deploy pre-releases"
-lane :preview do
-    BUILD_NUMBER_FILE = "BUILD_NUMBER"
-    bump_build_number versioning_file: "../versioning/#{BUILD_NUMBER_FILE}"
+desc "Deploy release variant into Firebase"
+lane :firebaseRelease do
     gradle(
         task: "assemble",
-        flavor: "Debug",
-        build_type: "Preview",
-        properties: {
-            "android.injected.signing.store.file" => ENV["RADIX_DEBUG_PREVIEW_KEYSTORE_FILE"],
-            "android.injected.signing.store.password" => ENV["RADIX_ANDROID_KEYSTORE_PASSWORD"],
-            "android.injected.signing.key.alias" => ENV["RADIX_ANDROID_KEYSTORE_ALIAS"],
-            "android.injected.signing.key.password" => ENV["RADIX_ANDROID_KEYSTORE_PRIVATE_KEY_PASSWORD"]
-        }
+        build_type: "Release"
     )
     firebase_app_distribution(
         app: ENV["FIREBASE_APP_ID"],
         release_notes: ENV["RELEASE_NOTES"],
         groups: ENV["GROUPS"]
     )
-    build_number_to_commit = File.read("../versioning/#{BUILD_NUMBER_FILE}")
-    version_name = get_version_name output_file: Actions.lane_context[SharedValues::GRADLE_OUTPUT_JSON_OUTPUT_PATH]
-    git_commit(
-        path: "./versioning/#{BUILD_NUMBER_FILE}",
-        message: "Version #{version_name} (#{build_number_to_commit}) distributed to Firebase"
-    )
-    push_to_git_remote(
-        remote_branch: ENV["RELEASE_BRANCH"],
-        tags: false
-    )
 end
 
+desc "Deploy release variant into Play Store"
+lane :googlePlayRelease do |options|
 
-desc "Deploy to Google Play Console"
-lane :release_to_google_play do
+    internal = options[:internal] == true || false
+    track = internal ? "internal" : "production"
 
-    BUILD_NUMBER_FILE = "PLAYSTORE_BUILD_NUMBER"
-    bump_build_number versioning_file: "../versioning/#{BUILD_NUMBER_FILE}"
-    gradle(
-        tasks: [
-            "bundleReleasePreview",  # Builds the bundle for PlayStore
-            "assembleReleasePreview" # Builds the APK that extracts the output.json for the version
-        ],
-        properties: {
-            "android.injected.signing.store.file" => ENV["RADIX_DEBUG_PREVIEW_KEYSTORE_FILE"],
-            "android.injected.signing.store.password" => ENV["RADIX_ANDROID_KEYSTORE_PASSWORD"],
-            "android.injected.signing.key.alias" => ENV["RADIX_ANDROID_KEYSTORE_ALIAS"],
-            "android.injected.signing.key.password" => ENV["RADIX_ANDROID_KEYSTORE_PRIVATE_KEY_PASSWORD"]
-        }
-    )
-
-    upload_to_play_store(
-        package_name: "com.babylon.wallet.android.preview",
-        track: "internal",
-        aab: Actions.lane_context[SharedValues::GRADLE_AAB_OUTPUT_PATH],
-        skip_upload_apk: true,
-        skip_upload_images: true,
-        skip_upload_screenshots: true,
-        release_status: "draft",
-        json_key: ENV["GOOGLE_PLAY_PREVIEW_DEPLOYER_JSON_FILE"]
-    )
-
-    build_number_to_commit = File.read("../versioning/#{BUILD_NUMBER_FILE}")
-    version_name = get_version_name output_file: Actions.lane_context[SharedValues::GRADLE_OUTPUT_JSON_OUTPUT_PATH]
-    git_commit(
-        path: "./versioning/#{BUILD_NUMBER_FILE}",
-        message: "Version #{version_name} (#{build_number_to_commit}) distributed to Playstore"
-    )
-    push_to_git_remote(
-        remote_branch: ENV["RELEASE_BRANCH"],
-        tags: false
-    )
+    puts latestGooglePlayVersionCode
+#     gradle(
+#         tasks: [
+#             "bundleReleasePreview",  # Builds the bundle for PlayStore
+#             "assembleReleasePreview" # Builds the APK that extracts the output.json for the version
+#         ]
+#     )
+#
+#     upload_to_play_store(
+#         track: internal ? "internal" : "production",
+#         aab: Actions.lane_context[SharedValues::GRADLE_AAB_OUTPUT_PATH],
+#         skip_upload_apk: true,
+#         skip_upload_images: true,
+#         skip_upload_screenshots: true,
+#         release_status: "draft",
+#         json_key: ENV["GOOGLE_PLAY_JSON_FILE"]
+#     )
 end
+
+# desc "Deploy to Google Play Console"
+# lane :release_to_google_play do
+#
+#     BUILD_NUMBER_FILE = "PLAYSTORE_BUILD_NUMBER"
+#     bump_build_number versioning_file: "../versioning/#{BUILD_NUMBER_FILE}"
+#     gradle(
+#         tasks: [
+#             "bundleReleasePreview",  # Builds the bundle for PlayStore
+#             "assembleReleasePreview" # Builds the APK that extracts the output.json for the version
+#         ],
+#         properties: {
+#             "android.injected.signing.store.file" => ENV["RADIX_DEBUG_PREVIEW_KEYSTORE_FILE"],
+#             "android.injected.signing.store.password" => ENV["RADIX_ANDROID_KEYSTORE_PASSWORD"],
+#             "android.injected.signing.key.alias" => ENV["RADIX_ANDROID_KEYSTORE_ALIAS"],
+#             "android.injected.signing.key.password" => ENV["RADIX_ANDROID_KEYSTORE_PRIVATE_KEY_PASSWORD"]
+#         }
+#     )
+#
+#     upload_to_play_store(
+#         package_name: "com.babylon.wallet.android.preview",
+#         track: "internal",
+#         aab: Actions.lane_context[SharedValues::GRADLE_AAB_OUTPUT_PATH],
+#         skip_upload_apk: true,
+#         skip_upload_images: true,
+#         skip_upload_screenshots: true,
+#         release_status: "draft",
+#         json_key: ENV["GOOGLE_PLAY_PREVIEW_DEPLOYER_JSON_FILE"]
+#     )
+#
+#     build_number_to_commit = File.read("../versioning/#{BUILD_NUMBER_FILE}")
+#     version_name = get_version_name output_file: Actions.lane_context[SharedValues::GRADLE_OUTPUT_JSON_OUTPUT_PATH]
+#     git_commit(
+#         path: "./versioning/#{BUILD_NUMBER_FILE}",
+#         message: "Version #{version_name} (#{build_number_to_commit}) distributed to Playstore"
+#     )
+#     push_to_git_remote(
+#         remote_branch: ENV["RELEASE_BRANCH"],
+#         tags: false
+#     )
+# end
 
 
 # after_all do |beta|
@@ -148,4 +130,23 @@ end
 lane :get_version_name do |options|
     output = read_json(json_path: options[:output_file])
     output[:elements][0][:versionName]
+end
+
+def latestGooglePlayVersionCode
+    jsonKey = "~/Downloads/GOOGLE_PLAY_JSON.json"
+    productionVersionCodes = google_play_track_version_codes(track: 'production', json_key: jsonKey)
+    betaVersionCodes = google_play_track_version_codes(track: 'beta', json_key: jsonKey)
+    alphaVersionCodes = google_play_track_version_codes(track: 'alpha', json_key: jsonKey)
+    internalVersionCodes = google_play_track_version_codes(track: 'internal', json_key: jsonKey)
+
+    # puts version codes from all tracks into the same array
+    versionCodes = [
+        productionVersionCodes,
+        betaVersionCodes,
+        alphaVersionCodes,
+        internalVersionCodes
+    ].reduce([], :concat)
+
+    # returns the highest version code from array
+    return versionCodes.max
 end
