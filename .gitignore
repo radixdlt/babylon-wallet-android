@@ -40,3 +40,5 @@ vendor/
 app/src/main/res/values/strings.xml
 # Jacoco export
 app/jacoco.exec
+# Fastlane report
+fastlane/report.xml
