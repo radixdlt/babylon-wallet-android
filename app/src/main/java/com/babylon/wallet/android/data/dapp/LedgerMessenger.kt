@@ -133,7 +133,12 @@ class LedgerMessengerImpl @Inject constructor(
     ): Result<MessageFromDataChannel.LedgerResponse.SignTransactionResponse> {
         val ledgerRequest: LedgerInteractionRequest = SignTransactionRequest(
             interactionId = interactionId,
-            signers = signersDerivationPathToCurve.map { DerivePublicKeyRequest.KeyParameters(Curve.from(it.second), it.first) },
+            signers = signersDerivationPathToCurve.map {
+                DerivePublicKeyRequest.KeyParameters(
+                    Curve.from(it.second),
+                    it.first
+                )
+            },
             ledgerDevice = ledgerDevice,
             displayHash = displayHashOnLedgerDisplay,
             compiledTransactionIntent = compiledTransactionIntent,
@@ -179,7 +184,12 @@ class LedgerMessengerImpl @Inject constructor(
     ): Result<MessageFromDataChannel.LedgerResponse.SignChallengeResponse> {
         val ledgerRequest: LedgerInteractionRequest = SignChallengeRequest(
             interactionId = interactionId,
-            signers = signersDerivationPathToCurve.map { DerivePublicKeyRequest.KeyParameters(Curve.from(it.second), it.first) },
+            signers = signersDerivationPathToCurve.map {
+                DerivePublicKeyRequest.KeyParameters(
+                    Curve.from(it.second),
+                    it.first
+                )
+            },
             ledgerDevice = ledgerDevice,
             challengeHex = challengeHex,
             origin = origin,

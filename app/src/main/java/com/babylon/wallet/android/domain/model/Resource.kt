@@ -161,7 +161,9 @@ sealed class Resource {
         override fun compareTo(other: NonFungibleResource): Int = when {
             nameMetadataItem == null && other.nameMetadataItem != null -> 1
             nameMetadataItem != null && other.nameMetadataItem == null -> -1
-            nameMetadataItem != null && other.nameMetadataItem != null -> nameMetadataItem.name.compareTo(other.nameMetadataItem.name)
+            nameMetadataItem != null && other.nameMetadataItem != null -> nameMetadataItem.name.compareTo(
+                other.nameMetadataItem.name
+            )
             else -> resourceAddress.compareTo(other.resourceAddress)
         }
 

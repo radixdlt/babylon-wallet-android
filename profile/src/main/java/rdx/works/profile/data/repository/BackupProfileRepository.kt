@@ -74,7 +74,10 @@ class BackupProfileRepositoryImpl @Inject constructor(
                 Result.failure(InvalidSnapshotException)
             } else {
                 val snapshot = runCatching {
-                    val decrypted = encryptedProfileSnapshot.decrypt(deserializer = profileSnapshotJson, password = backupType.password)
+                    val decrypted = encryptedProfileSnapshot.decrypt(
+                        deserializer = profileSnapshotJson,
+                        password = backupType.password
+                    )
                     profileSnapshotJson.encodeToString(decrypted)
                 }.getOrNull()
 
@@ -107,7 +110,9 @@ class BackupProfileRepositoryImpl @Inject constructor(
 
     override suspend fun getSnapshotForBackup(backupType: BackupType): String? {
         val profile = profileRepository.profile.firstOrNull() ?: return null
-        val snapshotSerialised = runCatching { profileSnapshotJson.encodeToString(profile.snapshot()) }.getOrNull() ?: return null
+        val snapshotSerialised = runCatching {
+            profileSnapshotJson.encodeToString(profile.snapshot())
+        }.getOrNull() ?: return null
 
         return when (backupType) {
             is BackupType.Cloud -> if (profile.appPreferences.security.isCloudProfileSyncEnabled) {

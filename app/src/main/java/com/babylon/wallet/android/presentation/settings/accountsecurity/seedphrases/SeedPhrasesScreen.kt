@@ -128,7 +128,10 @@ private fun SeedPhraseContent(
                             .throttleClickable {
                                 onSeedPhraseClick(deviceFactorSourceItem)
                             }
-                            .padding(horizontal = RadixTheme.dimensions.paddingDefault, vertical = RadixTheme.dimensions.paddingMedium)
+                            .padding(
+                                horizontal = RadixTheme.dimensions.paddingDefault,
+                                vertical = RadixTheme.dimensions.paddingMedium
+                            )
                             .fillMaxWidth(),
                         data = deviceFactorSourceItem
                     )

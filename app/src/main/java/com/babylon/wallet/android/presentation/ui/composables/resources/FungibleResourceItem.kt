@@ -44,7 +44,10 @@ fun FungibleResourceItem(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = RadixTheme.dimensions.paddingDefault, vertical = RadixTheme.dimensions.paddingLarge),
+                .padding(
+                    horizontal = RadixTheme.dimensions.paddingDefault,
+                    vertical = RadixTheme.dimensions.paddingLarge
+                ),
         ) {
             Spacer(modifier = Modifier.width(RadixTheme.dimensions.paddingMedium))
             val placeholder = rememberDrawablePainter(drawable = ColorDrawable(RadixTheme.colors.gray3.toArgb()))
@@ -118,7 +121,10 @@ fun SelectableFungibleResourceItem(
                     modifier = Modifier
                         .fillMaxWidth()
                         .background(RadixTheme.colors.gray5, shape = RadixTheme.shapes.roundedRectBottomMedium)
-                        .padding(horizontal = RadixTheme.dimensions.paddingMedium, vertical = RadixTheme.dimensions.paddingSmall),
+                        .padding(
+                            horizontal = RadixTheme.dimensions.paddingMedium,
+                            vertical = RadixTheme.dimensions.paddingSmall
+                        ),
                     tag = officialTag
                 )
             }

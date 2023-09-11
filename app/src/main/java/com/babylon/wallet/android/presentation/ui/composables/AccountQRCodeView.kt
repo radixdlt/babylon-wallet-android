@@ -59,7 +59,9 @@ fun AccountQRCodeView(
                 modifier = Modifier
                     .fillMaxWidth()
                     .background(
-                        Brush.horizontalGradient(AccountGradientList[dataHolder.accountAppearanceId % AccountGradientList.size]),
+                        Brush.horizontalGradient(
+                            AccountGradientList[dataHolder.accountAppearanceId % AccountGradientList.size]
+                        ),
                         RadixTheme.shapes.roundedRectSmall
                     )
                     .padding(

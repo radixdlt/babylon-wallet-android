@@ -9,7 +9,9 @@ object PriorityRoutes {
 
     fun add(route: String) = highPriorityRoutes.add(route)
 
-    fun isHighPriority(entry: NavBackStackEntry): Boolean = highPriorityRoutes.any { it.startsWith(entry.destination.route.orEmpty()) }
+    fun isHighPriority(entry: NavBackStackEntry): Boolean = highPriorityRoutes.any {
+        it.startsWith(entry.destination.route.orEmpty())
+    }
 }
 
 fun NavGraphBuilder.markAsHighPriority(route: String) {

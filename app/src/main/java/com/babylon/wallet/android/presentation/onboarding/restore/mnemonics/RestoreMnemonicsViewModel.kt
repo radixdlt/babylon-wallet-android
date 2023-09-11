@@ -183,7 +183,12 @@ class RestoreMnemonicsViewModel @Inject constructor(
             _state.update { state -> state.copy(isRestoring = false) }
             showNextRecoverableFactorSourceOrFinish()
         }.onFailure {
-            _state.update { state -> state.copy(uiMessage = UiMessage.InfoMessage.InvalidMnemonic, isRestoring = false) }
+            _state.update { state ->
+                state.copy(
+                    uiMessage = UiMessage.InfoMessage.InvalidMnemonic,
+                    isRestoring = false
+                )
+            }
         }
     }
 

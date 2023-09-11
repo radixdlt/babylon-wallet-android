@@ -256,7 +256,11 @@ class EntityRepositoryImpl @Inject constructor(
             val accountValidators = allValidatorAddresses
                 .map { validatorAddress ->
                     val validatorDetails = validatorDetailsList.firstOrNull { it.address == validatorAddress }
-                    val totalXrdStake = validatorDetails?.details?.xrdVaultAddress()?.let { validatorDetails.getXRDVaultAmount(it) }
+                    val totalXrdStake = validatorDetails?.details
+                        ?.xrdVaultAddress()
+                        ?.let {
+                            validatorDetails.getXRDVaultAmount(it)
+                        }
                     val validatorMetadata = validatorDetails?.explicitMetadata?.asMetadataItems().orEmpty().toMutableList()
                     val nameMetadata: NameMetadataItem? = validatorMetadata.consume()
                     val descriptionMetadataItem: DescriptionMetadataItem? = validatorMetadata.consume()
@@ -584,7 +588,9 @@ class EntityRepositoryImpl @Inject constructor(
                             val ledgerEpoch = latestEpoch
                             Resource.NonFungibleResource.Item(
                                 collectionAddress = resourceAddress,
-                                localId = Resource.NonFungibleResource.Item.ID.from(stateNonFungibleDetailsResponseItem.nonFungibleId),
+                                localId = Resource.NonFungibleResource.Item.ID.from(
+                                    stateNonFungibleDetailsResponseItem.nonFungibleId
+                                ),
                                 nameMetadataItem = stateNonFungibleDetailsResponseItem.data
                                     ?.programmaticJson?.fields?.find { field ->
                                         field.field_name == ExplicitMetadataKey.NAME.key

@@ -342,7 +342,11 @@ fun RestoreMnemonicsIntroContent() {
                 recoverableFactorSources = listOf(
                     RecoverableFactorSource(
                         associatedAccounts = List(5) { index ->
-                            SampleDataProvider().sampleAccount(address = "rdx_abcdefg$index", name = "Account $index", appearanceId = index)
+                            SampleDataProvider().sampleAccount(
+                                address = "rdx_abcdefg$index",
+                                name = "Account $index",
+                                appearanceId = index
+                            )
                         },
                         factorSource = SampleDataProvider().babylonDeviceFactorSource()
                     )
@@ -369,7 +373,11 @@ fun RestoreMnemonicsSeedPhraseContent() {
                 recoverableFactorSources = listOf(
                     RecoverableFactorSource(
                         associatedAccounts = List(5) { index ->
-                            SampleDataProvider().sampleAccount(address = "rdx_abcdefg$index", name = "Account $index", appearanceId = index)
+                            SampleDataProvider().sampleAccount(
+                                address = "rdx_abcdefg$index",
+                                name = "Account $index",
+                                appearanceId = index
+                            )
                         },
                         factorSource = SampleDataProvider().babylonDeviceFactorSource()
                     )

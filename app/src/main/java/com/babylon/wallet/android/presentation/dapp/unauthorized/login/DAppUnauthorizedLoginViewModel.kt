@@ -168,7 +168,12 @@ class DAppUnauthorizedLoginViewModel @Inject constructor(
     fun onGrantedPersonaDataOnetime() {
         val selectedPersona = checkNotNull(state.value.selectedPersona)
         viewModelScope.launch {
-            val requiredFields = checkNotNull(request.oneTimePersonaDataRequestItem?.toRequiredFields()?.fields?.map { it.kind })
+            val requiredFields = checkNotNull(
+                request.oneTimePersonaDataRequestItem
+                    ?.toRequiredFields()
+                    ?.fields
+                    ?.map { it.kind }
+            )
             getProfileUseCase.personaOnCurrentNetwork(selectedPersona.persona.address)?.let { updatedPersona ->
                 val dataFields = updatedPersona.personaData.allFields.filter { requiredFields.contains(it.value.kind) }
                 _state.update { state ->
@@ -217,7 +222,9 @@ class DAppUnauthorizedLoginViewModel @Inject constructor(
         viewModelScope.launch {
             buildUnauthorizedDappResponseUseCase(
                 request = request,
-                oneTimeAccounts = state.value.selectedAccountsOneTime.mapNotNull { getProfileUseCase.accountOnCurrentNetwork(it.address) },
+                oneTimeAccounts = state.value.selectedAccountsOneTime.mapNotNull {
+                    getProfileUseCase.accountOnCurrentNetwork(it.address)
+                },
                 onetimeSharedPersonaData = state.value.selectedPersonaData,
                 deviceBiometricAuthenticationProvider = deviceBiometricAuthenticationProvider
             ).onSuccess {

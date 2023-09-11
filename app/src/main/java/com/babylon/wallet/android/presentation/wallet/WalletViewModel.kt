@@ -185,7 +185,9 @@ data class WalletUiState(
             it.account.address == forAccount.address
         }?.resources ?: return null
 
-        val accountWithSecurityPrompt = accountsNeedSecurityPrompt.find { it.account.address == forAccount.address } ?: return null
+        val accountWithSecurityPrompt = accountsNeedSecurityPrompt.find {
+            it.account.address == forAccount.address
+        } ?: return null
         return if (accountWithSecurityPrompt.prompt == SecurityPromptType.NEEDS_BACKUP) {
             if (resourcesForAccount.hasXrd()) SecurityPromptType.NEEDS_BACKUP else null
         } else {

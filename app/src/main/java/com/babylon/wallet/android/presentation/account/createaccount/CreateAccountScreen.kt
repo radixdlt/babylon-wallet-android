@@ -187,7 +187,11 @@ fun CreateAccountContent(
 }
 
 @Composable
-private fun UseLedgerSwitch(useLedgerSelected: Boolean, onUseLedgerSelectionChanged: (Boolean) -> Unit, modifier: Modifier = Modifier) {
+private fun UseLedgerSwitch(
+    useLedgerSelected: Boolean,
+    onUseLedgerSelectionChanged: (Boolean) -> Unit,
+    modifier: Modifier = Modifier
+) {
     Row(
         modifier = modifier,
         verticalAlignment = Alignment.CenterVertically,

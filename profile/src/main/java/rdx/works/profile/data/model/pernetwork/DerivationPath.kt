@@ -50,7 +50,10 @@ data class DerivationPath(
             val pathComponents = derivationPath.path.split("/").drop(1).toMutableList()
             require(pathComponents.size == BabylonDerivationPathComponent.values().size)
             pathComponents.removeAt(BabylonDerivationPathComponent.KeyKindIndex.ordinal)
-            pathComponents.add(BabylonDerivationPathComponent.KeyKindIndex.ordinal, "${KeyType.AUTHENTICATION_SIGNING.value}H")
+            pathComponents.add(
+                index = BabylonDerivationPathComponent.KeyKindIndex.ordinal,
+                element = "${KeyType.AUTHENTICATION_SIGNING.value}H"
+            )
             return DerivationPath(
                 path = "m/" + pathComponents.joinToString("/"),
                 scheme = CAP_26

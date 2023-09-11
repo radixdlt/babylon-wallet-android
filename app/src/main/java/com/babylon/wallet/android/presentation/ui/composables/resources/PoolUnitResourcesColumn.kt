@@ -121,7 +121,10 @@ fun LazyListScope.poolUnitsResources(
                             }
                         }
                         val last = validator.liquidStakeUnits.last()
-                        items(items = validator.liquidStakeUnits, key = { it.fungibleResource.resourceAddress }) { liquidStakeUnit ->
+                        items(
+                            items = validator.liquidStakeUnits,
+                            key = { it.fungibleResource.resourceAddress }
+                        ) { liquidStakeUnit ->
                             val lastItem = liquidStakeUnit == last
                             CardWrapper(
                                 modifier = modifier,

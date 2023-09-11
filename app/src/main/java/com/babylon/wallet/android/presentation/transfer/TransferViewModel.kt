@@ -192,7 +192,9 @@ class TransferViewModel @Inject constructor(
         val isSheetVisible: Boolean
             get() = sheet != Sheet.None
 
-        val isSubmitEnabled: Boolean = targetAccounts[0] !is TargetAccount.Skeleton && targetAccounts.all { it.isValidForSubmission }
+        val isSubmitEnabled: Boolean = targetAccounts[0] !is TargetAccount.Skeleton && targetAccounts.all {
+            it.isValidForSubmission
+        }
 
         val submittedMessage: String?
             get() = (messageState as? Message.Added)?.message

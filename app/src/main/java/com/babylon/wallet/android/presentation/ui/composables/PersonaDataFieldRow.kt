@@ -19,7 +19,11 @@ import rdx.works.profile.data.model.pernetwork.PersonaData
 fun PersonaDataFieldRow(modifier: Modifier, field: PersonaData.PersonaDataField) {
     when (field) {
         is PersonaData.PersonaDataField.Email -> {
-            PersonaDataStringField(modifier = modifier, label = stringResource(id = field.kind.toDisplayResource()), value = field.value)
+            PersonaDataStringField(
+                modifier = modifier,
+                label = stringResource(id = field.kind.toDisplayResource()),
+                value = field.value
+            )
         }
 
         is PersonaData.PersonaDataField.Name -> {
@@ -32,7 +36,11 @@ fun PersonaDataFieldRow(modifier: Modifier, field: PersonaData.PersonaDataField)
         }
 
         is PersonaData.PersonaDataField.PhoneNumber -> {
-            PersonaDataStringField(modifier = modifier, label = stringResource(id = field.kind.toDisplayResource()), value = field.value)
+            PersonaDataStringField(
+                modifier = modifier,
+                label = stringResource(id = field.kind.toDisplayResource()),
+                value = field.value
+            )
         }
 
         else -> {}

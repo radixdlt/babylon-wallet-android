@@ -123,7 +123,10 @@ fun TransferContent(
 ) {
     val focusManager = LocalFocusManager.current
 
-    val bottomSheetState = rememberModalBottomSheetState(initialValue = ModalBottomSheetValue.Hidden, skipHalfExpanded = true)
+    val bottomSheetState = rememberModalBottomSheetState(
+        initialValue = ModalBottomSheetValue.Hidden,
+        skipHalfExpanded = true
+    )
 
     SyncSheetState(
         bottomSheetState = bottomSheetState,

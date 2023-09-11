@@ -17,6 +17,7 @@ import com.babylon.wallet.android.utils.AppEventBus
 import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
@@ -73,6 +74,7 @@ internal class PersonaDetailViewModelTest : StateViewModelTest<PersonaDetailView
 
     @Test
     fun `init load persona and dapps`() = runTest {
+        every { eventBus.events } returns MutableSharedFlow()
         val vm = vm.value
         val collectJob = launch(UnconfinedTestDispatcher()) { vm.state.collect {} }
         advanceUntilIdle()

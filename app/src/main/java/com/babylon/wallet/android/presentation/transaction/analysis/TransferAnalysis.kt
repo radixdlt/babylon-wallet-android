@@ -19,7 +19,10 @@ suspend fun TransactionType.Transfer.resolve(
     val allAccounts = getProfileUseCase.accountsOnCurrentNetwork().filter {
         it.address == from.addressString() || it.address in transfers.keys
     }
-    val allResources = getAccountsWithResourcesUseCase(accounts = allAccounts, isRefreshing = false).value().orEmpty().mapNotNull {
+    val allResources = getAccountsWithResourcesUseCase(
+        accounts = allAccounts,
+        isRefreshing = false
+    ).value().orEmpty().mapNotNull {
         it.resources
     }
 

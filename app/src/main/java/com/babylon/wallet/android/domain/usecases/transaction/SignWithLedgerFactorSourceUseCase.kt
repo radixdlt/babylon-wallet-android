@@ -23,7 +23,10 @@ import rdx.works.profile.data.utils.updateLastUsed
 import javax.inject.Inject
 
 typealias SignatureProviderResult = Result<List<MessageFromDataChannel.LedgerResponse.SignatureOfSigner>>
-typealias SignatureProviderCall = suspend (List<Pair<String, Slip10Curve>>, LedgerDeviceModel) -> SignatureProviderResult
+typealias SignatureProviderCall = suspend (
+    List<Pair<String, Slip10Curve>>,
+    LedgerDeviceModel
+) -> SignatureProviderResult
 
 class SignWithLedgerFactorSourceUseCase @Inject constructor(
     private val ledgerMessenger: LedgerMessenger,

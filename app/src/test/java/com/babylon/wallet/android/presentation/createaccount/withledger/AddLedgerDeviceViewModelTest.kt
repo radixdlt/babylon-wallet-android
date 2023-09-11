@@ -16,6 +16,8 @@ import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.junit.Test
 import rdx.works.profile.data.model.factorsources.FactorSource
+import rdx.works.profile.data.model.factorsources.LedgerHardwareWalletFactorSource
+import rdx.works.profile.domain.AddLedgerFactorSourceResult
 import rdx.works.profile.domain.AddLedgerFactorSourceUseCase
 import rdx.works.profile.domain.GetProfileUseCase
 
@@ -60,6 +62,24 @@ class AddLedgerDeviceViewModelTest : StateViewModelTest<AddLedgerDeviceViewModel
 
     @Test
     fun `adding ledger and providing name`() = runTest {
+        val ledgerDeviceToAdd = (profile().factorSources[1] as LedgerHardwareWalletFactorSource)
+        coEvery {
+            addLedgerFactorSourceUseCaseMock(
+                ledgerId = (profile().factorSources[1] as LedgerHardwareWalletFactorSource).id.body,
+                model = LedgerHardwareWalletFactorSource.DeviceModel.NANO_S,
+                name = ledgerDeviceToAdd.hint.name
+            )
+        } returns AddLedgerFactorSourceResult.Added(
+            ledgerFactorSource = ledgerDeviceToAdd
+        )
+        coEvery { getProfileUseCaseMock() } returns flowOf(profile())
+        coEvery { ledgerMessengerMock.sendDeviceInfoRequest(any()) } returns Result.success(
+            MessageFromDataChannel.LedgerResponse.GetDeviceInfoResponse(
+                interactionId = "1",
+                model = MessageFromDataChannel.LedgerResponse.LedgerDeviceModel.NanoS,
+                deviceId = ledgerDeviceToAdd.id.body
+            )
+        )
         val vm = vm.value
         advanceUntilIdle()
         vm.onSendAddLedgerRequestClick()

@@ -64,7 +64,9 @@ fun SwitchSettingsItem(
         checked = checked,
         onCheckedChange = onCheckedChange,
         icon = iconResource?.let {
-            { Icon(painter = painterResource(id = iconResource), contentDescription = null) }
+            {
+                Icon(painter = painterResource(id = iconResource), contentDescription = null)
+            }
         },
         subtitleRes = subtitleRes
     )

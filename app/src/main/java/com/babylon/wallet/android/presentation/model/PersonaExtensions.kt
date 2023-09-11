@@ -26,8 +26,7 @@ fun List<PersonaData.PersonaDataField.Kind>.encodeToString(): String {
     return joinToString(",") { it.name }.encodeUtf8()
 }
 
-fun RequestedNumber.Quantifier.toQuantifierUsedInRequest():
-    MessageFromDataChannel.IncomingRequest.NumberOfValues.Quantifier {
+fun RequestedNumber.Quantifier.toQuantifierUsedInRequest(): MessageFromDataChannel.IncomingRequest.NumberOfValues.Quantifier {
     return when (this) {
         RequestedNumber.Quantifier.Exactly -> {
             MessageFromDataChannel.IncomingRequest.NumberOfValues.Quantifier.Exactly
@@ -39,6 +38,7 @@ fun RequestedNumber.Quantifier.toQuantifierUsedInRequest():
     }
 }
 
+@Suppress("UNUSED_EXPRESSION")
 fun PersonaData.PersonaDataField.isValid(): Boolean {
     return when (this) {
         else -> true
@@ -67,8 +67,12 @@ val PersonaData.PersonaDataField.Name.fullName: String
 fun List<PersonaData.PersonaDataField>.toPersonaData(): PersonaData {
     return PersonaData(
         name = filterIsInstance<PersonaData.PersonaDataField.Name>().firstOrNull()?.let { IdentifiedEntry.init(it) },
-        dateOfBirth = filterIsInstance<PersonaData.PersonaDataField.DateOfBirth>().firstOrNull()?.let { IdentifiedEntry.init(it) },
-        companyName = filterIsInstance<PersonaData.PersonaDataField.CompanyName>().firstOrNull()?.let { IdentifiedEntry.init(it) },
+        dateOfBirth = filterIsInstance<PersonaData.PersonaDataField.DateOfBirth>().firstOrNull()?.let {
+            IdentifiedEntry.init(it)
+        },
+        companyName = filterIsInstance<PersonaData.PersonaDataField.CompanyName>().firstOrNull()?.let {
+            IdentifiedEntry.init(it)
+        },
         emailAddresses = filterIsInstance<PersonaData.PersonaDataField.Email>().let { field ->
             field.map { IdentifiedEntry.init(it) }
         },
@@ -89,7 +93,14 @@ fun List<PersonaData.PersonaDataField>.toPersonaData(): PersonaData {
 
 fun PersonaData.toPersonaDataRequestResponseItem(): PersonaDataRequestResponseItem {
     return PersonaDataRequestResponseItem(
-        name = name?.value?.let { name -> PersonaDataName(name.variant.toVariantDTO(), name.family, name.given, name.nickname) },
+        name = name?.value?.let { name ->
+            PersonaDataName(
+                name.variant.toVariantDTO(),
+                name.family,
+                name.given,
+                name.nickname
+            )
+        },
         emailAddresses = emailAddresses.map { it.value.value },
         phoneNumbers = phoneNumbers.map { it.value.value }
     )
@@ -130,7 +141,9 @@ fun Network.Persona.getPersonaDataForFieldKinds(requiredPersonaFields: List<Requ
             require(count <= personaData.urls.size)
             personaData.urls.take(count)
         }.orEmpty(),
-        postalAddresses = requiredPersonaFields.firstOrNull { it.kind == PersonaData.PersonaDataField.Kind.PostalAddress }?.let {
+        postalAddresses = requiredPersonaFields.firstOrNull {
+            it.kind == PersonaData.PersonaDataField.Kind.PostalAddress
+        }?.let {
             val count = it.numberOfValues.quantity
             require(count <= personaData.postalAddresses.size)
             personaData.postalAddresses.take(count)

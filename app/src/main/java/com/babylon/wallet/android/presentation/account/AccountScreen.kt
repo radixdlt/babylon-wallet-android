@@ -242,7 +242,11 @@ private fun AccountScreenContent(
                             overflow = TextOverflow.Ellipsis
                         )
                         Spacer(modifier = Modifier.weight(1f))
-                        IconButton(onClick = { onAccountPreferenceClick(state.accountWithResources?.account?.address.orEmpty()) }) {
+                        IconButton(
+                            onClick = {
+                                onAccountPreferenceClick(state.accountWithResources?.account?.address.orEmpty())
+                            }
+                        ) {
                             Icon(
                                 painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_more_horiz),
                                 tint = RadixTheme.colors.white,
@@ -546,7 +550,9 @@ fun AssetsContent(
                                 },
                                 liquidStakeItem = { liquidStakeUnit, validatorDetail ->
                                     LiquidStakeUnitItem(
-                                        stakeValueInXRD = liquidStakeUnit.stakeValueInXRD(validatorDetail.totalXrdStake),
+                                        stakeValueInXRD = liquidStakeUnit.stakeValueInXRD(
+                                            validatorDetail.totalXrdStake
+                                        ),
                                         modifier = Modifier.throttleClickable {
                                             onLSUUnitClicked(liquidStakeUnit, validatorDetail)
                                         }

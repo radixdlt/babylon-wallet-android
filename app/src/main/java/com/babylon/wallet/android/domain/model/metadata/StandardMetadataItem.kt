@@ -63,7 +63,11 @@ data class AccountTypeMetadataItem(
     }
 
     companion object {
-        fun from(value: String) = AccountType.values().find { it.asString == value }?.let { AccountTypeMetadataItem(it) }
+        fun from(value: String) = AccountType.values()
+            .find { it.asString == value }
+            ?.let {
+                AccountTypeMetadataItem(it)
+            }
     }
 }
 

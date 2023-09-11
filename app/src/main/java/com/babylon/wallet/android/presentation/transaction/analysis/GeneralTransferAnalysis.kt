@@ -33,7 +33,10 @@ suspend fun TransactionType.GeneralTransaction.resolve(
     val allAccounts = getProfileUseCase.accountsOnCurrentNetwork().filter {
         it.address in accountWithdraws.keys || it.address in accountDeposits.keys
     }
-    val allResources = getAccountsWithResourcesUseCase(accounts = allAccounts, isRefreshing = false).value().orEmpty().mapNotNull {
+    val allResources = getAccountsWithResourcesUseCase(
+        accounts = allAccounts,
+        isRefreshing = false
+    ).value().orEmpty().mapNotNull {
         it.resources
     }
 

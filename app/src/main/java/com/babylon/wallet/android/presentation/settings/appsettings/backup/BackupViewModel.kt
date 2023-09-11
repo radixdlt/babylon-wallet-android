@@ -80,7 +80,9 @@ class BackupViewModel @Inject constructor(
 
     fun onEncryptPasswordRevealChange() {
         val encryptSheet = state.value.encryptSheet as? State.EncryptSheet.Open ?: return
-        _state.update { it.copy(encryptSheet = encryptSheet.copy(isPasswordRevealed = !encryptSheet.isPasswordRevealed)) }
+        _state.update {
+            it.copy(encryptSheet = encryptSheet.copy(isPasswordRevealed = !encryptSheet.isPasswordRevealed))
+        }
     }
 
     fun onEncryptConfirmPasswordTyped(password: String) {
@@ -90,7 +92,9 @@ class BackupViewModel @Inject constructor(
 
     fun onEncryptConfirmPasswordRevealChange() {
         val encryptSheet = state.value.encryptSheet as? State.EncryptSheet.Open ?: return
-        _state.update { it.copy(encryptSheet = encryptSheet.copy(isConfirmPasswordRevealed = !encryptSheet.isConfirmPasswordRevealed)) }
+        _state.update {
+            it.copy(encryptSheet = encryptSheet.copy(isConfirmPasswordRevealed = !encryptSheet.isConfirmPasswordRevealed))
+        }
     }
 
     fun onEncryptSubmitClick() {

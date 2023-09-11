@@ -39,7 +39,10 @@ fun PersonaDetailCard(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = RadixTheme.dimensions.paddingDefault, vertical = RadixTheme.dimensions.paddingLarge),
+                .padding(
+                    horizontal = RadixTheme.dimensions.paddingDefault,
+                    vertical = RadixTheme.dimensions.paddingLarge
+                ),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingMedium)
         ) {

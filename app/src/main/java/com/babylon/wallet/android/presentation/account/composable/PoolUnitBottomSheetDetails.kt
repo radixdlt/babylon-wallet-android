@@ -111,7 +111,10 @@ fun PoolUnitBottomSheetDetails(
                 Divider(
                     Modifier
                         .fillMaxWidth()
-                        .padding(top = RadixTheme.dimensions.paddingLarge, bottom = RadixTheme.dimensions.paddingDefault),
+                        .padding(
+                            top = RadixTheme.dimensions.paddingLarge,
+                            bottom = RadixTheme.dimensions.paddingDefault
+                        ),
                     color = RadixTheme.colors.gray4
                 )
             }

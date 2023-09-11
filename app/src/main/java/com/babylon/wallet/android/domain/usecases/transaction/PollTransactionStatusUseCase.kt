@@ -3,7 +3,6 @@ package com.babylon.wallet.android.domain.usecases.transaction
 import com.babylon.wallet.android.data.gateway.generated.models.TransactionStatus
 import com.babylon.wallet.android.data.gateway.isComplete
 import com.babylon.wallet.android.data.gateway.isFailed
-import com.babylon.wallet.android.data.repository.cache.HttpCache
 import com.babylon.wallet.android.data.repository.transaction.TransactionRepository
 import com.babylon.wallet.android.data.transaction.DappRequestException
 import com.babylon.wallet.android.data.transaction.DappRequestFailure
@@ -12,8 +11,7 @@ import kotlinx.coroutines.delay
 import javax.inject.Inject
 
 class PollTransactionStatusUseCase @Inject constructor(
-    private val transactionRepository: TransactionRepository,
-    private val cache: HttpCache
+    private val transactionRepository: TransactionRepository
 ) {
 
     suspend operator fun invoke(
