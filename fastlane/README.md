@@ -37,14 +37,6 @@ Deploy release variant into Firebase
 
 Deploy release variant into Play Store
 
-### bump_build_number
-
-```sh
-[bundle exec] fastlane bump_build_number
-```
-
-
-
 ### get_version_name
 
 ```sh
@@ -52,6 +44,14 @@ Deploy release variant into Play Store
 ```
 
 
+
+### latestGooglePlayVersionCode
+
+```sh
+[bundle exec] fastlane latestGooglePlayVersionCode
+```
+
+Get the maximum version code from Play Store
 
 ----
 

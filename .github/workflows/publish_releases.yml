@@ -117,7 +117,6 @@ jobs:
           RADIX_ANDROID_KEYSTORE_ALIAS: ${{ secrets.RADIX_ANDROID_KEYSTORE_ALIAS }}
           RELEASE_BRANCH: ${{ github.event.release.target_commitish }}
 
-
   playstore_releases:
     name: "Publish to playstore"
     runs-on: ubuntu-latest
