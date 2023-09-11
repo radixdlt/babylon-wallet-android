@@ -3,7 +3,7 @@ import io.gitlab.arturbosch.detekt.Detekt
 buildscript {
     ext {
         minSdk = 27
-        compileSdk = 33
+        compileSdk = 34
         targetSdk = 33
         versionName = "1.0.1"
         internalVersionName = "rcnetv3.1"
