@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -16,6 +17,7 @@ import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
@@ -63,6 +65,7 @@ import com.babylon.wallet.android.presentation.ui.composables.BottomDialogDragHa
 import com.babylon.wallet.android.presentation.ui.composables.DefaultModalSheetLayout
 import com.babylon.wallet.android.presentation.ui.composables.ImageSize
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
+import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
 import com.babylon.wallet.android.presentation.ui.composables.rememberImageUrl
 import com.babylon.wallet.android.utils.truncatedHash
@@ -139,13 +142,15 @@ fun SpecificDepositorScreen(
                     sharedViewModel.onAddDepositor()
                 },
                 modifier = Modifier
+                    .navigationBarsPadding()
                     .fillMaxWidth()
                     .background(RadixTheme.colors.gray4)
                     .clip(RadixTheme.shapes.roundedRectTopDefault),
                 depositor = state.depositorToAdd,
                 onDismiss = {
                     hideCallback()
-                })
+                }
+            )
         },
         wrapContent = true,
         sheetState = sheetState
@@ -160,6 +165,7 @@ fun SpecificDepositorScreen(
                 }
             },
             modifier = Modifier
+                .navigationBarsPadding()
                 .fillMaxSize()
                 .background(RadixTheme.colors.gray5),
             allowedDepositors = state.allowedDepositors,
@@ -256,27 +262,38 @@ private fun SpecificDepositorContent(
         snackbarHostState = snackBarHostState,
         onMessageShown = onMessageShown
     )
-    Scaffold(modifier = modifier, topBar = {
-        RadixCenteredTopAppBar(
-            title = stringResource(R.string.accountSettings_thirdPartyDeposits_allowSpecificDepositors),
-            onBackClick = onBackClick,
-            containerColor = RadixTheme.colors.defaultBackground
-        )
-    }, bottomBar = {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(RadixTheme.colors.defaultBackground)
-        ) {
-            RadixPrimaryButton(
-                text = stringResource(R.string.accountSettings_thirdPartyDeposits_allowSpecificDepositorsButton),
-                onClick = onShowAddAssetSheet,
+    Scaffold(
+        modifier = modifier,
+        topBar = {
+            RadixCenteredTopAppBar(
+                title = stringResource(R.string.accountSettings_thirdPartyDeposits_allowSpecificDepositors),
+                onBackClick = onBackClick,
+                containerColor = RadixTheme.colors.defaultBackground,
+                windowInsets = WindowInsets.statusBars
+            )
+        },
+        bottomBar = {
+            Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(RadixTheme.dimensions.paddingDefault)
+                    .background(RadixTheme.colors.defaultBackground)
+            ) {
+                RadixPrimaryButton(
+                    text = stringResource(R.string.accountSettings_thirdPartyDeposits_allowSpecificDepositorsButton),
+                    onClick = onShowAddAssetSheet,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(RadixTheme.dimensions.paddingDefault)
+                )
+            }
+        },
+        snackbarHost = {
+            RadixSnackbarHost(
+                modifier = Modifier.padding(RadixTheme.dimensions.paddingDefault),
+                hostState = snackBarHostState
             )
-        }
-    }) { paddingValues ->
+        },
+    ) { paddingValues ->
         Column(
             Modifier
                 .fillMaxWidth()

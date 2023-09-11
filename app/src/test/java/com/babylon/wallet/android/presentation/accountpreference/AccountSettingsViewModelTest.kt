@@ -4,12 +4,12 @@ import androidx.lifecycle.SavedStateHandle
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.data.repository.TransactionStatusClient
 import com.babylon.wallet.android.data.transaction.ROLAClient
-import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.domain.usecases.FaucetState
 import com.babylon.wallet.android.domain.usecases.GetFreeXrdUseCase
 import com.babylon.wallet.android.presentation.StateViewModelTest
 import com.babylon.wallet.android.presentation.account.settings.ARG_ADDRESS
 import com.babylon.wallet.android.presentation.account.settings.AccountSettingsViewModel
+import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
 import io.mockk.Runs
 import io.mockk.coEvery
@@ -18,6 +18,7 @@ import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
@@ -60,11 +61,12 @@ internal class AccountSettingsViewModelTest : StateViewModelTest<AccountSettings
     @Before
     override fun setUp() {
         super.setUp()
-        every { getFreeXrdUseCase.getFaucetState(any()) } returns flow { emit(FaucetState.Available(true)) }
-        every { getProfileUseCase() } returns flowOf(SampleDataProvider().sampleProfile())
+        every { getFreeXrdUseCase.getFaucetState(any()) } returns flowOf(FaucetState.Available(true))
+        every { getProfileUseCase() } returns flowOf(sampleDataProvider.sampleProfile())
         coEvery { getFreeXrdUseCase(any()) } returns Result.success(sampleTxId)
         every { savedStateHandle.get<String>(ARG_ADDRESS) } returns sampleAddress
         coEvery { eventBus.sendEvent(any()) } just Runs
+        every { rolaClient.signingState } returns emptyFlow()
     }
 
     @Test
@@ -87,9 +89,10 @@ internal class AccountSettingsViewModelTest : StateViewModelTest<AccountSettings
     @Test
     fun `get free xrd success sets proper state`() = runTest {
         val vm = vm.value
+        advanceUntilIdle()
         vm.onGetFreeXrdClick()
         advanceUntilIdle()
-        val state = vm.state.first()
+        coVerify(exactly = 1) { eventBus.sendEvent(AppEvent.GotFreeXrd) }
         coVerify(exactly = 1) { getFreeXrdUseCase(sampleAddress) }
     }
 
@@ -97,6 +100,7 @@ internal class AccountSettingsViewModelTest : StateViewModelTest<AccountSettings
     fun `get free xrd failure sets proper state`() = runTest {
         coEvery { getFreeXrdUseCase(any()) } returns Result.failure(Exception())
         val vm = vm.value
+        advanceUntilIdle()
         vm.onGetFreeXrdClick()
         advanceUntilIdle()
         val state = vm.state.first()

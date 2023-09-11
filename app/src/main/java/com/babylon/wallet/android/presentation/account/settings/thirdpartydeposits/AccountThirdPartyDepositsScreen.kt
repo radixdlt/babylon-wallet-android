@@ -9,12 +9,14 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Text
@@ -41,6 +43,7 @@ import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
+import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import rdx.works.profile.data.model.pernetwork.Network
@@ -97,8 +100,7 @@ fun AccountThirdPartyDepositsScreen(
         error = state.error,
         modifier = modifier
             .fillMaxSize()
-            .background(RadixTheme.colors.defaultBackground)
-            .navigationBarsPadding(),
+            .background(RadixTheme.colors.defaultBackground),
         onAllowAll = viewModel::onAllowAll,
         onAcceptKnown = viewModel::onAcceptKnown,
         onDenyAll = viewModel::onDenyAll,
@@ -131,19 +133,16 @@ private fun AccountThirdPartyDepositsContent(
         snackbarHostState = snackBarHostState,
         onMessageShown = onMessageShown
     )
-    Scaffold(
-        modifier = modifier,
-        topBar = {
-            RadixCenteredTopAppBar(
-                title = stringResource(R.string.accountSettings_thirdPartyDeposits),
-                onBackClick = onBackClick,
-                containerColor = RadixTheme.colors.defaultBackground
-            )
-        },
-        bottomBar = {
+    Scaffold(modifier = modifier, topBar = {
+        RadixCenteredTopAppBar(
+            title = stringResource(R.string.accountSettings_thirdPartyDeposits),
+            onBackClick = onBackClick,
+            containerColor = RadixTheme.colors.defaultBackground,
+            windowInsets = WindowInsets.statusBars
+        )
+    }, bottomBar = {
             Column(
-                modifier = Modifier
-                    .background(color = RadixTheme.colors.defaultBackground)
+                modifier = Modifier.navigationBarsPadding().background(color = RadixTheme.colors.defaultBackground)
             ) {
                 Divider(color = RadixTheme.colors.gray5)
                 RadixPrimaryButton(
@@ -155,8 +154,12 @@ private fun AccountThirdPartyDepositsContent(
                     enabled = canUpdate
                 )
             }
-        }
-    ) { paddingValues ->
+        }, snackbarHost = {
+            RadixSnackbarHost(
+                modifier = Modifier.padding(RadixTheme.dimensions.paddingDefault),
+                hostState = snackBarHostState
+            )
+        }) { paddingValues ->
         Column(
             modifier = Modifier
                 .fillMaxSize()

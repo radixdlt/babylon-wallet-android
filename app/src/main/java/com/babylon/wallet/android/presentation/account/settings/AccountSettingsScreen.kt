@@ -88,6 +88,7 @@ fun AccountSettingsScreen(
         sheetShape = RadixTheme.shapes.roundedRectTopDefault
     ) {
         AccountSettingsContent(
+            modifier = Modifier.navigationBarsPadding(),
             onBackClick = onBackClick,
             onGetFreeXrdClick = viewModel::onGetFreeXrdClick,
             onShowQRCodeClick = {

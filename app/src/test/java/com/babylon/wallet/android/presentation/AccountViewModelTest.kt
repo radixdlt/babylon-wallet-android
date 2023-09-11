@@ -2,9 +2,7 @@ package com.babylon.wallet.android.presentation
 
 import androidx.lifecycle.SavedStateHandle
 import com.babylon.wallet.android.domain.SampleDataProvider
-import com.babylon.wallet.android.domain.common.Result
 import com.babylon.wallet.android.domain.usecases.GetAccountsWithResourcesUseCase
-import com.babylon.wallet.android.presentation.account.AccountUiState
 import com.babylon.wallet.android.presentation.account.AccountViewModel
 import com.babylon.wallet.android.presentation.navigation.Screen
 import com.babylon.wallet.android.utils.AppEvent
@@ -12,22 +10,14 @@ import com.babylon.wallet.android.utils.AppEventBus
 import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.test.UnconfinedTestDispatcher
-import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
-import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
-import org.junit.Test
 import org.mockito.Mockito
-import org.mockito.kotlin.any
 import org.mockito.kotlin.whenever
 import rdx.works.core.preferences.PreferencesManager
 import rdx.works.profile.domain.GetProfileUseCase
