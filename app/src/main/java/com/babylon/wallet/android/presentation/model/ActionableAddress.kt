@@ -2,6 +2,9 @@ package com.babylon.wallet.android.presentation.model
 
 import com.babylon.wallet.android.domain.model.Resource
 import com.babylon.wallet.android.utils.truncatedHash
+import rdx.works.core.AddressValidator
+import rdx.works.profile.data.model.apppreferences.Radix.dashboardUrl
+import rdx.works.profile.derivation.model.NetworkId
 
 data class ActionableAddress(
     val address: String,
@@ -25,7 +28,10 @@ data class ActionableAddress(
             else -> "${type.prefix}/$address"
         }
 
-        return "$DASHBOARD_BASE_URL/$suffix"
+        val url = AddressValidator.getValidNetworkId(address)?.let {
+            NetworkId.from(it)
+        }?.dashboardUrl() ?: NetworkId.Mainnet.dashboardUrl()
+        return "$url/$suffix"
     }
 
     enum class Type(
@@ -53,7 +59,6 @@ data class ActionableAddress(
     }
     companion object {
         private const val NFT_DELIMITER = ":"
-        private const val DASHBOARD_BASE_URL = "https://rcnet-v3-dashboard.radixdlt.com"
 
         fun from(address: String) = ActionableAddress(
             address = address,

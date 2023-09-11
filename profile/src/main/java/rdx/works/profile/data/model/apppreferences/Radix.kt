@@ -29,6 +29,11 @@ object Radix {
                 name = "Mainnet",
                 displayDescription = "Mainnet"
             )
+            val stokenet = Network(
+                id = NetworkId.Stokenet.value,
+                name = "stokenet",
+                displayDescription = "Stokenet"
+            )
             val hammunet = Network(
                 id = NetworkId.Hammunet.value,
                 name = "hammunet",
@@ -66,7 +71,7 @@ object Radix {
             )
 
             fun allKnownNetworks(): List<Network> {
-                return listOf(mainnet, hammunet, nebunet, kisharnet, mardunet, enkinet, ansharnet, zabanet)
+                return listOf(mainnet, stokenet, hammunet, nebunet, kisharnet, mardunet, enkinet, ansharnet, zabanet)
             }
 
             fun forName(name: String): Network {
@@ -123,6 +128,10 @@ object Radix {
                 url = "https://rcnet-v3.radixdlt.com",
                 network = Network.zabanet
             )
+            val stokenet = Gateway(
+                url = "https://babylon-stokenet-gateway.radixdlt.com",
+                network = Network.stokenet
+            )
             val mainnet = Gateway(
                 url = "https://mainnet.radixdlt.com",
                 network = Network.mainnet
@@ -138,4 +147,47 @@ object Radix {
                 }
         }
     }
+
+    fun NetworkId.dashboardUrl() =
+        when (this) {
+            NetworkId.Mainnet -> {
+                DASHBOARD_MAINNET_URL // TODO change it to mainnet
+            }
+
+            NetworkId.Zabanet -> {
+                DASHBOARD_RCNET_V3_URL
+            }
+
+            NetworkId.Stokenet -> {
+                DASHBOARD_STOKENET_URL
+            }
+
+            NetworkId.Hammunet -> {
+                DASHBOARD_HAMMUNET_URL
+            }
+
+            NetworkId.Enkinet -> {
+                DASHBOARD_ENKINET_URL
+            }
+
+            NetworkId.Mardunet -> {
+                DASHBOARD_MARDUNET_URL
+            }
+
+            NetworkId.Kisharnet -> {
+                DASHBOARD_KISHARNET_URL
+            }
+
+            else -> {
+                DASHBOARD_RCNET_V3_URL
+            }
+        }
+
+    private const val DASHBOARD_MAINNET_URL = "https://rcnet-v3-dashboard.radixdlt.com"
+    private const val DASHBOARD_RCNET_V3_URL = "https://rcnet-v3-dashboard.radixdlt.com"
+    private const val DASHBOARD_STOKENET_URL = "https://stokenet-dashboard.radixdlt.com"
+    private const val DASHBOARD_HAMMUNET_URL = "https://hammunet-dashboard.rdx-works-main.extratools.works"
+    private const val DASHBOARD_ENKINET_URL = "https://enkinet-dashboard.rdx-works-main.extratools.works"
+    private const val DASHBOARD_MARDUNET_URL = "https://mardunet-dashboard.rdx-works-main.extratools.works"
+    private const val DASHBOARD_KISHARNET_URL = "https://kisharnet-dashboard.radixdlt.com"
 }
