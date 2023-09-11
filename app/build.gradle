@@ -50,7 +50,7 @@ android {
     compileSdk rootProject.ext.compileSdk
 
     defaultConfig {
-        applicationId "com.babylon.wallet.android"
+        applicationId "com.radixpublishing.radixwallet.android"
         minSdk rootProject.ext.minSdk
         targetSdk rootProject.ext.targetSdk
         versionCode 1
