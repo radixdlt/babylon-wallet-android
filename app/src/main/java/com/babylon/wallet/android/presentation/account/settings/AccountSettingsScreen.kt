@@ -5,21 +5,19 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
-<<<<<<<< HEAD:app/src/main/java/com/babylon/wallet/android/presentation/account/accountpreference/AccountPreferencesScreen.kt
 import androidx.compose.foundation.layout.statusBars
-========
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.material.Divider
->>>>>>>> 6c886c7c9 (third party deposits UI):app/src/main/java/com/babylon/wallet/android/presentation/settings/account/AccountSettingsScreen.kt
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.ModalBottomSheetLayout
 import androidx.compose.material.ModalBottomSheetValue
 import androidx.compose.material.Text
 import androidx.compose.material.rememberModalBottomSheetState
+import androidx.compose.material3.Divider
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
@@ -31,6 +29,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.babylon.wallet.android.BuildConfig
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixSecondaryButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
@@ -96,7 +95,7 @@ fun AccountSettingsScreen(
             },
             faucetState = state.faucetState,
             isXrdLoading = state.isFreeXRDLoading,
-            isAuthSigningLoading = state.isAuthSigningLoading,
+            isAuthSigningLoading = state.isLoading,
             onMessageShown = viewModel::onMessageShown,
             error = state.error,
             hasAuthKey = state.hasAuthKey,
@@ -146,7 +145,6 @@ private fun AccountSettingsContent(
     )
     Scaffold(
         modifier = modifier,
-<<<<<<<< HEAD:app/src/main/java/com/babylon/wallet/android/presentation/account/accountpreference/AccountPreferencesScreen.kt
         topBar = {
             RadixCenteredTopAppBar(
                 title = stringResource(R.string.accountSettings_title),
@@ -162,101 +160,51 @@ private fun AccountSettingsContent(
         },
         containerColor = RadixTheme.colors.gray5
     ) { padding ->
-        Column(
-            Modifier
-                .padding(padding)
-                .padding(RadixTheme.dimensions.paddingLarge)
-        ) {
-            val context = LocalContext.current
-            if (faucetState is FaucetState.Available) {
-                RadixSecondaryButton(
-                    modifier = Modifier.fillMaxWidth(),
-                    text = stringResource(R.string.accountSettings_getXrdTestTokens),
-                    onClick = {
-                        context.biometricAuthenticate { authenticatedSuccessfully ->
-                            if (authenticatedSuccessfully) {
-                                onGetFreeXrdClick()
-                            }
-                        }
-                    },
-                    isLoading = isXrdLoading,
-                    enabled = !isXrdLoading && faucetState.isEnabled
-                )
-            }
-            if (isXrdLoading) {
-                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXSmall))
-                Text(
-                    text = stringResource(R.string.accountSettings_loadingPrompt),
-                    style = RadixTheme.typography.body2Regular,
-                    color = RadixTheme.colors.gray1,
-                )
-            }
-
-            if (BuildConfig.EXPERIMENTAL_FEATURES_ENABLED && !hasAuthKey) {
-                RadixSecondaryButton(
-                    modifier = Modifier.fillMaxWidth(),
-                    text = stringResource(id = R.string.biometrics_prompt_createSignAuthKey),
-                    onClick = onCreateAndUploadAuthKey,
-                    isLoading = isAuthSigningLoading,
-                    enabled = !isAuthSigningLoading,
-                    throttleClicks = true
-                )
-========
-        horizontalAlignment = Alignment.Start
-    ) {
-        RadixCenteredTopAppBar(
-            title = stringResource(R.string.accountSettings_title),
-            onBackClick = onBackClick,
-            containerColor = RadixTheme.colors.defaultBackground
-        )
-        Box(
+        val context = LocalContext.current
+        LazyColumn(
             modifier = Modifier
-                .fillMaxWidth()
-                .weight(1f)
+                .padding(padding)
+                .fillMaxSize()
+                .background(RadixTheme.colors.gray5)
         ) {
-            val context = LocalContext.current
-            LazyColumn(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(RadixTheme.colors.gray5)
-            ) {
-                settingsSections.forEach { section ->
+            settingsSections.forEach { section ->
+                item {
+                    Text(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(RadixTheme.dimensions.paddingDefault),
+                        text = stringResource(id = section.titleRes()),
+                        style = RadixTheme.typography.body1HighImportance,
+                        color = RadixTheme.colors.gray2
+                    )
+                }
+                val lastSettingsItem = section.settingsItems.last()
+                section.settingsItems.forEach { settingsItem ->
                     item {
-                        Text(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(RadixTheme.dimensions.paddingDefault),
-                            text = stringResource(id = section.titleRes()),
-                            style = RadixTheme.typography.body1HighImportance,
-                            color = RadixTheme.colors.gray2
+                        DefaultSettingsItem(
+                            onClick = {
+                                onSettingClick(settingsItem)
+                            },
+                            icon = settingsItem.getIcon(),
+                            title = stringResource(id = settingsItem.titleRes()),
+                            subtitle = stringResource(id = settingsItem.subtitleRes())
                         )
-                    }
-                    val lastSettingsItem = section.settingsItems.last()
-                    section.settingsItems.forEach { settingsItem ->
-                        item {
-                            DefaultSettingsItem(
-                                onClick = {
-                                    onSettingClick(settingsItem)
-                                },
-                                icon = settingsItem.getIcon(),
-                                title = stringResource(id = settingsItem.titleRes()),
-                                subtitle = stringResource(id = settingsItem.subtitleRes())
+                        if (lastSettingsItem != settingsItem) {
+                            Divider(
+                                modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingDefault),
+                                color = RadixTheme.colors.gray5
                             )
-                            if (lastSettingsItem != settingsItem) {
-                                Divider(
-                                    modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingDefault),
-                                    color = RadixTheme.colors.gray5
-                                )
-                            }
                         }
                     }
                 }
-                item {
-                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
+            }
+            item {
+                if (faucetState is FaucetState.Available) {
+                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSmall))
                     RadixSecondaryButton(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(horizontal = RadixTheme.dimensions.paddingDefault),
+                            .padding(horizontal = RadixTheme.dimensions.paddingLarge),
                         text = stringResource(R.string.accountSettings_getXrdTestTokens),
                         onClick = {
                             context.biometricAuthenticate { authenticatedSuccessfully ->
@@ -265,53 +213,44 @@ private fun AccountSettingsContent(
                                 }
                             }
                         },
-                        enabled = !loading && canUseFaucet
+                        isLoading = isXrdLoading,
+                        enabled = !isXrdLoading && faucetState.isEnabled
                     )
+                }
+                if (isXrdLoading) {
                     Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSmall))
+                    Text(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = RadixTheme.dimensions.paddingLarge),
+                        text = stringResource(R.string.accountSettings_loadingPrompt),
+                        style = RadixTheme.typography.body2Regular,
+                        color = RadixTheme.colors.gray1,
+                    )
                 }
-                if (!hasAuthKey) {
-                    item {
-                        RadixSecondaryButton(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = RadixTheme.dimensions.paddingDefault),
-                            text = "Create &amp; Upload Auth Key",
-                            onClick = onCreateAndUploadAuthKey,
-                            enabled = !loading,
-                            throttleClicks = true
-                        )
-                        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSmall))
-                    }
-                }
-                item {
+                if (BuildConfig.EXPERIMENTAL_FEATURES_ENABLED && !hasAuthKey) {
+                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSmall))
                     RadixSecondaryButton(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(horizontal = RadixTheme.dimensions.paddingDefault),
-                        text = stringResource(R.string.addressAction_showAccountQR),
-                        onClick = onShowQRCodeClick,
-                        enabled = !loading
+                            .padding(horizontal = RadixTheme.dimensions.paddingLarge),
+                        text = stringResource(id = R.string.biometrics_prompt_createSignAuthKey),
+                        onClick = onCreateAndUploadAuthKey,
+                        isLoading = isAuthSigningLoading,
+                        enabled = !isAuthSigningLoading,
+                        throttleClicks = true
                     )
                 }
-
-                if (loading) {
-                    item {
-                        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXSmall))
-                        Text(
-                            text = stringResource(R.string.accountSettings_loadingPrompt),
-                            style = RadixTheme.typography.body2Regular,
-                            color = RadixTheme.colors.gray1,
-                        )
-                    }
-                }
->>>>>>>> 6c886c7c9 (third party deposits UI):app/src/main/java/com/babylon/wallet/android/presentation/settings/account/AccountSettingsScreen.kt
+                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSmall))
+                RadixSecondaryButton(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = RadixTheme.dimensions.paddingLarge),
+                    text = stringResource(R.string.addressAction_showAccountQR),
+                    onClick = onShowQRCodeClick,
+                    enabled = !isXrdLoading
+                )
             }
-            RadixSecondaryButton(
-                modifier = Modifier.fillMaxWidth(),
-                text = stringResource(R.string.addressAction_showAccountQR),
-                onClick = onShowQRCodeClick,
-                enabled = !isXrdLoading
-            )
         }
     }
 }

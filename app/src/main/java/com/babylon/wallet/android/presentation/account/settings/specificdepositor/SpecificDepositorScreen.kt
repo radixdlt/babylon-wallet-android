@@ -21,7 +21,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.ExperimentalMaterialApi
-import androidx.compose.material.ModalBottomSheetLayout
 import androidx.compose.material.ModalBottomSheetValue
 import androidx.compose.material.rememberModalBottomSheetState
 import androidx.compose.material3.Divider
@@ -61,6 +60,7 @@ import com.babylon.wallet.android.presentation.account.settings.thirdpartydeposi
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.BottomDialogDragHandle
+import com.babylon.wallet.android.presentation.ui.composables.DefaultModalSheetLayout
 import com.babylon.wallet.android.presentation.ui.composables.ImageSize
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
@@ -129,21 +129,26 @@ fun SpecificDepositorScreen(
             )
         )
     }
-    ModalBottomSheetLayout(
-        modifier = modifier
-//            .systemBarsPadding()
-            .navigationBarsPadding(),
+    DefaultModalSheetLayout(
+        modifier = modifier.navigationBarsPadding(),
         sheetContent = {
-            AddDepositorSheet(onResourceAddressChanged = sharedViewModel::depositorAddressTyped, onAddDepositor = {
-                hideCallback()
-                sharedViewModel.onAddDepositor()
-            }, modifier = Modifier.fillMaxWidth(), depositor = state.depositorToAdd, onDismiss = {
+            AddDepositorSheet(
+                onResourceAddressChanged = sharedViewModel::depositorAddressTyped,
+                onAddDepositor = {
+                    hideCallback()
+                    sharedViewModel.onAddDepositor()
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(RadixTheme.colors.gray4)
+                    .clip(RadixTheme.shapes.roundedRectTopDefault),
+                depositor = state.depositorToAdd,
+                onDismiss = {
                     hideCallback()
                 })
         },
-        sheetState = sheetState,
-        sheetBackgroundColor = RadixTheme.colors.gray4,
-        sheetShape = RadixTheme.shapes.roundedRectTopDefault
+        wrapContent = true,
+        sheetState = sheetState
     ) {
         SpecificDepositorContent(
             onBackClick = onBackClick,
@@ -258,20 +263,20 @@ private fun SpecificDepositorContent(
             containerColor = RadixTheme.colors.defaultBackground
         )
     }, bottomBar = {
-            Column(
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(RadixTheme.colors.defaultBackground)
+        ) {
+            RadixPrimaryButton(
+                text = stringResource(R.string.accountSettings_thirdPartyDeposits_allowSpecificDepositorsButton),
+                onClick = onShowAddAssetSheet,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(RadixTheme.colors.defaultBackground)
-            ) {
-                RadixPrimaryButton(
-                    text = stringResource(R.string.accountSettings_thirdPartyDeposits_allowSpecificDepositorsButton),
-                    onClick = onShowAddAssetSheet,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(RadixTheme.dimensions.paddingDefault)
-                )
-            }
-        }) { paddingValues ->
+                    .padding(RadixTheme.dimensions.paddingDefault)
+            )
+        }
+    }) { paddingValues ->
         Column(
             Modifier
                 .fillMaxWidth()

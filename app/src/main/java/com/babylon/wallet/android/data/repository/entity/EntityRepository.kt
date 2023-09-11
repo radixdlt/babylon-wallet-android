@@ -412,9 +412,9 @@ class EntityRepositoryImpl @Inject constructor(
         )
     }
 
-    fun mapToNonFungibleResource(nonFungibleDetails: StateEntityDetailsResponseItem): Resource {
+    private fun mapToNonFungibleResource(nonFungibleDetails: StateEntityDetailsResponseItem): Resource {
         val resourceBehaviours = nonFungibleDetails.details?.calculateResourceBehaviours().orEmpty()
-        val currentSupply = nonFungibleDetails.details?.totalSupply()?.toBigDecimal()
+        val currentSupply = nonFungibleDetails.details?.totalSupply()?.toIntOrNull()
 
         val metaDataItems = nonFungibleDetails.explicitMetadata?.asMetadataItems().orEmpty().toMutableList()
 

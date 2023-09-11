@@ -9,8 +9,6 @@ import com.babylon.wallet.android.presentation.settings.accountsecurity.accountS
 import com.babylon.wallet.android.presentation.settings.accountsecurity.accountSecurityScreen
 import com.babylon.wallet.android.presentation.settings.accountsecurity.importlegacywallet.importLegacyWalletScreen
 import com.babylon.wallet.android.presentation.settings.appsettings.appSettingsNavGraph
-import com.babylon.wallet.android.presentation.onboarding.restore.mnemonics.RestoreMnemonicsArgs
-import com.babylon.wallet.android.presentation.onboarding.restore.mnemonics.restoreMnemonics
 import com.babylon.wallet.android.presentation.settings.appsettings.appSettingsScreen
 import com.babylon.wallet.android.presentation.settings.appsettings.linkedconnectors.linkedConnectorsScreen
 import com.babylon.wallet.android.presentation.settings.authorizeddapps.authorizedDAppsScreen
@@ -47,27 +45,6 @@ fun NavGraphBuilder.settingsNavGraph(
         }
         accountSecurityNavGraph(navController)
         appSettingsNavGraph(navController)
-        settingsGatewayEdit(navController)
-        seedPhrases(
-            onBackClick = { navController.popBackStack() },
-            onNavigateToRecoverMnemonic = { navController.restoreMnemonics(args = RestoreMnemonicsArgs.RestoreSpecificMnemonic(it.body)) },
-            onNavigateToSeedPhrase = { navController.revealSeedPhrase(it.body.value) }
-        )
-        importLegacyWalletScreen(
-            onBackClick = {
-                navController.popBackStack()
-            }
-        )
-        ledgerHardwareWalletsScreen(
-            onBackClick = {
-                navController.navigateUp()
-            }
-        )
-        revealSeedPhrase(
-            onBackClick = {
-                navController.navigateUp()
-            }
-        )
     }
 }
 
@@ -89,14 +66,6 @@ private fun NavGraphBuilder.settingsAll(navController: NavController) {
 
                     SettingsItem.TopLevelSettings.ImportOlympiaWallet -> {
                         navController.importLegacyWalletScreen()
-                    SettingsItem.TopLevelSettings.LinkedConnectors -> {
-                        navController.linkedConnectorsScreen()
-                    }
-
-                    SettingsItem.TopLevelSettings.Gateways -> {
-                        navController.navigate(Screen.SettingsEditGatewayApiDestination.route) {
-                            launchSingleTop = true
-                        }
                     }
 
                     SettingsItem.TopLevelSettings.AuthorizedDapps -> {
@@ -111,26 +80,8 @@ private fun NavGraphBuilder.settingsAll(navController: NavController) {
                         navController.accountSecurityScreen()
                     }
 
-                    is SettingsItem.TopLevelSettings.AppSettings -> {
-
                     SettingsItem.TopLevelSettings.AppSettings -> {
                         navController.appSettingsScreen()
-                    }
-
-                    SettingsItem.TopLevelSettings.SeedPhrases -> {
-                        navController.seedPhrases()
-                    }
-
-                    is SettingsItem.TopLevelSettings.Backups -> {
-                        navController.backupScreen()
-                    }
-
-                    SettingsItem.TopLevelSettings.LedgerHardwareWallets -> {
-                        navController.ledgerHardwareWalletsScreen()
-                    }
-
-                    SettingsItem.TopLevelSettings.ImportFromLegacyWallet -> {
-                        navController.importLegacyWalletScreen()
                     }
                 }
             }

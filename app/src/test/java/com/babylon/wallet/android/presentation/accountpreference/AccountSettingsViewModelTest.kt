@@ -5,6 +5,7 @@ import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.data.repository.TransactionStatusClient
 import com.babylon.wallet.android.data.transaction.ROLAClient
 import com.babylon.wallet.android.domain.SampleDataProvider
+import com.babylon.wallet.android.domain.usecases.FaucetState
 import com.babylon.wallet.android.domain.usecases.GetFreeXrdUseCase
 import com.babylon.wallet.android.presentation.StateViewModelTest
 import com.babylon.wallet.android.presentation.account.settings.ARG_ADDRESS
@@ -59,7 +60,7 @@ internal class AccountSettingsViewModelTest : StateViewModelTest<AccountSettings
     @Before
     override fun setUp() {
         super.setUp()
-        every { getFreeXrdUseCase.isAllowedToUseFaucet(any()) } returns flow { emit(true) }
+        every { getFreeXrdUseCase.getFaucetState(any()) } returns flow { emit(FaucetState.Available(true)) }
         every { getProfileUseCase() } returns flowOf(SampleDataProvider().sampleProfile())
         coEvery { getFreeXrdUseCase(any()) } returns Result.success(sampleTxId)
         every { savedStateHandle.get<String>(ARG_ADDRESS) } returns sampleAddress
@@ -71,16 +72,16 @@ internal class AccountSettingsViewModelTest : StateViewModelTest<AccountSettings
         val vm = vm.value
         advanceUntilIdle()
         val state = vm.state.first()
-        assert(state.canUseFaucet)
+        assert(state.faucetState is FaucetState.Available)
     }
 
     @Test
     fun `initial state is correct when free xrd not enabled`() = runTest {
-        every { getFreeXrdUseCase.isAllowedToUseFaucet(any()) } returns flow { emit(false) }
+        every { getFreeXrdUseCase.getFaucetState(any()) } returns flow { emit(FaucetState.Available(false)) }
         val vm = vm.value
         advanceUntilIdle()
         val state = vm.state.first()
-        assert(!state.canUseFaucet)
+        assert(state.faucetState is FaucetState.Available && !(state.faucetState as FaucetState.Available).isEnabled)
     }
 
     @Test
@@ -90,7 +91,6 @@ internal class AccountSettingsViewModelTest : StateViewModelTest<AccountSettings
         advanceUntilIdle()
         val state = vm.state.first()
         coVerify(exactly = 1) { getFreeXrdUseCase(sampleAddress) }
-        assert(state.gotFreeXrd)
     }
 
     @Test
@@ -101,7 +101,6 @@ internal class AccountSettingsViewModelTest : StateViewModelTest<AccountSettings
         advanceUntilIdle()
         val state = vm.state.first()
         coVerify(exactly = 1) { getFreeXrdUseCase(sampleAddress) }
-        assert(!state.gotFreeXrd)
         assert(state.error != null)
     }
 }

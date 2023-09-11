@@ -132,13 +132,13 @@ class AccountSettingsViewModel @Inject constructor(
     fun onCreateAndUploadAuthKey() {
         job = viewModelScope.launch {
             state.value.account?.let { account ->
-                _state.update { it.copy(isAuthSigningLoading = true) }
+                _state.update { it.copy(isLoading = true) }
                 rolaClient.generateAuthSigningFactorInstance(account).onSuccess { authSigningFactorInstance ->
                     val manifest = rolaClient
                         .createAuthKeyManifestWithStringInstructions(account, authSigningFactorInstance)
                         .getOrElse {
                             _state.update { state ->
-                                state.copy(isAuthSigningLoading = false)
+                                state.copy(isLoading = false)
                             }
                             return@launch
                         }
@@ -156,7 +156,7 @@ class AccountSettingsViewModel @Inject constructor(
                     listenForRolaKeyUploadTransactionResult(interactionId)
                 }.onFailure {
                     _state.update { state ->
-                        state.copy(isAuthSigningLoading = false)
+                        state.copy(isLoading = false)
                     }
                 }
             }
@@ -170,7 +170,7 @@ data class AccountPreferenceUiState(
     val accountAddress: String,
     val faucetState: FaucetState = FaucetState.Unavailable,
     val isFreeXRDLoading: Boolean = false,
-    val isAuthSigningLoading: Boolean = false,
+    val isLoading: Boolean = false,
     val error: UiMessage? = null,
     val hasAuthKey: Boolean = false,
     val interactionState: InteractionState? = null
