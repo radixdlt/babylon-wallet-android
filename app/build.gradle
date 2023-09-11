@@ -11,7 +11,7 @@ plugins {
 
 apply from: "$rootDir/config/jacoco.gradle"
 
-def debugPropertiesFile = rootProject.file("keystore-development.properties")
+def debugPropertiesFile = rootProject.file("config/signing/debug/keystore.properties")
 def debugKeystoreProperties = new Properties()
 debugKeystoreProperties.load(new FileInputStream(debugPropertiesFile))
 
