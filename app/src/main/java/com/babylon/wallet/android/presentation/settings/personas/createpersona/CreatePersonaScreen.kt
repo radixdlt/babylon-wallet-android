@@ -53,7 +53,6 @@ import com.babylon.wallet.android.presentation.model.PersonaFieldWrapper
 import com.babylon.wallet.android.presentation.model.toDisplayResource
 import com.babylon.wallet.android.presentation.ui.composables.DefaultModalSheetLayout
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
-import com.babylon.wallet.android.presentation.ui.composables.UnderlineTextButton
 import com.babylon.wallet.android.presentation.ui.composables.persona.AddFieldSheet
 import com.babylon.wallet.android.presentation.ui.composables.persona.PersonaDataFieldInput
 import com.babylon.wallet.android.utils.biometricAuthenticate
@@ -263,10 +262,10 @@ private fun CreatePersonaContentList(
                     .size(90.dp)
                     .clip(RadixTheme.shapes.circle)
             )
-            UnderlineTextButton(
-                text = stringResource(R.string.authorizedDapps_personaDetails_editAvatarButtonTitle),
-                onClick = onEditAvatar
-            )
+//            UnderlineTextButton(
+//                text = stringResource(R.string.authorizedDapps_personaDetails_editAvatarButtonTitle),
+//                onClick = onEditAvatar
+//            )
             Spacer(modifier = Modifier.height(dimensions.paddingLarge))
             RadixTextField(
                 modifier = Modifier.fillMaxWidth(),

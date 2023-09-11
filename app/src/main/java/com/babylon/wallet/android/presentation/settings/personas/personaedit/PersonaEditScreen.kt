@@ -52,7 +52,6 @@ import com.babylon.wallet.android.presentation.ui.composables.BottomPrimaryButto
 import com.babylon.wallet.android.presentation.ui.composables.DefaultModalSheetLayout
 import com.babylon.wallet.android.presentation.ui.composables.PersonaRoundedAvatar
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
-import com.babylon.wallet.android.presentation.ui.composables.UnderlineTextButton
 import com.babylon.wallet.android.presentation.ui.composables.persona.AddFieldSheet
 import com.babylon.wallet.android.presentation.ui.composables.persona.PersonaDataFieldInput
 import com.babylon.wallet.android.presentation.ui.composables.persona.RequiredPersonaInformationInfo
@@ -285,10 +284,10 @@ private fun PersonaDetailList(
                     .padding(vertical = dimensions.paddingDefault)
                     .size(104.dp)
             )
-            UnderlineTextButton(
-                text = stringResource(R.string.authorizedDapps_personaDetails_editAvatarButtonTitle),
-                onClick = onEditAvatar
-            )
+//            UnderlineTextButton(
+//                text = stringResource(R.string.authorizedDapps_personaDetails_editAvatarButtonTitle),
+//                onClick = onEditAvatar
+//            )
             Spacer(modifier = Modifier.height(dimensions.paddingSmall))
         }
         item {
