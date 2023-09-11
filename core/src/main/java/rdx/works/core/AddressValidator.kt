@@ -25,5 +25,4 @@ object AddressValidator {
     fun getValidNetworkId(address: String) = runCatching {
         Address(address)
     }.getOrNull()?.networkId()?.toInt()
-
 }

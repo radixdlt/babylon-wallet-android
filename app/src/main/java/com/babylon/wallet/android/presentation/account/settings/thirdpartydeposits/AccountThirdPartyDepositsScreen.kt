@@ -141,25 +141,25 @@ private fun AccountThirdPartyDepositsContent(
             windowInsets = WindowInsets.statusBars
         )
     }, bottomBar = {
-            Column(
-                modifier = Modifier.navigationBarsPadding().background(color = RadixTheme.colors.defaultBackground)
-            ) {
-                Divider(color = RadixTheme.colors.gray5)
-                RadixPrimaryButton(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(RadixTheme.dimensions.paddingDefault),
-                    text = stringResource(id = R.string.accountSettings_specificAssetsDeposits_update),
-                    onClick = onUpdateThirdPartyDeposits,
-                    enabled = canUpdate
-                )
-            }
-        }, snackbarHost = {
-            RadixSnackbarHost(
-                modifier = Modifier.padding(RadixTheme.dimensions.paddingDefault),
-                hostState = snackBarHostState
+        Column(
+            modifier = Modifier.navigationBarsPadding().background(color = RadixTheme.colors.defaultBackground)
+        ) {
+            Divider(color = RadixTheme.colors.gray5)
+            RadixPrimaryButton(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(RadixTheme.dimensions.paddingDefault),
+                text = stringResource(id = R.string.accountSettings_specificAssetsDeposits_update),
+                onClick = onUpdateThirdPartyDeposits,
+                enabled = canUpdate
             )
-        }) { paddingValues ->
+        }
+    }, snackbarHost = {
+        RadixSnackbarHost(
+            modifier = Modifier.padding(RadixTheme.dimensions.paddingDefault),
+            hostState = snackBarHostState
+        )
+    }) { paddingValues ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
