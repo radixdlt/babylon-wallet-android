@@ -8,34 +8,15 @@ on:
   release:
     types:
       - "published"
-  workflow_dispatch:
-    inputs:
-      flavor:
-        description: "Which flavor do you want to build and distribute?"
-        required: true
-        type: choice
-        options:
-          - "alpha"
-        default: "alpha"
-      release_notes:
-        description: "(Optional) Release notes for version you want to distribute (not needed for Alpha flavor)"
-        required: false
-        default: ''
-      groups:
-        description: "(Optional) Name of the group you want to notify about new version"
-        required: false
-        default: 'alpha-devs'
-        type: choice
-        options:
-          - "alpha-devs"
-          - "internal"
-          - "no"
 
 jobs:
 
-  alpha_firebase_releases:
-    name: "Publish to firebase"
+  firebase_alpha:
+    if: >
+      ( github.ref == 'refs/heads/main' && github.event_name == 'push' )
+    name: "Publish to Firebase"
     runs-on: ubuntu-latest
+    environment: Debug
     steps:
       - uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8
         with:
@@ -62,10 +43,7 @@ jobs:
           fileName: "service_account.json"
           encodedString: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS_BASE_64 }}
 
-      - name: Distribute Alpha
-        if: >
-          ( github.ref == 'refs/heads/main' && github.event_name == 'push' ) ||
-          ( github.event.inputs.flavor == 'alpha' && github.event_name == 'workflow_dispatch' )
+      - name: Distribute Alpha to Firebase
         run: |
           export GROUPS=${GROUPS:-"alpha-devs"}
           if [ "$GROUPS" == "no" ]; then
@@ -73,10 +51,10 @@ jobs:
           fi
           git config user.name $GIT_USER
           git config user.email $GIT_USER
-          bundle exec fastlane firebaseAlpha
-          echo "### Alpha flavor distributed! :rocket:" >> $GITHUB_STEP_SUMMARY
+          bundle exec fastlane deployFirebaseAlpha
+          echo "### App distributed! :rocket:" >> $GITHUB_STEP_SUMMARY
         env:
-          FIREBASE_APP_ID: ${{ secrets.BABYLON_FIREBASE_ALPHA_APP_ID }}
+          FIREBASE_APP_ID: ${{ secrets.FIREBASE_APP_ID }}
           GOOGLE_APPLICATION_CREDENTIALS: ${{ steps.google_application_credentials.outputs.filePath }}
           RELEASE_NOTES: ${{ github.event.inputs.release_notes }}
           GROUPS: ${{ github.event.inputs.groups }}
@@ -85,41 +63,11 @@ jobs:
           GPR_USER: ${{ secrets.GPR_USER }}
           GPR_TOKEN: ${{ secrets.GPR_TOKEN }}
 
-#      - name: Decode keystore credentials
-#        uses: timheuer/base64-to-file@48657ba25c726c2e3dcf02efa3639fff9b3d587e
-#        id: keystore_file
-#        with:
-#          fileName: "debugPreview.jks"
-#          encodedString: ${{ secrets.RADIX_DEBUG_PREVIEW_KEYSTORE_FILE_BASE_64 }}
-
-#      - name: Distribute Preview flavor
-#        if: ( github.event_name == 'release' && github.event.release.prerelease )
-#        run: |
-#          git config user.name $GIT_USER
-#          git config user.email $GIT_USER
-#          bundle exec fastlane preview
-#          echo "### Preview flavor distributed! :rocket:" >> $GITHUB_STEP_SUMMARY
-#        env:
-#          FIREBASE_APP_ID: ${{ secrets.FIREBASE_PREVIEW_APP_ID }}
-#          GOOGLE_APPLICATION_CREDENTIALS: ${{ steps.google_application_credentials.outputs.filePath }}
-#          RELEASE_NOTES: ${{ github.event.inputs.release_notes }}
-#          GROUPS: "internal"
-#          SLACK_URL: ${{ secrets.SLACK_URL }}
-#          GIT_USER: ${{ secrets.RADIX_BOT_USERNAME }}
-#          GPR_USER: ${{ secrets.GPR_USER }}
-#          GPR_TOKEN: ${{ secrets.GPR_TOKEN }}
-#          RADIX_DEBUG_PREVIEW_KEYSTORE_FILE: ${{ steps.keystore_file.outputs.filePath }}
-#          RADIX_ANDROID_KEYSTORE_PASSWORD: ${{ secrets.RADIX_ANDROID_KEYSTORE_PASSWORD }}
-#          RADIX_ANDROID_KEYSTORE_PRIVATE_KEY_PASSWORD: ${{ secrets.RADIX_ANDROID_KEYSTORE_PRIVATE_KEY_PASSWORD }}
-#          RADIX_ANDROID_KEYSTORE_ALIAS: ${{ secrets.RADIX_ANDROID_KEYSTORE_ALIAS }}
-#          RELEASE_BRANCH: ${{ github.event.release.target_commitish }}
-
   playstore_releases:
-    name: "Publish to playstore"
+    if: github.event_name == 'release'
+    name: "Publish to PlayStore"
     runs-on: ubuntu-latest
     environment: Release
-#    if: >
-#      ( github.event_name == 'release' && !github.event.release.prerelease )
     steps:
       - uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8
         with:
@@ -155,11 +103,15 @@ jobs:
         run: |        
           echo "RELEASE_BRANCH=${{ github.event.release.target_commitish }}" >> $GITHUB_ENV
 
+      - name: Set release track
+        run: |
+          echo "RELEASE_TRACK=${{ (github.event.release.prerelease) ? 'alpha' : 'production' }}" >> $GITHUB_ENV
+
       - name: Distribute to Google Play
         run: |
           git config user.name $GIT_USER
           git config user.email $GIT_USER
-          bundle exec fastlane googlePlayRelease internal:true
+          bundle exec fastlane deployRelease track:${{ env.RELEASE_TRACK }}
           echo "### Distribute Google Play flavor distributed! :rocket:" >> $GITHUB_STEP_SUMMARY
         env:
           SLACK_URL: ${{ secrets.SLACK_URL }}
@@ -174,11 +126,17 @@ jobs:
     if: github.event_name == 'release'
     steps:
       - uses: actions/checkout@755da8c3cf115ac066823e79a1e1788f8940201b
-      - uses: timheuer/base64-to-file@48657ba25c726c2e3dcf02efa3639fff9b3d587e
-        id: keystore_file
-        with:
-          fileName: "debugPreview.jks"
-          encodedString: ${{ secrets.RADIX_DEBUG_PREVIEW_KEYSTORE_FILE_BASE_64 }}
+      - name: Decode keystore credentials
+        run: |
+          mkdir config/signing/release
+          echo "${{ secrets.KEYSTORE_ENCRYPTED_BASE64 }}" > keystore.asc
+          gpg -d --passphrase "${{ secrets.KEYSTORE_PASSPHRASE }}" --batch keystore.asc > config/signing/release/keystore.jks
+
+          echo "keyAlias=${{ secrets.KEYSTORE_ALIAS }}" > config/signing/release/keystore.properties
+          echo "keyPassword=${{ secrets.KEYSTORE_KEY_PASSWORD }}" >> config/signing/release/keystore.properties
+          echo "storeFile=../config/signing/release/keystore.jks" >> config/signing/release/keystore.properties
+          echo "storePassword=${{ secrets.KEYSTORE_PASSWORD }}" >> config/signing/release/keystore.properties
+
       - name: Generate SBOM
         uses: snyk/actions/gradle-jdk17@b98d498629f1c368650224d6d212bf7dfa89e4bf # v0.4.0
         with:
@@ -186,7 +144,7 @@ jobs:
           command: sbom
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-          RADIX_DEBUG_PREVIEW_KEYSTORE_FILE: ${{ steps.keystore_file.outputs.filePath }}
+          RADIX_DEBUG_PREVIEW_KEYSTORE_FILE: config/signing/release/keystore.jks
       - name: Upload SBOM
         uses: svenstaro/upload-release-action@2b9d2847a97b04d02ad5c3df2d3a27baa97ce689 # v2.6.1
         with:

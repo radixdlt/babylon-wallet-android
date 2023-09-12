@@ -1,6 +1,6 @@
 
-desc "Deploy debug (alpha) variant into Firebase"
-lane :firebaseAlpha do
+desc "Deploy alpha to Firebase"
+lane :deployFirebaseAlpha do
     branch_name = git_branch
     commit = last_git_commit
 
@@ -16,24 +16,16 @@ lane :firebaseAlpha do
     )
 end
 
-desc "Deploy release variant into Firebase"
-lane :firebaseRelease do
-    gradle(
-        task: "assemble",
-        build_type: "Release"
-    )
-    firebase_app_distribution(
-        app: ENV["FIREBASE_APP_ID"],
-        release_notes: ENV["RELEASE_NOTES"],
-        groups: ENV["GROUPS"]
-    )
-end
+desc "Deploy Release"
+lane :deployRelease do |options|
+    track = options[:track] ||= 'production'
 
-desc "Deploy release variant into Play Store"
-lane :googlePlayRelease do |options|
-    internal = options[:internal] == true || false
-    track = internal ? "internal" : "production"
-    UI.success "Starting release to PlayStore for '#{track}' track"
+    testTracks = ['beta', 'alpha', 'internal']
+    if testTracks.include?(track) == false || track != 'production'
+        UI.user_error!("Track '#{track}' is not a valid. Valid tracks are: production, beta, alpha, internal")
+    else
+        UI.success "Starting release to PlayStore for '#{track}' track"
+    end
 
     currentVersionCode = latestGooglePlayVersionCode()
     versionCode = currentVersionCode + 1
@@ -55,52 +47,33 @@ lane :googlePlayRelease do |options|
 
     versionName = get_version_name(output_file: apkPath)
 
-#     upload_to_play_store(
-#         track: internal ? "internal" : "production",
-#         aab: aabPath,
-#         skip_upload_apk: true,
-#         skip_upload_images: true,
-#         skip_upload_screenshots: true,
-#         release_status: "draft",
-#         json_key_data: ENV['GOOGLE_PLAY_DEPLOYER_JSON_FILE']
-#     )
-#
-#     git_commit(
-#         path: "app/build.gradle",
-#         message: "Version #{versionName} (#{versionCode}) distributed to PlayStore."
-#     )
-#     push_to_git_remote(
-#         remote_branch: ENV["RELEASE_BRANCH"],
-#         tags: false
-#     )
+    upload_to_play_store(
+        track: track,
+        aab: aabPath,
+        skip_upload_apk: true,
+        skip_upload_images: true,
+        skip_upload_screenshots: true,
+        release_status: "draft",
+        json_key_data: ENV['GOOGLE_PLAY_DEPLOYER_JSON_FILE']
+    )
+
+    git_commit(
+        path: "app/build.gradle",
+        message: "Version #{versionName} (#{versionCode}) distributed to PlayStore."
+    )
+    push_to_git_remote(
+        remote_branch: ENV["RELEASE_BRANCH"],
+        tags: false
+    )
 end
 
-
-# after_all do |beta|
-#   slack(
-#     message: "New Android version of Babylon Wallet is released!",
-#     slack_url: ENV["SLACK_URL"],
-#     use_webhook_configured_username_and_icon: "false",
-#     username: "fastlane",
-#     icon_url: "https://fastlane.tools/assets/img/fastlane_icon.png",
-#     success: true
-# )
-# end
-
-# error do |beta, exception|
-#   slack(
-#     message: exception.message,
-#     success: false
-#   )
-# end
-
-lane :get_version_name do |options|
+private_lane :get_version_name do |options|
     output = read_json(json_path: options[:output_file])
     output[:elements][0][:versionName]
 end
 
 desc "Get the maximum version code from Play Store"
-lane :latestGooglePlayVersionCode do
+private_lane :latestGooglePlayVersionCode do
     productionVersionCodes = []
     begin
         productionVersionCodes = google_play_track_version_codes(
@@ -119,25 +92,24 @@ lane :latestGooglePlayVersionCode do
     rescue => e
     end
 
-   alphaVersionCodes = []
-   begin
+    alphaVersionCodes = []
+    begin
         alphaVersionCodes = google_play_track_version_codes(
             track: 'alpha',
             json_key_data: ENV['GOOGLE_PLAY_DEPLOYER_JSON_FILE']
         )
-   rescue => e
-   end
+    rescue => e
+    end
 
-   internalVersionCodes = []
-   begin
+    internalVersionCodes = []
+    begin
         internalVersionCodes = google_play_track_version_codes(
             track: 'internal',
             json_key_data: ENV['GOOGLE_PLAY_DEPLOYER_JSON_FILE']
         )
-   rescue => e
-   end
+    rescue => e
+    end
 
-    # puts version codes from all tracks into the same array
     versionCodes = [
         productionVersionCodes,
         betaVersionCodes,

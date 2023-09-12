@@ -37,22 +37,6 @@ Deploy release variant into Firebase
 
 Deploy release variant into Play Store
 
-### get_version_name
-
-```sh
-[bundle exec] fastlane get_version_name
-```
-
-
-
-### latestGooglePlayVersionCode
-
-```sh
-[bundle exec] fastlane latestGooglePlayVersionCode
-```
-
-Get the maximum version code from Play Store
-
 ----
 
 This README.md is auto-generated and will be re-generated every time [_fastlane_](https://fastlane.tools) is run.
