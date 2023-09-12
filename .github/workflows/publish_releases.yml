@@ -103,11 +103,6 @@ jobs:
         run: |        
           echo "RELEASE_BRANCH=${{ github.event.release.target_commitish }}" >> $GITHUB_ENV
 
-      - name: Set release track
-        run: echo "Track set to ${{ env.RELEASE_TRACK }}"
-        env:
-          RELEASE_TRACK: ${{ github.event.release.prerelease == true && 'alpha' || 'production' }}
-
       - name: Distribute to Google Play
         run: |
           git config user.name $GIT_USER
@@ -115,6 +110,7 @@ jobs:
           bundle exec fastlane deployRelease track:${{ env.RELEASE_TRACK }}
           echo "### Distribute Google Play flavor distributed! :rocket:" >> $GITHUB_STEP_SUMMARY
         env:
+          RELEASE_TRACK: ${{ github.event.release.prerelease == true && 'alpha' || 'production' }}
           SLACK_URL: ${{ secrets.SLACK_URL }}
           GIT_USER: ${{ secrets.RADIX_BOT_USERNAME }}
           GPR_USER: ${{ secrets.GPR_USER }}
