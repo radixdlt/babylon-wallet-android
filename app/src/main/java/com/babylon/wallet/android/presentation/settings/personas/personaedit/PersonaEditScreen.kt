@@ -52,7 +52,6 @@ import com.babylon.wallet.android.presentation.ui.composables.BottomPrimaryButto
 import com.babylon.wallet.android.presentation.ui.composables.DefaultModalSheetLayout
 import com.babylon.wallet.android.presentation.ui.composables.PersonaRoundedAvatar
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
-import com.babylon.wallet.android.presentation.ui.composables.UnderlineTextButton
 import com.babylon.wallet.android.presentation.ui.composables.persona.AddFieldSheet
 import com.babylon.wallet.android.presentation.ui.composables.persona.PersonaDataFieldInput
 import com.babylon.wallet.android.presentation.ui.composables.persona.RequiredPersonaInformationInfo
@@ -82,7 +81,6 @@ fun PersonaEditScreen(
         modifier = modifier,
         persona = state.persona,
         onSave = viewModel::onSave,
-        onEditAvatar = {},
         editedFields = state.currentFields,
         fieldsToAdd = state.fieldsToAdd,
         onAddFields = viewModel::onAddFields,
@@ -108,7 +106,6 @@ private fun PersonaEditContent(
     modifier: Modifier = Modifier,
     persona: Network.Persona?,
     onSave: () -> Unit,
-    onEditAvatar: () -> Unit,
     editedFields: ImmutableList<PersonaFieldWrapper>,
     fieldsToAdd: ImmutableList<PersonaFieldWrapper>,
     onAddFields: () -> Unit,
@@ -230,7 +227,6 @@ private fun PersonaEditContent(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(padding),
-                    onEditAvatar = onEditAvatar,
                     onAddField = {
                         scope.launch {
                             keyboardController?.hide()
@@ -260,7 +256,6 @@ private fun PersonaEditContent(
 @Composable
 private fun PersonaDetailList(
     modifier: Modifier = Modifier,
-    onEditAvatar: () -> Unit,
     onAddField: () -> Unit,
     editedFields: ImmutableList<PersonaFieldWrapper>,
     onDeleteField: (PersonaDataEntryID) -> Unit,
@@ -285,10 +280,10 @@ private fun PersonaDetailList(
                     .padding(vertical = dimensions.paddingDefault)
                     .size(104.dp)
             )
-            UnderlineTextButton(
-                text = stringResource(R.string.authorizedDapps_personaDetails_editAvatarButtonTitle),
-                onClick = onEditAvatar
-            )
+//            UnderlineTextButton(
+//                text = stringResource(R.string.authorizedDapps_personaDetails_editAvatarButtonTitle),
+//                onClick = onEditAvatar
+//            )
             Spacer(modifier = Modifier.height(dimensions.paddingSmall))
         }
         item {
@@ -388,7 +383,6 @@ fun DappDetailContentPreview() {
             onBackClick = {},
             persona = null,
             onSave = {},
-            onEditAvatar = {},
             editedFields = persistentListOf(),
             fieldsToAdd = persistentListOf(),
             onAddFields = {},
