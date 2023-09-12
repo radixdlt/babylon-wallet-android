@@ -56,10 +56,10 @@ jobs:
           java-version: '17'
 
       - name: Distribute Alpha
-        if: >
-          ( github.ref == 'refs/heads/feature-ABW-2149-ci' && github.event_name == 'push' ) ||
-          ( github.ref == 'refs/heads/main' && github.event_name == 'push' ) ||
-          ( github.event.inputs.flavor == 'alpha' && github.event_name == 'workflow_dispatch' )
+#        if: >
+#          ( github.ref == 'refs/heads/feature-ABW-2149-ci' && github.event_name == 'push' ) ||
+#          ( github.ref == 'refs/heads/main' && github.event_name == 'push' ) ||
+#          ( github.event.inputs.flavor == 'alpha' && github.event_name == 'workflow_dispatch' )
         run: |
           export GROUPS=${GROUPS:-"alpha-devs"}
           if [ "$GROUPS" == "no" ]; then
