@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - "main"
+      - "feature/ABW-2149-ci"
   release:
     types:
       - "published"
@@ -54,22 +55,9 @@ jobs:
           distribution: 'zulu' # See 'Supported distributions' for available options
           java-version: '17'
 
-      - name: Decode Service account credentials
-        uses: timheuer/base64-to-file@48657ba25c726c2e3dcf02efa3639fff9b3d587e
-        id: firebase_keystore
-        with:
-          fileName: "service_account.json"
-          encodedString: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS_BASE_64 }}
-
-      - name: Decode keystore credentials
-        uses: timheuer/base64-to-file@48657ba25c726c2e3dcf02efa3639fff9b3d587e
-        id: keystore_file
-        with:
-          fileName: "debugPreview.jks"
-          encodedString: ${{ secrets.RADIX_DEBUG_PREVIEW_KEYSTORE_FILE_BASE_64 }}
-
-      - name: Distribute Alpha flavor
+      - name: Distribute Alpha
         if: >
+          ( github.ref == 'refs/heads/feature-ABW-2149-ci' && github.event_name == 'push' ) ||
           ( github.ref == 'refs/heads/main' && github.event_name == 'push' ) ||
           ( github.event.inputs.flavor == 'alpha' && github.event_name == 'workflow_dispatch' )
         run: |
@@ -82,40 +70,43 @@ jobs:
           bundle exec fastlane alpha
           echo "### Alpha flavor distributed! :rocket:" >> $GITHUB_STEP_SUMMARY
         env:
-          FIREBASE_APP_ID: ${{ secrets.FIREBASE_ALPHA_APP_ID }}
-          GOOGLE_APPLICATION_CREDENTIALS: ${{ steps.firebase_keystore.outputs.filePath }}
+          FIREBASE_APP_ID: ${{ secrets.BABYLON_FIREBASE_ALPHA_APP_ID }}
+#          GOOGLE_APPLICATION_CREDENTIALS: ${{ steps.firebase_keystore.outputs.filePath }}
           RELEASE_NOTES: ${{ github.event.inputs.release_notes }}
           GROUPS: ${{ github.event.inputs.groups }}
           SLACK_URL: ${{ secrets.SLACK_URL }}
           GIT_USER: ${{ secrets.RADIX_BOT_USERNAME }}
           GPR_USER: ${{ secrets.GPR_USER }}
           GPR_TOKEN: ${{ secrets.GPR_TOKEN }}
-          RADIX_DEBUG_PREVIEW_KEYSTORE_FILE: ${{ steps.keystore_file.outputs.filePath }}
-          RADIX_ANDROID_KEYSTORE_PASSWORD: ${{ secrets.RADIX_ANDROID_KEYSTORE_PASSWORD }}
-          RADIX_ANDROID_KEYSTORE_PRIVATE_KEY_PASSWORD: ${{ secrets.RADIX_ANDROID_KEYSTORE_PRIVATE_KEY_PASSWORD }}
-          RADIX_ANDROID_KEYSTORE_ALIAS: ${{ secrets.RADIX_ANDROID_KEYSTORE_ALIAS }}
 
-      - name: Distribute Preview flavor
-        if: ( github.event_name == 'release' && github.event.release.prerelease )
-        run: |
-          git config user.name $GIT_USER
-          git config user.email $GIT_USER
-          bundle exec fastlane preview
-          echo "### Preview flavor distributed! :rocket:" >> $GITHUB_STEP_SUMMARY
-        env:
-          FIREBASE_APP_ID: ${{ secrets.FIREBASE_PREVIEW_APP_ID }}
-          GOOGLE_APPLICATION_CREDENTIALS: ${{ steps.firebase_keystore.outputs.filePath }}
-          RELEASE_NOTES: ${{ github.event.inputs.release_notes }}
-          GROUPS: "internal"
-          SLACK_URL: ${{ secrets.SLACK_URL }}
-          GIT_USER: ${{ secrets.RADIX_BOT_USERNAME }}
-          GPR_USER: ${{ secrets.GPR_USER }}
-          GPR_TOKEN: ${{ secrets.GPR_TOKEN }}
-          RADIX_DEBUG_PREVIEW_KEYSTORE_FILE: ${{ steps.keystore_file.outputs.filePath }}
-          RADIX_ANDROID_KEYSTORE_PASSWORD: ${{ secrets.RADIX_ANDROID_KEYSTORE_PASSWORD }}
-          RADIX_ANDROID_KEYSTORE_PRIVATE_KEY_PASSWORD: ${{ secrets.RADIX_ANDROID_KEYSTORE_PRIVATE_KEY_PASSWORD }}
-          RADIX_ANDROID_KEYSTORE_ALIAS: ${{ secrets.RADIX_ANDROID_KEYSTORE_ALIAS }}
-          RELEASE_BRANCH: ${{ github.event.release.target_commitish }}
+#      - name: Decode keystore credentials
+#        uses: timheuer/base64-to-file@48657ba25c726c2e3dcf02efa3639fff9b3d587e
+#        id: keystore_file
+#        with:
+#          fileName: "debugPreview.jks"
+#          encodedString: ${{ secrets.RADIX_DEBUG_PREVIEW_KEYSTORE_FILE_BASE_64 }}
+
+#      - name: Distribute Preview flavor
+#        if: ( github.event_name == 'release' && github.event.release.prerelease )
+#        run: |
+#          git config user.name $GIT_USER
+#          git config user.email $GIT_USER
+#          bundle exec fastlane preview
+#          echo "### Preview flavor distributed! :rocket:" >> $GITHUB_STEP_SUMMARY
+#        env:
+#          FIREBASE_APP_ID: ${{ secrets.FIREBASE_PREVIEW_APP_ID }}
+#          GOOGLE_APPLICATION_CREDENTIALS: ${{ steps.firebase_keystore.outputs.filePath }}
+#          RELEASE_NOTES: ${{ github.event.inputs.release_notes }}
+#          GROUPS: "internal"
+#          SLACK_URL: ${{ secrets.SLACK_URL }}
+#          GIT_USER: ${{ secrets.RADIX_BOT_USERNAME }}
+#          GPR_USER: ${{ secrets.GPR_USER }}
+#          GPR_TOKEN: ${{ secrets.GPR_TOKEN }}
+#          RADIX_DEBUG_PREVIEW_KEYSTORE_FILE: ${{ steps.keystore_file.outputs.filePath }}
+#          RADIX_ANDROID_KEYSTORE_PASSWORD: ${{ secrets.RADIX_ANDROID_KEYSTORE_PASSWORD }}
+#          RADIX_ANDROID_KEYSTORE_PRIVATE_KEY_PASSWORD: ${{ secrets.RADIX_ANDROID_KEYSTORE_PRIVATE_KEY_PASSWORD }}
+#          RADIX_ANDROID_KEYSTORE_ALIAS: ${{ secrets.RADIX_ANDROID_KEYSTORE_ALIAS }}
+#          RELEASE_BRANCH: ${{ github.event.release.target_commitish }}
 
   playstore_releases:
     name: "Publish to playstore"
