@@ -141,7 +141,6 @@ jobs:
 
       - name: Decode keystore credentials
         run: |
-          pwd
           mkdir config/signing/release
           echo "${{ secrets.KEYSTORE_ENCRYPTED_BASE64 }}" > keystore.asc
           gpg -d --passphrase "${{ secrets.KEYSTORE_PASSPHRASE }}" --batch keystore.asc > config/signing/release/keystore.jks
@@ -158,6 +157,7 @@ jobs:
 
       - name: Distribute Google Play flavor
         run: |
+          ls -la config/signing/release/
           git config user.name $GIT_USER
           git config user.email $GIT_USER
           bundle exec fastlane googlePlayRelease internal:true
