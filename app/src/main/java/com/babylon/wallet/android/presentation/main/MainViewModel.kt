@@ -3,7 +3,6 @@ package com.babylon.wallet.android.presentation.main
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.data.dapp.PeerdroidClient
-import com.babylon.wallet.android.data.repository.networkinfo.NetworkInfoRepository
 import com.babylon.wallet.android.domain.common.onValue
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel.IncomingRequest
 import com.babylon.wallet.android.domain.usecases.AuthorizeSpecifiedPersonaUseCase
@@ -56,7 +55,6 @@ class MainViewModel @Inject constructor(
     private val deviceSecurityHelper: DeviceSecurityHelper,
     private val checkMnemonicIntegrityUseCase: CheckMnemonicIntegrityUseCase,
     private val mainnetAvailabilityUseCase: MainnetAvailabilityUseCase,
-    val networkInfoRepository: NetworkInfoRepository // TODO ONLY FOR TESTING PURPOSES
 ) : StateViewModel<MainUiState>(), OneOffEventHandler<MainEvent> by OneOffEventHandlerImpl() {
 
     private var incomingDappRequestsJob: Job? = null

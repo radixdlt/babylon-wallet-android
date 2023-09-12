@@ -44,7 +44,6 @@ interface DataModule {
     ): TransactionRepository
 
     @Binds
-    @Singleton // TODO ONLY FOR TESTING PURPOSES
     fun bindNetworkInfoRepository(
         networkInfoRepository: NetworkInfoRepositoryImpl
     ): NetworkInfoRepository
