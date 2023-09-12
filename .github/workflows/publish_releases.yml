@@ -63,10 +63,9 @@ jobs:
           encodedString: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS_BASE_64 }}
 
       - name: Distribute Alpha
-#        if: >
-#          ( github.ref == 'refs/heads/feature-ABW-2149-ci' && github.event_name == 'push' ) ||
-#          ( github.ref == 'refs/heads/main' && github.event_name == 'push' ) ||
-#          ( github.event.inputs.flavor == 'alpha' && github.event_name == 'workflow_dispatch' )
+        if: >
+          ( github.ref == 'refs/heads/main' && github.event_name == 'push' ) ||
+          ( github.event.inputs.flavor == 'alpha' && github.event_name == 'workflow_dispatch' )
         run: |
           export GROUPS=${GROUPS:-"alpha-devs"}
           if [ "$GROUPS" == "no" ]; then
@@ -102,7 +101,7 @@ jobs:
 #          echo "### Preview flavor distributed! :rocket:" >> $GITHUB_STEP_SUMMARY
 #        env:
 #          FIREBASE_APP_ID: ${{ secrets.FIREBASE_PREVIEW_APP_ID }}
-#          GOOGLE_APPLICATION_CREDENTIALS: ${{ steps.firebase_keystore.outputs.filePath }}
+#          GOOGLE_APPLICATION_CREDENTIALS: ${{ steps.google_application_credentials.outputs.filePath }}
 #          RELEASE_NOTES: ${{ github.event.inputs.release_notes }}
 #          GROUPS: "internal"
 #          SLACK_URL: ${{ secrets.SLACK_URL }}
@@ -118,8 +117,8 @@ jobs:
   playstore_releases:
     name: "Publish to playstore"
     runs-on: ubuntu-latest
-    if: >
-      ( github.event_name == 'release' && !github.event.release.prerelease )
+#    if: >
+#      ( github.event_name == 'release' && !github.event.release.prerelease )
     steps:
       - uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8
         with:
@@ -140,18 +139,14 @@ jobs:
           java-version: '17'
 
       - name: Decode keystore credentials
-        uses: timheuer/base64-to-file@48657ba25c726c2e3dcf02efa3639fff9b3d587e
-        id: google_play_keystore
-        with:
-          fileName: "playstore_preview_upload_key.jks"
-          encodedString: ${{ secrets.GOOGLE_PLAY_PREVIEW_KEYSTORE_FILE_BASE_64 }}
-
-      - name: Decode Service account credentials
-        uses: timheuer/base64-to-file@48657ba25c726c2e3dcf02efa3639fff9b3d587e
-        id: google_play_service_account_json
-        with:
-          fileName: "service_account.json"
-          encodedString: ${{ secrets.GOOGLE_PLAY_PREVIEW_DEPLOYER_JSON_BASE_64 }}
+        run: |
+          echo "${{ secrets.KEYSTORE_ENCRYPTED_BASE64 }}" > keystore.asc
+          gpg -d --passphrase "${{ secrets.KEYSTORE_PASSPHRASE }}" --batch keystore.asc > config/signing/release/keystore.jks
+                  
+          echo "keyAlias=${{ secrets.KEYSTORE_ALIAS }}\n" > config/signing/release/keystore.properties
+          echo "keyPassword=${{ secrets.KEYSTORE_KEY_PASSWORD }}\n" >> config/signing/release/keystore.properties
+          echo "storeFile=../config/signing/release/keystore.jks\n" >> config/signing/release/keystore.properties
+          echo "storePassword=${{ secrets.KEYSTORE_PASSWORD }}\n" >> config/signing/release/keystore.properties
 
       - name: set commit branch for release
         if: github.event_name == 'release'
@@ -162,7 +157,8 @@ jobs:
         run: |
           git config user.name $GIT_USER
           git config user.email $GIT_USER
-          bundle exec fastlane release_to_google_play
+          bundle exec fastlane googlePlayRelease internal:true
+#          github.event.release.prerelease
           echo "### Distribute Google Play flavor distributed! :rocket:" >> $GITHUB_STEP_SUMMARY
         env:
           SLACK_URL: ${{ secrets.SLACK_URL }}

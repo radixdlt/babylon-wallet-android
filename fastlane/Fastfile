@@ -55,24 +55,24 @@ lane :googlePlayRelease do |options|
 
     versionName = get_version_name(output_file: apkPath)
 
-    upload_to_play_store(
-        track: internal ? "internal" : "production",
-        aab: aabPath,
-        skip_upload_apk: true,
-        skip_upload_images: true,
-        skip_upload_screenshots: true,
-        release_status: "draft",
-        json_key: ENV['GOOGLE_PLAY_DEPLOYER_JSON_FILE']
-    )
-
-    git_commit(
-        path: "app/build.gradle",
-        message: "Version #{versionName} (#{versionCode}) distributed to PlayStore."
-    )
-    push_to_git_remote(
-        remote_branch: ENV["RELEASE_BRANCH"],
-        tags: false
-    )
+#     upload_to_play_store(
+#         track: internal ? "internal" : "production",
+#         aab: aabPath,
+#         skip_upload_apk: true,
+#         skip_upload_images: true,
+#         skip_upload_screenshots: true,
+#         release_status: "draft",
+#         json_key: ENV['GOOGLE_PLAY_DEPLOYER_JSON_FILE']
+#     )
+#
+#     git_commit(
+#         path: "app/build.gradle",
+#         message: "Version #{versionName} (#{versionCode}) distributed to PlayStore."
+#     )
+#     push_to_git_remote(
+#         remote_branch: ENV["RELEASE_BRANCH"],
+#         tags: false
+#     )
 end
 
 
