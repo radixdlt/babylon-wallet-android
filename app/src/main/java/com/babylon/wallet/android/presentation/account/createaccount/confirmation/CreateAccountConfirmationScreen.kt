@@ -83,7 +83,7 @@ fun CreateAccountConfirmationContent(
             color = RadixTheme.colors.gray1
         )
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingMedium))
-        val text = if (requestSource == CreateAccountRequestSource.FirstTime) {
+        val text = if (requestSource.isFirstTime()) {
             stringResource(id = R.string.createAccount_completion_subtitleFirst)
         } else {
             stringResource(id = R.string.createAccount_completion_subtitleNotFirst)
@@ -109,7 +109,8 @@ fun CreateAccountConfirmationContent(
                     stringResource(id = R.string.createEntity_completion_destinationHome)
                 )
                 CreateAccountRequestSource.ChooseAccount -> stringResource(R.string.createEntity_completion_destinationChooseAccounts)
-                CreateAccountRequestSource.FirstTime -> stringResource(R.string.createEntity_completion_destinationHome)
+                CreateAccountRequestSource.FirstTime, CreateAccountRequestSource.SwitchToMainnet ->
+                    stringResource(R.string.createEntity_completion_destinationHome)
                 CreateAccountRequestSource.Gateways -> stringResource(R.string.createEntity_completion_destinationGateways)
             },
             onClick = accountConfirmed,

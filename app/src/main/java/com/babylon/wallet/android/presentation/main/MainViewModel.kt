@@ -6,6 +6,7 @@ import com.babylon.wallet.android.data.dapp.PeerdroidClient
 import com.babylon.wallet.android.domain.common.onValue
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel.IncomingRequest
 import com.babylon.wallet.android.domain.usecases.AuthorizeSpecifiedPersonaUseCase
+import com.babylon.wallet.android.domain.usecases.MainnetAvailabilityUseCase
 import com.babylon.wallet.android.domain.usecases.VerifyDappUseCase
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
@@ -22,6 +23,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.WhileSubscribed
 import kotlinx.coroutines.flow.cancellable
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onCompletion
@@ -50,8 +52,9 @@ class MainViewModel @Inject constructor(
     private val verifyDappUseCase: VerifyDappUseCase,
     private val appEventBus: AppEventBus,
     getProfileStateUseCase: GetProfileStateUseCase,
-    private var deviceSecurityHelper: DeviceSecurityHelper,
-    private var checkMnemonicIntegrityUseCase: CheckMnemonicIntegrityUseCase,
+    private val deviceSecurityHelper: DeviceSecurityHelper,
+    private val checkMnemonicIntegrityUseCase: CheckMnemonicIntegrityUseCase,
+    private val mainnetAvailabilityUseCase: MainnetAvailabilityUseCase,
 ) : StateViewModel<MainUiState>(), OneOffEventHandler<MainEvent> by OneOffEventHandlerImpl() {
 
     private var incomingDappRequestsJob: Job? = null
@@ -78,9 +81,27 @@ class MainViewModel @Inject constructor(
         .events
         .filterIsInstance<AppEvent.Status>()
 
-    val usesMainnetGateway = getProfileStateUseCase()
-        .filterIsInstance<ProfileState.Restored>()
-        .map { it.profile.currentGateway == Radix.Gateway.mainnet }
+    val isDevBannerVisible = combine(
+        getProfileStateUseCase(),
+        mainnetAvailabilityUseCase.isMainnetMigrationOngoing()
+    ) { profileState, mainnetMigrationOngoing ->
+        when (profileState) {
+            is ProfileState.Restored -> {
+
+                if (mainnetMigrationOngoing && profileState.profile.currentGateway != Radix.Gateway.mainnet) {
+                    // TODO To remove when mainnet becomes default
+                    false
+                } else {
+                    profileState.profile.currentGateway != Radix.Gateway.mainnet
+                }
+            }
+            // TODO To remove when mainnet becomes default
+            else -> Radix.Gateway.default != Radix.Gateway.mainnet
+        }
+    }
+
+    // TODO To remove when mainnet becomes default
+    val forceToMainnetMandatory = mainnetAvailabilityUseCase.checkForceToMainnetMandatory()
 
     val appNotSecureEvent = appEventBus.events.filterIsInstance<AppEvent.AppNotSecure>()
     val babylonMnemonicNeedsRecoveryEvent = appEventBus.events.filterIsInstance<AppEvent.BabylonFactorSourceNeedsRecovery>()
@@ -193,7 +214,7 @@ class MainViewModel @Inject constructor(
         Timber.d("Peerdroid terminated")
     }
 
-    fun checkMnemonicIntegrity() {
+    fun onAppToForeground() {
         viewModelScope.launch {
             checkMnemonicIntegrityUseCase()
             if (!deviceSecurityHelper.isDeviceSecure()) {
@@ -203,6 +224,10 @@ class MainViewModel @Inject constructor(
                     appEventBus.sendEvent(AppEvent.BabylonFactorSourceNeedsRecovery(factorSourceId), delayMs = 500L)
                 }
             }
+        }
+
+        viewModelScope.launch {
+            mainnetAvailabilityUseCase()
         }
     }
 
@@ -235,6 +260,7 @@ sealed interface AppState {
             } else {
                 OnBoarding
             }
+
             is ProfileState.None -> OnBoarding
             is ProfileState.NotInitialised -> OnBoarding
         }

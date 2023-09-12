@@ -43,8 +43,8 @@ class CreateAccountConfirmationViewModel @Inject constructor(
 
     fun accountConfirmed() {
         viewModelScope.launch {
-            when (args.requestSource) {
-                CreateAccountRequestSource.FirstTime -> sendEvent(CreateAccountConfirmationEvent.NavigateToHome)
+            when {
+                args.requestSource.isFirstTime() -> sendEvent(CreateAccountConfirmationEvent.NavigateToHome)
                 else -> sendEvent(CreateAccountConfirmationEvent.FinishAccountCreation)
             }
         }

@@ -98,6 +98,16 @@ class PreferencesManager @Inject constructor(
         }
     }
 
+    suspend fun setMainnetMigrationOngoing(isAvailable: Boolean) {
+        dataStore.edit { preferences ->
+            preferences[KEY_MAINNET_MIGRATION_ONGOING] = isAvailable
+        }
+    }
+
+    fun getMainnetMigrationOngoing() = dataStore.data.map { preferences ->
+        preferences[KEY_MAINNET_MIGRATION_ONGOING] ?: false
+    }
+
     suspend fun clear() = dataStore.edit { it.clear() }
 
     companion object {
@@ -107,5 +117,6 @@ class PreferencesManager @Inject constructor(
         private val KEY_BACKED_UP_FACTOR_SOURCE_IDS = stringPreferencesKey("backed_up_factor_source_ids")
         private val KEY_IMPORT_OLYMPIA_WALLET_SETTING_DISMISSED =
             booleanPreferencesKey("import_olympia_wallet_setting_dismissed")
+        private val KEY_MAINNET_MIGRATION_ONGOING = booleanPreferencesKey("mainnet_migration_ongoing")
     }
 }

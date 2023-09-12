@@ -41,9 +41,9 @@ class MainActivity : FragmentActivity() {
 
         setContent {
             RadixWalletTheme {
-                val isMainnet = viewModel.usesMainnetGateway.collectAsState(initial = true)
-                val devBannerState by remember(isMainnet) {
-                    derivedStateOf { DevBannerState(isVisible = !isMainnet.value) }
+                val isDevBannerVisible by viewModel.isDevBannerVisible.collectAsState(initial = true)
+                val devBannerState by remember(isDevBannerVisible) {
+                    derivedStateOf { DevBannerState(isVisible = isDevBannerVisible) }
                 }
 
                 DevelopmentPreviewWrapper(devBannerState = devBannerState) { padding ->
@@ -76,7 +76,7 @@ class MainActivity : FragmentActivity() {
 
     override fun onResume() {
         super.onResume()
-        viewModel.checkMnemonicIntegrity()
+        viewModel.onAppToForeground()
     }
 
     companion object {
