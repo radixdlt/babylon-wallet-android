@@ -67,7 +67,7 @@ jobs:
           fi
           git config user.name $GIT_USER
           git config user.email $GIT_USER
-          bundle exec fastlane alpha
+          bundle exec fastlane firebaseAlpha
           echo "### Alpha flavor distributed! :rocket:" >> $GITHUB_STEP_SUMMARY
         env:
           FIREBASE_APP_ID: ${{ secrets.BABYLON_FIREBASE_ALPHA_APP_ID }}
