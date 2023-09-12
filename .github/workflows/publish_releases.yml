@@ -145,19 +145,18 @@ jobs:
           echo "${{ secrets.KEYSTORE_ENCRYPTED_BASE64 }}" > keystore.asc
           gpg -d --passphrase "${{ secrets.KEYSTORE_PASSPHRASE }}" --batch keystore.asc > config/signing/release/keystore.jks
                   
-          echo "keyAlias=${{ secrets.KEYSTORE_ALIAS }}\n" > config/signing/release/keystore.properties
-          echo "keyPassword=${{ secrets.KEYSTORE_KEY_PASSWORD }}\n" >> config/signing/release/keystore.properties
-          echo "storeFile=../config/signing/release/keystore.jks\n" >> config/signing/release/keystore.properties
-          echo "storePassword=${{ secrets.KEYSTORE_PASSWORD }}\n" >> config/signing/release/keystore.properties
+          echo "keyAlias=${{ secrets.KEYSTORE_ALIAS }}" > config/signing/release/keystore.properties
+          echo "keyPassword=${{ secrets.KEYSTORE_KEY_PASSWORD }}" >> config/signing/release/keystore.properties
+          echo "storeFile=../config/signing/release/keystore.jks" >> config/signing/release/keystore.properties
+          echo "storePassword=${{ secrets.KEYSTORE_PASSWORD }}" >> config/signing/release/keystore.properties
 
       - name: set commit branch for release
         if: github.event_name == 'release'
         run: |        
           echo "RELEASE_BRANCH=${{ github.event.release.target_commitish }}" >> $GITHUB_ENV
 
-      - name: Distribute Google Play flavor
+      - name: Distribute to Google Play
         run: |
-          ls -la config/signing/release/
           git config user.name $GIT_USER
           git config user.email $GIT_USER
           bundle exec fastlane googlePlayRelease internal:true
