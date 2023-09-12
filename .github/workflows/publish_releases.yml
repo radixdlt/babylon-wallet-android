@@ -104,8 +104,8 @@ jobs:
           echo "RELEASE_BRANCH=${{ github.event.release.target_commitish }}" >> $GITHUB_ENV
 
       - name: Set release track
-        run: |
-          echo "RELEASE_TRACK=${{ (github.event.release.prerelease) ? 'alpha' : 'production' }}" >> $GITHUB_ENV
+        env:
+          RELEASE_TRACK: ${{ github.event.release.prerelease == true && 'alpha' || 'production' }}
 
       - name: Distribute to Google Play
         run: |
