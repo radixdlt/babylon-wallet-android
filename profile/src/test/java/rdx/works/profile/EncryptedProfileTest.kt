@@ -2,17 +2,17 @@ package rdx.works.profile
 
 import kotlinx.serialization.encodeToString
 import org.junit.Assert.assertEquals
-import org.junit.Ignore
 import org.junit.Test
 import rdx.works.profile.data.model.EncryptedProfileSnapshot
-import rdx.works.profile.data.model.MnemonicWithPassphrase
 import rdx.works.profile.data.model.Profile
 import rdx.works.profile.di.SerializerModule
 import java.time.Instant
+import kotlin.test.Ignore
 
 class EncryptedProfileTest {
 
     @Test
+    @Ignore("Waiting for Alex Cyon updated encryptedIOSSnapshot")
     fun crossPlatformCompatibility() {
         val encryptedIOSSnapshot = """
             {
