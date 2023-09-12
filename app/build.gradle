@@ -18,9 +18,14 @@ static def getCommitHash() {
 ext.keystoreProperties = { isDebug ->
     def fileName = (isDebug) ? "../config/signing/debug/keystore.properties"
             : "../config/signing/release/keystore.properties"
-    def properties = new Properties()
-    properties.load(new FileInputStream(file(fileName)))
-    return properties
+    try {
+        def properties = new Properties()
+        properties.load(new FileInputStream(file(fileName)))
+
+        return properties
+    } catch (Exception ignored) {
+        return null
+    }
 }
 
 android {
@@ -34,10 +39,12 @@ android {
         }
         release {
             def properties = keystoreProperties(false)
-            keyAlias properties['keyAlias']
-            keyPassword properties['keyPassword']
-            storeFile file(properties['storeFile'])
-            storePassword properties['storePassword']
+            if (properties != null) {
+                keyAlias properties['keyAlias']
+                keyPassword properties['keyPassword']
+                storeFile file(properties['storeFile'])
+                storePassword properties['storePassword']
+            }
         }
     }
 
@@ -46,8 +53,8 @@ android {
         applicationId "com.radixpublishing.radixwallet.android"
         minSdk rootProject.ext.minSdk
         targetSdk rootProject.ext.targetSdk
-        versionCode 1
-        versionName rootProject.ext.versionName
+        versionCode 5
+        versionName "1.0.0"
         buildConfigField "boolean", "DEBUG_MODE", "true"
         buildConfigField "boolean", "EXPERIMENTAL_FEATURES_ENABLED", "true"
         buildConfigField "String", "WELL_KNOWN_URL_SUFFIX", '".well-known/radix.json"'
