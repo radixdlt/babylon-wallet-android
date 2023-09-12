@@ -52,7 +52,7 @@ jobs:
           git config user.name $GIT_USER
           git config user.email $GIT_USER
           bundle exec fastlane deployFirebaseAlpha
-          echo "### App distributed! :rocket:" >> $GITHUB_STEP_SUMMARY
+          echo "### Distributed to Firebase! :rocket:" >> $GITHUB_STEP_SUMMARY
         env:
           FIREBASE_APP_ID: ${{ secrets.FIREBASE_APP_ID }}
           GOOGLE_APPLICATION_CREDENTIALS: ${{ steps.google_application_credentials.outputs.filePath }}
@@ -108,7 +108,7 @@ jobs:
           git config user.name $GIT_USER
           git config user.email $GIT_USER
           bundle exec fastlane deployRelease track:${{ env.RELEASE_TRACK }}
-          echo "### Distribute Google Play flavor distributed! :rocket:" >> $GITHUB_STEP_SUMMARY
+          echo "### Distributed to Google Play '${{ env.RELEASE_TRACK }}' track! :rocket:" >> $GITHUB_STEP_SUMMARY
         env:
           RELEASE_TRACK: ${{ github.event.release.prerelease == true && 'alpha' || 'production' }}
           SLACK_URL: ${{ secrets.SLACK_URL }}

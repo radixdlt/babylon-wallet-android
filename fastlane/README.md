@@ -13,29 +13,21 @@ For _fastlane_ installation instructions, see [Installing _fastlane_](https://do
 
 # Available Actions
 
-### firebaseAlpha
+### deployFirebaseAlpha
 
 ```sh
-[bundle exec] fastlane firebaseAlpha
+[bundle exec] fastlane deployFirebaseAlpha
 ```
 
-Deploy debug (alpha) variant into Firebase
+Deploy alpha to Firebase
 
-### firebaseRelease
+### deployRelease
 
 ```sh
-[bundle exec] fastlane firebaseRelease
+[bundle exec] fastlane deployRelease
 ```
 
-Deploy release variant into Firebase
-
-### googlePlayRelease
-
-```sh
-[bundle exec] fastlane googlePlayRelease
-```
-
-Deploy release variant into Play Store
+Deploy Release
 
 ----
 

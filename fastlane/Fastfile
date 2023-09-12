@@ -21,7 +21,7 @@ lane :deployRelease do |options|
     track = options[:track] ||= 'production'
 
     testTracks = ['beta', 'alpha', 'internal']
-    if testTracks.include?(track) == false || track != 'production'
+    if testTracks.include?(track) == false && track != 'production'
         UI.user_error!("Track '#{track}' is not a valid. Valid tracks are: production, beta, alpha, internal")
     else
         UI.success "Starting release to PlayStore for '#{track}' track"
