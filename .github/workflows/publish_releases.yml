@@ -117,6 +117,7 @@ jobs:
   playstore_releases:
     name: "Publish to playstore"
     runs-on: ubuntu-latest
+    environment: Release
 #    if: >
 #      ( github.event_name == 'release' && !github.event.release.prerelease )
     steps:
@@ -158,19 +159,14 @@ jobs:
           git config user.name $GIT_USER
           git config user.email $GIT_USER
           bundle exec fastlane googlePlayRelease internal:true
-#          github.event.release.prerelease
           echo "### Distribute Google Play flavor distributed! :rocket:" >> $GITHUB_STEP_SUMMARY
         env:
           SLACK_URL: ${{ secrets.SLACK_URL }}
           GIT_USER: ${{ secrets.RADIX_BOT_USERNAME }}
           GPR_USER: ${{ secrets.GPR_USER }}
           GPR_TOKEN: ${{ secrets.GPR_TOKEN }}
-          RADIX_DEBUG_PREVIEW_KEYSTORE_FILE: ${{ steps.google_play_keystore.outputs.filePath }}
-          RADIX_ANDROID_KEYSTORE_PASSWORD: ${{ secrets.GOOGLE_PLAY_KEYSTORE_PASSWORD }}
-          RADIX_ANDROID_KEYSTORE_PRIVATE_KEY_PASSWORD: ${{ secrets.GOOGLE_PLAY_KEYSTORE_PASSWORD }}
-          RADIX_ANDROID_KEYSTORE_ALIAS: "upload"
           RELEASE_BRANCH: ${{ env.RELEASE_BRANCH }}
-          GOOGLE_PLAY_PREVIEW_DEPLOYER_JSON_FILE: ${{ steps.google_play_service_account_json.outputs.filePath }}
+          GOOGLE_PLAY_DEPLOYER_JSON_FILE: ${{ secrets.GOOGLE_PLAY_DEPLOYER_JSON_FILE }}
 
   publish_sbom:
     runs-on: ubuntu-latest
