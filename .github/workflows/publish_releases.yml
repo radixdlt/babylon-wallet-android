@@ -104,6 +104,7 @@ jobs:
           echo "RELEASE_BRANCH=${{ github.event.release.target_commitish }}" >> $GITHUB_ENV
 
       - name: Set release track
+        run: echo "Track set to ${{ env.RELEASE_TRACK }}"
         env:
           RELEASE_TRACK: ${{ github.event.release.prerelease == true && 'alpha' || 'production' }}
 
