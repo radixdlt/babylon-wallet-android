@@ -208,8 +208,7 @@ fun CreatePersonaContent(
                     }
                 },
                 onPersonaDisplayNameFocusChanged = onPersonaDisplayNameFocusChanged,
-                onFieldFocusChanged = onFieldFocusChanged,
-                onEditAvatar = {}
+                onFieldFocusChanged = onFieldFocusChanged
             )
         }
     }
@@ -226,7 +225,6 @@ private fun CreatePersonaContentList(
     addButtonEnabled: Boolean,
     modifier: Modifier = Modifier,
     onAddFieldClick: () -> Unit,
-    onEditAvatar: () -> Unit,
     onFieldFocusChanged: (PersonaDataEntryID, Boolean) -> Unit,
     onPersonaDisplayNameFocusChanged: (Boolean) -> Unit
 ) {
