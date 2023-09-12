@@ -62,7 +62,7 @@ lane :googlePlayRelease do |options|
 #         skip_upload_images: true,
 #         skip_upload_screenshots: true,
 #         release_status: "draft",
-#         json_key: ENV['GOOGLE_PLAY_DEPLOYER_JSON_FILE']
+#         json_key_data: ENV['GOOGLE_PLAY_DEPLOYER_JSON_FILE']
 #     )
 #
 #     git_commit(
@@ -105,7 +105,7 @@ lane :latestGooglePlayVersionCode do
     begin
         productionVersionCodes = google_play_track_version_codes(
             track: 'production',
-            json_key: ENV['GOOGLE_PLAY_DEPLOYER_JSON_FILE']
+            json_key_data: ENV['GOOGLE_PLAY_DEPLOYER_JSON_FILE']
         )
     rescue => e
     end
@@ -114,7 +114,7 @@ lane :latestGooglePlayVersionCode do
     begin
         betaVersionCodes = google_play_track_version_codes(
             track: 'beta',
-            json_key: ENV['GOOGLE_PLAY_DEPLOYER_JSON_FILE']
+            json_key_data: ENV['GOOGLE_PLAY_DEPLOYER_JSON_FILE']
         )
     rescue => e
     end
@@ -123,7 +123,7 @@ lane :latestGooglePlayVersionCode do
    begin
         alphaVersionCodes = google_play_track_version_codes(
             track: 'alpha',
-            json_key: ENV['GOOGLE_PLAY_DEPLOYER_JSON_FILE']
+            json_key_data: ENV['GOOGLE_PLAY_DEPLOYER_JSON_FILE']
         )
    rescue => e
    end
@@ -132,7 +132,7 @@ lane :latestGooglePlayVersionCode do
    begin
         internalVersionCodes = google_play_track_version_codes(
             track: 'internal',
-            json_key: ENV['GOOGLE_PLAY_DEPLOYER_JSON_FILE']
+            json_key_data: ENV['GOOGLE_PLAY_DEPLOYER_JSON_FILE']
         )
    rescue => e
    end
