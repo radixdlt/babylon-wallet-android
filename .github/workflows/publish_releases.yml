@@ -121,6 +121,7 @@ jobs:
   publish_sbom:
     runs-on: ubuntu-latest
     if: github.event_name == 'release'
+    environment: Release
     steps:
       - uses: actions/checkout@755da8c3cf115ac066823e79a1e1788f8940201b
       - name: Decode keystore credentials

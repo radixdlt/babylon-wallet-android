@@ -53,8 +53,8 @@ android {
         applicationId "com.radixpublishing.radixwallet.android"
         minSdk rootProject.ext.minSdk
         targetSdk rootProject.ext.targetSdk
-        versionCode 1
-        versionName rootProject.ext.versionName
+        versionCode 4
+        versionName "1.0.0"
         buildConfigField "boolean", "DEBUG_MODE", "true"
         buildConfigField "boolean", "EXPERIMENTAL_FEATURES_ENABLED", "true"
         buildConfigField "String", "WELL_KNOWN_URL_SUFFIX", '".well-known/radix.json"'
