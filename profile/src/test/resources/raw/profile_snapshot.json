@@ -2,8 +2,7 @@
   "appPreferences" : {
     "display" : {
       "fiatCurrencyPriceTarget" : "usd",
-      "isCurrencyAmountVisible" : true,
-      "ledgerHQHardwareWalletSigningDisplayMode" : "summary"
+      "isCurrencyAmountVisible" : true
     },
     "gateways" : {
       "current" : "https://rcnet-v3.radixdlt.com",

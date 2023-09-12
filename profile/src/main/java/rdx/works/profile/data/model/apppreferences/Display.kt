@@ -2,24 +2,19 @@ package rdx.works.profile.data.model.apppreferences
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import rdx.works.profile.data.model.factorsources.LedgerHardwareWalletFactorSource
 
 @Serializable
 class Display private constructor(
     @SerialName("fiatCurrencyPriceTarget")
     val fiatCurrencyPriceTarget: String,
     @SerialName("isCurrencyAmountVisible")
-    val isCurrencyAmountVisible: Boolean,
-    @SerialName("ledgerHQHardwareWalletSigningDisplayMode")
-    val ledgerHQHardwareWalletSigningDisplayMode: LedgerHardwareWalletFactorSource.SigningDisplayMode
+    val isCurrencyAmountVisible: Boolean
 ) {
 
     override fun toString(): String {
         return "Display(" +
             "fiatCurrencyPriceTarget='$fiatCurrencyPriceTarget', " +
-            "isCurrencyAmountVisible=$isCurrencyAmountVisible, " +
-            "ledgerHQHardwareWalletSigningDisplayMode=$ledgerHQHardwareWalletSigningDisplayMode" +
-            ")"
+            "isCurrencyAmountVisible=$isCurrencyAmountVisible)"
     }
 
     override fun equals(other: Any?): Boolean {
@@ -30,7 +25,6 @@ class Display private constructor(
 
         if (fiatCurrencyPriceTarget != other.fiatCurrencyPriceTarget) return false
         if (isCurrencyAmountVisible != other.isCurrencyAmountVisible) return false
-        if (ledgerHQHardwareWalletSigningDisplayMode != other.ledgerHQHardwareWalletSigningDisplayMode) return false
 
         return true
     }
@@ -38,15 +32,13 @@ class Display private constructor(
     override fun hashCode(): Int {
         var result = fiatCurrencyPriceTarget.hashCode()
         result = 31 * result + isCurrencyAmountVisible.hashCode()
-        result = 31 * result + ledgerHQHardwareWalletSigningDisplayMode.hashCode()
         return result
     }
 
     companion object {
         val default = Display(
             fiatCurrencyPriceTarget = "usd",
-            isCurrencyAmountVisible = true,
-            ledgerHQHardwareWalletSigningDisplayMode = LedgerHardwareWalletFactorSource.SigningDisplayMode.Summary
+            isCurrencyAmountVisible = true
         )
     }
 }
