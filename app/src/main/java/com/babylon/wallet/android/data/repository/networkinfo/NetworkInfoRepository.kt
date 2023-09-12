@@ -49,7 +49,7 @@ class NetworkInfoRepositoryImpl @Inject constructor(
             okHttpClient = okHttpClient,
             jsonConverterFactory = jsonConverterFactory
         ).mainnetNetworkStatus().execute(
-            map = { it.isMainnetLive  }
+            map = { it.isMainnetLive }
         )
     }
 
