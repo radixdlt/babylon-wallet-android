@@ -124,6 +124,7 @@
   <string name="accountSettings_behaviors_supplyIncreasable">The supply of this asset can be increased.</string>
   <string name="accountSettings_behaviors_supplyDecreasable">The supply of this asset can be decreased.</string>
   <string name="accountSettings_behaviors_supplyFlexible">The supply of this asset can be increased or decreased.</string>
+  <string name="accountSettings_behaviors_supplyFlexibleXrd">Only the Radix Network may increase or decrease the supply of XRD.</string>
   <string name="accountSettings_behaviors_supplyIncreasableByAnyone">Anyone can increase the supply of this asset.</string>
   <string name="accountSettings_behaviors_supplyDecreasableByAnyone">Anyone can decrease the supply of this asset.</string>
   <string name="accountSettings_behaviors_supplyFlexibleByAnyone">Anyone can increase or decrease the supply of this asset.</string>
