@@ -75,7 +75,7 @@ jobs:
 #          if [ "$GROUPS" == "no" ]; then
 #            GROUPS=''
 #          fi
-          export GROUPS="alpha-devs"
+
           git config user.name $GIT_USER
           git config user.email $GIT_USER
           bundle exec fastlane deployFirebaseAlpha
@@ -84,7 +84,7 @@ jobs:
           FIREBASE_APP_ID: ${{ secrets.FIREBASE_APP_ID }}
           GOOGLE_APPLICATION_CREDENTIALS: ${{ steps.google_application_credentials.outputs.filePath }}
           RELEASE_NOTES: ${{ github.event.inputs.release_notes }}
-#          GROUPS: ${{ github.event.inputs.groups }}
+          GROUPS: "alpha-devs"
           SLACK_URL: ${{ secrets.SLACK_URL }}
           GIT_USER: ${{ secrets.RADIX_BOT_USERNAME }}
           GPR_USER: ${{ secrets.GPR_USER }}
