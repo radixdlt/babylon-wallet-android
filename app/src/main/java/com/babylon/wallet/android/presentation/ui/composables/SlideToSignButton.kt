@@ -36,11 +36,13 @@ import androidx.compose.ui.layout.positionInRoot
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.GradientBrand2
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
+import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.presentation.ui.modifier.applyIf
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
@@ -172,4 +174,28 @@ fun SlideToSignButton(enabled: Boolean, isSubmitting: Boolean, onSwipeComplete: 
 
 enum class ButtonSliderPosition {
     Start, End
+}
+
+@Preview
+@Composable
+fun AccountContentPreview() {
+    RadixWalletTheme {
+        SlideToSignButton(enabled = true, isSubmitting = false, onSwipeComplete = { })
+    }
+}
+
+@Preview
+@Composable
+fun AccountContentPreviewDisabled() {
+    RadixWalletTheme {
+        SlideToSignButton(enabled = false, isSubmitting = false, onSwipeComplete = { })
+    }
+}
+
+@Preview
+@Composable
+fun AccountContentPreviewSubmitting() {
+    RadixWalletTheme {
+        SlideToSignButton(enabled = true, isSubmitting = true, onSwipeComplete = { })
+    }
 }
