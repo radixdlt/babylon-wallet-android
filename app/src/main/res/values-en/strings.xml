@@ -364,6 +364,7 @@
   <string name="transactionReview_usingDappsHeading">Using dApps</string>
   <string name="transactionReview_unknownComponents">%d Unknown Components</string>
   <string name="transactionReview_withdrawalsHeading">Withdrawing From</string>
+  <string name="transactionReview_slideToSign">Slide to Sign</string>
   <string name="transactionReview_xrdAmount">%s XRD</string>
   <string name="transactionReview_insufficientBalance">Insufficient Balance</string>
   <string name="transactionReview_feePayerRequiredMessage">Fee Payer account required</string>
