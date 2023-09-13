@@ -50,14 +50,18 @@ import kotlin.math.roundToInt
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
-fun SlideToSignButton(enabled: Boolean, isSubmitting: Boolean, onSwipeComplete: () -> Unit, modifier: Modifier = Modifier) {
+fun SlideToSignButton(
+    enabled: Boolean,
+    isSubmitting: Boolean,
+    onSwipeComplete: () -> Unit,
+    modifier: Modifier = Modifier
+) {
     val buttonColor = if (enabled) RadixTheme.colors.blue1 else RadixTheme.colors.gray4
     val textColor = if (enabled) RadixTheme.colors.white else RadixTheme.colors.gray3
     BoxWithConstraints(
         modifier = modifier
             .fillMaxWidth()
             .height(50.dp)
-            .padding(horizontal = RadixTheme.dimensions.paddingLarge)
             .background(buttonColor, shape = RadixTheme.shapes.circle)
             .clip(RadixTheme.shapes.circle)
     ) {

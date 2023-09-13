@@ -21,7 +21,6 @@ import androidx.compose.material.ModalBottomSheetState
 import androidx.compose.material.ModalBottomSheetValue
 import androidx.compose.material.rememberModalBottomSheetState
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.TopAppBarDefaults
@@ -33,13 +32,9 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.babylon.wallet.android.R
 import com.babylon.wallet.android.data.transaction.TransactionVersion
-import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.model.DAppWithMetadataAndAssociatedResources
@@ -247,9 +242,10 @@ private fun TransactionPreviewContent(
                                 insufficientBalanceToPayTheFee = insufficientBalanceToPayTheFee,
                                 onCustomizeClick = onCustomizeClick
                             )
-                            ApproveButton(
-                                state = state,
-                                onApproveTransaction = onApproveTransaction
+                            SlideToSignButton(
+                                enabled = state.isSubmitEnabled,
+                                isSubmitting = state.isSubmitting,
+                                onSwipeComplete = onApproveTransaction
                             )
                         }
                     }
@@ -294,28 +290,6 @@ private fun TransactionPreviewContent(
             }
         }
     }
-}
-
-@Composable
-private fun ApproveButton(
-    state: State,
-    onApproveTransaction: () -> Unit
-) {
-    RadixPrimaryButton(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(RadixTheme.dimensions.paddingDefault),
-        text = stringResource(id = R.string.transactionReview_approveButtonTitle),
-        onClick = onApproveTransaction,
-        isLoading = state.isSubmitting,
-        enabled = state.isSubmitEnabled,
-        icon = {
-            Icon(
-                painter = painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_lock),
-                contentDescription = ""
-            )
-        }
-    )
 }
 
 @Composable
