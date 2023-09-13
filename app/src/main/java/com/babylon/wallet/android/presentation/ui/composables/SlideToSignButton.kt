@@ -54,7 +54,7 @@ fun SlideToSignButton(
     enabled: Boolean,
     isSubmitting: Boolean,
     onSwipeComplete: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     val buttonColor = if (enabled) RadixTheme.colors.blue1 else RadixTheme.colors.gray4
     val textColor = if (enabled) RadixTheme.colors.white else RadixTheme.colors.gray3
@@ -75,8 +75,8 @@ fun SlideToSignButton(
         // listen for complete swipe
         LaunchedEffect(swipeableState) {
             snapshotFlow { swipeableState.currentValue }.distinctUntilChanged().filter { it == ButtonSliderPosition.End }.collect {
-                swipeableState.animateTo(ButtonSliderPosition.Start)
                 onSwipeComplete()
+                swipeableState.animateTo(ButtonSliderPosition.Start)
             }
         }
         val anchors = mapOf(0f to ButtonSliderPosition.Start, maxWidthPx to ButtonSliderPosition.End)
@@ -109,7 +109,7 @@ fun SlideToSignButton(
                         drawContent()
                         drawRect(
                             brush = GradientBrand2,
-                            size = if (swipeableState.offset.value != 0f) {
+                            size = if (swipeableState.offset.value > 0f) {
                                 Size(swipeableState.offset.value + indicatorWidthPx / 2, size.height)
                             } else {
                                 Size.Zero
