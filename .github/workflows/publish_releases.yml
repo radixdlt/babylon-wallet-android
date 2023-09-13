@@ -19,20 +19,6 @@ on:
           - 'Google Play Alpha'
           - 'Google Play Production'
         default: 'Firebase Dev'
-#      TODO add more inputs later
-#      release_notes:
-#        description: "(Optional) Release notes for version you want to distribute (not needed for Alpha flavor)"
-#        required: false
-#        default: ''
-#      groups:
-#        description: "(Optional) Name of the group you want to notify about new version"
-#        required: false
-#        default: 'alpha-devs'
-#        type: choice
-#        options:
-#          - "alpha-devs"
-#          - "internal"
-#          - "no"
 
 jobs:
 
@@ -71,11 +57,6 @@ jobs:
 
       - name: Distribute Alpha to Firebase
         run: |
-#          export GROUPS=${GROUPS:-"alpha-devs"}
-#          if [ "$GROUPS" == "no" ]; then
-#            GROUPS=''
-#          fi
-
           git config user.name $GIT_USER
           git config user.email $GIT_USER
           bundle exec fastlane deployFirebaseAlpha
