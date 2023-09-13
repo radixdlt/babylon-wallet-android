@@ -8,12 +8,38 @@ on:
   release:
     types:
       - "published"
+  workflow_dispatch:
+    inputs:
+      track:
+        description: "Which track do you want to deploy to"
+        required: true
+        type: choice
+        options:
+          - 'Firebase Dev'
+          - 'Google Play Alpha'
+          - 'Google Play Production'
+        default: 'Firebase Dev'
+#      TODO add more inputs later
+#      release_notes:
+#        description: "(Optional) Release notes for version you want to distribute (not needed for Alpha flavor)"
+#        required: false
+#        default: ''
+#      groups:
+#        description: "(Optional) Name of the group you want to notify about new version"
+#        required: false
+#        default: 'alpha-devs'
+#        type: choice
+#        options:
+#          - "alpha-devs"
+#          - "internal"
+#          - "no"
 
 jobs:
 
   firebase_alpha:
     if: >
-      ( github.ref == 'refs/heads/main' && github.event_name == 'push' )
+      ( github.ref == 'refs/heads/main' && github.event_name == 'push' ) ||
+      ( github.event.inputs.track == 'Firebase Dev' && github.event_name == 'workflow_dispatch' )
     name: "Publish to Firebase"
     runs-on: ubuntu-latest
     environment: Debug
@@ -45,10 +71,11 @@ jobs:
 
       - name: Distribute Alpha to Firebase
         run: |
-          export GROUPS=${GROUPS:-"alpha-devs"}
-          if [ "$GROUPS" == "no" ]; then
-            GROUPS=''
-          fi
+#          export GROUPS=${GROUPS:-"alpha-devs"}
+#          if [ "$GROUPS" == "no" ]; then
+#            GROUPS=''
+#          fi
+          export GROUPS="alpha-devs"
           git config user.name $GIT_USER
           git config user.email $GIT_USER
           bundle exec fastlane deployFirebaseAlpha
@@ -57,14 +84,16 @@ jobs:
           FIREBASE_APP_ID: ${{ secrets.FIREBASE_APP_ID }}
           GOOGLE_APPLICATION_CREDENTIALS: ${{ steps.google_application_credentials.outputs.filePath }}
           RELEASE_NOTES: ${{ github.event.inputs.release_notes }}
-          GROUPS: ${{ github.event.inputs.groups }}
+#          GROUPS: ${{ github.event.inputs.groups }}
           SLACK_URL: ${{ secrets.SLACK_URL }}
           GIT_USER: ${{ secrets.RADIX_BOT_USERNAME }}
           GPR_USER: ${{ secrets.GPR_USER }}
           GPR_TOKEN: ${{ secrets.GPR_TOKEN }}
 
   playstore_releases:
-    if: github.event_name == 'release'
+    if: >
+      github.event_name == 'release' || (github.event_name == 'workflow_dispatch' && 
+      (github.event.inputs.track == 'Google Play Alpha' || github.event.inputs.track == 'Google Play Production'))
     name: "Publish to PlayStore"
     runs-on: ubuntu-latest
     environment: Release
@@ -105,10 +134,17 @@ jobs:
 
       - name: Distribute to Google Play
         run: |
+          track="alpha"
+          if [ ${{ github.event_name == 'workflow_dispatch' }} ]; then
+            if [ ${{ github.event.inputs.track == 'Google Play Production' }} ]; then
+              track="production"
+            fi
+          fi
+          
           git config user.name $GIT_USER
           git config user.email $GIT_USER
-          bundle exec fastlane deployRelease track:${{ env.RELEASE_TRACK }}
-          echo "### Distributed to Google Play '${{ env.RELEASE_TRACK }}' track! :rocket:" >> $GITHUB_STEP_SUMMARY
+          bundle exec fastlane deployRelease track:$track
+          echo "### Distributed to Google Play '$track' track! :rocket:" >> $GITHUB_STEP_SUMMARY
         env:
           RELEASE_TRACK: ${{ github.event.release.prerelease == true && 'alpha' || 'production' }}
           SLACK_URL: ${{ secrets.SLACK_URL }}
