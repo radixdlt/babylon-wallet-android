@@ -24,6 +24,7 @@ import com.babylon.wallet.android.presentation.incompatibleprofile.IncompatibleP
 import com.babylon.wallet.android.presentation.incompatibleprofile.ROUTE_INCOMPATIBLE_PROFILE
 import com.babylon.wallet.android.presentation.main.MAIN_ROUTE
 import com.babylon.wallet.android.presentation.main.MainUiState
+import com.babylon.wallet.android.presentation.main.blockPreviewAppScreen
 import com.babylon.wallet.android.presentation.main.main
 import com.babylon.wallet.android.presentation.navigation.Screen.Companion.ARG_ACCOUNT_ID
 import com.babylon.wallet.android.presentation.onboarding.OnboardingScreen
@@ -128,8 +129,9 @@ fun NavigationHost(
                 navController.restoreMnemonics(
                     args = RestoreMnemonicsArgs.RestoreSpecificMnemonic(factorSourceId = it.body)
                 )
-            },
+            }
         )
+        blockPreviewAppScreen(onCloseApp = onCloseApp)
         composable(
             route = Screen.AccountDestination.route + "/{$ARG_ACCOUNT_ID}",
             arguments = listOf(
