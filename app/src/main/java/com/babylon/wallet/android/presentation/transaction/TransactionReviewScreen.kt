@@ -6,6 +6,7 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -47,7 +48,7 @@ import com.babylon.wallet.android.domain.model.TransactionManifestData
 import com.babylon.wallet.android.presentation.common.FullscreenCircularProgressContent
 import com.babylon.wallet.android.presentation.settings.authorizeddapps.dappdetail.DAppDetailsSheetContent
 import com.babylon.wallet.android.presentation.status.signing.SigningStatusBottomDialog
-import com.babylon.wallet.android.presentation.transaction.TransactionApprovalViewModel.State
+import com.babylon.wallet.android.presentation.transaction.TransactionReviewViewModel.State
 import com.babylon.wallet.android.presentation.transaction.composables.FeesSheet
 import com.babylon.wallet.android.presentation.transaction.composables.GuaranteesSheet
 import com.babylon.wallet.android.presentation.transaction.composables.NetworkFeeContent
@@ -57,6 +58,8 @@ import com.babylon.wallet.android.presentation.transaction.composables.Transacti
 import com.babylon.wallet.android.presentation.transaction.fees.TransactionFees
 import com.babylon.wallet.android.presentation.ui.composables.DefaultModalSheetLayout
 import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
+import com.babylon.wallet.android.presentation.ui.composables.ReceiptEdge
+import com.babylon.wallet.android.presentation.ui.composables.SlideToSignButton
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
 import com.babylon.wallet.android.utils.biometricAuthenticateSuspend
 import kotlinx.coroutines.launch
@@ -64,9 +67,9 @@ import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.data.model.pernetwork.Network
 
 @Composable
-fun TransactionApprovalScreen(
+fun TransactionReviewScreen(
     modifier: Modifier = Modifier,
-    viewModel: TransactionApprovalViewModel,
+    viewModel: TransactionReviewViewModel,
     onDismiss: () -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -112,7 +115,7 @@ fun TransactionApprovalScreen(
     LaunchedEffect(Unit) {
         viewModel.oneOffEvent.collect { event ->
             when (event) {
-                TransactionApprovalViewModel.Event.Dismiss -> {
+                TransactionReviewViewModel.Event.Dismiss -> {
                     onDismiss()
                 }
             }
@@ -216,7 +219,7 @@ private fun TransactionPreviewContent(
                     hostState = snackBarHostState
                 )
             },
-            containerColor = RadixTheme.colors.gray5
+            containerColor = RadixTheme.colors.defaultBackground
         ) { padding ->
             Box(modifier = Modifier.padding(padding)) {
                 if (state.isLoading) {
@@ -230,10 +233,14 @@ private fun TransactionPreviewContent(
                         Column(
                             modifier = Modifier.verticalScroll(rememberScrollState())
                         ) {
+                            ReceiptEdge(modifier = Modifier.fillMaxWidth(), color = RadixTheme.colors.gray4, topEdge = true)
                             RawManifestView(
-                                modifier = Modifier.padding(RadixTheme.dimensions.paddingDefault),
+                                modifier = Modifier
+                                    .background(color = RadixTheme.colors.gray4)
+                                    .padding(RadixTheme.dimensions.paddingDefault),
                                 manifest = state.rawManifest
                             )
+                            ReceiptEdge(modifier = Modifier.fillMaxWidth(), color = RadixTheme.colors.gray4)
                             NetworkFeeContent(
                                 fees = state.transactionFees,
                                 noFeePayerSelected = noFeePayerSelected,
@@ -259,12 +266,15 @@ private fun TransactionPreviewContent(
                                 is PreviewType.None -> {}
                                 is PreviewType.NonConforming -> {}
                                 is PreviewType.Transaction -> {
+                                    ReceiptEdge(modifier = Modifier.fillMaxWidth(), color = RadixTheme.colors.gray4, topEdge = true)
                                     TransactionPreviewTypeContent(
+                                        modifier = Modifier.background(RadixTheme.colors.gray4),
                                         state = state,
                                         preview = state.previewType,
                                         onPromptForGuarantees = promptForGuarantees,
                                         onDappClick = onDAppClick
                                     )
+                                    ReceiptEdge(modifier = Modifier.fillMaxWidth(), color = RadixTheme.colors.gray4)
                                 }
                             }
                             NetworkFeeContent(
@@ -273,9 +283,10 @@ private fun TransactionPreviewContent(
                                 insufficientBalanceToPayTheFee = insufficientBalanceToPayTheFee,
                                 onCustomizeClick = onCustomizeClick
                             )
-                            ApproveButton(
-                                state = state,
-                                onApproveTransaction = onApproveTransaction
+                            SlideToSignButton(
+                                enabled = state.isSubmitEnabled,
+                                isSubmitting = state.isSubmitting,
+                                onSwipeComplete = onApproveTransaction
                             )
                         }
                     }

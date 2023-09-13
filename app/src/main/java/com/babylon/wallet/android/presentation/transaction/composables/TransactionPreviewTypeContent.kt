@@ -10,13 +10,13 @@ import androidx.compose.ui.Modifier
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.domain.model.DAppWithMetadataAndAssociatedResources
 import com.babylon.wallet.android.presentation.transaction.PreviewType
-import com.babylon.wallet.android.presentation.transaction.TransactionApprovalViewModel
+import com.babylon.wallet.android.presentation.transaction.TransactionReviewViewModel
 import kotlinx.collections.immutable.toPersistentList
 
 @Composable
 fun TransactionPreviewTypeContent(
     modifier: Modifier = Modifier,
-    state: TransactionApprovalViewModel.State,
+    state: TransactionReviewViewModel.State,
     preview: PreviewType.Transaction,
     onPromptForGuarantees: () -> Unit,
     onDappClick: (DAppWithMetadataAndAssociatedResources) -> Unit
@@ -52,8 +52,7 @@ fun TransactionPreviewTypeContent(
                 modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingDefault),
                 to = preview.to.toPersistentList(),
                 promptForGuarantees = onPromptForGuarantees,
-                showStrokeLine = preview.from.toPersistentList().isNotEmpty() ||
-                    preview.dApps.toPersistentList().isNotEmpty()
+                showStrokeLine = false
             )
 
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))

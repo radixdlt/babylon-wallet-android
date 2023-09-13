@@ -14,30 +14,30 @@ import com.google.accompanist.navigation.animation.composable
 @VisibleForTesting
 internal const val ARG_TRANSACTION_REQUEST_ID = "arg_transaction_request_id"
 
-const val ROUTE_TRANSACTION_APPROVAL = "transaction_approval_route/{$ARG_TRANSACTION_REQUEST_ID}"
+const val ROUTE_TRANSACTION_REVIEW = "transaction_review_route/{$ARG_TRANSACTION_REQUEST_ID}"
 
-internal class TransactionApprovalArgs(val requestId: String) {
+internal class TransactionReviewArgs(val requestId: String) {
     constructor(savedStateHandle: SavedStateHandle) : this(
         checkNotNull(savedStateHandle[ARG_TRANSACTION_REQUEST_ID]) as String
     )
 }
 
-fun NavController.transactionApproval(requestId: String) {
-    navigate("transaction_approval_route/$requestId")
+fun NavController.transactionReview(requestId: String) {
+    navigate("transaction_review_route/$requestId")
 }
 
 @OptIn(ExperimentalAnimationApi::class)
-fun NavGraphBuilder.transactionApprovalScreen(
+fun NavGraphBuilder.transactionReviewScreen(
     onBackClick: () -> Unit
 ) {
-    markAsHighPriority(ROUTE_TRANSACTION_APPROVAL)
+    markAsHighPriority(ROUTE_TRANSACTION_REVIEW)
     composable(
-        route = ROUTE_TRANSACTION_APPROVAL,
+        route = ROUTE_TRANSACTION_REVIEW,
         arguments = listOf(
             navArgument(ARG_TRANSACTION_REQUEST_ID) { type = NavType.StringType }
         )
     ) {
-        TransactionApprovalScreen(
+        TransactionReviewScreen(
             viewModel = hiltViewModel(),
             onDismiss = onBackClick
         )
