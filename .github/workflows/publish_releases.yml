@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - "main"
-      - "feature/ABW-2149-ci"
   release:
     types:
       - "published"
