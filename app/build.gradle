@@ -67,6 +67,8 @@ android {
     }
 
     buildTypes {
+        // keep the default build types (debug, release) at the TOP of the closure
+        // if you want your other custom build types to inherit the properties of the default ones
         debug {
             signingConfig signingConfigs.debug
             testCoverageEnabled true
