@@ -50,5 +50,5 @@ suspend fun TransactionType.SimpleTransfer.resolve(
         )
     }
 
-    return PreviewType.Transaction(from = listOf(fromAccount), to = listOf(toAccount))
+    return PreviewType.Transfer(from = listOf(fromAccount), to = listOf(toAccount))
 }

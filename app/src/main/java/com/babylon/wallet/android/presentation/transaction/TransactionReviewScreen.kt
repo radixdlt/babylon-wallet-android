@@ -6,6 +6,7 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -20,7 +21,6 @@ import androidx.compose.material.ModalBottomSheetState
 import androidx.compose.material.ModalBottomSheetValue
 import androidx.compose.material.rememberModalBottomSheetState
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.TopAppBarDefaults
@@ -32,13 +32,9 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.babylon.wallet.android.R
 import com.babylon.wallet.android.data.transaction.TransactionVersion
-import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.model.DAppWithMetadataAndAssociatedResources
@@ -47,7 +43,7 @@ import com.babylon.wallet.android.domain.model.TransactionManifestData
 import com.babylon.wallet.android.presentation.common.FullscreenCircularProgressContent
 import com.babylon.wallet.android.presentation.settings.authorizeddapps.dappdetail.DAppDetailsSheetContent
 import com.babylon.wallet.android.presentation.status.signing.SigningStatusBottomDialog
-import com.babylon.wallet.android.presentation.transaction.TransactionApprovalViewModel.State
+import com.babylon.wallet.android.presentation.transaction.TransactionReviewViewModel.State
 import com.babylon.wallet.android.presentation.transaction.composables.FeesSheet
 import com.babylon.wallet.android.presentation.transaction.composables.GuaranteesSheet
 import com.babylon.wallet.android.presentation.transaction.composables.NetworkFeeContent
@@ -57,6 +53,8 @@ import com.babylon.wallet.android.presentation.transaction.composables.Transacti
 import com.babylon.wallet.android.presentation.transaction.fees.TransactionFees
 import com.babylon.wallet.android.presentation.ui.composables.DefaultModalSheetLayout
 import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
+import com.babylon.wallet.android.presentation.ui.composables.ReceiptEdge
+import com.babylon.wallet.android.presentation.ui.composables.SlideToSignButton
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
 import com.babylon.wallet.android.utils.biometricAuthenticateSuspend
 import kotlinx.coroutines.launch
@@ -64,9 +62,9 @@ import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.data.model.pernetwork.Network
 
 @Composable
-fun TransactionApprovalScreen(
+fun TransactionReviewScreen(
     modifier: Modifier = Modifier,
-    viewModel: TransactionApprovalViewModel,
+    viewModel: TransactionReviewViewModel,
     onDismiss: () -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -112,7 +110,7 @@ fun TransactionApprovalScreen(
     LaunchedEffect(Unit) {
         viewModel.oneOffEvent.collect { event ->
             when (event) {
-                TransactionApprovalViewModel.Event.Dismiss -> {
+                TransactionReviewViewModel.Event.Dismiss -> {
                     onDismiss()
                 }
             }
@@ -216,7 +214,7 @@ private fun TransactionPreviewContent(
                     hostState = snackBarHostState
                 )
             },
-            containerColor = RadixTheme.colors.gray5
+            containerColor = RadixTheme.colors.defaultBackground
         ) { padding ->
             Box(modifier = Modifier.padding(padding)) {
                 if (state.isLoading) {
@@ -230,19 +228,25 @@ private fun TransactionPreviewContent(
                         Column(
                             modifier = Modifier.verticalScroll(rememberScrollState())
                         ) {
+                            ReceiptEdge(modifier = Modifier.fillMaxWidth(), color = RadixTheme.colors.gray4, topEdge = true)
                             RawManifestView(
-                                modifier = Modifier.padding(RadixTheme.dimensions.paddingDefault),
+                                modifier = Modifier
+                                    .background(color = RadixTheme.colors.gray4)
+                                    .padding(RadixTheme.dimensions.paddingDefault),
                                 manifest = state.rawManifest
                             )
+                            ReceiptEdge(modifier = Modifier.fillMaxWidth(), color = RadixTheme.colors.gray4)
                             NetworkFeeContent(
                                 fees = state.transactionFees,
                                 noFeePayerSelected = noFeePayerSelected,
                                 insufficientBalanceToPayTheFee = insufficientBalanceToPayTheFee,
                                 onCustomizeClick = onCustomizeClick
                             )
-                            ApproveButton(
-                                state = state,
-                                onApproveTransaction = onApproveTransaction
+                            SlideToSignButton(
+                                modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingXLarge),
+                                enabled = state.isSubmitEnabled,
+                                isSubmitting = state.isSubmitting,
+                                onSwipeComplete = onApproveTransaction
                             )
                         }
                     }
@@ -258,13 +262,16 @@ private fun TransactionPreviewContent(
                             when (state.previewType) {
                                 is PreviewType.None -> {}
                                 is PreviewType.NonConforming -> {}
-                                is PreviewType.Transaction -> {
+                                is PreviewType.Transfer -> {
+                                    ReceiptEdge(modifier = Modifier.fillMaxWidth(), color = RadixTheme.colors.gray4, topEdge = true)
                                     TransactionPreviewTypeContent(
+                                        modifier = Modifier.background(RadixTheme.colors.gray4),
                                         state = state,
                                         preview = state.previewType,
                                         onPromptForGuarantees = promptForGuarantees,
                                         onDappClick = onDAppClick
                                     )
+                                    ReceiptEdge(modifier = Modifier.fillMaxWidth(), color = RadixTheme.colors.gray4)
                                 }
                             }
                             NetworkFeeContent(
@@ -273,9 +280,11 @@ private fun TransactionPreviewContent(
                                 insufficientBalanceToPayTheFee = insufficientBalanceToPayTheFee,
                                 onCustomizeClick = onCustomizeClick
                             )
-                            ApproveButton(
-                                state = state,
-                                onApproveTransaction = onApproveTransaction
+                            SlideToSignButton(
+                                modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingXLarge),
+                                enabled = state.isSubmitEnabled,
+                                isSubmitting = state.isSubmitting,
+                                onSwipeComplete = onApproveTransaction
                             )
                         }
                     }
@@ -283,28 +292,6 @@ private fun TransactionPreviewContent(
             }
         }
     }
-}
-
-@Composable
-private fun ApproveButton(
-    state: State,
-    onApproveTransaction: () -> Unit
-) {
-    RadixPrimaryButton(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(RadixTheme.dimensions.paddingDefault),
-        text = stringResource(id = R.string.transactionReview_approveButtonTitle),
-        onClick = onApproveTransaction,
-        isLoading = state.isSubmitting,
-        enabled = state.isSubmitEnabled,
-        icon = {
-            Icon(
-                painter = painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_lock),
-                contentDescription = ""
-            )
-        }
-    )
 }
 
 @Composable

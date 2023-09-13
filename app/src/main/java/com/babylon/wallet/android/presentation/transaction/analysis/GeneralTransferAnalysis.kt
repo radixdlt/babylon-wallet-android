@@ -69,7 +69,7 @@ suspend fun TransactionType.GeneralTransaction.resolve(
     val thirdPartyMetadata = getResourcesMetadataUseCase
         .invoke(resourceAddresses = notOwnedResources, isRefreshing = false).value().orEmpty()
 
-    return PreviewType.Transaction(
+    return PreviewType.Transfer(
         from = resolveFromAccounts(allResources, allAccounts),
         to = resolveToAccounts(allResources, allAccounts, thirdPartyMetadata),
         badges = badges,

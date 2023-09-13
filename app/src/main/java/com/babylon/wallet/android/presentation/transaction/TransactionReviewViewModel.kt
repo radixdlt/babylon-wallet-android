@@ -27,8 +27,8 @@ import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
-import com.babylon.wallet.android.presentation.transaction.TransactionApprovalViewModel.Event
-import com.babylon.wallet.android.presentation.transaction.TransactionApprovalViewModel.State
+import com.babylon.wallet.android.presentation.transaction.TransactionReviewViewModel.Event
+import com.babylon.wallet.android.presentation.transaction.TransactionReviewViewModel.State
 import com.babylon.wallet.android.presentation.transaction.analysis.TransactionAnalysisDelegate
 import com.babylon.wallet.android.presentation.transaction.fees.TransactionFees
 import com.babylon.wallet.android.presentation.transaction.fees.TransactionFeesDelegate
@@ -51,7 +51,7 @@ import javax.inject.Inject
 
 @Suppress("LongParameterList", "TooManyFunctions")
 @HiltViewModel
-class TransactionApprovalViewModel @Inject constructor(
+class TransactionReviewViewModel @Inject constructor(
     private val transactionClient: TransactionClient,
     getAccountsWithResourcesUseCase: GetAccountsWithResourcesUseCase,
     getResourcesMetadataUseCase: GetResourcesMetadataUseCase,
@@ -67,7 +67,7 @@ class TransactionApprovalViewModel @Inject constructor(
 ) : StateViewModel<State>(),
     OneOffEventHandler<Event> by OneOffEventHandlerImpl() {
 
-    private val args = TransactionApprovalArgs(savedStateHandle)
+    private val args = TransactionReviewArgs(savedStateHandle)
     private val logger = Timber.tag("TransactionApproval")
 
     override fun initialState(): State = State(
@@ -322,7 +322,7 @@ class TransactionApprovalViewModel @Inject constructor(
         )
 
         val isRawManifestToggleVisible: Boolean
-            get() = previewType is PreviewType.Transaction
+            get() = previewType is PreviewType.Transfer
 
         val rawManifest: String = request.transactionManifestData.toTransactionManifest().getOrNull()?.toPrettyString().orEmpty()
 
@@ -388,16 +388,16 @@ class TransactionApprovalViewModel @Inject constructor(
     }
 
     sealed interface Event : OneOffEvent {
-        object Dismiss : Event
+        data object Dismiss : Event
     }
 }
 
 sealed interface PreviewType {
-    object None : PreviewType
+    data object None : PreviewType
 
-    object NonConforming : PreviewType
+    data object NonConforming : PreviewType
 
-    data class Transaction(
+    data class Transfer(
         val from: List<AccountWithTransferableResources>,
         val to: List<AccountWithTransferableResources>,
         val badges: List<Badge> = emptyList(),

@@ -8,7 +8,7 @@ import com.babylon.wallet.android.domain.usecases.ResolveDAppsUseCase
 import com.babylon.wallet.android.domain.usecases.transaction.GetTransactionBadgesUseCase
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.transaction.PreviewType
-import com.babylon.wallet.android.presentation.transaction.TransactionApprovalViewModel.State
+import com.babylon.wallet.android.presentation.transaction.TransactionReviewViewModel.State
 import com.babylon.wallet.android.presentation.transaction.fees.TransactionFees
 import com.babylon.wallet.android.presentation.transaction.guaranteesCount
 import com.radixdlt.ret.ExecutionAnalysis
@@ -90,7 +90,7 @@ class TransactionAnalysisDelegate(
             networkFinalization = analysis.feeSummary.finalizationCost.asStr().toBigDecimal(),
             networkStorage = analysis.feeSummary.storageExpansionCost.asStr().toBigDecimal(),
             royalties = analysis.feeSummary.royaltyCost.asStr().toBigDecimal(),
-            guaranteesCount = (previewType as? PreviewType.Transaction)?.to?.guaranteesCount() ?: 0,
+            guaranteesCount = (previewType as? PreviewType.Transfer)?.to?.guaranteesCount() ?: 0,
             notaryIsSignatory = notaryAndSigners.notaryIsSignatory,
             includeLockFee = false, // First its false because we don't know if lock fee is applicable or not yet
             signersCount = notaryAndSigners.signers.count()

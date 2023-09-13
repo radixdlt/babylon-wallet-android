@@ -9,7 +9,7 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavType
 import androidx.navigation.compose.dialog
 import androidx.navigation.navArgument
-import com.babylon.wallet.android.presentation.transaction.ROUTE_TRANSACTION_APPROVAL
+import com.babylon.wallet.android.presentation.transaction.ROUTE_TRANSACTION_REVIEW
 import com.babylon.wallet.android.presentation.transfer.ROUTE_TRANSFER
 import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.routeExist
@@ -70,7 +70,7 @@ fun NavController.transactionStatusDialog(transactionEvent: AppEvent.Status.Tran
         val popUpToRoute = if (this@transactionStatusDialog.routeExist(ROUTE_TRANSFER)) {
             ROUTE_TRANSFER
         } else {
-            ROUTE_TRANSACTION_APPROVAL
+            ROUTE_TRANSACTION_REVIEW
         }
 
         popUpTo(route = popUpToRoute) {

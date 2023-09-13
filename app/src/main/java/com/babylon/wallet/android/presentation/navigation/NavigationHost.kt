@@ -42,7 +42,7 @@ import com.babylon.wallet.android.presentation.settings.personas.personaedit.per
 import com.babylon.wallet.android.presentation.settings.settingsNavGraph
 import com.babylon.wallet.android.presentation.status.dapp.dappInteractionDialog
 import com.babylon.wallet.android.presentation.status.transaction.transactionStatusDialog
-import com.babylon.wallet.android.presentation.transaction.transactionApprovalScreen
+import com.babylon.wallet.android.presentation.transaction.transactionReviewScreen
 import com.babylon.wallet.android.presentation.transfer.transfer
 import com.babylon.wallet.android.presentation.transfer.transferScreen
 import com.google.accompanist.navigation.animation.AnimatedNavHost
@@ -221,7 +221,7 @@ fun NavigationHost(
         personaEditScreen(onBackClick = {
             navController.navigateUp()
         })
-        transactionApprovalScreen(
+        transactionReviewScreen(
             onBackClick = {
                 navController.popBackStack()
             }

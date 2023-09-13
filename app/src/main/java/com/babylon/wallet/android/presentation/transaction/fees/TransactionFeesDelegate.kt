@@ -1,6 +1,6 @@
 package com.babylon.wallet.android.presentation.transaction.fees
 
-import com.babylon.wallet.android.presentation.transaction.TransactionApprovalViewModel.State
+import com.babylon.wallet.android.presentation.transaction.TransactionReviewViewModel.State
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
 import rdx.works.profile.domain.GetProfileUseCase

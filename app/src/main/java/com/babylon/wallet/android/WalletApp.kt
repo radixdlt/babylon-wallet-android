@@ -30,7 +30,7 @@ import com.babylon.wallet.android.presentation.onboarding.restore.mnemonics.Rest
 import com.babylon.wallet.android.presentation.onboarding.restore.mnemonics.restoreMnemonics
 import com.babylon.wallet.android.presentation.status.dapp.dappInteractionDialog
 import com.babylon.wallet.android.presentation.status.transaction.transactionStatusDialog
-import com.babylon.wallet.android.presentation.transaction.transactionApproval
+import com.babylon.wallet.android.presentation.transaction.transactionReview
 import com.babylon.wallet.android.presentation.ui.composables.LocalDevBannerState
 import com.babylon.wallet.android.presentation.ui.composables.NotSecureAlertDialog
 import com.babylon.wallet.android.utils.AppEvent
@@ -62,7 +62,7 @@ fun WalletApp(
                 is MainEvent.IncomingRequestEvent -> {
                     when (val incomingRequest = event.request) {
                         is MessageFromDataChannel.IncomingRequest.TransactionRequest -> {
-                            navController.transactionApproval(
+                            navController.transactionReview(
                                 requestId = incomingRequest.requestId
                             )
                         }

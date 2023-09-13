@@ -28,7 +28,7 @@ import com.babylon.wallet.android.designsystem.composable.RadixTextButton
 import com.babylon.wallet.android.designsystem.composable.RadixTextField
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.presentation.transaction.AccountWithTransferableResources
-import com.babylon.wallet.android.presentation.transaction.TransactionApprovalViewModel
+import com.babylon.wallet.android.presentation.transaction.TransactionReviewViewModel
 import com.babylon.wallet.android.presentation.transaction.fees.TransactionFees
 import com.babylon.wallet.android.presentation.ui.composables.BottomDialogDragHandle
 import com.babylon.wallet.android.presentation.ui.composables.InfoLink
@@ -39,7 +39,7 @@ import rdx.works.profile.data.model.pernetwork.Network
 @Composable
 fun FeesSheet(
     modifier: Modifier = Modifier,
-    state: TransactionApprovalViewModel.State.Sheet.CustomizeFees,
+    state: TransactionReviewViewModel.State.Sheet.CustomizeFees,
     transactionFees: TransactionFees,
     insufficientBalanceToPayTheFee: Boolean,
     onClose: () -> Unit,
@@ -68,11 +68,11 @@ fun FeesSheet(
 
         item {
             val title = when (state.feesMode) {
-                TransactionApprovalViewModel.State.Sheet.CustomizeFees.FeesMode.Default -> {
+                TransactionReviewViewModel.State.Sheet.CustomizeFees.FeesMode.Default -> {
                     stringResource(id = R.string.transactionReview_customizeNetworkFeeSheet_normalMode_title)
                 }
 
-                TransactionApprovalViewModel.State.Sheet.CustomizeFees.FeesMode.Advanced -> {
+                TransactionReviewViewModel.State.Sheet.CustomizeFees.FeesMode.Advanced -> {
                     stringResource(id = R.string.transactionReview_customizeNetworkFeeSheet_advancedMode_title)
                 }
             }
@@ -89,11 +89,11 @@ fun FeesSheet(
 
         item {
             val body = when (state.feesMode) {
-                TransactionApprovalViewModel.State.Sheet.CustomizeFees.FeesMode.Default -> {
+                TransactionReviewViewModel.State.Sheet.CustomizeFees.FeesMode.Default -> {
                     stringResource(id = R.string.transactionReview_customizeNetworkFeeSheet_normalMode_subtitle)
                 }
 
-                TransactionApprovalViewModel.State.Sheet.CustomizeFees.FeesMode.Advanced -> {
+                TransactionReviewViewModel.State.Sheet.CustomizeFees.FeesMode.Advanced -> {
                     stringResource(id = R.string.transactionReview_customizeNetworkFeeSheet_advancedMode_subtitle)
                 }
             }
@@ -122,7 +122,7 @@ fun FeesSheet(
         }
 
         when (val feePayer = state.feePayerMode) {
-            TransactionApprovalViewModel.State.Sheet.CustomizeFees.FeePayerMode.NoFeePayerRequired -> {
+            TransactionReviewViewModel.State.Sheet.CustomizeFees.FeePayerMode.NoFeePayerRequired -> {
                 item {
                     Row(
                         modifier = Modifier
@@ -166,7 +166,7 @@ fun FeesSheet(
                     }
                 }
             }
-            is TransactionApprovalViewModel.State.Sheet.CustomizeFees.FeePayerMode.FeePayerSelected -> {
+            is TransactionReviewViewModel.State.Sheet.CustomizeFees.FeePayerMode.FeePayerSelected -> {
                 item {
                     Row(
                         modifier = Modifier
@@ -212,7 +212,7 @@ fun FeesSheet(
                     }
                 }
             }
-            is TransactionApprovalViewModel.State.Sheet.CustomizeFees.FeePayerMode.NoFeePayerSelected -> {
+            is TransactionReviewViewModel.State.Sheet.CustomizeFees.FeePayerMode.NoFeePayerSelected -> {
                 item {
                     Row(
                         modifier = Modifier
@@ -248,7 +248,7 @@ fun FeesSheet(
                     }
                 }
             }
-            is TransactionApprovalViewModel.State.Sheet.CustomizeFees.FeePayerMode.SelectFeePayer -> {
+            is TransactionReviewViewModel.State.Sheet.CustomizeFees.FeePayerMode.SelectFeePayer -> {
                 feePayerSelectionContent(
                     candidates = feePayer.candidates,
                     onPayerSelected = onPayerSelected
@@ -265,13 +265,13 @@ fun FeesSheet(
 
         item {
             when (state.feesMode) {
-                TransactionApprovalViewModel.State.Sheet.CustomizeFees.FeesMode.Default -> {
+                TransactionReviewViewModel.State.Sheet.CustomizeFees.FeesMode.Default -> {
                     NetworkFeesDefaultView(
                         transactionFees = transactionFees
                     )
                 }
 
-                TransactionApprovalViewModel.State.Sheet.CustomizeFees.FeesMode.Advanced -> {
+                TransactionReviewViewModel.State.Sheet.CustomizeFees.FeesMode.Advanced -> {
                     NetworkFeesAdvancedView(
                         transactionFees = transactionFees,
                         onFeePaddingAmountChanged = onFeePaddingAmountChanged,
@@ -289,7 +289,7 @@ fun FeesSheet(
                 horizontalArrangement = Arrangement.Center
             ) {
                 when (state.feesMode) {
-                    TransactionApprovalViewModel.State.Sheet.CustomizeFees.FeesMode.Default -> {
+                    TransactionReviewViewModel.State.Sheet.CustomizeFees.FeesMode.Default -> {
                         RadixTextButton(
                             text = stringResource(
                                 id = R.string.transactionReview_customizeNetworkFeeSheet_viewAdvancedModeButtonTitle
@@ -298,7 +298,7 @@ fun FeesSheet(
                         )
                     }
 
-                    TransactionApprovalViewModel.State.Sheet.CustomizeFees.FeesMode.Advanced -> {
+                    TransactionReviewViewModel.State.Sheet.CustomizeFees.FeesMode.Advanced -> {
                         RadixTextButton(
                             text = stringResource(
                                 id = R.string.transactionReview_customizeNetworkFeeSheet_viewNormalModeButtonTitle
