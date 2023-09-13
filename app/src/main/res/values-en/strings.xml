@@ -518,6 +518,9 @@
   <string name="onboarding_step2_subtitle">Let\'s get started</string>
   <string name="onboarding_step3_title">Your phone is your login</string>
   <string name="onboarding_step3_subtitle">Connect and transact securely with a world of web3 dApps, tokens, NFTs, and much more</string>
+  <string name="onboarding_eula_headerTitle">User Terms</string>
+  <string name="onboarding_eula_headerSubtitle">To proceed, you must accept the user terms below.</string>
+  <string name="onboarding_eula_accept">Accept</string>
   <string name="splash_passcodeNotSetTitle">Passcode not set up</string>
   <string name="splash_passcodeNotSetMessage">This app requires your phone to have a passcode set up</string>
   <string name="splash_incompatibleProfileVersionAlert_delete">Delete Wallet Data</string>
