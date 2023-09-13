@@ -741,5 +741,4 @@ Only the **current configuration** of your wallet is backed up with each manual 
   <string name="recoverSeedPhrase_enterButton">Enter This Seed Phrase</string>
   <string name="enterSeedPhrase_header_title">Enter Seed Phrase</string>
   <string name="enterSeedPhrase_warning">For your safety, make sure no one is looking at your screen. Never give your seed phrase to anyone for any reason.</string>
-  <string name="transactionReview_slideToSign">Slide to Sign</string>
 </resources>
