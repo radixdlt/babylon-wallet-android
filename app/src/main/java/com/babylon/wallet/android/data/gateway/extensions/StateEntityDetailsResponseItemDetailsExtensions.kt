@@ -122,15 +122,6 @@ fun StateEntityDetailsResponseItemDetails.calculateResourceBehaviours(): List<Re
             behaviors.add(ResourceBehaviour.FUTURE_MOVEMENT_WITHDRAW_DEPOSIT)
         }
 
-        if (roleAssignments?.isDefaultUpdate(ResourceRole.UpdateMetadata) == false) {
-            behaviors.add(ResourceBehaviour.CHANGE_UPDATE_METADATA)
-        }
-        if (roleAssignments?.isDefaultPerform(ResourceRole.UpdateMetadata) == false) {
-            if (behaviors.contains(ResourceBehaviour.CHANGE_UPDATE_METADATA).not()) {
-                behaviors.add(ResourceBehaviour.PERFORM_UPDATE_METADATA)
-            }
-        }
-
         if (roleAssignments?.isDefaultUpdate(ResourceRole.Recall) == false) {
             behaviors.add(ResourceBehaviour.CHANGE_RECALL)
         }
@@ -182,49 +173,43 @@ sealed interface ResourceRole {
     val defaultPerformRule: AccessRule
     val defaultUpdateRule: AccessRule
 
-    object Mint : ResourceRole {
+    data object Mint : ResourceRole {
         override val perform: String = "minter"
         override val defaultPerformRule: AccessRule = AccessRule.DenyAll
         override val defaultUpdateRule: AccessRule = AccessRule.DenyAll
     }
 
-    object Burn : ResourceRole {
+    data object Burn : ResourceRole {
         override val perform: String = "burner"
         override val defaultPerformRule: AccessRule = AccessRule.DenyAll
         override val defaultUpdateRule: AccessRule = AccessRule.DenyAll
     }
 
-    object Withdraw : ResourceRole {
+    data object Withdraw : ResourceRole {
         override val perform: String = "withdrawer"
         override val defaultPerformRule: AccessRule = AccessRule.AllowAll
         override val defaultUpdateRule: AccessRule = AccessRule.DenyAll
     }
 
-    object Deposit : ResourceRole {
+    data object Deposit : ResourceRole {
         override val perform: String = "depositor"
         override val defaultPerformRule: AccessRule = AccessRule.AllowAll
         override val defaultUpdateRule: AccessRule = AccessRule.DenyAll
     }
 
-    object Recall : ResourceRole {
+    data object Recall : ResourceRole {
         override val perform: String = "recaller"
         override val defaultPerformRule: AccessRule = AccessRule.DenyAll
         override val defaultUpdateRule: AccessRule = AccessRule.DenyAll
     }
 
-    object Freeze : ResourceRole {
+    data object Freeze : ResourceRole {
         override val perform: String = "freezer"
         override val defaultPerformRule: AccessRule = AccessRule.DenyAll
         override val defaultUpdateRule: AccessRule = AccessRule.DenyAll
     }
 
-    object UpdateMetadata : ResourceRole {
-        override val perform: String = "metadata_setter"
-        override val defaultPerformRule: AccessRule = AccessRule.DenyAll
-        override val defaultUpdateRule: AccessRule = AccessRule.DenyAll
-    }
-
-    object UpdateNonFungibleData : ResourceRole {
+    data object UpdateNonFungibleData : ResourceRole {
         override val perform: String = "non_fungible_data_updater"
         override val defaultPerformRule: AccessRule = AccessRule.DenyAll
         override val defaultUpdateRule: AccessRule = AccessRule.DenyAll
@@ -236,7 +221,6 @@ sealed interface ResourceRole {
             Mint,
             Deposit,
             Withdraw,
-            UpdateMetadata,
             Recall,
             Freeze
         )
@@ -246,7 +230,6 @@ sealed interface ResourceRole {
             Mint,
             Deposit,
             Withdraw,
-            UpdateMetadata,
             Recall,
             Freeze,
             UpdateNonFungibleData

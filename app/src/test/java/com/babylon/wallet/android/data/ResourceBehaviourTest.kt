@@ -19,22 +19,30 @@ import org.junit.Test
 
 class ResourceBehaviourTest {
 
+    private val defaultNonFungibleResponse = StateEntityDetailsResponseNonFungibleResourceDetails(
+        type = StateEntityDetailsResponseItemDetailsType.nonFungibleResource,
+        nonFungibleIdType = NonFungibleIdType.integer,
+        totalSupply = "",
+        totalBurned = "",
+        totalMinted = "",
+        roleAssignments = ComponentEntityRoleAssignments(defaultNonFungibleAccessRules)
+    )
+
+    private val defaultFungibleResponse = StateEntityDetailsResponseFungibleResourceDetails(
+        type = StateEntityDetailsResponseItemDetailsType.fungibleResource,
+        divisibility = 1,
+        totalSupply = "",
+        totalBurned = "",
+        totalMinted = "",
+        roleAssignments = ComponentEntityRoleAssignments(defaultFungibleAccessRules)
+    )
+
     @Test
     fun `given update_non_fungible_data perform and change rules set to defaults, verify no behaviours`() {
         // given
         val expectedBehaviours = listOf(ResourceBehaviour.DEFAULT_RESOURCE)
-        val response = StateEntityDetailsResponseNonFungibleResourceDetails(
-            type = StateEntityDetailsResponseItemDetailsType.nonFungibleResource,
-            nonFungibleIdType = NonFungibleIdType.integer,
-            totalSupply = "",
-            totalBurned = "",
-            totalMinted = "",
-            roleAssignments = ComponentEntityRoleAssignments(defaultNonFungibleAccessRules)
-        )
-
         // when
-        val behaviours = response.calculateResourceBehaviours()
-
+        val behaviours = defaultNonFungibleResponse.calculateResourceBehaviours()
         // then
         Assert.assertEquals(expectedBehaviours, behaviours)
     }
@@ -45,12 +53,7 @@ class ResourceBehaviourTest {
         val expectedBehaviours = listOf(
             ResourceBehaviour.CHANGE_UPDATE_NON_FUNGIBLE_DATA
         )
-        val response = StateEntityDetailsResponseNonFungibleResourceDetails(
-            type = StateEntityDetailsResponseItemDetailsType.nonFungibleResource,
-            nonFungibleIdType = NonFungibleIdType.integer,
-            totalSupply = "",
-            totalBurned = "",
-            totalMinted = "",
+        val response = defaultNonFungibleResponse.copy(
             roleAssignments = ComponentEntityRoleAssignments(defaultNonFungibleAccessRules.map {
                 when (it.roleKey.name) {
                     ResourceRole.UpdateNonFungibleData.change -> it.updateRoleAccessRule(AccessRule(AccessRule.Type.AllowAll))
@@ -58,7 +61,6 @@ class ResourceBehaviourTest {
                 }
             })
         )
-
         // when
         val behaviours = response.calculateResourceBehaviours()
 
@@ -72,12 +74,7 @@ class ResourceBehaviourTest {
         val expectedBehaviours = listOf(
             ResourceBehaviour.PERFORM_UPDATE_NON_FUNGIBLE_DATA
         )
-        val response = StateEntityDetailsResponseNonFungibleResourceDetails(
-            type = StateEntityDetailsResponseItemDetailsType.nonFungibleResource,
-            nonFungibleIdType = NonFungibleIdType.integer,
-            totalSupply = "",
-            totalBurned = "",
-            totalMinted = "",
+        val response = defaultNonFungibleResponse.copy(
             roleAssignments = ComponentEntityRoleAssignments(defaultNonFungibleAccessRules.map {
                 when (it.roleKey.name) {
                     ResourceRole.UpdateNonFungibleData.perform -> it.updateRoleAccessRule(AccessRule(AccessRule.Type.AllowAll))
@@ -85,7 +82,6 @@ class ResourceBehaviourTest {
                 }
             })
         )
-
         // when
         val behaviours = response.calculateResourceBehaviours()
 
@@ -99,12 +95,7 @@ class ResourceBehaviourTest {
         val expectedBehaviours = listOf(
             ResourceBehaviour.CHANGE_UPDATE_NON_FUNGIBLE_DATA
         )
-        val response = StateEntityDetailsResponseNonFungibleResourceDetails(
-            type = StateEntityDetailsResponseItemDetailsType.nonFungibleResource,
-            nonFungibleIdType = NonFungibleIdType.integer,
-            totalSupply = "",
-            totalBurned = "",
-            totalMinted = "",
+        val response = defaultNonFungibleResponse.copy(
             roleAssignments = ComponentEntityRoleAssignments(defaultNonFungibleAccessRules.map {
                 when (it.roleKey.name) {
                     ResourceRole.UpdateNonFungibleData.perform -> it.updateRoleAccessRule(AccessRule(AccessRule.Type.AllowAll))
@@ -127,12 +118,7 @@ class ResourceBehaviourTest {
         val expectedBehaviours = listOf(
             ResourceBehaviour.PERFORM_RECALL
         )
-        val fungibleResource = StateEntityDetailsResponseFungibleResourceDetails(
-            type = StateEntityDetailsResponseItemDetailsType.fungibleResource,
-            divisibility = 1,
-            totalSupply = "",
-            totalBurned = "",
-            totalMinted = "",
+        val fungibleResource = defaultFungibleResponse.copy(
             roleAssignments = ComponentEntityRoleAssignments(defaultFungibleAccessRules.map {
                 when (it.roleKey.name) {
                     ResourceRole.Recall.perform -> it.updateRoleAccessRule(AccessRule(AccessRule.Type.AllowAll))
@@ -154,12 +140,7 @@ class ResourceBehaviourTest {
         val expectedBehaviours = listOf(
             ResourceBehaviour.CHANGE_RECALL
         )
-        val fungibleResource = StateEntityDetailsResponseFungibleResourceDetails(
-            type = StateEntityDetailsResponseItemDetailsType.fungibleResource,
-            divisibility = 1,
-            totalSupply = "",
-            totalBurned = "",
-            totalMinted = "",
+        val fungibleResource = defaultFungibleResponse.copy(
             roleAssignments = ComponentEntityRoleAssignments(defaultFungibleAccessRules.map {
                 when (it.roleKey.name) {
                     ResourceRole.Recall.change -> it.updateRoleAccessRule(AccessRule(AccessRule.Type.AllowAll))
@@ -181,12 +162,7 @@ class ResourceBehaviourTest {
         val expectedBehaviours = listOf(
             ResourceBehaviour.CHANGE_RECALL
         )
-        val fungibleResource = StateEntityDetailsResponseFungibleResourceDetails(
-            type = StateEntityDetailsResponseItemDetailsType.fungibleResource,
-            divisibility = 1,
-            totalSupply = "",
-            totalBurned = "",
-            totalMinted = "",
+        val fungibleResource = defaultFungibleResponse.copy(
             roleAssignments = ComponentEntityRoleAssignments(defaultFungibleAccessRules.map {
                 when (it.roleKey.name) {
                     ResourceRole.Recall.perform -> it.updateRoleAccessRule(AccessRule(AccessRule.Type.AllowAll))
@@ -209,12 +185,7 @@ class ResourceBehaviourTest {
         val expectedBehaviours = listOf(
             ResourceBehaviour.PERFORM_FREEZE
         )
-        val fungibleResource = StateEntityDetailsResponseFungibleResourceDetails(
-            type = StateEntityDetailsResponseItemDetailsType.fungibleResource,
-            divisibility = 1,
-            totalSupply = "",
-            totalBurned = "",
-            totalMinted = "",
+        val fungibleResource = defaultFungibleResponse.copy(
             roleAssignments = ComponentEntityRoleAssignments(defaultFungibleAccessRules.map {
                 when (it.roleKey.name) {
                     ResourceRole.Freeze.perform -> it.updateRoleAccessRule(AccessRule(AccessRule.Type.AllowAll))
@@ -236,12 +207,7 @@ class ResourceBehaviourTest {
         val expectedBehaviours = listOf(
             ResourceBehaviour.CHANGE_FREEZE
         )
-        val fungibleResource = StateEntityDetailsResponseFungibleResourceDetails(
-            type = StateEntityDetailsResponseItemDetailsType.fungibleResource,
-            divisibility = 1,
-            totalSupply = "",
-            totalBurned = "",
-            totalMinted = "",
+        val fungibleResource = defaultFungibleResponse.copy(
             roleAssignments = ComponentEntityRoleAssignments(defaultFungibleAccessRules.map {
                 when (it.roleKey.name) {
                     ResourceRole.Freeze.change -> it.updateRoleAccessRule(AccessRule(AccessRule.Type.AllowAll))
@@ -263,98 +229,11 @@ class ResourceBehaviourTest {
         val expectedBehaviours = listOf(
             ResourceBehaviour.CHANGE_FREEZE
         )
-        val fungibleResource = StateEntityDetailsResponseFungibleResourceDetails(
-            type = StateEntityDetailsResponseItemDetailsType.fungibleResource,
-            divisibility = 1,
-            totalSupply = "",
-            totalBurned = "",
-            totalMinted = "",
+        val fungibleResource = defaultFungibleResponse.copy(
             roleAssignments = ComponentEntityRoleAssignments(defaultFungibleAccessRules.map {
                 when (it.roleKey.name) {
                     ResourceRole.Freeze.perform -> it.updateRoleAccessRule(AccessRule(AccessRule.Type.AllowAll))
                     ResourceRole.Freeze.change -> it.updateRoleAccessRule(AccessRule(AccessRule.Type.AllowAll))
-                    else -> it
-                }
-            })
-        )
-
-        // when
-        val behaviours = fungibleResource.calculateResourceBehaviours()
-
-        // then
-        Assert.assertEquals(expectedBehaviours, behaviours)
-    }
-
-    @Test
-    fun `given update_metadata perform rules set to NON defaults, verify PERFORM update_metadata behaviors`() {
-        // given
-        val expectedBehaviours = listOf(
-            ResourceBehaviour.PERFORM_UPDATE_METADATA
-        )
-        val fungibleResource = StateEntityDetailsResponseFungibleResourceDetails(
-            type = StateEntityDetailsResponseItemDetailsType.fungibleResource,
-            divisibility = 1,
-            totalSupply = "",
-            totalBurned = "",
-            totalMinted = "",
-            roleAssignments = ComponentEntityRoleAssignments(defaultFungibleAccessRules.map {
-                when (it.roleKey.name) {
-                    ResourceRole.UpdateMetadata.perform -> it.updateRoleAccessRule(AccessRule(AccessRule.Type.AllowAll))
-                    else -> it
-                }
-            })
-        )
-
-        // when
-        val behaviours = fungibleResource.calculateResourceBehaviours()
-
-        // then
-        Assert.assertEquals(expectedBehaviours, behaviours)
-    }
-
-    @Test
-    fun `given update_metadata change rules set to NON defaults, verify CHANGE update_metadata behaviors`() {
-        // given
-        val expectedBehaviours = listOf(
-            ResourceBehaviour.CHANGE_UPDATE_METADATA
-        )
-        val fungibleResource = StateEntityDetailsResponseFungibleResourceDetails(
-            type = StateEntityDetailsResponseItemDetailsType.fungibleResource,
-            divisibility = 1,
-            totalSupply = "",
-            totalBurned = "",
-            totalMinted = "",
-            roleAssignments = ComponentEntityRoleAssignments(defaultFungibleAccessRules.map {
-                when (it.roleKey.name) {
-                    ResourceRole.UpdateMetadata.change -> it.updateRoleAccessRule(AccessRule(AccessRule.Type.AllowAll))
-                    else -> it
-                }
-            })
-        )
-
-        // when
-        val behaviours = fungibleResource.calculateResourceBehaviours()
-
-        // then
-        Assert.assertEquals(expectedBehaviours, behaviours)
-    }
-
-    @Test
-    fun `given update_metadata perform and change rules set to NON defaults, verify PERFORM and CHANGE update_metadata behaviors`() {
-        // given
-        val expectedBehaviours = listOf(
-            ResourceBehaviour.CHANGE_UPDATE_METADATA
-        )
-        val fungibleResource = StateEntityDetailsResponseFungibleResourceDetails(
-            type = StateEntityDetailsResponseItemDetailsType.fungibleResource,
-            divisibility = 1,
-            totalSupply = "",
-            totalBurned = "",
-            totalMinted = "",
-            roleAssignments = ComponentEntityRoleAssignments(defaultFungibleAccessRules.map {
-                when (it.roleKey.name) {
-                    ResourceRole.UpdateMetadata.perform -> it.updateRoleAccessRule(AccessRule(AccessRule.Type.AllowAll))
-                    ResourceRole.UpdateMetadata.change -> it.updateRoleAccessRule(AccessRule(AccessRule.Type.AllowAll))
                     else -> it
                 }
             })
@@ -373,12 +252,7 @@ class ResourceBehaviourTest {
         val expectedBehaviours = listOf(
             ResourceBehaviour.PERFORM_MINT
         )
-        val fungibleResource = StateEntityDetailsResponseFungibleResourceDetails(
-            type = StateEntityDetailsResponseItemDetailsType.fungibleResource,
-            divisibility = 1,
-            totalSupply = "",
-            totalBurned = "",
-            totalMinted = "",
+        val fungibleResource = defaultFungibleResponse.copy(
             roleAssignments = ComponentEntityRoleAssignments(defaultFungibleAccessRules.map {
                 when (it.roleKey.name) {
                     ResourceRole.Mint.perform -> it.updateRoleAccessRule(AccessRule(AccessRule.Type.AllowAll))
@@ -400,12 +274,7 @@ class ResourceBehaviourTest {
         val expectedBehaviours = listOf(
             ResourceBehaviour.CHANGE_MINT
         )
-        val fungibleResource = StateEntityDetailsResponseFungibleResourceDetails(
-            type = StateEntityDetailsResponseItemDetailsType.fungibleResource,
-            divisibility = 1,
-            totalSupply = "",
-            totalBurned = "",
-            totalMinted = "",
+        val fungibleResource = defaultFungibleResponse.copy(
             roleAssignments = ComponentEntityRoleAssignments(defaultFungibleAccessRules.map {
                 when (it.roleKey.name) {
                     ResourceRole.Mint.change -> it.updateRoleAccessRule(AccessRule(AccessRule.Type.AllowAll))
@@ -427,12 +296,7 @@ class ResourceBehaviourTest {
         val expectedBehaviours = listOf(
             ResourceBehaviour.CHANGE_MINT
         )
-        val fungibleResource = StateEntityDetailsResponseFungibleResourceDetails(
-            type = StateEntityDetailsResponseItemDetailsType.fungibleResource,
-            divisibility = 1,
-            totalSupply = "",
-            totalBurned = "",
-            totalMinted = "",
+        val fungibleResource = defaultFungibleResponse.copy(
             roleAssignments = ComponentEntityRoleAssignments(defaultFungibleAccessRules.map {
                 when (it.roleKey.name) {
                     ResourceRole.Mint.perform -> it.updateRoleAccessRule(AccessRule(AccessRule.Type.AllowAll))
@@ -455,12 +319,7 @@ class ResourceBehaviourTest {
         val expectedBehaviours = listOf(
             ResourceBehaviour.PERFORM_BURN
         )
-        val fungibleResource = StateEntityDetailsResponseFungibleResourceDetails(
-            type = StateEntityDetailsResponseItemDetailsType.fungibleResource,
-            divisibility = 1,
-            totalSupply = "",
-            totalBurned = "",
-            totalMinted = "",
+        val fungibleResource = defaultFungibleResponse.copy(
             roleAssignments = ComponentEntityRoleAssignments(defaultFungibleAccessRules.map {
                 when (it.roleKey.name) {
                     ResourceRole.Burn.perform -> it.updateRoleAccessRule(AccessRule(AccessRule.Type.AllowAll))
@@ -482,12 +341,7 @@ class ResourceBehaviourTest {
         val expectedBehaviours = listOf(
             ResourceBehaviour.CHANGE_BURN
         )
-        val fungibleResource = StateEntityDetailsResponseFungibleResourceDetails(
-            type = StateEntityDetailsResponseItemDetailsType.fungibleResource,
-            divisibility = 1,
-            totalSupply = "",
-            totalBurned = "",
-            totalMinted = "",
+        val fungibleResource = defaultFungibleResponse.copy(
             roleAssignments = ComponentEntityRoleAssignments(defaultFungibleAccessRules.map {
                 when (it.roleKey.name) {
                     ResourceRole.Burn.change -> it.updateRoleAccessRule(AccessRule(AccessRule.Type.AllowAll))
@@ -509,12 +363,7 @@ class ResourceBehaviourTest {
         val expectedBehaviours = listOf(
             ResourceBehaviour.CHANGE_BURN
         )
-        val fungibleResource = StateEntityDetailsResponseFungibleResourceDetails(
-            type = StateEntityDetailsResponseItemDetailsType.fungibleResource,
-            divisibility = 1,
-            totalSupply = "",
-            totalBurned = "",
-            totalMinted = "",
+        val fungibleResource = defaultFungibleResponse.copy(
             roleAssignments = ComponentEntityRoleAssignments(defaultFungibleAccessRules.map {
                 when (it.roleKey.name) {
                     ResourceRole.Burn.perform -> it.updateRoleAccessRule(AccessRule(AccessRule.Type.AllowAll))
@@ -537,12 +386,7 @@ class ResourceBehaviourTest {
         val expectedBehaviours = listOf(
             ResourceBehaviour.PERFORM_MINT_BURN
         )
-        val fungibleResource = StateEntityDetailsResponseFungibleResourceDetails(
-            type = StateEntityDetailsResponseItemDetailsType.fungibleResource,
-            divisibility = 1,
-            totalSupply = "",
-            totalBurned = "",
-            totalMinted = "",
+        val fungibleResource = defaultFungibleResponse.copy(
             roleAssignments = ComponentEntityRoleAssignments(defaultFungibleAccessRules.map {
                 when (it.roleKey.name) {
                     ResourceRole.Burn.perform -> it.updateRoleAccessRule(AccessRule(AccessRule.Type.AllowAll))
@@ -567,12 +411,7 @@ class ResourceBehaviourTest {
         val expectedBehaviours = listOf(
             ResourceBehaviour.CHANGE_MINT_BURN
         )
-        val fungibleResource = StateEntityDetailsResponseFungibleResourceDetails(
-            type = StateEntityDetailsResponseItemDetailsType.fungibleResource,
-            divisibility = 1,
-            totalSupply = "",
-            totalBurned = "",
-            totalMinted = "",
+        val fungibleResource = defaultFungibleResponse.copy(
             roleAssignments = ComponentEntityRoleAssignments(defaultFungibleAccessRules.map {
                 when (it.roleKey.name) {
                     ResourceRole.Burn.perform -> it.updateRoleAccessRule(AccessRule(AccessRule.Type.DenyAll))
@@ -597,12 +436,7 @@ class ResourceBehaviourTest {
         val expectedBehaviours = listOf(
             ResourceBehaviour.CANNOT_PERFORM_WITHDRAW_DEPOSIT
         )
-        val fungibleResource = StateEntityDetailsResponseFungibleResourceDetails(
-            type = StateEntityDetailsResponseItemDetailsType.fungibleResource,
-            divisibility = 1,
-            totalSupply = "",
-            totalBurned = "",
-            totalMinted = "",
+        val fungibleResource = defaultFungibleResponse.copy(
             roleAssignments = ComponentEntityRoleAssignments(defaultFungibleAccessRules.map {
                 when (it.roleKey.name) {
                     ResourceRole.Deposit.perform -> it.updateRoleAccessRule(AccessRule(AccessRule.Type.DenyAll))
@@ -627,12 +461,7 @@ class ResourceBehaviourTest {
         val expectedBehaviours = listOf(
             ResourceBehaviour.CHANGE_WITHDRAW_DEPOSIT
         )
-        val fungibleResource = StateEntityDetailsResponseFungibleResourceDetails(
-            type = StateEntityDetailsResponseItemDetailsType.fungibleResource,
-            divisibility = 1,
-            totalSupply = "",
-            totalBurned = "",
-            totalMinted = "",
+        val fungibleResource = defaultFungibleResponse.copy(
             roleAssignments = ComponentEntityRoleAssignments(defaultFungibleAccessRules.map {
                 when (it.roleKey.name) {
                     ResourceRole.Deposit.perform -> it.updateRoleAccessRule(AccessRule(AccessRule.Type.AllowAll))
@@ -657,12 +486,7 @@ class ResourceBehaviourTest {
         val expectedBehaviours = listOf(
             ResourceBehaviour.FUTURE_MOVEMENT_WITHDRAW_DEPOSIT
         )
-        val fungibleResource = StateEntityDetailsResponseFungibleResourceDetails(
-            type = StateEntityDetailsResponseItemDetailsType.fungibleResource,
-            divisibility = 1,
-            totalSupply = "",
-            totalBurned = "",
-            totalMinted = "",
+        val fungibleResource = defaultFungibleResponse.copy(
             roleAssignments = ComponentEntityRoleAssignments(defaultFungibleAccessRules.map {
                 when (it.roleKey.name) {
                     ResourceRole.Deposit.perform -> it.updateRoleAccessRule(AccessRule(AccessRule.Type.AllowAll))
@@ -688,12 +512,7 @@ class ResourceBehaviourTest {
         val expectedBehaviours = listOf(
             ResourceBehaviour.DEFAULT_RESOURCE
         )
-        val fungibleResource = StateEntityDetailsResponseFungibleResourceDetails(
-            type = StateEntityDetailsResponseItemDetailsType.fungibleResource,
-            divisibility = 1,
-            totalSupply = "",
-            totalBurned = "",
-            totalMinted = "",
+        val fungibleResource = defaultFungibleResponse.copy(
             roleAssignments = ComponentEntityRoleAssignments(defaultFungibleAccessRules)
         )
 
@@ -710,12 +529,7 @@ class ResourceBehaviourTest {
         val expectedBehaviours = listOf(
             ResourceBehaviour.DEFAULT_RESOURCE
         )
-        val fungibleResource = StateEntityDetailsResponseNonFungibleResourceDetails(
-            type = StateEntityDetailsResponseItemDetailsType.nonFungibleResource,
-            nonFungibleIdType = NonFungibleIdType.integer,
-            totalSupply = "",
-            totalBurned = "",
-            totalMinted = "",
+        val fungibleResource = defaultNonFungibleResponse.copy(
             roleAssignments = ComponentEntityRoleAssignments(
                 propertyEntries = defaultNonFungibleAccessRules
             ),
