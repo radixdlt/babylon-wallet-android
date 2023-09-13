@@ -26,7 +26,7 @@ object Radix {
         companion object {
             val mainnet = Network(
                 id = NetworkId.Mainnet.value,
-                name = "Mainnet",
+                name = "mainnet",
                 displayDescription = "Mainnet"
             )
             val stokenet = Network(
@@ -74,8 +74,8 @@ object Radix {
                 return listOf(mainnet, stokenet, hammunet, nebunet, kisharnet, mardunet, enkinet, ansharnet, zabanet)
             }
 
-            fun forName(name: String): Network {
-                return allKnownNetworks().first { network ->
+            fun forName(name: String): Network? {
+                return allKnownNetworks().firstOrNull { network ->
                     network.name == name
                 }
             }
