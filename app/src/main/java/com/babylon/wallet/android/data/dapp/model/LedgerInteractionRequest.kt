@@ -82,9 +82,6 @@ data class SignTransactionRequest(
 
     @Serializable
     enum class Mode {
-        @SerialName("verbose")
-        Verbose,
-
         @SerialName("summary")
         Summary
     }
