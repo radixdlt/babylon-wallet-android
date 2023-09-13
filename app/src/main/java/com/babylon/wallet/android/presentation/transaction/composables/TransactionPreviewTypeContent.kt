@@ -17,7 +17,7 @@ import kotlinx.collections.immutable.toPersistentList
 fun TransactionPreviewTypeContent(
     modifier: Modifier = Modifier,
     state: TransactionReviewViewModel.State,
-    preview: PreviewType.Transaction,
+    preview: PreviewType.Transfer,
     onPromptForGuarantees: () -> Unit,
     onDappClick: (DAppWithMetadataAndAssociatedResources) -> Unit
 ) {

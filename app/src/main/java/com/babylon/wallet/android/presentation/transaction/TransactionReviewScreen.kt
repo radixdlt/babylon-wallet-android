@@ -262,7 +262,7 @@ private fun TransactionPreviewContent(
                             when (state.previewType) {
                                 is PreviewType.None -> {}
                                 is PreviewType.NonConforming -> {}
-                                is PreviewType.Transaction -> {
+                                is PreviewType.Transfer -> {
                                     ReceiptEdge(modifier = Modifier.fillMaxWidth(), color = RadixTheme.colors.gray4, topEdge = true)
                                     TransactionPreviewTypeContent(
                                         modifier = Modifier.background(RadixTheme.colors.gray4),

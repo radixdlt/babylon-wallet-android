@@ -90,7 +90,7 @@ class TransactionAnalysisDelegate(
             networkFinalization = analysis.feeSummary.finalizationCost.asStr().toBigDecimal(),
             networkStorage = analysis.feeSummary.storageExpansionCost.asStr().toBigDecimal(),
             royalties = analysis.feeSummary.royaltyCost.asStr().toBigDecimal(),
-            guaranteesCount = (previewType as? PreviewType.Transaction)?.to?.guaranteesCount() ?: 0,
+            guaranteesCount = (previewType as? PreviewType.Transfer)?.to?.guaranteesCount() ?: 0,
             notaryIsSignatory = notaryAndSigners.notaryIsSignatory,
             includeLockFee = false, // First its false because we don't know if lock fee is applicable or not yet
             signersCount = notaryAndSigners.signers.count()

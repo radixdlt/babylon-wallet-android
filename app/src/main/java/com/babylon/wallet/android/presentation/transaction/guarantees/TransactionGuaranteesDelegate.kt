@@ -16,7 +16,7 @@ class TransactionGuaranteesDelegate(
 ) {
 
     fun onEdit() {
-        val transaction = (state.value.previewType as? PreviewType.Transaction) ?: return
+        val transaction = (state.value.previewType as? PreviewType.Transfer) ?: return
 
         val accountsWithPredictedGuarantee = mutableListOf<AccountWithPredictedGuarantee>()
         transaction.to.forEach { depositing ->
@@ -115,7 +115,7 @@ class TransactionGuaranteesDelegate(
 
     fun onApply() {
         val sheet = (state.value.sheetState as? State.Sheet.CustomizeGuarantees) ?: return
-        val preview = (state.value.previewType as? PreviewType.Transaction) ?: return
+        val preview = (state.value.previewType as? PreviewType.Transfer) ?: return
 
         state.update {
             it.copy(

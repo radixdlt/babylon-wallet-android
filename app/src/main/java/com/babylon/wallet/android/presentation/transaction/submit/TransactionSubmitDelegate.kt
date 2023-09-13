@@ -187,7 +187,7 @@ class TransactionSubmitDelegate(
 
     private fun TransactionManifest.attachGuarantees(previewType: PreviewType): TransactionManifest {
         var manifest = this
-        if (previewType is PreviewType.Transaction) {
+        if (previewType is PreviewType.Transfer) {
             previewType.to.map { it.resources }.flatten().forEach { depositing ->
                 when (val assertion = depositing.guaranteeAssertion) {
                     is GuaranteeAssertion.ForAmount -> {

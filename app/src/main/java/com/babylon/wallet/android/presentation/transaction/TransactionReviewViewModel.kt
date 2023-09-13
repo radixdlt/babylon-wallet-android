@@ -322,7 +322,7 @@ class TransactionReviewViewModel @Inject constructor(
         )
 
         val isRawManifestToggleVisible: Boolean
-            get() = previewType is PreviewType.Transaction
+            get() = previewType is PreviewType.Transfer
 
         val rawManifest: String = request.transactionManifestData.toTransactionManifest().getOrNull()?.toPrettyString().orEmpty()
 
@@ -388,16 +388,16 @@ class TransactionReviewViewModel @Inject constructor(
     }
 
     sealed interface Event : OneOffEvent {
-        object Dismiss : Event
+        data object Dismiss : Event
     }
 }
 
 sealed interface PreviewType {
-    object None : PreviewType
+    data object None : PreviewType
 
-    object NonConforming : PreviewType
+    data object NonConforming : PreviewType
 
-    data class Transaction(
+    data class Transfer(
         val from: List<AccountWithTransferableResources>,
         val to: List<AccountWithTransferableResources>,
         val badges: List<Badge> = emptyList(),

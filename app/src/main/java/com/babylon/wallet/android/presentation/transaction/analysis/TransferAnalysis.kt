@@ -48,7 +48,7 @@ suspend fun TransactionType.Transfer.resolve(
         )
     }
 
-    return PreviewType.Transaction(
+    return PreviewType.Transfer(
         from = listOf(from),
         to = to
     )
