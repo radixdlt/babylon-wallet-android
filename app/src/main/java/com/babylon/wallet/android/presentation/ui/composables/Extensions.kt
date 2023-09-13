@@ -15,6 +15,7 @@ import coil.compose.AsyncImagePainter
 import coil.decode.SvgDecoder
 import coil.request.ImageRequest
 import com.babylon.wallet.android.BuildConfig
+import com.babylon.wallet.android.R
 import com.babylon.wallet.android.domain.model.Resource
 import com.babylon.wallet.android.domain.model.behaviours.ResourceBehaviour
 import rdx.works.core.toEncodedString
@@ -25,20 +26,19 @@ fun Modifier.applyImageAspectRatio(
     painter: AsyncImagePainter
 ): Modifier {
     return then(
-        (painter.state as? AsyncImagePainter.State.Success)
-            ?.painter?.intrinsicSize?.let { intrinsicSize ->
-                // If the image is taller in aspect ratio than a square,
-                // crop the image to the largest possible centered square
-                if (intrinsicSize.height > intrinsicSize.width) {
-                    Modifier.aspectRatio(1f)
-                    // If the image is wider in aspect ratio than 16:9,
-                    // crop the image to the largest possible centered 16:9 recntangle
-                } else if (intrinsicSize.width / intrinsicSize.height > IMAGE_RATIO) {
-                    Modifier.aspectRatio(IMAGE_RATIO)
-                } else {
-                    Modifier
-                }
-            } ?: Modifier
+        (painter.state as? AsyncImagePainter.State.Success)?.painter?.intrinsicSize?.let { intrinsicSize ->
+            // If the image is taller in aspect ratio than a square,
+            // crop the image to the largest possible centered square
+            if (intrinsicSize.height > intrinsicSize.width) {
+                Modifier.aspectRatio(1f)
+                // If the image is wider in aspect ratio than 16:9,
+                // crop the image to the largest possible centered 16:9 recntangle
+            } else if (intrinsicSize.width / intrinsicSize.height > IMAGE_RATIO) {
+                Modifier.aspectRatio(IMAGE_RATIO)
+            } else {
+                Modifier
+            }
+        } ?: Modifier
     )
 }
 
@@ -48,21 +48,15 @@ private fun Context.buildImageRequest(
     @DrawableRes placeholder: Int?,
     @DrawableRes error: Int?
 ): ImageRequest {
-    return ImageRequest.Builder(this)
-        .data(imageUrl)
-        .apply {
-            placeholder?.let {
-                this.placeholder(it)
-            } ?: this
-        }
-        .apply {
-            error?.let {
-                this.error(it)
-            } ?: this
-        }
-        .decoderFactory(SvgDecoder.Factory())
-        .addHeader("accept", "text/html")
-        .build()
+    return ImageRequest.Builder(this).data(imageUrl).apply {
+        placeholder?.let {
+            this.placeholder(it)
+        } ?: this
+    }.apply {
+        error?.let {
+            this.error(it)
+        } ?: this
+    }.decoderFactory(SvgDecoder.Factory()).addHeader("accept", "text/html").build()
 }
 
 @Composable
@@ -86,9 +80,7 @@ fun rememberImageUrl(
 
 @Suppress("MagicNumber")
 enum class ImageSize(val size: Int) {
-    SMALL(112),
-    MEDIUM(256),
-    LARGE(512);
+    SMALL(112), MEDIUM(256), LARGE(512);
 
     fun toSizeString(): String {
         return "${size}x$size"
@@ -104,7 +96,15 @@ fun Resource.Tag.name(): String {
 }
 
 @Composable
-fun ResourceBehaviour.name(): String = stringResource(id = title)
+fun ResourceBehaviour.name(isXrd: Boolean = false): String {
+    return when (this) {
+        ResourceBehaviour.PERFORM_MINT_BURN -> stringResource(
+            id = if (isXrd) R.string.accountSettings_behaviors_supplyFlexibleXrd else title
+        )
+
+        else -> stringResource(id = title)
+    }
+}
 
 @Composable
 fun ResourceBehaviour.icon(): Painter = painterResource(id = icon)

@@ -148,7 +148,7 @@ fun FungibleTokenBottomSheetDetails(
                     fungible.resourceBehaviours.forEach { resourceBehaviour ->
                         Behaviour(
                             icon = resourceBehaviour.icon(),
-                            name = resourceBehaviour.name()
+                            name = resourceBehaviour.name(fungible.isXrd)
                         )
                     }
                 }
