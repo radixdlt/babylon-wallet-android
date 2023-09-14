@@ -1,13 +1,17 @@
 package com.babylon.wallet.android.presentation.onboarding.eula
 
+import android.text.Html
 import android.view.ViewGroup
 import android.webkit.WebView
+import android.widget.TextView
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBars
@@ -27,6 +31,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.core.text.HtmlCompat
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
@@ -46,10 +51,18 @@ fun EulaScreen(
         topBar = {
             Column {
                 RadixCenteredTopAppBar(
-                    title = stringResource(id = R.string.onboarding_eula_headerTitle),
+                    title = stringResource(id = R.string.empty),
                     onBackClick = onBack,
                     backIconType = BackIconType.Close,
                     windowInsets = WindowInsets.statusBars
+                )
+
+                Text(
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = RadixTheme.dimensions.paddingDefault),
+                    text = stringResource(id = R.string.onboarding_eula_headerTitle),
+                    style = RadixTheme.typography.title,
+                    color = RadixTheme.colors.gray1,
+                    textAlign = TextAlign.Center
                 )
 
                 Text(
@@ -57,8 +70,8 @@ fun EulaScreen(
                         .fillMaxWidth()
                         .padding(RadixTheme.dimensions.paddingDefault),
                     text = stringResource(id = R.string.onboarding_eula_headerSubtitle),
-                    style = RadixTheme.typography.body1HighImportance,
-                    color = RadixTheme.colors.gray2,
+                    style = RadixTheme.typography.body1Regular,
+                    color = RadixTheme.colors.gray1,
                     textAlign = TextAlign.Center
                 )
 
@@ -86,7 +99,7 @@ fun EulaScreen(
         val context = LocalContext.current
         LaunchedEffect(Unit) {
             scope.launch {
-                eulaText = context.assets.open("eula.html").bufferedReader().use { it.readText() }
+                eulaText = context.assets.open("eula/eula.html").bufferedReader().use { it.readText() }
             }
         }
 
@@ -109,9 +122,6 @@ fun EulaScreen(
 
 @Composable
 private fun EulaContent(modifier: Modifier = Modifier, eula: String) {
-    Column {
-
-    }
     AndroidView(
         modifier = modifier,
         factory = {
