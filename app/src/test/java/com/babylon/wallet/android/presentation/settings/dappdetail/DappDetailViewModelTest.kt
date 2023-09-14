@@ -4,7 +4,6 @@ import androidx.lifecycle.SavedStateHandle
 import app.cash.turbine.test
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepositoryImpl
 import com.babylon.wallet.android.domain.SampleDataProvider
-import com.babylon.wallet.android.domain.common.Result
 import com.babylon.wallet.android.domain.usecases.GetDAppWithMetadataAndAssociatedResourcesUseCase
 import com.babylon.wallet.android.fakes.DAppConnectionRepositoryFake
 import com.babylon.wallet.android.mockdata.profile
@@ -80,7 +79,7 @@ internal class DappDetailViewModelTest : StateViewModelTest<DappDetailViewModel>
             )
         )
         coEvery { getDAppWithAssociatedResourcesUseCase("address1", false) } returns
-                Result.Success(
+                Result.success(
                     SampleDataProvider().sampleDAppWithResources()
                 )
     }

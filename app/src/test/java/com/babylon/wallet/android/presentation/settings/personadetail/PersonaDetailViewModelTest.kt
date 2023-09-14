@@ -5,15 +5,14 @@ import app.cash.turbine.test
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.data.transaction.ROLAClient
 import com.babylon.wallet.android.domain.SampleDataProvider
-import com.babylon.wallet.android.domain.common.Result
 import com.babylon.wallet.android.domain.usecases.GetDAppWithMetadataAndAssociatedResourcesUseCase
 import com.babylon.wallet.android.fakes.DAppConnectionRepositoryFake
 import com.babylon.wallet.android.mockdata.profile
 import com.babylon.wallet.android.presentation.StateViewModelTest
 import com.babylon.wallet.android.presentation.settings.personas.personadetail.ARG_PERSONA_ADDRESS
 import com.babylon.wallet.android.presentation.settings.personas.personadetail.PersonaDetailViewModel
-import io.mockk.coEvery
 import com.babylon.wallet.android.utils.AppEventBus
+import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -65,10 +64,10 @@ internal class PersonaDetailViewModelTest : StateViewModelTest<PersonaDetailView
             )
         )
         coEvery { getDAppWithAssociatedResourcesUseCase("address1", false) } returns
-            Result.Success(SampleDataProvider().sampleDAppWithResources()
+            Result.success(SampleDataProvider().sampleDAppWithResources()
         )
         coEvery { getDAppWithAssociatedResourcesUseCase("address2", false) } returns
-            Result.Success(SampleDataProvider().sampleDAppWithResources()
+            Result.success(SampleDataProvider().sampleDAppWithResources()
         )
     }
 

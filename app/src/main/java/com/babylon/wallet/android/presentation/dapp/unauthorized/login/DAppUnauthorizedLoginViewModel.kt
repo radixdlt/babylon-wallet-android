@@ -9,8 +9,6 @@ import com.babylon.wallet.android.data.repository.dappmetadata.DAppRepository
 import com.babylon.wallet.android.data.transaction.DappRequestException
 import com.babylon.wallet.android.data.transaction.DappRequestFailure
 import com.babylon.wallet.android.data.transaction.InteractionState
-import com.babylon.wallet.android.domain.common.onError
-import com.babylon.wallet.android.domain.common.onValue
 import com.babylon.wallet.android.domain.model.DAppWithMetadata
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.babylon.wallet.android.domain.model.RequiredPersonaFields
@@ -84,16 +82,14 @@ class DAppUnauthorizedLoginViewModel @Inject constructor(
                 handleRequestError(DappRequestException(DappRequestFailure.InvalidRequest))
                 return@launch
             }
-            val result = dAppRepository.getDAppMetadata(
+            dAppRepository.getDAppMetadata(
                 definitionAddress = request.metadata.dAppDefinitionAddress,
                 needMostRecentData = false
-            )
-            result.onValue { dappWithMetadata ->
+            ).onSuccess { dappWithMetadata ->
                 _state.update {
                     it.copy(dappWithMetadata = dappWithMetadata)
                 }
-            }
-            result.onError { error ->
+            }.onFailure { error ->
                 _state.update { it.copy(uiMessage = UiMessage.ErrorMessage.from(error)) }
             }
             setInitialDappLoginRoute()

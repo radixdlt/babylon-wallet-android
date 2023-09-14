@@ -158,6 +158,7 @@ enum class ExplicitMetadataKey(val key: String) {
                 DAPP_DEFINITION,
                 DAPP_DEFINITIONS,
                 CLAIMED_WEBSITES,
+                CLAIMED_ENTITIES,
                 ICON_URL
             )
 

@@ -65,7 +65,6 @@ data class DAppWithMetadata(
     companion object {
         fun from(address: String, metadataItems: List<MetadataItem> = listOf()): DAppWithMetadata {
             val remainingItems = metadataItems.toMutableList()
-
             return DAppWithMetadata(
                 dAppAddress = address,
                 nameItem = remainingItems.consume(),
