@@ -54,6 +54,9 @@
 
 -keep class org.bouncycastle.**  { *; }
 
+# Need to keep font names since app/src/main/assets/eula/eula.html references a font
+-keep class com.babylon.wallet.android.R$font { *; }
+
 -dontwarn java.awt.Component
 -dontwarn java.awt.GraphicsEnvironment
 -dontwarn java.awt.HeadlessException
