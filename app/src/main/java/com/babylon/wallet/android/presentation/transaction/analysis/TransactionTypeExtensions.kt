@@ -1,3 +1,5 @@
+@file:Suppress("TooManyFunctions")
+
 package com.babylon.wallet.android.presentation.transaction.analysis
 
 import android.net.Uri
@@ -13,6 +15,7 @@ import com.babylon.wallet.android.domain.model.metadata.MetadataItem
 import com.babylon.wallet.android.domain.model.metadata.MetadataItem.Companion.consume
 import com.babylon.wallet.android.domain.model.metadata.NameMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.SymbolMetadataItem
+import com.babylon.wallet.android.domain.model.metadata.TagsMetadataItem
 import com.radixdlt.ret.Address
 import com.radixdlt.ret.DecimalSource
 import com.radixdlt.ret.MetadataValue
@@ -98,7 +101,12 @@ fun ResourceTracker.toDepositingTransferableResource(
 
         is ResourceTracker.NonFungible -> {
             Transferable.Depositing(
-                transferable = toTransferableResource(allNFTCollections, newlyCreatedMetadata, newlyCreatedEntities),
+                transferable = toTransferableResource(
+                    allNFTCollections = allNFTCollections,
+                    newlyCreated = newlyCreatedMetadata,
+                    newlyCreatedEntities = newlyCreatedEntities,
+                    thirdPartyMetadata = thirdPartyMetadata
+                ),
                 guaranteeType = ids.toGuaranteeType()
             )
         }
@@ -180,12 +188,14 @@ fun ResourceSpecifier.toTransferableResource(
                 ) ?: Resource.NonFungibleResource(
                     resourceAddress = resourceAddress.addressString(),
                     amount = ids.size.toLong(),
-                    nameMetadataItem = metadata?.get(ExplicitMetadataKey.NAME.key)?.let { it as? MetadataValue.StringValue }?.let {
-                        NameMetadataItem(name = it.value)
-                    },
-                    iconMetadataItem = metadata?.get(ExplicitMetadataKey.ICON_URL.key)?.let { it as? MetadataValue.StringValue }?.let {
-                        IconUrlMetadataItem(url = Uri.parse(it.value))
-                    },
+                    nameMetadataItem = metadata?.get(ExplicitMetadataKey.NAME.key)
+                        ?.let { it as? MetadataValue.StringValue }?.let {
+                            NameMetadataItem(name = it.value)
+                        },
+                    iconMetadataItem = metadata?.get(ExplicitMetadataKey.ICON_URL.key)
+                        ?.let { it as? MetadataValue.UrlValue }?.let {
+                            IconUrlMetadataItem(url = Uri.parse(it.value))
+                        },
                     items = items
                 ),
                 isNewlyCreated = newlyCreated[resourceAddress.addressString()] != null
@@ -193,38 +203,6 @@ fun ResourceSpecifier.toTransferableResource(
         }
     }
 }
-
-private fun Resource.FungibleResource.Companion.from(
-    resourceAddress: Address,
-    metadata: Map<String, MetadataValue?>
-): Resource.FungibleResource = Resource.FungibleResource(
-    resourceAddress = resourceAddress.addressString(),
-    amount = BigDecimal.ZERO,
-    nameMetadataItem = metadata[ExplicitMetadataKey.NAME.key]?.let { it as? MetadataValue.StringValue }?.let {
-        NameMetadataItem(name = it.value)
-    },
-    symbolMetadataItem = metadata[ExplicitMetadataKey.SYMBOL.key]?.let { it as? MetadataValue.StringValue }?.let {
-        SymbolMetadataItem(symbol = it.value)
-    },
-    descriptionMetadataItem = metadata[ExplicitMetadataKey.DESCRIPTION.key]?.let { it as? MetadataValue.StringValue }?.let {
-        DescriptionMetadataItem(description = it.value)
-    },
-    iconUrlMetadataItem = metadata[ExplicitMetadataKey.ICON_URL.key]?.let { it as? MetadataValue.UrlValue }?.let {
-        IconUrlMetadataItem(url = Uri.parse(it.value))
-    }
-)
-
-private fun Resource.FungibleResource.Companion.from(
-    resourceAddress: Address,
-    metadataItems: List<MetadataItem>,
-): Resource.FungibleResource = Resource.FungibleResource(
-    resourceAddress = resourceAddress.addressString(),
-    amount = BigDecimal.ZERO,
-    nameMetadataItem = metadataItems.toMutableList().consume(),
-    symbolMetadataItem = metadataItems.toMutableList().consume(),
-    descriptionMetadataItem = metadataItems.toMutableList().consume(),
-    iconUrlMetadataItem = metadataItems.toMutableList().consume()
-)
 
 private fun ResourceTracker.Fungible.toTransferableResource(
     allFungibles: List<Resource.FungibleResource>,
@@ -254,13 +232,50 @@ private fun ResourceTracker.Fungible.toTransferableResource(
     )
 }
 
+private fun Resource.FungibleResource.Companion.from(
+    resourceAddress: Address,
+    metadataItems: List<MetadataItem>,
+): Resource.FungibleResource = Resource.FungibleResource(
+    resourceAddress = resourceAddress.addressString(),
+    ownedAmount = BigDecimal.ZERO,
+    nameMetadataItem = metadataItems.toMutableList().consume(),
+    symbolMetadataItem = metadataItems.toMutableList().consume(),
+    descriptionMetadataItem = metadataItems.toMutableList().consume(),
+    iconUrlMetadataItem = metadataItems.toMutableList().consume(),
+    tagsMetadataItem = metadataItems.toMutableList().consume()
+)
+
+private fun Resource.FungibleResource.Companion.from(
+    resourceAddress: Address,
+    metadata: Map<String, MetadataValue?>
+): Resource.FungibleResource = Resource.FungibleResource(
+    resourceAddress = resourceAddress.addressString(),
+    ownedAmount = BigDecimal.ZERO,
+    nameMetadataItem = metadata[ExplicitMetadataKey.NAME.key]?.let { it as? MetadataValue.StringValue }?.let {
+        NameMetadataItem(name = it.value)
+    },
+    symbolMetadataItem = metadata[ExplicitMetadataKey.SYMBOL.key]?.let { it as? MetadataValue.StringValue }?.let {
+        SymbolMetadataItem(symbol = it.value)
+    },
+    descriptionMetadataItem = metadata[ExplicitMetadataKey.DESCRIPTION.key]?.let { it as? MetadataValue.StringValue }
+        ?.let {
+            DescriptionMetadataItem(description = it.value)
+        },
+    iconUrlMetadataItem = metadata[ExplicitMetadataKey.ICON_URL.key]?.let { it as? MetadataValue.UrlValue }?.let {
+        IconUrlMetadataItem(url = Uri.parse(it.value))
+    },
+    tagsMetadataItem = metadata[ExplicitMetadataKey.TAGS.key]?.let { it as MetadataValue.StringArrayValue }?.let {
+        TagsMetadataItem(tags = it.value)
+    }
+)
+
 private fun ResourceTracker.NonFungible.toTransferableResource(
     allNFTCollections: List<Resource.NonFungibleResource>,
     newlyCreated: Map<String, Map<String, MetadataValue?>>,
     newlyCreatedEntities: List<Address>,
+    thirdPartyMetadata: Map<String, List<MetadataItem>> = emptyMap()
 ): TransferableResource.NFTs {
     val collection = allNFTCollections.find { it.resourceAddress == resourceAddress.addressString() }
-    val metadata = newlyCreated[resourceAddress.addressString()]
     val items = ids.valueList.map { id ->
         collection?.items?.find {
             it.localId.toRetId() == id
@@ -270,24 +285,69 @@ private fun ResourceTracker.NonFungible.toTransferableResource(
         )
     }
 
+    val newlyCreatedResource = if (thirdPartyMetadata[resourceAddress.addressString()] != null) {
+        Resource.NonFungibleResource.from(
+            resourceAddress = resourceAddress,
+            amount = items.size.toLong(),
+            items = items,
+            metadataItems = thirdPartyMetadata[resourceAddress.addressString()].orEmpty()
+        )
+    } else {
+        Resource.NonFungibleResource.from(
+            resourceAddress = resourceAddress,
+            amount = items.size.toLong(),
+            items = items,
+            metadata = newlyCreated[resourceAddress.addressString()].orEmpty()
+        )
+    }
+
     return TransferableResource.NFTs(
         resource = collection?.copy(
             amount = items.size.toLong(),
             items = items
-        ) ?: Resource.NonFungibleResource(
-            resourceAddress = resourceAddress.addressString(),
-            amount = items.size.toLong(),
-            nameMetadataItem = metadata?.get(ExplicitMetadataKey.NAME.key)?.let { it as? MetadataValue.StringValue }?.let {
-                NameMetadataItem(name = it.value)
-            },
-            iconMetadataItem = metadata?.get(ExplicitMetadataKey.ICON_URL.key)?.let { it as? MetadataValue.UrlValue }?.let {
-                IconUrlMetadataItem(url = Uri.parse(it.value))
-            },
-            items = items
-        ),
+        ) ?: newlyCreatedResource,
         isNewlyCreated = newlyCreatedEntities.map { it.addressString() }.contains(resourceAddress.addressString())
     )
 }
+
+private fun Resource.NonFungibleResource.Companion.from(
+    resourceAddress: Address,
+    amount: Long,
+    items: List<Resource.NonFungibleResource.Item>,
+    metadataItems: List<MetadataItem>
+): Resource.NonFungibleResource = Resource.NonFungibleResource(
+    amount = amount,
+    resourceAddress = resourceAddress.addressString(),
+    nameMetadataItem = metadataItems.toMutableList().consume(),
+    iconMetadataItem = metadataItems.toMutableList().consume(),
+    descriptionMetadataItem = metadataItems.toMutableList().consume(),
+    tagsMetadataItem = metadataItems.toMutableList().consume(),
+    items = items
+)
+
+private fun Resource.NonFungibleResource.Companion.from(
+    resourceAddress: Address,
+    amount: Long,
+    items: List<Resource.NonFungibleResource.Item>,
+    metadata: Map<String, MetadataValue?>
+): Resource.NonFungibleResource = Resource.NonFungibleResource(
+    resourceAddress = resourceAddress.addressString(),
+    amount = amount,
+    nameMetadataItem = metadata[ExplicitMetadataKey.NAME.key]?.let { it as? MetadataValue.StringValue }?.let {
+        NameMetadataItem(name = it.value)
+    },
+    iconMetadataItem = metadata[ExplicitMetadataKey.ICON_URL.key]?.let { it as? MetadataValue.UrlValue }?.let {
+        IconUrlMetadataItem(url = Uri.parse(it.value))
+    },
+    descriptionMetadataItem = metadata[ExplicitMetadataKey.DESCRIPTION.key]?.let { it as? MetadataValue.StringValue }
+        ?.let {
+            DescriptionMetadataItem(description = it.value)
+        },
+    tagsMetadataItem = metadata[ExplicitMetadataKey.TAGS.key]?.let { it as MetadataValue.StringArrayValue }?.let {
+        TagsMetadataItem(tags = it.value)
+    },
+    items = items,
+)
 
 private val DecimalSource.valueDecimal: BigDecimal
     get() = when (this) {
