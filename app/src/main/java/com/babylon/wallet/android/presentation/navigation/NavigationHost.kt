@@ -27,6 +27,8 @@ import com.babylon.wallet.android.presentation.main.MainUiState
 import com.babylon.wallet.android.presentation.main.main
 import com.babylon.wallet.android.presentation.navigation.Screen.Companion.ARG_ACCOUNT_ID
 import com.babylon.wallet.android.presentation.onboarding.OnboardingScreen
+import com.babylon.wallet.android.presentation.onboarding.eula.eulaScreen
+import com.babylon.wallet.android.presentation.onboarding.eula.navigateToEulaScreen
 import com.babylon.wallet.android.presentation.onboarding.restore.backup.restoreFromBackupScreen
 import com.babylon.wallet.android.presentation.onboarding.restore.mnemonics.RestoreMnemonicsArgs
 import com.babylon.wallet.android.presentation.onboarding.restore.mnemonics.restoreMnemonics
@@ -72,7 +74,7 @@ fun NavigationHost(
             OnboardingScreen(
                 viewModel = hiltViewModel(),
                 onCreateNewWalletClick = {
-                    navController.createAccountScreen(CreateAccountRequestSource.FirstTime)
+                    navController.navigateToEulaScreen()
                 },
                 onBack = onCloseApp,
                 onRestoreFromBackupClick = {
@@ -80,6 +82,14 @@ fun NavigationHost(
                 }
             )
         }
+        eulaScreen(
+            onBack = {
+                navController.popBackStack()
+            },
+            onAccepted = {
+                navController.createAccountScreen(CreateAccountRequestSource.FirstTime)
+            }
+        )
         restoreFromBackupScreen(
             onBack = {
                 navController.popBackStack()
