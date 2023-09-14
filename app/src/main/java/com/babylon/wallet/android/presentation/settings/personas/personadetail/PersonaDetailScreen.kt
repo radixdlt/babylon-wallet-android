@@ -30,6 +30,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -53,6 +54,7 @@ import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAp
 import com.babylon.wallet.android.presentation.ui.composables.StandardOneLineCard
 import com.babylon.wallet.android.presentation.ui.composables.displayName
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
+import com.babylon.wallet.android.utils.biometricAuthenticate
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.launch
@@ -65,6 +67,7 @@ fun PersonaDetailScreen(
     modifier: Modifier = Modifier,
     onEditPersona: (String) -> Unit
 ) {
+    val context = LocalContext.current
     val state by viewModel.state.collectAsStateWithLifecycle()
     PersonaDetailContent(
         onBackClick = onBackClick,
@@ -76,7 +79,13 @@ fun PersonaDetailScreen(
         onDAppClick = viewModel::onDAppClick,
         hasAuthKey = state.hasAuthKey,
         loading = state.loading,
-        onCreateAndUploadAuthKey = viewModel::onCreateAndUploadAuthKey
+        onCreateAndUploadAuthKey = {
+            context.biometricAuthenticate {
+                if (it) {
+                    viewModel.onCreateAndUploadAuthKey()
+                }
+            }
+        }
     )
 }
 
