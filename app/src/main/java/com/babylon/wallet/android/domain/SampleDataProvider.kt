@@ -9,6 +9,7 @@ import com.babylon.wallet.android.domain.model.DAppWithMetadataAndAssociatedReso
 import com.babylon.wallet.android.domain.model.Resource
 import com.babylon.wallet.android.domain.model.Resources
 import com.babylon.wallet.android.domain.model.ValidatorsWithStakeResources
+import com.babylon.wallet.android.domain.model.metadata.DescriptionMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.NameMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.SymbolMetadataItem
 import rdx.works.core.InstantGenerator
@@ -232,9 +233,12 @@ class SampleDataProvider {
                 add(
                     Resource.FungibleResource(
                         resourceAddress = randomAddress(),
-                        amount = amount.first,
-                        nameMetadataItem = NameMetadataItem("cool XRD"),
-                        symbolMetadataItem = SymbolMetadataItem("XRD")
+                        ownedAmount = amount.first,
+                        nameMetadataItem = NameMetadataItem(name = "XXX"),
+                        symbolMetadataItem = SymbolMetadataItem(symbol = "XXX"),
+                        descriptionMetadataItem = DescriptionMetadataItem(description = "a very xxx token"),
+                        tagsMetadataItem = null,
+                        currentSupply = BigDecimal("69696969696969.666999666999666999")
                     )
                 )
             }

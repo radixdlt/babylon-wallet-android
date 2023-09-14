@@ -38,10 +38,11 @@ fun RETResources.toTransferableResource(resourceAddress: String, allResources: L
     return when (this) {
         is RETResourcesAmount -> TransferableResource.Amount(
             amount = amount.asStr().toBigDecimal(),
-            resource = (allFungibles + allPoolUnits).find { it.resourceAddress == resourceAddress } ?: Resource.FungibleResource(
-                resourceAddress = resourceAddress,
-                amount = BigDecimal.ZERO
-            ),
+            resource = (allFungibles + allPoolUnits).find { it.resourceAddress == resourceAddress }
+                ?: Resource.FungibleResource(
+                    resourceAddress = resourceAddress,
+                    ownedAmount = BigDecimal.ZERO
+                ),
             isNewlyCreated = false
         )
 
@@ -128,7 +129,11 @@ fun ResourceTracker.toWithdrawingTransferableResource(
         )
 
         is ResourceTracker.NonFungible -> Transferable.Withdrawing(
-            transferable = toTransferableResource(allNFTCollections, newlyCreatedMetadata, newlyCreatedEntities)
+            transferable = toTransferableResource(
+                allNFTCollections = allNFTCollections,
+                newlyCreated = newlyCreatedMetadata,
+                newlyCreatedEntities = newlyCreatedEntities,
+            )
         )
     }
 }

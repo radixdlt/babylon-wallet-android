@@ -107,7 +107,7 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
     )
     private val sampleXrdResource = Resource.FungibleResource(
         resourceAddress = "addr_xrd",
-        amount = BigDecimal.TEN,
+        ownedAmount = BigDecimal.TEN,
         symbolMetadataItem = SymbolMetadataItem("XRD")
     )
 

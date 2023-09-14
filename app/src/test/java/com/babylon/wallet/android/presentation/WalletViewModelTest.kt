@@ -42,7 +42,7 @@ class WalletViewModelTest : StateViewModelTest<WalletViewModel>() {
     private val sampleProfile = profile(accounts = listOf(account(address = "adr_1", name = "primary")))
     private val sampleXrdResource = Resource.FungibleResource(
         resourceAddress = "addr_xrd",
-        amount = BigDecimal.TEN,
+        ownedAmount = BigDecimal.TEN,
         symbolMetadataItem = SymbolMetadataItem("XRD")
     )
 

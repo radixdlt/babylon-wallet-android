@@ -124,7 +124,7 @@ internal class TransactionClientTest {
                 fungibleResources = listOf(
                     Resource.FungibleResource(
                         resourceAddress = Resource.FungibleResource.officialXrdResourceAddresses().first(),
-                        amount = 30.toBigDecimal(),
+                        ownedAmount = 30.toBigDecimal(),
                         symbolMetadataItem = SymbolMetadataItem("XRD")
                     )
                 ),
@@ -152,7 +152,10 @@ internal class TransactionClientTest {
             }
         })
 
-        override suspend fun getEntityOwnerKeyHashes(entityAddress: String, isRefreshing: Boolean, stateVersion: Long?): Result<OwnerKeyHashesMetadataItem?> {
+        override suspend fun getEntityOwnerKeyHashes(
+            entityAddress: String,
+            isRefreshing: Boolean
+        ): Result<OwnerKeyHashesMetadataItem?> {
             error("Not needed")
         }
     }

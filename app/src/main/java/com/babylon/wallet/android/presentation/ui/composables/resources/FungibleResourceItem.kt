@@ -77,7 +77,7 @@ fun FungibleResourceItem(
             )
             Spacer(modifier = Modifier.width(RadixTheme.dimensions.paddingMedium))
 
-            resource.amount?.let { amount ->
+            resource.ownedAmount?.let { amount ->
                 Text(
                     text = amount.displayableQuantity(),
                     style = RadixTheme.typography.secondaryHeader,

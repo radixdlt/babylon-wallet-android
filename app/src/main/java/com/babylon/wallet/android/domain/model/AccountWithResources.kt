@@ -29,7 +29,7 @@ data class Resources(
         get() = fungibleResources.isNotEmpty() || nonFungibleResources.isNotEmpty()
 
     fun hasXrd(minimumBalance: BigDecimal = BigDecimal(1)): Boolean = xrd?.let {
-        it.amount?.let { amount ->
+        it.ownedAmount?.let { amount ->
             amount >= minimumBalance
         }
     } == true
