@@ -46,6 +46,7 @@ import com.babylon.wallet.android.presentation.ui.composables.rememberImageUrl
 import com.babylon.wallet.android.presentation.ui.composables.resources.AddressRow
 import com.babylon.wallet.android.presentation.ui.composables.resources.TokenBalance
 import com.google.accompanist.drawablepainter.rememberDrawablePainter
+import java.math.BigDecimal
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
@@ -90,7 +91,9 @@ fun FungibleTokenBottomSheetDetails(
                     .clip(RadixTheme.shapes.circle)
             )
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
-            TokenBalance(fungible)
+            if (fungible.ownedAmount != BigDecimal.ZERO) {
+                TokenBalance(fungibleResource = fungible)
+            }
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
 
             if (fungible.description.isNotBlank()) {
