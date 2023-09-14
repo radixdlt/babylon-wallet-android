@@ -5,6 +5,7 @@ import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.data.manifest.addGuaranteeInstructionToManifest
 import com.babylon.wallet.android.data.transaction.DappRequestException
 import com.babylon.wallet.android.data.transaction.DappRequestFailure
+import com.babylon.wallet.android.data.transaction.RadixWalletException
 import com.babylon.wallet.android.data.transaction.TransactionClient
 import com.babylon.wallet.android.data.transaction.model.TransactionApprovalRequest
 import com.babylon.wallet.android.domain.model.GuaranteeAssertion
@@ -168,7 +169,9 @@ class TransactionSubmitDelegate(
             )
         }.onFailure { error ->
             val exception = error as? DappRequestException
-            if (exception?.e is SignatureCancelledException) {
+            val cancelled = exception?.e is SignatureCancelledException
+            val failedToCollectLedgerSignature = exception?.e is RadixWalletException.FailedToCollectLedgerSignature
+            if (cancelled || failedToCollectLedgerSignature) {
                 state.update { it.copy(isSubmitting = false) }
                 approvalJob = null
                 return
