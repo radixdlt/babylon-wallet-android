@@ -19,13 +19,13 @@ class GetDAppWithMetadataAndAssociatedResourcesUseCase @Inject constructor(
     ).mapCatching { dAppMetadata ->
         // If well known file verification fails, we dont want claimed websites
         val websites = dAppMetadata.claimedWebsites.map {
-            val isWebsiteAuthentic = dAppRepository.verifyDapp(
+            val validDapp = dAppRepository.verifyDapp(
                 origin = it,
                 dAppDefinitionAddress = dAppMetadata.dAppAddress,
                 wellKnownFileCheck = false
             ).getOrThrow()
 
-            it to isWebsiteAuthentic
+            it to validDapp
         }.filterNot { !it.second }
 
         val updatedDAppMetadata = dAppMetadata.copy(

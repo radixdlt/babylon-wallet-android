@@ -19,6 +19,7 @@ import com.babylon.wallet.android.data.repository.entity.EntityRepositoryImpl
 import com.babylon.wallet.android.data.repository.execute
 import com.babylon.wallet.android.data.transaction.DappRequestException
 import com.babylon.wallet.android.data.transaction.DappRequestFailure
+import com.babylon.wallet.android.data.transaction.RadixWalletException
 import com.babylon.wallet.android.di.JsonConverterFactory
 import com.babylon.wallet.android.di.SimpleHttpClient
 import com.babylon.wallet.android.di.buildApi
@@ -125,8 +126,12 @@ class DAppRepositoryImpl @Inject constructor(
         definitionAddresses = listOf(definitionAddress),
         explicitMetadata = explicitMetadata,
         needMostRecentData = needMostRecentData
-    ).map { dAppWithMetadataItems ->
-        dAppWithMetadataItems.first()
+    ).mapCatching { dAppWithMetadataItems ->
+        if (dAppWithMetadataItems.isEmpty()) {
+            throw RadixWalletException.DappMetadataEmpty
+        } else {
+            dAppWithMetadataItems.first()
+        }
     }
 
     override suspend fun getDAppsMetadata(
