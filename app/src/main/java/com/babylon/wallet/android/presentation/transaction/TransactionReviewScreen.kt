@@ -1,5 +1,3 @@
-@file:OptIn(ExperimentalMaterialApi::class, ExperimentalMaterialApi::class, ExperimentalMaterialApi::class)
-
 package com.babylon.wallet.android.presentation.transaction
 
 import androidx.activity.compose.BackHandler
@@ -39,7 +37,10 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.model.DAppWithMetadataAndAssociatedResources
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
+import com.babylon.wallet.android.domain.model.Resource
 import com.babylon.wallet.android.domain.model.TransactionManifestData
+import com.babylon.wallet.android.presentation.account.composable.FungibleTokenBottomSheetDetails
+import com.babylon.wallet.android.presentation.account.composable.NonFungibleTokenBottomSheetDetails
 import com.babylon.wallet.android.presentation.common.FullscreenCircularProgressContent
 import com.babylon.wallet.android.presentation.settings.authorizeddapps.dappdetail.DAppDetailsSheetContent
 import com.babylon.wallet.android.presentation.status.signing.SigningStatusBottomDialog
@@ -88,6 +89,8 @@ fun TransactionReviewScreen(
         onGuaranteeValueIncreased = viewModel::onGuaranteeValueIncreased,
         onGuaranteeValueDecreased = viewModel::onGuaranteeValueDecreased,
         onDAppClick = viewModel::onDAppClick,
+        onFungibleResourceClick = viewModel::onFungibleResourceClick,
+        onNonFungibleResourceClick = viewModel::onNonFungibleResourceClick,
         onChangeFeePayerClick = viewModel::onChangeFeePayerClick,
         onSelectFeePayerClick = viewModel::onSelectFeePayerClick,
         onPayerSelected = viewModel::onPayerSelected,
@@ -118,9 +121,8 @@ fun TransactionReviewScreen(
     }
 }
 
-@Suppress("CyclomaticComplexMethod")
-@Composable
 @OptIn(ExperimentalMaterialApi::class, ExperimentalMaterial3Api::class)
+@Composable
 private fun TransactionPreviewContent(
     modifier: Modifier = Modifier,
     onBackClick: () -> Unit,
@@ -136,6 +138,8 @@ private fun TransactionPreviewContent(
     onGuaranteeValueIncreased: (AccountWithPredictedGuarantee) -> Unit,
     onGuaranteeValueDecreased: (AccountWithPredictedGuarantee) -> Unit,
     onDAppClick: (DAppWithMetadataAndAssociatedResources) -> Unit,
+    onFungibleResourceClick: (Resource.FungibleResource) -> Unit,
+    onNonFungibleResourceClick: (Resource.NonFungibleResource, Resource.NonFungibleResource.Item) -> Unit,
     onChangeFeePayerClick: () -> Unit,
     onSelectFeePayerClick: () -> Unit,
     onPayerSelected: (Network.Account) -> Unit,
@@ -272,7 +276,9 @@ private fun TransactionPreviewContent(
                                         state = state,
                                         preview = state.previewType,
                                         onPromptForGuarantees = promptForGuarantees,
-                                        onDappClick = onDAppClick
+                                        onDappClick = onDAppClick,
+                                        onFungibleResourceClick = onFungibleResourceClick,
+                                        onNonFungibleResourceClick = onNonFungibleResourceClick
                                     )
                                     ReceiptEdge(modifier = Modifier.fillMaxWidth(), color = RadixTheme.colors.gray4)
                                 }
@@ -321,6 +327,27 @@ private fun BottomSheetContent(
     onViewAdvancedModeClick: () -> Unit
 ) {
     when (sheetState) {
+        is State.Sheet.ResourceDetails -> {
+            when (val resource = sheetState.resource) {
+                is Resource.FungibleResource -> {
+                    FungibleTokenBottomSheetDetails(
+                        modifier = modifier.fillMaxWidth(),
+                        fungible = resource,
+                        onCloseClick = onCloseDAppSheet
+                    )
+                }
+                is Resource.NonFungibleResource -> {
+                    NonFungibleTokenBottomSheetDetails(
+                        modifier = modifier.fillMaxWidth(),
+                        item = sheetState.item,
+                        nonFungibleResource = resource,
+                        onCloseClick = onCloseDAppSheet
+                    )
+                }
+                else -> {}
+            }
+        }
+
         is State.Sheet.CustomizeGuarantees -> {
             GuaranteesSheet(
                 modifier = modifier,
@@ -362,6 +389,7 @@ private fun BottomSheetContent(
     }
 }
 
+@OptIn(ExperimentalMaterialApi::class)
 @Composable
 private fun SyncSheetState(
     bottomSheetState: ModalBottomSheetState,
@@ -414,6 +442,8 @@ fun TransactionPreviewContentPreview() {
             promptForGuarantees = {},
             onCustomizeClick = {},
             onDAppClick = {},
+            onFungibleResourceClick = {},
+            onNonFungibleResourceClick = { _, _ -> },
             onGuaranteeValueChanged = { _, _ -> },
             onGuaranteeValueIncreased = {},
             onGuaranteeValueDecreased = {},

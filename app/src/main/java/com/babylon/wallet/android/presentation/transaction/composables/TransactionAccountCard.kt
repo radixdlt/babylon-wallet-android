@@ -2,6 +2,7 @@ package com.babylon.wallet.android.presentation.transaction.composables
 
 import android.net.Uri
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
@@ -28,6 +29,7 @@ import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
@@ -39,6 +41,7 @@ import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.designsystem.theme.getAccountGradientColorsFor
 import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.domain.model.GuaranteeAssertion
+import com.babylon.wallet.android.domain.model.Resource
 import com.babylon.wallet.android.domain.model.Transferable
 import com.babylon.wallet.android.domain.model.TransferableResource
 import com.babylon.wallet.android.presentation.transaction.AccountWithTransferableResources
@@ -52,7 +55,9 @@ import rdx.works.core.displayableQuantity
 @Composable
 fun TransactionAccountCard(
     modifier: Modifier = Modifier,
-    account: AccountWithTransferableResources
+    account: AccountWithTransferableResources,
+    onFungibleResourceClick: (fungibleResource: Resource.FungibleResource) -> Unit,
+    onNonFungibleResourceClick: (nonFungibleResource: Resource.NonFungibleResource, Resource.NonFungibleResource.Item) -> Unit
 ) {
     Column(
         modifier = modifier,
@@ -78,17 +83,18 @@ fun TransactionAccountCard(
             val transferableAmount = amountTransferable.transferable as TransferableResource.Amount
             val amountGuaranteeAssertion = amountTransferable.guaranteeAssertion as? GuaranteeAssertion.ForAmount
 
-            TokenItemContent(
+            ResourceItemContent(
                 isXrdToken = transferableAmount.resource.isXrd,
-                tokenUrl = transferableAmount.resource.iconUrl,
-                tokenSymbol = transferableAmount.resource.displayTitle.ifEmpty {
+                iconUrl = transferableAmount.resource.iconUrl,
+                symbol = transferableAmount.resource.displayTitle.ifEmpty {
                     stringResource(id = com.babylon.wallet.android.R.string.transactionReview_unknown)
                 },
-                tokenAmount = transferableAmount.amount.displayableQuantity(),
+                amount = transferableAmount.amount.displayableQuantity(),
                 isTokenAmountVisible = true,
                 guaranteedQuantity = amountGuaranteeAssertion?.amount?.displayableQuantity(),
                 shape = shape,
-                isNft = false
+                isNft = false,
+                onResourceClick = { onFungibleResourceClick(amountTransferable.transferable.resource as Resource.FungibleResource) }
             )
         }
 
@@ -98,13 +104,14 @@ fun TransactionAccountCard(
             // Show each nft item
             collection.resource.items.forEachIndexed { itemIndex, item ->
                 val lastItem = itemIndex == collection.resource.items.lastIndex && collectionIndex == nftTransferables.lastIndex
-                TokenItemContent(
+                ResourceItemContent(
                     isXrdToken = false,
-                    tokenUrl = collection.resource.iconUrl,
-                    tokenSymbol = item.localId.displayable,
+                    iconUrl = collection.resource.iconUrl,
+                    symbol = item.localId.displayable,
                     isTokenAmountVisible = false,
                     shape = if (lastItem) RadixTheme.shapes.roundedRectBottomMedium else RectangleShape,
-                    isNft = true
+                    isNft = true,
+                    onResourceClick = { onNonFungibleResourceClick(collection.resource, item) }
                 )
             }
         }
@@ -152,15 +159,16 @@ fun TransactionAccountCardHeader(
 }
 
 @Composable
-private fun TokenItemContent(
+private fun ResourceItemContent(
     isXrdToken: Boolean,
-    tokenUrl: Uri?,
-    tokenSymbol: String?,
-    tokenAmount: String? = null,
+    iconUrl: Uri?,
+    symbol: String?,
+    amount: String? = null,
     isTokenAmountVisible: Boolean,
     guaranteedQuantity: String? = null,
     shape: Shape,
-    isNft: Boolean
+    isNft: Boolean,
+    onResourceClick: () -> Unit
 ) {
     Row(
         verticalAlignment = CenterVertically,
@@ -192,8 +200,9 @@ private fun TokenItemContent(
             modifier = Modifier
                 .size(44.dp)
                 .background(RadixTheme.colors.gray4, shape = RadixTheme.shapes.circle)
-                .clip(RadixTheme.shapes.circle),
-            model = rememberImageUrl(fromUrl = tokenUrl, size = ImageSize.SMALL),
+                .clip(RadixTheme.shapes.circle)
+                .clickable(role = Role.Button) { onResourceClick() },
+            model = rememberImageUrl(fromUrl = iconUrl, size = ImageSize.SMALL),
             placeholder = placeholder,
             fallback = placeholder,
             error = placeholder,
@@ -206,7 +215,7 @@ private fun TokenItemContent(
         Text(
             modifier = Modifier
                 .weight(1f),
-            text = tokenSymbol ?: stringResource(id = com.babylon.wallet.android.R.string.transactionReview_unknown),
+            text = symbol ?: stringResource(id = com.babylon.wallet.android.R.string.transactionReview_unknown),
             style = RadixTheme.typography.body2HighImportance,
             color = RadixTheme.colors.gray1,
             maxLines = 1,
@@ -231,7 +240,7 @@ private fun TokenItemContent(
                     )
                 }
                 if (isTokenAmountVisible) {
-                    tokenAmount?.let { amount ->
+                    amount?.let { amount ->
                         Text(
                             modifier = Modifier,
                             text = amount,
@@ -288,7 +297,9 @@ fun TransactionAccountCardPreview() {
                         )
                     )
                 }
-            )
+            ),
+            onFungibleResourceClick = { _ -> },
+            onNonFungibleResourceClick = { _, _ -> }
         )
     }
 }

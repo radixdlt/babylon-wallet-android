@@ -15,6 +15,7 @@ import com.babylon.wallet.android.domain.model.Badge
 import com.babylon.wallet.android.domain.model.DAppWithMetadataAndAssociatedResources
 import com.babylon.wallet.android.domain.model.GuaranteeAssertion
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
+import com.babylon.wallet.android.domain.model.Resource
 import com.babylon.wallet.android.domain.model.Transferable
 import com.babylon.wallet.android.domain.model.TransferableResource
 import com.babylon.wallet.android.domain.usecases.GetAccountsWithResourcesUseCase
@@ -250,6 +251,21 @@ class TransactionReviewViewModel @Inject constructor(
         }
     }
 
+    fun onFungibleResourceClick(fungibleResource: Resource.FungibleResource) {
+        _state.update {
+            it.copy(sheetState = State.Sheet.ResourceDetails(fungibleResource))
+        }
+    }
+
+    fun onNonFungibleResourceClick(
+        nonFungibleResource: Resource.NonFungibleResource,
+        item: Resource.NonFungibleResource.Item
+    ) {
+        _state.update {
+            it.copy(sheetState = State.Sheet.ResourceDetails(nonFungibleResource, item))
+        }
+    }
+
     data class State(
         val request: MessageFromDataChannel.IncomingRequest.TransactionRequest,
         val isLoading: Boolean,
@@ -349,7 +365,13 @@ class TransactionReviewViewModel @Inject constructor(
             get() = feePayerSearchResult?.insufficientBalanceToPayTheFee == true
 
         sealed class Sheet {
-            object None : Sheet()
+
+            data object None : Sheet()
+
+            data class ResourceDetails(
+                val resource: Resource, // it can be token or nft
+                val item: Resource.NonFungibleResource.Item? = null // if resource nft then pass item the user clicked
+            ) : Sheet()
 
             data class CustomizeGuarantees(
                 val accountsWithPredictedGuarantees: List<AccountWithPredictedGuarantee>
@@ -361,7 +383,8 @@ class TransactionReviewViewModel @Inject constructor(
             ) : Sheet() {
 
                 sealed interface FeePayerMode {
-                    object NoFeePayerRequired : FeePayerMode
+
+                    data object NoFeePayerRequired : FeePayerMode
 
                     data class FeePayerSelected(
                         val feePayerCandidate: Network.Account
