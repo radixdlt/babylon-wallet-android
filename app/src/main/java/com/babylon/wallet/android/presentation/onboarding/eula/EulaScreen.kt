@@ -38,11 +38,13 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun EulaScreen(
+    modifier: Modifier = Modifier,
     onBack: () -> Unit,
     onAccepted: () -> Unit
 ) {
     var eulaText: String? by remember { mutableStateOf(null) }
     Scaffold(
+        modifier = modifier,
         topBar = {
             Column {
                 RadixCenteredTopAppBar(
