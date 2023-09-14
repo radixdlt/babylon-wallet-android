@@ -66,8 +66,10 @@ suspend fun TransactionType.GeneralTransaction.resolve(
     // Here we have "third party" resources that are not associated with accounts we hold
     val notOwnedResources = depositResourcesInvolvedInTransaction.filterNot { allResourcesAddresses.contains(it) }
 
-    val thirdPartyMetadata = getResourcesMetadataUseCase
-        .invoke(resourceAddresses = notOwnedResources, isRefreshing = false).value().orEmpty()
+    val thirdPartyMetadata = getResourcesMetadataUseCase(
+        resourceAddresses = notOwnedResources,
+        isRefreshing = false
+    ).value().orEmpty()
 
     return PreviewType.Transfer(
         from = resolveFromAccounts(allResources, allAccounts),
