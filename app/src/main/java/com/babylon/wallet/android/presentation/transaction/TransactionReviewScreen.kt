@@ -243,7 +243,10 @@ private fun TransactionPreviewContent(
                                 onCustomizeClick = onCustomizeClick
                             )
                             SlideToSignButton(
-                                modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingXLarge),
+                                modifier = Modifier.padding(
+                                    horizontal = RadixTheme.dimensions.paddingXLarge,
+                                    vertical = RadixTheme.dimensions.paddingDefault
+                                ),
                                 enabled = state.isSubmitEnabled,
                                 isSubmitting = state.isSubmitting,
                                 onSwipeComplete = onApproveTransaction
@@ -281,7 +284,10 @@ private fun TransactionPreviewContent(
                                 onCustomizeClick = onCustomizeClick
                             )
                             SlideToSignButton(
-                                modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingXLarge),
+                                modifier = Modifier.padding(
+                                    horizontal = RadixTheme.dimensions.paddingXLarge,
+                                    vertical = RadixTheme.dimensions.paddingDefault
+                                ),
                                 enabled = state.isSubmitEnabled,
                                 isSubmitting = state.isSubmitting,
                                 onSwipeComplete = onApproveTransaction
