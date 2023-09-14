@@ -52,7 +52,7 @@ fun NonFungibleTokenBottomSheetDetails(
     item: Resource.NonFungibleResource.Item?,
     onCloseClick: () -> Unit,
     modifier: Modifier = Modifier,
-    nonFungibleResource: Resource.NonFungibleResource? = null,
+    nonFungibleResource: Resource.NonFungibleResource? = null
 ) {
     Column(
         modifier = modifier
@@ -66,25 +66,27 @@ fun NonFungibleTokenBottomSheetDetails(
             backIconType = BackIconType.Close
         )
         if (item != null) {
-            val painter = rememberAsyncImagePainter(
-                model = rememberImageUrl(
-                    fromUrl = item.imageUrl,
-                    size = ImageSize.LARGE
-                ),
-                placeholder = painterResource(id = R.drawable.img_placeholder),
-                error = painterResource(id = R.drawable.img_placeholder)
-            )
-            Image(
-                painter = painter,
-                contentDescription = "Nft image",
-                contentScale = ContentScale.FillWidth,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = RadixTheme.dimensions.paddingXLarge)
-                    .clip(RadixTheme.shapes.roundedRectMedium)
-                    .background(Color.Transparent, RadixTheme.shapes.roundedRectMedium)
-            )
-            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
+            if (item.imageUrl != null) {
+                val painter = rememberAsyncImagePainter(
+                    model = rememberImageUrl(
+                        fromUrl = item.imageUrl,
+                        size = ImageSize.LARGE
+                    ),
+                    placeholder = painterResource(id = R.drawable.img_placeholder),
+                    error = painterResource(id = R.drawable.img_placeholder)
+                )
+                Image(
+                    painter = painter,
+                    contentDescription = "Nft image",
+                    contentScale = ContentScale.FillWidth,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = RadixTheme.dimensions.paddingXLarge)
+                        .clip(RadixTheme.shapes.roundedRectMedium)
+                        .background(Color.Transparent, RadixTheme.shapes.roundedRectMedium)
+                )
+                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
+            }
             AssetMetadataRow(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -129,8 +131,7 @@ fun NonFungibleTokenBottomSheetDetails(
                 )
             }
             GrayBackgroundWrapper(contentPadding = PaddingValues(horizontal = RadixTheme.dimensions.paddingXLarge)) {
-                val placeholder =
-                    rememberDrawablePainter(drawable = ColorDrawable(RadixTheme.colors.gray3.toArgb()))
+                val placeholder = rememberDrawablePainter(drawable = ColorDrawable(RadixTheme.colors.gray3.toArgb()))
                 AsyncImage(
                     model = rememberImageUrl(
                         fromUrl = nonFungibleResource.iconUrl,
