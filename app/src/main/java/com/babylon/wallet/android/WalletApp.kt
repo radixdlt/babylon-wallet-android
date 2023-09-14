@@ -17,13 +17,12 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
-import com.babylon.wallet.android.presentation.account.createaccount.confirmation.CreateAccountRequestSource
-import com.babylon.wallet.android.presentation.account.createaccount.createAccountScreen
 import com.babylon.wallet.android.presentation.dapp.authorized.login.dAppLoginAuthorized
 import com.babylon.wallet.android.presentation.dapp.unauthorized.login.dAppLoginUnauthorized
 import com.babylon.wallet.android.presentation.main.MAIN_ROUTE
 import com.babylon.wallet.android.presentation.main.MainEvent
 import com.babylon.wallet.android.presentation.main.MainViewModel
+import com.babylon.wallet.android.presentation.main.navigateToBlockPreviewApp
 import com.babylon.wallet.android.presentation.navigation.NavigationHost
 import com.babylon.wallet.android.presentation.navigation.PriorityRoutes
 import com.babylon.wallet.android.presentation.onboarding.restore.mnemonics.RestoreMnemonicsArgs
@@ -37,7 +36,6 @@ import com.babylon.wallet.android.utils.AppEvent
 import com.google.accompanist.navigation.animation.rememberAnimatedNavController
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import kotlinx.coroutines.flow.Flow
-import rdx.works.profile.data.model.apppreferences.Radix
 
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
@@ -140,12 +138,7 @@ private fun CheckForceToMainnet(navController: NavController, forceToMainnetMand
     LaunchedEffect(navController) {
         forceToMainnetMandatory.collect { isMandatory ->
             if (isMandatory) {
-                navController.createAccountScreen(
-                    requestSource = CreateAccountRequestSource.SwitchToMainnet,
-                    networkUrl = Radix.Gateway.mainnet.url,
-                    networkName = Radix.Gateway.mainnet.network.name,
-                    switchNetwork = true
-                )
+                navController.navigateToBlockPreviewApp()
             }
         }
     }
