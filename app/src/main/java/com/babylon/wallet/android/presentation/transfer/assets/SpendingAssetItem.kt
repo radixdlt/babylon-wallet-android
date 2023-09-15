@@ -35,13 +35,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalFocusManager
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
@@ -50,8 +47,6 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import coil.compose.AsyncImage
-import com.babylon.wallet.android.designsystem.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.model.Resource
@@ -59,8 +54,7 @@ import com.babylon.wallet.android.domain.model.metadata.IconUrlMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.NameMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.SymbolMetadataItem
 import com.babylon.wallet.android.presentation.transfer.SpendingAsset
-import com.babylon.wallet.android.presentation.ui.composables.ThumbnailRequestSize
-import com.babylon.wallet.android.presentation.ui.composables.rememberImageUrl
+import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
 import rdx.works.core.displayableQuantity
 import java.math.BigDecimal
 
@@ -104,6 +98,7 @@ fun SpendingAssetItem(
             )
 
             is SpendingAsset.NFT -> NonFungibleSpendingAsset(
+                resource = asset.resource,
                 nft = asset.item,
                 isExceedingBalance = asset.exceedingBalance,
             )
@@ -135,6 +130,7 @@ fun SpendingAssetItem(
             )
 
             is SpendingAsset.StakeClaimNFT -> NonFungibleSpendingAsset(
+                resource = asset.resource,
                 nft = asset.item,
                 isExceedingBalance = asset.exceedingBalance,
             )
@@ -159,23 +155,9 @@ private fun ColumnScope.FungibleSpendingAsset(
         modifier = modifier.padding(horizontal = RadixTheme.dimensions.paddingDefault),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        val placeholder = painterResource(id = R.drawable.ic_token)
-
-        AsyncImage(
-            modifier = Modifier
-                .size(24.dp)
-                .background(RadixTheme.colors.gray3, shape = RadixTheme.shapes.circle)
-                .clip(RadixTheme.shapes.circle),
-            model = if (resource.isXrd) {
-                R.drawable.ic_xrd_token
-            } else {
-                rememberImageUrl(fromUrl = resource.iconUrl, size = ThumbnailRequestSize.MEDIUM)
-            },
-            placeholder = placeholder,
-            fallback = placeholder,
-            error = placeholder,
-            contentDescription = null,
-            contentScale = ContentScale.Crop
+        Thumbnail.Fungible(
+            modifier = Modifier.size(24.dp),
+            token = resource
         )
         Spacer(modifier = Modifier.width(RadixTheme.dimensions.paddingSmall))
         Text(
@@ -300,6 +282,7 @@ private fun ColumnScope.FungibleSpendingAsset(
 @Composable
 private fun NonFungibleSpendingAsset(
     modifier: Modifier = Modifier,
+    resource: Resource.NonFungibleResource,
     nft: Resource.NonFungibleResource.Item,
     isExceedingBalance: Boolean,
 ) {
@@ -310,29 +293,10 @@ private fun NonFungibleSpendingAsset(
             .padding(RadixTheme.dimensions.paddingSmall),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        val placeholder = painterResource(id = R.drawable.ic_nfts)
-        var contentScale by remember {
-            mutableStateOf(ContentScale.Crop)
-        }
-        AsyncImage(
-            model = rememberImageUrl(
-                fromUrl = nft.imageUrl,
-                size = ThumbnailRequestSize.SMALL
-            ),
-            placeholder = placeholder,
-            error = placeholder,
-            fallback = placeholder,
-            contentDescription = "Nft image",
-            contentScale = contentScale,
-            alignment = Alignment.Center,
-            modifier = Modifier
-                .size(55.dp)
-                .background(RadixTheme.colors.gray3, shape = RadixTheme.shapes.roundedRectSmall)
-                .clip(RadixTheme.shapes.roundedRectSmall),
-            onError = {
-                // to properly render nft icon placeholder
-                contentScale = ContentScale.Inside
-            }
+        Thumbnail.NonFungible(
+            modifier = Modifier.size(55.dp),
+            collection = resource,
+            shape = Thumbnail.Shape.RoundedRectangle(8.dp)
         )
         Spacer(modifier = Modifier.width(RadixTheme.dimensions.paddingDefault))
         Column {
@@ -342,11 +306,13 @@ private fun NonFungibleSpendingAsset(
                 style = RadixTheme.typography.body2Regular
             )
 
-//            Text(
-//                text = "Devin Booker - Dunk",
-//                color = RadixTheme.colors.gray1,
-//                style = RadixTheme.typography.body1HighImportance
-//            )
+            if (nft.nameMetadataItem != null) {
+                Text(
+                    text = nft.nameMetadataItem.name,
+                    color = RadixTheme.colors.gray1,
+                    style = RadixTheme.typography.body1HighImportance
+                )
+            }
 
             AnimatedVisibility(
                 visible = isExceedingBalance,
@@ -416,18 +382,26 @@ fun SpendingAssetItemsPreview() {
                 }
             )
 
+            val item = Resource.NonFungibleResource.Item(
+                collectionAddress = "resource_rdx_abcd",
+                localId = Resource.NonFungibleResource.Item.ID.from("<dbooker_dunk_39>"),
+                nameMetadataItem = NameMetadataItem(name = "Local item with ID 39"),
+                iconMetadataItem = IconUrlMetadataItem(
+                    url = Uri.parse(
+                        "https://c4.wallpaperflare.com/wallpaper/817/534/563/ave-bosque-fantasia-fenix-wallpaper-preview.jpg"
+                    )
+                )
+            )
+            val collection = Resource.NonFungibleResource(
+                resourceAddress = "resource_rdx_abcd",
+                amount = 1,
+                nameMetadataItem = NameMetadataItem("NFT Collection"),
+                items = listOf(item)
+            )
             SpendingAssetItem(
                 asset = SpendingAsset.NFT(
-                    Resource.NonFungibleResource.Item(
-                        collectionAddress = "resource_rdx_abcd",
-                        localId = Resource.NonFungibleResource.Item.ID.from("<dbooker_dunk_39>"),
-                        nameMetadataItem = NameMetadataItem(name = "Local item with ID 39"),
-                        iconMetadataItem = IconUrlMetadataItem(
-                            url = Uri.parse(
-                                "https://c4.wallpaperflare.com/wallpaper/817/534/563/ave-bosque-fantasia-fenix-wallpaper-preview.jpg"
-                            )
-                        )
-                    )
+                    resource = collection,
+                    item = item
                 ),
                 onAmountTyped = {
                     secondAmount = it
@@ -439,16 +413,8 @@ fun SpendingAssetItemsPreview() {
 
             SpendingAssetItem(
                 asset = SpendingAsset.NFT(
-                    Resource.NonFungibleResource.Item(
-                        collectionAddress = "resource_rdx_abcd",
-                        localId = Resource.NonFungibleResource.Item.ID.from("<dbooker_dunk_39>"),
-                        nameMetadataItem = NameMetadataItem(name = "Local item with ID 39"),
-                        iconMetadataItem = IconUrlMetadataItem(
-                            url = Uri.parse(
-                                "https://c4.wallpaperflare.com/wallpaper/817/534/563/ave-bosque-fantasia-fenix-wallpaper-preview.jpg"
-                            )
-                        )
-                    ),
+                    resource = collection,
+                    item = item,
                     exceedingBalance = true
                 ),
                 onAmountTyped = {

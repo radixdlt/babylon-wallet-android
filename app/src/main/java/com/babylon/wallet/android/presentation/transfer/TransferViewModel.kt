@@ -486,6 +486,7 @@ sealed class SpendingAsset {
     }
 
     data class NFT(
+        val resource: Resource.NonFungibleResource,
         val item: Resource.NonFungibleResource.Item,
         val exceedingBalance: Boolean = false
     ) : SpendingAsset() {
@@ -529,6 +530,7 @@ sealed class SpendingAsset {
     }
 
     data class StakeClaimNFT(
+        val resource: Resource.NonFungibleResource,
         val item: Resource.NonFungibleResource.Item,
         val exceedingBalance: Boolean = false
     ) : SpendingAsset() {

@@ -169,17 +169,17 @@ fun ChooseAssetsSheet(
                             ChooseAssets.Tab.NFTs -> NonFungibleResourcesColumn(
                                 resources = state.resources,
                                 modifier = Modifier.fillMaxSize(),
-                            ) { _, item ->
+                            ) { resource, item ->
                                 val isSelected = state.targetAccount.assets.any { it.address == item.globalAddress }
                                 SelectableNonFungibleResourceItem(
                                     modifier = Modifier.clickable {
-                                        val nonFungibleAsset = SpendingAsset.NFT(item = item)
+                                        val nonFungibleAsset = SpendingAsset.NFT(resource = resource, item = item)
                                         onAssetSelectionChanged(nonFungibleAsset, !isSelected)
                                     },
                                     item = item,
                                     isSelected = isSelected,
                                     onCheckChanged = {
-                                        val nonFungibleAsset = SpendingAsset.NFT(item = item)
+                                        val nonFungibleAsset = SpendingAsset.NFT(resource = resource, item = item)
                                         onAssetSelectionChanged(nonFungibleAsset, it)
                                     }
                                 )
@@ -242,7 +242,10 @@ fun ChooseAssetsSheet(
                                         val isSelected = state.targetAccount.assets.any { it.address == stakeClaimNftItem.globalAddress }
                                         StakeClaimNftItem(
                                             modifier = Modifier.throttleClickable {
-                                                val spendingAsset = SpendingAsset.NFT(stakeClaimNftItem)
+                                                val spendingAsset = SpendingAsset.NFT(
+                                                    resource = stakeClaim.nonFungibleResource,
+                                                    item = stakeClaimNftItem
+                                                )
                                                 onAssetSelectionChanged(spendingAsset, !isSelected)
                                             },
                                             stakeClaimNft = stakeClaimNftItem,
@@ -250,7 +253,10 @@ fun ChooseAssetsSheet(
                                                 Checkbox(
                                                     checked = isSelected,
                                                     onCheckedChange = {
-                                                        val spendingAsset = SpendingAsset.NFT(stakeClaimNftItem)
+                                                        val spendingAsset = SpendingAsset.NFT(
+                                                            resource = stakeClaim.nonFungibleResource,
+                                                            item = stakeClaimNftItem
+                                                        )
                                                         onAssetSelectionChanged(spendingAsset, !isSelected)
                                                     },
                                                     colors = CheckboxDefaults.colors(
