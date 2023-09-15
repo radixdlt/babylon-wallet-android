@@ -7,21 +7,21 @@ import com.babylon.wallet.android.data.dapp.model.WalletErrorType
 @Suppress("CyclomaticComplexMethod")
 sealed class DappRequestFailure(msg: String? = null) : Exception(msg.orEmpty()) {
 
-    object GetEpoch : DappRequestFailure()
-    object RejectedByUser : DappRequestFailure()
-    object InvalidRequest : DappRequestFailure()
-    object InvalidPersona : DappRequestFailure()
+    data object GetEpoch : DappRequestFailure()
+    data object RejectedByUser : DappRequestFailure()
+    data object InvalidRequest : DappRequestFailure()
+    data object InvalidPersona : DappRequestFailure()
     data class FailedToSignAuthChallenge(val msg: String = "") : DappRequestFailure(msg)
     data class WrongNetwork(val currentNetworkId: Int, val requestNetworkId: Int) : DappRequestFailure()
 
     sealed class TransactionApprovalFailure : DappRequestFailure() {
-        object ConvertManifest : TransactionApprovalFailure()
-        object BuildTransactionHeader : TransactionApprovalFailure()
-        object FailedToFindAccountWithEnoughFundsToLockFee : TransactionApprovalFailure()
-        object CompileTransactionIntent : TransactionApprovalFailure()
-        object SignCompiledTransactionIntent : TransactionApprovalFailure()
-        object PrepareNotarizedTransaction : TransactionApprovalFailure()
-        object SubmitNotarizedTransaction : TransactionApprovalFailure()
+        data object ConvertManifest : TransactionApprovalFailure()
+        data object BuildTransactionHeader : TransactionApprovalFailure()
+        data object FailedToFindAccountWithEnoughFundsToLockFee : TransactionApprovalFailure()
+        data object CompileTransactionIntent : TransactionApprovalFailure()
+        data object SignCompiledTransactionIntent : TransactionApprovalFailure()
+        data object PrepareNotarizedTransaction : TransactionApprovalFailure()
+        data object SubmitNotarizedTransaction : TransactionApprovalFailure()
         data class InvalidTXDuplicate(val txId: String) : TransactionApprovalFailure()
         data class FailedToPollTXStatus(val txId: String) : TransactionApprovalFailure()
         data class GatewayRejected(val txId: String) : TransactionApprovalFailure()
@@ -29,16 +29,17 @@ sealed class DappRequestFailure(msg: String? = null) : Exception(msg.orEmpty()) 
     }
 
     sealed class DappVerificationFailure : DappRequestFailure() {
-        object WrongAccountType : DappVerificationFailure()
-        object UnknownWebsite : DappVerificationFailure()
-        object RadixJsonNotFound : DappVerificationFailure()
-        object UnknownDefinitionAddress : DappVerificationFailure()
+        data object WrongAccountType : DappVerificationFailure()
+        data object UnknownWebsite : DappVerificationFailure()
+        data object RadixJsonNotFound : DappVerificationFailure()
+        data object UnknownDefinitionAddress : DappVerificationFailure()
+        data object ClaimedEntityAddressNotPresent : DappVerificationFailure()
     }
 
     sealed class LedgerCommunicationFailure : DappRequestFailure() {
-        object FailedToGetDeviceId : LedgerCommunicationFailure()
-        object FailedToDerivePublicKeys : LedgerCommunicationFailure()
-        object FailedToSignTransaction : LedgerCommunicationFailure()
+        data object FailedToGetDeviceId : LedgerCommunicationFailure()
+        data object FailedToDerivePublicKeys : LedgerCommunicationFailure()
+        data object FailedToSignTransaction : LedgerCommunicationFailure()
     }
 
     fun toWalletErrorType(): WalletErrorType {
@@ -73,6 +74,7 @@ sealed class DappRequestFailure(msg: String? = null) : Exception(msg.orEmpty()) 
             LedgerCommunicationFailure.FailedToDerivePublicKeys -> WalletErrorType.InvalidRequest
             LedgerCommunicationFailure.FailedToGetDeviceId -> WalletErrorType.InvalidRequest
             LedgerCommunicationFailure.FailedToSignTransaction -> WalletErrorType.InvalidRequest
+            DappVerificationFailure.ClaimedEntityAddressNotPresent -> WalletErrorType.WrongAccountType
         }
     }
 
@@ -105,6 +107,7 @@ sealed class DappRequestFailure(msg: String? = null) : Exception(msg.orEmpty()) 
             LedgerCommunicationFailure.FailedToGetDeviceId -> R.string.common_somethingWentWrong // TODO consider different copy
             LedgerCommunicationFailure.FailedToSignTransaction -> R.string.common_somethingWentWrong // TODO consider different copy
             is FailedToSignAuthChallenge -> R.string.common_somethingWentWrong // TODO consider different copy
+            DappVerificationFailure.ClaimedEntityAddressNotPresent -> R.string.common_somethingWentWrong // TODO consider different copy
         }
     }
 

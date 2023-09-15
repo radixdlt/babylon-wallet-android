@@ -55,7 +55,7 @@ data class DAppWithMetadata(
             try {
                 val claimedUri = Uri.parse(it)
                 val originUri = Uri.parse(origin)
-                claimedUri.scheme != null && claimedUri.scheme == originUri.scheme
+                claimedUri.scheme != null && claimedUri.host == originUri.host
             } catch (e: Exception) {
                 false
             }
@@ -65,7 +65,6 @@ data class DAppWithMetadata(
     companion object {
         fun from(address: String, metadataItems: List<MetadataItem> = listOf()): DAppWithMetadata {
             val remainingItems = metadataItems.toMutableList()
-
             return DAppWithMetadata(
                 dAppAddress = address,
                 nameItem = remainingItems.consume(),

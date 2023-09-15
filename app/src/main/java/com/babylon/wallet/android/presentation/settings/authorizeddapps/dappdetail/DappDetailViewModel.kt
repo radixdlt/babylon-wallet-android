@@ -3,8 +3,6 @@ package com.babylon.wallet.android.presentation.settings.authorizeddapps.dappdet
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
-import com.babylon.wallet.android.domain.common.onError
-import com.babylon.wallet.android.domain.common.onValue
 import com.babylon.wallet.android.domain.model.DAppWithMetadataAndAssociatedResources
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.babylon.wallet.android.domain.model.RequiredPersonaField
@@ -50,19 +48,17 @@ class DappDetailViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            val metadataResult = dAppWithAssociatedResourcesUseCase.invoke(
+            dAppWithAssociatedResourcesUseCase.invoke(
                 definitionAddress = args.dappDefinitionAddress,
                 needMostRecentData = false
-            )
-            metadataResult.onValue { dAppWithAssociatedResources ->
+            ).onSuccess { dAppWithAssociatedResources ->
                 _state.update { state ->
                     state.copy(
                         dappWithMetadata = dAppWithAssociatedResources,
                         loading = false
                     )
                 }
-            }
-            metadataResult.onError {
+            }.onFailure {
                 _state.update { state ->
                     state.copy(loading = false)
                 }
@@ -236,8 +232,9 @@ class DappDetailViewModel @Inject constructor(
 sealed interface DappDetailEvent : OneOffEvent {
     data class EditPersona(val personaAddress: String, val requiredPersonaFields: RequiredPersonaFields? = null) :
         DappDetailEvent
-    object LastPersonaDeleted : DappDetailEvent
-    object DappDeleted : DappDetailEvent
+
+    data object LastPersonaDeleted : DappDetailEvent
+    data object DappDeleted : DappDetailEvent
 }
 
 data class DappDetailUiState(

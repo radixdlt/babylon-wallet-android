@@ -60,7 +60,7 @@ class PersonaDetailViewModel @Inject constructor(
                     dAppWithAssociatedResourcesUseCase.invoke(
                         definitionAddress = authorizedDApp.dAppDefinitionAddress,
                         needMostRecentData = false
-                    ).value()
+                    ).getOrNull()
                 }
                 val dApps = metadataResults.mapNotNull { dAppWithAssociatedResources ->
                     dAppWithAssociatedResources

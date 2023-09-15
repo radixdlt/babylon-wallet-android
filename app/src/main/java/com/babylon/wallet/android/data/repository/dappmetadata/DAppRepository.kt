@@ -19,13 +19,14 @@ import com.babylon.wallet.android.data.repository.entity.EntityRepositoryImpl
 import com.babylon.wallet.android.data.repository.execute
 import com.babylon.wallet.android.data.transaction.DappRequestException
 import com.babylon.wallet.android.data.transaction.DappRequestFailure
+import com.babylon.wallet.android.data.transaction.RadixWalletException
 import com.babylon.wallet.android.di.JsonConverterFactory
 import com.babylon.wallet.android.di.SimpleHttpClient
 import com.babylon.wallet.android.di.buildApi
 import com.babylon.wallet.android.di.coroutines.IoDispatcher
 import com.babylon.wallet.android.domain.common.Result
+import com.babylon.wallet.android.domain.common.asKotlinResult
 import com.babylon.wallet.android.domain.common.map
-import com.babylon.wallet.android.domain.common.mapIfNotEmpty
 import com.babylon.wallet.android.domain.common.switchMap
 import com.babylon.wallet.android.domain.common.value
 import com.babylon.wallet.android.domain.model.DAppResources
@@ -41,27 +42,24 @@ import retrofit2.Converter
 import javax.inject.Inject
 
 interface DAppRepository {
-    suspend fun verifyDapp(
-        origin: String,
-        dAppDefinitionAddress: String
-    ): Result<Boolean>
+    suspend fun verifyDapp(origin: String, dAppDefinitionAddress: String, wellKnownFileCheck: Boolean = true): kotlin.Result<Boolean>
 
     suspend fun getDAppMetadata(
         definitionAddress: String,
         explicitMetadata: Set<ExplicitMetadataKey> = ExplicitMetadataKey.forDapp,
         needMostRecentData: Boolean
-    ): Result<DAppWithMetadata>
+    ): kotlin.Result<DAppWithMetadata>
 
     suspend fun getDAppsMetadata(
         definitionAddresses: List<String>,
         explicitMetadata: Set<ExplicitMetadataKey> = ExplicitMetadataKey.forDapp,
         needMostRecentData: Boolean
-    ): Result<List<DAppWithMetadata>>
+    ): kotlin.Result<List<DAppWithMetadata>>
 
     suspend fun getDAppResources(
         dAppMetadata: DAppWithMetadata,
         isRefreshing: Boolean = true
-    ): Result<DAppResources>
+    ): kotlin.Result<DAppResources>
 }
 
 class DAppRepositoryImpl @Inject constructor(
@@ -74,35 +72,49 @@ class DAppRepositoryImpl @Inject constructor(
 
     override suspend fun verifyDapp(
         origin: String,
-        dAppDefinitionAddress: String
-    ): Result<Boolean> = withContext(ioDispatcher) {
+        dAppDefinitionAddress: String,
+        wellKnownFileCheck: Boolean
+    ): kotlin.Result<Boolean> = withContext(ioDispatcher) {
         if (origin.isValidHttpsUrl()) {
             getDAppMetadata(
                 definitionAddress = dAppDefinitionAddress,
                 explicitMetadata = ExplicitMetadataKey.forDapp,
-                needMostRecentData = false
-            ).switchMap { gatewayMetadata ->
+                needMostRecentData = true
+            ).mapCatching { gatewayMetadata ->
                 when {
                     !gatewayMetadata.isDappDefinition -> {
-                        Result.Error(DappRequestException(DappRequestFailure.DappVerificationFailure.WrongAccountType))
+                        throw DappRequestException(DappRequestFailure.DappVerificationFailure.WrongAccountType)
                     }
 
                     !gatewayMetadata.isRelatedWith(origin) -> {
-                        Result.Error(DappRequestException(DappRequestFailure.DappVerificationFailure.UnknownWebsite))
+                        throw DappRequestException(DappRequestFailure.DappVerificationFailure.UnknownWebsite)
                     }
 
-                    else -> wellKnownFileMetadata(origin)
-                }
-            }.switchMap { wellKnownFileDAppDefinitions ->
-                val isWellKnown = wellKnownFileDAppDefinitions.any { it == dAppDefinitionAddress }
-                if (isWellKnown) {
-                    Result.Success(true)
-                } else {
-                    Result.Error(DappRequestException(DappRequestFailure.DappVerificationFailure.UnknownDefinitionAddress))
+                    else -> {
+                        if (wellKnownFileCheck) {
+                            verifyWellKnownFileContainsDappDefinitionAddress(origin, dAppDefinitionAddress).getOrThrow()
+                        } else {
+                            true
+                        }
+                    }
                 }
             }
         } else {
-            Result.Error(DappRequestException(DappRequestFailure.DappVerificationFailure.UnknownWebsite))
+            throw DappRequestException(DappRequestFailure.DappVerificationFailure.UnknownWebsite)
+        }
+    }
+
+    private suspend fun verifyWellKnownFileContainsDappDefinitionAddress(
+        origin: String,
+        dAppDefinitionAddress: String
+    ): kotlin.Result<Boolean> {
+        return wellKnownFileMetadata(origin).map { wellKnownFileDAppDefinitionAddresses ->
+            val isWellKnown = wellKnownFileDAppDefinitionAddresses.any { it == dAppDefinitionAddress }
+            if (isWellKnown) {
+                true
+            } else {
+                throw DappRequestException(DappRequestFailure.DappVerificationFailure.UnknownDefinitionAddress)
+            }
         }
     }
 
@@ -110,20 +122,24 @@ class DAppRepositoryImpl @Inject constructor(
         definitionAddress: String,
         explicitMetadata: Set<ExplicitMetadataKey>,
         needMostRecentData: Boolean
-    ): Result<DAppWithMetadata> = getDAppsMetadata(
+    ): kotlin.Result<DAppWithMetadata> = getDAppsMetadata(
         definitionAddresses = listOf(definitionAddress),
         explicitMetadata = explicitMetadata,
         needMostRecentData = needMostRecentData
-    ).mapIfNotEmpty { dAppWithMetadataItems ->
-        dAppWithMetadataItems.first()
+    ).mapCatching { dAppWithMetadataItems ->
+        if (dAppWithMetadataItems.isEmpty()) {
+            throw RadixWalletException.DappMetadataEmpty
+        } else {
+            dAppWithMetadataItems.first()
+        }
     }
 
     override suspend fun getDAppsMetadata(
         definitionAddresses: List<String>,
         explicitMetadata: Set<ExplicitMetadataKey>,
         needMostRecentData: Boolean
-    ): Result<List<DAppWithMetadata>> = withContext(ioDispatcher) {
-        if (definitionAddresses.isEmpty()) return@withContext Result.Success(emptyList())
+    ): kotlin.Result<List<DAppWithMetadata>> = withContext(ioDispatcher) {
+        if (definitionAddresses.isEmpty()) return@withContext kotlin.Result.success(emptyList())
 
         val optIns = if (explicitMetadata.isNotEmpty()) {
             StateEntityDetailsOptIns(
@@ -151,12 +167,12 @@ class DAppRepositoryImpl @Inject constructor(
                     )
                 }
             },
-        )
+        ).asKotlinResult()
     }
 
     private suspend fun wellKnownFileMetadata(
         origin: String
-    ): Result<List<String>> {
+    ): kotlin.Result<List<String>> {
         return withContext(ioDispatcher) {
             buildApi<DAppDefinitionApi>(
                 baseUrl = origin,
@@ -171,14 +187,14 @@ class DAppRepositoryImpl @Inject constructor(
                 error = {
                     DappRequestException(DappRequestFailure.DappVerificationFailure.RadixJsonNotFound)
                 }
-            )
+            ).asKotlinResult()
         }
     }
 
     override suspend fun getDAppResources(
         dAppMetadata: DAppWithMetadata,
         isRefreshing: Boolean
-    ): Result<DAppResources> {
+    ): kotlin.Result<DAppResources> {
         val claimedResources = dAppMetadata.claimedEntities.filter {
             ActionableAddress.Type.from(it) == ActionableAddress.Type.RESOURCE
         }
@@ -241,7 +257,7 @@ class DAppRepositoryImpl @Inject constructor(
             )
 
             Result.Success(dAppsWithResources)
-        }
+        }.asKotlinResult()
     }
 
     private suspend fun getStateEntityDetailsResponse(

@@ -9,8 +9,6 @@ import com.babylon.wallet.android.data.repository.dappmetadata.DAppRepository
 import com.babylon.wallet.android.data.transaction.DappRequestException
 import com.babylon.wallet.android.data.transaction.DappRequestFailure
 import com.babylon.wallet.android.data.transaction.InteractionState
-import com.babylon.wallet.android.domain.common.onError
-import com.babylon.wallet.android.domain.common.onValue
 import com.babylon.wallet.android.domain.model.DAppWithMetadata
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel.IncomingRequest.AccountsRequestItem
@@ -109,16 +107,14 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
                 request.requestMetadata.dAppDefinitionAddress
             )
             editedDapp = authorizedDapp
-            val result = dAppRepository.getDAppMetadata(
+            dAppRepository.getDAppMetadata(
                 definitionAddress = request.metadata.dAppDefinitionAddress,
                 needMostRecentData = false
-            )
-            result.onValue { dappWithMetadata ->
+            ).onSuccess { dappWithMetadata ->
                 _state.update {
                     it.copy(dappWithMetadata = dappWithMetadata)
                 }
-            }
-            result.onError { error ->
+            }.onFailure { error ->
                 _state.update { it.copy(uiMessage = UiMessage.ErrorMessage.from(error)) }
             }
             setInitialDappLoginRoute()

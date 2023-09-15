@@ -5,8 +5,6 @@ import com.babylon.wallet.android.data.dapp.model.WalletErrorType
 import com.babylon.wallet.android.data.repository.dappmetadata.DAppRepository
 import com.babylon.wallet.android.data.transaction.DappRequestException
 import com.babylon.wallet.android.data.transaction.DappRequestFailure
-import com.babylon.wallet.android.domain.common.Result
-import com.babylon.wallet.android.domain.common.onError
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel.IncomingRequest
 import com.radixdlt.ret.Address
 import kotlinx.coroutines.flow.first
@@ -29,16 +27,16 @@ class VerifyDappUseCase @Inject constructor(
                 requestId = request.id,
                 error = WalletErrorType.InvalidRequest
             )
-            return Result.Error(DappRequestException(DappRequestFailure.InvalidRequest))
+            return Result.failure(DappRequestException(DappRequestFailure.InvalidRequest))
         }
         return if (developerMode) {
-            Result.Success(true)
+            Result.success(true)
         } else {
             val validationResult = dAppRepository.verifyDapp(
                 origin = request.metadata.origin,
                 dAppDefinitionAddress = request.metadata.dAppDefinitionAddress
             )
-            validationResult.onError { e ->
+            validationResult.onFailure { e ->
                 (e as? DappRequestException)?.let {
                     dAppMessenger.sendWalletInteractionResponseFailure(
                         remoteConnectorId = request.remoteConnectorId,

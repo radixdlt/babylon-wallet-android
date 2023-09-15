@@ -155,7 +155,9 @@ fun ResourceSpecifier.toTransferableResource(
     val allPoolUnits = allResources.map { resource ->
         resource.poolUnits.map { poolUnit ->
             poolUnit.poolUnitResource
-        }
+        } + resource.validatorsWithStakeResources.validators.map { validator ->
+            validator.liquidStakeUnits.map { it.fungibleResource }
+        }.flatten()
     }.flatten()
 
     return when (this) {

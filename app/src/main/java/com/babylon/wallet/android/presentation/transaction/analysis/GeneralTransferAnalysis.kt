@@ -28,7 +28,9 @@ suspend fun TransactionType.GeneralTransaction.resolve(
     resolveDAppsUseCase: ResolveDAppsUseCase
 ): PreviewType {
     val badges = getTransactionBadgesUseCase(accountProofs = accountProofs)
-    val dApps = resolveDApps(resolveDAppsUseCase)
+    val dApps = resolveDApps(resolveDAppsUseCase).distinctBy {
+        it.dAppWithMetadata.definitionAddresses
+    }
 
     val allAccounts = getProfileUseCase.accountsOnCurrentNetwork().filter {
         it.address in accountWithdraws.keys || it.address in accountDeposits.keys

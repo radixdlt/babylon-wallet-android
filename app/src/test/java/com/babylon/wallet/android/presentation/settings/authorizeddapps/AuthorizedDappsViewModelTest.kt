@@ -2,7 +2,6 @@ package com.babylon.wallet.android.presentation.settings.authorizeddapps
 
 import app.cash.turbine.test
 import com.babylon.wallet.android.domain.SampleDataProvider
-import com.babylon.wallet.android.domain.common.Result
 import com.babylon.wallet.android.domain.usecases.GetDAppWithMetadataAndAssociatedResourcesUseCase
 import com.babylon.wallet.android.fakes.DAppConnectionRepositoryFake
 import com.babylon.wallet.android.presentation.StateViewModelTest
@@ -31,11 +30,11 @@ internal class AuthorizedDappsViewModelTest : StateViewModelTest<AuthorizedDapps
         super.setUp()
 
         coEvery { getDAppWithAssociatedResourcesUseCase("address1", false) } returns
-                Result.Success(
+                Result.success(
                     SampleDataProvider().sampleDAppWithResources()
                 )
         coEvery { getDAppWithAssociatedResourcesUseCase("address2", false) } returns
-                Result.Success(
+                Result.success(
                     SampleDataProvider().sampleDAppWithResources()
                 )
     }
