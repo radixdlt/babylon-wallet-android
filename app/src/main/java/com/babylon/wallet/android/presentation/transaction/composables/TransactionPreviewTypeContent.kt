@@ -44,7 +44,7 @@ fun TransactionPreviewTypeContent(
                 modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingDefault),
                 from = preview.from.toPersistentList(),
                 showStrokeLine = preview.from.toPersistentList().isNotEmpty() ||
-                    preview.dApps.toPersistentList().isNotEmpty(),
+                        preview.dApps.toPersistentList().isNotEmpty(),
                 onFungibleResourceClick = { onFungibleResourceClick(it) },
                 onNonFungibleResourceClick = { nonFungibleResource, nonFungibleResourceItem ->
                     onNonFungibleResourceClick(nonFungibleResource, nonFungibleResourceItem)
@@ -59,7 +59,11 @@ fun TransactionPreviewTypeContent(
             )
 
             DepositAccountContent(
-                modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingDefault),
+                modifier = Modifier.padding(
+                    start = RadixTheme.dimensions.paddingDefault,
+                    end = RadixTheme.dimensions.paddingDefault,
+                    bottom = RadixTheme.dimensions.paddingLarge
+                ),
                 to = preview.to.toPersistentList(),
                 promptForGuarantees = onPromptForGuarantees,
                 showStrokeLine = false,
@@ -68,8 +72,6 @@ fun TransactionPreviewTypeContent(
                     onNonFungibleResourceClick(nonFungibleResource, nonFungibleResourceItem)
                 }
             )
-
-            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
         }
     }
 }
