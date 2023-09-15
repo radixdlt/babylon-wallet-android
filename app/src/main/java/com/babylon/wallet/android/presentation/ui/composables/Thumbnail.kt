@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -143,7 +144,7 @@ object Thumbnail {
                     .build()
             }
 
-            var painterState: AsyncImagePainter.State by remember(request) { mutableStateOf(AsyncImagePainter.State.Empty) }
+            var painterState: AsyncImagePainter.State by remember(image) { mutableStateOf(AsyncImagePainter.State.Empty) }
 
             // Scaling of the resulting image can vary between states
             var contentScale by remember(cropped) { mutableStateOf(if (cropped) ContentScale.Crop else ContentScale.FillWidth) }
@@ -151,25 +152,31 @@ object Thumbnail {
 
             AsyncImage(
                 modifier = modifier
-                    .applyIf(
-                        condition = cropped,
-                        modifier = when (val state = painterState) {
-                            is AsyncImagePainter.State.Empty -> Modifier
-                            is AsyncImagePainter.State.Error -> Modifier.aspectRatio(maxAspectRatio)
-                            is AsyncImagePainter.State.Loading -> Modifier
-                            is AsyncImagePainter.State.Success -> {
-                                val intrinsicSize = state.painter.intrinsicSize
-                                if (intrinsicSize.height > intrinsicSize.width) {
-                                    // If the image is taller in aspect ratio than a square,
-                                    // crop the image to the largest possible centered square
-                                    Modifier.aspectRatio(1f)
-                                } else if (intrinsicSize.width / intrinsicSize.height > maxAspectRatio) {
-                                    // If the image is wider in aspect ratio than maxAspectRatio,
-                                    // crop the image to the largest possible centered maxAspectRatio rectangle
-                                    Modifier.aspectRatio(maxAspectRatio)
-                                } else {
-                                    Modifier
+                    .then(
+                        if (cropped) {
+                            when (val state = painterState) {
+                                is AsyncImagePainter.State.Empty -> Modifier
+                                is AsyncImagePainter.State.Error -> Modifier.aspectRatio(maxAspectRatio)
+                                is AsyncImagePainter.State.Loading -> Modifier
+                                is AsyncImagePainter.State.Success -> {
+                                    val intrinsicSize = state.painter.intrinsicSize
+                                    if (intrinsicSize.height > intrinsicSize.width) {
+                                        // If the image is taller in aspect ratio than a square,
+                                        // crop the image to the largest possible centered square
+                                        Modifier.aspectRatio(1f)
+                                    } else if (intrinsicSize.width / intrinsicSize.height > maxAspectRatio) {
+                                        // If the image is wider in aspect ratio than maxAspectRatio,
+                                        // crop the image to the largest possible centered maxAspectRatio rectangle
+                                        Modifier.aspectRatio(maxAspectRatio)
+                                    } else {
+                                        Modifier
+                                    }
                                 }
+                            }
+                        } else {
+                            when (painterState) {
+                                is AsyncImagePainter.State.Error -> Modifier.aspectRatio(maxAspectRatio)
+                                else -> Modifier.wrapContentHeight()
                             }
                         }
                     )
