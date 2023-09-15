@@ -24,7 +24,6 @@ import coil.compose.AsyncImage
 import com.babylon.wallet.android.designsystem.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.domain.model.Resource
-import com.babylon.wallet.android.presentation.account.composable.Tag
 import com.babylon.wallet.android.presentation.ui.composables.ImageSize
 import com.babylon.wallet.android.presentation.ui.composables.rememberImageUrl
 import com.google.accompanist.drawablepainter.rememberDrawablePainter
@@ -114,20 +113,20 @@ fun SelectableFungibleResourceItem(
             )
 
             Spacer(modifier = Modifier.width(RadixTheme.dimensions.paddingSmall))
-        },
-        bottomContent = {
-            resource.tags.find { it == Resource.Tag.Official }?.let { officialTag ->
-                Tag(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .background(RadixTheme.colors.gray5, shape = RadixTheme.shapes.roundedRectBottomMedium)
-                        .padding(
-                            horizontal = RadixTheme.dimensions.paddingMedium,
-                            vertical = RadixTheme.dimensions.paddingSmall
-                        ),
-                    tag = officialTag
-                )
-            }
         }
+//        bottomContent = {
+//            resource.tags.find { it == Resource.Tag.Official }?.let { _ ->
+//                Tag(
+//                    modifier = Modifier
+//                        .fillMaxWidth()
+//                        .background(RadixTheme.colors.gray5, shape = RadixTheme.shapes.roundedRectBottomMedium)
+//                        .padding(
+//                            horizontal = RadixTheme.dimensions.paddingMedium,
+//                            vertical = RadixTheme.dimensions.paddingSmall
+//                        ),
+//                    tag = officialTag
+//                )
+//            }
+//        }
     )
 }
