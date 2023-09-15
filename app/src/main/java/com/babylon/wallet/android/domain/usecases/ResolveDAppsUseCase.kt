@@ -11,6 +11,13 @@ class ResolveDAppsUseCase @Inject constructor(
     private val getDAppWithMetadataAndAssociatedResourcesUseCase: GetDAppWithMetadataAndAssociatedResourcesUseCase
 ) {
 
+    /**
+     * Each component is validated as follows:
+     * - get dAppDefinitionAddress from component metadata
+     * - get metadata for that address
+     * - validate that account_type is "dapp definition"
+     * - check if componentAddress is within claimed_enditites metadata of dAppDefinitionAddress metadata
+     */
     suspend operator fun invoke(
         componentAddress: String
     ): Result<DAppWithMetadataAndAssociatedResources> {
