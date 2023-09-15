@@ -87,7 +87,6 @@ object Thumbnail {
             imageType = imageType,
             imageContentScale = ContentScale.Crop,
             emptyDrawable = R.drawable.ic_token,
-            emptyContentScale = ContentScale.None,
             shape = Shape.Circle,
             contentDescription = token.displayTitle
         )
@@ -232,7 +231,7 @@ object Thumbnail {
         val context = LocalContext.current
         val data: Any? = when (imageType) {
             is ImageType.External -> remember(imageType) { imageType.cloudFlareUri }
-            is ImageType.Internal -> painterResource(id = imageType.drawableRes)
+            is ImageType.Internal -> imageType.drawableRes
             else -> null
         }
 
@@ -312,12 +311,11 @@ object Thumbnail {
             )
 
             val scale = optimalDimensionSize / srcSize.maxDimension
-            Timber.tag("Bakos").d("Scale: $scale")
             return ScaleFactor(scaleX = scale, scaleY = scale)
         }
 
         companion object {
-            fun standard(density: Density): CustomContentScale = from(20.dp, 40.dp, density)
+            fun standard(density: Density): CustomContentScale = from(8.dp, 40.dp, density)
 
             fun from(minSize: Dp, maxSize: Dp, density: Density): CustomContentScale {
                 val min = with(density) { minSize.toPx().toInt() }

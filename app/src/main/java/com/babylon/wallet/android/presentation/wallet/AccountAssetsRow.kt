@@ -21,9 +21,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -33,7 +31,6 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.Dimension
-import coil.compose.AsyncImage
 import com.babylon.wallet.android.designsystem.R
 import com.babylon.wallet.android.designsystem.theme.AccountGradientList
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
@@ -46,8 +43,7 @@ import com.babylon.wallet.android.domain.model.allNftItemsSize
 import com.babylon.wallet.android.domain.model.metadata.IconUrlMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.NameMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.SymbolMetadataItem
-import com.babylon.wallet.android.presentation.ui.composables.ThumbnailRequestSize
-import com.babylon.wallet.android.presentation.ui.composables.rememberImageUrl
+import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
 import com.google.accompanist.placeholder.PlaceholderHighlight
 import com.google.accompanist.placeholder.placeholder
 import com.google.accompanist.placeholder.shimmer
@@ -111,50 +107,29 @@ private fun AssetsContent(
         val poolUnitRowRef = if (poolUnitCount > 0) createRef() else null
 
         visibleFungibles.forEachIndexed { index, fungible ->
-            val iconModifier = Modifier
-                .constrainAs(fungibleRefs[index]) {
-                    linkTo(top = parent.top, bottom = parent.bottom)
-                    height = Dimension.value(iconSize)
-                    width = Dimension.value(iconSize)
+            Thumbnail.Fungible(
+                modifier = Modifier
+                    .constrainAs(fungibleRefs[index]) {
+                        linkTo(top = parent.top, bottom = parent.bottom)
+                        height = Dimension.value(iconSize)
+                        width = Dimension.value(iconSize)
 
-                    if (index == 0) {
-                        start.linkTo(parent.start)
-                    } else {
-                        val prevRef = fungibleRefs[index - 1]
-                        start.linkTo(prevRef.start, margin = iconSize - iconsOverlap)
+                        if (index == 0) {
+                            start.linkTo(parent.start)
+                        } else {
+                            val prevRef = fungibleRefs[index - 1]
+                            start.linkTo(prevRef.start, margin = iconSize - iconsOverlap)
+                        }
                     }
-                }
-                .zIndex(visibleFungibles.size - index.toFloat())
-                .border(
-                    width = bordersSize,
-                    color = RadixTheme.colors.white.copy(alpha = 0.2f),
-                    shape = CircleShape
-                )
-                .padding(bordersSize)
-                .clip(CircleShape)
-                .background(
-                    brush = Brush.linearGradient(
-                        colors = listOf(White, White.copy(alpha = 0.73f))
-                    ),
-                    shape = RadixTheme.shapes.circle
-                )
-
-            if (fungible.isXrd) {
-                Image(
-                    modifier = iconModifier,
-                    painter = painterResource(id = R.drawable.ic_xrd_token),
-                    contentDescription = null
-                )
-            } else {
-                AsyncImage(
-                    modifier = iconModifier,
-                    model = rememberImageUrl(fromUrl = fungible.iconUrl, size = ThumbnailRequestSize.SMALL),
-                    placeholder = painterResource(id = R.drawable.ic_token),
-                    error = painterResource(id = R.drawable.ic_token),
-                    contentDescription = null,
-                    contentScale = ContentScale.Crop
-                )
-            }
+                    .zIndex(visibleFungibles.size - index.toFloat())
+                    .border(
+                        width = bordersSize,
+                        color = RadixTheme.colors.white.copy(alpha = 0.2f),
+                        shape = CircleShape
+                    )
+                    .padding(bordersSize),
+                token = fungible
+            )
         }
 
         if (fungibleCounterBoxRef != null) {
@@ -253,7 +228,8 @@ private fun AssetsContent(
                                 colors = listOf(White, White.copy(alpha = 0.73f))
                             ),
                             shape = RadixTheme.shapes.circle
-                        ).padding(4.dp),
+                        )
+                        .padding(4.dp),
                     painter = painterResource(id = R.drawable.ic_pool_units),
                     contentDescription = null
                 )
