@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.data.transaction
+package com.babylon.wallet.android.domain
 
 import androidx.annotation.StringRes
 import com.babylon.wallet.android.R
