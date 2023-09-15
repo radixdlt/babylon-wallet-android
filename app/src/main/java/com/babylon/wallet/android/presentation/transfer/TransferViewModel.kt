@@ -106,7 +106,7 @@ class TransferViewModel @Inject constructor(
 
     fun onMaxAmount(account: TargetAccount, asset: SpendingAsset) {
         val fungibleAsset = asset as? SpendingAsset.Fungible ?: return
-        val maxAmount = fungibleAsset.resource.amount ?: return
+        val maxAmount = fungibleAsset.resource.ownedAmount ?: return
         val spentAmount = _state.value.targetAccounts
             .filterNot { it.address == account.address }
             .sumOf { it.amountSpent(fungibleAsset) }
@@ -279,7 +279,7 @@ class TransferViewModel @Inject constructor(
                                     exceedingBalance = fungibleBalances.getOrDefault(
                                         asset.resource,
                                         BigDecimal.ZERO
-                                    ) > asset.resource.amount
+                                    ) > asset.resource.ownedAmount
                                 )
 
                                 is SpendingAsset.NFT -> asset.copy(
@@ -290,14 +290,14 @@ class TransferViewModel @Inject constructor(
                                     exceedingBalance = fungibleBalances.getOrDefault(
                                         asset.resource,
                                         BigDecimal.ZERO
-                                    ) > asset.resource.amount
+                                    ) > asset.resource.ownedAmount
                                 )
 
                                 is SpendingAsset.PoolUnit -> asset.copy(
                                     exceedingBalance = fungibleBalances.getOrDefault(
                                         asset.resource,
                                         BigDecimal.ZERO
-                                    ) > asset.resource.amount
+                                    ) > asset.resource.ownedAmount
                                 )
 
                                 is SpendingAsset.StakeClaimNFT -> asset.copy(
@@ -311,7 +311,7 @@ class TransferViewModel @Inject constructor(
         }
 
         sealed interface Sheet {
-            object None : Sheet
+            data object None : Sheet
 
             data class ChooseAccounts(
                 val selectedAccount: TargetAccount,
@@ -373,7 +373,7 @@ class TransferViewModel @Inject constructor(
         }
 
         sealed interface Message {
-            object None : Message
+            data object None : Message
             data class Added(val message: String = "") : Message
         }
     }

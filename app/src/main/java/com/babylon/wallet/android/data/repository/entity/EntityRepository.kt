@@ -70,8 +70,7 @@ interface EntityRepository {
 
     suspend fun getEntityOwnerKeyHashes(
         entityAddress: String,
-        isRefreshing: Boolean = false,
-        stateVersion: Long? = null
+        isRefreshing: Boolean = false
     ): Result<OwnerKeyHashesMetadataItem?>
 }
 
@@ -343,11 +342,11 @@ class EntityRepositoryImpl @Inject constructor(
         val resourceBehaviours = fungibleDetails?.details?.calculateResourceBehaviours().orEmpty()
         val currentSupply = fungibleDetails?.details?.totalSupply()?.toBigDecimal()
         val metaDataItems = (fungibleDetails?.explicitMetadata ?: fungibleResourcesItem.explicitMetadata)?.asMetadataItems().orEmpty()
-        val amount = fungibleResourcesItem.vaults.items.first().amount.toBigDecimal()
-        if (amount == BigDecimal.ZERO) return null
+        val ownedAmount = fungibleResourcesItem.vaults.items.first().amount.toBigDecimal()
+        if (ownedAmount == BigDecimal.ZERO) return null
         return Resource.FungibleResource(
             resourceAddress = fungibleResourcesItem.resourceAddress,
-            amount = amount,
+            ownedAmount = ownedAmount,
             nameMetadataItem = metaDataItems.toMutableList().consume(),
             symbolMetadataItem = metaDataItems.toMutableList().consume(),
             descriptionMetadataItem = metaDataItems.toMutableList().consume(),
@@ -662,16 +661,14 @@ class EntityRepositoryImpl @Inject constructor(
 
     override suspend fun getEntityOwnerKeyHashes(
         entityAddress: String,
-        isRefreshing: Boolean,
-        stateVersion: Long?
+        isRefreshing: Boolean
     ): Result<OwnerKeyHashesMetadataItem?> {
         return stateApi.entityDetails(
             StateEntityDetailsRequest(
                 addresses = listOf(entityAddress),
                 optIns = StateEntityDetailsOptIns(
                     explicitMetadata = ExplicitMetadataKey.forEntities.map { it.key }
-                ),
-                atLedgerState = stateVersion?.let { LedgerStateSelector(stateVersion = it) }
+                )
             )
         ).execute(
             cacheParameters = CacheParameters(

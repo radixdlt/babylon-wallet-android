@@ -308,7 +308,7 @@ fun AssetsContentRowPreview() {
             val allFungibles = List(117) {
                 Resource.FungibleResource(
                     resourceAddress = "resource_address",
-                    amount = BigDecimal.valueOf(237659),
+                    ownedAmount = BigDecimal.valueOf(237659),
                     nameMetadataItem = NameMetadataItem("AWE"),
                     symbolMetadataItem = SymbolMetadataItem("AWE"),
                     iconUrlMetadataItem = IconUrlMetadataItem(

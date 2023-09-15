@@ -205,7 +205,7 @@ class DAppRepositoryImpl @Inject constructor(
                 val metadataItems = fungibleItem.metadata.asMetadataItems().toMutableList()
                 Resource.FungibleResource(
                     resourceAddress = fungibleItem.address,
-                    amount = null, // No amount given in metadata
+                    ownedAmount = null, // No owned amount given in metadata
                     nameMetadataItem = metadataItems.consume(),
                     symbolMetadataItem = metadataItems.consume(),
                     descriptionMetadataItem = metadataItems.consume(),

@@ -222,7 +222,7 @@ fun TargetAccountCardPreview() {
                         SpendingAsset.Fungible(
                             resource = Resource.FungibleResource(
                                 resourceAddress = "resource_rdx_abcd",
-                                amount = BigDecimal.TEN,
+                                ownedAmount = BigDecimal.TEN,
                                 nameMetadataItem = NameMetadataItem("Radix"),
                                 symbolMetadataItem = SymbolMetadataItem("XRD")
                             )

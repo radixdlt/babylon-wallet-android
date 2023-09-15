@@ -9,9 +9,12 @@ import com.babylon.wallet.android.domain.model.Resource
 import rdx.works.core.displayableQuantity
 
 @Composable
-fun TokenBalance(resource: Resource.FungibleResource, modifier: Modifier = Modifier) {
+fun TokenBalance(
+    fungibleResource: Resource.FungibleResource,
+    modifier: Modifier = Modifier
+) {
     Row(modifier = modifier) {
-        resource.amount?.let { amount ->
+        fungibleResource.ownedAmount?.let { amount ->
             Text(
                 modifier = Modifier.alignByBaseline(),
                 text = amount.displayableQuantity(),
@@ -21,7 +24,7 @@ fun TokenBalance(resource: Resource.FungibleResource, modifier: Modifier = Modif
         }
         Text(
             modifier = Modifier.alignByBaseline(),
-            text = " ${resource.symbol}",
+            text = " ${fungibleResource.symbol}",
             style = RadixTheme.typography.header,
             color = RadixTheme.colors.gray1
         )
