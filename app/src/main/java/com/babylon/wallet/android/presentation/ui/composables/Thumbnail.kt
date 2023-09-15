@@ -145,52 +145,51 @@ object Thumbnail {
             }
 
             var painterState: AsyncImagePainter.State by remember(image) { mutableStateOf(AsyncImagePainter.State.Empty) }
-
-            // Scaling of the resulting image can vary between states
-            var contentScale by remember(cropped) { mutableStateOf(if (cropped) ContentScale.Crop else ContentScale.FillWidth) }
             val density = LocalDensity.current
-
             AsyncImage(
                 modifier = modifier
-                    .then(
-                        if (cropped) {
-                            when (val state = painterState) {
-                                is AsyncImagePainter.State.Empty -> Modifier
-                                is AsyncImagePainter.State.Error -> Modifier.aspectRatio(maxAspectRatio)
-                                is AsyncImagePainter.State.Loading -> Modifier
-                                is AsyncImagePainter.State.Success -> {
-                                    val intrinsicSize = state.painter.intrinsicSize
-                                    if (intrinsicSize.height > intrinsicSize.width) {
-                                        // If the image is taller in aspect ratio than a square,
-                                        // crop the image to the largest possible centered square
-                                        Modifier.aspectRatio(1f)
-                                    } else if (intrinsicSize.width / intrinsicSize.height > maxAspectRatio) {
-                                        // If the image is wider in aspect ratio than maxAspectRatio,
-                                        // crop the image to the largest possible centered maxAspectRatio rectangle
-                                        Modifier.aspectRatio(maxAspectRatio)
-                                    } else {
-                                        Modifier
-                                    }
+                    .applyIf(
+                        condition = cropped,
+                        modifier = when (val state = painterState) {
+                            is AsyncImagePainter.State.Empty -> Modifier
+                            is AsyncImagePainter.State.Error -> Modifier.aspectRatio(maxAspectRatio)
+                            is AsyncImagePainter.State.Loading -> Modifier
+                            is AsyncImagePainter.State.Success -> {
+                                val intrinsicSize = state.painter.intrinsicSize
+                                if (intrinsicSize.height > intrinsicSize.width) {
+                                    // If the image is taller in aspect ratio than a square,
+                                    // crop the image to the largest possible centered square
+                                    Modifier.aspectRatio(1f)
+                                } else if (intrinsicSize.width / intrinsicSize.height > maxAspectRatio) {
+                                    // If the image is wider in aspect ratio than maxAspectRatio,
+                                    // crop the image to the largest possible centered maxAspectRatio rectangle
+                                    Modifier.aspectRatio(maxAspectRatio)
+                                } else {
+                                    Modifier
                                 }
-                            }
-                        } else {
-                            when (painterState) {
-                                is AsyncImagePainter.State.Error -> Modifier.aspectRatio(maxAspectRatio)
-                                else -> Modifier.wrapContentHeight()
                             }
                         }
                     )
+                    .applyIf(
+                        condition = !cropped,
+                        modifier = when (painterState) {
+                            is AsyncImagePainter.State.Error -> Modifier.aspectRatio(maxAspectRatio)
+                            else -> Modifier.wrapContentHeight()
+                        }
+                    )
                     .clip(RoundedCornerShape(cornerRadius))
-                    .background(RadixTheme.colors.gray4),
+                    .applyIf(
+                        condition = painterState !is AsyncImagePainter.State.Success,
+                        modifier = Modifier.background(RadixTheme.colors.gray4)
+                    ),
                 model = request,
                 contentDescription = nft.localId.displayable,
-                contentScale = contentScale,
+                contentScale = when (painterState) {
+                    is AsyncImagePainter.State.Error -> CustomContentScale.standard(density)
+                    else -> if (cropped) ContentScale.Crop else ContentScale.FillWidth
+                },
                 onState = {
                     painterState = it
-
-                    if (painterState is AsyncImagePainter.State.Error) {
-                        contentScale = CustomContentScale.standard(density)
-                    }
                 }
             )
         }
@@ -260,8 +259,7 @@ object Thumbnail {
                 .build()
         }
 
-        // Scaling of the resulting image can vary between states
-        var contentScale by remember { mutableStateOf(ContentScale.Crop) }
+        var painterState: AsyncImagePainter.State by remember(data) { mutableStateOf(AsyncImagePainter.State.Empty) }
 
         AsyncImage(
             modifier = modifier
@@ -269,24 +267,27 @@ object Thumbnail {
                 .applyIf(shape is Shape.Circle, Modifier.clip(RadixTheme.shapes.circle))
                 // Draw as a rounded rect when needed
                 .applyWhen(shape as? Shape.RoundedRectangle) { Modifier.clip(RoundedCornerShape(it.cornerRadius)) }
-                .background(backgroundColor),
+                .applyIf(
+                    condition = painterState !is AsyncImagePainter.State.Success,
+                    modifier = Modifier.background(backgroundColor)
+                ),
             model = imageRequest,
             contentDescription = contentDescription,
-            contentScale = contentScale,
-            onState = { state ->
-                contentScale = when (state) {
-                    is AsyncImagePainter.State.Error -> {
-                        if (state.result.throwable is NullRequestDataException) {
-                            // Url was null, placeholder visible
-                            emptyContentScale
-                        } else {
-                            // Error making the request, error visible
-                            errorContentScale
-                        }
+            contentScale = when (val state = painterState) {
+                is AsyncImagePainter.State.Error -> {
+                    if (state.result.throwable is NullRequestDataException) {
+                        // Url was null, placeholder visible
+                        emptyContentScale
+                    } else {
+                        // Error making the request, error visible
+                        errorContentScale
                     }
-
-                    else -> imageContentScale
                 }
+
+                else -> imageContentScale
+            },
+            onState = { state ->
+                painterState = state
             }
         )
     }
