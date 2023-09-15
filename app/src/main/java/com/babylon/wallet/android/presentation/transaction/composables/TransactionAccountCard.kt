@@ -84,7 +84,7 @@ fun TransactionAccountCard(
                 tokenSymbol = transferableAmount.resource.displayTitle.ifEmpty {
                     stringResource(id = com.babylon.wallet.android.R.string.transactionReview_unknown)
                 },
-                tokenAmount = transferableAmount.amount.toPlainString(),
+                tokenAmount = transferableAmount.amount.displayableQuantity(),
                 isTokenAmountVisible = true,
                 guaranteedQuantity = amountGuaranteeAssertion?.amount?.displayableQuantity(),
                 shape = shape,
