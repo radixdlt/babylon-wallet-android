@@ -38,7 +38,7 @@ import com.babylon.wallet.android.domain.model.Resource
 import com.babylon.wallet.android.presentation.ui.composables.ActionableAddressView
 import com.babylon.wallet.android.presentation.ui.composables.BackIconType
 import com.babylon.wallet.android.presentation.ui.composables.GrayBackgroundWrapper
-import com.babylon.wallet.android.presentation.ui.composables.ImageSize
+import com.babylon.wallet.android.presentation.ui.composables.ThumbnailRequestSize
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.icon
 import com.babylon.wallet.android.presentation.ui.composables.name
@@ -70,7 +70,7 @@ fun NonFungibleTokenBottomSheetDetails(
                 val painter = rememberAsyncImagePainter(
                     model = rememberImageUrl(
                         fromUrl = item.imageUrl,
-                        size = ImageSize.LARGE
+                        size = ThumbnailRequestSize.LARGE
                     ),
                     placeholder = painterResource(id = R.drawable.img_placeholder),
                     error = painterResource(id = R.drawable.img_placeholder)
@@ -135,7 +135,7 @@ fun NonFungibleTokenBottomSheetDetails(
                 AsyncImage(
                     model = rememberImageUrl(
                         fromUrl = nonFungibleResource.iconUrl,
-                        size = ImageSize.LARGE
+                        size = ThumbnailRequestSize.LARGE
                     ),
                     placeholder = placeholder,
                     fallback = placeholder,

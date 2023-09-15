@@ -24,7 +24,7 @@ import coil.compose.AsyncImage
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.domain.model.Badge
-import com.babylon.wallet.android.presentation.ui.composables.ImageSize
+import com.babylon.wallet.android.presentation.ui.composables.ThumbnailRequestSize
 import com.babylon.wallet.android.presentation.ui.composables.rememberImageUrl
 import com.google.accompanist.drawablepainter.rememberDrawablePainter
 import kotlinx.collections.immutable.ImmutableList
@@ -77,7 +77,7 @@ fun PresentingProofsContent(
                         val placeholder =
                             rememberDrawablePainter(drawable = ColorDrawable(RadixTheme.colors.gray3.toArgb()))
                         AsyncImage(
-                            model = rememberImageUrl(fromUrl = badge.icon, size = ImageSize.SMALL),
+                            model = rememberImageUrl(fromUrl = badge.icon, size = ThumbnailRequestSize.SMALL),
                             placeholder = placeholder,
                             fallback = placeholder,
                             error = placeholder,

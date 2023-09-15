@@ -20,7 +20,7 @@ import coil.compose.SubcomposeAsyncImage
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.domain.model.Resource
-import com.babylon.wallet.android.presentation.ui.composables.ImageSize
+import com.babylon.wallet.android.presentation.ui.composables.ThumbnailRequestSize
 import com.babylon.wallet.android.presentation.ui.composables.applyImageAspectRatio
 import com.babylon.wallet.android.presentation.ui.composables.rememberImageUrl
 
@@ -37,7 +37,7 @@ fun NonFungibleResourceItem(
             SubcomposeAsyncImage(
                 model = rememberImageUrl(
                     fromUrl = imageUrl,
-                    size = ImageSize.LARGE,
+                    size = ThumbnailRequestSize.LARGE,
                     placeholder = R.drawable.img_placeholder,
                     error = R.drawable.img_nft_broken_image
                 ),

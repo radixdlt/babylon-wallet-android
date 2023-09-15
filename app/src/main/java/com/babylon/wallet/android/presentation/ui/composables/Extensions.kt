@@ -62,7 +62,7 @@ private fun Context.buildImageRequest(
 @Composable
 fun rememberImageUrl(
     fromUrl: Uri?,
-    size: ImageSize = ImageSize.SMALL,
+    size: ThumbnailRequestSize = ThumbnailRequestSize.SMALL,
     @DrawableRes placeholder: Int? = null,
     @DrawableRes error: Int? = null
 ): ImageRequest {
@@ -75,15 +75,6 @@ fun rememberImageUrl(
         }
 
         context.buildImageRequest(requestUrl, placeholder, error)
-    }
-}
-
-@Suppress("MagicNumber")
-enum class ImageSize(val size: Int) {
-    SMALL(112), MEDIUM(256), LARGE(512);
-
-    fun toSizeString(): String {
-        return "${size}x$size"
     }
 }
 

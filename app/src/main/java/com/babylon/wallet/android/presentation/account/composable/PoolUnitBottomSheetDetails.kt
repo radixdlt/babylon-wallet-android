@@ -29,7 +29,7 @@ import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.domain.model.Resource
 import com.babylon.wallet.android.presentation.ui.composables.BackIconType
-import com.babylon.wallet.android.presentation.ui.composables.ImageSize
+import com.babylon.wallet.android.presentation.ui.composables.ThumbnailRequestSize
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.icon
 import com.babylon.wallet.android.presentation.ui.composables.name
@@ -66,7 +66,7 @@ fun PoolUnitBottomSheetDetails(
         ) {
             val placeholder = rememberDrawablePainter(drawable = ColorDrawable(RadixTheme.colors.gray3.toArgb()))
             AsyncImage(
-                model = rememberImageUrl(fromUrl = poolUnit.poolUnitResource.iconUrl, size = ImageSize.LARGE),
+                model = rememberImageUrl(fromUrl = poolUnit.poolUnitResource.iconUrl, size = ThumbnailRequestSize.LARGE),
                 placeholder = placeholder,
                 fallback = placeholder,
                 error = placeholder,

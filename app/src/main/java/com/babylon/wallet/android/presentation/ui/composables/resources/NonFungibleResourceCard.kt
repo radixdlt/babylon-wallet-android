@@ -34,7 +34,7 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.model.Resource
 import com.babylon.wallet.android.domain.model.metadata.NameMetadataItem
-import com.babylon.wallet.android.presentation.ui.composables.ImageSize
+import com.babylon.wallet.android.presentation.ui.composables.ThumbnailRequestSize
 import com.babylon.wallet.android.presentation.ui.composables.rememberImageUrl
 
 @OptIn(ExperimentalMaterialApi::class)
@@ -104,7 +104,7 @@ fun NonFungibleResourceCollectionHeader(
             ) {
                 Image(
                     painter = rememberAsyncImagePainter(
-                        model = rememberImageUrl(fromUrl = collection.iconUrl, size = ImageSize.SMALL),
+                        model = rememberImageUrl(fromUrl = collection.iconUrl, size = ThumbnailRequestSize.SMALL),
                         placeholder = painterResource(id = R.drawable.img_placeholder),
                         error = painterResource(id = R.drawable.img_placeholder)
                     ),

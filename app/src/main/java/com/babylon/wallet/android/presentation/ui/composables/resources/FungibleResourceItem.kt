@@ -24,7 +24,7 @@ import coil.compose.AsyncImage
 import com.babylon.wallet.android.designsystem.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.domain.model.Resource
-import com.babylon.wallet.android.presentation.ui.composables.ImageSize
+import com.babylon.wallet.android.presentation.ui.composables.ThumbnailRequestSize
 import com.babylon.wallet.android.presentation.ui.composables.rememberImageUrl
 import com.google.accompanist.drawablepainter.rememberDrawablePainter
 import rdx.works.core.displayableQuantity
@@ -58,7 +58,7 @@ fun FungibleResourceItem(
                 model = if (resource.isXrd) {
                     R.drawable.ic_xrd_token
                 } else {
-                    rememberImageUrl(fromUrl = resource.iconUrl, size = ImageSize.MEDIUM)
+                    rememberImageUrl(fromUrl = resource.iconUrl, size = ThumbnailRequestSize.MEDIUM)
                 },
                 placeholder = placeholder,
                 fallback = placeholder,

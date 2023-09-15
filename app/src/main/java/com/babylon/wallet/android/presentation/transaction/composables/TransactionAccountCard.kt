@@ -48,7 +48,7 @@ import com.babylon.wallet.android.presentation.transaction.AccountWithTransferab
 import com.babylon.wallet.android.presentation.transaction.AccountWithTransferableResources.Other
 import com.babylon.wallet.android.presentation.transaction.AccountWithTransferableResources.Owned
 import com.babylon.wallet.android.presentation.ui.composables.ActionableAddressView
-import com.babylon.wallet.android.presentation.ui.composables.ImageSize
+import com.babylon.wallet.android.presentation.ui.composables.ThumbnailRequestSize
 import com.babylon.wallet.android.presentation.ui.composables.rememberImageUrl
 import rdx.works.core.displayableQuantity
 
@@ -202,7 +202,7 @@ private fun ResourceItemContent(
                 .background(RadixTheme.colors.gray4, shape = RadixTheme.shapes.circle)
                 .clip(RadixTheme.shapes.circle)
                 .clickable(role = Role.Button) { onResourceClick() },
-            model = rememberImageUrl(fromUrl = iconUrl, size = ImageSize.SMALL),
+            model = rememberImageUrl(fromUrl = iconUrl, size = ThumbnailRequestSize.SMALL),
             placeholder = placeholder,
             fallback = placeholder,
             error = placeholder,

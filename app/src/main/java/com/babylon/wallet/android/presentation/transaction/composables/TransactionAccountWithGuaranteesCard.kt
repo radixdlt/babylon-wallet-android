@@ -48,7 +48,7 @@ import com.babylon.wallet.android.presentation.transaction.AccountWithPredictedG
 import com.babylon.wallet.android.presentation.transaction.AccountWithPredictedGuarantee.Other
 import com.babylon.wallet.android.presentation.transaction.AccountWithPredictedGuarantee.Owned
 import com.babylon.wallet.android.presentation.ui.composables.ActionableAddressView
-import com.babylon.wallet.android.presentation.ui.composables.ImageSize
+import com.babylon.wallet.android.presentation.ui.composables.ThumbnailRequestSize
 import com.babylon.wallet.android.presentation.ui.composables.rememberImageUrl
 import com.google.accompanist.drawablepainter.rememberDrawablePainter
 import rdx.works.core.displayableQuantity
@@ -130,7 +130,7 @@ fun TransactionAccountWithGuaranteesCard(
                         .background(RadixTheme.colors.gray3, shape = RadixTheme.shapes.circle)
                 ) {
                     AsyncImage(
-                        model = rememberImageUrl(fromUrl = transferrable.resource.iconUrl, size = ImageSize.LARGE),
+                        model = rememberImageUrl(fromUrl = transferrable.resource.iconUrl, size = ThumbnailRequestSize.LARGE),
                         placeholder = placeholder,
                         fallback = placeholder,
                         error = placeholder,

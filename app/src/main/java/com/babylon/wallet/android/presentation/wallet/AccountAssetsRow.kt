@@ -46,7 +46,7 @@ import com.babylon.wallet.android.domain.model.allNftItemsSize
 import com.babylon.wallet.android.domain.model.metadata.IconUrlMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.NameMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.SymbolMetadataItem
-import com.babylon.wallet.android.presentation.ui.composables.ImageSize
+import com.babylon.wallet.android.presentation.ui.composables.ThumbnailRequestSize
 import com.babylon.wallet.android.presentation.ui.composables.rememberImageUrl
 import com.google.accompanist.placeholder.PlaceholderHighlight
 import com.google.accompanist.placeholder.placeholder
@@ -148,7 +148,7 @@ private fun AssetsContent(
             } else {
                 AsyncImage(
                     modifier = iconModifier,
-                    model = rememberImageUrl(fromUrl = fungible.iconUrl, size = ImageSize.SMALL),
+                    model = rememberImageUrl(fromUrl = fungible.iconUrl, size = ThumbnailRequestSize.SMALL),
                     placeholder = painterResource(id = R.drawable.ic_token),
                     error = painterResource(id = R.drawable.ic_token),
                     contentDescription = null,

@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.lazy.LazyColumn
@@ -50,7 +49,7 @@ import com.babylon.wallet.android.presentation.dapp.authorized.selectpersona.Per
 import com.babylon.wallet.android.presentation.status.signing.SigningStatusBottomDialog
 import com.babylon.wallet.android.presentation.ui.composables.BackIconType
 import com.babylon.wallet.android.presentation.ui.composables.BottomPrimaryButton
-import com.babylon.wallet.android.presentation.ui.composables.ImageSize
+import com.babylon.wallet.android.presentation.ui.composables.ThumbnailRequestSize
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.persona.PersonaDetailCard
 import com.babylon.wallet.android.presentation.ui.composables.rememberImageUrl
@@ -187,7 +186,7 @@ private fun PersonaDataOnetimeContent(
             item {
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
                 AsyncImage(
-                    model = rememberImageUrl(fromUrl = dappWithMetadata?.iconUrl, size = ImageSize.MEDIUM),
+                    model = rememberImageUrl(fromUrl = dappWithMetadata?.iconUrl, size = ThumbnailRequestSize.MEDIUM),
                     placeholder = painterResource(id = R.drawable.img_placeholder),
                     fallback = painterResource(id = R.drawable.img_placeholder),
                     error = painterResource(id = R.drawable.img_placeholder),

@@ -59,7 +59,7 @@ import com.babylon.wallet.android.domain.model.metadata.IconUrlMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.NameMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.SymbolMetadataItem
 import com.babylon.wallet.android.presentation.transfer.SpendingAsset
-import com.babylon.wallet.android.presentation.ui.composables.ImageSize
+import com.babylon.wallet.android.presentation.ui.composables.ThumbnailRequestSize
 import com.babylon.wallet.android.presentation.ui.composables.rememberImageUrl
 import rdx.works.core.displayableQuantity
 import java.math.BigDecimal
@@ -169,7 +169,7 @@ private fun ColumnScope.FungibleSpendingAsset(
             model = if (resource.isXrd) {
                 R.drawable.ic_xrd_token
             } else {
-                rememberImageUrl(fromUrl = resource.iconUrl, size = ImageSize.MEDIUM)
+                rememberImageUrl(fromUrl = resource.iconUrl, size = ThumbnailRequestSize.MEDIUM)
             },
             placeholder = placeholder,
             fallback = placeholder,
@@ -317,7 +317,7 @@ private fun NonFungibleSpendingAsset(
         AsyncImage(
             model = rememberImageUrl(
                 fromUrl = nft.imageUrl,
-                size = ImageSize.SMALL
+                size = ThumbnailRequestSize.SMALL
             ),
             placeholder = placeholder,
             error = placeholder,

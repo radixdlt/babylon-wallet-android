@@ -40,7 +40,6 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.domain.model.DAppResources
 import com.babylon.wallet.android.domain.model.DAppWithMetadata
 import com.babylon.wallet.android.domain.model.DAppWithMetadataAndAssociatedResources
-import com.babylon.wallet.android.presentation.ui.composables.ImageSize
 import com.babylon.wallet.android.presentation.ui.composables.displayName
 import com.babylon.wallet.android.presentation.ui.composables.rememberImageUrl
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
