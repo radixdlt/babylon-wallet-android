@@ -398,7 +398,7 @@ class EntityRepositoryImpl @Inject constructor(
         val metaDataItems = fungibleDetails.explicitMetadata?.asMetadataItems().orEmpty()
         return Resource.FungibleResource(
             resourceAddress = fungibleDetails.address,
-            amount = null,
+            ownedAmount = null,
             nameMetadataItem = metaDataItems.toMutableList().consume(),
             symbolMetadataItem = metaDataItems.toMutableList().consume(),
             descriptionMetadataItem = metaDataItems.toMutableList().consume(),
