@@ -34,6 +34,7 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.model.Resource
 import com.babylon.wallet.android.domain.model.metadata.NameMetadataItem
+import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
 import com.babylon.wallet.android.presentation.ui.composables.ThumbnailRequestSize
 import com.babylon.wallet.android.presentation.ui.composables.rememberImageUrl
 
@@ -102,17 +103,10 @@ fun NonFungibleResourceCollectionHeader(
                     .padding(horizontal = RadixTheme.dimensions.paddingLarge),
                 horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingDefault)
             ) {
-                Image(
-                    painter = rememberAsyncImagePainter(
-                        model = rememberImageUrl(fromUrl = collection.iconUrl, size = ThumbnailRequestSize.SMALL),
-                        placeholder = painterResource(id = R.drawable.img_placeholder),
-                        error = painterResource(id = R.drawable.img_placeholder)
-                    ),
-                    contentDescription = "Nft icon",
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier
-                        .size(44.dp)
-                        .clip(RadixTheme.shapes.roundedRectSmall)
+                Thumbnail.NonFungible(
+                    modifier = Modifier.size(44.dp),
+                    collection = collection,
+                    shape = Thumbnail.Shape.RoundedRectangle(8.dp)
                 )
                 Column(verticalArrangement = Arrangement.Center) {
                     if (collection.name.isNotEmpty()) {
