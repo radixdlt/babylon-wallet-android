@@ -15,7 +15,8 @@ import com.babylon.wallet.android.domain.model.Badge
 import com.babylon.wallet.android.domain.model.DAppWithMetadataAndAssociatedResources
 import com.babylon.wallet.android.domain.model.GuaranteeAssertion
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
-import com.babylon.wallet.android.domain.model.Resource
+import com.babylon.wallet.android.domain.model.Resource.FungibleResource
+import com.babylon.wallet.android.domain.model.Resource.NonFungibleResource
 import com.babylon.wallet.android.domain.model.Transferable
 import com.babylon.wallet.android.domain.model.TransferableResource
 import com.babylon.wallet.android.domain.usecases.GetAccountsWithResourcesUseCase
@@ -251,18 +252,18 @@ class TransactionReviewViewModel @Inject constructor(
         }
     }
 
-    fun onFungibleResourceClick(fungibleResource: Resource.FungibleResource) {
+    fun onFungibleResourceClick(fungibleResource: FungibleResource) {
         _state.update {
-            it.copy(sheetState = State.Sheet.ResourceDetails(fungibleResource))
+            it.copy(sheetState = State.Sheet.ResourceSelected.Fungible(fungibleResource))
         }
     }
 
     fun onNonFungibleResourceClick(
-        nonFungibleResource: Resource.NonFungibleResource,
-        item: Resource.NonFungibleResource.Item
+        nonFungibleResource: NonFungibleResource,
+        item: NonFungibleResource.Item
     ) {
         _state.update {
-            it.copy(sheetState = State.Sheet.ResourceDetails(nonFungibleResource, item))
+            it.copy(sheetState = State.Sheet.ResourceSelected.NonFungible(nonFungibleResource, item))
         }
     }
 
@@ -364,23 +365,33 @@ class TransactionReviewViewModel @Inject constructor(
         val insufficientBalanceToPayTheFee: Boolean
             get() = feePayerSearchResult?.insufficientBalanceToPayTheFee == true
 
-        sealed class Sheet {
+        sealed interface Sheet {
 
-            data object None : Sheet()
+            data object None : Sheet
 
-            data class ResourceDetails(
-                val resource: Resource, // it can be token or nft
-                val item: Resource.NonFungibleResource.Item? = null // if resource nft then pass item the user clicked
-            ) : Sheet()
+//            data class ResourceDetails(
+//                val resource: Resource, // it can be token or nft
+//                val item: Resource.NonFungibleResource.Item? = null // if resource nft then pass item the user clicked
+//            ) : Sheet()
+
+            sealed interface ResourceSelected : Sheet {
+
+                data class Fungible(val token: FungibleResource) : ResourceSelected
+
+                data class NonFungible(
+                    val collection: NonFungibleResource,
+                    val item: NonFungibleResource.Item
+                ) : ResourceSelected
+            }
 
             data class CustomizeGuarantees(
                 val accountsWithPredictedGuarantees: List<AccountWithPredictedGuarantee>
-            ) : Sheet()
+            ) : Sheet
 
             data class CustomizeFees(
                 val feePayerMode: FeePayerMode,
                 val feesMode: FeesMode
-            ) : Sheet() {
+            ) : Sheet {
 
                 sealed interface FeePayerMode {
 
@@ -406,7 +417,7 @@ class TransactionReviewViewModel @Inject constructor(
 
             data class Dapp(
                 val dApp: DAppWithMetadataAndAssociatedResources
-            ) : Sheet()
+            ) : Sheet
         }
     }
 

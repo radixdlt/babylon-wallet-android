@@ -327,24 +327,23 @@ private fun BottomSheetContent(
     onViewAdvancedModeClick: () -> Unit
 ) {
     when (sheetState) {
-        is State.Sheet.ResourceDetails -> {
-            when (val resource = sheetState.resource) {
-                is Resource.FungibleResource -> {
+        is State.Sheet.ResourceSelected -> {
+            when (sheetState) {
+                is State.Sheet.ResourceSelected.Fungible -> {
                     FungibleTokenBottomSheetDetails(
                         modifier = modifier.fillMaxWidth(),
-                        fungible = resource,
+                        fungible = sheetState.token,
                         onCloseClick = onCloseDAppSheet
                     )
                 }
-                is Resource.NonFungibleResource -> {
+                is State.Sheet.ResourceSelected.NonFungible -> {
                     NonFungibleTokenBottomSheetDetails(
                         modifier = modifier.fillMaxWidth(),
                         item = sheetState.item,
-                        nonFungibleResource = resource,
+                        nonFungibleResource = sheetState.collection,
                         onCloseClick = onCloseDAppSheet
                     )
                 }
-                else -> {}
             }
         }
 
