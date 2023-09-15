@@ -4,6 +4,7 @@ import com.babylon.wallet.android.data.dapp.LedgerMessenger
 import com.babylon.wallet.android.data.dapp.model.DerivePublicKeyRequest
 import com.babylon.wallet.android.data.dapp.model.LedgerDeviceModel
 import com.babylon.wallet.android.data.dapp.model.LedgerDeviceModel.Companion.getLedgerDeviceModel
+import com.babylon.wallet.android.domain.RadixWalletException
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.radixdlt.ret.SignatureWithPublicKey
 import kotlinx.coroutines.flow.first
@@ -159,7 +160,7 @@ class SignWithLedgerFactorSourceUseCase @Inject constructor(
             profileRepository.saveProfile(profile.updateLastUsed(ledgerFactorSource.id))
             Result.success(ledgerSignatures)
         } else {
-            Result.failure(Exception("Failed to collect ledger signatures"))
+            Result.failure(RadixWalletException.FailedToCollectLedgerSignature)
         }
     }
 }
