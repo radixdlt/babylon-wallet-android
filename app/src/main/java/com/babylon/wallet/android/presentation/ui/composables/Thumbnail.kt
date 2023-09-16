@@ -214,7 +214,13 @@ object Thumbnail {
         modifier: Modifier = Modifier,
         badge: Badge
     ) {
-
+        Custom(
+            modifier = modifier,
+            imageType = null,//badge.icon?.let { ImageType.External(it, ThumbnailRequestSize.SMALL) },
+            emptyDrawable = R.drawable.ic_dapp,
+            shape = Shape.RoundedRectangle(4.dp),
+            contentDescription = badge.name.orEmpty()
+        )
     }
 
     @Composable

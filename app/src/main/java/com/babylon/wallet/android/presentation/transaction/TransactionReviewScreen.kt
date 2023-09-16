@@ -48,6 +48,7 @@ import com.babylon.wallet.android.presentation.transaction.TransactionReviewView
 import com.babylon.wallet.android.presentation.transaction.composables.FeesSheet
 import com.babylon.wallet.android.presentation.transaction.composables.GuaranteesSheet
 import com.babylon.wallet.android.presentation.transaction.composables.NetworkFeeContent
+import com.babylon.wallet.android.presentation.transaction.composables.PresentingProofsContent
 import com.babylon.wallet.android.presentation.transaction.composables.RawManifestView
 import com.babylon.wallet.android.presentation.transaction.composables.TransactionPreviewHeader
 import com.babylon.wallet.android.presentation.transaction.composables.TransactionPreviewTypeContent
@@ -58,6 +59,7 @@ import com.babylon.wallet.android.presentation.ui.composables.ReceiptEdge
 import com.babylon.wallet.android.presentation.ui.composables.SlideToSignButton
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
 import com.babylon.wallet.android.utils.biometricAuthenticateSuspend
+import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.launch
 import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.data.model.pernetwork.Network
@@ -266,21 +268,24 @@ private fun TransactionPreviewContent(
                         Column(
                             modifier = Modifier.verticalScroll(rememberScrollState())
                         ) {
-                            when (state.previewType) {
+                            ReceiptEdge(modifier = Modifier.fillMaxWidth(), color = RadixTheme.colors.gray4, topEdge = true)
+                            when (val preview = state.previewType) {
                                 is PreviewType.None -> {}
                                 is PreviewType.NonConforming -> {}
                                 is PreviewType.Transfer -> {
-                                    ReceiptEdge(modifier = Modifier.fillMaxWidth(), color = RadixTheme.colors.gray4, topEdge = true)
                                     TransactionPreviewTypeContent(
                                         modifier = Modifier.background(RadixTheme.colors.gray4),
                                         state = state,
-                                        preview = state.previewType,
+                                        preview = preview,
                                         onPromptForGuarantees = promptForGuarantees,
                                         onDappClick = onDAppClick,
                                         onFungibleResourceClick = onFungibleResourceClick,
                                         onNonFungibleResourceClick = onNonFungibleResourceClick
                                     )
                                     ReceiptEdge(modifier = Modifier.fillMaxWidth(), color = RadixTheme.colors.gray4)
+                                    PresentingProofsContent(
+                                        badges = preview.badges.toPersistentList()
+                                    )
                                 }
                             }
                             NetworkFeeContent(

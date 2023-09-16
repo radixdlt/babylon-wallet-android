@@ -71,10 +71,6 @@ fun TransactionPreviewTypeContent(
 
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
         }
-
-        PresentingProofsContent(
-            badges = preview.badges.toPersistentList()
-        )
     }
 }
 

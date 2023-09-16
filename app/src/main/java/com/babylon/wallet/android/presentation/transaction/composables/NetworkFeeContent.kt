@@ -29,13 +29,12 @@ fun NetworkFeeContent(
     Column(
         modifier = modifier.padding(horizontal = RadixTheme.dimensions.paddingDefault)
     ) {
-        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
+        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
         Row(
             modifier = Modifier
                 .padding(horizontal = RadixTheme.dimensions.paddingDefault)
         ) {
             Text(
-                modifier = Modifier,
                 text = stringResource(id = R.string.transactionReview_networkFee_heading).uppercase(),
                 style = RadixTheme.typography.body1Link,
                 color = RadixTheme.colors.gray2
