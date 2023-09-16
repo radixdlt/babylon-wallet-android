@@ -247,6 +247,7 @@ object Thumbnail {
             modifier = modifier,
             imageType = liquidStakeUnit.fungibleResource.iconUrl?.let { ImageType.External(it, ThumbnailRequestSize.LARGE) },
             emptyDrawable = com.babylon.wallet.android.R.drawable.ic_empty_pool_tokens,
+            emptyContentScale = ContentScale.Inside,
             shape = Shape.RoundedRectangle(12.dp),
             contentDescription = liquidStakeUnit.fungibleResource.displayTitle
         )
@@ -261,6 +262,7 @@ object Thumbnail {
             modifier = modifier,
             imageType = poolUnit.poolUnitResource.iconUrl?.let { ImageType.External(it, ThumbnailRequestSize.LARGE) },
             emptyDrawable = com.babylon.wallet.android.R.drawable.ic_empty_pool_tokens,
+            emptyContentScale = ContentScale.Inside,
             shape = Shape.RoundedRectangle(12.dp),
             contentDescription = poolUnit.poolUnitResource.displayTitle
         )
