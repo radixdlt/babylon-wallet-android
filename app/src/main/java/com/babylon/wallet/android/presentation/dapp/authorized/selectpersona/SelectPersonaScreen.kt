@@ -49,7 +49,7 @@ import com.babylon.wallet.android.presentation.status.signing.SigningStatusBotto
 import com.babylon.wallet.android.presentation.ui.composables.BackIconType
 import com.babylon.wallet.android.presentation.ui.composables.BottomPrimaryButton
 import com.babylon.wallet.android.presentation.ui.composables.ThumbnailRequestSize
-import com.babylon.wallet.android.presentation.ui.composables.PersonaCard
+import com.babylon.wallet.android.presentation.ui.composables.PersonaSelectableCard
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.rememberImageUrl
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
@@ -244,7 +244,7 @@ private fun SelectPersonaContent(
                     }
                 }
                 itemsIndexed(items = personas) { _, personaItem ->
-                    PersonaCard(
+                    PersonaSelectableCard(
                         modifier = Modifier
                             .fillMaxWidth()
                             .background(

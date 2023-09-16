@@ -78,12 +78,14 @@ import com.babylon.wallet.android.presentation.ui.composables.ActionableAddressV
 import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.DefaultModalSheetLayout
 import com.babylon.wallet.android.presentation.ui.composables.GrayBackgroundWrapper
+import com.babylon.wallet.android.presentation.ui.composables.PersonaCard
 import com.babylon.wallet.android.presentation.ui.composables.PersonaDataFieldRow
 import com.babylon.wallet.android.presentation.ui.composables.PersonaDataStringField
 import com.babylon.wallet.android.presentation.ui.composables.PersonaRoundedAvatar
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.SimpleAccountCard
 import com.babylon.wallet.android.presentation.ui.composables.StandardOneLineCard
+import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import com.google.accompanist.drawablepainter.rememberDrawablePainter
 import kotlinx.collections.immutable.ImmutableList
@@ -488,24 +490,11 @@ private fun DappDetails(
             }
             items(personaList) { persona ->
                 GrayBackgroundWrapper {
-                    StandardOneLineCard(
-                        "",
-                        persona.displayName,
-                        modifier = Modifier
-                            .shadow(elevation = 8.dp, shape = RadixTheme.shapes.roundedRectMedium)
-                            .clip(RadixTheme.shapes.roundedRectMedium)
-                            .throttleClickable {
-                                onPersonaClick(persona)
-                            }
-                            .fillMaxWidth()
-                            .background(
-                                RadixTheme.colors.white,
-                                shape = RadixTheme.shapes.roundedRectMedium
-                            )
-                            .padding(
-                                horizontal = dimensions.paddingLarge,
-                                vertical = dimensions.paddingDefault
-                            ),
+                    PersonaCard(
+                        modifier = Modifier.throttleClickable {
+                            onPersonaClick(persona)
+                        },
+                        persona = persona,
                         showChevron = false
                     )
                     Spacer(modifier = Modifier.height(dimensions.paddingDefault))
@@ -675,17 +664,11 @@ private fun PersonaDetailList(
         modifier = modifier
     ) {
         item {
-            AsyncImage(
-                model = "",
-                placeholder = painterResource(id = R.drawable.img_placeholder),
-                fallback = painterResource(id = R.drawable.img_placeholder),
-                error = painterResource(id = R.drawable.img_placeholder),
-                contentDescription = null,
-                contentScale = ContentScale.Crop,
+            Thumbnail.Persona(
                 modifier = Modifier
                     .padding(vertical = dimensions.paddingDefault)
-                    .size(104.dp)
-                    .clip(RadixTheme.shapes.circle)
+                    .size(104.dp),
+                persona = persona.persona
             )
         }
         item {

@@ -49,9 +49,9 @@ import com.babylon.wallet.android.presentation.ui.composables.DefaultModalSheetL
 import com.babylon.wallet.android.presentation.ui.composables.GrayBackgroundWrapper
 import com.babylon.wallet.android.presentation.ui.composables.PersonaDataFieldRow
 import com.babylon.wallet.android.presentation.ui.composables.PersonaDataStringField
-import com.babylon.wallet.android.presentation.ui.composables.PersonaRoundedAvatar
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.StandardOneLineCard
+import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
 import com.babylon.wallet.android.presentation.ui.composables.displayName
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import com.babylon.wallet.android.utils.biometricAuthenticate
@@ -182,11 +182,11 @@ private fun PersonaDetailList(
         modifier = modifier
     ) {
         item {
-            PersonaRoundedAvatar(
-                url = "",
+            Thumbnail.Persona(
                 modifier = Modifier
                     .padding(vertical = dimensions.paddingDefault)
-                    .size(104.dp)
+                    .size(104.dp),
+                persona = persona
             )
         }
         item {

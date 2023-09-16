@@ -1,6 +1,5 @@
 package com.babylon.wallet.android.presentation.settings.personas
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
@@ -19,8 +18,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -29,14 +26,15 @@ import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixSecondaryButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
+import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.presentation.settings.personas.PersonasViewModel.PersonasEvent
-import com.babylon.wallet.android.presentation.settings.personas.PersonasViewModel.PersonasUiState
+import com.babylon.wallet.android.presentation.ui.composables.PersonaCard
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
-import com.babylon.wallet.android.presentation.ui.composables.StandardOneLineCard
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
+import rdx.works.profile.data.model.pernetwork.Network
 
 @Composable
 fun PersonasScreen(
@@ -66,7 +64,7 @@ fun PersonasScreen(
 
 @Composable
 fun PersonasContent(
-    personas: ImmutableList<PersonasUiState.PersonaUiModel>,
+    personas: ImmutableList<Network.Persona>,
     modifier: Modifier,
     onBackClick: () -> Unit,
     createNewPersona: () -> Unit,
@@ -108,24 +106,11 @@ fun PersonasContent(
 //                )
                 }
                 itemsIndexed(items = personas) { _, personaItem ->
-                    StandardOneLineCard(
-                        "",
-                        personaItem.displayName,
-                        modifier = Modifier
-                            .shadow(elevation = 8.dp, shape = RadixTheme.shapes.roundedRectMedium)
-                            .clip(RadixTheme.shapes.roundedRectMedium)
-                            .throttleClickable {
-                                onPersonaClick(personaItem.address)
-                            }
-                            .fillMaxWidth()
-                            .background(
-                                RadixTheme.colors.white,
-                                shape = RadixTheme.shapes.roundedRectMedium
-                            )
-                            .padding(
-                                horizontal = RadixTheme.dimensions.paddingLarge,
-                                vertical = RadixTheme.dimensions.paddingDefault
-                            )
+                    PersonaCard(
+                        modifier = Modifier.throttleClickable {
+                            onPersonaClick(personaItem.address)
+                        },
+                        persona = personaItem,
                     )
                     Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
                 }
@@ -149,14 +134,14 @@ fun PersonasScreenPreview() {
     RadixWalletTheme {
         PersonasContent(
             personas = listOf(
-                PersonasUiState.PersonaUiModel(
-                    address = "address1",
-                    displayName = "persona1"
+                SampleDataProvider().samplePersona(
+                    personaAddress = "address1",
+                    personaName = "persona1"
                 ),
-                PersonasUiState.PersonaUiModel(
-                    address = "address2",
-                    displayName = "persona2"
-                )
+                SampleDataProvider().samplePersona(
+                    personaAddress = "address2",
+                    personaName = "persona2"
+                ),
             ).toImmutableList(),
             modifier = Modifier,
             onBackClick = {},

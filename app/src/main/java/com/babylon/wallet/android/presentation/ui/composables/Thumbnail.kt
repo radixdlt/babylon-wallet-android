@@ -30,7 +30,6 @@ import androidx.compose.ui.layout.ScaleFactor
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Dp
@@ -53,6 +52,7 @@ import com.babylon.wallet.android.domain.model.metadata.IconUrlMetadataItem
 import com.babylon.wallet.android.presentation.ui.modifier.applyIf
 import com.babylon.wallet.android.presentation.ui.modifier.applyWhen
 import rdx.works.core.toEncodedString
+import rdx.works.profile.data.model.pernetwork.Network
 import timber.log.Timber
 import java.math.BigDecimal
 import kotlin.math.absoluteValue
@@ -69,7 +69,7 @@ object Thumbnail {
         val imageType = remember(token, viewSize) {
             val size = viewSize
             if (token.isXrd) {
-                ImageType.Internal(drawableRes = R.drawable.ic_xrd_token)
+                ImageType.InternalRes(drawableRes = R.drawable.ic_xrd_token)
             } else if (size != null) {
                 val icon = token.iconUrl
                 if (icon != null) {
@@ -198,10 +198,15 @@ object Thumbnail {
     @Composable
     fun Persona(
         modifier: Modifier = Modifier,
-        // we don't support avatars in personas yet
-        //persona: Network.Persona
+        persona: Network.Persona
     ) {
-
+        Custom(
+            modifier = modifier,
+            imageType = null, // We don't support persona avatars yet
+            emptyDrawable = R.drawable.ic_persona,
+            shape = Shape.Circle,
+            contentDescription = persona.displayName
+        )
     }
 
     @Composable
@@ -237,7 +242,7 @@ object Thumbnail {
         val context = LocalContext.current
         val data: Any? = when (imageType) {
             is ImageType.External -> remember(imageType) { imageType.cloudFlareUri }
-            is ImageType.Internal -> imageType.drawableRes
+            is ImageType.InternalRes -> imageType.drawableRes
             else -> null
         }
 
@@ -303,7 +308,7 @@ object Thumbnail {
                 )
         }
 
-        data class Internal(@DrawableRes val drawableRes: Int) : ImageType
+        data class InternalRes(@DrawableRes val drawableRes: Int) : ImageType
     }
 
     sealed interface Shape {
