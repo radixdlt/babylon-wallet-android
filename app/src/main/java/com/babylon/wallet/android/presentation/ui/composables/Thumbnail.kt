@@ -239,6 +239,35 @@ object Thumbnail {
     }
 
     @Composable
+    fun LSU(
+        modifier: Modifier = Modifier,
+        liquidStakeUnit: Resource.LiquidStakeUnitResource
+    ) {
+        Custom(
+            modifier = modifier,
+            imageType = liquidStakeUnit.fungibleResource.iconUrl?.let { ImageType.External(it, ThumbnailRequestSize.LARGE) },
+            emptyDrawable = com.babylon.wallet.android.R.drawable.ic_empty_pool_tokens,
+            shape = Shape.RoundedRectangle(12.dp),
+            contentDescription = liquidStakeUnit.fungibleResource.displayTitle
+        )
+    }
+
+    @Composable
+    fun PoolUnit(
+        modifier: Modifier = Modifier,
+        poolUnit: Resource.PoolUnitResource
+    ) {
+        Custom(
+            modifier = modifier,
+            imageType = poolUnit.poolUnitResource.iconUrl?.let { ImageType.External(it, ThumbnailRequestSize.LARGE) },
+            emptyDrawable = com.babylon.wallet.android.R.drawable.ic_empty_pool_tokens,
+            shape = Shape.RoundedRectangle(12.dp),
+            contentDescription = poolUnit.poolUnitResource.displayTitle
+        )
+    }
+
+
+    @Composable
     private fun Custom(
         modifier: Modifier,
         imageType: ImageType?,

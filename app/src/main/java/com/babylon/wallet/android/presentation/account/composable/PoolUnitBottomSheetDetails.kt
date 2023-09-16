@@ -1,7 +1,5 @@
 package com.babylon.wallet.android.presentation.account.composable
 
-import android.graphics.drawable.ColorDrawable
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -15,30 +13,24 @@ import androidx.compose.material3.Divider
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.toArgb
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import coil.compose.AsyncImage
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.domain.model.Resource
 import com.babylon.wallet.android.presentation.ui.composables.BackIconType
-import com.babylon.wallet.android.presentation.ui.composables.ThumbnailRequestSize
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
+import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
 import com.babylon.wallet.android.presentation.ui.composables.icon
 import com.babylon.wallet.android.presentation.ui.composables.name
-import com.babylon.wallet.android.presentation.ui.composables.rememberImageUrl
 import com.babylon.wallet.android.presentation.ui.composables.resources.AddressRow
 import com.babylon.wallet.android.presentation.ui.composables.resources.PoolResourcesValues
 import com.babylon.wallet.android.presentation.ui.composables.resources.TokenBalance
 import com.babylon.wallet.android.presentation.ui.composables.resources.poolName
-import com.google.accompanist.drawablepainter.rememberDrawablePainter
 
 @Composable
 fun PoolUnitBottomSheetDetails(
@@ -64,18 +56,9 @@ fun PoolUnitBottomSheetDetails(
                 .padding(horizontal = RadixTheme.dimensions.paddingLarge),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            val placeholder = rememberDrawablePainter(drawable = ColorDrawable(RadixTheme.colors.gray3.toArgb()))
-            AsyncImage(
-                model = rememberImageUrl(fromUrl = poolUnit.poolUnitResource.iconUrl, size = ThumbnailRequestSize.LARGE),
-                placeholder = placeholder,
-                fallback = placeholder,
-                error = placeholder,
-                contentDescription = null,
-                contentScale = ContentScale.Crop,
-                modifier = Modifier
-                    .size(104.dp)
-                    .background(RadixTheme.colors.gray3, RadixTheme.shapes.roundedRectMedium)
-                    .clip(RadixTheme.shapes.roundedRectMedium)
+            Thumbnail.PoolUnit(
+                modifier = Modifier.size(104.dp),
+                poolUnit = poolUnit
             )
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
             TokenBalance(poolUnit.poolUnitResource)
