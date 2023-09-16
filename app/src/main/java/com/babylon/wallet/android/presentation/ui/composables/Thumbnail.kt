@@ -220,10 +220,16 @@ object Thumbnail {
     @Composable
     fun DApp(
         modifier: Modifier = Modifier,
-        dapp: DAppWithMetadata,
+        dapp: DAppWithMetadata?,
         shape: Shape
     ) {
-
+        Custom(
+            modifier = modifier,
+            imageType = dapp?.iconUrl?.let { ImageType.External(it, ThumbnailRequestSize.MEDIUM) },
+            emptyDrawable = R.drawable.ic_dapp,
+            shape = shape,
+            contentDescription = dapp?.name.orEmpty()
+        )
     }
 
     @Composable

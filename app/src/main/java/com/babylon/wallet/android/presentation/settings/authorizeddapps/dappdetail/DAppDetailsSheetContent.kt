@@ -28,9 +28,9 @@ import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.domain.model.DAppWithMetadataAndAssociatedResources
 import com.babylon.wallet.android.presentation.ui.composables.GrayBackgroundWrapper
-import com.babylon.wallet.android.presentation.ui.composables.PersonaRoundedAvatar
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.StandardOneLineCard
+import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
 import com.babylon.wallet.android.presentation.ui.composables.displayName
 import com.google.accompanist.drawablepainter.rememberDrawablePainter
 
@@ -52,19 +52,15 @@ fun DAppDetailsSheetContent(
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier.fillMaxSize()
         ) {
-            dApp.dAppWithMetadata.iconUrl?.let {
-                val url = it.toString()
-                if (url.isNotEmpty()) {
-                    item {
-                        PersonaRoundedAvatar(
-                            url = url,
-                            modifier = Modifier
-                                .padding(vertical = RadixTheme.dimensions.paddingDefault)
-                                .size(104.dp)
-                        )
-                        Divider(color = RadixTheme.colors.gray5)
-                    }
-                }
+            item {
+                Thumbnail.DApp(
+                    modifier = Modifier
+                        .padding(vertical = RadixTheme.dimensions.paddingDefault)
+                        .size(104.dp),
+                    dapp = dApp.dAppWithMetadata,
+                    shape = Thumbnail.Shape.RoundedRectangle(16.dp)
+                )
+                Divider(color = RadixTheme.colors.gray5)
             }
             dApp.dAppWithMetadata.description?.let { description ->
                 item {

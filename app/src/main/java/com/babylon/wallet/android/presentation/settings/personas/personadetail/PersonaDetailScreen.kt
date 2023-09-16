@@ -45,6 +45,7 @@ import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.domain.model.DAppWithMetadataAndAssociatedResources
 import com.babylon.wallet.android.presentation.common.FullscreenCircularProgressContent
 import com.babylon.wallet.android.presentation.settings.authorizeddapps.dappdetail.DAppDetailsSheetContent
+import com.babylon.wallet.android.presentation.ui.composables.DappCard
 import com.babylon.wallet.android.presentation.ui.composables.DefaultModalSheetLayout
 import com.babylon.wallet.android.presentation.ui.composables.GrayBackgroundWrapper
 import com.babylon.wallet.android.presentation.ui.composables.PersonaDataFieldRow
@@ -259,22 +260,11 @@ private fun PersonaDetailList(
             }
             items(authorizedDapps) { dApp ->
                 GrayBackgroundWrapper {
-                    StandardOneLineCard(
-                        image = dApp.dAppWithMetadata.iconUrl.toString(),
-                        title = dApp.dAppWithMetadata.displayName(),
-                        modifier = Modifier
-                            .shadow(elevation = 8.dp, shape = RadixTheme.shapes.roundedRectMedium)
-                            .clip(RadixTheme.shapes.roundedRectMedium)
-                            .throttleClickable {
-                                onDAppClick(dApp)
-                            }
-                            .fillMaxWidth()
-                            .background(RadixTheme.colors.white, shape = RadixTheme.shapes.roundedRectMedium)
-                            .padding(
-                                horizontal = dimensions.paddingLarge,
-                                vertical = dimensions.paddingDefault
-                            ),
-                        showChevron = false
+                    DappCard(
+                        modifier = Modifier.throttleClickable {
+                            onDAppClick(dApp)
+                        },
+                        dApp = dApp.dAppWithMetadata
                     )
                     Spacer(modifier = Modifier.height(dimensions.paddingLarge))
                 }

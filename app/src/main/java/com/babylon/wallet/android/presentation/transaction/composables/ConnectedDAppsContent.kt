@@ -1,6 +1,5 @@
 package com.babylon.wallet.android.presentation.transaction.composables
 
-import android.net.Uri
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -22,26 +21,23 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import coil.compose.AsyncImage
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.domain.model.DAppResources
 import com.babylon.wallet.android.domain.model.DAppWithMetadata
 import com.babylon.wallet.android.domain.model.DAppWithMetadataAndAssociatedResources
+import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
 import com.babylon.wallet.android.presentation.ui.composables.displayName
-import com.babylon.wallet.android.presentation.ui.composables.rememberImageUrl
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
@@ -102,16 +98,17 @@ fun ConnectedDAppsContent(
             val unverifiedDappsCount = connectedDApps.count { it.verified.not() }
             val verifiedDapps = connectedDApps.filter { it.verified }
             if (unverifiedDappsCount > 0) {
-                ConnectedDappRow(null, stringResource(id = R.string.transactionReview_unknownComponents, unverifiedDappsCount))
+                ConnectedDappRow(
+                    dApp = null,
+                    name = stringResource(id = R.string.transactionReview_unknownComponents, unverifiedDappsCount)
+                )
             }
             verifiedDapps.forEach { connectedDApp ->
                 ConnectedDappRow(
-                    connectedDApp.dAppWithMetadata.iconUrl,
-                    connectedDApp.dAppWithMetadata.displayName(),
-                    modifier = Modifier
-                        .throttleClickable {
-                            onDAppClick(connectedDApp)
-                        }
+                    dApp = connectedDApp.dAppWithMetadata,
+                    modifier = Modifier.throttleClickable {
+                        onDAppClick(connectedDApp)
+                    }
                 )
             }
         }
@@ -124,8 +121,8 @@ fun ConnectedDAppsContent(
 
 @Composable
 private fun ConnectedDappRow(
-    imageUrl: Uri?,
-    displayName: String,
+    dApp: DAppWithMetadata?,
+    name: String = dApp.displayName(),
     modifier: Modifier = Modifier
 ) {
     val strokeWidth = with(LocalDensity.current) { 2.dp.toPx() }
@@ -151,24 +148,14 @@ private fun ConnectedDappRow(
             .padding(8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        val placeholder = painterResource(id = R.drawable.ic_unknown_component)
-        AsyncImage(
-            model = rememberImageUrl(
-                fromUrl = imageUrl,
-                size = ImageSize.SMALL
-            ),
-            placeholder = placeholder,
-            fallback = placeholder,
-            error = placeholder,
-            contentDescription = null,
-            contentScale = ContentScale.Crop,
-            modifier = Modifier
-                .size(44.dp)
-                .clip(RadixTheme.shapes.circle)
+        Thumbnail.DApp(
+            modifier = Modifier.size(44.dp),
+            dapp = dApp,
+            shape = Thumbnail.Shape.Circle
         )
         Spacer(modifier = Modifier.width(RadixTheme.dimensions.paddingDefault))
         Text(
-            text = displayName,
+            text = name,
             style = RadixTheme.typography.body1HighImportance,
             color = RadixTheme.colors.gray1,
             overflow = TextOverflow.Ellipsis

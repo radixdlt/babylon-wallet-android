@@ -21,9 +21,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -31,7 +28,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import coil.compose.AsyncImage
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
@@ -42,9 +38,8 @@ import com.babylon.wallet.android.presentation.dapp.InitialAuthorizedLoginRoute
 import com.babylon.wallet.android.presentation.dapp.authorized.login.DAppAuthorizedLoginViewModel
 import com.babylon.wallet.android.presentation.dapp.authorized.login.Event
 import com.babylon.wallet.android.presentation.ui.composables.BackIconType
-import com.babylon.wallet.android.presentation.ui.composables.ThumbnailRequestSize
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
-import com.babylon.wallet.android.presentation.ui.composables.rememberImageUrl
+import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
 import com.babylon.wallet.android.utils.formattedSpans
 
 @Composable
@@ -123,17 +118,11 @@ private fun LoginPermissionContent(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
-            AsyncImage(
-                model = rememberImageUrl(fromUrl = dappWithMetadata?.iconUrl, size = ThumbnailRequestSize.MEDIUM),
-                placeholder = painterResource(id = R.drawable.img_placeholder),
-                fallback = painterResource(id = R.drawable.img_placeholder),
-                error = painterResource(id = R.drawable.img_placeholder),
-                contentDescription = null,
-                contentScale = ContentScale.Crop,
+            Thumbnail.DApp(
                 modifier = Modifier
-                    .size(64.dp)
-                    .background(RadixTheme.colors.gray3, RadixTheme.shapes.roundedRectDefault)
-                    .clip(RadixTheme.shapes.roundedRectDefault)
+                    .size(64.dp),
+                dapp = dappWithMetadata,
+                shape = Thumbnail.Shape.RoundedRectangle(16.dp)
             )
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
             Text(

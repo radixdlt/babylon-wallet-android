@@ -46,14 +46,12 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import coil.compose.AsyncImage
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixSecondaryButton
 import com.babylon.wallet.android.designsystem.theme.AccountGradientList
@@ -81,7 +79,6 @@ import com.babylon.wallet.android.presentation.ui.composables.GrayBackgroundWrap
 import com.babylon.wallet.android.presentation.ui.composables.PersonaCard
 import com.babylon.wallet.android.presentation.ui.composables.PersonaDataFieldRow
 import com.babylon.wallet.android.presentation.ui.composables.PersonaDataStringField
-import com.babylon.wallet.android.presentation.ui.composables.PersonaRoundedAvatar
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.SimpleAccountCard
 import com.babylon.wallet.android.presentation.ui.composables.StandardOneLineCard
@@ -331,18 +328,16 @@ private fun DappDetails(
             modifier = Modifier
                 .fillMaxSize()
         ) {
-            dAppWithResources?.dAppWithMetadata?.iconUrl?.let {
-                val url = it.toString()
-                if (url.isNotEmpty()) {
-                    item {
-                        PersonaRoundedAvatar(
-                            url = url,
-                            modifier = Modifier
-                                .padding(vertical = dimensions.paddingDefault)
-                                .size(104.dp)
-                        )
-                        Divider(color = RadixTheme.colors.gray5)
-                    }
+            dAppWithResources?.dAppWithMetadata?.let { dApp ->
+                item {
+                    Thumbnail.DApp(
+                        modifier = Modifier
+                            .padding(vertical = RadixTheme.dimensions.paddingDefault)
+                            .size(104.dp),
+                        dapp = dApp,
+                        shape = Thumbnail.Shape.RoundedRectangle(16.dp)
+                    )
+                    Divider(color = RadixTheme.colors.gray5)
                 }
             }
             dAppWithResources?.dAppWithMetadata?.description?.let { description ->
