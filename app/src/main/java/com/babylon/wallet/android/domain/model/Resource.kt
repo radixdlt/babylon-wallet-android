@@ -15,6 +15,7 @@ import com.radixdlt.ret.knownAddresses
 import com.radixdlt.ret.nonFungibleLocalIdAsStr
 import com.radixdlt.ret.nonFungibleLocalIdFromStr
 import rdx.works.core.displayableQuantity
+import rdx.works.profile.data.model.apppreferences.Gateways
 import rdx.works.profile.data.model.apppreferences.Radix
 import java.math.BigDecimal
 import java.math.MathContext
@@ -125,6 +126,9 @@ sealed class Resource {
             fun officialXrdResourceAddresses(): List<String> = Radix.Network.allKnownNetworks().map { network ->
                 knownAddresses(networkId = network.networkId().value.toUByte()).resourceAddresses.xrd.addressString()
             }
+
+            val officialXrdAddress: String
+                get() = knownAddresses(networkId = Radix.Gateway.default.network.id.toUByte()).resourceAddresses.xrd.addressString()
         }
     }
 

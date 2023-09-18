@@ -201,9 +201,12 @@ private fun LSUResourceValue(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingMedium)
     ) {
-        Thumbnail.LSU(
+        Thumbnail.Fungible(
             modifier = Modifier.size(44.dp),
-            liquidStakeUnit = resource
+            token = Resource.FungibleResource(
+                resourceAddress = Resource.FungibleResource.officialXrdAddress,
+                ownedAmount = null
+            )
         )
         Text(
             modifier = Modifier.weight(1f),
