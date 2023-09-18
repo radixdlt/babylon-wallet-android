@@ -8,41 +8,6 @@ on:
 
 jobs:
 
-  firebase_alpha:
-    name: "TEST STEP"
-    runs-on: ubuntu-latest
-    permissions:
-      id-token: write
-      contents: read
-      pull-requests: read
-    steps:
-      - uses: actions/checkout@3df4ab11eba7bda6032a0b82a6bb43b11571feac # v4.0.0
-        with:
-          token: ${{ secrets.RADIX_BOT_PAT }}
-
-      - name: Fetch Firebase App ID
-        uses: radixdlt/public-iac-resuable-artifacts/fetch-secrets@main
-        with:
-          role_name: 'arn:aws:iam::308190735829:role/gh-babylon-wallet-android-secrets-read-access'
-          app_name: 'babylon-wallet-android'
-          step_name: 'push-app-id'
-          secret_prefix: 'GH'
-          secret_name: "arn:aws:secretsmanager:eu-west-2:308190735829:secret:github-actions/radixdlt/babylon-wallet-android/firebase/secrets-NbB1MM"
-          parse_json: true
-      - name: Fetch Firebase App ID 1
-        uses: radixdlt/public-iac-resuable-artifacts/fetch-secrets@main
-        with:
-          role_name: 'arn:aws:iam::308190735829:role/gh-babylon-wallet-android-secrets-read-access'
-          app_name: 'babylon-wallet-android'
-          step_name: 'push-app-id-1'
-          secret_prefix: 'GH_1'
-          secret_name: "arn:aws:secretsmanager:eu-west-2:308190735829:secret:github-actions/radixdlt/babylon-wallet-android/firebase/secrets-NbB1MM"
-          parse_json: false
-      - name: print
-        run: |
-          #!/bin/bash -e
-          env
-
   cancel:
     runs-on: ubuntu-latest
     steps:
