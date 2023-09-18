@@ -75,7 +75,7 @@ fun NavigationHost(
             OnboardingScreen(
                 viewModel = hiltViewModel(),
                 onCreateNewWalletClick = {
-                    navController.navigateToEulaScreen()
+                    navController.createAccountScreen(CreateAccountRequestSource.FirstTime)
                 },
                 onBack = onCloseApp,
                 onRestoreFromBackupClick = {
