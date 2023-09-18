@@ -72,6 +72,8 @@ fun TransactionPreviewTypeContent(
                     onNonFungibleResourceClick(nonFungibleResource, nonFungibleResourceItem)
                 }
             )
+
+            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
         }
     }
 }
