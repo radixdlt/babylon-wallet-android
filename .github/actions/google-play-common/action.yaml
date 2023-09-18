@@ -1,0 +1,97 @@
+name: Download tools, fetch secrets and distribute
+
+description: Common steps for release trigger
+
+inputs:
+  gpc_track:
+    description: 'Google Play Console track. So far either alpha or production.'
+    required: true
+  radix_bot_username:
+    description: 'Git user to push commit with new app number.'
+    required: true
+  gpr_user:
+    description: 'User to fetch dependecies from another repository.'
+    required: true
+  gpr_token:
+    description: 'User credentials to fetch dependecies from another repository.'
+    required: true
+
+
+runs:
+  using: 'composite'
+  steps:
+  - name: Dump context
+    uses: crazy-max/ghaction-dump-context@8b55fa205ab4530d36f787a4de1009afaaa7f3b4 # v2.1.0
+
+  - name: Download Ruby (action)
+    uses: ruby/setup-ruby@5311f05890856149502132d25c4a24985a00d426 # v1.153.0
+    with:
+      ruby-version: '3.1.2'
+      bundler-cache: true
+
+  - uses: actions/setup-java@cd89f46ac9d01407894225f350157564c9c7cee2 # v3.12.0
+    with:
+      distribution: 'zulu' # See 'Supported distributions' for available options
+      java-version: '17'
+
+  - name: Fetch Keystore credentials
+    uses: radixdlt/public-iac-resuable-artifacts/fetch-secrets@main
+    with:
+      role_name: 'arn:aws:iam::308190735829:role/gh-babylon-wallet-android-secrets-read-access'
+      app_name: 'babylon-wallet-android'
+      step_name: 'release'
+      secret_prefix: 'GH'
+      secret_name: "arn:aws:secretsmanager:eu-west-2:308190735829:secret:github-actions/radixdlt/babylon-wallet-android/google-play-console/secrets"
+      parse_json: true
+
+  - name: Fetch Google service account credentials
+    uses: radixdlt/public-iac-resuable-artifacts/fetch-secrets@main
+    with:
+      role_name: 'arn:aws:iam::308190735829:role/gh-babylon-wallet-android-secrets-read-access'
+      app_name: 'babylon-wallet-android-sa'
+      step_name: 'release'
+      secret_prefix: 'GH_GOOGLE_SERVICE_ACCOUNT_JSON_FILE'
+      secret_name: "arn:aws:secretsmanager:eu-west-2:308190735829:secret:github-actions/radixdlt/babylon-wallet-android/google-play-console/service-account-json-file"
+      parse_json: false
+
+  - name: Fetch keystore.asc value
+    uses: radixdlt/public-iac-resuable-artifacts/fetch-secrets@main
+    with:
+      role_name: 'arn:aws:iam::308190735829:role/gh-babylon-wallet-android-secrets-read-access'
+      app_name: 'babylon-wallet-android-sa'
+      step_name: 'release'
+      secret_prefix: 'GH_KEYSTORE_ENCRYPTED_BASE64'
+      secret_name: "github-actions/radixdlt/babylon-wallet-android/google-play-console/keystore-asc"
+      parse_json: false
+
+  - name: Decode release keystore credentials
+    shell: bash
+    run: |
+      mkdir config/signing/release
+      echo "${{ env.GH_KEYSTORE_ENCRYPTED_BASE64 }}" > keystore.asc
+      gpg -d --passphrase "${{ env.GH_KEYSTORE_PASSPHRASE }}" --batch keystore.asc > config/signing/release/keystore.jks
+
+      echo "keyAlias=${{ env.GH_KEYSTORE_ALIAS }}" > config/signing/release/keystore.properties
+      echo "keyPassword=${{ env.GH_KEYSTORE_KEY_PASSWORD }}" >> config/signing/release/keystore.properties
+      echo "storeFile=../config/signing/release/keystore.jks" >> config/signing/release/keystore.properties
+      echo "storePassword=${{ env.GH_KEYSTORE_PASSWORD }}" >> config/signing/release/keystore.properties
+
+  - name: Set commit branch for release
+    shell: bash
+    run: |
+      echo "RELEASE_BRANCH=${{ github.event.release.target_commitish }}" >> $GITHUB_ENV
+
+  - name: Distribute to Google Play ${{ inputs.gpc_track }}
+    shell: bash
+    run: |
+      track=${{ inputs.gpc_track }}
+      git config user.name $GIT_USER
+      git config user.email $GIT_USER
+      bundle exec fastlane deployRelease track:$track
+      echo "### Distributed to Google Play ${{ inputs.gpc_track }} track! :rocket:" >> $GITHUB_STEP_SUMMARY
+    env:
+      GIT_USER: ${{ inputs.radix_bot_username }}
+      GPR_USER: ${{ inputs.gpr_user }}
+      GPR_TOKEN: ${{ inputs.gpr_token }}
+      RELEASE_BRANCH: ${{ env.RELEASE_BRANCH }}
+      GOOGLE_PLAY_DEPLOYER_JSON_FILE: ${{ env.GH_GOOGLE_SERVICE_ACCOUNT_JSON_FILE }}
