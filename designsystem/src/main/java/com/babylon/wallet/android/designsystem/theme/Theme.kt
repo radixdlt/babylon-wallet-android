@@ -343,6 +343,7 @@ fun RadixWalletTheme(
 ) {
     val colors = if (darkTheme) {
         // TODO update to dark color palette when we have it ready
+        // TODO remove android:windowBackground from themes.xml
         LightColorPalette
     } else {
         LightColorPalette
