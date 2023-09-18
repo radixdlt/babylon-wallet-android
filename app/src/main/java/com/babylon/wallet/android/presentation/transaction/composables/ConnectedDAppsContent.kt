@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -152,7 +151,7 @@ private fun ConnectedDappRow(
         Thumbnail.DApp(
             modifier = Modifier.size(44.dp),
             dapp = dApp,
-            shape = CircleShape
+            shape = RadixTheme.shapes.roundedRectXSmall
         )
         Spacer(modifier = Modifier.width(RadixTheme.dimensions.paddingDefault))
         Text(
