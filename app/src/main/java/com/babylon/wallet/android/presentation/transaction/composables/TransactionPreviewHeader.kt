@@ -15,14 +15,17 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Density
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.data.transaction.TransactionVersion
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
@@ -51,14 +54,16 @@ fun TransactionPreviewHeader(
         modifier = modifier,
         title = {
             Box {
-                Text(
-                    modifier = Modifier.alpha(1 - fraction * 2),
-                    text = title,
-                    style = RadixTheme.typography.title,
-                    color = RadixTheme.colors.gray1,
-                    textAlign = TextAlign.Start,
-                    maxLines = 2
-                )
+                CompositionLocalProvider(LocalDensity provides Density(LocalDensity.current.density, 1f)) {
+                    Text(
+                        modifier = Modifier.alpha(1 - fraction * 2),
+                        text = title,
+                        style = RadixTheme.typography.title,
+                        color = RadixTheme.colors.gray1,
+                        textAlign = TextAlign.Start,
+                        maxLines = 2
+                    )
+                }
 
                 val smallAlpha = if (fraction in 0f..0.6f) 0f else fraction + fraction * 0.6f
                 Text(

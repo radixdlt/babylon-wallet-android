@@ -61,10 +61,10 @@ fun WithdrawAccountContent(
                 }
             }
         }
-    }
-    if (showStrokeLine) {
-        StrokeLine(height = 40.dp)
-    } else {
-        Spacer(modifier = Modifier.height(40.dp))
+        if (showStrokeLine) {
+            StrokeLine(height = 40.dp)
+        } else {
+            Spacer(modifier = Modifier.height(40.dp))
+        }
     }
 }
