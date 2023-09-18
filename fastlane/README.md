@@ -13,45 +13,21 @@ For _fastlane_ installation instructions, see [Installing _fastlane_](https://do
 
 # Available Actions
 
-### alpha
+### deployFirebaseAlpha
 
 ```sh
-[bundle exec] fastlane alpha
+[bundle exec] fastlane deployFirebaseAlpha
 ```
 
-Deploy merges to main and any other manual trigger
+Deploy alpha to Firebase
 
-### preview
+### deployRelease
 
 ```sh
-[bundle exec] fastlane preview
+[bundle exec] fastlane deployRelease
 ```
 
-Deploy pre-releases
-
-### release_to_google_play
-
-```sh
-[bundle exec] fastlane release_to_google_play
-```
-
-Deploy to Google Play Console
-
-### bump_build_number
-
-```sh
-[bundle exec] fastlane bump_build_number
-```
-
-
-
-### get_version_name
-
-```sh
-[bundle exec] fastlane get_version_name
-```
-
-
+Deploy Release
 
 ----
 

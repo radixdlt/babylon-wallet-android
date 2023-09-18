@@ -22,8 +22,8 @@ misc.xml
 deploymentTargetDropDown.xml
 render.experimental.xml
 
-# Keystore files
-*.keystore
+# Release signing files
+config/signing/release/*
 
 # Google Services (e.g. APIs or Firebase)
 google-services.json
@@ -40,3 +40,5 @@ vendor/
 app/src/main/res/values/strings.xml
 # Jacoco export
 app/jacoco.exec
+# Fastlane report
+fastlane/report.xml
