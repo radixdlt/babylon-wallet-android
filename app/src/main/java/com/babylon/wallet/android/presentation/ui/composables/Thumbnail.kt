@@ -48,6 +48,7 @@ import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.domain.model.Badge
 import com.babylon.wallet.android.domain.model.DAppWithMetadata
 import com.babylon.wallet.android.domain.model.Resource
+import com.babylon.wallet.android.domain.model.ValidatorDetail
 import com.babylon.wallet.android.domain.model.metadata.IconUrlMetadataItem
 import com.babylon.wallet.android.presentation.ui.modifier.applyIf
 import com.babylon.wallet.android.presentation.ui.modifier.applyWhen
@@ -247,7 +248,7 @@ object Thumbnail {
             modifier = modifier,
             imageType = liquidStakeUnit.fungibleResource.iconUrl?.let { ImageType.External(it, ThumbnailRequestSize.LARGE) },
             emptyDrawable = com.babylon.wallet.android.R.drawable.ic_empty_pool_tokens,
-            emptyContentScale = ContentScale.Inside,
+            emptyContentScale = CustomContentScale.standard(density = LocalDensity.current),
             shape = Shape.RoundedRectangle(12.dp),
             contentDescription = liquidStakeUnit.fungibleResource.displayTitle
         )
@@ -262,9 +263,24 @@ object Thumbnail {
             modifier = modifier,
             imageType = poolUnit.poolUnitResource.iconUrl?.let { ImageType.External(it, ThumbnailRequestSize.LARGE) },
             emptyDrawable = com.babylon.wallet.android.R.drawable.ic_empty_pool_tokens,
-            emptyContentScale = ContentScale.Inside,
+            emptyContentScale = CustomContentScale.standard(density = LocalDensity.current),
             shape = Shape.RoundedRectangle(12.dp),
             contentDescription = poolUnit.poolUnitResource.displayTitle
+        )
+    }
+
+    @Composable
+    fun Validator(
+        modifier: Modifier = Modifier,
+        validator: ValidatorDetail
+    ) {
+        Custom(
+            modifier = modifier,
+            imageType = validator.url?.let { ImageType.External(it, ThumbnailRequestSize.MEDIUM) },
+            emptyDrawable = R.drawable.ic_nfts,
+            emptyContentScale = CustomContentScale.standard(density = LocalDensity.current),
+            shape = Shape.RoundedRectangle(8.dp),
+            contentDescription = validator.name
         )
     }
 
