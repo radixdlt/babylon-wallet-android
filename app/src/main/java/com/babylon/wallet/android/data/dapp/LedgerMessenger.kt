@@ -159,7 +159,7 @@ class LedgerMessengerImpl @Inject constructor(
                             is MessageFromDataChannel.LedgerResponse.LedgerErrorResponse -> {
                                 emit(
                                     Result.failure(
-                                        DappRequestException(DappRequestFailure.LedgerCommunicationFailure.FailedToDerivePublicKeys)
+                                        DappRequestException(DappRequestFailure.LedgerCommunicationFailure.FailedToSignTransaction)
                                     )
                                 )
                             }
