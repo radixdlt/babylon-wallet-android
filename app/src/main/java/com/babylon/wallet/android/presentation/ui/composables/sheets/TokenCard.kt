@@ -67,7 +67,6 @@ fun FungibleCard(
     }
 }
 
-
 @Composable
 fun NonFungibleCard(
     nonFungible: Resource.NonFungibleResource,

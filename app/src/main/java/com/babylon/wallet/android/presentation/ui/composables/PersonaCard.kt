@@ -132,7 +132,7 @@ fun PersonaSelectableCard(modifier: Modifier, persona: PersonaUiModel, onSelectP
 fun DAppLoginContentPreview() {
     RadixWalletTheme {
         PersonaCard(persona = SampleDataProvider().samplePersona())
-        
+
         PersonaSelectableCard(
             modifier = Modifier
                 .fillMaxWidth()
