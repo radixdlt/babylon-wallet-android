@@ -174,8 +174,7 @@ private fun PersonaDataOngoingPermissionContent(
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
             Thumbnail.DApp(
                 modifier = Modifier.size(64.dp),
-                dapp = dappWithMetadata,
-                shape = Thumbnail.Shape.RoundedRectangle(16.dp)
+                dapp = dappWithMetadata
             )
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
             Text(

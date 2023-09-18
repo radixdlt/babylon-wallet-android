@@ -45,9 +45,9 @@ import com.babylon.wallet.android.presentation.dapp.authorized.login.Event
 import com.babylon.wallet.android.presentation.status.signing.SigningStatusBottomDialog
 import com.babylon.wallet.android.presentation.ui.composables.BackIconType
 import com.babylon.wallet.android.presentation.ui.composables.BottomPrimaryButton
-import com.babylon.wallet.android.presentation.ui.composables.PersonaSelectableCard
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
+import com.babylon.wallet.android.presentation.ui.composables.card.PersonaSelectableCard
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import com.babylon.wallet.android.utils.biometricAuthenticate
 import com.babylon.wallet.android.utils.biometricAuthenticateSuspend
@@ -193,8 +193,7 @@ private fun SelectPersonaContent(
                     Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
                     Thumbnail.DApp(
                         modifier = Modifier.size(104.dp),
-                        dapp = dappWithMetadata,
-                        shape = Thumbnail.Shape.RoundedRectangle(16.dp)
+                        dapp = dappWithMetadata
                     )
                     Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
                     Text(

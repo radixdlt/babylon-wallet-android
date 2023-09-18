@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Text
@@ -25,6 +26,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.ScaleFactor
 import androidx.compose.ui.layout.onGloballyPositioned
@@ -51,7 +53,6 @@ import com.babylon.wallet.android.domain.model.Resource
 import com.babylon.wallet.android.domain.model.ValidatorDetail
 import com.babylon.wallet.android.domain.model.metadata.IconUrlMetadataItem
 import com.babylon.wallet.android.presentation.ui.modifier.applyIf
-import com.babylon.wallet.android.presentation.ui.modifier.applyWhen
 import rdx.works.core.toEncodedString
 import rdx.works.profile.data.model.pernetwork.Network
 import timber.log.Timber
@@ -90,7 +91,7 @@ object Thumbnail {
             imageType = imageType,
             imageContentScale = ContentScale.Crop,
             emptyDrawable = R.drawable.ic_token,
-            shape = Shape.Circle,
+            shape = CircleShape,
             contentDescription = token.displayTitle
         )
     }
@@ -206,7 +207,7 @@ object Thumbnail {
             modifier = modifier,
             imageType = null, // We don't support persona avatars yet
             emptyDrawable = R.drawable.ic_persona,
-            shape = Shape.Circle,
+            shape = CircleShape,
             contentDescription = persona.displayName
         )
     }
@@ -220,7 +221,7 @@ object Thumbnail {
             modifier = modifier,
             imageType = null, // badge.icon?.let { ImageType.External(it, ThumbnailRequestSize.SMALL) },
             emptyDrawable = R.drawable.ic_dapp,
-            shape = Shape.RoundedRectangle(4.dp),
+            shape = RadixTheme.shapes.roundedRectXSmall,
             contentDescription = badge.name.orEmpty()
         )
     }
@@ -229,7 +230,7 @@ object Thumbnail {
     fun DApp(
         modifier: Modifier = Modifier,
         dapp: DAppWithMetadata?,
-        shape: Shape
+        shape: Shape = RadixTheme.shapes.roundedRectDefault
     ) {
         Custom(
             modifier = modifier,
@@ -250,7 +251,7 @@ object Thumbnail {
             imageType = liquidStakeUnit.fungibleResource.iconUrl?.let { ImageType.External(it, ThumbnailRequestSize.LARGE) },
             emptyDrawable = com.babylon.wallet.android.R.drawable.ic_empty_pool_tokens,
             emptyContentScale = CustomContentScale.standard(density = LocalDensity.current),
-            shape = Shape.RoundedRectangle(12.dp),
+            shape = RadixTheme.shapes.roundedRectMedium,
             contentDescription = liquidStakeUnit.fungibleResource.displayTitle
         )
     }
@@ -265,7 +266,7 @@ object Thumbnail {
             imageType = poolUnit.poolUnitResource.iconUrl?.let { ImageType.External(it, ThumbnailRequestSize.LARGE) },
             emptyDrawable = com.babylon.wallet.android.R.drawable.ic_empty_pool_tokens,
             emptyContentScale = CustomContentScale.standard(density = LocalDensity.current),
-            shape = Shape.RoundedRectangle(12.dp),
+            shape = RadixTheme.shapes.roundedRectMedium,
             contentDescription = poolUnit.poolUnitResource.displayTitle
         )
     }
@@ -280,7 +281,7 @@ object Thumbnail {
             imageType = validator.url?.let { ImageType.External(it, ThumbnailRequestSize.MEDIUM) },
             emptyDrawable = R.drawable.ic_nfts,
             emptyContentScale = CustomContentScale.standard(density = LocalDensity.current),
-            shape = Shape.RoundedRectangle(8.dp),
+            shape = RadixTheme.shapes.roundedRectSmall,
             contentDescription = validator.name
         )
     }
@@ -327,10 +328,7 @@ object Thumbnail {
 
         AsyncImage(
             modifier = modifier
-                // Draw as a circle when needed
-                .applyIf(shape is Shape.Circle, Modifier.clip(RadixTheme.shapes.circle))
-                // Draw as a rounded rect when needed
-                .applyWhen(shape as? Shape.RoundedRectangle) { Modifier.clip(RoundedCornerShape(it.cornerRadius)) }
+                .clip(shape)
                 .applyIf(
                     condition = painterState !is AsyncImagePainter.State.Success,
                     modifier = Modifier.background(backgroundColor)
@@ -368,11 +366,6 @@ object Thumbnail {
         }
 
         data class InternalRes(@DrawableRes val drawableRes: Int) : ImageType
-    }
-
-    sealed interface Shape {
-        data class RoundedRectangle(val cornerRadius: Dp) : Shape
-        data object Circle : Shape
     }
 
     private class CustomContentScale(private val sizeRange: IntRange) : ContentScale {
@@ -483,13 +476,13 @@ fun NonFungibleResourcesPreview() {
                 Thumbnail.NonFungible(
                     modifier = Modifier.size(100.dp),
                     collection = withUrl,
-                    shape = Thumbnail.Shape.Circle
+                    shape = CircleShape
                 )
 
                 Thumbnail.NonFungible(
                     modifier = Modifier.size(100.dp),
                     collection = withUrl,
-                    shape = Thumbnail.Shape.RoundedRectangle(RadixTheme.dimensions.paddingSmall)
+                    shape = RadixTheme.shapes.roundedRectSmall
                 )
             }
 
@@ -506,13 +499,13 @@ fun NonFungibleResourcesPreview() {
                 Thumbnail.NonFungible(
                     modifier = Modifier.size(100.dp),
                     collection = withNoUrl,
-                    shape = Thumbnail.Shape.Circle
+                    shape = CircleShape
                 )
 
                 Thumbnail.NonFungible(
                     modifier = Modifier.size(100.dp),
                     collection = withNoUrl,
-                    shape = Thumbnail.Shape.RoundedRectangle(RadixTheme.dimensions.paddingSmall)
+                    shape = RadixTheme.shapes.roundedRectSmall
                 )
             }
 
@@ -530,13 +523,13 @@ fun NonFungibleResourcesPreview() {
                 Thumbnail.NonFungible(
                     modifier = Modifier.size(100.dp),
                     collection = error,
-                    shape = Thumbnail.Shape.Circle
+                    shape = CircleShape
                 )
 
                 Thumbnail.NonFungible(
                     modifier = Modifier.size(100.dp),
                     collection = error,
-                    shape = Thumbnail.Shape.RoundedRectangle(RadixTheme.dimensions.paddingSmall)
+                    shape = RadixTheme.shapes.roundedRectSmall
                 )
             }
         }

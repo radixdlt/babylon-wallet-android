@@ -122,7 +122,7 @@ private fun LoginPermissionContent(
                 modifier = Modifier
                     .size(64.dp),
                 dapp = dappWithMetadata,
-                shape = Thumbnail.Shape.RoundedRectangle(16.dp)
+                shape = RadixTheme.shapes.roundedRectSmall
             )
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
             Text(

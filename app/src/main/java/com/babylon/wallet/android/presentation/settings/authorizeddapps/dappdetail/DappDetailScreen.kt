@@ -73,14 +73,14 @@ import com.babylon.wallet.android.presentation.ui.composables.ActionableAddressV
 import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.DefaultModalSheetLayout
 import com.babylon.wallet.android.presentation.ui.composables.GrayBackgroundWrapper
-import com.babylon.wallet.android.presentation.ui.composables.PersonaCard
 import com.babylon.wallet.android.presentation.ui.composables.PersonaDataFieldRow
 import com.babylon.wallet.android.presentation.ui.composables.PersonaDataStringField
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.SimpleAccountCard
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
-import com.babylon.wallet.android.presentation.ui.composables.sheets.FungibleCard
-import com.babylon.wallet.android.presentation.ui.composables.sheets.NonFungibleCard
+import com.babylon.wallet.android.presentation.ui.composables.card.FungibleCard
+import com.babylon.wallet.android.presentation.ui.composables.card.NonFungibleCard
+import com.babylon.wallet.android.presentation.ui.composables.card.PersonaCard
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
@@ -331,8 +331,7 @@ private fun DappDetails(
                         modifier = Modifier
                             .padding(vertical = RadixTheme.dimensions.paddingDefault)
                             .size(104.dp),
-                        dapp = dApp,
-                        shape = Thumbnail.Shape.RoundedRectangle(16.dp)
+                        dapp = dApp
                     )
                     Divider(color = RadixTheme.colors.gray5)
                 }

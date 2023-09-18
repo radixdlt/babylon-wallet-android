@@ -99,7 +99,7 @@ fun NonFungibleResourceCollectionHeader(
                 Thumbnail.NonFungible(
                     modifier = Modifier.size(44.dp),
                     collection = collection,
-                    shape = Thumbnail.Shape.RoundedRectangle(8.dp)
+                    shape = RadixTheme.shapes.roundedRectDefault
                 )
                 Column(verticalArrangement = Arrangement.Center) {
                     if (collection.name.isNotEmpty()) {

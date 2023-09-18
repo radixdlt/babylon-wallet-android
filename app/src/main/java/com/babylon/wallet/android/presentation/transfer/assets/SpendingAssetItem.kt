@@ -296,7 +296,7 @@ private fun NonFungibleSpendingAsset(
         Thumbnail.NonFungible(
             modifier = Modifier.size(55.dp),
             collection = resource,
-            shape = Thumbnail.Shape.RoundedRectangle(8.dp)
+            shape = RadixTheme.shapes.roundedRectSmall
         )
         Spacer(modifier = Modifier.width(RadixTheme.dimensions.paddingDefault))
         Column {

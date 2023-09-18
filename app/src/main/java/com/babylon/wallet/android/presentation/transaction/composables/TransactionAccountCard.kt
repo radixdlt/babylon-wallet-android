@@ -168,7 +168,7 @@ private fun TransferableItemContent(
                 Thumbnail.NonFungible(
                     modifier = Modifier.size(44.dp),
                     collection = resource.resource,
-                    shape = Thumbnail.Shape.RoundedRectangle(8.dp)
+                    shape = RadixTheme.shapes.roundedRectSmall
                 )
             }
         }
@@ -195,7 +195,7 @@ private fun TransferableItemContent(
                 if (guaranteedQuantity != null) {
                     Text(
                         modifier = Modifier.padding(end = RadixTheme.dimensions.paddingSmall),
-                        text = stringResource(id = com.babylon.wallet.android.R.string.transactionReview_estimated),
+                        text = stringResource(id = R.string.transactionReview_estimated),
                         style = RadixTheme.typography.body2Link,
                         color = RadixTheme.colors.gray1,
                         maxLines = 1,

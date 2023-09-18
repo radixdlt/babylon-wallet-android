@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.presentation.ui.composables
+package com.babylon.wallet.android.presentation.ui.composables.card
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -19,6 +19,8 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.domain.model.DAppWithMetadata
+import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
+import com.babylon.wallet.android.presentation.ui.composables.displayName
 
 @Composable
 fun DappCard(
@@ -43,7 +45,7 @@ fun DappCard(
         Thumbnail.DApp(
             modifier = Modifier.size(44.dp),
             dapp = dApp,
-            shape = Thumbnail.Shape.RoundedRectangle(RadixTheme.dimensions.paddingSmall)
+            shape = RadixTheme.shapes.roundedRectSmall
         )
         Text(
             modifier = Modifier.weight(1f),

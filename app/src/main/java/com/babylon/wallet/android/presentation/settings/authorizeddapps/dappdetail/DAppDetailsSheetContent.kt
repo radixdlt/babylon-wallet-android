@@ -24,9 +24,9 @@ import com.babylon.wallet.android.domain.model.DAppWithMetadataAndAssociatedReso
 import com.babylon.wallet.android.presentation.ui.composables.GrayBackgroundWrapper
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
+import com.babylon.wallet.android.presentation.ui.composables.card.FungibleCard
+import com.babylon.wallet.android.presentation.ui.composables.card.NonFungibleCard
 import com.babylon.wallet.android.presentation.ui.composables.displayName
-import com.babylon.wallet.android.presentation.ui.composables.sheets.FungibleCard
-import com.babylon.wallet.android.presentation.ui.composables.sheets.NonFungibleCard
 
 @Composable
 fun DAppDetailsSheetContent(
@@ -51,8 +51,7 @@ fun DAppDetailsSheetContent(
                     modifier = Modifier
                         .padding(vertical = RadixTheme.dimensions.paddingDefault)
                         .size(104.dp),
-                    dapp = dApp.dAppWithMetadata,
-                    shape = Thumbnail.Shape.RoundedRectangle(16.dp)
+                    dapp = dApp.dAppWithMetadata
                 )
                 Divider(color = RadixTheme.colors.gray5)
             }
