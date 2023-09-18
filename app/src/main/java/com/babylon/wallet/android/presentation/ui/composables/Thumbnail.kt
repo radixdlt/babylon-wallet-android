@@ -55,7 +55,6 @@ import com.babylon.wallet.android.domain.model.metadata.IconUrlMetadataItem
 import com.babylon.wallet.android.presentation.ui.modifier.applyIf
 import rdx.works.core.toEncodedString
 import rdx.works.profile.data.model.pernetwork.Network
-import timber.log.Timber
 import java.math.BigDecimal
 import kotlin.math.absoluteValue
 
@@ -77,7 +76,7 @@ object Thumbnail {
                 if (icon != null) {
                     ImageType.External(
                         uri = icon,
-                        size = ThumbnailRequestSize.closest(size).also { Timber.tag("Bakos").d(it.toSizeString()) }
+                        size = ThumbnailRequestSize.closest(size)
                     )
                 } else {
                     null
@@ -219,7 +218,7 @@ object Thumbnail {
     ) {
         Custom(
             modifier = modifier,
-            imageType = null, // badge.icon?.let { ImageType.External(it, ThumbnailRequestSize.SMALL) },
+            imageType = badge.icon?.let { ImageType.External(it, ThumbnailRequestSize.SMALL) },
             emptyDrawable = R.drawable.ic_dapp,
             shape = RadixTheme.shapes.roundedRectXSmall,
             contentDescription = badge.name.orEmpty()

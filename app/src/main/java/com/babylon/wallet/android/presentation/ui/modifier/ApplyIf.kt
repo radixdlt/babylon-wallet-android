@@ -12,14 +12,3 @@ fun Modifier.applyIf(
         this
     }
 }
-
-fun <T> Modifier.applyWhen(
-    condition: T?,
-    modifier: (T) -> Modifier
-): Modifier {
-    return if (condition != null) {
-        then(modifier(condition))
-    } else {
-        this
-    }
-}
