@@ -185,7 +185,7 @@ private fun AssetsContent(
                             ),
                             shape = RadixTheme.shapes.roundedRectSmall
                         )
-                        .padding(top = 4.dp), // Needed since the icon is not correctly centered.
+                        .padding(4.dp),
                     painter = painterResource(id = R.drawable.ic_nfts),
                     contentDescription = null
                 )
