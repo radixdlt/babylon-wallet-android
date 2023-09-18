@@ -2,7 +2,6 @@
 
 package com.babylon.wallet.android.presentation.settings.authorizeddapps.dappdetail
 
-import android.graphics.drawable.ColorDrawable
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -42,10 +41,8 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
@@ -81,10 +78,10 @@ import com.babylon.wallet.android.presentation.ui.composables.PersonaDataFieldRo
 import com.babylon.wallet.android.presentation.ui.composables.PersonaDataStringField
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.SimpleAccountCard
-import com.babylon.wallet.android.presentation.ui.composables.StandardOneLineCard
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
+import com.babylon.wallet.android.presentation.ui.composables.sheets.FungibleCard
+import com.babylon.wallet.android.presentation.ui.composables.sheets.NonFungibleCard
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
-import com.google.accompanist.drawablepainter.rememberDrawablePainter
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -396,33 +393,12 @@ private fun DappDetails(
             }
             itemsIndexed(dAppWithResources?.fungibleResources.orEmpty()) { _, fungibleToken ->
                 GrayBackgroundWrapper {
-                    val placeholder = if (fungibleToken.isXrd) {
-                        painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_xrd_token)
-                    } else {
-                        rememberDrawablePainter(drawable = ColorDrawable(RadixTheme.colors.gray3.toArgb()))
-                    }
-                    StandardOneLineCard(
-                        image = fungibleToken.iconUrl.toString(),
-                        title = fungibleToken.displayTitle.ifEmpty {
-                            stringResource(id = R.string.authorizedDapps_dAppDetails_unknownTokenName)
+                    FungibleCard(
+                        modifier = Modifier.throttleClickable {
+                            onFungibleTokenClick(fungibleToken)
                         },
-                        modifier = Modifier
-                            .shadow(elevation = 8.dp, shape = RadixTheme.shapes.roundedRectMedium)
-                            .clip(RadixTheme.shapes.roundedRectMedium)
-                            .throttleClickable {
-                                onFungibleTokenClick(fungibleToken)
-                            }
-                            .fillMaxWidth()
-                            .background(
-                                RadixTheme.colors.white,
-                                shape = RadixTheme.shapes.roundedRectMedium
-                            )
-                            .padding(
-                                horizontal = dimensions.paddingLarge,
-                                vertical = dimensions.paddingDefault
-                            ),
-                        showChevron = false,
-                        placeholder = placeholder
+                        fungible = fungibleToken,
+                        showChevron = false
                     )
                     Spacer(modifier = Modifier.height(dimensions.paddingDefault))
                 }
@@ -444,28 +420,12 @@ private fun DappDetails(
             }
             items(dAppWithResources?.nonFungibleResources.orEmpty()) { nonFungibleResource ->
                 GrayBackgroundWrapper {
-                    StandardOneLineCard(
-                        image = nonFungibleResource.iconUrl?.toString().orEmpty(),
-                        title = nonFungibleResource.name.ifEmpty {
-                            stringResource(id = R.string.authorizedDapps_dAppDetails_unknownTokenName)
+                    NonFungibleCard(
+                        modifier = Modifier.throttleClickable {
+                            onNonFungibleClick(nonFungibleResource)
                         },
-                        modifier = Modifier
-                            .shadow(elevation = 8.dp, shape = RadixTheme.shapes.roundedRectMedium)
-                            .clip(RadixTheme.shapes.roundedRectMedium)
-                            .throttleClickable {
-                                onNonFungibleClick(nonFungibleResource)
-                            }
-                            .fillMaxWidth()
-                            .background(
-                                RadixTheme.colors.white,
-                                shape = RadixTheme.shapes.roundedRectMedium
-                            )
-                            .padding(
-                                horizontal = dimensions.paddingLarge,
-                                vertical = dimensions.paddingDefault
-                            ),
-                        showChevron = false,
-                        placeholder = rememberDrawablePainter(drawable = ColorDrawable(RadixTheme.colors.gray3.toArgb()))
+                        nonFungible = nonFungibleResource,
+                        showChevron = false
                     )
                     Spacer(modifier = Modifier.height(dimensions.paddingDefault))
                 }

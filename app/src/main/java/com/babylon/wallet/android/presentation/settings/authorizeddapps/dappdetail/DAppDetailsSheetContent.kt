@@ -1,7 +1,5 @@
 package com.babylon.wallet.android.presentation.settings.authorizeddapps.dappdetail
 
-import android.graphics.drawable.ColorDrawable
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
@@ -17,10 +15,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.graphics.toArgb
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -29,10 +23,10 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.domain.model.DAppWithMetadataAndAssociatedResources
 import com.babylon.wallet.android.presentation.ui.composables.GrayBackgroundWrapper
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
-import com.babylon.wallet.android.presentation.ui.composables.StandardOneLineCard
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
 import com.babylon.wallet.android.presentation.ui.composables.displayName
-import com.google.accompanist.drawablepainter.rememberDrawablePainter
+import com.babylon.wallet.android.presentation.ui.composables.sheets.FungibleCard
+import com.babylon.wallet.android.presentation.ui.composables.sheets.NonFungibleCard
 
 @Composable
 fun DAppDetailsSheetContent(
@@ -116,28 +110,9 @@ fun DAppDetailsSheetContent(
             }
             items(dApp.fungibleResources) { fungibleToken ->
                 GrayBackgroundWrapper {
-                    val placeholder = if (fungibleToken.isXrd) {
-                        painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_xrd_token)
-                    } else {
-                        rememberDrawablePainter(drawable = ColorDrawable(RadixTheme.colors.gray3.toArgb()))
-                    }
-                    StandardOneLineCard(
-                        image = fungibleToken.iconUrl.toString(),
-                        title = fungibleToken.displayTitle,
-                        modifier = Modifier
-                            .shadow(elevation = 8.dp, shape = RadixTheme.shapes.roundedRectMedium)
-                            .clip(RadixTheme.shapes.roundedRectMedium)
-                            .fillMaxWidth()
-                            .background(
-                                RadixTheme.colors.white,
-                                shape = RadixTheme.shapes.roundedRectMedium
-                            )
-                            .padding(
-                                horizontal = RadixTheme.dimensions.paddingLarge,
-                                vertical = RadixTheme.dimensions.paddingDefault
-                            ),
-                        showChevron = false,
-                        placeholder = placeholder
+                    FungibleCard(
+                        fungible = fungibleToken,
+                        showChevron = false
                     )
                     Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
                 }
@@ -159,21 +134,8 @@ fun DAppDetailsSheetContent(
             }
             items(dApp.nonFungibleResources) { nonFungibleResource ->
                 GrayBackgroundWrapper {
-                    StandardOneLineCard(
-                        image = nonFungibleResource.iconUrl.toString(),
-                        title = nonFungibleResource.name,
-                        modifier = Modifier
-                            .shadow(elevation = 8.dp, shape = RadixTheme.shapes.roundedRectMedium)
-                            .clip(RadixTheme.shapes.roundedRectMedium)
-                            .fillMaxWidth()
-                            .background(
-                                RadixTheme.colors.white,
-                                shape = RadixTheme.shapes.roundedRectMedium
-                            )
-                            .padding(
-                                horizontal = RadixTheme.dimensions.paddingLarge,
-                                vertical = RadixTheme.dimensions.paddingDefault
-                            ),
+                    NonFungibleCard(
+                        nonFungible = nonFungibleResource,
                         showChevron = false
                     )
                     Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
