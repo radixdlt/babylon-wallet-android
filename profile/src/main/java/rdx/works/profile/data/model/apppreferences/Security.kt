@@ -16,7 +16,7 @@ data class Security(
 
     companion object {
         val default = Security(
-            isDeveloperModeEnabled = true,
+            isDeveloperModeEnabled = false,
             // Will be fixed later: https://rdxworks.slack.com/archives/C03Q8QK1GLW/p1692805178941029
             structureConfigurationReferences = emptyList(),
             isCloudProfileSyncEnabled = true
