@@ -1,5 +1,6 @@
-package com.babylon.wallet.android.presentation.ui.composables
+package com.babylon.wallet.android.presentation.ui.composables.card
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -9,25 +10,76 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Divider
+import androidx.compose.material3.Icon
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.RadioButtonDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.presentation.dapp.authorized.selectpersona.PersonaUiModel
+import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
 import rdx.works.profile.data.model.pernetwork.Network
 
 @Composable
-fun PersonaCard(modifier: Modifier, persona: PersonaUiModel, onSelectPersona: (Network.Persona) -> Unit) {
+fun PersonaCard(
+    modifier: Modifier = Modifier,
+    persona: Network.Persona,
+    showChevron: Boolean = true,
+    elevation: Dp = 8.dp
+) {
+    Row(
+        modifier = modifier
+            .shadow(elevation = elevation, shape = RadixTheme.shapes.roundedRectMedium)
+            .clip(RadixTheme.shapes.roundedRectMedium)
+            .fillMaxWidth()
+            .background(RadixTheme.colors.white, shape = RadixTheme.shapes.roundedRectMedium)
+            .padding(
+                horizontal = RadixTheme.dimensions.paddingLarge,
+                vertical = RadixTheme.dimensions.paddingDefault
+            ),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingDefault)
+    ) {
+        Thumbnail.Persona(
+            modifier = Modifier.size(44.dp),
+            persona = persona
+        )
+        Text(
+            modifier = Modifier.weight(1f),
+            text = persona.displayName,
+            style = RadixTheme.typography.secondaryHeader,
+            color = RadixTheme.colors.gray1,
+            maxLines = 2,
+            overflow = TextOverflow.Ellipsis
+        )
+        if (showChevron) {
+            Icon(
+                painter = painterResource(
+                    id = com.babylon.wallet.android.designsystem.R.drawable.ic_chevron_right
+                ),
+                contentDescription = null,
+                tint = RadixTheme.colors.gray1
+            )
+        }
+    }
+}
+
+@Composable
+fun PersonaSelectableCard(modifier: Modifier, persona: PersonaUiModel, onSelectPersona: (Network.Persona) -> Unit) {
     val paddingDefault = RadixTheme.dimensions.paddingDefault
     Column(modifier) {
         Row(
@@ -37,7 +89,10 @@ fun PersonaCard(modifier: Modifier, persona: PersonaUiModel, onSelectPersona: (N
             horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingDefault),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            PersonaRoundedAvatar(url = "", Modifier.size(44.dp))
+            Thumbnail.Persona(
+                modifier = Modifier.size(44.dp),
+                persona = persona.persona
+            )
             Text(
                 modifier = Modifier.weight(1f),
                 text = persona.persona.displayName,
@@ -77,7 +132,9 @@ fun PersonaCard(modifier: Modifier, persona: PersonaUiModel, onSelectPersona: (N
 @Composable
 fun DAppLoginContentPreview() {
     RadixWalletTheme {
-        PersonaCard(
+        PersonaCard(persona = SampleDataProvider().samplePersona())
+
+        PersonaSelectableCard(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(120.dp),

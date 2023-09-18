@@ -1,6 +1,5 @@
 package com.babylon.wallet.android.presentation.transaction.composables
 
-import android.net.Uri
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -14,28 +13,20 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Alignment.Companion.CenterVertically
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.SolidColor
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import coil.compose.AsyncImage
-import com.babylon.wallet.android.designsystem.R
+import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.designsystem.theme.getAccountGradientColorsFor
@@ -48,8 +39,7 @@ import com.babylon.wallet.android.presentation.transaction.AccountWithTransferab
 import com.babylon.wallet.android.presentation.transaction.AccountWithTransferableResources.Other
 import com.babylon.wallet.android.presentation.transaction.AccountWithTransferableResources.Owned
 import com.babylon.wallet.android.presentation.ui.composables.ActionableAddressView
-import com.babylon.wallet.android.presentation.ui.composables.ImageSize
-import com.babylon.wallet.android.presentation.ui.composables.rememberImageUrl
+import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
 import rdx.works.core.displayableQuantity
 
 @Composable
@@ -81,20 +71,13 @@ fun TransactionAccountCard(
             val lastItem = if (nftTransferables.isEmpty()) index == amountTransferables.lastIndex else false
             val shape = if (lastItem) RadixTheme.shapes.roundedRectBottomMedium else RectangleShape
             val transferableAmount = amountTransferable.transferable as TransferableResource.Amount
-            val amountGuaranteeAssertion = amountTransferable.guaranteeAssertion as? GuaranteeAssertion.ForAmount
 
-            ResourceItemContent(
-                isXrdToken = transferableAmount.resource.isXrd,
-                iconUrl = transferableAmount.resource.iconUrl,
-                symbol = transferableAmount.resource.displayTitle.ifEmpty {
-                    stringResource(id = com.babylon.wallet.android.R.string.transactionReview_unknown)
+            TransferableItemContent(
+                modifier = Modifier.clickable {
+                    onFungibleResourceClick(transferableAmount.resource)
                 },
-                amount = transferableAmount.amount.displayableQuantity(),
-                isTokenAmountVisible = true,
-                guaranteedQuantity = amountGuaranteeAssertion?.amount?.displayableQuantity(),
+                transferable = amountTransferable,
                 shape = shape,
-                isNft = false,
-                onResourceClick = { onFungibleResourceClick(amountTransferable.transferable.resource as Resource.FungibleResource) }
             )
         }
 
@@ -104,14 +87,10 @@ fun TransactionAccountCard(
             // Show each nft item
             collection.resource.items.forEachIndexed { itemIndex, item ->
                 val lastItem = itemIndex == collection.resource.items.lastIndex && collectionIndex == nftTransferables.lastIndex
-                ResourceItemContent(
-                    isXrdToken = false,
-                    iconUrl = collection.resource.iconUrl,
-                    symbol = item.localId.displayable,
-                    isTokenAmountVisible = false,
+                TransferableItemContent(
+                    modifier = Modifier.clickable { onNonFungibleResourceClick(collection.resource, item) },
+                    transferable = nftTransferable,
                     shape = if (lastItem) RadixTheme.shapes.roundedRectBottomMedium else RectangleShape,
-                    isNft = true,
-                    onResourceClick = { onNonFungibleResourceClick(collection.resource, item) }
                 )
             }
         }
@@ -159,20 +138,14 @@ fun TransactionAccountCardHeader(
 }
 
 @Composable
-private fun ResourceItemContent(
-    isXrdToken: Boolean,
-    iconUrl: Uri?,
-    symbol: String?,
-    amount: String? = null,
-    isTokenAmountVisible: Boolean,
-    guaranteedQuantity: String? = null,
-    shape: Shape,
-    isNft: Boolean,
-    onResourceClick: () -> Unit
+private fun TransferableItemContent(
+    modifier: Modifier = Modifier,
+    transferable: Transferable,
+    shape: Shape
 ) {
     Row(
         verticalAlignment = CenterVertically,
-        modifier = Modifier
+        modifier = modifier
             .height(IntrinsicSize.Min)
             .background(
                 color = RadixTheme.colors.gray5,
@@ -184,38 +157,28 @@ private fun ResourceItemContent(
             ),
         horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingMedium)
     ) {
-        val placeholder = if (isXrdToken) {
-            painterResource(id = R.drawable.ic_xrd_token)
-        } else {
-            if (isNft) {
-                painterResource(id = R.drawable.ic_nfts)
-            } else {
-                painterResource(id = R.drawable.ic_token)
+        when (val resource = transferable.transferable) {
+            is TransferableResource.Amount -> {
+                Thumbnail.Fungible(
+                    modifier = Modifier.size(44.dp),
+                    token = resource.resource,
+                )
+            }
+            is TransferableResource.NFTs -> {
+                Thumbnail.NonFungible(
+                    modifier = Modifier.size(44.dp),
+                    collection = resource.resource,
+                    shape = RadixTheme.shapes.roundedRectSmall
+                )
             }
         }
-        var contentScale by remember {
-            mutableStateOf(ContentScale.Crop)
-        }
-        AsyncImage(
-            modifier = Modifier
-                .size(44.dp)
-                .background(RadixTheme.colors.gray4, shape = RadixTheme.shapes.circle)
-                .clip(RadixTheme.shapes.circle)
-                .clickable(role = Role.Button) { onResourceClick() },
-            model = rememberImageUrl(fromUrl = iconUrl, size = ImageSize.SMALL),
-            placeholder = placeholder,
-            fallback = placeholder,
-            error = placeholder,
-            contentDescription = null,
-            contentScale = contentScale,
-            onError = {
-                contentScale = ContentScale.Inside
-            }
-        )
         Text(
             modifier = Modifier
                 .weight(1f),
-            text = symbol ?: stringResource(id = com.babylon.wallet.android.R.string.transactionReview_unknown),
+            text = when (val resource = transferable.transferable) {
+                is TransferableResource.Amount -> resource.resource.displayTitle
+                is TransferableResource.NFTs -> resource.resource.name
+            }.ifEmpty { stringResource(id = R.string.transactionReview_unknown) },
             style = RadixTheme.typography.body2HighImportance,
             color = RadixTheme.colors.gray1,
             maxLines = 1,
@@ -224,6 +187,7 @@ private fun ResourceItemContent(
         Column(
             horizontalAlignment = Alignment.End
         ) {
+            val guaranteedQuantity = transferable.guaranteeAssertion as? GuaranteeAssertion.ForAmount
             Row(
                 modifier = Modifier,
                 verticalAlignment = CenterVertically
@@ -231,7 +195,7 @@ private fun ResourceItemContent(
                 if (guaranteedQuantity != null) {
                     Text(
                         modifier = Modifier.padding(end = RadixTheme.dimensions.paddingSmall),
-                        text = stringResource(id = com.babylon.wallet.android.R.string.transactionReview_estimated),
+                        text = stringResource(id = R.string.transactionReview_estimated),
                         style = RadixTheme.typography.body2Link,
                         color = RadixTheme.colors.gray1,
                         maxLines = 1,
@@ -239,21 +203,20 @@ private fun ResourceItemContent(
                         textAlign = TextAlign.End
                     )
                 }
-                if (isTokenAmountVisible) {
-                    amount?.let { amount ->
-                        Text(
-                            modifier = Modifier,
-                            text = amount,
-                            style = RadixTheme.typography.secondaryHeader,
-                            color = RadixTheme.colors.gray1,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis,
-                            textAlign = TextAlign.End
-                        )
-                    }
+
+                (transferable.transferable as? TransferableResource.Amount)?.let {
+                    Text(
+                        modifier = Modifier,
+                        text = it.amount.displayableQuantity(),
+                        style = RadixTheme.typography.secondaryHeader,
+                        color = RadixTheme.colors.gray1,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        textAlign = TextAlign.End
+                    )
                 }
             }
-            guaranteedQuantity?.let { guaranteedQuantity ->
+            guaranteedQuantity?.let { quantity ->
                 Row {
                     Text(
                         modifier = Modifier.padding(end = RadixTheme.dimensions.paddingSmall),
@@ -266,7 +229,7 @@ private fun ResourceItemContent(
                     )
                     Text(
                         modifier = Modifier,
-                        text = guaranteedQuantity,
+                        text = quantity.amount.displayableQuantity(),
                         style = RadixTheme.typography.body2HighImportance,
                         color = RadixTheme.colors.gray2,
                         maxLines = 1,

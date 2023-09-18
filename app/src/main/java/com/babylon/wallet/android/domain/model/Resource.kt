@@ -125,6 +125,9 @@ sealed class Resource {
             fun officialXrdResourceAddresses(): List<String> = Radix.Network.allKnownNetworks().map { network ->
                 knownAddresses(networkId = network.networkId().value.toUByte()).resourceAddresses.xrd.addressString()
             }
+
+            val officialXrdAddress: String
+                get() = knownAddresses(networkId = Radix.Gateway.default.network.id.toUByte()).resourceAddresses.xrd.addressString()
         }
     }
 

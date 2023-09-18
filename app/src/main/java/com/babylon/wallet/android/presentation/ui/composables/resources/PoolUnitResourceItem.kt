@@ -20,14 +20,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import coil.compose.AsyncImage
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.domain.model.Resource
+import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
 import rdx.works.core.displayableQuantity
 import java.math.BigDecimal
 
@@ -56,15 +55,9 @@ fun PoolUnitItem(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = spacedBy(RadixTheme.dimensions.paddingMedium)
             ) {
-                AsyncImage(
-                    model = resource.poolUnitResource.iconUrl,
-                    placeholder = painterResource(id = R.drawable.img_placeholder),
-                    error = painterResource(id = R.drawable.img_placeholder),
-                    contentDescription = null,
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier
-                        .size(44.dp)
-                        .clip(RadixTheme.shapes.roundedRectSmall)
+                Thumbnail.PoolUnit(
+                    modifier = Modifier.size(44.dp),
+                    poolUnit = resource
                 )
                 Text(
                     poolName(resource.poolUnitResource.displayTitle),
@@ -98,15 +91,9 @@ fun PoolResourcesValues(resource: Resource.PoolUnitResource, modifier: Modifier 
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingMedium)
             ) {
-                AsyncImage(
-                    model = poolResource.iconUrl,
-                    placeholder = painterResource(id = R.drawable.img_placeholder),
-                    error = painterResource(id = R.drawable.img_placeholder),
-                    contentDescription = null,
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier
-                        .size(44.dp)
-                        .clip(RadixTheme.shapes.circle)
+                Thumbnail.Fungible(
+                    modifier = Modifier.size(44.dp),
+                    token = poolResource
                 )
                 Text(
                     modifier = Modifier.weight(1f),

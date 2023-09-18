@@ -208,6 +208,12 @@ fun TargetAccountCardPreview() {
                 targetAccount = TargetAccount.Skeleton()
             )
 
+            val item = Resource.NonFungibleResource.Item(
+                collectionAddress = "resource_rdx_abcde",
+                localId = Resource.NonFungibleResource.Item.ID.from("<local_id>"),
+                nameMetadataItem = null,
+                iconMetadataItem = null
+            )
             TargetAccountCard(
                 onChooseAccountClick = {},
                 onAddAssetsClick = {},
@@ -228,12 +234,13 @@ fun TargetAccountCardPreview() {
                             )
                         ),
                         SpendingAsset.NFT(
-                            item = Resource.NonFungibleResource.Item(
-                                collectionAddress = "resource_rdx_abcde",
-                                localId = Resource.NonFungibleResource.Item.ID.from("<local_id>"),
-                                nameMetadataItem = null,
-                                iconMetadataItem = null
-                            )
+                            resource = Resource.NonFungibleResource(
+                                resourceAddress = "resource_rdx_abcde",
+                                amount = 1L,
+                                nameMetadataItem = NameMetadataItem("NFT Collection"),
+                                items = listOf(item)
+                            ),
+                            item = item
                         )
                     )
                 )

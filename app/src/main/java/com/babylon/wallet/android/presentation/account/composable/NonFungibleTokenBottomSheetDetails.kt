@@ -1,8 +1,5 @@
 package com.babylon.wallet.android.presentation.account.composable
 
-import android.graphics.drawable.ColorDrawable
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -16,35 +13,27 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Text
 import androidx.compose.material3.Divider
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.toArgb
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import coil.compose.AsyncImage
-import coil.compose.rememberAsyncImagePainter
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.domain.model.Resource
 import com.babylon.wallet.android.presentation.ui.composables.ActionableAddressView
 import com.babylon.wallet.android.presentation.ui.composables.BackIconType
 import com.babylon.wallet.android.presentation.ui.composables.GrayBackgroundWrapper
-import com.babylon.wallet.android.presentation.ui.composables.ImageSize
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
+import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
 import com.babylon.wallet.android.presentation.ui.composables.icon
 import com.babylon.wallet.android.presentation.ui.composables.name
-import com.babylon.wallet.android.presentation.ui.composables.rememberImageUrl
 import com.babylon.wallet.android.presentation.ui.composables.resources.AddressRow
-import com.google.accompanist.drawablepainter.rememberDrawablePainter
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
@@ -66,25 +55,14 @@ fun NonFungibleTokenBottomSheetDetails(
             backIconType = BackIconType.Close
         )
         if (item != null) {
+            Thumbnail.NFT(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = RadixTheme.dimensions.paddingLarge),
+                nft = item,
+                cropped = false
+            )
             if (item.imageUrl != null) {
-                val painter = rememberAsyncImagePainter(
-                    model = rememberImageUrl(
-                        fromUrl = item.imageUrl,
-                        size = ImageSize.LARGE
-                    ),
-                    placeholder = painterResource(id = R.drawable.img_placeholder),
-                    error = painterResource(id = R.drawable.img_placeholder)
-                )
-                Image(
-                    painter = painter,
-                    contentDescription = "Nft image",
-                    contentScale = ContentScale.FillWidth,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = RadixTheme.dimensions.paddingXLarge)
-                        .clip(RadixTheme.shapes.roundedRectMedium)
-                        .background(Color.Transparent, RadixTheme.shapes.roundedRectMedium)
-                )
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
             }
             AssetMetadataRow(
@@ -131,22 +109,12 @@ fun NonFungibleTokenBottomSheetDetails(
                 )
             }
             GrayBackgroundWrapper(contentPadding = PaddingValues(horizontal = RadixTheme.dimensions.paddingXLarge)) {
-                val placeholder = rememberDrawablePainter(drawable = ColorDrawable(RadixTheme.colors.gray3.toArgb()))
-                AsyncImage(
-                    model = rememberImageUrl(
-                        fromUrl = nonFungibleResource.iconUrl,
-                        size = ImageSize.LARGE
-                    ),
-                    placeholder = placeholder,
-                    fallback = placeholder,
-                    error = placeholder,
-                    contentDescription = null,
-                    contentScale = ContentScale.Crop,
+                Thumbnail.NonFungible(
                     modifier = Modifier
                         .padding(vertical = RadixTheme.dimensions.paddingDefault)
-                        .size(104.dp)
-                        .background(RadixTheme.colors.gray3, RadixTheme.shapes.circle)
-                        .clip(RadixTheme.shapes.circle)
+                        .size(104.dp),
+                    collection = nonFungibleResource,
+                    shape = CircleShape
                 )
 
                 if (nonFungibleResource.description.isNotBlank()) {

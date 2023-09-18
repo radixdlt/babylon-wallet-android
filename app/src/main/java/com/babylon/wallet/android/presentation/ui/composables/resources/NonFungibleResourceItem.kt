@@ -1,7 +1,5 @@
 package com.babylon.wallet.android.presentation.ui.composables.resources
 
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement.spacedBy
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -13,16 +11,10 @@ import androidx.compose.material3.CheckboxDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
-import coil.compose.SubcomposeAsyncImage
-import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.domain.model.Resource
-import com.babylon.wallet.android.presentation.ui.composables.ImageSize
-import com.babylon.wallet.android.presentation.ui.composables.applyImageAspectRatio
-import com.babylon.wallet.android.presentation.ui.composables.rememberImageUrl
+import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
 
 @Composable
 fun NonFungibleResourceItem(
@@ -33,29 +25,10 @@ fun NonFungibleResourceItem(
         modifier = modifier,
         verticalArrangement = spacedBy(RadixTheme.dimensions.paddingDefault)
     ) {
-        item.imageUrl?.let { imageUrl ->
-            SubcomposeAsyncImage(
-                model = rememberImageUrl(
-                    fromUrl = imageUrl,
-                    size = ImageSize.LARGE,
-                    placeholder = R.drawable.img_placeholder,
-                    error = R.drawable.img_nft_broken_image
-                ),
-                contentDescription = null
-            ) {
-                Image(
-                    painter = painter,
-                    contentDescription = "Nft image",
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .applyImageAspectRatio(painter = painter)
-                        .clip(RadixTheme.shapes.roundedRectMedium)
-                        .background(Color.Transparent, RadixTheme.shapes.roundedRectMedium)
-                )
-            }
-        }
-
+        Thumbnail.NFT(
+            modifier = Modifier.fillMaxWidth(),
+            nft = item
+        )
         item.nameMetadataItem?.name?.let { name ->
             Text(
                 modifier = Modifier.fillMaxWidth(),

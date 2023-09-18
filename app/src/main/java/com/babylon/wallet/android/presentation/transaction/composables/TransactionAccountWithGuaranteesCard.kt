@@ -1,9 +1,7 @@
 package com.babylon.wallet.android.presentation.transaction.composables
 
-import android.graphics.drawable.ColorDrawable
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
@@ -23,11 +21,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.SolidColor
-import androidx.compose.ui.graphics.toArgb
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
@@ -36,8 +31,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import coil.compose.AsyncImage
-import com.babylon.wallet.android.designsystem.R
 import com.babylon.wallet.android.designsystem.composable.RadixTextField
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
@@ -48,9 +41,7 @@ import com.babylon.wallet.android.presentation.transaction.AccountWithPredictedG
 import com.babylon.wallet.android.presentation.transaction.AccountWithPredictedGuarantee.Other
 import com.babylon.wallet.android.presentation.transaction.AccountWithPredictedGuarantee.Owned
 import com.babylon.wallet.android.presentation.ui.composables.ActionableAddressView
-import com.babylon.wallet.android.presentation.ui.composables.ImageSize
-import com.babylon.wallet.android.presentation.ui.composables.rememberImageUrl
-import com.google.accompanist.drawablepainter.rememberDrawablePainter
+import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
 import rdx.works.core.displayableQuantity
 import java.math.BigDecimal
 
@@ -119,28 +110,10 @@ fun TransactionAccountWithGuaranteesCard(
                 horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingMedium)
             ) {
                 val transferrable = accountWithGuarantee.transferableAmount
-                val placeholder = if (transferrable.resource.isXrd) {
-                    painterResource(id = R.drawable.ic_xrd_token)
-                } else {
-                    rememberDrawablePainter(drawable = ColorDrawable(RadixTheme.colors.gray3.toArgb()))
-                }
-                Box(
-                    modifier = Modifier
-                        .size(44.dp)
-                        .background(RadixTheme.colors.gray3, shape = RadixTheme.shapes.circle)
-                ) {
-                    AsyncImage(
-                        model = rememberImageUrl(fromUrl = transferrable.resource.iconUrl, size = ImageSize.LARGE),
-                        placeholder = placeholder,
-                        fallback = placeholder,
-                        error = placeholder,
-                        contentDescription = null,
-                        contentScale = ContentScale.Crop,
-                        modifier = Modifier
-                            .size(44.dp)
-                            .clip(RadixTheme.shapes.circle)
-                    )
-                }
+                Thumbnail.Fungible(
+                    modifier = Modifier.size(44.dp),
+                    token = transferrable.resource
+                )
                 Text(
                     modifier = Modifier.weight(1f),
                     text = transferrable.resource.displayTitle,

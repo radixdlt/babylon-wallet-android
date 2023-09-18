@@ -1,12 +1,10 @@
 package com.babylon.wallet.android.presentation.settings.authorizeddapps
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBars
@@ -19,11 +17,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
@@ -31,8 +26,7 @@ import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.domain.model.DAppWithMetadataAndAssociatedResources
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
-import com.babylon.wallet.android.presentation.ui.composables.StandardOneLineCard
-import com.babylon.wallet.android.presentation.ui.composables.displayName
+import com.babylon.wallet.android.presentation.ui.composables.card.DappCard
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
@@ -92,21 +86,11 @@ private fun AuthorizedDAppsContent(
 //                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
                 }
                 items(dApps) { dApp ->
-                    StandardOneLineCard(
-                        image = dApp.dAppWithMetadata.iconUrl.toString(),
-                        title = dApp.dAppWithMetadata.displayName(),
-                        modifier = Modifier
-                            .shadow(elevation = 8.dp, shape = RadixTheme.shapes.roundedRectMedium)
-                            .clip(RadixTheme.shapes.roundedRectMedium)
-                            .throttleClickable {
-                                onDAppClick(dApp.dAppWithMetadata.dAppAddress)
-                            }
-                            .fillMaxWidth()
-                            .background(RadixTheme.colors.white, shape = RadixTheme.shapes.roundedRectMedium)
-                            .padding(
-                                horizontal = RadixTheme.dimensions.paddingLarge,
-                                vertical = RadixTheme.dimensions.paddingDefault
-                            )
+                    DappCard(
+                        modifier = Modifier.throttleClickable {
+                            onDAppClick(dApp.dAppWithMetadata.dAppAddress)
+                        },
+                        dApp = dApp.dAppWithMetadata
                     )
                     Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
                 }

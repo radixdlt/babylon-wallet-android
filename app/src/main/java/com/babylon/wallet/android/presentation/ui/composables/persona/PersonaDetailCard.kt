@@ -22,7 +22,7 @@ import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
 import com.babylon.wallet.android.designsystem.composable.RadixSecondaryButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.presentation.dapp.authorized.selectpersona.PersonaUiModel
-import com.babylon.wallet.android.presentation.ui.composables.PersonaRoundedAvatar
+import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
 import kotlinx.collections.immutable.ImmutableList
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.data.model.pernetwork.PersonaData
@@ -46,11 +46,11 @@ fun PersonaDetailCard(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingMedium)
         ) {
-            PersonaRoundedAvatar(
-                url = "",
+            Thumbnail.Persona(
                 modifier = Modifier
                     .padding(vertical = RadixTheme.dimensions.paddingDefault)
-                    .size(44.dp)
+                    .size(44.dp),
+                persona = persona.persona
             )
             Text(
                 text = persona.persona.displayName,
