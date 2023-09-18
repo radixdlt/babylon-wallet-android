@@ -3,7 +3,6 @@ package com.babylon.wallet.android.presentation.main
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.data.dapp.PeerdroidClient
-import com.babylon.wallet.android.domain.common.onValue
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel.IncomingRequest
 import com.babylon.wallet.android.domain.usecases.AuthorizeSpecifiedPersonaUseCase
 import com.babylon.wallet.android.domain.usecases.MainnetAvailabilityUseCase
@@ -185,7 +184,7 @@ class MainViewModel @Inject constructor(
     private fun processIncomingRequest(request: IncomingRequest) {
         processingDappRequestJob = viewModelScope.launch {
             val verificationResult = verifyDappUseCase(request)
-            verificationResult.onValue { verified ->
+            verificationResult.onSuccess { verified ->
                 if (verified) {
                     incomingRequestRepository.add(request)
                 }

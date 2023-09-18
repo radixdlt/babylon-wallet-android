@@ -28,6 +28,8 @@ import com.babylon.wallet.android.presentation.main.blockPreviewAppScreen
 import com.babylon.wallet.android.presentation.main.main
 import com.babylon.wallet.android.presentation.navigation.Screen.Companion.ARG_ACCOUNT_ID
 import com.babylon.wallet.android.presentation.onboarding.OnboardingScreen
+import com.babylon.wallet.android.presentation.onboarding.eula.eulaScreen
+import com.babylon.wallet.android.presentation.onboarding.eula.navigateToEulaScreen
 import com.babylon.wallet.android.presentation.onboarding.restore.backup.restoreFromBackupScreen
 import com.babylon.wallet.android.presentation.onboarding.restore.mnemonics.RestoreMnemonicsArgs
 import com.babylon.wallet.android.presentation.onboarding.restore.mnemonics.restoreMnemonics
@@ -43,7 +45,7 @@ import com.babylon.wallet.android.presentation.settings.personas.personaedit.per
 import com.babylon.wallet.android.presentation.settings.settingsNavGraph
 import com.babylon.wallet.android.presentation.status.dapp.dappInteractionDialog
 import com.babylon.wallet.android.presentation.status.transaction.transactionStatusDialog
-import com.babylon.wallet.android.presentation.transaction.transactionApprovalScreen
+import com.babylon.wallet.android.presentation.transaction.transactionReviewScreen
 import com.babylon.wallet.android.presentation.transfer.transfer
 import com.babylon.wallet.android.presentation.transfer.transferScreen
 import com.google.accompanist.navigation.animation.AnimatedNavHost
@@ -73,7 +75,7 @@ fun NavigationHost(
             OnboardingScreen(
                 viewModel = hiltViewModel(),
                 onCreateNewWalletClick = {
-                    navController.createAccountScreen(CreateAccountRequestSource.FirstTime)
+                    navController.navigateToEulaScreen()
                 },
                 onBack = onCloseApp,
                 onRestoreFromBackupClick = {
@@ -81,6 +83,14 @@ fun NavigationHost(
                 }
             )
         }
+        eulaScreen(
+            onBack = {
+                navController.popBackStack()
+            },
+            onAccepted = {
+                navController.createAccountScreen(CreateAccountRequestSource.FirstTime)
+            }
+        )
         restoreFromBackupScreen(
             onBack = {
                 navController.popBackStack()
@@ -223,7 +233,7 @@ fun NavigationHost(
         personaEditScreen(onBackClick = {
             navController.navigateUp()
         })
-        transactionApprovalScreen(
+        transactionReviewScreen(
             onBackClick = {
                 navController.popBackStack()
             }

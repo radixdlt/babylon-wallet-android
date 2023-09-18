@@ -2,15 +2,22 @@
 
 package com.babylon.wallet.android.domain
 
+import com.babylon.wallet.android.data.transaction.TransactionVersion
 import com.babylon.wallet.android.domain.model.AccountWithResources
 import com.babylon.wallet.android.domain.model.DAppResources
 import com.babylon.wallet.android.domain.model.DAppWithMetadata
 import com.babylon.wallet.android.domain.model.DAppWithMetadataAndAssociatedResources
+import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.babylon.wallet.android.domain.model.Resource
 import com.babylon.wallet.android.domain.model.Resources
+import com.babylon.wallet.android.domain.model.TransactionManifestData
+import com.babylon.wallet.android.domain.model.Transferable
+import com.babylon.wallet.android.domain.model.TransferableResource
 import com.babylon.wallet.android.domain.model.ValidatorsWithStakeResources
+import com.babylon.wallet.android.domain.model.metadata.DescriptionMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.NameMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.SymbolMetadataItem
+import com.babylon.wallet.android.presentation.transaction.AccountWithTransferableResources
 import rdx.works.core.InstantGenerator
 import rdx.works.profile.data.model.Header
 import rdx.works.profile.data.model.MnemonicWithPassphrase
@@ -60,6 +67,72 @@ class SampleDataProvider {
             model = LedgerHardwareWalletFactorSource.DeviceModel.NANO_X,
             name = "Nano X",
         )
+    )
+
+    val transactionRequest = MessageFromDataChannel.IncomingRequest.TransactionRequest(
+        remoteConnectorId = "b49d643908be5b79b1d233c0b21c1c9dd31a8376ab7caee242af42f6ff1c3bcc",
+        requestId = "7294770e-5aec-4e49-ada0-e6a2213fc8c8",
+        transactionManifestData = TransactionManifestData(
+            instructions = "CREATE_FUNGIBLE_RESOURCE_WITH_INITIAL_SUPPLY",
+            version = TransactionVersion.Default.value,
+            networkId = Radix.Gateway.default.network.id,
+            message = "Hello"
+        ),
+        requestMetadata = MessageFromDataChannel.IncomingRequest.RequestMetadata.internal(Radix.Gateway.default.network.id)
+    )
+
+    val transferableDepositing = Transferable.Depositing(
+        transferable = TransferableResource.Amount(
+            amount = BigDecimal(69),
+            resource = Resource.FungibleResource(
+                resourceAddress = "resource_tdx_e_1tkawacgvcw7z9xztccgjrged25c7nqtnd4nllh750s2ny64m0cltmg",
+                ownedAmount = null,
+                nameMetadataItem = NameMetadataItem(name = "XXX"),
+                symbolMetadataItem = SymbolMetadataItem(symbol = "XXX"),
+                descriptionMetadataItem = DescriptionMetadataItem(description = "a very xxx token"),
+                tagsMetadataItem = null,
+                currentSupply = BigDecimal("69696969696969.666999666999666999")
+            ),
+            isNewlyCreated = true
+        )
+    )
+
+    val accountWithTransferableResourcesOwned = AccountWithTransferableResources.Owned(
+        account = Network.Account(
+            address = "account_tdx_e_12yeuyl924ml5v9qks4s3cegpm6gl355r96cd9d5z99qtlxvwq7y3sz",
+            appearanceID = 0,
+            displayName = "666",
+            networkID = 14,
+            securityState = SecurityState.Unsecured(
+                unsecuredEntityControl = SecurityState.UnsecuredEntityControl(
+                    entityIndex = 0,
+                    transactionSigning = FactorInstance(
+                        badge = FactorInstance.Badge.VirtualSource.HierarchicalDeterministic(
+                            derivationPath = DerivationPath.forAccount(
+                                networkId = Radix.Gateway.default.network.networkId(),
+                                accountIndex = 0,
+                                keyType = KeyType.TRANSACTION_SIGNING
+                            ),
+                            publicKey = FactorInstance.PublicKey.curve25519PublicKey(
+                                "c294ecdd8752e2197ad0027fe4557d464362df12b587537234f0b106237462f5"
+                            )
+                        ),
+                        factorSourceId = FactorSource.FactorSourceID.FromHash(
+                            kind = FactorSourceKind.DEVICE,
+                            body = FactorSource.HexCoded32Bytes("ba6a7bd3e91b2a83e21f05c22eaddecd12e75ab01c492e9d4e62d6445600c142")
+                        )
+                    )
+                )
+            ),
+            onLedgerSettings = Network.Account.OnLedgerSettings(
+                thirdPartyDeposits = Network.Account.OnLedgerSettings.ThirdPartyDeposits(
+                    depositRule = Network.Account.OnLedgerSettings.ThirdPartyDeposits.DepositRule.AcceptAll,
+                    assetsExceptionList = emptyList(),
+                    depositorsAllowList = emptyList()
+                )
+            )
+        ),
+        resources = listOf(transferableDepositing)
     )
 
     fun babylonDeviceFactorSource() = DeviceFactorSource(
@@ -232,9 +305,12 @@ class SampleDataProvider {
                 add(
                     Resource.FungibleResource(
                         resourceAddress = randomAddress(),
-                        amount = amount.first,
-                        nameMetadataItem = NameMetadataItem("cool XRD"),
-                        symbolMetadataItem = SymbolMetadataItem("XRD")
+                        ownedAmount = amount.first,
+                        nameMetadataItem = NameMetadataItem(name = "XXX"),
+                        symbolMetadataItem = SymbolMetadataItem(symbol = "XXX"),
+                        descriptionMetadataItem = DescriptionMetadataItem(description = "a very xxx token"),
+                        tagsMetadataItem = null,
+                        currentSupply = BigDecimal("69696969696969.666999666999666999")
                     )
                 )
             }

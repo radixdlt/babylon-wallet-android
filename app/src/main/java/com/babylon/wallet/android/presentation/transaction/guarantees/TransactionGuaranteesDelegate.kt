@@ -6,7 +6,7 @@ import com.babylon.wallet.android.domain.model.TransferableResource
 import com.babylon.wallet.android.presentation.transaction.AccountWithPredictedGuarantee
 import com.babylon.wallet.android.presentation.transaction.AccountWithTransferableResources
 import com.babylon.wallet.android.presentation.transaction.PreviewType
-import com.babylon.wallet.android.presentation.transaction.TransactionApprovalViewModel.State
+import com.babylon.wallet.android.presentation.transaction.TransactionReviewViewModel.State
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
 import rdx.works.core.mapWhen
@@ -16,7 +16,7 @@ class TransactionGuaranteesDelegate(
 ) {
 
     fun onEdit() {
-        val transaction = (state.value.previewType as? PreviewType.Transaction) ?: return
+        val transaction = (state.value.previewType as? PreviewType.Transfer) ?: return
 
         val accountsWithPredictedGuarantee = mutableListOf<AccountWithPredictedGuarantee>()
         transaction.to.forEach { depositing ->
@@ -115,7 +115,7 @@ class TransactionGuaranteesDelegate(
 
     fun onApply() {
         val sheet = (state.value.sheetState as? State.Sheet.CustomizeGuarantees) ?: return
-        val preview = (state.value.previewType as? PreviewType.Transaction) ?: return
+        val preview = (state.value.previewType as? PreviewType.Transfer) ?: return
 
         state.update {
             it.copy(

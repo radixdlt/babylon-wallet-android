@@ -15,6 +15,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
+import com.babylon.wallet.android.domain.model.Resource
 import com.babylon.wallet.android.presentation.transaction.AccountWithTransferableResources
 import kotlinx.collections.immutable.ImmutableList
 
@@ -22,7 +23,9 @@ import kotlinx.collections.immutable.ImmutableList
 fun WithdrawAccountContent(
     modifier: Modifier = Modifier,
     from: ImmutableList<AccountWithTransferableResources>,
-    showStrokeLine: Boolean
+    showStrokeLine: Boolean,
+    onFungibleResourceClick: (fungibleResource: Resource.FungibleResource) -> Unit,
+    onNonFungibleResourceClick: (nonFungibleResource: Resource.NonFungibleResource, Resource.NonFungibleResource.Item) -> Unit
 ) {
     if (from.isNotEmpty()) {
         Text(
@@ -46,7 +49,11 @@ fun WithdrawAccountContent(
         ) {
             from.forEachIndexed { index, account ->
                 TransactionAccountCard(
-                    account = account
+                    account = account,
+                    onFungibleResourceClick = { onFungibleResourceClick(it) },
+                    onNonFungibleResourceClick = { nonFungibleResource, nonFungibleResourceItem ->
+                        onNonFungibleResourceClick(nonFungibleResource, nonFungibleResourceItem)
+                    }
                 )
 
                 if (index != from.lastIndex) {

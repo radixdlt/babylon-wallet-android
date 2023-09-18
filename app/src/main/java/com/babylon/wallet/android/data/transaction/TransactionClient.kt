@@ -226,7 +226,7 @@ class TransactionClient @Inject constructor(
         val candidates = allAccountsWithResources?.map {
             FeePayerSearchResult.FeePayerCandidate(
                 account = it.account,
-                xrdAmount = it.resources?.xrd?.amount ?: BigDecimal.ZERO
+                xrdAmount = it.resources?.xrd?.ownedAmount ?: BigDecimal.ZERO
             )
         }.orEmpty()
 

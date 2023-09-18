@@ -7,19 +7,25 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.tooling.preview.Preview
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
+import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
+import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.domain.model.DAppWithMetadataAndAssociatedResources
+import com.babylon.wallet.android.domain.model.Resource
 import com.babylon.wallet.android.presentation.transaction.PreviewType
-import com.babylon.wallet.android.presentation.transaction.TransactionApprovalViewModel
+import com.babylon.wallet.android.presentation.transaction.TransactionReviewViewModel
 import kotlinx.collections.immutable.toPersistentList
 
 @Composable
 fun TransactionPreviewTypeContent(
     modifier: Modifier = Modifier,
-    state: TransactionApprovalViewModel.State,
-    preview: PreviewType.Transaction,
+    state: TransactionReviewViewModel.State,
+    preview: PreviewType.Transfer,
     onPromptForGuarantees: () -> Unit,
-    onDappClick: (DAppWithMetadataAndAssociatedResources) -> Unit
+    onDappClick: (DAppWithMetadataAndAssociatedResources) -> Unit,
+    onFungibleResourceClick: (fungibleResource: Resource.FungibleResource) -> Unit,
+    onNonFungibleResourceClick: (nonFungibleResource: Resource.NonFungibleResource, Resource.NonFungibleResource.Item) -> Unit
 ) {
     Column(
         modifier = modifier.fillMaxSize()
@@ -38,7 +44,11 @@ fun TransactionPreviewTypeContent(
                 modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingDefault),
                 from = preview.from.toPersistentList(),
                 showStrokeLine = preview.from.toPersistentList().isNotEmpty() ||
-                    preview.dApps.toPersistentList().isNotEmpty()
+                    preview.dApps.toPersistentList().isNotEmpty(),
+                onFungibleResourceClick = { onFungibleResourceClick(it) },
+                onNonFungibleResourceClick = { nonFungibleResource, nonFungibleResourceItem ->
+                    onNonFungibleResourceClick(nonFungibleResource, nonFungibleResourceItem)
+                }
             )
 
             ConnectedDAppsContent(
@@ -52,8 +62,11 @@ fun TransactionPreviewTypeContent(
                 modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingDefault),
                 to = preview.to.toPersistentList(),
                 promptForGuarantees = onPromptForGuarantees,
-                showStrokeLine = preview.from.toPersistentList().isNotEmpty() ||
-                    preview.dApps.toPersistentList().isNotEmpty()
+                showStrokeLine = false,
+                onFungibleResourceClick = { onFungibleResourceClick(it) },
+                onNonFungibleResourceClick = { nonFungibleResource, nonFungibleResourceItem ->
+                    onNonFungibleResourceClick(nonFungibleResource, nonFungibleResourceItem)
+                }
             )
 
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
@@ -61,6 +74,28 @@ fun TransactionPreviewTypeContent(
 
         PresentingProofsContent(
             badges = preview.badges.toPersistentList()
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun TransactionPreviewTypePreview() {
+    RadixWalletTheme {
+        TransactionPreviewTypeContent(
+            state = TransactionReviewViewModel.State(
+                request = SampleDataProvider().transactionRequest,
+                isLoading = false,
+                previewType = PreviewType.NonConforming
+            ),
+            preview = PreviewType.Transfer(
+                from = emptyList(),
+                to = listOf(SampleDataProvider().accountWithTransferableResourcesOwned)
+            ),
+            onPromptForGuarantees = {},
+            onDappClick = { _ -> },
+            onFungibleResourceClick = { _ -> },
+            onNonFungibleResourceClick = { _, _ -> }
         )
     }
 }

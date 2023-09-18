@@ -1,5 +1,6 @@
 package com.babylon.wallet.android.presentation.transaction.composables
 
+import android.net.Uri
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -57,11 +58,6 @@ fun ConnectedDAppsContent(
 
     var expanded by rememberSaveable { mutableStateOf(true) }
 
-    val strokeWidth = with(LocalDensity.current) { 2.dp.toPx() }
-    val cornerRadius = with(LocalDensity.current) { 8.dp.toPx() }
-    val strokeInterval = with(LocalDensity.current) { 6.dp.toPx() }
-    val strokeColor = RadixTheme.colors.gray3
-
     Box(
         modifier = modifier
             .padding(
@@ -104,59 +100,80 @@ fun ConnectedDAppsContent(
                 .fillMaxWidth(),
             horizontalAlignment = Alignment.End
         ) {
-            connectedDApps.forEach { connectedDApp ->
-                Row(
+            val unverifiedDappsCount = connectedDApps.count { it.verified.not() }
+            val verifiedDapps = connectedDApps.filter { it.verified }
+            if (unverifiedDappsCount > 0) {
+                ConnectedDappRow(null, stringResource(id = R.string.transactionReview_unknownComponents, unverifiedDappsCount))
+            }
+            verifiedDapps.forEach { connectedDApp ->
+                ConnectedDappRow(
+                    connectedDApp.dAppWithMetadata.iconUrl,
+                    connectedDApp.dAppWithMetadata.displayName(),
                     modifier = Modifier
                         .throttleClickable {
                             onDAppClick(connectedDApp)
                         }
-                        .drawBehind {
-                            drawRoundRect(
-                                color = strokeColor,
-                                style = Stroke(
-                                    width = strokeWidth,
-                                    pathEffect = PathEffect
-                                        .dashPathEffect(
-                                            floatArrayOf(strokeInterval, strokeInterval),
-                                            0f
-                                        )
-                                ),
-                                cornerRadius = CornerRadius(cornerRadius, cornerRadius)
-                            )
-                        }
-                        .padding(8.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    val placeholder = painterResource(id = R.drawable.ic_unknown_component)
-                    AsyncImage(
-                        model = rememberImageUrl(
-                            fromUrl = connectedDApp.dAppWithMetadata.iconUrl,
-                            size = ImageSize.SMALL
-                        ),
-                        placeholder = placeholder,
-                        fallback = placeholder,
-                        error = placeholder,
-                        contentDescription = null,
-                        contentScale = ContentScale.Crop,
-                        modifier = Modifier
-                            .size(44.dp)
-                            .clip(RadixTheme.shapes.circle)
-                    )
-                    Spacer(modifier = Modifier.width(RadixTheme.dimensions.paddingDefault))
-                    connectedDApp.dAppWithMetadata.displayName()
-                    Text(
-                        text = connectedDApp.dAppWithMetadata.displayName(),
-                        style = RadixTheme.typography.body1HighImportance,
-                        color = RadixTheme.colors.gray1,
-                        overflow = TextOverflow.Ellipsis
-                    )
-                }
+                )
             }
         }
     }
 
     if (showStrokeLine) {
         StrokeLine(height = 20.dp)
+    }
+}
+
+@Composable
+private fun ConnectedDappRow(
+    imageUrl: Uri?,
+    displayName: String,
+    modifier: Modifier = Modifier
+) {
+    val strokeWidth = with(LocalDensity.current) { 2.dp.toPx() }
+    val cornerRadius = with(LocalDensity.current) { 8.dp.toPx() }
+    val strokeInterval = with(LocalDensity.current) { 6.dp.toPx() }
+    val strokeColor = RadixTheme.colors.gray3
+    Row(
+        modifier = modifier
+            .drawBehind {
+                drawRoundRect(
+                    color = strokeColor,
+                    style = Stroke(
+                        width = strokeWidth,
+                        pathEffect = PathEffect
+                            .dashPathEffect(
+                                floatArrayOf(strokeInterval, strokeInterval),
+                                0f
+                            )
+                    ),
+                    cornerRadius = CornerRadius(cornerRadius, cornerRadius)
+                )
+            }
+            .padding(8.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        val placeholder = painterResource(id = R.drawable.ic_unknown_component)
+        AsyncImage(
+            model = rememberImageUrl(
+                fromUrl = imageUrl,
+                size = ImageSize.SMALL
+            ),
+            placeholder = placeholder,
+            fallback = placeholder,
+            error = placeholder,
+            contentDescription = null,
+            contentScale = ContentScale.Crop,
+            modifier = Modifier
+                .size(44.dp)
+                .clip(RadixTheme.shapes.circle)
+        )
+        Spacer(modifier = Modifier.width(RadixTheme.dimensions.paddingDefault))
+        Text(
+            text = displayName,
+            style = RadixTheme.typography.body1HighImportance,
+            color = RadixTheme.colors.gray1,
+            overflow = TextOverflow.Ellipsis
+        )
     }
 }
 
@@ -172,7 +189,8 @@ fun ConnectedDAppsContentPreview() {
                 resources = DAppResources(
                     emptyList(),
                     emptyList()
-                )
+                ),
+                verified = true
             )
         ),
         onDAppClick = {},

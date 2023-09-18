@@ -19,21 +19,28 @@ import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixTextButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
+import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
+import com.babylon.wallet.android.domain.SampleDataProvider
+import com.babylon.wallet.android.domain.model.Resource
 import com.babylon.wallet.android.presentation.transaction.AccountWithTransferableResources
 import com.babylon.wallet.android.presentation.transaction.hasCustomizableGuarantees
 import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.toPersistentList
 
 @Composable
 fun DepositAccountContent(
     modifier: Modifier = Modifier,
     to: ImmutableList<AccountWithTransferableResources>,
     promptForGuarantees: () -> Unit,
-    showStrokeLine: Boolean
+    showStrokeLine: Boolean,
+    onFungibleResourceClick: (fungibleResource: Resource.FungibleResource) -> Unit,
+    onNonFungibleResourceClick: (nonFungibleResource: Resource.NonFungibleResource, Resource.NonFungibleResource.Item) -> Unit
 ) {
     if (to.isNotEmpty()) {
         Row(verticalAlignment = Alignment.Bottom) {
@@ -64,7 +71,11 @@ fun DepositAccountContent(
             to.onEachIndexed { index, accountEntry ->
                 val lastItem = index == to.size - 1
                 TransactionAccountCard(
-                    account = accountEntry
+                    account = accountEntry,
+                    onFungibleResourceClick = { onFungibleResourceClick(it) },
+                    onNonFungibleResourceClick = { nonFungibleResource, nonFungibleResourceItem ->
+                        onNonFungibleResourceClick(nonFungibleResource, nonFungibleResourceItem)
+                    }
                 )
 
                 if (!lastItem) {
@@ -106,6 +117,20 @@ fun StrokeLine(
             end = Offset(width - 150f, lineHeight),
             strokeWidth = strokeWidth,
             pathEffect = pathEffect
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun DepositAccountPreview() {
+    RadixWalletTheme {
+        DepositAccountContent(
+            to = listOf(SampleDataProvider().accountWithTransferableResourcesOwned).toPersistentList(),
+            promptForGuarantees = {},
+            showStrokeLine = true,
+            onFungibleResourceClick = { _ -> },
+            onNonFungibleResourceClick = { _, _ -> }
         )
     }
 }

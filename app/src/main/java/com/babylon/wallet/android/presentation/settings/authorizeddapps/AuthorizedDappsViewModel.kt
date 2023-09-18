@@ -1,7 +1,6 @@
 package com.babylon.wallet.android.presentation.settings.authorizeddapps
 
 import androidx.lifecycle.viewModelScope
-import com.babylon.wallet.android.domain.common.value
 import com.babylon.wallet.android.domain.model.DAppWithMetadataAndAssociatedResources
 import com.babylon.wallet.android.domain.usecases.GetDAppWithMetadataAndAssociatedResourcesUseCase
 import com.babylon.wallet.android.presentation.common.StateViewModel
@@ -32,7 +31,7 @@ class AuthorizedDappsViewModel @Inject constructor(
                         definitionAddress = dApp.dAppDefinitionAddress,
                         needMostRecentData = false
                     )
-                    metadataResult.value()
+                    metadataResult.getOrNull()
                 }
                 _state.update { state ->
                     state.copy(

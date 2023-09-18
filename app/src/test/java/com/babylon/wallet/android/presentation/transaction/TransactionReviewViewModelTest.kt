@@ -59,7 +59,7 @@ import java.math.BigDecimal
 import com.babylon.wallet.android.domain.common.Result as ResultInternal
 
 @OptIn(ExperimentalCoroutinesApi::class)
-internal class TransactionApprovalViewModelTest : StateViewModelTest<TransactionApprovalViewModel>() {
+internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionReviewViewModel>() {
 
     private val transactionClient = mockk<TransactionClient>()
     private val getCurrentGatewayUseCase = mockk<GetCurrentGatewayUseCase>()
@@ -107,7 +107,7 @@ internal class TransactionApprovalViewModelTest : StateViewModelTest<Transaction
     )
     private val sampleXrdResource = Resource.FungibleResource(
         resourceAddress = "addr_xrd",
-        amount = BigDecimal.TEN,
+        ownedAmount = BigDecimal.TEN,
         symbolMetadataItem = SymbolMetadataItem("XRD")
     )
 
@@ -196,8 +196,8 @@ internal class TransactionApprovalViewModelTest : StateViewModelTest<Transaction
         )
     }
 
-    override fun initVM(): TransactionApprovalViewModel {
-        return TransactionApprovalViewModel(
+    override fun initVM(): TransactionReviewViewModel {
+        return TransactionReviewViewModel(
             transactionClient = transactionClient,
             getAccountsWithResourcesUseCase = getAccountsWithResourcesUseCase,
             getResourcesMetadataUseCase = getResourcesMetadataUseCase,
@@ -245,7 +245,7 @@ internal class TransactionApprovalViewModelTest : StateViewModelTest<Transaction
             )
         }
         assertEquals(WalletErrorType.WrongNetwork, errorSlot.captured)
-        assertEquals(TransactionApprovalViewModel.Event.Dismiss, vm.oneOffEvent.first())
+        assertEquals(TransactionReviewViewModel.Event.Dismiss, vm.oneOffEvent.first())
     }
 
     @Test

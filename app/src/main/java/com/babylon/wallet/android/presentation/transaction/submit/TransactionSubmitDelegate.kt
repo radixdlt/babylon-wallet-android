@@ -7,13 +7,14 @@ import com.babylon.wallet.android.data.transaction.DappRequestException
 import com.babylon.wallet.android.data.transaction.DappRequestFailure
 import com.babylon.wallet.android.data.transaction.TransactionClient
 import com.babylon.wallet.android.data.transaction.model.TransactionApprovalRequest
+import com.babylon.wallet.android.domain.RadixWalletException
 import com.babylon.wallet.android.domain.model.GuaranteeAssertion
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.babylon.wallet.android.domain.usecases.transaction.SignatureCancelledException
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.transaction.PreviewType
-import com.babylon.wallet.android.presentation.transaction.TransactionApprovalViewModel.Event
-import com.babylon.wallet.android.presentation.transaction.TransactionApprovalViewModel.State
+import com.babylon.wallet.android.presentation.transaction.TransactionReviewViewModel.Event
+import com.babylon.wallet.android.presentation.transaction.TransactionReviewViewModel.State
 import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
 import com.babylon.wallet.android.utils.toRETDecimalString
@@ -168,7 +169,9 @@ class TransactionSubmitDelegate(
             )
         }.onFailure { error ->
             val exception = error as? DappRequestException
-            if (exception?.e is SignatureCancelledException) {
+            val cancelled = exception?.e is SignatureCancelledException
+            val failedToCollectLedgerSignature = exception?.e is RadixWalletException.FailedToCollectLedgerSignature
+            if (cancelled || failedToCollectLedgerSignature) {
                 state.update { it.copy(isSubmitting = false) }
                 approvalJob = null
                 return
@@ -187,7 +190,7 @@ class TransactionSubmitDelegate(
 
     private fun TransactionManifest.attachGuarantees(previewType: PreviewType): TransactionManifest {
         var manifest = this
-        if (previewType is PreviewType.Transaction) {
+        if (previewType is PreviewType.Transfer) {
             previewType.to.map { it.resources }.flatten().forEach { depositing ->
                 when (val assertion = depositing.guaranteeAssertion) {
                     is GuaranteeAssertion.ForAmount -> {

@@ -349,7 +349,8 @@
   <string name="dAppRequest_metadata_unknownName">Unknown dApp</string>
   <string name="dAppRequest_personalDataBox_edit">Edit</string>
   <string name="dAppRequest_personalDataBox_requiredInformation">Required information:</string>
-  <string name="transactionReview_title">Review Transaction</string>
+  <string name="transactionReview_title">Review Your Transaction</string>
+  <string name="transactionReview_transferTitle">Review Your Transfer</string>
   <string name="transactionReview_approveButtonTitle">Approve</string>
   <string name="transactionReview_customizeGuaranteesButtonTitle">Customize Guarantees</string>
   <string name="transactionReview_depositsHeading">Depositing To</string>
@@ -364,6 +365,7 @@
   <string name="transactionReview_usingDappsHeading">Using dApps</string>
   <string name="transactionReview_unknownComponents">%d Unknown Components</string>
   <string name="transactionReview_withdrawalsHeading">Withdrawing From</string>
+  <string name="transactionReview_slideToSign">Slide to Sign</string>
   <string name="transactionReview_xrdAmount">%s XRD</string>
   <string name="transactionReview_insufficientBalance">Insufficient Balance</string>
   <string name="transactionReview_feePayerRequiredMessage">Fee Payer account required</string>
@@ -516,6 +518,9 @@
   <string name="onboarding_step2_subtitle">Let\'s get started</string>
   <string name="onboarding_step3_title">Your phone is your login</string>
   <string name="onboarding_step3_subtitle">Connect and transact securely with a world of web3 dApps, tokens, NFTs, and much more</string>
+  <string name="onboarding_eula_headerTitle">User Terms</string>
+  <string name="onboarding_eula_headerSubtitle">To proceed, you must accept the user terms below.</string>
+  <string name="onboarding_eula_accept">Accept</string>
   <string name="splash_passcodeNotSetTitle">Passcode not set up</string>
   <string name="splash_passcodeNotSetMessage">This app requires your phone to have a passcode set up</string>
   <string name="splash_incompatibleProfileVersionAlert_delete">Delete Wallet Data</string>

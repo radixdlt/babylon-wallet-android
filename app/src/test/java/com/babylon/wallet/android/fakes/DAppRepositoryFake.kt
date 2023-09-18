@@ -2,15 +2,14 @@ package com.babylon.wallet.android.fakes
 
 import com.babylon.wallet.android.data.gateway.model.ExplicitMetadataKey
 import com.babylon.wallet.android.data.repository.dappmetadata.DAppRepository
-import com.babylon.wallet.android.domain.common.Result
 import com.babylon.wallet.android.domain.model.DAppResources
 import com.babylon.wallet.android.domain.model.DAppWithMetadata
 import com.babylon.wallet.android.domain.model.metadata.NameMetadataItem
 
 class DAppRepositoryFake : DAppRepository {
 
-    override suspend fun verifyDapp(origin: String, dAppDefinitionAddress: String): Result<Boolean> {
-        return Result.Success(true)
+    override suspend fun verifyDapp(origin: String, dAppDefinitionAddress: String, wellKnownFileCheck: Boolean): Result<Boolean> {
+        return Result.success(true)
     }
 
     override suspend fun getDAppMetadata(
@@ -18,7 +17,7 @@ class DAppRepositoryFake : DAppRepository {
         explicitMetadata: Set<ExplicitMetadataKey>,
         needMostRecentData: Boolean
     ): Result<DAppWithMetadata> {
-        return Result.Success(
+        return Result.success(
             DAppWithMetadata(
                 dAppAddress = "dapp_address",
                 nameItem = NameMetadataItem(name = "dApp")
@@ -31,7 +30,7 @@ class DAppRepositoryFake : DAppRepository {
         explicitMetadata: Set<ExplicitMetadataKey>,
         needMostRecentData: Boolean
     ): Result<List<DAppWithMetadata>> {
-        return Result.Success(
+        return Result.success(
             listOf(
                 DAppWithMetadata(
                     dAppAddress = "dapp_address",
@@ -45,7 +44,7 @@ class DAppRepositoryFake : DAppRepository {
         dAppMetadata: DAppWithMetadata,
         isRefreshing: Boolean
     ): Result<DAppResources> {
-        return Result.Success(
+        return Result.success(
             DAppResources(
                 fungibleResources = emptyList(),
                 nonFungibleResources = emptyList()

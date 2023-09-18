@@ -200,7 +200,7 @@ fun AccountCardPreview() {
                         fungibleResources = listOf(
                             Resource.FungibleResource(
                                 resourceAddress = "resource_address",
-                                amount = BigDecimal.valueOf(237659),
+                                ownedAmount = BigDecimal.valueOf(237659),
                                 nameMetadataItem = NameMetadataItem("cool XRD"),
                                 symbolMetadataItem = SymbolMetadataItem("XRD")
                             )

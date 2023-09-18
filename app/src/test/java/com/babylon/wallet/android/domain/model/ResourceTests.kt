@@ -6,7 +6,6 @@ import com.babylon.wallet.android.domain.model.metadata.SymbolMetadataItem
 import org.junit.Assert
 import org.junit.Test
 import java.math.BigDecimal
-import java.util.UUID
 
 class ResourceTests {
 
@@ -177,7 +176,7 @@ class ResourceTests {
         symbol: String?
     ) = Resource.FungibleResource(
         resourceAddress = address,
-        amount = BigDecimal(1234.5678),
+        ownedAmount = BigDecimal(1234.5678),
         nameMetadataItem = name?.let { NameMetadataItem(it) },
         symbolMetadataItem = symbol?.let { SymbolMetadataItem(it) }
     )

@@ -142,7 +142,7 @@ class LedgerMessengerImpl @Inject constructor(
             ledgerDevice = ledgerDevice,
             displayHash = displayHashOnLedgerDisplay,
             compiledTransactionIntent = compiledTransactionIntent,
-            mode = SignTransactionRequest.Mode.Verbose
+            mode = SignTransactionRequest.Mode.Summary
         )
         return flow<Result<MessageFromDataChannel.LedgerResponse.SignTransactionResponse>> {
             when (peerdroidClient.sendMessage(peerdroidRequestJson.encodeToString(ledgerRequest))) {

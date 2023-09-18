@@ -25,7 +25,7 @@ sealed class Resource {
 
     data class FungibleResource(
         override val resourceAddress: String,
-        val amount: BigDecimal?,
+        val ownedAmount: BigDecimal?,
         private val nameMetadataItem: NameMetadataItem? = null,
         private val symbolMetadataItem: SymbolMetadataItem? = null,
         private val descriptionMetadataItem: DescriptionMetadataItem? = null,
@@ -292,6 +292,8 @@ sealed class Resource {
                 }
             }
         }
+
+        companion object
     }
 
     data class LiquidStakeUnitResource(
@@ -305,7 +307,7 @@ sealed class Resource {
             get() = fungibleResource.resourceAddress
 
         private val percentageOwned: BigDecimal?
-            get() = fungibleResource.amount?.divide(fungibleResource.currentSupply, fungibleResource.mathContext)
+            get() = fungibleResource.ownedAmount?.divide(fungibleResource.currentSupply, fungibleResource.mathContext)
 
         fun stakeValueInXRD(totalXrdStake: BigDecimal?): BigDecimal? {
             return percentageOwned?.multiply(totalXrdStake, fungibleResource.mathContext)
@@ -333,8 +335,8 @@ sealed class Resource {
             get() = poolUnitResource.resourceAddress
 
         fun resourceRedemptionValue(resourceAddress: String): BigDecimal? {
-            val resourceVaultBalance = poolResources.find { it.resourceAddress == resourceAddress }?.amount
-            return poolUnitResource.amount?.multiply(resourceVaultBalance)
+            val resourceVaultBalance = poolResources.find { it.resourceAddress == resourceAddress }?.ownedAmount
+            return poolUnitResource.ownedAmount?.multiply(resourceVaultBalance)
                 ?.divide(poolUnitResource.currentSupply, poolUnitResource.mathContext)
         }
     }

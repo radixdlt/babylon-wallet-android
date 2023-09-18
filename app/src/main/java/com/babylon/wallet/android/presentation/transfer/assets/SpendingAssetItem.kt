@@ -282,7 +282,7 @@ private fun ColumnScope.FungibleSpendingAsset(
                 textDecoration = TextDecoration.Underline
             )
 
-            resource.amount?.let { amount ->
+            resource.ownedAmount?.let { amount ->
                 Text(
                     text = "- Balance: ${amount.displayableQuantity()}",
                     style = RadixTheme.typography.body2HighImportance.copy(
@@ -382,7 +382,7 @@ fun SpendingAssetItemsPreview() {
                 asset = SpendingAsset.Fungible(
                     Resource.FungibleResource(
                         resourceAddress = "resource_rdx_abcd",
-                        amount = BigDecimal.TEN,
+                        ownedAmount = BigDecimal.TEN,
                         nameMetadataItem = NameMetadataItem("Radix"),
                         symbolMetadataItem = SymbolMetadataItem("XRD")
                     ),
@@ -401,7 +401,7 @@ fun SpendingAssetItemsPreview() {
                 asset = SpendingAsset.Fungible(
                     resource = Resource.FungibleResource(
                         resourceAddress = "resource_rdx_abcd",
-                        amount = BigDecimal.TEN,
+                        ownedAmount = BigDecimal.TEN,
                         nameMetadataItem = NameMetadataItem("Radix"),
                         symbolMetadataItem = SymbolMetadataItem("XRD")
                     ),

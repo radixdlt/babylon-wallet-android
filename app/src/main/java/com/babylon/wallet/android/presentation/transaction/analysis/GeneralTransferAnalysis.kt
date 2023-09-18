@@ -28,7 +28,9 @@ suspend fun TransactionType.GeneralTransaction.resolve(
     resolveDAppsUseCase: ResolveDAppsUseCase
 ): PreviewType {
     val badges = getTransactionBadgesUseCase(accountProofs = accountProofs)
-    val dApps = resolveDApps(resolveDAppsUseCase)
+    val dApps = resolveDApps(resolveDAppsUseCase).distinctBy {
+        it.dAppWithMetadata.definitionAddresses
+    }
 
     val allAccounts = getProfileUseCase.accountsOnCurrentNetwork().filter {
         it.address in accountWithdraws.keys || it.address in accountDeposits.keys
@@ -66,10 +68,12 @@ suspend fun TransactionType.GeneralTransaction.resolve(
     // Here we have "third party" resources that are not associated with accounts we hold
     val notOwnedResources = depositResourcesInvolvedInTransaction.filterNot { allResourcesAddresses.contains(it) }
 
-    val thirdPartyMetadata = getResourcesMetadataUseCase
-        .invoke(resourceAddresses = notOwnedResources, isRefreshing = false).value().orEmpty()
+    val thirdPartyMetadata = getResourcesMetadataUseCase(
+        resourceAddresses = notOwnedResources,
+        isRefreshing = false
+    ).value().orEmpty()
 
-    return PreviewType.Transaction(
+    return PreviewType.Transfer(
         from = resolveFromAccounts(allResources, allAccounts),
         to = resolveToAccounts(allResources, allAccounts, thirdPartyMetadata),
         badges = badges,

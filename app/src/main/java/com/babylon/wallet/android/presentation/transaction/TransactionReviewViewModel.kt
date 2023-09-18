@@ -15,6 +15,8 @@ import com.babylon.wallet.android.domain.model.Badge
 import com.babylon.wallet.android.domain.model.DAppWithMetadataAndAssociatedResources
 import com.babylon.wallet.android.domain.model.GuaranteeAssertion
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
+import com.babylon.wallet.android.domain.model.Resource.FungibleResource
+import com.babylon.wallet.android.domain.model.Resource.NonFungibleResource
 import com.babylon.wallet.android.domain.model.Transferable
 import com.babylon.wallet.android.domain.model.TransferableResource
 import com.babylon.wallet.android.domain.usecases.GetAccountsWithResourcesUseCase
@@ -27,8 +29,8 @@ import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
-import com.babylon.wallet.android.presentation.transaction.TransactionApprovalViewModel.Event
-import com.babylon.wallet.android.presentation.transaction.TransactionApprovalViewModel.State
+import com.babylon.wallet.android.presentation.transaction.TransactionReviewViewModel.Event
+import com.babylon.wallet.android.presentation.transaction.TransactionReviewViewModel.State
 import com.babylon.wallet.android.presentation.transaction.analysis.TransactionAnalysisDelegate
 import com.babylon.wallet.android.presentation.transaction.fees.TransactionFees
 import com.babylon.wallet.android.presentation.transaction.fees.TransactionFeesDelegate
@@ -51,7 +53,7 @@ import javax.inject.Inject
 
 @Suppress("LongParameterList", "TooManyFunctions")
 @HiltViewModel
-class TransactionApprovalViewModel @Inject constructor(
+class TransactionReviewViewModel @Inject constructor(
     private val transactionClient: TransactionClient,
     getAccountsWithResourcesUseCase: GetAccountsWithResourcesUseCase,
     getResourcesMetadataUseCase: GetResourcesMetadataUseCase,
@@ -67,7 +69,7 @@ class TransactionApprovalViewModel @Inject constructor(
 ) : StateViewModel<State>(),
     OneOffEventHandler<Event> by OneOffEventHandlerImpl() {
 
-    private val args = TransactionApprovalArgs(savedStateHandle)
+    private val args = TransactionReviewArgs(savedStateHandle)
     private val logger = Timber.tag("TransactionApproval")
 
     override fun initialState(): State = State(
@@ -250,6 +252,21 @@ class TransactionApprovalViewModel @Inject constructor(
         }
     }
 
+    fun onFungibleResourceClick(fungibleResource: FungibleResource) {
+        _state.update {
+            it.copy(sheetState = State.Sheet.ResourceSelected.Fungible(fungibleResource))
+        }
+    }
+
+    fun onNonFungibleResourceClick(
+        nonFungibleResource: NonFungibleResource,
+        item: NonFungibleResource.Item
+    ) {
+        _state.update {
+            it.copy(sheetState = State.Sheet.ResourceSelected.NonFungible(nonFungibleResource, item))
+        }
+    }
+
     data class State(
         val request: MessageFromDataChannel.IncomingRequest.TransactionRequest,
         val isLoading: Boolean,
@@ -322,7 +339,7 @@ class TransactionApprovalViewModel @Inject constructor(
         )
 
         val isRawManifestToggleVisible: Boolean
-            get() = previewType is PreviewType.Transaction
+            get() = previewType is PreviewType.Transfer
 
         val rawManifest: String = request.transactionManifestData.toTransactionManifest().getOrNull()?.toPrettyString().orEmpty()
 
@@ -348,20 +365,37 @@ class TransactionApprovalViewModel @Inject constructor(
         val insufficientBalanceToPayTheFee: Boolean
             get() = feePayerSearchResult?.insufficientBalanceToPayTheFee == true
 
-        sealed class Sheet {
-            object None : Sheet()
+        sealed interface Sheet {
+
+            data object None : Sheet
+
+//            data class ResourceDetails(
+//                val resource: Resource, // it can be token or nft
+//                val item: Resource.NonFungibleResource.Item? = null // if resource nft then pass item the user clicked
+//            ) : Sheet()
+
+            sealed interface ResourceSelected : Sheet {
+
+                data class Fungible(val token: FungibleResource) : ResourceSelected
+
+                data class NonFungible(
+                    val collection: NonFungibleResource,
+                    val item: NonFungibleResource.Item
+                ) : ResourceSelected
+            }
 
             data class CustomizeGuarantees(
                 val accountsWithPredictedGuarantees: List<AccountWithPredictedGuarantee>
-            ) : Sheet()
+            ) : Sheet
 
             data class CustomizeFees(
                 val feePayerMode: FeePayerMode,
                 val feesMode: FeesMode
-            ) : Sheet() {
+            ) : Sheet {
 
                 sealed interface FeePayerMode {
-                    object NoFeePayerRequired : FeePayerMode
+
+                    data object NoFeePayerRequired : FeePayerMode
 
                     data class FeePayerSelected(
                         val feePayerCandidate: Network.Account
@@ -383,21 +417,21 @@ class TransactionApprovalViewModel @Inject constructor(
 
             data class Dapp(
                 val dApp: DAppWithMetadataAndAssociatedResources
-            ) : Sheet()
+            ) : Sheet
         }
     }
 
     sealed interface Event : OneOffEvent {
-        object Dismiss : Event
+        data object Dismiss : Event
     }
 }
 
 sealed interface PreviewType {
-    object None : PreviewType
+    data object None : PreviewType
 
-    object NonConforming : PreviewType
+    data object NonConforming : PreviewType
 
-    data class Transaction(
+    data class Transfer(
         val from: List<AccountWithTransferableResources>,
         val to: List<AccountWithTransferableResources>,
         val badges: List<Badge> = emptyList(),

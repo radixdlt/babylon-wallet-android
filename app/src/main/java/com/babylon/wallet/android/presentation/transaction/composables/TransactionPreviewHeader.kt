@@ -30,7 +30,7 @@ import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.babylon.wallet.android.domain.model.TransactionManifestData
 import com.babylon.wallet.android.presentation.transaction.PreviewType
-import com.babylon.wallet.android.presentation.transaction.TransactionApprovalViewModel.State
+import com.babylon.wallet.android.presentation.transaction.TransactionReviewViewModel.State
 import rdx.works.profile.data.model.apppreferences.Radix
 
 @Composable
@@ -42,13 +42,18 @@ fun TransactionPreviewHeader(
     scrollBehavior: TopAppBarScrollBehavior
 ) {
     val fraction = scrollBehavior.state.collapsedFraction
+    val title = when (state.previewType) {
+        PreviewType.None -> stringResource(id = R.string.empty)
+        is PreviewType.Transfer -> stringResource(R.string.transactionReview_transferTitle)
+        else -> stringResource(R.string.transactionReview_title)
+    }
     LargeTopAppBar(
         modifier = modifier,
         title = {
             Box {
                 Text(
                     modifier = Modifier.alpha(1 - fraction * 2),
-                    text = stringResource(R.string.transactionReview_title),
+                    text = title,
                     style = RadixTheme.typography.title,
                     color = RadixTheme.colors.gray1,
                     textAlign = TextAlign.Start,
@@ -57,8 +62,10 @@ fun TransactionPreviewHeader(
 
                 val smallAlpha = if (fraction in 0f..0.6f) 0f else fraction + fraction * 0.6f
                 Text(
-                    modifier = Modifier.alpha(smallAlpha).align(Alignment.Center),
-                    text = stringResource(R.string.transactionReview_title),
+                    modifier = Modifier
+                        .alpha(smallAlpha)
+                        .align(Alignment.Center),
+                    text = title,
                     style = RadixTheme.typography.body1Header,
                     color = RadixTheme.colors.gray1,
                     textAlign = TextAlign.Center,

@@ -10,7 +10,6 @@ interface MetadataItem {
     companion object {
         inline fun <reified T : MetadataItem> MutableList<MetadataItem>.consume(): T? {
             val item = find { it is T } as? T
-
             if (item != null) {
                 remove(item)
             }
