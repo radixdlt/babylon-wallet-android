@@ -109,9 +109,19 @@ jobs:
       contents: read
       pull-requests: read
     steps:
+      - name: Fetch Radixbot push commit token
+        uses: radixdlt/public-iac-resuable-artifacts/fetch-secrets@main
+        with:
+          role_name: 'arn:aws:iam::308190735829:role/gh-babylon-wallet-android-secrets-read-access'
+          app_name: 'wallet-android'
+          step_name: 'gpc-alpha-1'
+          secret_prefix: 'GH'
+          secret_name: "arn:aws:secretsmanager:eu-west-2:308190735829:secret:github-actions/radixdlt/babylon-wallet-android/push-pat-token"
+          parse_json: true
+
       - uses: actions/checkout@3df4ab11eba7bda6032a0b82a6bb43b11571feac # v4.0.0
         with:
-          token: ${{ secrets.RADIX_BOT_PAT }}
+          token: ${{ env.GH_RADIXBOT_PUSH_COMMIT_PAT_TOKEN }}
 
       - name: Fetch GPR credentials
         uses: radixdlt/public-iac-resuable-artifacts/fetch-secrets@main
@@ -137,9 +147,19 @@ jobs:
     runs-on: ubuntu-latest
     environment: release
     steps:
+      - name: Fetch Radixbot push commit token
+        uses: radixdlt/public-iac-resuable-artifacts/fetch-secrets@main
+        with:
+          role_name: 'arn:aws:iam::308190735829:role/gh-babylon-wallet-android-secrets-read-access'
+          app_name: 'wallet-android'
+          step_name: 'gpc-alpha-1'
+          secret_prefix: 'GH'
+          secret_name: "arn:aws:secretsmanager:eu-west-2:308190735829:secret:github-actions/radixdlt/babylon-wallet-android/push-pat-token"
+          parse_json: true
+
       - uses: actions/checkout@3df4ab11eba7bda6032a0b82a6bb43b11571feac # v4.0.0
         with:
-          token: ${{ secrets.RADIX_BOT_PAT }}
+          token: ${{ env.GH_RADIXBOT_PUSH_COMMIT_PAT_TOKEN }}
 
       - name: Fetch GPR credentials
         uses: radixdlt/public-iac-resuable-artifacts/fetch-secrets@main
