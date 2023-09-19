@@ -93,6 +93,7 @@ import com.babylon.wallet.android.presentation.ui.composables.SimpleAccountCard
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
 import com.babylon.wallet.android.presentation.ui.modifier.applyIf
 import com.babylon.wallet.android.utils.biometricAuthenticate
+import com.babylon.wallet.android.utils.biometricAuthenticateSuspend
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
@@ -125,18 +126,20 @@ fun ImportLegacyWalletScreen(
         pages = state.pages,
         oneOffEvent = viewModel.oneOffEvent,
         olympiaAccountsToImport = state.olympiaAccountsToImport,
-        onImportAccounts = viewModel::onImportAccounts,
+        onImportAccounts = {
+            viewModel.onImportAccounts {
+                context.biometricAuthenticateSuspend()
+            }
+        },
         onCloseScreen = onCloseScreen,
         importButtonEnabled = state.importButtonEnabled,
         seedPhraseWords = state.seedPhraseWords,
         bip39Passphrase = state.bip39Passphrase,
         onWordChanged = viewModel::onWordChanged,
         onPassphraseChanged = viewModel::onPassphraseChanged,
-        onImportSoftwareAccounts = {
-            context.biometricAuthenticate { authenticated ->
-                if (authenticated) {
-                    viewModel.onImportSoftwareAccounts()
-                }
+        onValidateSoftwareAccounts = {
+            viewModel.onValidateSoftwareAccounts {
+                context.biometricAuthenticateSuspend()
             }
         },
         uiMessage = state.uiMessage,
@@ -169,7 +172,8 @@ fun ImportLegacyWalletScreen(
         },
         shouldShowAddLedgerDeviceScreen = state.shouldShowAddLedgerDeviceScreen,
         onCloseSettings = viewModel::onCloseSettings,
-        onWordSelected = viewModel::onWordSelected
+        onWordSelected = viewModel::onWordSelected,
+        importAllAccounts = viewModel::importAllAccounts
     )
 }
 
@@ -189,7 +193,7 @@ private fun ImportLegacyWalletContent(
     bip39Passphrase: String,
     onWordChanged: (Int, String) -> Unit,
     onPassphraseChanged: (String) -> Unit,
-    onImportSoftwareAccounts: () -> Unit,
+    onValidateSoftwareAccounts: () -> Unit,
     uiMessage: UiMessage?,
     onMessageShown: () -> Unit,
     migratedAccounts: ImmutableList<AccountItemUiModel>,
@@ -212,7 +216,8 @@ private fun ImportLegacyWalletContent(
     onNewConnectorCloseClick: () -> Unit,
     shouldShowAddLedgerDeviceScreen: Boolean,
     onCloseSettings: () -> Unit,
-    onWordSelected: (Int, String) -> Unit
+    onWordSelected: (Int, String) -> Unit,
+    importAllAccounts: () -> Unit
 ) {
     val focusManager = LocalFocusManager.current
     val cameraPermissionState = rememberPermissionState(permission = Manifest.permission.CAMERA)
@@ -262,10 +267,10 @@ private fun ImportLegacyWalletContent(
                     }
                 }
 
-                OlympiaImportEvent.BiometricPrompt -> {
+                OlympiaImportEvent.BiometricPromptBeforeFinalImport -> {
                     context.biometricAuthenticate { authenticatedSuccessfully ->
                         if (authenticatedSuccessfully) {
-                            onImportSoftwareAccounts()
+                            importAllAccounts()
                         }
                     }
                 }
@@ -284,38 +289,6 @@ private fun ImportLegacyWalletContent(
         onMessageShown = onMessageShown
     )
     Box(modifier = modifier) {
-        if (shouldShowAddLinkConnectorScreen) {
-            AddLinkConnectorScreen(
-                modifier = Modifier,
-                showContent = addLinkConnectorState.showContent,
-                isLoading = addLinkConnectorState.isLoading,
-                onQrCodeScanned = onLinkConnectorQrCodeScanned,
-                onConnectorDisplayNameChanged = onConnectorDisplayNameChanged,
-                connectorDisplayName = addLinkConnectorState.connectorDisplayName,
-                isNewConnectorContinueButtonEnabled = addLinkConnectorState.isContinueButtonEnabled,
-                onNewConnectorContinueClick = onNewConnectorContinueClick,
-                onNewConnectorCloseClick = onNewConnectorCloseClick
-            )
-        }
-        if (shouldShowAddLedgerDeviceScreen) {
-            AddLedgerDeviceScreen(
-                modifier = Modifier
-                    .fillMaxSize(),
-                deviceModel = deviceModel,
-                onSendAddLedgerRequestClick = onContinueWithLedgerClick,
-                showContent = addLedgerSheetState,
-                onConfirmLedgerNameClick = {
-                    onConfirmLedgerName(it)
-                    onCloseSettings()
-                },
-                backIconType = BackIconType.Back,
-                onClose = onCloseSettings,
-                waitingForLedgerResponse = waitingForLedgerResponse,
-                onBackClick = onCloseSettings
-
-            )
-        }
-
         Scaffold(
             topBar = {
                 RadixCenteredTopAppBar(
@@ -388,7 +361,7 @@ private fun ImportLegacyWalletContent(
                             bip39Passphrase = bip39Passphrase,
                             onWordChanged = onWordChanged,
                             onPassphraseChanged = onPassphraseChanged,
-                            onImportSoftwareAccounts = onImportSoftwareAccounts,
+                            onImportSoftwareAccounts = onValidateSoftwareAccounts,
                             onFocusedWordIndexChanged = {
                                 focusedWordIndex = it
                             }
@@ -414,6 +387,37 @@ private fun ImportLegacyWalletContent(
                     }
                 }
             }
+        }
+        if (shouldShowAddLinkConnectorScreen) {
+            AddLinkConnectorScreen(
+                modifier = Modifier.fillMaxSize(),
+                showContent = addLinkConnectorState.showContent,
+                isLoading = addLinkConnectorState.isLoading,
+                onQrCodeScanned = onLinkConnectorQrCodeScanned,
+                onConnectorDisplayNameChanged = onConnectorDisplayNameChanged,
+                connectorDisplayName = addLinkConnectorState.connectorDisplayName,
+                isNewConnectorContinueButtonEnabled = addLinkConnectorState.isContinueButtonEnabled,
+                onNewConnectorContinueClick = onNewConnectorContinueClick,
+                onNewConnectorCloseClick = onNewConnectorCloseClick
+            )
+        }
+        if (shouldShowAddLedgerDeviceScreen) {
+            AddLedgerDeviceScreen(
+                modifier = Modifier
+                    .fillMaxSize(),
+                deviceModel = deviceModel,
+                onSendAddLedgerRequestClick = onContinueWithLedgerClick,
+                showContent = addLedgerSheetState,
+                onConfirmLedgerNameClick = {
+                    onConfirmLedgerName(it)
+                    onCloseSettings()
+                },
+                backIconType = BackIconType.Back,
+                onClose = onCloseSettings,
+                waitingForLedgerResponse = waitingForLedgerResponse,
+                onBackClick = onCloseSettings
+
+            )
         }
     }
 }
@@ -532,7 +536,7 @@ private fun AccountsToImportListPage(
                 )
             }
             items(olympiaAccountsToImport) { item ->
-                val gradientColor = getAccountGradientColorsFor(item.index)
+                val gradientColor = getAccountGradientColorsFor(item.appearanceId)
                 LegacyAccountCard(
                     modifier = Modifier
                         .background(
@@ -768,7 +772,8 @@ private fun VerifyWithYourSeedPhrasePage(
             .padding(
                 start = RadixTheme.dimensions.paddingLarge,
                 end = RadixTheme.dimensions.paddingLarge
-            ),
+            )
+            .imePadding(),
         verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingSemiLarge)
     ) {
         Text(

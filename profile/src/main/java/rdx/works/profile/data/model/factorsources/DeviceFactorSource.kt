@@ -28,6 +28,9 @@ data class DeviceFactorSource(
     val isBabylon: Boolean
         get() = common.cryptoParameters == Common.CryptoParameters.babylon
 
+    val isOlympia: Boolean
+        get() = common.cryptoParameters == Common.CryptoParameters.olympiaBackwardsCompatible
+
     companion object {
 
         fun babylon(
