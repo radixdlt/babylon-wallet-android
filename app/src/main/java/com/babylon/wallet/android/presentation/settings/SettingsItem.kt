@@ -8,12 +8,12 @@ import rdx.works.profile.data.model.BackupState
 sealed interface SettingsItem {
 
     sealed interface TopLevelSettings {
-        object LinkToConnector : TopLevelSettings
-        object ImportOlympiaWallet : TopLevelSettings
-        object AuthorizedDapps : TopLevelSettings
-        object Personas : TopLevelSettings
-        object AccountSecurityAndSettings : TopLevelSettings
-        object AppSettings : TopLevelSettings
+        data object LinkToConnector : TopLevelSettings
+        data object ImportOlympiaWallet : TopLevelSettings
+        data object AuthorizedDapps : TopLevelSettings
+        data object Personas : TopLevelSettings
+        data object AccountSecurityAndSettings : TopLevelSettings
+        data object AppSettings : TopLevelSettings
 
         @StringRes
         fun descriptionRes(): Int {
@@ -40,10 +40,10 @@ sealed interface SettingsItem {
     }
 
     sealed interface AccountSecurityAndSettingsItem {
-        object SeedPhrases : AccountSecurityAndSettingsItem
-        object LedgerHardwareWallets : AccountSecurityAndSettingsItem
-        object DepositGuarantees : AccountSecurityAndSettingsItem
-        object ImportFromLegacyWallet : AccountSecurityAndSettingsItem
+        data object SeedPhrases : AccountSecurityAndSettingsItem
+        data object LedgerHardwareWallets : AccountSecurityAndSettingsItem
+        data object DepositGuarantees : AccountSecurityAndSettingsItem
+        data object ImportFromLegacyWallet : AccountSecurityAndSettingsItem
 
         @StringRes
         fun descriptionRes(): Int {
@@ -67,8 +67,8 @@ sealed interface SettingsItem {
     }
 
     sealed interface AppSettingsItem {
-        object LinkedConnectors : AppSettingsItem
-        object Gateways : AppSettingsItem
+        data object LinkedConnectors : AppSettingsItem
+        data object Gateways : AppSettingsItem
         data class Backups(val backupState: BackupState) : AppSettingsItem
         data class DeveloperMode(val enabled: Boolean) : AppSettingsItem
 
