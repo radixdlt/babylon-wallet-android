@@ -226,7 +226,7 @@ object Thumbnail {
         Custom(
             modifier = modifier,
             imageType = badge.icon?.let { ImageType.External(it, ThumbnailRequestSize.SMALL) },
-            emptyDrawable = R.drawable.ic_dapp,
+            emptyDrawable = R.drawable.ic_badge,
             shape = RadixTheme.shapes.roundedRectXSmall,
             contentDescription = badge.name.orEmpty()
         )
@@ -255,7 +255,7 @@ object Thumbnail {
         Custom(
             modifier = modifier,
             imageType = liquidStakeUnit.fungibleResource.iconUrl?.let { ImageType.External(it, ThumbnailRequestSize.LARGE) },
-            emptyDrawable = com.babylon.wallet.android.R.drawable.ic_empty_pool_tokens,
+            emptyDrawable = R.drawable.ic_pool_units,
             emptyContentScale = CustomContentScale.standard(density = LocalDensity.current),
             shape = RadixTheme.shapes.roundedRectMedium,
             contentDescription = liquidStakeUnit.fungibleResource.displayTitle
@@ -270,7 +270,7 @@ object Thumbnail {
         Custom(
             modifier = modifier,
             imageType = poolUnit.poolUnitResource.iconUrl?.let { ImageType.External(it, ThumbnailRequestSize.LARGE) },
-            emptyDrawable = com.babylon.wallet.android.R.drawable.ic_empty_pool_tokens,
+            emptyDrawable = R.drawable.ic_pool_units,
             emptyContentScale = CustomContentScale.standard(density = LocalDensity.current),
             shape = RadixTheme.shapes.roundedRectMedium,
             contentDescription = poolUnit.poolUnitResource.displayTitle
