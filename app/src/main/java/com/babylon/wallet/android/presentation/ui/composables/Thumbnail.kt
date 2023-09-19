@@ -2,6 +2,7 @@ package com.babylon.wallet.android.presentation.ui.composables
 
 import android.net.Uri
 import androidx.annotation.DrawableRes
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -39,6 +40,7 @@ import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import coil.compose.AsyncImagePainter
+import coil.compose.SubcomposeAsyncImage
 import coil.decode.SvgDecoder
 import coil.request.ImageRequest
 import coil.request.NullRequestDataException
@@ -148,52 +150,57 @@ object Thumbnail {
 
             var painterState: AsyncImagePainter.State by remember(image) { mutableStateOf(AsyncImagePainter.State.Empty) }
             val density = LocalDensity.current
-            AsyncImage(
-                modifier = modifier
-                    .applyIf(
-                        condition = cropped,
-                        modifier = when (val state = painterState) {
-                            is AsyncImagePainter.State.Empty -> Modifier
-                            is AsyncImagePainter.State.Error -> Modifier.aspectRatio(maxAspectRatio)
-                            is AsyncImagePainter.State.Loading -> Modifier
-                            is AsyncImagePainter.State.Success -> {
-                                val intrinsicSize = state.painter.intrinsicSize
-                                if (intrinsicSize.height > intrinsicSize.width) {
-                                    // If the image is taller in aspect ratio than a square,
-                                    // crop the image to the largest possible centered square
-                                    Modifier.aspectRatio(1f)
-                                } else if (intrinsicSize.width / intrinsicSize.height > maxAspectRatio) {
-                                    // If the image is wider in aspect ratio than maxAspectRatio,
-                                    // crop the image to the largest possible centered maxAspectRatio rectangle
-                                    Modifier.aspectRatio(maxAspectRatio)
-                                } else {
-                                    Modifier
-                                }
-                            }
-                        }
-                    )
-                    .applyIf(
-                        condition = !cropped,
-                        modifier = when (painterState) {
-                            is AsyncImagePainter.State.Error -> Modifier.aspectRatio(maxAspectRatio)
-                            else -> Modifier.wrapContentHeight()
-                        }
-                    )
-                    .clip(RoundedCornerShape(cornerRadius))
-                    .applyIf(
-                        condition = painterState !is AsyncImagePainter.State.Success,
-                        modifier = Modifier.background(RadixTheme.colors.gray4)
-                    ),
+
+            SubcomposeAsyncImage(
+                modifier = modifier,
                 model = request,
                 contentDescription = nft.localId.displayable,
-                contentScale = when (painterState) {
-                    is AsyncImagePainter.State.Error -> CustomContentScale.standard(density)
-                    else -> if (cropped) ContentScale.Crop else ContentScale.FillWidth
-                },
-                onState = {
-                    painterState = it
-                }
-            )
+                onState = { painterState = it }
+            ) {
+                Image(
+                    modifier = Modifier
+                        .applyIf(
+                            condition = cropped,
+                            modifier = when (val state = painterState) {
+                                is AsyncImagePainter.State.Empty -> Modifier
+                                is AsyncImagePainter.State.Error -> Modifier.aspectRatio(maxAspectRatio)
+                                is AsyncImagePainter.State.Loading -> Modifier
+                                is AsyncImagePainter.State.Success -> {
+                                    val intrinsicSize = state.painter.intrinsicSize
+                                    if (intrinsicSize.height > intrinsicSize.width) {
+                                        // If the image is taller in aspect ratio than a square,
+                                        // crop the image to the largest possible centered square
+                                        Modifier.aspectRatio(1f)
+                                    } else if (intrinsicSize.width / intrinsicSize.height > maxAspectRatio) {
+                                        // If the image is wider in aspect ratio than maxAspectRatio,
+                                        // crop the image to the largest possible centered maxAspectRatio rectangle
+                                        Modifier.aspectRatio(maxAspectRatio)
+                                    } else {
+                                        Modifier
+                                    }
+                                }
+                            }
+                        )
+                        .applyIf(
+                            condition = !cropped,
+                            modifier = when (painterState) {
+                                is AsyncImagePainter.State.Error -> Modifier.aspectRatio(maxAspectRatio)
+                                else -> Modifier.wrapContentHeight()
+                            }
+                        )
+                        .clip(RoundedCornerShape(cornerRadius))
+                        .applyIf(
+                            condition = painterState !is AsyncImagePainter.State.Success,
+                            modifier = Modifier.background(RadixTheme.colors.gray4)
+                        ),
+                    painter = painter,
+                    contentDescription = null,
+                    contentScale = when (painterState) {
+                        is AsyncImagePainter.State.Error -> CustomContentScale.standard(density)
+                        else -> if (cropped) ContentScale.Crop else ContentScale.FillWidth
+                    }
+                )
+            }
         }
     }
 
@@ -219,7 +226,7 @@ object Thumbnail {
         Custom(
             modifier = modifier,
             imageType = badge.icon?.let { ImageType.External(it, ThumbnailRequestSize.SMALL) },
-            emptyDrawable = R.drawable.ic_dapp,
+            emptyDrawable = R.drawable.ic_badge,
             shape = RadixTheme.shapes.roundedRectXSmall,
             contentDescription = badge.name.orEmpty()
         )
@@ -248,7 +255,7 @@ object Thumbnail {
         Custom(
             modifier = modifier,
             imageType = liquidStakeUnit.fungibleResource.iconUrl?.let { ImageType.External(it, ThumbnailRequestSize.LARGE) },
-            emptyDrawable = com.babylon.wallet.android.R.drawable.ic_empty_pool_tokens,
+            emptyDrawable = R.drawable.ic_pool_units,
             emptyContentScale = CustomContentScale.standard(density = LocalDensity.current),
             shape = RadixTheme.shapes.roundedRectMedium,
             contentDescription = liquidStakeUnit.fungibleResource.displayTitle
@@ -263,7 +270,7 @@ object Thumbnail {
         Custom(
             modifier = modifier,
             imageType = poolUnit.poolUnitResource.iconUrl?.let { ImageType.External(it, ThumbnailRequestSize.LARGE) },
-            emptyDrawable = com.babylon.wallet.android.R.drawable.ic_empty_pool_tokens,
+            emptyDrawable = R.drawable.ic_pool_units,
             emptyContentScale = CustomContentScale.standard(density = LocalDensity.current),
             shape = RadixTheme.shapes.roundedRectMedium,
             contentDescription = poolUnit.poolUnitResource.displayTitle
