@@ -112,7 +112,7 @@ jobs:
           role_name: 'arn:aws:iam::308190735829:role/gh-babylon-wallet-android-secrets-read-access'
           app_name: 'wallet-android'
           step_name: 'sonar'
-          secret_prefix: 'SNYK'
+          secret_prefix: 'GH'
           secret_name: "arn:aws:secretsmanager:eu-west-2:308190735829:secret:github-actions/radixdlt/babylon-wallet-android/gpr-credentials"
           parse_json: true
 
