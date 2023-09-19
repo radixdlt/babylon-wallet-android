@@ -3,6 +3,7 @@
 package rdx.works.profile.data.model.pernetwork
 
 import kotlinx.serialization.Contextual
+import kotlinx.serialization.EncodeDefault
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.SerialName
@@ -28,18 +29,23 @@ data class PersonaData(
     val companyName: IdentifiedEntry<PersonaDataField.CompanyName>? = null,
 
     @SerialName("emailAddresses")
+    @EncodeDefault
     val emailAddresses: List<IdentifiedEntry<PersonaDataField.Email>> = emptyList(),
 
     @SerialName("phoneNumbers")
+    @EncodeDefault
     val phoneNumbers: List<IdentifiedEntry<PersonaDataField.PhoneNumber>> = emptyList(),
 
     @SerialName("urls")
+    @EncodeDefault
     val urls: List<IdentifiedEntry<PersonaDataField.Url>> = emptyList(),
 
     @SerialName("postalAddresses")
+    @EncodeDefault
     val postalAddresses: List<IdentifiedEntry<PersonaDataField.PostalAddress>> = emptyList(),
 
     @SerialName("creditCards")
+    @EncodeDefault
     val creditCards: List<IdentifiedEntry<PersonaDataField.CreditCard>> = emptyList()
 
 ) {
