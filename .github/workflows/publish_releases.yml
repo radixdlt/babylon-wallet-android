@@ -146,6 +146,10 @@ jobs:
     name: "Publish Google Play Production"
     runs-on: ubuntu-latest
     environment: release
+    permissions:
+      id-token: write
+      contents: read
+      pull-requests: read
     steps:
       - name: Fetch Radixbot push commit token
         uses: radixdlt/public-iac-resuable-artifacts/fetch-secrets@main
