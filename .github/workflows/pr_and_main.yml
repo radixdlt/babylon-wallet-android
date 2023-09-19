@@ -15,6 +15,10 @@ jobs:
 
   cancel:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
+      actions: write
     steps:
       - name: Cancel Previous Runs
         uses: styfle/cancel-workflow-action@b173b6ec0100793626c2d9e6b90435061f4fc3e5
