@@ -30,9 +30,19 @@ jobs:
       contents: read
       pull-requests: read
     steps:
+      - name: Fetch Radixbot push commit token
+        uses: radixdlt/public-iac-resuable-artifacts/fetch-secrets@main
+        with:
+          role_name: 'arn:aws:iam::308190735829:role/gh-babylon-wallet-android-secrets-read-access'
+          app_name: 'wallet-android'
+          step_name: 'gpc-alpha-1'
+          secret_prefix: 'GH'
+          secret_name: "arn:aws:secretsmanager:eu-west-2:308190735829:secret:github-actions/radixdlt/babylon-wallet-android/push-pat-token"
+          parse_json: true
+
       - uses: actions/checkout@3df4ab11eba7bda6032a0b82a6bb43b11571feac # v4.0.0
         with:
-          token: ${{ secrets.RADIX_BOT_PAT }}
+          token: ${{ env.GH_RADIXBOT_PUSH_COMMIT_PAT_TOKEN }}
 
       - name: Dump context
         uses: crazy-max/ghaction-dump-context@8b55fa205ab4530d36f787a4de1009afaaa7f3b4 # v2.1.0
@@ -65,6 +75,16 @@ jobs:
           fileName: "service_account.json"
           encodedString: ${{ env.GH_GOOGLE_SERVICE_ACCOUNT_JSON_FILE_BASE64 }}
 
+      - name: Fetch GPR credentials
+        uses: radixdlt/public-iac-resuable-artifacts/fetch-secrets@main
+        with:
+          role_name: 'arn:aws:iam::308190735829:role/gh-babylon-wallet-android-secrets-read-access'
+          app_name: 'wallet-android'
+          step_name: 'firebase-dev'
+          secret_prefix: 'GH'
+          secret_name: "arn:aws:secretsmanager:eu-west-2:308190735829:secret:github-actions/radixdlt/babylon-wallet-android/gpr-credentials"
+          parse_json: true
+
       - name: Distribute Alpha to Firebase
         run: |
           git config user.name $GIT_USER
@@ -75,9 +95,9 @@ jobs:
           FIREBASE_APP_ID: ${{ env.GH_FIREBASE_DEV_APP_ID }}
           GOOGLE_APPLICATION_CREDENTIALS: ${{ steps.google_application_credentials.outputs.filePath }}
           GROUPS: "alpha-devs"
-          GIT_USER: ${{ secrets.RADIX_BOT_USERNAME }}
-          GPR_USER: ${{ secrets.GPR_USER }}
-          GPR_TOKEN: ${{ secrets.GPR_TOKEN }}
+          GIT_USER: ${{ env.GH_GPR_USER }}
+          GPR_USER: ${{ env.GH_GPR_USER }}
+          GPR_TOKEN: ${{ env.GH_GPR_TOKEN }}
 
   google_play_alpha_release:
     if: ${{ github.event_name == 'release' && github.event.release.prerelease == true }}
@@ -89,42 +109,100 @@ jobs:
       contents: read
       pull-requests: read
     steps:
+      - name: Fetch Radixbot push commit token
+        uses: radixdlt/public-iac-resuable-artifacts/fetch-secrets@main
+        with:
+          role_name: 'arn:aws:iam::308190735829:role/gh-babylon-wallet-android-secrets-read-access'
+          app_name: 'wallet-android'
+          step_name: 'gpc-alpha-1'
+          secret_prefix: 'GH'
+          secret_name: "arn:aws:secretsmanager:eu-west-2:308190735829:secret:github-actions/radixdlt/babylon-wallet-android/push-pat-token"
+          parse_json: true
+
       - uses: actions/checkout@3df4ab11eba7bda6032a0b82a6bb43b11571feac # v4.0.0
         with:
-          token: ${{ secrets.RADIX_BOT_PAT }}
+          token: ${{ env.GH_RADIXBOT_PUSH_COMMIT_PAT_TOKEN }}
+
+      - name: Fetch GPR credentials
+        uses: radixdlt/public-iac-resuable-artifacts/fetch-secrets@main
+        with:
+          role_name: 'arn:aws:iam::308190735829:role/gh-babylon-wallet-android-secrets-read-access'
+          app_name: 'wallet-android'
+          step_name: 'gpc-alpha'
+          secret_prefix: 'GH'
+          secret_name: "arn:aws:secretsmanager:eu-west-2:308190735829:secret:github-actions/radixdlt/babylon-wallet-android/gpr-credentials"
+          parse_json: true
 
       - uses: ./.github/actions/google-play-common
         with:
           gpc_track: "alpha"
           secret_arn: "arn:aws:secretsmanager:eu-west-2:308190735829:secret:github-actions/radixdlt/babylon-wallet-android/google-play-console/secrets-OEmdRj"
-          radix_bot_username: ${{ secrets.RADIX_BOT_USERNAME }}
-          gpr_user: ${{ secrets.GPR_USER }}
-          gpr_token: ${{ secrets.GPR_TOKEN }}
+          radix_bot_username: ${{ env.GH_GPR_USER }}
+          gpr_user: ${{ env.GH_GPR_USER }}
+          gpr_token: ${{ env.GH_GPR_TOKEN }}
 
   google_play_production_release:
     if: ${{ github.event_name == 'release' && github.event.release.prerelease == false }}
     name: "Publish Google Play Production"
     runs-on: ubuntu-latest
     environment: release
+    permissions:
+      id-token: write
+      contents: read
+      pull-requests: read
     steps:
+      - name: Fetch Radixbot push commit token
+        uses: radixdlt/public-iac-resuable-artifacts/fetch-secrets@main
+        with:
+          role_name: 'arn:aws:iam::308190735829:role/gh-babylon-wallet-android-secrets-read-access'
+          app_name: 'wallet-android'
+          step_name: 'gpc-alpha-1'
+          secret_prefix: 'GH'
+          secret_name: "arn:aws:secretsmanager:eu-west-2:308190735829:secret:github-actions/radixdlt/babylon-wallet-android/push-pat-token"
+          parse_json: true
+
       - uses: actions/checkout@3df4ab11eba7bda6032a0b82a6bb43b11571feac # v4.0.0
         with:
-          token: ${{ secrets.RADIX_BOT_PAT }}
+          token: ${{ env.GH_RADIXBOT_PUSH_COMMIT_PAT_TOKEN }}
+
+      - name: Fetch GPR credentials
+        uses: radixdlt/public-iac-resuable-artifacts/fetch-secrets@main
+        with:
+          role_name: 'arn:aws:iam::308190735829:role/gh-babylon-wallet-android-secrets-read-access'
+          app_name: 'wallet-android'
+          step_name: 'gpc-alpha'
+          secret_prefix: 'GH'
+          secret_name: "arn:aws:secretsmanager:eu-west-2:308190735829:secret:github-actions/radixdlt/babylon-wallet-android/gpr-credentials"
+          parse_json: true
 
       - uses: ./.github/actions/google-play-common
         with:
           gpc_track: "production"
           secret_arn: "arn:aws:secretsmanager:eu-west-2:308190735829:secret:github-actions/radixdlt/babylon-wallet-android/google-play-console/secrets"
-          radix_bot_username: ${{ secrets.RADIX_BOT_USERNAME }}
-          gpr_user: ${{ secrets.GPR_USER }}
-          gpr_token: ${{ secrets.GPR_TOKEN }}
+          radix_bot_username: ${{ env.GH_GPR_USER }}
+          gpr_user: ${{ env.GH_GPR_USER }}
+          gpr_token: ${{ env.GH_GPR_TOKEN }}
 
   publish_sbom:
     runs-on: ubuntu-latest
     if: ${{ github.event_name == 'release' }}
+    permissions:
+      id-token: write
+      contents: write
+      pull-requests: read
     name: Publish SBOM
     steps:
       - uses: actions/checkout@3df4ab11eba7bda6032a0b82a6bb43b11571feac # v4.0.0
+
+      - name: Fetch Snyk credentials
+        uses: radixdlt/public-iac-resuable-artifacts/fetch-secrets@main
+        with:
+          role_name: 'arn:aws:iam::308190735829:role/gh-common-secrets-read-access'
+          app_name: 'wallet-android'
+          step_name: 'snyk-sbom'
+          secret_prefix: 'SNYK'
+          secret_name: "arn:aws:secretsmanager:eu-west-2:308190735829:secret:github-actions/common/snyk-credentials"
+          parse_json: true
 
       - name: Fetch Keystore credentials
         uses: radixdlt/public-iac-resuable-artifacts/fetch-secrets@main
@@ -171,10 +249,10 @@ jobs:
       - name: Generate SBOM
         uses: snyk/actions/gradle-jdk17@b98d498629f1c368650224d6d212bf7dfa89e4bf # v0.4.0
         with:
-          args: --all-projects --org=${{ secrets.SNYK_ORG_ID }} --format=cyclonedx1.4+json --json-file-output sbom.json
+          args: --all-projects --org=${{ env.SNYK_COREAPPS_ORG_ID }} --format=cyclonedx1.4+json --json-file-output sbom.json
           command: sbom
         env:
-          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+          SNYK_TOKEN: ${{ env.SNYK_TOKEN }}
           RADIX_DEBUG_PREVIEW_KEYSTORE_FILE: config/signing/release/keystore.jks
       - name: Upload SBOM
         uses: svenstaro/upload-release-action@2b9d2847a97b04d02ad5c3df2d3a27baa97ce689 # v2.6.1
