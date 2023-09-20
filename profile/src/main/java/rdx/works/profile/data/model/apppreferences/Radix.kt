@@ -152,7 +152,7 @@ object Radix {
     fun NetworkId.dashboardUrl() =
         when (this) {
             NetworkId.Mainnet -> {
-                DASHBOARD_MAINNET_URL // TODO change it to mainnet
+                DASHBOARD_MAINNET_URL
             }
 
             NetworkId.Zabanet -> {
@@ -180,11 +180,11 @@ object Radix {
             }
 
             else -> {
-                DASHBOARD_RCNET_V3_URL
+                DASHBOARD_MAINNET_URL
             }
         }
 
-    private const val DASHBOARD_MAINNET_URL = "https://rcnet-v3-dashboard.radixdlt.com"
+    private const val DASHBOARD_MAINNET_URL = "https://dashboard.radixdlt.com"
     private const val DASHBOARD_RCNET_V3_URL = "https://rcnet-v3-dashboard.radixdlt.com"
     private const val DASHBOARD_STOKENET_URL = "https://stokenet-dashboard.radixdlt.com"
     private const val DASHBOARD_HAMMUNET_URL = "https://hammunet-dashboard.rdx-works-main.extratools.works"
