@@ -25,6 +25,7 @@ import org.junit.Before
 import org.junit.Ignore
 import org.junit.Test
 import rdx.works.profile.data.model.pernetwork.Network
+import rdx.works.profile.domain.CheckMnemonicIntegrityUseCase
 import rdx.works.profile.domain.GetProfileUseCase
 
 @ExperimentalCoroutinesApi
@@ -34,6 +35,7 @@ class TransferViewModelTest : StateViewModelTest<TransferViewModel>() {
     private val getProfileUseCase = mockk<GetProfileUseCase>()
     private val getAccountsWithResourcesUseCase = mockk<GetAccountsWithResourcesUseCase>()
     private val incomingRequestRepository = mockk<IncomingRequestRepository>()
+    private val checkMnemonicIntegrityUseCase = mockk<CheckMnemonicIntegrityUseCase>()
 
     private val fromAccount = account(
         address = "account_tdx_19jd32jd3928jd3892jd329",
@@ -59,6 +61,7 @@ class TransferViewModelTest : StateViewModelTest<TransferViewModel>() {
             getProfileUseCase = getProfileUseCase,
             getAccountsWithResourcesUseCase = getAccountsWithResourcesUseCase,
             incomingRequestRepository = incomingRequestRepository,
+            checkMnemonicIntegrityUseCase = checkMnemonicIntegrityUseCase,
             savedStateHandle = savedStateHandle
         )
     }
