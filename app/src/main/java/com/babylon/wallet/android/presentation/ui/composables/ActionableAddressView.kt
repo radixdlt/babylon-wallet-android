@@ -147,7 +147,7 @@ fun ActionableAddressView(
 @Composable
 private fun resolveAddress(
     address: String
-): ActionableAddress = remember(address) { ActionableAddress.from(address) }
+): ActionableAddress = remember(address) { ActionableAddress(address) }
 
 @Composable
 private fun resolveActions(

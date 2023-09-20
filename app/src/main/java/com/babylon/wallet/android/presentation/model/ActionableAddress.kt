@@ -7,9 +7,10 @@ import rdx.works.profile.data.model.apppreferences.Radix.dashboardUrl
 import rdx.works.profile.derivation.model.NetworkId
 
 data class ActionableAddress(
-    val address: String,
-    val type: Type
+    val address: String
 ) {
+
+    val type: Type? = Type.from(address)
 
     val isNft: Boolean = type == Type.RESOURCE && address.split(NFT_DELIMITER).size > 1
 
@@ -25,12 +26,19 @@ data class ActionableAddress(
     fun toDashboardUrl(): String {
         val suffix = when {
             isNft -> "nft/$address"
-            else -> "${type.prefix}/$address"
+            type == Type.TRANSACTION -> "transaction/$address"
+            type != null -> "${type.prefix}/$address"
+            else -> address
         }
 
-        val url = AddressValidator.getValidNetworkId(address)?.let {
-            NetworkId.from(it)
-        }?.dashboardUrl() ?: NetworkId.Mainnet.dashboardUrl()
+        val url = if (type == Type.TRANSACTION) {
+            NetworkId.Mainnet.dashboardUrl()
+        } else {
+            val globalAddress = address.split(NFT_DELIMITER)[0]
+            AddressValidator.getValidNetworkId(globalAddress)?.let {
+                NetworkId.from(it)
+            }?.dashboardUrl() ?: NetworkId.Mainnet.dashboardUrl()
+        }
         return "$url/$suffix"
     }
 
@@ -49,20 +57,16 @@ data class ActionableAddress(
                 const val RESOURCE = "resource"
                 const val PACKAGE = "package"
                 const val COMPONENT = "component"
-                const val TRANSACTION = "transaction"
+                const val TRANSACTION = "txid"
             }
 
-            fun from(address: String): Type = Type.values().find {
+            fun from(address: String): Type? = Type.values().find {
                 address.startsWith(it.prefix)
-            } ?: TRANSACTION
+            }
         }
     }
+
     companion object {
         private const val NFT_DELIMITER = ":"
-
-        fun from(address: String) = ActionableAddress(
-            address = address,
-            type = Type.from(address)
-        )
     }
 }
