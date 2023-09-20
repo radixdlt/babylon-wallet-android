@@ -26,7 +26,7 @@ object Radix {
         companion object {
             val mainnet = Network(
                 id = NetworkId.Mainnet.value,
-                name = "Mainnet",
+                name = "mainnet",
                 displayDescription = "Mainnet"
             )
             val stokenet = Network(
