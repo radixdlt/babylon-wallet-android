@@ -207,14 +207,14 @@ object Thumbnail {
     @Composable
     fun Persona(
         modifier: Modifier = Modifier,
-        persona: Network.Persona
+        persona: Network.Persona?
     ) {
         Custom(
             modifier = modifier,
             imageType = null, // We don't support persona avatars yet
             emptyDrawable = R.drawable.ic_persona,
             shape = CircleShape,
-            contentDescription = persona.displayName
+            contentDescription = persona?.displayName.orEmpty()
         )
     }
 
