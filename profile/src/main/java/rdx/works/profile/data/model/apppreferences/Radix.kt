@@ -101,7 +101,7 @@ object Radix {
 
         companion object {
             val nebunet = Gateway(
-                url = "https://betanet.radixdlt.com",
+                url = "https://betanet.radixdlt.com/",
                 network = Network.nebunet
             )
             val kisharnet = Gateway(
@@ -109,31 +109,31 @@ object Radix {
                 network = Network.kisharnet
             )
             val hammunet = Gateway(
-                url = "https://hammunet-gateway.radixdlt.com",
+                url = "https://hammunet-gateway.radixdlt.com/",
                 network = Network.hammunet
             )
             val enkinet = Gateway(
-                url = "https://enkinet-gateway.radixdlt.com",
+                url = "https://enkinet-gateway.radixdlt.com/",
                 network = Network.enkinet
             )
             val mardunet = Gateway(
-                url = "https://mardunet-gateway.radixdlt.com",
+                url = "https://mardunet-gateway.radixdlt.com/",
                 network = Network.mardunet
             )
             val ansharnet = Gateway(
-                url = "https://ansharnet-gateway.radixdlt.com",
+                url = "https://ansharnet-gateway.radixdlt.com/",
                 network = Network.ansharnet
             )
             val rcnetV3 = Gateway(
-                url = "https://rcnet-v3.radixdlt.com",
+                url = "https://rcnet-v3.radixdlt.com/",
                 network = Network.zabanet
             )
             val stokenet = Gateway(
-                url = "https://babylon-stokenet-gateway.radixdlt.com",
+                url = "https://babylon-stokenet-gateway.radixdlt.com/",
                 network = Network.stokenet
             )
             val mainnet = Gateway(
-                url = "https://mainnet.radixdlt.com",
+                url = "https://mainnet.radixdlt.com/",
                 network = Network.mainnet
             )
 
