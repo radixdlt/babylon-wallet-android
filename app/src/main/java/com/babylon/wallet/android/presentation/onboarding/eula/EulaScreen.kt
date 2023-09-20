@@ -1,5 +1,6 @@
 package com.babylon.wallet.android.presentation.onboarding.eula
 
+import android.graphics.Color
 import android.view.ViewGroup
 import android.webkit.WebView
 import androidx.compose.animation.AnimatedVisibility
@@ -129,6 +130,7 @@ private fun EulaContent(modifier: Modifier = Modifier, eula: String) {
                 )
                 settings.loadWithOverviewMode = true
                 settings.textZoom = 100
+                setBackgroundColor(Color.TRANSPARENT)
                 loadDataWithBaseURL(null, eula, "text/html", "UTF-8", null)
             }
         }
