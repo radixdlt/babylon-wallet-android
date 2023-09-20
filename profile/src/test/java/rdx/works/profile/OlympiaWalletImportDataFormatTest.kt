@@ -5,6 +5,7 @@ package rdx.works.profile
 import io.mockk.coEvery
 import io.mockk.mockk
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest
 import kotlinx.serialization.json.Json
 import okio.ByteString.Companion.decodeBase64
@@ -12,10 +13,13 @@ import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
 import rdx.works.profile.data.model.MnemonicWithPassphrase
+import rdx.works.profile.data.model.Profile
 import rdx.works.profile.data.model.apppreferences.Radix
+import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.gateway.GetCurrentGatewayUseCase
 import rdx.works.profile.olympiaimport.OlympiaWalletDataParser
 import java.io.File
+import java.time.Instant
 
 internal class OlympiaWalletExportFormatTest {
 
@@ -24,12 +28,14 @@ internal class OlympiaWalletExportFormatTest {
     private lateinit var testVectors: List<TestVector>
 
     private val getCurrentGatewayUseCase = mockk<GetCurrentGatewayUseCase>()
+    private val getProfileUseCase = mockk<GetProfileUseCase>()
 
-    private val parser = OlympiaWalletDataParser(getCurrentGatewayUseCase)
+    private val parser = OlympiaWalletDataParser(getCurrentGatewayUseCase, getProfileUseCase)
 
     @Before
     fun setUp() {
-        coEvery { getCurrentGatewayUseCase() } returns Radix.Gateway("", Radix.Network.hammunet)
+        coEvery { getCurrentGatewayUseCase() } returns Radix.Gateway("", Radix.Gateway.default.network)
+        coEvery { getProfileUseCase() } returns flowOf(Profile.init("", "", Instant.now()))
         val testVectorsContent = File("src/test/resources/raw/import_olympia_wallet_parse_test.json").readText()
         testVectors = json.decodeFromString(testVectorsContent)
     }

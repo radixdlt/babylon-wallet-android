@@ -75,7 +75,8 @@ object MockUiProvider {
             publicKey = "publicKey1",
             accountName = "account one",
             derivationPath = DerivationPath(path = "path", scheme = DerivationPathScheme.BIP_44_OLYMPIA),
-            newBabylonAddress = "babylon_account_address_1"
+            newBabylonAddress = "babylon_account_address_1",
+            appearanceId = 0
         ),
 
         OlympiaAccountDetails(
@@ -85,7 +86,8 @@ object MockUiProvider {
             publicKey = "publicKey2",
             accountName = "account two",
             derivationPath = DerivationPath(path = "path", scheme = DerivationPathScheme.BIP_44_OLYMPIA),
-            newBabylonAddress = "babylon_account_address_2"
+            newBabylonAddress = "babylon_account_address_2",
+            appearanceId = 1
         ),
         OlympiaAccountDetails(
             index = 2,
@@ -94,7 +96,8 @@ object MockUiProvider {
             publicKey = "publicKey3",
             accountName = "account three",
             derivationPath = DerivationPath(path = "path", scheme = DerivationPathScheme.BIP_44_OLYMPIA),
-            newBabylonAddress = "babylon_account_address_3"
+            newBabylonAddress = "babylon_account_address_3",
+            appearanceId = 3
         ),
     )
 
