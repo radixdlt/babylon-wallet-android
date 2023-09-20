@@ -54,7 +54,6 @@ import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -63,25 +62,23 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import coil.compose.AsyncImage
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
 import com.babylon.wallet.android.designsystem.composable.RadixTextField
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.SampleDataProvider
+import com.babylon.wallet.android.domain.model.Resource
 import com.babylon.wallet.android.presentation.account.settings.thirdpartydeposits.AccountThirdPartyDepositsViewModel
 import com.babylon.wallet.android.presentation.account.settings.thirdpartydeposits.AssetType
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.BottomDialogDragHandle
 import com.babylon.wallet.android.presentation.ui.composables.DefaultModalSheetLayout
-import com.babylon.wallet.android.presentation.ui.composables.ImageSize
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
-import com.babylon.wallet.android.presentation.ui.composables.rememberImageUrl
-import com.babylon.wallet.android.presentation.ui.modifier.applyIf
+import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
 import com.babylon.wallet.android.utils.truncatedHash
 import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.persistentListOf
@@ -358,7 +355,8 @@ private fun SpecificAssetsDepositsContent(
         },
         bottomBar = {
             Column(
-                modifier = Modifier.navigationBarsPadding()
+                modifier = Modifier
+                    .navigationBarsPadding()
                     .fillMaxWidth()
                     .background(RadixTheme.colors.defaultBackground)
             ) {
@@ -508,38 +506,26 @@ private fun AssetItem(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingDefault)
     ) {
-        val placeholder = if (asset.isNft) {
-            painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_nfts)
-        } else {
-            painterResource(id = R.drawable.img_placeholder)
+        when (asset.resource) {
+            is Resource.FungibleResource -> Thumbnail.Fungible(token = asset.resource, modifier = Modifier.size(44.dp))
+            is Resource.NonFungibleResource -> Thumbnail.NonFungible(
+                collection = asset.resource,
+                modifier = Modifier.size(44.dp),
+                shape = RadixTheme.shapes.roundedRectSmall
+            )
+            else -> {}
         }
-        AsyncImage(
-            model = rememberImageUrl(
-                fromUrl = asset.assetIcon,
-                size = ImageSize.SMALL
-            ),
-            placeholder = placeholder,
-            fallback = placeholder,
-            error = placeholder,
-            contentDescription = null,
-            contentScale = if (asset.isNft) ContentScale.Inside else ContentScale.Crop,
-            modifier = Modifier
-                .size(44.dp)
-                .clip(if (asset.isNft) RadixTheme.shapes.roundedRectSmall else RadixTheme.shapes.circle)
-                .applyIf(asset.isNft, Modifier.background(RadixTheme.colors.gray3, RadixTheme.shapes.roundedRectSmall))
-        )
         Column(
             modifier = Modifier.weight(1f)
         ) {
-            if (asset.assetName.isNotBlank()) {
-                Text(
-                    text = asset.assetName,
-                    textAlign = TextAlign.Start,
-                    maxLines = 1,
-                    style = RadixTheme.typography.body1HighImportance,
-                    color = RadixTheme.colors.gray1
-                )
-            }
+            Text(
+                text = asset.resource?.name.orEmpty().ifEmpty {
+                    stringResource(id = R.string.authorizedDapps_dAppDetails_unknownTokenName)
+                },
+                maxLines = 1,
+                style = RadixTheme.typography.body1HighImportance,
+                color = RadixTheme.colors.gray1
+            )
             Text(
                 text = asset.assetException.address.truncatedHash(),
                 textAlign = TextAlign.Start,
@@ -645,9 +631,9 @@ enum class SpecificAssetsTab {
 }
 
 sealed interface DeleteDialogState {
-    object None : DeleteDialogState
+    data object None : DeleteDialogState
     data class AboutToDeleteAssetException(val assetException: ThirdPartyDeposits.AssetException) : DeleteDialogState
-    data class AboutToDeleteAssetDepositor(val depositor: ThirdPartyDeposits.DepositorAddress) : DeleteDialogState
+    data class AboutToDeleteAssetDepositor(val depositor: AssetType.Depositor) : DeleteDialogState
 }
 
 @Preview(showBackground = true)
@@ -660,8 +646,8 @@ fun SpecificAssetsDepositsPreview() {
                 onMessageShown = {},
                 error = null,
                 onShowAddAssetSheet = {},
-                allowedAssets = persistentListOf(sampleAssetException(), sampleAssetException(true), sampleAssetException()),
-                deniedAssets = persistentListOf(sampleAssetException(), sampleAssetException(true), sampleAssetException())
+                allowedAssets = persistentListOf(sampleAssetException(), sampleAssetException(), sampleAssetException()),
+                deniedAssets = persistentListOf(sampleAssetException(), sampleAssetException(), sampleAssetException())
             ) {}
         }
     }

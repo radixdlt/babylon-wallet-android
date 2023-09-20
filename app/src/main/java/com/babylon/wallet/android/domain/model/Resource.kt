@@ -22,6 +22,7 @@ import java.math.RoundingMode
 
 sealed class Resource {
     abstract val resourceAddress: String
+    abstract val name: String
 
     data class FungibleResource(
         override val resourceAddress: String,
@@ -37,7 +38,7 @@ sealed class Resource {
         private val poolMetadataItem: PoolMetadataItem? = null,
         val divisibility: Int? = null
     ) : Resource(), Comparable<FungibleResource> {
-        val name: String
+        override val name: String
             get() = nameMetadataItem?.name.orEmpty()
 
         val symbol: String
@@ -143,7 +144,7 @@ sealed class Resource {
         val currentSupply: Int? = null,
         private val validatorMetadataItem: ValidatorMetadataItem? = null
     ) : Resource(), Comparable<NonFungibleResource> {
-        val name: String
+        override val name: String
             get() = nameMetadataItem?.name.orEmpty()
 
         val description: String
@@ -308,6 +309,8 @@ sealed class Resource {
 
         override val resourceAddress: String
             get() = fungibleResource.resourceAddress
+        override val name: String
+            get() = fungibleResource.name
 
         private val percentageOwned: BigDecimal?
             get() = fungibleResource.ownedAmount?.divide(fungibleResource.currentSupply, fungibleResource.mathContext)
@@ -327,6 +330,8 @@ sealed class Resource {
 
         override val resourceAddress: String
             get() = nonFungibleResource.resourceAddress
+        override val name: String
+            get() = nonFungibleResource.name
     }
 
     data class PoolUnitResource(
@@ -336,6 +341,9 @@ sealed class Resource {
 
         override val resourceAddress: String
             get() = poolUnitResource.resourceAddress
+
+        override val name: String
+            get() = poolUnitResource.name
 
         fun resourceRedemptionValue(resourceAddress: String): BigDecimal? {
             val resourceVaultBalance = poolResources.find { it.resourceAddress == resourceAddress }?.ownedAmount

@@ -17,8 +17,8 @@ import com.babylon.wallet.android.domain.model.ValidatorsWithStakeResources
 import com.babylon.wallet.android.domain.model.metadata.DescriptionMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.NameMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.SymbolMetadataItem
-import com.babylon.wallet.android.presentation.transaction.AccountWithTransferableResources
 import com.babylon.wallet.android.presentation.account.settings.thirdpartydeposits.AssetType
+import com.babylon.wallet.android.presentation.transaction.AccountWithTransferableResources
 import rdx.works.core.InstantGenerator
 import rdx.works.profile.data.model.Header
 import rdx.works.profile.data.model.MnemonicWithPassphrase
@@ -340,21 +340,26 @@ class SampleDataProvider {
         )
     }
 
-    fun sampleAssetException(isNft: Boolean = false): AssetType.AssetException {
+    fun sampleAssetException(): AssetType.AssetException {
         return AssetType.AssetException(
             assetException = Network.Account.OnLedgerSettings.ThirdPartyDeposits.AssetException(
                 address = randomAddress(),
                 exceptionRule = Network.Account.OnLedgerSettings.ThirdPartyDeposits.DepositAddressExceptionRule.Allow
-            ),
-            isNft = isNft
+            )
         )
     }
 
-    fun sampleDepositorResourceAddress(): Network.Account.OnLedgerSettings.ThirdPartyDeposits.DepositorAddress {
-        return Network.Account.OnLedgerSettings.ThirdPartyDeposits.DepositorAddress.ResourceAddress(randomAddress())
+    fun sampleDepositorResourceAddress(): AssetType.Depositor {
+        return AssetType.Depositor(
+            depositorAddress = Network.Account.OnLedgerSettings.ThirdPartyDeposits.DepositorAddress.ResourceAddress(
+                randomAddress()
+            )
+        )
     }
 
-    fun sampleDepositorNftAddress(): Network.Account.OnLedgerSettings.ThirdPartyDeposits.DepositorAddress {
-        return Network.Account.OnLedgerSettings.ThirdPartyDeposits.DepositorAddress.NonFungibleGlobalID(randomAddress())
+    fun sampleDepositorNftAddress(): AssetType.Depositor {
+        return AssetType.Depositor(
+            depositorAddress = Network.Account.OnLedgerSettings.ThirdPartyDeposits.DepositorAddress.NonFungibleGlobalID(randomAddress())
+        )
     }
 }

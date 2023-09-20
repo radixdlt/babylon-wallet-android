@@ -1,11 +1,8 @@
 package com.babylon.wallet.android.presentation.account.settings.specificdepositor
 
-import android.graphics.drawable.ColorDrawable
-import android.net.Uri
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -39,9 +36,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.toArgb
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -49,13 +43,13 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import coil.compose.AsyncImage
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
 import com.babylon.wallet.android.designsystem.composable.RadixTextField
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.SampleDataProvider
+import com.babylon.wallet.android.domain.model.Resource
 import com.babylon.wallet.android.presentation.account.settings.specificassets.DeleteDialogState
 import com.babylon.wallet.android.presentation.account.settings.thirdpartydeposits.AccountThirdPartyDepositsViewModel
 import com.babylon.wallet.android.presentation.account.settings.thirdpartydeposits.AssetType
@@ -63,17 +57,14 @@ import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.BottomDialogDragHandle
 import com.babylon.wallet.android.presentation.ui.composables.DefaultModalSheetLayout
-import com.babylon.wallet.android.presentation.ui.composables.ImageSize
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
-import com.babylon.wallet.android.presentation.ui.composables.rememberImageUrl
+import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
 import com.babylon.wallet.android.utils.truncatedHash
-import com.google.accompanist.drawablepainter.rememberDrawablePainter
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.launch
-import rdx.works.profile.data.model.pernetwork.Network
 
 @OptIn(ExperimentalMaterialApi::class, ExperimentalComposeUiApi::class)
 @Composable
@@ -168,7 +159,7 @@ fun SpecificDepositorScreen(
                 .navigationBarsPadding()
                 .fillMaxSize()
                 .background(RadixTheme.colors.gray5),
-            allowedDepositors = state.allowedDepositors,
+            allowedDepositors = state.allowedDepositorsUiModels,
             onDeleteDepositor = sharedViewModel::showDeletePrompt
         )
     }
@@ -252,8 +243,8 @@ private fun SpecificDepositorContent(
     error: UiMessage?,
     onShowAddAssetSheet: () -> Unit,
     modifier: Modifier = Modifier,
-    allowedDepositors: ImmutableList<Network.Account.OnLedgerSettings.ThirdPartyDeposits.DepositorAddress>,
-    onDeleteDepositor: (Network.Account.OnLedgerSettings.ThirdPartyDeposits.DepositorAddress) -> Unit
+    allowedDepositors: ImmutableList<AssetType.Depositor>,
+    onDeleteDepositor: (AssetType.Depositor) -> Unit
 ) {
     val snackBarHostState = remember { SnackbarHostState() }
 
@@ -330,9 +321,9 @@ private fun SpecificDepositorContent(
 
 @Composable
 private fun DepositorList(
-    depositors: ImmutableList<Network.Account.OnLedgerSettings.ThirdPartyDeposits.DepositorAddress>,
+    depositors: ImmutableList<AssetType.Depositor>,
     modifier: Modifier = Modifier,
-    onDeleteDepositor: (Network.Account.OnLedgerSettings.ThirdPartyDeposits.DepositorAddress) -> Unit
+    onDeleteDepositor: (AssetType.Depositor) -> Unit
 ) {
     val lastItem = depositors.last()
     LazyColumn(modifier = modifier) {
@@ -360,52 +351,39 @@ private fun DepositorList(
 @Composable
 private fun DepositorItem(
     modifier: Modifier,
-    depositor: Network.Account.OnLedgerSettings.ThirdPartyDeposits.DepositorAddress,
-    onDeleteDepositor: (Network.Account.OnLedgerSettings.ThirdPartyDeposits.DepositorAddress) -> Unit
+    depositor: AssetType.Depositor,
+    onDeleteDepositor: (AssetType.Depositor) -> Unit
 ) {
     Row(
         modifier = modifier,
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingDefault)
     ) {
-        when (depositor) {
-            is Network.Account.OnLedgerSettings.ThirdPartyDeposits.DepositorAddress.NonFungibleGlobalID -> {
-                Box(
-                    modifier = Modifier
-                        .size(44.dp)
-                        .background(RadixTheme.colors.gray3, RadixTheme.shapes.roundedRectSmall)
-                ) {
-                    Icon(
-                        painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_nfts),
-                        modifier = Modifier.align(Alignment.Center),
-                        tint = Color.Unspecified,
-                        contentDescription = null
-                    )
-                }
-            }
+        when (depositor.resource) {
+            is Resource.FungibleResource -> Thumbnail.Fungible(token = depositor.resource, modifier = Modifier.size(44.dp))
+            is Resource.NonFungibleResource -> Thumbnail.NonFungible(
+                collection = depositor.resource,
+                modifier = Modifier.size(44.dp),
+                shape = RadixTheme.shapes.roundedRectSmall
+            )
 
-            is Network.Account.OnLedgerSettings.ThirdPartyDeposits.DepositorAddress.ResourceAddress -> {
-                AsyncImage(
-                    model = rememberImageUrl(
-                        fromUrl = Uri.parse(""),
-                        size = ImageSize.SMALL
-                    ),
-                    placeholder = rememberDrawablePainter(drawable = ColorDrawable(RadixTheme.colors.gray3.toArgb())),
-                    fallback = rememberDrawablePainter(drawable = ColorDrawable(RadixTheme.colors.gray3.toArgb())),
-                    error = rememberDrawablePainter(drawable = ColorDrawable(RadixTheme.colors.gray3.toArgb())),
-                    contentDescription = null,
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier
-                        .size(44.dp)
-                        .clip(RadixTheme.shapes.roundedRectSmall)
-                )
-            }
+            else -> {}
         }
         Column(
             modifier = Modifier.weight(1f)
         ) {
+            depositor.resource?.name?.let {
+                Text(
+                    text = it.ifEmpty {
+                        stringResource(id = R.string.authorizedDapps_dAppDetails_unknownTokenName)
+                    },
+                    maxLines = 1,
+                    style = RadixTheme.typography.body1HighImportance,
+                    color = RadixTheme.colors.gray1
+                )
+            }
             Text(
-                text = depositor.address.truncatedHash(),
+                text = depositor.depositorAddress?.address?.truncatedHash().orEmpty(),
                 textAlign = TextAlign.Start,
                 maxLines = 1,
                 style = RadixTheme.typography.body2Regular,
