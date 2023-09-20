@@ -16,12 +16,14 @@ import kotlinx.coroutines.flow.update
 import rdx.works.core.ret.BabylonManifestBuilder
 import rdx.works.core.ret.buildSafely
 import rdx.works.profile.data.model.pernetwork.Network
+import rdx.works.profile.domain.CheckMnemonicIntegrityUseCase
 import timber.log.Timber
 import java.math.BigDecimal
 
 class PrepareManifestDelegate(
     private val state: MutableStateFlow<TransferViewModel.State>,
-    private val incomingRequestRepository: IncomingRequestRepository
+    private val incomingRequestRepository: IncomingRequestRepository,
+    private val checkMnemonicIntegrityUseCase: CheckMnemonicIntegrityUseCase
 ) {
 
     suspend fun onSubmit() {
@@ -36,7 +38,7 @@ class PrepareManifestDelegate(
         }
     }
 
-    private fun prepareRequest(
+    private suspend fun prepareRequest(
         fromAccount: Network.Account,
         currentState: TransferViewModel.State
     ): Result<MessageFromDataChannel.IncomingRequest.TransactionRequest> =
@@ -58,7 +60,7 @@ class PrepareManifestDelegate(
             }
 
     @Suppress("NestedBlockDepth")
-    private fun BabylonManifestBuilder.attachInstructionsForFungibles(
+    private suspend fun BabylonManifestBuilder.attachInstructionsForFungibles(
         fromAccount: Network.Account,
         targetAccounts: List<TargetAccount>
     ) = apply {
@@ -87,17 +89,31 @@ class PrepareManifestDelegate(
                         intoBucket = bucket
                     )
 
-                    // Then deposit the bucket into the target account
-                    accountTryDepositOrAbort(
-                        toAddress = Address(targetAccount.address),
-                        fromBucket = bucket
-                    )
+                    val isUserAccount = targetAccount.isUserAccount
+                    val isSoftwareAccount = targetAccount.isSoftwareAccount
+                    val mnemonicHasBeenImported = checkMnemonicIntegrityUseCase
+                        .mnemonicHasBeenImported(targetAccount.factorSourceId) ?: false
+
+                    // We use deposit instruction only for owned software accounts that mnemonic doesnt need recovery
+                    // or mnemonic for this account has been imported
+                    if (isUserAccount && isSoftwareAccount && mnemonicHasBeenImported) {
+                        accountDeposit(
+                            toAddress = Address(targetAccount.address),
+                            fromBucket = bucket
+                        )
+                    } else {
+                        accountTryDepositOrAbort(
+                            toAddress = Address(targetAccount.address),
+                            fromBucket = bucket
+                        )
+                    }
                 }
             }
         }
     }
 
-    private fun BabylonManifestBuilder.attachInstructionsForNFTs(
+    @Suppress("NestedBlockDepth")
+    private suspend fun BabylonManifestBuilder.attachInstructionsForNFTs(
         fromAccount: Network.Account,
         targetAccounts: List<TargetAccount>
     ) = apply {
@@ -118,10 +134,25 @@ class PrepareManifestDelegate(
                     nonFungible = globalId,
                     intoBucket = bucket
                 )
-                accountTryDepositOrAbort(
-                    toAddress = Address(targetAccount.address),
-                    fromBucket = bucket
-                )
+
+                val isUserAccount = targetAccount.isUserAccount
+                val isSoftwareAccount = targetAccount.isSoftwareAccount
+                val mnemonicHasBeenImported = checkMnemonicIntegrityUseCase
+                    .mnemonicHasBeenImported(targetAccount.factorSourceId) ?: false
+
+                // We use deposit instruction only for owned software accounts that mnemonic doesnt need recovery
+                // or in other words mnemonic for this account has been imported
+                if (isUserAccount && isSoftwareAccount && mnemonicHasBeenImported) {
+                    accountDeposit(
+                        toAddress = Address(targetAccount.address),
+                        fromBucket = bucket
+                    )
+                } else {
+                    accountTryDepositOrAbort(
+                        toAddress = Address(targetAccount.address),
+                        fromBucket = bucket
+                    )
+                }
             }
         }
     }

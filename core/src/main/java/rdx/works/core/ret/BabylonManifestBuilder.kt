@@ -11,6 +11,7 @@ import com.radixdlt.ret.PublicKeyHash
 import com.radixdlt.ret.TransactionManifest
 import rdx.works.core.toByteArray
 
+@Suppress("TooManyFunctions")
 class BabylonManifestBuilder {
     private var latestBucketIndex: Int = 0
     private var manifestBuilder = ManifestBuilder()
@@ -42,6 +43,17 @@ class BabylonManifestBuilder {
         manifestBuilder = manifestBuilder.accountTryDepositOrAbort(
             accountAddress = toAddress,
             authorizedDepositorBadge = null,
+            bucket = fromBucket
+        )
+        return this
+    }
+
+    fun accountDeposit(
+        toAddress: Address,
+        fromBucket: ManifestBuilderBucket
+    ): BabylonManifestBuilder {
+        manifestBuilder = manifestBuilder.accountDeposit(
+            accountAddress = toAddress,
             bucket = fromBucket
         )
         return this
