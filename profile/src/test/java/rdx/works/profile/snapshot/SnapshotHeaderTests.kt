@@ -1,4 +1,4 @@
-package rdx.works
+package rdx.works.profile.snapshot
 
 import org.junit.Test
 import rdx.works.profile.data.model.DeviceInfo
