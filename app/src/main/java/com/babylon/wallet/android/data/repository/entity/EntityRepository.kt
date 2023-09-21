@@ -5,11 +5,11 @@ import com.babylon.wallet.android.data.gateway.apis.StateApi
 import com.babylon.wallet.android.data.gateway.extensions.allResourceAddresses
 import com.babylon.wallet.android.data.gateway.extensions.asMetadataItems
 import com.babylon.wallet.android.data.gateway.extensions.calculateResourceBehaviours
+import com.babylon.wallet.android.data.gateway.extensions.claimTokenResourceAddress
 import com.babylon.wallet.android.data.gateway.extensions.divisibility
 import com.babylon.wallet.android.data.gateway.extensions.getXRDVaultAmount
 import com.babylon.wallet.android.data.gateway.extensions.stakeUnitResourceAddress
 import com.babylon.wallet.android.data.gateway.extensions.totalSupply
-import com.babylon.wallet.android.data.gateway.extensions.unstakeClaimTokenAddress
 import com.babylon.wallet.android.data.gateway.extensions.xrdVaultAddress
 import com.babylon.wallet.android.data.gateway.generated.models.FungibleResourcesCollection
 import com.babylon.wallet.android.data.gateway.generated.models.FungibleResourcesCollectionItemVaultAggregated
@@ -127,7 +127,7 @@ class EntityRepositoryImpl @Inject constructor(
                 stateVersion = stateVersion
             )
             val validatorResourceAddresses = validatorDetails.map { item ->
-                listOfNotNull(item.details?.stakeUnitResourceAddress(), item.details?.unstakeClaimTokenAddress())
+                listOfNotNull(item.details?.stakeUnitResourceAddress(), item.details?.claimTokenResourceAddress)
             }.flatten().toSet()
             val poolAddresses = poolsList.map { item -> item.address }.toSet()
 

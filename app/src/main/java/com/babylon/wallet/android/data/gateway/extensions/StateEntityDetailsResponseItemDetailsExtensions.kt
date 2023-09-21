@@ -57,12 +57,13 @@ fun StateEntityDetailsResponseItemDetails.stakeUnitResourceAddress(): String? {
     }
 }
 
-fun StateEntityDetailsResponseItemDetails.unstakeClaimTokenAddress(): String? {
-    return when (val details = this) {
-        is StateEntityDetailsResponseComponentDetails -> details.state?.unstakeClaimTokenResourceAddress
-        else -> null
+val StateEntityDetailsResponseItemDetails.claimTokenResourceAddress: String?
+    get() {
+        return when (val details = this) {
+            is StateEntityDetailsResponseComponentDetails -> details.state?.claimTokenResourceAddress
+            else -> null
+        }
     }
-}
 
 @Suppress("ComplexCondition", "TooManyFunctions", "LongMethod", "CyclomaticComplexMethod", "NestedBlockDepth")
 fun StateEntityDetailsResponseItemDetails.calculateResourceBehaviours(): List<ResourceBehaviour> {
