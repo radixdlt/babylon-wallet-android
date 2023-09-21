@@ -80,7 +80,7 @@ private fun NavGraphBuilder.settingsAll(navController: NavController) {
                         navController.accountSecurityScreen()
                     }
 
-                    is SettingsItem.TopLevelSettings.AppSettings -> {
+                    SettingsItem.TopLevelSettings.AppSettings -> {
                         navController.appSettingsScreen()
                     }
                 }

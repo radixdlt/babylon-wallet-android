@@ -6,6 +6,7 @@ import com.babylon.wallet.android.data.dapp.IncomingRequestRepositoryImpl
 import com.babylon.wallet.android.data.dapp.model.WalletErrorType
 import com.babylon.wallet.android.data.gateway.generated.models.TransactionPreviewResponse
 import com.babylon.wallet.android.data.gateway.generated.models.TransactionReceipt
+import com.babylon.wallet.android.data.repository.TransactionStatusClient
 import com.babylon.wallet.android.data.transaction.DappRequestException
 import com.babylon.wallet.android.data.transaction.DappRequestFailure
 import com.babylon.wallet.android.data.transaction.NotaryAndSigners
@@ -32,9 +33,11 @@ import com.radixdlt.ret.Decimal
 import com.radixdlt.ret.ExecutionAnalysis
 import com.radixdlt.ret.FeeLocks
 import com.radixdlt.ret.TransactionType
+import io.mockk.Runs
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
+import io.mockk.just
 import io.mockk.mockk
 import io.mockk.slot
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -48,7 +51,11 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
 import org.junit.Before
+import org.junit.Rule
 import org.junit.Test
+import org.junit.rules.TestRule
+import org.junit.runner.Description
+import org.junit.runners.model.Statement
 import rdx.works.core.displayableQuantity
 import rdx.works.core.ret.crypto.PrivateKey
 import rdx.works.profile.data.model.apppreferences.Radix
@@ -56,10 +63,14 @@ import rdx.works.profile.data.model.currentNetwork
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.gateway.GetCurrentGatewayUseCase
 import java.math.BigDecimal
+import java.util.Locale
 import com.babylon.wallet.android.domain.common.Result as ResultInternal
 
 @OptIn(ExperimentalCoroutinesApi::class)
 internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionReviewViewModel>() {
+
+    @get:Rule
+    val defaultLocaleTestRule = DefaultLocaleRule()
 
     private val transactionClient = mockk<TransactionClient>()
     private val getCurrentGatewayUseCase = mockk<GetCurrentGatewayUseCase>()
@@ -67,6 +78,7 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
     private val getResourcesMetadataUseCase = mockk<GetResourcesMetadataUseCase>()
     private val getProfileUseCase = mockk<GetProfileUseCase>()
     private val getTransactionBadgesUseCase = mockk<GetTransactionBadgesUseCase>()
+    private val transactionStatusClient = mockk<TransactionStatusClient>()
     private val resolveDAppsUseCase = mockk<ResolveDAppsUseCase>()
     private val incomingRequestRepository = IncomingRequestRepositoryImpl()
     private val dAppMessenger = mockk<DappMessenger>()
@@ -127,6 +139,7 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
         coEvery { transactionClient.getTransactionPreview(any(), any()) } returns Result.success(
             previewResponse()
         )
+        coEvery { transactionStatusClient.pollTransactionStatus(any(), any(), any()) } just Runs
         coEvery {
             dAppMessenger.sendTransactionWriteResponseSuccess(
                 remoteConnectorId = "remoteConnectorId",
@@ -209,7 +222,8 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
             appEventBus = appEventBus,
             incomingRequestRepository = incomingRequestRepository,
             appScope = TestScope(),
-            savedStateHandle = savedStateHandle
+            savedStateHandle = savedStateHandle,
+            transactionStatusClient = transactionStatusClient
         )
     }
 
@@ -624,4 +638,15 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
         ),
         logs = emptyList()
     )
+}
+
+class DefaultLocaleRule : TestRule {
+    override fun apply(base: Statement, description: Description): Statement {
+        return object : Statement() {
+            override fun evaluate() {
+                Locale.setDefault(Locale.UK)
+                base.evaluate()
+            }
+        }
+    }
 }

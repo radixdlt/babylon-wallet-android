@@ -45,23 +45,27 @@ sealed interface AppEvent {
 
             abstract val transactionId: String
             abstract val isInternal: Boolean
+            abstract val blockUntilComplete: Boolean
 
             data class InProgress(
                 override val requestId: String,
                 override val transactionId: String,
-                override val isInternal: Boolean
+                override val isInternal: Boolean,
+                override val blockUntilComplete: Boolean
             ) : Transaction()
 
             data class Success(
                 override val requestId: String,
                 override val transactionId: String,
-                override val isInternal: Boolean
+                override val isInternal: Boolean,
+                override val blockUntilComplete: Boolean
             ) : Transaction()
 
             data class Fail(
                 override val requestId: String,
                 override val transactionId: String,
                 override val isInternal: Boolean,
+                override val blockUntilComplete: Boolean,
                 val errorMessage: UiMessage.ErrorMessage?
             ) : Transaction()
         }

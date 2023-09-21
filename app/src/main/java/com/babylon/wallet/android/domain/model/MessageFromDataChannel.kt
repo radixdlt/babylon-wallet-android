@@ -1,6 +1,7 @@
 package com.babylon.wallet.android.domain.model
 
 import android.os.Parcelable
+import com.babylon.wallet.android.data.dapp.model.TransactionType
 import kotlinx.parcelize.Parcelize
 import kotlinx.serialization.Serializable
 import rdx.works.profile.data.model.factorsources.FactorSource
@@ -19,6 +20,11 @@ sealed interface MessageFromDataChannel {
         val isInternal: Boolean
             get() {
                 return metadata.isInternal
+            }
+
+        val blockUntilComplete: Boolean
+            get() {
+                return metadata.blockUntilCompleted
             }
 
         data class AuthorizedRequest(
@@ -101,21 +107,24 @@ sealed interface MessageFromDataChannel {
             val requestId: String,
             val transactionManifestData: TransactionManifestData,
             val requestMetadata: RequestMetadata,
+            val transactionType: TransactionType = TransactionType.Generic
         ) : IncomingRequest(remoteConnectorId, requestId, requestMetadata)
 
         data class RequestMetadata(
             val networkId: Int,
             val origin: String,
             val dAppDefinitionAddress: String,
-            val isInternal: Boolean // Indicates that the request is made from the wallet app itself.
+            val isInternal: Boolean, // Indicates that the request is made from the wallet app itself.
+            val blockUntilCompleted: Boolean = false
         ) {
 
             companion object {
-                fun internal(networkId: Int) = RequestMetadata(
+                fun internal(networkId: Int, blockUntilCompleted: Boolean = false) = RequestMetadata(
                     networkId = networkId,
                     origin = "",
                     dAppDefinitionAddress = "",
-                    isInternal = true
+                    isInternal = true,
+                    blockUntilCompleted = blockUntilCompleted
                 )
             }
         }
