@@ -87,15 +87,15 @@ class MainViewModel @Inject constructor(
         when (profileState) {
             is ProfileState.Restored -> {
 
-                if (mainnetMigrationOngoing && profileState.profile.currentGateway != Radix.Gateway.mainnet) {
+                if (mainnetMigrationOngoing && profileState.profile.currentGateway.network != Radix.Gateway.mainnet.network) {
                     // TODO To remove when mainnet becomes default
                     false
                 } else {
-                    profileState.profile.currentGateway != Radix.Gateway.mainnet
+                    profileState.profile.currentGateway.network != Radix.Gateway.mainnet.network
                 }
             }
             // TODO To remove when mainnet becomes default
-            else -> Radix.Gateway.default != Radix.Gateway.mainnet
+            else -> Radix.Gateway.default.network != Radix.Gateway.mainnet.network
         }
     }
 

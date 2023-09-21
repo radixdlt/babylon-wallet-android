@@ -90,10 +90,16 @@ fun String.decodeUtf8(): String {
     return URLDecoder.decode(this, "UTF-8")
 }
 
-fun String.prependHttpsPrefixIfNotPresent(): String {
+fun String.sanitizeUrl(): String {
     return if (this.startsWith("https://")) {
         this
     } else {
         "https://$this"
+    }.let {
+        if (it.endsWith('/').not()) {
+            "$it/"
+        } else {
+            it
+        }
     }
 }

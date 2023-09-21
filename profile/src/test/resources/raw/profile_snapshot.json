@@ -5,7 +5,7 @@
       "isCurrencyAmountVisible" : true
     },
     "gateways" : {
-      "current" : "https://rcnet-v3.radixdlt.com",
+      "current" : "https://rcnet-v3.radixdlt.com/",
       "saved" : [
         {
           "network" : {
@@ -13,7 +13,7 @@
             "id" : 14,
             "name" : "zabanet"
           },
-          "url" : "https://rcnet-v3.radixdlt.com"
+          "url" : "https://rcnet-v3.radixdlt.com/"
         }
       ]
     },

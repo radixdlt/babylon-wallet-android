@@ -13,7 +13,7 @@ internal class DisplayableAddressTest(
 
     @Test
     fun `convert of address to dashboard url`() {
-        assertEquals(displayed, ActionableAddress.from(address).displayAddress)
+        assertEquals(displayed, ActionableAddress(address).displayAddress)
     }
 
 
