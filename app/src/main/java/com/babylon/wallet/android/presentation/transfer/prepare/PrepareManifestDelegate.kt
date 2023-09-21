@@ -10,20 +10,21 @@ import com.babylon.wallet.android.presentation.transfer.TargetAccount
 import com.babylon.wallet.android.presentation.transfer.TransferViewModel
 import com.radixdlt.ret.Address
 import com.radixdlt.ret.Decimal
+import com.radixdlt.ret.ManifestBuilderBucket
 import com.radixdlt.ret.NonFungibleGlobalId
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
 import rdx.works.core.ret.BabylonManifestBuilder
 import rdx.works.core.ret.buildSafely
 import rdx.works.profile.data.model.pernetwork.Network
-import rdx.works.profile.domain.CheckMnemonicIntegrityUseCase
+import rdx.works.profile.data.repository.MnemonicRepository
 import timber.log.Timber
 import java.math.BigDecimal
 
 class PrepareManifestDelegate(
     private val state: MutableStateFlow<TransferViewModel.State>,
     private val incomingRequestRepository: IncomingRequestRepository,
-    private val checkMnemonicIntegrityUseCase: CheckMnemonicIntegrityUseCase
+    private val mnemonicRepository: MnemonicRepository
 ) {
 
     suspend fun onSubmit() {
@@ -89,24 +90,10 @@ class PrepareManifestDelegate(
                         intoBucket = bucket
                     )
 
-                    val isUserAccount = targetAccount.isUserAccount
-                    val isSoftwareAccount = targetAccount.isSoftwareAccount
-                    val mnemonicHasBeenImported = checkMnemonicIntegrityUseCase
-                        .mnemonicHasBeenImported(targetAccount.factorSourceId) ?: false
-
-                    // We use deposit instruction only for owned software accounts that mnemonic doesnt need recovery
-                    // or mnemonic for this account has been imported
-                    if (isUserAccount && isSoftwareAccount && mnemonicHasBeenImported) {
-                        accountDeposit(
-                            toAddress = Address(targetAccount.address),
-                            fromBucket = bucket
-                        )
-                    } else {
-                        accountTryDepositOrAbort(
-                            toAddress = Address(targetAccount.address),
-                            fromBucket = bucket
-                        )
-                    }
+                    deposit(
+                        targetAccount = targetAccount,
+                        bucket = bucket
+                    )
                 }
             }
         }
@@ -135,25 +122,33 @@ class PrepareManifestDelegate(
                     intoBucket = bucket
                 )
 
-                val isUserAccount = targetAccount.isUserAccount
-                val isSoftwareAccount = targetAccount.isSoftwareAccount
-                val mnemonicHasBeenImported = checkMnemonicIntegrityUseCase
-                    .mnemonicHasBeenImported(targetAccount.factorSourceId) ?: false
-
-                // We use deposit instruction only for owned software accounts that mnemonic doesnt need recovery
-                // or in other words mnemonic for this account has been imported
-                if (isUserAccount && isSoftwareAccount && mnemonicHasBeenImported) {
-                    accountDeposit(
-                        toAddress = Address(targetAccount.address),
-                        fromBucket = bucket
-                    )
-                } else {
-                    accountTryDepositOrAbort(
-                        toAddress = Address(targetAccount.address),
-                        fromBucket = bucket
-                    )
-                }
+                deposit(
+                    targetAccount = targetAccount,
+                    bucket = bucket
+                )
             }
+        }
+    }
+
+    private suspend fun BabylonManifestBuilder.deposit(targetAccount: TargetAccount, bucket: ManifestBuilderBucket) = apply {
+        val isUserAccount = targetAccount.isUserAccount
+        val isSoftwareAccount = targetAccount.isSoftwareAccount
+        val mnemonicHasBeenImported = targetAccount.factorSourceId?.let {
+            mnemonicRepository.mnemonicExist(it)
+        } ?: false
+
+        // We use deposit instruction only for owned software accounts that mnemonic doesnt need recovery
+        // or in other words mnemonic for this account has been imported
+        if (isUserAccount && isSoftwareAccount && mnemonicHasBeenImported) {
+            accountDeposit(
+                toAddress = Address(targetAccount.address),
+                fromBucket = bucket
+            )
+        } else {
+            accountTryDepositOrAbort(
+                toAddress = Address(targetAccount.address),
+                fromBucket = bucket
+            )
         }
     }
 

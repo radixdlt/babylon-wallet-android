@@ -26,8 +26,8 @@ import rdx.works.core.UUIDGenerator
 import rdx.works.core.mapWhen
 import rdx.works.profile.data.model.factorsources.FactorSource
 import rdx.works.profile.data.model.pernetwork.Network
+import rdx.works.profile.data.repository.MnemonicRepository
 import rdx.works.profile.data.utils.factorSourceId
-import rdx.works.profile.domain.CheckMnemonicIntegrityUseCase
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.accountOnCurrentNetwork
 import java.math.BigDecimal
@@ -39,7 +39,7 @@ class TransferViewModel @Inject constructor(
     getProfileUseCase: GetProfileUseCase,
     getAccountsWithResourcesUseCase: GetAccountsWithResourcesUseCase,
     incomingRequestRepository: IncomingRequestRepository,
-    checkMnemonicIntegrityUseCase: CheckMnemonicIntegrityUseCase,
+    mnemonicRepository: MnemonicRepository,
     savedStateHandle: SavedStateHandle,
 ) : StateViewModel<TransferViewModel.State>() {
 
@@ -60,7 +60,7 @@ class TransferViewModel @Inject constructor(
     private val prepareManifestDelegate = PrepareManifestDelegate(
         state = _state,
         incomingRequestRepository = incomingRequestRepository,
-        checkMnemonicIntegrityUseCase = checkMnemonicIntegrityUseCase
+        mnemonicRepository = mnemonicRepository
     )
 
     init {

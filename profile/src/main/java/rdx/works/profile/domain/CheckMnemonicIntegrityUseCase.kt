@@ -5,7 +5,6 @@ import rdx.works.core.KeySpec
 import rdx.works.core.KeystoreManager
 import rdx.works.core.UUIDGenerator
 import rdx.works.core.checkIfKeyWasPermanentlyInvalidated
-import rdx.works.profile.data.model.factorsources.DeviceFactorSource
 import rdx.works.profile.data.model.factorsources.FactorSource
 import rdx.works.profile.data.repository.MnemonicRepository
 import timber.log.Timber
@@ -42,17 +41,6 @@ class CheckMnemonicIntegrityUseCase @Inject constructor(
             babylonFactorSource.id
         } else {
             null
-        }
-    }
-
-    /**
-     * If mnemonic has been imported it means that account does not need recovery
-     */
-    suspend fun mnemonicHasBeenImported(factorSourceId: FactorSource.FactorSourceID.FromHash?): Boolean? {
-        return factorSourceId?.let {
-            (getProfileUseCase.factorSourceById(it) as? DeviceFactorSource)?.let { factorSource ->
-                mnemonicRepository.mnemonicExist(factorSource.id)
-            }
         }
     }
 }
