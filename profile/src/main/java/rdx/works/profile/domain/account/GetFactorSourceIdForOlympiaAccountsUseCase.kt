@@ -28,8 +28,8 @@ class GetFactorSourceIdForOlympiaAccountsUseCase @Inject constructor(
                     deviceFactorSource.id
                 }
                 .forEach { fromHashId ->
-                    val mnemonic = requireNotNull(mnemonicRepository.readMnemonic(fromHashId).getOrNull())
-                    if (mnemonic.validatePublicKeysOf(olympiaAccounts)) {
+                    val mnemonic = mnemonicRepository.readMnemonic(fromHashId).getOrNull()
+                    if (mnemonic?.validatePublicKeysOf(olympiaAccounts) == true) {
                         return@withContext fromHashId
                     }
                 }

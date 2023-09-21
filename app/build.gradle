@@ -11,50 +11,50 @@ plugins {
 
 apply from: "$rootDir/config/jacoco.gradle"
 
-def debugPropertiesFile = rootProject.file("keystore-development.properties")
-def debugKeystoreProperties = new Properties()
-debugKeystoreProperties.load(new FileInputStream(debugPropertiesFile))
-
 static def getCommitHash() {
     'git rev-parse --verify --short HEAD'.execute().text.trim()
+}
+
+ext.keystoreProperties = { isDebug ->
+    def fileName = (isDebug) ? "../config/signing/debug/keystore.properties"
+            : "../config/signing/release/keystore.properties"
+    try {
+        def properties = new Properties()
+        properties.load(new FileInputStream(file(fileName)))
+
+        return properties
+    } catch (Exception ignored) {
+        return null
+    }
 }
 
 android {
     signingConfigs {
         debug {
-            keyAlias debugKeystoreProperties['keyAlias']
-            keyPassword debugKeystoreProperties['keyPassword']
-            storeFile file(debugKeystoreProperties['storeFile'])
-            storePassword debugKeystoreProperties['storePassword']
+            def properties = keystoreProperties(true)
+            keyAlias properties['keyAlias']
+            keyPassword properties['keyPassword']
+            storeFile file(properties['storeFile'])
+            storePassword properties['storePassword']
         }
-        debugAlpha {
-            keyAlias System.getenv("RADIX_ANDROID_KEYSTORE_ALIAS")
-            keyPassword System.getenv("RADIX_ANDROID_KEYSTORE_PRIVATE_KEY_PASSWORD")
-            storeFile file(System.getenv("RADIX_DEBUG_PREVIEW_KEYSTORE_FILE"))
-            storePassword System.getenv("RADIX_ANDROID_KEYSTORE_PASSWORD")
-        }
-        debugPreview {
-            keyAlias System.getenv("RADIX_ANDROID_KEYSTORE_ALIAS")
-            keyPassword System.getenv("RADIX_ANDROID_KEYSTORE_PRIVATE_KEY_PASSWORD")
-            storeFile file(System.getenv("RADIX_DEBUG_PREVIEW_KEYSTORE_FILE"))
-            storePassword System.getenv("RADIX_ANDROID_KEYSTORE_PASSWORD")
-        }
-        releasePreview {
-            keyAlias System.getenv("RADIX_ANDROID_KEYSTORE_ALIAS")
-            keyPassword System.getenv("RADIX_ANDROID_KEYSTORE_PRIVATE_KEY_PASSWORD")
-            storeFile file(System.getenv("RADIX_DEBUG_PREVIEW_KEYSTORE_FILE"))
-            storePassword System.getenv("RADIX_ANDROID_KEYSTORE_PASSWORD")
+        release {
+            def properties = keystoreProperties(false)
+            if (properties != null) {
+                keyAlias properties['keyAlias']
+                keyPassword properties['keyPassword']
+                storeFile file(properties['storeFile'])
+                storePassword properties['storePassword']
+            }
         }
     }
 
     compileSdk rootProject.ext.compileSdk
-
     defaultConfig {
-        applicationId "com.babylon.wallet.android"
+        applicationId "com.radixpublishing.radixwallet.android"
         minSdk rootProject.ext.minSdk
         targetSdk rootProject.ext.targetSdk
-        versionCode 1
-        versionName rootProject.ext.versionName
+        versionCode 10
+        versionName "1.0.0"
         buildConfigField "boolean", "DEBUG_MODE", "true"
         buildConfigField "boolean", "EXPERIMENTAL_FEATURES_ENABLED", "true"
         buildConfigField "String", "WELL_KNOWN_URL_SUFFIX", '".well-known/radix.json"'
@@ -70,16 +70,10 @@ android {
         // keep the default build types (debug, release) at the TOP of the closure
         // if you want your other custom build types to inherit the properties of the default ones
         debug {
+            signingConfig signingConfigs.debug
             testCoverageEnabled true
             versionNameSuffix "-" + rootProject.ext.internalVersionName + "-" + getCommitHash()
             resValue "string", "app_name", "Radix Wallet Dev"
-        }
-        release {
-            minifyEnabled true
-            buildConfigField "boolean", "DEBUG_MODE", "false"
-            buildConfigField "boolean", "EXPERIMENTAL_FEATURES_ENABLED", "false"
-            buildConfigField "String", "IMAGE_HOST_BASE_URL", '"https://image-service.radixdlt.com"'
-            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
         debugAlpha {
             initWith debug
@@ -90,23 +84,12 @@ android {
             matchingFallbacks = ['debug']
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
-        debugPreview {
-            initWith release
-            applicationIdSuffix ".preview"
-            versionNameSuffix "-" + rootProject.ext.internalVersionName + "-" + getCommitHash()
+        release {
             minifyEnabled true
-            signingConfig signingConfigs.debugPreview
-            resValue "string", "app_name", "Radix Wallet Preview"
-            matchingFallbacks = ['release']
-            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-        }
-        releasePreview {
-            initWith release
-            signingConfig signingConfigs.releasePreview
-            applicationIdSuffix ".preview"
-            minifyEnabled true
-            resValue "string", "app_name", "Radix Wallet Preview"
-            matchingFallbacks = ['release']
+            signingConfig signingConfigs.release
+            buildConfigField "boolean", "DEBUG_MODE", "false"
+            buildConfigField "boolean", "EXPERIMENTAL_FEATURES_ENABLED", "false"
+            buildConfigField "String", "IMAGE_HOST_BASE_URL", '"https://image-service.radixdlt.com"'
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }

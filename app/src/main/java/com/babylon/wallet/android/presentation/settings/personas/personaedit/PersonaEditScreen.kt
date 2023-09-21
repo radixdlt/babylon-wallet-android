@@ -50,8 +50,8 @@ import com.babylon.wallet.android.presentation.ui.composables.BackIconType
 import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.BottomPrimaryButton
 import com.babylon.wallet.android.presentation.ui.composables.DefaultModalSheetLayout
-import com.babylon.wallet.android.presentation.ui.composables.PersonaRoundedAvatar
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
+import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
 import com.babylon.wallet.android.presentation.ui.composables.persona.AddFieldSheet
 import com.babylon.wallet.android.presentation.ui.composables.persona.PersonaDataFieldInput
 import com.babylon.wallet.android.presentation.ui.composables.persona.RequiredPersonaInformationInfo
@@ -185,7 +185,9 @@ private fun PersonaEditContent(
                     onAddFields()
                 },
                 onSelectionChanged = onSelectionChanged,
-                modifier = Modifier.fillMaxSize().navigationBarsPadding(),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .navigationBarsPadding(),
                 anyFieldSelected = addButtonEnabled
             )
         }
@@ -227,6 +229,7 @@ private fun PersonaEditContent(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(padding),
+                    persona = persona,
                     onAddField = {
                         scope.launch {
                             keyboardController?.hide()
@@ -256,6 +259,7 @@ private fun PersonaEditContent(
 @Composable
 private fun PersonaDetailList(
     modifier: Modifier = Modifier,
+    persona: Network.Persona,
     onAddField: () -> Unit,
     editedFields: ImmutableList<PersonaFieldWrapper>,
     onDeleteField: (PersonaDataEntryID) -> Unit,
@@ -274,11 +278,11 @@ private fun PersonaDetailList(
         modifier = modifier
     ) {
         item {
-            PersonaRoundedAvatar(
-                url = "",
+            Thumbnail.Persona(
                 modifier = Modifier
                     .padding(vertical = dimensions.paddingDefault)
-                    .size(104.dp)
+                    .size(104.dp),
+                persona = persona
             )
 //            UnderlineTextButton(
 //                text = stringResource(R.string.authorizedDapps_personaDetails_editAvatarButtonTitle),

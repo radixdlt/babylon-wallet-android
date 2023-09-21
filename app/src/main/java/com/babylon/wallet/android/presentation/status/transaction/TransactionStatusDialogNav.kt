@@ -38,6 +38,9 @@ private const val ARG_TX_ID = "arg_tx_id"
 private const val ARG_IS_INTERNAL = "arg_is_internal"
 
 @VisibleForTesting
+private const val ARG_BLOCK_UNTIL_COMPLETE = "arg_blockUntilComplete"
+
+@VisibleForTesting
 private const val ARG_ERROR = "arg_error"
 
 @VisibleForTesting
@@ -65,7 +68,8 @@ fun NavController.transactionStatusDialog(transactionEvent: AppEvent.Status.Tran
         route = "$ROUTE/${transactionEvent.toType()}/$requestId" +
             "?txId=${transactionEvent.transactionId}" +
             "&isInternal=${transactionEvent.isInternal}" +
-            "&error=$errorSerialized"
+            "&error=$errorSerialized" +
+            "&$ARG_BLOCK_UNTIL_COMPLETE=${transactionEvent.blockUntilComplete}"
     ) {
         val popUpToRoute = if (this@transactionStatusDialog.routeExist(ROUTE_TRANSFER)) {
             ROUTE_TRANSFER
@@ -83,7 +87,8 @@ fun NavGraphBuilder.transactionStatusDialog(
     onClose: () -> Unit
 ) {
     dialog(
-        route = "$ROUTE/{$ARG_STATUS}/{$ARG_REQUEST_ID}?txId={$ARG_TX_ID}&isInternal={$ARG_IS_INTERNAL}&error={$ARG_ERROR}",
+        route = "$ROUTE/{$ARG_STATUS}/{$ARG_REQUEST_ID}?txId={$ARG_TX_ID}&isInternal={$ARG_IS_INTERNAL}" +
+            "&error={$ARG_ERROR}&$ARG_BLOCK_UNTIL_COMPLETE={$ARG_BLOCK_UNTIL_COMPLETE}",
         arguments = listOf(
             navArgument(ARG_STATUS) {
                 type = NavType.StringType
@@ -96,6 +101,10 @@ fun NavGraphBuilder.transactionStatusDialog(
                 defaultValue = ""
             },
             navArgument(ARG_IS_INTERNAL) {
+                type = NavType.BoolType
+                defaultValue = false
+            },
+            navArgument(ARG_BLOCK_UNTIL_COMPLETE) {
                 type = NavType.BoolType
                 defaultValue = false
             },
@@ -127,17 +136,23 @@ private fun SavedStateHandle.toStatus(): AppEvent.Status.Transaction {
             transactionId = checkNotNull(get<String>(ARG_TX_ID)),
             isInternal = checkNotNull(get<Boolean>(ARG_IS_INTERNAL)),
             errorMessage = get<String>(ARG_ERROR)?.let { Json.decodeFromString(it) },
+            blockUntilComplete = checkNotNull(get<Boolean>(ARG_BLOCK_UNTIL_COMPLETE))
         )
+
         VALUE_STATUS_SUCCESS -> AppEvent.Status.Transaction.Success(
             requestId = checkNotNull(get<String>(ARG_REQUEST_ID)),
             transactionId = checkNotNull(get<String>(ARG_TX_ID)),
             isInternal = checkNotNull(get<Boolean>(ARG_IS_INTERNAL)),
+            blockUntilComplete = checkNotNull(get<Boolean>(ARG_BLOCK_UNTIL_COMPLETE))
         )
+
         VALUE_STATUS_IN_PROGRESS -> AppEvent.Status.Transaction.InProgress(
             requestId = checkNotNull(get<String>(ARG_REQUEST_ID)),
             transactionId = checkNotNull(get<String>(ARG_TX_ID)),
             isInternal = checkNotNull(get<Boolean>(ARG_IS_INTERNAL)),
+            blockUntilComplete = checkNotNull(get<Boolean>(ARG_BLOCK_UNTIL_COMPLETE))
         )
+
         else -> error("Status not received")
     }
 }

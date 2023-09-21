@@ -10,13 +10,16 @@ import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.navArgument
 import com.babylon.wallet.android.presentation.account.AccountScreen
-import com.babylon.wallet.android.presentation.account.accountpreference.accountPreferences
-import com.babylon.wallet.android.presentation.account.accountpreference.accountPreferencesScreen
 import com.babylon.wallet.android.presentation.account.createaccount.ROUTE_CREATE_ACCOUNT
 import com.babylon.wallet.android.presentation.account.createaccount.confirmation.CreateAccountRequestSource
 import com.babylon.wallet.android.presentation.account.createaccount.confirmation.createAccountConfirmationScreen
 import com.babylon.wallet.android.presentation.account.createaccount.createAccountScreen
 import com.babylon.wallet.android.presentation.account.createaccount.withledger.createAccountWithLedger
+import com.babylon.wallet.android.presentation.account.settings.AccountSettingItem
+import com.babylon.wallet.android.presentation.account.settings.accountSettings
+import com.babylon.wallet.android.presentation.account.settings.specificassets.specificAssets
+import com.babylon.wallet.android.presentation.account.settings.specificdepositor.specificDepositor
+import com.babylon.wallet.android.presentation.account.settings.thirdpartydeposits.accountThirdPartyDeposits
 import com.babylon.wallet.android.presentation.dapp.authorized.dappLoginAuthorizedNavGraph
 import com.babylon.wallet.android.presentation.dapp.completion.ChooseAccountsCompletionScreen
 import com.babylon.wallet.android.presentation.dapp.unauthorized.dappLoginUnauthorizedNavGraph
@@ -149,7 +152,7 @@ fun NavigationHost(
             AccountScreen(
                 viewModel = hiltViewModel(),
                 onAccountPreferenceClick = { address ->
-                    navController.accountPreferences(address = address)
+                    navController.accountSettings(address = address)
                 },
                 onBackClick = {
                     navController.navigateUp()
@@ -241,9 +244,38 @@ fun NavigationHost(
                 navController.popBackStack()
             }
         )
-        accountPreferencesScreen {
-            navController.popBackStack()
-        }
+        accountSettings(
+            onBackClick = {
+                navController.popBackStack()
+            },
+            onSettingClick = { item, accountAddress ->
+                when (item) {
+                    AccountSettingItem.ThirdPartyDeposits -> {
+                        navController.accountThirdPartyDeposits(accountAddress)
+                    }
+
+                    else -> {}
+                }
+            }
+        )
+        accountThirdPartyDeposits(
+            navController = navController,
+            onBackClick = {
+                navController.navigateUp()
+            },
+            onAssetSpecificRulesClick = {
+                navController.specificAssets()
+            },
+            onSpecificDepositorsClick = {
+                navController.specificDepositor()
+            }
+        )
+        specificAssets(navController = navController, onBackClick = {
+            navController.navigateUp()
+        })
+        specificDepositor(navController = navController, onBackClick = {
+            navController.navigateUp()
+        })
         dappLoginAuthorizedNavGraph(navController = navController)
         dappLoginUnauthorizedNavGraph(navController = navController)
         settingsNavGraph(navController)

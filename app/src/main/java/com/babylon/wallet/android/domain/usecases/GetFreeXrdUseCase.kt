@@ -7,7 +7,6 @@ import com.babylon.wallet.android.data.transaction.TransactionConfig
 import com.babylon.wallet.android.data.transaction.TransactionConfig.TIP_PERCENTAGE
 import com.babylon.wallet.android.data.transaction.model.TransactionApprovalRequest
 import com.babylon.wallet.android.di.coroutines.IoDispatcher
-import com.babylon.wallet.android.domain.common.onValue
 import com.babylon.wallet.android.domain.usecases.transaction.PollTransactionStatusUseCase
 import com.radixdlt.ret.Address
 import kotlinx.coroutines.CoroutineDispatcher
@@ -69,7 +68,7 @@ class GetFreeXrdUseCase @Inject constructor(
                         tipPercentage = TIP_PERCENTAGE,
                         deviceBiometricAuthenticationProvider = { true }
                     ).onSuccess { txId ->
-                        pollTransactionStatusUseCase(txId).onValue {
+                        pollTransactionStatusUseCase(txId, "").result.onSuccess {
                             preferencesManager.updateEpoch(address, epochResult.data)
                         }
                     }
@@ -82,7 +81,7 @@ class GetFreeXrdUseCase @Inject constructor(
         getProfileUseCase.gateways,
         preferencesManager.getLastUsedEpochFlow(address)
     ) { gateways, lastUsedEpoch ->
-        if (gateways.current() == Radix.Gateway.mainnet) {
+        if (gateways.current().network == Radix.Gateway.mainnet.network) {
             FaucetState.Unavailable
         } else {
             if (lastUsedEpoch == null) return@combine FaucetState.Available(isEnabled = true)

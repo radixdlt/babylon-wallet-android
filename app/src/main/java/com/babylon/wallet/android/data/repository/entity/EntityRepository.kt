@@ -21,7 +21,9 @@ import com.babylon.wallet.android.data.gateway.generated.models.ResourceAggregat
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsOptIns
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsRequest
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponse
+import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponseFungibleResourceDetails
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponseItem
+import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponseNonFungibleResourceDetails
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityFungiblesPageRequest
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityFungiblesPageResponse
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityNonFungibleIdsPageRequest
@@ -68,13 +70,19 @@ interface EntityRepository {
         isRefreshing: Boolean = true
     ): Result<List<AccountWithResources>>
 
+    suspend fun getResources(
+        resourceAddresses: List<String>,
+        explicitMetadataForAssets: Set<ExplicitMetadataKey> = ExplicitMetadataKey.forAssets,
+        isRefreshing: Boolean = true
+    ): kotlin.Result<List<Resource>>
+
     suspend fun getEntityOwnerKeyHashes(
         entityAddress: String,
         isRefreshing: Boolean = false
     ): Result<OwnerKeyHashesMetadataItem?>
 }
 
-@Suppress("TooManyFunctions", "LongMethod")
+@Suppress("TooManyFunctions", "LongMethod", "LargeClass")
 class EntityRepositoryImpl @Inject constructor(
     private val stateApi: StateApi,
     private val cache: HttpCache
@@ -109,7 +117,7 @@ class EntityRepositoryImpl @Inject constructor(
             var mapOfAccountsWithFungibleResources =
                 buildMapOfAccountsWithFungibles(accountDetailsResponses, resourcesDetails, stateVersion)
             var mapOfAccountsWithNonFungibleResources = buildMapOfAccountsWithNonFungibles(
-                entityDetailsResponses = accountDetailsResponses,
+                accountDetailsResponses = accountDetailsResponses,
                 resourcesDetails = resourcesDetails,
                 isRefreshing = isRefreshing,
                 stateVersion = stateVersion
@@ -187,6 +195,28 @@ class EntityRepositoryImpl @Inject constructor(
 
             Result.Success(listOfAccountsWithResources)
         }
+    }
+
+    override suspend fun getResources(
+        resourceAddresses: List<String>,
+        explicitMetadataForAssets: Set<ExplicitMetadataKey>,
+        isRefreshing: Boolean
+    ): kotlin.Result<List<Resource>> {
+        return kotlin.Result.success(
+            getDetailsForResources(resourceAddresses).mapNotNull { resourceDetails ->
+                when (resourceDetails.details) {
+                    is StateEntityDetailsResponseFungibleResourceDetails -> {
+                        mapToFungibleResource(resourceDetails)
+                    }
+
+                    is StateEntityDetailsResponseNonFungibleResourceDetails -> {
+                        mapToNonFungibleResource(resourceDetails)
+                    }
+
+                    else -> null
+                }
+            }
+        )
     }
 
     private suspend fun getAllValidatorDetails(
@@ -360,14 +390,55 @@ class EntityRepositoryImpl @Inject constructor(
         )
     }
 
+    private fun mapToFungibleResource(
+        fungibleDetails: StateEntityDetailsResponseItem
+    ): Resource.FungibleResource {
+        val resourceBehaviours = fungibleDetails.details?.calculateResourceBehaviours().orEmpty()
+        val currentSupply = fungibleDetails.details?.totalSupply()?.toBigDecimal()
+        val metaDataItems = fungibleDetails.explicitMetadata?.asMetadataItems().orEmpty()
+        return Resource.FungibleResource(
+            resourceAddress = fungibleDetails.address,
+            ownedAmount = null,
+            nameMetadataItem = metaDataItems.toMutableList().consume(),
+            symbolMetadataItem = metaDataItems.toMutableList().consume(),
+            descriptionMetadataItem = metaDataItems.toMutableList().consume(),
+            iconUrlMetadataItem = metaDataItems.toMutableList().consume(),
+            tagsMetadataItem = metaDataItems.toMutableList().consume(),
+            behaviours = resourceBehaviours,
+            currentSupply = currentSupply,
+            validatorMetadataItem = metaDataItems.toMutableList().consume(),
+            poolMetadataItem = metaDataItems.toMutableList().consume(),
+            divisibility = fungibleDetails.details?.divisibility()
+        )
+    }
+
+    private fun mapToNonFungibleResource(nonFungibleDetails: StateEntityDetailsResponseItem): Resource {
+        val resourceBehaviours = nonFungibleDetails.details?.calculateResourceBehaviours().orEmpty()
+        val currentSupply = nonFungibleDetails.details?.totalSupply()?.toIntOrNull()
+
+        val metaDataItems = nonFungibleDetails.explicitMetadata?.asMetadataItems().orEmpty().toMutableList()
+
+        return Resource.NonFungibleResource(
+            resourceAddress = nonFungibleDetails.address,
+            amount = 0,
+            nameMetadataItem = metaDataItems.consume(),
+            descriptionMetadataItem = metaDataItems.consume(),
+            iconMetadataItem = metaDataItems.consume(),
+            behaviours = resourceBehaviours,
+            items = emptyList(),
+            currentSupply = currentSupply,
+            validatorMetadataItem = metaDataItems.consume()
+        )
+    }
+
     private suspend fun buildMapOfAccountsWithNonFungibles(
-        entityDetailsResponses: List<StateEntityDetailsResponse>,
+        accountDetailsResponses: List<StateEntityDetailsResponse>,
         resourcesDetails: List<StateEntityDetailsResponseItem>,
         isRefreshing: Boolean,
         stateVersion: Long?
     ): Map<String, List<Resource.NonFungibleResource>> {
-        return entityDetailsResponses.map { entityDetailsResponse ->
-            entityDetailsResponse.items
+        return accountDetailsResponses.map { accountDetailsResponse ->
+            accountDetailsResponse.items
                 .groupingBy { entityDetailsResponseItem ->
                     entityDetailsResponseItem.address // this is account address
                 }

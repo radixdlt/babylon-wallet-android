@@ -1,4 +1,4 @@
-@file:Suppress("MagicNumber")
+@file:Suppress("MagicNumber", "TooManyFunctions")
 
 package com.babylon.wallet.android.domain
 
@@ -17,6 +17,7 @@ import com.babylon.wallet.android.domain.model.ValidatorsWithStakeResources
 import com.babylon.wallet.android.domain.model.metadata.DescriptionMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.NameMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.SymbolMetadataItem
+import com.babylon.wallet.android.presentation.account.settings.thirdpartydeposits.AssetType
 import com.babylon.wallet.android.presentation.transaction.AccountWithTransferableResources
 import rdx.works.core.InstantGenerator
 import rdx.works.profile.data.model.Header
@@ -272,10 +273,11 @@ class SampleDataProvider {
         mnemonicWithPassphrase: MnemonicWithPassphrase = MnemonicWithPassphrase(
             mnemonic = "zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo vote",
             bip39Passphrase = ""
-        ),
-        sampleNetwork: (networkId: Int) -> Network? = { null }
+        )
     ): Profile {
-        return Profile(
+        val network = network(Radix.Gateway.default.network.id)
+        val networkId = checkNotNull(network.knownNetworkId)
+        val profile = Profile(
             header = Header.init(
                 id = "9958f568-8c9b-476a-beeb-017d1f843266",
                 deviceName = "Galaxy A53 5G (Samsung SM-A536B)",
@@ -292,8 +294,21 @@ class SampleDataProvider {
             factorSources = listOf(
                 DeviceFactorSource.babylon(mnemonicWithPassphrase = mnemonicWithPassphrase)
             ),
-            networks = sampleNetwork(Radix.Gateway.default.network.id)?.let { listOf(it) }.orEmpty()
+            networks = emptyList()
         )
+        val firstAccount = Network.Account.initAccountWithDeviceFactorSource(
+            entityIndex = 0,
+            displayName = "first account",
+            mnemonicWithPassphrase = mnemonicWithPassphrase,
+            deviceFactorSource = (profile.factorSources.first() as DeviceFactorSource),
+            networkId = networkId,
+            appearanceID = 0
+        )
+        return profile.copy(networks = listOf(network.copy(accounts = listOf(firstAccount))))
+    }
+
+    fun network(networkId: Int): Network {
+        return Network(networkId, emptyList(), emptyList(), emptyList())
     }
 
     fun sampleFungibleResources(
@@ -336,6 +351,29 @@ class SampleDataProvider {
                 fungibleResources = emptyList(),
                 nonFungibleResources = emptyList()
             )
+        )
+    }
+
+    fun sampleAssetException(): AssetType.AssetException {
+        return AssetType.AssetException(
+            assetException = Network.Account.OnLedgerSettings.ThirdPartyDeposits.AssetException(
+                address = randomAddress(),
+                exceptionRule = Network.Account.OnLedgerSettings.ThirdPartyDeposits.DepositAddressExceptionRule.Allow
+            )
+        )
+    }
+
+    fun sampleDepositorResourceAddress(): AssetType.Depositor {
+        return AssetType.Depositor(
+            depositorAddress = Network.Account.OnLedgerSettings.ThirdPartyDeposits.DepositorAddress.ResourceAddress(
+                randomAddress()
+            )
+        )
+    }
+
+    fun sampleDepositorNftAddress(): AssetType.Depositor {
+        return AssetType.Depositor(
+            depositorAddress = Network.Account.OnLedgerSettings.ThirdPartyDeposits.DepositorAddress.NonFungibleGlobalID(randomAddress())
         )
     }
 }

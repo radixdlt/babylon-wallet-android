@@ -29,14 +29,20 @@ typealias RETResources = com.radixdlt.ret.Resources
 typealias RETResourcesAmount = com.radixdlt.ret.Resources.Amount
 typealias RETResourcesIds = com.radixdlt.ret.Resources.Ids
 
+fun List<Resources>.allPoolUnits(): List<Resource.FungibleResource> {
+    return map { resource ->
+        resource.poolUnits.map { poolUnit ->
+            poolUnit.poolUnitResource
+        } + resource.validatorsWithStakeResources.validators.map { validator ->
+            validator.liquidStakeUnits.map { it.fungibleResource }
+        }.flatten()
+    }.flatten()
+}
+
 fun RETResources.toTransferableResource(resourceAddress: String, allResources: List<Resources>): TransferableResource {
     val allFungibles = allResources.map { it.fungibleResources }.flatten()
     val allNFTCollections = allResources.map { it.nonFungibleResources }.flatten()
-    val allPoolUnits = allResources.map { resource ->
-        resource.poolUnits.map { poolUnit ->
-            poolUnit.poolUnitResource
-        }
-    }.flatten()
+    val allPoolUnits = allResources.allPoolUnits()
 
     return when (this) {
         is RETResourcesAmount -> TransferableResource.Amount(
@@ -81,11 +87,7 @@ fun ResourceTracker.toDepositingTransferableResource(
 ): Transferable.Depositing {
     val allFungibles = allResources.map { it.fungibleResources }.flatten()
     val allNFTCollections = allResources.map { it.nonFungibleResources }.flatten()
-    val allPoolUnits = allResources.map { resource ->
-        resource.poolUnits.map { poolUnit ->
-            poolUnit.poolUnitResource
-        }
-    }.flatten()
+    val allPoolUnits = allResources.allPoolUnits()
 
     return when (this) {
         is ResourceTracker.Fungible -> Transferable.Depositing(
@@ -120,11 +122,7 @@ fun ResourceTracker.toWithdrawingTransferableResource(
 ): Transferable.Withdrawing {
     val allFungibles = allResources.map { it.fungibleResources }.flatten()
     val allNFTCollections = allResources.map { it.nonFungibleResources }.flatten()
-    val allPoolUnits = allResources.map { resource ->
-        resource.poolUnits.map { poolUnit ->
-            poolUnit.poolUnitResource
-        }
-    }.flatten()
+    val allPoolUnits = allResources.allPoolUnits()
 
     return when (this) {
         is ResourceTracker.Fungible -> Transferable.Withdrawing(
@@ -152,13 +150,7 @@ fun ResourceSpecifier.toTransferableResource(
 ): TransferableResource {
     val allFungibles = allResources.map { it.fungibleResources }.flatten()
     val allNFTCollections = allResources.map { it.nonFungibleResources }.flatten()
-    val allPoolUnits = allResources.map { resource ->
-        resource.poolUnits.map { poolUnit ->
-            poolUnit.poolUnitResource
-        } + resource.validatorsWithStakeResources.validators.map { validator ->
-            validator.liquidStakeUnits.map { it.fungibleResource }
-        }.flatten()
-    }.flatten()
+    val allPoolUnits = allResources.allPoolUnits()
 
     return when (this) {
         is ResourceSpecifier.Amount -> TransferableResource.Amount(

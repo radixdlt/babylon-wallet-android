@@ -82,10 +82,7 @@ private fun AccountSecurityContent(
                                 onAccountSecuritySettingItemClick(accountSecurityAndSettingsItem)
                             }
                         )
-
-                        if (index < appSettings.count() - 1) {
-                            Divider(color = RadixTheme.colors.gray5)
-                        }
+                        Divider(color = RadixTheme.colors.gray5)
                     }
                 }
             }

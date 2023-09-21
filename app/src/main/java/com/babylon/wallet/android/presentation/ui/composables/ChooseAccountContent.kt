@@ -20,14 +20,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import coil.compose.AsyncImage
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixTextButton
 import com.babylon.wallet.android.designsystem.theme.AccountGradientList
@@ -84,17 +81,9 @@ fun ChooseAccountContent(
         ) {
             item {
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
-                AsyncImage(
-                    model = rememberImageUrl(fromUrl = dappWithMetadata?.iconUrl, size = ImageSize.MEDIUM),
-                    placeholder = painterResource(id = R.drawable.img_placeholder),
-                    fallback = painterResource(id = R.drawable.img_placeholder),
-                    error = painterResource(id = R.drawable.img_placeholder),
-                    contentDescription = null,
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier
-                        .size(104.dp)
-                        .background(RadixTheme.colors.gray3, RadixTheme.shapes.roundedRectDefault)
-                        .clip(RadixTheme.shapes.roundedRectDefault)
+                Thumbnail.DApp(
+                    modifier = Modifier.size(104.dp),
+                    dapp = dappWithMetadata
                 )
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
                 Text(

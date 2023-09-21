@@ -59,7 +59,11 @@ fun TransactionPreviewTypeContent(
             )
 
             DepositAccountContent(
-                modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingDefault),
+                modifier = Modifier.padding(
+                    start = RadixTheme.dimensions.paddingDefault,
+                    end = RadixTheme.dimensions.paddingDefault,
+                    bottom = RadixTheme.dimensions.paddingLarge
+                ),
                 to = preview.to.toPersistentList(),
                 promptForGuarantees = onPromptForGuarantees,
                 showStrokeLine = false,
@@ -71,10 +75,6 @@ fun TransactionPreviewTypeContent(
 
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
         }
-
-        PresentingProofsContent(
-            badges = preview.badges.toPersistentList()
-        )
     }
 }
 

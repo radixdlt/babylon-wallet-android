@@ -2,6 +2,7 @@
 
 package com.babylon.wallet.android.data.manifest
 
+import com.babylon.wallet.android.data.dapp.model.TransactionType
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.babylon.wallet.android.domain.model.TransactionManifestData
 import com.radixdlt.ret.Address
@@ -14,7 +15,6 @@ import com.radixdlt.ret.TransactionHeader
 import com.radixdlt.ret.TransactionManifest
 import rdx.works.core.ret.ManifestMethod
 import rdx.works.core.toRETDecimal
-import java.lang.StringBuilder
 import java.math.BigDecimal
 import java.math.RoundingMode
 import java.util.UUID
@@ -78,7 +78,9 @@ private fun guaranteeInstruction(
 fun TransactionManifest.prepareInternalTransactionRequest(
     networkId: Int,
     requestId: String = UUID.randomUUID().toString(),
-    message: String? = null
+    message: String? = null,
+    blockUntilCompleted: Boolean = false,
+    transactionType: TransactionType = TransactionType.Generic
 ) = MessageFromDataChannel.IncomingRequest.TransactionRequest(
     // Since we mock this request as a dApp request from the wallet app, the dApp's id is empty. Should never be invoked as we always
     // check if a request is not internal before sending message to the dApp
@@ -89,7 +91,8 @@ fun TransactionManifest.prepareInternalTransactionRequest(
         networkId = networkId,
         message = message
     ),
-    requestMetadata = MessageFromDataChannel.IncomingRequest.RequestMetadata.internal(networkId)
+    requestMetadata = MessageFromDataChannel.IncomingRequest.RequestMetadata.internal(networkId, blockUntilCompleted),
+    transactionType = transactionType
 )
 
 fun TransactionHeader.toPrettyString(): String = StringBuilder()

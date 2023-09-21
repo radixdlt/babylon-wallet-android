@@ -2,7 +2,6 @@
 
 package com.babylon.wallet.android.presentation.settings.personas.personadetail
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -28,8 +27,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -49,10 +46,9 @@ import com.babylon.wallet.android.presentation.ui.composables.DefaultModalSheetL
 import com.babylon.wallet.android.presentation.ui.composables.GrayBackgroundWrapper
 import com.babylon.wallet.android.presentation.ui.composables.PersonaDataFieldRow
 import com.babylon.wallet.android.presentation.ui.composables.PersonaDataStringField
-import com.babylon.wallet.android.presentation.ui.composables.PersonaRoundedAvatar
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
-import com.babylon.wallet.android.presentation.ui.composables.StandardOneLineCard
-import com.babylon.wallet.android.presentation.ui.composables.displayName
+import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
+import com.babylon.wallet.android.presentation.ui.composables.card.DappCard
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import com.babylon.wallet.android.utils.biometricAuthenticate
 import kotlinx.collections.immutable.ImmutableList
@@ -182,11 +178,11 @@ private fun PersonaDetailList(
         modifier = modifier
     ) {
         item {
-            PersonaRoundedAvatar(
-                url = "",
+            Thumbnail.Persona(
                 modifier = Modifier
                     .padding(vertical = dimensions.paddingDefault)
-                    .size(104.dp)
+                    .size(104.dp),
+                persona = persona
             )
         }
         item {
@@ -259,22 +255,11 @@ private fun PersonaDetailList(
             }
             items(authorizedDapps) { dApp ->
                 GrayBackgroundWrapper {
-                    StandardOneLineCard(
-                        image = dApp.dAppWithMetadata.iconUrl.toString(),
-                        title = dApp.dAppWithMetadata.displayName(),
-                        modifier = Modifier
-                            .shadow(elevation = 8.dp, shape = RadixTheme.shapes.roundedRectMedium)
-                            .clip(RadixTheme.shapes.roundedRectMedium)
-                            .throttleClickable {
-                                onDAppClick(dApp)
-                            }
-                            .fillMaxWidth()
-                            .background(RadixTheme.colors.white, shape = RadixTheme.shapes.roundedRectMedium)
-                            .padding(
-                                horizontal = dimensions.paddingLarge,
-                                vertical = dimensions.paddingDefault
-                            ),
-                        showChevron = false
+                    DappCard(
+                        modifier = Modifier.throttleClickable {
+                            onDAppClick(dApp)
+                        },
+                        dApp = dApp.dAppWithMetadata
                     )
                     Spacer(modifier = Modifier.height(dimensions.paddingLarge))
                 }

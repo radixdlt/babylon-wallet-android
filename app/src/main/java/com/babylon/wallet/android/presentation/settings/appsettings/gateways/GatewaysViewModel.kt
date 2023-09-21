@@ -12,7 +12,7 @@ import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.utils.encodeUtf8
 import com.babylon.wallet.android.utils.isValidUrl
-import com.babylon.wallet.android.utils.prependHttpsPrefixIfNotPresent
+import com.babylon.wallet.android.utils.sanitizeUrl
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.persistentListOf
@@ -63,7 +63,7 @@ class SettingsEditGatewayViewModel @Inject constructor(
 
     fun onNewUrlChanged(newUrl: String) {
         _state.update { state ->
-            val urlWithHttpsAppended = newUrl.prependHttpsPrefixIfNotPresent()
+            val urlWithHttpsAppended = newUrl.sanitizeUrl()
             val urlAlreadyAdded =
                 state.gatewayList.any { it.gateway.url == newUrl || it.gateway.url == urlWithHttpsAppended }
             state.copy(
@@ -86,7 +86,7 @@ class SettingsEditGatewayViewModel @Inject constructor(
 
     fun onAddGateway() {
         viewModelScope.launch {
-            val newUrl = state.value.newUrl.prependHttpsPrefixIfNotPresent()
+            val newUrl = state.value.newUrl.sanitizeUrl()
             _state.update { state -> state.copy(addingGateway = true) }
             val newGatewayInfo = networkInfoRepository.getNetworkInfo(newUrl)
             newGatewayInfo.onValue { networkName ->
@@ -128,7 +128,7 @@ class SettingsEditGatewayViewModel @Inject constructor(
 
 @VisibleForTesting
 internal sealed interface SettingsEditGatewayEvent : OneOffEvent {
-    object GatewayAdded : SettingsEditGatewayEvent
+    data object GatewayAdded : SettingsEditGatewayEvent
     data class CreateProfileOnNetwork(val newUrl: String, val networkName: String) : SettingsEditGatewayEvent
 }
 

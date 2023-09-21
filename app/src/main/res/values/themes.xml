@@ -1,9 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
+    <!-- TODO android:windowBackground must be removed when implement dark mode -->
     <style name="Theme.BabylonWallet" parent="Theme.Material3.DayNight.NoActionBar">
         <item name="android:statusBarColor">#00000000</item>
         <item name="android:windowLightStatusBar">true</item>
+        <item name="android:windowBackground">@color/white</item>
     </style>
 
     <style name="Theme.App.Starting" parent="Theme.SplashScreen">

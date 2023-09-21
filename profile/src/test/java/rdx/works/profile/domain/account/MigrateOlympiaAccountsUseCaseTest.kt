@@ -155,7 +155,8 @@ internal class MigrateOlympiaAccountsUseCaseTest {
                 publicKey = publicKey.toHexString(),
                 accountName = "Olympia $index",
                 derivationPath = derivationPath,
-                newBabylonAddress = "empty"
+                newBabylonAddress = "empty",
+                appearanceId = index
             )
         }
         return accounts

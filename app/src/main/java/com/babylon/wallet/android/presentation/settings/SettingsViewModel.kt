@@ -21,6 +21,8 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import rdx.works.profile.data.model.Profile
+import rdx.works.profile.data.model.apppreferences.Radix
+import rdx.works.profile.data.model.currentNetwork
 import rdx.works.profile.domain.GetProfileUseCase
 import javax.inject.Inject
 
@@ -48,7 +50,9 @@ class SettingsViewModel @Inject constructor(
             mutated.add(topIndex, LinkToConnector)
             topIndex += 1
         }
-        if (isImportFromOlympiaSettingDismissed.not() && EXPERIMENTAL_FEATURES_ENABLED && !defaultSettings.contains(ImportOlympiaWallet)) {
+
+        val isImportFeatureAvailable = EXPERIMENTAL_FEATURES_ENABLED || profile.currentNetwork.networkID == Radix.Network.mainnet.id
+        if (!isImportFromOlympiaSettingDismissed && !defaultSettings.contains(ImportOlympiaWallet) && isImportFeatureAvailable) {
             mutated.add(topIndex, ImportOlympiaWallet)
         }
         SettingsUiState(mutated.toPersistentList())

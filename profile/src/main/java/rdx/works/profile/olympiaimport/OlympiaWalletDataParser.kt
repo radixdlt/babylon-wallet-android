@@ -6,11 +6,15 @@ import com.radixdlt.ret.Address
 import com.radixdlt.ret.OlympiaNetwork
 import com.radixdlt.ret.PublicKey
 import com.radixdlt.ret.deriveOlympiaAccountAddressFromPublicKey
+import kotlinx.coroutines.flow.first
 import okio.ByteString.Companion.decodeBase64
 import rdx.works.core.compressedPublicKeyHashBytes
 import rdx.works.core.decodeHex
 import rdx.works.core.toUByteList
 import rdx.works.profile.data.model.pernetwork.DerivationPath
+import rdx.works.profile.data.model.pernetwork.nextAccountIndex
+import rdx.works.profile.derivation.model.NetworkId
+import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.gateway.GetCurrentGatewayUseCase
 import timber.log.Timber
 import javax.inject.Inject
@@ -22,14 +26,16 @@ private const val EndOfAccountName = "}"
 private const val AccountNameForbiddenCharsReplacement = "_"
 
 class OlympiaWalletDataParser @Inject constructor(
-    private val getCurrentGatewayUseCase: GetCurrentGatewayUseCase
+    private val getCurrentGatewayUseCase: GetCurrentGatewayUseCase,
+    private val getProfileUseCase: GetProfileUseCase
 ) {
 
     suspend fun parseOlympiaWalletAccountData(
         olympiaWalletDataChunks: Collection<String>,
         existingAccountHashes: Set<ByteArray> = emptySet()
     ): OlympiaWalletData? {
-        val currentNetworkId = getCurrentGatewayUseCase.invoke().network.networkId().value.toUByte()
+        val currentNetworkId = getCurrentGatewayUseCase.invoke().network.networkId()
+        val accountIndexOffset = getProfileUseCase.invoke().first().nextAccountIndex(currentNetworkId)
         val headerToPayloadList = olympiaWalletDataChunks.map { payloadChunk ->
             val headerAndPayload = payloadChunk.split(HeaderSeparator)
             val headerChunks = headerAndPayload[0].split(InnerSeparator)
@@ -39,46 +45,8 @@ class OlympiaWalletDataParser @Inject constructor(
         val header = headerToPayloadList.first().first
         return if (olympiaWalletDataChunks.size == header.payloadCount) {
             try {
-                val accountsToMigrate = fullPayload.split(OuterSeparator).map { singleAccountData ->
-                    val singleAccountDataChunks = singleAccountData.split(InnerSeparator)
-                    val type = requireNotNull(OlympiaAccountType.from(singleAccountDataChunks[0]))
-                    val publicKeyHex = requireNotNull(singleAccountDataChunks[1].decodeBase64()?.hex())
-                    val publicKey = PublicKey.Secp256k1(publicKeyHex.decodeHex().toUByteList())
-                    val publicKeyHash = publicKeyHex.compressedPublicKeyHashBytes()
-                    val index = requireNotNull(singleAccountDataChunks[2].toInt())
-                    val name = if (singleAccountDataChunks.size == 4) {
-                        singleAccountDataChunks[3]
-                            .replace(
-                                oldValue = EndOfAccountName,
-                                newValue = ""
-                            )
-                            .replace(
-                                regex = Regex("[$HeaderSeparator$InnerSeparator$OuterSeparator]"),
-                                replacement = AccountNameForbiddenCharsReplacement
-                            )
-                    } else {
-                        ""
-                    }.ifEmpty { "Unnamed Olympia account $index" }
-
-                    val olympiaAddress = deriveOlympiaAccountAddressFromPublicKey(
-                        publicKey = publicKey,
-                        olympiaNetwork = OlympiaNetwork.MAINNET
-                    )
-                    val newBabylonAddress = Address.virtualAccountAddressFromOlympiaAddress(
-                        olympiaAccountAddress = olympiaAddress,
-                        networkId = currentNetworkId
-                    ).addressString()
-
-                    OlympiaAccountDetails(
-                        index = index,
-                        type = type,
-                        address = olympiaAddress.asStr(),
-                        publicKey = publicKeyHex,
-                        accountName = name,
-                        derivationPath = DerivationPath.forLegacyOlympia(accountIndex = index),
-                        alreadyImported = existingAccountHashes.containsWithEqualityCheck(publicKeyHash),
-                        newBabylonAddress = newBabylonAddress
-                    )
+                val accountsToMigrate = fullPayload.split(OuterSeparator).mapIndexed { index, singleAccountData ->
+                    parseSingleAccount(singleAccountData, currentNetworkId, existingAccountHashes, accountIndexOffset, index)
                 }
                 return OlympiaWalletData(header.mnemonicWordCount, accountsToMigrate)
             } catch (e: Exception) {
@@ -88,6 +56,55 @@ class OlympiaWalletDataParser @Inject constructor(
         } else {
             null
         }
+    }
+
+    private fun parseSingleAccount(
+        singleAccountData: String,
+        currentNetworkId: NetworkId,
+        existingAccountHashes: Set<ByteArray>,
+        accountIndexOffset: Int,
+        index: Int
+    ): OlympiaAccountDetails {
+        val singleAccountDataChunks = singleAccountData.split(InnerSeparator)
+        val type = requireNotNull(OlympiaAccountType.from(singleAccountDataChunks[0]))
+        val publicKeyHex = requireNotNull(singleAccountDataChunks[1].decodeBase64()?.hex())
+        val publicKey = PublicKey.Secp256k1(publicKeyHex.decodeHex().toUByteList())
+        val publicKeyHash = publicKeyHex.compressedPublicKeyHashBytes()
+        val parsedIndex = requireNotNull(singleAccountDataChunks[2].toInt())
+        val name = if (singleAccountDataChunks.size == 4) {
+            singleAccountDataChunks[3]
+                .replace(
+                    oldValue = EndOfAccountName,
+                    newValue = ""
+                )
+                .replace(
+                    regex = Regex("[$HeaderSeparator$InnerSeparator$OuterSeparator]"),
+                    replacement = AccountNameForbiddenCharsReplacement
+                )
+        } else {
+            ""
+        }.ifEmpty { "Unnamed Olympia account $parsedIndex" }
+
+        val olympiaAddress = deriveOlympiaAccountAddressFromPublicKey(
+            publicKey = publicKey,
+            olympiaNetwork = OlympiaNetwork.MAINNET
+        )
+        val newBabylonAddress = Address.virtualAccountAddressFromOlympiaAddress(
+            olympiaAccountAddress = olympiaAddress,
+            networkId = currentNetworkId.value.toUByte()
+        ).addressString()
+
+        return OlympiaAccountDetails(
+            index = parsedIndex,
+            type = type,
+            address = olympiaAddress.asStr(),
+            publicKey = publicKeyHex,
+            accountName = name,
+            derivationPath = DerivationPath.forLegacyOlympia(accountIndex = parsedIndex),
+            alreadyImported = existingAccountHashes.containsWithEqualityCheck(publicKeyHash),
+            newBabylonAddress = newBabylonAddress,
+            appearanceId = accountIndexOffset + index
+        )
     }
 
     fun chunkInfo(olympiaWalletDataChunks: Collection<String>): ChunkInfo? {
@@ -138,6 +155,7 @@ data class OlympiaAccountDetails(
     val accountName: String,
     val derivationPath: DerivationPath,
     val newBabylonAddress: String,
+    val appearanceId: Int,
     val alreadyImported: Boolean = false
 )
 

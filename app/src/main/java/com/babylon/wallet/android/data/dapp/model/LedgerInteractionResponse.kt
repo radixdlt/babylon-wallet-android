@@ -2,8 +2,12 @@ package com.babylon.wallet.android.data.dapp.model
 
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel.LedgerResponse
+import kotlinx.serialization.KSerializer
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.descriptors.SerialDescriptor
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
 import rdx.works.profile.data.model.factorsources.FactorSource
 
 @Serializable
@@ -83,10 +87,23 @@ data class SignChallengeResponse(
 @Serializable
 data class Error(
     @SerialName("code")
-    val code: Int? = null,
+    @Serializable(with = LedgerErrorCodeSerializer::class)
+    val code: LedgerErrorCode? = null,
     @SerialName("message")
     val message: String
 )
+
+@Serializable
+enum class LedgerErrorCode {
+    @SerialName("0")
+    Generic,
+
+    @SerialName("1")
+    BlindSigningNotEnabledButRequired,
+
+    @SerialName("2")
+    UserRejectedSigningOfTransaction
+}
 
 fun Curve.toDomainModel(): LedgerResponse.DerivedPublicKey.Curve {
     return when (this) {
@@ -138,7 +155,11 @@ private fun SignTransactionResponse.toDomainModel() =
             success.map { it.toDomainModel() }
         )
     } else {
-        LedgerResponse.LedgerErrorResponse(interactionId, error?.code ?: 0, error?.message.orEmpty())
+        LedgerResponse.LedgerErrorResponse(
+            interactionId = interactionId,
+            code = error?.code?.ordinal ?: LedgerErrorCode.Generic.ordinal,
+            message = error?.message.orEmpty()
+        )
     }
 
 private fun SignChallengeResponse.toDomainModel() =
@@ -148,7 +169,11 @@ private fun SignChallengeResponse.toDomainModel() =
             success.map { it.toDomainModel() }
         )
     } else {
-        LedgerResponse.LedgerErrorResponse(interactionId, error?.code ?: 0, error?.message.orEmpty())
+        LedgerResponse.LedgerErrorResponse(
+            interactionId = interactionId,
+            code = error?.code?.ordinal ?: LedgerErrorCode.Generic.ordinal,
+            message = error?.message.orEmpty()
+        )
     }
 
 private fun GetDeviceInfoResponse.toDomainModel() =
@@ -159,7 +184,11 @@ private fun GetDeviceInfoResponse.toDomainModel() =
             deviceId = FactorSource.HexCoded32Bytes(success.id)
         )
     } else {
-        LedgerResponse.LedgerErrorResponse(interactionId, error?.code ?: 0, error?.message.orEmpty())
+        LedgerResponse.LedgerErrorResponse(
+            interactionId = interactionId,
+            code = error?.code?.ordinal ?: LedgerErrorCode.Generic.ordinal,
+            message = error?.message.orEmpty()
+        )
     }
 
 private fun DerivePublicKeyResponse.toDomainModel() =
@@ -169,5 +198,30 @@ private fun DerivePublicKeyResponse.toDomainModel() =
             success.toDomainModel()
         )
     } else {
-        LedgerResponse.LedgerErrorResponse(interactionId, error?.code ?: 0, error?.message.orEmpty())
+        LedgerResponse.LedgerErrorResponse(
+            interactionId = interactionId,
+            code = error?.code?.ordinal ?: LedgerErrorCode.Generic.ordinal,
+            message = error?.message.orEmpty()
+        )
     }
+
+object LedgerErrorCodeSerializer : KSerializer<LedgerErrorCode> {
+
+    private val delegate = LedgerErrorCode.serializer()
+
+    override val descriptor: SerialDescriptor
+        get() = delegate.descriptor
+
+    @Suppress("SwallowedException")
+    override fun deserialize(decoder: Decoder): LedgerErrorCode {
+        return try {
+            decoder.decodeSerializableValue(delegate)
+        } catch (e: Exception) {
+            LedgerErrorCode.Generic
+        }
+    }
+
+    override fun serialize(encoder: Encoder, value: LedgerErrorCode) {
+        encoder.encodeSerializableValue(delegate, value)
+    }
+}
