@@ -8,7 +8,7 @@ import org.junit.runners.Parameterized
 @RunWith(Parameterized::class)
 internal class ActionableAddressTypeTest(
     private val address: String,
-    private val type: ActionableAddress.Type
+    private val type: ActionableAddress.Type?
 ) {
 
     @Test
@@ -20,7 +20,7 @@ internal class ActionableAddressTypeTest(
     companion object {
         @JvmStatic
         @Parameterized.Parameters(name = "\"{0}\" => {1}")
-        fun data() : Collection<Array<Any>> {
+        fun data() : Collection<Array<Any?>> {
             return listOf(
                 arrayOf(RESOURCE_ADDRESS, ActionableAddress.Type.RESOURCE),
                 arrayOf(RESOURCE_NFT_ADDRESS, ActionableAddress.Type.RESOURCE),
@@ -28,7 +28,7 @@ internal class ActionableAddressTypeTest(
                 arrayOf(PACKAGE_ADDRESS, ActionableAddress.Type.PACKAGE),
                 arrayOf(TRANSACTION_ADDRESS, ActionableAddress.Type.TRANSACTION),
                 arrayOf(COMPONENT_ADDRESS, ActionableAddress.Type.COMPONENT),
-                arrayOf(UNKNOWN_ADDRESS, ActionableAddress.Type.TRANSACTION)
+                arrayOf(UNKNOWN_ADDRESS, null)
             )
         }
 

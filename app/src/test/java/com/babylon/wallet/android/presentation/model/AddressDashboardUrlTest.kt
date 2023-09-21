@@ -28,12 +28,11 @@ internal class AddressDashboardUrlTest(
                 arrayOf(PACKAGE_ADDRESS, "$BASE_NETWORK_URL/package/$PACKAGE_ADDRESS"),
                 arrayOf(
                     "txid_tdx_e_106vpmdem94zr2x4yt2rf4l935d26pzrnlmz6wzwrwgz8s6jpyhmsa5ze2x",
-                    "$BASE_NETWORK_URL/transaction/txid_tdx_e_106vpmdem94zr2x4yt2rf4l935d26pzrnlmz6wzwrwgz8s6jpyhmsa5ze2x"
+                    "$BASE_MAIN_URL/transaction/txid_tdx_e_106vpmdem94zr2x4yt2rf4l935d26pzrnlmz6wzwrwgz8s6jpyhmsa5ze2x"
                 ),
                 arrayOf(
                     "txid_tdx_22_1t0sdhcc6usx8sun36cd95jn6xlwzt4mw3gctz5r5yp94fjss9u3syuqcxg",
-                    "https://dashboard.radixdlt.com/" +
-                            "transaction/txid_tdx_22_1t0sdhcc6usx8sun36cd95jn6xlwzt4mw3gctz5r5yp94fjss9u3syuqcxg"
+                    "$BASE_MAIN_URL/transaction/txid_tdx_22_1t0sdhcc6usx8sun36cd95jn6xlwzt4mw3gctz5r5yp94fjss9u3syuqcxg"
                 ),
                 arrayOf(COMPONENT_ADDRESS, "$BASE_NETWORK_URL/component/$COMPONENT_ADDRESS"),
                 arrayOf(UNKNOWN_ADDRESS, "$BASE_MAIN_URL/$UNKNOWN_ADDRESS")
