@@ -33,6 +33,7 @@ import rdx.works.profile.data.repository.DeviceInfoRepository
 import rdx.works.profile.data.repository.ProfileRepository
 import rdx.works.profile.derivation.model.KeyType
 import rdx.works.profile.domain.GenerateProfileUseCase
+import rdx.works.profile.domain.TestData
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class GenerateProfileUseCaseTest {
@@ -53,7 +54,7 @@ class GenerateProfileUseCaseTest {
             val profile = Profile(
                 header = Header.init(
                     id = "9958f568-8c9b-476a-beeb-017d1f843266",
-                    deviceName = "Galaxy A53 5G (Samsung SM-A536B)",
+                    deviceInfo = TestData.deviceInfo,
                     creationDate = InstantGenerator(),
                     numberOfNetworks = 1,
                     numberOfAccounts = 1
@@ -182,11 +183,7 @@ class GenerateProfileUseCaseTest {
     }
 
     private class FakeDeviceInfoRepository: DeviceInfoRepository {
-        override fun getDeviceInfo(): DeviceInfo = DeviceInfo(
-            name = "Galaxy A53 5G",
-            manufacturer = "samsung",
-            model = "SM-A536B"
-        )
+        override fun getDeviceInfo(): DeviceInfo = TestData.deviceInfo
 
     }
 }

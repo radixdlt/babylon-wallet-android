@@ -75,7 +75,7 @@ data class Profile(
     companion object {
         fun init(
             id: String,
-            deviceName: String,
+            deviceInfo: DeviceInfo,
             creationDate: Instant,
             gateway: Radix.Gateway = Radix.Gateway.default
         ): Profile {
@@ -99,7 +99,7 @@ data class Profile(
             return Profile(
                 header = Header.init(
                     id = id,
-                    deviceName = deviceName,
+                    deviceInfo = deviceInfo,
                     creationDate = creationDate,
                     numberOfNetworks = networks.size
                 ),

@@ -3,6 +3,7 @@ package rdx.works.profile
 import kotlinx.serialization.encodeToString
 import org.junit.Assert.assertEquals
 import org.junit.Test
+import rdx.works.profile.data.model.DeviceInfo
 import rdx.works.profile.data.model.EncryptedProfileSnapshot
 import rdx.works.profile.data.model.Profile
 import rdx.works.profile.di.SerializerModule
@@ -41,7 +42,11 @@ class EncryptedProfileTest {
         val serializer = SerializerModule.provideProfileSerializer()
         val profile = Profile.init(
             id = "BABE1442-3C98-41FF-AFB0-D0F5829B020D",
-            deviceName = "unit test",
+            deviceInfo = DeviceInfo(
+                name = "unit",
+                manufacturer = "",
+                model = "test"
+            ),
             creationDate = Instant.ofEpochSecond(0L)
         )
 

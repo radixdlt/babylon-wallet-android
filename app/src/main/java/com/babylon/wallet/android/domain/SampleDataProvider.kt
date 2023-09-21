@@ -42,6 +42,7 @@ import rdx.works.profile.data.model.pernetwork.PersonaData
 import rdx.works.profile.data.model.pernetwork.SecurityState
 import rdx.works.profile.derivation.model.KeyType
 import rdx.works.profile.derivation.model.NetworkId
+import rdx.works.profile.domain.TestData
 import java.math.BigDecimal
 
 class SampleDataProvider {
@@ -280,7 +281,7 @@ class SampleDataProvider {
         val profile = Profile(
             header = Header.init(
                 id = "9958f568-8c9b-476a-beeb-017d1f843266",
-                deviceName = "Galaxy A53 5G (Samsung SM-A536B)",
+                deviceInfo = TestData.deviceInfo,
                 creationDate = InstantGenerator(),
                 numberOfNetworks = 0
             ),

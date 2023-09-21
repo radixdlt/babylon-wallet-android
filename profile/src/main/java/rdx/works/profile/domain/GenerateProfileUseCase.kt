@@ -24,7 +24,7 @@ class GenerateProfileUseCase @Inject constructor(
             else -> withContext(defaultDispatcher) {
                 val profile = Profile.init(
                     id = UUIDGenerator.uuid().toString(),
-                    deviceName = deviceInfoRepository.getDeviceInfo().displayName,
+                    deviceInfo = deviceInfoRepository.getDeviceInfo(),
                     creationDate = InstantGenerator()
                 )
 

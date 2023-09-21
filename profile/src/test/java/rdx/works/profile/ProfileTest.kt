@@ -35,9 +35,11 @@ import rdx.works.profile.data.model.pernetwork.addPersona
 import rdx.works.profile.data.model.pernetwork.nextAccountIndex
 import rdx.works.profile.data.model.pernetwork.nextPersonaIndex
 import rdx.works.core.serializers.InstantSerializer
+import rdx.works.profile.data.model.DeviceInfo
 import rdx.works.profile.data.model.pernetwork.PersonaData.*
 import rdx.works.profile.data.repository.MnemonicRepository
 import rdx.works.profile.data.repository.createOrUpdateAuthorizedDapp
+import rdx.works.profile.domain.TestData
 import java.io.File
 import java.time.Instant
 
@@ -57,7 +59,7 @@ class ProfileTest {
             bip39Passphrase = ""
         )
         val babylonFactorSource = DeviceFactorSource.babylon(
-            mnemonicWithPassphrase, model = "Galaxy A53 5G (Samsung SM-A536B)",
+            mnemonicWithPassphrase, model = TestData.deviceInfo.displayName,
             name = "Samsung"
         )
         val mnemonicRepository = mockk<MnemonicRepository>()
@@ -65,7 +67,7 @@ class ProfileTest {
 
         val profile = Profile.init(
             id = "BABE1442-3C98-41FF-AFB0-D0F5829B020D",
-            deviceName = "Galaxy A53 5G (Samsung SM-A536B)",
+            deviceInfo = TestData.deviceInfo,
             creationDate = InstantGenerator()
         ).copy(factorSources = listOf(babylonFactorSource))
 
@@ -158,7 +160,11 @@ class ProfileTest {
         )
         var expected = Profile.init(
             id = "BABE1442-3C98-41FF-AFB0-D0F5829B020D",
-            deviceName = "computer unit test",
+            deviceInfo = DeviceInfo(
+                name = "computer",
+                manufacturer = "",
+                model = "unit test"
+            ),
             creationDate = Instant.EPOCH,
             gateway = gateway
         ).copy(factorSources = listOf(babylonFactorSource))

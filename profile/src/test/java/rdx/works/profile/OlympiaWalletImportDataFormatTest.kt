@@ -12,6 +12,7 @@ import okio.ByteString.Companion.decodeBase64
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
+import rdx.works.profile.data.model.DeviceInfo
 import rdx.works.profile.data.model.MnemonicWithPassphrase
 import rdx.works.profile.data.model.Profile
 import rdx.works.profile.data.model.apppreferences.Radix
@@ -35,7 +36,9 @@ internal class OlympiaWalletExportFormatTest {
     @Before
     fun setUp() {
         coEvery { getCurrentGatewayUseCase() } returns Radix.Gateway("", Radix.Gateway.default.network)
-        coEvery { getProfileUseCase() } returns flowOf(Profile.init("", "", Instant.now()))
+        coEvery { getProfileUseCase() } returns flowOf(
+            Profile.init("", DeviceInfo(name = "", manufacturer = "", model = ""), Instant.now())
+        )
         val testVectorsContent = File("src/test/resources/raw/import_olympia_wallet_parse_test.json").readText()
         testVectors = json.decodeFromString(testVectorsContent)
     }

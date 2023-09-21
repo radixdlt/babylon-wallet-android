@@ -1,6 +1,7 @@
 package rdx.works.profile.domain
 
 import rdx.works.core.InstantGenerator
+import rdx.works.profile.data.model.DeviceInfo
 import rdx.works.profile.data.model.Header
 import rdx.works.profile.data.model.MnemonicWithPassphrase
 import rdx.works.profile.data.model.Profile
@@ -30,6 +31,12 @@ object TestData {
         name = "Ledger1"
     )
 
+    val deviceInfo = DeviceInfo(
+        name = "Galaxy A53 5G",
+        manufacturer = "Samsung",
+        model = "SM-A536B"
+    )
+
     @Suppress("LongMethod")
     fun testProfile2Networks2AccountsEach(mnemonicWithPassphrase: MnemonicWithPassphrase): Profile {
         val network1 = Radix.Gateway.hammunet
@@ -37,7 +44,7 @@ object TestData {
         return Profile(
             header = Header.init(
                 id = "9958f568-8c9b-476a-beeb-017d1f843266",
-                deviceName = "Galaxy A53 5G (Samsung SM-A536B)",
+                deviceInfo = deviceInfo,
                 creationDate = InstantGenerator(),
                 numberOfNetworks = 2,
                 numberOfAccounts = 4
