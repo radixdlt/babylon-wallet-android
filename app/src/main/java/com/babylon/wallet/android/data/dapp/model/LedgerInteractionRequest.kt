@@ -6,7 +6,9 @@ import rdx.works.profile.data.model.factorsources.LedgerHardwareWalletFactorSour
 import rdx.works.profile.data.model.factorsources.Slip10Curve
 
 @Serializable
-sealed interface LedgerInteractionRequest
+sealed interface LedgerInteractionRequest {
+    val interactionId: String
+}
 
 @Serializable
 enum class Curve {
@@ -30,14 +32,14 @@ enum class Curve {
 @SerialName("getDeviceInfo")
 data class GetDeviceInfoRequest(
     @SerialName("interactionId")
-    val interactionId: String,
+    override val interactionId: String,
 ) : LedgerInteractionRequest
 
 @Serializable
 @SerialName("derivePublicKeys")
 data class DerivePublicKeyRequest(
     @SerialName("interactionId")
-    val interactionId: String,
+    override val interactionId: String,
     @SerialName("keysParameters")
     val keysParameters: List<KeyParameters>,
     @SerialName("ledgerDevice")
@@ -67,7 +69,7 @@ data class DerivePublicKeyRequest(
 @SerialName("signTransaction")
 data class SignTransactionRequest(
     @SerialName("interactionId")
-    val interactionId: String,
+    override val interactionId: String,
     @SerialName("signers")
     val signers: List<DerivePublicKeyRequest.KeyParameters>,
     @SerialName("ledgerDevice")
@@ -91,7 +93,7 @@ data class SignTransactionRequest(
 @SerialName("signChallenge")
 data class SignChallengeRequest(
     @SerialName("interactionId")
-    val interactionId: String,
+    override val interactionId: String,
     @SerialName("signers")
     val signers: List<DerivePublicKeyRequest.KeyParameters>,
     @SerialName("ledgerDevice")

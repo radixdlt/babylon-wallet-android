@@ -172,6 +172,10 @@ class TransactionReviewViewModel @Inject constructor(
         }
     }
 
+    fun onCancelSigningClick() {
+        transactionClient.cancelSigning()
+    }
+
     fun onChangeFeePayerClick() = fees.onChangeFeePayerClick()
 
     fun onSelectFeePayerClick() = fees.onSelectFeePayerClick()

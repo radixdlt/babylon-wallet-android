@@ -56,32 +56,9 @@ class LedgerMessengerImpl @Inject constructor(
 
     override suspend fun sendDeviceInfoRequest(interactionId: String): Result<MessageFromDataChannel.LedgerResponse.GetDeviceInfoResponse> {
         val ledgerRequest: LedgerInteractionRequest = GetDeviceInfoRequest(interactionId)
-        return flow<Result<MessageFromDataChannel.LedgerResponse.GetDeviceInfoResponse>> {
-            when (peerdroidClient.sendMessage(peerdroidRequestJson.encodeToString(ledgerRequest))) {
-                is Success -> {
-                    peerdroidClient.listenForLedgerResponses().filter {
-                        it.id == interactionId
-                    }.catch {
-                        emit(Result.failure(it))
-                    }.collect { response ->
-                        when (response) {
-                            is MessageFromDataChannel.LedgerResponse.GetDeviceInfoResponse -> {
-                                emit(Result.success(response))
-                            }
-                            is MessageFromDataChannel.LedgerResponse.LedgerErrorResponse -> {
-                                emit(
-                                    Result.failure(DappRequestException(DappRequestFailure.LedgerCommunicationFailure.FailedToGetDeviceId))
-                                )
-                            }
-                            else -> {}
-                        }
-                    }
-                }
-                is Error -> {
-                    emit(Result.failure(Exception("Failed to get ledger device info")))
-                }
-            }
-        }.first()
+        return makeLedgerRequest(request = ledgerRequest, onError = {
+            DappRequestException(DappRequestFailure.LedgerCommunicationFailure.FailedToGetDeviceId)
+        })
     }
 
     override suspend fun sendDerivePublicKeyRequest(
@@ -94,34 +71,9 @@ class LedgerMessengerImpl @Inject constructor(
             keysParameters = keyParameters,
             ledgerDevice = ledgerDevice
         )
-        return flow<Result<MessageFromDataChannel.LedgerResponse.DerivePublicKeyResponse>> {
-            when (peerdroidClient.sendMessage(peerdroidRequestJson.encodeToString(ledgerRequest))) {
-                is Success -> {
-                    peerdroidClient.listenForLedgerResponses().filter {
-                        it.id == interactionId
-                    }.catch {
-                        emit(Result.failure(it))
-                    }.collect { response ->
-                        when (response) {
-                            is MessageFromDataChannel.LedgerResponse.DerivePublicKeyResponse -> {
-                                emit(Result.success(response))
-                            }
-                            is MessageFromDataChannel.LedgerResponse.LedgerErrorResponse -> {
-                                emit(
-                                    Result.failure(
-                                        DappRequestException(DappRequestFailure.LedgerCommunicationFailure.FailedToDerivePublicKeys)
-                                    )
-                                )
-                            }
-                            else -> {}
-                        }
-                    }
-                }
-                is Error -> {
-                    emit(Result.failure(Exception("Failed to derive public key with Ledger")))
-                }
-            }
-        }.first()
+        return makeLedgerRequest(request = ledgerRequest, onError = {
+            DappRequestException(DappRequestFailure.LedgerCommunicationFailure.FailedToDerivePublicKeys)
+        })
     }
 
     override suspend fun signTransactionRequest(
@@ -144,34 +96,9 @@ class LedgerMessengerImpl @Inject constructor(
             compiledTransactionIntent = compiledTransactionIntent,
             mode = SignTransactionRequest.Mode.Summary
         )
-        return flow<Result<MessageFromDataChannel.LedgerResponse.SignTransactionResponse>> {
-            when (peerdroidClient.sendMessage(peerdroidRequestJson.encodeToString(ledgerRequest))) {
-                is Success -> {
-                    peerdroidClient.listenForLedgerResponses().filter {
-                        it.id == interactionId
-                    }.catch { e ->
-                        emit(Result.failure(e))
-                    }.collect { response ->
-                        when (response) {
-                            is MessageFromDataChannel.LedgerResponse.SignTransactionResponse -> {
-                                emit(Result.success(response))
-                            }
-                            is MessageFromDataChannel.LedgerResponse.LedgerErrorResponse -> {
-                                emit(
-                                    Result.failure(
-                                        DappRequestException(DappRequestFailure.LedgerCommunicationFailure.FailedToSignTransaction)
-                                    )
-                                )
-                            }
-                            else -> {}
-                        }
-                    }
-                }
-                is Error -> {
-                    emit(Result.failure(Exception("Failed to sign transaction with Ledger")))
-                }
-            }
-        }.first()
+        return makeLedgerRequest(request = ledgerRequest, onError = {
+            DappRequestException(DappRequestFailure.LedgerCommunicationFailure.FailedToSignTransaction(it.code))
+        })
     }
 
     override suspend fun signChallengeRequest(
@@ -195,33 +122,34 @@ class LedgerMessengerImpl @Inject constructor(
             origin = origin,
             dAppDefinitionAddress = dAppDefinitionAddress
         )
-        return flow<Result<MessageFromDataChannel.LedgerResponse.SignChallengeResponse>> {
-            when (peerdroidClient.sendMessage(peerdroidRequestJson.encodeToString(ledgerRequest))) {
-                is Success -> {
-                    peerdroidClient.listenForLedgerResponses().filter {
-                        it.id == interactionId
-                    }.catch { e ->
-                        emit(Result.failure(e))
-                    }.collect { response ->
-                        when (response) {
-                            is MessageFromDataChannel.LedgerResponse.SignChallengeResponse -> {
-                                emit(Result.success(response))
-                            }
-                            is MessageFromDataChannel.LedgerResponse.LedgerErrorResponse -> {
-                                emit(
-                                    Result.failure(
-                                        DappRequestException(DappRequestFailure.LedgerCommunicationFailure.FailedToDerivePublicKeys)
-                                    )
-                                )
-                            }
-                            else -> {}
+        return makeLedgerRequest(request = ledgerRequest, onError = {
+            DappRequestException(DappRequestFailure.LedgerCommunicationFailure.FailedToDerivePublicKeys)
+        })
+    }
+
+    private suspend inline fun <reified R: MessageFromDataChannel.LedgerResponse> makeLedgerRequest(
+        request: LedgerInteractionRequest,
+        crossinline onError: (MessageFromDataChannel.LedgerResponse.LedgerErrorResponse) -> DappRequestException
+    ): Result<R> = flow<Result<R>> {
+        when (peerdroidClient.sendMessage(peerdroidRequestJson.encodeToString(request))) {
+            is Success -> {
+                peerdroidClient.listenForLedgerResponses().filter {
+                    it.id == request.interactionId
+                }.catch { e ->
+                    emit(Result.failure(e))
+                }.collect { response ->
+                    when (response) {
+                        is R -> emit(Result.success(response))
+                        is MessageFromDataChannel.LedgerResponse.LedgerErrorResponse -> {
+                            emit(Result.failure(onError(response)))
                         }
+                        else -> {}
                     }
                 }
-                is Error -> {
-                    emit(Result.failure(Exception("Failed to sign transaction with Ledger")))
-                }
             }
-        }.first()
-    }
+            is Error -> {
+                emit(Result.failure(Exception("Failed to sign transaction with Ledger")))
+            }
+        }
+    }.first()
 }

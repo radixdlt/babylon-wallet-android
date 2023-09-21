@@ -139,9 +139,8 @@ class SignWithLedgerFactorSourceUseCase @Inject constructor(
             }
         }
         val deviceModel = requireNotNull(ledgerFactorSource.getLedgerDeviceModel())
-        val signaturesResult = signaturesProvider(derivationPathToCurve, deviceModel)
-        return if (signaturesResult.isSuccess) {
-            val ledgerSignatures = signaturesResult.getOrThrow().map { signatureOfSigner ->
+        return signaturesProvider(derivationPathToCurve, deviceModel).map { signatures ->
+            signatures.map { signatureOfSigner ->
                 when (signatureOfSigner.derivedPublicKey.curve) {
                     MessageFromDataChannel.LedgerResponse.DerivedPublicKey.Curve.Curve25519 -> {
                         SignatureWithPublicKey.Ed25519(
@@ -149,6 +148,7 @@ class SignWithLedgerFactorSourceUseCase @Inject constructor(
                             publicKey = signatureOfSigner.derivedPublicKey.publicKeyHex.decodeHex().toUByteList()
                         )
                     }
+
                     MessageFromDataChannel.LedgerResponse.DerivedPublicKey.Curve.Secp256k1 -> {
                         SignatureWithPublicKey.Secp256k1(
                             signature = signatureOfSigner.signature.decodeHex().toUByteList()
@@ -156,11 +156,9 @@ class SignWithLedgerFactorSourceUseCase @Inject constructor(
                     }
                 }
             }
+        }.onSuccess {
             val profile = profileRepository.profile.first()
             profileRepository.saveProfile(profile.updateLastUsed(ledgerFactorSource.id))
-            Result.success(ledgerSignatures)
-        } else {
-            Result.failure(RadixWalletException.FailedToCollectLedgerSignature)
         }
     }
 }

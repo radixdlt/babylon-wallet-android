@@ -157,7 +157,7 @@ private fun SignTransactionResponse.toDomainModel() =
     } else {
         LedgerResponse.LedgerErrorResponse(
             interactionId = interactionId,
-            code = error?.code?.ordinal ?: LedgerErrorCode.Generic.ordinal,
+            code = error?.code ?: LedgerErrorCode.Generic,
             message = error?.message.orEmpty()
         )
     }
@@ -171,7 +171,7 @@ private fun SignChallengeResponse.toDomainModel() =
     } else {
         LedgerResponse.LedgerErrorResponse(
             interactionId = interactionId,
-            code = error?.code?.ordinal ?: LedgerErrorCode.Generic.ordinal,
+            code = error?.code ?: LedgerErrorCode.Generic,
             message = error?.message.orEmpty()
         )
     }
@@ -186,7 +186,7 @@ private fun GetDeviceInfoResponse.toDomainModel() =
     } else {
         LedgerResponse.LedgerErrorResponse(
             interactionId = interactionId,
-            code = error?.code?.ordinal ?: LedgerErrorCode.Generic.ordinal,
+            code = error?.code ?: LedgerErrorCode.Generic,
             message = error?.message.orEmpty()
         )
     }
@@ -200,7 +200,7 @@ private fun DerivePublicKeyResponse.toDomainModel() =
     } else {
         LedgerResponse.LedgerErrorResponse(
             interactionId = interactionId,
-            code = error?.code?.ordinal ?: LedgerErrorCode.Generic.ordinal,
+            code = error?.code ?: LedgerErrorCode.Generic,
             message = error?.message.orEmpty()
         )
     }

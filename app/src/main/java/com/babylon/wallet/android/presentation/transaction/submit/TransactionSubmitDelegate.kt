@@ -166,7 +166,7 @@ class TransactionSubmitDelegate(
         }.onFailure { error ->
             val exception = error as? DappRequestException
             val cancelled = exception?.e is SignatureCancelledException
-            val failedToCollectLedgerSignature = exception?.e is RadixWalletException.FailedToCollectLedgerSignature
+            val failedToCollectLedgerSignature = (exception?.e as? DappRequestException)?.failure is DappRequestFailure.LedgerCommunicationFailure
             if (cancelled || failedToCollectLedgerSignature) {
                 state.update { it.copy(isSubmitting = false) }
                 approvalJob = null

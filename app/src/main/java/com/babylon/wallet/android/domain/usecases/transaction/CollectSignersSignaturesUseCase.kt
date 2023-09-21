@@ -1,5 +1,6 @@
 package com.babylon.wallet.android.domain.usecases.transaction
 
+import com.babylon.wallet.android.data.transaction.DappRequestException
 import com.babylon.wallet.android.data.transaction.InteractionState
 import com.radixdlt.hex.extensions.toHexString
 import com.radixdlt.ret.SignatureWithPublicKey
@@ -81,9 +82,15 @@ class CollectSignersSignaturesUseCase @Inject constructor(
                     ).onSuccess { signatures ->
                         _interactionState.update { null }
                         signaturesWithPublicKeys.addAll(signatures)
-                    }.onFailure {
-                        _interactionState.update { null }
-                        return Result.failure(it)
+                    }.onFailure { error ->
+                        _interactionState.update {
+                            if (error is DappRequestException) {
+                                InteractionState.Ledger.Error(factorSource, signingPurpose, error.failure)
+                            } else {
+                                null
+                            }
+                        }
+                        return Result.failure(error)
                     }
                 }
 

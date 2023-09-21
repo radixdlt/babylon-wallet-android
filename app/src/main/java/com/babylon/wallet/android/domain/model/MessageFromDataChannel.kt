@@ -1,6 +1,7 @@
 package com.babylon.wallet.android.domain.model
 
 import android.os.Parcelable
+import com.babylon.wallet.android.data.dapp.model.LedgerErrorCode
 import com.babylon.wallet.android.data.dapp.model.TransactionType
 import kotlinx.parcelize.Parcelize
 import kotlinx.serialization.Serializable
@@ -219,7 +220,7 @@ sealed interface MessageFromDataChannel {
 
         data class LedgerErrorResponse(
             val interactionId: String,
-            val code: Int,
+            val code: LedgerErrorCode,
             val message: String
         ) : LedgerResponse(interactionId)
     }
