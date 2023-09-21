@@ -63,7 +63,6 @@ class CollectSignersSignaturesUseCase @Inject constructor(
                     signaturesWithPublicKeys.addAll(signatures)
                     // _signingState.update { SigningState.Device.Success(factorSource) }
                 }
-
                 FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET -> {
                     if (!deviceAuthenticated) {
                         deviceAuthenticated = deviceBiometricAuthenticationProvider()
@@ -93,14 +92,8 @@ class CollectSignersSignaturesUseCase @Inject constructor(
                         return Result.failure(error)
                     }
                 }
-
-                FactorSourceKind.OFF_DEVICE_MNEMONIC -> {
-                    // TODO when we have off device mnemonic
-                }
-
-                FactorSourceKind.TRUSTED_CONTACT -> {
-                    error("trusted contact cannot sign")
-                }
+                FactorSourceKind.OFF_DEVICE_MNEMONIC -> { /*TODO when we have off device mnemonic*/ }
+                FactorSourceKind.TRUSTED_CONTACT -> error("trusted contact cannot sign")
             }
         }
         return Result.success(signaturesWithPublicKeys)

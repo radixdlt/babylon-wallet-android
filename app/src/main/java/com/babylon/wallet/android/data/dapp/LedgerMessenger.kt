@@ -127,7 +127,7 @@ class LedgerMessengerImpl @Inject constructor(
         })
     }
 
-    private suspend inline fun <reified R: MessageFromDataChannel.LedgerResponse> makeLedgerRequest(
+    private suspend inline fun <reified R : MessageFromDataChannel.LedgerResponse> makeLedgerRequest(
         request: LedgerInteractionRequest,
         crossinline onError: (MessageFromDataChannel.LedgerResponse.LedgerErrorResponse) -> DappRequestException
     ): Result<R> = flow<Result<R>> {
