@@ -27,6 +27,7 @@ import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Test
+import rdx.works.profile.data.model.currentNetwork
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.account.AddAuthSigningFactorInstanceUseCase
 
@@ -42,7 +43,8 @@ internal class AccountSettingsViewModelTest : StateViewModelTest<AccountSettings
     private val rolaClient = mockk<ROLAClient>()
     private val eventBus = mockk<AppEventBus>()
     private val sampleTxId = "txId1"
-    private val sampleAddress = sampleDataProvider.randomAddress()
+    private val sampleProfile = sampleDataProvider.sampleProfile()
+    private val sampleAddress = sampleProfile.currentNetwork.accounts.first().address
 
     override fun initVM(): AccountSettingsViewModel {
         return AccountSettingsViewModel(

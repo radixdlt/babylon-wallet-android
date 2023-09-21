@@ -119,6 +119,6 @@ val Profile.currentNetwork: Network
         val currentGateway = currentGateway
 
         return networks.find { it.networkID == currentGateway.network.id } ?: error(
-            "No per-network found for gateway: $currentGateway. This should not happen"
+            "No per-network found for gateway: $currentGateway. This should not happen $networks"
         )
     }
