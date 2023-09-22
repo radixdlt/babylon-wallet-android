@@ -34,9 +34,7 @@ class AddLedgerDeviceViewModel @Inject constructor(
             _state.update {
                 it.copy(isLoading = true)
             }
-            val result = ledgerMessenger.sendDeviceInfoRequest(interactionId = UUIDGenerator.uuid().toString())
-
-            result.onSuccess { deviceInfoResponse ->
+            ledgerMessenger.sendDeviceInfoRequest(interactionId = UUIDGenerator.uuid().toString()).onSuccess { deviceInfoResponse ->
                 val existingLedgerFactorSource = getProfileUseCase.factorSourceById(
                     FactorSource.FactorSourceID.FromHash(
                         kind = FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET,
@@ -71,8 +69,7 @@ class AddLedgerDeviceViewModel @Inject constructor(
                         )
                     }
                 }
-            }
-            result.onFailure { error ->
+            }.onFailure { error ->
                 _state.update { state ->
                     state.copy(
                         uiMessage = UiMessage.ErrorMessage.from(error),

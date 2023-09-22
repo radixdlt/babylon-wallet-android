@@ -150,8 +150,8 @@ data class CreateAccountWithLedgerUiState(
 ) : UiState {
 
     sealed interface ShowContent {
-        object ChooseLedger : ShowContent
-        object AddLedger : ShowContent
+        data object ChooseLedger : ShowContent
+        data object AddLedger : ShowContent
         data class LinkNewConnector(val addDeviceAfterLinking: Boolean = true) : ShowContent
         data class AddLinkConnector(val addDeviceAfterLinking: Boolean = true) : ShowContent
     }
