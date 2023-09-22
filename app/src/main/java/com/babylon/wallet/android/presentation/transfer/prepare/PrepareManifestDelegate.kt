@@ -132,7 +132,7 @@ class PrepareManifestDelegate(
 
     private suspend fun BabylonManifestBuilder.deposit(targetAccount: TargetAccount, bucket: ManifestBuilderBucket) = apply {
         val isUserAccount = targetAccount.isUserAccount
-        val isSoftwareAccount = targetAccount.isSoftwareAccount
+        val isSoftwareAccount = !targetAccount.isLedgerAccount
         val mnemonicHasBeenImported = targetAccount.factorSourceId?.let {
             mnemonicRepository.mnemonicExist(it)
         } ?: false

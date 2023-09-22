@@ -406,8 +406,8 @@ sealed class TargetAccount {
     val isUserAccount: Boolean
         get() = this is Owned
 
-    val isSoftwareAccount: Boolean
-        get() = (this as? Owned)?.account?.isSoftwareAccount == true
+    val isLedgerAccount: Boolean
+        get() = (this as? Owned)?.account?.isLedgerAccount == true
 
     val factorSourceId: FactorSource.FactorSourceID.FromHash?
         get() = (this as? Owned)?.account?.factorSourceId() as? FactorSource.FactorSourceID.FromHash

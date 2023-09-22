@@ -177,11 +177,11 @@ data class Network(
             }
         }
 
-        val isSoftwareAccount: Boolean
+        val isLedgerAccount: Boolean
             get() = when (securityState) {
                 is SecurityState.Unsecured -> {
                     securityState.unsecuredEntityControl
-                        .transactionSigning.factorSourceId.kind != FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET
+                        .transactionSigning.factorSourceId.kind == FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET
                 }
             }
 
