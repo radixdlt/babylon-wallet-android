@@ -53,6 +53,7 @@ import com.babylon.wallet.android.domain.model.Badge
 import com.babylon.wallet.android.domain.model.DAppWithMetadata
 import com.babylon.wallet.android.domain.model.Resource
 import com.babylon.wallet.android.domain.model.ValidatorDetail
+import com.babylon.wallet.android.domain.model.isXrd
 import com.babylon.wallet.android.domain.model.metadata.IconUrlMetadataItem
 import com.babylon.wallet.android.presentation.ui.modifier.applyIf
 import rdx.works.core.toEncodedString

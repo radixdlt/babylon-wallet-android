@@ -41,6 +41,7 @@ import com.babylon.wallet.android.presentation.transaction.AccountWithTransferab
 import com.babylon.wallet.android.presentation.ui.composables.ActionableAddressView
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
 import rdx.works.core.displayableQuantity
+import rdx.works.profile.data.model.pernetwork.Network
 
 @Composable
 fun TransactionAccountCard(
@@ -104,8 +105,11 @@ fun TransactionAccountCardHeader(
     account: AccountWithTransferableResources,
     shape: Shape = RadixTheme.shapes.roundedRectTopMedium
 ) {
-    Row(
-        horizontalArrangement = Arrangement.SpaceBetween,
+    AccountCardHeader(
+        displayName = when (account) {
+            is Other -> stringResource(id = R.string.transactionReview_externalAccountName)
+            is Owned -> account.account.displayName
+        },
         modifier = modifier
             .fillMaxWidth()
             .background(
@@ -116,13 +120,34 @@ fun TransactionAccountCardHeader(
                 shape = shape
             )
             .padding(RadixTheme.dimensions.paddingMedium),
+        address = account.address
+    )
+}
+
+@Composable
+fun AccountDepositAccountCardHeader(account: Network.Account, modifier: Modifier = Modifier) {
+    AccountCardHeader(
+        displayName = account.displayName,
+        modifier = modifier
+            .fillMaxWidth()
+            .background(
+                brush = Brush.linearGradient(getAccountGradientColorsFor(account.appearanceID)),
+                shape = RadixTheme.shapes.roundedRectTopMedium
+            )
+            .padding(RadixTheme.dimensions.paddingMedium),
+        address = account.address
+    )
+}
+
+@Composable
+private fun AccountCardHeader(modifier: Modifier = Modifier, displayName: String, address: String) {
+    Row(
+        horizontalArrangement = Arrangement.SpaceBetween,
+        modifier = modifier,
         verticalAlignment = CenterVertically
     ) {
         Text(
-            text = when (account) {
-                is Other -> stringResource(id = com.babylon.wallet.android.R.string.transactionReview_externalAccountName)
-                is Owned -> account.account.displayName
-            },
+            text = displayName,
             style = RadixTheme.typography.body1Header,
             maxLines = 1,
             modifier = Modifier.weight(1f, false),
@@ -130,7 +155,7 @@ fun TransactionAccountCardHeader(
         )
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSmall))
         ActionableAddressView(
-            address = account.address,
+            address = address,
             textStyle = RadixTheme.typography.body2Regular,
             textColor = RadixTheme.colors.white,
             iconColor = RadixTheme.colors.white

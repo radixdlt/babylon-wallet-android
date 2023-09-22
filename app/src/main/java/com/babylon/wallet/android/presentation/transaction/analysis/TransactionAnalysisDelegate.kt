@@ -6,6 +6,7 @@ import com.babylon.wallet.android.data.transaction.NotaryAndSigners
 import com.babylon.wallet.android.data.transaction.TransactionClient
 import com.babylon.wallet.android.domain.usecases.GetAccountsWithResourcesUseCase
 import com.babylon.wallet.android.domain.usecases.GetResourcesMetadataUseCase
+import com.babylon.wallet.android.domain.usecases.GetResourcesUseCase
 import com.babylon.wallet.android.domain.usecases.ResolveDAppsUseCase
 import com.babylon.wallet.android.domain.usecases.transaction.GetTransactionBadgesUseCase
 import com.babylon.wallet.android.presentation.common.UiMessage
@@ -29,6 +30,7 @@ class TransactionAnalysisDelegate(
     private val getProfileUseCase: GetProfileUseCase,
     private val getAccountsWithResourcesUseCase: GetAccountsWithResourcesUseCase,
     private val getResourcesMetadataUseCase: GetResourcesMetadataUseCase,
+    private val getResourcesUseCase: GetResourcesUseCase,
     private val getTransactionBadgesUseCase: GetTransactionBadgesUseCase,
     private val resolveDAppsUseCase: ResolveDAppsUseCase,
     private val transactionClient: TransactionClient,
@@ -115,6 +117,7 @@ class TransactionAnalysisDelegate(
 
     private suspend fun processConformingManifest(transactionType: TransactionType): PreviewType {
         return when (transactionType) {
+
             is TransactionType.GeneralTransaction -> transactionType.resolve(
                 getTransactionBadgesUseCase = getTransactionBadgesUseCase,
                 getProfileUseCase = getProfileUseCase,
@@ -132,6 +135,8 @@ class TransactionAnalysisDelegate(
                 getProfileUseCase = getProfileUseCase,
                 getAccountsWithResourcesUseCase = getAccountsWithResourcesUseCase
             )
+
+            is TransactionType.AccountDepositSettings -> transactionType.resolve(getProfileUseCase, getResourcesUseCase)
 
             else -> {
                 PreviewType.NonConforming

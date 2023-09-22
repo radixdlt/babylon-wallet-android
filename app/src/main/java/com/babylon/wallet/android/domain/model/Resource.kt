@@ -1,6 +1,7 @@
 package com.babylon.wallet.android.domain.model
 
 import android.net.Uri
+import com.babylon.wallet.android.domain.model.XrdResource.officialXrdResourceAddresses
 import com.babylon.wallet.android.domain.model.behaviours.ResourceBehaviour
 import com.babylon.wallet.android.domain.model.metadata.ClaimAmountMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.DAppDefinitionsMetadataItem
@@ -24,6 +25,7 @@ import java.math.RoundingMode
 sealed class Resource {
     abstract val resourceAddress: String
     abstract val name: String
+    abstract val iconUrl: Uri?
 
     data class FungibleResource(
         override val resourceAddress: String,
@@ -49,7 +51,7 @@ sealed class Resource {
         val description: String
             get() = descriptionMetadataItem?.description.orEmpty()
 
-        val iconUrl: Uri?
+        override val iconUrl: Uri?
             get() = iconUrlMetadataItem?.url
 
         val validatorAddress: String?
@@ -82,8 +84,6 @@ sealed class Resource {
             } else {
                 ""
             }
-
-        val isXrd: Boolean = officialXrdResourceAddresses().contains(resourceAddress)
 
         val mathContext: MathContext
             get() = if (divisibility == null) {
@@ -126,15 +126,7 @@ sealed class Resource {
             }
         }
 
-        companion object {
-            // todo Needs to be revisited. Having default network in param does not work on different networks
-            fun officialXrdResourceAddresses(): List<String> = Radix.Network.allKnownNetworks().map { network ->
-                knownAddresses(networkId = network.networkId().value.toUByte()).resourceAddresses.xrd.addressString()
-            }
-
-            val officialXrdAddress: String
-                get() = knownAddresses(networkId = Radix.Gateway.default.network.id.toUByte()).resourceAddresses.xrd.addressString()
-        }
+        companion object
     }
 
     data class NonFungibleResource(
@@ -156,7 +148,7 @@ sealed class Resource {
         val description: String
             get() = descriptionMetadataItem?.description.orEmpty()
 
-        val iconUrl: Uri?
+        override val iconUrl: Uri?
             get() = iconMetadataItem?.url
 
         val tags: List<Tag>
@@ -321,6 +313,9 @@ sealed class Resource {
         override val name: String
             get() = fungibleResource.name
 
+        override val iconUrl: Uri?
+            get() = fungibleResource.iconUrl
+
         private val percentageOwned: BigDecimal?
             get() = fungibleResource.ownedAmount?.divide(fungibleResource.currentSupply, fungibleResource.mathContext)
 
@@ -339,8 +334,12 @@ sealed class Resource {
 
         override val resourceAddress: String
             get() = nonFungibleResource.resourceAddress
+
         override val name: String
             get() = nonFungibleResource.name
+
+        override val iconUrl: Uri?
+            get() = nonFungibleResource.iconUrl
     }
 
     data class PoolUnitResource(
@@ -354,6 +353,9 @@ sealed class Resource {
         override val name: String
             get() = poolUnitResource.name
 
+        override val iconUrl: Uri?
+            get() = poolUnitResource.iconUrl
+
         fun resourceRedemptionValue(resourceAddress: String): BigDecimal? {
             val resourceVaultBalance = poolResources.find { it.resourceAddress == resourceAddress }?.ownedAmount
             return poolUnitResource.ownedAmount?.multiply(resourceVaultBalance)
@@ -362,7 +364,7 @@ sealed class Resource {
     }
 
     sealed interface Tag {
-        object Official : Tag
+        data object Official : Tag
 
         data class Dynamic(
             val name: String
@@ -373,3 +375,16 @@ sealed class Resource {
         const val XRD_SYMBOL = "XRD"
     }
 }
+
+object XrdResource {
+    // todo Needs to be revisited. Having default network in param does not work on different networks
+    fun officialXrdResourceAddresses(): List<String> = Radix.Network.allKnownNetworks().map { network ->
+        knownAddresses(networkId = network.networkId().value.toUByte()).resourceAddresses.xrd.addressString()
+    }
+
+    val officialXrdAddress: String
+        get() = knownAddresses(networkId = Radix.Gateway.default.network.id.toUByte()).resourceAddresses.xrd.addressString()
+}
+
+val Resource.FungibleResource.isXrd: Boolean
+    get() = officialXrdResourceAddresses().contains(resourceAddress)
