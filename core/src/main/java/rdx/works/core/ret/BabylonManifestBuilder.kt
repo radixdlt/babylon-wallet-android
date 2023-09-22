@@ -52,6 +52,17 @@ class BabylonManifestBuilder {
         return this
     }
 
+    fun accountDeposit(
+        toAddress: Address,
+        fromBucket: ManifestBuilderBucket
+    ): BabylonManifestBuilder {
+        manifestBuilder = manifestBuilder.accountDeposit(
+            accountAddress = toAddress,
+            bucket = fromBucket
+        )
+        return this
+    }
+
     fun takeNonFungiblesFromWorktop(
         nonFungible: NonFungibleGlobalId,
         intoBucket: ManifestBuilderBucket
