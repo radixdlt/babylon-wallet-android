@@ -79,18 +79,21 @@ data class FactorInstance(
 
 fun FactorInstance.validateAgainst(mnemonicWithPassphrase: MnemonicWithPassphrase): Boolean {
     if (factorSourceId.kind != FactorSourceKind.DEVICE) return false
-    val hashFactorSourceId = (factorSourceId as? FactorSource.FactorSourceID.FromHash) ?: return false
+    val hashFactorSourceId = factorSourceId as? FactorSource.FactorSourceID.FromHash
+    val hdSource = badge as? FactorInstance.Badge.VirtualSource.HierarchicalDeterministic
 
-    val hdSource = (badge as? FactorInstance.Badge.VirtualSource.HierarchicalDeterministic) ?: return false
+    return if (hashFactorSourceId != null && hdSource != null) {
+        val idMatches = FactorSource.factorSourceId(
+            mnemonicWithPassphrase = mnemonicWithPassphrase
+        ) == hashFactorSourceId.body.value
 
-    val idMatches = FactorSource.factorSourceId(
-        mnemonicWithPassphrase = mnemonicWithPassphrase
-    ) == hashFactorSourceId.body.value
+        val pubKeyMatches = mnemonicWithPassphrase.compressedPublicKey(
+            derivationPath = hdSource.derivationPath,
+            curve = hdSource.publicKey.curve
+        ).removeLeadingZero().toHexString() == hdSource.publicKey.compressedData
 
-    val pubKeyMatches = mnemonicWithPassphrase.compressedPublicKey(
-        derivationPath = hdSource.derivationPath,
-        curve = hdSource.publicKey.curve
-    ).removeLeadingZero().toHexString() == hdSource.publicKey.compressedData
-
-    return idMatches && pubKeyMatches
+        idMatches && pubKeyMatches
+    } else {
+        false
+    }
 }
