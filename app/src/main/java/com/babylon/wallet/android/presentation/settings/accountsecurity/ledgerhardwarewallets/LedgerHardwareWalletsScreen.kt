@@ -94,7 +94,9 @@ fun LedgerHardwareWalletsScreen(
                     onBackClick = {
                         addLedgerDeviceViewModel.initState()
                         viewModel.onCloseClick()
-                    }
+                    },
+                    onMessageShown = addLedgerDeviceViewModel::onMessageShown,
+                    uiMessage = addLedgerDeviceState.uiMessage
                 )
             }
 
