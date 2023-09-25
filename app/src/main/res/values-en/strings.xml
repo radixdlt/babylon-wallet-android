@@ -176,8 +176,6 @@
   <string name="linkedConnectors_cameraPermissionDeniedAlert_message">Camera access is required to link to a Connector.</string>
   <string name="linkedConnectors_localNetworkPermissionDeniedAlert_title">Access Required</string>
   <string name="linkedConnectors_localNetworkPermissionDeniedAlert_message">Local network access is required to link to a Connector.</string>
-  <string name="linkedConnectors_incorrectQrTitle">Incorrect QR code scanned.</string>
-  <string name="linkedConnectors_incorrectQrMessage">Please scan the QR code provided by your Radix Wallet Connector browser extension.</string>
   <string name="gateways_title">Gateways</string>
   <string name="gateways_subtitle">Choose the gateway your wallet will use to connect to the Radix Network or test networks. Only change this if you know what you’re doing.</string>
   <string name="gateways_whatIsAGateway">What is a Gateway?</string>
@@ -340,8 +338,6 @@
   <string name="dAppRequest_validationOutcome_shortExplanationInvalidOrigin">Invalid origin</string>
   <string name="dAppRequest_validationOutcome_shortExplanationInvalidDappDefinitionAddress">Invalid dApp Definition Address</string>
   <string name="dAppRequest_validationOutcome_shortExplanationP2PError">Radix Connect connection error</string>
-  <string name="dAppRequest_validationOutcome_invalidRequestTitle">Invalid Request.</string>
-  <string name="dAppRequest_validationOutcome_invalidRequestMessage">Could not validate the dApp.</string>
   <string name="dAppRequest_requestMalformedAlert_message">Request received from dApp is invalid.</string>
   <string name="dAppRequest_requestPersonaNotFoundAlert_message">dApp specified an invalid Persona.</string>
   <string name="dAppRequest_requestWrongNetworkAlert_message">dApp made a requested intended for network %s, but you are currently connected to %s.</string>
@@ -421,6 +417,16 @@
   <string name="transactionReview_submitTransaction_txID">Transaction ID</string>
   <string name="transactionReview_submitTransaction_status">Status</string>
   <string name="transactionReview_submitTransaction_navigationTitle">Submitting Transaction</string>
+  <string name="transactionReview_accountDepositSettings_title">Review New Deposit Settings</string>
+  <string name="transactionReview_accountDepositSettings_subtitle">Third-party deposit setting</string>
+  <string name="transactionReview_accountDepositSettings_acceptAllRule">Allow third parties to deposit *any asset* to this account.</string>
+  <string name="transactionReview_accountDepositSettings_acceptKnownRule">Allow third parties to deposit *only assets this account has already held*.</string>
+  <string name="transactionReview_accountDepositSettings_denyAllRule">*Disallow* all deposits from third parties without your consent.</string>
+  <string name="transactionReview_accountDepositSettings_assetChangeAllow">Allow</string>
+  <string name="transactionReview_accountDepositSettings_assetChangeDisallow">Disallow</string>
+  <string name="transactionReview_accountDepositSettings_assetChangeClear">Clear Exception</string>
+  <string name="transactionReview_accountDepositSettings_depositorChangeAdd">Add Depositor</string>
+  <string name="transactionReview_accountDepositSettings_depositorChangeRemove">Remove Depositor</string>
   <string name="transaction_status_completing_text">Completing Transaction…</string>
   <string name="transaction_status_success_title">Success</string>
   <string name="transaction_status_success_text">Your transaction was successful</string>
