@@ -436,6 +436,8 @@ class TransactionReviewViewModel @Inject constructor(
 sealed interface PreviewType {
     data object None : PreviewType
 
+    data object UnacceptableManifest : PreviewType
+
     data object NonConforming : PreviewType
 
     data class Transfer(
