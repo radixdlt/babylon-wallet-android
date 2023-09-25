@@ -58,6 +58,7 @@ class TransactionAnalysisDelegate(
         }.resolve(manifest, notaryAndSigners)
     }
 
+    @Suppress("LongMethod")
     private suspend fun Result<ExecutionAnalysis>.resolve(
         manifest: TransactionManifest,
         notaryAndSigners: NotaryAndSigners

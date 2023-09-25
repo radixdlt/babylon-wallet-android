@@ -22,6 +22,7 @@ import com.babylon.wallet.android.domain.model.TransactionManifestData
 import com.babylon.wallet.android.domain.model.metadata.SymbolMetadataItem
 import com.babylon.wallet.android.domain.usecases.GetAccountsWithResourcesUseCase
 import com.babylon.wallet.android.domain.usecases.GetResourcesMetadataUseCase
+import com.babylon.wallet.android.domain.usecases.GetResourcesUseCase
 import com.babylon.wallet.android.domain.usecases.ResolveDAppsUseCase
 import com.babylon.wallet.android.domain.usecases.transaction.GetTransactionBadgesUseCase
 import com.babylon.wallet.android.mockdata.account
@@ -75,6 +76,7 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
     private val transactionClient = mockk<TransactionClient>()
     private val getCurrentGatewayUseCase = mockk<GetCurrentGatewayUseCase>()
     private val getAccountsWithResourcesUseCase = mockk<GetAccountsWithResourcesUseCase>()
+    private val getResourcesUseCase = mockk<GetResourcesUseCase>()
     private val getResourcesMetadataUseCase = mockk<GetResourcesMetadataUseCase>()
     private val getProfileUseCase = mockk<GetProfileUseCase>()
     private val getTransactionBadgesUseCase = mockk<GetTransactionBadgesUseCase>()
@@ -223,7 +225,8 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
             incomingRequestRepository = incomingRequestRepository,
             appScope = TestScope(),
             savedStateHandle = savedStateHandle,
-            transactionStatusClient = transactionStatusClient
+            transactionStatusClient = transactionStatusClient,
+            getResourcesUseCase = getResourcesUseCase
         )
     }
 

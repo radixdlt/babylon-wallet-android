@@ -1,7 +1,7 @@
 package com.babylon.wallet.android.domain.model
 
 import android.net.Uri
-import com.babylon.wallet.android.domain.model.XrdResource.officialXrdResourceAddresses
+import com.babylon.wallet.android.domain.model.XrdResource.officialAddresses
 import com.babylon.wallet.android.domain.model.behaviours.ResourceBehaviour
 import com.babylon.wallet.android.domain.model.metadata.ClaimAmountMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.DAppDefinitionsMetadataItem
@@ -169,6 +169,7 @@ sealed class Resource {
             nameMetadataItem != null && other.nameMetadataItem != null -> nameMetadataItem.name.compareTo(
                 other.nameMetadataItem.name
             )
+
             else -> resourceAddress.compareTo(other.resourceAddress)
         }
 
@@ -290,6 +291,7 @@ sealed class Resource {
                         is NonFungibleLocalId.Bytes -> BytesType(
                             id = nonFungibleLocalIdAsStr(id).removeSurrounding(BYTES_PREFIX, BYTES_SUFFIX)
                         )
+
                         is NonFungibleLocalId.Ruid -> RUIDType(
                             id = nonFungibleLocalIdAsStr(id).removeSurrounding(RUID_PREFIX, RUID_SUFFIX)
                         )
@@ -378,13 +380,14 @@ sealed class Resource {
 
 object XrdResource {
     // todo Needs to be revisited. Having default network in param does not work on different networks
-    fun officialXrdResourceAddresses(): List<String> = Radix.Network.allKnownNetworks().map { network ->
-        knownAddresses(networkId = network.networkId().value.toUByte()).resourceAddresses.xrd.addressString()
-    }
+    val officialAddresses: List<String>
+        get() = Radix.Network.allKnownNetworks().map { network ->
+            knownAddresses(networkId = network.networkId().value.toUByte()).resourceAddresses.xrd.addressString()
+        }
 
-    val officialXrdAddress: String
+    val officialAddress: String
         get() = knownAddresses(networkId = Radix.Gateway.default.network.id.toUByte()).resourceAddresses.xrd.addressString()
 }
 
 val Resource.FungibleResource.isXrd: Boolean
-    get() = officialXrdResourceAddresses().contains(resourceAddress)
+    get() = officialAddresses.contains(resourceAddress)

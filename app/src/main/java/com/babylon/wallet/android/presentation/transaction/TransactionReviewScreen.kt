@@ -312,7 +312,6 @@ private fun TransactionPreviewContent(
                                 is PreviewType.AccountsDepositSettings -> {
                                     AccountDepositSettingsTypeContent(
                                         modifier = Modifier.background(RadixTheme.colors.gray5),
-                                        state = state,
                                         preview = preview
                                     )
                                     ReceiptEdge(modifier = Modifier.fillMaxWidth(), color = RadixTheme.colors.gray5)

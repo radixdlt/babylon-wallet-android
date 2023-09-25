@@ -8,6 +8,7 @@ import com.babylon.wallet.android.domain.common.Result
 import com.babylon.wallet.android.domain.model.AccountWithResources
 import com.babylon.wallet.android.domain.model.Resource
 import com.babylon.wallet.android.domain.model.Resources
+import com.babylon.wallet.android.domain.model.XrdResource
 import com.babylon.wallet.android.domain.model.metadata.OwnerKeyHashesMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.SymbolMetadataItem
 import com.babylon.wallet.android.domain.usecases.GetAccountsWithResourcesUseCase
@@ -123,7 +124,7 @@ internal class TransactionClientTest {
             resources = Resources(
                 fungibleResources = listOf(
                     Resource.FungibleResource(
-                        resourceAddress = Resource.FungibleResource.officialXrdResourceAddresses().first(),
+                        resourceAddress = XrdResource.officialAddresses.first(),
                         ownedAmount = 30.toBigDecimal(),
                         symbolMetadataItem = SymbolMetadataItem("XRD")
                     )

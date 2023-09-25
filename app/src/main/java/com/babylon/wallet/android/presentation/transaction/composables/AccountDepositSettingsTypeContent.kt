@@ -29,14 +29,12 @@ import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.domain.model.Resource
 import com.babylon.wallet.android.presentation.transaction.AccountWithDepositSettingsChanges
 import com.babylon.wallet.android.presentation.transaction.PreviewType
-import com.babylon.wallet.android.presentation.transaction.TransactionReviewViewModel.State
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
 import com.babylon.wallet.android.utils.formattedSpans
 import com.radixdlt.ret.AccountDefaultDepositRule
 
 @Composable
 fun AccountDepositSettingsTypeContent(
-    state: State,
     preview: PreviewType.AccountsDepositSettings,
     modifier: Modifier = Modifier
 ) {
@@ -200,11 +198,6 @@ fun AccountDepositSettingsTypeContentPreview() {
     RadixWalletTheme {
         with(SampleDataProvider()) {
             AccountDepositSettingsTypeContent(
-                state = State(
-                    request = SampleDataProvider().transactionRequest,
-                    isLoading = false,
-                    previewType = PreviewType.NonConforming
-                ),
                 preview = PreviewType.AccountsDepositSettings(
                     accountsWithDepositSettingsChanges = listOf(
                         AccountWithDepositSettingsChanges(
@@ -248,11 +241,6 @@ fun AccountDepositSettingsTypeContentPreview() {
 fun AccountDepositSettingsTypeContentPreviewJustRule() {
     RadixWalletTheme {
         AccountDepositSettingsTypeContent(
-            state = State(
-                request = SampleDataProvider().transactionRequest,
-                isLoading = false,
-                previewType = PreviewType.NonConforming
-            ),
             preview = PreviewType.AccountsDepositSettings(
                 accountsWithDepositSettingsChanges = listOf(
                     AccountWithDepositSettingsChanges(
@@ -273,11 +261,6 @@ fun AccountDepositSettingsTypeContentPreviewJustAssetChanges() {
     RadixWalletTheme {
         with(SampleDataProvider()) {
             AccountDepositSettingsTypeContent(
-                state = State(
-                    request = SampleDataProvider().transactionRequest,
-                    isLoading = false,
-                    previewType = PreviewType.NonConforming
-                ),
                 preview = PreviewType.AccountsDepositSettings(
                     accountsWithDepositSettingsChanges = listOf(
                         AccountWithDepositSettingsChanges(
@@ -310,11 +293,6 @@ fun AccountDepositSettingsTypeContentPreviewJustDepositorChanges() {
     RadixWalletTheme {
         with(SampleDataProvider()) {
             AccountDepositSettingsTypeContent(
-                state = State(
-                    request = SampleDataProvider().transactionRequest,
-                    isLoading = false,
-                    previewType = PreviewType.NonConforming
-                ),
                 preview = PreviewType.AccountsDepositSettings(
                     accountsWithDepositSettingsChanges = listOf(
                         AccountWithDepositSettingsChanges(

@@ -205,7 +205,7 @@ private fun LSUResourceValue(
         Thumbnail.Fungible(
             modifier = Modifier.size(44.dp),
             token = Resource.FungibleResource(
-                resourceAddress = XrdResource.officialXrdAddress,
+                resourceAddress = XrdResource.officialAddress,
                 ownedAmount = null
             )
         )
