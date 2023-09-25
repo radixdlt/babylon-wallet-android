@@ -176,6 +176,8 @@
   <string name="linkedConnectors_cameraPermissionDeniedAlert_message">Camera access is required to link to a Connector.</string>
   <string name="linkedConnectors_localNetworkPermissionDeniedAlert_title">Access Required</string>
   <string name="linkedConnectors_localNetworkPermissionDeniedAlert_message">Local network access is required to link to a Connector.</string>
+  <string name="linkedConnectors_incorrectQrTitle">Incorrect QR code scanned.</string>
+  <string name="linkedConnectors_incorrectQrMessage">Please scan the QR code provided by your Radix Wallet Connector browser extension.</string>
   <string name="gateways_title">Gateways</string>
   <string name="gateways_subtitle">Choose the gateway your wallet will use to connect to the Radix Network or test networks. Only change this if you know what you’re doing.</string>
   <string name="gateways_whatIsAGateway">What is a Gateway?</string>
@@ -338,6 +340,8 @@
   <string name="dAppRequest_validationOutcome_shortExplanationInvalidOrigin">Invalid origin</string>
   <string name="dAppRequest_validationOutcome_shortExplanationInvalidDappDefinitionAddress">Invalid dApp Definition Address</string>
   <string name="dAppRequest_validationOutcome_shortExplanationP2PError">Radix Connect connection error</string>
+  <string name="dAppRequest_validationOutcome_invalidRequestTitle">Invalid Request.</string>
+  <string name="dAppRequest_validationOutcome_invalidRequestMessage">Could not validate the dApp.</string>
   <string name="dAppRequest_requestMalformedAlert_message">Request received from dApp is invalid.</string>
   <string name="dAppRequest_requestPersonaNotFoundAlert_message">dApp specified an invalid Persona.</string>
   <string name="dAppRequest_requestWrongNetworkAlert_message">dApp made a requested intended for network %s, but you are currently connected to %s.</string>
@@ -429,6 +433,9 @@
   <string name="addressAction_noWebBrowserInstalled">There is no web browser installed in this device</string>
   <string name="addressAction_viewOnDashboard">View on Radix Dashboard</string>
   <string name="addressAction_showAccountQR">Show Address QR Code</string>
+  <string name="addressAction_verifyAddressLedger">Verify Address with Ledger</string>
+  <string name="addressAction_verifyAddressLedger_success">Address verified</string>
+  <string name="addressAction_verifyAddressLedger_error">Verify address request failed</string>
   <string name="addressAction_qrCodeView_qrCodeLabel">QR code for an account</string>
   <string name="addressAction_qrCodeView_failureLabel">Could not create QR code</string>
   <string name="biometrics_prompt_title">Authenticate to continue</string>
