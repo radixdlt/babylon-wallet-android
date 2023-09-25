@@ -97,7 +97,6 @@ sealed interface LedgerInteractionRequest {
                 id = ledgerFactorSource.id.body.value
             )
         }
-
     }
 
     @Serializable

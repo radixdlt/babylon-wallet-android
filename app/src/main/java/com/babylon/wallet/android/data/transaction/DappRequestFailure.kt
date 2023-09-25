@@ -41,7 +41,7 @@ sealed class DappRequestFailure(msg: String? = null) : Exception(msg.orEmpty()) 
     sealed class LedgerCommunicationFailure : DappRequestFailure() {
         data object FailedToGetDeviceId : LedgerCommunicationFailure()
         data object FailedToDerivePublicKeys : LedgerCommunicationFailure()
-        data object FailedToDeriveAndDisplayAddress: LedgerCommunicationFailure()
+        data object FailedToDeriveAndDisplayAddress : LedgerCommunicationFailure()
         data class FailedToSignTransaction(val reason: LedgerErrorCode) : LedgerCommunicationFailure()
     }
 

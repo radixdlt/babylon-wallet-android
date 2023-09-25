@@ -16,7 +16,6 @@ import kotlinx.serialization.encodeToString
 import rdx.works.peerdroid.helpers.Result.Error
 import rdx.works.peerdroid.helpers.Result.Success
 import rdx.works.profile.data.model.factorsources.Slip10Curve
-import timber.log.Timber
 import javax.inject.Inject
 
 interface LedgerMessenger {

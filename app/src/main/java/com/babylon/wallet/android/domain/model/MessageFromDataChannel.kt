@@ -226,7 +226,7 @@ sealed interface MessageFromDataChannel {
         data class DeriveAndDisplayAddressResponse(
             val interactionId: String,
             val derivedAddress: DerivedAddress
-        ): LedgerResponse(interactionId)
+        ) : LedgerResponse(interactionId)
 
         data class LedgerErrorResponse(
             val interactionId: String,

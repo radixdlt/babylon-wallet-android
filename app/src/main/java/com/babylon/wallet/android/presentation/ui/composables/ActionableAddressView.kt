@@ -322,7 +322,7 @@ private sealed interface OnAction {
             private val actionableAddress: ActionableAddress,
             private val verifyAddressOnLedgerUseCase: VerifyAddressOnLedgerUseCase,
             private val applicationScope: CoroutineScope
-        ): CallbackBasedAction {
+        ) : CallbackBasedAction {
             override fun onAction(context: Context) {
                 applicationScope.launch {
                     val result = verifyAddressOnLedgerUseCase(actionableAddress.address)
