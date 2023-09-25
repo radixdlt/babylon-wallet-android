@@ -45,7 +45,7 @@ fun AccountDepositSettingsTypeContent(
     ) {
         Text(
             modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingDefault),
-            text = stringResource(id = R.string.transactionReview_thirdPartyDeposits_subtitle).uppercase(),
+            text = stringResource(id = R.string.transactionReview_accountDepositSettings_subtitle).uppercase(),
             style = RadixTheme.typography.body1Header,
             maxLines = 1,
             color = RadixTheme.colors.gray2
@@ -65,9 +65,9 @@ fun AccountDepositSettingsTypeContent(
                 accountWithSettings.defaultDepositRule?.let { newRule ->
                     val ruleText = stringResource(
                         id = when (newRule) {
-                            AccountDefaultDepositRule.ACCEPT -> R.string.transactionReview_thirdPartyDeposits_acceptAllRule
-                            AccountDefaultDepositRule.REJECT -> R.string.transactionReview_thirdPartyDeposits_denyAllRule
-                            AccountDefaultDepositRule.ALLOW_EXISTING -> R.string.transactionReview_thirdPartyDeposits_acceptKnownRule
+                            AccountDefaultDepositRule.ACCEPT -> R.string.transactionReview_accountDepositSettings_acceptAllRule
+                            AccountDefaultDepositRule.REJECT -> R.string.transactionReview_accountDepositSettings_denyAllRule
+                            AccountDefaultDepositRule.ALLOW_EXISTING -> R.string.transactionReview_accountDepositSettings_acceptKnownRule
                         }
                     ).formattedSpans(boldStyle = SpanStyle(fontWeight = FontWeight.SemiBold, color = RadixTheme.colors.gray1))
                     val ruleBackgroundShape =
@@ -124,11 +124,11 @@ private fun AccountWithDepositSettingsChanges.DepositorPreferenceChange.ChangeTy
     return stringResource(
         id = when (this) {
             AccountWithDepositSettingsChanges.DepositorPreferenceChange.ChangeType.Add -> {
-                R.string.transactionReview_thirdPartyDeposits_depositorChangeAdd
+                R.string.transactionReview_accountDepositSettings_depositorChangeAdd
             }
 
             AccountWithDepositSettingsChanges.DepositorPreferenceChange.ChangeType.Remove -> {
-                R.string.transactionReview_thirdPartyDeposits_depositorChangeRemove
+                R.string.transactionReview_accountDepositSettings_depositorChangeRemove
             }
         }
     )
@@ -139,15 +139,15 @@ private fun AccountWithDepositSettingsChanges.AssetPreferenceChange.ChangeType.d
     return stringResource(
         id = when (this) {
             AccountWithDepositSettingsChanges.AssetPreferenceChange.ChangeType.Allow -> {
-                R.string.transactionReview_thirdPartyDeposits_assetChangeAllow
+                R.string.transactionReview_accountDepositSettings_assetChangeAllow
             }
 
             AccountWithDepositSettingsChanges.AssetPreferenceChange.ChangeType.Disallow -> {
-                R.string.transactionReview_thirdPartyDeposits_assetChangeDisallow
+                R.string.transactionReview_accountDepositSettings_assetChangeDisallow
             }
 
             AccountWithDepositSettingsChanges.AssetPreferenceChange.ChangeType.Clear -> {
-                R.string.transactionReview_thirdPartyDeposits_assetChangeClear
+                R.string.transactionReview_accountDepositSettings_assetChangeClear
             }
         }
     )
