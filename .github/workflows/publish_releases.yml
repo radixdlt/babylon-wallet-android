@@ -33,11 +33,11 @@ jobs:
       - name: Fetch Radixbot push commit token
         uses: radixdlt/public-iac-resuable-artifacts/fetch-secrets@main
         with:
-          role_name: 'arn:aws:iam::308190735829:role/gh-babylon-wallet-android-secrets-read-access'
+          role_name: '{{ secrets.ANDROID_WALLET_SECRETS_READ_IAM_ROLE }}'
           app_name: 'wallet-android'
           step_name: 'gpc-alpha-1'
           secret_prefix: 'GH'
-          secret_name: "arn:aws:secretsmanager:eu-west-2:308190735829:secret:github-actions/radixdlt/babylon-wallet-android/push-pat-token"
+          secret_name: "github-actions/radixdlt/babylon-wallet-android/push-pat-token"
           parse_json: true
 
       - uses: actions/checkout@3df4ab11eba7bda6032a0b82a6bb43b11571feac # v4.0.0
@@ -61,11 +61,11 @@ jobs:
       - name: Fetch Firebase App ID
         uses: radixdlt/public-iac-resuable-artifacts/fetch-secrets@main
         with:
-          role_name: 'arn:aws:iam::308190735829:role/gh-babylon-wallet-android-secrets-read-access'
+          role_name: '{{ secrets.ANDROID_WALLET_SECRETS_READ_IAM_ROLE }}'
           app_name: 'babylon-wallet-android'
           step_name: 'push-app-id'
           secret_prefix: 'GH'
-          secret_name: "arn:aws:secretsmanager:eu-west-2:308190735829:secret:github-actions/radixdlt/babylon-wallet-android/firebase/secrets-NbB1MM"
+          secret_name: "github-actions/radixdlt/babylon-wallet-android/firebase/secrets"
           parse_json: true
 
       - name: Decode Google Service account credentials
@@ -78,11 +78,11 @@ jobs:
       - name: Fetch GPR credentials
         uses: radixdlt/public-iac-resuable-artifacts/fetch-secrets@main
         with:
-          role_name: 'arn:aws:iam::308190735829:role/gh-babylon-wallet-android-secrets-read-access'
+          role_name: '{{ secrets.ANDROID_WALLET_SECRETS_READ_IAM_ROLE }}'
           app_name: 'wallet-android'
           step_name: 'firebase-dev'
           secret_prefix: 'GH'
-          secret_name: "arn:aws:secretsmanager:eu-west-2:308190735829:secret:github-actions/radixdlt/babylon-wallet-android/gpr-credentials"
+          secret_name: "github-actions/radixdlt/babylon-wallet-android/gpr-credentials"
           parse_json: true
 
       - name: Distribute Alpha to Firebase
@@ -112,11 +112,11 @@ jobs:
       - name: Fetch Radixbot push commit token
         uses: radixdlt/public-iac-resuable-artifacts/fetch-secrets@main
         with:
-          role_name: 'arn:aws:iam::308190735829:role/gh-babylon-wallet-android-secrets-read-access'
+          role_name: '{{ secrets.ANDROID_WALLET_SECRETS_READ_IAM_ROLE }}'
           app_name: 'wallet-android'
           step_name: 'gpc-alpha-1'
           secret_prefix: 'GH'
-          secret_name: "arn:aws:secretsmanager:eu-west-2:308190735829:secret:github-actions/radixdlt/babylon-wallet-android/push-pat-token"
+          secret_name: "github-actions/radixdlt/babylon-wallet-android/push-pat-token"
           parse_json: true
 
       - uses: actions/checkout@3df4ab11eba7bda6032a0b82a6bb43b11571feac # v4.0.0
@@ -126,11 +126,11 @@ jobs:
       - name: Fetch GPR credentials
         uses: radixdlt/public-iac-resuable-artifacts/fetch-secrets@main
         with:
-          role_name: 'arn:aws:iam::308190735829:role/gh-babylon-wallet-android-secrets-read-access'
+          role_name: '{{ secrets.ANDROID_WALLET_SECRETS_READ_IAM_ROLE }}'
           app_name: 'wallet-android'
           step_name: 'gpc-alpha'
           secret_prefix: 'GH'
-          secret_name: "arn:aws:secretsmanager:eu-west-2:308190735829:secret:github-actions/radixdlt/babylon-wallet-android/gpr-credentials"
+          secret_name: "github-actions/radixdlt/babylon-wallet-android/gpr-credentials"
           parse_json: true
 
       - uses: ./.github/actions/google-play-common
@@ -154,11 +154,11 @@ jobs:
       - name: Fetch Radixbot push commit token
         uses: radixdlt/public-iac-resuable-artifacts/fetch-secrets@main
         with:
-          role_name: 'arn:aws:iam::308190735829:role/gh-babylon-wallet-android-secrets-read-access'
+          role_name: '{{ secrets.ANDROID_WALLET_SECRETS_READ_IAM_ROLE }}'
           app_name: 'wallet-android'
           step_name: 'gpc-alpha-1'
           secret_prefix: 'GH'
-          secret_name: "arn:aws:secretsmanager:eu-west-2:308190735829:secret:github-actions/radixdlt/babylon-wallet-android/push-pat-token"
+          secret_name: "github-actions/radixdlt/babylon-wallet-android/push-pat-token"
           parse_json: true
 
       - uses: actions/checkout@3df4ab11eba7bda6032a0b82a6bb43b11571feac # v4.0.0
@@ -168,11 +168,11 @@ jobs:
       - name: Fetch GPR credentials
         uses: radixdlt/public-iac-resuable-artifacts/fetch-secrets@main
         with:
-          role_name: 'arn:aws:iam::308190735829:role/gh-babylon-wallet-android-secrets-read-access'
+          role_name: '{{ secrets.ANDROID_WALLET_SECRETS_READ_IAM_ROLE }}'
           app_name: 'wallet-android'
           step_name: 'gpc-alpha'
           secret_prefix: 'GH'
-          secret_name: "arn:aws:secretsmanager:eu-west-2:308190735829:secret:github-actions/radixdlt/babylon-wallet-android/gpr-credentials"
+          secret_name: "github-actions/radixdlt/babylon-wallet-android/gpr-credentials"
           parse_json: true
 
       - uses: ./.github/actions/google-play-common
@@ -197,37 +197,37 @@ jobs:
       - name: Fetch Snyk credentials
         uses: radixdlt/public-iac-resuable-artifacts/fetch-secrets@main
         with:
-          role_name: 'arn:aws:iam::308190735829:role/gh-common-secrets-read-access'
+          role_name: '{{ secrets.COMMON_SECRETS_READ_IAM_ROLE }}'
           app_name: 'wallet-android'
           step_name: 'snyk-sbom'
           secret_prefix: 'SNYK'
-          secret_name: "arn:aws:secretsmanager:eu-west-2:308190735829:secret:github-actions/common/snyk-credentials"
+          secret_name: "github-actions/common/snyk-credentials"
           parse_json: true
 
       - name: Fetch Keystore credentials
         uses: radixdlt/public-iac-resuable-artifacts/fetch-secrets@main
         with:
-          role_name: 'arn:aws:iam::308190735829:role/gh-babylon-wallet-android-secrets-read-access'
+          role_name: '{{ secrets.ANDROID_WALLET_SECRETS_READ_IAM_ROLE }}'
           app_name: 'babylon-wallet-android'
           step_name: 'snyk-keystore'
           secret_prefix: 'GH'
-          secret_name: "arn:aws:secretsmanager:eu-west-2:308190735829:secret:github-actions/radixdlt/babylon-wallet-android/google-play-console/secrets"
+          secret_name: "github-actions/radixdlt/babylon-wallet-android/google-play-console/secrets"
           parse_json: true
 
       - name: Fetch Google service account credentials
         uses: radixdlt/public-iac-resuable-artifacts/fetch-secrets@main
         with:
-          role_name: 'arn:aws:iam::308190735829:role/gh-babylon-wallet-android-secrets-read-access'
+          role_name: '{{ secrets.ANDROID_WALLET_SECRETS_READ_IAM_ROLE }}'
           app_name: 'babylon-wallet-android-sa'
           step_name: 'snyk-sa'
           secret_prefix: 'GH_GOOGLE_SERVICE_ACCOUNT_JSON_FILE'
-          secret_name: "arn:aws:secretsmanager:eu-west-2:308190735829:secret:github-actions/radixdlt/babylon-wallet-android/google-play-console/service-account-json-file"
+          secret_name: "github-actions/radixdlt/babylon-wallet-android/google-play-console/service-account-json-file"
           parse_json: false
 
       - name: Fetch keystore.asc value
         uses: radixdlt/public-iac-resuable-artifacts/fetch-secrets@main
         with:
-          role_name: 'arn:aws:iam::308190735829:role/gh-babylon-wallet-android-secrets-read-access'
+          role_name: '{{ secrets.ANDROID_WALLET_SECRETS_READ_IAM_ROLE }}'
           app_name: 'babylon-wallet-android-sa'
           step_name: 'snyk-keystore-asc'
           secret_prefix: 'GH_KEYSTORE_ENCRYPTED_BASE64'
