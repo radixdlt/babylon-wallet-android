@@ -617,10 +617,10 @@
   <string name="displayMnemonics_cautionAlert_revealButtonLabel">Reveal Seed Phrase</string>
   <string name="displayMnemonics_cautionAlert_message">A seed phrase provides full control of its Accounts. Do not view in a public area. Back up the seed phrase words securely. Screenshots are disabled.</string>
   <string name="displayMnemonics_seedPhrases">Seed Phrases</string>
-  <string name="displayMnemonics_connectedAccountsPersonasLabel_one">Connected to Personas and %d account</string>
-  <string name="displayMnemonics_connectedAccountsPersonasLabel_many">Connected to Personas and to %d accounts</string>
-  <string name="displayMnemonics_connectedAccountsLabel_one">Connected to %d account</string>
-  <string name="displayMnemonics_connectedAccountsLabel_many">Connected to %d accounts</string>
+  <string name="displayMnemonics_connectedAccountsPersonasLabel_one">Connected to Personas and %d Account</string>
+  <string name="displayMnemonics_connectedAccountsPersonasLabel_many">Connected to Personas and to %d Accounts</string>
+  <string name="displayMnemonics_connectedAccountsLabel_one">Connected to %d Account</string>
+  <string name="displayMnemonics_connectedAccountsLabel_many">Connected to %d Accounts</string>
   <string name="displayMnemonics_seedPhraseSecurityInfo">You are responsible for the security of your Seed Phrase</string>
   <string name="displayMnemonics_backUpWarning">Back up this Seed Phrase</string>
   <string name="revealSeedPhrase_title">Reveal Seed Phrase</string>
@@ -634,8 +634,8 @@
   <string name="seedPhrases_message">A Seed Phrase provides full access to your accounts and funds. When viewing, ensure you’re in a safe environment and no one is looking at your screen.</string>
   <string name="seedPhrases_warning">You are responsible for the security of your Seed Phrase</string>
   <string name="seedPhrases_seedPhrase_reveal">Reveal Seed Phrase</string>
-  <string name="seedPhrases_seedPhrase_oneConnectedAccount">Connected to 1 account</string>
-  <string name="seedPhrases_seedPhrase_multipleConnectedAccounts">Connected to %d accounts</string>
+  <string name="seedPhrases_seedPhrase_oneConnectedAccount">Connected to 1 Account</string>
+  <string name="seedPhrases_seedPhrase_multipleConnectedAccounts">Connected to %d Accounts</string>
   <string name="appSettings_title">App Settings</string>
   <string name="appSettings_subtitle">Customize your Radix Wallet</string>
   <string name="appSettings_developerMode_title">Developer Mode</string>
