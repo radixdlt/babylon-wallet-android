@@ -37,7 +37,7 @@ runs:
   - name: Fetch Keystore credentials
     uses: radixdlt/public-iac-resuable-artifacts/fetch-secrets@main
     with:
-      role_name: '{{ secrets.ANDROID_WALLET_SECRETS_READ_IAM_ROLE }}'
+      role_name: '${{ secrets.ANDROID_WALLET_SECRETS_READ_IAM_ROLE }}'
       app_name: 'babylon-wallet-android'
       step_name: 'release'
       secret_prefix: 'GH'
@@ -47,7 +47,7 @@ runs:
   - name: Fetch Google service account credentials
     uses: radixdlt/public-iac-resuable-artifacts/fetch-secrets@main
     with:
-      role_name: '{{ secrets.ANDROID_WALLET_SECRETS_READ_IAM_ROLE }}'
+      role_name: '${{ secrets.ANDROID_WALLET_SECRETS_READ_IAM_ROLE }}'
       app_name: 'babylon-wallet-android-sa'
       step_name: 'release'
       secret_prefix: 'GH_GOOGLE_SERVICE_ACCOUNT_JSON_FILE'
@@ -57,7 +57,7 @@ runs:
   - name: Fetch keystore.asc value
     uses: radixdlt/public-iac-resuable-artifacts/fetch-secrets@main
     with:
-      role_name: '{{ secrets.ANDROID_WALLET_SECRETS_READ_IAM_ROLE }}'
+      role_name: '${{ secrets.ANDROID_WALLET_SECRETS_READ_IAM_ROLE }}'
       app_name: 'babylon-wallet-android-sa'
       step_name: 'release'
       secret_prefix: 'GH_KEYSTORE_ENCRYPTED_BASE64'

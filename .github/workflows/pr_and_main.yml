@@ -32,7 +32,7 @@ jobs:
       - name: Fetch Snyk credentials
         uses: radixdlt/public-iac-resuable-artifacts/fetch-secrets@main
         with:
-          role_name: '{{ secrets.COMMON_SECRETS_READ_IAM_ROLE }}'
+          role_name: '${{ secrets.COMMON_SECRETS_READ_IAM_ROLE }}'
           app_name: 'wallet-android'
           step_name: 'snyk-licenses'
           secret_prefix: 'SNYK'
@@ -55,7 +55,7 @@ jobs:
       - name: Fetch Snyk credentials
         uses: radixdlt/public-iac-resuable-artifacts/fetch-secrets@main
         with:
-          role_name: '{{ secrets.COMMON_SECRETS_READ_IAM_ROLE }}'
+          role_name: '${{ secrets.COMMON_SECRETS_READ_IAM_ROLE }}'
           app_name: 'wallet-android'
           step_name: 'snyk-licenses'
           secret_prefix: 'SNYK'
@@ -79,7 +79,7 @@ jobs:
       - name: Fetch Snyk credentials
         uses: radixdlt/public-iac-resuable-artifacts/fetch-secrets@main
         with:
-          role_name: '{{ secrets.COMMON_SECRETS_READ_IAM_ROLE }}'
+          role_name: '${{ secrets.COMMON_SECRETS_READ_IAM_ROLE }}'
           app_name: 'wallet-android'
           step_name: 'snyk-licenses'
           secret_prefix: 'SNYK'
@@ -109,7 +109,7 @@ jobs:
       - name: Fetch GPR credentials
         uses: radixdlt/public-iac-resuable-artifacts/fetch-secrets@main
         with:
-          role_name: '{{ secrets.ANDROID_WALLET_SECRETS_READ_IAM_ROLE }}'
+          role_name: '${{ secrets.ANDROID_WALLET_SECRETS_READ_IAM_ROLE }}'
           app_name: 'wallet-android'
           step_name: 'sonar'
           secret_prefix: 'GH'
@@ -139,7 +139,7 @@ jobs:
       - name: Fetch GPR credentials
         uses: radixdlt/public-iac-resuable-artifacts/fetch-secrets@main
         with:
-          role_name: '{{ secrets.ANDROID_WALLET_SECRETS_READ_IAM_ROLE }}'
+          role_name: '${{ secrets.ANDROID_WALLET_SECRETS_READ_IAM_ROLE }}'
           app_name: 'wallet-android'
           step_name: 'sonar'
           secret_prefix: 'GH'
@@ -149,7 +149,7 @@ jobs:
       - name: Fetch Sonar token
         uses: radixdlt/public-iac-resuable-artifacts/fetch-secrets@main
         with:
-          role_name: '{{ secrets.ANDROID_WALLET_SECRETS_READ_IAM_ROLE }}'
+          role_name: '${{ secrets.ANDROID_WALLET_SECRETS_READ_IAM_ROLE }}'
           app_name: 'wallet-android'
           step_name: 'sonar-1'
           secret_prefix: 'GH'
@@ -200,7 +200,7 @@ jobs:
       - name: Fetch GPR credentials
         uses: radixdlt/public-iac-resuable-artifacts/fetch-secrets@main
         with:
-          role_name: '{{ secrets.ANDROID_WALLET_SECRETS_READ_IAM_ROLE }}'
+          role_name: '${{ secrets.ANDROID_WALLET_SECRETS_READ_IAM_ROLE }}'
           app_name: 'wallet-android'
           step_name: 'build'
           secret_prefix: 'GH'
@@ -226,7 +226,7 @@ jobs:
       - name: Fetch Snyk credentials
         uses: radixdlt/public-iac-resuable-artifacts/fetch-secrets@main
         with:
-          role_name: '{{ secrets.COMMON_SECRETS_READ_IAM_ROLE }}'
+          role_name: '${{ secrets.COMMON_SECRETS_READ_IAM_ROLE }}'
           app_name: 'wallet-android'
           step_name: 'snyk-licenses'
           secret_prefix: 'SNYK'
