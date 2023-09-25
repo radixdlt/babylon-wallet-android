@@ -12,7 +12,6 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
 import okhttp3.Interceptor
 import okhttp3.MediaType.Companion.toMediaType
@@ -51,6 +50,11 @@ annotation class CurrentGatewayHttpClient
 @Retention(AnnotationRetention.BINARY)
 @Qualifier
 annotation class SimpleHttpClient
+
+private const val HEADER_RDX_CLIENT_NAME = "RDX-Client-Name"
+private const val HEADER_RDX_CLIENT_VERSION = "RDX-Client-Version"
+
+private const val HEADER_VALUE_RDX_CLIENT_NAME = "Android Wallet"
 
 /**
  * A helper method to build an API class
@@ -114,7 +118,6 @@ object NetworkModule {
         return Serializer.kotlinxSerializationJson
     }
 
-    @OptIn(ExperimentalSerializationApi::class)
     @Provides
     @JsonConverterFactory
     fun provideJsonConverterFactory(json: Json): Factory {
@@ -166,8 +169,9 @@ object NetworkModule {
 
             val request = chain.request().newBuilder()
                 .url(updatedUrl)
+                .addHeader(HEADER_RDX_CLIENT_NAME, HEADER_VALUE_RDX_CLIENT_NAME)
+                .addHeader(HEADER_RDX_CLIENT_VERSION, "${BuildConfig.VERSION_NAME} (${BuildConfig.VERSION_CODE})")
                 .build()
-
             return chain.proceed(request)
         }
     }
