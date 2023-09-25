@@ -3,8 +3,8 @@ package com.babylon.wallet.android.presentation.account.createaccount.withledger
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.dapp.LedgerMessenger
 import com.babylon.wallet.android.data.dapp.model.Curve
-import com.babylon.wallet.android.data.dapp.model.DerivePublicKeyRequest
 import com.babylon.wallet.android.data.dapp.model.LedgerDeviceModel.Companion.getLedgerDeviceModel
+import com.babylon.wallet.android.data.dapp.model.LedgerInteractionRequest
 import com.babylon.wallet.android.domain.model.Selectable
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
@@ -96,8 +96,8 @@ class CreateAccountWithLedgerViewModel @Inject constructor(
                 val deviceModel = requireNotNull(ledgerFactorSource.data.getLedgerDeviceModel())
                 val result = ledgerMessenger.sendDerivePublicKeyRequest(
                     interactionId = UUIDGenerator.uuid().toString(),
-                    keyParameters = listOf(DerivePublicKeyRequest.KeyParameters(Curve.Curve25519, derivationPath.path)),
-                    ledgerDevice = DerivePublicKeyRequest.LedgerDevice(
+                    keyParameters = listOf(LedgerInteractionRequest.KeyParameters(Curve.Curve25519, derivationPath.path)),
+                    ledgerDevice = LedgerInteractionRequest.LedgerDevice(
                         name = ledgerFactorSource.data.hint.name,
                         model = deviceModel,
                         id = ledgerFactorSource.data.id.body.value

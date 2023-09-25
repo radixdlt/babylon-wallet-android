@@ -8,6 +8,94 @@ import rdx.works.profile.data.model.factorsources.Slip10Curve
 @Serializable
 sealed interface LedgerInteractionRequest {
     val interactionId: String
+
+    @Serializable
+    @SerialName("getDeviceInfo")
+    data class GetDeviceInfo(
+        @SerialName("interactionId")
+        override val interactionId: String,
+    ) : LedgerInteractionRequest
+
+    @Serializable
+    @SerialName("derivePublicKeys")
+    data class DerivePublicKeys(
+        @SerialName("interactionId")
+        override val interactionId: String,
+        @SerialName("keysParameters")
+        val keysParameters: List<KeyParameters>,
+        @SerialName("ledgerDevice")
+        val ledgerDevice: LedgerDevice,
+    ) : LedgerInteractionRequest
+
+    @Serializable
+    @SerialName("signTransaction")
+    data class SignTransaction(
+        @SerialName("interactionId")
+        override val interactionId: String,
+        @SerialName("signers")
+        val signers: List<KeyParameters>,
+        @SerialName("ledgerDevice")
+        val ledgerDevice: LedgerDevice,
+        @SerialName("displayHash")
+        val displayHash: Boolean,
+        @SerialName("compiledTransactionIntent")
+        val compiledTransactionIntent: String,
+        @SerialName("mode")
+        val mode: Mode,
+    ) : LedgerInteractionRequest {
+
+        @Serializable
+        enum class Mode {
+            @SerialName("summary")
+            Summary
+        }
+    }
+
+    @Serializable
+    @SerialName("signChallenge")
+    data class SignChallenge(
+        @SerialName("interactionId")
+        override val interactionId: String,
+        @SerialName("signers")
+        val signers: List<KeyParameters>,
+        @SerialName("ledgerDevice")
+        val ledgerDevice: LedgerDevice,
+        @SerialName("challenge")
+        val challengeHex: String,
+        @SerialName("origin")
+        val origin: String,
+        @SerialName("dAppDefinitionAddress")
+        val dAppDefinitionAddress: String,
+    ) : LedgerInteractionRequest
+
+    @Serializable
+    @SerialName("deriveAndDisplayAddress")
+    data class DeriveAndDisplayAddress(
+        @SerialName("interactionId")
+        override val interactionId: String,
+        @SerialName("keyParameters")
+        val keyParameters: KeyParameters,
+        @SerialName("ledgerDevice")
+        val ledgerDevice: LedgerDevice
+    ) : LedgerInteractionRequest
+
+    @Serializable
+    data class LedgerDevice(
+        @SerialName("name")
+        val name: String?,
+        @SerialName("model")
+        val model: LedgerDeviceModel,
+        @SerialName("id")
+        val id: String
+    )
+
+    @Serializable
+    data class KeyParameters(
+        @SerialName("curve")
+        val curve: Curve,
+        @SerialName("derivationPath")
+        val derivationPath: String
+    )
 }
 
 @Serializable
@@ -27,84 +115,6 @@ enum class Curve {
         }
     }
 }
-
-@Serializable
-@SerialName("getDeviceInfo")
-data class GetDeviceInfoRequest(
-    @SerialName("interactionId")
-    override val interactionId: String,
-) : LedgerInteractionRequest
-
-@Serializable
-@SerialName("derivePublicKeys")
-data class DerivePublicKeyRequest(
-    @SerialName("interactionId")
-    override val interactionId: String,
-    @SerialName("keysParameters")
-    val keysParameters: List<KeyParameters>,
-    @SerialName("ledgerDevice")
-    val ledgerDevice: LedgerDevice,
-) : LedgerInteractionRequest {
-
-    @Serializable
-    data class KeyParameters(
-        @SerialName("curve")
-        val curve: Curve,
-        @SerialName("derivationPath")
-        val derivationPath: String
-    )
-
-    @Serializable
-    data class LedgerDevice(
-        @SerialName("name")
-        val name: String?,
-        @SerialName("model")
-        val model: LedgerDeviceModel,
-        @SerialName("id")
-        val id: String
-    )
-}
-
-@Serializable
-@SerialName("signTransaction")
-data class SignTransactionRequest(
-    @SerialName("interactionId")
-    override val interactionId: String,
-    @SerialName("signers")
-    val signers: List<DerivePublicKeyRequest.KeyParameters>,
-    @SerialName("ledgerDevice")
-    val ledgerDevice: DerivePublicKeyRequest.LedgerDevice,
-    @SerialName("displayHash")
-    val displayHash: Boolean,
-    @SerialName("compiledTransactionIntent")
-    val compiledTransactionIntent: String,
-    @SerialName("mode")
-    val mode: Mode,
-) : LedgerInteractionRequest {
-
-    @Serializable
-    enum class Mode {
-        @SerialName("summary")
-        Summary
-    }
-}
-
-@Serializable
-@SerialName("signChallenge")
-data class SignChallengeRequest(
-    @SerialName("interactionId")
-    override val interactionId: String,
-    @SerialName("signers")
-    val signers: List<DerivePublicKeyRequest.KeyParameters>,
-    @SerialName("ledgerDevice")
-    val ledgerDevice: DerivePublicKeyRequest.LedgerDevice,
-    @SerialName("challenge")
-    val challengeHex: String,
-    @SerialName("origin")
-    val origin: String,
-    @SerialName("dAppDefinitionAddress")
-    val dAppDefinitionAddress: String,
-) : LedgerInteractionRequest
 
 @Serializable
 enum class LedgerDeviceModel {

@@ -188,6 +188,11 @@ sealed interface MessageFromDataChannel {
             }
         }
 
+        data class DerivedAddress(
+            val derivedKey: DerivedPublicKey,
+            val address: String
+        )
+
         enum class LedgerDeviceModel {
             NanoS, NanoSPlus, NanoX
         }
@@ -218,6 +223,11 @@ sealed interface MessageFromDataChannel {
             val signatures: List<SignatureOfSigner>
         ) : LedgerResponse(interactionId)
 
+        data class DeriveAndDisplayAddressResponse(
+            val interactionId: String,
+            val success: DerivedAddress
+        ): LedgerResponse(interactionId)
+
         data class LedgerErrorResponse(
             val interactionId: String,
             val code: LedgerErrorCode,
@@ -225,9 +235,9 @@ sealed interface MessageFromDataChannel {
         ) : LedgerResponse(interactionId)
     }
 
-    object ParsingError : MessageFromDataChannel
+    data object ParsingError : MessageFromDataChannel
 
-    object Error : MessageFromDataChannel
+    data object Error : MessageFromDataChannel
 }
 
 fun MessageFromDataChannel.IncomingRequest.NumberOfValues.toProfileShareAccountsQuantifier(): RequestedNumber.Quantifier {

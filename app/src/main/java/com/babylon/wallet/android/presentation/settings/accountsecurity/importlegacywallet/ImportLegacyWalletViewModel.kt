@@ -5,8 +5,8 @@ package com.babylon.wallet.android.presentation.settings.accountsecurity.importl
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.dapp.LedgerMessenger
 import com.babylon.wallet.android.data.dapp.model.Curve
-import com.babylon.wallet.android.data.dapp.model.DerivePublicKeyRequest
 import com.babylon.wallet.android.data.dapp.model.LedgerDeviceModel.Companion.getLedgerDeviceModel
+import com.babylon.wallet.android.data.dapp.model.LedgerInteractionRequest
 import com.babylon.wallet.android.domain.model.AppConstants.ACCOUNT_NAME_MAX_LENGTH
 import com.babylon.wallet.android.domain.model.AppConstants.DELAY_300_MS
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
@@ -400,7 +400,7 @@ class ImportLegacyWalletViewModel @Inject constructor(
             val hardwareAccountsDerivationPaths = hardwareAccountsLeftToMigrate().map { it.derivationPath.path }
             val interactionId = UUIDGenerator.uuid().toString()
             val deviceModel = requireNotNull(ledgerFactorSource.getLedgerDeviceModel())
-            val ledgerDevice = DerivePublicKeyRequest.LedgerDevice(
+            val ledgerDevice = LedgerInteractionRequest.LedgerDevice(
                 name = ledgerFactorSource.hint.name,
                 model = deviceModel,
                 id = ledgerFactorSource.id.body.value
@@ -408,7 +408,7 @@ class ImportLegacyWalletViewModel @Inject constructor(
             ledgerMessenger.sendDerivePublicKeyRequest(
                 interactionId = interactionId,
                 keyParameters = hardwareAccountsDerivationPaths.map { derivationPath ->
-                    DerivePublicKeyRequest.KeyParameters(Curve.Secp256k1, derivationPath)
+                    LedgerInteractionRequest.KeyParameters(Curve.Secp256k1, derivationPath)
                 },
                 ledgerDevice = ledgerDevice
             ).onFailure {
