@@ -37,7 +37,11 @@ internal class EnsureBabylonFactorSourceExistUseCaseTest {
         )
         val profile = Profile.init(
             id = "BABE1442-3C98-41FF-AFB0-D0F5829B020D",
-            deviceName = "unit test",
+            deviceInfo = DeviceInfo(
+                name = "unit",
+                manufacturer = "",
+                model = "test"
+            ),
             creationDate = Instant.EPOCH,
             gateway = Radix.Gateway.default
         )

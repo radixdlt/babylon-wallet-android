@@ -16,15 +16,13 @@ data class DeviceInfo(
             model
         } else {
             "$manufacturer $model"
-        }.replaceFirstChar {
-            if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString()
         }
 
     val displayName: String
         get() = if (name.isBlank()) {
             commercialName
         } else {
-            "$name ($commercialName)"
+            "$name $commercialName"
         }
 
     companion object {
@@ -34,8 +32,12 @@ data class DeviceInfo(
                 context.contentResolver,
                 Settings.Global.DEVICE_NAME
             ).orEmpty(),
-            manufacturer = Build.MANUFACTURER,
-            model = Build.MODEL
+            manufacturer = Build.MANUFACTURER.replaceFirstChar {
+                if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString()
+            },
+            model = Build.MODEL.replaceFirstChar {
+                if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString()
+            }
         )
     }
 }

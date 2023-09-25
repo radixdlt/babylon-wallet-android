@@ -45,6 +45,7 @@ import rdx.works.profile.data.model.pernetwork.SecurityState
 import rdx.works.profile.data.repository.MnemonicRepository
 import rdx.works.profile.data.repository.ProfileRepository
 import rdx.works.profile.derivation.model.KeyType
+import rdx.works.profile.domain.TestData
 import rdx.works.profile.olympiaimport.OlympiaAccountDetails
 import rdx.works.profile.olympiaimport.OlympiaAccountType
 import rdx.works.profile.olympiaimport.olympiaTestSeedPhrase
@@ -68,7 +69,7 @@ internal class MigrateOlympiaAccountsUseCaseTest {
         val profile = Profile(
             header = Header.init(
                 id = "9958f568-8c9b-476a-beeb-017d1f843266",
-                deviceName = "Galaxy A53 5G (Samsung SM-A536B)",
+                deviceInfo = TestData.deviceInfo,
                 creationDate = InstantGenerator(),
                 numberOfNetworks = 1,
                 numberOfAccounts = 1

@@ -56,7 +56,7 @@ internal class AddOlympiaFactorSourceUseCaseTest {
         val profile = Profile(
             header = Header.init(
                 id = "9958f568-8c9b-476a-beeb-017d1f843266",
-                deviceName = "Galaxy A53 5G (Samsung SM-A536B)",
+                deviceInfo = TestData.deviceInfo,
                 creationDate = InstantGenerator(),
                 numberOfNetworks = 1,
                 numberOfAccounts = 1

@@ -16,6 +16,7 @@ import rdx.works.profile.data.model.factorsources.DeviceFactorSource
 import rdx.works.profile.data.model.factorsources.FactorSource
 import rdx.works.profile.data.model.factorsources.LedgerHardwareWalletFactorSource
 import rdx.works.profile.data.model.pernetwork.Network
+import rdx.works.profile.domain.TestData
 
 fun profile(
     accounts: List<Network.Account> = listOf(account("acc-1"), account("acc-2")),
@@ -25,7 +26,7 @@ fun profile(
 ) = Profile(
     header = Header.init(
         id = "9958f568-8c9b-476a-beeb-017d1f843266",
-        deviceName = "Galaxy A53 5G (Samsung SM-A536B)",
+        deviceInfo = TestData.deviceInfo,
         creationDate = InstantGenerator(),
         numberOfNetworks = 1
     ),

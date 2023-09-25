@@ -59,14 +59,14 @@ data class Header(
         @Suppress("LongParameterList")
         fun init(
             id: String,
-            deviceName: String?,
+            deviceInfo: DeviceInfo?,
             creationDate: Instant,
             numberOfNetworks: Int,
             numberOfAccounts: Int = 0,
             numberOfPersonas: Int = 0,
         ): Header {
             val device = Device(
-                description = if (deviceName.isNullOrBlank()) GENERIC_ANDROID_DEVICE_PLACEHOLDER else deviceName,
+                description = deviceInfo?.displayName.orEmpty().ifEmpty { GENERIC_ANDROID_DEVICE_PLACEHOLDER },
                 id = id,
                 date = creationDate
             )
