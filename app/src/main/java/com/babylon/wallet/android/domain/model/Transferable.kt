@@ -73,7 +73,7 @@ sealed interface GuaranteeAssertion {
 }
 
 sealed interface GuaranteeType {
-    object Guaranteed : GuaranteeType
+    data object Guaranteed : GuaranteeType
     data class Predicted(
         val instructionIndex: Long,
         @FloatRange(from = 0.0, to = 1.0)

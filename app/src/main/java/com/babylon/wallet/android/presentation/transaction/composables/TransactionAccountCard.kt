@@ -87,10 +87,11 @@ fun TransactionAccountCard(
             // Show each nft item
             collection.resource.items.forEachIndexed { itemIndex, item ->
                 val lastItem = itemIndex == collection.resource.items.lastIndex && collectionIndex == nftTransferables.lastIndex
-                TransferableItemContent(
+                TransferableNftItemContent(
                     modifier = Modifier.clickable { onNonFungibleResourceClick(collection.resource, item) },
-                    transferable = nftTransferable,
+                    transferable = collection,
                     shape = if (lastItem) RadixTheme.shapes.roundedRectBottomMedium else RectangleShape,
+                    nftItem = item
                 )
             }
         }
@@ -164,6 +165,7 @@ private fun TransferableItemContent(
                     token = resource.resource,
                 )
             }
+
             is TransferableResource.NFTs -> {
                 Thumbnail.NonFungible(
                     modifier = Modifier.size(44.dp),
@@ -173,8 +175,7 @@ private fun TransferableItemContent(
             }
         }
         Text(
-            modifier = Modifier
-                .weight(1f),
+            modifier = Modifier.weight(1f),
             text = when (val resource = transferable.transferable) {
                 is TransferableResource.Amount -> resource.resource.displayTitle
                 is TransferableResource.NFTs -> resource.resource.name
@@ -238,6 +239,53 @@ private fun TransferableItemContent(
                     )
                 }
             }
+        }
+    }
+}
+
+@Composable
+private fun TransferableNftItemContent(
+    modifier: Modifier = Modifier,
+    transferable: TransferableResource.NFTs,
+    shape: Shape,
+    nftItem: Resource.NonFungibleResource.Item
+) {
+    Row(
+        verticalAlignment = CenterVertically,
+        modifier = modifier
+            .height(IntrinsicSize.Min)
+            .background(
+                color = RadixTheme.colors.gray5,
+                shape = shape
+            )
+            .padding(
+                horizontal = RadixTheme.dimensions.paddingDefault,
+                vertical = RadixTheme.dimensions.paddingMedium
+            ),
+        horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingMedium)
+    ) {
+        Thumbnail.NonFungible(
+            modifier = Modifier.size(44.dp),
+            collection = transferable.resource,
+            shape = RadixTheme.shapes.roundedRectSmall
+        )
+        Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.Center) {
+            Text(
+                text = nftItem.localId.displayable,
+                style = RadixTheme.typography.body2Regular,
+                color = RadixTheme.colors.gray1,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
+            Text(
+                text = (nftItem.nameMetadataItem?.name ?: transferable.resource.name).ifEmpty {
+                    stringResource(id = R.string.transactionReview_unknown)
+                },
+                style = RadixTheme.typography.body2HighImportance,
+                color = RadixTheme.colors.gray1,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
         }
     }
 }
