@@ -16,6 +16,7 @@ import kotlinx.serialization.encodeToString
 import rdx.works.peerdroid.helpers.Result.Error
 import rdx.works.peerdroid.helpers.Result.Success
 import rdx.works.profile.data.model.factorsources.Slip10Curve
+import timber.log.Timber
 import javax.inject.Inject
 
 interface LedgerMessenger {
@@ -148,7 +149,7 @@ class LedgerMessengerImpl @Inject constructor(
         request: LedgerInteractionRequest,
         crossinline onError: (MessageFromDataChannel.LedgerResponse.LedgerErrorResponse) -> DappRequestException
     ): Result<R> = flow<Result<R>> {
-        when (peerdroidClient.sendMessage(peerdroidRequestJson.encodeToString(request))) {
+        when (val result = peerdroidClient.sendMessage(peerdroidRequestJson.encodeToString(request))) {
             is Success -> {
                 peerdroidClient.listenForLedgerResponses().filter {
                     it.id == request.interactionId
@@ -165,7 +166,7 @@ class LedgerMessengerImpl @Inject constructor(
                 }
             }
             is Error -> {
-                emit(Result.failure(Exception("Failed to sign transaction with Ledger")))
+                emit(Result.failure(Exception("Failed to sign transaction with Ledger", result.exception)))
             }
         }
     }.first()

@@ -85,6 +85,23 @@ data class SignChallengeResponse(
 ) : LedgerInteractionResponse
 
 @Serializable
+@SerialName("deriveAndDisplayAddress")
+data class DeriveAndDisplayAddressResponse(
+    @SerialName("interactionId")
+    val interactionId: String,
+    @SerialName("success")
+    val success: DerivedAddress? = null,
+    @SerialName("error")
+    val error: Error? = null
+) : LedgerInteractionResponse
+
+@Serializable
+data class DerivedAddress(
+    val derivedKey: DerivedPublicKey,
+    val address: String
+)
+
+@Serializable
 data class Error(
     @SerialName("code")
     @Serializable(with = LedgerErrorCodeSerializer::class)
@@ -145,6 +162,7 @@ fun LedgerInteractionResponse.toDomainModel(): MessageFromDataChannel {
         is GetDeviceInfoResponse -> toDomainModel()
         is SignChallengeResponse -> toDomainModel()
         is SignTransactionResponse -> toDomainModel()
+        is DeriveAndDisplayAddressResponse -> toDomainModel()
     }
 }
 
@@ -204,6 +222,22 @@ private fun DerivePublicKeyResponse.toDomainModel() =
             message = error?.message.orEmpty()
         )
     }
+
+private fun DeriveAndDisplayAddressResponse.toDomainModel() = if (success != null) {
+    LedgerResponse.DeriveAndDisplayAddressResponse(
+        interactionId = interactionId,
+        derivedAddress = LedgerResponse.DerivedAddress(
+            derivedKey = success.derivedKey.toDomainModel(),
+            address = success.address
+        )
+    )
+} else {
+    LedgerResponse.LedgerErrorResponse(
+        interactionId = interactionId,
+        code = error?.code ?: LedgerErrorCode.Generic,
+        message = error?.message.orEmpty()
+    )
+}
 
 object LedgerErrorCodeSerializer : KSerializer<LedgerErrorCode> {
 

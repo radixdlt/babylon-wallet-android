@@ -1,5 +1,6 @@
 package com.babylon.wallet.android.data.dapp.model
 
+import com.babylon.wallet.android.data.dapp.model.LedgerDeviceModel.Companion.getLedgerDeviceModel
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import rdx.works.profile.data.model.factorsources.LedgerHardwareWalletFactorSource
@@ -87,7 +88,17 @@ sealed interface LedgerInteractionRequest {
         val model: LedgerDeviceModel,
         @SerialName("id")
         val id: String
-    )
+    ) {
+
+        companion object {
+            fun from(ledgerFactorSource: LedgerHardwareWalletFactorSource): LedgerDevice = LedgerDevice(
+                name = ledgerFactorSource.hint.name,
+                model = requireNotNull(ledgerFactorSource.getLedgerDeviceModel()),
+                id = ledgerFactorSource.id.body.value
+            )
+        }
+
+    }
 
     @Serializable
     data class KeyParameters(

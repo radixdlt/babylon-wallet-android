@@ -5,7 +5,6 @@ package com.babylon.wallet.android.presentation.settings.accountsecurity.importl
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.dapp.LedgerMessenger
 import com.babylon.wallet.android.data.dapp.model.Curve
-import com.babylon.wallet.android.data.dapp.model.LedgerDeviceModel.Companion.getLedgerDeviceModel
 import com.babylon.wallet.android.data.dapp.model.LedgerInteractionRequest
 import com.babylon.wallet.android.domain.model.AppConstants.ACCOUNT_NAME_MAX_LENGTH
 import com.babylon.wallet.android.domain.model.AppConstants.DELAY_300_MS
@@ -399,18 +398,12 @@ class ImportLegacyWalletViewModel @Inject constructor(
             _state.update { it.copy(waitingForLedgerResponse = true) }
             val hardwareAccountsDerivationPaths = hardwareAccountsLeftToMigrate().map { it.derivationPath.path }
             val interactionId = UUIDGenerator.uuid().toString()
-            val deviceModel = requireNotNull(ledgerFactorSource.getLedgerDeviceModel())
-            val ledgerDevice = LedgerInteractionRequest.LedgerDevice(
-                name = ledgerFactorSource.hint.name,
-                model = deviceModel,
-                id = ledgerFactorSource.id.body.value
-            )
             ledgerMessenger.sendDerivePublicKeyRequest(
                 interactionId = interactionId,
                 keyParameters = hardwareAccountsDerivationPaths.map { derivationPath ->
                     LedgerInteractionRequest.KeyParameters(Curve.Secp256k1, derivationPath)
                 },
-                ledgerDevice = ledgerDevice
+                ledgerDevice = LedgerInteractionRequest.LedgerDevice.from(ledgerFactorSource)
             ).onFailure {
                 _state.update { uiState ->
                     uiState.copy(waitingForLedgerResponse = false)

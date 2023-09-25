@@ -449,6 +449,9 @@
   <string name="addressAction_verifyAddressLedger_error">Verify address request failed</string>
   <string name="addressAction_qrCodeView_qrCodeLabel">QR code for an account</string>
   <string name="addressAction_qrCodeView_failureLabel">Could not create QR code</string>
+  <string name="addressAction_verifyAddressLedger">Verify Address with Ledger</string>
+  <string name="addressAction_verifyAddressLedger_success">Address verified</string>
+  <string name="addressAction_verifyAddressLedger_error">Verify address request failed</string>
   <string name="biometrics_prompt_title">Authenticate to continue</string>
   <string name="biometrics_prompt_creationOfEntity">Authenticate to create new %s with this phone.</string>
   <string name="biometrics_prompt_signAuthChallenge">Authenticate to sign proof with this phone.</string>

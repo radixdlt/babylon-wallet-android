@@ -2,7 +2,6 @@ package com.babylon.wallet.android.domain.usecases.transaction
 
 import com.babylon.wallet.android.data.dapp.LedgerMessenger
 import com.babylon.wallet.android.data.dapp.model.Curve
-import com.babylon.wallet.android.data.dapp.model.LedgerDeviceModel.Companion.getLedgerDeviceModel
 import com.babylon.wallet.android.data.dapp.model.LedgerInteractionRequest
 import com.babylon.wallet.android.data.transaction.DappRequestFailure
 import com.babylon.wallet.android.data.transaction.InteractionState
@@ -85,7 +84,6 @@ class GenerateAuthSigningFactorInstanceUseCase @Inject constructor(
         ledgerHardwareWalletFactorSource: LedgerHardwareWalletFactorSource,
         authSigningDerivationPath: DerivationPath
     ): Result<FactorInstance> {
-        val deviceModel = requireNotNull(ledgerHardwareWalletFactorSource.getLedgerDeviceModel())
         _interactionState.update {
             InteractionState.Ledger.DerivingPublicKey(ledgerHardwareWalletFactorSource)
         }
@@ -97,11 +95,7 @@ class GenerateAuthSigningFactorInstanceUseCase @Inject constructor(
                     authSigningDerivationPath.path
                 )
             ),
-            ledgerDevice = LedgerInteractionRequest.LedgerDevice(
-                name = ledgerHardwareWalletFactorSource.hint.name,
-                model = deviceModel,
-                id = ledgerHardwareWalletFactorSource.id.body.value
-            )
+            ledgerDevice = LedgerInteractionRequest.LedgerDevice.from(ledgerHardwareWalletFactorSource)
         ).mapCatching { derivePublicKeyResponse ->
             derivePublicKeyResponse.publicKeysHex.first().publicKeyHex
         }
