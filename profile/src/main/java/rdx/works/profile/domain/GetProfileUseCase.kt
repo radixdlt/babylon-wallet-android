@@ -7,6 +7,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapNotNull
 import rdx.works.core.PUBLIC_KEY_HASH_LENGTH
 import rdx.works.core.toByteArray
+import rdx.works.profile.data.model.ProfileState
 import rdx.works.profile.data.model.currentNetwork
 import rdx.works.profile.data.model.factorsources.DeviceFactorSource
 import rdx.works.profile.data.model.factorsources.FactorSource
@@ -22,6 +23,11 @@ import javax.inject.Inject
 
 class GetProfileUseCase @Inject constructor(private val profileRepository: ProfileRepository) {
     operator fun invoke() = profileRepository.profile
+
+    suspend fun isInitialized(): Boolean {
+        val profileState = profileRepository.profileState.first()
+        return profileState != ProfileState.NotInitialised && profileState != ProfileState.None
+    }
 }
 
 /**

@@ -17,6 +17,7 @@ class CheckMnemonicIntegrityUseCase @Inject constructor(
 ) {
 
     suspend operator fun invoke() {
+        if (getProfileUseCase.isInitialized().not()) return
         val deviceFactorSources = getProfileUseCase.deviceFactorSources.firstOrNull().orEmpty()
         // try to encrypt random string
         if (deviceFactorSources.isEmpty()) return
