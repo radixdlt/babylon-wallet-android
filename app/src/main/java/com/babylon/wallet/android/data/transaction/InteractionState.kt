@@ -44,6 +44,12 @@ sealed class InteractionState(val factorSource: FactorSource) {
             override val signingPurpose: SigningPurpose = SigningPurpose.SignTransaction
         ) : Ledger(ledgerFactorSource)
 
+        data class Error(
+            private val ledgerFactorSource: LedgerHardwareWalletFactorSource,
+            override val signingPurpose: SigningPurpose?,
+            val failure: DappRequestFailure
+        ) : Ledger(ledgerFactorSource)
+
         override val label: String
             get() = ledgerFactorSource.hint.name
     }

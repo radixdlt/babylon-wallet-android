@@ -2,6 +2,7 @@ package com.babylon.wallet.android.data.transaction
 
 import androidx.annotation.StringRes
 import com.babylon.wallet.android.R
+import com.babylon.wallet.android.data.dapp.model.LedgerErrorCode
 import com.babylon.wallet.android.data.dapp.model.WalletErrorType
 
 @Suppress("CyclomaticComplexMethod")
@@ -39,7 +40,7 @@ sealed class DappRequestFailure(msg: String? = null) : Exception(msg.orEmpty()) 
     sealed class LedgerCommunicationFailure : DappRequestFailure() {
         data object FailedToGetDeviceId : LedgerCommunicationFailure()
         data object FailedToDerivePublicKeys : LedgerCommunicationFailure()
-        data object FailedToSignTransaction : LedgerCommunicationFailure()
+        data class FailedToSignTransaction(val reason: LedgerErrorCode) : LedgerCommunicationFailure()
     }
 
     fun toWalletErrorType(): WalletErrorType {
@@ -71,9 +72,9 @@ sealed class DappRequestFailure(msg: String? = null) : Exception(msg.orEmpty()) 
             TransactionApprovalFailure.CompileTransactionIntent -> WalletErrorType.FailedToCompileTransaction
             TransactionApprovalFailure.SignCompiledTransactionIntent -> WalletErrorType.FailedToSignTransaction
             is FailedToSignAuthChallenge -> WalletErrorType.FailedToSignAuthChallenge
-            LedgerCommunicationFailure.FailedToDerivePublicKeys -> WalletErrorType.InvalidRequest
+            is LedgerCommunicationFailure.FailedToDerivePublicKeys -> WalletErrorType.InvalidRequest
             LedgerCommunicationFailure.FailedToGetDeviceId -> WalletErrorType.InvalidRequest
-            LedgerCommunicationFailure.FailedToSignTransaction -> WalletErrorType.InvalidRequest
+            is LedgerCommunicationFailure.FailedToSignTransaction -> WalletErrorType.InvalidRequest
             DappVerificationFailure.ClaimedEntityAddressNotPresent -> WalletErrorType.WrongAccountType
         }
     }
@@ -105,7 +106,11 @@ sealed class DappRequestFailure(msg: String? = null) : Exception(msg.orEmpty()) 
             TransactionApprovalFailure.SignCompiledTransactionIntent -> R.string.error_transactionFailure_prepare
             LedgerCommunicationFailure.FailedToDerivePublicKeys -> R.string.common_somethingWentWrong // TODO consider different copy
             LedgerCommunicationFailure.FailedToGetDeviceId -> R.string.common_somethingWentWrong // TODO consider different copy
-            LedgerCommunicationFailure.FailedToSignTransaction -> R.string.common_somethingWentWrong // TODO consider different copy
+            is LedgerCommunicationFailure.FailedToSignTransaction -> when (this.reason) {
+                LedgerErrorCode.Generic -> R.string.common_somethingWentWrong
+                LedgerErrorCode.BlindSigningNotEnabledButRequired -> R.string.error_transactionFailure_blindSigningNotEnabledButRequired
+                LedgerErrorCode.UserRejectedSigningOfTransaction -> R.string.error_transactionFailure_rejected
+            }
             is FailedToSignAuthChallenge -> R.string.common_somethingWentWrong // TODO consider different copy
             DappVerificationFailure.ClaimedEntityAddressNotPresent -> R.string.common_somethingWentWrong // TODO consider different copy
         }

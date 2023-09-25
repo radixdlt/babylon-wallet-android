@@ -4,7 +4,6 @@ import com.babylon.wallet.android.data.dapp.LedgerMessenger
 import com.babylon.wallet.android.data.dapp.model.DerivePublicKeyRequest
 import com.babylon.wallet.android.data.dapp.model.LedgerDeviceModel
 import com.babylon.wallet.android.data.dapp.model.LedgerDeviceModel.Companion.getLedgerDeviceModel
-import com.babylon.wallet.android.domain.RadixWalletException
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.radixdlt.ret.SignatureWithPublicKey
 import kotlinx.coroutines.flow.first
@@ -139,9 +138,8 @@ class SignWithLedgerFactorSourceUseCase @Inject constructor(
             }
         }
         val deviceModel = requireNotNull(ledgerFactorSource.getLedgerDeviceModel())
-        val signaturesResult = signaturesProvider(derivationPathToCurve, deviceModel)
-        return if (signaturesResult.isSuccess) {
-            val ledgerSignatures = signaturesResult.getOrThrow().map { signatureOfSigner ->
+        return signaturesProvider(derivationPathToCurve, deviceModel).map { signatures ->
+            signatures.map { signatureOfSigner ->
                 when (signatureOfSigner.derivedPublicKey.curve) {
                     MessageFromDataChannel.LedgerResponse.DerivedPublicKey.Curve.Curve25519 -> {
                         SignatureWithPublicKey.Ed25519(
@@ -149,6 +147,7 @@ class SignWithLedgerFactorSourceUseCase @Inject constructor(
                             publicKey = signatureOfSigner.derivedPublicKey.publicKeyHex.decodeHex().toUByteList()
                         )
                     }
+
                     MessageFromDataChannel.LedgerResponse.DerivedPublicKey.Curve.Secp256k1 -> {
                         SignatureWithPublicKey.Secp256k1(
                             signature = signatureOfSigner.signature.decodeHex().toUByteList()
@@ -156,11 +155,9 @@ class SignWithLedgerFactorSourceUseCase @Inject constructor(
                     }
                 }
             }
+        }.onSuccess {
             val profile = profileRepository.profile.first()
             profileRepository.saveProfile(profile.updateLastUsed(ledgerFactorSource.id))
-            Result.success(ledgerSignatures)
-        } else {
-            Result.failure(RadixWalletException.FailedToCollectLedgerSignature)
         }
     }
 }
