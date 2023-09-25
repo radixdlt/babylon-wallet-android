@@ -4,6 +4,7 @@ import android.content.Intent
 import android.provider.Settings
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -13,10 +14,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
+import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.babylon.wallet.android.presentation.account.createaccount.confirmation.CreateAccountRequestSource
 import com.babylon.wallet.android.presentation.account.createaccount.createAccountScreen
@@ -32,6 +35,7 @@ import com.babylon.wallet.android.presentation.onboarding.restore.mnemonics.rest
 import com.babylon.wallet.android.presentation.status.dapp.dappInteractionDialog
 import com.babylon.wallet.android.presentation.status.transaction.transactionStatusDialog
 import com.babylon.wallet.android.presentation.transaction.transactionReview
+import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.LocalDevBannerState
 import com.babylon.wallet.android.presentation.ui.composables.NotSecureAlertDialog
 import com.babylon.wallet.android.utils.AppEvent
@@ -48,6 +52,7 @@ fun WalletApp(
     mainViewModel: MainViewModel,
     onCloseApp: () -> Unit
 ) {
+    val state by mainViewModel.state.collectAsStateWithLifecycle()
     val navController = rememberAnimatedNavController()
     var showNotSecuredDialog by remember { mutableStateOf(false) }
     NavigationHost(
@@ -119,6 +124,31 @@ fun WalletApp(
             showNotSecuredDialog = false
             onCloseApp()
         })
+    }
+    if (state.invalidRequest) {
+        BasicPromptAlertDialog(
+            finish = {
+                mainViewModel.onInvalidRequestMessageShown()
+            },
+            title = {
+                Text(
+                    text = stringResource(id = R.string.dAppRequest_validationOutcome_invalidRequestTitle),
+                    style = RadixTheme.typography.body1Header,
+                    color = RadixTheme.colors.gray1
+                )
+            },
+            text = {
+                Text(
+                    text = stringResource(id = R.string.dAppRequest_validationOutcome_invalidRequestMessage),
+                    style = RadixTheme.typography.body2Regular,
+                    color = RadixTheme.colors.gray1
+                )
+            },
+            confirmText = stringResource(
+                id = R.string.common_ok
+            ),
+            dismissText = null
+        )
     }
 }
 

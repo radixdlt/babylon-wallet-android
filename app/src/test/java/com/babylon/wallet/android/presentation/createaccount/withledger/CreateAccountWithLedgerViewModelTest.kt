@@ -21,12 +21,12 @@ import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Ignore
 import org.junit.Test
+import rdx.works.core.HexCoded32Bytes
 import rdx.works.profile.data.model.apppreferences.P2PLink
-import rdx.works.profile.data.model.factorsources.FactorSource
 import rdx.works.profile.data.model.factorsources.LedgerHardwareWalletFactorSource
+import rdx.works.profile.domain.AddLedgerFactorSourceResult
 import rdx.works.profile.domain.AddLedgerFactorSourceUseCase
 import rdx.works.profile.domain.GetProfileUseCase
-import rdx.works.profile.domain.AddLedgerFactorSourceResult
 import rdx.works.profile.domain.p2pLinks
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -51,7 +51,7 @@ internal class CreateAccountWithLedgerViewModelTest : StateViewModelTest<CreateA
         coEvery { getProfileUseCase() } returns flowOf(profile())
         coEvery {
             addLedgerFactorSourceUseCase(
-                FactorSource.HexCoded32Bytes(firstDeviceId),
+                HexCoded32Bytes(firstDeviceId),
                 any(),
                 any()
             )
@@ -59,7 +59,7 @@ internal class CreateAccountWithLedgerViewModelTest : StateViewModelTest<CreateA
             LedgerHardwareWalletFactorSource.newSource(
                 model = LedgerHardwareWalletFactorSource.DeviceModel.NANO_S,
                 name = "ledger",
-                deviceID = FactorSource.HexCoded32Bytes(secondDeviceId)
+                deviceID = HexCoded32Bytes(secondDeviceId)
             )
         )
         coEvery { ledgerMessenger.sendDerivePublicKeyRequest(any(), any(), any()) } returns Result.success(

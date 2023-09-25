@@ -5,7 +5,7 @@ import com.babylon.wallet.android.data.dapp.model.LedgerErrorCode
 import com.babylon.wallet.android.data.dapp.model.TransactionType
 import kotlinx.parcelize.Parcelize
 import kotlinx.serialization.Serializable
-import rdx.works.profile.data.model.factorsources.FactorSource
+import rdx.works.core.HexCoded32Bytes
 import rdx.works.profile.data.model.factorsources.LedgerHardwareWalletFactorSource
 import rdx.works.profile.data.model.pernetwork.PersonaData
 import rdx.works.profile.data.model.pernetwork.RequestedNumber
@@ -200,7 +200,7 @@ sealed interface MessageFromDataChannel {
         data class GetDeviceInfoResponse(
             val interactionId: String,
             val model: LedgerDeviceModel,
-            val deviceId: FactorSource.HexCoded32Bytes
+            val deviceId: HexCoded32Bytes
         ) : LedgerResponse(interactionId)
 
         data class DerivePublicKeyResponse(

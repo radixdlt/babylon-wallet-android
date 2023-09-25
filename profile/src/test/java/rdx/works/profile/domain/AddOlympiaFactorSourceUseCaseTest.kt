@@ -10,6 +10,7 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest
 import org.junit.Test
+import rdx.works.core.HexCoded32Bytes
 import rdx.works.core.InstantGenerator
 import rdx.works.core.preferences.PreferencesManager
 import rdx.works.profile.data.model.Header
@@ -96,7 +97,7 @@ internal class AddOlympiaFactorSourceUseCaseTest {
                                         ),
                                         factorSourceId = FactorSource.FactorSourceID.FromHash(
                                             kind = FactorSourceKind.DEVICE,
-                                            body = FactorSource.HexCoded32Bytes("5f07ec336e9e7891bff04004c817201e73c097b6b1e1b3a26bc501e0010196f5")
+                                            body = HexCoded32Bytes("5f07ec336e9e7891bff04004c817201e73c097b6b1e1b3a26bc501e0010196f5")
                                         )
                                     )
                                 )

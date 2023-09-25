@@ -46,7 +46,9 @@ fun AddLinkConnectorScreen(
     connectorDisplayName: String,
     isNewConnectorContinueButtonEnabled: Boolean,
     onNewConnectorContinueClick: () -> Unit,
-    onNewConnectorCloseClick: () -> Unit
+    onNewConnectorCloseClick: () -> Unit,
+    invalidConnectionPassword: Boolean,
+    onInvalidConnectionPasswordDismissed: () -> Unit
 ) {
     BackHandler(onBack = onNewConnectorCloseClick)
 
@@ -67,6 +69,31 @@ fun AddLinkConnectorScreen(
         onContinueClick = onNewConnectorContinueClick,
         onCloseClick = onNewConnectorCloseClick
     )
+    if (invalidConnectionPassword) {
+        BasicPromptAlertDialog(
+            finish = {
+                onInvalidConnectionPasswordDismissed()
+            },
+            title = {
+                Text(
+                    text = stringResource(id = R.string.linkedConnectors_incorrectQrTitle),
+                    style = RadixTheme.typography.body1Header,
+                    color = RadixTheme.colors.gray1
+                )
+            },
+            text = {
+                Text(
+                    text = stringResource(id = R.string.linkedConnectors_incorrectQrMessage),
+                    style = RadixTheme.typography.body2Regular,
+                    color = RadixTheme.colors.gray1
+                )
+            },
+            confirmText = stringResource(
+                id = R.string.common_ok
+            ),
+            dismissText = null
+        )
+    }
 }
 
 @OptIn(ExperimentalComposeUiApi::class)

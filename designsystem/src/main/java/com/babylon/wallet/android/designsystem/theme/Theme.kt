@@ -210,9 +210,9 @@ private val LightColorPalette = RadixColors(
 
 @Suppress("UnusedPrivateMember")
 private val DarkColorPalette = RadixColors(
-    defaultBackground = Black,
-    backgroundAlternate = White,
-    defaultText = White,
+    defaultBackground = White,
+    backgroundAlternate = Black,
+    defaultText = Black,
     blue1 = Blue1,
     blue2 = Blue2,
     blue3 = Blue3,
@@ -344,7 +344,7 @@ fun RadixWalletTheme(
     val colors = if (darkTheme) {
         // TODO update to dark color palette when we have it ready
         // TODO remove android:windowBackground from themes.xml
-        LightColorPalette
+        DarkColorPalette
     } else {
         LightColorPalette
     }

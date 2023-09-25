@@ -194,10 +194,13 @@ class MainViewModel @Inject constructor(
 
     private fun processIncomingRequest(request: IncomingRequest) {
         processingDappRequestJob = viewModelScope.launch {
-            val verificationResult = verifyDappUseCase(request)
-            verificationResult.onSuccess { verified ->
+            verifyDappUseCase(request).onSuccess { verified ->
                 if (verified) {
                     incomingRequestRepository.add(request)
+                }
+            }.onFailure {
+                _state.update { state ->
+                    state.copy(invalidRequest = true)
                 }
             }
         }
@@ -211,6 +214,10 @@ class MainViewModel @Inject constructor(
         peerdroidClient.terminate()
         incomingRequestRepository.removeAll()
         Timber.d("Peerdroid terminated")
+    }
+
+    fun onInvalidRequestMessageShown() {
+        _state.update { it.copy(invalidRequest = false) }
     }
 
     fun onAppToForeground() {
@@ -242,14 +249,15 @@ sealed class MainEvent : OneOffEvent {
 }
 
 data class MainUiState(
-    val initialAppState: AppState = AppState.Loading
+    val initialAppState: AppState = AppState.Loading,
+    val invalidRequest: Boolean = false
 ) : UiState
 
 sealed interface AppState {
-    object OnBoarding : AppState
-    object Wallet : AppState
-    object IncompatibleProfile : AppState
-    object Loading : AppState
+    data object OnBoarding : AppState
+    data object Wallet : AppState
+    data object IncompatibleProfile : AppState
+    data object Loading : AppState
 
     companion object {
         fun from(profileState: ProfileState) = when (profileState) {

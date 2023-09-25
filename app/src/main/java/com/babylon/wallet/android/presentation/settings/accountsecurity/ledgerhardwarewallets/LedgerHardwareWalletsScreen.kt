@@ -126,7 +126,9 @@ fun LedgerHardwareWalletsScreen(
                     onNewConnectorCloseClick = {
                         addLinkConnectorViewModel.onCloseClick()
                         viewModel.onNewConnectorCloseClick()
-                    }
+                    },
+                    invalidConnectionPassword = addLinkConnectorState.invalidConnectionPassword,
+                    onInvalidConnectionPasswordDismissed = addLinkConnectorViewModel::onInvalidConnectionPasswordShown
                 )
             }
         }

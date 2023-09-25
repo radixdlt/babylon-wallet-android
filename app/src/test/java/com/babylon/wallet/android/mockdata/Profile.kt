@@ -1,6 +1,7 @@
 package com.babylon.wallet.android.mockdata
 
 import com.babylon.wallet.android.domain.SampleDataProvider
+import rdx.works.core.HexCoded32Bytes
 import rdx.works.core.InstantGenerator
 import rdx.works.profile.data.model.Header
 import rdx.works.profile.data.model.MnemonicWithPassphrase
@@ -13,7 +14,6 @@ import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.data.model.apppreferences.Security
 import rdx.works.profile.data.model.apppreferences.Transaction
 import rdx.works.profile.data.model.factorsources.DeviceFactorSource
-import rdx.works.profile.data.model.factorsources.FactorSource
 import rdx.works.profile.data.model.factorsources.LedgerHardwareWalletFactorSource
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.domain.TestData
@@ -45,7 +45,7 @@ fun profile(
             )
         ),
         LedgerHardwareWalletFactorSource.newSource(
-            deviceID = FactorSource.HexCoded32Bytes("5f07ec336e9e7891bff04004c817201e73c097b6b1e1b3a26bc501e0010196f5"),
+            deviceID = HexCoded32Bytes("5f07ec336e9e7891bff04004c817201e73c097b6b1e1b3a26bc501e0010196f5"),
             model = LedgerHardwareWalletFactorSource.DeviceModel.NANO_S,
             name = "My Ledger"
         )

@@ -4,6 +4,7 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import rdx.works.core.HexCoded32Bytes
 import rdx.works.profile.data.model.MnemonicWithPassphrase
 import rdx.works.profile.data.model.factorsources.FactorSource
 import rdx.works.profile.data.model.factorsources.FactorSourceKind
@@ -68,7 +69,7 @@ class MnemonicRepository @Inject constructor(
             val key = FactorSource.factorSourceId(mnemonicWithPassphrase = generated)
             val fromHash = FactorSource.FactorSourceID.FromHash(
                 kind = FactorSourceKind.DEVICE,
-                body = FactorSource.HexCoded32Bytes(key)
+                body = HexCoded32Bytes(key)
             )
             saveMnemonic(key = fromHash, mnemonicWithPassphrase = generated)
             generated

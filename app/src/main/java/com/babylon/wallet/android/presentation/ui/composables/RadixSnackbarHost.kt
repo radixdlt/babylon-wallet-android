@@ -78,12 +78,12 @@ fun RadixSnackbar(
 ) {
     Snackbar(
         modifier = modifier,
-        action = action,
         shape = shape,
         containerColor = containerColor,
         contentColor = contentColor,
         content = {
             Text(text = snackbarData.visuals.message, style = RadixTheme.typography.body2Regular)
         },
+        action = action
     )
 }

@@ -7,7 +7,7 @@ import kotlinx.serialization.EncodeDefault
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import okio.ByteString.Companion.decodeHex
+import rdx.works.core.HexCoded32Bytes
 import rdx.works.profile.data.model.MnemonicWithPassphrase
 import rdx.works.profile.data.model.compressedPublicKey
 import rdx.works.profile.data.model.pernetwork.DerivationPath
@@ -48,20 +48,6 @@ sealed class FactorSource {
         companion object {
             const val fromHashSerialName = "fromHash"
             const val fromAddressSerialName = "fromAddress"
-        }
-    }
-
-    // TODO move it to the domain layer
-    @Serializable
-    @JvmInline
-    value class HexCoded32Bytes(val value: String) {
-        init {
-            val byteArray = value.decodeHex().toByteArray()
-            require(byteArray.size == byteCount) { "value must be 32 bytes but it is ${byteArray.size}" }
-        }
-
-        companion object {
-            private const val byteCount = 32
         }
     }
 

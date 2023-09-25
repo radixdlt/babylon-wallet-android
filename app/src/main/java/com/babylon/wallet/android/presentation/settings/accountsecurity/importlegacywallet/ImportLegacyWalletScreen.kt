@@ -34,7 +34,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
@@ -106,6 +105,7 @@ import kotlinx.coroutines.launch
 import rdx.works.profile.data.model.factorsources.LedgerHardwareWalletFactorSource
 import rdx.works.profile.olympiaimport.ChunkInfo
 import rdx.works.profile.olympiaimport.OlympiaAccountDetails
+import kotlin.reflect.KFunction0
 
 @Composable
 fun ImportLegacyWalletScreen(
@@ -173,7 +173,8 @@ fun ImportLegacyWalletScreen(
         shouldShowAddLedgerDeviceScreen = state.shouldShowAddLedgerDeviceScreen,
         onCloseSettings = viewModel::onCloseSettings,
         onWordSelected = viewModel::onWordSelected,
-        importAllAccounts = viewModel::importAllAccounts
+        importAllAccounts = viewModel::importAllAccounts,
+        onInvalidConnectionPasswordShown = addLinkConnectorViewModel::onInvalidConnectionPasswordShown
     )
 }
 
@@ -217,7 +218,8 @@ private fun ImportLegacyWalletContent(
     shouldShowAddLedgerDeviceScreen: Boolean,
     onCloseSettings: () -> Unit,
     onWordSelected: (Int, String) -> Unit,
-    importAllAccounts: () -> Unit
+    importAllAccounts: () -> Unit,
+    onInvalidConnectionPasswordShown: KFunction0<Unit>
 ) {
     val focusManager = LocalFocusManager.current
     val cameraPermissionState = rememberPermissionState(permission = Manifest.permission.CAMERA)
@@ -281,7 +283,6 @@ private fun ImportLegacyWalletContent(
             }
         }
     }
-
     val snackBarHostState = remember { SnackbarHostState() }
     SnackbarUIMessage(
         message = uiMessage,
@@ -302,11 +303,7 @@ private fun ImportLegacyWalletContent(
                 RadixSnackbarHost(
                     modifier = Modifier.padding(RadixTheme.dimensions.paddingDefault),
                     hostState = snackBarHostState
-                ) {
-                    TextButton(onClick = onMessageShown) {
-                        Text(stringResource(id = R.string.common_ok))
-                    }
-                }
+                )
             },
             containerColor = RadixTheme.colors.defaultBackground,
             bottomBar = {
@@ -398,7 +395,9 @@ private fun ImportLegacyWalletContent(
                 connectorDisplayName = addLinkConnectorState.connectorDisplayName,
                 isNewConnectorContinueButtonEnabled = addLinkConnectorState.isContinueButtonEnabled,
                 onNewConnectorContinueClick = onNewConnectorContinueClick,
-                onNewConnectorCloseClick = onNewConnectorCloseClick
+                onNewConnectorCloseClick = onNewConnectorCloseClick,
+                invalidConnectionPassword = addLinkConnectorState.invalidConnectionPassword,
+                onInvalidConnectionPasswordDismissed = onInvalidConnectionPasswordShown
             )
         }
         if (shouldShowAddLedgerDeviceScreen) {

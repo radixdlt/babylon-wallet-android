@@ -2,6 +2,7 @@ package rdx.works.profile.data.model.factorsources
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import rdx.works.core.HexCoded32Bytes
 import rdx.works.core.InstantGenerator
 import rdx.works.profile.data.model.MnemonicWithPassphrase
 import java.time.Instant
