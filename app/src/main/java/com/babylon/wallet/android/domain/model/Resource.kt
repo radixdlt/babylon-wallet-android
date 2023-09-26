@@ -177,7 +177,8 @@ sealed class Resource {
             val nameMetadataItem: NameMetadataItem? = null,
             val iconMetadataItem: IconUrlMetadataItem? = null,
             val readyToClaim: Boolean = false,
-            val claimAmountMetadataItem: ClaimAmountMetadataItem? = null
+            val claimAmountMetadataItem: ClaimAmountMetadataItem? = null,
+            val remainingMetadata: List<Pair<String, String>> = emptyList()
         ) : Comparable<Item> {
 
             val globalAddress: String

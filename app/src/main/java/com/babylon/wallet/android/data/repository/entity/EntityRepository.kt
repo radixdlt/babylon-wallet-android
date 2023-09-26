@@ -594,7 +594,7 @@ class EntityRepositoryImpl @Inject constructor(
         return allNonFungibles
     }
 
-    @Suppress("LongMethod")
+    @Suppress("LongMethod", "CyclomaticComplexMethod")
     private suspend fun getNonFungibleResourceItemsForAccount(
         accountAddress: String,
         vaultAddress: String,
@@ -671,7 +671,20 @@ class EntityRepositoryImpl @Inject constructor(
                                     }?.value?.let { imageUrl -> IconUrlMetadataItem(url = Uri.parse(imageUrl)) },
                                 readyToClaim = claimEpoch != null && ledgerEpoch != null && ledgerEpoch >= claimEpoch,
                                 claimAmountMetadataItem = stateNonFungibleDetailsResponseItem.claimAmount()
-                                    ?.let { claimAmount -> ClaimAmountMetadataItem(claimAmount) }
+                                    ?.let { claimAmount -> ClaimAmountMetadataItem(claimAmount) },
+                                remainingMetadata = stateNonFungibleDetailsResponseItem.data?.programmaticJson?.fields
+                                    ?.filterNot { field ->
+                                        field.field_name == ExplicitMetadataKey.NAME.key ||
+                                            field.field_name == ExplicitMetadataKey.KEY_IMAGE_URL.key
+                                    }?.mapNotNull { field ->
+                                        val fieldName = field.field_name.orEmpty()
+                                        val value = field.valueContent.orEmpty()
+                                        if (fieldName.isNotEmpty() && value.isNotBlank()) {
+                                            Pair(fieldName, value)
+                                        } else {
+                                            null
+                                        }
+                                    }.orEmpty()
                             )
                         }
                     }.value()

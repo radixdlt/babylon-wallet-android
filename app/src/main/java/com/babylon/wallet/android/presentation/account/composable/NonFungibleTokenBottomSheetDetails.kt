@@ -97,6 +97,28 @@ fun NonFungibleTokenBottomSheetDetails(
                     )
                 }
             }
+
+            item.remainingMetadata.forEach { field ->
+                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
+                Row(
+                    modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingXLarge),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(
+                        modifier = Modifier.padding(end = RadixTheme.dimensions.paddingMedium),
+                        text = field.first,
+                        style = RadixTheme.typography.body1Regular,
+                        color = RadixTheme.colors.gray2
+                    )
+                    Spacer(modifier = Modifier.weight(1f))
+                    Text(
+                        text = field.second,
+                        style = RadixTheme.typography.body1HighImportance,
+                        color = RadixTheme.colors.gray1
+                    )
+                }
+            }
             Spacer(modifier = Modifier.weight(1f))
         }
         if (nonFungibleResource != null) {
