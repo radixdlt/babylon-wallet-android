@@ -16,7 +16,7 @@ class ResolveDAppsUseCase @Inject constructor(
      * - get dAppDefinitionAddress from component metadata
      * - get metadata for that address
      * - validate that account_type is "dapp definition"
-     * - check if componentAddress is within claimed_enditites metadata of dAppDefinitionAddress metadata
+     * - check if componentAddress is within claimed_entities metadata of dAppDefinitionAddress metadata
      */
     suspend operator fun invoke(
         componentAddress: String

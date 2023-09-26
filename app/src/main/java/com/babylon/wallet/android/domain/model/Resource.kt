@@ -3,6 +3,7 @@ package com.babylon.wallet.android.domain.model
 import android.net.Uri
 import com.babylon.wallet.android.domain.model.behaviours.ResourceBehaviour
 import com.babylon.wallet.android.domain.model.metadata.ClaimAmountMetadataItem
+import com.babylon.wallet.android.domain.model.metadata.DAppDefinitionsMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.DescriptionMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.IconUrlMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.NameMetadataItem
@@ -36,6 +37,7 @@ sealed class Resource {
         val currentSupply: BigDecimal? = null,
         private val validatorMetadataItem: ValidatorMetadataItem? = null,
         private val poolMetadataItem: PoolMetadataItem? = null,
+        private val dAppDefinitionsMetadataItem: DAppDefinitionsMetadataItem? = null,
         val divisibility: Int? = null
     ) : Resource(), Comparable<FungibleResource> {
         override val name: String
@@ -55,6 +57,9 @@ sealed class Resource {
 
         val poolAddress: String?
             get() = poolMetadataItem?.poolAddress
+
+        val dappDefinitions: List<String>
+            get() = dAppDefinitionsMetadataItem?.addresses.orEmpty()
 
         val tags: List<Tag>
             get() = if (isXrd) {
@@ -142,7 +147,8 @@ sealed class Resource {
         private val behaviours: List<ResourceBehaviour> = emptyList(),
         val items: List<Item>,
         val currentSupply: Int? = null,
-        private val validatorMetadataItem: ValidatorMetadataItem? = null
+        private val validatorMetadataItem: ValidatorMetadataItem? = null,
+        private val dAppDefinitionsMetadataItem: DAppDefinitionsMetadataItem? = null,
     ) : Resource(), Comparable<NonFungibleResource> {
         override val name: String
             get() = nameMetadataItem?.name.orEmpty()
@@ -161,6 +167,9 @@ sealed class Resource {
 
         val resourceBehaviours: List<ResourceBehaviour>
             get() = behaviours
+
+        val dappDefinitions: List<String>
+            get() = dAppDefinitionsMetadataItem?.addresses.orEmpty()
 
         override fun compareTo(other: NonFungibleResource): Int = when {
             nameMetadataItem == null && other.nameMetadataItem != null -> 1
