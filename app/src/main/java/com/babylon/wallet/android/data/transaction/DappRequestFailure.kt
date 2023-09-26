@@ -11,6 +11,7 @@ sealed class DappRequestFailure(msg: String? = null) : Exception(msg.orEmpty()) 
     data object GetEpoch : DappRequestFailure()
     data object RejectedByUser : DappRequestFailure()
     data object InvalidRequest : DappRequestFailure()
+    data object UnacceptableManifest : DappRequestFailure()
     data object InvalidPersona : DappRequestFailure()
     data class FailedToSignAuthChallenge(val msg: String = "") : DappRequestFailure(msg)
     data class WrongNetwork(val currentNetworkId: Int, val requestNetworkId: Int) : DappRequestFailure()
@@ -76,6 +77,7 @@ sealed class DappRequestFailure(msg: String? = null) : Exception(msg.orEmpty()) 
             LedgerCommunicationFailure.FailedToGetDeviceId -> WalletErrorType.InvalidRequest
             is LedgerCommunicationFailure.FailedToSignTransaction -> WalletErrorType.InvalidRequest
             DappVerificationFailure.ClaimedEntityAddressNotPresent -> WalletErrorType.WrongAccountType
+            UnacceptableManifest -> WalletErrorType.FailedToPrepareTransaction
         }
     }
 
@@ -113,6 +115,7 @@ sealed class DappRequestFailure(msg: String? = null) : Exception(msg.orEmpty()) 
             }
             is FailedToSignAuthChallenge -> R.string.common_somethingWentWrong // TODO consider different copy
             DappVerificationFailure.ClaimedEntityAddressNotPresent -> R.string.common_somethingWentWrong // TODO consider different copy
+            UnacceptableManifest -> R.string.transactionReview_unacceptableManifest_rejected
         }
     }
 

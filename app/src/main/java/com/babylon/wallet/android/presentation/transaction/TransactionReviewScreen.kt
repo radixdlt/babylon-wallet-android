@@ -288,6 +288,9 @@ private fun TransactionPreviewContent(
                             ReceiptEdge(modifier = Modifier.fillMaxWidth(), color = RadixTheme.colors.gray5, topEdge = true)
                             when (val preview = state.previewType) {
                                 is PreviewType.None -> {}
+                                is PreviewType.UnacceptableManifest -> {
+                                    return@AnimatedVisibility
+                                }
                                 is PreviewType.NonConforming -> {}
                                 is PreviewType.Transfer -> {
                                     TransactionPreviewTypeContent(

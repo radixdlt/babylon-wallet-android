@@ -1,5 +1,7 @@
 package com.babylon.wallet.android.presentation.transaction.analysis
 
+import com.babylon.wallet.android.data.transaction.DappRequestException
+import com.babylon.wallet.android.data.transaction.DappRequestFailure
 import com.babylon.wallet.android.data.transaction.NotaryAndSigners
 import com.babylon.wallet.android.data.transaction.TransactionClient
 import com.babylon.wallet.android.domain.usecases.GetAccountsWithResourcesUseCase
@@ -58,30 +60,17 @@ class TransactionAnalysisDelegate(
         manifest: TransactionManifest,
         notaryAndSigners: NotaryAndSigners
     ) = this.onSuccess { analysis ->
-        val previewType = if (analysis.transactionTypes.isEmpty()) {
+        val previewType = if (analysis.reservedInstructions.isNotEmpty()) { // wallet unacceptable manifest
+            state.update {
+                it.copy(
+                    error = UiMessage.ErrorMessage.from(DappRequestException(DappRequestFailure.UnacceptableManifest))
+                )
+            }
+            PreviewType.UnacceptableManifest
+        } else if (analysis.transactionTypes.isEmpty()) {
             PreviewType.NonConforming
         } else {
-            when (val type = analysis.transactionTypes[0]) {
-                is TransactionType.GeneralTransaction -> type.resolve(
-                    getTransactionBadgesUseCase = getTransactionBadgesUseCase,
-                    getProfileUseCase = getProfileUseCase,
-                    getAccountsWithResourcesUseCase = getAccountsWithResourcesUseCase,
-                    getResourcesMetadataUseCase = getResourcesMetadataUseCase,
-                    resolveDAppsUseCase = resolveDAppsUseCase
-                )
-
-                is TransactionType.SimpleTransfer -> type.resolve(
-                    getProfileUseCase = getProfileUseCase,
-                    getAccountsWithResourcesUseCase = getAccountsWithResourcesUseCase
-                )
-
-                is TransactionType.Transfer -> type.resolve(
-                    getProfileUseCase = getProfileUseCase,
-                    getAccountsWithResourcesUseCase = getAccountsWithResourcesUseCase
-                )
-
-                else -> { PreviewType.NonConforming }
-            }
+            processConformingManifest(analysis.transactionTypes[0])
         }
 
         var transactionFees = TransactionFees(
@@ -122,6 +111,32 @@ class TransactionAnalysisDelegate(
         }
     }.onFailure { error ->
         reportFailure(error)
+    }
+
+    private suspend fun processConformingManifest(transactionType: TransactionType): PreviewType {
+        return when (transactionType) {
+            is TransactionType.GeneralTransaction -> transactionType.resolve(
+                getTransactionBadgesUseCase = getTransactionBadgesUseCase,
+                getProfileUseCase = getProfileUseCase,
+                getAccountsWithResourcesUseCase = getAccountsWithResourcesUseCase,
+                getResourcesMetadataUseCase = getResourcesMetadataUseCase,
+                resolveDAppsUseCase = resolveDAppsUseCase
+            )
+
+            is TransactionType.SimpleTransfer -> transactionType.resolve(
+                getProfileUseCase = getProfileUseCase,
+                getAccountsWithResourcesUseCase = getAccountsWithResourcesUseCase
+            )
+
+            is TransactionType.Transfer -> transactionType.resolve(
+                getProfileUseCase = getProfileUseCase,
+                getAccountsWithResourcesUseCase = getAccountsWithResourcesUseCase
+            )
+
+            else -> {
+                PreviewType.NonConforming
+            }
+        }
     }
 
     private fun reportFailure(error: Throwable) {
