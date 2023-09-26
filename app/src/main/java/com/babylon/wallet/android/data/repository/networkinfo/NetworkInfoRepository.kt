@@ -13,7 +13,6 @@ import javax.inject.Inject
 interface NetworkInfoRepository {
     suspend fun getNetworkInfo(networkUrl: String): Result<String>
     suspend fun getFaucetComponentAddress(networkUrl: String): Result<String>
-    suspend fun getMainnetAvailability(): Result<Boolean>
 }
 
 class NetworkInfoRepositoryImpl @Inject constructor(
@@ -41,19 +40,5 @@ class NetworkInfoRepositoryImpl @Inject constructor(
                 it.wellKnownAddresses.faucet
             }
         )
-    }
-
-    override suspend fun getMainnetAvailability(): Result<Boolean> {
-        return buildApi<StatusApi>(
-            baseUrl = MAINNET_STATUS_URL,
-            okHttpClient = okHttpClient,
-            jsonConverterFactory = jsonConverterFactory
-        ).mainnetNetworkStatus().execute(
-            map = { it.isMainnetLive }
-        )
-    }
-
-    companion object {
-        private const val MAINNET_STATUS_URL = "https://mainnet-status.extratools.works"
     }
 }

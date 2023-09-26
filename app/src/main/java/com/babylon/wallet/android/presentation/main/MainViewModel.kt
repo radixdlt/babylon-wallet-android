@@ -5,7 +5,6 @@ import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.data.dapp.PeerdroidClient
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel.IncomingRequest
 import com.babylon.wallet.android.domain.usecases.AuthorizeSpecifiedPersonaUseCase
-import com.babylon.wallet.android.domain.usecases.MainnetAvailabilityUseCase
 import com.babylon.wallet.android.domain.usecases.VerifyDappUseCase
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
@@ -22,7 +21,6 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.WhileSubscribed
 import kotlinx.coroutines.flow.cancellable
-import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onCompletion
@@ -53,7 +51,6 @@ class MainViewModel @Inject constructor(
     getProfileStateUseCase: GetProfileStateUseCase,
     private val deviceSecurityHelper: DeviceSecurityHelper,
     private val checkMnemonicIntegrityUseCase: CheckMnemonicIntegrityUseCase,
-    private val mainnetAvailabilityUseCase: MainnetAvailabilityUseCase,
 ) : StateViewModel<MainUiState>(), OneOffEventHandler<MainEvent> by OneOffEventHandlerImpl() {
 
     private var incomingDappRequestsJob: Job? = null
@@ -80,27 +77,14 @@ class MainViewModel @Inject constructor(
         .events
         .filterIsInstance<AppEvent.Status>()
 
-    val isDevBannerVisible = combine(
-        getProfileStateUseCase(),
-        mainnetAvailabilityUseCase.isMainnetMigrationOngoing()
-    ) { profileState, mainnetMigrationOngoing ->
+    val isDevBannerVisible = getProfileStateUseCase().map { profileState ->
         when (profileState) {
             is ProfileState.Restored -> {
-
-                if (mainnetMigrationOngoing && profileState.profile.currentGateway.network != Radix.Gateway.mainnet.network) {
-                    // TODO To remove when mainnet becomes default
-                    false
-                } else {
-                    profileState.profile.currentGateway.network != Radix.Gateway.mainnet.network
-                }
+                profileState.profile.currentGateway.network != Radix.Gateway.mainnet.network
             }
-            // TODO To remove when mainnet becomes default
-            else -> Radix.Gateway.default.network != Radix.Gateway.mainnet.network
+            else -> false
         }
     }
-
-    // TODO To remove when mainnet becomes default
-    val forceToMainnetMandatory = mainnetAvailabilityUseCase.checkForceToMainnetMandatory()
 
     val appNotSecureEvent = appEventBus.events.filterIsInstance<AppEvent.AppNotSecure>()
     val babylonMnemonicNeedsRecoveryEvent = appEventBus.events.filterIsInstance<AppEvent.BabylonFactorSourceNeedsRecovery>()
@@ -223,10 +207,6 @@ class MainViewModel @Inject constructor(
                     appEventBus.sendEvent(AppEvent.BabylonFactorSourceNeedsRecovery(factorSourceId), delayMs = 500L)
                 }
             }
-        }
-
-        viewModelScope.launch {
-            mainnetAvailabilityUseCase()
         }
     }
 
