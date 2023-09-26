@@ -115,7 +115,7 @@ sealed class DappRequestFailure(msg: String? = null) : Exception(msg.orEmpty()) 
             }
             is FailedToSignAuthChallenge -> R.string.common_somethingWentWrong // TODO consider different copy
             DappVerificationFailure.ClaimedEntityAddressNotPresent -> R.string.common_somethingWentWrong // TODO consider different copy
-            UnacceptableManifest -> R.string.common_somethingWentWrong // TODO consider different copy
+            UnacceptableManifest -> R.string.transactionReview_unacceptableManifest_rejected
         }
     }
 
