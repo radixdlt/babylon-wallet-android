@@ -12,17 +12,14 @@ import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.draggable
 import androidx.compose.foundation.gestures.rememberDraggableState
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.BoxWithConstraintsScope
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.offset
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -32,36 +29,25 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.BlurredEdgeTreatment
 import androidx.compose.ui.draw.blur
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.geometry.CornerRadius
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.RoundRect
-import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.graphics.BlendMode
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
-import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.drawscope.clipPath
-import androidx.compose.ui.graphics.drawscope.clipRect
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.boundsInParent
 import androidx.compose.ui.layout.onGloballyPositioned
-import androidx.compose.ui.layout.positionInParent
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.Constraints
-import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.IntOffset
-import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.R
-import com.babylon.wallet.android.presentation.ui.modifier.applyIf
+import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.launch
-import timber.log.Timber
 import kotlin.math.roundToInt
 
 @Composable
@@ -69,8 +55,6 @@ fun OnboardingGraphic(
     modifier: Modifier = Modifier
 ) {
     BoxWithConstraints(modifier = modifier) {
-        val items = OnboardingAssetItem.initial(constraints)
-
         val offsetX = remember { Animatable(0f) }
         val coroutineScope = rememberCoroutineScope()
         val draggableState = rememberDraggableState(onDelta = { delta ->
@@ -81,7 +65,6 @@ fun OnboardingGraphic(
         var imageRect by remember { mutableStateOf(Rect.Zero) }
 
         OnboardingItems(
-            items = items,
             imageRect = imageRect,
             offsetX = offsetX
         )
@@ -116,7 +99,7 @@ fun OnboardingGraphic(
 }
 
 @Composable
-private fun rememberRotations(items: List<OnboardingAssetItem>): List<Animatable<Float, AnimationVector1D>> {
+private fun rememberRotations(items: ImmutableList<OnboardingAssetItem>): List<Animatable<Float, AnimationVector1D>> {
     val rotations = remember(items) { items.map { Animatable(0f) } }
 
     LaunchedEffect(items) {
@@ -140,15 +123,14 @@ private fun rememberRotations(items: List<OnboardingAssetItem>): List<Animatable
 }
 
 @Composable
-private fun OnboardingItems(
-    modifier: Modifier = Modifier,
-    items: List<OnboardingAssetItem>,
+private fun BoxWithConstraintsScope.OnboardingItems(
     imageRect: Rect,
     offsetX: Animatable<Float, AnimationVector1D>
 ) {
+    val items = remember { OnboardingAssetItem.initial(constraints).toPersistentList() }
     val rotations = rememberRotations(items = items)
 
-    Box(modifier = modifier.fillMaxSize()) {
+    Box(modifier = Modifier.fillMaxSize()) {
         items.forEachIndexed { index, item ->
             Image(
                 modifier = Modifier
@@ -162,7 +144,7 @@ private fun OnboardingItems(
         }
     }
 
-    val radiusPx = with(LocalDensity.current){ 18.dp.toPx() }
+    val radiusPx = with(LocalDensity.current) { 18.dp.toPx() }
     val clipPath = remember(imageRect, offsetX.value) {
         Path().apply {
             addRoundRect(
@@ -180,9 +162,8 @@ private fun OnboardingItems(
         }
     }
 
-
     Box(
-        modifier = modifier
+        modifier = Modifier
             .fillMaxSize()
             .drawWithContent {
                 clipPath(clipPath) {
@@ -201,7 +182,6 @@ private fun OnboardingItems(
             )
         }
     }
-
 }
 
 private data class OnboardingAssetItem(
@@ -211,6 +191,7 @@ private data class OnboardingAssetItem(
     val z: Float
 ) {
 
+    @Suppress("MagicNumber")
     companion object {
         fun initial(constraints: Constraints): List<OnboardingAssetItem> {
             val width = constraints.minWidth
@@ -260,5 +241,4 @@ private data class OnboardingAssetItem(
             )
         }
     }
-
 }
