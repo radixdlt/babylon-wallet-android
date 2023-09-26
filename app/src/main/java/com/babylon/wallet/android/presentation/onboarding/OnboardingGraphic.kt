@@ -152,7 +152,7 @@ private fun OnboardingItems(
         items.forEachIndexed { index, item ->
             Image(
                 modifier = Modifier
-                    .offset { item.offset.value }
+                    .offset { item.offset.value + IntOffset((item.z * offsetX.value).roundToInt(), 0) }
                     .rotate(rotations[index].value)
                     .align(Alignment.Center)
                     .blur(radius = 5.dp, edgeTreatment = BlurredEdgeTreatment.Unbounded),
@@ -193,7 +193,7 @@ private fun OnboardingItems(
         items.forEachIndexed { index, item ->
             Image(
                 modifier = Modifier
-                    .offset { item.offset.value }
+                    .offset { item.offset.value + IntOffset((item.z * offsetX.value).roundToInt(), 0) }
                     .rotate(rotations[index].value)
                     .align(Alignment.Center),
                 painter = painterResource(id = item.resource),
@@ -207,7 +207,8 @@ private fun OnboardingItems(
 private data class OnboardingAssetItem(
     @DrawableRes val resource: Int,
     val rotationTimes: Int,
-    val offset: MutableState<IntOffset>
+    val offset: MutableState<IntOffset>,
+    val z: Float
 ) {
 
     companion object {
@@ -221,35 +222,40 @@ private data class OnboardingAssetItem(
                     rotationTimes = 3,
                     offset = mutableStateOf(
                         IntOffset((0.15f * width).roundToInt(), (-0.15 * height).roundToInt())
-                    )
+                    ),
+                    z = 0.35f
                 ),
                 OnboardingAssetItem(
                     resource = R.drawable.ic_onboarding_item_2,
                     rotationTimes = -5,
                     offset = mutableStateOf(
                         IntOffset((-0.25f * width).roundToInt(), (-0.08 * height).roundToInt())
-                    )
+                    ),
+                    z = 0.4f
                 ),
                 OnboardingAssetItem(
                     resource = R.drawable.ic_onboarding_item_3,
                     rotationTimes = 4,
                     offset = mutableStateOf(
                         IntOffset((0.05f * width).roundToInt(), (0.08 * height).roundToInt())
-                    )
+                    ),
+                    z = 0.53f
                 ),
                 OnboardingAssetItem(
                     resource = R.drawable.ic_onboarding_item_4,
                     rotationTimes = -4,
                     offset = mutableStateOf(
                         IntOffset((0.3f * width).roundToInt(), (0.2 * height).roundToInt())
-                    )
+                    ),
+                    z = 0.63f
                 ),
                 OnboardingAssetItem(
                     resource = R.drawable.ic_onboarding_item_5,
                     rotationTimes = -6,
                     offset = mutableStateOf(
                         IntOffset((-0.3f * width).roundToInt(), (0.25 * height).roundToInt())
-                    )
+                    ),
+                    z = 0.69f
                 )
             )
         }
