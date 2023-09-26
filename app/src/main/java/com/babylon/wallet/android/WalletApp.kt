@@ -125,7 +125,7 @@ fun WalletApp(
             onCloseApp()
         })
     }
-    if (state.invalidRequest) {
+    state.dappVerificationError?.let {
         BasicPromptAlertDialog(
             finish = {
                 mainViewModel.onInvalidRequestMessageShown()

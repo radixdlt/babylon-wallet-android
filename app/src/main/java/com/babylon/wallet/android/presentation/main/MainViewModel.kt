@@ -3,6 +3,7 @@ package com.babylon.wallet.android.presentation.main
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.data.dapp.PeerdroidClient
+import com.babylon.wallet.android.data.transaction.DappRequestFailure
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel.IncomingRequest
 import com.babylon.wallet.android.domain.usecases.AuthorizeSpecifiedPersonaUseCase
 import com.babylon.wallet.android.domain.usecases.MainnetAvailabilityUseCase
@@ -200,7 +201,7 @@ class MainViewModel @Inject constructor(
                 }
             }.onFailure {
                 _state.update { state ->
-                    state.copy(invalidRequest = true)
+                    state.copy(dappVerificationError = DappRequestFailure.InvalidRequest)
                 }
             }
         }
@@ -217,7 +218,7 @@ class MainViewModel @Inject constructor(
     }
 
     fun onInvalidRequestMessageShown() {
-        _state.update { it.copy(invalidRequest = false) }
+        _state.update { it.copy(dappVerificationError = null) }
     }
 
     fun onAppToForeground() {
@@ -250,7 +251,7 @@ sealed class MainEvent : OneOffEvent {
 
 data class MainUiState(
     val initialAppState: AppState = AppState.Loading,
-    val invalidRequest: Boolean = false
+    val dappVerificationError: DappRequestFailure? = null
 ) : UiState
 
 sealed interface AppState {
