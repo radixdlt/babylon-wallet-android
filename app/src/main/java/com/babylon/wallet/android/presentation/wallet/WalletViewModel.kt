@@ -72,7 +72,11 @@ class WalletViewModel @Inject constructor(
                     state.loadingResources(accounts = accounts, isRefreshing = state.isRefreshing)
                 }
 
-                getAccountsWithResourcesUseCase(accounts, isRefreshing = _state.value.isRefreshing)
+                getAccountsWithResourcesUseCase(
+                    accounts = accounts,
+                    isDetailedBreakdown = false,
+                    isRefreshing = _state.value.isRefreshing
+                )
                     .onValue { resources ->
                         _state.update { it.onResourcesReceived(resources) }
                     }

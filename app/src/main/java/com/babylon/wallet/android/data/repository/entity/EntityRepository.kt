@@ -67,6 +67,7 @@ interface EntityRepository {
         accounts: List<Network.Account>,
         // we pass a combination of fungible AND non fungible explicit metadata keys
         explicitMetadataForAssets: Set<ExplicitMetadataKey> = ExplicitMetadataKey.forAssets,
+        isDetailedBreakdown: Boolean = true,
         isRefreshing: Boolean = true
     ): Result<List<AccountWithResources>>
 
@@ -91,6 +92,7 @@ class EntityRepositoryImpl @Inject constructor(
     override suspend fun getAccountsWithResources(
         accounts: List<Network.Account>,
         explicitMetadataForAssets: Set<ExplicitMetadataKey>,
+        isDetailedBreakdown: Boolean,
         isRefreshing: Boolean
     ): Result<List<AccountWithResources>> {
         if (accounts.isEmpty()) return Result.Success(emptyList())
@@ -119,6 +121,7 @@ class EntityRepositoryImpl @Inject constructor(
             var mapOfAccountsWithNonFungibleResources = buildMapOfAccountsWithNonFungibles(
                 accountDetailsResponses = accountDetailsResponses,
                 resourcesDetails = resourcesDetails,
+                isDetailedBreakdown = isDetailedBreakdown,
                 isRefreshing = isRefreshing,
                 stateVersion = stateVersion
             )
@@ -434,6 +437,7 @@ class EntityRepositoryImpl @Inject constructor(
     private suspend fun buildMapOfAccountsWithNonFungibles(
         accountDetailsResponses: List<StateEntityDetailsResponse>,
         resourcesDetails: List<StateEntityDetailsResponseItem>,
+        isDetailedBreakdown: Boolean = true,
         isRefreshing: Boolean,
         stateVersion: Long?
     ): Map<String, List<Resource.NonFungibleResource>> {
@@ -461,13 +465,29 @@ class EntityRepositoryImpl @Inject constructor(
                         val currentSupply = nonFungibleDetails?.details?.totalSupply()?.toIntOrNull()
 
                         val metaDataItems = nonFungibleDetails?.explicitMetadata?.asMetadataItems().orEmpty().toMutableList()
-                        val nftItems = getNonFungibleResourceItemsForAccount(
-                            accountAddress = entityItem.address,
-                            vaultAddress = nonFungibleResourcesItem.vaults.items.first().vaultAddress,
-                            resourceAddress = nonFungibleResourcesItem.resourceAddress,
-                            stateVersion = stateVersion,
-                            isRefreshing = isRefreshing,
-                        ).value().orEmpty().sorted()
+
+                        val nftItems = if (isDetailedBreakdown) {
+                            getNonFungibleResourceItemsDetailedForAccount(
+                                accountAddress = entityItem.address,
+                                vaultAddress = nonFungibleResourcesItem.vaults.items.first().vaultAddress,
+                                resourceAddress = nonFungibleResourcesItem.resourceAddress,
+                                stateVersion = stateVersion,
+                                isRefreshing = isRefreshing,
+                            ).value().orEmpty().sorted()
+                        } else {
+                            getNonFungibleIdsForAccount(
+                                accountAddress = entityItem.address,
+                                vaultAddress = nonFungibleResourcesItem.vaults.items.first().vaultAddress,
+                                resourceAddress = nonFungibleResourcesItem.resourceAddress,
+                                stateVersion = stateVersion,
+                                isRefreshing = isRefreshing
+                            ).first.map {
+                                Resource.NonFungibleResource.Item(
+                                    collectionAddress = nonFungibleResourcesItem.resourceAddress,
+                                    localId = Resource.NonFungibleResource.Item.ID.from(it)
+                                )
+                            }
+                        }
 
                         if (nftItems.isEmpty()) return@mapNotNull null
 
@@ -595,37 +615,22 @@ class EntityRepositoryImpl @Inject constructor(
     }
 
     @Suppress("LongMethod")
-    private suspend fun getNonFungibleResourceItemsForAccount(
+    private suspend fun getNonFungibleResourceItemsDetailedForAccount(
         accountAddress: String,
         vaultAddress: String,
         resourceAddress: String,
         stateVersion: Long?,
         isRefreshing: Boolean = false
     ): Result<List<Resource.NonFungibleResource.Item>> {
-        val nftIds = mutableListOf<String>()
-        var nextIdsCursor: String? = null
-        var latestEpoch: Long? = null
-        do {
-            stateApi.entityNonFungibleIdsPage(
-                StateEntityNonFungibleIdsPageRequest(
-                    address = accountAddress,
-                    vaultAddress = vaultAddress,
-                    resourceAddress = resourceAddress,
-                    cursor = nextIdsCursor,
-                    atLedgerState = stateVersion?.let { LedgerStateSelector(stateVersion = it) }
-                )
-            ).execute(
-                cacheParameters = CacheParameters(
-                    httpCache = cache,
-                    timeoutDuration = if (isRefreshing) NO_CACHE else TimeoutDuration.FIVE_MINUTES
-                ),
-                map = { it }
-            ).onValue { page ->
-                nftIds.addAll(page.items)
-                nextIdsCursor = page.nextCursor
-                latestEpoch = page.ledgerState.epoch
-            }
-        } while (nextIdsCursor != null)
+        val nftIdsForAccount = getNonFungibleIdsForAccount(
+            accountAddress = accountAddress,
+            vaultAddress = vaultAddress,
+            resourceAddress = resourceAddress,
+            stateVersion = stateVersion,
+            isRefreshing = isRefreshing
+        )
+        val nftIds = nftIdsForAccount.first
+        val latestEpoch = nftIdsForAccount.second
 
         val nonFungibleDataResponsesListResult = nftIds.chunked(CHUNK_SIZE_OF_ITEMS).map { ids ->
             stateApi.nonFungibleData(
@@ -678,6 +683,41 @@ class EntityRepositoryImpl @Inject constructor(
                 }.flatten()
             Result.Success(nonFungibleResourceItemsList)
         }
+    }
+
+    private suspend fun getNonFungibleIdsForAccount(
+        accountAddress: String,
+        vaultAddress: String,
+        resourceAddress: String,
+        stateVersion: Long?,
+        isRefreshing: Boolean = false
+    ): Pair<List<String>, Long?> {
+        val nftIds = mutableListOf<String>()
+        var nextIdsCursor: String? = null
+        var latestEpoch: Long? = null
+        do {
+            stateApi.entityNonFungibleIdsPage(
+                StateEntityNonFungibleIdsPageRequest(
+                    address = accountAddress,
+                    vaultAddress = vaultAddress,
+                    resourceAddress = resourceAddress,
+                    cursor = nextIdsCursor,
+                    atLedgerState = stateVersion?.let { LedgerStateSelector(stateVersion = it) }
+                )
+            ).execute(
+                cacheParameters = CacheParameters(
+                    httpCache = cache,
+                    timeoutDuration = if (isRefreshing) NO_CACHE else TimeoutDuration.FIVE_MINUTES
+                ),
+                map = { it }
+            ).onValue { page ->
+                nftIds.addAll(page.items)
+                nextIdsCursor = page.nextCursor
+                latestEpoch = page.ledgerState.epoch
+            }
+        } while (nextIdsCursor != null)
+
+        return Pair(nftIds, latestEpoch)
     }
 
     private fun StateNonFungibleDetailsResponseItem.claimAmount(): String? = data?.programmaticJson?.fields?.find { element ->

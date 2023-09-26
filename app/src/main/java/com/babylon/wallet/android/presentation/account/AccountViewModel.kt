@@ -88,7 +88,10 @@ class AccountViewModel @Inject constructor(
     private fun loadAccountData(isRefreshing: Boolean) {
         val account = _state.value.accountWithResources?.account ?: return
         viewModelScope.launch {
-            val result = getAccountsWithResourcesUseCase(listOf(account), isRefreshing)
+            val result = getAccountsWithResourcesUseCase(
+                accounts = listOf(account),
+                isRefreshing = isRefreshing
+            )
             result.onError { e ->
                 Timber.w(e)
                 _state.update { accountUiState ->
