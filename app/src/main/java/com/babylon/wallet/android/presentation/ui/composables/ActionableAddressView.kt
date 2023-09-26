@@ -1,7 +1,5 @@
 package com.babylon.wallet.android.presentation.ui.composables
 
-import android.content.ActivityNotFoundException
-import android.content.Intent
 import android.os.Build
 import android.widget.Toast
 import androidx.annotation.DrawableRes
@@ -37,10 +35,10 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
-import androidx.core.net.toUri
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.presentation.model.ActionableAddress
+import com.babylon.wallet.android.utils.openUrl
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
@@ -249,20 +247,7 @@ private sealed class OnAction {
         @Composable
         override fun ActionView() {
             val context = LocalContext.current
-
-            val intent = Intent(Intent.ACTION_VIEW).apply {
-                data = actionableAddress.toDashboardUrl().toUri()
-            }
-
-            try {
-                context.startActivity(intent)
-            } catch (activityNotFound: ActivityNotFoundException) {
-                Toast.makeText(
-                    context,
-                    R.string.addressAction_noWebBrowserInstalled,
-                    Toast.LENGTH_SHORT
-                ).show()
-            }
+            context.openUrl(actionableAddress.toDashboardUrl())
         }
     }
 
