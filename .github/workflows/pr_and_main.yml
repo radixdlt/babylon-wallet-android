@@ -32,11 +32,11 @@ jobs:
       - name: Fetch Snyk credentials
         uses: radixdlt/public-iac-resuable-artifacts/fetch-secrets@main
         with:
-          role_name: 'arn:aws:iam::308190735829:role/gh-common-secrets-read-access'
+          role_name: '${{ secrets.COMMON_SECRETS_READ_IAM_ROLE }}'
           app_name: 'wallet-android'
           step_name: 'snyk-licenses'
           secret_prefix: 'SNYK'
-          secret_name: "arn:aws:secretsmanager:eu-west-2:308190735829:secret:github-actions/common/snyk-credentials"
+          secret_name: "github-actions/common/snyk-credentials"
           parse_json: true
 
       - name: Run Snyk to check for deps vulnerabilities
@@ -55,11 +55,11 @@ jobs:
       - name: Fetch Snyk credentials
         uses: radixdlt/public-iac-resuable-artifacts/fetch-secrets@main
         with:
-          role_name: 'arn:aws:iam::308190735829:role/gh-common-secrets-read-access'
+          role_name: '${{ secrets.COMMON_SECRETS_READ_IAM_ROLE }}'
           app_name: 'wallet-android'
           step_name: 'snyk-licenses'
           secret_prefix: 'SNYK'
-          secret_name: "arn:aws:secretsmanager:eu-west-2:308190735829:secret:github-actions/common/snyk-credentials"
+          secret_name: "github-actions/common/snyk-credentials"
           parse_json: true
 
       - name: Run Snyk to check for code vulnerabilities
@@ -79,11 +79,11 @@ jobs:
       - name: Fetch Snyk credentials
         uses: radixdlt/public-iac-resuable-artifacts/fetch-secrets@main
         with:
-          role_name: 'arn:aws:iam::308190735829:role/gh-common-secrets-read-access'
+          role_name: '${{ secrets.COMMON_SECRETS_READ_IAM_ROLE }}'
           app_name: 'wallet-android'
           step_name: 'snyk-licenses'
           secret_prefix: 'SNYK'
-          secret_name: "arn:aws:secretsmanager:eu-west-2:308190735829:secret:github-actions/common/snyk-credentials"
+          secret_name: "github-actions/common/snyk-credentials"
           parse_json: true
 
       - name: Generate SBOM # check SBOM can be generated but nothing is done with it
@@ -109,11 +109,11 @@ jobs:
       - name: Fetch GPR credentials
         uses: radixdlt/public-iac-resuable-artifacts/fetch-secrets@main
         with:
-          role_name: 'arn:aws:iam::308190735829:role/gh-babylon-wallet-android-secrets-read-access'
+          role_name: '${{ secrets.ANDROID_WALLET_SECRETS_READ_IAM_ROLE }}'
           app_name: 'wallet-android'
           step_name: 'sonar'
           secret_prefix: 'GH'
-          secret_name: "arn:aws:secretsmanager:eu-west-2:308190735829:secret:github-actions/radixdlt/babylon-wallet-android/gpr-credentials"
+          secret_name: "github-actions/radixdlt/babylon-wallet-android/gpr-credentials"
           parse_json: true
 
       - name: "Run unit tests"
@@ -139,21 +139,21 @@ jobs:
       - name: Fetch GPR credentials
         uses: radixdlt/public-iac-resuable-artifacts/fetch-secrets@main
         with:
-          role_name: 'arn:aws:iam::308190735829:role/gh-babylon-wallet-android-secrets-read-access'
+          role_name: '${{ secrets.ANDROID_WALLET_SECRETS_READ_IAM_ROLE }}'
           app_name: 'wallet-android'
           step_name: 'sonar'
           secret_prefix: 'GH'
-          secret_name: "arn:aws:secretsmanager:eu-west-2:308190735829:secret:github-actions/radixdlt/babylon-wallet-android/gpr-credentials"
+          secret_name: "github-actions/radixdlt/babylon-wallet-android/gpr-credentials"
           parse_json: true
 
       - name: Fetch Sonar token
         uses: radixdlt/public-iac-resuable-artifacts/fetch-secrets@main
         with:
-          role_name: 'arn:aws:iam::308190735829:role/gh-babylon-wallet-android-secrets-read-access'
+          role_name: '${{ secrets.ANDROID_WALLET_SECRETS_READ_IAM_ROLE }}'
           app_name: 'wallet-android'
           step_name: 'sonar-1'
           secret_prefix: 'GH'
-          secret_name: "arn:aws:secretsmanager:eu-west-2:308190735829:secret:github-actions/radixdlt/babylon-wallet-android/sonar-token"
+          secret_name: "github-actions/radixdlt/babylon-wallet-android/sonar-token"
           parse_json: true
 
       - name: Export vars
@@ -200,11 +200,11 @@ jobs:
       - name: Fetch GPR credentials
         uses: radixdlt/public-iac-resuable-artifacts/fetch-secrets@main
         with:
-          role_name: 'arn:aws:iam::308190735829:role/gh-babylon-wallet-android-secrets-read-access'
+          role_name: '${{ secrets.ANDROID_WALLET_SECRETS_READ_IAM_ROLE }}'
           app_name: 'wallet-android'
           step_name: 'build'
           secret_prefix: 'GH'
-          secret_name: "arn:aws:secretsmanager:eu-west-2:308190735829:secret:github-actions/radixdlt/babylon-wallet-android/gpr-credentials"
+          secret_name: "github-actions/radixdlt/babylon-wallet-android/gpr-credentials"
           parse_json: true
 
       - name: "Build"
@@ -226,11 +226,11 @@ jobs:
       - name: Fetch Snyk credentials
         uses: radixdlt/public-iac-resuable-artifacts/fetch-secrets@main
         with:
-          role_name: 'arn:aws:iam::308190735829:role/gh-common-secrets-read-access'
+          role_name: '${{ secrets.COMMON_SECRETS_READ_IAM_ROLE }}'
           app_name: 'wallet-android'
           step_name: 'snyk-licenses'
           secret_prefix: 'SNYK'
-          secret_name: "arn:aws:secretsmanager:eu-west-2:308190735829:secret:github-actions/common/snyk-credentials"
+          secret_name: "github-actions/common/snyk-credentials"
           parse_json: true
 
       - name: Enable Snyk online monitoring to check for vulnerabilities
