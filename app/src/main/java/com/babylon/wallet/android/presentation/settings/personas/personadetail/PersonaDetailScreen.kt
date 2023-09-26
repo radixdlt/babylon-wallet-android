@@ -2,7 +2,6 @@
 
 package com.babylon.wallet.android.presentation.settings.personas.personadetail
 
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
@@ -134,28 +133,26 @@ private fun PersonaDetailContent(
             },
             containerColor = RadixTheme.colors.defaultBackground
         ) { padding ->
-            Box(modifier = Modifier.padding(padding)) {
-                if (persona != null) {
-                    PersonaDetailList(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(padding),
-                        persona = persona,
-                        authorizedDapps = authorizedDapps,
-                        onDAppClick = {
-                            onDAppClick(it)
-                            scope.launch {
-                                bottomSheetState.show()
-                            }
-                        },
-                        onEditPersona = onEditPersona,
-                        hasAuthKey = hasAuthKey,
-                        onCreateAndUploadAuthKey = onCreateAndUploadAuthKey,
-                        loading = loading
-                    )
-                } else {
-                    FullscreenCircularProgressContent()
-                }
+            if (persona != null) {
+                PersonaDetailList(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(padding),
+                    persona = persona,
+                    authorizedDapps = authorizedDapps,
+                    onDAppClick = {
+                        onDAppClick(it)
+                        scope.launch {
+                            bottomSheetState.show()
+                        }
+                    },
+                    onEditPersona = onEditPersona,
+                    hasAuthKey = hasAuthKey,
+                    onCreateAndUploadAuthKey = onCreateAndUploadAuthKey,
+                    loading = loading
+                )
+            } else {
+                FullscreenCircularProgressContent()
             }
         }
     }
