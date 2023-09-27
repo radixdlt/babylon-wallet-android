@@ -354,7 +354,7 @@ data class Network(
 
         @SerialName("dAppDefinitionAddress") val dAppDefinitionAddress: String,
 
-        @SerialName("displayName") val displayName: String,
+        @SerialName("displayName") val displayName: String? = null,
 
         @SerialName("referencesToAuthorizedPersonas") val referencesToAuthorizedPersonas: List<AuthorizedPersonaSimple>
     ) {
