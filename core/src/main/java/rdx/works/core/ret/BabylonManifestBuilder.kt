@@ -40,13 +40,12 @@ class BabylonManifestBuilder {
         return this
     }
 
-    fun accountTryDepositOrAbort(
+    fun accountDeposit(
         toAddress: Address,
         fromBucket: ManifestBuilderBucket
     ): BabylonManifestBuilder {
-        manifestBuilder = manifestBuilder.accountTryDepositOrAbort(
+        manifestBuilder = manifestBuilder.accountDeposit(
             accountAddress = toAddress,
-            authorizedDepositorBadge = null,
             bucket = fromBucket
         )
         return this

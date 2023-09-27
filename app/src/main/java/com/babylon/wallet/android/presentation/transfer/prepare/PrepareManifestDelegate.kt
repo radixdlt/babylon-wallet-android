@@ -88,7 +88,7 @@ class PrepareManifestDelegate(
                     )
 
                     // Then deposit the bucket into the target account
-                    accountTryDepositOrAbort(
+                    accountDeposit(
                         toAddress = Address(targetAccount.address),
                         fromBucket = bucket
                     )
@@ -118,7 +118,7 @@ class PrepareManifestDelegate(
                     nonFungible = globalId,
                     intoBucket = bucket
                 )
-                accountTryDepositOrAbort(
+                accountDeposit(
                     toAddress = Address(targetAccount.address),
                     fromBucket = bucket
                 )
