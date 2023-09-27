@@ -763,9 +763,4 @@ Only the **current configuration** of your wallet is backed up with each manual 
   <string name="recoverSeedPhrase_enterButton">Enter This Seed Phrase</string>
   <string name="enterSeedPhrase_header_title">Enter Seed Phrase</string>
   <string name="enterSeedPhrase_warning">For your safety, make sure no one is looking at your screen. Never give your seed phrase to anyone for any reason.</string>
-
-  <string name="dAppRequest_validationOutcome_invalidRequestTitle">Invalid Request.</string>
-  <string name="dAppRequest_validationOutcome_invalidRequestMessage">Could not validate the dApp.</string>
-  <string name="linkedConnectors_incorrectQrTitle">Incorrect QR code scanned.</string>
-  <string name="linkedConnectors_incorrectQrMessage">Please scan the QR code provided by your Radix Wallet Connector browser extension.</string>
 </resources>
