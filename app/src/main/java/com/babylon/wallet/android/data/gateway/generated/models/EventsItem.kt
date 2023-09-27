@@ -23,19 +23,22 @@ import kotlinx.serialization.Contextual
 /**
  * 
  *
- * @param keyHex Hex-encoded binary blob.
- * @param keyJson 
+ * @param name 
+ * @param emitter 
+ * @param `data` 
  */
 @Serializable
 
-data class StateKeyValueStoreDataRequestKeyItem (
+data class EventsItem (
 
-    /* Hex-encoded binary blob. */
-    @SerialName(value = "key_hex")
-    val keyHex: kotlin.String? = null,
+    @SerialName(value = "name")
+    val name: kotlin.String? = null,
 
-//    @Contextual @SerialName(value = "key_json")
-//    val keyJson: kotlin.Any? = null
+//    @Contextual @SerialName(value = "emitter")
+//    val emitter: kotlin.Any,
+//
+//    @Contextual @SerialName(value = "data")
+//    val `data`: kotlin.Any
 
 )
 

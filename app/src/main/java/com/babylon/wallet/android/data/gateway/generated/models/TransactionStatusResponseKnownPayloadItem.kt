@@ -15,6 +15,8 @@
 
 package com.babylon.wallet.android.data.gateway.generated.models
 
+import com.babylon.wallet.android.data.gateway.generated.models.TransactionPayloadGatewayHandlingStatus
+import com.babylon.wallet.android.data.gateway.generated.models.TransactionPayloadStatus
 import com.babylon.wallet.android.data.gateway.generated.models.TransactionStatus
 
 import kotlinx.serialization.Serializable
@@ -26,7 +28,13 @@ import kotlinx.serialization.Contextual
  *
  * @param payloadHash Bech32m-encoded hash.
  * @param status 
- * @param errorMessage 
+ * @param payloadStatus 
+ * @param payloadStatusDescription An additional description to clarify the payload status. 
+ * @param errorMessage The initial error message received for a rejection or failure during transaction execution. This will typically be the useful error message, explaining the root cause of the issue. Please note that presence of an error message doesn't imply that this payload will definitely reject or fail. This could represent an error during a temporary rejection (such as out of fees) which then gets resolved (e.g. by depositing money to pay the fee), allowing the transaction to be committed. 
+ * @param latestErrorMessage The latest error message received for a rejection or failure during transaction execution, this is only returned if it is different from the initial error message. This is more current than the initial error message, but may be less useful, as it could be a message regarding the expiry of the transaction at the end of its epoch validity window. Please note that presence of an error message doesn't imply that this payload will definitely reject or fail. This could represent an error during a temporary rejection (such as out of fees) which then gets resolved (e.g. by depositing money to pay the fee), allowing the transaction to be committed. 
+ * @param handlingStatus 
+ * @param handlingStatusReason Additional reason for why the Gateway has its current handling status. 
+ * @param submissionError The most recent error message received when submitting this transaction to the network. Please note that the presence of an error message doesn't imply that this transaction payload will definitely reject or fail. This could be a transient error. 
  */
 @Serializable
 
@@ -39,8 +47,31 @@ data class TransactionStatusResponseKnownPayloadItem (
     @Contextual @SerialName(value = "status")
     val status: TransactionStatus,
 
+    @Contextual @SerialName(value = "payload_status")
+    val payloadStatus: TransactionPayloadStatus? = null,
+
+    /* An additional description to clarify the payload status.  */
+    @SerialName(value = "payload_status_description")
+    val payloadStatusDescription: kotlin.String? = null,
+
+    /* The initial error message received for a rejection or failure during transaction execution. This will typically be the useful error message, explaining the root cause of the issue. Please note that presence of an error message doesn't imply that this payload will definitely reject or fail. This could represent an error during a temporary rejection (such as out of fees) which then gets resolved (e.g. by depositing money to pay the fee), allowing the transaction to be committed.  */
     @SerialName(value = "error_message")
-    val errorMessage: kotlin.String? = null
+    val errorMessage: kotlin.String? = null,
+
+    /* The latest error message received for a rejection or failure during transaction execution, this is only returned if it is different from the initial error message. This is more current than the initial error message, but may be less useful, as it could be a message regarding the expiry of the transaction at the end of its epoch validity window. Please note that presence of an error message doesn't imply that this payload will definitely reject or fail. This could represent an error during a temporary rejection (such as out of fees) which then gets resolved (e.g. by depositing money to pay the fee), allowing the transaction to be committed.  */
+    @SerialName(value = "latest_error_message")
+    val latestErrorMessage: kotlin.String? = null,
+
+    @Contextual @SerialName(value = "handling_status")
+    val handlingStatus: TransactionPayloadGatewayHandlingStatus? = null,
+
+    /* Additional reason for why the Gateway has its current handling status.  */
+    @SerialName(value = "handling_status_reason")
+    val handlingStatusReason: kotlin.String? = null,
+
+    /* The most recent error message received when submitting this transaction to the network. Please note that the presence of an error message doesn't imply that this transaction payload will definitely reject or fail. This could be a transient error.  */
+    @SerialName(value = "submission_error")
+    val submissionError: kotlin.String? = null
 
 )
 
