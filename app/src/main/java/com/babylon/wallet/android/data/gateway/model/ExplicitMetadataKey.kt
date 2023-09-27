@@ -134,7 +134,8 @@ enum class ExplicitMetadataKey(val key: String) {
                 RELATED_WEBSITES,
                 ICON_URL,
                 INFO_URL,
-                TAGS
+                TAGS,
+                DAPP_DEFINITIONS
             )
 
         val forResources: Set<ExplicitMetadataKey>
