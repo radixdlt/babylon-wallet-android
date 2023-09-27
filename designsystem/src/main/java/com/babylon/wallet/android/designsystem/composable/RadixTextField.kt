@@ -39,15 +39,8 @@ fun RadixTextField(
     hint: String? = null,
     hintColor: Color? = RadixTheme.colors.defaultText,
     error: String? = null,
-    leftLabel: String? = null,
-    leftLabelContent: @Composable (() -> Unit) = {
-        Text(
-            text = leftLabel.orEmpty(),
-            style = RadixTheme.typography.body1HighImportance,
-            color = if (error != null) RadixTheme.colors.red1 else RadixTheme.colors.gray1
-        )
-    },
-    rightLabel: String? = null,
+    leftLabel: LabelType? = null,
+    rightLabel: LabelType? = null,
     optionalHint: String? = null,
     trailingIcon: @Composable (() -> Unit)? = null,
     iconToTheRight: @Composable (() -> Unit)? = null,
@@ -59,14 +52,10 @@ fun RadixTextField(
     errorFixedSize: Boolean = false,
     visualTransformation: VisualTransformation = VisualTransformation.None
 ) {
+    val isError = error != null
     Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingSmall)) {
-        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-            Column {
-                leftLabelContent.invoke()
-            }
-            rightLabel?.let { hint ->
-                Text(text = hint, style = RadixTheme.typography.body1Regular, color = RadixTheme.colors.gray2)
-            }
+        if (leftLabel != null || rightLabel != null) {
+            TopLabelRow(leftLabel, rightLabel, isError)
         }
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -143,7 +132,47 @@ fun RadixTextField(
     }
 }
 
-@Preview
+@Composable
+private fun TopLabelRow(
+    leftLabel: LabelType?,
+    rightLabel: LabelType?,
+    isError: Boolean,
+    modifier: Modifier = Modifier
+) {
+    Row(modifier = modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+        when (leftLabel) {
+            is LabelType.Custom -> {
+                Column {
+                    leftLabel.content()
+                }
+            }
+
+            is LabelType.Default -> {
+                Text(
+                    text = leftLabel.value,
+                    style = RadixTheme.typography.body1HighImportance,
+                    color = if (isError) RadixTheme.colors.red1 else RadixTheme.colors.gray1
+                )
+            }
+
+            else -> {}
+        }
+        when (rightLabel) {
+            is LabelType.Default -> {
+                Text(text = rightLabel.value, style = RadixTheme.typography.body1Regular, color = RadixTheme.colors.gray2)
+            }
+
+            else -> {}
+        }
+    }
+}
+
+sealed interface LabelType {
+    data class Default(val value: String) : LabelType
+    data class Custom(val content: @Composable () -> Unit) : LabelType
+}
+
+@Preview(showBackground = true)
 @Composable
 fun RadixTextFieldPreview() {
     RadixWalletTheme {
@@ -157,7 +186,7 @@ fun RadixTextFieldPreview() {
     }
 }
 
-@Preview
+@Preview(showBackground = true)
 @Composable
 fun RadixTextFieldFilled() {
     RadixWalletTheme {
@@ -166,13 +195,14 @@ fun RadixTextFieldFilled() {
             onValueChanged = {},
             value = "Input Text",
             hint = "Placeholder",
-            rightLabel = "7/10",
+            leftLabel = LabelType.Default("abc"),
+            rightLabel = LabelType.Default("7/10"),
             optionalHint = "This is a hint text, It should be short and sweet"
         )
     }
 }
 
-@Preview
+@Preview(showBackground = true)
 @Composable
 fun RadixTextErrorField() {
     RadixWalletTheme {

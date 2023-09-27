@@ -36,6 +36,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
+import com.babylon.wallet.android.designsystem.composable.LabelType
 import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
 import com.babylon.wallet.android.designsystem.composable.RadixSecondaryButton
 import com.babylon.wallet.android.designsystem.composable.RadixTextField
@@ -257,8 +258,10 @@ private fun CreatePersonaContentList(
                 modifier = Modifier.fillMaxWidth(),
                 onValueChanged = onPersonaNameChange,
                 value = personaName.value,
-                leftLabel = stringResource(
-                    id = R.string.authorizedDapps_personaDetails_personaLabelHeading
+                leftLabel = LabelType.Default(
+                    stringResource(
+                        id = R.string.authorizedDapps_personaDetails_personaLabelHeading
+                    )
                 ),
                 hint = stringResource(id = R.string.createPersona_nameNewPersona_placeholder),
                 onFocusChanged = {

@@ -38,6 +38,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.R
+import com.babylon.wallet.android.designsystem.composable.LabelType
 import com.babylon.wallet.android.designsystem.composable.RadixTextField
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
@@ -124,7 +125,7 @@ fun PersonaDataStringInput(
         modifier = modifier,
         onValueChanged = onValueChanged,
         value = value,
-        leftLabel = label,
+        leftLabel = LabelType.Default(label),
         iconToTheRight = if (onDeleteField != null) {
             {
                 IconButton(onClick = onDeleteField) {
@@ -150,7 +151,7 @@ fun PersonaDataStringInput(
                 KeyboardOptions.Default.keyboardType
             }
         ),
-        rightLabel = if (required) stringResource(id = R.string.editPersona_requiredByDapp) else null,
+        rightLabel = if (required) LabelType.Default(stringResource(id = R.string.editPersona_requiredByDapp)) else null,
         error = error,
         singleLine = true
     )

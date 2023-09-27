@@ -24,6 +24,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import com.babylon.wallet.android.R
+import com.babylon.wallet.android.designsystem.composable.LabelType
 import com.babylon.wallet.android.designsystem.composable.RadixTextButton
 import com.babylon.wallet.android.designsystem.composable.RadixTextField
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
@@ -166,6 +167,7 @@ fun FeesSheet(
                     }
                 }
             }
+
             is TransactionReviewViewModel.State.Sheet.CustomizeFees.FeePayerMode.FeePayerSelected -> {
                 item {
                     Row(
@@ -212,6 +214,7 @@ fun FeesSheet(
                     }
                 }
             }
+
             is TransactionReviewViewModel.State.Sheet.CustomizeFees.FeePayerMode.NoFeePayerSelected -> {
                 item {
                     Row(
@@ -248,6 +251,7 @@ fun FeesSheet(
                     }
                 }
             }
+
             is TransactionReviewViewModel.State.Sheet.CustomizeFees.FeePayerMode.SelectFeePayer -> {
                 feePayerSelectionContent(
                     candidates = feePayer.candidates,
@@ -470,8 +474,10 @@ fun NetworkFeesAdvancedView(
                 ),
             onValueChanged = onFeePaddingAmountChanged,
             value = transactionFees?.feePaddingAmountToDisplay.orEmpty(),
-            leftLabel = stringResource(
-                id = R.string.transactionReview_customizeNetworkFeeSheet_paddingFieldLabel
+            leftLabel = LabelType.Default(
+                stringResource(
+                    id = R.string.transactionReview_customizeNetworkFeeSheet_paddingFieldLabel
+                )
             ),
             keyboardOptions = KeyboardOptions(
                 keyboardType = KeyboardType.Decimal,
@@ -495,7 +501,7 @@ fun NetworkFeesAdvancedView(
                 ),
             onValueChanged = onTipPercentageChanged,
             value = transactionFees?.tipPercentageToDisplay.orEmpty(),
-            leftLabelContent = {
+            leftLabel = LabelType.Custom {
                 Text(
                     text = stringResource(id = R.string.transactionReview_customizeNetworkFeeSheet_tipFieldLabel),
                     style = RadixTheme.typography.body1HighImportance,
