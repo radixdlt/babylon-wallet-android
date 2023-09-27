@@ -118,7 +118,6 @@ class TransactionAnalysisDelegate(
 
     private suspend fun processConformingManifest(transactionType: TransactionType): PreviewType {
         return when (transactionType) {
-
             is TransactionType.GeneralTransaction -> transactionType.resolve(
                 getTransactionBadgesUseCase = getTransactionBadgesUseCase,
                 getProfileUseCase = getProfileUseCase,

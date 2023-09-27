@@ -763,15 +763,4 @@ Only the **current configuration** of your wallet is backed up with each manual 
   <string name="recoverSeedPhrase_enterButton">Enter This Seed Phrase</string>
   <string name="enterSeedPhrase_header_title">Enter Seed Phrase</string>
   <string name="enterSeedPhrase_warning">For your safety, make sure no one is looking at your screen. Never give your seed phrase to anyone for any reason.</string>
-
-    <string name="transactionReview_accountDepositSettings_title">Review New Deposit Settings</string>
-    <string name="transactionReview_accountDepositSettings_subtitle">Third-party deposit setting</string>
-    <string name="transactionReview_accountDepositSettings_acceptAllRule">Allow third parties to deposit *any asset* to this account.</string>
-    <string name="transactionReview_accountDepositSettings_acceptKnownRule">Allow third parties to deposit *only assets this account has already held*.</string>
-    <string name="transactionReview_accountDepositSettings_denyAllRule">*Disallow* all deposits from third parties without your consent.</string>
-    <string name="transactionReview_accountDepositSettings_assetChangeAllow">Allow</string>
-    <string name="transactionReview_accountDepositSettings_assetChangeDisallow">Disallow</string>
-    <string name="transactionReview_accountDepositSettings_assetChangeClear">Clear Exception</string>
-    <string name="transactionReview_accountDepositSettings_depositorChangeAdd">Add Depositor</string>
-    <string name="transactionReview_accountDepositSettings_depositorChangeRemove">Remove Depositor</string>
 </resources>
