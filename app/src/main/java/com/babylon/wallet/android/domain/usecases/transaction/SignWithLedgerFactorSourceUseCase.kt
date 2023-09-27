@@ -1,9 +1,9 @@
 package com.babylon.wallet.android.domain.usecases.transaction
 
 import com.babylon.wallet.android.data.dapp.LedgerMessenger
-import com.babylon.wallet.android.data.dapp.model.DerivePublicKeyRequest
 import com.babylon.wallet.android.data.dapp.model.LedgerDeviceModel
 import com.babylon.wallet.android.data.dapp.model.LedgerDeviceModel.Companion.getLedgerDeviceModel
+import com.babylon.wallet.android.data.dapp.model.LedgerInteractionRequest
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.radixdlt.ret.SignatureWithPublicKey
 import kotlinx.coroutines.flow.first
@@ -74,7 +74,7 @@ class SignWithLedgerFactorSourceUseCase @Inject constructor(
                 interactionId = UUIDGenerator.uuid().toString(),
                 signersDerivationPathToCurve = pathToCurve,
                 compiledTransactionIntent = dataToSign.toHexString(),
-                ledgerDevice = DerivePublicKeyRequest.LedgerDevice(
+                ledgerDevice = LedgerInteractionRequest.LedgerDevice(
                     name = ledgerFactorSource.hint.name,
                     model = deviceModel,
                     id = ledgerFactorSource.id.body.value
@@ -98,7 +98,7 @@ class SignWithLedgerFactorSourceUseCase @Inject constructor(
         ) { pathToCurve, deviceModel ->
             ledgerMessenger.signChallengeRequest(
                 interactionId = UUIDGenerator.uuid().toString(),
-                ledgerDevice = DerivePublicKeyRequest.LedgerDevice(
+                ledgerDevice = LedgerInteractionRequest.LedgerDevice(
                     name = ledgerFactorSource.hint.name,
                     model = deviceModel,
                     id = ledgerFactorSource.id.body.value

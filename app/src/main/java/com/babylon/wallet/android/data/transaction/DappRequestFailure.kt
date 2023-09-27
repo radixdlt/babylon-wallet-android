@@ -41,6 +41,7 @@ sealed class DappRequestFailure(msg: String? = null) : Exception(msg.orEmpty()) 
     sealed class LedgerCommunicationFailure : DappRequestFailure() {
         data object FailedToGetDeviceId : LedgerCommunicationFailure()
         data object FailedToDerivePublicKeys : LedgerCommunicationFailure()
+        data object FailedToDeriveAndDisplayAddress : LedgerCommunicationFailure()
         data class FailedToSignTransaction(val reason: LedgerErrorCode) : LedgerCommunicationFailure()
     }
 
@@ -76,6 +77,7 @@ sealed class DappRequestFailure(msg: String? = null) : Exception(msg.orEmpty()) 
             is LedgerCommunicationFailure.FailedToDerivePublicKeys -> WalletErrorType.InvalidRequest
             LedgerCommunicationFailure.FailedToGetDeviceId -> WalletErrorType.InvalidRequest
             is LedgerCommunicationFailure.FailedToSignTransaction -> WalletErrorType.InvalidRequest
+            is LedgerCommunicationFailure.FailedToDeriveAndDisplayAddress -> WalletErrorType.InvalidRequest
             DappVerificationFailure.ClaimedEntityAddressNotPresent -> WalletErrorType.WrongAccountType
             UnacceptableManifest -> WalletErrorType.FailedToPrepareTransaction
         }
@@ -114,6 +116,7 @@ sealed class DappRequestFailure(msg: String? = null) : Exception(msg.orEmpty()) 
                 LedgerErrorCode.UserRejectedSigningOfTransaction -> R.string.error_transactionFailure_rejected
             }
             is FailedToSignAuthChallenge -> R.string.common_somethingWentWrong // TODO consider different copy
+            is LedgerCommunicationFailure.FailedToDeriveAndDisplayAddress -> R.string.common_somethingWentWrong
             DappVerificationFailure.ClaimedEntityAddressNotPresent -> R.string.common_somethingWentWrong // TODO consider different copy
             UnacceptableManifest -> R.string.transactionReview_unacceptableManifest_rejected
         }
