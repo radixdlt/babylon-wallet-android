@@ -121,7 +121,7 @@ fun ActionableAddressView(
                 .combinedClickable(
                     onClick = {
                         when (val actionData = actions.primary.onAction()) {
-                            is OnAction.CallbackBasedAction -> actionData.onAction(context.applicationContext)
+                            is OnAction.CallbackBasedAction -> actionData.onAction(context)
                             is OnAction.ViewBasedAction -> viewBasedAction = actionData
                         }
                     },
@@ -170,7 +170,7 @@ fun ActionableAddressView(
                     onClick = {
                         isDropdownMenuExpanded = false
                         when (val actionData = it.onAction()) {
-                            is OnAction.CallbackBasedAction -> actionData.onAction(context.applicationContext)
+                            is OnAction.CallbackBasedAction -> actionData.onAction(context)
                             is OnAction.ViewBasedAction -> viewBasedAction = actionData
                         }
                     },
