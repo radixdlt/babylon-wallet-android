@@ -3,6 +3,7 @@ package com.babylon.wallet.android.presentation.main
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.data.dapp.PeerdroidClient
+import com.babylon.wallet.android.data.transaction.DappRequestFailure
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel.IncomingRequest
 import com.babylon.wallet.android.domain.usecases.AuthorizeSpecifiedPersonaUseCase
 import com.babylon.wallet.android.domain.usecases.MainnetAvailabilityUseCase
@@ -194,10 +195,13 @@ class MainViewModel @Inject constructor(
 
     private fun processIncomingRequest(request: IncomingRequest) {
         processingDappRequestJob = viewModelScope.launch {
-            val verificationResult = verifyDappUseCase(request)
-            verificationResult.onSuccess { verified ->
+            verifyDappUseCase(request).onSuccess { verified ->
                 if (verified) {
                     incomingRequestRepository.add(request)
+                }
+            }.onFailure {
+                _state.update { state ->
+                    state.copy(dappVerificationError = DappRequestFailure.InvalidRequest)
                 }
             }
         }
@@ -211,6 +215,10 @@ class MainViewModel @Inject constructor(
         peerdroidClient.terminate()
         incomingRequestRepository.removeAll()
         Timber.d("Peerdroid terminated")
+    }
+
+    fun onInvalidRequestMessageShown() {
+        _state.update { it.copy(dappVerificationError = null) }
     }
 
     fun onAppToForeground() {
@@ -242,14 +250,15 @@ sealed class MainEvent : OneOffEvent {
 }
 
 data class MainUiState(
-    val initialAppState: AppState = AppState.Loading
+    val initialAppState: AppState = AppState.Loading,
+    val dappVerificationError: DappRequestFailure? = null
 ) : UiState
 
 sealed interface AppState {
-    object OnBoarding : AppState
-    object Wallet : AppState
-    object IncompatibleProfile : AppState
-    object Loading : AppState
+    data object OnBoarding : AppState
+    data object Wallet : AppState
+    data object IncompatibleProfile : AppState
+    data object Loading : AppState
 
     companion object {
         fun from(profileState: ProfileState) = when (profileState) {

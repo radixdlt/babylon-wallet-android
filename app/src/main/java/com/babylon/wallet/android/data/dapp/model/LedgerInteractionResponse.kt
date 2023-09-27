@@ -8,7 +8,7 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
-import rdx.works.profile.data.model.factorsources.FactorSource
+import rdx.works.core.HexCoded32Bytes
 
 @Serializable
 sealed interface LedgerInteractionResponse : ConnectorExtensionInteraction
@@ -181,7 +181,7 @@ private fun GetDeviceInfoResponse.toDomainModel() =
         LedgerResponse.GetDeviceInfoResponse(
             interactionId = interactionId,
             model = success.model?.toDomainModel() ?: LedgerResponse.LedgerDeviceModel.NanoS,
-            deviceId = FactorSource.HexCoded32Bytes(success.id)
+            deviceId = HexCoded32Bytes(success.id)
         )
     } else {
         LedgerResponse.LedgerErrorResponse(

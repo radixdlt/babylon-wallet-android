@@ -13,7 +13,7 @@ import com.google.accompanist.navigation.animation.composable
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
-import rdx.works.profile.data.model.factorsources.FactorSource
+import rdx.works.core.HexCoded32Bytes
 import rdx.works.profile.domain.backup.BackupType
 
 private const val ARGS_RESTORE_MNEMONICS = "restoreMnemonicsArgs"
@@ -32,7 +32,7 @@ sealed interface RestoreMnemonicsArgs {
 
     @Serializable
     data class RestoreSpecificMnemonic(
-        val factorSourceId: FactorSource.HexCoded32Bytes,
+        val factorSourceId: HexCoded32Bytes,
         val isMandatory: Boolean = false
     ) : RestoreMnemonicsArgs
 

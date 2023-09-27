@@ -20,6 +20,7 @@ import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.runTest
 import org.junit.Test
+import rdx.works.core.HexCoded32Bytes
 import rdx.works.core.InstantGenerator
 import rdx.works.core.toHexString
 import rdx.works.core.toUByteList
@@ -109,7 +110,7 @@ internal class MigrateOlympiaAccountsUseCaseTest {
                                         ),
                                         factorSourceId = FactorSource.FactorSourceID.FromHash(
                                             kind = FactorSourceKind.DEVICE,
-                                            body = FactorSource.HexCoded32Bytes("5f07ec336e9e7891bff04004c817201e73c097b6b1e1b3a26bc501e0010196f5")
+                                            body = HexCoded32Bytes("5f07ec336e9e7891bff04004c817201e73c097b6b1e1b3a26bc501e0010196f5")
                                         )
                                     )
                                 )
@@ -133,7 +134,7 @@ internal class MigrateOlympiaAccountsUseCaseTest {
         val capturedProfile = slot<Profile>()
         usecase(getOlympiaTestAccounts(), FactorSource.FactorSourceID.FromHash(
             kind = FactorSourceKind.DEVICE,
-            body = FactorSource.HexCoded32Bytes("5f07ec336e9e7891bff04004c817201e73c097b6b1e1b3a26bc501e0010196f5")
+            body = HexCoded32Bytes("5f07ec336e9e7891bff04004c817201e73c097b6b1e1b3a26bc501e0010196f5")
         ))
         coVerify(exactly = 1) { profileRepository.saveProfile(capture(capturedProfile)) }
         assert(capturedProfile.captured.currentNetwork.accounts.size == 12)

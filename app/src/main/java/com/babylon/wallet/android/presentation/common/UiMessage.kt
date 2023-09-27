@@ -21,27 +21,27 @@ sealed class UiMessage(val id: String = UUIDGenerator.uuid().toString()) {
     sealed class InfoMessage : UiMessage() {
         @Serializable
         @SerialName("invalid_mnemonic")
-        object InvalidMnemonic : InfoMessage()
+        data object InvalidMnemonic : InfoMessage()
 
         @Serializable
         @SerialName("invalid_snapshot")
-        object InvalidSnapshot : InfoMessage()
+        data object InvalidSnapshot : InfoMessage()
 
         @Serializable
         @SerialName("invalid_password")
-        object InvalidPassword : InfoMessage()
+        data object InvalidPassword : InfoMessage()
 
         @Serializable
         @SerialName("invalid_payload")
-        object InvalidPayload : InfoMessage()
+        data object InvalidPayload : InfoMessage()
 
         @Serializable
         @SerialName("invalid_no_mnemonic_for_accounts")
-        object NoMnemonicForAccounts : InfoMessage()
+        data object NoMnemonicForAccounts : InfoMessage()
 
         @Serializable
         @SerialName("invalid_no_accounts_for_ledger")
-        object NoAccountsForLedger : InfoMessage()
+        data object NoAccountsForLedger : InfoMessage()
 
         @Serializable
         @SerialName("invalid_ledger_already_exist")
@@ -49,7 +49,7 @@ sealed class UiMessage(val id: String = UUIDGenerator.uuid().toString()) {
 
         @Serializable
         @SerialName("wallet_exported")
-        object WalletExported : InfoMessage()
+        data object WalletExported : InfoMessage()
 
         override fun getMessage(context: Context): String = when (this) {
             InvalidMnemonic -> context.getString(R.string.importOlympiaAccounts_invalidMnemonic)
