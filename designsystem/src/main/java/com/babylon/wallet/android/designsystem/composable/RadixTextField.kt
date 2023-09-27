@@ -4,8 +4,10 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.selection.LocalTextSelectionColors
@@ -24,6 +26,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.designsystem.R
@@ -39,15 +42,8 @@ fun RadixTextField(
     hint: String? = null,
     hintColor: Color? = RadixTheme.colors.defaultText,
     error: String? = null,
-    leftLabel: String? = null,
-    leftLabelContent: @Composable (() -> Unit) = {
-        Text(
-            text = leftLabel.orEmpty(),
-            style = RadixTheme.typography.body1HighImportance,
-            color = if (error != null) RadixTheme.colors.red1 else RadixTheme.colors.gray1
-        )
-    },
-    rightLabel: String? = null,
+    leftLabel: LabelType? = null,
+    rightLabel: LabelType? = null,
     optionalHint: String? = null,
     trailingIcon: @Composable (() -> Unit)? = null,
     iconToTheRight: @Composable (() -> Unit)? = null,
@@ -59,14 +55,10 @@ fun RadixTextField(
     errorFixedSize: Boolean = false,
     visualTransformation: VisualTransformation = VisualTransformation.None
 ) {
+    val isError = error != null
     Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingSmall)) {
-        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-            Column {
-                leftLabelContent.invoke()
-            }
-            rightLabel?.let { hint ->
-                Text(text = hint, style = RadixTheme.typography.body1Regular, color = RadixTheme.colors.gray2)
-            }
+        if (leftLabel != null || rightLabel != null) {
+            TopLabelRow(leftLabel, rightLabel, isError)
         }
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -143,7 +135,55 @@ fun RadixTextField(
     }
 }
 
-@Preview
+@Composable
+private fun TopLabelRow(
+    leftLabel: LabelType?,
+    rightLabel: LabelType?,
+    isError: Boolean,
+    modifier: Modifier = Modifier
+) {
+    Row(modifier = modifier.fillMaxWidth()) {
+        when (leftLabel) {
+            is LabelType.Custom -> {
+                Column(modifier = Modifier.weight(1f)) {
+                    leftLabel.content()
+                }
+            }
+
+            is LabelType.Default -> {
+                Text(
+                    modifier = Modifier.weight(1f),
+                    text = leftLabel.value,
+                    style = RadixTheme.typography.body1HighImportance,
+                    color = if (isError) RadixTheme.colors.red1 else RadixTheme.colors.gray1
+                )
+            }
+
+            else -> {}
+        }
+        Spacer(modifier = Modifier.width(RadixTheme.dimensions.paddingSmall))
+        when (rightLabel) {
+            is LabelType.Default -> {
+                Text(
+                    modifier = Modifier.weight(1f),
+                    text = rightLabel.value,
+                    style = RadixTheme.typography.body1Regular,
+                    color = RadixTheme.colors.gray2,
+                    textAlign = TextAlign.End
+                )
+            }
+
+            else -> {}
+        }
+    }
+}
+
+sealed interface LabelType {
+    data class Default(val value: String) : LabelType
+    data class Custom(val content: @Composable () -> Unit) : LabelType
+}
+
+@Preview(showBackground = true)
 @Composable
 fun RadixTextFieldPreview() {
     RadixWalletTheme {
@@ -157,7 +197,7 @@ fun RadixTextFieldPreview() {
     }
 }
 
-@Preview
+@Preview(showBackground = true)
 @Composable
 fun RadixTextFieldFilled() {
     RadixWalletTheme {
@@ -166,13 +206,14 @@ fun RadixTextFieldFilled() {
             onValueChanged = {},
             value = "Input Text",
             hint = "Placeholder",
-            rightLabel = "7/10",
+            leftLabel = LabelType.Default("Left Label"),
+            rightLabel = LabelType.Default("Right label"),
             optionalHint = "This is a hint text, It should be short and sweet"
         )
     }
 }
 
-@Preview
+@Preview(showBackground = true)
 @Composable
 fun RadixTextErrorField() {
     RadixWalletTheme {
@@ -195,6 +236,7 @@ fun RadixTextFieldWithIcon() {
             modifier = Modifier.fillMaxWidth(),
             onValueChanged = { },
             value = "casino",
+            rightLabel = LabelType.Default("Abc"),
             trailingIcon = {
                 Icon(
                     modifier = Modifier.size(20.dp),

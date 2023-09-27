@@ -37,6 +37,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
+import com.babylon.wallet.android.designsystem.composable.LabelType
 import com.babylon.wallet.android.designsystem.composable.RadixSecondaryButton
 import com.babylon.wallet.android.designsystem.composable.RadixTextField
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
@@ -297,7 +298,7 @@ private fun PersonaDetailList(
                     .padding(horizontal = dimensions.paddingDefault),
                 onValueChanged = onDisplayNameChanged,
                 value = personaDisplayName.value,
-                leftLabel = stringResource(id = R.string.authorizedDapps_personaDetails_personaLabelHeading),
+                leftLabel = LabelType.Default(stringResource(id = R.string.authorizedDapps_personaDetails_personaLabelHeading)),
                 error = if (personaDisplayName.shouldDisplayValidationError && personaDisplayName.valid == false) {
                     stringResource(id = R.string.createPersona_emptyDisplayName)
                 } else {

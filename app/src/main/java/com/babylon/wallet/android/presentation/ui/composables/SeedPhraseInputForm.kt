@@ -32,6 +32,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.R
+import com.babylon.wallet.android.designsystem.composable.LabelType
 import com.babylon.wallet.android.designsystem.composable.MnemonicWordTextField
 import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
 import com.babylon.wallet.android.designsystem.composable.RadixTextButton
@@ -89,7 +90,7 @@ fun SeedPhraseInputForm(
                     .padding(vertical = RadixTheme.dimensions.paddingMedium),
                 onValueChanged = onPassphraseChanged,
                 value = bip39Passphrase,
-                leftLabel = stringResource(id = R.string.importMnemonic_passphrase),
+                leftLabel = LabelType.Default(stringResource(id = R.string.importMnemonic_passphrase)),
                 optionalHint = stringResource(id = R.string.importMnemonic_passphraseHint),
 
             )
