@@ -29,6 +29,7 @@ import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.presentation.settings.SettingsItem
+import com.babylon.wallet.android.presentation.ui.composables.DefaultSettingsItem
 import com.babylon.wallet.android.presentation.ui.composables.NotBackedUpWarning
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.SwitchSettingsItem
@@ -112,7 +113,8 @@ private fun AppSettingsContent(
                                     )
                                 } else {
                                     DefaultSettingsItem(
-                                        settingsItem = appSettingsItem,
+                                        title = stringResource(id = appSettingsItem.descriptionRes()),
+                                        icon = appSettingsItem.getIcon(),
                                         onClick = {
                                             onAppSettingItemClick(appSettingsItem)
                                         }
@@ -125,39 +127,6 @@ private fun AppSettingsContent(
                 }
             }
         }
-    }
-}
-
-@Composable
-private fun DefaultSettingsItem(
-    settingsItem: SettingsItem.AppSettingsItem,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    Row(
-        modifier = modifier
-            .fillMaxWidth()
-            .height(72.dp)
-            .background(RadixTheme.colors.defaultBackground)
-            .throttleClickable(onClick = onClick)
-            .padding(horizontal = RadixTheme.dimensions.paddingDefault),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingMedium)
-    ) {
-        settingsItem.getIcon()?.let {
-            Icon(painter = painterResource(id = it), contentDescription = null)
-        }
-        Text(
-            text = stringResource(id = settingsItem.descriptionRes()),
-            style = RadixTheme.typography.body2Header,
-            color = RadixTheme.colors.gray1
-        )
-        Spacer(modifier = Modifier.weight(1f))
-        Icon(
-            painter = painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_chevron_right),
-            contentDescription = null,
-            tint = RadixTheme.colors.gray1
-        )
     }
 }
 
