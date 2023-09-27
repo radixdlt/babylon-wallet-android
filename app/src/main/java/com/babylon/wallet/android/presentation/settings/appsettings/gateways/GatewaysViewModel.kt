@@ -77,7 +77,7 @@ class GatewaysViewModel @Inject constructor(
             val sanitizedUrl = newUrl.sanitizeAndValidateGatewayUrl(isDevModeEnabled = state.isDeveloperModeEnabled)
             val urlAlreadyAdded = state.gatewayList.any { it.gateway.url == newUrl || it.gateway.url == sanitizedUrl }
             state.copy(
-                newUrlValid = !urlAlreadyAdded && (newUrl.isValidUrl() || sanitizedUrl.isValidUrl()) && (sanitizedUrl == "/").not(),
+                newUrlValid = !urlAlreadyAdded && (newUrl.isValidUrl() || sanitizedUrl?.isValidUrl() == true),
                 newUrl = newUrl,
                 gatewayAddFailure = if (urlAlreadyAdded) GatewayAddFailure.AlreadyExist else null
             )
@@ -96,8 +96,13 @@ class GatewaysViewModel @Inject constructor(
 
     fun onAddGateway() {
         viewModelScope.launch {
-            val newUrl = state.value.newUrl.sanitizeAndValidateGatewayUrl(isDevModeEnabled = state.value.isDeveloperModeEnabled)
+            val newUrl = state.value
+                .newUrl
+                .sanitizeAndValidateGatewayUrl(isDevModeEnabled = state.value.isDeveloperModeEnabled)
+                ?: return@launch
+
             _state.update { state -> state.copy(addingGateway = true) }
+
             val newGatewayInfo = networkInfoRepository.getNetworkInfo(newUrl)
             newGatewayInfo.onValue { networkName ->
                 addGatewayUseCase(Radix.Gateway(newUrl, Radix.Network.forName(networkName)))

@@ -94,7 +94,7 @@ fun String.decodeUtf8(): String {
 }
 
 // see the SanitizeAndValidateGatewayUrlTest for better understanding
-fun String.sanitizeAndValidateGatewayUrl(isDevModeEnabled: Boolean = false): String {
+fun String.sanitizeAndValidateGatewayUrl(isDevModeEnabled: Boolean = false): String? {
     val ipValidator = InetAddressValidator.getInstance()
     val urlValidator = UrlValidator.getInstance()
 
@@ -120,14 +120,14 @@ fun String.sanitizeAndValidateGatewayUrl(isDevModeEnabled: Boolean = false): Str
     } else { // when dev mode is disabled we should not accept ONLY https - no IPs
         val urlWithoutHttp = this.removePrefix("http://").removePrefix("https://")
         if (urlWithoutHttp.contains(":")) { // if true it means it has a port or it is an IPv6
-            "/" // then do not accept it
+            null // then do not accept it
         } else {
             // now we need to check also for
             val urlToValidate = urlWithoutHttp
                 .substringBefore("/")
                 .removeSuffix("/")
             if (ipValidator.isValidInet4Address(urlToValidate) || ipValidator.isValidInet6Address(urlToValidate)) {
-                "/" // then do not accept it
+                null // then do not accept it
             } else {
                 "https://$urlToValidate/"
             }

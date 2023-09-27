@@ -8,90 +8,74 @@ class SanitizeAndValidateGatewayUrlTest {
     @Test
     fun `given dev mode is disabled when gateway url is IPv4 then do not accept it`() {
         val inputIP1 = "198.161.9.9"
-        val expectedIP1 = "/" // not accepted
         val actualIP1 = inputIP1.sanitizeAndValidateGatewayUrl()
-        Assert.assertEquals(expectedIP1, actualIP1)
+        Assert.assertNull(actualIP1)
 
         val inputIP2 = "198.161.9.9/"
-        val expectedIP2 = "/" // not accepted
         val actualIP2 = inputIP2.sanitizeAndValidateGatewayUrl()
-        Assert.assertEquals(expectedIP2, actualIP2)
+        Assert.assertNull(actualIP2)
 
         val inputIP3 = "http://198.161.9.9"
-        val expectedIP3 = "/" // not accepted
         val actualIP3 = inputIP3.sanitizeAndValidateGatewayUrl()
-        Assert.assertEquals(expectedIP3, actualIP3)
+        Assert.assertNull(actualIP3)
 
         val inputIP4 = "https://198.161.9.9"
-        val expectedIP4 = "/" // not accepted
         val actualIP4 = inputIP4.sanitizeAndValidateGatewayUrl()
-        Assert.assertEquals(expectedIP4, actualIP4)
+        Assert.assertNull(actualIP4)
 
         val inputIP5 = "https://198.161.9.9/"
-        val expectedIP5 = "/" // not accepted
         val actualIP5 = inputIP5.sanitizeAndValidateGatewayUrl()
-        Assert.assertEquals(expectedIP5, actualIP5)
+        Assert.assertNull(actualIP5)
 
         val inputIP6 = "https://198.161.9.9:456/test"
-        val expectedIP6 = "/" // not accepted
         val actualIP6 = inputIP6.sanitizeAndValidateGatewayUrl()
-        Assert.assertEquals(expectedIP6, actualIP6)
+        Assert.assertNull(actualIP6)
 
         val inputIP7 = "https://198.161.9.9:456/test/test"
-        val expectedIP7 = "/" // not accepted
         val actualIP7 = inputIP7.sanitizeAndValidateGatewayUrl()
-        Assert.assertEquals(expectedIP7, actualIP7)
+        Assert.assertNull(actualIP7)
     }
 
     @Test
     fun `given dev mode is disabled when gateway url is IPv6 then do not accept it`() {
         val inputIP1 = "2001:db8:3333:4444:5555:6666:7777:8888"
-        val expectedIP1 = "/" // not accepted
         val actualIP1 = inputIP1.sanitizeAndValidateGatewayUrl()
-        Assert.assertEquals(expectedIP1, actualIP1)
+        Assert.assertNull(actualIP1)
 
         val inputIP2 = "[2001:db8:3333:4444:5555:6666:7777:8888]"
-        val expectedIP2 = "/" // not accepted
         val actualIP2 = inputIP2.sanitizeAndValidateGatewayUrl()
-        Assert.assertEquals(expectedIP2, actualIP2)
+        Assert.assertNull(actualIP2)
 
         val inputIP3 = "http://2001:db8:3333:4444:5555:6666:7777:8888"
-        val expectedIP3 = "/" // not accepted
         val actualIP3 = inputIP3.sanitizeAndValidateGatewayUrl()
-        Assert.assertEquals(expectedIP3, actualIP3)
+        Assert.assertNull(actualIP3)
 
         val inputIP4 = "https://2001:db8:3333:4444:5555:6666:7777:8888"
-        val expectedIP4 = "/" // not accepted
         val actualIP4 = inputIP4.sanitizeAndValidateGatewayUrl()
-        Assert.assertEquals(expectedIP4, actualIP4)
+        Assert.assertNull(actualIP4)
 
         val inputIP5 = "https://[2001:db8:3333:4444:5555:6666:7777:8888]/"
-        val expectedIP5 = "/" // not accepted
         val actualIP5 = inputIP5.sanitizeAndValidateGatewayUrl()
-        Assert.assertEquals(expectedIP5, actualIP5)
+        Assert.assertNull(actualIP5)
 
         val inputIP6 = "https://[2001:db8:3333:4444:5555:6666:7777:8888]:456/test"
-        val expectedIP6 = "/" // not accepted
         val actualIP6 = inputIP6.sanitizeAndValidateGatewayUrl()
-        Assert.assertEquals(expectedIP6, actualIP6)
+        Assert.assertNull(actualIP6)
     }
 
     @Test
     fun `given dev mode is disabled when gateway url is a domain url with port then do not accept it`() {
         val inputDomain1 = "www.network.com:456"
-        val expectedDomain1 = "/" // not accepted
         val actualDomain1 = inputDomain1.sanitizeAndValidateGatewayUrl()
-        Assert.assertEquals(expectedDomain1, actualDomain1)
+        Assert.assertNull(actualDomain1)
 
         val inputDomain2 = "https://www.network.com:456"
-        val expectedDomain2 = "/" // not accepted
         val actualDomain2 = inputDomain2.sanitizeAndValidateGatewayUrl()
-        Assert.assertEquals(expectedDomain2, actualDomain2)
+        Assert.assertNull(actualDomain2)
 
         val inputDomain3 = "http://2847478384-network.radixdlt.com:456/test/test"
-        val expectedDomain3 = "/" // not accepted
         val actualDomain3 = inputDomain3.sanitizeAndValidateGatewayUrl()
-        Assert.assertEquals(expectedDomain3, actualDomain3)
+        Assert.assertNull(actualDomain3)
     }
 
     @Test
