@@ -62,4 +62,6 @@ Some useful Kotlin resources
 - How to create [GitHub repository](https://radixdlt.atlassian.net/wiki/spaces/EN/pages/2804023327/Github+repositories)
 - At the moment we use GitHub Actions + [fastlane](https://fastlane.tools/)
 
+## License
 
+The Babylon Wallet Android code is released under the [Apache 2.0 license](./LICENSE). Binaries are licensed under the [Radix Wallet Software EULA](http://www.radixdlt.com/terms/walletEULA).
