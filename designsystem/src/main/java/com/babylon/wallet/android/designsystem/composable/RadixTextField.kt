@@ -105,7 +105,7 @@ fun RadixTextField(
                 keyboardActions = keyboardActions,
                 keyboardOptions = keyboardOptions,
 
-                )
+            )
             iconToTheRight?.let { icon ->
                 Box {
                     icon()
