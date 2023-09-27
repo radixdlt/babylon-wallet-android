@@ -55,6 +55,7 @@ import com.babylon.wallet.android.domain.model.metadata.MetadataItem
 import com.babylon.wallet.android.domain.model.metadata.MetadataItem.Companion.consume
 import com.babylon.wallet.android.domain.model.metadata.NameMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.OwnerKeyHashesMetadataItem
+import com.babylon.wallet.android.domain.model.metadata.StringMetadataItem
 import rdx.works.profile.data.model.pernetwork.Network
 import timber.log.Timber
 import java.io.IOException
@@ -680,7 +681,7 @@ class EntityRepositoryImpl @Inject constructor(
                                         val fieldName = field.field_name.orEmpty()
                                         val value = field.valueContent.orEmpty()
                                         if (fieldName.isNotEmpty() && value.isNotBlank()) {
-                                            Pair(fieldName, value)
+                                            StringMetadataItem(fieldName, value)
                                         } else {
                                             null
                                         }

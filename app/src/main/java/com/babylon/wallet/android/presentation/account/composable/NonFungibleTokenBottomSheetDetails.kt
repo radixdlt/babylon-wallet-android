@@ -107,13 +107,13 @@ fun NonFungibleTokenBottomSheetDetails(
                 ) {
                     Text(
                         modifier = Modifier.padding(end = RadixTheme.dimensions.paddingMedium),
-                        text = field.first,
+                        text = field.key,
                         style = RadixTheme.typography.body1Regular,
                         color = RadixTheme.colors.gray2
                     )
                     Spacer(modifier = Modifier.weight(1f))
                     Text(
-                        text = field.second,
+                        text = field.value,
                         style = RadixTheme.typography.body1HighImportance,
                         color = RadixTheme.colors.gray1
                     )
