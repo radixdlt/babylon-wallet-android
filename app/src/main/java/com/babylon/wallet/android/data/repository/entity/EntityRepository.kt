@@ -55,6 +55,7 @@ import com.babylon.wallet.android.domain.model.metadata.MetadataItem
 import com.babylon.wallet.android.domain.model.metadata.MetadataItem.Companion.consume
 import com.babylon.wallet.android.domain.model.metadata.NameMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.OwnerKeyHashesMetadataItem
+import com.babylon.wallet.android.domain.model.metadata.StringMetadataItem
 import rdx.works.profile.data.model.pernetwork.Network
 import timber.log.Timber
 import java.io.IOException
@@ -594,7 +595,7 @@ class EntityRepositoryImpl @Inject constructor(
         return allNonFungibles
     }
 
-    @Suppress("LongMethod")
+    @Suppress("LongMethod", "CyclomaticComplexMethod")
     private suspend fun getNonFungibleResourceItemsForAccount(
         accountAddress: String,
         vaultAddress: String,
@@ -671,7 +672,20 @@ class EntityRepositoryImpl @Inject constructor(
                                     }?.value?.let { imageUrl -> IconUrlMetadataItem(url = Uri.parse(imageUrl)) },
                                 readyToClaim = claimEpoch != null && ledgerEpoch != null && ledgerEpoch >= claimEpoch,
                                 claimAmountMetadataItem = stateNonFungibleDetailsResponseItem.claimAmount()
-                                    ?.let { claimAmount -> ClaimAmountMetadataItem(claimAmount) }
+                                    ?.let { claimAmount -> ClaimAmountMetadataItem(claimAmount) },
+                                remainingMetadata = stateNonFungibleDetailsResponseItem.data?.programmaticJson?.fields
+                                    ?.filterNot { field ->
+                                        field.field_name == ExplicitMetadataKey.NAME.key ||
+                                            field.field_name == ExplicitMetadataKey.KEY_IMAGE_URL.key
+                                    }?.mapNotNull { field ->
+                                        val fieldName = field.field_name.orEmpty()
+                                        val value = field.valueContent.orEmpty()
+                                        if (fieldName.isNotEmpty() && value.isNotBlank()) {
+                                            StringMetadataItem(fieldName, value)
+                                        } else {
+                                            null
+                                        }
+                                    }.orEmpty()
                             )
                         }
                     }.value()

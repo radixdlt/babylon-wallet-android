@@ -9,6 +9,7 @@ import com.babylon.wallet.android.domain.model.metadata.DescriptionMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.IconUrlMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.NameMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.PoolMetadataItem
+import com.babylon.wallet.android.domain.model.metadata.StringMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.SymbolMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.TagsMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.ValidatorMetadataItem
@@ -179,7 +180,8 @@ sealed class Resource {
             val nameMetadataItem: NameMetadataItem? = null,
             val iconMetadataItem: IconUrlMetadataItem? = null,
             val readyToClaim: Boolean = false,
-            val claimAmountMetadataItem: ClaimAmountMetadataItem? = null
+            val claimAmountMetadataItem: ClaimAmountMetadataItem? = null,
+            val remainingMetadata: List<StringMetadataItem> = emptyList()
         ) : Comparable<Item> {
 
             val globalAddress: String
