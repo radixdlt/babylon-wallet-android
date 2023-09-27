@@ -504,8 +504,7 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
         val dApp = authorizedDapp
         val date = LocalDateTime.now().toISO8601String()
         if (dApp == null) {
-            // TODO do we really need to save the dapp with "Unknown dApp"? Seems wrong!
-            val dAppName = state.value.dappWithMetadata?.name.orEmpty().ifEmpty { "Unknown dApp" }
+            val dAppName = state.value.dappWithMetadata?.name?.ifEmpty { null }
             mutex.withLock {
                 editedDapp = Network.AuthorizedDapp(
                     request.metadata.networkId,

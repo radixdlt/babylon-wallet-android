@@ -109,8 +109,8 @@ class AuthorizeSpecifiedPersonaUseCase @Inject constructor(
         authorizedPersonaSimple: Network.AuthorizedDapp.AuthorizedPersonaSimple,
         hasOngoingPersonaDataRequest: Boolean,
         persona: Network.Persona
-    ): Result<String> {
-        var operationResult: Result<String> = Result.failure(DappRequestFailure.InvalidRequest)
+    ): Result<String?> {
+        var operationResult: Result<String?> = Result.failure(DappRequestFailure.InvalidRequest)
         val selectedAccounts: List<Selectable<Network.Account>> = getAccountsWithGrantedAccess(
             request,
             authorizedDapp,
@@ -168,7 +168,7 @@ class AuthorizeSpecifiedPersonaUseCase @Inject constructor(
         selectedAccounts: List<Selectable<Network.Account>>,
         selectedPersonaData: PersonaData?,
         authorizedDapp: Network.AuthorizedDapp
-    ): Result<String> {
+    ): Result<String?> {
         return buildAuthorizedDappResponseUseCase(
             request = request,
             selectedPersona = persona,
@@ -250,5 +250,5 @@ class AuthorizeSpecifiedPersonaUseCase @Inject constructor(
 
 data class DAppData(
     val requestId: String,
-    val name: String
+    val name: String?
 )
