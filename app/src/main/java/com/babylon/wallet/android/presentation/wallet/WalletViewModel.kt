@@ -74,7 +74,7 @@ class WalletViewModel @Inject constructor(
 
                 getAccountsWithResourcesUseCase(
                     accounts = accounts,
-                    isDetailedBreakdown = false,
+                    isNftItemDataNeeded = false,
                     isRefreshing = _state.value.isRefreshing
                 )
                     .onValue { resources ->
