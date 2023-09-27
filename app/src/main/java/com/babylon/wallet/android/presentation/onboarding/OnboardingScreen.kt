@@ -12,12 +12,15 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
@@ -69,28 +72,28 @@ private fun OnboardingScreenContent(
                 .fillMaxSize(),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text(
-                modifier = Modifier
-                    .widthIn(max = 300.dp)
-                    .padding(
-                        horizontal = RadixTheme.dimensions.paddingLarge,
-                        vertical = RadixTheme.dimensions.paddingDefault
-                    ),
-                text = stringResource(id = R.string.onboarding_step1_title),
-                style = RadixTheme.typography.title,
-                color = RadixTheme.colors.gray1,
-                textAlign = TextAlign.Center
-            )
+            CompositionLocalProvider(LocalDensity provides Density(LocalDensity.current.density, 1f)) {
+                Text(
+                    modifier = Modifier
+                        .widthIn(max = 300.dp)
+                        .padding(
+                            top = RadixTheme.dimensions.paddingLarge,
+                            bottom = RadixTheme.dimensions.paddingDefault
+                        ),
+                    text = stringResource(id = R.string.onboarding_step1_title),
+                    style = RadixTheme.typography.title,
+                    color = RadixTheme.colors.gray1,
+                    textAlign = TextAlign.Center
+                )
 
-            Text(
-                modifier = Modifier
-                    .widthIn(max = 300.dp)
-                    .padding(horizontal = RadixTheme.dimensions.paddingLarge),
-                text = stringResource(id = R.string.onboarding_step1_subtitle),
-                style = RadixTheme.typography.secondaryHeader,
-                color = RadixTheme.colors.gray2,
-                textAlign = TextAlign.Center
-            )
+                Text(
+                    modifier = Modifier.widthIn(max = 300.dp),
+                    text = stringResource(id = R.string.onboarding_step1_subtitle),
+                    style = RadixTheme.typography.secondaryHeader,
+                    color = RadixTheme.colors.gray2,
+                    textAlign = TextAlign.Center
+                )
+            }
 
             OnboardingGraphic(
                 modifier = Modifier
