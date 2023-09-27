@@ -19,6 +19,7 @@ import com.babylon.wallet.android.domain.model.metadata.NameMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.SymbolMetadataItem
 import com.babylon.wallet.android.presentation.account.settings.thirdpartydeposits.AssetType
 import com.babylon.wallet.android.presentation.transaction.AccountWithTransferableResources
+import rdx.works.core.HexCoded32Bytes
 import rdx.works.core.InstantGenerator
 import rdx.works.profile.data.model.Header
 import rdx.works.profile.data.model.MnemonicWithPassphrase
@@ -60,12 +61,12 @@ class SampleDataProvider {
 
     val ledgerFactorSourcesSample = listOf(
         LedgerHardwareWalletFactorSource.newSource(
-            deviceID = FactorSource.HexCoded32Bytes("5f07ec336e9e7891bff04004c817201e73c097b6b1e1b3a26bc205e0010196f5"),
+            deviceID = HexCoded32Bytes("5f07ec336e9e7891bff04004c817201e73c097b6b1e1b3a26bc205e0010196f5"),
             model = LedgerHardwareWalletFactorSource.DeviceModel.NANO_S,
             name = "Nano S",
         ),
         LedgerHardwareWalletFactorSource.newSource(
-            deviceID = FactorSource.HexCoded32Bytes("5f07ec336e9e7891bff00404c817201e73c097b6b1e1b3a26bc205e0010196f5"),
+            deviceID = HexCoded32Bytes("5f07ec336e9e7891bff00404c817201e73c097b6b1e1b3a26bc205e0010196f5"),
             model = LedgerHardwareWalletFactorSource.DeviceModel.NANO_X,
             name = "Nano X",
         )
@@ -121,7 +122,7 @@ class SampleDataProvider {
                         ),
                         factorSourceId = FactorSource.FactorSourceID.FromHash(
                             kind = FactorSourceKind.DEVICE,
-                            body = FactorSource.HexCoded32Bytes("ba6a7bd3e91b2a83e21f05c22eaddecd12e75ab01c492e9d4e62d6445600c142")
+                            body = HexCoded32Bytes("ba6a7bd3e91b2a83e21f05c22eaddecd12e75ab01c492e9d4e62d6445600c142")
                         )
                     )
                 )
@@ -140,7 +141,7 @@ class SampleDataProvider {
     fun babylonDeviceFactorSource() = DeviceFactorSource(
         id = FactorSource.FactorSourceID.FromHash(
             kind = FactorSourceKind.DEVICE,
-            body = FactorSource.HexCoded32Bytes("5f07ec336e9e7891bff04004c817201e73c097b6b1e1b3a26bc205e0010196f5")
+            body = HexCoded32Bytes("5f07ec336e9e7891bff04004c817201e73c097b6b1e1b3a26bc205e0010196f5")
         ),
         common = FactorSource.Common(
             cryptoParameters = FactorSource.Common.CryptoParameters.babylon,
@@ -158,7 +159,7 @@ class SampleDataProvider {
     fun olympiaDeviceFactorSource() = DeviceFactorSource(
         id = FactorSource.FactorSourceID.FromHash(
             kind = FactorSourceKind.DEVICE,
-            body = FactorSource.HexCoded32Bytes("5f07ec336e9e7891bff04004c817201e73c097b6b1e1b3a26bc205e0010196f5")
+            body = HexCoded32Bytes("5f07ec336e9e7891bff04004c817201e73c097b6b1e1b3a26bc205e0010196f5")
         ),
         common = FactorSource.Common(
             cryptoParameters = FactorSource.Common.CryptoParameters.olympiaBackwardsCompatible,
@@ -178,7 +179,7 @@ class SampleDataProvider {
         name: String = "my account",
         factorSourceId: FactorSource.FactorSourceID.FromHash = FactorSource.FactorSourceID.FromHash(
             kind = FactorSourceKind.DEVICE,
-            body = FactorSource.HexCoded32Bytes("5f07ec336e9e7891bff04004c817201e73c097b6b1e1b3a26bc205e0010196f5")
+            body = HexCoded32Bytes("5f07ec336e9e7891bff04004c817201e73c097b6b1e1b3a26bc205e0010196f5")
         ),
         appearanceId: Int = 0
     ): Network.Account {
@@ -235,7 +236,7 @@ class SampleDataProvider {
                         ),
                         factorSourceId = FactorSource.FactorSourceID.FromHash(
                             kind = FactorSourceKind.DEVICE,
-                            body = FactorSource.HexCoded32Bytes("5f07ec336e9e7891bff04004c817201e73c097b6b1e1b3a26bc205e0010196f5")
+                            body = HexCoded32Bytes("5f07ec336e9e7891bff04004c817201e73c097b6b1e1b3a26bc205e0010196f5")
                         ),
                     )
                 )
@@ -331,6 +332,17 @@ class SampleDataProvider {
                 )
             }
         }
+    }
+
+    fun nonFungibleResource(name: String): Resource.NonFungibleResource {
+        return Resource.NonFungibleResource(
+            resourceAddress = randomAddress(),
+            amount = 1,
+            nameMetadataItem = NameMetadataItem(name),
+            descriptionMetadataItem = null,
+            iconMetadataItem = null,
+            items = emptyList()
+        )
     }
 
     fun samplePoolUnit(): Resource.PoolUnitResource {

@@ -1,6 +1,7 @@
 package rdx.works.profile.domain
 
 import kotlinx.coroutines.flow.first
+import rdx.works.core.HexCoded32Bytes
 import rdx.works.profile.data.model.factorsources.FactorSource
 import rdx.works.profile.data.model.factorsources.FactorSourceKind
 import rdx.works.profile.data.model.factorsources.LedgerHardwareWalletFactorSource
@@ -14,7 +15,7 @@ class AddLedgerFactorSourceUseCase @Inject constructor(
 ) {
 
     suspend operator fun invoke(
-        ledgerId: FactorSource.HexCoded32Bytes,
+        ledgerId: HexCoded32Bytes,
         model: LedgerHardwareWalletFactorSource.DeviceModel,
         name: String?
     ): AddLedgerFactorSourceResult {

@@ -45,7 +45,7 @@ fun DefaultSettingsItem(
         Column(modifier = Modifier.height(IntrinsicSize.Max), verticalArrangement = Arrangement.Center) {
             Text(
                 text = title,
-                style = RadixTheme.typography.body1HighImportance,
+                style = RadixTheme.typography.body2Header,
                 color = RadixTheme.colors.gray1
             )
             subtitle?.let { subtitle ->

@@ -11,6 +11,7 @@ sealed class DappRequestFailure(msg: String? = null) : Exception(msg.orEmpty()) 
     data object GetEpoch : DappRequestFailure()
     data object RejectedByUser : DappRequestFailure()
     data object InvalidRequest : DappRequestFailure()
+    data object UnacceptableManifest : DappRequestFailure()
     data object InvalidPersona : DappRequestFailure()
     data class FailedToSignAuthChallenge(val msg: String = "") : DappRequestFailure(msg)
     data class WrongNetwork(val currentNetworkId: Int, val requestNetworkId: Int) : DappRequestFailure()
@@ -40,6 +41,7 @@ sealed class DappRequestFailure(msg: String? = null) : Exception(msg.orEmpty()) 
     sealed class LedgerCommunicationFailure : DappRequestFailure() {
         data object FailedToGetDeviceId : LedgerCommunicationFailure()
         data object FailedToDerivePublicKeys : LedgerCommunicationFailure()
+        data object FailedToDeriveAndDisplayAddress : LedgerCommunicationFailure()
         data class FailedToSignTransaction(val reason: LedgerErrorCode) : LedgerCommunicationFailure()
     }
 
@@ -75,7 +77,9 @@ sealed class DappRequestFailure(msg: String? = null) : Exception(msg.orEmpty()) 
             is LedgerCommunicationFailure.FailedToDerivePublicKeys -> WalletErrorType.InvalidRequest
             LedgerCommunicationFailure.FailedToGetDeviceId -> WalletErrorType.InvalidRequest
             is LedgerCommunicationFailure.FailedToSignTransaction -> WalletErrorType.InvalidRequest
+            is LedgerCommunicationFailure.FailedToDeriveAndDisplayAddress -> WalletErrorType.InvalidRequest
             DappVerificationFailure.ClaimedEntityAddressNotPresent -> WalletErrorType.WrongAccountType
+            UnacceptableManifest -> WalletErrorType.FailedToPrepareTransaction
         }
     }
 
@@ -112,7 +116,9 @@ sealed class DappRequestFailure(msg: String? = null) : Exception(msg.orEmpty()) 
                 LedgerErrorCode.UserRejectedSigningOfTransaction -> R.string.error_transactionFailure_rejected
             }
             is FailedToSignAuthChallenge -> R.string.common_somethingWentWrong // TODO consider different copy
+            is LedgerCommunicationFailure.FailedToDeriveAndDisplayAddress -> R.string.common_somethingWentWrong
             DappVerificationFailure.ClaimedEntityAddressNotPresent -> R.string.common_somethingWentWrong // TODO consider different copy
+            UnacceptableManifest -> R.string.transactionReview_unacceptableManifest_rejected
         }
     }
 

@@ -228,9 +228,10 @@ class DAppRepositoryImpl @Inject constructor(
                     iconUrlMetadataItem = metadataItems.consume(),
                     behaviours = fungibleItem.details?.calculateResourceBehaviours().orEmpty(),
                     currentSupply = fungibleItem.details?.totalSupply()?.toBigDecimal(),
-                    validatorMetadataItem = metadataItems.toMutableList().consume(),
-                    poolMetadataItem = metadataItems.toMutableList().consume(),
-                    divisibility = fungibleItem.details?.divisibility()
+                    validatorMetadataItem = metadataItems.consume(),
+                    poolMetadataItem = metadataItems.consume(),
+                    divisibility = fungibleItem.details?.divisibility(),
+                    dAppDefinitionsMetadataItem = metadataItems.consume()
                 )
             }
 
@@ -251,12 +252,12 @@ class DAppRepositoryImpl @Inject constructor(
                 )
             }
 
-            val dAppsWithResources = DAppResources(
-                fungibleResources = fungibleResources,
-                nonFungibleResources = nonFungibleResource,
+            val dAppResources = DAppResources(
+                fungibleResources = fungibleResources.filter { it.dappDefinitions.contains(dAppMetadata.dAppAddress) },
+                nonFungibleResources = nonFungibleResource.filter { it.dappDefinitions.contains(dAppMetadata.dAppAddress) },
             )
 
-            Result.Success(dAppsWithResources)
+            Result.Success(dAppResources)
         }.asKotlinResult()
     }
 

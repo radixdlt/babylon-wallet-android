@@ -62,7 +62,33 @@ data class ScryptoSborValue (
 
             @SerialName(value = "value")
             val value: String? = null,
-        )
+        ) {
+            // If kind is type of array we assume its complex
+            private val isKindComplex: Boolean
+                get() = kind == MetadataValueType.boolArray.value ||
+                        kind == MetadataValueType.u8Array.value ||
+                        kind == MetadataValueType.u32Array.value ||
+                        kind == MetadataValueType.u64Array.value ||
+                        kind == MetadataValueType.i32Array.value ||
+                        kind == MetadataValueType.i64Array.value ||
+                        kind == MetadataValueType.decimalArray.value ||
+                        kind == MetadataValueType.globalAddressArray.value ||
+                        kind == MetadataValueType.publicKeyArray.value ||
+                        kind == MetadataValueType.nonFungibleGlobalIdArray.value ||
+                        kind == MetadataValueType.nonFungibleLocalIdArray.value ||
+                        kind == MetadataValueType.instantArray.value ||
+                        kind == MetadataValueType.urlArray.value ||
+                        kind == MetadataValueType.originArray.value ||
+                        kind == MetadataValueType.publicKeyHashArray.value
+
+
+            val valueContent: String?
+                get() = if (isKindComplex) COMPLEX else value
+
+            companion object {
+                private const val COMPLEX = "[Complex]"
+            }
+        }
     }
 }
 

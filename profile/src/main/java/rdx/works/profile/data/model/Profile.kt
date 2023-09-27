@@ -77,13 +77,13 @@ data class Profile(
             id: String,
             deviceInfo: DeviceInfo,
             creationDate: Instant,
-            gateway: Radix.Gateway = Radix.Gateway.default
+            gateways: Gateways = Gateways.preset
         ): Profile {
             val networks = listOf(
                 Network(
                     accounts = listOf(),
                     authorizedDapps = listOf(),
-                    networkID = gateway.network.id,
+                    networkID = gateways.current().network.id,
                     personas = listOf()
                 )
             )
@@ -92,7 +92,7 @@ data class Profile(
                 transaction = Transaction.default,
                 display = Display.default,
                 security = Security.default,
-                gateways = Gateways.fromCurrent(current = gateway),
+                gateways = gateways,
                 p2pLinks = listOf()
             )
 

@@ -15,7 +15,7 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.junit.Test
-import rdx.works.profile.data.model.factorsources.FactorSource
+import rdx.works.core.HexCoded32Bytes
 import rdx.works.profile.data.model.factorsources.LedgerHardwareWalletFactorSource
 import rdx.works.profile.domain.AddLedgerFactorSourceResult
 import rdx.works.profile.domain.AddLedgerFactorSourceUseCase
@@ -45,7 +45,7 @@ class AddLedgerDeviceViewModelTest : StateViewModelTest<AddLedgerDeviceViewModel
             MessageFromDataChannel.LedgerResponse.GetDeviceInfoResponse(
                 interactionId = "1",
                 model = MessageFromDataChannel.LedgerResponse.LedgerDeviceModel.NanoS,
-                deviceId = FactorSource.HexCoded32Bytes(firstDeviceId)
+                deviceId = HexCoded32Bytes(firstDeviceId)
             )
         )
         val vm = vm.value

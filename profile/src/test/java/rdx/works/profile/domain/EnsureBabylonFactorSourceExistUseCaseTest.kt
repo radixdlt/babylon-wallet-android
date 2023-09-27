@@ -42,8 +42,7 @@ internal class EnsureBabylonFactorSourceExistUseCaseTest {
                 manufacturer = "",
                 model = "test"
             ),
-            creationDate = Instant.EPOCH,
-            gateway = Radix.Gateway.default
+            creationDate = Instant.EPOCH
         )
         every { profileRepository.profileState } returns flowOf(ProfileState.Restored(profile))
         coEvery { profileRepository.saveProfile(any()) } just Runs

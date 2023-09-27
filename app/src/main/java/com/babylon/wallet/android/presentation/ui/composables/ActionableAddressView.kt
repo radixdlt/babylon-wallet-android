@@ -1,7 +1,7 @@
 package com.babylon.wallet.android.presentation.ui.composables
 
-import android.content.ActivityNotFoundException
-import android.content.Intent
+import android.content.ClipData
+import android.content.Context
 import android.os.Build
 import android.widget.Toast
 import androidx.annotation.DrawableRes
@@ -30,18 +30,28 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
-import androidx.core.net.toUri
+import androidx.core.content.getSystemService
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
+import com.babylon.wallet.android.di.coroutines.ApplicationScope
+import com.babylon.wallet.android.domain.usecases.VerifyAddressOnLedgerUseCase
 import com.babylon.wallet.android.presentation.model.ActionableAddress
+import com.babylon.wallet.android.utils.openUrl
+import dagger.hilt.EntryPoint
+import dagger.hilt.EntryPoints
+import dagger.hilt.InstallIn
+import dagger.hilt.components.SingletonComponent
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import rdx.works.profile.domain.GetProfileUseCase
+import rdx.works.profile.domain.accountOnCurrentNetwork
+import timber.log.Timber
 
 @OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
 @Composable
@@ -53,16 +63,54 @@ fun ActionableAddressView(
     iconColor: Color = textColor
 ) {
     val actionableAddress = resolveAddress(address = address)
-    val actions = resolveActions(actionableAddress = actionableAddress)
+    val context = LocalContext.current
+    var actions by remember(actionableAddress) {
+        mutableStateOf(
+            resolveStaticActions(
+                actionableAddress = actionableAddress,
+                context = context
+            )
+        )
+    }
+
+    // Resolve if address is ledger and attach another action
+    if (actionableAddress.type == ActionableAddress.Type.ACCOUNT) {
+        val useCaseProvider = remember(context) {
+            EntryPoints.get(context.applicationContext, ActionableAddressViewEntryPoint::class.java)
+        }
+        val scope = rememberCoroutineScope()
+
+        LaunchedEffect(actionableAddress) {
+            scope.launch {
+                if (useCaseProvider.profileUseCase().accountOnCurrentNetwork(actionableAddress.address)?.isLedgerAccount == true) {
+                    val verifyOnLedgerAction = PopupActionItem(
+                        name = context.getString(R.string.addressAction_verifyAddressLedger),
+                        icon = com.babylon.wallet.android.designsystem.R.drawable.ic_ledger_hardware_wallets
+                    ) {
+                        OnAction.CallbackBasedAction.VerifyAddressOnLedger(
+                            actionableAddress = actionableAddress,
+                            verifyAddressOnLedgerUseCase = useCaseProvider.verifyAddressOnLedgerUseCase(),
+                            applicationScope = useCaseProvider.applicationScope()
+                        )
+                    }
+
+                    actions = actions.copy(
+                        secondary = actions.secondary.toMutableList().apply { add(verifyOnLedgerAction) }.toList()
+                    )
+                }
+            }
+        }
+    }
+
     var isDropdownMenuExpanded by remember { mutableStateOf(false) }
-    var onAction: OnAction? by remember { mutableStateOf(null) }
+    var viewBasedAction: OnAction.ViewBasedAction? by remember { mutableStateOf(null) }
     val scope = rememberCoroutineScope()
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
-    LaunchedEffect(onAction) {
-        if (onAction == null) {
+    LaunchedEffect(viewBasedAction) {
+        if (viewBasedAction == null) {
             scope.launch { sheetState.hide() }
-        } else if (onAction?.isPresentedInModal == true) {
+        } else {
             scope.launch { sheetState.show() }
         }
     }
@@ -72,7 +120,10 @@ fun ActionableAddressView(
             modifier = Modifier
                 .combinedClickable(
                     onClick = {
-                        onAction = actions.primary.onAction()
+                        when (val actionData = actions.primary.onAction()) {
+                            is OnAction.CallbackBasedAction -> actionData.onAction(context)
+                            is OnAction.ViewBasedAction -> viewBasedAction = actionData
+                        }
                     },
                     onLongClick = { isDropdownMenuExpanded = true }
                 ),
@@ -118,7 +169,10 @@ fun ActionableAddressView(
                     },
                     onClick = {
                         isDropdownMenuExpanded = false
-                        onAction = it.onAction()
+                        when (val actionData = it.onAction()) {
+                            is OnAction.CallbackBasedAction -> actionData.onAction(context)
+                            is OnAction.ViewBasedAction -> viewBasedAction = actionData
+                        }
                     },
                     contentPadding = PaddingValues(
                         horizontal = RadixTheme.dimensions.paddingDefault,
@@ -128,17 +182,12 @@ fun ActionableAddressView(
             }
         }
 
-        onAction?.let { actionData ->
-            if (actionData.isPresentedInModal) {
-                BottomSheetWrapper(
-                    onDismissRequest = { onAction = null },
-                    bottomSheetState = sheetState
-                ) {
-                    actionData.ActionView()
-                }
-            } else {
+        viewBasedAction?.let { actionData ->
+            BottomSheetWrapper(
+                onDismissRequest = { viewBasedAction = null },
+                bottomSheetState = sheetState
+            ) {
                 actionData.ActionView()
-                onAction = null
             }
         }
     }
@@ -149,49 +198,47 @@ private fun resolveAddress(
     address: String
 ): ActionableAddress = remember(address) { ActionableAddress(address) }
 
-@Composable
-private fun resolveActions(
-    actionableAddress: ActionableAddress
+private fun resolveStaticActions(
+    actionableAddress: ActionableAddress,
+    context: Context
 ): PopupActions {
     val copyAction = PopupActionItem(
-        name = stringResource(
-            id = when {
+        name = context.getString(
+            when {
                 actionableAddress.type == ActionableAddress.Type.TRANSACTION -> R.string.addressAction_copyTransactionId
                 actionableAddress.isNft -> R.string.addressAction_copyNftId
                 else -> R.string.addressAction_copyAddress
             }
         ),
         icon = R.drawable.ic_copy
-    ) { OnAction.CopyToClipboard(actionableAddress) }
+    ) { OnAction.CallbackBasedAction.CopyToClipboard(actionableAddress) }
 
     val openExternalAction = PopupActionItem(
-        name = stringResource(id = R.string.addressAction_viewOnDashboard),
+        name = context.getString(R.string.addressAction_viewOnDashboard),
         icon = R.drawable.ic_external_link
-    ) { OnAction.OpenExternalWebView(actionableAddress) }
+    ) { OnAction.CallbackBasedAction.OpenExternalWebView(actionableAddress) }
 
     val qrAction = PopupActionItem(
-        name = stringResource(id = R.string.addressAction_showAccountQR),
+        name = context.getString(R.string.addressAction_showAccountQR),
         icon = com.babylon.wallet.android.designsystem.R.drawable.ic_qr_code_scanner
-    ) { OnAction.QRCode(actionableAddress) }
+    ) { OnAction.ViewBasedAction.QRCode(actionableAddress) }
 
-    return remember(actionableAddress) {
-        if (actionableAddress.isCopyPrimaryAction) {
-            val secondaryActions = if (actionableAddress.type == ActionableAddress.Type.ACCOUNT) {
-                listOf(qrAction, openExternalAction)
-            } else {
-                listOf(openExternalAction)
-            }
-
-            PopupActions(
-                primary = copyAction,
-                secondary = secondaryActions
-            )
+    return if (actionableAddress.isCopyPrimaryAction) {
+        val secondaryActions = if (actionableAddress.type == ActionableAddress.Type.ACCOUNT) {
+            listOf(qrAction, openExternalAction)
         } else {
-            PopupActions(
-                primary = openExternalAction,
-                secondary = listOf(copyAction)
-            )
+            listOf(openExternalAction)
         }
+
+        PopupActions(
+            primary = copyAction,
+            secondary = secondaryActions
+        )
+    } else {
+        PopupActions(
+            primary = openExternalAction,
+            secondary = listOf(copyAction)
+        )
     }
 }
 
@@ -213,71 +260,100 @@ private data class PopupActionItem(
  * An action that will be presented to the user when clicked
  * on the PopupMenu
  */
-private sealed class OnAction {
+private sealed interface OnAction {
 
-    abstract val isPresentedInModal: Boolean
+    sealed interface ViewBasedAction : OnAction {
 
-    /**
-     * This view will appear when the user has clicked on the corresponding [PopupActionItem]
-     */
-    @Composable
-    abstract fun ActionView()
-
-    data class CopyToClipboard(val actionableAddress: ActionableAddress) : OnAction() {
-
-        override val isPresentedInModal: Boolean = false
-
+        /**
+         * This view will appear when the user has clicked on the corresponding [PopupActionItem]
+         */
         @Composable
-        override fun ActionView() {
-            val clipboardManager = LocalClipboardManager.current
-            val context = LocalContext.current
+        fun ActionView()
 
-            clipboardManager.setText(AnnotatedString(actionableAddress.address))
+        data class QRCode(private val actionableAddress: ActionableAddress) : ViewBasedAction {
 
-            // From Android 13, the system handles the copy confirmation
-            if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.S_V2) {
-                Toast.makeText(context, R.string.addressAction_copiedToClipboard, Toast.LENGTH_SHORT).show()
+            @Composable
+            override fun ActionView() {
+                Box(
+                    modifier = Modifier
+                        .background(RadixTheme.colors.defaultBackground)
+                ) {
+                    AccountQRCodeView(accountAddress = actionableAddress.address)
+                }
             }
         }
     }
 
-    data class OpenExternalWebView(val actionableAddress: ActionableAddress) : OnAction() {
+    sealed interface CallbackBasedAction : OnAction {
 
-        override val isPresentedInModal: Boolean = false
+        fun onAction(context: Context)
 
-        @Suppress("SwallowedException")
-        @Composable
-        override fun ActionView() {
-            val context = LocalContext.current
+        data class CopyToClipboard(
+            private val actionableAddress: ActionableAddress
+        ) : CallbackBasedAction {
 
-            val intent = Intent(Intent.ACTION_VIEW).apply {
-                data = actionableAddress.toDashboardUrl().toUri()
+            override fun onAction(context: Context) {
+                context.getSystemService<android.content.ClipboardManager>()?.let { clipboardManager ->
+
+                    val clipData = ClipData.newPlainText(
+                        "Radix Address",
+                        actionableAddress.address
+                    )
+
+                    clipboardManager.setPrimaryClip(clipData)
+
+                    // From Android 13, the system handles the copy confirmation
+                    if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.S_V2) {
+                        Toast.makeText(context, R.string.addressAction_copiedToClipboard, Toast.LENGTH_SHORT).show()
+                    }
+                }
             }
+        }
 
-            try {
-                context.startActivity(intent)
-            } catch (activityNotFound: ActivityNotFoundException) {
-                Toast.makeText(
-                    context,
-                    R.string.addressAction_noWebBrowserInstalled,
-                    Toast.LENGTH_SHORT
-                ).show()
+        data class OpenExternalWebView(private val actionableAddress: ActionableAddress) : CallbackBasedAction {
+
+            @Suppress("SwallowedException")
+            override fun onAction(context: Context) {
+                context.openUrl(actionableAddress.toDashboardUrl())
+            }
+        }
+
+        data class VerifyAddressOnLedger(
+            private val actionableAddress: ActionableAddress,
+            private val verifyAddressOnLedgerUseCase: VerifyAddressOnLedgerUseCase,
+            private val applicationScope: CoroutineScope
+        ) : CallbackBasedAction {
+            override fun onAction(context: Context) {
+                applicationScope.launch {
+                    val result = verifyAddressOnLedgerUseCase(actionableAddress.address)
+                    withContext(Dispatchers.Main) {
+                        result.onSuccess {
+                            Toast.makeText(
+                                context,
+                                R.string.addressAction_verifyAddressLedger_success,
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        }.onFailure {
+                            Timber.w(it)
+                            Toast.makeText(
+                                context,
+                                R.string.addressAction_verifyAddressLedger_error,
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        }
+                    }
+                }
             }
         }
     }
+}
 
-    data class QRCode(val actionableAddress: ActionableAddress) : OnAction() {
+@EntryPoint
+@InstallIn(SingletonComponent::class)
+private interface ActionableAddressViewEntryPoint {
+    fun profileUseCase(): GetProfileUseCase
 
-        override val isPresentedInModal: Boolean = true
+    fun verifyAddressOnLedgerUseCase(): VerifyAddressOnLedgerUseCase
 
-        @Composable
-        override fun ActionView() {
-            Box(
-                modifier = Modifier
-                    .background(RadixTheme.colors.defaultBackground)
-            ) {
-                AccountQRCodeView(accountAddress = actionableAddress.address)
-            }
-        }
-    }
+    @ApplicationScope fun applicationScope(): CoroutineScope
 }

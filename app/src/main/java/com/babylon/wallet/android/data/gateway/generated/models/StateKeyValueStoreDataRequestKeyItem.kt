@@ -24,6 +24,7 @@ import kotlinx.serialization.Contextual
  * 
  *
  * @param keyHex Hex-encoded binary blob.
+ * @param keyJson 
  */
 @Serializable
 
@@ -31,7 +32,10 @@ data class StateKeyValueStoreDataRequestKeyItem (
 
     /* Hex-encoded binary blob. */
     @SerialName(value = "key_hex")
-    val keyHex: kotlin.String
+    val keyHex: kotlin.String? = null,
+
+//    @Contextual @SerialName(value = "key_json")
+//    val keyJson: kotlin.Any? = null
 
 )
 

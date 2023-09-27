@@ -2,6 +2,7 @@ package rdx.works.profile.factorSource
 
 import kotlinx.serialization.encodeToString
 import org.junit.Test
+import rdx.works.core.HexCoded32Bytes
 import rdx.works.profile.data.model.MnemonicWithPassphrase
 import rdx.works.profile.data.model.factorsources.DeviceFactorSource
 import rdx.works.profile.data.model.factorsources.FactorSource
@@ -63,7 +64,7 @@ class FactorSourceEncodingTests {
             LedgerHardwareWalletFactorSource.newSource(
                 model = LedgerHardwareWalletFactorSource.DeviceModel.NANO_S,
                 name = "Orange",
-                deviceID = FactorSource.HexCoded32Bytes("deadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef"),
+                deviceID = HexCoded32Bytes("deadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef"),
                 createdAt = date
             ),
             OffDeviceMnemonicFactorSource.newSource(

@@ -1,12 +1,15 @@
 package com.babylon.wallet.android.domain.model
 
 import android.net.Uri
+import com.babylon.wallet.android.domain.model.XrdResource.officialAddresses
 import com.babylon.wallet.android.domain.model.behaviours.ResourceBehaviour
 import com.babylon.wallet.android.domain.model.metadata.ClaimAmountMetadataItem
+import com.babylon.wallet.android.domain.model.metadata.DAppDefinitionsMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.DescriptionMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.IconUrlMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.NameMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.PoolMetadataItem
+import com.babylon.wallet.android.domain.model.metadata.StringMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.SymbolMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.TagsMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.ValidatorMetadataItem
@@ -23,6 +26,7 @@ import java.math.RoundingMode
 sealed class Resource {
     abstract val resourceAddress: String
     abstract val name: String
+    abstract val iconUrl: Uri?
 
     data class FungibleResource(
         override val resourceAddress: String,
@@ -36,6 +40,7 @@ sealed class Resource {
         val currentSupply: BigDecimal? = null,
         private val validatorMetadataItem: ValidatorMetadataItem? = null,
         private val poolMetadataItem: PoolMetadataItem? = null,
+        private val dAppDefinitionsMetadataItem: DAppDefinitionsMetadataItem? = null,
         val divisibility: Int? = null
     ) : Resource(), Comparable<FungibleResource> {
         override val name: String
@@ -47,7 +52,7 @@ sealed class Resource {
         val description: String
             get() = descriptionMetadataItem?.description.orEmpty()
 
-        val iconUrl: Uri?
+        override val iconUrl: Uri?
             get() = iconUrlMetadataItem?.url
 
         val validatorAddress: String?
@@ -55,6 +60,9 @@ sealed class Resource {
 
         val poolAddress: String?
             get() = poolMetadataItem?.poolAddress
+
+        val dappDefinitions: List<String>
+            get() = dAppDefinitionsMetadataItem?.addresses.orEmpty()
 
         val tags: List<Tag>
             get() = if (isXrd) {
@@ -77,8 +85,6 @@ sealed class Resource {
             } else {
                 ""
             }
-
-        val isXrd: Boolean = officialXrdResourceAddresses().contains(resourceAddress)
 
         val mathContext: MathContext
             get() = if (divisibility == null) {
@@ -121,15 +127,7 @@ sealed class Resource {
             }
         }
 
-        companion object {
-            // todo Needs to be revisited. Having default network in param does not work on different networks
-            fun officialXrdResourceAddresses(): List<String> = Radix.Network.allKnownNetworks().map { network ->
-                knownAddresses(networkId = network.networkId().value.toUByte()).resourceAddresses.xrd.addressString()
-            }
-
-            val officialXrdAddress: String
-                get() = knownAddresses(networkId = Radix.Gateway.default.network.id.toUByte()).resourceAddresses.xrd.addressString()
-        }
+        companion object
     }
 
     data class NonFungibleResource(
@@ -142,7 +140,8 @@ sealed class Resource {
         private val behaviours: List<ResourceBehaviour> = emptyList(),
         val items: List<Item>,
         val currentSupply: Int? = null,
-        private val validatorMetadataItem: ValidatorMetadataItem? = null
+        private val validatorMetadataItem: ValidatorMetadataItem? = null,
+        private val dAppDefinitionsMetadataItem: DAppDefinitionsMetadataItem? = null,
     ) : Resource(), Comparable<NonFungibleResource> {
         override val name: String
             get() = nameMetadataItem?.name.orEmpty()
@@ -150,7 +149,7 @@ sealed class Resource {
         val description: String
             get() = descriptionMetadataItem?.description.orEmpty()
 
-        val iconUrl: Uri?
+        override val iconUrl: Uri?
             get() = iconMetadataItem?.url
 
         val tags: List<Tag>
@@ -162,12 +161,16 @@ sealed class Resource {
         val resourceBehaviours: List<ResourceBehaviour>
             get() = behaviours
 
+        val dappDefinitions: List<String>
+            get() = dAppDefinitionsMetadataItem?.addresses.orEmpty()
+
         override fun compareTo(other: NonFungibleResource): Int = when {
             nameMetadataItem == null && other.nameMetadataItem != null -> 1
             nameMetadataItem != null && other.nameMetadataItem == null -> -1
             nameMetadataItem != null && other.nameMetadataItem != null -> nameMetadataItem.name.compareTo(
                 other.nameMetadataItem.name
             )
+
             else -> resourceAddress.compareTo(other.resourceAddress)
         }
 
@@ -177,7 +180,8 @@ sealed class Resource {
             val nameMetadataItem: NameMetadataItem? = null,
             val iconMetadataItem: IconUrlMetadataItem? = null,
             val readyToClaim: Boolean = false,
-            val claimAmountMetadataItem: ClaimAmountMetadataItem? = null
+            val claimAmountMetadataItem: ClaimAmountMetadataItem? = null,
+            val remainingMetadata: List<StringMetadataItem> = emptyList()
         ) : Comparable<Item> {
 
             val globalAddress: String
@@ -289,6 +293,7 @@ sealed class Resource {
                         is NonFungibleLocalId.Bytes -> BytesType(
                             id = nonFungibleLocalIdAsStr(id).removeSurrounding(BYTES_PREFIX, BYTES_SUFFIX)
                         )
+
                         is NonFungibleLocalId.Ruid -> RUIDType(
                             id = nonFungibleLocalIdAsStr(id).removeSurrounding(RUID_PREFIX, RUID_SUFFIX)
                         )
@@ -312,6 +317,9 @@ sealed class Resource {
         override val name: String
             get() = fungibleResource.name
 
+        override val iconUrl: Uri?
+            get() = fungibleResource.iconUrl
+
         private val percentageOwned: BigDecimal?
             get() = fungibleResource.ownedAmount?.divide(fungibleResource.currentSupply, fungibleResource.mathContext)
 
@@ -330,8 +338,12 @@ sealed class Resource {
 
         override val resourceAddress: String
             get() = nonFungibleResource.resourceAddress
+
         override val name: String
             get() = nonFungibleResource.name
+
+        override val iconUrl: Uri?
+            get() = nonFungibleResource.iconUrl
     }
 
     data class PoolUnitResource(
@@ -345,6 +357,9 @@ sealed class Resource {
         override val name: String
             get() = poolUnitResource.name
 
+        override val iconUrl: Uri?
+            get() = poolUnitResource.iconUrl
+
         fun resourceRedemptionValue(resourceAddress: String): BigDecimal? {
             val resourceVaultBalance = poolResources.find { it.resourceAddress == resourceAddress }?.ownedAmount
             return poolUnitResource.ownedAmount?.multiply(resourceVaultBalance)
@@ -353,7 +368,7 @@ sealed class Resource {
     }
 
     sealed interface Tag {
-        object Official : Tag
+        data object Official : Tag
 
         data class Dynamic(
             val name: String
@@ -364,3 +379,17 @@ sealed class Resource {
         const val XRD_SYMBOL = "XRD"
     }
 }
+
+object XrdResource {
+    // todo Needs to be revisited. Having default network in param does not work on different networks
+    val officialAddresses: List<String>
+        get() = Radix.Network.allKnownNetworks().map { network ->
+            knownAddresses(networkId = network.networkId().value.toUByte()).resourceAddresses.xrd.addressString()
+        }
+
+    val officialAddress: String
+        get() = knownAddresses(networkId = Radix.Gateway.default.network.id.toUByte()).resourceAddresses.xrd.addressString()
+}
+
+val Resource.FungibleResource.isXrd: Boolean
+    get() = officialAddresses.contains(resourceAddress)

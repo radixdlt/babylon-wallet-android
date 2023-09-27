@@ -13,8 +13,8 @@ import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import rdx.works.core.HexCoded32Bytes
 import rdx.works.core.preferences.PreferencesManager
-import rdx.works.profile.data.model.factorsources.FactorSource
 import rdx.works.profile.data.model.factorsources.FactorSource.FactorSourceID
 import rdx.works.profile.data.model.factorsources.FactorSourceKind
 import rdx.works.profile.data.repository.MnemonicRepository
@@ -38,7 +38,7 @@ class RevealSeedPhraseViewModel @Inject constructor(
                 mnemonicRepository.readMnemonic(
                     FactorSourceID.FromHash(
                         kind = FactorSourceKind.DEVICE,
-                        body = FactorSource.HexCoded32Bytes(args.factorSourceId)
+                        body = HexCoded32Bytes(args.factorSourceId)
                     )
                 ).getOrNull()?.let { mnemonicWithPassphrase ->
                     _state.update { state ->
@@ -73,6 +73,6 @@ class RevealSeedPhraseViewModel @Inject constructor(
     ) : UiState
 
     sealed interface Effect : OneOffEvent {
-        object Close : Effect
+        data object Close : Effect
     }
 }

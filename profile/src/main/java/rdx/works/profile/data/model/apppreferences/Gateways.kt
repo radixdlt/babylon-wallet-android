@@ -32,9 +32,9 @@ data class Gateways(
 
     companion object {
 
-        fun fromCurrent(current: Radix.Gateway) = Gateways(
-            currentGatewayUrl = current.url,
-            saved = listOf(current)
+        val preset = Gateways(
+            currentGatewayUrl = Radix.Gateway.mainnet.url,
+            saved = listOf(Radix.Gateway.mainnet, Radix.Gateway.stokenet)
         )
     }
 }

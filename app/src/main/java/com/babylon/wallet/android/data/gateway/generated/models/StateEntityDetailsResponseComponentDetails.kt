@@ -15,10 +15,6 @@
 
 package com.babylon.wallet.android.data.gateway.generated.models
 
-import com.babylon.wallet.android.data.gateway.generated.models.ComponentEntityRoleAssignments
-import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponseItemDetails
-import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponseItemDetailsType
-
 import kotlinx.serialization.Contextual
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -71,8 +67,8 @@ data class ComponentEntityState(
     @SerialName(value = "stake_unit_resource_address")
     val stakeUnitResourceAddress: String? = null,
 
-    @SerialName(value = "unstake_claim_token_resource_address")
-    val unstakeClaimTokenResourceAddress: String? = null
+    @SerialName(value = "claim_token_resource_address")
+    val claimTokenResourceAddress: String? = null
 
 )
 

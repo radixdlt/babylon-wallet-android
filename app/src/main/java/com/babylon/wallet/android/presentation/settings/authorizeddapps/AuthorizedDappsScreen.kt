@@ -74,9 +74,11 @@ private fun AuthorizedDAppsContent(
                 style = RadixTheme.typography.body1HighImportance,
                 color = RadixTheme.colors.gray2
             )
-            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXLarge))
             LazyColumn(
-                contentPadding = PaddingValues(horizontal = RadixTheme.dimensions.paddingDefault),
+                contentPadding = PaddingValues(
+                    horizontal = RadixTheme.dimensions.paddingDefault,
+                    vertical = RadixTheme.dimensions.paddingXLarge
+                ),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 modifier = Modifier.fillMaxSize()
             ) {

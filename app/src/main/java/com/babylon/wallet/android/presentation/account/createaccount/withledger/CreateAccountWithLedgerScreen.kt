@@ -102,7 +102,9 @@ fun CreateAccountWithLedgerScreen(
                 onNewConnectorCloseClick = {
                     addLinkConnectorViewModel.onCloseClick()
                     viewModel.onCloseClick()
-                }
+                },
+                invalidConnectionPassword = addLinkConnectorState.invalidConnectionPassword,
+                onInvalidConnectionPasswordDismissed = addLinkConnectorViewModel::onInvalidConnectionPasswordShown
             )
         }
 

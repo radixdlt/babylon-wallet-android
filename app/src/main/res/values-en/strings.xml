@@ -176,6 +176,8 @@
   <string name="linkedConnectors_cameraPermissionDeniedAlert_message">Camera access is required to link to a Connector.</string>
   <string name="linkedConnectors_localNetworkPermissionDeniedAlert_title">Access Required</string>
   <string name="linkedConnectors_localNetworkPermissionDeniedAlert_message">Local network access is required to link to a Connector.</string>
+  <string name="linkedConnectors_incorrectQrTitle">Incorrect QR code scanned.</string>
+  <string name="linkedConnectors_incorrectQrMessage">Please scan the QR code provided by your Radix Wallet Connector browser extension.</string>
   <string name="gateways_title">Gateways</string>
   <string name="gateways_subtitle">Choose the gateway your wallet will use to connect to the Radix Network or test networks. Only change this if you know what you’re doing.</string>
   <string name="gateways_whatIsAGateway">What is a Gateway?</string>
@@ -338,6 +340,8 @@
   <string name="dAppRequest_validationOutcome_shortExplanationInvalidOrigin">Invalid origin</string>
   <string name="dAppRequest_validationOutcome_shortExplanationInvalidDappDefinitionAddress">Invalid dApp Definition Address</string>
   <string name="dAppRequest_validationOutcome_shortExplanationP2PError">Radix Connect connection error</string>
+  <string name="dAppRequest_validationOutcome_invalidRequestTitle">Invalid Request.</string>
+  <string name="dAppRequest_validationOutcome_invalidRequestMessage">Could not validate the dApp.</string>
   <string name="dAppRequest_requestMalformedAlert_message">Request received from dApp is invalid.</string>
   <string name="dAppRequest_requestPersonaNotFoundAlert_message">dApp specified an invalid Persona.</string>
   <string name="dAppRequest_requestWrongNetworkAlert_message">dApp made a requested intended for network %s, but you are currently connected to %s.</string>
@@ -697,15 +701,12 @@ Only the **current configuration** of your wallet is backed up with each manual 
   <string name="profileBackup_deleteWallet_title">Delete Wallet</string>
   <string name="profileBackup_deleteWalletDialog_message">WARNING. This will clear all contents of your Wallet. If you have no backup, you will lose access to your Accounts and Personas permanently.</string>
   <string name="profileBackup_deleteWalletDialog_confirm">Delete Wallet</string>
-  <string name="androidProfileBackup_automaticBackups_enable">Enable Backup</string>
-  <string name="androidProfileBackup_automaticBackups_disable">Disable Backup</string>
   <string name="androidProfileBackup_disabledText">Back up is turned off</string>
   <string name="androidProfileBackup_lastBackedUp">Last Backed up: %s</string>
   <string name="androidProfileBackup_noLastBackUp">Not backed up yet</string>
   <string name="androidProfileBackup_openSystemBackupSettings">Open System Backup Settings</string>
-  <string name="androidProfileBackup_backupWalletData_title">Backup Wallet Data</string>
+  <string name="androidProfileBackup_backupWalletData_title">Backup Wallet Data to Cloud</string>
   <string name="androidProfileBackup_backupWalletData_message">Warning: If disabled you might lose access to your Accounts and Personas.</string>
-  <string name="androidProfileBackup_automaticBackups_subtitle">Periodic system backups</string>
   <string name="androidProfileBackup_deleteWallet_subtitle">You may delete your wallet. This will clear the Radix Wallet app, clears its contents, and delete any cloud backup.
 
 **Access to any Accounts or Personas will be permanently lost unless you have a manual backup file.**</string>

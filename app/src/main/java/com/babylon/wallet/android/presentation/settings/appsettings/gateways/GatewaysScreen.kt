@@ -331,7 +331,7 @@ private fun GatewayCard(
                 overflow = TextOverflow.Ellipsis
             )
         }
-        if (!gateway.gateway.isDefault) {
+        if (!gateway.gateway.isWellKnown) {
             IconButton(onClick = {
                 gatewayToDelete = gateway
             }) {

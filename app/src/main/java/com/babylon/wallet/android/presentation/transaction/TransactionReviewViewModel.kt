@@ -16,12 +16,14 @@ import com.babylon.wallet.android.domain.model.Badge
 import com.babylon.wallet.android.domain.model.DAppWithMetadataAndAssociatedResources
 import com.babylon.wallet.android.domain.model.GuaranteeAssertion
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
+import com.babylon.wallet.android.domain.model.Resource
 import com.babylon.wallet.android.domain.model.Resource.FungibleResource
 import com.babylon.wallet.android.domain.model.Resource.NonFungibleResource
 import com.babylon.wallet.android.domain.model.Transferable
 import com.babylon.wallet.android.domain.model.TransferableResource
 import com.babylon.wallet.android.domain.usecases.GetAccountsWithResourcesUseCase
 import com.babylon.wallet.android.domain.usecases.GetResourcesMetadataUseCase
+import com.babylon.wallet.android.domain.usecases.GetResourcesUseCase
 import com.babylon.wallet.android.domain.usecases.ResolveDAppsUseCase
 import com.babylon.wallet.android.domain.usecases.transaction.GetTransactionBadgesUseCase
 import com.babylon.wallet.android.presentation.common.OneOffEvent
@@ -38,6 +40,7 @@ import com.babylon.wallet.android.presentation.transaction.fees.TransactionFeesD
 import com.babylon.wallet.android.presentation.transaction.guarantees.TransactionGuaranteesDelegate
 import com.babylon.wallet.android.presentation.transaction.submit.TransactionSubmitDelegate
 import com.babylon.wallet.android.utils.AppEventBus
+import com.radixdlt.ret.AccountDefaultDepositRule
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.update
@@ -59,6 +62,7 @@ class TransactionReviewViewModel @Inject constructor(
     getAccountsWithResourcesUseCase: GetAccountsWithResourcesUseCase,
     getResourcesMetadataUseCase: GetResourcesMetadataUseCase,
     getProfileUseCase: GetProfileUseCase,
+    getResourcesUseCase: GetResourcesUseCase,
     getTransactionBadgesUseCase: GetTransactionBadgesUseCase,
     resolveDAppsUseCase: ResolveDAppsUseCase,
     getCurrentGatewayUseCase: GetCurrentGatewayUseCase,
@@ -88,7 +92,8 @@ class TransactionReviewViewModel @Inject constructor(
         getResourcesMetadataUseCase = getResourcesMetadataUseCase,
         resolveDAppsUseCase = resolveDAppsUseCase,
         transactionClient = transactionClient,
-        logger = logger
+        logger = logger,
+        getResourcesUseCase = getResourcesUseCase
     )
 
     private val guarantees: TransactionGuaranteesDelegate = TransactionGuaranteesDelegate(
@@ -436,7 +441,13 @@ class TransactionReviewViewModel @Inject constructor(
 sealed interface PreviewType {
     data object None : PreviewType
 
+    data object UnacceptableManifest : PreviewType
+
     data object NonConforming : PreviewType
+
+    data class AccountsDepositSettings(
+        val accountsWithDepositSettingsChanges: List<AccountWithDepositSettingsChanges> = emptyList()
+    ) : PreviewType
 
     data class Transfer(
         val from: List<AccountWithTransferableResources>,
@@ -444,6 +455,34 @@ sealed interface PreviewType {
         val badges: List<Badge> = emptyList(),
         val dApps: List<DAppWithMetadataAndAssociatedResources> = emptyList()
     ) : PreviewType
+}
+
+data class AccountWithDepositSettingsChanges(
+    val account: Network.Account,
+    val defaultDepositRule: AccountDefaultDepositRule? = null,
+    val assetChanges: List<AssetPreferenceChange> = emptyList(),
+    val depositorChanges: List<DepositorPreferenceChange> = emptyList()
+) {
+    data class AssetPreferenceChange(
+        val change: ChangeType,
+        val resource: Resource? = null
+    ) {
+        enum class ChangeType {
+            Allow, Disallow, Clear
+        }
+    }
+
+    data class DepositorPreferenceChange(
+        val change: ChangeType,
+        val resource: Resource? = null
+    ) {
+        enum class ChangeType {
+            Add, Remove
+        }
+    }
+
+    val onlyDepositRuleChanged: Boolean
+        get() = assetChanges.isEmpty() && depositorChanges.isEmpty()
 }
 
 @Suppress("MagicNumber")

@@ -49,6 +49,7 @@ import com.babylon.wallet.android.presentation.common.FullscreenCircularProgress
 import com.babylon.wallet.android.presentation.settings.authorizeddapps.dappdetail.DAppDetailsSheetContent
 import com.babylon.wallet.android.presentation.status.signing.SigningStatusBottomDialog
 import com.babylon.wallet.android.presentation.transaction.TransactionReviewViewModel.State
+import com.babylon.wallet.android.presentation.transaction.composables.AccountDepositSettingsTypeContent
 import com.babylon.wallet.android.presentation.transaction.composables.FeesSheet
 import com.babylon.wallet.android.presentation.transaction.composables.GuaranteesSheet
 import com.babylon.wallet.android.presentation.transaction.composables.NetworkFeeContent
@@ -288,6 +289,9 @@ private fun TransactionPreviewContent(
                             ReceiptEdge(modifier = Modifier.fillMaxWidth(), color = RadixTheme.colors.gray5, topEdge = true)
                             when (val preview = state.previewType) {
                                 is PreviewType.None -> {}
+                                is PreviewType.UnacceptableManifest -> {
+                                    return@AnimatedVisibility
+                                }
                                 is PreviewType.NonConforming -> {}
                                 is PreviewType.Transfer -> {
                                     TransactionPreviewTypeContent(
@@ -303,6 +307,14 @@ private fun TransactionPreviewContent(
                                     PresentingProofsContent(
                                         badges = preview.badges.toPersistentList()
                                     )
+                                }
+
+                                is PreviewType.AccountsDepositSettings -> {
+                                    AccountDepositSettingsTypeContent(
+                                        modifier = Modifier.background(RadixTheme.colors.gray5),
+                                        preview = preview
+                                    )
+                                    ReceiptEdge(modifier = Modifier.fillMaxWidth(), color = RadixTheme.colors.gray5)
                                 }
                             }
                             NetworkFeeContent(
@@ -358,6 +370,7 @@ private fun BottomSheetContent(
                         onCloseClick = onCloseDAppSheet
                     )
                 }
+
                 is State.Sheet.ResourceSelected.NonFungible -> {
                     NonFungibleTokenBottomSheetDetails(
                         modifier = modifier.fillMaxWidth(),

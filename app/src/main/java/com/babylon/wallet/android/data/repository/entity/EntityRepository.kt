@@ -5,11 +5,11 @@ import com.babylon.wallet.android.data.gateway.apis.StateApi
 import com.babylon.wallet.android.data.gateway.extensions.allResourceAddresses
 import com.babylon.wallet.android.data.gateway.extensions.asMetadataItems
 import com.babylon.wallet.android.data.gateway.extensions.calculateResourceBehaviours
+import com.babylon.wallet.android.data.gateway.extensions.claimTokenResourceAddress
 import com.babylon.wallet.android.data.gateway.extensions.divisibility
 import com.babylon.wallet.android.data.gateway.extensions.getXRDVaultAmount
 import com.babylon.wallet.android.data.gateway.extensions.stakeUnitResourceAddress
 import com.babylon.wallet.android.data.gateway.extensions.totalSupply
-import com.babylon.wallet.android.data.gateway.extensions.unstakeClaimTokenAddress
 import com.babylon.wallet.android.data.gateway.extensions.xrdVaultAddress
 import com.babylon.wallet.android.data.gateway.generated.models.FungibleResourcesCollection
 import com.babylon.wallet.android.data.gateway.generated.models.FungibleResourcesCollectionItemVaultAggregated
@@ -55,6 +55,7 @@ import com.babylon.wallet.android.domain.model.metadata.MetadataItem
 import com.babylon.wallet.android.domain.model.metadata.MetadataItem.Companion.consume
 import com.babylon.wallet.android.domain.model.metadata.NameMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.OwnerKeyHashesMetadataItem
+import com.babylon.wallet.android.domain.model.metadata.StringMetadataItem
 import rdx.works.profile.data.model.pernetwork.Network
 import timber.log.Timber
 import java.io.IOException
@@ -138,7 +139,7 @@ class EntityRepositoryImpl @Inject constructor(
                 stateVersion = stateVersion
             )
             val validatorResourceAddresses = validatorDetails.map { item ->
-                listOfNotNull(item.details?.stakeUnitResourceAddress(), item.details?.unstakeClaimTokenAddress())
+                listOfNotNull(item.details?.stakeUnitResourceAddress(), item.details?.claimTokenResourceAddress)
             }.flatten().toSet()
             val poolAddresses = poolsList.map { item -> item.address }.toSet()
 
@@ -614,7 +615,7 @@ class EntityRepositoryImpl @Inject constructor(
         return allNonFungibles
     }
 
-    @Suppress("LongMethod")
+    @Suppress("LongMethod", "CyclomaticComplexMethod")
     private suspend fun getNonFungibleDataForAccount(
         accountAddress: String,
         vaultAddress: String,
@@ -676,7 +677,20 @@ class EntityRepositoryImpl @Inject constructor(
                                     }?.value?.let { imageUrl -> IconUrlMetadataItem(url = Uri.parse(imageUrl)) },
                                 readyToClaim = claimEpoch != null && ledgerEpoch != null && ledgerEpoch >= claimEpoch,
                                 claimAmountMetadataItem = stateNonFungibleDetailsResponseItem.claimAmount()
-                                    ?.let { claimAmount -> ClaimAmountMetadataItem(claimAmount) }
+                                    ?.let { claimAmount -> ClaimAmountMetadataItem(claimAmount) },
+                                remainingMetadata = stateNonFungibleDetailsResponseItem.data?.programmaticJson?.fields
+                                    ?.filterNot { field ->
+                                        field.field_name == ExplicitMetadataKey.NAME.key ||
+                                            field.field_name == ExplicitMetadataKey.KEY_IMAGE_URL.key
+                                    }?.mapNotNull { field ->
+                                        val fieldName = field.field_name.orEmpty()
+                                        val value = field.valueContent.orEmpty()
+                                        if (fieldName.isNotEmpty() && value.isNotBlank()) {
+                                            StringMetadataItem(fieldName, value)
+                                        } else {
+                                            null
+                                        }
+                                    }.orEmpty()
                             )
                         }
                     }.value()

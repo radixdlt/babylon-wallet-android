@@ -31,10 +31,9 @@ fun NavController.createAccountConfirmationScreen(accountId: String, requestSour
 }
 
 enum class CreateAccountRequestSource {
-    AccountsList, ChooseAccount, FirstTime, Gateways, SwitchToMainnet;
+    AccountsList, ChooseAccount, FirstTime, Gateways;
 
-    // TODO To remove when mainnet becomes default
-    fun isFirstTime() = this == FirstTime || this == SwitchToMainnet
+    fun isFirstTime() = this == FirstTime
 }
 
 @OptIn(ExperimentalAnimationApi::class)

@@ -3,11 +3,7 @@
 package com.babylon.wallet.android.data.dapp
 
 import com.babylon.wallet.android.data.dapp.model.Curve
-import com.babylon.wallet.android.data.dapp.model.DerivePublicKeyRequest
-import com.babylon.wallet.android.data.dapp.model.GetDeviceInfoRequest
 import com.babylon.wallet.android.data.dapp.model.LedgerInteractionRequest
-import com.babylon.wallet.android.data.dapp.model.SignChallengeRequest
-import com.babylon.wallet.android.data.dapp.model.SignTransactionRequest
 import com.babylon.wallet.android.data.dapp.model.peerdroidRequestJson
 import com.babylon.wallet.android.data.transaction.DappRequestException
 import com.babylon.wallet.android.data.transaction.DappRequestFailure
@@ -30,24 +26,30 @@ interface LedgerMessenger {
         interactionId: String,
         signersDerivationPathToCurve: List<Pair<String, Slip10Curve>>,
         compiledTransactionIntent: String,
-        ledgerDevice: DerivePublicKeyRequest.LedgerDevice,
+        ledgerDevice: LedgerInteractionRequest.LedgerDevice,
         displayHashOnLedgerDisplay: Boolean = true
     ): Result<MessageFromDataChannel.LedgerResponse.SignTransactionResponse>
 
     suspend fun sendDerivePublicKeyRequest(
         interactionId: String,
-        keyParameters: List<DerivePublicKeyRequest.KeyParameters>,
-        ledgerDevice: DerivePublicKeyRequest.LedgerDevice
+        keyParameters: List<LedgerInteractionRequest.KeyParameters>,
+        ledgerDevice: LedgerInteractionRequest.LedgerDevice
     ): Result<MessageFromDataChannel.LedgerResponse.DerivePublicKeyResponse>
 
     suspend fun signChallengeRequest(
         interactionId: String,
         signersDerivationPathToCurve: List<Pair<String, Slip10Curve>>,
-        ledgerDevice: DerivePublicKeyRequest.LedgerDevice,
+        ledgerDevice: LedgerInteractionRequest.LedgerDevice,
         challengeHex: String,
         origin: String,
         dAppDefinitionAddress: String
     ): Result<MessageFromDataChannel.LedgerResponse.SignChallengeResponse>
+
+    suspend fun deriveAndDisplayAddressRequest(
+        interactionId: String,
+        keyParameters: LedgerInteractionRequest.KeyParameters,
+        ledgerDevice: LedgerInteractionRequest.LedgerDevice
+    ): Result<MessageFromDataChannel.LedgerResponse.DeriveAndDisplayAddressResponse>
 }
 
 class LedgerMessengerImpl @Inject constructor(
@@ -55,7 +57,7 @@ class LedgerMessengerImpl @Inject constructor(
 ) : LedgerMessenger {
 
     override suspend fun sendDeviceInfoRequest(interactionId: String): Result<MessageFromDataChannel.LedgerResponse.GetDeviceInfoResponse> {
-        val ledgerRequest: LedgerInteractionRequest = GetDeviceInfoRequest(interactionId)
+        val ledgerRequest: LedgerInteractionRequest = LedgerInteractionRequest.GetDeviceInfo(interactionId)
         return makeLedgerRequest(request = ledgerRequest, onError = {
             DappRequestException(DappRequestFailure.LedgerCommunicationFailure.FailedToGetDeviceId)
         })
@@ -63,10 +65,10 @@ class LedgerMessengerImpl @Inject constructor(
 
     override suspend fun sendDerivePublicKeyRequest(
         interactionId: String,
-        keyParameters: List<DerivePublicKeyRequest.KeyParameters>,
-        ledgerDevice: DerivePublicKeyRequest.LedgerDevice
+        keyParameters: List<LedgerInteractionRequest.KeyParameters>,
+        ledgerDevice: LedgerInteractionRequest.LedgerDevice
     ): Result<MessageFromDataChannel.LedgerResponse.DerivePublicKeyResponse> {
-        val ledgerRequest: LedgerInteractionRequest = DerivePublicKeyRequest(
+        val ledgerRequest: LedgerInteractionRequest = LedgerInteractionRequest.DerivePublicKeys(
             interactionId = interactionId,
             keysParameters = keyParameters,
             ledgerDevice = ledgerDevice
@@ -80,13 +82,13 @@ class LedgerMessengerImpl @Inject constructor(
         interactionId: String,
         signersDerivationPathToCurve: List<Pair<String, Slip10Curve>>,
         compiledTransactionIntent: String,
-        ledgerDevice: DerivePublicKeyRequest.LedgerDevice,
+        ledgerDevice: LedgerInteractionRequest.LedgerDevice,
         displayHashOnLedgerDisplay: Boolean
     ): Result<MessageFromDataChannel.LedgerResponse.SignTransactionResponse> {
-        val ledgerRequest: LedgerInteractionRequest = SignTransactionRequest(
+        val ledgerRequest: LedgerInteractionRequest = LedgerInteractionRequest.SignTransaction(
             interactionId = interactionId,
             signers = signersDerivationPathToCurve.map {
-                DerivePublicKeyRequest.KeyParameters(
+                LedgerInteractionRequest.KeyParameters(
                     Curve.from(it.second),
                     it.first
                 )
@@ -94,7 +96,7 @@ class LedgerMessengerImpl @Inject constructor(
             ledgerDevice = ledgerDevice,
             displayHash = displayHashOnLedgerDisplay,
             compiledTransactionIntent = compiledTransactionIntent,
-            mode = SignTransactionRequest.Mode.Summary
+            mode = LedgerInteractionRequest.SignTransaction.Mode.Summary
         )
         return makeLedgerRequest(request = ledgerRequest, onError = {
             DappRequestException(DappRequestFailure.LedgerCommunicationFailure.FailedToSignTransaction(it.code))
@@ -104,15 +106,15 @@ class LedgerMessengerImpl @Inject constructor(
     override suspend fun signChallengeRequest(
         interactionId: String,
         signersDerivationPathToCurve: List<Pair<String, Slip10Curve>>,
-        ledgerDevice: DerivePublicKeyRequest.LedgerDevice,
+        ledgerDevice: LedgerInteractionRequest.LedgerDevice,
         challengeHex: String,
         origin: String,
         dAppDefinitionAddress: String
     ): Result<MessageFromDataChannel.LedgerResponse.SignChallengeResponse> {
-        val ledgerRequest: LedgerInteractionRequest = SignChallengeRequest(
+        val ledgerRequest: LedgerInteractionRequest = LedgerInteractionRequest.SignChallenge(
             interactionId = interactionId,
             signers = signersDerivationPathToCurve.map {
-                DerivePublicKeyRequest.KeyParameters(
+                LedgerInteractionRequest.KeyParameters(
                     Curve.from(it.second),
                     it.first
                 )
@@ -127,11 +129,26 @@ class LedgerMessengerImpl @Inject constructor(
         })
     }
 
+    override suspend fun deriveAndDisplayAddressRequest(
+        interactionId: String,
+        keyParameters: LedgerInteractionRequest.KeyParameters,
+        ledgerDevice: LedgerInteractionRequest.LedgerDevice
+    ): Result<MessageFromDataChannel.LedgerResponse.DeriveAndDisplayAddressResponse> {
+        val ledgerRequest = LedgerInteractionRequest.DeriveAndDisplayAddress(
+            interactionId = interactionId,
+            keyParameters = keyParameters,
+            ledgerDevice = ledgerDevice
+        )
+        return makeLedgerRequest(request = ledgerRequest, onError = {
+            DappRequestException(DappRequestFailure.LedgerCommunicationFailure.FailedToDeriveAndDisplayAddress)
+        })
+    }
+
     private suspend inline fun <reified R : MessageFromDataChannel.LedgerResponse> makeLedgerRequest(
         request: LedgerInteractionRequest,
         crossinline onError: (MessageFromDataChannel.LedgerResponse.LedgerErrorResponse) -> DappRequestException
     ): Result<R> = flow<Result<R>> {
-        when (peerdroidClient.sendMessage(peerdroidRequestJson.encodeToString(request))) {
+        when (val result = peerdroidClient.sendMessage(peerdroidRequestJson.encodeToString(request))) {
             is Success -> {
                 peerdroidClient.listenForLedgerResponses().filter {
                     it.id == request.interactionId
@@ -148,7 +165,7 @@ class LedgerMessengerImpl @Inject constructor(
                 }
             }
             is Error -> {
-                emit(Result.failure(Exception("Failed to sign transaction with Ledger")))
+                emit(Result.failure(Exception("Failed to sign transaction with Ledger", result.exception)))
             }
         }
     }.first()

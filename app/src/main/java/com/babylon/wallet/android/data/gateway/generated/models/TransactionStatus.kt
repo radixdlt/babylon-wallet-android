@@ -20,7 +20,7 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 /**
- * 
+ * A top-level intent status, left in for backwards compatibility. It doesn't give much information. Rejected means PermanentRejection. 
  *
  * Values: unknown,committedSuccess,committedFailure,pending,rejected
  */

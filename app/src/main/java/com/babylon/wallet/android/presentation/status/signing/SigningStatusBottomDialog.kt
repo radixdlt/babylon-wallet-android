@@ -34,7 +34,7 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.presentation.ui.composables.BottomSheetDialogWrapper
 import com.babylon.wallet.android.utils.formattedSpans
-import rdx.works.profile.data.model.factorsources.FactorSource
+import rdx.works.core.HexCoded32Bytes
 import rdx.works.profile.data.model.factorsources.LedgerHardwareWalletFactorSource
 import rdx.works.profile.data.model.pernetwork.SigningPurpose
 
@@ -225,7 +225,7 @@ fun SignatureRequestContentPreview() {
                 LedgerHardwareWalletFactorSource.newSource(
                     model = LedgerHardwareWalletFactorSource.DeviceModel.NANO_S,
                     name = "nanoS",
-                    deviceID = FactorSource.HexCoded32Bytes("5f07ec336e9e7891bff04004c817201e73c097b6b1e1b3a26bc501e0010196f5")
+                    deviceID = HexCoded32Bytes("5f07ec336e9e7891bff04004c817201e73c097b6b1e1b3a26bc501e0010196f5")
                 )
             )
         )

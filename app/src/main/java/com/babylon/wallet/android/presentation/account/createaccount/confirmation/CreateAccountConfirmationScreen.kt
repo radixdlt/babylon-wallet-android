@@ -109,8 +109,7 @@ fun CreateAccountConfirmationContent(
                     stringResource(id = R.string.createEntity_completion_destinationHome)
                 )
                 CreateAccountRequestSource.ChooseAccount -> stringResource(R.string.createEntity_completion_destinationChooseAccounts)
-                CreateAccountRequestSource.FirstTime, CreateAccountRequestSource.SwitchToMainnet ->
-                    stringResource(R.string.createEntity_completion_destinationHome)
+                CreateAccountRequestSource.FirstTime -> stringResource(R.string.createEntity_completion_destinationHome)
                 CreateAccountRequestSource.Gateways -> stringResource(R.string.createEntity_completion_destinationGateways)
             },
             onClick = accountConfirmed,
