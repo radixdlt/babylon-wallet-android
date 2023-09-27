@@ -10,7 +10,7 @@ import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetai
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponseItemDetails
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponseItemDetailsType
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponseNonFungibleResourceDetails
-import com.babylon.wallet.android.domain.model.Resource
+import com.babylon.wallet.android.domain.model.XrdResource
 import com.babylon.wallet.android.domain.model.behaviours.ResourceBehaviour
 import java.math.BigDecimal
 
@@ -32,7 +32,7 @@ fun StateEntityDetailsResponseItemDetails.divisibility(): Int? {
 fun StateEntityDetailsResponseItem.getXRDVaultAmount(vaultAddress: String): BigDecimal? {
     return when (
         val resource = fungibleResources?.items?.find {
-            Resource.FungibleResource.officialXrdResourceAddresses().contains(it.resourceAddress)
+            XrdResource.officialAddresses.contains(it.resourceAddress)
         }
     ) {
         is FungibleResourcesCollectionItemVaultAggregated -> {
@@ -57,12 +57,13 @@ fun StateEntityDetailsResponseItemDetails.stakeUnitResourceAddress(): String? {
     }
 }
 
-fun StateEntityDetailsResponseItemDetails.unstakeClaimTokenAddress(): String? {
-    return when (val details = this) {
-        is StateEntityDetailsResponseComponentDetails -> details.state?.unstakeClaimTokenResourceAddress
-        else -> null
+val StateEntityDetailsResponseItemDetails.claimTokenResourceAddress: String?
+    get() {
+        return when (val details = this) {
+            is StateEntityDetailsResponseComponentDetails -> details.state?.claimTokenResourceAddress
+            else -> null
+        }
     }
-}
 
 @Suppress("ComplexCondition", "TooManyFunctions", "LongMethod", "CyclomaticComplexMethod", "NestedBlockDepth")
 fun StateEntityDetailsResponseItemDetails.calculateResourceBehaviours(): List<ResourceBehaviour> {

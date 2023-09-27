@@ -333,6 +333,17 @@ class SampleDataProvider {
         }
     }
 
+    fun nonFungibleResource(name: String): Resource.NonFungibleResource {
+        return Resource.NonFungibleResource(
+            resourceAddress = randomAddress(),
+            amount = 1,
+            nameMetadataItem = NameMetadataItem(name),
+            descriptionMetadataItem = null,
+            iconMetadataItem = null,
+            items = emptyList()
+        )
+    }
+
     fun samplePoolUnit(): Resource.PoolUnitResource {
         return Resource.PoolUnitResource(sampleFungibleResources().first(), sampleFungibleResources())
     }
