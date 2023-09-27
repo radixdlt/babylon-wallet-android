@@ -20,12 +20,12 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 /**
- * A top-level intent status, left in for backwards compatibility. It doesn't give much information. Rejected means PermanentRejection. 
+ * A more specific intent status. See the description field for further information. Note that `CommitPendingOutcomeUnknown` can either result in `CommittedSuccess` or `CommittedFailure`. 
  *
- * Values: unknown,committedSuccess,committedFailure,pending,rejected
+ * Values: unknown,committedSuccess,committedFailure,commitPendingOutcomeUnknown,permanentlyRejected,likelyButNotCertainRejection,pending
  */
 @Serializable
-enum class TransactionStatus(val value: kotlin.String) {
+enum class TransactionIntentStatus(val value: kotlin.String) {
 
     @SerialName(value = "Unknown")
     unknown("Unknown"),
@@ -36,11 +36,17 @@ enum class TransactionStatus(val value: kotlin.String) {
     @SerialName(value = "CommittedFailure")
     committedFailure("CommittedFailure"),
 
-    @SerialName(value = "Pending")
-    pending("Pending"),
+    @SerialName(value = "CommitPendingOutcomeUnknown")
+    commitPendingOutcomeUnknown("CommitPendingOutcomeUnknown"),
 
-    @SerialName(value = "Rejected")
-    rejected("Rejected");
+    @SerialName(value = "PermanentlyRejected")
+    permanentlyRejected("PermanentlyRejected"),
+
+    @SerialName(value = "LikelyButNotCertainRejection")
+    likelyButNotCertainRejection("LikelyButNotCertainRejection"),
+
+    @SerialName(value = "Pending")
+    pending("Pending");
 
     /**
      * Override [toString()] to avoid using the enum variable name as the value, and instead use
@@ -55,12 +61,12 @@ enum class TransactionStatus(val value: kotlin.String) {
         /**
          * Converts the provided [data] to a [String] on success, null otherwise.
          */
-        fun encode(data: kotlin.Any?): kotlin.String? = if (data is TransactionStatus) "$data" else null
+        fun encode(data: kotlin.Any?): kotlin.String? = if (data is TransactionIntentStatus) "$data" else null
 
         /**
-         * Returns a valid [TransactionStatus] for [data], null otherwise.
+         * Returns a valid [TransactionIntentStatus] for [data], null otherwise.
          */
-        fun decode(data: kotlin.Any?): TransactionStatus? = data?.let {
+        fun decode(data: kotlin.Any?): TransactionIntentStatus? = data?.let {
           val normalizedData = "$it".lowercase()
           values().firstOrNull { value ->
             it == value || normalizedData == "$value".lowercase()

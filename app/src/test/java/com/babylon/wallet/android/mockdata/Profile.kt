@@ -22,7 +22,8 @@ fun profile(
     accounts: List<Network.Account> = listOf(account("acc-1"), account("acc-2")),
     personas: List<Network.Persona> = listOf(SampleDataProvider().samplePersona()),
     dApps: List<Network.AuthorizedDapp> = emptyList(),
-    p2pLinks: List<P2PLink> = emptyList()
+    p2pLinks: List<P2PLink> = emptyList(),
+    gateway: Radix.Gateway = Radix.Gateway.default
 ) = Profile(
     header = Header.init(
         id = "9958f568-8c9b-476a-beeb-017d1f843266",
@@ -34,7 +35,7 @@ fun profile(
         transaction = Transaction.default,
         display = Display.default,
         security = Security.default,
-        gateways = Gateways(Radix.Gateway.default.url, listOf(Radix.Gateway.default)),
+        gateways = Gateways(gateway.url, listOf(gateway)),
         p2pLinks = emptyList()
     ),
     factorSources = listOf(
@@ -52,7 +53,7 @@ fun profile(
     ),
     networks = listOf(
         Network(
-            networkID = Radix.Gateway.default.network.id,
+            networkID = gateway.network.id,
             accounts = accounts,
             personas = personas,
             authorizedDapps = dApps

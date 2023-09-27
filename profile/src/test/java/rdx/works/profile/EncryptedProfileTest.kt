@@ -6,6 +6,8 @@ import org.junit.Test
 import rdx.works.profile.data.model.DeviceInfo
 import rdx.works.profile.data.model.EncryptedProfileSnapshot
 import rdx.works.profile.data.model.Profile
+import rdx.works.profile.data.model.apppreferences.Gateways
+import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.di.SerializerModule
 import java.time.Instant
 import kotlin.test.Ignore
@@ -47,9 +49,9 @@ class EncryptedProfileTest {
                 manufacturer = "",
                 model = "test"
             ),
-            creationDate = Instant.ofEpochSecond(0L)
+            creationDate = Instant.ofEpochSecond(0L),
+            gateways = Gateways(currentGatewayUrl = Radix.Gateway.rcnetV3.url, saved = listOf(Radix.Gateway.rcnetV3))
         )
-
 
         val encryptedSnapshot = EncryptedProfileSnapshot.from(serializer, profile.snapshot(), "super secret")
         val encryptedSnapshotSerialized = serializer.encodeToString(encryptedSnapshot)

@@ -27,12 +27,12 @@ object Radix {
             val mainnet = Network(
                 id = NetworkId.Mainnet.value,
                 name = "mainnet",
-                displayDescription = "Mainnet"
+                displayDescription = "Mainnet Gateway"
             )
             val stokenet = Network(
                 id = NetworkId.Stokenet.value,
                 name = "stokenet",
-                displayDescription = "Stokenet"
+                displayDescription = "Stokenet (testnet) Gateway"
             )
             val hammunet = Network(
                 id = NetworkId.Hammunet.value,
@@ -67,7 +67,7 @@ object Radix {
             val zabanet = Network(
                 id = NetworkId.Zabanet.value,
                 name = "zabanet",
-                displayDescription = "RCnet-V3 test network"
+                displayDescription = "RCnet v3 Gateway"
             )
 
             fun allKnownNetworks(): List<Network> {
@@ -94,6 +94,9 @@ object Radix {
 
         val isDefault: Boolean
             get() = url == default.url
+
+        val isWellKnown: Boolean
+            get() = this.network in listOf(Network.mainnet, Network.stokenet)
 
         fun displayDescription(): String {
             return network.displayDescription
@@ -137,15 +140,7 @@ object Radix {
                 network = Network.mainnet
             )
 
-            var default: Gateway = rcnetV3
-                // TODO To remove when mainnet becomes default and change to val
-                set(value) {
-                    // Can change default Gateway, only if the
-                    // value is Mainnet
-                    if (value == mainnet) {
-                        field = mainnet
-                    }
-                }
+            val default: Gateway = mainnet
         }
     }
 

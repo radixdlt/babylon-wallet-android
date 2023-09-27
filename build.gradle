@@ -5,7 +5,7 @@ buildscript {
         minSdk = 27
         compileSdk = 34
         targetSdk = 33
-        internalVersionName = "rcnetv3.1"
+        internalVersionName = "babylon"
         kotlinCompilerExtensionVersion = "1.5.3"
     }
     dependencies {

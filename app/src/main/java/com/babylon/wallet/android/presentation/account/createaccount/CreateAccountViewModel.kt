@@ -3,7 +3,6 @@ package com.babylon.wallet.android.presentation.account.createaccount
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.domain.model.AppConstants.ACCOUNT_NAME_MAX_LENGTH
-import com.babylon.wallet.android.domain.usecases.MainnetAvailabilityUseCase
 import com.babylon.wallet.android.presentation.account.createaccount.confirmation.CreateAccountRequestSource
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
@@ -17,7 +16,6 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.data.model.factorsources.FactorSource
 import rdx.works.profile.data.model.pernetwork.DerivationPath
 import rdx.works.profile.data.model.pernetwork.Network
@@ -41,8 +39,7 @@ class CreateAccountViewModel @Inject constructor(
     private val createAccountWithDeviceFactorSourceUseCase: CreateAccountWithDeviceFactorSourceUseCase,
     private val createAccountWithLedgerFactorSourceUseCase: CreateAccountWithLedgerFactorSourceUseCase,
     private val switchNetworkUseCase: SwitchNetworkUseCase,
-    private val appEventBus: AppEventBus,
-    private val mainnetAvailabilityUseCase: MainnetAvailabilityUseCase
+    private val appEventBus: AppEventBus
 ) : StateViewModel<CreateAccountViewModel.CreateAccountState>(),
     OneOffEventHandler<CreateAccountEvent> by OneOffEventHandlerImpl() {
 
@@ -89,7 +86,6 @@ class CreateAccountViewModel @Inject constructor(
         val accountName = accountName.value.trim()
         val networkId = switchNetworkIfNeeded()
         val account = accountProvider(accountName, networkId)
-        mainnetAvailabilityUseCase.onMainnetMigrationCompleted()
         val accountId = account.address
 
         _state.update {
@@ -110,7 +106,7 @@ class CreateAccountViewModel @Inject constructor(
 
     override fun initialState(): CreateAccountState = CreateAccountState(
         firstTime = args.requestSource?.isFirstTime() == true,
-        isCancelable = args.requestSource != CreateAccountRequestSource.SwitchToMainnet
+        isCancelable = true
     )
 
     fun onAccountNameChange(accountName: String) {
@@ -121,11 +117,6 @@ class CreateAccountViewModel @Inject constructor(
     fun onAccountCreateClick() {
         viewModelScope.launch {
             if (!getProfileStateUseCase.isInitialized()) {
-                if (mainnetAvailabilityUseCase.isMainnetAvailable()) {
-                    // TODO To remove when mainnet becomes default
-                    Radix.Gateway.default = Radix.Gateway.mainnet
-                }
-
                 generateProfileUseCase()
             }
 

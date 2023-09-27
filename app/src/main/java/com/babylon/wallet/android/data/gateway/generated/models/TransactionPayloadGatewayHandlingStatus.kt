@@ -20,27 +20,18 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 /**
- * A top-level intent status, left in for backwards compatibility. It doesn't give much information. Rejected means PermanentRejection. 
+ * A status concerning the Gateway's handling status of this pending transaction. 
  *
- * Values: unknown,committedSuccess,committedFailure,pending,rejected
+ * Values: handlingSubmission,concluded
  */
 @Serializable
-enum class TransactionStatus(val value: kotlin.String) {
+enum class TransactionPayloadGatewayHandlingStatus(val value: kotlin.String) {
 
-    @SerialName(value = "Unknown")
-    unknown("Unknown"),
+    @SerialName(value = "HandlingSubmission")
+    handlingSubmission("HandlingSubmission"),
 
-    @SerialName(value = "CommittedSuccess")
-    committedSuccess("CommittedSuccess"),
-
-    @SerialName(value = "CommittedFailure")
-    committedFailure("CommittedFailure"),
-
-    @SerialName(value = "Pending")
-    pending("Pending"),
-
-    @SerialName(value = "Rejected")
-    rejected("Rejected");
+    @SerialName(value = "Concluded")
+    concluded("Concluded");
 
     /**
      * Override [toString()] to avoid using the enum variable name as the value, and instead use
@@ -55,12 +46,12 @@ enum class TransactionStatus(val value: kotlin.String) {
         /**
          * Converts the provided [data] to a [String] on success, null otherwise.
          */
-        fun encode(data: kotlin.Any?): kotlin.String? = if (data is TransactionStatus) "$data" else null
+        fun encode(data: kotlin.Any?): kotlin.String? = if (data is TransactionPayloadGatewayHandlingStatus) "$data" else null
 
         /**
-         * Returns a valid [TransactionStatus] for [data], null otherwise.
+         * Returns a valid [TransactionPayloadGatewayHandlingStatus] for [data], null otherwise.
          */
-        fun decode(data: kotlin.Any?): TransactionStatus? = data?.let {
+        fun decode(data: kotlin.Any?): TransactionPayloadGatewayHandlingStatus? = data?.let {
           val normalizedData = "$it".lowercase()
           values().firstOrNull { value ->
             it == value || normalizedData == "$value".lowercase()

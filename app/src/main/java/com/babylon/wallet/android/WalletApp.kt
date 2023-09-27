@@ -21,8 +21,6 @@ import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
-import com.babylon.wallet.android.presentation.account.createaccount.confirmation.CreateAccountRequestSource
-import com.babylon.wallet.android.presentation.account.createaccount.createAccountScreen
 import com.babylon.wallet.android.presentation.dapp.authorized.login.dAppLoginAuthorized
 import com.babylon.wallet.android.presentation.dapp.unauthorized.login.dAppLoginUnauthorized
 import com.babylon.wallet.android.presentation.main.MAIN_ROUTE
@@ -42,7 +40,6 @@ import com.babylon.wallet.android.utils.AppEvent
 import com.google.accompanist.navigation.animation.rememberAnimatedNavController
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import kotlinx.coroutines.flow.Flow
-import rdx.works.profile.data.model.apppreferences.Radix
 
 @OptIn(ExperimentalAnimationApi::class, ExperimentalMaterialApi::class)
 @Composable
@@ -86,7 +83,6 @@ fun WalletApp(
         }
     }
     SyncStatusBarWithScreenChanges(navController)
-    CheckForceToMainnet(navController = navController, forceToMainnetMandatory = mainViewModel.forceToMainnetMandatory)
 
     LaunchedEffect(Unit) {
         mainViewModel.appNotSecureEvent.collect {
@@ -162,22 +158,6 @@ private fun SyncStatusBarWithScreenChanges(navController: NavHostController) {
         // their invocation comes later.
         navController.currentBackStackEntryFlow.collect {
             systemUiController.setStatusBarColor(color = Color.Transparent, darkIcons = !devBannerState.isVisible)
-        }
-    }
-}
-
-@Composable
-private fun CheckForceToMainnet(navController: NavController, forceToMainnetMandatory: Flow<Boolean>) {
-    LaunchedEffect(navController) {
-        forceToMainnetMandatory.collect { isMandatory ->
-            if (isMandatory) {
-                navController.createAccountScreen(
-                    requestSource = CreateAccountRequestSource.SwitchToMainnet,
-                    networkUrl = Radix.Gateway.mainnet.url,
-                    networkName = Radix.Gateway.mainnet.network.name,
-                    switchNetwork = true
-                )
-            }
         }
     }
 }

@@ -47,30 +47,30 @@ data class TransactionReceipt (
 
     @SerialName(value = "costing_parameters")
     val costingParameters: CostingParameters? = null,
-//
-//    /* Only present if the `status` is not `Rejected`. */
+
+    /* Only present if the `status` is not `Rejected`. */
 //    @Contextual @SerialName(value = "fee_destination")
 //    val feeDestination: kotlin.Any? = null,
-//
-//    /* Only present if the `status` is not `Rejected`. */
+
+    /* Only present if the `status` is not `Rejected`. */
 //    @Contextual @SerialName(value = "fee_source")
 //    val feeSource: kotlin.Any? = null,
-//
-//    /* Transaction state updates (only present if status is Succeeded or Failed). */
+
+    /* Transaction state updates (only present if status is Succeeded or Failed). */
 //    @Contextual @SerialName(value = "state_updates")
 //    val stateUpdates: kotlin.Any? = null,
-//
-//    /* Information (number and active validator list) about new epoch if occured. */
+
+    /* Information (number and active validator list) about new epoch if occured. */
 //    @Contextual @SerialName(value = "next_epoch")
 //    val nextEpoch: kotlin.Any? = null,
-//
-//    /* The manifest line-by-line engine return data (only present if `status` is `Succeeded`). */
+
+    /* The manifest line-by-line engine return data (only present if `status` is `Succeeded`). */
 //    @Contextual @SerialName(value = "output")
 //    val output: kotlin.Any? = null,
-//
-//    /* Events emitted by a transaction. */
-//    @Contextual @SerialName(value = "events")
-//    val events: kotlin.Any? = null,
+
+    /* Events emitted by a transaction. */
+    @SerialName(value = "events")
+    val events: kotlin.collections.List<EventsItem>? = null,
 
     /* Error message (only present if status is `Failed` or `Rejected`) */
     @SerialName(value = "error_message")
