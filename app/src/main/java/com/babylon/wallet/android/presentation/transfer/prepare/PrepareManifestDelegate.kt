@@ -10,21 +10,18 @@ import com.babylon.wallet.android.presentation.transfer.TargetAccount
 import com.babylon.wallet.android.presentation.transfer.TransferViewModel
 import com.radixdlt.ret.Address
 import com.radixdlt.ret.Decimal
-import com.radixdlt.ret.ManifestBuilderBucket
 import com.radixdlt.ret.NonFungibleGlobalId
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
 import rdx.works.core.ret.BabylonManifestBuilder
 import rdx.works.core.ret.buildSafely
 import rdx.works.profile.data.model.pernetwork.Network
-import rdx.works.profile.data.repository.MnemonicRepository
 import timber.log.Timber
 import java.math.BigDecimal
 
 class PrepareManifestDelegate(
     private val state: MutableStateFlow<TransferViewModel.State>,
-    private val incomingRequestRepository: IncomingRequestRepository,
-    private val mnemonicRepository: MnemonicRepository
+    private val incomingRequestRepository: IncomingRequestRepository
 ) {
 
     suspend fun onSubmit() {
@@ -39,7 +36,7 @@ class PrepareManifestDelegate(
         }
     }
 
-    private suspend fun prepareRequest(
+    private fun prepareRequest(
         fromAccount: Network.Account,
         currentState: TransferViewModel.State
     ): Result<MessageFromDataChannel.IncomingRequest.TransactionRequest> =
@@ -61,7 +58,7 @@ class PrepareManifestDelegate(
             }
 
     @Suppress("NestedBlockDepth")
-    private suspend fun BabylonManifestBuilder.attachInstructionsForFungibles(
+    private fun BabylonManifestBuilder.attachInstructionsForFungibles(
         fromAccount: Network.Account,
         targetAccounts: List<TargetAccount>
     ) = apply {
@@ -90,17 +87,17 @@ class PrepareManifestDelegate(
                         intoBucket = bucket
                     )
 
-                    deposit(
-                        targetAccount = targetAccount,
-                        bucket = bucket
+                    // Then deposit the bucket into the target account
+                    accountTryDepositOrAbort(
+                        toAddress = Address(targetAccount.address),
+                        fromBucket = bucket
                     )
                 }
             }
         }
     }
 
-    @Suppress("NestedBlockDepth")
-    private suspend fun BabylonManifestBuilder.attachInstructionsForNFTs(
+    private fun BabylonManifestBuilder.attachInstructionsForNFTs(
         fromAccount: Network.Account,
         targetAccounts: List<TargetAccount>
     ) = apply {
@@ -121,34 +118,11 @@ class PrepareManifestDelegate(
                     nonFungible = globalId,
                     intoBucket = bucket
                 )
-
-                deposit(
-                    targetAccount = targetAccount,
-                    bucket = bucket
+                accountTryDepositOrAbort(
+                    toAddress = Address(targetAccount.address),
+                    fromBucket = bucket
                 )
             }
-        }
-    }
-
-    private suspend fun BabylonManifestBuilder.deposit(targetAccount: TargetAccount, bucket: ManifestBuilderBucket) = apply {
-        val isUserAccount = targetAccount.isUserAccount
-        val isSoftwareAccount = !targetAccount.isLedgerAccount
-        val mnemonicHasBeenImported = targetAccount.factorSourceId?.let {
-            mnemonicRepository.mnemonicExist(it)
-        } ?: false
-
-        // We use deposit instruction only for owned software accounts that mnemonic doesnt need recovery
-        // or in other words mnemonic for this account has been imported
-        if (isUserAccount && isSoftwareAccount && mnemonicHasBeenImported) {
-            accountDeposit(
-                toAddress = Address(targetAccount.address),
-                fromBucket = bucket
-            )
-        } else {
-            accountTryDepositOrAbort(
-                toAddress = Address(targetAccount.address),
-                fromBucket = bucket
-            )
         }
     }
 
