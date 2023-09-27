@@ -144,6 +144,7 @@ internal class TransactionClientTest {
         override suspend fun getAccountsWithResources(
             accounts: List<Network.Account>,
             explicitMetadataForAssets: Set<ExplicitMetadataKey>,
+            isDetailedBreakdown: Boolean,
             isRefreshing: Boolean
         ): Result<List<AccountWithResources>> = Result.Success(accounts.map {
             when (it.address) {

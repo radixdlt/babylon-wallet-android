@@ -13,15 +13,23 @@ class GetAccountsWithResourcesUseCase @Inject constructor(
     private val getProfileUseCase: GetProfileUseCase
 ) {
 
-    suspend operator fun invoke(accounts: List<Network.Account>, isRefreshing: Boolean): Result<List<AccountWithResources>> {
+    suspend operator fun invoke(
+        accounts: List<Network.Account>,
+        isNftItemDataNeeded: Boolean = true,
+        isRefreshing: Boolean,
+    ): Result<List<AccountWithResources>> {
         return entityRepository.getAccountsWithResources(
             accounts = accounts,
+            isNftItemDataNeeded = isNftItemDataNeeded,
             isRefreshing = isRefreshing
         )
     }
 
-    suspend operator fun invoke(isRefreshing: Boolean): Result<List<AccountWithResources>> {
+    suspend operator fun invoke(
+        isNftItemDataNeeded: Boolean,
+        isRefreshing: Boolean
+    ): Result<List<AccountWithResources>> {
         val accounts = getProfileUseCase.accountsOnCurrentNetwork()
-        return invoke(accounts = accounts, isRefreshing = isRefreshing)
+        return invoke(accounts = accounts, isNftItemDataNeeded = isNftItemDataNeeded, isRefreshing = isRefreshing)
     }
 }
