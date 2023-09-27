@@ -31,7 +31,7 @@ import rdx.works.profile.domain.security
 import javax.inject.Inject
 
 @HiltViewModel
-class SettingsEditGatewayViewModel @Inject constructor(
+class GatewaysViewModel @Inject constructor(
     private val getProfileUseCase: GetProfileUseCase,
     private val changeGatewayUseCase: ChangeGatewayUseCase,
     private val addGatewayUseCase: AddGatewayUseCase,

@@ -63,7 +63,7 @@ import rdx.works.profile.data.model.apppreferences.Radix
 
 @Composable
 fun GatewaysScreen(
-    viewModel: SettingsEditGatewayViewModel,
+    viewModel: GatewaysViewModel,
     onBackClick: () -> Unit,
     onCreateProfile: (String, String) -> Unit,
     modifier: Modifier = Modifier

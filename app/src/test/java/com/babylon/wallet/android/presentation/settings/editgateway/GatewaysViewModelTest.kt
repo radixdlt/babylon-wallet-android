@@ -7,7 +7,7 @@ import com.babylon.wallet.android.domain.common.Result
 import com.babylon.wallet.android.presentation.TestDispatcherRule
 import com.babylon.wallet.android.presentation.settings.appsettings.gateways.GatewayAddFailure
 import com.babylon.wallet.android.presentation.settings.appsettings.gateways.SettingsEditGatewayEvent
-import com.babylon.wallet.android.presentation.settings.appsettings.gateways.SettingsEditGatewayViewModel
+import com.babylon.wallet.android.presentation.settings.appsettings.gateways.GatewaysViewModel
 import com.babylon.wallet.android.utils.isValidUrl
 import io.mockk.coEvery
 import io.mockk.coVerify
@@ -28,11 +28,11 @@ import rdx.works.profile.domain.gateway.ChangeGatewayUseCase
 import rdx.works.profile.domain.gateway.DeleteGatewayUseCase
 
 @OptIn(ExperimentalCoroutinesApi::class)
-class SettingsEditGatewayViewModelTest {
+class GatewaysViewModelTest {
     @get:Rule
     val coroutineRule = TestDispatcherRule()
 
-    private lateinit var vm: SettingsEditGatewayViewModel
+    private lateinit var vm: GatewaysViewModel
 
     private val getProfileUseCase = mockk<GetProfileUseCase>()
     private val changeGatewayUseCase = mockk<ChangeGatewayUseCase>()
@@ -44,7 +44,7 @@ class SettingsEditGatewayViewModelTest {
 
     @Before
     fun setUp() = runTest {
-        vm = SettingsEditGatewayViewModel(
+        vm = GatewaysViewModel(
             getProfileUseCase = getProfileUseCase,
             changeGatewayUseCase = changeGatewayUseCase,
             addGatewayUseCase = addGatewayUseCase,
