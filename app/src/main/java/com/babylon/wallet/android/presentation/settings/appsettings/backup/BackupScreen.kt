@@ -255,12 +255,8 @@ private fun BackupScreenContent(
                         verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingDefault)
                     ) {
                         SwitchSettingsItem(
-                            titleRes = if (state.isBackupEnabled) {
-                                R.string.androidProfileBackup_automaticBackups_disable
-                            } else {
-                                R.string.androidProfileBackup_automaticBackups_enable
-                            },
-                            subtitleRes = R.string.androidProfileBackup_automaticBackups_subtitle,
+                            titleRes = R.string.androidProfileBackup_backupWalletData_title,
+                            subtitleRes = R.string.androidProfileBackup_backupWalletData_message,
                             checked = state.isBackupEnabled,
                             icon = {
                                 Icon(
