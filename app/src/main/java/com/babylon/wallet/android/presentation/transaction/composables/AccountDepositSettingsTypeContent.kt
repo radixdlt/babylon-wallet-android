@@ -288,6 +288,7 @@ fun AccountDepositSettingsTypeContentPreviewJustAssetChanges() {
     }
 }
 
+@Preview
 @Composable
 fun AccountDepositSettingsTypeContentPreviewJustDepositorChanges() {
     RadixWalletTheme {
