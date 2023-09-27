@@ -4,8 +4,10 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.selection.LocalTextSelectionColors
@@ -24,6 +26,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.designsystem.R
@@ -102,7 +105,7 @@ fun RadixTextField(
                 keyboardActions = keyboardActions,
                 keyboardOptions = keyboardOptions,
 
-            )
+                )
             iconToTheRight?.let { icon ->
                 Box {
                     icon()
@@ -139,16 +142,17 @@ private fun TopLabelRow(
     isError: Boolean,
     modifier: Modifier = Modifier
 ) {
-    Row(modifier = modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+    Row(modifier = modifier.fillMaxWidth()) {
         when (leftLabel) {
             is LabelType.Custom -> {
-                Column {
+                Column(modifier = Modifier.weight(1f)) {
                     leftLabel.content()
                 }
             }
 
             is LabelType.Default -> {
                 Text(
+                    modifier = Modifier.weight(1f),
                     text = leftLabel.value,
                     style = RadixTheme.typography.body1HighImportance,
                     color = if (isError) RadixTheme.colors.red1 else RadixTheme.colors.gray1
@@ -157,9 +161,16 @@ private fun TopLabelRow(
 
             else -> {}
         }
+        Spacer(modifier = Modifier.width(RadixTheme.dimensions.paddingSmall))
         when (rightLabel) {
             is LabelType.Default -> {
-                Text(text = rightLabel.value, style = RadixTheme.typography.body1Regular, color = RadixTheme.colors.gray2)
+                Text(
+                    modifier = Modifier.weight(1f),
+                    text = rightLabel.value,
+                    style = RadixTheme.typography.body1Regular,
+                    color = RadixTheme.colors.gray2,
+                    textAlign = TextAlign.End
+                )
             }
 
             else -> {}
@@ -195,8 +206,8 @@ fun RadixTextFieldFilled() {
             onValueChanged = {},
             value = "Input Text",
             hint = "Placeholder",
-            leftLabel = LabelType.Default("abc"),
-            rightLabel = LabelType.Default("7/10"),
+            leftLabel = LabelType.Default("Left Label"),
+            rightLabel = LabelType.Default("Right label"),
             optionalHint = "This is a hint text, It should be short and sweet"
         )
     }
@@ -225,6 +236,7 @@ fun RadixTextFieldWithIcon() {
             modifier = Modifier.fillMaxWidth(),
             onValueChanged = { },
             value = "casino",
+            rightLabel = LabelType.Default("Abc"),
             trailingIcon = {
                 Icon(
                     modifier = Modifier.size(20.dp),
