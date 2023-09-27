@@ -20,7 +20,6 @@ import rdx.works.profile.data.model.Profile
 import rdx.works.profile.data.model.compressedPublicKey
 import rdx.works.profile.data.model.currentGateway
 import rdx.works.profile.data.model.factorsources.DeviceFactorSource
-import rdx.works.profile.data.model.factorsources.FactorSourceKind
 import rdx.works.profile.data.model.factorsources.LedgerHardwareWalletFactorSource
 import rdx.works.profile.data.model.factorsources.Slip10Curve
 import rdx.works.profile.derivation.model.KeyType
@@ -170,14 +169,6 @@ data class Network(
                 }
             }
         }
-
-        val isLedgerAccount: Boolean
-            get() = when (securityState) {
-                is SecurityState.Unsecured -> {
-                    securityState.unsecuredEntityControl
-                        .transactionSigning.factorSourceId.kind == FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET
-                }
-            }
 
         companion object {
             @Suppress("LongParameterList")
