@@ -63,7 +63,8 @@ class TransactionAnalysisDelegate(
         manifest: TransactionManifest,
         notaryAndSigners: NotaryAndSigners
     ) = this.onSuccess { analysis ->
-        val previewType = if (analysis.reservedInstructions.isNotEmpty()) { // wallet unacceptable manifest
+        val previewType = if (state.value.request.isInternal.not() && analysis.reservedInstructions.isNotEmpty()) {
+            // wallet unacceptable manifest
             state.update {
                 it.copy(
                     error = UiMessage.ErrorMessage.from(DappRequestException(DappRequestFailure.UnacceptableManifest))
