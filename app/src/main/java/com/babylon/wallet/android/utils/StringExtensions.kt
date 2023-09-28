@@ -117,7 +117,7 @@ fun String.sanitizeAndValidateGatewayUrl(isDevModeEnabled: Boolean = false): Str
                 "http://$urlToValidate/"
             }
         }
-    } else { // when dev mode is disabled we should not accept ONLY https - no IPs
+    } else { // when dev mode is disabled we should accept ONLY https - no IPs
         val urlWithoutHttp = this.removePrefix("http://").removePrefix("https://")
         if (urlWithoutHttp.contains(":")) { // if true it means it has a port or it is an IPv6
             null // then do not accept it
