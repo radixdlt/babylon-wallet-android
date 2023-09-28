@@ -133,7 +133,7 @@ class GatewaysViewModel @Inject constructor(
 
         // this is the case where a url has been added when the developer mode was enabled
         // but at the time the user clicks to switch network the developer mode is disabled
-        if (gateway.url.sanitizeAndValidateGatewayUrl(isDevModeEnabled = state.value.isDeveloperModeEnabled) == "/") return
+        if (gateway.url.sanitizeAndValidateGatewayUrl(isDevModeEnabled = state.value.isDeveloperModeEnabled) == null) return
 
         val isGatewayChanged = changeGatewayUseCase(gateway)
         if (isGatewayChanged) {
