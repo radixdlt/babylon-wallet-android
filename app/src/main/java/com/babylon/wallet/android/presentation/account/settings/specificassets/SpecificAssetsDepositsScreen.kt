@@ -440,7 +440,7 @@ private fun SpecificAssetsDepositsContent(
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .padding(horizontal = RadixTheme.dimensions.paddingLarge),
-                                text = stringResource(id = R.string.accountSettings_specificAssetsDeposits_emptyAllowAll),
+                                text = stringResource(id = R.string.accountSettings_specificAssetsDeposits_emptyDenyAll),
                                 textAlign = TextAlign.Center,
                                 style = RadixTheme.typography.body1HighImportance,
                                 color = RadixTheme.colors.gray2
