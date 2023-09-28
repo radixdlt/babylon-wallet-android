@@ -8,7 +8,6 @@ import rdx.works.profile.data.model.apppreferences.Security
 import rdx.works.profile.data.model.apppreferences.Transaction
 import rdx.works.profile.data.model.factorsources.DeviceFactorSource
 import rdx.works.profile.data.model.factorsources.FactorSource
-import rdx.works.profile.data.model.factorsources.Slip10Curve.CURVE_25519
 import rdx.works.profile.data.model.pernetwork.Network
 import java.time.Instant
 
@@ -62,14 +61,14 @@ data class Profile(
         get() = factorSources
             .filterIsInstance<DeviceFactorSource>()
             .first {
-                it.common.cryptoParameters.supportedCurves.contains(CURVE_25519)
+                it.common.cryptoParameters == FactorSource.Common.CryptoParameters.babylon
             }
 
     val babylonDeviceFactorSourceExist: Boolean
         get() = factorSources
             .filterIsInstance<DeviceFactorSource>()
             .any {
-                it.common.cryptoParameters.supportedCurves.contains(CURVE_25519)
+                it.common.cryptoParameters == FactorSource.Common.CryptoParameters.babylon
             }
 
     companion object {
