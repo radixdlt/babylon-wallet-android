@@ -15,9 +15,7 @@ import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.utils.AppEvent
-import com.babylon.wallet.android.utils.AppEvent.GotFreeXrd
 import com.babylon.wallet.android.utils.AppEvent.RestoredMnemonic
-import com.babylon.wallet.android.utils.AppEvent.Status
 import com.babylon.wallet.android.utils.AppEventBus
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -139,7 +137,7 @@ class WalletViewModel @Inject constructor(
     private fun observeGlobalAppEvents() {
         viewModelScope.launch {
             appEventBus.events.filter { event ->
-                event is GotFreeXrd || event is Status.Transaction.Success || event is RestoredMnemonic
+                event is AppEvent.RefreshResourcesNeeded || event is RestoredMnemonic
             }.collect {
                 loadResources(withRefresh = it !is RestoredMnemonic)
             }
