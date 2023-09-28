@@ -2,7 +2,6 @@ package com.babylon.wallet.android.data.repository.entity
 
 import android.net.Uri
 import com.babylon.wallet.android.data.gateway.apis.StateApi
-import com.babylon.wallet.android.data.gateway.extensions.allResourceAddresses
 import com.babylon.wallet.android.data.gateway.extensions.asMetadataItems
 import com.babylon.wallet.android.data.gateway.extensions.calculateResourceBehaviours
 import com.babylon.wallet.android.data.gateway.extensions.claimTokenResourceAddress
@@ -106,22 +105,11 @@ class EntityRepositoryImpl @Inject constructor(
 
         return listOfEntityDetailsResponsesResult.switchMap { accountDetailsResponses ->
             val stateVersion = accountDetailsResponses.firstOrNull()?.ledgerState?.stateVersion ?: return Result.Error()
-
-            val resourceAddresses = accountDetailsResponses.map { stateEntityDetailsResponse ->
-                stateEntityDetailsResponse.items.map { stateEntityDetailsResponseItem ->
-                    stateEntityDetailsResponseItem.allResourceAddresses
-                }.flatten()
-            }.flatten()
-            val resourcesDetails = getDetailsForResources(
-                resourceAddresses = resourceAddresses,
-                stateVersion = stateVersion
-            )
             val mapOfAccountsWithMetadata = buildMapOfAccountsAddressesWithMetadata(accountDetailsResponses)
             var mapOfAccountsWithFungibleResources =
-                buildMapOfAccountsWithFungibles(accountDetailsResponses, resourcesDetails, stateVersion)
+                buildMapOfAccountsWithFungibles(accountDetailsResponses, stateVersion)
             var mapOfAccountsWithNonFungibleResources = buildMapOfAccountsWithNonFungibles(
                 accountDetailsResponses = accountDetailsResponses,
-                resourcesDetails = resourcesDetails,
                 isNftItemDataNeeded = isNftItemDataNeeded,
                 isRefreshing = isRefreshing,
                 stateVersion = stateVersion
@@ -336,7 +324,6 @@ class EntityRepositoryImpl @Inject constructor(
 
     private suspend fun buildMapOfAccountsWithFungibles(
         entityDetailsResponses: List<StateEntityDetailsResponse>,
-        resourcesDetails: List<StateEntityDetailsResponseItem>,
         stateVersion: Long?
     ): Map<String, List<Resource.FungibleResource>> {
         return entityDetailsResponses.map { entityDetailsResponse ->
@@ -350,6 +337,14 @@ class EntityRepositoryImpl @Inject constructor(
                         getFungibleResourcesCollectionItemsForAccount(
                             accountAddress = entityItem.address,
                             fungibleResources = entityItem.fungibleResources,
+                            stateVersion = stateVersion
+                        )
+                    } else {
+                        emptyList()
+                    }
+                    val resourcesDetails = if (fungibleResourcesItemsList.isNotEmpty()) {
+                        getDetailsForResources(
+                            resourceAddresses = fungibleResourcesItemsList.map { it.resourceAddress },
                             stateVersion = stateVersion
                         )
                     } else {
@@ -437,7 +432,6 @@ class EntityRepositoryImpl @Inject constructor(
 
     private suspend fun buildMapOfAccountsWithNonFungibles(
         accountDetailsResponses: List<StateEntityDetailsResponse>,
-        resourcesDetails: List<StateEntityDetailsResponseItem>,
         isNftItemDataNeeded: Boolean = true,
         isRefreshing: Boolean,
         stateVersion: Long?
@@ -452,6 +446,14 @@ class EntityRepositoryImpl @Inject constructor(
                         getNonFungibleResourcesCollectionItemsForAccount(
                             accountAddress = entityItem.address,
                             nonFungibleResources = entityItem.nonFungibleResources,
+                            stateVersion = stateVersion
+                        )
+                    } else {
+                        emptyList()
+                    }
+                    val resourcesDetails = if (nonFungibleResourcesItemsList.isNotEmpty()) {
+                        getDetailsForResources(
+                            resourceAddresses = nonFungibleResourcesItemsList.map { it.resourceAddress },
                             stateVersion = stateVersion
                         )
                     } else {
