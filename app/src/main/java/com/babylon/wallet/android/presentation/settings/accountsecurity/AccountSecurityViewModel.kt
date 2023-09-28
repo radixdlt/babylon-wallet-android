@@ -31,7 +31,7 @@ class AccountSecurityViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            if (getProfileUseCase.gateways.first().current().network == Radix.Network.mainnet || EXPERIMENTAL_FEATURES_ENABLED) {
+            if (getProfileUseCase.gateways.first().current().network.id == Radix.Network.mainnet.id || EXPERIMENTAL_FEATURES_ENABLED) {
                 _state.update { state ->
                     state.copy(
                         settings = state.settings

@@ -81,7 +81,7 @@ class MainViewModel @Inject constructor(
     val isDevBannerVisible = getProfileStateUseCase().map { profileState ->
         when (profileState) {
             is ProfileState.Restored -> {
-                profileState.profile.currentGateway.network != Radix.Gateway.mainnet.network
+                profileState.profile.currentGateway.network.id != Radix.Gateway.mainnet.network.id
             }
             else -> false
         }

@@ -96,7 +96,7 @@ object Radix {
             get() = url == default.url
 
         val isWellKnown: Boolean
-            get() = this.network in listOf(Network.mainnet, Network.stokenet)
+            get() = this.network.id in listOf(Network.mainnet.id, Network.stokenet.id)
 
         fun displayDescription(): String {
             return network.displayDescription

@@ -81,7 +81,7 @@ class GetFreeXrdUseCase @Inject constructor(
         getProfileUseCase.gateways,
         preferencesManager.getLastUsedEpochFlow(address)
     ) { gateways, lastUsedEpoch ->
-        if (gateways.current().network == Radix.Gateway.mainnet.network) {
+        if (gateways.current().network.id == Radix.Gateway.mainnet.network.id) {
             FaucetState.Unavailable
         } else {
             if (lastUsedEpoch == null) return@combine FaucetState.Available(isEnabled = true)
