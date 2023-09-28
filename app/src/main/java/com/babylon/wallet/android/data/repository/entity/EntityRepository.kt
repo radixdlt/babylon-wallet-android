@@ -98,7 +98,7 @@ class EntityRepositoryImpl @Inject constructor(
         if (accounts.isEmpty()) return Result.Success(emptyList())
 
         val listOfEntityDetailsResponsesResult = getStateEntityDetailsResponse(
-            addresses = listOf("account_rdx16yn526l4quvykzwny9fr3y7mpr8sm5ky0hwyj49eyzslg3t4v7ttd9"), // accounts.map { it.address },
+            addresses = accounts.map { it.address },
             explicitMetadata = explicitMetadataForAssets,
             isRefreshing = isRefreshing
         )
