@@ -54,7 +54,7 @@ android {
         minSdk rootProject.ext.minSdk
         targetSdk rootProject.ext.targetSdk
         versionCode 11
-        versionName "1.0.0"
+        versionName "1.0.1"
         buildConfigField "boolean", "DEBUG_MODE", "true"
         buildConfigField "boolean", "EXPERIMENTAL_FEATURES_ENABLED", "true"
         buildConfigField "String", "WELL_KNOWN_URL_SUFFIX", '".well-known/radix.json"'
