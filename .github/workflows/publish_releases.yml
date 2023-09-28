@@ -140,6 +140,7 @@ jobs:
           radix_bot_username: ${{ env.GH_GPR_USER }}
           gpr_user: ${{ env.GH_GPR_USER }}
           gpr_token: ${{ env.GH_GPR_TOKEN }}
+          role_name: '${{ secrets.ANDROID_WALLET_SECRETS_READ_IAM_ROLE }}'
 
   google_play_production_release:
     if: ${{ github.event_name == 'release' && github.event.release.prerelease == false }}
@@ -182,6 +183,7 @@ jobs:
           radix_bot_username: ${{ env.GH_GPR_USER }}
           gpr_user: ${{ env.GH_GPR_USER }}
           gpr_token: ${{ env.GH_GPR_TOKEN }}
+          role_name: '${{ secrets.ANDROID_WALLET_SECRETS_READ_IAM_ROLE }}'
 
   publish_sbom:
     runs-on: ubuntu-latest
