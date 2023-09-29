@@ -179,10 +179,6 @@ class DAppRepositoryImpl @Inject constructor(
                 okHttpClient = okHttpClient,
                 jsonConverterFactory = jsonConverterFactory
             ).wellKnownDAppDefinition().execute(
-                cacheParameters = CacheParameters(
-                    httpCache = cache,
-                    timeoutDuration = TimeoutDuration.FIVE_MINUTES
-                ),
                 map = { response -> response.dApps.map { it.dAppDefinitionAddress } },
                 error = {
                     DappRequestException(DappRequestFailure.DappVerificationFailure.RadixJsonNotFound)
