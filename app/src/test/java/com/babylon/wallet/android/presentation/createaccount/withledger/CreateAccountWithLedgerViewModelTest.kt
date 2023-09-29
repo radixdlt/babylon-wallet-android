@@ -26,6 +26,7 @@ import rdx.works.profile.data.model.apppreferences.P2PLink
 import rdx.works.profile.data.model.factorsources.LedgerHardwareWalletFactorSource
 import rdx.works.profile.domain.AddLedgerFactorSourceResult
 import rdx.works.profile.domain.AddLedgerFactorSourceUseCase
+import rdx.works.profile.domain.EnsureBabylonFactorSourceExistUseCase
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.p2pLinks
 
@@ -35,13 +36,14 @@ internal class CreateAccountWithLedgerViewModelTest : StateViewModelTest<CreateA
     private val getProfileUseCase = mockk<GetProfileUseCase>()
     private val ledgerMessenger = mockk<LedgerMessenger>()
     private val addLedgerFactorSourceUseCase = mockk<AddLedgerFactorSourceUseCase>()
+    private val ensureBabylonFactorSourceExistUseCase = mockk<EnsureBabylonFactorSourceExistUseCase>()
     private val eventBus = mockk<AppEventBus>()
 
     private val firstDeviceId = "5f47ec336e9e7891bff04004c817201e73c097b6b1e1b3a26bc501e0010996f5"
     private val secondDeviceId = "5f07ec336e9e7891bff04004c817201e73c097b6b1e1b3a26bc501e0010196f5"
 
     override fun initVM(): CreateAccountWithLedgerViewModel {
-        return CreateAccountWithLedgerViewModel(getProfileUseCase, ledgerMessenger, eventBus)
+        return CreateAccountWithLedgerViewModel(getProfileUseCase, ledgerMessenger, ensureBabylonFactorSourceExistUseCase, eventBus)
     }
 
     @Before
@@ -106,7 +108,7 @@ internal class CreateAccountWithLedgerViewModelTest : StateViewModelTest<CreateA
         coEvery { getProfileUseCase.p2pLinks } returns flowOf(listOf(P2PLink("pwd", "chrome")))
         val vm = vm.value
         advanceUntilIdle()
-        vm.onUseLedgerContinueClick()
+        vm.onUseLedgerContinueClick { true }
         advanceUntilIdle()
         val event = slot<AppEvent.DerivedAccountPublicKeyWithLedger>()
         coVerify(exactly = 1) {
