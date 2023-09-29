@@ -37,6 +37,7 @@ import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDi
 import com.babylon.wallet.android.presentation.ui.composables.LocalDevBannerState
 import com.babylon.wallet.android.presentation.ui.composables.NotSecureAlertDialog
 import com.babylon.wallet.android.utils.AppEvent
+import com.babylon.wallet.android.utils.biometricAuthenticateSuspend
 import com.google.accompanist.navigation.animation.rememberAnimatedNavController
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import kotlinx.coroutines.flow.Flow
@@ -49,6 +50,7 @@ fun WalletApp(
     mainViewModel: MainViewModel,
     onCloseApp: () -> Unit
 ) {
+    val context = LocalContext.current
     val state by mainViewModel.state.collectAsStateWithLifecycle()
     val navController = rememberAnimatedNavController()
     var showNotSecuredDialog by remember { mutableStateOf(false) }
@@ -105,6 +107,11 @@ fun WalletApp(
             )
         }
     }
+    LaunchedEffect(Unit) {
+        mainViewModel.babylonFactorSourceDoesNotExistEvent.collect {
+            mainViewModel.createBabylonFactorSource({ context.biometricAuthenticateSuspend() })
+        }
+    }
 
     HandleStatusEvents(
         navController = navController,
@@ -116,7 +123,6 @@ fun WalletApp(
         onHighPriorityScreen = mainViewModel::onHighPriorityScreen
     )
     mainViewModel.observeP2PLinks.collectAsStateWithLifecycle(null)
-    val context = LocalContext.current
     if (showNotSecuredDialog) {
         NotSecureAlertDialog(finish = {
             if (it) {

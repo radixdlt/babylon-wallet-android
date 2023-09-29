@@ -13,9 +13,11 @@ class CheckAccountsOrPersonasWereCreatedWithOlympia @Inject constructor(
         if (getProfileUseCase.isInitialized().not()) return false
         val accounts = getProfileUseCase.accountsOnCurrentNetwork()
         val personas = getProfileUseCase.personasOnCurrentNetwork()
-        val olympiaFactorSourceIds = getProfileUseCase.deviceFactorSources.firstOrNull()?.filter { it.isOlympia }?.map { it.id }.orEmpty()
-        val wrongAccounts = accounts.count { it.usesCurve25519() && olympiaFactorSourceIds.contains(it.factorSourceId()) }
-        val wrongPersonas = personas.count { it.usesCurve25519() && olympiaFactorSourceIds.contains(it.factorSourceId()) }
-        return wrongAccounts > 1 || wrongPersonas > 1
+        val olympiaFactorSourceIds = getProfileUseCase.deviceFactorSources.firstOrNull()?.filter {
+            it.isOlympia
+        }?.map { it.id }.orEmpty()
+        val accountsCreatedWithOlympia = accounts.count { it.usesCurve25519() && olympiaFactorSourceIds.contains(it.factorSourceId()) }
+        val personasCreatedWithOlympia = personas.count { it.usesCurve25519() && olympiaFactorSourceIds.contains(it.factorSourceId()) }
+        return accountsCreatedWithOlympia > 0 || personasCreatedWithOlympia > 0
     }
 }

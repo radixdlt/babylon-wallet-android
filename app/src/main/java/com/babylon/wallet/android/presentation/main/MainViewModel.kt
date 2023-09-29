@@ -34,6 +34,7 @@ import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.data.model.currentGateway
 import rdx.works.profile.domain.CheckAccountsOrPersonasWereCreatedWithOlympia
 import rdx.works.profile.domain.CheckMnemonicIntegrityUseCase
+import rdx.works.profile.domain.EnsureBabylonFactorSourceExistUseCase
 import rdx.works.profile.domain.GetProfileStateUseCase
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.p2pLinks
@@ -53,7 +54,8 @@ class MainViewModel @Inject constructor(
     getProfileStateUseCase: GetProfileStateUseCase,
     private val deviceSecurityHelper: DeviceSecurityHelper,
     private val checkMnemonicIntegrityUseCase: CheckMnemonicIntegrityUseCase,
-    private val checkAccountsOrPersonasWereCreatedWithOlympia: CheckAccountsOrPersonasWereCreatedWithOlympia
+    private val checkAccountsOrPersonasWereCreatedWithOlympia: CheckAccountsOrPersonasWereCreatedWithOlympia,
+    private val ensureBabylonFactorSourceExistUseCase: EnsureBabylonFactorSourceExistUseCase
 ) : StateViewModel<MainUiState>(), OneOffEventHandler<MainEvent> by OneOffEventHandlerImpl() {
 
     private var incomingDappRequestsJob: Job? = null
@@ -93,6 +95,8 @@ class MainViewModel @Inject constructor(
     val appNotSecureEvent = appEventBus.events.filterIsInstance<AppEvent.AppNotSecure>()
     val entitiesCreatedWithOlympiaLegacyFactorSourceEvent =
         appEventBus.events.filterIsInstance<AppEvent.EntitiesCreatedWithOlympiaLegacyFactorSource>()
+    val babylonFactorSourceDoesNotExistEvent =
+        appEventBus.events.filterIsInstance<AppEvent.BabylonFactorSourceDoesNotExist>()
     val babylonMnemonicNeedsRecoveryEvent = appEventBus.events.filterIsInstance<AppEvent.BabylonFactorSourceNeedsRecovery>()
 
     init {
@@ -213,16 +217,30 @@ class MainViewModel @Inject constructor(
     fun onAppToForeground() {
         viewModelScope.launch {
             checkMnemonicIntegrityUseCase()
-            if (!deviceSecurityHelper.isDeviceSecure()) {
+            val deviceNotSecure = deviceSecurityHelper.isDeviceSecure().not()
+            if (deviceNotSecure) {
                 appEventBus.sendEvent(AppEvent.AppNotSecure, delayMs = 500L)
             } else {
-                checkMnemonicIntegrityUseCase.babylonMnemonicNeedsRecovery()?.let { factorSourceId ->
-                    appEventBus.sendEvent(AppEvent.BabylonFactorSourceNeedsRecovery(factorSourceId), delayMs = 500L)
-                }
                 val entitiesCreatedWithOlympiaLegacyFactorSource = checkAccountsOrPersonasWereCreatedWithOlympia()
                 if (entitiesCreatedWithOlympiaLegacyFactorSource) {
                     appEventBus.sendEvent(AppEvent.EntitiesCreatedWithOlympiaLegacyFactorSource, delayMs = 500L)
+                    return@launch
                 }
+                if (ensureBabylonFactorSourceExistUseCase.babylonFactorSourceExist().not()) {
+                    appEventBus.sendEvent(AppEvent.BabylonFactorSourceDoesNotExist, delayMs = 500L)
+                    return@launch
+                }
+                checkMnemonicIntegrityUseCase.babylonMnemonicNeedsRecovery()?.let { factorSourceId ->
+                    appEventBus.sendEvent(AppEvent.BabylonFactorSourceNeedsRecovery(factorSourceId), delayMs = 500L)
+                }
+            }
+        }
+    }
+
+    suspend fun createBabylonFactorSource(deviceBiometricAuthenticationProvider: suspend () -> Boolean) {
+        viewModelScope.launch {
+            if (deviceBiometricAuthenticationProvider()) {
+                ensureBabylonFactorSourceExistUseCase()
             }
         }
     }
