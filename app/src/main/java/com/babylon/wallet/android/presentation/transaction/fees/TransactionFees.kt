@@ -16,7 +16,7 @@ data class TransactionFees(
     private val includeLockFee: Boolean = false,
     private val signersCount: Int = 0,
     private val feePaddingAmount: String? = null,
-    private val tipPercentage: BigDecimal? = null,
+    private val tipPercentage: String? = null,
     val isNetworkCongested: Boolean = false
 ) {
 
@@ -113,7 +113,7 @@ data class TransactionFees(
      */
     @Suppress("MagicNumber")
     val effectiveTip: BigDecimal
-        get() = tipPercentage?.divide(
+        get() = tipPercentageBigDecimal?.divide(
             BigDecimal(100)
         )?.multiply(
             totalExecutionCost.add(
@@ -143,6 +143,9 @@ data class TransactionFees(
             )
         )
 
+    private val tipPercentageBigDecimal: BigDecimal?
+        get() = tipPercentage?.toBigDecimalOrNull()
+
     @Suppress("MagicNumber")
     val feePaddingAmountToDisplay: String
         get() = feePaddingAmount
@@ -159,7 +162,7 @@ data class TransactionFees(
         }
 
     val tipPercentageToDisplay: String
-        get() = tipPercentage?.toPlainString() ?: "0"
+        get() = tipPercentage.orEmpty()
 
     val tipPercentageForTransaction: UShort
         get() = tipPercentage?.toLong()?.toUShort()
