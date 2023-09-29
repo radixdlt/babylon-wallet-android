@@ -162,7 +162,7 @@ data class TransactionFees(
         }
 
     val tipPercentageToDisplay: String
-        get() = tipPercentage.orEmpty()
+        get() = tipPercentage ?: "0"
 
     val tipPercentageForTransaction: UShort
         get() = tipPercentage?.toLong()?.toUShort()
