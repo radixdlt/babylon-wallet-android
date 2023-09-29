@@ -23,6 +23,7 @@ import kotlinx.coroutines.launch
 import rdx.works.core.UUIDGenerator
 import rdx.works.profile.data.model.factorsources.FactorSource
 import rdx.works.profile.data.model.factorsources.LedgerHardwareWalletFactorSource
+import rdx.works.profile.domain.EnsureBabylonFactorSourceExistUseCase
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.ledgerFactorSources
 import rdx.works.profile.domain.nextDerivationPathForAccountOnCurrentNetworkWithLedger
@@ -33,6 +34,7 @@ import javax.inject.Inject
 class CreateAccountWithLedgerViewModel @Inject constructor(
     private val getProfileUseCase: GetProfileUseCase,
     private val ledgerMessenger: LedgerMessenger,
+    private val ensureBabylonFactorSourceExistUseCase: EnsureBabylonFactorSourceExistUseCase,
     private val appEventBus: AppEventBus
 ) : StateViewModel<CreateAccountWithLedgerUiState>(),
     OneOffEventHandler<CreateAccountWithLedgerEvent> by OneOffEventHandlerImpl() {
@@ -78,7 +80,7 @@ class CreateAccountWithLedgerViewModel @Inject constructor(
         }
     }
 
-    fun onUseLedgerContinueClick() {
+    fun onUseLedgerContinueClick(deviceBiometricAuthenticationProvider: suspend () -> Boolean) {
         state.value.ledgerDevices.firstOrNull { selectableLedgerDevice ->
             selectableLedgerDevice.selected
         }?.let { ledgerFactorSource ->
@@ -90,7 +92,15 @@ class CreateAccountWithLedgerViewModel @Inject constructor(
                     }
                     return@launch
                 }
-
+                if (ensureBabylonFactorSourceExistUseCase.babylonFactorSourceExist().not()) {
+                    val authenticationResult = deviceBiometricAuthenticationProvider()
+                    if (authenticationResult) {
+                        ensureBabylonFactorSourceExistUseCase()
+                    } else {
+                        // don't move forward without babylon factor source
+                        return@launch
+                    }
+                }
                 val derivationPath = getProfileUseCase.nextDerivationPathForAccountOnCurrentNetworkWithLedger()
                 val result = ledgerMessenger.sendDerivePublicKeyRequest(
                     interactionId = UUIDGenerator.uuid().toString(),

@@ -108,8 +108,12 @@ class BackupProfileRepositoryImpl @Inject constructor(
         }
     }
 
+    /**
+     * we only back up fully initialized profile, that has Babylon Factor Source
+     */
     override suspend fun getSnapshotForBackup(backupType: BackupType): String? {
-        val profile = profileRepository.profile.firstOrNull() ?: return null
+        val profile = profileRepository.profile.firstOrNull()
+        if (profile == null || profile.babylonDeviceFactorSourceExist.not()) return null
         val snapshotSerialised = runCatching {
             profileSnapshotJson.encodeToString(profile.snapshot())
         }.getOrNull() ?: return null

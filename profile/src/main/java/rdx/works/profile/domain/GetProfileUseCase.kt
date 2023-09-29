@@ -3,6 +3,7 @@ package rdx.works.profile.domain
 import com.radixdlt.ret.Address
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapNotNull
 import rdx.works.core.PUBLIC_KEY_HASH_LENGTH
@@ -35,6 +36,10 @@ class GetProfileUseCase @Inject constructor(private val profileRepository: Profi
  */
 val GetProfileUseCase.accountsOnCurrentNetwork
     get() = invoke().map { it.currentNetwork.accounts }
+
+suspend fun GetProfileUseCase.babylonFactorSourceExist(): Boolean {
+    return invoke().map { profile -> profile.babylonDeviceFactorSourceExist }.firstOrNull() == true
+}
 
 val GetProfileUseCase.factorSources
     get() = invoke().map { profile -> profile.factorSources }

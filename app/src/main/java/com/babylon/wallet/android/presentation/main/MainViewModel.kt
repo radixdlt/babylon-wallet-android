@@ -27,6 +27,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import rdx.works.peerdroid.helpers.Result
 import rdx.works.profile.data.model.ProfileState
@@ -35,6 +36,7 @@ import rdx.works.profile.data.model.currentGateway
 import rdx.works.profile.domain.CheckMnemonicIntegrityUseCase
 import rdx.works.profile.domain.GetProfileStateUseCase
 import rdx.works.profile.domain.GetProfileUseCase
+import rdx.works.profile.domain.IsAnyEntityCreatedWithOlympiaUseCase
 import rdx.works.profile.domain.p2pLinks
 import timber.log.Timber
 import javax.inject.Inject
@@ -52,10 +54,12 @@ class MainViewModel @Inject constructor(
     getProfileStateUseCase: GetProfileStateUseCase,
     private val deviceSecurityHelper: DeviceSecurityHelper,
     private val checkMnemonicIntegrityUseCase: CheckMnemonicIntegrityUseCase,
+    private val isAnyEntityCreatedWithOlympiaUseCase: IsAnyEntityCreatedWithOlympiaUseCase
 ) : StateViewModel<MainUiState>(), OneOffEventHandler<MainEvent> by OneOffEventHandlerImpl() {
 
     private var incomingDappRequestsJob: Job? = null
     private var processingDappRequestJob: Job? = null
+    private var countdownJob: Job? = null
 
     val observeP2PLinks = getProfileUseCase
         .p2pLinks
@@ -83,6 +87,7 @@ class MainViewModel @Inject constructor(
             is ProfileState.Restored -> {
                 profileState.profile.currentGateway.network.id != Radix.Gateway.mainnet.network.id
             }
+
             else -> false
         }
     }
@@ -205,12 +210,26 @@ class MainViewModel @Inject constructor(
         _state.update { it.copy(dappVerificationError = null) }
     }
 
+    fun clearOlympiaError() {
+        _state.update { it.copy(olympiaErrorState = OlympiaErrorState.None) }
+    }
+
     fun onAppToForeground() {
         viewModelScope.launch {
             checkMnemonicIntegrityUseCase()
-            if (!deviceSecurityHelper.isDeviceSecure()) {
+            val deviceNotSecure = deviceSecurityHelper.isDeviceSecure().not()
+            if (deviceNotSecure) {
                 appEventBus.sendEvent(AppEvent.AppNotSecure, delayMs = 500L)
             } else {
+                val entitiesCreatedWithOlympiaLegacyFactorSource = isAnyEntityCreatedWithOlympiaUseCase()
+                if (entitiesCreatedWithOlympiaLegacyFactorSource) {
+                    _state.update { state ->
+                        state.copy(olympiaErrorState = OlympiaErrorState.Countdown())
+                    }
+                    countdownJob?.cancel()
+                    countdownJob = startOlympiaErrorCountdown()
+                    return@launch
+                }
                 checkMnemonicIntegrityUseCase.babylonMnemonicNeedsRecovery()?.let { factorSourceId ->
                     appEventBus.sendEvent(AppEvent.BabylonFactorSourceNeedsRecovery(factorSourceId), delayMs = 500L)
                 }
@@ -218,21 +237,44 @@ class MainViewModel @Inject constructor(
         }
     }
 
+    private fun startOlympiaErrorCountdown(): Job {
+        return viewModelScope.launch {
+            var errorState = state.value.olympiaErrorState
+            while (isActive && errorState is OlympiaErrorState.Countdown) {
+                delay(TICK_MS)
+                val newState = if (errorState.secondsLeft - 1 <= 0) {
+                    OlympiaErrorState.CanDismiss
+                } else {
+                    OlympiaErrorState.Countdown(errorState.secondsLeft - 1)
+                }
+                errorState = newState
+                _state.update { it.copy(olympiaErrorState = newState) }
+            }
+        }
+    }
+
     companion object {
         private val PEERDROID_STOP_TIMEOUT = 60.seconds
         private const val REQUEST_HANDLING_DELAY = 300L
+        private const val TICK_MS = 1000L
     }
 }
 
 sealed class MainEvent : OneOffEvent {
-
     data class IncomingRequestEvent(val request: IncomingRequest) : MainEvent()
 }
 
 data class MainUiState(
     val initialAppState: AppState = AppState.Loading,
-    val dappVerificationError: DappRequestFailure? = null
+    val dappVerificationError: DappRequestFailure? = null,
+    val olympiaErrorState: OlympiaErrorState = OlympiaErrorState.None
 ) : UiState
+
+sealed interface OlympiaErrorState {
+    data class Countdown(val secondsLeft: Int = 30) : OlympiaErrorState
+    data object CanDismiss : OlympiaErrorState
+    data object None : OlympiaErrorState
+}
 
 sealed interface AppState {
     data object OnBoarding : AppState

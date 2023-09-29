@@ -2,6 +2,7 @@
 
 package com.babylon.wallet.android.presentation.settings.appsettings.backup
 
+import android.provider.DocumentsContract
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -47,6 +48,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -74,6 +76,7 @@ import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAp
 import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
 import com.babylon.wallet.android.presentation.ui.composables.SwitchSettingsItem
+import com.babylon.wallet.android.utils.biometricAuthenticateSuspend
 import com.babylon.wallet.android.utils.formattedSpans
 import kotlinx.coroutines.launch
 import rdx.works.profile.data.model.BackupState
@@ -87,7 +90,7 @@ fun BackupScreen(
     onClose: () -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
-
+    val context = LocalContext.current
     BackupScreenContent(
         modifier = modifier,
         state = state,
@@ -114,7 +117,9 @@ fun BackupScreen(
         contract = ActivityResultContracts.CreateDocument(mimeType = "application/json")
     ) { uri ->
         if (uri != null) {
-            viewModel.onFileChosen(uri)
+            viewModel.onFileChosen(uri, deviceBiometricAuthenticationProvider = {
+                context.biometricAuthenticateSuspend()
+            })
         }
     }
 
@@ -124,6 +129,9 @@ fun BackupScreen(
                 is BackupViewModel.Event.Dismiss -> onClose()
                 is BackupViewModel.Event.ChooseExportFile -> filePickerLauncher.launch(it.fileName)
                 is BackupViewModel.Event.ProfileDeleted -> onProfileDeleted()
+                is BackupViewModel.Event.DeleteFile -> {
+                    DocumentsContract.deleteDocument(context.contentResolver, it.file)
+                }
             }
         }
     }

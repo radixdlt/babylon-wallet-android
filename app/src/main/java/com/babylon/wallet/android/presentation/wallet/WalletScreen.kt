@@ -33,6 +33,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -47,6 +48,7 @@ import com.babylon.wallet.android.domain.usecases.SecurityPromptType
 import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
+import com.babylon.wallet.android.utils.biometricAuthenticateSuspend
 import rdx.works.profile.data.model.factorsources.FactorSource.FactorSourceID
 import rdx.works.profile.data.model.pernetwork.Network
 
@@ -60,6 +62,7 @@ fun WalletScreen(
     onNavigateToMnemonicRestore: (FactorSourceID.FromHash) -> Unit,
     onAccountCreationClick: () -> Unit
 ) {
+    val context = LocalContext.current
     val walletState by viewModel.state.collectAsStateWithLifecycle()
 
     WalletContent(
@@ -72,6 +75,12 @@ fun WalletScreen(
         onMessageShown = viewModel::onMessageShown,
         onApplySecuritySettings = viewModel::onApplySecuritySettings
     )
+
+    LaunchedEffect(Unit) {
+        viewModel.babylonFactorSourceDoesNotExistEvent.collect {
+            viewModel.createBabylonFactorSource { context.biometricAuthenticateSuspend() }
+        }
+    }
 
     LaunchedEffect(Unit) {
         viewModel.oneOffEvent.collect {

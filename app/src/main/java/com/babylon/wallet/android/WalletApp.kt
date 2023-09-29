@@ -2,6 +2,7 @@ package com.babylon.wallet.android
 
 import android.content.Intent
 import android.provider.Settings
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material3.Text
@@ -26,6 +27,7 @@ import com.babylon.wallet.android.presentation.dapp.unauthorized.login.dAppLogin
 import com.babylon.wallet.android.presentation.main.MAIN_ROUTE
 import com.babylon.wallet.android.presentation.main.MainEvent
 import com.babylon.wallet.android.presentation.main.MainViewModel
+import com.babylon.wallet.android.presentation.main.OlympiaErrorState
 import com.babylon.wallet.android.presentation.navigation.NavigationHost
 import com.babylon.wallet.android.presentation.navigation.PriorityRoutes
 import com.babylon.wallet.android.presentation.onboarding.restore.mnemonics.RestoreMnemonicsArgs
@@ -49,6 +51,7 @@ fun WalletApp(
     mainViewModel: MainViewModel,
     onCloseApp: () -> Unit
 ) {
+    val context = LocalContext.current
     val state by mainViewModel.state.collectAsStateWithLifecycle()
     val navController = rememberAnimatedNavController()
     var showNotSecuredDialog by remember { mutableStateOf(false) }
@@ -99,7 +102,6 @@ fun WalletApp(
             )
         }
     }
-
     HandleStatusEvents(
         navController = navController,
         statusEvents = mainViewModel.statusEvents
@@ -110,7 +112,6 @@ fun WalletApp(
         onHighPriorityScreen = mainViewModel::onHighPriorityScreen
     )
     mainViewModel.observeP2PLinks.collectAsStateWithLifecycle(null)
-    val context = LocalContext.current
     if (showNotSecuredDialog) {
         NotSecureAlertDialog(finish = {
             if (it) {
@@ -120,6 +121,40 @@ fun WalletApp(
             showNotSecuredDialog = false
             onCloseApp()
         })
+    }
+    val olympiaErrorState = state.olympiaErrorState
+    if (olympiaErrorState != OlympiaErrorState.None) {
+        BackHandler {}
+        val confirmText = if (olympiaErrorState is OlympiaErrorState.Countdown) {
+            stringResource(id = R.string.profileOlympiaError_okCountdown, olympiaErrorState.secondsLeft)
+        } else {
+            stringResource(
+                id = R.string.common_ok
+            )
+        }
+        BasicPromptAlertDialog(
+            finish = {
+                if (state.olympiaErrorState == OlympiaErrorState.CanDismiss) {
+                    mainViewModel.clearOlympiaError()
+                }
+            },
+            title = {
+                Text(
+                    text = stringResource(id = R.string.profileOlympiaError_title),
+                    style = RadixTheme.typography.body1Header,
+                    color = RadixTheme.colors.gray1
+                )
+            },
+            text = {
+                Text(
+                    text = stringResource(id = R.string.profileOlympiaError_subtitle),
+                    style = RadixTheme.typography.body2Regular,
+                    color = RadixTheme.colors.gray1
+                )
+            },
+            confirmText = confirmText,
+            dismissText = null
+        )
     }
     state.dappVerificationError?.let {
         BasicPromptAlertDialog(

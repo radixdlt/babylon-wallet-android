@@ -5,13 +5,10 @@ import android.net.Uri
 import dagger.hilt.android.qualifiers.ApplicationContext
 import okio.buffer
 import okio.source
-import java.lang.NullPointerException
 import javax.inject.Inject
 
 interface FileRepository {
-
     fun save(toFile: Uri, data: String): Result<Unit>
-
     fun read(fromFile: Uri): Result<String>
 }
 
