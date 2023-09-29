@@ -35,6 +35,16 @@ fun Network.Account.isOlympiaAccount(): Boolean {
     }
 }
 
+fun Entity.usesCurve25519(): Boolean {
+    val unsecuredEntityControl = (securityState as? SecurityState.Unsecured)?.unsecuredEntityControl
+    return when (val virtualBadge = unsecuredEntityControl?.transactionSigning?.badge) {
+        is FactorInstance.Badge.VirtualSource.HierarchicalDeterministic -> {
+            virtualBadge.publicKey.curve == Slip10Curve.CURVE_25519
+        }
+        null -> false
+    }
+}
+
 fun Entity.factorSourceId(): FactorSource.FactorSourceID {
     return (this.securityState as SecurityState.Unsecured).unsecuredEntityControl.transactionSigning.factorSourceId
 }

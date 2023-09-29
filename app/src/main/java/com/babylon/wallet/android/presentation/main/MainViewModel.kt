@@ -32,6 +32,7 @@ import rdx.works.peerdroid.helpers.Result
 import rdx.works.profile.data.model.ProfileState
 import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.data.model.currentGateway
+import rdx.works.profile.domain.CheckAccountsOrPersonasWereCreatedWithOlympia
 import rdx.works.profile.domain.CheckMnemonicIntegrityUseCase
 import rdx.works.profile.domain.GetProfileStateUseCase
 import rdx.works.profile.domain.GetProfileUseCase
@@ -52,6 +53,7 @@ class MainViewModel @Inject constructor(
     getProfileStateUseCase: GetProfileStateUseCase,
     private val deviceSecurityHelper: DeviceSecurityHelper,
     private val checkMnemonicIntegrityUseCase: CheckMnemonicIntegrityUseCase,
+    private val checkAccountsOrPersonasWereCreatedWithOlympia: CheckAccountsOrPersonasWereCreatedWithOlympia
 ) : StateViewModel<MainUiState>(), OneOffEventHandler<MainEvent> by OneOffEventHandlerImpl() {
 
     private var incomingDappRequestsJob: Job? = null
@@ -83,11 +85,14 @@ class MainViewModel @Inject constructor(
             is ProfileState.Restored -> {
                 profileState.profile.currentGateway.network.id != Radix.Gateway.mainnet.network.id
             }
+
             else -> false
         }
     }
 
     val appNotSecureEvent = appEventBus.events.filterIsInstance<AppEvent.AppNotSecure>()
+    val entitiesCreatedWithOlympiaLegacyFactorSourceEvent =
+        appEventBus.events.filterIsInstance<AppEvent.EntitiesCreatedWithOlympiaLegacyFactorSource>()
     val babylonMnemonicNeedsRecoveryEvent = appEventBus.events.filterIsInstance<AppEvent.BabylonFactorSourceNeedsRecovery>()
 
     init {
@@ -213,6 +218,10 @@ class MainViewModel @Inject constructor(
             } else {
                 checkMnemonicIntegrityUseCase.babylonMnemonicNeedsRecovery()?.let { factorSourceId ->
                     appEventBus.sendEvent(AppEvent.BabylonFactorSourceNeedsRecovery(factorSourceId), delayMs = 500L)
+                }
+                val entitiesCreatedWithOlympiaLegacyFactorSource = checkAccountsOrPersonasWereCreatedWithOlympia()
+                if (entitiesCreatedWithOlympiaLegacyFactorSource) {
+                    appEventBus.sendEvent(AppEvent.EntitiesCreatedWithOlympiaLegacyFactorSource, delayMs = 500L)
                 }
             }
         }

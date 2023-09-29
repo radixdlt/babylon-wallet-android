@@ -52,6 +52,7 @@ fun WalletApp(
     val state by mainViewModel.state.collectAsStateWithLifecycle()
     val navController = rememberAnimatedNavController()
     var showNotSecuredDialog by remember { mutableStateOf(false) }
+    var showEntitiesCreatedWithOlympiaLegacyFactorSourceDialog by remember { mutableStateOf(false) }
     NavigationHost(
         modifier = modifier,
         startDestination = MAIN_ROUTE,
@@ -90,6 +91,11 @@ fun WalletApp(
         }
     }
     LaunchedEffect(Unit) {
+        mainViewModel.entitiesCreatedWithOlympiaLegacyFactorSourceEvent.collect {
+            showEntitiesCreatedWithOlympiaLegacyFactorSourceDialog = true
+        }
+    }
+    LaunchedEffect(Unit) {
         mainViewModel.babylonMnemonicNeedsRecoveryEvent.collect {
             navController.restoreMnemonics(
                 args = RestoreMnemonicsArgs.RestoreSpecificMnemonic(
@@ -120,6 +126,31 @@ fun WalletApp(
             showNotSecuredDialog = false
             onCloseApp()
         })
+    }
+    if (showEntitiesCreatedWithOlympiaLegacyFactorSourceDialog) {
+        BasicPromptAlertDialog(
+            finish = {
+                onCloseApp()
+            },
+            title = {
+                Text(
+                    text = stringResource(id = R.string.profileOlympiaError_title),
+                    style = RadixTheme.typography.body1Header,
+                    color = RadixTheme.colors.gray1
+                )
+            },
+            text = {
+                Text(
+                    text = stringResource(id = R.string.profileOlympiaError_subtitle),
+                    style = RadixTheme.typography.body2Regular,
+                    color = RadixTheme.colors.gray1
+                )
+            },
+            confirmText = stringResource(
+                id = R.string.common_ok
+            ),
+            dismissText = null
+        )
     }
     state.dappVerificationError?.let {
         BasicPromptAlertDialog(

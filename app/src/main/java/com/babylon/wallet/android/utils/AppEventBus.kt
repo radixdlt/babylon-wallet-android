@@ -23,9 +23,10 @@ class AppEventBus @Inject constructor() {
 }
 
 sealed interface AppEvent {
-    object AppNotSecure : AppEvent
-    object GotFreeXrd : AppEvent
-    object RestoredMnemonic : AppEvent
+    data object AppNotSecure : AppEvent
+    data object GotFreeXrd : AppEvent
+    data object RestoredMnemonic : AppEvent
+    data object EntitiesCreatedWithOlympiaLegacyFactorSource : AppEvent
     data class BabylonFactorSourceNeedsRecovery(val factorSourceID: FactorSource.FactorSourceID.FromHash) : AppEvent
     data class DerivedAccountPublicKeyWithLedger(
         val factorSourceID: FactorSource.FactorSourceID.FromHash,
