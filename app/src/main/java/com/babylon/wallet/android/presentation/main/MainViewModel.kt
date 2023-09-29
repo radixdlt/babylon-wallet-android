@@ -241,6 +241,9 @@ class MainViewModel @Inject constructor(
         viewModelScope.launch {
             if (deviceBiometricAuthenticationProvider()) {
                 ensureBabylonFactorSourceExistUseCase()
+            } else {
+                //force user to authenticate until we can create Babylon Factor source
+                appEventBus.sendEvent(AppEvent.BabylonFactorSourceDoesNotExist)
             }
         }
     }
