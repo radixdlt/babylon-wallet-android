@@ -14,6 +14,7 @@ import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
+import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEvent.GotFreeXrd
 import com.babylon.wallet.android.utils.AppEvent.RestoredMnemonic
 import com.babylon.wallet.android.utils.AppEvent.Status
@@ -23,6 +24,7 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.profile.data.model.factorsources.FactorSource
@@ -31,6 +33,7 @@ import rdx.works.profile.data.model.factorsources.FactorSourceKind
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.data.utils.factorSourceId
 import rdx.works.profile.data.utils.isOlympiaAccount
+import rdx.works.profile.domain.EnsureBabylonFactorSourceExistUseCase
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.accountOnCurrentNetwork
 import rdx.works.profile.domain.accountsOnCurrentNetwork
@@ -45,6 +48,7 @@ class WalletViewModel @Inject constructor(
     private val getProfileUseCase: GetProfileUseCase,
     private val getAccountsForSecurityPromptUseCase: GetAccountsForSecurityPromptUseCase,
     private val appEventBus: AppEventBus,
+    private val ensureBabylonFactorSourceExistUseCase: EnsureBabylonFactorSourceExistUseCase,
     getBackupStateUseCase: GetBackupStateUseCase
 ) : StateViewModel<WalletUiState>(), OneOffEventHandler<WalletEvent> by OneOffEventHandlerImpl() {
 
@@ -56,13 +60,33 @@ class WalletViewModel @Inject constructor(
         refreshFlow
     ) { accounts, _ -> accounts }
 
+    val babylonFactorSourceDoesNotExistEvent =
+        appEventBus.events.filterIsInstance<AppEvent.BabylonFactorSourceDoesNotExist>()
+
     init {
+        viewModelScope.launch {
+            if (ensureBabylonFactorSourceExistUseCase.babylonFactorSourceExist().not()) {
+                appEventBus.sendEvent(AppEvent.BabylonFactorSourceDoesNotExist, delayMs = 500L)
+                return@launch
+            }
+        }
         observeAccounts()
         observeDeviceFactorSources()
         observePrompts()
         observeProfileBackupState(getBackupStateUseCase)
         observeGlobalAppEvents()
         loadResources(withRefresh = false)
+    }
+
+    suspend fun createBabylonFactorSource(deviceBiometricAuthenticationProvider: suspend () -> Boolean) {
+        viewModelScope.launch {
+            if (deviceBiometricAuthenticationProvider()) {
+                ensureBabylonFactorSourceExistUseCase()
+            } else {
+                // force user to authenticate until we can create Babylon Factor source
+                appEventBus.sendEvent(AppEvent.BabylonFactorSourceDoesNotExist)
+            }
+        }
     }
 
     private fun observeAccounts() {
@@ -76,14 +100,12 @@ class WalletViewModel @Inject constructor(
                     accounts = accounts,
                     isNftItemDataNeeded = false,
                     isRefreshing = _state.value.isRefreshing
-                )
-                    .onValue { resources ->
-                        _state.update { it.onResourcesReceived(resources) }
-                    }
-                    .onError { error ->
-                        _state.update { it.onResourcesError(error) }
-                        Timber.w(error)
-                    }
+                ).onValue { resources ->
+                    _state.update { it.onResourcesReceived(resources) }
+                }.onError { error ->
+                    _state.update { it.onResourcesError(error) }
+                    Timber.w(error)
+                }
             }
         }
     }
@@ -108,10 +130,9 @@ class WalletViewModel @Inject constructor(
 
     private fun observeProfileBackupState(getBackupStateUseCase: GetBackupStateUseCase) {
         viewModelScope.launch {
-            getBackupStateUseCase()
-                .collect { backupState ->
-                    _state.update { it.copy(isSettingsWarningVisible = backupState.isWarningVisible) }
-                }
+            getBackupStateUseCase().collect { backupState ->
+                _state.update { it.copy(isSettingsWarningVisible = backupState.isWarningVisible) }
+            }
         }
     }
 
@@ -140,8 +161,8 @@ class WalletViewModel @Inject constructor(
 
     fun onApplySecuritySettings(account: Network.Account, securityPromptType: SecurityPromptType) {
         viewModelScope.launch {
-            val factorSourceId = getProfileUseCase.accountOnCurrentNetwork(account.address)
-                ?.factorSourceId() as? FactorSourceID.FromHash ?: return@launch
+            val factorSourceId =
+                getProfileUseCase.accountOnCurrentNetwork(account.address)?.factorSourceId() as? FactorSourceID.FromHash ?: return@launch
 
             when (securityPromptType) {
                 SecurityPromptType.NEEDS_BACKUP -> sendEvent(WalletEvent.NavigateToMnemonicBackup(factorSourceId))
@@ -250,9 +271,6 @@ data class WalletUiState(
     )
 
     enum class AccountTag {
-        LEDGER_BABYLON,
-        DAPP_DEFINITION,
-        LEDGER_LEGACY,
-        LEGACY_SOFTWARE
+        LEDGER_BABYLON, DAPP_DEFINITION, LEDGER_LEGACY, LEGACY_SOFTWARE
     }
 }

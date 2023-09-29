@@ -5,7 +5,7 @@ import rdx.works.profile.data.utils.factorSourceId
 import rdx.works.profile.data.utils.usesCurve25519
 import javax.inject.Inject
 
-class CheckAccountsOrPersonasWereCreatedWithOlympia @Inject constructor(
+class IsAnyEntityCreatedWithOlympiaUseCase @Inject constructor(
     private val getProfileUseCase: GetProfileUseCase
 ) {
 
@@ -18,6 +18,6 @@ class CheckAccountsOrPersonasWereCreatedWithOlympia @Inject constructor(
         }?.map { it.id }.orEmpty()
         val accountsCreatedWithOlympia = accounts.count { it.usesCurve25519() && olympiaFactorSourceIds.contains(it.factorSourceId()) }
         val personasCreatedWithOlympia = personas.count { it.usesCurve25519() && olympiaFactorSourceIds.contains(it.factorSourceId()) }
-        return accountsCreatedWithOlympia > 0 || personasCreatedWithOlympia > 0
+        return true // accountsCreatedWithOlympia > 0 || personasCreatedWithOlympia > 0
     }
 }

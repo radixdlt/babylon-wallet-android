@@ -27,16 +27,16 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import rdx.works.peerdroid.helpers.Result
 import rdx.works.profile.data.model.ProfileState
 import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.data.model.currentGateway
-import rdx.works.profile.domain.CheckAccountsOrPersonasWereCreatedWithOlympia
 import rdx.works.profile.domain.CheckMnemonicIntegrityUseCase
-import rdx.works.profile.domain.EnsureBabylonFactorSourceExistUseCase
 import rdx.works.profile.domain.GetProfileStateUseCase
 import rdx.works.profile.domain.GetProfileUseCase
+import rdx.works.profile.domain.IsAnyEntityCreatedWithOlympiaUseCase
 import rdx.works.profile.domain.p2pLinks
 import timber.log.Timber
 import javax.inject.Inject
@@ -54,12 +54,13 @@ class MainViewModel @Inject constructor(
     getProfileStateUseCase: GetProfileStateUseCase,
     private val deviceSecurityHelper: DeviceSecurityHelper,
     private val checkMnemonicIntegrityUseCase: CheckMnemonicIntegrityUseCase,
-    private val checkAccountsOrPersonasWereCreatedWithOlympia: CheckAccountsOrPersonasWereCreatedWithOlympia,
-    private val ensureBabylonFactorSourceExistUseCase: EnsureBabylonFactorSourceExistUseCase
+    private val isAnyEntityCreatedWithOlympiaUseCase: IsAnyEntityCreatedWithOlympiaUseCase
 ) : StateViewModel<MainUiState>(), OneOffEventHandler<MainEvent> by OneOffEventHandlerImpl() {
 
     private var incomingDappRequestsJob: Job? = null
     private var processingDappRequestJob: Job? = null
+    private var countdownJob: Job? = null
+    private var tickMs = 1000L
 
     val observeP2PLinks = getProfileUseCase
         .p2pLinks
@@ -93,10 +94,6 @@ class MainViewModel @Inject constructor(
     }
 
     val appNotSecureEvent = appEventBus.events.filterIsInstance<AppEvent.AppNotSecure>()
-    val entitiesCreatedWithOlympiaLegacyFactorSourceEvent =
-        appEventBus.events.filterIsInstance<AppEvent.EntitiesCreatedWithOlympiaLegacyFactorSource>()
-    val babylonFactorSourceDoesNotExistEvent =
-        appEventBus.events.filterIsInstance<AppEvent.BabylonFactorSourceDoesNotExist>()
     val babylonMnemonicNeedsRecoveryEvent = appEventBus.events.filterIsInstance<AppEvent.BabylonFactorSourceNeedsRecovery>()
 
     init {
@@ -214,6 +211,10 @@ class MainViewModel @Inject constructor(
         _state.update { it.copy(dappVerificationError = null) }
     }
 
+    fun clearOlympiaError() {
+        _state.update { it.copy(olympiaErrorState = OlympiaErrorState.None) }
+    }
+
     fun onAppToForeground() {
         viewModelScope.launch {
             checkMnemonicIntegrityUseCase()
@@ -221,13 +222,13 @@ class MainViewModel @Inject constructor(
             if (deviceNotSecure) {
                 appEventBus.sendEvent(AppEvent.AppNotSecure, delayMs = 500L)
             } else {
-                val entitiesCreatedWithOlympiaLegacyFactorSource = checkAccountsOrPersonasWereCreatedWithOlympia()
+                val entitiesCreatedWithOlympiaLegacyFactorSource = isAnyEntityCreatedWithOlympiaUseCase()
                 if (entitiesCreatedWithOlympiaLegacyFactorSource) {
-                    appEventBus.sendEvent(AppEvent.EntitiesCreatedWithOlympiaLegacyFactorSource, delayMs = 500L)
-                    return@launch
-                }
-                if (ensureBabylonFactorSourceExistUseCase.babylonFactorSourceExist().not()) {
-                    appEventBus.sendEvent(AppEvent.BabylonFactorSourceDoesNotExist, delayMs = 500L)
+                    _state.update { state ->
+                        state.copy(olympiaErrorState = OlympiaErrorState.Countdown())
+                    }
+                    countdownJob?.cancel()
+                    countdownJob = startOlympiaErrorCountdown()
                     return@launch
                 }
                 checkMnemonicIntegrityUseCase.babylonMnemonicNeedsRecovery()?.let { factorSourceId ->
@@ -237,13 +238,18 @@ class MainViewModel @Inject constructor(
         }
     }
 
-    suspend fun createBabylonFactorSource(deviceBiometricAuthenticationProvider: suspend () -> Boolean) {
-        viewModelScope.launch {
-            if (deviceBiometricAuthenticationProvider()) {
-                ensureBabylonFactorSourceExistUseCase()
-            } else {
-                //force user to authenticate until we can create Babylon Factor source
-                appEventBus.sendEvent(AppEvent.BabylonFactorSourceDoesNotExist)
+    private fun startOlympiaErrorCountdown(): Job {
+        return viewModelScope.launch {
+            var errorState = state.value.olympiaErrorState
+            while (isActive && errorState is OlympiaErrorState.Countdown) {
+                delay(tickMs)
+                val newState = if (errorState.secondsLeft - 1 <= 0) {
+                    OlympiaErrorState.CanDismiss
+                } else {
+                    OlympiaErrorState.Countdown(errorState.secondsLeft - 1)
+                }
+                errorState = newState
+                _state.update { it.copy(olympiaErrorState = newState) }
             }
         }
     }
@@ -255,14 +261,20 @@ class MainViewModel @Inject constructor(
 }
 
 sealed class MainEvent : OneOffEvent {
-
     data class IncomingRequestEvent(val request: IncomingRequest) : MainEvent()
 }
 
 data class MainUiState(
     val initialAppState: AppState = AppState.Loading,
-    val dappVerificationError: DappRequestFailure? = null
+    val dappVerificationError: DappRequestFailure? = null,
+    val olympiaErrorState: OlympiaErrorState = OlympiaErrorState.None
 ) : UiState
+
+sealed interface OlympiaErrorState {
+    data class Countdown(val secondsLeft: Int = 30) : OlympiaErrorState
+    data object CanDismiss : OlympiaErrorState
+    data object None : OlympiaErrorState
+}
 
 sealed interface AppState {
     data object OnBoarding : AppState

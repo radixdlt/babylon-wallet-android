@@ -2,6 +2,7 @@ package com.babylon.wallet.android
 
 import android.content.Intent
 import android.provider.Settings
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material3.Text
@@ -26,6 +27,7 @@ import com.babylon.wallet.android.presentation.dapp.unauthorized.login.dAppLogin
 import com.babylon.wallet.android.presentation.main.MAIN_ROUTE
 import com.babylon.wallet.android.presentation.main.MainEvent
 import com.babylon.wallet.android.presentation.main.MainViewModel
+import com.babylon.wallet.android.presentation.main.OlympiaErrorState
 import com.babylon.wallet.android.presentation.navigation.NavigationHost
 import com.babylon.wallet.android.presentation.navigation.PriorityRoutes
 import com.babylon.wallet.android.presentation.onboarding.restore.mnemonics.RestoreMnemonicsArgs
@@ -37,7 +39,6 @@ import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDi
 import com.babylon.wallet.android.presentation.ui.composables.LocalDevBannerState
 import com.babylon.wallet.android.presentation.ui.composables.NotSecureAlertDialog
 import com.babylon.wallet.android.utils.AppEvent
-import com.babylon.wallet.android.utils.biometricAuthenticateSuspend
 import com.google.accompanist.navigation.animation.rememberAnimatedNavController
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import kotlinx.coroutines.flow.Flow
@@ -54,7 +55,6 @@ fun WalletApp(
     val state by mainViewModel.state.collectAsStateWithLifecycle()
     val navController = rememberAnimatedNavController()
     var showNotSecuredDialog by remember { mutableStateOf(false) }
-    var showEntitiesCreatedWithOlympiaLegacyFactorSourceDialog by remember { mutableStateOf(false) }
     NavigationHost(
         modifier = modifier,
         startDestination = MAIN_ROUTE,
@@ -93,11 +93,6 @@ fun WalletApp(
         }
     }
     LaunchedEffect(Unit) {
-        mainViewModel.entitiesCreatedWithOlympiaLegacyFactorSourceEvent.collect {
-            showEntitiesCreatedWithOlympiaLegacyFactorSourceDialog = true
-        }
-    }
-    LaunchedEffect(Unit) {
         mainViewModel.babylonMnemonicNeedsRecoveryEvent.collect {
             navController.restoreMnemonics(
                 args = RestoreMnemonicsArgs.RestoreSpecificMnemonic(
@@ -107,12 +102,6 @@ fun WalletApp(
             )
         }
     }
-    LaunchedEffect(Unit) {
-        mainViewModel.babylonFactorSourceDoesNotExistEvent.collect {
-            mainViewModel.createBabylonFactorSource({ context.biometricAuthenticateSuspend() })
-        }
-    }
-
     HandleStatusEvents(
         navController = navController,
         statusEvents = mainViewModel.statusEvents
@@ -133,10 +122,21 @@ fun WalletApp(
             onCloseApp()
         })
     }
-    if (showEntitiesCreatedWithOlympiaLegacyFactorSourceDialog) {
+    val olympiaErrorState = state.olympiaErrorState
+    if (olympiaErrorState != OlympiaErrorState.None) {
+        BackHandler {}
+        val confirmText = if (olympiaErrorState is OlympiaErrorState.Countdown) {
+            stringResource(id = R.string.profileOlympiaError_okCountdown, olympiaErrorState.secondsLeft)
+        } else {
+            stringResource(
+                id = R.string.common_ok
+            )
+        }
         BasicPromptAlertDialog(
             finish = {
-                onCloseApp()
+                if (state.olympiaErrorState == OlympiaErrorState.CanDismiss) {
+                    mainViewModel.clearOlympiaError()
+                }
             },
             title = {
                 Text(
@@ -152,9 +152,7 @@ fun WalletApp(
                     color = RadixTheme.colors.gray1
                 )
             },
-            confirmText = stringResource(
-                id = R.string.common_ok
-            ),
+            confirmText = confirmText,
             dismissText = null
         )
     }
