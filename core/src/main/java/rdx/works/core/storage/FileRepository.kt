@@ -8,11 +8,8 @@ import okio.source
 import javax.inject.Inject
 
 interface FileRepository {
-
     fun save(toFile: Uri, data: String): Result<Unit>
-
     fun read(fromFile: Uri): Result<String>
-    fun delete(file: Uri): Result<Unit>
 }
 
 class FileRepositoryImpl @Inject constructor(
@@ -38,19 +35,6 @@ class FileRepositoryImpl @Inject constructor(
             } ?: return Result.failure(NullPointerException("File not found"))
 
             Result.success(fileContent)
-        } catch (exception: Exception) {
-            Result.failure(exception)
-        }
-    }
-
-    override fun delete(file: Uri): Result<Unit> {
-        return try {
-            val deletedCount = context.contentResolver.delete(file, null, null)
-            return if (deletedCount == 1) {
-                Result.success(Unit)
-            } else {
-                Result.failure(Exception("File does not exist"))
-            }
         } catch (exception: Exception) {
             Result.failure(exception)
         }

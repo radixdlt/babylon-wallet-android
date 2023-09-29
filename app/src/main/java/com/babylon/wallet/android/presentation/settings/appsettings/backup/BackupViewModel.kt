@@ -118,7 +118,7 @@ class BackupViewModel @Inject constructor(
                 ensureBabylonFactorSourceExistUseCase()
             } else {
                 Timber.w("Trying to back up profile without Babylon FS, should not happen!")
-                backupProfileToFileUseCase.deleteFile(uri)
+                sendEvent(Event.DeleteFile(uri))
                 // don't backup without Babylon Factor source!
                 return@launch
             }
@@ -171,7 +171,7 @@ class BackupViewModel @Inject constructor(
             get() = encryptSheet is EncryptSheet.Open
 
         sealed interface EncryptSheet {
-            object Closed : EncryptSheet
+            data object Closed : EncryptSheet
             data class Open(
                 val password: String = "",
                 val isPasswordRevealed: Boolean = false,
@@ -194,8 +194,9 @@ class BackupViewModel @Inject constructor(
     }
 
     sealed interface Event : OneOffEvent {
-        object Dismiss : Event
-        object ProfileDeleted : Event
+        data object Dismiss : Event
+        data object ProfileDeleted : Event
         data class ChooseExportFile(val fileName: String) : Event
+        data class DeleteFile(val file: Uri) : Event
     }
 }

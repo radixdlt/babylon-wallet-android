@@ -2,6 +2,7 @@
 
 package com.babylon.wallet.android.presentation.settings.appsettings.backup
 
+import android.provider.DocumentsContract
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -128,6 +129,9 @@ fun BackupScreen(
                 is BackupViewModel.Event.Dismiss -> onClose()
                 is BackupViewModel.Event.ChooseExportFile -> filePickerLauncher.launch(it.fileName)
                 is BackupViewModel.Event.ProfileDeleted -> onProfileDeleted()
+                is BackupViewModel.Event.DeleteFile -> {
+                    DocumentsContract.deleteDocument(context.contentResolver, it.file)
+                }
             }
         }
     }
