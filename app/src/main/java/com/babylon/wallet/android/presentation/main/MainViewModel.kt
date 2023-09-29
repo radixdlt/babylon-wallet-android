@@ -60,7 +60,6 @@ class MainViewModel @Inject constructor(
     private var incomingDappRequestsJob: Job? = null
     private var processingDappRequestJob: Job? = null
     private var countdownJob: Job? = null
-    private var tickMs = 1000L
 
     val observeP2PLinks = getProfileUseCase
         .p2pLinks
@@ -242,7 +241,7 @@ class MainViewModel @Inject constructor(
         return viewModelScope.launch {
             var errorState = state.value.olympiaErrorState
             while (isActive && errorState is OlympiaErrorState.Countdown) {
-                delay(tickMs)
+                delay(TICK_MS)
                 val newState = if (errorState.secondsLeft - 1 <= 0) {
                     OlympiaErrorState.CanDismiss
                 } else {
@@ -257,6 +256,7 @@ class MainViewModel @Inject constructor(
     companion object {
         private val PEERDROID_STOP_TIMEOUT = 60.seconds
         private const val REQUEST_HANDLING_DELAY = 300L
+        private const val TICK_MS = 1000L
     }
 }
 

@@ -26,6 +26,7 @@ import kotlinx.coroutines.test.runTest
 import org.junit.Test
 import rdx.works.profile.data.model.BackupState
 import rdx.works.profile.data.model.currentNetwork
+import rdx.works.profile.domain.EnsureBabylonFactorSourceExistUseCase
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.backup.GetBackupStateUseCase
 import java.math.BigDecimal
@@ -37,6 +38,7 @@ class WalletViewModelTest : StateViewModelTest<WalletViewModel>() {
     private val getBackupStateUseCase = mockk<GetBackupStateUseCase>()
     private val getProfileUseCase = mockk<GetProfileUseCase>()
     private val getAccountsForSecurityPromptUseCase = mockk<GetAccountsForSecurityPromptUseCase>()
+    private val ensureBabylonFactorSourceExistUseCase = mockk<EnsureBabylonFactorSourceExistUseCase>()
     private val appEventBus = mockk<AppEventBus>()
 
     private val sampleProfile = profile(accounts = listOf(account(address = "adr_1", name = "primary")))
@@ -51,11 +53,13 @@ class WalletViewModelTest : StateViewModelTest<WalletViewModel>() {
         getProfileUseCase,
         getAccountsForSecurityPromptUseCase,
         appEventBus,
+        ensureBabylonFactorSourceExistUseCase,
         getBackupStateUseCase
     )
 
     override fun setUp() {
         super.setUp()
+        coEvery { ensureBabylonFactorSourceExistUseCase.babylonFactorSourceExist() } returns true
         every { getAccountsForSecurityPromptUseCase() } returns flow { emit(emptyList()) }
         every { getBackupStateUseCase() } returns flowOf(BackupState.Closed)
         every { getProfileUseCase() } returns flowOf(sampleProfile)

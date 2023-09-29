@@ -18,6 +18,6 @@ class IsAnyEntityCreatedWithOlympiaUseCase @Inject constructor(
         }?.map { it.id }.orEmpty()
         val accountsCreatedWithOlympia = accounts.count { it.usesCurve25519() && olympiaFactorSourceIds.contains(it.factorSourceId()) }
         val personasCreatedWithOlympia = personas.count { it.usesCurve25519() && olympiaFactorSourceIds.contains(it.factorSourceId()) }
-        return true // accountsCreatedWithOlympia > 0 || personasCreatedWithOlympia > 0
+        return accountsCreatedWithOlympia > 0 || personasCreatedWithOlympia > 0
     }
 }
