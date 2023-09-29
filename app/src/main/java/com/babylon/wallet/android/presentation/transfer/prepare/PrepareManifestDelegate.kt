@@ -134,8 +134,10 @@ class PrepareManifestDelegate(
         val isUserAccount = targetAccount.isUserAccount
         // TODO Temporary revert of checking if the receiving account is a ledger account
         val isSoftwareAccount = true // !targetAccount.isLedgerAccount
+
+        // Accounts' mnemonic that does not need recovery
         val mnemonicHasBeenImported = targetAccount.factorSourceId?.let {
-            mnemonicRepository.mnemonicExist(it)
+            mnemonicRepository.mnemonicExist(it).not()
         } ?: false
 
         // We use deposit instruction only for owned software accounts that mnemonic doesnt need recovery
