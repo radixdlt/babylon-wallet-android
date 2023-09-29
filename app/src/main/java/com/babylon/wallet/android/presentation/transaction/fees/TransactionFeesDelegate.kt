@@ -65,7 +65,7 @@ class TransactionFeesDelegate(
         state.update { state ->
             state.copy(
                 transactionFees = transactionFees.copy(
-                    tipPercentage = tipPercentage.toBigDecimalOrNull()
+                    tipPercentage = tipPercentage
                 )
             )
         }
