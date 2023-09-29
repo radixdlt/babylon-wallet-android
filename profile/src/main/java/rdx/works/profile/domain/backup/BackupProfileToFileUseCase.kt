@@ -16,4 +16,8 @@ class BackupProfileToFileUseCase @Inject constructor(
         )
         return fileRepository.save(toFile = file, data = snapshot)
     }
+
+    fun deleteFile(file: Uri) {
+        fileRepository.delete(file)
+    }
 }

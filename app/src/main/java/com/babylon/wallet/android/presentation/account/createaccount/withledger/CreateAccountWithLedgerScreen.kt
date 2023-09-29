@@ -13,6 +13,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -31,6 +32,7 @@ import com.babylon.wallet.android.presentation.ui.composables.BackIconType
 import com.babylon.wallet.android.presentation.ui.composables.ChooseLedgerDeviceSection
 import com.babylon.wallet.android.presentation.ui.composables.LinkConnectorScreen
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
+import com.babylon.wallet.android.utils.biometricAuthenticateSuspend
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.launch
@@ -45,6 +47,7 @@ fun CreateAccountWithLedgerScreen(
     modifier: Modifier = Modifier,
     goBackToCreateAccount: () -> Unit,
 ) {
+    val context = LocalContext.current
     val state by viewModel.state.collectAsStateWithLifecycle()
     val addLedgerDeviceState by addLedgerDeviceViewModel.state.collectAsStateWithLifecycle()
     val addLinkConnectorState by addLinkConnectorViewModel.state.collectAsStateWithLifecycle()
@@ -66,7 +69,11 @@ fun CreateAccountWithLedgerScreen(
                 ledgerDevices = state.ledgerDevices,
                 onLedgerDeviceSelected = viewModel::onLedgerDeviceSelected,
                 onAddLedgerDeviceClick = viewModel::onAddLedgerDeviceClick,
-                onUseLedgerContinueClick = viewModel::onUseLedgerContinueClick
+                onUseLedgerContinueClick = {
+                    viewModel.onUseLedgerContinueClick(deviceBiometricAuthenticationProvider = {
+                        context.biometricAuthenticateSuspend()
+                    })
+                }
             )
         }
 

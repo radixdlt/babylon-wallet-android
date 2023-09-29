@@ -31,4 +31,8 @@ class EnsureBabylonFactorSourceExistUseCase @Inject constructor(
         profileRepository.saveProfile(updatedProfile)
         return updatedProfile
     }
+
+    suspend fun babylonFactorSourceExist(): Boolean {
+        return profileRepository.profile.first().babylonDeviceFactorSourceExist
+    }
 }

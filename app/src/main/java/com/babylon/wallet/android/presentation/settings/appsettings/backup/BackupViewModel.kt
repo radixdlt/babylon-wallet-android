@@ -15,22 +15,20 @@ import kotlinx.coroutines.launch
 import rdx.works.profile.data.model.BackupState
 import rdx.works.profile.domain.DeleteProfileUseCase
 import rdx.works.profile.domain.EnsureBabylonFactorSourceExistUseCase
-import rdx.works.profile.domain.GetProfileUseCase
-import rdx.works.profile.domain.babylonFactorSourceExist
 import rdx.works.profile.domain.backup.BackupProfileToFileUseCase
 import rdx.works.profile.domain.backup.BackupType
 import rdx.works.profile.domain.backup.ChangeBackupSettingUseCase
 import rdx.works.profile.domain.backup.GetBackupStateUseCase
+import timber.log.Timber
 import javax.inject.Inject
 
-@Suppress("TooManyFunctions", "LongParameterList")
+@Suppress("TooManyFunctions")
 @HiltViewModel
 class BackupViewModel @Inject constructor(
     private val changeBackupSettingUseCase: ChangeBackupSettingUseCase,
     private val backupProfileToFileUseCase: BackupProfileToFileUseCase,
     private val deleteProfileUseCase: DeleteProfileUseCase,
     private val peerdroidClient: PeerdroidClient,
-    private val getProfileUseCase: GetProfileUseCase,
     private val ensureBabylonFactorSourceExistUseCase: EnsureBabylonFactorSourceExistUseCase,
     getBackupStateUseCase: GetBackupStateUseCase
 ) : StateViewModel<BackupViewModel.State>(), OneOffEventHandler<BackupViewModel.Event> by OneOffEventHandlerImpl() {
@@ -114,11 +112,13 @@ class BackupViewModel @Inject constructor(
             is State.EncryptSheet.Closed -> BackupType.File.PlainText
             is State.EncryptSheet.Open -> BackupType.File.Encrypted(sheet.password)
         }
-        if (getProfileUseCase.babylonFactorSourceExist().not()) {
+        if (ensureBabylonFactorSourceExistUseCase.babylonFactorSourceExist().not()) {
             val authenticationResult = deviceBiometricAuthenticationProvider()
             if (authenticationResult) {
                 ensureBabylonFactorSourceExistUseCase()
             } else {
+                Timber.w("Trying to back up profile without Babylon FS, should not happen!")
+                backupProfileToFileUseCase.deleteFile(uri)
                 // don't backup without Babylon Factor source!
                 return@launch
             }
