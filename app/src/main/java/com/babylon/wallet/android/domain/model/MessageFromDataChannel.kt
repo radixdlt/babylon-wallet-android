@@ -79,8 +79,8 @@ sealed interface MessageFromDataChannel {
 
             sealed interface AuthRequest {
                 sealed class LoginRequest : AuthRequest {
-                    data class WithChallenge(val challenge: String) : LoginRequest()
-                    object WithoutChallenge : LoginRequest()
+                    data class WithChallenge(val challenge: HexCoded32Bytes) : LoginRequest()
+                    data object WithoutChallenge : LoginRequest()
                 }
 
                 data class UsePersonaRequest(val personaAddress: String) : AuthRequest
@@ -133,7 +133,7 @@ sealed interface MessageFromDataChannel {
         data class AccountsRequestItem(
             val isOngoing: Boolean,
             val numberOfValues: NumberOfValues,
-            val challenge: String?
+            val challenge: HexCoded32Bytes?
         ) {
 
             fun isValidRequestItem(): Boolean {
@@ -237,7 +237,11 @@ sealed interface MessageFromDataChannel {
 
     data object ParsingError : MessageFromDataChannel
 
-    data object Error : MessageFromDataChannel
+    sealed interface Error : MessageFromDataChannel {
+        data object DappRequest : Error
+        data object LedgerResponse : Error
+        data object Unknown : Error
+    }
 }
 
 fun MessageFromDataChannel.IncomingRequest.NumberOfValues.toProfileShareAccountsQuantifier(): RequestedNumber.Quantifier {

@@ -1,5 +1,6 @@
 package com.babylon.wallet.android.data.dapp.model
 
+import com.babylon.wallet.android.domain.RadixWalletException
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel.LedgerResponse
 import kotlinx.serialization.KSerializer
@@ -156,13 +157,18 @@ fun List<DerivedPublicKey>.toDomainModel() = map { derivedPublicKey ->
     derivedPublicKey.toDomainModel()
 }
 
+@Suppress("SwallowedException")
 fun LedgerInteractionResponse.toDomainModel(): MessageFromDataChannel {
-    return when (this) {
-        is DerivePublicKeyResponse -> toDomainModel()
-        is GetDeviceInfoResponse -> toDomainModel()
-        is SignChallengeResponse -> toDomainModel()
-        is SignTransactionResponse -> toDomainModel()
-        is DeriveAndDisplayAddressResponse -> toDomainModel()
+    try {
+        return when (this) {
+            is DerivePublicKeyResponse -> toDomainModel()
+            is GetDeviceInfoResponse -> toDomainModel()
+            is SignChallengeResponse -> toDomainModel()
+            is SignTransactionResponse -> toDomainModel()
+            is DeriveAndDisplayAddressResponse -> toDomainModel()
+        }
+    } catch (e: Exception) {
+        throw RadixWalletException.ErrorParsingLedgerResponse
     }
 }
 

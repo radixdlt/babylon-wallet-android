@@ -13,6 +13,7 @@ sealed class DappRequestFailure(msg: String? = null) : Exception(msg.orEmpty()) 
     data object InvalidRequest : DappRequestFailure()
     data object UnacceptableManifest : DappRequestFailure()
     data object InvalidPersona : DappRequestFailure()
+    data object InvalidRequestChallenge : DappRequestFailure("Invalid challenge in dApp request")
     data class FailedToSignAuthChallenge(val msg: String = "") : DappRequestFailure(msg)
     data class WrongNetwork(val currentNetworkId: Int, val requestNetworkId: Int) : DappRequestFailure()
 
@@ -80,6 +81,7 @@ sealed class DappRequestFailure(msg: String? = null) : Exception(msg.orEmpty()) 
             is LedgerCommunicationFailure.FailedToDeriveAndDisplayAddress -> WalletErrorType.InvalidRequest
             DappVerificationFailure.ClaimedEntityAddressNotPresent -> WalletErrorType.WrongAccountType
             UnacceptableManifest -> WalletErrorType.FailedToPrepareTransaction
+            is InvalidRequestChallenge -> WalletErrorType.InvalidRequest
         }
     }
 
@@ -105,7 +107,7 @@ sealed class DappRequestFailure(msg: String? = null) : Exception(msg.orEmpty()) 
             DappVerificationFailure.UnknownWebsite -> R.string.dAppRequest_validationOutcome_devExplanationInvalidOrigin
             DappVerificationFailure.WrongAccountType -> R.string.dAppRequest_validationOutcome_devExplanationInvalidDappDefinitionAddress
             InvalidPersona -> R.string.error_dappRequest_invalidPersonaId
-            InvalidRequest -> R.string.error_dappRequest_invalidRequest
+            InvalidRequest -> R.string.dAppRequest_validationOutcome_invalidRequestMessage
             TransactionApprovalFailure.CompileTransactionIntent -> R.string.error_transactionFailure_prepare
             TransactionApprovalFailure.SignCompiledTransactionIntent -> R.string.error_transactionFailure_prepare
             LedgerCommunicationFailure.FailedToDerivePublicKeys -> R.string.common_somethingWentWrong // TODO consider different copy
@@ -119,6 +121,7 @@ sealed class DappRequestFailure(msg: String? = null) : Exception(msg.orEmpty()) 
             is LedgerCommunicationFailure.FailedToDeriveAndDisplayAddress -> R.string.common_somethingWentWrong
             DappVerificationFailure.ClaimedEntityAddressNotPresent -> R.string.common_somethingWentWrong // TODO consider different copy
             UnacceptableManifest -> R.string.transactionReview_unacceptableManifest_rejected
+            is InvalidRequestChallenge -> R.string.dAppRequest_requestMalformedAlert_message
         }
     }
 
