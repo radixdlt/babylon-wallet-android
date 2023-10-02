@@ -124,7 +124,7 @@ fun WalletInteraction.toDomainModel(remoteConnectorId: String): MessageFromDataC
             }
         }
     } catch (e: Exception) {
-        throw RadixWalletException.ErrorParsingIncomingRequest
+        throw RadixWalletException.ErrorParsingIncomingRequest(e)
     }
 }
 
