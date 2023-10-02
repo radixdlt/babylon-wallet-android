@@ -139,7 +139,7 @@ class PrepareManifestDelegate(
 
             val isAccountAbleToSign = targetAccount.factorSourceId?.let {
                 it.kind == FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET ||
-                        (it.kind == FactorSourceKind.DEVICE && mnemonicRepository.mnemonicExist(it))
+                    (it.kind == FactorSourceKind.DEVICE && mnemonicRepository.mnemonicExist(it))
             } ?: false
 
             // we want to use try_deposit_or_abort for account that we are not controlling and are not able to sign tx
