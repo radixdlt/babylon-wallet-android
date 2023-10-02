@@ -16,6 +16,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
 import rdx.works.core.ret.BabylonManifestBuilder
 import rdx.works.core.ret.buildSafely
+import rdx.works.profile.data.model.factorsources.FactorSourceKind
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.data.repository.MnemonicRepository
 import timber.log.Timber
@@ -130,28 +131,30 @@ class PrepareManifestDelegate(
         }
     }
 
-    private suspend fun BabylonManifestBuilder.deposit(targetAccount: TargetAccount, bucket: ManifestBuilderBucket) = apply {
-        val isUserAccount = targetAccount.isUserAccount
-        // TODO Temporary revert of checking if the receiving account is a ledger account
-        val isSoftwareAccount = true // !targetAccount.isLedgerAccount
-        val mnemonicHasBeenImported = targetAccount.factorSourceId?.let {
-            mnemonicRepository.mnemonicExist(it)
-        } ?: false
+    private suspend fun BabylonManifestBuilder.deposit(targetAccount: TargetAccount, bucket: ManifestBuilderBucket) =
+        apply {
+            val isUserAccount = targetAccount.isUserAccount
+            // TODO Temporary revert of checking if the receiving account is a ledger account
+            val isSoftwareAccount = true // !targetAccount.isLedgerAccount
 
-        // We use deposit instruction only for owned software accounts that mnemonic doesnt need recovery
-        // or in other words mnemonic for this account has been imported
-        if (isUserAccount && isSoftwareAccount && mnemonicHasBeenImported) {
-            accountDeposit(
-                toAddress = Address(targetAccount.address),
-                fromBucket = bucket
-            )
-        } else {
-            accountTryDepositOrAbort(
-                toAddress = Address(targetAccount.address),
-                fromBucket = bucket
-            )
+            val isAccountAbleToSign = targetAccount.factorSourceId?.let {
+                it.kind == FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET ||
+                    (it.kind == FactorSourceKind.DEVICE && mnemonicRepository.mnemonicExist(it))
+            } ?: false
+
+            // we want to use try_deposit_or_abort for account that we are not controlling and are not able to sign tx
+            if (isUserAccount && isSoftwareAccount && isAccountAbleToSign) {
+                accountDeposit(
+                    toAddress = Address(targetAccount.address),
+                    fromBucket = bucket
+                )
+            } else {
+                accountTryDepositOrAbort(
+                    toAddress = Address(targetAccount.address),
+                    fromBucket = bucket
+                )
+            }
         }
-    }
 
     /**
      * Sums all the amount needed to be withdrawn for each fungible
