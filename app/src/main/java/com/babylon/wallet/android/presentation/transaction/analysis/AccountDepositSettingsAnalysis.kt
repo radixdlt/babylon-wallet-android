@@ -16,7 +16,7 @@ suspend fun TransactionType.AccountDepositSettings.resolve(
     getProfileUseCase: GetProfileUseCase,
     getResourcesUseCase: GetResourcesUseCase
 ): PreviewType {
-    val involvedAccountAddresses = defaultDepositRuleChanges.keys + resourcePreferenceChanges.keys + defaultDepositRuleChanges.keys
+    val involvedAccountAddresses = defaultDepositRuleChanges.keys + resourcePreferenceChanges.keys + authorizedDepositorsChanges.keys
     val involvedAccounts = getProfileUseCase.accountsOnCurrentNetwork().filter { involvedAccountAddresses.contains(it.address) }
     val result = involvedAccounts.map { involvedAccount ->
         val defaultDepositRule = defaultDepositRuleChanges[involvedAccount.address]
