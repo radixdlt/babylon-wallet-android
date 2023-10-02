@@ -105,9 +105,7 @@ fun TransactionReviewScreen(
         onFeePaddingAmountChanged = viewModel::onFeePaddingAmountChanged,
         onTipPercentageChanged = viewModel::onTipPercentageChanged,
         onViewDefaultModeClick = viewModel::onViewDefaultModeClick,
-        onViewAdvancedModeClick = viewModel::onViewAdvancedModeClick,
-        noFeePayerSelected = state.noFeePayerSelected,
-        insufficientBalanceToPayTheFee = state.insufficientBalanceToPayTheFee
+        onViewAdvancedModeClick = viewModel::onViewAdvancedModeClick
     )
 
     state.interactionState?.let {
@@ -166,9 +164,7 @@ private fun TransactionPreviewContent(
     onFeePaddingAmountChanged: (String) -> Unit,
     onTipPercentageChanged: (String) -> Unit,
     onViewDefaultModeClick: () -> Unit,
-    onViewAdvancedModeClick: () -> Unit,
-    noFeePayerSelected: Boolean,
-    insufficientBalanceToPayTheFee: Boolean
+    onViewAdvancedModeClick: () -> Unit
 ) {
     val modalBottomSheetState = rememberModalBottomSheetState(
         initialValue = ModalBottomSheetValue.Hidden,
@@ -202,7 +198,7 @@ private fun TransactionPreviewContent(
                 modifier = Modifier.navigationBarsPadding(),
                 sheetState = state.sheetState,
                 transactionFees = state.transactionFees,
-                insufficientBalanceToPayTheFee = state.feePayerSearchResult?.insufficientBalanceToPayTheFee ?: false,
+                insufficientBalanceToPayTheFee = state.isBalanceInsufficientToPayTheFee,
                 onGuaranteesCloseClick = onGuaranteesCloseClick,
                 onGuaranteesApplyClick = onGuaranteesApplyClick,
                 onGuaranteeValueChanged = onGuaranteeValueChanged,
@@ -262,8 +258,8 @@ private fun TransactionPreviewContent(
                             ReceiptEdge(modifier = Modifier.fillMaxWidth(), color = RadixTheme.colors.gray5)
                             NetworkFeeContent(
                                 fees = state.transactionFees,
-                                noFeePayerSelected = noFeePayerSelected,
-                                insufficientBalanceToPayTheFee = insufficientBalanceToPayTheFee,
+                                noFeePayerSelected = state.noFeePayerSelected,
+                                insufficientBalanceToPayTheFee = state.isBalanceInsufficientToPayTheFee,
                                 onCustomizeClick = onCustomizeClick
                             )
                             SlideToSignButton(
@@ -319,8 +315,8 @@ private fun TransactionPreviewContent(
                             }
                             NetworkFeeContent(
                                 fees = state.transactionFees,
-                                noFeePayerSelected = noFeePayerSelected,
-                                insufficientBalanceToPayTheFee = insufficientBalanceToPayTheFee,
+                                noFeePayerSelected = state.noFeePayerSelected,
+                                insufficientBalanceToPayTheFee = state.isBalanceInsufficientToPayTheFee,
                                 onCustomizeClick = onCustomizeClick
                             )
                             SlideToSignButton(
@@ -487,9 +483,7 @@ fun TransactionPreviewContentPreview() {
             onFeePaddingAmountChanged = {},
             onTipPercentageChanged = {},
             onViewDefaultModeClick = {},
-            onViewAdvancedModeClick = {},
-            noFeePayerSelected = false,
-            insufficientBalanceToPayTheFee = false,
+            onViewAdvancedModeClick = {}
         )
     }
 }
