@@ -13,24 +13,38 @@ import androidx.navigation.navArgument
 import com.google.accompanist.navigation.animation.composable
 
 @VisibleForTesting
-internal const val ARG_ADDRESS = "arg_address"
+internal const val ARG_ACCOUNT_SETTINGS_ADDRESS = "arg_account_settings_address"
+internal const val ARG_ACCOUNT_SETTINGS_NAME = "arg_account_settings_name"
 
-internal class AccountSettingsArgs(val address: String) {
-    constructor(savedStateHandle: SavedStateHandle) : this(checkNotNull(savedStateHandle[ARG_ADDRESS]) as String)
+internal class AccountSettingsArgs(
+    val address: String,
+    val name: String
+) {
+    constructor(savedStateHandle: SavedStateHandle) : this(
+        checkNotNull(savedStateHandle[ARG_ACCOUNT_SETTINGS_ADDRESS]) as String,
+        checkNotNull(savedStateHandle[ARG_ACCOUNT_SETTINGS_NAME]) as String
+    )
 }
 
-fun NavController.accountSettings(address: String) {
-    navigate("account_settings_route/$address") {
+fun NavController.accountSettings(
+    address: String,
+    name: String
+) {
+    navigate("account_settings_route/$address/$name") {
         launchSingleTop
     }
 }
 
 @OptIn(ExperimentalAnimationApi::class)
-fun NavGraphBuilder.accountSettings(onBackClick: () -> Unit, onSettingClick: (AccountSettingItem, String) -> Unit) {
+fun NavGraphBuilder.accountSettings(
+    onBackClick: () -> Unit,
+    onAccountSettingItemClick: (AccountSettingItem, address: String) -> Unit
+) {
     composable(
-        route = "account_settings_route/{$ARG_ADDRESS}",
+        route = "account_settings_route/{$ARG_ACCOUNT_SETTINGS_ADDRESS}/{$ARG_ACCOUNT_SETTINGS_NAME}",
         arguments = listOf(
-            navArgument(ARG_ADDRESS) { type = NavType.StringType }
+            navArgument(ARG_ACCOUNT_SETTINGS_ADDRESS) { type = NavType.StringType },
+            navArgument(ARG_ACCOUNT_SETTINGS_NAME) { type = NavType.StringType }
         ),
         enterTransition = {
             slideIntoContainer(AnimatedContentScope.SlideDirection.Up)
@@ -48,7 +62,7 @@ fun NavGraphBuilder.accountSettings(onBackClick: () -> Unit, onSettingClick: (Ac
         AccountSettingsScreen(
             viewModel = hiltViewModel(),
             onBackClick = onBackClick,
-            onSettingClick = onSettingClick
+            onSettingItemClick = onAccountSettingItemClick
         )
     }
 }
