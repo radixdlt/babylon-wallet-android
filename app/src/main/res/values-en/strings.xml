@@ -75,6 +75,7 @@
   <string name="accountSettings_loadingPrompt">This may take several seconds, please wait for completion</string>
   <string name="accountSettings_renameAccount_title">Rename Account</string>
   <string name="accountSettings_renameAccount_subtitle">Enter a new label for this Account</string>
+  <string name="accountSettings_renameAccount_button">Update</string>
   <string name="accountSettings_accountColor_text">Select the color for this Account</string>
   <string name="accountSettings_accountColor_selected">Selected</string>
   <string name="accountSettings_hideAccount_title">Hide This Account</string>
