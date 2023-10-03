@@ -2,6 +2,8 @@ package rdx.works.profile.domain.backup
 
 import rdx.works.core.InstantGenerator
 import rdx.works.core.preferences.PreferencesManager
+import rdx.works.profile.data.model.apppreferences.Radix
+import rdx.works.profile.data.model.apppreferences.changeGateway
 import rdx.works.profile.data.repository.BackupProfileRepository
 import rdx.works.profile.data.repository.DeviceInfoRepository
 import rdx.works.profile.data.repository.ProfileRepository
@@ -15,7 +17,8 @@ class RestoreProfileFromBackupUseCase @Inject constructor(
 ) {
 
     suspend operator fun invoke(backupType: BackupType) {
-        val profile = backupProfileRepository.getTemporaryRestoringProfile(backupType)
+        // always restore backup on mainnet
+        val profile = backupProfileRepository.getTemporaryRestoringProfile(backupType)?.changeGateway(Radix.Gateway.mainnet)
 
         if (profile != null) {
             val newDeviceName = deviceInfoRepository.getDeviceInfo().displayName
