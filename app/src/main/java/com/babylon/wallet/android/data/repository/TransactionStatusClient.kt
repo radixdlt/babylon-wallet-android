@@ -3,6 +3,8 @@ package com.babylon.wallet.android.data.repository
 import com.babylon.wallet.android.data.dapp.model.TransactionType
 import com.babylon.wallet.android.di.coroutines.ApplicationScope
 import com.babylon.wallet.android.domain.usecases.transaction.PollTransactionStatusUseCase
+import com.babylon.wallet.android.utils.AppEvent
+import com.babylon.wallet.android.utils.AppEventBus
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -20,6 +22,7 @@ import javax.inject.Singleton
 @Singleton
 class TransactionStatusClient @Inject constructor(
     private val pollTransactionStatusUseCase: PollTransactionStatusUseCase,
+    private val appEventBus: AppEventBus,
     @ApplicationScope private val appScope: CoroutineScope
 ) {
 
@@ -43,6 +46,9 @@ class TransactionStatusClient @Inject constructor(
     fun pollTransactionStatus(txID: String, requestId: String, transactionType: TransactionType = TransactionType.Generic) {
         appScope.launch {
             val pollResult = pollTransactionStatusUseCase(txID, requestId, transactionType)
+            pollResult.result.onSuccess {
+                appEventBus.sendEvent(AppEvent.RefreshResourcesNeeded)
+            }
             updateTransactionStatus(pollResult)
         }
     }

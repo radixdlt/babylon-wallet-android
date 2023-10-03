@@ -57,7 +57,7 @@ class AccountViewModel @Inject constructor(
 
         viewModelScope.launch {
             appEventBus.events.filter { event ->
-                event is AppEvent.GotFreeXrd || event is AppEvent.Status.Transaction.Success || event is AppEvent.RestoredMnemonic
+                event is AppEvent.RefreshResourcesNeeded || event is AppEvent.RestoredMnemonic
             }.collect {
                 refresh(fetchNewData = it !is AppEvent.RestoredMnemonic)
             }

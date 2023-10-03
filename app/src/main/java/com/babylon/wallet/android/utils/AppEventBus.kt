@@ -24,7 +24,7 @@ class AppEventBus @Inject constructor() {
 
 sealed interface AppEvent {
     data object AppNotSecure : AppEvent
-    data object GotFreeXrd : AppEvent
+    data object RefreshResourcesNeeded : AppEvent
     data object RestoredMnemonic : AppEvent
     data object BabylonFactorSourceDoesNotExist : AppEvent
     data class BabylonFactorSourceNeedsRecovery(val factorSourceID: FactorSource.FactorSourceID.FromHash) : AppEvent
