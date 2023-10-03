@@ -95,6 +95,7 @@ fun AccountSettingsScreen(
                         accountNameChanged = state.accountNameChanged,
                         onNewAccountNameChange = viewModel::onRenameAccountNameChange,
                         isNewNameValid = state.isNewNameValid,
+                        isNewNameLengthMoreThanTheMaximum = state.isNewNameLengthMoreThanTheMaximum,
                         onRenameAccountNameClick = {
                             viewModel.onRenameAccountNameConfirm()
                             scope.launch {
@@ -320,6 +321,7 @@ private fun RenameAccountSheet(
     accountNameChanged: String,
     onNewAccountNameChange: (String) -> Unit,
     isNewNameValid: Boolean,
+    isNewNameLengthMoreThanTheMaximum: Boolean,
     onRenameAccountNameClick: () -> Unit,
     onClose: () -> Unit
 ) {
@@ -363,7 +365,12 @@ private fun RenameAccountSheet(
                 .padding(horizontal = RadixTheme.dimensions.paddingXLarge),
             onValueChanged = onNewAccountNameChange,
             value = accountNameChanged,
-            singleLine = true
+            singleLine = true,
+            error = if (isNewNameLengthMoreThanTheMaximum) {
+                "Account label too long"
+            } else {
+                null
+            }
         )
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXXLarge))
         RadixPrimaryButton(
@@ -440,6 +447,7 @@ fun RenameAccountSheetPreview() {
         RenameAccountSheet(
             accountNameChanged = "updated",
             isNewNameValid = true,
+            isNewNameLengthMoreThanTheMaximum = false,
             onNewAccountNameChange = {},
             onRenameAccountNameClick = {},
             onClose = {}

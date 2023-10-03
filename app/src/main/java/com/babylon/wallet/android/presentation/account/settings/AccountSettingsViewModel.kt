@@ -55,7 +55,7 @@ class AccountSettingsViewModel @Inject constructor(
     private var createAndUploadAuthKeyJob: Job? = null
 
     override fun initialState(): AccountPreferenceUiState = AccountPreferenceUiState(
-        accountAddress = args.address
+        accountAddress = args.address,
     )
 
     init {
@@ -113,7 +113,8 @@ class AccountSettingsViewModel @Inject constructor(
         _state.update { accountPreferenceUiState ->
             accountPreferenceUiState.copy(
                 accountNameChanged = accountNameChanged,
-                isNewNameValid = accountNameChanged.isNotBlank() && accountNameChanged.count() <= ACCOUNT_NAME_MAX_LENGTH
+                isNewNameValid = accountNameChanged.isNotBlank() && accountNameChanged.count() <= ACCOUNT_NAME_MAX_LENGTH,
+                isNewNameLengthMoreThanTheMaximum = accountNameChanged.count() > ACCOUNT_NAME_MAX_LENGTH
             )
         }
     }
@@ -224,6 +225,7 @@ data class AccountPreferenceUiState(
     val accountName: String = "",
     val accountNameChanged: String = "",
     val isNewNameValid: Boolean = false,
+    val isNewNameLengthMoreThanTheMaximum: Boolean = false,
     val faucetState: FaucetState = FaucetState.Unavailable,
     val isFreeXRDLoading: Boolean = false,
     val isLoading: Boolean = false,
