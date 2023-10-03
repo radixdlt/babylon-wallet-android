@@ -21,9 +21,9 @@ class TransactionFeesDelegate(
             }
         } else {
             state.value.feePayerSearchResult?.let { feePayerResult ->
-                if (feePayerResult.feePayerAddressFromManifest != null) {
+                if (feePayerResult.feePayerAddress != null) {
                     // Candidate selected
-                    getProfileUseCase.accountOnCurrentNetwork(withAddress = feePayerResult.feePayerAddressFromManifest)
+                    getProfileUseCase.accountOnCurrentNetwork(withAddress = feePayerResult.feePayerAddress)
                         ?.let { feePayerCandidate ->
                             state.update { state ->
                                 state.candidateSelectedState(feePayerCandidate)

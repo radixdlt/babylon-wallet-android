@@ -239,7 +239,7 @@ class TransactionClient @Inject constructor(
             if (withdrawnFromCandidate != null) {
                 return Result.success(
                     FeePayerSearchResult(
-                        feePayerAddressFromManifest = withdrawnFromCandidate,
+                        feePayerAddress = withdrawnFromCandidate,
                         candidates = candidates
                     )
                 )
@@ -255,7 +255,7 @@ class TransactionClient @Inject constructor(
             if (depositedIntoCandidate != null) {
                 return Result.success(
                     FeePayerSearchResult(
-                        feePayerAddressFromManifest = depositedIntoCandidate,
+                        feePayerAddress = depositedIntoCandidate,
                         candidates = candidates
                     )
                 )
@@ -271,7 +271,7 @@ class TransactionClient @Inject constructor(
             if (requiringAuthCandidate != null) {
                 return Result.success(
                     FeePayerSearchResult(
-                        feePayerAddressFromManifest = requiringAuthCandidate,
+                        feePayerAddress = requiringAuthCandidate,
                         candidates = candidates
                     )
                 )

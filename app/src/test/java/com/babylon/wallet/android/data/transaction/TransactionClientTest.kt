@@ -77,7 +77,7 @@ internal class TransactionClientTest {
             val addressToLockFee = transactionClient.findFeePayerInManifest(
                 manifest,
                 TransactionConfig.DEFAULT_LOCK_FEE.toBigDecimal()
-            ).getOrThrow().feePayerAddressFromManifest
+            ).getOrThrow().feePayerAddress
             manifest = manifest.addLockFeeInstructionToManifest(addressToLockFee!!, TransactionConfig.DEFAULT_LOCK_FEE.toBigDecimal())
             val signingEntities = transactionClient.getSigningEntities(manifest)
             Assert.assertEquals(1, signingEntities.size)
@@ -97,7 +97,7 @@ internal class TransactionClientTest {
                 manifest,
                 TransactionConfig.DEFAULT_LOCK_FEE.toBigDecimal()
             ).getOrThrow()
-            assert(addressToLockFee.feePayerAddressFromManifest != null)
+            assert(addressToLockFee.feePayerAddress != null)
             assert(addressToLockFee.candidates.size == 2)
         }
 
@@ -109,7 +109,7 @@ internal class TransactionClientTest {
             manifest,
             TransactionConfig.DEFAULT_LOCK_FEE.toBigDecimal()
         ).getOrNull()
-        assert(feePayerResult?.feePayerAddressFromManifest == null)
+        assert(feePayerResult?.feePayerAddress == null)
         assert(feePayerResult?.candidates?.size == 2)
     }
 

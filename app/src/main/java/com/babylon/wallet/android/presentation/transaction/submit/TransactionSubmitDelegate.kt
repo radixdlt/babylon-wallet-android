@@ -100,10 +100,10 @@ class TransactionSubmitDelegate(
     ) {
         state.value.feePayerSearchResult?.let { feePayerResult ->
             state.update { it.copy(isSubmitting = false) }
-            if (feePayerResult.feePayerAddressFromManifest != null) {
+            if (feePayerResult.feePayerAddress != null) {
                 signAndSubmit(
                     transactionRequest = state.value.request,
-                    feePayerAddress = feePayerResult.feePayerAddressFromManifest,
+                    feePayerAddress = feePayerResult.feePayerAddress,
                     manifest = manifest,
                     deviceBiometricAuthenticationProvider = deviceBiometricAuthenticationProvider
                 )
