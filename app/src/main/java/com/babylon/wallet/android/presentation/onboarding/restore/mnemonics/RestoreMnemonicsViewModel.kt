@@ -16,6 +16,8 @@ import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.profile.data.model.MnemonicWithPassphrase
+import rdx.works.profile.data.model.apppreferences.Radix
+import rdx.works.profile.data.model.apppreferences.changeGateway
 import rdx.works.profile.data.model.currentNetwork
 import rdx.works.profile.data.model.factorsources.DeviceFactorSource
 import rdx.works.profile.data.model.pernetwork.Network
@@ -53,7 +55,7 @@ class RestoreMnemonicsViewModel @Inject constructor(
         viewModelScope.launch {
             val factorSources = when (args) {
                 is RestoreMnemonicsArgs.RestoreProfile -> {
-                    val profile = getTemporaryRestoringProfileForBackupUseCase(args.backupType)
+                    val profile = getTemporaryRestoringProfileForBackupUseCase(args.backupType)?.changeGateway(Radix.Gateway.mainnet)
                     val allAccounts = profile?.currentNetwork?.accounts.orEmpty()
 
                     profile?.factorSources
@@ -232,8 +234,8 @@ class RestoreMnemonicsViewModel @Inject constructor(
 
     sealed interface Event : OneOffEvent {
         data class FinishRestoration(val isMovingToMain: Boolean) : Event
-        object CloseApp : Event
-        object MoveToNextWord : Event
+        data object CloseApp : Event
+        data object MoveToNextWord : Event
     }
 }
 
