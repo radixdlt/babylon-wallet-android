@@ -186,7 +186,7 @@ class ImportLegacyWalletViewModel @Inject constructor(
                         currentPage = nextPage,
                         olympiaAccountsToImport = data.accountData
                             .map {
-                                // truncate the name, max 20 chars
+                                // truncate the name, max 30 chars
                                 it.copy(accountName = it.accountName.take(ACCOUNT_NAME_MAX_LENGTH))
                             }
                             .toPersistentList(),
