@@ -28,7 +28,7 @@ import com.babylon.wallet.android.presentation.incompatibleprofile.ROUTE_INCOMPA
 import com.babylon.wallet.android.presentation.main.MAIN_ROUTE
 import com.babylon.wallet.android.presentation.main.MainUiState
 import com.babylon.wallet.android.presentation.main.main
-import com.babylon.wallet.android.presentation.navigation.Screen.Companion.ARG_ACCOUNT_ID
+import com.babylon.wallet.android.presentation.navigation.Screen.Companion.ARG_ACCOUNT_ADDRESS
 import com.babylon.wallet.android.presentation.onboarding.OnboardingScreen
 import com.babylon.wallet.android.presentation.onboarding.eula.eulaScreen
 import com.babylon.wallet.android.presentation.onboarding.eula.navigateToEulaScreen
@@ -144,9 +144,9 @@ fun NavigationHost(
             },
         )
         composable(
-            route = Screen.AccountDestination.route + "/{$ARG_ACCOUNT_ID}",
+            route = Screen.AccountDestination.route + "/{$ARG_ACCOUNT_ADDRESS}",
             arguments = listOf(
-                navArgument(ARG_ACCOUNT_ID) { type = NavType.StringType }
+                navArgument(ARG_ACCOUNT_ADDRESS) { type = NavType.StringType }
             )
         ) {
             AccountScreen(
