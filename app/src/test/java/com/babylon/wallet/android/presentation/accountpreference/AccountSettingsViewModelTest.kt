@@ -8,7 +8,6 @@ import com.babylon.wallet.android.domain.usecases.FaucetState
 import com.babylon.wallet.android.domain.usecases.GetFreeXrdUseCase
 import com.babylon.wallet.android.presentation.StateViewModelTest
 import com.babylon.wallet.android.presentation.account.settings.ARG_ACCOUNT_SETTINGS_ADDRESS
-import com.babylon.wallet.android.presentation.account.settings.ARG_ACCOUNT_SETTINGS_NAME
 import com.babylon.wallet.android.presentation.account.settings.AccountSettingsViewModel
 import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
@@ -71,7 +70,6 @@ internal class AccountSettingsViewModelTest : StateViewModelTest<AccountSettings
         every { getProfileUseCase() } returns flowOf(sampleDataProvider.sampleProfile())
         coEvery { getFreeXrdUseCase(any()) } returns Result.success(sampleTxId)
         every { savedStateHandle.get<String>(ARG_ACCOUNT_SETTINGS_ADDRESS) } returns sampleAddress
-        every { savedStateHandle.get<String>(ARG_ACCOUNT_SETTINGS_NAME) } returns "name"
         coEvery { eventBus.sendEvent(any()) } just Runs
         every { rolaClient.signingState } returns emptyFlow()
     }
