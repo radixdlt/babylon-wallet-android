@@ -80,6 +80,14 @@ suspend fun GetProfileUseCase.accountOnCurrentNetwork(
     account.address == withAddress
 }
 
+fun GetProfileUseCase.accountOnCurrentNetworkWithAddress(
+    address: String
+) = accountsOnCurrentNetwork.map { accounts ->
+    accounts.firstOrNull { account ->
+        account.address == address
+    }
+}
+
 suspend fun GetProfileUseCase.nextDerivationPathForAccountOnCurrentNetworkWithLedger(): DerivationPath {
     val profile = invoke().first()
     val currentNetwork = requireNotNull(profile.currentNetwork.knownNetworkId)
