@@ -1,7 +1,4 @@
-@file:OptIn(
-    ExperimentalFoundationApi::class,
-    ExperimentalMaterialApi::class
-)
+@file:OptIn(ExperimentalFoundationApi::class, ExperimentalMaterialApi::class)
 
 package com.babylon.wallet.android.presentation.account
 
