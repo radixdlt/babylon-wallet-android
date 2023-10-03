@@ -11,7 +11,7 @@ import com.babylon.wallet.android.presentation.settings.SettingsItem.TopLevelSet
 import com.babylon.wallet.android.presentation.settings.SettingsItem.TopLevelSettings.ImportOlympiaWallet
 import com.babylon.wallet.android.presentation.settings.SettingsItem.TopLevelSettings.LinkToConnector
 import com.babylon.wallet.android.presentation.settings.SettingsItem.TopLevelSettings.Personas
-import com.babylon.wallet.android.utils.AppConstants
+import com.babylon.wallet.android.utils.Constants
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toPersistentList
@@ -58,7 +58,7 @@ class SettingsViewModel @Inject constructor(
         SettingsUiState(mutated.toPersistentList())
     }.stateIn(
         viewModelScope,
-        SharingStarted.WhileSubscribed(AppConstants.VM_STOP_TIMEOUT_MS),
+        SharingStarted.WhileSubscribed(Constants.VM_STOP_TIMEOUT_MS),
         SettingsUiState(defaultSettings.toPersistentList())
     )
 

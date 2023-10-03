@@ -8,9 +8,9 @@ import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiState
-import com.babylon.wallet.android.utils.AppConstants.ACCOUNT_NAME_MAX_LENGTH
 import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
+import com.babylon.wallet.android.utils.Constants.ACCOUNT_NAME_MAX_LENGTH
 import com.babylon.wallet.android.utils.decodeUtf8
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.filterIsInstance
