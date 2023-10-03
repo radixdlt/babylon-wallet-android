@@ -54,9 +54,7 @@ class AccountSettingsViewModel @Inject constructor(
     private var createAndUploadAuthKeyJob: Job? = null
 
     override fun initialState(): AccountPreferenceUiState = AccountPreferenceUiState(
-        accountAddress = args.address,
-        accountName = args.name,
-        accountNameChanged = args.name,
+        accountAddress = args.address
     )
 
     init {
@@ -81,6 +79,8 @@ class AccountSettingsViewModel @Inject constructor(
                 .collect { account ->
                     _state.update {
                         it.copy(
+                            accountName = account.displayName,
+                            accountNameChanged = account.displayName,
                             account = account,
                             hasAuthKey = account.hasAuthSigning()
                         )
@@ -220,7 +220,7 @@ data class AccountPreferenceUiState(
     val settingsSections: ImmutableList<AccountSettingsSection> = defaultSettings,
     val account: Network.Account? = null,
     val accountAddress: String,
-    val accountName: String,
+    val accountName: String = "",
     val accountNameChanged: String = "",
     val isNewNameValid: Boolean = false,
     val faucetState: FaucetState = FaucetState.Unavailable,

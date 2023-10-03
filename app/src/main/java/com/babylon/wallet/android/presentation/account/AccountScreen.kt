@@ -105,7 +105,7 @@ import rdx.works.profile.data.model.factorsources.FactorSource
 @Composable
 fun AccountScreen(
     viewModel: AccountViewModel,
-    onAccountPreferenceClick: (address: String, name: String) -> Unit,
+    onAccountPreferenceClick: (address: String) -> Unit,
     modifier: Modifier = Modifier,
     onBackClick: () -> Unit,
     onNavigateToMnemonicBackup: (FactorSource.FactorSourceID.FromHash) -> Unit,
@@ -130,8 +130,8 @@ fun AccountScreen(
     AccountScreenContent(
         modifier = modifier,
         state = state,
-        onAccountPreferenceClick = { address, name ->
-            onAccountPreferenceClick(address, name)
+        onAccountPreferenceClick = { address ->
+            onAccountPreferenceClick(address)
         },
         onBackClick = onBackClick,
         onRefresh = viewModel::refresh,
@@ -151,7 +151,7 @@ fun AccountScreen(
 private fun AccountScreenContent(
     modifier: Modifier = Modifier,
     state: AccountUiState,
-    onAccountPreferenceClick: (address: String, name: String) -> Unit,
+    onAccountPreferenceClick: (address: String) -> Unit,
     onBackClick: () -> Unit,
     onRefresh: () -> Unit,
     onHistoryClick: () -> Unit,
@@ -244,10 +244,7 @@ private fun AccountScreenContent(
                         Spacer(modifier = Modifier.weight(1f))
                         IconButton(
                             onClick = {
-                                onAccountPreferenceClick(
-                                    state.accountWithResources?.account?.address.orEmpty(),
-                                    state.accountWithResources?.account?.displayName.orEmpty()
-                                )
+                                onAccountPreferenceClick(state.accountWithResources?.account?.address.orEmpty())
                             }
                         ) {
                             Icon(
@@ -624,7 +621,7 @@ fun AccountContentPreview() {
                         ),
                     )
                 ),
-                onAccountPreferenceClick = { _, _ -> },
+                onAccountPreferenceClick = { _ -> },
                 onBackClick = {},
                 onRefresh = {},
                 onHistoryClick = {},

@@ -14,23 +14,19 @@ import com.google.accompanist.navigation.animation.composable
 
 @VisibleForTesting
 internal const val ARG_ACCOUNT_SETTINGS_ADDRESS = "arg_account_settings_address"
-internal const val ARG_ACCOUNT_SETTINGS_NAME = "arg_account_settings_name"
 
 internal class AccountSettingsArgs(
-    val address: String,
-    val name: String
+    val address: String
 ) {
     constructor(savedStateHandle: SavedStateHandle) : this(
-        checkNotNull(savedStateHandle[ARG_ACCOUNT_SETTINGS_ADDRESS]) as String,
-        checkNotNull(savedStateHandle[ARG_ACCOUNT_SETTINGS_NAME]) as String
+        checkNotNull(savedStateHandle[ARG_ACCOUNT_SETTINGS_ADDRESS]) as String
     )
 }
 
 fun NavController.accountSettings(
-    address: String,
-    name: String
+    address: String
 ) {
-    navigate("account_settings_route/$address/$name") {
+    navigate("account_settings_route/$address") {
         launchSingleTop
     }
 }
@@ -41,10 +37,9 @@ fun NavGraphBuilder.accountSettings(
     onAccountSettingItemClick: (AccountSettingItem, address: String) -> Unit
 ) {
     composable(
-        route = "account_settings_route/{$ARG_ACCOUNT_SETTINGS_ADDRESS}/{$ARG_ACCOUNT_SETTINGS_NAME}",
+        route = "account_settings_route/{$ARG_ACCOUNT_SETTINGS_ADDRESS}",
         arguments = listOf(
-            navArgument(ARG_ACCOUNT_SETTINGS_ADDRESS) { type = NavType.StringType },
-            navArgument(ARG_ACCOUNT_SETTINGS_NAME) { type = NavType.StringType }
+            navArgument(ARG_ACCOUNT_SETTINGS_ADDRESS) { type = NavType.StringType }
         ),
         enterTransition = {
             slideIntoContainer(AnimatedContentScope.SlideDirection.Up)

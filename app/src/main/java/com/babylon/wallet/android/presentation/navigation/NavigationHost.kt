@@ -151,8 +151,8 @@ fun NavigationHost(
         ) {
             AccountScreen(
                 viewModel = hiltViewModel(),
-                onAccountPreferenceClick = { address, name ->
-                    navController.accountSettings(address = address, name = name)
+                onAccountPreferenceClick = { address ->
+                    navController.accountSettings(address = address)
                 },
                 onBackClick = {
                     navController.navigateUp()
