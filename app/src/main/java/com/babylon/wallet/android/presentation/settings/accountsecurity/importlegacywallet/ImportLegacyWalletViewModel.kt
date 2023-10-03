@@ -6,8 +6,6 @@ import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.dapp.LedgerMessenger
 import com.babylon.wallet.android.data.dapp.model.Curve
 import com.babylon.wallet.android.data.dapp.model.LedgerInteractionRequest
-import com.babylon.wallet.android.utils.AppConstants.ACCOUNT_NAME_MAX_LENGTH
-import com.babylon.wallet.android.utils.AppConstants.DELAY_300_MS
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.babylon.wallet.android.domain.usecases.settings.MarkImportOlympiaWalletCompleteUseCase
 import com.babylon.wallet.android.presentation.common.OneOffEvent
@@ -21,6 +19,8 @@ import com.babylon.wallet.android.presentation.dapp.authorized.account.AccountIt
 import com.babylon.wallet.android.presentation.dapp.authorized.account.toUiModel
 import com.babylon.wallet.android.presentation.model.LedgerDeviceUiModel
 import com.babylon.wallet.android.presentation.settings.accountsecurity.ledgerhardwarewallets.AddLedgerDeviceUiState
+import com.babylon.wallet.android.utils.AppConstants.ACCOUNT_NAME_MAX_LENGTH
+import com.babylon.wallet.android.utils.AppConstants.DELAY_300_MS
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.PersistentList

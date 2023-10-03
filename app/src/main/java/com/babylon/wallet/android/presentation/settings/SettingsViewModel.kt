@@ -3,7 +3,6 @@ package com.babylon.wallet.android.presentation.settings
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.BuildConfig.EXPERIMENTAL_FEATURES_ENABLED
-import com.babylon.wallet.android.utils.AppConstants
 import com.babylon.wallet.android.domain.usecases.settings.GetImportOlympiaSettingVisibilityUseCase
 import com.babylon.wallet.android.domain.usecases.settings.MarkImportOlympiaWalletCompleteUseCase
 import com.babylon.wallet.android.presentation.settings.SettingsItem.TopLevelSettings.AccountSecurityAndSettings
@@ -12,6 +11,7 @@ import com.babylon.wallet.android.presentation.settings.SettingsItem.TopLevelSet
 import com.babylon.wallet.android.presentation.settings.SettingsItem.TopLevelSettings.ImportOlympiaWallet
 import com.babylon.wallet.android.presentation.settings.SettingsItem.TopLevelSettings.LinkToConnector
 import com.babylon.wallet.android.presentation.settings.SettingsItem.TopLevelSettings.Personas
+import com.babylon.wallet.android.utils.AppConstants
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toPersistentList
