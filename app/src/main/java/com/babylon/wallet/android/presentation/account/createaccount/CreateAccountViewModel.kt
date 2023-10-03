@@ -46,6 +46,7 @@ class CreateAccountViewModel @Inject constructor(
     private val args = CreateAccountNavArgs(savedStateHandle)
     val accountName = savedStateHandle.getStateFlow(ACCOUNT_NAME, "")
     val buttonEnabled = savedStateHandle.getStateFlow(CREATE_ACCOUNT_BUTTON_ENABLED, false)
+    val isAccountNameLengthMoreThanTheMax = savedStateHandle.getStateFlow(IS_ACCOUNT_NAME_LENGTH_MORE_THAN_THE_MAX, false)
 
     init {
         viewModelScope.launch {
@@ -106,12 +107,13 @@ class CreateAccountViewModel @Inject constructor(
 
     override fun initialState(): CreateAccountState = CreateAccountState(
         firstTime = args.requestSource?.isFirstTime() == true,
-        isCancelable = true
+        isCancelable = true,
     )
 
     fun onAccountNameChange(accountName: String) {
-        savedStateHandle[ACCOUNT_NAME] = accountName.take(ACCOUNT_NAME_MAX_LENGTH)
-        savedStateHandle[CREATE_ACCOUNT_BUTTON_ENABLED] = accountName.trim().isNotEmpty()
+        savedStateHandle[ACCOUNT_NAME] = accountName // .take(ACCOUNT_NAME_MAX_LENGTH)
+        savedStateHandle[IS_ACCOUNT_NAME_LENGTH_MORE_THAN_THE_MAX] = accountName.count() > ACCOUNT_NAME_MAX_LENGTH
+        savedStateHandle[CREATE_ACCOUNT_BUTTON_ENABLED] = accountName.trim().isNotEmpty() && accountName.count() <= ACCOUNT_NAME_MAX_LENGTH
     }
 
     fun onAccountCreateClick() {
@@ -169,6 +171,7 @@ class CreateAccountViewModel @Inject constructor(
 
     companion object {
         private const val ACCOUNT_NAME = "account_name"
+        private const val IS_ACCOUNT_NAME_LENGTH_MORE_THAN_THE_MAX = "is_account_name_length_more_than_the_max"
         private const val CREATE_ACCOUNT_BUTTON_ENABLED = "create_account_button_enabled"
     }
 }
@@ -179,6 +182,6 @@ internal sealed interface CreateAccountEvent : OneOffEvent {
         val requestSource: CreateAccountRequestSource?,
     ) : CreateAccountEvent
 
-    object AddLedgerDevice : CreateAccountEvent
-    object Dismiss : CreateAccountEvent
+    data object AddLedgerDevice : CreateAccountEvent
+    data object Dismiss : CreateAccountEvent
 }
