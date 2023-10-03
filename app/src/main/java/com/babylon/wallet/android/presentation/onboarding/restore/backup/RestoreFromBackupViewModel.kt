@@ -2,7 +2,7 @@ package com.babylon.wallet.android.presentation.onboarding.restore.backup
 
 import android.net.Uri
 import androidx.lifecycle.viewModelScope
-import com.babylon.wallet.android.domain.model.AppConstants
+import com.babylon.wallet.android.utils.AppConstants
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
