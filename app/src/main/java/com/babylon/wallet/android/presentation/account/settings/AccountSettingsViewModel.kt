@@ -124,7 +124,7 @@ class AccountSettingsViewModel @Inject constructor(
                 args.address == it.address
             }
             accountToRename?.let {
-                val newAccountName = _state.value.accountNameChanged
+                val newAccountName = _state.value.accountNameChanged.trim()
                 renameAccountDisplayNameUseCase(
                     accountToRename = it,
                     newDisplayName = newAccountName
