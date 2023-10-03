@@ -27,7 +27,7 @@ fun NavController.accountSettings(
     address: String
 ) {
     navigate("account_settings_route/$address") {
-        launchSingleTop
+        launchSingleTop = true
     }
 }
 
