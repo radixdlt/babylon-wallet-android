@@ -151,8 +151,8 @@ fun NavigationHost(
         ) {
             AccountScreen(
                 viewModel = hiltViewModel(),
-                onAccountPreferenceClick = { address ->
-                    navController.accountSettings(address = address)
+                onAccountPreferenceClick = { address, name ->
+                    navController.accountSettings(address = address, name = name)
                 },
                 onBackClick = {
                     navController.navigateUp()
@@ -248,7 +248,7 @@ fun NavigationHost(
             onBackClick = {
                 navController.popBackStack()
             },
-            onSettingClick = { item, accountAddress ->
+            onAccountSettingItemClick = { item, accountAddress ->
                 when (item) {
                     AccountSettingItem.ThirdPartyDeposits -> {
                         navController.accountThirdPartyDeposits(accountAddress)
