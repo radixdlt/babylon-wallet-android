@@ -2,6 +2,7 @@
 
 package com.babylon.wallet.android.presentation.account.settings
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -69,15 +70,23 @@ fun AccountSettingsScreen(
     val context = LocalContext.current
     val state by viewModel.state.collectAsStateWithLifecycle()
     val scope = rememberCoroutineScope()
-    val sheetState = rememberModalBottomSheetState(
+    val bottomSheetState = rememberModalBottomSheetState(
         initialValue = ModalBottomSheetValue.Hidden,
         skipHalfExpanded = true
     )
+
+    BackHandler(enabled = bottomSheetState.isVisible) {
+        scope.launch {
+            bottomSheetState.hide()
+            viewModel.resetBottomSheetContent()
+        }
+    }
+
     DefaultModalSheetLayout(
         modifier = modifier,
         wrapContent = true,
         enableImePadding = true,
-        sheetState = sheetState,
+        sheetState = bottomSheetState,
         sheetContent = {
             when (state.bottomSheetContent) {
                 AccountPreferenceUiState.BottomSheetContent.RenameAccount -> {
@@ -89,13 +98,13 @@ fun AccountSettingsScreen(
                         onRenameAccountNameClick = {
                             viewModel.onRenameAccountNameConfirm()
                             scope.launch {
-                                sheetState.hide()
+                                bottomSheetState.hide()
                                 viewModel.resetBottomSheetContent()
                             }
                         },
                         onClose = {
                             scope.launch {
-                                sheetState.hide()
+                                bottomSheetState.hide()
                                 viewModel.resetBottomSheetContent()
                             }
                         }
@@ -106,7 +115,7 @@ fun AccountSettingsScreen(
                         accountAddress = state.accountAddress,
                         dismissAddressQRCodeSheet = {
                             scope.launch {
-                                sheetState.hide()
+                                bottomSheetState.hide()
                                 viewModel.resetBottomSheetContent()
                             }
                         }
@@ -124,13 +133,13 @@ fun AccountSettingsScreen(
             onShowRenameAccountClick = {
                 scope.launch {
                     viewModel.setBottomSheetContentToRenameAccount()
-                    sheetState.show()
+                    bottomSheetState.show()
                 }
             },
             onShowAddressQRCodeClick = {
                 scope.launch {
                     viewModel.setBottomSheetContentToAddressQRCode()
-                    sheetState.show()
+                    bottomSheetState.show()
                 }
             },
             faucetState = state.faucetState,
