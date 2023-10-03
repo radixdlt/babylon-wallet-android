@@ -9,6 +9,8 @@ import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.withStyle
 import com.radixdlt.bip39.wordlists.WORDLIST_ENGLISH
+import org.apache.commons.validator.routines.InetAddressValidator
+import org.apache.commons.validator.routines.UrlValidator
 import java.net.URLDecoder
 import java.net.URLEncoder
 import java.text.DecimalFormat
@@ -70,6 +72,7 @@ fun String.formatDecimalSeparator(): String {
     }
 }
 
+// TODO this does not work for IPv6 thus we can't add a IPv6 address in gateway settings
 fun String.isValidUrl(): Boolean {
     return Patterns.WEB_URL.matcher(this).matches()
 }
@@ -90,16 +93,44 @@ fun String.decodeUtf8(): String {
     return URLDecoder.decode(this, "UTF-8")
 }
 
-fun String.sanitizeUrl(): String {
-    return if (this.startsWith("https://")) {
-        this
-    } else {
-        "https://$this"
-    }.let {
-        if (it.endsWith('/').not()) {
-            "$it/"
+// see the SanitizeAndValidateGatewayUrlTest for better understanding
+fun String.sanitizeAndValidateGatewayUrl(isDevModeEnabled: Boolean = false): String? {
+    val ipValidator = InetAddressValidator.getInstance()
+    val urlValidator = UrlValidator.getInstance()
+
+    return if (isDevModeEnabled) { // when dev mode is enabled we can accept IPs, IP:Port, http, and https
+        if (urlValidator.isValid(this)) { // valid url meaning that contains http or https
+            if (this.endsWith('/').not()) {
+                "$this/"
+            } else {
+                this
+            }
         } else {
-            it
+            val urlToValidate = this.removeSuffix("/")
+            if (ipValidator.isValidInet6Address(urlToValidate)) {
+                "http://[$urlToValidate]/"
+            } else if (urlToValidate.startsWith("https://")) {
+                urlToValidate.substring(0, 8) + '[' + urlToValidate.substring(8) + "]/"
+            } else if (urlToValidate.startsWith("http://")) {
+                urlToValidate.substring(0, 7) + '[' + urlToValidate.substring(7) + "]/"
+            } else {
+                "http://$urlToValidate/"
+            }
+        }
+    } else { // when dev mode is disabled we should accept ONLY https - no IPs
+        val urlWithoutHttp = this.removePrefix("http://").removePrefix("https://")
+        if (urlWithoutHttp.contains(":")) { // if true it means it has a port or it is an IPv6
+            null // then do not accept it
+        } else {
+            // now we need to check also for
+            val urlToValidate = urlWithoutHttp
+                .substringBefore("/")
+                .removeSuffix("/")
+            if (ipValidator.isValidInet4Address(urlToValidate) || ipValidator.isValidInet6Address(urlToValidate)) {
+                null // then do not accept it
+            } else {
+                "https://$urlToValidate/"
+            }
         }
     }
 }

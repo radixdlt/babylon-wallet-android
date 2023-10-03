@@ -200,6 +200,9 @@ dependencies {
     implementation libs.cameraLifecycle
     implementation libs.cameraView
 
+    // apache commons validator
+    implementation libs.apacheCommonsValidator
+
     // Peerdroid
     implementation project(path: ':peerdroid')
     implementation project(path: ':profile')

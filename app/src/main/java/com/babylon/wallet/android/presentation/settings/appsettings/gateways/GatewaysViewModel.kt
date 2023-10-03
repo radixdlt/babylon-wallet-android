@@ -12,11 +12,13 @@ import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.utils.encodeUtf8
 import com.babylon.wallet.android.utils.isValidUrl
-import com.babylon.wallet.android.utils.sanitizeUrl
+import com.babylon.wallet.android.utils.sanitizeAndValidateGatewayUrl
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toPersistentList
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.profile.data.model.apppreferences.Radix
@@ -25,10 +27,11 @@ import rdx.works.profile.domain.gateway.AddGatewayUseCase
 import rdx.works.profile.domain.gateway.ChangeGatewayUseCase
 import rdx.works.profile.domain.gateway.DeleteGatewayUseCase
 import rdx.works.profile.domain.gateways
+import rdx.works.profile.domain.security
 import javax.inject.Inject
 
 @HiltViewModel
-class SettingsEditGatewayViewModel @Inject constructor(
+class GatewaysViewModel @Inject constructor(
     private val getProfileUseCase: GetProfileUseCase,
     private val changeGatewayUseCase: ChangeGatewayUseCase,
     private val addGatewayUseCase: AddGatewayUseCase,
@@ -44,30 +47,37 @@ class SettingsEditGatewayViewModel @Inject constructor(
 
     private fun observeProfile() {
         viewModelScope.launch {
-            getProfileUseCase.gateways.collect { gateways ->
-                val current = gateways.current()
+            combine(
+                getProfileUseCase.gateways,
+                getProfileUseCase.security.map {
+                    it.isDeveloperModeEnabled
+                }
+            ) { gateways, isDeveloperModeEnabled ->
+                Pair(gateways, isDeveloperModeEnabled)
+            }.collect { pair ->
+                val current = pair.first.current()
                 _state.update { state ->
                     state.copy(
                         currentGateway = current,
-                        gatewayList = gateways.saved.toPersistentList().map {
+                        gatewayList = pair.first.saved.toPersistentList().map {
                             GatewayWrapper(
                                 gateway = it,
                                 selected = it.url == current.url
                             )
-                        }.toPersistentList()
+                        }.toPersistentList(),
+                        isDeveloperModeEnabled = pair.second
                     )
                 }
             }
         }
     }
 
-    fun onNewUrlChanged(newUrl: String) {
+    fun onNewUrlChanged(newUrl: String) { // check comment in the isValidUrl extension function
         _state.update { state ->
-            val urlWithHttpsAppended = newUrl.sanitizeUrl()
-            val urlAlreadyAdded =
-                state.gatewayList.any { it.gateway.url == newUrl || it.gateway.url == urlWithHttpsAppended }
+            val sanitizedUrl = newUrl.sanitizeAndValidateGatewayUrl(isDevModeEnabled = state.isDeveloperModeEnabled)
+            val urlAlreadyAdded = state.gatewayList.any { it.gateway.url == newUrl || it.gateway.url == sanitizedUrl }
             state.copy(
-                newUrlValid = !urlAlreadyAdded && (newUrl.isValidUrl() || urlWithHttpsAppended.isValidUrl()),
+                newUrlValid = !urlAlreadyAdded && (newUrl.isValidUrl() || sanitizedUrl?.isValidUrl() == true),
                 newUrl = newUrl,
                 gatewayAddFailure = if (urlAlreadyAdded) GatewayAddFailure.AlreadyExist else null
             )
@@ -86,8 +96,13 @@ class SettingsEditGatewayViewModel @Inject constructor(
 
     fun onAddGateway() {
         viewModelScope.launch {
-            val newUrl = state.value.newUrl.sanitizeUrl()
+            val newUrl = state.value
+                .newUrl
+                .sanitizeAndValidateGatewayUrl(isDevModeEnabled = state.value.isDeveloperModeEnabled)
+                ?: return@launch
+
             _state.update { state -> state.copy(addingGateway = true) }
+
             val newGatewayInfo = networkInfoRepository.getNetworkInfo(newUrl)
             newGatewayInfo.onValue { networkName ->
                 addGatewayUseCase(Radix.Gateway(newUrl, Radix.Network.forName(networkName)))
@@ -116,6 +131,10 @@ class SettingsEditGatewayViewModel @Inject constructor(
     private suspend fun switchGateway(gateway: Radix.Gateway) {
         if (gateway.url == state.value.currentGateway?.url) return
 
+        // this is the case where a url has been added when the developer mode was enabled
+        // but at the time the user clicks to switch network the developer mode is disabled
+        if (gateway.url.sanitizeAndValidateGatewayUrl(isDevModeEnabled = state.value.isDeveloperModeEnabled) == null) return
+
         val isGatewayChanged = changeGatewayUseCase(gateway)
         if (isGatewayChanged) {
             _state.update { state -> state.copy(addingGateway = false) }
@@ -138,7 +157,8 @@ data class SettingsUiState(
     val newUrl: String = "",
     val newUrlValid: Boolean = false,
     val addingGateway: Boolean = false,
-    val gatewayAddFailure: GatewayAddFailure? = null
+    val gatewayAddFailure: GatewayAddFailure? = null,
+    val isDeveloperModeEnabled: Boolean = false
 ) : UiState
 
 enum class GatewayAddFailure {

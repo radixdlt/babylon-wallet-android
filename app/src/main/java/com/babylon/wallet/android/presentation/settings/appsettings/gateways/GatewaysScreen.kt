@@ -63,7 +63,7 @@ import rdx.works.profile.data.model.apppreferences.Radix
 
 @Composable
 fun GatewaysScreen(
-    viewModel: SettingsEditGatewayViewModel,
+    viewModel: GatewaysViewModel,
     onBackClick: () -> Unit,
     onCreateProfile: (String, String) -> Unit,
     modifier: Modifier = Modifier
@@ -72,7 +72,7 @@ fun GatewaysScreen(
     GatewaysContent(
         modifier = modifier,
         onBackClick = onBackClick,
-        onSwitchToClick = viewModel::onAddGateway,
+        onAddGatewayClick = viewModel::onAddGateway,
         newUrl = state.newUrl,
         onNewUrlChanged = viewModel::onNewUrlChanged,
         newUrlValid = state.newUrlValid,
@@ -90,7 +90,7 @@ fun GatewaysScreen(
 private fun GatewaysContent(
     modifier: Modifier = Modifier,
     onBackClick: () -> Unit,
-    onSwitchToClick: () -> Unit,
+    onAddGatewayClick: () -> Unit,
     newUrl: String,
     onNewUrlChanged: (String) -> Unit,
     newUrlValid: Boolean,
@@ -132,7 +132,7 @@ private fun GatewaysContent(
         enableImePadding = true,
         sheetContent = {
             AddGatewaySheet(
-                onAddGateway = onSwitchToClick,
+                onAddGatewayClick = onAddGatewayClick,
                 newUrl = newUrl,
                 onNewUrlChanged = onNewUrlChanged,
                 onClose = {
@@ -226,7 +226,7 @@ private fun GatewaysContent(
 
 @Composable
 private fun AddGatewaySheet(
-    onAddGateway: () -> Unit,
+    onAddGatewayClick: () -> Unit,
     newUrl: String,
     onNewUrlChanged: (String) -> Unit,
     onClose: () -> Unit,
@@ -285,7 +285,7 @@ private fun AddGatewaySheet(
         RadixPrimaryButton(
             text = stringResource(R.string.gateways_addNewGateway_addGatewayButtonTitle),
             onClick = {
-                onAddGateway()
+                onAddGatewayClick()
             },
             modifier = Modifier.fillMaxWidth(),
             enabled = newUrlValid,
@@ -384,13 +384,28 @@ fun GatewaysScreenPreview() {
     RadixWalletTheme {
         GatewaysContent(
             onBackClick = {},
-            onSwitchToClick = {},
+            onAddGatewayClick = {},
             newUrl = "",
             onNewUrlChanged = {},
             newUrlValid = false,
-            gatewayList = persistentListOf(),
+            gatewayList = persistentListOf(
+                GatewayWrapper(
+                    gateway = Radix.Gateway(
+                        url = "https://babylon-stokenet-gateway.radixdlt.com/",
+                        Radix.Network.stokenet
+                    ),
+                    selected = true
+                ),
+                GatewayWrapper(
+                    gateway = Radix.Gateway(
+                        url = "https://mainnet.radixdlt.com/",
+                        Radix.Network.mainnet
+                    ),
+                    selected = false
+                )
+            ),
             onDeleteGateway = {},
-            addingGateway = false,
+            addingGateway = true,
             gatewayAddFailure = null,
             onGatewayClick = {},
             oneOffEvent = flow { },
