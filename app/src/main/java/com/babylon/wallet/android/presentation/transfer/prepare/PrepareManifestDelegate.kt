@@ -9,18 +9,19 @@ import com.babylon.wallet.android.presentation.transfer.SpendingAsset
 import com.babylon.wallet.android.presentation.transfer.TargetAccount
 import com.babylon.wallet.android.presentation.transfer.TransferViewModel
 import com.radixdlt.ret.Address
-import com.radixdlt.ret.Decimal
 import com.radixdlt.ret.ManifestBuilderBucket
 import com.radixdlt.ret.NonFungibleGlobalId
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
 import rdx.works.core.ret.BabylonManifestBuilder
 import rdx.works.core.ret.buildSafely
+import rdx.works.core.toRETDecimal
 import rdx.works.profile.data.model.factorsources.FactorSourceKind
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.data.repository.MnemonicRepository
 import timber.log.Timber
 import java.math.BigDecimal
+import java.math.RoundingMode
 
 class PrepareManifestDelegate(
     private val state: MutableStateFlow<TransferViewModel.State>,
@@ -71,7 +72,7 @@ class PrepareManifestDelegate(
             withdrawFromAccount(
                 fromAddress = Address(fromAccount.address),
                 fungible = Address(resource.resourceAddress),
-                amount = Decimal(amount.toPlainString())
+                amount = amount.toRETDecimal(roundingMode = RoundingMode.HALF_UP)
             )
 
             // Deposit to each target account
@@ -87,7 +88,7 @@ class PrepareManifestDelegate(
                     // First take the correct amount from worktop and pour it into bucket
                     takeFromWorktop(
                         fungible = Address(resource.resourceAddress),
-                        amount = Decimal(spendingFungibleAsset.amountDecimal.toPlainString()),
+                        amount = spendingFungibleAsset.amountDecimal.toRETDecimal(roundingMode = RoundingMode.HALF_UP),
                         intoBucket = bucket
                     )
 
