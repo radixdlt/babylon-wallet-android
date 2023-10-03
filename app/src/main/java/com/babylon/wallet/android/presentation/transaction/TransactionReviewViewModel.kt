@@ -21,6 +21,7 @@ import com.babylon.wallet.android.domain.model.Resource.FungibleResource
 import com.babylon.wallet.android.domain.model.Resource.NonFungibleResource
 import com.babylon.wallet.android.domain.model.Transferable
 import com.babylon.wallet.android.domain.model.TransferableResource
+import com.babylon.wallet.android.domain.model.isXrd
 import com.babylon.wallet.android.domain.usecases.GetAccountsWithResourcesUseCase
 import com.babylon.wallet.android.domain.usecases.GetResourcesMetadataUseCase
 import com.babylon.wallet.android.domain.usecases.GetResourcesUseCase
@@ -187,34 +188,10 @@ class TransactionReviewViewModel @Inject constructor(
 
     fun onFeePaddingAmountChanged(feePaddingAmount: String) {
         fees.onFeePaddingAmountChanged(feePaddingAmount)
-
-        validateLockFee()
     }
 
     fun onTipPercentageChanged(tipPercentage: String) {
         fees.onTipPercentageChanged(tipPercentage)
-
-        validateLockFee()
-    }
-
-    private fun validateLockFee() {
-        val feePayerResult = state.value.feePayerSearchResult
-        _state.update {
-            it.copy(
-                feePayerSearchResult = feePayerResult?.copy(
-                    insufficientBalanceToPayTheFee = feePayerResult.hasInsufficientBalanceToPayTheFee(
-                        feePayerResult.feePayerAddressFromManifest.orEmpty()
-                    )
-                )
-            )
-        }
-    }
-
-    private fun FeePayerSearchResult.hasInsufficientBalanceToPayTheFee(candidateAddress: String): Boolean {
-        val transactionFee = state.value.transactionFees.transactionFeeToLock
-        return candidateXrdBalance(
-            candidateAddress = candidateAddress
-        ) < transactionFee
     }
 
     fun onViewDefaultModeClick() = fees.onViewDefaultModeClick()
@@ -227,11 +204,8 @@ class TransactionReviewViewModel @Inject constructor(
         val signersCount = state.value.defaultSignersCount
 
         val updatedFeePayerResult = feePayerSearchResult?.copy(
-            feePayerAddressFromManifest = selectedFeePayer.address,
-            candidates = feePayerSearchResult.candidates,
-            insufficientBalanceToPayTheFee = feePayerSearchResult.hasInsufficientBalanceToPayTheFee(
-                selectedFeePayer.address
-            )
+            feePayerAddress = selectedFeePayer.address,
+            candidates = feePayerSearchResult.candidates
         )
 
         val customizeFeesSheet = state.value.sheetState as? State.Sheet.CustomizeFees ?: return
@@ -369,13 +343,45 @@ class TransactionReviewViewModel @Inject constructor(
             }
 
         val isSubmitEnabled: Boolean
-            get() = previewType !is PreviewType.None && feePayerSearchResult?.insufficientBalanceToPayTheFee == false
+            get() = previewType !is PreviewType.None && !isBalanceInsufficientToPayTheFee
 
         val noFeePayerSelected: Boolean
-            get() = feePayerSearchResult?.feePayerAddressFromManifest == null
+            get() = feePayerSearchResult?.feePayerAddress == null
 
-        val insufficientBalanceToPayTheFee: Boolean
-            get() = feePayerSearchResult?.insufficientBalanceToPayTheFee == true
+        val isBalanceInsufficientToPayTheFee: Boolean
+            get() {
+                if (feePayerSearchResult == null) return true
+                val candidateAddress = feePayerSearchResult.feePayerAddress ?: return true
+
+                val xrdInCandidateAccount = feePayerSearchResult.candidates.find {
+                    it.account.address == candidateAddress
+                }?.xrdAmount ?: BigDecimal.ZERO
+
+                // Calculate how many XRD have been used from accounts withdrawn from
+                // In cases were it is not a transfer type, then it means the user
+                // will not spend any other XRD rather than the ones spent for the fees
+                val xrdUsed = when (previewType) {
+                    is PreviewType.Transfer -> {
+                        val candidateAddressWithdrawn = previewType.from.find { it.address == candidateAddress }
+                        if (candidateAddressWithdrawn != null) {
+                            val xrdResourceWithdrawn = candidateAddressWithdrawn.resources.map {
+                                it.transferable
+                            }.filterIsInstance<TransferableResource.Amount>().find { it.resource.isXrd }
+
+                            xrdResourceWithdrawn?.amount ?: BigDecimal.ZERO
+                        } else {
+                            BigDecimal.ZERO
+                        }
+                    }
+                    // On-purpose made this check exhaustive, future types may involve accounts spending XRD
+                    is PreviewType.AccountsDepositSettings -> BigDecimal.ZERO
+                    is PreviewType.NonConforming -> BigDecimal.ZERO
+                    is PreviewType.None -> BigDecimal.ZERO
+                    is PreviewType.UnacceptableManifest -> BigDecimal.ZERO
+                }
+
+                return xrdInCandidateAccount - xrdUsed < transactionFees.transactionFeeToLock
+            }
 
         sealed interface Sheet {
 

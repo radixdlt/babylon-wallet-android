@@ -106,9 +106,7 @@ class TransactionAnalysisDelegate(
                     transactionFees = transactionFees,
                     isLoading = false,
                     previewType = previewType,
-                    feePayerSearchResult = feePayerResult.copy(
-                        insufficientBalanceToPayTheFee = feePayerResult.candidateXrdBalance() < transactionFees.defaultTransactionFee
-                    ),
+                    feePayerSearchResult = feePayerResult,
                     defaultSignersCount = notaryAndSigners.signers.count()
                 )
             }
