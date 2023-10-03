@@ -113,7 +113,7 @@ data class TransactionFees(
      */
     @Suppress("MagicNumber")
     val effectiveTip: BigDecimal
-        get() = tipPercentageNumber?.toBigDecimal()?.divide(
+        get() = tipPercentageNumber?.toLong()?.toBigDecimal()?.divide(
             BigDecimal(100)
         )?.multiply(
             totalExecutionCost.add(
@@ -143,8 +143,8 @@ data class TransactionFees(
             )
         )
 
-    private val tipPercentageNumber: Int?
-        get() = tipPercentage?.toIntOrNull()
+    private val tipPercentageNumber: UShort?
+        get() = tipPercentage?.toUShortOrNull()
 
     @Suppress("MagicNumber")
     val feePaddingAmountToDisplay: String
@@ -165,7 +165,7 @@ data class TransactionFees(
         get() = tipPercentage ?: "0"
 
     val tipPercentageForTransaction: UShort
-        get() = tipPercentageNumber?.toUShort() ?: TransactionConfig.TIP_PERCENTAGE
+        get() = tipPercentageNumber ?: TransactionConfig.TIP_PERCENTAGE
 
     companion object {
         private val PERCENT_15 = BigDecimal(0.15)
