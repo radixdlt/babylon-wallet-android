@@ -378,7 +378,7 @@ private fun RenameAccountSheet(
                 .fillMaxWidth()
                 .padding(horizontal = RadixTheme.dimensions.paddingSemiLarge)
                 .padding(bottom = RadixTheme.dimensions.paddingSemiLarge),
-            text = "Update",
+            text = stringResource(id = R.string.accountSettings_renameAccount_button),
             onClick = {
                 onRenameAccountNameClick()
             },
