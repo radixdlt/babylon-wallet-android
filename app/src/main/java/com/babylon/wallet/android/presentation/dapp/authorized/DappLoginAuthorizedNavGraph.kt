@@ -39,8 +39,8 @@ fun NavGraphBuilder.dappLoginAuthorizedNavGraph(navController: NavController) {
             navigateToOneTimePersonaData = {
                 navController.personaDataOnetimeAuthorized(it)
             },
-            navigateToSelectPersona = { reqeustId ->
-                navController.selectPersona(reqeustId)
+            navigateToSelectPersona = { dappDefinitionAddress ->
+                navController.selectPersona(dappDefinitionAddress)
             }
         ) { personaAddress, requiredFields ->
             navController.personaDataOngoing(personaAddress, requiredFields)

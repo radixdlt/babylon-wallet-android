@@ -73,7 +73,7 @@ fun SelectPersonaScreen(
     LaunchedEffect(Unit) {
         sharedViewModel.oneOffEvent.collect { event ->
             when (event) {
-                Event.RejectLogin -> onBackClick()
+                Event.CloseLoginFlow -> onBackClick()
                 is Event.LoginFlowCompleted -> onLoginFlowComplete()
                 is Event.ChooseAccounts -> onChooseAccounts(event)
                 is Event.DisplayPermission -> onDisplayPermission(event)

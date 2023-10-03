@@ -50,7 +50,7 @@ class TransactionSubmitDelegate(
         approvalJob = appScope.launch {
             val currentState = state.value
             val currentNetworkId = getCurrentGatewayUseCase().network.networkId().value
-            val manifestNetworkId = currentState.request.transactionManifestData.networkId
+            val manifestNetworkId = currentState.requestNonNull.transactionManifestData.networkId
 
             if (currentNetworkId != manifestNetworkId) {
                 approvalJob = null
@@ -61,7 +61,7 @@ class TransactionSubmitDelegate(
 
             state.update { it.copy(isSubmitting = true) }
 
-            currentState.request.transactionManifestData.toTransactionManifest().onSuccess { manifest ->
+            currentState.requestNonNull.transactionManifestData.toTransactionManifest().onSuccess { manifest ->
                 resolveFeePayerAndSubmit(manifest.attachGuarantees(currentState.previewType), deviceBiometricAuthenticationProvider)
             }.onFailure { error ->
                 reportFailure(error)
@@ -71,7 +71,7 @@ class TransactionSubmitDelegate(
 
     suspend fun onDismiss(failure: DappRequestFailure) {
         if (approvalJob == null) {
-            val request = state.value.request
+            val request = state.value.requestNonNull
             if (!request.isInternal) {
                 dAppMessenger.sendWalletInteractionResponseFailure(
                     remoteConnectorId = request.remoteConnectorId,
@@ -102,7 +102,7 @@ class TransactionSubmitDelegate(
             state.update { it.copy(isSubmitting = false) }
             if (feePayerResult.feePayerAddress != null) {
                 signAndSubmit(
-                    transactionRequest = state.value.request,
+                    transactionRequest = state.value.requestNonNull,
                     feePayerAddress = feePayerResult.feePayerAddress,
                     manifest = manifest,
                     deviceBiometricAuthenticationProvider = deviceBiometricAuthenticationProvider
@@ -217,10 +217,10 @@ class TransactionSubmitDelegate(
         }
 
         val currentState = state.value
-        if (error is DappRequestException && !currentState.request.isInternal) {
+        if (error is DappRequestException && !currentState.requestNonNull.isInternal) {
             dAppMessenger.sendWalletInteractionResponseFailure(
-                remoteConnectorId = currentState.request.remoteConnectorId,
-                requestId = currentState.request.requestId,
+                remoteConnectorId = currentState.requestNonNull.remoteConnectorId,
+                requestId = currentState.requestNonNull.requestId,
                 error = error.failure.toWalletErrorType(),
                 message = error.failure.getDappMessage()
             )

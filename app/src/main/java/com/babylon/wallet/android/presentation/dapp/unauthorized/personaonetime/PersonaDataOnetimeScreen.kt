@@ -75,7 +75,7 @@ fun PersonaDataOnetimeScreen(
         sharedViewModel.oneOffEvent.collect { event ->
             when (event) {
                 is Event.LoginFlowCompleted -> onLoginFlowComplete()
-                Event.RejectLogin -> onLoginFlowCancelled()
+                Event.CloseLoginFlow -> onLoginFlowCancelled()
                 is Event.RequestCompletionBiometricPrompt -> {
                     if (event.requestDuringSigning) {
                         sharedViewModel.sendRequestResponse(deviceBiometricAuthenticationProvider = {

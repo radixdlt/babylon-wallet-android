@@ -57,7 +57,7 @@ fun LoginPermissionScreen(
         viewModel.oneOffEvent.collect { event ->
             when (event) {
                 is Event.ChooseAccounts -> onChooseAccounts(event)
-                is Event.RejectLogin -> onCompleteFlow()
+                is Event.CloseLoginFlow -> onCompleteFlow()
                 else -> {}
             }
         }

@@ -15,18 +15,18 @@ import com.babylon.wallet.android.presentation.dapp.authorized.login.ROUTE_DAPP_
 import com.google.accompanist.navigation.animation.composable
 
 @VisibleForTesting
-internal const val ARG_REQUEST_ID = "request_id"
+internal const val ARG_DAPP_DEFINITION_ADDRESS = "dapp_definition_address"
 
-const val ROUTE_SELECT_PERSONA = "select_persona/{$ARG_REQUEST_ID}"
+const val ROUTE_SELECT_PERSONA = "select_persona/{$ARG_DAPP_DEFINITION_ADDRESS}"
 
-internal class SelectPersonaArgs(val requestId: String) {
-    constructor(savedStateHandle: SavedStateHandle) : this(checkNotNull(savedStateHandle[ARG_REQUEST_ID]) as String)
+internal class SelectPersonaArgs(val dappDefinitionAddress: String) {
+    constructor(savedStateHandle: SavedStateHandle) : this(checkNotNull(savedStateHandle[ARG_DAPP_DEFINITION_ADDRESS]) as String)
 }
 
 fun NavController.selectPersona(
-    requestId: String
+    dappDefinitionAddress: String
 ) {
-    navigate("select_persona/$requestId")
+    navigate("select_persona/$dappDefinitionAddress")
 }
 
 @OptIn(ExperimentalAnimationApi::class)
@@ -44,7 +44,7 @@ fun NavGraphBuilder.selectPersona(
     composable(
         route = ROUTE_SELECT_PERSONA,
         arguments = listOf(
-            navArgument(ARG_REQUEST_ID) {
+            navArgument(ARG_DAPP_DEFINITION_ADDRESS) {
                 type = NavType.StringType
             }
         )
