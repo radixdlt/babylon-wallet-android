@@ -105,7 +105,7 @@ import rdx.works.profile.data.model.factorsources.FactorSource
 @Composable
 fun AccountScreen(
     viewModel: AccountViewModel,
-    onAccountPreferenceClick: (String) -> Unit,
+    onAccountPreferenceClick: (address: String, name: String) -> Unit,
     modifier: Modifier = Modifier,
     onBackClick: () -> Unit,
     onNavigateToMnemonicBackup: (FactorSource.FactorSourceID.FromHash) -> Unit,
@@ -130,8 +130,8 @@ fun AccountScreen(
     AccountScreenContent(
         modifier = modifier,
         state = state,
-        onAccountPreferenceClick = {
-            onAccountPreferenceClick(it)
+        onAccountPreferenceClick = { address, name ->
+            onAccountPreferenceClick(address, name)
         },
         onBackClick = onBackClick,
         onRefresh = viewModel::refresh,
@@ -151,7 +151,7 @@ fun AccountScreen(
 private fun AccountScreenContent(
     modifier: Modifier = Modifier,
     state: AccountUiState,
-    onAccountPreferenceClick: (String) -> Unit,
+    onAccountPreferenceClick: (address: String, name: String) -> Unit,
     onBackClick: () -> Unit,
     onRefresh: () -> Unit,
     onHistoryClick: () -> Unit,
@@ -244,7 +244,10 @@ private fun AccountScreenContent(
                         Spacer(modifier = Modifier.weight(1f))
                         IconButton(
                             onClick = {
-                                onAccountPreferenceClick(state.accountWithResources?.account?.address.orEmpty())
+                                onAccountPreferenceClick(
+                                    state.accountWithResources?.account?.address.orEmpty(),
+                                    state.accountWithResources?.account?.displayName.orEmpty()
+                                )
                             }
                         ) {
                             Icon(
@@ -621,7 +624,7 @@ fun AccountContentPreview() {
                         ),
                     )
                 ),
-                onAccountPreferenceClick = {},
+                onAccountPreferenceClick = { _, _ -> },
                 onBackClick = {},
                 onRefresh = {},
                 onHistoryClick = {},
