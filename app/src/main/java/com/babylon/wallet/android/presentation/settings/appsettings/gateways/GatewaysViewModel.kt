@@ -105,7 +105,7 @@ class GatewaysViewModel @Inject constructor(
 
             val newGatewayInfo = networkInfoRepository.getNetworkInfo(newUrl)
             newGatewayInfo.onValue { networkName ->
-                addGatewayUseCase(Radix.Gateway(newUrl, Radix.Network.forName(networkName)))
+                addGatewayUseCase(Radix.Gateway(newUrl, Radix.Network.fromName(networkName)))
                 _state.update { state ->
                     state.copy(addingGateway = false, newUrl = "", newUrlValid = false)
                 }

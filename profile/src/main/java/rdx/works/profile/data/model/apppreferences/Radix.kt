@@ -74,10 +74,14 @@ object Radix {
                 return listOf(mainnet, stokenet, hammunet, nebunet, kisharnet, mardunet, enkinet, ansharnet, zabanet)
             }
 
-            fun forName(name: String): Network {
+            fun fromName(name: String): Network {
                 return allKnownNetworks().first { network ->
                     network.name == name
                 }
+            }
+
+            fun fromId(id: Int): Network {
+                return allKnownNetworks().first { it.id == id }
             }
         }
     }

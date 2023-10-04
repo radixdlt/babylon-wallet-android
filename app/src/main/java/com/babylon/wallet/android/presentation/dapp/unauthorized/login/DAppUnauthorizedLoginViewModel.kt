@@ -32,7 +32,6 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toPersistentList
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.profile.data.model.pernetwork.Network
@@ -138,21 +137,21 @@ class DAppUnauthorizedLoginViewModel @Inject constructor(
         }
     }
 
-    @Suppress("MagicNumber")
     private suspend fun handleRequestError(exception: DappRequestException) {
         if (exception.e is SignatureCancelledException) {
-            _state.update { it.copy() }
             return
         }
-        val failure = exception.failure
-        _state.update { it.copy(uiMessage = UiMessage.ErrorMessage.from(DappRequestException(failure))) }
         dAppMessenger.sendWalletInteractionResponseFailure(
             remoteConnectorId = request.remoteConnectorId,
             requestId = args.requestId,
-            error = failure.toWalletErrorType(),
-            message = failure.getDappMessage()
+            error = exception.failure.toWalletErrorType(),
+            message = exception.failure.getDappMessage()
         )
-        delay(2000)
+        _state.update { it.copy(failureDialog = DAppUnauthorizedLoginUiState.FailureDialog.Open(exception)) }
+    }
+
+    fun onAcknowledgeFailureDialog() = viewModelScope.launch {
+        _state.update { it.copy(failureDialog = DAppUnauthorizedLoginUiState.FailureDialog.Closed) }
         sendEvent(Event.RejectLogin)
         incomingRequestRepository.requestHandled(requestId = args.requestId)
     }
@@ -261,9 +260,16 @@ sealed interface Event : OneOffEvent {
 data class DAppUnauthorizedLoginUiState(
     val dappWithMetadata: DAppWithMetadata? = null,
     val uiMessage: UiMessage? = null,
+    val failureDialog: FailureDialog = FailureDialog.Closed,
     val initialUnauthorizedLoginRoute: InitialUnauthorizedLoginRoute? = null,
     val selectedPersonaData: PersonaData? = null,
     val selectedAccountsOneTime: ImmutableList<AccountItemUiModel> = persistentListOf(),
     val selectedPersona: PersonaUiModel? = null,
     val interactionState: InteractionState? = null
-) : UiState
+) : UiState {
+
+    sealed interface FailureDialog {
+        data object Closed : FailureDialog
+        data class Open(val dappRequestException: DappRequestException) : FailureDialog
+    }
+}

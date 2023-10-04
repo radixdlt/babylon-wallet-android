@@ -34,7 +34,6 @@ import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
 import com.babylon.wallet.android.utils.toISO8601String
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
@@ -233,20 +232,21 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
         }
     }
 
-    @Suppress("MagicNumber")
     private suspend fun handleRequestError(exception: DappRequestException) {
         if (exception.e is SignatureCancelledException) {
             return
         }
-        val failure = exception.failure
-        _state.update { it.copy(uiMessage = UiMessage.ErrorMessage.from(DappRequestException(failure))) }
         dAppMessenger.sendWalletInteractionResponseFailure(
             remoteConnectorId = request.remoteConnectorId,
             requestId = args.interactionId,
-            error = failure.toWalletErrorType(),
-            message = failure.getDappMessage()
+            error = exception.failure.toWalletErrorType(),
+            message = exception.failure.getDappMessage()
         )
-        delay(2000)
+        _state.update { it.copy(failureDialog = DAppLoginUiState.FailureDialog.Open(exception)) }
+    }
+
+    fun onAcknowledgeFailureDialog() = viewModelScope.launch {
+        _state.update { it.copy(failureDialog = DAppLoginUiState.FailureDialog.Closed) }
         sendEvent(Event.RejectLogin)
         incomingRequestRepository.requestHandled(requestId = args.interactionId)
     }
@@ -714,6 +714,7 @@ sealed interface Event : OneOffEvent {
 data class DAppLoginUiState(
     val dappWithMetadata: DAppWithMetadata? = null,
     val uiMessage: UiMessage? = null,
+    val failureDialog: FailureDialog = FailureDialog.Closed,
     val initialAuthorizedLoginRoute: InitialAuthorizedLoginRoute? = null,
     val selectedAccountsOngoing: List<AccountItemUiModel> = emptyList(),
     val selectedOngoingPersonaData: PersonaData? = null,
@@ -721,4 +722,10 @@ data class DAppLoginUiState(
     val selectedAccountsOneTime: List<AccountItemUiModel> = emptyList(),
     val selectedPersona: PersonaUiModel? = null,
     val interactionState: InteractionState? = null
-) : UiState
+) : UiState {
+
+    sealed interface FailureDialog {
+        data object Closed : FailureDialog
+        data class Open(val dappRequestException: DappRequestException) : FailureDialog
+    }
+}

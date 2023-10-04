@@ -4,6 +4,7 @@ import androidx.annotation.StringRes
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.data.dapp.model.LedgerErrorCode
 import com.babylon.wallet.android.data.dapp.model.WalletErrorType
+import rdx.works.profile.data.model.apppreferences.Radix
 
 @Suppress("CyclomaticComplexMethod")
 sealed class DappRequestFailure(msg: String? = null) : Exception(msg.orEmpty()) {
@@ -15,7 +16,15 @@ sealed class DappRequestFailure(msg: String? = null) : Exception(msg.orEmpty()) 
     data object InvalidPersona : DappRequestFailure()
     data object InvalidRequestChallenge : DappRequestFailure("Invalid challenge in dApp request")
     data class FailedToSignAuthChallenge(val msg: String = "") : DappRequestFailure(msg)
-    data class WrongNetwork(val currentNetworkId: Int, val requestNetworkId: Int) : DappRequestFailure()
+    data class WrongNetwork(
+        val currentNetworkId: Int,
+        val requestNetworkId: Int
+    ) : DappRequestFailure() {
+        val currentNetworkName: String
+            get() = runCatching { Radix.Network.fromId(currentNetworkId) }.getOrNull()?.name.orEmpty().replaceFirstChar(Char::titlecase)
+        val requestNetworkName: String
+            get() = runCatching { Radix.Network.fromId(requestNetworkId) }.getOrNull()?.name.orEmpty().replaceFirstChar(Char::titlecase)
+    }
 
     sealed class TransactionApprovalFailure : DappRequestFailure() {
         data object ConvertManifest : TransactionApprovalFailure()
@@ -98,7 +107,8 @@ sealed class DappRequestFailure(msg: String? = null) : Exception(msg.orEmpty()) 
             TransactionApprovalFailure.PrepareNotarizedTransaction -> R.string.error_transactionFailure_prepare
             RejectedByUser -> R.string.error_transactionFailure_rejectedByUser
             TransactionApprovalFailure.SubmitNotarizedTransaction -> R.string.error_transactionFailure_submit
-            is WrongNetwork -> R.string.error_transactionFailure_network
+            // Cannot use the correct error resource, since the correct one needs parameters to work
+            is WrongNetwork -> R.string.common_somethingWentWrong
             TransactionApprovalFailure.FailedToFindAccountWithEnoughFundsToLockFee ->
                 R.string.error_transactionFailure_noFundsToApproveTransaction
             DappVerificationFailure.RadixJsonNotFound -> R.string.dAppRequest_validationOutcome_shortExplanationBadContent
