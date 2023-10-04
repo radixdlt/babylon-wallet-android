@@ -106,7 +106,9 @@ class IncomingRequestRepositoryImpl @Inject constructor() : IncomingRequestRepos
         val queueItem = requestQueue.find {
             it is QueueItem.RequestItem && it.incomingRequest.id == requestId && it.incomingRequest is IncomingRequest.UnauthorizedRequest
         }
-        Timber.w("Unauthorized request with id $requestId is null")
+        if (queueItem == null) {
+            Timber.w("Unauthorized request with id $requestId is null")
+        }
         return (queueItem as? QueueItem.RequestItem)?.incomingRequest as? IncomingRequest.UnauthorizedRequest
     }
 
@@ -114,7 +116,9 @@ class IncomingRequestRepositoryImpl @Inject constructor() : IncomingRequestRepos
         val queueItem = requestQueue.find {
             it is QueueItem.RequestItem && it.incomingRequest.id == requestId && it.incomingRequest is IncomingRequest.TransactionRequest
         }
-        Timber.w("Transaction request with id $requestId is null")
+        if (queueItem == null) {
+            Timber.w("Transaction request with id $requestId is null")
+        }
         return (queueItem as? QueueItem.RequestItem)?.incomingRequest as? IncomingRequest.TransactionRequest
     }
 
@@ -122,7 +126,9 @@ class IncomingRequestRepositoryImpl @Inject constructor() : IncomingRequestRepos
         val queueItem = requestQueue.find {
             it is QueueItem.RequestItem && it.incomingRequest.id == requestId && it.incomingRequest is IncomingRequest.AuthorizedRequest
         }
-        Timber.w("Authorized request with id $requestId is null")
+        if (queueItem == null) {
+            Timber.w("Authorized request with id $requestId is null")
+        }
         return (queueItem as? QueueItem.RequestItem)?.incomingRequest as? IncomingRequest.AuthorizedRequest
     }
 
