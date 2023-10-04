@@ -54,11 +54,9 @@ fun CreateAccountScreen(
     if (state.loading) {
         FullscreenCircularProgressContent()
     } else {
-        val accountName = viewModel.accountName.collectAsStateWithLifecycle().value
-        val buttonEnabled = viewModel.buttonEnabled.collectAsStateWithLifecycle().value
-        val isAccountNameLengthMoreThanTheMax = viewModel.isAccountNameLengthMoreThanTheMax
-            .collectAsStateWithLifecycle()
-            .value
+        val accountName by viewModel.accountName.collectAsStateWithLifecycle()
+        val buttonEnabled by viewModel.buttonEnabled.collectAsStateWithLifecycle()
+        val isAccountNameLengthMoreThanTheMax by viewModel.isAccountNameLengthMoreThanTheMax.collectAsStateWithLifecycle()
 
         CreateAccountContent(
             onAccountNameChange = viewModel::onAccountNameChange,
