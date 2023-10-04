@@ -133,75 +133,12 @@ class SnapshotEncodingTests(private val versionUnderTest: Int) {
                 fun toDomain() = MnemonicWithPassphrase(mnemonic, passphrase)
             }
         }
-
-        companion object {
-
-            fun from(
-                serializer: Json,
-                snapshot: ProfileSnapshot,
-                mnemonics: List<MnemonicWithPassphrase>,
-                passwords: List<String>
-            ): TestVector {
-                val profile = snapshot.toProfile()
-
-                return TestVector(
-                    snapshotVersion = profile.header.snapshotVersion,
-                    encryptedSnapshots = passwords.map {
-                        EncryptedMnemonicWithPassword(
-                            password = it,
-                            snapshot = EncryptedProfileSnapshot.from(
-                                serializer = serializer,
-                                snapshot = snapshot,
-                                password = it
-                            )
-                        )
-                    },
-                    mnemonics = mnemonics.map {
-                        MnemonicWithFactorSourceId(
-                            factorSourceID = FactorSource.FactorSourceID.FromHash(
-                                kind = FactorSourceKind.DEVICE,
-                                body = HexCoded32Bytes(FactorSource.factorSourceId(mnemonicWithPassphrase = it))
-                            ),
-                            mnemonicWithPassphrase = MnemonicWithFactorSourceId.Mnemonic(
-                                mnemonic = it.mnemonic,
-                                passphrase = it.bip39Passphrase
-                            )
-                        )
-                    },
-                    plaintext = snapshot
-                )
-            }
-
-        }
     }
 
     companion object {
         private const val TEST_VECTOR_DIR = "src/test/resources/version"
         private const val MULTI_SNAPSHOT_VECTOR_FILE = "multi_profile_snapshots.json"
         private const val BASE_SNAPSHOT = "base_profile_snapshot.json"
-
-        private val MNEMONICS = listOf(
-            MnemonicWithPassphrase(
-                mnemonic = "alley urge tag valid execute hat little funny armed salute orient hurt balcony urban found clip tennis wrong " +
-                        "turtle canoe castle exist pledge test",
-                bip39Passphrase = ""
-            ),
-            MnemonicWithPassphrase(
-                mnemonic = "gentle hawk winner rain embrace erosion call update photo frost fatal wrestle",
-                bip39Passphrase = ""
-            ),
-            MnemonicWithPassphrase(
-                mnemonic = "smile entry satisfy shed margin rubber disorder hungry foot error ribbon cradle aim round october blind " +
-                        "lab spend",
-                bip39Passphrase = ""
-            )
-        )
-
-        private val PASSWORDS = listOf(
-            "",
-            "Radix... just imagine!",
-            "babylon"
-        )
 
         @JvmStatic
         @Parameterized.Parameters(name = "{0}")
