@@ -26,10 +26,14 @@ fun NavGraphBuilder.dappLoginUnauthorizedNavGraph(navController: NavController) 
             navController,
             navigateToChooseAccount = { numberOfAccounts, isExactAccountsCount ->
                 navController.chooseAccountsOneTime(numberOfAccounts, isExactAccountsCount)
+            },
+            navigateToOneTimePersonaData = {
+                navController.personaDataOnetimeUnauthorized(it)
+            },
+            onLoginFlowComplete = {
+                navController.popBackStack(ROUTE_DAPP_LOGIN_UNAUTHORIZED_GRAPH, true)
             }
-        ) {
-            navController.personaDataOnetimeUnauthorized(it)
-        }
+        )
         chooseAccountsOneTime(
             exitRequestFlow = {
                 navController.popBackStack()

@@ -31,7 +31,8 @@ fun NavController.dAppLoginUnauthorized(requestId: String) {
 fun NavGraphBuilder.dAppLoginUnauthorized(
     navController: NavController,
     navigateToChooseAccount: (Int, Boolean) -> Unit,
-    navigateToOneTimePersonaData: (RequiredPersonaFields) -> Unit
+    navigateToOneTimePersonaData: (RequiredPersonaFields) -> Unit,
+    onLoginFlowComplete: () -> Unit
 ) {
     composable(
         route = ROUTE_DAPP_LOGIN_UNAUTHORIZED_SCREEN,
@@ -48,7 +49,8 @@ fun NavGraphBuilder.dAppLoginUnauthorized(
         DappUnauthorizedLoginScreen(
             viewModel = vm,
             navigateToOneTimePersonaData = navigateToOneTimePersonaData,
-            navigateToChooseAccount = navigateToChooseAccount
+            navigateToChooseAccount = navigateToChooseAccount,
+            onLoginFlowComplete = onLoginFlowComplete
         )
     }
 }

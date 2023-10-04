@@ -344,7 +344,7 @@
   <string name="dAppRequest_validationOutcome_invalidRequestMessage">Could not validate the dApp.</string>
   <string name="dAppRequest_requestMalformedAlert_message">Request received from dApp is invalid.</string>
   <string name="dAppRequest_requestPersonaNotFoundAlert_message">dApp specified an invalid Persona.</string>
-  <string name="dAppRequest_requestWrongNetworkAlert_message">dApp made a requested intended for network %s, but you are currently connected to %s.</string>
+  <string name="dAppRequest_requestWrongNetworkAlert_message">dApp made a request intended for network %s, but you are currently connected to %s.</string>
   <string name="dAppRequest_responseFailureAlert_message">Failed to send request response to dApp.</string>
   <string name="dAppRequest_completion_title">Success</string>
   <string name="dAppRequest_completion_subtitle">Request from %s complete</string>
@@ -492,7 +492,7 @@
   <string name="error_transactionFailure_epoch">Failed to get epoch</string>
   <string name="error_transactionFailure_header">Failed to build transaction header</string>
   <string name="error_transactionFailure_manifest">Failed to convert transaction manifest</string>
-  <string name="error_transactionFailure_network">Wrong network</string>
+  <string name="error_transactionFailure_network">dApp made a request intended for %s network, but you are currently connected to %s network.</string>
   <string name="error_transactionFailure_noFundsToApproveTransaction">No funds to approve transaction</string>
   <string name="error_transactionFailure_pollStatus">Failed to poll transaction status</string>
   <string name="error_transactionFailure_prepare">Failed to prepare transaction</string>
