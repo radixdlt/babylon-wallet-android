@@ -331,7 +331,7 @@
   <string name="dAppRequest_validationOutcome_subtitleBadContent">Invalid content</string>
   <string name="dAppRequest_validationOutcome_subtitleIncompatibleVersion">Incompatible connector extension</string>
   <string name="dAppRequest_validationOutcome_subtitleWrongNetworkID">Network mismatch</string>
-  <string name="dAppRequest_validationOutcome_devExplanationBadContent">Invalid value of `numberOfAccountsInvalid`: must not be be `exactly(0)` nor can `quantity` be negative</string>
+  <string name="dAppRequest_validationOutcome_devExplanationBadContent">Invalid value of `numberOfAccountsInvalid`: must not be `exactly(0)` nor can `quantity` be negative</string>
   <string name="dAppRequest_validationOutcome_devExplanationIncompatibleVersion">%s (CE: %s, wallet: %s)</string>
   <string name="dAppRequest_validationOutcome_devExplanationInvalidOrigin">\'%s\' is not valid origin.</string>
   <string name="dAppRequest_validationOutcome_devExplanationInvalidDappDefinitionAddress">\'%s\' is not valid account address.</string>
@@ -345,7 +345,7 @@
   <string name="dAppRequest_validationOutcome_invalidRequestMessage">Could not validate the dApp.</string>
   <string name="dAppRequest_requestMalformedAlert_message">Request received from dApp is invalid.</string>
   <string name="dAppRequest_requestPersonaNotFoundAlert_message">dApp specified an invalid Persona.</string>
-  <string name="dAppRequest_requestWrongNetworkAlert_message">dApp made a requested intended for network %s, but you are currently connected to %s.</string>
+  <string name="dAppRequest_requestWrongNetworkAlert_message">dApp made a request intended for network %s, but you are currently connected to %s.</string>
   <string name="dAppRequest_responseFailureAlert_message">Failed to send request response to dApp.</string>
   <string name="dAppRequest_completion_title">Success</string>
   <string name="dAppRequest_completion_subtitle">Request from %s complete</string>
