@@ -8,6 +8,7 @@ import com.babylon.wallet.android.data.dapp.model.WalletInteraction
 import com.babylon.wallet.android.data.dapp.model.WalletInteractionFailureResponse
 import com.babylon.wallet.android.data.dapp.model.peerdroidRequestJson
 import com.babylon.wallet.android.data.dapp.model.toDomainModel
+import com.babylon.wallet.android.domain.RadixWalletException
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.babylon.wallet.android.utils.parseEncryptionKeyFromConnectionPassword
 import com.radixdlt.hex.extensions.toHexString
@@ -49,6 +50,7 @@ interface PeerdroidClient {
 
     fun terminate()
     fun listenForLedgerResponses(): Flow<MessageFromDataChannel.LedgerResponse>
+    fun listenForIncomingRequestErrors(): Flow<MessageFromDataChannel.Error.DappRequest>
 }
 
 class PeerdroidClientImpl @Inject constructor(
@@ -94,6 +96,10 @@ class PeerdroidClientImpl @Inject constructor(
         return listenForIncomingMessages().filterIsInstance()
     }
 
+    override fun listenForIncomingRequestErrors(): Flow<MessageFromDataChannel.Error.DappRequest> {
+        return listenForIncomingMessages().filterIsInstance()
+    }
+
     override fun listenForLedgerResponses(): Flow<MessageFromDataChannel.LedgerResponse> {
         return listenForIncomingMessages().filterIsInstance()
     }
@@ -118,8 +124,7 @@ class PeerdroidClientImpl @Inject constructor(
         messageInJsonString: String
     ): MessageFromDataChannel {
         return try {
-            val payload = peerdroidRequestJson.decodeFromString<ConnectorExtensionInteraction>(messageInJsonString)
-            when (payload) {
+            when (val payload = peerdroidRequestJson.decodeFromString<ConnectorExtensionInteraction>(messageInJsonString)) {
                 is WalletInteraction -> payload.toDomainModel(remoteConnectorId = remoteConnectorId)
                 else -> (payload as LedgerInteractionResponse).toDomainModel()
             }
@@ -136,9 +141,13 @@ class PeerdroidClientImpl @Inject constructor(
                 remoteConnectorId = remoteConnectorId
             )
             MessageFromDataChannel.ParsingError
+        } catch (e: RadixWalletException.ErrorParsingIncomingRequest) {
+            MessageFromDataChannel.Error.DappRequest
+        } catch (e: RadixWalletException.ErrorParsingLedgerResponse) {
+            MessageFromDataChannel.Error.LedgerResponse
         } catch (exception: Exception) {
             Timber.e("failed to parse incoming message: ${exception.localizedMessage}")
-            MessageFromDataChannel.Error
+            MessageFromDataChannel.Error.Unknown
         }
     }
 

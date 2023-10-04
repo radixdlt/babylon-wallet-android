@@ -156,7 +156,7 @@ fun WalletApp(
             dismissText = null
         )
     }
-    state.dappVerificationError?.let {
+    state.dappRequestFailure?.let {
         BasicPromptAlertDialog(
             finish = {
                 mainViewModel.onInvalidRequestMessageShown()
@@ -170,7 +170,7 @@ fun WalletApp(
             },
             text = {
                 Text(
-                    text = stringResource(id = R.string.dAppRequest_validationOutcome_invalidRequestMessage),
+                    text = stringResource(id = it.toDescriptionRes()),
                     style = RadixTheme.typography.body2Regular,
                     color = RadixTheme.colors.gray1
                 )

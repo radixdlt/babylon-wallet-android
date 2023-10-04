@@ -104,7 +104,7 @@ class BuildAuthorizedDappResponseUseCase @Inject constructor(
                 buildAccountsResponseItem(
                     request,
                     oneTimeAccounts,
-                    request.oneTimeAccountsRequestItem?.challenge,
+                    request.oneTimeAccountsRequestItem?.challenge?.value,
                     authProvider
                 )
             if (oneTimeAccountsResponseItem.isFailure) {
@@ -114,7 +114,7 @@ class BuildAuthorizedDappResponseUseCase @Inject constructor(
                 buildAccountsResponseItem(
                     request,
                     ongoingAccounts,
-                    request.ongoingAccountsRequestItem?.challenge,
+                    request.ongoingAccountsRequestItem?.challenge?.value,
                     authProvider
                 )
             if (ongoingAccountsResponseItem.isFailure) {
@@ -148,7 +148,7 @@ class BuildAuthorizedDappResponseUseCase @Inject constructor(
                     DappRequestFailure.FailedToSignAuthChallenge()
                 )
                 val signRequest = SignRequest.SignAuthChallengeRequest(
-                    challengeHex = authRequest.challenge,
+                    challengeHex = authRequest.challenge.value,
                     origin = request.metadata.origin,
                     dAppDefinitionAddress = request.metadata.dAppDefinitionAddress
                 )
@@ -163,7 +163,7 @@ class BuildAuthorizedDappResponseUseCase @Inject constructor(
                                 selectedPersona.address,
                                 selectedPersona.displayName
                             ),
-                            authRequest.challenge,
+                            authRequest.challenge.value,
                             signature.toProof(signRequest.dataToSign)
                         )
                     )
@@ -214,7 +214,7 @@ class BuildUnauthorizedDappResponseUseCase @Inject constructor(
             buildAccountsResponseItem(
                 request = request,
                 accounts = oneTimeAccounts,
-                challengeHex = request.oneTimeAccountsRequestItem?.challenge,
+                challengeHex = request.oneTimeAccountsRequestItem?.challenge?.value,
                 deviceBiometricAuthenticationProvider = deviceBiometricAuthenticationProvider
             )
         if (oneTimeAccountsResponseItem.isFailure) {
