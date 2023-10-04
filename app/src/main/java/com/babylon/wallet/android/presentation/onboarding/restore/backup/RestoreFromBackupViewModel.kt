@@ -2,13 +2,13 @@ package com.babylon.wallet.android.presentation.onboarding.restore.backup
 
 import android.net.Uri
 import androidx.lifecycle.viewModelScope
-import com.babylon.wallet.android.domain.model.AppConstants
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
+import com.babylon.wallet.android.utils.Constants
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.update
@@ -96,7 +96,7 @@ class RestoreFromBackupViewModel @Inject constructor(
                 )
                     .onSuccess {
                         _state.update { state -> state.copy(passwordSheetState = State.PasswordSheet.Closed) }
-                        delay(AppConstants.DELAY_300_MS)
+                        delay(Constants.DELAY_300_MS)
                         sendEvent(Event.OnRestoreConfirm(fromCloud = false))
                     }.onFailure { error ->
                         when (error) {

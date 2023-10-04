@@ -19,6 +19,7 @@ import rdx.works.profile.data.model.pernetwork.addPersona
 import rdx.works.profile.data.model.pernetwork.nextAccountIndex
 import rdx.works.profile.data.model.pernetwork.nextPersonaIndex
 import rdx.works.profile.data.repository.MnemonicRepository
+import rdx.works.profile.data.utils.renameAccountDisplayName
 import rdx.works.profile.domain.TestData
 
 class ProfileGenerationTest {
@@ -37,7 +38,7 @@ class ProfileGenerationTest {
         val mnemonicRepository = mockk<MnemonicRepository>()
         coEvery { mnemonicRepository() } returns mnemonicWithPassphrase
 
-        val profile = Profile.init(
+        var profile = Profile.init(
             id = "BABE1442-3C98-41FF-AFB0-D0F5829B020D",
             deviceInfo = TestData.deviceInfo,
             creationDate = InstantGenerator()
@@ -65,17 +66,17 @@ class ProfileGenerationTest {
             appearanceID = 0
         )
 
-        var updatedProfile = profile.addAccount(
+        profile = profile.addAccount(
             account = firstAccount,
             onNetwork = defaultNetwork.networkId()
         )
 
-        println("Profile updated generated $updatedProfile")
-        assertEquals(updatedProfile.networks.first().accounts.count(), 1)
+        println("Profile updated generated $profile")
+        assertEquals(profile.networks.first().accounts.count(), 1)
         assertEquals(
             "Next derivation index for second account",
             1,
-            updatedProfile.nextAccountIndex(defaultNetwork.networkId()),
+            profile.nextAccountIndex(defaultNetwork.networkId()),
         )
 
         val firstPersona = init(
@@ -86,28 +87,36 @@ class ProfileGenerationTest {
             networkId = defaultNetwork.networkId()
         )
 
-        updatedProfile = updatedProfile.addPersona(
+        profile = profile.addPersona(
             persona = firstPersona,
             onNetwork = defaultNetwork.networkId()
         )
 
-        assertEquals(updatedProfile.networks.first().personas.count(), 1)
+        assertEquals(profile.networks.first().personas.count(), 1)
         assertEquals(
             "Next derivation index for second persona",
             1,
-            updatedProfile.nextPersonaIndex(defaultNetwork.networkId())
+            profile.nextPersonaIndex(defaultNetwork.networkId())
         )
 
         val p2pLink = P2PLink.init(
             connectionPassword = "deadbeeffadedeafdeadbeeffadedeafdeadbeeffadedeafdeadbeeffadedeaf",
             displayName = "Brave browser on Mac Studio"
         )
-        updatedProfile = updatedProfile.addP2PLink(
+        profile = profile.addP2PLink(
             p2pLink = p2pLink
         )
 
-        assertEquals(1, updatedProfile.appPreferences.p2pLinks.count())
+        assertEquals(1, profile.appPreferences.p2pLinks.count())
 
-        Assert.assertTrue(updatedProfile.header.id.isNotBlank())
+        Assert.assertTrue(profile.header.id.isNotBlank())
+
+        val newDisplayNameForAccount = "bla bla bla"
+        profile = profile.renameAccountDisplayName(
+            accountToRename = firstAccount,
+            newDisplayName = newDisplayNameForAccount
+        )
+        assertEquals(profile.networks.first().accounts.count(), 1)
+        assertEquals(profile.networks.first().accounts[0].displayName, newDisplayNameForAccount)
     }
 }

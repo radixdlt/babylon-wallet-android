@@ -1,7 +1,4 @@
-@file:OptIn(
-    ExperimentalFoundationApi::class,
-    ExperimentalMaterialApi::class
-)
+@file:OptIn(ExperimentalFoundationApi::class, ExperimentalMaterialApi::class)
 
 package com.babylon.wallet.android.presentation.account
 
@@ -105,7 +102,7 @@ import rdx.works.profile.data.model.factorsources.FactorSource
 @Composable
 fun AccountScreen(
     viewModel: AccountViewModel,
-    onAccountPreferenceClick: (String) -> Unit,
+    onAccountPreferenceClick: (address: String) -> Unit,
     modifier: Modifier = Modifier,
     onBackClick: () -> Unit,
     onNavigateToMnemonicBackup: (FactorSource.FactorSourceID.FromHash) -> Unit,
@@ -130,8 +127,8 @@ fun AccountScreen(
     AccountScreenContent(
         modifier = modifier,
         state = state,
-        onAccountPreferenceClick = {
-            onAccountPreferenceClick(it)
+        onAccountPreferenceClick = { address ->
+            onAccountPreferenceClick(address)
         },
         onBackClick = onBackClick,
         onRefresh = viewModel::refresh,
@@ -151,7 +148,7 @@ fun AccountScreen(
 private fun AccountScreenContent(
     modifier: Modifier = Modifier,
     state: AccountUiState,
-    onAccountPreferenceClick: (String) -> Unit,
+    onAccountPreferenceClick: (address: String) -> Unit,
     onBackClick: () -> Unit,
     onRefresh: () -> Unit,
     onHistoryClick: () -> Unit,
@@ -621,7 +618,7 @@ fun AccountContentPreview() {
                         ),
                     )
                 ),
-                onAccountPreferenceClick = {},
+                onAccountPreferenceClick = { _ -> },
                 onBackClick = {},
                 onRefresh = {},
                 onHistoryClick = {},

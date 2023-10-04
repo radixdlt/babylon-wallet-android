@@ -142,9 +142,7 @@ private fun GatewaysContent(
                 },
                 newUrlValid = newUrlValid,
                 addingGateway = addingGateway,
-                modifier = Modifier
-                    .padding(RadixTheme.dimensions.paddingDefault)
-                    .navigationBarsPadding(),
+                modifier = Modifier.navigationBarsPadding(),
                 gatewayAddFailure = gatewayAddFailure
             )
         }
@@ -239,24 +237,28 @@ private fun AddGatewaySheet(
         modifier = modifier.verticalScroll(rememberScrollState()),
         verticalArrangement = Arrangement.Center,
     ) {
-        IconButton(onClick = onClose) {
+        IconButton(
+            modifier = Modifier.padding(
+                start = RadixTheme.dimensions.paddingXSmall,
+                top = RadixTheme.dimensions.paddingMedium
+            ),
+            onClick = onClose
+        ) {
             Icon(
-                painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_close),
+                painter = painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_close),
                 tint = RadixTheme.colors.gray1,
                 contentDescription = null
             )
         }
-        Spacer(modifier = Modifier.height(20.dp))
+        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingMedium))
         Text(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = RadixTheme.dimensions.paddingDefault),
+            modifier = Modifier.fillMaxWidth(),
             text = stringResource(id = R.string.gateways_addNewGateway_title),
             style = RadixTheme.typography.title,
             color = RadixTheme.colors.gray1,
             textAlign = TextAlign.Center
         )
-        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
+        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingMedium))
         Text(
             modifier = Modifier.fillMaxWidth(),
             text = stringResource(id = R.string.gateways_addNewGateway_subtitle),
@@ -264,11 +266,11 @@ private fun AddGatewaySheet(
             color = RadixTheme.colors.gray1,
             textAlign = TextAlign.Center
         )
-        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
+        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXXLarge))
         RadixTextField(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = RadixTheme.dimensions.paddingDefault),
+                .padding(horizontal = RadixTheme.dimensions.paddingXLarge),
             onValueChanged = onNewUrlChanged,
             value = newUrl,
             hint = stringResource(id = R.string.gateways_addNewGateway_textFieldPlaceholder),
@@ -281,13 +283,16 @@ private fun AddGatewaySheet(
                 else -> null
             }
         )
-        Spacer(modifier = Modifier.height(40.dp))
+        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXXLarge))
         RadixPrimaryButton(
             text = stringResource(R.string.gateways_addNewGateway_addGatewayButtonTitle),
             onClick = {
                 onAddGatewayClick()
             },
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = RadixTheme.dimensions.paddingSemiLarge)
+                .padding(bottom = RadixTheme.dimensions.paddingSemiLarge),
             enabled = newUrlValid,
             isLoading = addingGateway
         )

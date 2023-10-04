@@ -80,7 +80,7 @@ fun FeesSheet(
             Text(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = RadixTheme.dimensions.paddingXXLarge),
+                    .padding(horizontal = RadixTheme.dimensions.paddingXXXLarge),
                 text = title,
                 style = RadixTheme.typography.title,
                 color = RadixTheme.colors.gray1,
@@ -101,7 +101,7 @@ fun FeesSheet(
             Text(
                 modifier = Modifier
                     .padding(
-                        horizontal = RadixTheme.dimensions.paddingXXLarge,
+                        horizontal = RadixTheme.dimensions.paddingXXXLarge,
                         vertical = RadixTheme.dimensions.paddingDefault
                     ),
                 text = body,

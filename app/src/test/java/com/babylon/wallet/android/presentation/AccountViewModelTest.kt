@@ -43,7 +43,7 @@ class AccountViewModelTest {
     fun setUp() = runTest {
         coEvery { preferencesManager.getBackedUpFactorSourceIds() } returns flowOf(emptySet())
         every { getProfileUseCase() } returns flowOf(SampleDataProvider().sampleProfile())
-        whenever(savedStateHandle.get<String>(Screen.ARG_ACCOUNT_ID)).thenReturn(accountId)
+        whenever(savedStateHandle.get<String>(Screen.ARG_ACCOUNT_ADDRESS)).thenReturn(accountId)
         whenever(appEventBus.events).thenReturn(MutableSharedFlow<AppEvent>().asSharedFlow())
     }
 

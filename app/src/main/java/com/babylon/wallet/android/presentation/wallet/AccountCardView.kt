@@ -69,7 +69,7 @@ fun AccountCardView(
             },
             text = accountWithResources.account.displayName,
             style = RadixTheme.typography.body1Header,
-            maxLines = 2,
+            maxLines = 1,
             color = RadixTheme.colors.white,
             overflow = TextOverflow.Ellipsis
         )

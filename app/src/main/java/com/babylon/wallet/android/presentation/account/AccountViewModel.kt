@@ -18,17 +18,18 @@ import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
-import com.babylon.wallet.android.presentation.navigation.Screen.Companion.ARG_ACCOUNT_ID
+import com.babylon.wallet.android.presentation.navigation.Screen.Companion.ARG_ACCOUNT_ADDRESS
 import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.profile.data.model.factorsources.FactorSource.FactorSourceID
 import rdx.works.profile.data.utils.factorSourceId
 import rdx.works.profile.domain.GetProfileUseCase
-import rdx.works.profile.domain.accountOnCurrentNetwork
+import rdx.works.profile.domain.accountOnCurrentNetworkWithAddress
 import timber.log.Timber
 import javax.inject.Inject
 
@@ -41,17 +42,19 @@ class AccountViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle
 ) : StateViewModel<AccountUiState>(), OneOffEventHandler<AccountEvent> by OneOffEventHandlerImpl() {
 
-    private val accountId: String = savedStateHandle.get<String>(ARG_ACCOUNT_ID).orEmpty()
+    private val accountAddress: String = savedStateHandle.get<String>(ARG_ACCOUNT_ADDRESS).orEmpty()
 
     override fun initialState(): AccountUiState = AccountUiState(accountWithResources = null)
 
     init {
         viewModelScope.launch {
-            getProfileUseCase.accountOnCurrentNetwork(accountId)?.let { account ->
-                _state.update { state ->
-                    state.copy(accountWithResources = AccountWithResources(account = account, resources = null))
+            getProfileUseCase.accountOnCurrentNetworkWithAddress(accountAddress).collectLatest { account ->
+                account?.let {
+                    _state.update { state ->
+                        state.copy(accountWithResources = AccountWithResources(account = account, resources = null))
+                    }
+                    loadAccountData(isRefreshing = false)
                 }
-                loadAccountData(isRefreshing = false)
             }
         }
 
@@ -69,7 +72,7 @@ class AccountViewModel @Inject constructor(
     private fun observeSecurityPrompt() {
         viewModelScope.launch {
             getAccountsForSecurityPromptUseCase().collect { accounts ->
-                val securityPrompt = accounts.find { it.account.address == accountId }?.prompt
+                val securityPrompt = accounts.find { it.account.address == accountAddress }?.prompt
 
                 _state.update { state ->
                     state.copy(securityPromptType = securityPrompt)

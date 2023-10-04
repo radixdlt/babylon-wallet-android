@@ -1,3 +1,5 @@
+@file:Suppress("TooManyFunctions")
+
 package rdx.works.profile.data.utils
 
 import com.radixdlt.ret.AccountDefaultDepositRule
@@ -5,6 +7,7 @@ import com.radixdlt.ret.ResourcePreference
 import rdx.works.core.InstantGenerator
 import rdx.works.core.mapWhen
 import rdx.works.profile.data.model.Profile
+import rdx.works.profile.data.model.currentGateway
 import rdx.works.profile.data.model.factorsources.FactorSource
 import rdx.works.profile.data.model.factorsources.Slip10Curve
 import rdx.works.profile.data.model.pernetwork.Entity
@@ -22,6 +25,30 @@ fun Profile.updateLastUsed(id: FactorSource.FactorSourceID): Profile {
             factorSource.common.lastUsedOn = InstantGenerator()
             factorSource
         }
+    )
+}
+
+fun Profile.renameAccountDisplayName(
+    accountToRename: Network.Account,
+    newDisplayName: String
+): Profile {
+    val networkId = currentGateway.network.networkId()
+    val renamedAccount = accountToRename.copy(
+        displayName = newDisplayName
+    )
+
+    return copy(
+        networks = networks.mapWhen(
+            predicate = { it.networkID == networkId.value },
+            mutation = { network ->
+                network.copy(
+                    accounts = network.accounts.mapWhen(
+                        predicate = { it == accountToRename },
+                        mutation = { renamedAccount }
+                    )
+                )
+            }
+        )
     )
 }
 
