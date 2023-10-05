@@ -48,7 +48,7 @@ fun DappUnauthorizedLoginScreen(
         null -> {}
     }
     LaunchedEffect(Unit) {
-        viewModel.oneOffEvent.filterIsInstance<Event.RejectLogin>().collect {
+        viewModel.oneOffEvent.filterIsInstance<Event.CloseLoginFlow>().collect {
             onLoginFlowComplete()
         }
     }
