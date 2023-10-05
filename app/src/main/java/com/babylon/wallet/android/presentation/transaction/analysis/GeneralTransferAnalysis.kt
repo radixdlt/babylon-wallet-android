@@ -18,6 +18,7 @@ import kotlinx.coroutines.coroutineScope
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.accountsOnCurrentNetwork
+import rdx.works.profile.domain.defaultDepositGuarantee
 
 // Generic transaction resolver
 suspend fun TransactionType.GeneralTransaction.resolve(
@@ -73,9 +74,11 @@ suspend fun TransactionType.GeneralTransaction.resolve(
         isRefreshing = false
     ).value().orEmpty()
 
+    val defaultDepositGuarantee = getProfileUseCase.defaultDepositGuarantee().toFloat()
+
     return PreviewType.Transfer(
         from = resolveFromAccounts(allResources, allAccounts),
-        to = resolveToAccounts(allResources, allAccounts, thirdPartyMetadata),
+        to = resolveToAccounts(allResources, allAccounts, thirdPartyMetadata, defaultDepositGuarantee),
         badges = badges,
         dApps = dApps
     )
@@ -123,14 +126,16 @@ private fun TransactionType.GeneralTransaction.resolveFromAccounts(
 private fun TransactionType.GeneralTransaction.resolveToAccounts(
     allResources: List<Resources>,
     allAccounts: List<Network.Account>,
-    thirdPartyMetadata: Map<String, List<MetadataItem>> = emptyMap()
+    thirdPartyMetadata: Map<String, List<MetadataItem>> = emptyMap(),
+    defaultDepositGuarantees: Float
 ) = accountDeposits.map { depositEntry ->
     val transferables = depositEntry.value.map {
         it.toDepositingTransferableResource(
             allResources = allResources,
             newlyCreatedMetadata = metadataOfNewlyCreatedEntities,
             newlyCreatedEntities = addressesOfNewlyCreatedEntities,
-            thirdPartyMetadata = thirdPartyMetadata
+            thirdPartyMetadata = thirdPartyMetadata,
+            defaultDepositGuarantees = defaultDepositGuarantees
         )
     }
 

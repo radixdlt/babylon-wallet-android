@@ -50,7 +50,7 @@ sealed interface SettingsItem {
             return when (this) {
                 SeedPhrases -> R.string.displayMnemonics_seedPhrases
                 LedgerHardwareWallets -> R.string.settings_ledgerHardwareWallets
-                DepositGuarantees -> R.string.accountSettings_thirdPartyDeposits
+                DepositGuarantees -> R.string.accountSettings_depositGuarantees
                 ImportFromLegacyWallet -> R.string.settings_importFromLegacyWallet
             }
         }
@@ -60,8 +60,8 @@ sealed interface SettingsItem {
             return when (this) {
                 SeedPhrases -> com.babylon.wallet.android.designsystem.R.drawable.ic_seed_phrases
                 LedgerHardwareWallets -> com.babylon.wallet.android.designsystem.R.drawable.ic_ledger_hardware_wallets
+                DepositGuarantees -> com.babylon.wallet.android.designsystem.R.drawable.ic_filter_list
                 ImportFromLegacyWallet -> com.babylon.wallet.android.designsystem.R.drawable.ic_app_settings
-                else -> null
             }
         }
     }

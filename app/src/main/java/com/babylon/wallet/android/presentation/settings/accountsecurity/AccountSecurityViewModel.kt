@@ -25,7 +25,8 @@ class AccountSecurityViewModel @Inject constructor(
     override fun initialState(): AccountSecurityUiState = AccountSecurityUiState(
         settings = persistentSetOf(
             SettingsItem.AccountSecurityAndSettingsItem.SeedPhrases,
-            SettingsItem.AccountSecurityAndSettingsItem.LedgerHardwareWallets
+            SettingsItem.AccountSecurityAndSettingsItem.LedgerHardwareWallets,
+            SettingsItem.AccountSecurityAndSettingsItem.DepositGuarantees,
         )
     )
 

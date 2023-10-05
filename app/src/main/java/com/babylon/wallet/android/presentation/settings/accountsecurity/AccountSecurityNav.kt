@@ -9,6 +9,7 @@ import androidx.navigation.NavGraphBuilder
 import com.babylon.wallet.android.presentation.onboarding.restore.mnemonics.RestoreMnemonicsArgs
 import com.babylon.wallet.android.presentation.onboarding.restore.mnemonics.restoreMnemonics
 import com.babylon.wallet.android.presentation.settings.SettingsItem
+import com.babylon.wallet.android.presentation.settings.accountsecurity.depositguarantees.depositGuaranteesScreen
 import com.babylon.wallet.android.presentation.settings.accountsecurity.importlegacywallet.importLegacyWalletScreen
 import com.babylon.wallet.android.presentation.settings.accountsecurity.ledgerhardwarewallets.ledgerHardwareWalletsScreen
 import com.babylon.wallet.android.presentation.settings.accountsecurity.seedphrases.reveal.revealSeedPhrase
@@ -45,6 +46,11 @@ fun NavGraphBuilder.accountSecurityNavGraph(
             }
         )
         importLegacyWalletScreen(
+            onBackClick = {
+                navController.popBackStack()
+            }
+        )
+        depositGuaranteesScreen(
             onBackClick = {
                 navController.popBackStack()
             }
@@ -87,6 +93,7 @@ fun NavGraphBuilder.accountSecurityScreen(
                         navController.ledgerHardwareWalletsScreen()
                     }
                     SettingsItem.AccountSecurityAndSettingsItem.DepositGuarantees -> {
+                        navController.depositGuaranteesScreen()
                     }
                     SettingsItem.AccountSecurityAndSettingsItem.ImportFromLegacyWallet -> {
                         navController.importLegacyWalletScreen()

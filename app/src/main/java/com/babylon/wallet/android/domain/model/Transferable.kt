@@ -77,7 +77,7 @@ sealed interface GuaranteeType {
     data class Predicted(
         val instructionIndex: Long,
         @FloatRange(from = 0.0, to = 1.0)
-        val guaranteeOffset: Float = 1f
+        val guaranteeOffset: Float
     ) : GuaranteeType {
 
         @Suppress("MagicNumber")
