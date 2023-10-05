@@ -123,7 +123,7 @@ class CreateAccountViewModel @Inject constructor(
             }
 
             if (state.value.useLedgerSelected) {
-                sendEvent(CreateAccountEvent.AddLedgerDevice)
+                sendEvent(CreateAccountEvent.AddLedgerDevice(args.networkId))
             } else {
                 handleAccountCreate { name, networkId ->
                     createAccountWithDeviceFactorSourceUseCase(
@@ -150,8 +150,8 @@ class CreateAccountViewModel @Inject constructor(
         var networkId: NetworkId? = null
         if (switchNetwork) {
             val networkUrl = args.networkUrlEncoded!!.decodeUtf8()
-            val networkName = args.networkName!!
-            networkId = switchNetworkUseCase(networkUrl, networkName)
+            val id = args.networkId
+            networkId = switchNetworkUseCase(networkUrl, id)
         }
         return networkId
     }
@@ -182,6 +182,6 @@ internal sealed interface CreateAccountEvent : OneOffEvent {
         val requestSource: CreateAccountRequestSource?,
     ) : CreateAccountEvent
 
-    data object AddLedgerDevice : CreateAccountEvent
+    data class AddLedgerDevice(val networkId: Int) : CreateAccountEvent
     data object Dismiss : CreateAccountEvent
 }

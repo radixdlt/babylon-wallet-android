@@ -7,7 +7,7 @@ import rdx.works.profile.data.repository.ProfileRepository
 import rdx.works.profile.data.repository.profile
 import javax.inject.Inject
 
-class ChangeGatewayUseCase @Inject constructor(
+class ChangeGatewayIfNetworkExistUseCase @Inject constructor(
     private val profileRepository: ProfileRepository
 ) {
 

@@ -65,7 +65,7 @@ import rdx.works.profile.data.model.apppreferences.Radix
 fun GatewaysScreen(
     viewModel: GatewaysViewModel,
     onBackClick: () -> Unit,
-    onCreateProfile: (String, String) -> Unit,
+    onCreateProfile: (String, Int) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -99,7 +99,7 @@ private fun GatewaysContent(
     addingGateway: Boolean,
     gatewayAddFailure: GatewayAddFailure?,
     onGatewayClick: (Radix.Gateway) -> Unit,
-    onCreateProfile: (String, String) -> Unit,
+    onCreateProfile: (String, Int) -> Unit,
     oneOffEvent: Flow<SettingsEditGatewayEvent>
 ) {
     val bottomSheetState =
@@ -114,7 +114,7 @@ private fun GatewaysContent(
         oneOffEvent.collect {
             when (it) {
                 is SettingsEditGatewayEvent.CreateProfileOnNetwork -> {
-                    onCreateProfile(it.newUrl, it.networkName)
+                    onCreateProfile(it.newUrl, it.networkId)
                 }
                 else -> {
                     scope.launch {

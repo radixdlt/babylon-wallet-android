@@ -24,7 +24,7 @@ import kotlinx.coroutines.launch
 import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.gateway.AddGatewayUseCase
-import rdx.works.profile.domain.gateway.ChangeGatewayUseCase
+import rdx.works.profile.domain.gateway.ChangeGatewayIfNetworkExistUseCase
 import rdx.works.profile.domain.gateway.DeleteGatewayUseCase
 import rdx.works.profile.domain.gateways
 import rdx.works.profile.domain.security
@@ -33,7 +33,7 @@ import javax.inject.Inject
 @HiltViewModel
 class GatewaysViewModel @Inject constructor(
     private val getProfileUseCase: GetProfileUseCase,
-    private val changeGatewayUseCase: ChangeGatewayUseCase,
+    private val changeGatewayIfNetworkExistUseCase: ChangeGatewayIfNetworkExistUseCase,
     private val addGatewayUseCase: AddGatewayUseCase,
     private val deleteGatewayUseCase: DeleteGatewayUseCase,
     private val networkInfoRepository: NetworkInfoRepository,
@@ -135,12 +135,12 @@ class GatewaysViewModel @Inject constructor(
         // but at the time the user clicks to switch network the developer mode is disabled
         if (gateway.url.sanitizeAndValidateGatewayUrl(isDevModeEnabled = state.value.isDeveloperModeEnabled) == null) return
 
-        val isGatewayChanged = changeGatewayUseCase(gateway)
+        val isGatewayChanged = changeGatewayIfNetworkExistUseCase(gateway)
         if (isGatewayChanged) {
             _state.update { state -> state.copy(addingGateway = false) }
         } else {
             val urlEncoded = gateway.url.encodeUtf8()
-            sendEvent(SettingsEditGatewayEvent.CreateProfileOnNetwork(urlEncoded, gateway.network.name))
+            sendEvent(SettingsEditGatewayEvent.CreateProfileOnNetwork(urlEncoded, gateway.network.id))
         }
     }
 }
@@ -148,7 +148,7 @@ class GatewaysViewModel @Inject constructor(
 @VisibleForTesting
 internal sealed interface SettingsEditGatewayEvent : OneOffEvent {
     data object GatewayAdded : SettingsEditGatewayEvent
-    data class CreateProfileOnNetwork(val newUrl: String, val networkName: String) : SettingsEditGatewayEvent
+    data class CreateProfileOnNetwork(val newUrl: String, val networkId: Int) : SettingsEditGatewayEvent
 }
 
 data class SettingsUiState(

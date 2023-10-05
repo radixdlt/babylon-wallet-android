@@ -47,7 +47,7 @@ fun CreateAccountScreen(
         accountId: String,
         requestSource: CreateAccountRequestSource?,
     ) -> Unit = { _: String, _: CreateAccountRequestSource? -> },
-    onAddLedgerDevice: () -> Unit
+    onAddLedgerDevice: (Int) -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     BackHandler(onBack = viewModel::onBackClick)
@@ -80,7 +80,7 @@ fun CreateAccountScreen(
                     event.requestSource
                 )
 
-                is CreateAccountEvent.AddLedgerDevice -> onAddLedgerDevice()
+                is CreateAccountEvent.AddLedgerDevice -> onAddLedgerDevice(event.networkId)
                 is CreateAccountEvent.Dismiss -> onBackClick()
             }
         }

@@ -181,7 +181,7 @@ fun NavigationHost(
                 )
             },
             onAddLedgerDevice = {
-                navController.createAccountWithLedger()
+                navController.createAccountWithLedger(networkId = it)
             }
         )
         createAccountWithLedger(

@@ -1,5 +1,6 @@
 package com.babylon.wallet.android.presentation.account.createaccount.withledger
 
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.dapp.LedgerMessenger
 import com.babylon.wallet.android.data.dapp.model.Curve
@@ -25,19 +26,24 @@ import rdx.works.profile.data.model.factorsources.FactorSource
 import rdx.works.profile.data.model.factorsources.LedgerHardwareWalletFactorSource
 import rdx.works.profile.domain.EnsureBabylonFactorSourceExistUseCase
 import rdx.works.profile.domain.GetProfileUseCase
+import rdx.works.profile.domain.gateway.GetCurrentGatewayUseCase
 import rdx.works.profile.domain.ledgerFactorSources
-import rdx.works.profile.domain.nextDerivationPathForAccountOnCurrentNetworkWithLedger
+import rdx.works.profile.domain.nextDerivationPathForAccountOnNetwork
 import rdx.works.profile.domain.p2pLinks
 import javax.inject.Inject
 
 @HiltViewModel
 class CreateAccountWithLedgerViewModel @Inject constructor(
     private val getProfileUseCase: GetProfileUseCase,
+    private val getCurrentGatewayUseCase: GetCurrentGatewayUseCase,
     private val ledgerMessenger: LedgerMessenger,
     private val ensureBabylonFactorSourceExistUseCase: EnsureBabylonFactorSourceExistUseCase,
-    private val appEventBus: AppEventBus
+    private val appEventBus: AppEventBus,
+    savedStateHandle: SavedStateHandle
 ) : StateViewModel<CreateAccountWithLedgerUiState>(),
     OneOffEventHandler<CreateAccountWithLedgerEvent> by OneOffEventHandlerImpl() {
+
+    private val args = CreateAccountWithLedgerArgs(savedStateHandle)
 
     override fun initialState(): CreateAccountWithLedgerUiState = CreateAccountWithLedgerUiState()
 
@@ -101,7 +107,7 @@ class CreateAccountWithLedgerViewModel @Inject constructor(
                         return@launch
                     }
                 }
-                val derivationPath = getProfileUseCase.nextDerivationPathForAccountOnCurrentNetworkWithLedger()
+                val derivationPath = getProfileUseCase.nextDerivationPathForAccountOnNetwork(networkIdToCreateAccountOn())
                 val result = ledgerMessenger.sendDerivePublicKeyRequest(
                     interactionId = UUIDGenerator.uuid().toString(),
                     keyParameters = listOf(LedgerInteractionRequest.KeyParameters(Curve.Curve25519, derivationPath.path)),
@@ -118,6 +124,14 @@ class CreateAccountWithLedgerViewModel @Inject constructor(
                     sendEvent(CreateAccountWithLedgerEvent.DerivedPublicKeyForAccount)
                 }
             }
+        }
+    }
+
+    private suspend fun networkIdToCreateAccountOn(): Int {
+        return if (args.networkId == -1) {
+            getCurrentGatewayUseCase.invoke().network.id
+        } else {
+            args.networkId
         }
     }
 
