@@ -1,5 +1,6 @@
 package com.babylon.wallet.android.data.dapp.model
 
+import com.babylon.wallet.android.domain.RadixWalletException
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.babylon.wallet.android.domain.model.TransactionManifestData
 import com.radixdlt.hex.decode
@@ -102,23 +103,28 @@ fun WalletTransactionItems.SendTransactionItem.toDomainModel(
         requestMetadata = metadata
     )
 
+@Suppress("SwallowedException")
 fun WalletInteraction.toDomainModel(remoteConnectorId: String): MessageFromDataChannel.IncomingRequest {
-    val metadata = MessageFromDataChannel.IncomingRequest.RequestMetadata(
-        networkId = metadata.networkId,
-        origin = metadata.origin,
-        dAppDefinitionAddress = metadata.dAppDefinitionAddress,
-        isInternal = false
-    )
-    return when (items) {
-        is WalletTransactionItems -> {
-            items.send.toDomainModel(remoteConnectorId, interactionId, metadata)
+    try {
+        val metadata = MessageFromDataChannel.IncomingRequest.RequestMetadata(
+            networkId = metadata.networkId,
+            origin = metadata.origin,
+            dAppDefinitionAddress = metadata.dAppDefinitionAddress,
+            isInternal = false
+        )
+        return when (items) {
+            is WalletTransactionItems -> {
+                items.send.toDomainModel(remoteConnectorId, interactionId, metadata)
+            }
+            is WalletAuthorizedRequestItems -> {
+                items.parseAuthorizedRequest(remoteConnectorId, interactionId, metadata)
+            }
+            is WalletUnauthorizedRequestItems -> {
+                items.parseUnauthorizedRequest(remoteConnectorId, interactionId, metadata)
+            }
         }
-        is WalletAuthorizedRequestItems -> {
-            items.parseAuthorizedRequest(remoteConnectorId, interactionId, metadata)
-        }
-        is WalletUnauthorizedRequestItems -> {
-            items.parseUnauthorizedRequest(remoteConnectorId, interactionId, metadata)
-        }
+    } catch (e: Exception) {
+        throw RadixWalletException.ErrorParsingIncomingRequest(e)
     }
 }
 

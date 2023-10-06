@@ -46,7 +46,7 @@ fun GuaranteesSheet(
         Text(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = RadixTheme.dimensions.paddingXXLarge),
+                .padding(horizontal = RadixTheme.dimensions.paddingXXXLarge),
             text = stringResource(id = com.babylon.wallet.android.R.string.transactionReview_guarantees_title),
             style = RadixTheme.typography.title,
             color = RadixTheme.colors.gray1,
@@ -68,7 +68,7 @@ fun GuaranteesSheet(
             item {
                 Text(
                     modifier = Modifier
-                        .padding(horizontal = RadixTheme.dimensions.paddingXXLarge),
+                        .padding(horizontal = RadixTheme.dimensions.paddingXXXLarge),
                     text = stringResource(
                         id = com.babylon.wallet.android.R.string.transactionReview_guarantees_subtitle
                     ),

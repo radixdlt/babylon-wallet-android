@@ -3,6 +3,7 @@ package com.babylon.wallet.android.data.dapp.model
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel.IncomingRequest
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import rdx.works.core.HexCoded32Bytes
 
 // REQUEST
 @Serializable
@@ -21,7 +22,7 @@ fun AccountsRequestItem.toDomainModel(isOngoing: Boolean = true): IncomingReques
     return IncomingRequest.AccountsRequestItem(
         isOngoing = isOngoing,
         numberOfValues = numberOfAccounts.toDomainModel(),
-        challenge = challenge
+        challenge = challenge?.let { HexCoded32Bytes(it) }
     )
 }
 

@@ -34,7 +34,6 @@ import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
 import com.babylon.wallet.android.utils.toISO8601String
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
@@ -75,9 +74,7 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
 
     private val mutex = Mutex()
 
-    private val request = incomingRequestRepository.getAuthorizedRequest(
-        args.interactionId
-    )
+    private lateinit var request: AuthorizedRequest
 
     private var authorizedDapp: Network.AuthorizedDapp? = null
     private var editedDapp: Network.AuthorizedDapp? = null
@@ -87,6 +84,13 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
     init {
         observeSigningState()
         viewModelScope.launch {
+            val requestToHandle = incomingRequestRepository.getAuthorizedRequest(args.interactionId)
+            if (requestToHandle == null) {
+                sendEvent(Event.CloseLoginFlow)
+                return@launch
+            } else {
+                request = requestToHandle
+            }
             val currentNetworkId = getCurrentGatewayUseCase().network.networkId().value
             if (currentNetworkId != request.requestMetadata.networkId) {
                 handleRequestError(
@@ -136,11 +140,11 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
     }
 
     private suspend fun setInitialDappLoginRoute() {
-        when (val request = request.authRequest) {
+        when (val authRequest = request.authRequest) {
             is AuthorizedRequest.AuthRequest.UsePersonaRequest -> {
                 val dapp = authorizedDapp
                 if (dapp != null) {
-                    setInitialDappLoginRouteForUsePersonaRequest(dapp, request)
+                    setInitialDappLoginRouteForUsePersonaRequest(dapp, authRequest)
                 } else {
                     onAbortDappLogin(WalletErrorType.InvalidPersona)
                 }
@@ -150,7 +154,7 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
                 _state.update {
                     it.copy(
                         initialAuthorizedLoginRoute = InitialAuthorizedLoginRoute.SelectPersona(
-                            args.interactionId
+                            request.requestMetadata.dAppDefinitionAddress
                         )
                     )
                 }
@@ -233,21 +237,22 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
         }
     }
 
-    @Suppress("MagicNumber")
     private suspend fun handleRequestError(exception: DappRequestException) {
         if (exception.e is SignatureCancelledException) {
             return
         }
-        val failure = exception.failure
-        _state.update { it.copy(uiMessage = UiMessage.ErrorMessage.from(DappRequestException(failure))) }
         dAppMessenger.sendWalletInteractionResponseFailure(
             remoteConnectorId = request.remoteConnectorId,
             requestId = args.interactionId,
-            error = failure.toWalletErrorType(),
-            message = failure.getDappMessage()
+            error = exception.failure.toWalletErrorType(),
+            message = exception.failure.getDappMessage()
         )
-        delay(2000)
-        sendEvent(Event.RejectLogin)
+        _state.update { it.copy(failureDialog = DAppLoginUiState.FailureDialog.Open(exception)) }
+    }
+
+    fun onAcknowledgeFailureDialog() = viewModelScope.launch {
+        _state.update { it.copy(failureDialog = DAppLoginUiState.FailureDialog.Closed) }
+        sendEvent(Event.CloseLoginFlow)
         incomingRequestRepository.requestHandled(requestId = args.interactionId)
     }
 
@@ -265,6 +270,7 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
     }
 
     private suspend fun handleNextRequestItem(selectedPersona: Network.Persona) {
+        val request = request
         when {
             request.hasOnlyAuthItem() -> {
                 promptForBiometrics()
@@ -404,6 +410,7 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
     }
 
     private suspend fun handleNextOneTimeRequestItem() {
+        val request = request
         when {
             request.oneTimeAccountsRequestItem != null -> handleOneTimeAccountRequestItem(
                 request.oneTimeAccountsRequestItem
@@ -479,6 +486,7 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
                         }
                     )
             }
+            val request = request
             when {
                 request.ongoingPersonaDataRequestItem != null && request.ongoingPersonaDataRequestItem.isValid() -> {
                     handleOngoingPersonaDataRequestItem(
@@ -544,7 +552,7 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
                     error = walletWalletErrorType
                 )
             }
-            sendEvent(Event.RejectLogin)
+            sendEvent(Event.CloseLoginFlow)
             incomingRequestRepository.requestHandled(requestId = args.interactionId)
         }
     }
@@ -592,6 +600,7 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
                         )
                     )
                 }
+                val request = request
                 when {
                     request.ongoingPersonaDataRequestItem != null && request.ongoingPersonaDataRequestItem.isValid() -> {
                         handleOngoingPersonaDataRequestItem(
@@ -615,6 +624,7 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
             }
         } else if (handledRequest?.isOngoing == false) {
             _state.update { it.copy(selectedAccountsOneTime = selectedAccounts) }
+            val request = request
             when {
                 request.oneTimePersonaDataRequestItem != null && request.oneTimePersonaDataRequestItem.isValid() -> {
                     handleOneTimePersonaDataRequestItem(request.oneTimePersonaDataRequestItem)
@@ -685,10 +695,10 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
 
 sealed interface Event : OneOffEvent {
 
-    object RejectLogin : Event
+    data object CloseLoginFlow : Event
     data class RequestCompletionBiometricPrompt(val requestDuringSigning: Boolean) : Event
 
-    object LoginFlowCompleted : Event
+    data object LoginFlowCompleted : Event
 
     data class DisplayPermission(
         val numberOfAccounts: Int,
@@ -714,6 +724,7 @@ sealed interface Event : OneOffEvent {
 data class DAppLoginUiState(
     val dappWithMetadata: DAppWithMetadata? = null,
     val uiMessage: UiMessage? = null,
+    val failureDialog: FailureDialog = FailureDialog.Closed,
     val initialAuthorizedLoginRoute: InitialAuthorizedLoginRoute? = null,
     val selectedAccountsOngoing: List<AccountItemUiModel> = emptyList(),
     val selectedOngoingPersonaData: PersonaData? = null,
@@ -721,4 +732,10 @@ data class DAppLoginUiState(
     val selectedAccountsOneTime: List<AccountItemUiModel> = emptyList(),
     val selectedPersona: PersonaUiModel? = null,
     val interactionState: InteractionState? = null
-) : UiState
+) : UiState {
+
+    sealed interface FailureDialog {
+        data object Closed : FailureDialog
+        data class Open(val dappRequestException: DappRequestException) : FailureDialog
+    }
+}

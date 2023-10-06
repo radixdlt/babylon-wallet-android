@@ -25,7 +25,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
@@ -55,13 +54,15 @@ fun CreateAccountScreen(
     if (state.loading) {
         FullscreenCircularProgressContent()
     } else {
-        val accountName = viewModel.accountName.collectAsStateWithLifecycle().value
-        val buttonEnabled = viewModel.buttonEnabled.collectAsStateWithLifecycle().value
+        val accountName by viewModel.accountName.collectAsStateWithLifecycle()
+        val buttonEnabled by viewModel.buttonEnabled.collectAsStateWithLifecycle()
+        val isAccountNameLengthMoreThanTheMax by viewModel.isAccountNameLengthMoreThanTheMax.collectAsStateWithLifecycle()
 
         CreateAccountContent(
             onAccountNameChange = viewModel::onAccountNameChange,
             onAccountCreateClick = viewModel::onAccountCreateClick,
             accountName = accountName,
+            isAccountNameLengthMoreThanTheMaximum = isAccountNameLengthMoreThanTheMax,
             buttonEnabled = buttonEnabled,
             cancelable = state.isCancelable,
             onBackClick = viewModel::onBackClick,
@@ -91,6 +92,7 @@ fun CreateAccountContent(
     onAccountNameChange: (String) -> Unit,
     onAccountCreateClick: () -> Unit,
     accountName: String,
+    isAccountNameLengthMoreThanTheMaximum: Boolean,
     buttonEnabled: Boolean,
     onBackClick: () -> Unit,
     cancelable: Boolean,
@@ -140,6 +142,7 @@ fun CreateAccountContent(
             modifier = Modifier
                 .padding(padding)
                 .padding(horizontal = RadixTheme.dimensions.paddingLarge)
+                .padding(top = RadixTheme.dimensions.paddingDefault)
                 .verticalScroll(rememberScrollState()),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
@@ -166,17 +169,22 @@ fun CreateAccountContent(
                 color = RadixTheme.colors.gray2,
                 textAlign = TextAlign.Center
             )
-            Spacer(modifier = Modifier.height(30.dp))
+            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXLarge))
             RadixTextField(
                 modifier = Modifier.fillMaxWidth(),
                 onValueChanged = onAccountNameChange,
                 value = accountName,
+                error = if (isAccountNameLengthMoreThanTheMaximum) {
+                    "Account label too long"
+                } else {
+                    null
+                },
                 hint = stringResource(id = R.string.createAccount_nameNewAccount_placeholder),
                 hintColor = RadixTheme.colors.gray2,
                 singleLine = true
             )
-            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
-            UseLedgerSwitch(
+            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
+            CreateWithLedgerSwitch(
                 useLedgerSelected = useLedgerSelected,
                 onUseLedgerSelectionChanged = onUseLedgerSelectionChanged,
                 modifier = Modifier.fillMaxWidth()
@@ -186,7 +194,7 @@ fun CreateAccountContent(
 }
 
 @Composable
-private fun UseLedgerSwitch(
+private fun CreateWithLedgerSwitch(
     useLedgerSelected: Boolean,
     onUseLedgerSelectionChanged: (Boolean) -> Unit,
     modifier: Modifier = Modifier
@@ -221,6 +229,7 @@ fun CreateAccountContentPreview() {
             onAccountNameChange = {},
             onAccountCreateClick = {},
             accountName = "Name",
+            isAccountNameLengthMoreThanTheMaximum = false,
             buttonEnabled = false,
             onBackClick = {},
             cancelable = true,

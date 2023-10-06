@@ -3,6 +3,7 @@ package com.babylon.wallet.android.data.dapp.model
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel.IncomingRequest.AuthorizedRequest
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import rdx.works.core.HexCoded32Bytes
 
 @Serializable
 sealed class AuthRequestItem
@@ -19,7 +20,7 @@ data class AuthLoginWithChallengeRequestItem(
 
 @Serializable
 @SerialName("loginWithoutChallenge")
-object AuthLoginWithoutChallengeRequestItem : AuthLoginRequestItem()
+data object AuthLoginWithoutChallengeRequestItem : AuthLoginRequestItem()
 
 @Serializable
 @SerialName("usePersona")
@@ -30,7 +31,12 @@ data class AuthUsePersonaRequestItem(
 
 fun AuthLoginRequestItem.toDomainModel(): AuthorizedRequest.AuthRequest.LoginRequest {
     return when (this) {
-        is AuthLoginWithChallengeRequestItem -> AuthorizedRequest.AuthRequest.LoginRequest.WithChallenge(challenge = challenge.orEmpty())
+        is AuthLoginWithChallengeRequestItem -> AuthorizedRequest.AuthRequest.LoginRequest.WithChallenge(
+            challenge = HexCoded32Bytes(
+                challenge.orEmpty()
+            )
+        )
+
         is AuthLoginWithoutChallengeRequestItem -> AuthorizedRequest.AuthRequest.LoginRequest.WithoutChallenge
     }
 }

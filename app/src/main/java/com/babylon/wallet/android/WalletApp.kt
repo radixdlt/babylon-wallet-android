@@ -126,7 +126,7 @@ fun WalletApp(
     if (olympiaErrorState != OlympiaErrorState.None) {
         BackHandler {}
         val confirmText = if (olympiaErrorState is OlympiaErrorState.Countdown) {
-            stringResource(id = R.string.profileOlympiaError_okCountdown, olympiaErrorState.secondsLeft)
+            stringResource(id = R.string.homePage_profileOlympiaError_okCountdown, olympiaErrorState.secondsLeft)
         } else {
             stringResource(
                 id = R.string.common_ok
@@ -140,14 +140,14 @@ fun WalletApp(
             },
             title = {
                 Text(
-                    text = stringResource(id = R.string.profileOlympiaError_title),
+                    text = stringResource(id = R.string.homePage_profileOlympiaError_title),
                     style = RadixTheme.typography.body1Header,
                     color = RadixTheme.colors.gray1
                 )
             },
             text = {
                 Text(
-                    text = stringResource(id = R.string.profileOlympiaError_subtitle),
+                    text = stringResource(id = R.string.homePage_profileOlympiaError_subtitle),
                     style = RadixTheme.typography.body2Regular,
                     color = RadixTheme.colors.gray1
                 )
@@ -156,7 +156,7 @@ fun WalletApp(
             dismissText = null
         )
     }
-    state.dappVerificationError?.let {
+    state.dappRequestFailure?.let {
         BasicPromptAlertDialog(
             finish = {
                 mainViewModel.onInvalidRequestMessageShown()
@@ -170,7 +170,7 @@ fun WalletApp(
             },
             text = {
                 Text(
-                    text = stringResource(id = R.string.dAppRequest_validationOutcome_invalidRequestMessage),
+                    text = stringResource(id = it.toDescriptionRes()),
                     style = RadixTheme.typography.body2Regular,
                     color = RadixTheme.colors.gray1
                 )

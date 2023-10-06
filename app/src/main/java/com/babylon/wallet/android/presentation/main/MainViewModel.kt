@@ -59,6 +59,7 @@ class MainViewModel @Inject constructor(
 
     private var incomingDappRequestsJob: Job? = null
     private var processingDappRequestJob: Job? = null
+    private var incomingDappRequestErrorsJob: Job? = null
     private var countdownJob: Job? = null
 
     val observeP2PLinks = getProfileUseCase
@@ -144,6 +145,16 @@ class MainViewModel @Inject constructor(
                                     processIncomingRequest(incomingRequest)
                                 }
                         }
+                        incomingDappRequestErrorsJob = viewModelScope.launch {
+                            peerdroidClient
+                                .listenForIncomingRequestErrors()
+                                .cancellable()
+                                .collect {
+                                    _state.update { state ->
+                                        state.copy(dappRequestFailure = DappRequestFailure.InvalidRequestChallenge)
+                                    }
+                                }
+                        }
                     }
                 }
 
@@ -190,7 +201,7 @@ class MainViewModel @Inject constructor(
                 }
             }.onFailure {
                 _state.update { state ->
-                    state.copy(dappVerificationError = DappRequestFailure.InvalidRequest)
+                    state.copy(dappRequestFailure = DappRequestFailure.InvalidRequest)
                 }
             }
         }
@@ -201,13 +212,15 @@ class MainViewModel @Inject constructor(
         incomingDappRequestsJob = null
         processingDappRequestJob?.cancel()
         processingDappRequestJob = null
+        incomingDappRequestErrorsJob?.cancel()
+        incomingDappRequestErrorsJob = null
         peerdroidClient.terminate()
         incomingRequestRepository.removeAll()
         Timber.d("Peerdroid terminated")
     }
 
     fun onInvalidRequestMessageShown() {
-        _state.update { it.copy(dappVerificationError = null) }
+        _state.update { it.copy(dappRequestFailure = null) }
     }
 
     fun clearOlympiaError() {
@@ -266,7 +279,7 @@ sealed class MainEvent : OneOffEvent {
 
 data class MainUiState(
     val initialAppState: AppState = AppState.Loading,
-    val dappVerificationError: DappRequestFailure? = null,
+    val dappRequestFailure: DappRequestFailure? = null,
     val olympiaErrorState: OlympiaErrorState = OlympiaErrorState.None
 ) : UiState
 

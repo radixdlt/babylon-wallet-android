@@ -2,14 +2,12 @@ package com.babylon.wallet.android.presentation.dapp.selectpersona
 
 import androidx.lifecycle.SavedStateHandle
 import app.cash.turbine.test
-import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.domain.SampleDataProvider
-import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.babylon.wallet.android.fakes.DAppConnectionRepositoryFake
 import com.babylon.wallet.android.mockdata.profile
 import com.babylon.wallet.android.presentation.StateViewModelTest
+import com.babylon.wallet.android.presentation.dapp.authorized.selectpersona.ARG_DAPP_DEFINITION_ADDRESS
 import com.babylon.wallet.android.presentation.dapp.authorized.selectpersona.SelectPersonaViewModel
-import com.babylon.wallet.android.presentation.dapp.unauthorized.login.ARG_REQUEST_ID
 import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
@@ -26,40 +24,17 @@ import rdx.works.profile.domain.GetProfileUseCase
 @OptIn(ExperimentalCoroutinesApi::class)
 internal class SelectPersonaViewModelTest : StateViewModelTest<SelectPersonaViewModel>() {
 
-    private val incomingRequestRepository = mockk<IncomingRequestRepository>()
     private val getProfileUseCase = mockk<GetProfileUseCase>()
     private val savedStateHandle = mockk<SavedStateHandle>()
     private val preferencesManager = mockk<PreferencesManager>()
     private val dAppConnectionRepository = DAppConnectionRepositoryFake()
-
-    private val requestWithNonExistingDappAddress = MessageFromDataChannel.IncomingRequest.AuthorizedRequest(
-        remoteConnectorId = "1",
-        interactionId = "1",
-        requestMetadata = MessageFromDataChannel.IncomingRequest.RequestMetadata(
-            11,
-            "",
-            "address",
-            false
-        ),
-        authRequest = MessageFromDataChannel.IncomingRequest.AuthorizedRequest.AuthRequest.LoginRequest.WithoutChallenge,
-        oneTimeAccountsRequestItem = null,
-        ongoingAccountsRequestItem = MessageFromDataChannel.IncomingRequest.AccountsRequestItem(
-            true,
-            MessageFromDataChannel.IncomingRequest.NumberOfValues(
-                1,
-                MessageFromDataChannel.IncomingRequest.NumberOfValues.Quantifier.AtLeast
-            ),
-            null
-        )
-    )
 
     override fun initVM(): SelectPersonaViewModel {
         return SelectPersonaViewModel(
             savedStateHandle,
             dAppConnectionRepository,
             getProfileUseCase,
-            preferencesManager,
-            incomingRequestRepository
+            preferencesManager
         )
     }
 
@@ -69,7 +44,7 @@ internal class SelectPersonaViewModelTest : StateViewModelTest<SelectPersonaView
         coEvery { preferencesManager.firstPersonaCreated } returns flow {
             emit(true)
         }
-        every { savedStateHandle.get<String>(ARG_REQUEST_ID) } returns "1"
+        every { savedStateHandle.get<String>(ARG_DAPP_DEFINITION_ADDRESS) } returns "address1"
         every { getProfileUseCase() } returns flowOf(
             profile(
                 personas = listOf(
@@ -78,7 +53,6 @@ internal class SelectPersonaViewModelTest : StateViewModelTest<SelectPersonaView
                 )
             )
         )
-        coEvery { incomingRequestRepository.getAuthorizedRequest(any()) } returns requestWithNonExistingDappAddress
     }
 
     @Test

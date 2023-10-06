@@ -63,7 +63,7 @@ fun LinkConnectorScreen(
                 tint = Color.Unspecified,
                 contentDescription = null
             )
-            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXXLarge))
+            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXXXLarge))
             Text(
                 text = stringResource(id = com.babylon.wallet.android.R.string.ledgerHardwareDevices_linkConnectorAlert_title),
                 style = RadixTheme.typography.title,

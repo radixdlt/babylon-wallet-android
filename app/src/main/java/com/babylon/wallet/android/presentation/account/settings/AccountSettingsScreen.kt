@@ -1,6 +1,10 @@
+@file:OptIn(ExperimentalMaterialApi::class)
+
 package com.babylon.wallet.android.presentation.account.settings
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
@@ -12,26 +16,33 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.ExperimentalMaterialApi
-import androidx.compose.material.ModalBottomSheetLayout
 import androidx.compose.material.ModalBottomSheetValue
-import androidx.compose.material.Text
 import androidx.compose.material.rememberModalBottomSheetState
 import androidx.compose.material3.Divider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.BuildConfig
 import com.babylon.wallet.android.R
+import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
 import com.babylon.wallet.android.designsystem.composable.RadixSecondaryButton
+import com.babylon.wallet.android.designsystem.composable.RadixTextField
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.usecases.FaucetState
@@ -39,6 +50,7 @@ import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.status.signing.SigningStatusBottomDialog
 import com.babylon.wallet.android.presentation.ui.composables.AccountQRCodeView
 import com.babylon.wallet.android.presentation.ui.composables.BottomDialogDragHandle
+import com.babylon.wallet.android.presentation.ui.composables.DefaultModalSheetLayout
 import com.babylon.wallet.android.presentation.ui.composables.DefaultSettingsItem
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
@@ -48,51 +60,88 @@ import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun AccountSettingsScreen(
     viewModel: AccountSettingsViewModel,
     onBackClick: () -> Unit,
     modifier: Modifier = Modifier,
-    onSettingClick: (AccountSettingItem, String) -> Unit
+    onSettingItemClick: (AccountSettingItem, address: String) -> Unit
 ) {
     val context = LocalContext.current
     val state by viewModel.state.collectAsStateWithLifecycle()
     val scope = rememberCoroutineScope()
-    val sheetState = rememberModalBottomSheetState(
+    val bottomSheetState = rememberModalBottomSheetState(
         initialValue = ModalBottomSheetValue.Hidden,
         skipHalfExpanded = true
     )
-    ModalBottomSheetLayout(
-        modifier = modifier,
-        sheetContent = {
-            Column(modifier = Modifier.navigationBarsPadding()) {
-                BottomDialogDragHandle(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .background(
-                            color = RadixTheme.colors.defaultBackground,
-                            shape = RadixTheme.shapes.roundedRectTopDefault
-                        )
-                        .padding(vertical = RadixTheme.dimensions.paddingSmall),
-                    onDismissRequest = {
-                        scope.launch { sheetState.hide() }
-                    }
-                )
 
-                AccountQRCodeView(accountAddress = state.accountAddress)
+    BackHandler(enabled = bottomSheetState.isVisible) {
+        scope.launch {
+            bottomSheetState.hide()
+            viewModel.resetBottomSheetContent()
+        }
+    }
+
+    DefaultModalSheetLayout(
+        modifier = modifier,
+        wrapContent = true,
+        enableImePadding = true,
+        sheetState = bottomSheetState,
+        sheetContent = {
+            when (state.bottomSheetContent) {
+                AccountPreferenceUiState.BottomSheetContent.RenameAccount -> {
+                    RenameAccountSheet(
+                        modifier = Modifier.navigationBarsPadding(),
+                        accountNameChanged = state.accountNameChanged,
+                        onNewAccountNameChange = viewModel::onRenameAccountNameChange,
+                        isNewNameValid = state.isNewNameValid,
+                        isNewNameLengthMoreThanTheMaximum = state.isNewNameLengthMoreThanTheMaximum,
+                        onRenameAccountNameClick = {
+                            viewModel.onRenameAccountNameConfirm()
+                            scope.launch {
+                                bottomSheetState.hide()
+                                viewModel.resetBottomSheetContent()
+                            }
+                        },
+                        onClose = {
+                            scope.launch {
+                                bottomSheetState.hide()
+                                viewModel.resetBottomSheetContent()
+                            }
+                        }
+                    )
+                }
+                AccountPreferenceUiState.BottomSheetContent.AddressQRCode -> {
+                    AddressQRCodeSheet(
+                        accountAddress = state.accountAddress,
+                        dismissAddressQRCodeSheet = {
+                            scope.launch {
+                                bottomSheetState.hide()
+                                viewModel.resetBottomSheetContent()
+                            }
+                        }
+                    )
+                }
+                AccountPreferenceUiState.BottomSheetContent.None -> {}
             }
-        },
-        sheetState = sheetState,
-        sheetBackgroundColor = RadixTheme.colors.defaultBackground,
-        sheetShape = RadixTheme.shapes.roundedRectTopDefault
+        }
     ) {
         AccountSettingsContent(
             modifier = Modifier.navigationBarsPadding(),
             onBackClick = onBackClick,
+            accountName = state.accountName,
             onGetFreeXrdClick = viewModel::onGetFreeXrdClick,
-            onShowQRCodeClick = {
-                scope.launch { sheetState.show() }
+            onShowRenameAccountClick = {
+                scope.launch {
+                    viewModel.setBottomSheetContentToRenameAccount()
+                    bottomSheetState.show()
+                }
+            },
+            onShowAddressQRCodeClick = {
+                scope.launch {
+                    viewModel.setBottomSheetContentToAddressQRCode()
+                    bottomSheetState.show()
+                }
             },
             faucetState = state.faucetState,
             isXrdLoading = state.isFreeXRDLoading,
@@ -109,7 +158,7 @@ fun AccountSettingsScreen(
             },
             settingsSections = state.settingsSections,
             onSettingClick = {
-                onSettingClick(it, state.accountAddress)
+                onSettingItemClick(it, state.accountAddress)
             }
         )
         state.interactionState?.let {
@@ -125,8 +174,10 @@ fun AccountSettingsScreen(
 @Composable
 private fun AccountSettingsContent(
     onBackClick: () -> Unit,
+    accountName: String,
     onGetFreeXrdClick: () -> Unit,
-    onShowQRCodeClick: () -> Unit,
+    onShowRenameAccountClick: () -> Unit,
+    onShowAddressQRCodeClick: () -> Unit,
     faucetState: FaucetState,
     isXrdLoading: Boolean,
     isAuthSigningLoading: Boolean,
@@ -184,11 +235,19 @@ private fun AccountSettingsContent(
                     item {
                         DefaultSettingsItem(
                             onClick = {
-                                onSettingClick(settingsItem)
+                                if (settingsItem == AccountSettingItem.AccountLabel) {
+                                    onShowRenameAccountClick()
+                                } else {
+                                    onSettingClick(settingsItem)
+                                }
                             },
                             icon = settingsItem.getIcon(),
                             title = stringResource(id = settingsItem.titleRes()),
-                            subtitle = stringResource(id = settingsItem.subtitleRes())
+                            subtitle = if (settingsItem == AccountSettingItem.AccountLabel) {
+                                accountName
+                            } else {
+                                stringResource(id = settingsItem.subtitleRes())
+                            }
                         )
                         if (lastSettingsItem != settingsItem) {
                             Divider(
@@ -248,11 +307,106 @@ private fun AccountSettingsContent(
                         .fillMaxWidth()
                         .padding(horizontal = RadixTheme.dimensions.paddingLarge),
                     text = stringResource(R.string.addressAction_showAccountQR),
-                    onClick = onShowQRCodeClick,
+                    onClick = onShowAddressQRCodeClick,
                     enabled = !isXrdLoading
                 )
             }
         }
+    }
+}
+
+@Composable
+private fun RenameAccountSheet(
+    modifier: Modifier = Modifier,
+    accountNameChanged: String,
+    onNewAccountNameChange: (String) -> Unit,
+    isNewNameValid: Boolean,
+    isNewNameLengthMoreThanTheMaximum: Boolean,
+    onRenameAccountNameClick: () -> Unit,
+    onClose: () -> Unit
+) {
+    Column(
+        modifier = modifier.verticalScroll(rememberScrollState()),
+        verticalArrangement = Arrangement.Center,
+    ) {
+        IconButton(
+            modifier = Modifier.padding(
+                start = RadixTheme.dimensions.paddingXSmall,
+                top = RadixTheme.dimensions.paddingMedium
+            ),
+            onClick = onClose
+        ) {
+            Icon(
+                painter = painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_close),
+                tint = RadixTheme.colors.gray1,
+                contentDescription = null
+            )
+        }
+        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingMedium))
+        Text(
+            modifier = Modifier.fillMaxWidth(),
+            text = stringResource(id = R.string.accountSettings_renameAccount_title),
+            style = RadixTheme.typography.title,
+            color = RadixTheme.colors.gray1,
+            textAlign = TextAlign.Center
+        )
+        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingMedium))
+        Text(
+            modifier = Modifier.fillMaxWidth(),
+            text = stringResource(id = R.string.accountSettings_renameAccount_subtitle),
+            style = RadixTheme.typography.body1Regular,
+            color = RadixTheme.colors.gray1,
+            textAlign = TextAlign.Center
+        )
+        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
+        RadixTextField(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = RadixTheme.dimensions.paddingXLarge),
+            onValueChanged = onNewAccountNameChange,
+            value = accountNameChanged,
+            singleLine = true,
+            error = if (isNewNameLengthMoreThanTheMaximum) {
+                "Account label too long"
+            } else {
+                null
+            }
+        )
+        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXXLarge))
+        RadixPrimaryButton(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = RadixTheme.dimensions.paddingSemiLarge)
+                .padding(bottom = RadixTheme.dimensions.paddingSemiLarge),
+            text = stringResource(id = R.string.accountSettings_renameAccount_button),
+            onClick = {
+                onRenameAccountNameClick()
+            },
+            enabled = isNewNameValid
+        )
+    }
+}
+
+@Composable
+private fun AddressQRCodeSheet(
+    accountAddress: String,
+    dismissAddressQRCodeSheet: () -> Unit
+) {
+    Column(modifier = Modifier.navigationBarsPadding()) {
+        BottomDialogDragHandle(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(
+                    color = RadixTheme.colors.defaultBackground,
+                    shape = RadixTheme.shapes.roundedRectTopDefault
+                )
+                .padding(vertical = RadixTheme.dimensions.paddingSmall),
+            onDismissRequest = {
+                dismissAddressQRCodeSheet()
+            }
+        )
+
+        AccountQRCodeView(accountAddress = accountAddress)
     }
 }
 
@@ -262,8 +416,10 @@ fun AccountSettingsPreview() {
     RadixWalletTheme {
         AccountSettingsContent(
             onBackClick = {},
+            accountName = "my cool account",
             onGetFreeXrdClick = {},
-            onShowQRCodeClick = {},
+            onShowRenameAccountClick = {},
+            onShowAddressQRCodeClick = {},
             faucetState = FaucetState.Available(isEnabled = true),
             isXrdLoading = false,
             isAuthSigningLoading = false,
@@ -273,10 +429,28 @@ fun AccountSettingsPreview() {
             onCreateAndUploadAuthKey = {},
             settingsSections = persistentListOf(
                 AccountSettingsSection.AccountSection(
-                    listOf(AccountSettingItem.ThirdPartyDeposits)
+                    listOf(
+                        AccountSettingItem.AccountLabel,
+                        AccountSettingItem.ThirdPartyDeposits
+                    )
                 )
             ),
             onSettingClick = {}
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun RenameAccountSheetPreview() {
+    RadixWalletTheme {
+        RenameAccountSheet(
+            accountNameChanged = "updated",
+            isNewNameValid = true,
+            isNewNameLengthMoreThanTheMaximum = false,
+            onNewAccountNameChange = {},
+            onRenameAccountNameClick = {},
+            onClose = {}
         )
     }
 }

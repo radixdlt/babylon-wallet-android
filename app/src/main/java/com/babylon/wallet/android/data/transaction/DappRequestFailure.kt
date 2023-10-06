@@ -4,6 +4,7 @@ import androidx.annotation.StringRes
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.data.dapp.model.LedgerErrorCode
 import com.babylon.wallet.android.data.dapp.model.WalletErrorType
+import rdx.works.profile.data.model.apppreferences.Radix
 
 @Suppress("CyclomaticComplexMethod")
 sealed class DappRequestFailure(msg: String? = null) : Exception(msg.orEmpty()) {
@@ -13,8 +14,17 @@ sealed class DappRequestFailure(msg: String? = null) : Exception(msg.orEmpty()) 
     data object InvalidRequest : DappRequestFailure()
     data object UnacceptableManifest : DappRequestFailure()
     data object InvalidPersona : DappRequestFailure()
+    data object InvalidRequestChallenge : DappRequestFailure("Invalid challenge in dApp request")
     data class FailedToSignAuthChallenge(val msg: String = "") : DappRequestFailure(msg)
-    data class WrongNetwork(val currentNetworkId: Int, val requestNetworkId: Int) : DappRequestFailure()
+    data class WrongNetwork(
+        val currentNetworkId: Int,
+        val requestNetworkId: Int
+    ) : DappRequestFailure() {
+        val currentNetworkName: String
+            get() = runCatching { Radix.Network.fromId(currentNetworkId) }.getOrNull()?.name.orEmpty().replaceFirstChar(Char::titlecase)
+        val requestNetworkName: String
+            get() = runCatching { Radix.Network.fromId(requestNetworkId) }.getOrNull()?.name.orEmpty().replaceFirstChar(Char::titlecase)
+    }
 
     sealed class TransactionApprovalFailure : DappRequestFailure() {
         data object ConvertManifest : TransactionApprovalFailure()
@@ -80,6 +90,7 @@ sealed class DappRequestFailure(msg: String? = null) : Exception(msg.orEmpty()) 
             is LedgerCommunicationFailure.FailedToDeriveAndDisplayAddress -> WalletErrorType.InvalidRequest
             DappVerificationFailure.ClaimedEntityAddressNotPresent -> WalletErrorType.WrongAccountType
             UnacceptableManifest -> WalletErrorType.FailedToPrepareTransaction
+            is InvalidRequestChallenge -> WalletErrorType.InvalidRequest
         }
     }
 
@@ -96,7 +107,8 @@ sealed class DappRequestFailure(msg: String? = null) : Exception(msg.orEmpty()) 
             TransactionApprovalFailure.PrepareNotarizedTransaction -> R.string.error_transactionFailure_prepare
             RejectedByUser -> R.string.error_transactionFailure_rejectedByUser
             TransactionApprovalFailure.SubmitNotarizedTransaction -> R.string.error_transactionFailure_submit
-            is WrongNetwork -> R.string.error_transactionFailure_network
+            // Cannot use the correct error resource, since the correct one needs parameters to work
+            is WrongNetwork -> R.string.common_somethingWentWrong
             TransactionApprovalFailure.FailedToFindAccountWithEnoughFundsToLockFee ->
                 R.string.error_transactionFailure_noFundsToApproveTransaction
             DappVerificationFailure.RadixJsonNotFound -> R.string.dAppRequest_validationOutcome_shortExplanationBadContent
@@ -105,7 +117,7 @@ sealed class DappRequestFailure(msg: String? = null) : Exception(msg.orEmpty()) 
             DappVerificationFailure.UnknownWebsite -> R.string.dAppRequest_validationOutcome_devExplanationInvalidOrigin
             DappVerificationFailure.WrongAccountType -> R.string.dAppRequest_validationOutcome_devExplanationInvalidDappDefinitionAddress
             InvalidPersona -> R.string.error_dappRequest_invalidPersonaId
-            InvalidRequest -> R.string.error_dappRequest_invalidRequest
+            InvalidRequest -> R.string.dAppRequest_validationOutcome_invalidRequestMessage
             TransactionApprovalFailure.CompileTransactionIntent -> R.string.error_transactionFailure_prepare
             TransactionApprovalFailure.SignCompiledTransactionIntent -> R.string.error_transactionFailure_prepare
             LedgerCommunicationFailure.FailedToDerivePublicKeys -> R.string.common_somethingWentWrong // TODO consider different copy
@@ -119,6 +131,7 @@ sealed class DappRequestFailure(msg: String? = null) : Exception(msg.orEmpty()) 
             is LedgerCommunicationFailure.FailedToDeriveAndDisplayAddress -> R.string.common_somethingWentWrong
             DappVerificationFailure.ClaimedEntityAddressNotPresent -> R.string.common_somethingWentWrong // TODO consider different copy
             UnacceptableManifest -> R.string.transactionReview_unacceptableManifest_rejected
+            is InvalidRequestChallenge -> R.string.dAppRequest_requestMalformedAlert_message
         }
     }
 

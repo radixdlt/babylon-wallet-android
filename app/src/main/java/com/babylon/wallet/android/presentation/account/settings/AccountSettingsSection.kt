@@ -19,11 +19,11 @@ sealed class AccountSettingsSection(val settingsItems: List<AccountSettingItem>)
 }
 
 sealed interface AccountSettingItem {
-    object AccountLabel : AccountSettingItem
-    object AccountColor : AccountSettingItem
-    object ShowAssetsWithTags : AccountSettingItem
-    object AccountSecurity : AccountSettingItem
-    object ThirdPartyDeposits : AccountSettingItem
+    data object AccountLabel : AccountSettingItem
+    data object AccountColor : AccountSettingItem
+    data object ShowAssetsWithTags : AccountSettingItem
+    data object AccountSecurity : AccountSettingItem
+    data object ThirdPartyDeposits : AccountSettingItem
 
     @StringRes
     fun titleRes(): Int {

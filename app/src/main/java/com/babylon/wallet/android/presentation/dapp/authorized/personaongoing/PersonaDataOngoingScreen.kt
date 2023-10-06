@@ -81,7 +81,7 @@ fun PersonaDataOngoingScreen(
                 is Event.LoginFlowCompleted -> onLoginFlowComplete()
                 is Event.ChooseAccounts -> onChooseAccounts(event)
                 is Event.PersonaDataOnetime -> onPersonaDataOnetime(event)
-                is Event.RejectLogin -> onLoginFlowComplete()
+                is Event.CloseLoginFlow -> onLoginFlowComplete()
                 is Event.RequestCompletionBiometricPrompt -> {
                     if (event.requestDuringSigning) {
                         sharedViewModel.completeRequestHandling(deviceBiometricAuthenticationProvider = {

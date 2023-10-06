@@ -23,11 +23,11 @@ interface IncomingRequestRepository {
 
     suspend fun resumeIncomingRequests()
 
-    fun getUnauthorizedRequest(requestId: String): IncomingRequest.UnauthorizedRequest
+    fun getUnauthorizedRequest(requestId: String): IncomingRequest.UnauthorizedRequest?
 
-    fun getTransactionWriteRequest(requestId: String): IncomingRequest.TransactionRequest
+    fun getTransactionWriteRequest(requestId: String): IncomingRequest.TransactionRequest?
 
-    fun getAuthorizedRequest(requestId: String): IncomingRequest.AuthorizedRequest
+    fun getAuthorizedRequest(requestId: String): IncomingRequest.AuthorizedRequest?
 
     fun removeAll()
 
@@ -102,40 +102,34 @@ class IncomingRequestRepositoryImpl @Inject constructor() : IncomingRequestRepos
         }
     }
 
-    override fun getUnauthorizedRequest(requestId: String): IncomingRequest.UnauthorizedRequest {
+    override fun getUnauthorizedRequest(requestId: String): IncomingRequest.UnauthorizedRequest? {
         val queueItem = requestQueue.find {
             it is QueueItem.RequestItem && it.incomingRequest.id == requestId && it.incomingRequest is IncomingRequest.UnauthorizedRequest
         }
-
-        requireNotNull(queueItem) {
-            "IncomingRequestRepository does not contain this request"
+        if (queueItem == null) {
+            Timber.w("Unauthorized request with id $requestId is null")
         }
-
-        return (queueItem as QueueItem.RequestItem).incomingRequest as IncomingRequest.UnauthorizedRequest
+        return (queueItem as? QueueItem.RequestItem)?.incomingRequest as? IncomingRequest.UnauthorizedRequest
     }
 
-    override fun getTransactionWriteRequest(requestId: String): IncomingRequest.TransactionRequest {
+    override fun getTransactionWriteRequest(requestId: String): IncomingRequest.TransactionRequest? {
         val queueItem = requestQueue.find {
             it is QueueItem.RequestItem && it.incomingRequest.id == requestId && it.incomingRequest is IncomingRequest.TransactionRequest
         }
-
-        requireNotNull(queueItem) {
-            "IncomingRequestRepository does not contain this request"
+        if (queueItem == null) {
+            Timber.w("Transaction request with id $requestId is null")
         }
-
-        return (queueItem as QueueItem.RequestItem).incomingRequest as IncomingRequest.TransactionRequest
+        return (queueItem as? QueueItem.RequestItem)?.incomingRequest as? IncomingRequest.TransactionRequest
     }
 
-    override fun getAuthorizedRequest(requestId: String): IncomingRequest.AuthorizedRequest {
+    override fun getAuthorizedRequest(requestId: String): IncomingRequest.AuthorizedRequest? {
         val queueItem = requestQueue.find {
             it is QueueItem.RequestItem && it.incomingRequest.id == requestId && it.incomingRequest is IncomingRequest.AuthorizedRequest
         }
-
-        requireNotNull(queueItem) {
-            "IncomingRequestRepository does not contain this request"
+        if (queueItem == null) {
+            Timber.w("Authorized request with id $requestId is null")
         }
-
-        return (queueItem as QueueItem.RequestItem).incomingRequest as IncomingRequest.AuthorizedRequest
+        return (queueItem as? QueueItem.RequestItem)?.incomingRequest as? IncomingRequest.AuthorizedRequest
     }
 
     override fun removeAll() {
@@ -156,7 +150,7 @@ class IncomingRequestRepositoryImpl @Inject constructor() : IncomingRequestRepos
     }
 
     private sealed interface QueueItem {
-        object HighPriorityScreen : QueueItem
+        data object HighPriorityScreen : QueueItem
 
         data class RequestItem(val incomingRequest: IncomingRequest) : QueueItem
     }

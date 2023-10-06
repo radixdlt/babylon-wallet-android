@@ -74,10 +74,11 @@ class GatewaysViewModel @Inject constructor(
 
     fun onNewUrlChanged(newUrl: String) { // check comment in the isValidUrl extension function
         _state.update { state ->
+            // if sanitizedUrl = null it means it didn't pass the validation
             val sanitizedUrl = newUrl.sanitizeAndValidateGatewayUrl(isDevModeEnabled = state.isDeveloperModeEnabled)
             val urlAlreadyAdded = state.gatewayList.any { it.gateway.url == newUrl || it.gateway.url == sanitizedUrl }
             state.copy(
-                newUrlValid = !urlAlreadyAdded && (newUrl.isValidUrl() || sanitizedUrl?.isValidUrl() == true),
+                newUrlValid = !urlAlreadyAdded && sanitizedUrl?.isValidUrl() == true && newUrl.isValidUrl(),
                 newUrl = newUrl,
                 gatewayAddFailure = if (urlAlreadyAdded) GatewayAddFailure.AlreadyExist else null
             )
@@ -105,7 +106,7 @@ class GatewaysViewModel @Inject constructor(
 
             val newGatewayInfo = networkInfoRepository.getNetworkInfo(newUrl)
             newGatewayInfo.onValue { networkName ->
-                addGatewayUseCase(Radix.Gateway(newUrl, Radix.Network.forName(networkName)))
+                addGatewayUseCase(Radix.Gateway(newUrl, Radix.Network.fromName(networkName)))
                 _state.update { state ->
                     state.copy(addingGateway = false, newUrl = "", newUrlValid = false)
                 }

@@ -116,7 +116,7 @@ private fun OnboardingScreenContent(
                 onClick = onRestoreWalletClick,
                 textStyle = RadixTheme.typography.body1StandaloneLink
             )
-            Spacer(Modifier.height(RadixTheme.dimensions.paddingXXLarge))
+            Spacer(Modifier.height(RadixTheme.dimensions.paddingXXXLarge))
         }
     }
 }
