@@ -42,7 +42,12 @@ fun DefaultSettingsItem(
         icon?.let {
             Icon(painter = painterResource(id = it), contentDescription = null)
         }
-        Column(modifier = Modifier.height(IntrinsicSize.Max), verticalArrangement = Arrangement.Center) {
+        Column(
+            modifier = Modifier
+                .weight(10f)
+                .height(IntrinsicSize.Max),
+            verticalArrangement = Arrangement.Center
+        ) {
             Text(
                 text = title,
                 style = RadixTheme.typography.body2Header,
