@@ -173,7 +173,7 @@ const val AES_ALGORITHM = "AES"
 private const val AES_GCM_NOPADDING = "AES/GCM/NoPadding"
 private const val AES_KEY_SIZE = 256
 private const val GCM_IV_LENGTH = 12
-private const val KEY_AUTHORIZATION_SECONDS = 10
+private const val KEY_AUTHORIZATION_SECONDS = 30 // seem that some low end devices take very long time to generate BDFS mnemonic
 private const val AUTH_TAG_LENGTH = 128 // bit
 
 sealed class KeySpec(val alias: String) {
