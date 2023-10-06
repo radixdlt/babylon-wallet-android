@@ -77,7 +77,7 @@ class GatewaysViewModel @Inject constructor(
             val sanitizedUrl = newUrl.sanitizeAndValidateGatewayUrl(isDevModeEnabled = state.isDeveloperModeEnabled)
             val urlAlreadyAdded = state.gatewayList.any { it.gateway.url == newUrl || it.gateway.url == sanitizedUrl }
             state.copy(
-                newUrlValid = !urlAlreadyAdded && (newUrl.isValidUrl() || sanitizedUrl?.isValidUrl() == true),
+                newUrlValid = !urlAlreadyAdded && (sanitizedUrl != null && sanitizedUrl.isValidUrl()) && newUrl.isValidUrl(),
                 newUrl = newUrl,
                 gatewayAddFailure = if (urlAlreadyAdded) GatewayAddFailure.AlreadyExist else null
             )
