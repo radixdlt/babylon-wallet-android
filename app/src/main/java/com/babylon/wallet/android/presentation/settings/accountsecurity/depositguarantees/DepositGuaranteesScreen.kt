@@ -68,7 +68,7 @@ fun DepositGuaranteesContent(
     Scaffold(
         topBar = {
             RadixCenteredTopAppBar(
-                title = "Deposit Guarantees",
+                title = stringResource(id = R.string.settings_depositGuarantees),
                 onBackClick = onBackClick,
                 windowInsets = WindowInsets.statusBars
             )
@@ -81,8 +81,7 @@ fun DepositGuaranteesContent(
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingMedium))
                 Text(
                     modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingDefault),
-                    text = "Set the guaranteed minimum deposit to be applied whenever a deposit in a transaction can only" +
-                        " be estimated.\n\nYou can always change the guarantee from this default in each transaction.",
+                    text = stringResource(id = R.string.depositGuarantees_text),
                     style = RadixTheme.typography.body1HighImportance,
                     color = RadixTheme.colors.gray2
                 )

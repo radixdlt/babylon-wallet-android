@@ -2,7 +2,6 @@ package com.babylon.wallet.android.presentation.dapp.authorized.selectpersona
 
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
-import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
@@ -32,15 +31,10 @@ class SelectPersonaViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     private val dAppConnectionRepository: DAppConnectionRepository,
     private val getProfileUseCase: GetProfileUseCase,
-    private val preferencesManager: PreferencesManager,
-    incomingRequestRepository: IncomingRequestRepository
+    private val preferencesManager: PreferencesManager
 ) : StateViewModel<SelectPersonaUiState>(), OneOffEventHandler<DAppSelectPersonaEvent> by OneOffEventHandlerImpl() {
 
     private val args = SelectPersonaArgs(savedStateHandle)
-
-    private val authorizedRequest = incomingRequestRepository.getAuthorizedRequest(
-        args.requestId
-    )
 
     private var authorizedDapp: Network.AuthorizedDapp? = null
 
@@ -48,9 +42,7 @@ class SelectPersonaViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            authorizedDapp = dAppConnectionRepository.getAuthorizedDapp(
-                authorizedRequest.requestMetadata.dAppDefinitionAddress
-            )
+            authorizedDapp = dAppConnectionRepository.getAuthorizedDapp(args.dappDefinitionAddress)
             val allAuthorizedPersonas = authorizedDapp?.referencesToAuthorizedPersonas
             _state.update { state ->
                 val personas = generatePersonasListForDisplay(
@@ -72,9 +64,7 @@ class SelectPersonaViewModel @Inject constructor(
     private fun observePersonas() {
         viewModelScope.launch {
             getProfileUseCase.personasOnCurrentNetwork.collect { personas ->
-                authorizedDapp = dAppConnectionRepository.getAuthorizedDapp(
-                    authorizedRequest.requestMetadata.dAppDefinitionAddress
-                )
+                authorizedDapp = dAppConnectionRepository.getAuthorizedDapp(args.dappDefinitionAddress)
                 val allAuthorizedPersonas = authorizedDapp?.referencesToAuthorizedPersonas
                 _state.update { state ->
                     val personasListForDisplay = generatePersonasListForDisplay(

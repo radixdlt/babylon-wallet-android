@@ -38,7 +38,7 @@ fun DappAuthorizedLoginScreen(
     modifier: Modifier = Modifier
 ) {
     LaunchedEffect(Unit) {
-        viewModel.oneOffEvent.filterIsInstance<Event.RejectLogin>().collect {
+        viewModel.oneOffEvent.filterIsInstance<Event.CloseLoginFlow>().collect {
             onBackClick()
         }
     }
@@ -61,7 +61,7 @@ fun DappAuthorizedLoginScreen(
             route.oneTime,
             route.showBack
         )
-        is InitialAuthorizedLoginRoute.SelectPersona -> navigateToSelectPersona(route.reqId)
+        is InitialAuthorizedLoginRoute.SelectPersona -> navigateToSelectPersona(route.dappDefinitionAddress)
         else -> {}
     }
     Box(

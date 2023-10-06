@@ -58,13 +58,18 @@ class DAppUnauthorizedLoginViewModel @Inject constructor(
 
     private val args = DAppUnauthorizedLoginArgs(savedStateHandle)
 
-    private val request = incomingRequestRepository.getUnauthorizedRequest(
-        args.requestId
-    )
+    private lateinit var request: MessageFromDataChannel.IncomingRequest.UnauthorizedRequest
 
     init {
         observeSigningState()
         viewModelScope.launch {
+            val requestToHandle = incomingRequestRepository.getUnauthorizedRequest(args.requestId)
+            if (requestToHandle == null) {
+                sendEvent(Event.CloseLoginFlow)
+                return@launch
+            } else {
+                request = requestToHandle
+            }
             val currentNetworkId = getCurrentGatewayUseCase().network.networkId().value
             if (currentNetworkId != request.requestMetadata.networkId) {
                 handleRequestError(
@@ -110,6 +115,7 @@ class DAppUnauthorizedLoginViewModel @Inject constructor(
     }
 
     private fun setInitialDappLoginRoute() {
+        val request = request
         when {
             request.oneTimeAccountsRequestItem != null -> {
                 _state.update {
@@ -152,7 +158,7 @@ class DAppUnauthorizedLoginViewModel @Inject constructor(
 
     fun onAcknowledgeFailureDialog() = viewModelScope.launch {
         _state.update { it.copy(failureDialog = DAppUnauthorizedLoginUiState.FailureDialog.Closed) }
-        sendEvent(Event.RejectLogin)
+        sendEvent(Event.CloseLoginFlow)
         incomingRequestRepository.requestHandled(requestId = args.requestId)
     }
 
@@ -189,7 +195,7 @@ class DAppUnauthorizedLoginViewModel @Inject constructor(
                 requestId = args.requestId,
                 error = WalletErrorType.RejectedByUser
             )
-            sendEvent(Event.RejectLogin)
+            sendEvent(Event.CloseLoginFlow)
             incomingRequestRepository.requestHandled(requestId = args.requestId)
         }
     }
@@ -201,6 +207,7 @@ class DAppUnauthorizedLoginViewModel @Inject constructor(
     fun onAccountsSelected(onetimeAccounts: List<AccountItemUiModel>) {
         viewModelScope.launch {
             _state.update { it.copy(selectedAccountsOneTime = onetimeAccounts.toPersistentList()) }
+            val request = request
             if (request.oneTimePersonaDataRequestItem != null) {
                 sendEvent(
                     Event.PersonaDataOnetime(
@@ -250,9 +257,9 @@ class DAppUnauthorizedLoginViewModel @Inject constructor(
 sealed interface Event : OneOffEvent {
 
     data class RequestCompletionBiometricPrompt(val requestDuringSigning: Boolean) : Event
-    object RejectLogin : Event
+    data object CloseLoginFlow : Event
 
-    object LoginFlowCompleted : Event
+    data object LoginFlowCompleted : Event
 
     data class PersonaDataOnetime(val requiredPersonaFields: RequiredPersonaFields) : Event
 }

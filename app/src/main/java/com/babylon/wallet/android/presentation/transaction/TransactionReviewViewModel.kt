@@ -70,7 +70,7 @@ class TransactionReviewViewModel @Inject constructor(
     dAppMessenger: DappMessenger,
     appEventBus: AppEventBus,
     transactionStatusClient: TransactionStatusClient,
-    private val incomingRequestRepository: IncomingRequestRepository,
+    incomingRequestRepository: IncomingRequestRepository,
     @ApplicationScope private val appScope: CoroutineScope,
     savedStateHandle: SavedStateHandle,
 ) : StateViewModel<State>(),
@@ -80,7 +80,6 @@ class TransactionReviewViewModel @Inject constructor(
     private val logger = Timber.tag("TransactionApproval")
 
     override fun initialState(): State = State(
-        request = incomingRequestRepository.getTransactionWriteRequest(args.requestId),
         isLoading = true,
         previewType = PreviewType.None
     )
@@ -122,16 +121,21 @@ class TransactionReviewViewModel @Inject constructor(
     )
 
     init {
-        viewModelScope.launch {
-            transactionClient.signingState.collect { signingState ->
-                _state.update { state ->
-                    state.copy(interactionState = signingState)
+        val request = incomingRequestRepository.getTransactionWriteRequest(args.requestId)
+        if (request == null) {
+            viewModelScope.launch { sendEvent(Event.Dismiss) }
+        } else {
+            _state.update { it.copy(request = request) }
+            viewModelScope.launch {
+                transactionClient.signingState.collect { signingState ->
+                    _state.update { state ->
+                        state.copy(interactionState = signingState)
+                    }
                 }
             }
-        }
-
-        viewModelScope.launch {
-            analysis.analyse()
+            viewModelScope.launch {
+                analysis.analyse()
+            }
         }
     }
 
@@ -210,8 +214,8 @@ class TransactionReviewViewModel @Inject constructor(
 
         val customizeFeesSheet = state.value.sheetState as? State.Sheet.CustomizeFees ?: return
 
-        val selectedFeePayerInvolvedInTransaction = state.value.request.transactionManifestData.toTransactionManifest()
-            .getOrNull()?.let {
+        val selectedFeePayerInvolvedInTransaction = state.value.request?.transactionManifestData?.toTransactionManifest()
+            ?.getOrNull()?.let {
                 it.accountsWithdrawnFrom() + it.accountsDepositedInto() + it.accountsRequiringAuth()
             }.orEmpty().any { it.addressString() == selectedFeePayer.address }
 
@@ -254,7 +258,7 @@ class TransactionReviewViewModel @Inject constructor(
     }
 
     data class State(
-        val request: MessageFromDataChannel.IncomingRequest.TransactionRequest,
+        val request: MessageFromDataChannel.IncomingRequest.TransactionRequest? = null,
         val isLoading: Boolean,
         val isSubmitting: Boolean = false,
         val isRawManifestVisible: Boolean = false,
@@ -268,6 +272,9 @@ class TransactionReviewViewModel @Inject constructor(
         val ephemeralNotaryPrivateKey: PrivateKey = PrivateKey.EddsaEd25519.newRandom(),
         val interactionState: InteractionState? = null
     ) : UiState {
+
+        val requestNonNull: MessageFromDataChannel.IncomingRequest.TransactionRequest
+            get() = requireNotNull(request)
 
         fun noneRequiredState(): State = copy(
             sheetState = Sheet.CustomizeFees(
@@ -327,14 +334,14 @@ class TransactionReviewViewModel @Inject constructor(
         val isRawManifestToggleVisible: Boolean
             get() = previewType is PreviewType.Transfer
 
-        val rawManifest: String = request.transactionManifestData.toTransactionManifest().getOrNull()?.toPrettyString().orEmpty()
+        val rawManifest: String = request?.transactionManifestData?.toTransactionManifest()?.getOrNull()?.toPrettyString().orEmpty()
 
         val isSheetVisible: Boolean
             get() = sheetState != Sheet.None
 
         val message: String?
             get() {
-                val message = request.transactionManifestData.message
+                val message = request?.transactionManifestData?.message
                 return if (!message.isNullOrBlank()) {
                     message
                 } else {

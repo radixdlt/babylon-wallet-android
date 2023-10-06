@@ -45,7 +45,7 @@ fun OneTimeChooseAccountsScreen(
             when (event) {
                 is Event.LoginFlowCompleted -> onLoginFlowComplete()
                 is Event.PersonaDataOnetime -> onPersonaOnetime(event.requiredPersonaFields)
-                Event.RejectLogin -> onLoginFlowComplete()
+                Event.CloseLoginFlow -> onLoginFlowComplete()
                 is Event.RequestCompletionBiometricPrompt -> {
                     if (event.requestDuringSigning) {
                         sharedViewModel.sendRequestResponse(deviceBiometricAuthenticationProvider = {

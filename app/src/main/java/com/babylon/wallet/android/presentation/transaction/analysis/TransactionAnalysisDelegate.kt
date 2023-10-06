@@ -38,7 +38,7 @@ class TransactionAnalysisDelegate(
 ) {
 
     suspend fun analyse() {
-        state.value.request.transactionManifestData.toTransactionManifest().onSuccess {
+        state.value.requestNonNull.transactionManifestData.toTransactionManifest().onSuccess {
             startAnalysis(it)
         }.onFailure { error ->
             reportFailure(error)
@@ -63,7 +63,7 @@ class TransactionAnalysisDelegate(
         manifest: TransactionManifest,
         notaryAndSigners: NotaryAndSigners
     ) = this.onSuccess { analysis ->
-        val previewType = if (state.value.request.isInternal.not() && analysis.reservedInstructions.isNotEmpty()) {
+        val previewType = if (state.value.requestNonNull.isInternal.not() && analysis.reservedInstructions.isNotEmpty()) {
             // wallet unacceptable manifest
             state.update {
                 it.copy(
