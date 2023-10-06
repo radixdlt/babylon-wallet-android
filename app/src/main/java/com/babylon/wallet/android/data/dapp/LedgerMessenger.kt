@@ -165,7 +165,7 @@ class LedgerMessengerImpl @Inject constructor(
                 }
             }
             is Error -> {
-                emit(Result.failure(Exception("Failed to sign transaction with Ledger", result.exception)))
+                emit(Result.failure(Exception("Failed to connect Ledger device ", result.exception)))
             }
         }
     }.first()

@@ -77,6 +77,7 @@ fun LedgerHardwareWalletsScreen(
             LedgerHardwareWalletsUiState.ShowContent.AddLedger -> {
                 AddLedgerDeviceScreen(
                     showContent = addLedgerDeviceState.showContent,
+                    uiMessage = addLedgerDeviceState.uiMessage,
                     deviceModel = addLedgerDeviceState.newConnectedLedgerDevice?.model?.toProfileLedgerDeviceModel()?.value,
                     onSendAddLedgerRequestClick = addLedgerDeviceViewModel::onSendAddLedgerRequestClick,
                     onConfirmLedgerNameClick = {
@@ -86,6 +87,7 @@ fun LedgerHardwareWalletsScreen(
                         }
                     },
                     backIconType = BackIconType.Back,
+                    onMessageShown = addLedgerDeviceViewModel::onMessageShown,
                     onClose = {
                         addLedgerDeviceViewModel.initState()
                         viewModel.onCloseClick()
@@ -95,8 +97,7 @@ fun LedgerHardwareWalletsScreen(
                         addLedgerDeviceViewModel.initState()
                         viewModel.onCloseClick()
                     },
-                    onMessageShown = addLedgerDeviceViewModel::onMessageShown,
-                    uiMessage = addLedgerDeviceState.uiMessage
+                    connectorExtensionConnected = addLedgerDeviceState.connectorExtensionConnected
                 )
             }
 

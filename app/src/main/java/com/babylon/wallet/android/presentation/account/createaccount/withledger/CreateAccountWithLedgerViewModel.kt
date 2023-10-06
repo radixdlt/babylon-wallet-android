@@ -2,6 +2,7 @@ package com.babylon.wallet.android.presentation.account.createaccount.withledger
 
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.dapp.LedgerMessenger
+import com.babylon.wallet.android.data.dapp.PeerdroidClient
 import com.babylon.wallet.android.data.dapp.model.Curve
 import com.babylon.wallet.android.data.dapp.model.LedgerInteractionRequest
 import com.babylon.wallet.android.domain.model.Selectable
@@ -35,13 +36,24 @@ class CreateAccountWithLedgerViewModel @Inject constructor(
     private val getProfileUseCase: GetProfileUseCase,
     private val ledgerMessenger: LedgerMessenger,
     private val ensureBabylonFactorSourceExistUseCase: EnsureBabylonFactorSourceExistUseCase,
-    private val appEventBus: AppEventBus
+    private val appEventBus: AppEventBus,
+    private val peerdroidClient: PeerdroidClient
 ) : StateViewModel<CreateAccountWithLedgerUiState>(),
     OneOffEventHandler<CreateAccountWithLedgerEvent> by OneOffEventHandlerImpl() {
 
     override fun initialState(): CreateAccountWithLedgerUiState = CreateAccountWithLedgerUiState()
 
     init {
+        viewModelScope.launch {
+            peerdroidClient.anyChannelConnected.collect { connected ->
+                _state.update { it.copy(connectorExtensionConnected = connected) }
+            }
+        }
+        viewModelScope.launch {
+            getProfileUseCase.p2pLinks.collect { links ->
+                _state.update { it.copy(hasP2PLinks = links.isNotEmpty()) }
+            }
+        }
         viewModelScope.launch {
             getProfileUseCase.ledgerFactorSources.collect { ledgerDevices ->
                 _state.update { uiState ->
@@ -80,6 +92,21 @@ class CreateAccountWithLedgerViewModel @Inject constructor(
         }
     }
 
+    fun dismissConnectorPrompt(linkConnector: Boolean, source: ShowLinkConnectorPromptState.Source) {
+        _state.update {
+            it.copy(
+                showContent = if (linkConnector) {
+                    CreateAccountWithLedgerUiState.ShowContent.LinkNewConnector(
+                        source == ShowLinkConnectorPromptState.Source.AddLedgerDevice
+                    )
+                } else {
+                    it.showContent
+                },
+                showLinkConnectorPromptState = ShowLinkConnectorPromptState.None
+            )
+        }
+    }
+
     fun onUseLedgerContinueClick(deviceBiometricAuthenticationProvider: suspend () -> Boolean) {
         state.value.ledgerDevices.firstOrNull { selectableLedgerDevice ->
             selectableLedgerDevice.selected
@@ -91,6 +118,17 @@ class CreateAccountWithLedgerViewModel @Inject constructor(
                         it.copy(showContent = CreateAccountWithLedgerUiState.ShowContent.LinkNewConnector(false))
                     }
                     return@launch
+                } else {
+                    if (!state.value.connectorExtensionConnected) {
+                        _state.update {
+                            it.copy(
+                                showLinkConnectorPromptState = ShowLinkConnectorPromptState.Show(
+                                    ShowLinkConnectorPromptState.Source.UseLedger
+                                )
+                            )
+                        }
+                        return@launch
+                    }
                 }
                 if (ensureBabylonFactorSourceExistUseCase.babylonFactorSourceExist().not()) {
                     val authenticationResult = deviceBiometricAuthenticationProvider()
@@ -127,9 +165,23 @@ class CreateAccountWithLedgerViewModel @Inject constructor(
                 if (getProfileUseCase.p2pLinks.first().isEmpty()) {
                     it.copy(showContent = CreateAccountWithLedgerUiState.ShowContent.LinkNewConnector())
                 } else {
-                    it.copy(showContent = CreateAccountWithLedgerUiState.ShowContent.AddLedger)
+                    if (!it.connectorExtensionConnected) {
+                        it.copy(
+                            showLinkConnectorPromptState = ShowLinkConnectorPromptState.Show(
+                                ShowLinkConnectorPromptState.Source.AddLedgerDevice
+                            )
+                        )
+                    } else {
+                        it.copy(showContent = CreateAccountWithLedgerUiState.ShowContent.AddLedger)
+                    }
                 }
             }
+        }
+    }
+
+    fun showAddLedgerDeviceContent() {
+        _state.update {
+            it.copy(showContent = CreateAccountWithLedgerUiState.ShowContent.AddLedger)
         }
     }
 
@@ -150,7 +202,10 @@ data class CreateAccountWithLedgerUiState(
     val loading: Boolean = false,
     val showContent: ShowContent = ShowContent.ChooseLedger,
     val ledgerDevices: ImmutableList<Selectable<LedgerHardwareWalletFactorSource>> = persistentListOf(),
-    val selectedLedgerDeviceId: FactorSource.FactorSourceID.FromHash? = null
+    val selectedLedgerDeviceId: FactorSource.FactorSourceID.FromHash? = null,
+    val connectorExtensionConnected: Boolean = false,
+    val showLinkConnectorPromptState: ShowLinkConnectorPromptState = ShowLinkConnectorPromptState.None,
+    val hasP2PLinks: Boolean = false
 ) : UiState {
 
     sealed interface ShowContent {
@@ -161,6 +216,15 @@ data class CreateAccountWithLedgerUiState(
     }
 }
 
+sealed interface ShowLinkConnectorPromptState {
+    data object None : ShowLinkConnectorPromptState
+    data class Show(val source: Source) : ShowLinkConnectorPromptState
+
+    enum class Source {
+        AddLedgerDevice, UseLedger
+    }
+}
+
 internal sealed interface CreateAccountWithLedgerEvent : OneOffEvent {
-    object DerivedPublicKeyForAccount : CreateAccountWithLedgerEvent
+    data object DerivedPublicKeyForAccount : CreateAccountWithLedgerEvent
 }

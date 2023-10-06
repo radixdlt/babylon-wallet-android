@@ -2,6 +2,7 @@ package com.babylon.wallet.android.presentation.createaccount.withledger
 
 import app.cash.turbine.test
 import com.babylon.wallet.android.data.dapp.LedgerMessenger
+import com.babylon.wallet.android.data.dapp.PeerdroidClient
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.babylon.wallet.android.mockdata.profile
 import com.babylon.wallet.android.presentation.StateViewModelTest
@@ -14,6 +15,7 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
+import org.junit.Before
 import org.junit.Test
 import rdx.works.core.HexCoded32Bytes
 import rdx.works.profile.data.model.factorsources.LedgerHardwareWalletFactorSource
@@ -28,14 +30,21 @@ class AddLedgerDeviceViewModelTest : StateViewModelTest<AddLedgerDeviceViewModel
 
     private val getProfileUseCaseMock = mockk<GetProfileUseCase>()
     private val ledgerMessengerMock = mockk<LedgerMessenger>()
+    private val peerdroidClient = mockk<PeerdroidClient>()
     private val addLedgerFactorSourceUseCaseMock = mockk<AddLedgerFactorSourceUseCase>()
 
     override fun initVM(): AddLedgerDeviceViewModel {
         return AddLedgerDeviceViewModel(
             getProfileUseCase = getProfileUseCaseMock,
             ledgerMessenger = ledgerMessengerMock,
-            addLedgerFactorSourceUseCase = addLedgerFactorSourceUseCaseMock
+            addLedgerFactorSourceUseCase = addLedgerFactorSourceUseCaseMock,
+            peerdroidClient = peerdroidClient
         )
+    }
+
+    @Before
+    fun setup() {
+        coEvery { peerdroidClient.anyChannelConnected } returns flowOf(true)
     }
 
     @Test

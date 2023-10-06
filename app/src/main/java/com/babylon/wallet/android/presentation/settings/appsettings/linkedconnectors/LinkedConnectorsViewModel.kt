@@ -70,8 +70,8 @@ class LinkedConnectorsViewModel @Inject constructor(
     }
 }
 
-sealed interface Event : OneOffEvent {
-    object Close : Event
+internal sealed interface Event : OneOffEvent {
+    data object Close : Event
 }
 
 data class LinkedConnectorsUiState(

@@ -2,6 +2,7 @@ package com.babylon.wallet.android.presentation.settings.accountsecurity.ledgerh
 
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.dapp.LedgerMessenger
+import com.babylon.wallet.android.data.dapp.PeerdroidClient
 import com.babylon.wallet.android.domain.model.toProfileLedgerDeviceModel
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiMessage
@@ -18,6 +19,7 @@ import rdx.works.profile.domain.AddLedgerFactorSourceResult
 import rdx.works.profile.domain.AddLedgerFactorSourceUseCase
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.factorSourceById
+import timber.log.Timber
 import javax.inject.Inject
 
 @HiltViewModel
@@ -25,9 +27,14 @@ class AddLedgerDeviceViewModel @Inject constructor(
     private val getProfileUseCase: GetProfileUseCase,
     private val ledgerMessenger: LedgerMessenger,
     private val addLedgerFactorSourceUseCase: AddLedgerFactorSourceUseCase,
+    private val peerdroidClient: PeerdroidClient
 ) : StateViewModel<AddLedgerDeviceUiState>() {
 
     override fun initialState() = AddLedgerDeviceUiState.init
+
+    init {
+        observeCEConnectionState()
+    }
 
     fun onSendAddLedgerRequestClick() {
         viewModelScope.launch {
@@ -80,6 +87,15 @@ class AddLedgerDeviceViewModel @Inject constructor(
         }
     }
 
+    private fun observeCEConnectionState() {
+        viewModelScope.launch {
+            peerdroidClient.anyChannelConnected.collect { connected ->
+                Timber.d("Connector extension connected: $connected")
+                _state.update { it.copy(connectorExtensionConnected = connected) }
+            }
+        }
+    }
+
     suspend fun onConfirmLedgerNameClick(name: String) {
         _state.update { state ->
             state.copy(newConnectedLedgerDevice = state.newConnectedLedgerDevice?.copy(name = name))
@@ -88,7 +104,9 @@ class AddLedgerDeviceViewModel @Inject constructor(
     }
 
     fun initState() {
-        _state.value = AddLedgerDeviceUiState.init
+        _state.update { current ->
+            AddLedgerDeviceUiState.init.copy(connectorExtensionConnected = current.connectorExtensionConnected)
+        }
     }
 
     fun onMessageShown() {
@@ -121,7 +139,8 @@ data class AddLedgerDeviceUiState(
     val isLoading: Boolean,
     val showContent: ShowContent,
     val newConnectedLedgerDevice: LedgerDeviceUiModel?,
-    val uiMessage: UiMessage?
+    val uiMessage: UiMessage?,
+    val connectorExtensionConnected: Boolean = false
 ) : UiState {
 
     enum class ShowContent {

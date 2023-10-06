@@ -404,9 +404,9 @@ private fun ImportLegacyWalletContent(
             AddLedgerDeviceScreen(
                 modifier = Modifier
                     .fillMaxSize(),
+                showContent = addLedgerSheetState,
                 deviceModel = deviceModel,
                 onSendAddLedgerRequestClick = onContinueWithLedgerClick,
-                showContent = addLedgerSheetState,
                 onConfirmLedgerNameClick = {
                     onConfirmLedgerName(it)
                     onCloseSettings()
@@ -414,7 +414,8 @@ private fun ImportLegacyWalletContent(
                 backIconType = BackIconType.Back,
                 onClose = onCloseSettings,
                 waitingForLedgerResponse = waitingForLedgerResponse,
-                onBackClick = onCloseSettings
+                onBackClick = onCloseSettings,
+                connectorExtensionConnected = true
 
             )
         }

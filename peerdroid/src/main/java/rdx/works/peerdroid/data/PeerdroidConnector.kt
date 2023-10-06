@@ -11,9 +11,11 @@ import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.cancellable
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flatMapMerge
@@ -64,6 +66,8 @@ interface PeerdroidConnector {
     suspend fun sendDataChannelMessageToRemoteClient(remoteConnectorId: String, message: String): Result<Unit>
 
     suspend fun sendDataChannelMessageToAllRemoteClients(message: String): Result<Unit>
+
+    val anyChannelConnected: Flow<Boolean>
 }
 
 internal class PeerdroidConnectorImpl(
@@ -86,6 +90,8 @@ internal class PeerdroidConnectorImpl(
 
     // every time a new data channel opens it will be added in the dataChannelMessagesFromRemoteClients
     private val dataChannelObserver = MutableStateFlow<DataChannelWrapper?>(null)
+
+    private val isAnyChannelConnected = MutableStateFlow(false)
 
     init {
         Timber.d("⚙️ init PeerdroidConnector")
@@ -116,6 +122,7 @@ internal class PeerdroidConnectorImpl(
                     )
                     result
                 }
+
                 is Result.Error -> {
                     Timber.e("⚙️ failed to connect to CE with connectionId: $connectionId")
                     result
@@ -224,6 +231,9 @@ internal class PeerdroidConnectorImpl(
         }
     }
 
+    override val anyChannelConnected: Flow<Boolean>
+        get() = isAnyChannelConnected.asSharedFlow()
+
     private fun listenForMessagesFromRemoteClients(
         connectionIdHolder: ConnectionIdHolder,
         webSocketClient: WebSocketClient
@@ -248,6 +258,7 @@ internal class PeerdroidConnectorImpl(
                                 Timber.d("⚙️ count of peer connections: ${mapOfPeerConnections.size}")
                             }
                         }
+
                         is RemoteData -> {
                             if (signalingServerMessage is RemoteData.Offer) {
                                 val remoteClientHolder = RemoteClientHolder(id = signalingServerMessage.remoteClientId)
@@ -267,6 +278,7 @@ internal class PeerdroidConnectorImpl(
                                 addRemoteIceCandidateInWebRtc(signalingServerMessage)
                             }
                         }
+
                         is Confirmation -> {} // TODO do something with this poor but important event
                         is Error -> {
                             Timber.d("⚙️ ⬇️ error")
@@ -297,16 +309,20 @@ internal class PeerdroidConnectorImpl(
                         Timber.d("⚙️ ⚡ renegotiation needed 🆗 for remote client: $remoteClientHolder")
                         renegotiationDeferred.complete(Unit)
                     }
+
                     is PeerConnectionEvent.IceGatheringChange -> {
                         Timber.d("⚙️ ⚡ ice gathering state changed: ${event.state} for remote client: $remoteClientHolder")
                     }
+
                     is PeerConnectionEvent.IceCandidate -> {
                         Timber.d("⚙️ ⚡ ice candidate generated for remote client: $remoteClientHolder")
                         sendIceCandidateToRemoteClient(connectionIdHolder, remoteClientHolder, event.data)
                     }
+
                     is PeerConnectionEvent.SignalingState -> {
                         Timber.d("⚙️ ⚡ signaling state changed: ${event.message} for remote client: $remoteClientHolder")
                     }
+
                     is PeerConnectionEvent.Connected -> {
                         Timber.d("⚙️ ⚡ peer connection connected 🟢 for remote client: $remoteClientHolder")
                         val dataChannel = DataChannelWrapper(
@@ -318,12 +334,16 @@ internal class PeerdroidConnectorImpl(
                             connectionIdHolder = connectionIdHolder,
                             dataChannel = dataChannel
                         )
+                        isAnyChannelConnected.emit(mapOfDataChannels.values.isNotEmpty())
                         Timber.d("⚙️ count of data channels: ${mapOfDataChannels.size}")
                     }
+
                     is PeerConnectionEvent.Disconnected -> {
                         Timber.d("⚙️ ⚡ peer connection disconnected 🔴 for remote client: $remoteClientHolder")
                         terminatePeerConnectionAndDataChannel(remoteClientHolder, connectionIdHolder)
+                        isAnyChannelConnected.emit(mapOfDataChannels.values.isNotEmpty())
                     }
+
                     is PeerConnectionEvent.Failed -> {
                         Timber.d("⚙️ ⚡ peer connection failed ❌ for remote client: $remoteClientHolder")
                         terminatePeerConnectionAndDataChannel(remoteClientHolder, connectionIdHolder)
@@ -375,6 +395,7 @@ internal class PeerdroidConnectorImpl(
                     Timber.d("⚙️ ⚡ remote description is set for remote client: $remoteClientHolder")
                     true
                 }
+
                 is Result.Error -> {
                     Timber.e("⚙️ ⚡ failed to set remote description:${result.message} for remote client: $remoteClientHolder")
                     false
@@ -412,6 +433,7 @@ internal class PeerdroidConnectorImpl(
                         false
                     }
                 }
+
                 is Result.Error -> {
                     Timber.e("⚙️ ⚡ failed to create answer: ${result.message}")
                     return false
@@ -434,6 +456,7 @@ internal class PeerdroidConnectorImpl(
                 Timber.d("⚙️ ⚡ local description is set for remote client: $remoteClientHolder")
                 true
             }
+
             is Result.Error -> {
                 Timber.e("⚙️ ⚡ failed to set local description:${result.message} for remote client: $remoteClientHolder")
                 false

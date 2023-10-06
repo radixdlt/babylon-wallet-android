@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -29,6 +30,7 @@ import com.babylon.wallet.android.presentation.settings.appsettings.linkedconnec
 import com.babylon.wallet.android.presentation.ui.composables.AddLedgerDeviceScreen
 import com.babylon.wallet.android.presentation.ui.composables.AddLinkConnectorScreen
 import com.babylon.wallet.android.presentation.ui.composables.BackIconType
+import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.ChooseLedgerDeviceSection
 import com.babylon.wallet.android.presentation.ui.composables.LinkConnectorScreen
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
@@ -60,7 +62,29 @@ fun CreateAccountWithLedgerScreen(
             }
         }
     }
-
+    val promptState = state.showLinkConnectorPromptState
+    if (promptState is ShowLinkConnectorPromptState.Show) {
+        BasicPromptAlertDialog(
+            finish = {
+                viewModel.dismissConnectorPrompt(it, promptState.source)
+            },
+            title = {
+                Text(
+                    text = stringResource(id = R.string.ledgerHardwareDevices_linkConnectorAlert_title),
+                    style = RadixTheme.typography.body1Header,
+                    color = RadixTheme.colors.gray1
+                )
+            },
+            text = {
+                Text(
+                    text = stringResource(id = R.string.ledgerHardwareDevices_linkConnectorAlert_message),
+                    style = RadixTheme.typography.body2Regular,
+                    color = RadixTheme.colors.gray1
+                )
+            },
+            confirmText = stringResource(id = R.string.ledgerHardwareDevices_linkConnectorAlert_continue)
+        )
+    }
     when (val showContent = state.showContent) {
         CreateAccountWithLedgerUiState.ShowContent.ChooseLedger -> {
             ChooseLedgerDeviceContent(
@@ -100,7 +124,7 @@ fun CreateAccountWithLedgerScreen(
                     coroutineScope.launch {
                         addLinkConnectorViewModel.onContinueClick()
                         if (showContent.addDeviceAfterLinking) {
-                            viewModel.onAddLedgerDeviceClick()
+                            viewModel.showAddLedgerDeviceContent()
                         } else {
                             viewModel.onCloseClick()
                         }
@@ -138,7 +162,9 @@ fun CreateAccountWithLedgerScreen(
                     addLedgerDeviceViewModel.initState()
                     viewModel.onCloseClick()
                 },
-                onMessageShown = addLedgerDeviceViewModel::onMessageShown
+                onMessageShown = addLedgerDeviceViewModel::onMessageShown,
+                connectorExtensionConnected = addLedgerDeviceState.connectorExtensionConnected,
+//                hasP2PLinks = state.hasP2PLinks
             )
         }
     }

@@ -51,6 +51,7 @@ interface PeerdroidClient {
     fun terminate()
     fun listenForLedgerResponses(): Flow<MessageFromDataChannel.LedgerResponse>
     fun listenForIncomingRequestErrors(): Flow<MessageFromDataChannel.Error.DappRequest>
+    val anyChannelConnected: Flow<Boolean>
 }
 
 class PeerdroidClientImpl @Inject constructor(
@@ -99,6 +100,9 @@ class PeerdroidClientImpl @Inject constructor(
     override fun listenForIncomingRequestErrors(): Flow<MessageFromDataChannel.Error.DappRequest> {
         return listenForIncomingMessages().filterIsInstance()
     }
+
+    override val anyChannelConnected: Flow<Boolean>
+        get() = peerdroidConnector.anyChannelConnected
 
     override fun listenForLedgerResponses(): Flow<MessageFromDataChannel.LedgerResponse> {
         return listenForIncomingMessages().filterIsInstance()
