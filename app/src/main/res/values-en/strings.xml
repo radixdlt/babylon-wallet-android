@@ -14,6 +14,9 @@
   <string name="homePage_accountsTag_ledgerBabylon">Ledger</string>
   <string name="homePage_visitDashboard_title">Visit the Radix Dashboard</string>
   <string name="homePage_visitDashboard_subtitle">Ready to get started using the Radix Network and your Wallet?</string>
+  <string name="homePage_profileOlympiaError_title">SERIOUS ERROR - PLEASE READ</string>
+  <string name="homePage_profileOlympiaError_subtitle">Your wallet is in a rare condition that must be resolved manually. Please email support at hello@radixdlt.com with subject line BDFS ERROR. Somebody will respond and help you resolve the issue safely.</string>
+  <string name="homePage_profileOlympiaError_okCountdown">OK (%d)</string>
   <string name="account_transfer">Transfer</string>
   <string name="account_tokens">Tokens</string>
   <string name="account_nfts">NFTs</string>
@@ -148,6 +151,8 @@
   <string name="settings_backups">Backups</string>
   <string name="settings_importFromLegacyWallet">Import from a Legacy Wallet</string>
   <string name="settings_ledgerHardwareWallets">Ledger Hardware Wallets</string>
+  <string name="settings_depositGuarantees">Deposit Guarantees</string>
+  <string name="settings_depositGuarantees_subtitle">Set your default guaranteed minimum for estimated deposits</string>
   <string name="settings_multiFactor">Multi-Factor Setup</string>
   <string name="settings_appVersion">Version: %s build #%s</string>
   <string name="settings_deleteWalletData">Delete Wallet Data</string>
@@ -761,4 +766,7 @@ Only the **current configuration** of your wallet is backed up with each manual 
   <string name="recoverSeedPhrase_enterButton">Enter This Seed Phrase</string>
   <string name="enterSeedPhrase_header_title">Enter Seed Phrase</string>
   <string name="enterSeedPhrase_warning">For your safety, make sure no one is looking at your screen. Never give your seed phrase to anyone for any reason.</string>
+  <string name="depositGuarantees_text">Set the guaranteed minimum deposit to be applied whenever a deposit in a transaction can only be estimated.
+
+You can always change the guarantee from this default in each transaction.</string>
 </resources>
