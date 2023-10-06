@@ -498,7 +498,7 @@
   <string name="error_transactionFailure_epoch">Failed to get epoch</string>
   <string name="error_transactionFailure_header">Failed to build transaction header</string>
   <string name="error_transactionFailure_manifest">Failed to convert transaction manifest</string>
-  <string name="error_transactionFailure_network">dApp made a request intended for %s network, but you are currently connected to %s network.</string>
+  <string name="error_transactionFailure_network">Wrong network</string>
   <string name="error_transactionFailure_noFundsToApproveTransaction">No funds to approve transaction</string>
   <string name="error_transactionFailure_pollStatus">Failed to poll transaction status</string>
   <string name="error_transactionFailure_prepare">Failed to prepare transaction</string>
