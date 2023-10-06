@@ -13,6 +13,7 @@ import androidx.navigation.navArgument
 import com.babylon.wallet.android.presentation.account.createaccount.confirmation.ARG_REQUEST_SOURCE
 import com.babylon.wallet.android.presentation.account.createaccount.confirmation.CreateAccountRequestSource
 import com.babylon.wallet.android.presentation.navigation.markAsHighPriority
+import com.babylon.wallet.android.utils.Constants
 import com.google.accompanist.navigation.animation.composable
 
 @VisibleForTesting
@@ -49,7 +50,7 @@ internal class CreateAccountNavArgs(
 fun NavController.createAccountScreen(
     requestSource: CreateAccountRequestSource = CreateAccountRequestSource.FirstTime,
     networkUrl: String? = null,
-    networkId: Int = -1,
+    networkId: Int = Constants.USE_CURRENT_NETWORK,
     switchNetwork: Boolean? = null,
     navOptions: NavOptions? = null
 ) {
@@ -89,7 +90,7 @@ fun NavGraphBuilder.createAccountScreen(
             },
             navArgument(ARG_NETWORK_ID) {
                 type = NavType.IntType
-                defaultValue = -1 // no network id, use current network
+                defaultValue = Constants.USE_CURRENT_NETWORK
             },
             navArgument(ARG_SWITCH_NETWORK) {
                 type = NavType.BoolType

@@ -3,7 +3,6 @@ package rdx.works.profile.domain
 import com.radixdlt.ret.Address
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapNotNull
 import rdx.works.core.PUBLIC_KEY_HASH_LENGTH
@@ -67,10 +66,6 @@ suspend fun GetProfileUseCase.factorSourceById(
     id: FactorSource.FactorSourceID
 ) = factorSources.first().firstOrNull { factorSource ->
     factorSource.id == id
-}
-
-suspend fun GetProfileUseCase.networkExist(networkId: Int): Network? {
-    return invoke().firstOrNull()?.networks?.find { network -> network.networkID == networkId }
 }
 
 suspend fun GetProfileUseCase.accountsOnCurrentNetwork() = accountsOnCurrentNetwork.first()

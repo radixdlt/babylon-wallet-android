@@ -10,6 +10,7 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavType
 import androidx.navigation.navArgument
 import com.babylon.wallet.android.presentation.navigation.markAsHighPriority
+import com.babylon.wallet.android.utils.Constants
 import com.google.accompanist.navigation.animation.composable
 
 @VisibleForTesting
@@ -25,7 +26,7 @@ internal class CreateAccountWithLedgerArgs(
     )
 }
 
-fun NavController.createAccountWithLedger(networkId: Int = -1) {
+fun NavController.createAccountWithLedger(networkId: Int = Constants.USE_CURRENT_NETWORK) {
     navigate(
         route = "route_create_account_with_ledger?$ARG_NETWORK_ID=$networkId"
     )
@@ -48,7 +49,7 @@ fun NavGraphBuilder.createAccountWithLedger(
         arguments = listOf(
             navArgument(ARG_NETWORK_ID) {
                 type = NavType.IntType
-                defaultValue = -1 // no network id, use current network
+                defaultValue = Constants.USE_CURRENT_NETWORK
             }
         )
     ) {
