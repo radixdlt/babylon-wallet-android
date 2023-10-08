@@ -41,7 +41,7 @@ internal class SwitchNetworkUseCaseTest {
 
     @Test
     fun `switching network changes profile current network`() = testScope.runTest {
-        val changedNetworkId = useCase.invoke(Radix.Gateway.kisharnet.url, Radix.Network.kisharnet.name)
+        val changedNetworkId = useCase.invoke(Radix.Gateway.kisharnet.url, Radix.Network.kisharnet.id)
         val updatedProfile = slot<Profile>()
         coVerify(exactly = 1) { profileRepository.saveProfile(capture(updatedProfile)) }
         assert(updatedProfile.captured.appPreferences.gateways.current().url == Radix.Gateway.kisharnet.url)
