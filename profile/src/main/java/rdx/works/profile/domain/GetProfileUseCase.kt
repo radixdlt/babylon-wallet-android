@@ -147,4 +147,4 @@ val GetProfileUseCase.p2pLinks
  * Default deposit guarantee
  */
 suspend fun GetProfileUseCase.defaultDepositGuarantee() =
-    invoke().map { it.appPreferences.transaction.defaultDepositGuarantee }.distinctUntilChanged().first()
+    invoke().map { it.appPreferences.transaction.defaultDepositGuarantee }.first()
