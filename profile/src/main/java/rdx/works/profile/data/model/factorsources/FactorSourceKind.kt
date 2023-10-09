@@ -29,8 +29,8 @@ enum class FactorSourceKind {
      * * Hierarchical deterministic (Mnemonic)
      * * Encrypted by Security Questions
      */
-//    @SerialName("securityQuestions")
-//    SECURITY_QUESTIONS,
+    @SerialName("securityQuestions")
+    SECURITY_QUESTIONS,
 
     /**
      * A user owned hardware wallet by vendor Ledger HQ, most commonly
