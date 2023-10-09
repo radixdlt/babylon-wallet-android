@@ -100,7 +100,7 @@ class DAppRepositoryImpl @Inject constructor(
                 }
             }
         } else {
-            throw DappRequestException(DappRequestFailure.DappVerificationFailure.UnknownWebsite)
+            kotlin.Result.failure(DappRequestException(DappRequestFailure.DappVerificationFailure.UnknownWebsite))
         }
     }
 
