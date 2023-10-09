@@ -13,6 +13,7 @@ import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
+import com.babylon.wallet.android.utils.Constants
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
@@ -128,7 +129,7 @@ class CreateAccountWithLedgerViewModel @Inject constructor(
     }
 
     private suspend fun networkIdToCreateAccountOn(): Int {
-        return if (args.networkId == -1) {
+        return if (args.networkId == Constants.USE_CURRENT_NETWORK) {
             getCurrentGatewayUseCase.invoke().network.id
         } else {
             args.networkId
