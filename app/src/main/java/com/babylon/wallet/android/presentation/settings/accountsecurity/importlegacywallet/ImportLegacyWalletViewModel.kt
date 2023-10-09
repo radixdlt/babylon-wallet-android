@@ -93,7 +93,7 @@ class ImportLegacyWalletViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            peerdroidClient.anyChannelConnected.collect { connected ->
+            peerdroidClient.hasAtLeastOneConnection.collect { connected ->
                 _state.update { it.copy(connectorExtensionConnected = connected) }
             }
         }

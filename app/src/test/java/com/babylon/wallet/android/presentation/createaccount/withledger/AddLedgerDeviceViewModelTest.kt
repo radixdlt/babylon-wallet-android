@@ -2,7 +2,6 @@ package com.babylon.wallet.android.presentation.createaccount.withledger
 
 import app.cash.turbine.test
 import com.babylon.wallet.android.data.dapp.LedgerMessenger
-import com.babylon.wallet.android.data.dapp.PeerdroidClient
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.babylon.wallet.android.mockdata.profile
 import com.babylon.wallet.android.presentation.StateViewModelTest
@@ -30,21 +29,19 @@ class AddLedgerDeviceViewModelTest : StateViewModelTest<AddLedgerDeviceViewModel
 
     private val getProfileUseCaseMock = mockk<GetProfileUseCase>()
     private val ledgerMessengerMock = mockk<LedgerMessenger>()
-    private val peerdroidClient = mockk<PeerdroidClient>()
     private val addLedgerFactorSourceUseCaseMock = mockk<AddLedgerFactorSourceUseCase>()
 
     override fun initVM(): AddLedgerDeviceViewModel {
         return AddLedgerDeviceViewModel(
             getProfileUseCase = getProfileUseCaseMock,
             ledgerMessenger = ledgerMessengerMock,
-            addLedgerFactorSourceUseCase = addLedgerFactorSourceUseCaseMock,
-            peerdroidClient = peerdroidClient
+            addLedgerFactorSourceUseCase = addLedgerFactorSourceUseCaseMock
         )
     }
 
     @Before
     fun setup() {
-        coEvery { peerdroidClient.anyChannelConnected } returns flowOf(true)
+        coEvery { ledgerMessengerMock.isConnected } returns flowOf(true)
     }
 
     @Test

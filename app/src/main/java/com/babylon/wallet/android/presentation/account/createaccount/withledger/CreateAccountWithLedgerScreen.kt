@@ -26,6 +26,7 @@ import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.domain.model.Selectable
 import com.babylon.wallet.android.domain.model.toProfileLedgerDeviceModel
 import com.babylon.wallet.android.presentation.settings.accountsecurity.ledgerhardwarewallets.AddLedgerDeviceViewModel
+import com.babylon.wallet.android.presentation.settings.accountsecurity.ledgerhardwarewallets.ShowLinkConnectorPromptState
 import com.babylon.wallet.android.presentation.settings.appsettings.linkedconnectors.AddLinkConnectorViewModel
 import com.babylon.wallet.android.presentation.ui.composables.AddLedgerDeviceScreen
 import com.babylon.wallet.android.presentation.ui.composables.AddLinkConnectorScreen
@@ -121,13 +122,11 @@ fun CreateAccountWithLedgerScreen(
                 connectorDisplayName = addLinkConnectorState.connectorDisplayName,
                 isNewConnectorContinueButtonEnabled = addLinkConnectorState.isContinueButtonEnabled,
                 onNewConnectorContinueClick = {
-                    coroutineScope.launch {
-                        addLinkConnectorViewModel.onContinueClick()
-                        if (showContent.addDeviceAfterLinking) {
-                            viewModel.showAddLedgerDeviceContent()
-                        } else {
-                            viewModel.onCloseClick()
-                        }
+                    addLinkConnectorViewModel.onContinueClick()
+                    if (showContent.addDeviceAfterLinking) {
+                        viewModel.showAddLedgerDeviceContent()
+                    } else {
+                        viewModel.onCloseClick()
                     }
                 },
                 onNewConnectorCloseClick = {
@@ -163,7 +162,7 @@ fun CreateAccountWithLedgerScreen(
                     viewModel.onCloseClick()
                 },
                 onMessageShown = addLedgerDeviceViewModel::onMessageShown,
-                connectorExtensionConnected = addLedgerDeviceState.connectorExtensionConnected,
+                isLinkConnectionEstablished = addLedgerDeviceState.isLinkConnectionEstablished,
 //                hasP2PLinks = state.hasP2PLinks
             )
         }

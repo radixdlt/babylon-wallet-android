@@ -117,8 +117,6 @@ fun ImportLegacyWalletScreen(
     val context = LocalContext.current
     val state by viewModel.state.collectAsStateWithLifecycle()
     val addLinkConnectorState by addLinkConnectorViewModel.state.collectAsStateWithLifecycle()
-    val coroutineScope = rememberCoroutineScope()
-
     ImportLegacyWalletContent(
         modifier = modifier,
         onBackClick = viewModel::onBackClick,
@@ -161,10 +159,8 @@ fun ImportLegacyWalletScreen(
         onLinkConnectorQrCodeScanned = addLinkConnectorViewModel::onQrCodeScanned,
         onConnectorDisplayNameChanged = addLinkConnectorViewModel::onConnectorDisplayNameChanged,
         onNewConnectorContinueClick = {
-            coroutineScope.launch {
-                addLinkConnectorViewModel.onContinueClick()
-                viewModel.onNewConnectorAdded()
-            }
+            addLinkConnectorViewModel.onContinueClick()
+            viewModel.onNewConnectorAdded()
         },
         onNewConnectorCloseClick = {
             addLinkConnectorViewModel.onCloseClick()
@@ -415,7 +411,7 @@ private fun ImportLegacyWalletContent(
                 onClose = onCloseSettings,
                 waitingForLedgerResponse = waitingForLedgerResponse,
                 onBackClick = onCloseSettings,
-                connectorExtensionConnected = true
+                isLinkConnectionEstablished = true
 
             )
         }

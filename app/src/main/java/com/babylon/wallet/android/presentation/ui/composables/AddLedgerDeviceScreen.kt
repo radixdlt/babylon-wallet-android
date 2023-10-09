@@ -54,7 +54,7 @@ fun AddLedgerDeviceScreen(
     onClose: () -> Unit,
     waitingForLedgerResponse: Boolean,
     onBackClick: () -> Unit,
-    connectorExtensionConnected: Boolean
+    isLinkConnectionEstablished: Boolean
 ) {
     BackHandler(onBack = onBackClick)
 
@@ -140,8 +140,8 @@ fun AddLedgerDeviceScreen(
                                 modifier = Modifier.fillMaxWidth(),
                                 onClick = onSendAddLedgerRequestClick,
                                 text = stringResource(id = com.babylon.wallet.android.R.string.addLedgerDevice_addDevice_continue),
-                                enabled = connectorExtensionConnected,
-                                isLoading = !connectorExtensionConnected
+                                enabled = isLinkConnectionEstablished,
+                                isLoading = !isLinkConnectionEstablished
                             )
                         }
 
@@ -230,7 +230,7 @@ fun AddLedgerDeviceScreenPreview() {
             onClose = {},
             waitingForLedgerResponse = false,
             onBackClick = {},
-            connectorExtensionConnected = true
+            isLinkConnectionEstablished = true
         )
     }
 }
@@ -251,7 +251,7 @@ fun AddLedgerDeviceContentPreview3() {
             onClose = {},
             waitingForLedgerResponse = false,
             onBackClick = {},
-            connectorExtensionConnected = true
+            isLinkConnectionEstablished = true
         )
     }
 }

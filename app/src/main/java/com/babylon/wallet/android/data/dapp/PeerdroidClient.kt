@@ -33,6 +33,7 @@ import javax.inject.Inject
 
 interface PeerdroidClient {
 
+    val hasAtLeastOneConnection: Flow<Boolean>
     suspend fun connect(encryptionKey: ByteArray): Result<Unit>
 
     suspend fun sendMessage(
@@ -45,13 +46,12 @@ interface PeerdroidClient {
     ): Result<Unit>
 
     fun listenForIncomingRequests(): Flow<MessageFromDataChannel.IncomingRequest>
+    fun listenForLedgerResponses(): Flow<MessageFromDataChannel.LedgerResponse>
+    fun listenForIncomingRequestErrors(): Flow<MessageFromDataChannel.Error.DappRequest>
 
     suspend fun deleteLink(connectionPassword: String)
 
     fun terminate()
-    fun listenForLedgerResponses(): Flow<MessageFromDataChannel.LedgerResponse>
-    fun listenForIncomingRequestErrors(): Flow<MessageFromDataChannel.Error.DappRequest>
-    val anyChannelConnected: Flow<Boolean>
 }
 
 class PeerdroidClientImpl @Inject constructor(
@@ -101,7 +101,7 @@ class PeerdroidClientImpl @Inject constructor(
         return listenForIncomingMessages().filterIsInstance()
     }
 
-    override val anyChannelConnected: Flow<Boolean>
+    override val hasAtLeastOneConnection: Flow<Boolean>
         get() = peerdroidConnector.anyChannelConnected
 
     override fun listenForLedgerResponses(): Flow<MessageFromDataChannel.LedgerResponse> {

@@ -2,7 +2,6 @@ package com.babylon.wallet.android.presentation.account.createaccount.withledger
 
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.dapp.LedgerMessenger
-import com.babylon.wallet.android.data.dapp.PeerdroidClient
 import com.babylon.wallet.android.data.dapp.model.Curve
 import com.babylon.wallet.android.data.dapp.model.LedgerInteractionRequest
 import com.babylon.wallet.android.domain.model.Selectable
@@ -11,6 +10,7 @@ import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiState
+import com.babylon.wallet.android.presentation.settings.accountsecurity.ledgerhardwarewallets.ShowLinkConnectorPromptState
 import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -36,8 +36,7 @@ class CreateAccountWithLedgerViewModel @Inject constructor(
     private val getProfileUseCase: GetProfileUseCase,
     private val ledgerMessenger: LedgerMessenger,
     private val ensureBabylonFactorSourceExistUseCase: EnsureBabylonFactorSourceExistUseCase,
-    private val appEventBus: AppEventBus,
-    private val peerdroidClient: PeerdroidClient
+    private val appEventBus: AppEventBus
 ) : StateViewModel<CreateAccountWithLedgerUiState>(),
     OneOffEventHandler<CreateAccountWithLedgerEvent> by OneOffEventHandlerImpl() {
 
@@ -45,8 +44,8 @@ class CreateAccountWithLedgerViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            peerdroidClient.anyChannelConnected.collect { connected ->
-                _state.update { it.copy(connectorExtensionConnected = connected) }
+            ledgerMessenger.isConnected.collect { connected ->
+                _state.update { it.copy(isLinkConnectionEstablished = connected) }
             }
         }
         viewModelScope.launch {
@@ -119,7 +118,7 @@ class CreateAccountWithLedgerViewModel @Inject constructor(
                     }
                     return@launch
                 } else {
-                    if (!state.value.connectorExtensionConnected) {
+                    if (!state.value.isLinkConnectionEstablished) {
                         _state.update {
                             it.copy(
                                 showLinkConnectorPromptState = ShowLinkConnectorPromptState.Show(
@@ -165,7 +164,7 @@ class CreateAccountWithLedgerViewModel @Inject constructor(
                 if (getProfileUseCase.p2pLinks.first().isEmpty()) {
                     it.copy(showContent = CreateAccountWithLedgerUiState.ShowContent.LinkNewConnector())
                 } else {
-                    if (!it.connectorExtensionConnected) {
+                    if (!it.isLinkConnectionEstablished) {
                         it.copy(
                             showLinkConnectorPromptState = ShowLinkConnectorPromptState.Show(
                                 ShowLinkConnectorPromptState.Source.AddLedgerDevice
@@ -203,7 +202,7 @@ data class CreateAccountWithLedgerUiState(
     val showContent: ShowContent = ShowContent.ChooseLedger,
     val ledgerDevices: ImmutableList<Selectable<LedgerHardwareWalletFactorSource>> = persistentListOf(),
     val selectedLedgerDeviceId: FactorSource.FactorSourceID.FromHash? = null,
-    val connectorExtensionConnected: Boolean = false,
+    val isLinkConnectionEstablished: Boolean = false,
     val showLinkConnectorPromptState: ShowLinkConnectorPromptState = ShowLinkConnectorPromptState.None,
     val hasP2PLinks: Boolean = false
 ) : UiState {
@@ -213,15 +212,6 @@ data class CreateAccountWithLedgerUiState(
         data object AddLedger : ShowContent
         data class LinkNewConnector(val addDeviceAfterLinking: Boolean = true) : ShowContent
         data class AddLinkConnector(val addDeviceAfterLinking: Boolean = true) : ShowContent
-    }
-}
-
-sealed interface ShowLinkConnectorPromptState {
-    data object None : ShowLinkConnectorPromptState
-    data class Show(val source: Source) : ShowLinkConnectorPromptState
-
-    enum class Source {
-        AddLedgerDevice, UseLedger
     }
 }
 

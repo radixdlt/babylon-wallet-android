@@ -40,6 +40,7 @@ import com.babylon.wallet.android.presentation.settings.appsettings.linkedconnec
 import com.babylon.wallet.android.presentation.ui.composables.AddLedgerDeviceScreen
 import com.babylon.wallet.android.presentation.ui.composables.AddLinkConnectorScreen
 import com.babylon.wallet.android.presentation.ui.composables.BackIconType
+import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.LedgerListItem
 import com.babylon.wallet.android.presentation.ui.composables.LinkConnectorScreen
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
@@ -62,6 +63,29 @@ fun LedgerHardwareWalletsScreen(
     val addLinkConnectorState by addLinkConnectorViewModel.state.collectAsStateWithLifecycle()
     val coroutineScope = rememberCoroutineScope()
 
+    val promptState = state.showLinkConnectorPromptState
+    if (promptState is ShowLinkConnectorPromptState.Show) {
+        BasicPromptAlertDialog(
+            finish = {
+                viewModel.dismissConnectorPrompt(it, promptState.source)
+            },
+            title = {
+                Text(
+                    text = stringResource(id = R.string.ledgerHardwareDevices_linkConnectorAlert_title),
+                    style = RadixTheme.typography.body1Header,
+                    color = RadixTheme.colors.gray1
+                )
+            },
+            text = {
+                Text(
+                    text = stringResource(id = R.string.ledgerHardwareDevices_linkConnectorAlert_message),
+                    style = RadixTheme.typography.body2Regular,
+                    color = RadixTheme.colors.gray1
+                )
+            },
+            confirmText = stringResource(id = R.string.ledgerHardwareDevices_linkConnectorAlert_continue)
+        )
+    }
     Box(
         modifier = modifier
     ) {
@@ -71,6 +95,7 @@ fun LedgerHardwareWalletsScreen(
                     ledgerDevices = state.ledgerDevices,
                     onAddLedgerDeviceClick = viewModel::onAddLedgerDeviceClick,
                     onBackClick = onBackClick,
+                    addLedgerEnabled = state.addLedgerEnabled
                 )
             }
 
@@ -97,11 +122,11 @@ fun LedgerHardwareWalletsScreen(
                         addLedgerDeviceViewModel.initState()
                         viewModel.onCloseClick()
                     },
-                    connectorExtensionConnected = addLedgerDeviceState.connectorExtensionConnected
+                    isLinkConnectionEstablished = addLedgerDeviceState.isLinkConnectionEstablished
                 )
             }
 
-            LedgerHardwareWalletsUiState.ShowContent.LinkNewConnector -> {
+            is LedgerHardwareWalletsUiState.ShowContent.LinkNewConnector -> {
                 LinkConnectorScreen(
                     modifier = Modifier.fillMaxSize(),
                     onLinkConnectorClick = viewModel::onLinkConnectorClick,
@@ -109,7 +134,7 @@ fun LedgerHardwareWalletsScreen(
                 )
             }
 
-            LedgerHardwareWalletsUiState.ShowContent.AddLinkConnector -> {
+            is LedgerHardwareWalletsUiState.ShowContent.AddLinkConnector -> {
                 AddLinkConnectorScreen(
                     modifier = Modifier,
                     showContent = addLinkConnectorState.showContent,
@@ -119,10 +144,8 @@ fun LedgerHardwareWalletsScreen(
                     connectorDisplayName = addLinkConnectorState.connectorDisplayName,
                     isNewConnectorContinueButtonEnabled = addLinkConnectorState.isContinueButtonEnabled,
                     onNewConnectorContinueClick = {
-                        coroutineScope.launch {
-                            addLinkConnectorViewModel.onContinueClick()
-                            viewModel.onAddLedgerDeviceClick()
-                        }
+                        addLinkConnectorViewModel.onContinueClick()
+                        viewModel.disableAddLedgerButtonUntilConnectionIsEstablished()
                     },
                     onNewConnectorCloseClick = {
                         addLinkConnectorViewModel.onCloseClick()
@@ -141,6 +164,7 @@ private fun LedgerHardwareWalletsContent(
     ledgerDevices: ImmutableList<LedgerHardwareWalletFactorSource>,
     onAddLedgerDeviceClick: () -> Unit,
     onBackClick: () -> Unit,
+    addLedgerEnabled: Boolean,
 ) {
     BackHandler(onBack = onBackClick)
 
@@ -159,7 +183,8 @@ private fun LedgerHardwareWalletsContent(
             LedgerDeviceDetails(
                 modifier = Modifier.fillMaxWidth(),
                 ledgerFactorSources = ledgerDevices,
-                onAddLedgerDeviceClick = onAddLedgerDeviceClick
+                onAddLedgerDeviceClick = onAddLedgerDeviceClick,
+                addLedgerEnabled = addLedgerEnabled
             )
         }
     }
@@ -169,7 +194,8 @@ private fun LedgerHardwareWalletsContent(
 private fun LedgerDeviceDetails(
     modifier: Modifier = Modifier,
     ledgerFactorSources: ImmutableList<LedgerHardwareWalletFactorSource>,
-    onAddLedgerDeviceClick: () -> Unit
+    onAddLedgerDeviceClick: () -> Unit,
+    addLedgerEnabled: Boolean
 ) {
     Column(modifier, horizontalAlignment = Alignment.CenterHorizontally) {
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingMedium))
@@ -186,7 +212,8 @@ private fun LedgerDeviceDetails(
                     .weight(1f)
                     .fillMaxWidth(),
                 ledgerDevices = ledgerFactorSources,
-                onAddLedgerDeviceClick = onAddLedgerDeviceClick
+                onAddLedgerDeviceClick = onAddLedgerDeviceClick,
+                addLedgerEnabled = addLedgerEnabled
             )
         } else {
             Text(
@@ -207,7 +234,9 @@ private fun LedgerDeviceDetails(
                 onClick = onAddLedgerDeviceClick,
                 modifier = Modifier
                     .fillMaxWidth(0.7f)
-                    .imePadding()
+                    .imePadding(),
+                enabled = addLedgerEnabled,
+                throttleClicks = true
             )
         }
     }
@@ -217,7 +246,8 @@ private fun LedgerDeviceDetails(
 private fun LedgerDevicesListContent(
     modifier: Modifier = Modifier,
     ledgerDevices: ImmutableList<LedgerHardwareWalletFactorSource>,
-    onAddLedgerDeviceClick: () -> Unit
+    onAddLedgerDeviceClick: () -> Unit,
+    addLedgerEnabled: Boolean
 ) {
     LazyColumn(
         modifier,
@@ -250,7 +280,8 @@ private fun LedgerDevicesListContent(
                     .padding(bottom = RadixTheme.dimensions.paddingMedium),
                 text = stringResource(id = R.string.ledgerHardwareDevices_addNewLedger),
                 onClick = onAddLedgerDeviceClick,
-                throttleClicks = true
+                throttleClicks = true,
+                enabled = addLedgerEnabled
             )
         }
     }
@@ -264,6 +295,7 @@ fun LedgerHardwareWalletsScreenEmptyPreview() {
             ledgerDevices = persistentListOf(),
             onAddLedgerDeviceClick = {},
             onBackClick = {},
+            addLedgerEnabled = true
         )
     }
 }
@@ -276,6 +308,7 @@ fun LedgerHardwareWalletsScreenPreview() {
             ledgerDevices = SampleDataProvider().ledgerFactorSourcesSample.toPersistentList(),
             onAddLedgerDeviceClick = {},
             onBackClick = {},
+            addLedgerEnabled = true
         )
     }
 }

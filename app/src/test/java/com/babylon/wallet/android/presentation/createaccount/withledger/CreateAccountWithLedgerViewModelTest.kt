@@ -2,7 +2,6 @@ package com.babylon.wallet.android.presentation.createaccount.withledger
 
 import app.cash.turbine.test
 import com.babylon.wallet.android.data.dapp.LedgerMessenger
-import com.babylon.wallet.android.data.dapp.PeerdroidClient
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.babylon.wallet.android.mockdata.profile
 import com.babylon.wallet.android.presentation.StateViewModelTest
@@ -39,19 +38,18 @@ internal class CreateAccountWithLedgerViewModelTest : StateViewModelTest<CreateA
     private val addLedgerFactorSourceUseCase = mockk<AddLedgerFactorSourceUseCase>()
     private val ensureBabylonFactorSourceExistUseCase = mockk<EnsureBabylonFactorSourceExistUseCase>()
     private val eventBus = mockk<AppEventBus>()
-    private val peerdroidClient = mockk<PeerdroidClient>()
 
     private val firstDeviceId = "5f47ec336e9e7891bff04004c817201e73c097b6b1e1b3a26bc501e0010996f5"
     private val secondDeviceId = "5f07ec336e9e7891bff04004c817201e73c097b6b1e1b3a26bc501e0010196f5"
 
     override fun initVM(): CreateAccountWithLedgerViewModel {
-        return CreateAccountWithLedgerViewModel(getProfileUseCase, ledgerMessenger, ensureBabylonFactorSourceExistUseCase, eventBus, peerdroidClient)
+        return CreateAccountWithLedgerViewModel(getProfileUseCase, ledgerMessenger, ensureBabylonFactorSourceExistUseCase, eventBus)
     }
 
     @Before
     override fun setUp() {
         super.setUp()
-        coEvery { peerdroidClient.anyChannelConnected } returns flowOf(true)
+        coEvery { ledgerMessenger.isConnected } returns flowOf(true)
         coEvery { eventBus.sendEvent(any()) } just Runs
         coEvery { getProfileUseCase() } returns flowOf(profile())
         coEvery {

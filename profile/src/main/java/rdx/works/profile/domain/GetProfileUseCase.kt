@@ -14,7 +14,6 @@ import rdx.works.profile.data.model.factorsources.DeviceFactorSource
 import rdx.works.profile.data.model.factorsources.FactorSource
 import rdx.works.profile.data.model.factorsources.LedgerHardwareWalletFactorSource
 import rdx.works.profile.data.model.pernetwork.DerivationPath
-import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.data.model.pernetwork.nextAccountIndex
 import rdx.works.profile.data.repository.ProfileRepository
 import rdx.works.profile.data.repository.profile
@@ -50,17 +49,10 @@ val GetProfileUseCase.deviceFactorSources
 val GetProfileUseCase.deviceFactorSourcesWithAccounts
     get() = invoke().map { profile ->
         val deviceFactorSources = profile.factorSources.filterIsInstance<DeviceFactorSource>()
-
-        val factorSourcesWithAccounts = mutableMapOf<DeviceFactorSource, MutableList<Network.Account>>()
-        profile.currentNetwork.accounts.forEach { account ->
-            val deviceFactorSource = deviceFactorSources.find { it.id == account.factorSourceId() }
-            if (deviceFactorSource != null) {
-                val accounts = factorSourcesWithAccounts.getOrPut(deviceFactorSource) { mutableListOf() }
-                accounts.add(account)
-            }
+        val allAccountsOnNetwork = profile.currentNetwork.accounts
+        deviceFactorSources.associateWith { deviceFactorSource ->
+            allAccountsOnNetwork.filter { it.factorSourceId() == deviceFactorSource.id }
         }
-
-        factorSourcesWithAccounts.mapValues { it.value.toList() }
     }
 
 val GetProfileUseCase.ledgerFactorSources

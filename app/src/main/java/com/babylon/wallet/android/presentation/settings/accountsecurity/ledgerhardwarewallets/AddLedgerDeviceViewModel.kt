@@ -2,7 +2,6 @@ package com.babylon.wallet.android.presentation.settings.accountsecurity.ledgerh
 
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.dapp.LedgerMessenger
-import com.babylon.wallet.android.data.dapp.PeerdroidClient
 import com.babylon.wallet.android.domain.model.toProfileLedgerDeviceModel
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiMessage
@@ -19,21 +18,19 @@ import rdx.works.profile.domain.AddLedgerFactorSourceResult
 import rdx.works.profile.domain.AddLedgerFactorSourceUseCase
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.factorSourceById
-import timber.log.Timber
 import javax.inject.Inject
 
 @HiltViewModel
 class AddLedgerDeviceViewModel @Inject constructor(
     private val getProfileUseCase: GetProfileUseCase,
     private val ledgerMessenger: LedgerMessenger,
-    private val addLedgerFactorSourceUseCase: AddLedgerFactorSourceUseCase,
-    private val peerdroidClient: PeerdroidClient
+    private val addLedgerFactorSourceUseCase: AddLedgerFactorSourceUseCase
 ) : StateViewModel<AddLedgerDeviceUiState>() {
 
     override fun initialState() = AddLedgerDeviceUiState.init
 
     init {
-        observeCEConnectionState()
+        observeLinkConnectionStatus()
     }
 
     fun onSendAddLedgerRequestClick() {
@@ -87,11 +84,10 @@ class AddLedgerDeviceViewModel @Inject constructor(
         }
     }
 
-    private fun observeCEConnectionState() {
+    private fun observeLinkConnectionStatus() {
         viewModelScope.launch {
-            peerdroidClient.anyChannelConnected.collect { connected ->
-                Timber.d("Connector extension connected: $connected")
-                _state.update { it.copy(connectorExtensionConnected = connected) }
+            ledgerMessenger.isConnected.collect { connected ->
+                _state.update { it.copy(isLinkConnectionEstablished = connected) }
             }
         }
     }
@@ -105,7 +101,7 @@ class AddLedgerDeviceViewModel @Inject constructor(
 
     fun initState() {
         _state.update { current ->
-            AddLedgerDeviceUiState.init.copy(connectorExtensionConnected = current.connectorExtensionConnected)
+            AddLedgerDeviceUiState.init.copy(isLinkConnectionEstablished = current.isLinkConnectionEstablished)
         }
     }
 
@@ -140,7 +136,7 @@ data class AddLedgerDeviceUiState(
     val showContent: ShowContent,
     val newConnectedLedgerDevice: LedgerDeviceUiModel?,
     val uiMessage: UiMessage?,
-    val connectorExtensionConnected: Boolean = false
+    val isLinkConnectionEstablished: Boolean = false
 ) : UiState {
 
     enum class ShowContent {
@@ -154,5 +150,14 @@ data class AddLedgerDeviceUiState(
             newConnectedLedgerDevice = null,
             uiMessage = null
         )
+    }
+}
+
+sealed interface ShowLinkConnectorPromptState {
+    data object None : ShowLinkConnectorPromptState
+    data class Show(val source: Source) : ShowLinkConnectorPromptState
+
+    enum class Source {
+        AddLedgerDevice, UseLedger
     }
 }
