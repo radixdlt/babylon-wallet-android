@@ -73,7 +73,6 @@
   <string name="accountSettings_accountSecurity">Account Security</string>
   <string name="accountSettings_accountSecuritySubtitle">Set how you want this Account to work</string>
   <string name="accountSettings_thirdPartyDeposits">Third-party Deposits</string>
-  <!-- TODO hardcoded in the meantime -->
   <string name="accountSettings_hideAccount">Hide Account</string>
   <string name="accountSettings_getXrdTestTokens">Get XRD Test Tokens</string>
   <string name="accountSettings_loadingPrompt">This may take several seconds, please wait for completion</string>
