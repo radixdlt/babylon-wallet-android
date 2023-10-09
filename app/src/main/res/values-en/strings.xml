@@ -473,7 +473,7 @@
   <string name="common_account">Account</string>
   <string name="common_cancel">Cancel</string>
   <string name="common_continue">Continue</string>
-  <string name="common_developerDisclaimerText">For development only. Not usable on Radix mainnet.</string>
+  <string name="common_developerDisclaimerText">Connected to a test network, not Radix main network.</string>
   <string name="common_errorAlertTitle">An Error Occurred</string>
   <string name="common_none">None</string>
   <string name="common_ok">OK</string>
