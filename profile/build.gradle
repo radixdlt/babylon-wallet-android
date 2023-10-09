@@ -64,4 +64,5 @@ dependencies {
     testImplementation libs.mockitoKotlin
     testImplementation libs.mockitoInline
     testImplementation libs.retKotlin
+    testImplementation libs.jsonAssert
 }

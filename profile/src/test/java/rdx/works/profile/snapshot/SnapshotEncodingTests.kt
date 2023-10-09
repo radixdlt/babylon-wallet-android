@@ -2,10 +2,13 @@ package rdx.works.profile.snapshot
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.Parameterized
+import org.skyscreamer.jsonassert.JSONAssert
+import rdx.works.core.HexCoded32Bytes
 import rdx.works.profile.data.model.EncryptedProfileSnapshot
 import rdx.works.profile.data.model.MnemonicWithPassphrase
 import rdx.works.profile.data.model.ProfileSnapshot
@@ -18,7 +21,6 @@ import rdx.works.profile.data.model.pernetwork.validateAgainst
 import rdx.works.profile.di.SerializerModule
 import java.io.File
 import kotlin.test.assertEquals
-import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 @RunWith(Parameterized::class)
@@ -27,7 +29,7 @@ class SnapshotEncodingTests(private val versionUnderTest: Int) {
     private val serializer = SerializerModule.provideProfileSerializer()
 
     @Test
-    fun `multiple snapshots version `() {
+    fun `test round-trip for multiple `() {
         val multiple = File("$TEST_VECTOR_DIR/$versionUnderTest/$MULTI_SNAPSHOT_VECTOR_FILE").readText()
         val testVector = serializer.decodeFromString<TestVector>(multiple)
 
@@ -39,6 +41,22 @@ class SnapshotEncodingTests(private val versionUnderTest: Int) {
         )
         // Validate plaintext snapshot has the correct version
         assertEquals(versionUnderTest, testVector.plaintext.toProfile().header.snapshotVersion)
+
+        val expected = File("$TEST_VECTOR_DIR/$versionUnderTest/$BASE_SNAPSHOT").readText()
+        decryptedSnapshots.forEach { snapshot ->
+            val actual = serializer.encodeToString(snapshot)
+
+            JSONAssert.assertEquals(expected, actual, false)
+        }
+    }
+
+    @Test
+    fun `test round-trip for snapshot `() {
+        val expected = File("$TEST_VECTOR_DIR/$versionUnderTest/$BASE_SNAPSHOT").readText()
+        val snapshot = serializer.decodeFromString<ProfileSnapshot>(expected)
+
+        val actual = serializer.encodeToString(snapshot)
+        JSONAssert.assertEquals(expected, actual, false)
     }
 
     @Serializable
@@ -120,6 +138,7 @@ class SnapshotEncodingTests(private val versionUnderTest: Int) {
     companion object {
         private const val TEST_VECTOR_DIR = "src/test/resources/version"
         private const val MULTI_SNAPSHOT_VECTOR_FILE = "multi_profile_snapshots.json"
+        private const val BASE_SNAPSHOT = "base_profile_snapshot.json"
 
         @JvmStatic
         @Parameterized.Parameters(name = "{0}")
