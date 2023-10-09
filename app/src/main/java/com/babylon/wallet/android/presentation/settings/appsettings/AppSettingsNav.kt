@@ -112,11 +112,11 @@ private fun NavGraphBuilder.settingsGateway(navController: NavController) {
             onBackClick = {
                 navController.popBackStack()
             },
-            onCreateProfile = { url, networkName ->
+            onCreateProfile = { url, networkId ->
                 navController.createAccountScreen(
                     CreateAccountRequestSource.Gateways,
                     url,
-                    networkName,
+                    networkId,
                     true
                 )
             }

@@ -1,16 +1,19 @@
 package com.babylon.wallet.android.presentation.createaccount.withledger
 
+import androidx.lifecycle.SavedStateHandle
 import app.cash.turbine.test
 import com.babylon.wallet.android.data.dapp.LedgerMessenger
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.babylon.wallet.android.mockdata.profile
 import com.babylon.wallet.android.presentation.StateViewModelTest
+import com.babylon.wallet.android.presentation.account.createaccount.withledger.ARG_NETWORK_ID
 import com.babylon.wallet.android.presentation.account.createaccount.withledger.CreateAccountWithLedgerViewModel
 import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
 import io.mockk.Runs
 import io.mockk.coEvery
 import io.mockk.coVerify
+import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
 import io.mockk.slot
@@ -23,11 +26,13 @@ import org.junit.Ignore
 import org.junit.Test
 import rdx.works.core.HexCoded32Bytes
 import rdx.works.profile.data.model.apppreferences.P2PLink
+import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.data.model.factorsources.LedgerHardwareWalletFactorSource
 import rdx.works.profile.domain.AddLedgerFactorSourceResult
 import rdx.works.profile.domain.AddLedgerFactorSourceUseCase
 import rdx.works.profile.domain.EnsureBabylonFactorSourceExistUseCase
 import rdx.works.profile.domain.GetProfileUseCase
+import rdx.works.profile.domain.gateway.GetCurrentGatewayUseCase
 import rdx.works.profile.domain.p2pLinks
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -35,15 +40,25 @@ internal class CreateAccountWithLedgerViewModelTest : StateViewModelTest<CreateA
 
     private val getProfileUseCase = mockk<GetProfileUseCase>()
     private val ledgerMessenger = mockk<LedgerMessenger>()
+    private val getCurrentGatewayUseCase = mockk<GetCurrentGatewayUseCase>()
     private val addLedgerFactorSourceUseCase = mockk<AddLedgerFactorSourceUseCase>()
     private val ensureBabylonFactorSourceExistUseCase = mockk<EnsureBabylonFactorSourceExistUseCase>()
     private val eventBus = mockk<AppEventBus>()
+    private val savedStateHandle = mockk<SavedStateHandle>()
+
 
     private val firstDeviceId = "5f47ec336e9e7891bff04004c817201e73c097b6b1e1b3a26bc501e0010996f5"
     private val secondDeviceId = "5f07ec336e9e7891bff04004c817201e73c097b6b1e1b3a26bc501e0010196f5"
 
     override fun initVM(): CreateAccountWithLedgerViewModel {
-        return CreateAccountWithLedgerViewModel(getProfileUseCase, ledgerMessenger, ensureBabylonFactorSourceExistUseCase, eventBus)
+        return CreateAccountWithLedgerViewModel(
+            getProfileUseCase,
+            getCurrentGatewayUseCase,
+            ledgerMessenger,
+            ensureBabylonFactorSourceExistUseCase,
+            eventBus,
+            savedStateHandle
+        )
     }
 
     @Before
@@ -51,6 +66,8 @@ internal class CreateAccountWithLedgerViewModelTest : StateViewModelTest<CreateA
         super.setUp()
         coEvery { eventBus.sendEvent(any()) } just Runs
         coEvery { getProfileUseCase() } returns flowOf(profile())
+        every { savedStateHandle.get<Int>(ARG_NETWORK_ID) } returns Radix.Gateway.mainnet.network.id
+        coEvery { getCurrentGatewayUseCase() } returns Radix.Gateway.mainnet
         coEvery {
             addLedgerFactorSourceUseCase(
                 HexCoded32Bytes(firstDeviceId),

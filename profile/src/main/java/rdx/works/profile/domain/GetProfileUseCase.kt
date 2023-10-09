@@ -3,7 +3,6 @@ package rdx.works.profile.domain
 import com.radixdlt.ret.Address
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapNotNull
 import rdx.works.core.PUBLIC_KEY_HASH_LENGTH
@@ -20,6 +19,7 @@ import rdx.works.profile.data.repository.ProfileRepository
 import rdx.works.profile.data.repository.profile
 import rdx.works.profile.data.utils.factorSourceId
 import rdx.works.profile.derivation.model.KeyType
+import rdx.works.profile.derivation.model.NetworkId
 import javax.inject.Inject
 
 class GetProfileUseCase @Inject constructor(private val profileRepository: ProfileRepository) {
@@ -36,10 +36,6 @@ class GetProfileUseCase @Inject constructor(private val profileRepository: Profi
  */
 val GetProfileUseCase.accountsOnCurrentNetwork
     get() = invoke().map { it.currentNetwork.accounts }
-
-suspend fun GetProfileUseCase.babylonFactorSourceExist(): Boolean {
-    return invoke().map { profile -> profile.babylonDeviceFactorSourceExist }.firstOrNull() == true
-}
 
 val GetProfileUseCase.factorSources
     get() = invoke().map { profile -> profile.factorSources }
@@ -80,22 +76,22 @@ suspend fun GetProfileUseCase.accountOnCurrentNetwork(
     account.address == withAddress
 }
 
+suspend fun GetProfileUseCase.nextDerivationPathForAccountOnNetwork(networkId: Int): DerivationPath {
+    val profile = invoke().first()
+    val network = requireNotNull(NetworkId.from(networkId))
+    return DerivationPath.forAccount(
+        networkId = network,
+        accountIndex = profile.nextAccountIndex(network),
+        keyType = KeyType.TRANSACTION_SIGNING
+    )
+}
+
 fun GetProfileUseCase.accountOnCurrentNetworkWithAddress(
     address: String
 ) = accountsOnCurrentNetwork.map { accounts ->
     accounts.firstOrNull { account ->
         account.address == address
     }
-}
-
-suspend fun GetProfileUseCase.nextDerivationPathForAccountOnCurrentNetworkWithLedger(): DerivationPath {
-    val profile = invoke().first()
-    val currentNetwork = requireNotNull(profile.currentNetwork.knownNetworkId)
-    return DerivationPath.forAccount(
-        networkId = currentNetwork,
-        accountIndex = profile.nextAccountIndex(currentNetwork),
-        keyType = KeyType.TRANSACTION_SIGNING
-    )
 }
 
 suspend fun GetProfileUseCase.currentNetworkAccountHashes(): Set<ByteArray> {

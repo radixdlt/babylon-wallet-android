@@ -568,7 +568,7 @@ fun Profile.addNetworkIfDoesNotExist(
 fun Profile.nextAccountIndex(
     forNetworkId: NetworkId
 ): Int {
-    return networks.first { it.networkID == forNetworkId.value }.accounts.size
+    return networks.firstOrNull { it.networkID == forNetworkId.value }?.accounts?.size ?: 0
 }
 
 fun Profile.nextPersonaIndex(

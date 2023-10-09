@@ -5,6 +5,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
 import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.data.model.apppreferences.changeGateway
+import rdx.works.profile.data.model.currentNetwork
 import rdx.works.profile.data.model.pernetwork.addNetworkIfDoesNotExist
 import rdx.works.profile.data.repository.ProfileRepository
 import rdx.works.profile.data.repository.profile
@@ -18,15 +19,19 @@ class SwitchNetworkUseCase @Inject constructor(
 ) {
     suspend operator fun invoke(
         networkUrl: String,
-        networkName: String
+        networkId: Int
     ): NetworkId {
         return withContext(defaultDispatcher) {
             val profile = profileRepository.profile.first()
-
+            val networkIdToSwitch = if (networkId == -1) {
+                profile.currentNetwork.networkID
+            } else {
+                networkId
+            }
             val gateway = Radix.Gateway(
                 url = networkUrl,
                 network = Radix.Network.allKnownNetworks().first { network ->
-                    network.name == networkName
+                    network.id == networkIdToSwitch
                 }
             )
             val updatedProfile = profile.addNetworkIfDoesNotExist(gateway.network.networkId()).changeGateway(gateway)
