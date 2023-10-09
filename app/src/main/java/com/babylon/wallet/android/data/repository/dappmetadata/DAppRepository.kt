@@ -3,8 +3,8 @@ package com.babylon.wallet.android.data.repository.dappmetadata
 import com.babylon.wallet.android.data.gateway.apis.DAppDefinitionApi
 import com.babylon.wallet.android.data.gateway.apis.StateApi
 import com.babylon.wallet.android.data.gateway.extensions.asMetadataItems
-import com.babylon.wallet.android.data.gateway.extensions.calculateResourceBehaviours
 import com.babylon.wallet.android.data.gateway.extensions.divisibility
+import com.babylon.wallet.android.data.gateway.extensions.extractBehaviours
 import com.babylon.wallet.android.data.gateway.extensions.totalSupply
 import com.babylon.wallet.android.data.gateway.generated.models.ResourceAggregationLevel
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsOptIns
@@ -222,7 +222,7 @@ class DAppRepositoryImpl @Inject constructor(
                     symbolMetadataItem = metadataItems.consume(),
                     descriptionMetadataItem = metadataItems.consume(),
                     iconUrlMetadataItem = metadataItems.consume(),
-                    behaviours = fungibleItem.details?.calculateResourceBehaviours().orEmpty(),
+                    behaviours = fungibleItem.details?.extractBehaviours().orEmpty(),
                     currentSupply = fungibleItem.details?.totalSupply()?.toBigDecimal(),
                     validatorMetadataItem = metadataItems.consume(),
                     poolMetadataItem = metadataItems.consume(),
@@ -243,7 +243,7 @@ class DAppRepositoryImpl @Inject constructor(
                     tagsMetadataItem = metadataItems.consume(),
                     validatorMetadataItem = metadataItems.consume(),
                     items = emptyList(),
-                    behaviours = nonFungibleItem.details?.calculateResourceBehaviours().orEmpty(),
+                    behaviours = nonFungibleItem.details?.extractBehaviours().orEmpty(),
                     currentSupply = nonFungibleItem.details?.totalSupply()?.toIntOrNull()
                 )
             }

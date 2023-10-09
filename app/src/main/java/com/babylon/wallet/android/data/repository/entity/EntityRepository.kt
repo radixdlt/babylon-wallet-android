@@ -3,9 +3,9 @@ package com.babylon.wallet.android.data.repository.entity
 import android.net.Uri
 import com.babylon.wallet.android.data.gateway.apis.StateApi
 import com.babylon.wallet.android.data.gateway.extensions.asMetadataItems
-import com.babylon.wallet.android.data.gateway.extensions.calculateResourceBehaviours
 import com.babylon.wallet.android.data.gateway.extensions.claimTokenResourceAddress
 import com.babylon.wallet.android.data.gateway.extensions.divisibility
+import com.babylon.wallet.android.data.gateway.extensions.extractBehaviours
 import com.babylon.wallet.android.data.gateway.extensions.getXRDVaultAmount
 import com.babylon.wallet.android.data.gateway.extensions.stakeUnitResourceAddress
 import com.babylon.wallet.android.data.gateway.extensions.totalSupply
@@ -368,7 +368,7 @@ class EntityRepositoryImpl @Inject constructor(
         fungibleResourcesItem: FungibleResourcesCollectionItemVaultAggregated,
         fungibleDetails: StateEntityDetailsResponseItem? = null
     ): Resource.FungibleResource? {
-        val resourceBehaviours = fungibleDetails?.details?.calculateResourceBehaviours().orEmpty()
+        val resourceBehaviours = fungibleDetails?.details?.extractBehaviours().orEmpty()
         val currentSupply = fungibleDetails?.details?.totalSupply()?.toBigDecimal()
         val metaDataItems = (fungibleDetails?.explicitMetadata ?: fungibleResourcesItem.explicitMetadata)?.asMetadataItems().orEmpty()
         val ownedAmount = fungibleResourcesItem.vaults.items.first().amount.toBigDecimal()
@@ -392,7 +392,7 @@ class EntityRepositoryImpl @Inject constructor(
     private fun mapToFungibleResource(
         fungibleDetails: StateEntityDetailsResponseItem
     ): Resource.FungibleResource {
-        val resourceBehaviours = fungibleDetails.details?.calculateResourceBehaviours().orEmpty()
+        val resourceBehaviours = fungibleDetails.details?.extractBehaviours().orEmpty()
         val currentSupply = fungibleDetails.details?.totalSupply()?.toBigDecimal()
         val metaDataItems = fungibleDetails.explicitMetadata?.asMetadataItems().orEmpty()
         return Resource.FungibleResource(
@@ -412,7 +412,7 @@ class EntityRepositoryImpl @Inject constructor(
     }
 
     private fun mapToNonFungibleResource(nonFungibleDetails: StateEntityDetailsResponseItem): Resource {
-        val resourceBehaviours = nonFungibleDetails.details?.calculateResourceBehaviours().orEmpty()
+        val resourceBehaviours = nonFungibleDetails.details?.extractBehaviours().orEmpty()
         val currentSupply = nonFungibleDetails.details?.totalSupply()?.toIntOrNull()
 
         val metaDataItems = nonFungibleDetails.explicitMetadata?.asMetadataItems().orEmpty().toMutableList()
@@ -464,7 +464,7 @@ class EntityRepositoryImpl @Inject constructor(
                             it.address == nonFungibleResourcesItem.resourceAddress
                         }
 
-                        val resourceBehaviours = nonFungibleDetails?.details?.calculateResourceBehaviours().orEmpty()
+                        val resourceBehaviours = nonFungibleDetails?.details?.extractBehaviours().orEmpty()
                         val currentSupply = nonFungibleDetails?.details?.totalSupply()?.toIntOrNull()
 
                         val metaDataItems = nonFungibleDetails?.explicitMetadata?.asMetadataItems().orEmpty().toMutableList()

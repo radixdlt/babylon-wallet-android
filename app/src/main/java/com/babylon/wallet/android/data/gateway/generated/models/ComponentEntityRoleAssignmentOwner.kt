@@ -29,13 +29,9 @@ import kotlinx.serialization.Contextual
  */
 @Serializable
 
-data class ComponentEntityRoleAssignments (
+data class ComponentEntityRoleAssignmentOwner (
 
-    @SerialName(value = "owner")
-    val owner: ComponentEntityRoleAssignmentOwner,
-
-    @SerialName(value = "entries")
-    val propertyEntries: kotlin.collections.List<ComponentEntityRoleAssignmentEntry>
+    @SerialName(value = "rule")
+    val rule: AccessRule
 
 )
-

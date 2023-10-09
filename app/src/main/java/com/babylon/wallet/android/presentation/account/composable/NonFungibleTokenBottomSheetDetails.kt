@@ -198,7 +198,7 @@ fun NonFungibleTokenBottomSheetDetails(
                         )
                     }
                 }
-                if (nonFungibleResource.resourceBehaviours.isNotEmpty()) {
+                if (nonFungibleResource.behaviours.isNotEmpty()) {
                     Column {
                         Text(
                             modifier = Modifier
@@ -211,10 +211,10 @@ fun NonFungibleTokenBottomSheetDetails(
                             style = RadixTheme.typography.body1Regular,
                             color = RadixTheme.colors.gray2
                         )
-                        nonFungibleResource.resourceBehaviours.forEach { resourceBehaviour ->
+                        nonFungibleResource.behaviours.forEach { behaviour ->
                             Behaviour(
-                                icon = resourceBehaviour.icon(),
-                                name = resourceBehaviour.name()
+                                icon = behaviour.icon(),
+                                name = behaviour.name()
                             )
                         }
                     }
