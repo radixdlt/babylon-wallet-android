@@ -1,4 +1,4 @@
-package rdx.works.profile.domain.preferences
+package rdx.works.profile.domain.depositguarantees
 
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.first

@@ -16,7 +16,7 @@ import org.junit.Before
 import org.junit.Test
 import rdx.works.profile.data.model.apppreferences.Transaction
 import rdx.works.profile.domain.GetProfileUseCase
-import rdx.works.profile.domain.preferences.ChangeDefaultDepositGuaranteeUseCase
+import rdx.works.profile.domain.depositguarantees.ChangeDefaultDepositGuaranteeUseCase
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class DepositGuaranteesViewModelTest : StateViewModelTest<DepositGuaranteesViewModel>() {

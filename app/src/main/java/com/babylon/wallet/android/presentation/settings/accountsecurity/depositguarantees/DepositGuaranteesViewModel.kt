@@ -9,7 +9,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.defaultDepositGuarantee
-import rdx.works.profile.domain.preferences.ChangeDefaultDepositGuaranteeUseCase
+import rdx.works.profile.domain.depositguarantees.ChangeDefaultDepositGuaranteeUseCase
 import java.text.DecimalFormat
 import javax.inject.Inject
 
