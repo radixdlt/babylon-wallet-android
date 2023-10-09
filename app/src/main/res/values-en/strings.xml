@@ -140,6 +140,8 @@
   <string name="accountSettings_behaviors_informationChangeableByAnyone">Anyone can change naming and information about this asset.</string>
   <string name="accountSettings_behaviors_removableByThirdParty">A third party can remove this asset from accounts and dApps.</string>
   <string name="accountSettings_behaviors_removableByAnyone">Anyone can remove this asset from accounts and dApps.</string>
+  <string name="accountSettings_behaviors_freezableByThirdParty">A third party can freeze this asset in place.</string>
+  <string name="accountSettings_behaviors_freezableByAnyone">Anyone can freeze this asset in place.</string>
   <string name="accountSettings_behaviors_nftDataChangeable">Data that is set on these NFTs can be changed.</string>
   <string name="accountSettings_behaviors_nftDataChangeableByAnyone">Anyone can change data that is set on these NFTs.</string>
   <string name="settings_title">Settings</string>
@@ -499,7 +501,7 @@
   <string name="error_transactionFailure_epoch">Failed to get epoch</string>
   <string name="error_transactionFailure_header">Failed to build transaction header</string>
   <string name="error_transactionFailure_manifest">Failed to convert transaction manifest</string>
-  <string name="error_transactionFailure_network">dApp made a request intended for %s network, but you are currently connected to %s network.</string>
+  <string name="error_transactionFailure_network">Wrong network</string>
   <string name="error_transactionFailure_noFundsToApproveTransaction">No funds to approve transaction</string>
   <string name="error_transactionFailure_pollStatus">Failed to poll transaction status</string>
   <string name="error_transactionFailure_prepare">Failed to prepare transaction</string>
