@@ -18,7 +18,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
-import com.babylon.wallet.android.presentation.settings.SettingsItem
+import com.babylon.wallet.android.presentation.settings.SettingsItem.AccountSecurityAndSettingsItem
 import com.babylon.wallet.android.presentation.ui.composables.DefaultSettingsItem
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import kotlinx.collections.immutable.ImmutableSet
@@ -28,7 +28,7 @@ import kotlinx.collections.immutable.persistentSetOf
 fun AccountSecurityScreen(
     modifier: Modifier = Modifier,
     viewModel: AccountSecurityViewModel,
-    onAccountSecuritySettingItemClick: (SettingsItem.AccountSecurityAndSettingsItem) -> Unit,
+    onAccountSecuritySettingItemClick: (AccountSecurityAndSettingsItem) -> Unit,
     onBackClick: () -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -43,8 +43,8 @@ fun AccountSecurityScreen(
 @Composable
 private fun AccountSecurityContent(
     modifier: Modifier = Modifier,
-    appSettings: ImmutableSet<SettingsItem.AccountSecurityAndSettingsItem>,
-    onAccountSecuritySettingItemClick: (SettingsItem.AccountSecurityAndSettingsItem) -> Unit,
+    appSettings: ImmutableSet<AccountSecurityAndSettingsItem>,
+    onAccountSecuritySettingItemClick: (AccountSecurityAndSettingsItem) -> Unit,
     onBackClick: () -> Unit,
 ) {
     Scaffold(
@@ -71,6 +71,13 @@ private fun AccountSecurityContent(
                             icon = accountSecurityAndSettingsItem.getIcon(),
                             onClick = {
                                 onAccountSecuritySettingItemClick(accountSecurityAndSettingsItem)
+                            },
+                            subtitle =
+                            if (accountSecurityAndSettingsItem is AccountSecurityAndSettingsItem.DepositGuarantees) {
+                                // TODO Add Crowdin
+                                "Set your default guaranteed minimum for estimated deposits"
+                            } else {
+                                null
                             }
                         )
                         Divider(color = RadixTheme.colors.gray5)

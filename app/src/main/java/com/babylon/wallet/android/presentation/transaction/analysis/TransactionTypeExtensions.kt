@@ -83,7 +83,8 @@ fun ResourceTracker.toDepositingTransferableResource(
     allResources: List<Resources>,
     newlyCreatedMetadata: Map<String, Map<String, MetadataValue?>>,
     newlyCreatedEntities: List<Address>,
-    thirdPartyMetadata: Map<String, List<MetadataItem>>
+    thirdPartyMetadata: Map<String, List<MetadataItem>>,
+    defaultDepositGuarantees: Float
 ): Transferable.Depositing {
     val allFungibles = allResources.map { it.fungibleResources }.flatten()
     val allNFTCollections = allResources.map { it.nonFungibleResources }.flatten()
@@ -98,7 +99,7 @@ fun ResourceTracker.toDepositingTransferableResource(
                 newlyCreatedEntities = newlyCreatedEntities,
                 thirdPartyMetadata = thirdPartyMetadata
             ),
-            guaranteeType = amount.toGuaranteeType()
+            guaranteeType = amount.toGuaranteeType(defaultDepositGuarantees)
         )
 
         is ResourceTracker.NonFungible -> {
@@ -109,7 +110,7 @@ fun ResourceTracker.toDepositingTransferableResource(
                     newlyCreatedEntities = newlyCreatedEntities,
                     thirdPartyMetadata = thirdPartyMetadata
                 ),
-                guaranteeType = ids.toGuaranteeType()
+                guaranteeType = ids.toGuaranteeType(defaultDepositGuarantees)
             )
         }
     }
@@ -349,9 +350,12 @@ private val DecimalSource.valueDecimal: BigDecimal
         is DecimalSource.Predicted -> value.asStr().toBigDecimal()
     }
 
-private fun DecimalSource.toGuaranteeType(): GuaranteeType = when (this) {
+private fun DecimalSource.toGuaranteeType(defaultDepositGuarantees: Float): GuaranteeType = when (this) {
     is DecimalSource.Guaranteed -> GuaranteeType.Guaranteed
-    is DecimalSource.Predicted -> GuaranteeType.Predicted(instructionIndex = instructionIndex.toLong())
+    is DecimalSource.Predicted -> GuaranteeType.Predicted(
+        instructionIndex = instructionIndex.toLong(),
+        guaranteeOffset = defaultDepositGuarantees
+    )
 }
 
 private val NonFungibleLocalIdVecSource.valueList: List<NonFungibleLocalId>
@@ -360,7 +364,10 @@ private val NonFungibleLocalIdVecSource.valueList: List<NonFungibleLocalId>
         is NonFungibleLocalIdVecSource.Predicted -> value
     }
 
-private fun NonFungibleLocalIdVecSource.toGuaranteeType(): GuaranteeType = when (this) {
+private fun NonFungibleLocalIdVecSource.toGuaranteeType(defaultDepositGuarantees: Float): GuaranteeType = when (this) {
     is NonFungibleLocalIdVecSource.Guaranteed -> GuaranteeType.Guaranteed
-    is NonFungibleLocalIdVecSource.Predicted -> GuaranteeType.Predicted(instructionIndex = instructionIndex.toLong())
+    is NonFungibleLocalIdVecSource.Predicted -> GuaranteeType.Predicted(
+        instructionIndex = instructionIndex.toLong(),
+        guaranteeOffset = defaultDepositGuarantees
+    )
 }

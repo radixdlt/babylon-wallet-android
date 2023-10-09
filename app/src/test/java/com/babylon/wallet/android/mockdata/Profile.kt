@@ -23,7 +23,8 @@ fun profile(
     personas: List<Network.Persona> = listOf(SampleDataProvider().samplePersona()),
     dApps: List<Network.AuthorizedDapp> = emptyList(),
     p2pLinks: List<P2PLink> = emptyList(),
-    gateway: Radix.Gateway = Radix.Gateway.default
+    gateway: Radix.Gateway = Radix.Gateway.default,
+    transaction: Transaction = Transaction.default
 ) = Profile(
     header = Header.init(
         id = "9958f568-8c9b-476a-beeb-017d1f843266",
@@ -32,7 +33,7 @@ fun profile(
         numberOfNetworks = 1
     ),
     appPreferences = AppPreferences(
-        transaction = Transaction.default,
+        transaction = transaction,
         display = Display.default,
         security = Security.default,
         gateways = Gateways(gateway.url, listOf(gateway)),
