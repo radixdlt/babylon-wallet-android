@@ -120,7 +120,6 @@ class BackupProfileRepositoryImpl @Inject constructor(
 
         return when (backupType) {
             is BackupType.Cloud -> if (profile.appPreferences.security.isCloudProfileSyncEnabled) {
-                preferencesManager.updateLastBackupInstant(InstantGenerator())
                 snapshotSerialised
             } else {
                 null
