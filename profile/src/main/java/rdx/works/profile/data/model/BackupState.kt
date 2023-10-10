@@ -20,18 +20,11 @@ sealed class BackupState {
             get() {
                 if (lastBackup == null) return false
 
-                if (lastProfileSave.epochSecond < lastBackup.epochSecond) return true
-
-                val duration = Duration.between(lastBackup, lastProfileSave)
-                return duration.toDays() < OUTSTANDING_NO_BACKUP_TIME_DAYS
+                return lastProfileSave.epochSecond <= lastBackup.epochSecond
             }
-
-        companion object {
-            private const val OUTSTANDING_NO_BACKUP_TIME_DAYS = 3
-        }
     }
 
-    object Closed : BackupState()
+    data object Closed : BackupState()
 
     val isWarningVisible: Boolean
         get() = this is Closed || (this is Open && !isWithinWindow)
