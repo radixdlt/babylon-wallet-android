@@ -66,7 +66,7 @@ fun DefaultSettingsItem(
         }
         Column(
             modifier = Modifier
-                .weight(10f)
+                .weight(1f)
                 .height(IntrinsicSize.Max),
             verticalArrangement = Arrangement.Center
         ) {
@@ -79,7 +79,6 @@ fun DefaultSettingsItem(
                 subtitle()
             }
         }
-        Spacer(modifier = Modifier.weight(1f))
         Icon(
             painter = painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_chevron_right),
             contentDescription = null,
