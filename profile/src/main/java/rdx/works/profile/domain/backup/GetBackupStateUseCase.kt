@@ -7,6 +7,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.isActive
+import rdx.works.core.InstantGenerator
 import rdx.works.core.preferences.PreferencesManager
 import rdx.works.profile.data.model.BackupState
 import rdx.works.profile.data.repository.ProfileRepository
@@ -25,7 +26,15 @@ class GetBackupStateUseCase @Inject constructor(
         preferencesManager.lastBackupInstant,
         minuteUpdateFlow(),
     ) { profile, lastBackupInstant, _ ->
-        BackupState.from(profile, lastBackupInstant)
+        if (profile.appPreferences.security.isCloudProfileSyncEnabled) {
+            BackupState.Open(
+                lastCloudBackupTime = lastBackupInstant,
+                lastProfileUpdate = profile.header.lastModified,
+                lastCheck = InstantGenerator()
+            )
+        } else {
+            BackupState.Closed
+        }
     }
 
     private fun minuteUpdateFlow() = flow {
