@@ -13,7 +13,7 @@ sealed interface SettingsItem {
         data object AuthorizedDapps : TopLevelSettings
         data object Personas : TopLevelSettings
         data object AccountSecurityAndSettings : TopLevelSettings
-        data object AppSettings : TopLevelSettings
+        data class AppSettings(val showNotificationWarning: Boolean) : TopLevelSettings
 
         @StringRes
         fun descriptionRes(): Int {

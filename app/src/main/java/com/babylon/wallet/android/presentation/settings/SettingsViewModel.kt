@@ -20,30 +20,35 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import rdx.works.core.mapWhen
+import rdx.works.profile.data.model.BackupState
 import rdx.works.profile.data.model.Profile
 import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.data.model.currentNetwork
 import rdx.works.profile.domain.GetProfileUseCase
+import rdx.works.profile.domain.backup.GetBackupStateUseCase
 import javax.inject.Inject
 
 @HiltViewModel
 class SettingsViewModel @Inject constructor(
     getProfileUseCase: GetProfileUseCase,
     getImportOlympiaSettingVisibilityUseCase: GetImportOlympiaSettingVisibilityUseCase,
-    private val markImportOlympiaWalletCompleteUseCase: MarkImportOlympiaWalletCompleteUseCase
+    private val markImportOlympiaWalletCompleteUseCase: MarkImportOlympiaWalletCompleteUseCase,
+    getBackupStateUseCase: GetBackupStateUseCase
 ) : ViewModel() {
 
     private val defaultSettings = listOf(
         AuthorizedDapps,
         Personas,
         AccountSecurityAndSettings,
-        AppSettings
+        AppSettings(showNotificationWarning = false)
     )
 
     val state: StateFlow<SettingsUiState> = combine(
         getProfileUseCase(),
-        getImportOlympiaSettingVisibilityUseCase()
-    ) { profile: Profile, isImportFromOlympiaSettingDismissed ->
+        getImportOlympiaSettingVisibilityUseCase(),
+        getBackupStateUseCase()
+    ) { profile: Profile, isImportFromOlympiaSettingDismissed: Boolean, backupState: BackupState ->
         val mutated = defaultSettings.toMutableList()
         var topIndex = 0
         if (profile.appPreferences.p2pLinks.isEmpty() && !defaultSettings.contains(LinkToConnector)) {
@@ -55,7 +60,12 @@ class SettingsViewModel @Inject constructor(
         if (!isImportFromOlympiaSettingDismissed && !defaultSettings.contains(ImportOlympiaWallet) && isImportFeatureAvailable) {
             mutated.add(topIndex, ImportOlympiaWallet)
         }
-        SettingsUiState(mutated.toPersistentList())
+
+        val withBackupWarning = mutated.mapWhen(predicate = { it is AppSettings }) {
+            AppSettings(showNotificationWarning = backupState.isWarningVisible)
+        }
+
+        SettingsUiState(withBackupWarning.toPersistentList())
     }.stateIn(
         viewModelScope,
         SharingStarted.WhileSubscribed(Constants.VM_STOP_TIMEOUT_MS),
