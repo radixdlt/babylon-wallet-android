@@ -148,7 +148,7 @@ fun PoolUnitBottomSheetDetails(
                 )
             }
 
-            if (poolUnit.poolUnitResource.resourceBehaviours.isNotEmpty()) {
+            if (poolUnit.poolUnitResource.behaviours.isNotEmpty()) {
                 Column {
                     Text(
                         modifier = Modifier
@@ -161,10 +161,10 @@ fun PoolUnitBottomSheetDetails(
                         style = RadixTheme.typography.body1Regular,
                         color = RadixTheme.colors.gray2
                     )
-                    poolUnit.poolUnitResource.resourceBehaviours.forEach { resourceBehaviour ->
+                    poolUnit.poolUnitResource.behaviours.forEach { behaviour ->
                         Behaviour(
-                            icon = resourceBehaviour.icon(),
-                            name = resourceBehaviour.name()
+                            icon = behaviour.icon(),
+                            name = behaviour.name()
                         )
                     }
                 }

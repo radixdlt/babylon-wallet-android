@@ -160,7 +160,7 @@ fun LSUBottomSheetDetails(
                 label = "Validator address"
             )
 
-            if (lsuUnit.fungibleResource.resourceBehaviours.isNotEmpty()) {
+            if (lsuUnit.fungibleResource.behaviours.isNotEmpty()) {
                 Column {
                     Text(
                         modifier = Modifier
@@ -173,10 +173,10 @@ fun LSUBottomSheetDetails(
                         style = RadixTheme.typography.body1Regular,
                         color = RadixTheme.colors.gray2
                     )
-                    lsuUnit.fungibleResource.resourceBehaviours.forEach { resourceBehaviour ->
+                    lsuUnit.fungibleResource.behaviours.forEach { behaviour ->
                         Behaviour(
-                            icon = resourceBehaviour.icon(),
-                            name = resourceBehaviour.name()
+                            icon = behaviour.icon(),
+                            name = behaviour.name()
                         )
                     }
                 }

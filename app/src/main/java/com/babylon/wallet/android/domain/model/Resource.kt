@@ -2,7 +2,7 @@ package com.babylon.wallet.android.domain.model
 
 import android.net.Uri
 import com.babylon.wallet.android.domain.model.XrdResource.officialAddresses
-import com.babylon.wallet.android.domain.model.behaviours.ResourceBehaviour
+import com.babylon.wallet.android.domain.model.behaviours.AssetBehaviours
 import com.babylon.wallet.android.domain.model.metadata.ClaimAmountMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.DAppDefinitionsMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.DescriptionMetadataItem
@@ -36,7 +36,7 @@ sealed class Resource {
         private val descriptionMetadataItem: DescriptionMetadataItem? = null,
         private val iconUrlMetadataItem: IconUrlMetadataItem? = null,
         private val tagsMetadataItem: TagsMetadataItem? = null,
-        private val behaviours: List<ResourceBehaviour> = emptyList(),
+        val behaviours: AssetBehaviours = emptySet(),
         val currentSupply: BigDecimal? = null,
         private val validatorMetadataItem: ValidatorMetadataItem? = null,
         private val poolMetadataItem: PoolMetadataItem? = null,
@@ -70,9 +70,6 @@ sealed class Resource {
             } else {
                 tagsMetadataItem?.tags?.map { Tag.Dynamic(name = it) }.orEmpty()
             }
-
-        val resourceBehaviours: List<ResourceBehaviour>
-            get() = behaviours
 
         val currentSupplyToDisplay: String?
             get() = currentSupply?.displayableQuantity()
@@ -137,7 +134,7 @@ sealed class Resource {
         private val descriptionMetadataItem: DescriptionMetadataItem? = null,
         private val iconMetadataItem: IconUrlMetadataItem? = null,
         private val tagsMetadataItem: TagsMetadataItem? = null,
-        private val behaviours: List<ResourceBehaviour> = emptyList(),
+        val behaviours: AssetBehaviours = emptySet(),
         val items: List<Item>,
         val currentSupply: Int? = null,
         private val validatorMetadataItem: ValidatorMetadataItem? = null,
@@ -157,9 +154,6 @@ sealed class Resource {
 
         val validatorAddress: String?
             get() = validatorMetadataItem?.validatorAddress
-
-        val resourceBehaviours: List<ResourceBehaviour>
-            get() = behaviours
 
         val dappDefinitions: List<String>
             get() = dAppDefinitionsMetadataItem?.addresses.orEmpty()
