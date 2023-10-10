@@ -98,7 +98,8 @@ fun CreateAccountWithLedgerScreen(
                     viewModel.onUseLedgerContinueClick(deviceBiometricAuthenticationProvider = {
                         context.biometricAuthenticateSuspend()
                     })
-                }
+                },
+                linkingToConnector = state.linkingToConnector
             )
         }
 
@@ -123,11 +124,7 @@ fun CreateAccountWithLedgerScreen(
                 isNewConnectorContinueButtonEnabled = addLinkConnectorState.isContinueButtonEnabled,
                 onNewConnectorContinueClick = {
                     addLinkConnectorViewModel.onContinueClick()
-                    if (showContent.addDeviceAfterLinking) {
-                        viewModel.showAddLedgerDeviceContent()
-                    } else {
-                        viewModel.onCloseClick()
-                    }
+                    viewModel.onNewConnectorAdded(showContent.addDeviceAfterLinking)
                 },
                 onNewConnectorCloseClick = {
                     addLinkConnectorViewModel.onCloseClick()
@@ -162,8 +159,7 @@ fun CreateAccountWithLedgerScreen(
                     viewModel.onCloseClick()
                 },
                 onMessageShown = addLedgerDeviceViewModel::onMessageShown,
-                isLinkConnectionEstablished = addLedgerDeviceState.isLinkConnectionEstablished,
-//                hasP2PLinks = state.hasP2PLinks
+                isLinkConnectionEstablished = addLedgerDeviceState.isLinkConnectionEstablished && state.linkingToConnector.not()
             )
         }
     }
@@ -176,7 +172,8 @@ private fun ChooseLedgerDeviceContent(
     onLedgerDeviceSelected: (LedgerHardwareWalletFactorSource) -> Unit,
     onUseLedgerContinueClick: () -> Unit,
     onAddLedgerDeviceClick: () -> Unit,
-    onBackClick: () -> Unit
+    onBackClick: () -> Unit,
+    linkingToConnector: Boolean
 ) {
     BackHandler { onBackClick() }
 
@@ -201,7 +198,8 @@ private fun ChooseLedgerDeviceContent(
                         vertical = RadixTheme.dimensions.paddingDefault
                     )
                     .navigationBarsPadding(),
-                enabled = ledgerDevices.any { it.selected }
+                enabled = ledgerDevices.any { it.selected } && linkingToConnector.not(),
+                isLoading = linkingToConnector
             )
         },
         containerColor = RadixTheme.colors.defaultBackground
@@ -235,7 +233,8 @@ fun CreateAccountWithLedgerScreenPreview() {
             onLedgerDeviceSelected = {},
             onUseLedgerContinueClick = {},
             onAddLedgerDeviceClick = {},
-            onBackClick = {}
+            onBackClick = {},
+            linkingToConnector = false
         )
     }
 }

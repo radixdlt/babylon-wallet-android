@@ -18,7 +18,9 @@ import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.collections.immutable.toPersistentList
+import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.UUIDGenerator
@@ -46,11 +48,6 @@ class CreateAccountWithLedgerViewModel @Inject constructor(
         viewModelScope.launch {
             ledgerMessenger.isConnected.collect { connected ->
                 _state.update { it.copy(isLinkConnectionEstablished = connected) }
-            }
-        }
-        viewModelScope.launch {
-            getProfileUseCase.p2pLinks.collect { links ->
-                _state.update { it.copy(hasP2PLinks = links.isNotEmpty()) }
             }
         }
         viewModelScope.launch {
@@ -178,7 +175,7 @@ class CreateAccountWithLedgerViewModel @Inject constructor(
         }
     }
 
-    fun showAddLedgerDeviceContent() {
+    private fun showAddLedgerDeviceContent() {
         _state.update {
             it.copy(showContent = CreateAccountWithLedgerUiState.ShowContent.AddLedger)
         }
@@ -187,6 +184,20 @@ class CreateAccountWithLedgerViewModel @Inject constructor(
     fun onCloseClick() {
         _state.update {
             it.copy(showContent = CreateAccountWithLedgerUiState.ShowContent.ChooseLedger)
+        }
+    }
+
+    fun onNewConnectorAdded(addDeviceAfterLinking: Boolean) {
+        _state.update { it.copy(linkingToConnector = true) }
+        if (addDeviceAfterLinking) {
+            showAddLedgerDeviceContent()
+        } else {
+            onCloseClick()
+        }
+        viewModelScope.launch {
+            ledgerMessenger.isConnected.filter { it }.firstOrNull()?.let {
+                _state.update { state -> state.copy(linkingToConnector = false) }
+            }
         }
     }
 
@@ -204,7 +215,7 @@ data class CreateAccountWithLedgerUiState(
     val selectedLedgerDeviceId: FactorSource.FactorSourceID.FromHash? = null,
     val isLinkConnectionEstablished: Boolean = false,
     val showLinkConnectorPromptState: ShowLinkConnectorPromptState = ShowLinkConnectorPromptState.None,
-    val hasP2PLinks: Boolean = false
+    val linkingToConnector: Boolean = false
 ) : UiState {
 
     sealed interface ShowContent {

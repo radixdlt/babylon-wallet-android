@@ -81,13 +81,13 @@ class LedgerHardwareWalletsViewModel @Inject constructor(
         _state.update {
             it.copy(
                 showContent = LedgerHardwareWalletsUiState.ShowContent.Details,
-                addLedgerEnabled = false
+                linkingToConnector = true
             )
         }
         viewModelScope.launch {
             ledgerMessenger.isConnected.filter { it }.firstOrNull()?.let {
                 _state.update { state ->
-                    state.copy(addLedgerEnabled = true)
+                    state.copy(linkingToConnector = false)
                 }
             }
         }
@@ -118,7 +118,7 @@ data class LedgerHardwareWalletsUiState(
     val ledgerDevices: ImmutableList<LedgerHardwareWalletFactorSource> = persistentListOf(),
     val showLinkConnectorPromptState: ShowLinkConnectorPromptState = ShowLinkConnectorPromptState.None,
     val isLinkConnectionEstablished: Boolean = false,
-    val addLedgerEnabled: Boolean = true
+    val linkingToConnector: Boolean = false
 ) : UiState {
 
     sealed interface ShowContent {
