@@ -3,8 +3,11 @@
 package com.babylon.wallet.android.data.manifest
 
 import com.babylon.wallet.android.data.dapp.model.TransactionType
+import com.babylon.wallet.android.domain.model.GuaranteeAssertion
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.babylon.wallet.android.domain.model.TransactionManifestData
+import com.babylon.wallet.android.domain.model.Transferable
+import com.babylon.wallet.android.utils.toRETDecimalString
 import com.radixdlt.ret.Address
 import com.radixdlt.ret.Decimal
 import com.radixdlt.ret.Instruction
@@ -49,6 +52,34 @@ fun TransactionManifest.addGuaranteeInstructionToManifest(
     ),
     blobs = blobs()
 )
+
+fun TransactionManifest.addAssertions(
+    depositing: List<Transferable.Depositing>
+): TransactionManifest {
+    var startIndex = 0
+    var manifest = this
+
+    depositing.forEach {
+        when (val assertion = it.guaranteeAssertion) {
+            is GuaranteeAssertion.ForAmount -> {
+                manifest = manifest.addGuaranteeInstructionToManifest(
+                    address = it.transferable.resourceAddress,
+                    guaranteedAmount = assertion.amount.toRETDecimalString(),
+                    index = assertion.instructionIndex.toInt() + startIndex
+                )
+                startIndex++
+            }
+
+            is GuaranteeAssertion.ForNFT -> {
+                // Will be implemented later
+            }
+
+            null -> {}
+        }
+    }
+
+    return manifest
+}
 
 private fun lockFeeInstruction(
     addressToLockFee: String,

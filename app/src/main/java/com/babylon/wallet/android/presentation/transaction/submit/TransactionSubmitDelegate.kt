@@ -2,14 +2,14 @@ package com.babylon.wallet.android.presentation.transaction.submit
 
 import com.babylon.wallet.android.data.dapp.DappMessenger
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
-import com.babylon.wallet.android.data.manifest.addGuaranteeInstructionToManifest
+import com.babylon.wallet.android.data.manifest.addAssertions
 import com.babylon.wallet.android.data.repository.TransactionStatusClient
 import com.babylon.wallet.android.data.transaction.DappRequestException
 import com.babylon.wallet.android.data.transaction.DappRequestFailure
 import com.babylon.wallet.android.data.transaction.TransactionClient
 import com.babylon.wallet.android.data.transaction.model.TransactionApprovalRequest
-import com.babylon.wallet.android.domain.model.GuaranteeAssertion
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
+import com.babylon.wallet.android.domain.model.Transferable
 import com.babylon.wallet.android.domain.usecases.transaction.SignatureCancelledException
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.transaction.PreviewType
@@ -17,7 +17,6 @@ import com.babylon.wallet.android.presentation.transaction.TransactionReviewView
 import com.babylon.wallet.android.presentation.transaction.TransactionReviewViewModel.State
 import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
-import com.babylon.wallet.android.utils.toRETDecimalString
 import com.radixdlt.ret.TransactionManifest
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
@@ -188,23 +187,11 @@ class TransactionSubmitDelegate(
     private fun TransactionManifest.attachGuarantees(previewType: PreviewType): TransactionManifest {
         var manifest = this
         if (previewType is PreviewType.Transfer) {
-            previewType.to.map { it.resources }.flatten().forEach { depositing ->
-                when (val assertion = depositing.guaranteeAssertion) {
-                    is GuaranteeAssertion.ForAmount -> {
-                        manifest = manifest.addGuaranteeInstructionToManifest(
-                            address = depositing.transferable.resourceAddress,
-                            guaranteedAmount = assertion.amount.toRETDecimalString(),
-                            index = assertion.instructionIndex.toInt()
-                        )
-                    }
-
-                    is GuaranteeAssertion.ForNFT -> {
-                        // Will be implemented later
-                    }
-
-                    null -> {}
-                }
-            }
+            manifest = manifest.addAssertions(
+                depositing = previewType.to.map {
+                    it.resources
+                }.flatten().filterIsInstance<Transferable.Depositing>()
+            )
         }
 
         return manifest
