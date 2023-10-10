@@ -235,10 +235,7 @@ private fun RestoreFromBackupContent(
 
                 Surface(
                     modifier = Modifier
-                        .padding(horizontal = RadixTheme.dimensions.paddingDefault)
-                        .clickable(enabled = state.restoringProfile != null) {
-                            onRestoringProfileCheckChanged(!state.isRestoringProfileChecked)
-                        },
+                        .padding(horizontal = RadixTheme.dimensions.paddingDefault),
                     color = RadixTheme.colors.gray5,
                     elevation = if (state.restoringProfile != null) 8.dp else 0.dp,
                     shape = RadixTheme.shapes.roundedRectMedium,
@@ -246,6 +243,9 @@ private fun RestoreFromBackupContent(
                     if (state.restoringProfile != null) {
                         Row(
                             modifier = Modifier
+                                .clickable {
+                                    onRestoringProfileCheckChanged(!state.isRestoringProfileChecked)
+                                }
                                 .padding(RadixTheme.dimensions.paddingDefault),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
