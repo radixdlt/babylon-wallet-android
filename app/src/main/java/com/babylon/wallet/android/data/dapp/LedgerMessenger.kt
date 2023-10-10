@@ -8,6 +8,7 @@ import com.babylon.wallet.android.data.dapp.model.peerdroidRequestJson
 import com.babylon.wallet.android.data.transaction.DappRequestException
 import com.babylon.wallet.android.data.transaction.DappRequestFailure
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.first
@@ -20,6 +21,7 @@ import javax.inject.Inject
 
 interface LedgerMessenger {
 
+    val isConnected: Flow<Boolean>
     suspend fun sendDeviceInfoRequest(interactionId: String): Result<MessageFromDataChannel.LedgerResponse.GetDeviceInfoResponse>
 
     suspend fun signTransactionRequest(
@@ -55,6 +57,9 @@ interface LedgerMessenger {
 class LedgerMessengerImpl @Inject constructor(
     private val peerdroidClient: PeerdroidClient,
 ) : LedgerMessenger {
+
+    override val isConnected: Flow<Boolean>
+        get() = peerdroidClient.hasAtLeastOneConnection
 
     override suspend fun sendDeviceInfoRequest(interactionId: String): Result<MessageFromDataChannel.LedgerResponse.GetDeviceInfoResponse> {
         val ledgerRequest: LedgerInteractionRequest = LedgerInteractionRequest.GetDeviceInfo(interactionId)
@@ -165,7 +170,7 @@ class LedgerMessengerImpl @Inject constructor(
                 }
             }
             is Error -> {
-                emit(Result.failure(Exception("Failed to sign transaction with Ledger", result.exception)))
+                emit(Result.failure(Exception("Failed to connect Ledger device ", result.exception)))
             }
         }
     }.first()

@@ -64,6 +64,7 @@ internal class CreateAccountWithLedgerViewModelTest : StateViewModelTest<CreateA
     @Before
     override fun setUp() {
         super.setUp()
+        coEvery { ledgerMessenger.isConnected } returns flowOf(true)
         coEvery { eventBus.sendEvent(any()) } just Runs
         coEvery { getProfileUseCase() } returns flowOf(profile())
         every { savedStateHandle.get<Int>(ARG_NETWORK_ID) } returns Radix.Gateway.mainnet.network.id

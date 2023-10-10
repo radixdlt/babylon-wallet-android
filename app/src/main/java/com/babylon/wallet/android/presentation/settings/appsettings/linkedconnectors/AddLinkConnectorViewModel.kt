@@ -1,10 +1,12 @@
 package com.babylon.wallet.android.presentation.settings.appsettings.linkedconnectors
 
+import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.utils.parseEncryptionKeyFromConnectionPassword
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 import rdx.works.core.HexCoded32Bytes
 import rdx.works.peerdroid.data.PeerdroidLink
 import rdx.works.profile.domain.p2plink.AddP2PLinkUseCase
@@ -44,29 +46,31 @@ class AddLinkConnectorViewModel @Inject constructor(
         }
     }
 
-    suspend fun onContinueClick() {
-        _state.update {
-            it.copy(isLoading = true)
-        }
-        val encryptionKey = currentConnectionPassword?.let {
-            parseEncryptionKeyFromConnectionPassword(connectionPassword = it.value)
-        }
-        if (encryptionKey != null) {
-            val connectionPassword = requireNotNull(currentConnectionPassword)
-            when (peerdroidLink.addConnection(encryptionKey)) {
-                is rdx.works.peerdroid.helpers.Result.Success -> {
-                    addP2PLinkUseCase(
-                        displayName = state.value.connectorDisplayName,
-                        connectionPassword = connectionPassword.value
-                    )
-                }
+    fun onContinueClick() {
+        viewModelScope.launch {
+            _state.update {
+                it.copy(isLoading = true)
+            }
+            val encryptionKey = currentConnectionPassword?.let {
+                parseEncryptionKeyFromConnectionPassword(connectionPassword = it.value)
+            }
+            if (encryptionKey != null) {
+                val connectionPassword = requireNotNull(currentConnectionPassword)
+                when (peerdroidLink.addConnection(encryptionKey)) {
+                    is rdx.works.peerdroid.helpers.Result.Success -> {
+                        addP2PLinkUseCase(
+                            displayName = state.value.connectorDisplayName,
+                            connectionPassword = connectionPassword.value
+                        )
+                    }
 
-                is rdx.works.peerdroid.helpers.Result.Error -> {
-                    Timber.d("Failed to connect to remote peer.")
+                    is rdx.works.peerdroid.helpers.Result.Error -> {
+                        Timber.d("Failed to connect to remote peer.")
+                    }
                 }
             }
+            _state.value = AddLinkConnectorUiState.init
         }
-        _state.value = AddLinkConnectorUiState.init
     }
 
     fun onCloseClick() {

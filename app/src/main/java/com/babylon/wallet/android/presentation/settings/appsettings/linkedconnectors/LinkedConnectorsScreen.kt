@@ -24,7 +24,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -44,7 +43,6 @@ import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAp
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toPersistentList
-import kotlinx.coroutines.launch
 import rdx.works.profile.data.model.apppreferences.P2PLink
 
 @Composable
@@ -56,8 +54,6 @@ fun LinkedConnectorsScreen(
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val addLinkConnectorState by addLinkConnectorViewModel.state.collectAsStateWithLifecycle()
-    val coroutineScope = rememberCoroutineScope()
-
     LaunchedEffect(Unit) {
         viewModel.oneOffEvent.collect { event ->
             when (event) {
@@ -76,10 +72,8 @@ fun LinkedConnectorsScreen(
             connectorDisplayName = addLinkConnectorState.connectorDisplayName,
             isNewConnectorContinueButtonEnabled = addLinkConnectorState.isContinueButtonEnabled,
             onNewConnectorContinueClick = {
-                coroutineScope.launch {
-                    addLinkConnectorViewModel.onContinueClick()
-                    viewModel.onNewConnectorCloseClick()
-                }
+                addLinkConnectorViewModel.onContinueClick()
+                viewModel.onNewConnectorCloseClick()
             },
             onNewConnectorCloseClick = {
                 addLinkConnectorViewModel.onCloseClick()

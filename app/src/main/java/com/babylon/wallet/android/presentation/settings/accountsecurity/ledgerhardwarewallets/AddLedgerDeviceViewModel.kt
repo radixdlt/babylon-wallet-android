@@ -24,10 +24,14 @@ import javax.inject.Inject
 class AddLedgerDeviceViewModel @Inject constructor(
     private val getProfileUseCase: GetProfileUseCase,
     private val ledgerMessenger: LedgerMessenger,
-    private val addLedgerFactorSourceUseCase: AddLedgerFactorSourceUseCase,
+    private val addLedgerFactorSourceUseCase: AddLedgerFactorSourceUseCase
 ) : StateViewModel<AddLedgerDeviceUiState>() {
 
     override fun initialState() = AddLedgerDeviceUiState.init
+
+    init {
+        observeLinkConnectionStatus()
+    }
 
     fun onSendAddLedgerRequestClick() {
         viewModelScope.launch {
@@ -80,6 +84,14 @@ class AddLedgerDeviceViewModel @Inject constructor(
         }
     }
 
+    private fun observeLinkConnectionStatus() {
+        viewModelScope.launch {
+            ledgerMessenger.isConnected.collect { connected ->
+                _state.update { it.copy(isLinkConnectionEstablished = connected) }
+            }
+        }
+    }
+
     suspend fun onConfirmLedgerNameClick(name: String) {
         _state.update { state ->
             state.copy(newConnectedLedgerDevice = state.newConnectedLedgerDevice?.copy(name = name))
@@ -88,7 +100,9 @@ class AddLedgerDeviceViewModel @Inject constructor(
     }
 
     fun initState() {
-        _state.value = AddLedgerDeviceUiState.init
+        _state.update { current ->
+            AddLedgerDeviceUiState.init.copy(isLinkConnectionEstablished = current.isLinkConnectionEstablished)
+        }
     }
 
     fun onMessageShown() {
@@ -121,7 +135,8 @@ data class AddLedgerDeviceUiState(
     val isLoading: Boolean,
     val showContent: ShowContent,
     val newConnectedLedgerDevice: LedgerDeviceUiModel?,
-    val uiMessage: UiMessage?
+    val uiMessage: UiMessage?,
+    val isLinkConnectionEstablished: Boolean = false
 ) : UiState {
 
     enum class ShowContent {
@@ -135,5 +150,14 @@ data class AddLedgerDeviceUiState(
             newConnectedLedgerDevice = null,
             uiMessage = null
         )
+    }
+}
+
+sealed interface ShowLinkConnectorPromptState {
+    data object None : ShowLinkConnectorPromptState
+    data class Show(val source: Source) : ShowLinkConnectorPromptState
+
+    enum class Source {
+        AddLedgerDevice, UseLedger
     }
 }

@@ -11,6 +11,7 @@ import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiState
+import com.babylon.wallet.android.presentation.settings.accountsecurity.ledgerhardwarewallets.ShowLinkConnectorPromptState
 import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
 import com.babylon.wallet.android.utils.Constants
@@ -19,7 +20,9 @@ import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.collections.immutable.toPersistentList
+import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.UUIDGenerator
@@ -49,6 +52,11 @@ class CreateAccountWithLedgerViewModel @Inject constructor(
     override fun initialState(): CreateAccountWithLedgerUiState = CreateAccountWithLedgerUiState()
 
     init {
+        viewModelScope.launch {
+            ledgerMessenger.isConnected.collect { connected ->
+                _state.update { it.copy(isLinkConnectionEstablished = connected) }
+            }
+        }
         viewModelScope.launch {
             getProfileUseCase.ledgerFactorSources.collect { ledgerDevices ->
                 _state.update { uiState ->
@@ -87,6 +95,21 @@ class CreateAccountWithLedgerViewModel @Inject constructor(
         }
     }
 
+    fun dismissConnectorPrompt(linkConnector: Boolean, source: ShowLinkConnectorPromptState.Source) {
+        _state.update {
+            it.copy(
+                showContent = if (linkConnector) {
+                    CreateAccountWithLedgerUiState.ShowContent.LinkNewConnector(
+                        source == ShowLinkConnectorPromptState.Source.AddLedgerDevice
+                    )
+                } else {
+                    it.showContent
+                },
+                showLinkConnectorPromptState = ShowLinkConnectorPromptState.None
+            )
+        }
+    }
+
     fun onUseLedgerContinueClick(deviceBiometricAuthenticationProvider: suspend () -> Boolean) {
         state.value.ledgerDevices.firstOrNull { selectableLedgerDevice ->
             selectableLedgerDevice.selected
@@ -98,6 +121,17 @@ class CreateAccountWithLedgerViewModel @Inject constructor(
                         it.copy(showContent = CreateAccountWithLedgerUiState.ShowContent.LinkNewConnector(false))
                     }
                     return@launch
+                } else {
+                    if (!state.value.isLinkConnectionEstablished) {
+                        _state.update {
+                            it.copy(
+                                showLinkConnectorPromptState = ShowLinkConnectorPromptState.Show(
+                                    ShowLinkConnectorPromptState.Source.UseLedger
+                                )
+                            )
+                        }
+                        return@launch
+                    }
                 }
                 if (ensureBabylonFactorSourceExistUseCase.babylonFactorSourceExist().not()) {
                     val authenticationResult = deviceBiometricAuthenticationProvider()
@@ -142,15 +176,43 @@ class CreateAccountWithLedgerViewModel @Inject constructor(
                 if (getProfileUseCase.p2pLinks.first().isEmpty()) {
                     it.copy(showContent = CreateAccountWithLedgerUiState.ShowContent.LinkNewConnector())
                 } else {
-                    it.copy(showContent = CreateAccountWithLedgerUiState.ShowContent.AddLedger)
+                    if (!it.isLinkConnectionEstablished) {
+                        it.copy(
+                            showLinkConnectorPromptState = ShowLinkConnectorPromptState.Show(
+                                ShowLinkConnectorPromptState.Source.AddLedgerDevice
+                            )
+                        )
+                    } else {
+                        it.copy(showContent = CreateAccountWithLedgerUiState.ShowContent.AddLedger)
+                    }
                 }
             }
+        }
+    }
+
+    private fun showAddLedgerDeviceContent() {
+        _state.update {
+            it.copy(showContent = CreateAccountWithLedgerUiState.ShowContent.AddLedger)
         }
     }
 
     fun onCloseClick() {
         _state.update {
             it.copy(showContent = CreateAccountWithLedgerUiState.ShowContent.ChooseLedger)
+        }
+    }
+
+    fun onNewConnectorAdded(addDeviceAfterLinking: Boolean) {
+        _state.update { it.copy(linkingToConnector = true) }
+        if (addDeviceAfterLinking) {
+            showAddLedgerDeviceContent()
+        } else {
+            onCloseClick()
+        }
+        viewModelScope.launch {
+            ledgerMessenger.isConnected.filter { it }.firstOrNull()?.let {
+                _state.update { state -> state.copy(linkingToConnector = false) }
+            }
         }
     }
 
@@ -165,7 +227,10 @@ data class CreateAccountWithLedgerUiState(
     val loading: Boolean = false,
     val showContent: ShowContent = ShowContent.ChooseLedger,
     val ledgerDevices: ImmutableList<Selectable<LedgerHardwareWalletFactorSource>> = persistentListOf(),
-    val selectedLedgerDeviceId: FactorSource.FactorSourceID.FromHash? = null
+    val selectedLedgerDeviceId: FactorSource.FactorSourceID.FromHash? = null,
+    val isLinkConnectionEstablished: Boolean = false,
+    val showLinkConnectorPromptState: ShowLinkConnectorPromptState = ShowLinkConnectorPromptState.None,
+    val linkingToConnector: Boolean = false
 ) : UiState {
 
     sealed interface ShowContent {
@@ -177,5 +242,5 @@ data class CreateAccountWithLedgerUiState(
 }
 
 internal sealed interface CreateAccountWithLedgerEvent : OneOffEvent {
-    object DerivedPublicKeyForAccount : CreateAccountWithLedgerEvent
+    data object DerivedPublicKeyForAccount : CreateAccountWithLedgerEvent
 }

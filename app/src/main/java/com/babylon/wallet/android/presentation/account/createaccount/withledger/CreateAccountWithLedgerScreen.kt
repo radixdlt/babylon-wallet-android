@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -25,10 +26,12 @@ import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.domain.model.Selectable
 import com.babylon.wallet.android.domain.model.toProfileLedgerDeviceModel
 import com.babylon.wallet.android.presentation.settings.accountsecurity.ledgerhardwarewallets.AddLedgerDeviceViewModel
+import com.babylon.wallet.android.presentation.settings.accountsecurity.ledgerhardwarewallets.ShowLinkConnectorPromptState
 import com.babylon.wallet.android.presentation.settings.appsettings.linkedconnectors.AddLinkConnectorViewModel
 import com.babylon.wallet.android.presentation.ui.composables.AddLedgerDeviceScreen
 import com.babylon.wallet.android.presentation.ui.composables.AddLinkConnectorScreen
 import com.babylon.wallet.android.presentation.ui.composables.BackIconType
+import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.ChooseLedgerDeviceSection
 import com.babylon.wallet.android.presentation.ui.composables.LinkConnectorScreen
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
@@ -60,7 +63,29 @@ fun CreateAccountWithLedgerScreen(
             }
         }
     }
-
+    val promptState = state.showLinkConnectorPromptState
+    if (promptState is ShowLinkConnectorPromptState.Show) {
+        BasicPromptAlertDialog(
+            finish = {
+                viewModel.dismissConnectorPrompt(it, promptState.source)
+            },
+            title = {
+                Text(
+                    text = stringResource(id = R.string.ledgerHardwareDevices_linkConnectorAlert_title),
+                    style = RadixTheme.typography.body1Header,
+                    color = RadixTheme.colors.gray1
+                )
+            },
+            text = {
+                Text(
+                    text = stringResource(id = R.string.ledgerHardwareDevices_linkConnectorAlert_message),
+                    style = RadixTheme.typography.body2Regular,
+                    color = RadixTheme.colors.gray1
+                )
+            },
+            confirmText = stringResource(id = R.string.ledgerHardwareDevices_linkConnectorAlert_continue)
+        )
+    }
     when (val showContent = state.showContent) {
         CreateAccountWithLedgerUiState.ShowContent.ChooseLedger -> {
             ChooseLedgerDeviceContent(
@@ -73,7 +98,8 @@ fun CreateAccountWithLedgerScreen(
                     viewModel.onUseLedgerContinueClick(deviceBiometricAuthenticationProvider = {
                         context.biometricAuthenticateSuspend()
                     })
-                }
+                },
+                linkingToConnector = state.linkingToConnector
             )
         }
 
@@ -97,14 +123,8 @@ fun CreateAccountWithLedgerScreen(
                 connectorDisplayName = addLinkConnectorState.connectorDisplayName,
                 isNewConnectorContinueButtonEnabled = addLinkConnectorState.isContinueButtonEnabled,
                 onNewConnectorContinueClick = {
-                    coroutineScope.launch {
-                        addLinkConnectorViewModel.onContinueClick()
-                        if (showContent.addDeviceAfterLinking) {
-                            viewModel.onAddLedgerDeviceClick()
-                        } else {
-                            viewModel.onCloseClick()
-                        }
-                    }
+                    addLinkConnectorViewModel.onContinueClick()
+                    viewModel.onNewConnectorAdded(showContent.addDeviceAfterLinking)
                 },
                 onNewConnectorCloseClick = {
                     addLinkConnectorViewModel.onCloseClick()
@@ -138,7 +158,8 @@ fun CreateAccountWithLedgerScreen(
                     addLedgerDeviceViewModel.initState()
                     viewModel.onCloseClick()
                 },
-                onMessageShown = addLedgerDeviceViewModel::onMessageShown
+                onMessageShown = addLedgerDeviceViewModel::onMessageShown,
+                isLinkConnectionEstablished = addLedgerDeviceState.isLinkConnectionEstablished && state.linkingToConnector.not()
             )
         }
     }
@@ -151,7 +172,8 @@ private fun ChooseLedgerDeviceContent(
     onLedgerDeviceSelected: (LedgerHardwareWalletFactorSource) -> Unit,
     onUseLedgerContinueClick: () -> Unit,
     onAddLedgerDeviceClick: () -> Unit,
-    onBackClick: () -> Unit
+    onBackClick: () -> Unit,
+    linkingToConnector: Boolean
 ) {
     BackHandler { onBackClick() }
 
@@ -176,7 +198,8 @@ private fun ChooseLedgerDeviceContent(
                         vertical = RadixTheme.dimensions.paddingDefault
                     )
                     .navigationBarsPadding(),
-                enabled = ledgerDevices.any { it.selected }
+                enabled = ledgerDevices.any { it.selected } && linkingToConnector.not(),
+                isLoading = linkingToConnector
             )
         },
         containerColor = RadixTheme.colors.defaultBackground
@@ -210,7 +233,8 @@ fun CreateAccountWithLedgerScreenPreview() {
             onLedgerDeviceSelected = {},
             onUseLedgerContinueClick = {},
             onAddLedgerDeviceClick = {},
-            onBackClick = {}
+            onBackClick = {},
+            linkingToConnector = false
         )
     }
 }
