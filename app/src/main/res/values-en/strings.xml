@@ -220,7 +220,7 @@
   <string name="authorizedDapps_personaDetails_lastName">Last Name</string>
   <string name="authorizedDapps_personaDetails_emailAddress">Email Address</string>
   <string name="authorizedDapps_personaDetails_phoneNumber">Phone Number</string>
-  <string name="authorizedDapps_personaDetails_editPersona">Edit Persona Data</string>
+  <string name="authorizedDapps_personaDetails_editPersona">Edit Persona</string>
   <string name="authorizedDapps_personaDetails_authorizedDappsHeading">Here are the dApps you have logged into with this Persona.</string>
   <string name="authorizedDapps_personaDetails_accountSharingDescription">Here are the Account names and addresses that you are currently sharing with %s.</string>
   <string name="authorizedDapps_personaDetails_editAccountSharing">Edit Account Sharing</string>
