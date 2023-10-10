@@ -1,11 +1,14 @@
 package rdx.works.profile.domain.backup
 
 import android.app.backup.BackupDataOutput
+import rdx.works.core.InstantGenerator
+import rdx.works.core.preferences.PreferencesManager
 import rdx.works.profile.data.repository.BackupProfileRepository
 import javax.inject.Inject
 
 class BackupProfileToCloudUseCase @Inject constructor(
-    private val backupProfileRepository: BackupProfileRepository
+    private val backupProfileRepository: BackupProfileRepository,
+    private val preferencesManager: PreferencesManager
 ) {
 
     suspend operator fun invoke(data: BackupDataOutput?, tag: String): Result<Unit> {
@@ -19,10 +22,9 @@ class BackupProfileToCloudUseCase @Inject constructor(
 
             writeEntityHeader(tag, len)
             writeEntityData(byteArray, len)
+            preferencesManager.updateLastBackupInstant(InstantGenerator())
         }
 
-        // Save to temporary location, what Google has actually saved into data
-        // So when user deletes the wallet they can still see the entry to recover the previous snapshot.
-        return backupProfileRepository.saveTemporaryRestoringSnapshot(snapshotSerialised = snapshot, BackupType.Cloud)
+        return Result.success(Unit)
     }
 }
