@@ -96,8 +96,6 @@ class ProfileRepositoryImpl @Inject constructor(
             val profileContent = profileSnapshotJson.encodeToString(profileToSave.snapshot())
             // Store profile
             encryptedPreferencesManager.putProfileSnapshot(profileContent)
-            // Remove any previous restored profile from backup restoration
-            encryptedPreferencesManager.clearProfileSnapshotFromCloudBackup()
 
             // Update the flow and notify Backup Manager that it needs to backup
             profileStateFlow.update { ProfileState.Restored(profileToSave) }

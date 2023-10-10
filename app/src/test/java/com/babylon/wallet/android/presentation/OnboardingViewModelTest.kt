@@ -30,10 +30,7 @@ class OnboardingViewModelTest {
         // given
         //whenever(deviceSecurityHelper.isDeviceSecure()).thenReturn(false)
         val event = mutableListOf<OnboardingViewModel.OnBoardingUiState>()
-        val viewModel = OnboardingViewModel(
-            //deviceSecurityHelper = deviceSecurityHelper,
-            discardTemporaryRestoredFileForBackupUseCase = discardTemporaryRestoredFileForBackupUseCase
-        )
+        val viewModel = OnboardingViewModel()
 
         // when
         viewModel.onCreateNewWalletClick()
