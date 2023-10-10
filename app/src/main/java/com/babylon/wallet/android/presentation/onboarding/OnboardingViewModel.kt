@@ -11,7 +11,8 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class OnboardingViewModel @Inject constructor(): StateViewModel<OnboardingViewModel.OnBoardingUiState>(),
+class OnboardingViewModel @Inject constructor() :
+    StateViewModel<OnboardingViewModel.OnBoardingUiState>(),
     OneOffEventHandler<OnboardingViewModel.OnBoardingEvent> by OneOffEventHandlerImpl() {
 
     override fun initialState(): OnBoardingUiState = OnBoardingUiState()

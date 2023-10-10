@@ -34,5 +34,4 @@ sealed class BackupState {
 
     val isWarningVisible: Boolean
         get() = this is Closed || (this is Open && !isWithinWindow)
-
 }

@@ -100,7 +100,6 @@ private fun AppSettingsContent(
                             else -> {
                                 if (appSettingsItem is SettingsItem.AppSettingsItem.Backups) {
                                     DefaultSettingsItem(
-                                        modifier = modifier,
                                         title = stringResource(id = appSettingsItem.descriptionRes()),
                                         subtitleView = {
                                             NotBackedUpWarning(backupState = appSettingsItem.backupState)
