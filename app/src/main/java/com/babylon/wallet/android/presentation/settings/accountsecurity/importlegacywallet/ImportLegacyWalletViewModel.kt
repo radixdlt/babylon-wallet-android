@@ -4,7 +4,6 @@ package com.babylon.wallet.android.presentation.settings.accountsecurity.importl
 
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.dapp.LedgerMessenger
-import com.babylon.wallet.android.data.dapp.PeerdroidClient
 import com.babylon.wallet.android.data.dapp.model.Curve
 import com.babylon.wallet.android.data.dapp.model.LedgerInteractionRequest
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
@@ -66,8 +65,7 @@ class ImportLegacyWalletViewModel @Inject constructor(
     private val getFactorSourceIdForOlympiaAccountsUseCase: GetFactorSourceIdForOlympiaAccountsUseCase,
     private val getProfileUseCase: GetProfileUseCase,
     private val olympiaWalletDataParser: OlympiaWalletDataParser,
-    private val markImportOlympiaWalletCompleteUseCase: MarkImportOlympiaWalletCompleteUseCase,
-    private val peerdroidClient: PeerdroidClient
+    private val markImportOlympiaWalletCompleteUseCase: MarkImportOlympiaWalletCompleteUseCase
 ) : StateViewModel<ImportLegacyWalletUiState>(), OneOffEventHandler<OlympiaImportEvent> by OneOffEventHandlerImpl() {
 
     private val scannedData = mutableSetOf<String>()
@@ -93,8 +91,8 @@ class ImportLegacyWalletViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            peerdroidClient.hasAtLeastOneConnection.collect { connected ->
-                _state.update { it.copy(connectorExtensionConnected = connected) }
+            ledgerMessenger.isConnected.collect { connected ->
+                _state.update { it.copy(isLinkConnectionEstablished = connected) }
             }
         }
         viewModelScope.launch {
@@ -452,7 +450,7 @@ class ImportLegacyWalletViewModel @Inject constructor(
     fun onContinueWithLedgerClick() {
         viewModelScope.launch {
             if (getProfileUseCase.p2pLinks.first().isNotEmpty()) {
-                if (state.value.connectorExtensionConnected.not()) {
+                if (state.value.isLinkConnectionEstablished.not()) {
                     _state.update {
                         it.copy(shouldShowAddLinkConnectorScreen = true)
                     }
@@ -530,7 +528,7 @@ data class ImportLegacyWalletUiState(
     val shouldShowAddLinkConnectorScreen: Boolean = false,
     val shouldShowAddLedgerDeviceScreen: Boolean = false,
     var existingOlympiaFactorSourceId: FactorSourceID.FromHash? = null,
-    val connectorExtensionConnected: Boolean = false
+    val isLinkConnectionEstablished: Boolean = false
 ) : UiState {
 
     fun mnemonicWithPassphrase(): MnemonicWithPassphrase {

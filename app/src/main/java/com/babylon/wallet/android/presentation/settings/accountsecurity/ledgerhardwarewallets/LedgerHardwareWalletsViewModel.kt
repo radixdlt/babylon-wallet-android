@@ -45,7 +45,7 @@ class LedgerHardwareWalletsViewModel @Inject constructor(
     fun onAddLedgerDeviceClick() {
         viewModelScope.launch {
             if (getProfileUseCase.p2pLinks.first().isEmpty()) {
-                _state.update { it.copy(showContent = LedgerHardwareWalletsUiState.ShowContent.LinkNewConnector(false)) }
+                _state.update { it.copy(showContent = LedgerHardwareWalletsUiState.ShowContent.LinkNewConnector) }
             } else {
                 if (!state.value.isLinkConnectionEstablished) {
                     _state.update {
@@ -62,13 +62,11 @@ class LedgerHardwareWalletsViewModel @Inject constructor(
         }
     }
 
-    fun dismissConnectorPrompt(linkConnector: Boolean, source: ShowLinkConnectorPromptState.Source) {
+    fun dismissConnectorPrompt(linkConnector: Boolean) {
         _state.update {
             it.copy(
                 showContent = if (linkConnector) {
-                    LedgerHardwareWalletsUiState.ShowContent.LinkNewConnector(
-                        source == ShowLinkConnectorPromptState.Source.AddLedgerDevice
-                    )
+                    LedgerHardwareWalletsUiState.ShowContent.LinkNewConnector
                 } else {
                     it.showContent
                 },
@@ -81,13 +79,13 @@ class LedgerHardwareWalletsViewModel @Inject constructor(
         _state.update {
             it.copy(
                 showContent = LedgerHardwareWalletsUiState.ShowContent.Details,
-                linkingToConnector = true
+                isAddLedgerButtonEnabled = true
             )
         }
         viewModelScope.launch {
             ledgerMessenger.isConnected.filter { it }.firstOrNull()?.let {
                 _state.update { state ->
-                    state.copy(linkingToConnector = false)
+                    state.copy(isAddLedgerButtonEnabled = false)
                 }
             }
         }
@@ -101,7 +99,7 @@ class LedgerHardwareWalletsViewModel @Inject constructor(
 
     fun onLinkConnectorClick() {
         _state.update {
-            it.copy(showContent = LedgerHardwareWalletsUiState.ShowContent.AddLinkConnector(false))
+            it.copy(showContent = LedgerHardwareWalletsUiState.ShowContent.AddLinkConnector)
         }
     }
 
@@ -118,13 +116,13 @@ data class LedgerHardwareWalletsUiState(
     val ledgerDevices: ImmutableList<LedgerHardwareWalletFactorSource> = persistentListOf(),
     val showLinkConnectorPromptState: ShowLinkConnectorPromptState = ShowLinkConnectorPromptState.None,
     val isLinkConnectionEstablished: Boolean = false,
-    val linkingToConnector: Boolean = false
+    val isAddLedgerButtonEnabled: Boolean = false
 ) : UiState {
 
     sealed interface ShowContent {
         data object Details : ShowContent
         data object AddLedger : ShowContent
-        data class LinkNewConnector(val addDeviceAfterLinking: Boolean = true) : ShowContent
-        data class AddLinkConnector(val addDeviceAfterLinking: Boolean = true) : ShowContent
+        data object LinkNewConnector : ShowContent
+        data object AddLinkConnector : ShowContent
     }
 }

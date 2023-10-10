@@ -67,7 +67,7 @@ fun LedgerHardwareWalletsScreen(
     if (promptState is ShowLinkConnectorPromptState.Show) {
         BasicPromptAlertDialog(
             finish = {
-                viewModel.dismissConnectorPrompt(it, promptState.source)
+                viewModel.dismissConnectorPrompt(it)
             },
             title = {
                 Text(
@@ -95,7 +95,7 @@ fun LedgerHardwareWalletsScreen(
                     ledgerDevices = state.ledgerDevices,
                     onAddLedgerDeviceClick = viewModel::onAddLedgerDeviceClick,
                     onBackClick = onBackClick,
-                    linkingToConnector = state.linkingToConnector
+                    linkingToConnector = state.isAddLedgerButtonEnabled
                 )
             }
 
