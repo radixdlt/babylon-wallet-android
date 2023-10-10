@@ -1,4 +1,5 @@
 @file:OptIn(ExperimentalSerializationApi::class)
+@file:Suppress("TooManyFunctions")
 
 package rdx.works.profile.data.model.pernetwork
 
@@ -20,12 +21,12 @@ import rdx.works.profile.data.model.Profile
 import rdx.works.profile.data.model.compressedPublicKey
 import rdx.works.profile.data.model.currentGateway
 import rdx.works.profile.data.model.factorsources.DeviceFactorSource
+import rdx.works.profile.data.model.factorsources.EntityFlag
 import rdx.works.profile.data.model.factorsources.FactorSourceKind
 import rdx.works.profile.data.model.factorsources.LedgerHardwareWalletFactorSource
 import rdx.works.profile.data.model.factorsources.Slip10Curve
 import rdx.works.profile.derivation.model.KeyType
 import rdx.works.profile.derivation.model.NetworkId
-
 @Serializable
 data class Network(
     /**
@@ -88,9 +89,11 @@ data class Network(
         /**
          * The on ledger synced settings for this account
          */
-        @SerialName("onLedgerSettings") val onLedgerSettings: OnLedgerSettings
+        @SerialName("onLedgerSettings") val onLedgerSettings: OnLedgerSettings,
 
-    ) : Entity {
+        override val flags: List<EntityFlag> = emptyList()
+
+    ) : Entity() {
 
         @Serializable
         data class OnLedgerSettings(
@@ -296,8 +299,10 @@ data class Network(
         /**
          * Security of this persona
          */
-        @SerialName("securityState") override val securityState: SecurityState
-    ) : Entity {
+        @SerialName("securityState") override val securityState: SecurityState,
+
+        override val flags: List<EntityFlag> = emptyList()
+    ) : Entity() {
 
         companion object {
             @Suppress("LongParameterList") // TODO refine this later on
@@ -652,6 +657,46 @@ fun Network.AuthorizedDapp.AuthorizedPersonaSimple.ensurePersonaDataExist(
                 }
             }
         )
+    )
+}
+
+fun Profile.hideEntity(address: String): Profile {
+    val networkId = currentGateway.network.networkId()
+
+    return copy(
+        networks = networks.mapWhen(predicate = { it.networkID == networkId.value }, mutation = { network ->
+            network.copy(
+                personas = network.personas.mapWhen(
+                    predicate = { it.address == address },
+                    mutation = { persona ->
+                        persona.copy(flags = (persona.flags + EntityFlag.DeletedByUser).distinct())
+                    }
+                ),
+                accounts = network.accounts.mapWhen(
+                    predicate = { it.address == address },
+                    mutation = { account ->
+                        account.copy(flags = (account.flags + EntityFlag.DeletedByUser).distinct())
+                    }
+                ),
+            )
+        })
+    )
+}
+
+fun Profile.unhideAllEntities(): Profile {
+    val networkId = currentGateway.network.networkId()
+
+    return copy(
+        networks = networks.mapWhen(predicate = { it.networkID == networkId.value }, mutation = { network ->
+            network.copy(
+                personas = network.personas.map { persona ->
+                    persona.copy(flags = persona.flags - EntityFlag.DeletedByUser)
+                },
+                accounts = network.accounts.map { persona ->
+                    persona.copy(flags = persona.flags - EntityFlag.DeletedByUser)
+                }
+            )
+        })
     )
 }
 

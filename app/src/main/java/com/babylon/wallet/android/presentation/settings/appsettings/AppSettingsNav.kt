@@ -13,6 +13,7 @@ import com.babylon.wallet.android.presentation.navigation.Screen
 import com.babylon.wallet.android.presentation.settings.SettingsItem
 import com.babylon.wallet.android.presentation.settings.appsettings.backup.backupScreen
 import com.babylon.wallet.android.presentation.settings.appsettings.backup.systemBackupSettingsScreen
+import com.babylon.wallet.android.presentation.settings.appsettings.entityhiding.entityHidingScreen
 import com.babylon.wallet.android.presentation.settings.appsettings.gateways.GatewaysScreen
 import com.babylon.wallet.android.presentation.settings.appsettings.linkedconnectors.linkedConnectorsScreen
 import com.google.accompanist.navigation.animation.composable
@@ -40,6 +41,9 @@ fun NavGraphBuilder.appSettingsNavGraph(
             navController.popBackStack()
         })
         settingsGateway(navController)
+        entityHidingScreen(onBackClick = {
+            navController.popBackStack()
+        })
         backupScreen(
             onSystemBackupSettingsClick = {
                 navController.systemBackupSettingsScreen()
@@ -80,13 +84,19 @@ fun NavGraphBuilder.appSettingsScreen(
                     SettingsItem.AppSettingsItem.LinkedConnectors -> {
                         navController.linkedConnectorsScreen()
                     }
+
                     SettingsItem.AppSettingsItem.Gateways -> {
                         navController.navigate(Screen.SettingsEditGatewayApiDestination.route)
                     }
+
                     is SettingsItem.AppSettingsItem.Backups -> {
                         navController.backupScreen()
                     }
+
                     is SettingsItem.AppSettingsItem.DeveloperMode -> {}
+                    SettingsItem.AppSettingsItem.EntityHiding -> {
+                        navController.entityHidingScreen()
+                    }
                 }
             },
             onBackClick = {

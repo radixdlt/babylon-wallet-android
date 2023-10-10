@@ -256,6 +256,9 @@ fun NavigationHost(
 
                     else -> {}
                 }
+            },
+            onHideAccount = {
+                navController.popBackStack(MAIN_ROUTE, inclusive = false)
             }
         )
         accountThirdPartyDeposits(

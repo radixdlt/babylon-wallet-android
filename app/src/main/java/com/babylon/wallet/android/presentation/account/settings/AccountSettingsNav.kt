@@ -34,7 +34,8 @@ fun NavController.accountSettings(
 @OptIn(ExperimentalAnimationApi::class)
 fun NavGraphBuilder.accountSettings(
     onBackClick: () -> Unit,
-    onAccountSettingItemClick: (AccountSettingItem, address: String) -> Unit
+    onAccountSettingItemClick: (AccountSettingItem, address: String) -> Unit,
+    onHideAccount: () -> Unit
 ) {
     composable(
         route = "account_settings_route/{$ARG_ACCOUNT_SETTINGS_ADDRESS}",
@@ -57,7 +58,8 @@ fun NavGraphBuilder.accountSettings(
         AccountSettingsScreen(
             viewModel = hiltViewModel(),
             onBackClick = onBackClick,
-            onSettingItemClick = onAccountSettingItemClick
+            onSettingItemClick = onAccountSettingItemClick,
+            onHideAccount = onHideAccount
         )
     }
 }

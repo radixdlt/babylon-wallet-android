@@ -28,9 +28,12 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -45,27 +48,33 @@ import com.babylon.wallet.android.designsystem.composable.RadixSecondaryButton
 import com.babylon.wallet.android.designsystem.composable.RadixTextField
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
+import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.domain.usecases.FaucetState
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.status.signing.SigningStatusBottomDialog
 import com.babylon.wallet.android.presentation.ui.composables.AccountQRCodeView
+import com.babylon.wallet.android.presentation.ui.composables.ActionableAddressView
+import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.BottomDialogDragHandle
 import com.babylon.wallet.android.presentation.ui.composables.DefaultModalSheetLayout
 import com.babylon.wallet.android.presentation.ui.composables.DefaultSettingsItem
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
+import com.babylon.wallet.android.presentation.ui.composables.RedButton
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
 import com.babylon.wallet.android.utils.biometricAuthenticate
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.launch
 
+@OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun AccountSettingsScreen(
     viewModel: AccountSettingsViewModel,
     onBackClick: () -> Unit,
     modifier: Modifier = Modifier,
-    onSettingItemClick: (AccountSettingItem, address: String) -> Unit
+    onSettingItemClick: (AccountSettingItem, address: String) -> Unit,
+    onHideAccount: () -> Unit,
 ) {
     val context = LocalContext.current
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -74,7 +83,33 @@ fun AccountSettingsScreen(
         initialValue = ModalBottomSheetValue.Hidden,
         skipHalfExpanded = true
     )
+    var hideAccountPrompt by remember { mutableStateOf(false) }
+    if (hideAccountPrompt) {
+        BasicPromptAlertDialog(
+            finish = {
+                if (it) {
+                    viewModel.onHideAccount()
+                }
+                hideAccountPrompt = false
+            },
+            text = {
+                Text(
+                    text = stringResource(id = R.string.accountSettings_hideAccountConfirmation),
+                    style = RadixTheme.typography.body2Regular,
+                    color = RadixTheme.colors.gray1
+                )
+            },
+            confirmText = stringResource(id = R.string.common_continue)
+        )
+    }
 
+    LaunchedEffect(Unit) {
+        viewModel.oneOffEvent.collect { event ->
+            when (event) {
+                Event.AccountHidden -> onHideAccount()
+            }
+        }
+    }
     BackHandler(enabled = bottomSheetState.isVisible) {
         scope.launch {
             bottomSheetState.hide()
@@ -111,6 +146,7 @@ fun AccountSettingsScreen(
                         }
                     )
                 }
+
                 AccountPreferenceUiState.BottomSheetContent.AddressQRCode -> {
                     AddressQRCodeSheet(
                         accountAddress = state.accountAddress,
@@ -122,12 +158,12 @@ fun AccountSettingsScreen(
                         }
                     )
                 }
+
                 AccountPreferenceUiState.BottomSheetContent.None -> {}
             }
         }
     ) {
         AccountSettingsContent(
-            modifier = Modifier.navigationBarsPadding(),
             onBackClick = onBackClick,
             accountName = state.accountName,
             onGetFreeXrdClick = viewModel::onGetFreeXrdClick,
@@ -148,6 +184,7 @@ fun AccountSettingsScreen(
             isAuthSigningLoading = state.isLoading,
             onMessageShown = viewModel::onMessageShown,
             error = state.error,
+            modifier = Modifier.navigationBarsPadding(),
             hasAuthKey = state.hasAuthKey,
             onCreateAndUploadAuthKey = {
                 context.biometricAuthenticate {
@@ -159,6 +196,10 @@ fun AccountSettingsScreen(
             settingsSections = state.settingsSections,
             onSettingClick = {
                 onSettingItemClick(it, state.accountAddress)
+            },
+            accountAddress = state.accountAddress,
+            onHideAccount = {
+                hideAccountPrompt = true
             }
         )
         state.interactionState?.let {
@@ -187,7 +228,9 @@ private fun AccountSettingsContent(
     hasAuthKey: Boolean,
     onCreateAndUploadAuthKey: () -> Unit,
     settingsSections: ImmutableList<AccountSettingsSection>,
-    onSettingClick: (AccountSettingItem) -> Unit
+    onSettingClick: (AccountSettingItem) -> Unit,
+    accountAddress: String,
+    onHideAccount: () -> Unit
 ) {
     val snackBarHostState = remember { SnackbarHostState() }
     SnackbarUIMessage(
@@ -219,17 +262,28 @@ private fun AccountSettingsContent(
                 .fillMaxSize()
                 .background(RadixTheme.colors.gray5)
         ) {
+            item {
+                ActionableAddressView(
+                    address = accountAddress,
+                    modifier = Modifier.padding(
+                        horizontal = RadixTheme.dimensions.paddingLarge,
+                        vertical = RadixTheme.dimensions.paddingSmall
+                    ),
+                    textStyle = RadixTheme.typography.body2Regular,
+                    textColor = RadixTheme.colors.gray2,
+                    truncateAddressForDisplay = false
+                )
+                RadixSecondaryButton(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = RadixTheme.dimensions.paddingLarge),
+                    text = stringResource(R.string.addressAction_showAccountQR),
+                    onClick = onShowAddressQRCodeClick,
+                    enabled = !isXrdLoading
+                )
+                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
+            }
             settingsSections.forEach { section ->
-                item {
-                    Text(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(RadixTheme.dimensions.paddingDefault),
-                        text = stringResource(id = section.titleRes()),
-                        style = RadixTheme.typography.body1HighImportance,
-                        color = RadixTheme.colors.gray2
-                    )
-                }
                 val lastSettingsItem = section.settingsItems.last()
                 section.settingsItems.forEach { settingsItem ->
                     item {
@@ -302,13 +356,10 @@ private fun AccountSettingsContent(
                     )
                 }
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSmall))
-                RadixSecondaryButton(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = RadixTheme.dimensions.paddingLarge),
-                    text = stringResource(R.string.addressAction_showAccountQR),
-                    onClick = onShowAddressQRCodeClick,
-                    enabled = !isXrdLoading
+                RedButton(
+                    modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingLarge),
+                    text = stringResource(R.string.accountSettings_hideThisAccount),
+                    onClick = onHideAccount
                 )
             }
         }
@@ -435,7 +486,9 @@ fun AccountSettingsPreview() {
                     )
                 )
             ),
-            onSettingClick = {}
+            onSettingClick = {},
+            accountAddress = SampleDataProvider().randomAddress(),
+            onHideAccount = {}
         )
     }
 }

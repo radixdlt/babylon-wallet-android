@@ -109,10 +109,10 @@ fun AccountTopBar(
 
         if (progress != 1f) {
             ActionableAddressView(
+                address = accountAddress,
                 modifier = Modifier
                     .layoutId("accountAddressView")
                     .padding(bottom = RadixTheme.dimensions.paddingXLarge),
-                address = accountAddress,
                 textStyle = RadixTheme.typography.body2HighImportance,
                 textColor = RadixTheme.colors.white
             )

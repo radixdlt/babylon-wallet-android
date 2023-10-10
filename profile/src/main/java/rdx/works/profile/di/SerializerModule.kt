@@ -26,6 +26,7 @@ object SerializerModule {
     @ProfileSerializer
     fun provideProfileSerializer(): Json {
         return Json {
+            ignoreUnknownKeys = true
             serializersModule = SerializersModule {
                 contextual(Instant::class, InstantSerializer)
             }

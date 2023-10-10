@@ -70,6 +70,7 @@ sealed interface SettingsItem {
         data object LinkedConnectors : AppSettingsItem
         data object Gateways : AppSettingsItem
         data class Backups(val backupState: BackupState) : AppSettingsItem
+        data object EntityHiding : AppSettingsItem
         data class DeveloperMode(val enabled: Boolean) : AppSettingsItem
 
         @StringRes
@@ -79,6 +80,7 @@ sealed interface SettingsItem {
                 Gateways -> R.string.settings_gateways
                 is Backups -> R.string.settings_backups
                 is DeveloperMode -> R.string.appSettings_developerMode_title
+                EntityHiding -> R.string.appSettings_entityHiding_title
             }
         }
 
@@ -88,6 +90,7 @@ sealed interface SettingsItem {
                 LinkedConnectors -> com.babylon.wallet.android.designsystem.R.drawable.ic_desktop_connection
                 Gateways -> com.babylon.wallet.android.designsystem.R.drawable.ic_gateways
                 is Backups -> com.babylon.wallet.android.designsystem.R.drawable.ic_backup
+                EntityHiding -> com.babylon.wallet.android.designsystem.R.drawable.ic_entity_hiding
                 else -> null
             }
         }

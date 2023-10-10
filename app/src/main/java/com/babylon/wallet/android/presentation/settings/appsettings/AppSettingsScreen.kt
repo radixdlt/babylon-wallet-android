@@ -94,41 +94,51 @@ private fun AppSettingsContent(
                                     checked = appSettingsItem.enabled,
                                     onCheckedChange = onDeveloperModeToggled
                                 )
-                                Divider(color = RadixTheme.colors.gray5)
+                            }
+
+                            is SettingsItem.AppSettingsItem.Backups -> {
+                                DefaultSettingsItem(
+                                    title = stringResource(id = appSettingsItem.descriptionRes()),
+                                    subtitleView = {
+                                        NotBackedUpWarning(backupState = appSettingsItem.backupState)
+                                    },
+                                    iconView = appSettingsItem.getIcon()?.let { iconRes ->
+                                        {
+                                            Icon(
+                                                modifier = Modifier.size(24.dp),
+                                                painter = painterResource(id = iconRes),
+                                                contentDescription = null
+                                            )
+                                        }
+                                    },
+                                    onClick = {
+                                        onAppSettingItemClick(appSettingsItem)
+                                    }
+                                )
+                            }
+
+                            SettingsItem.AppSettingsItem.EntityHiding -> {
+                                DefaultSettingsItem(
+                                    title = stringResource(id = appSettingsItem.descriptionRes()),
+                                    icon = appSettingsItem.getIcon(),
+                                    onClick = {
+                                        onAppSettingItemClick(appSettingsItem)
+                                    },
+                                    subtitle = stringResource(id = R.string.appSettings_entityHiding_subtitle)
+                                )
                             }
 
                             else -> {
-                                if (appSettingsItem is SettingsItem.AppSettingsItem.Backups) {
-                                    DefaultSettingsItem(
-                                        title = stringResource(id = appSettingsItem.descriptionRes()),
-                                        subtitleView = {
-                                            NotBackedUpWarning(backupState = appSettingsItem.backupState)
-                                        },
-                                        iconView = appSettingsItem.getIcon()?.let { iconRes ->
-                                            {
-                                                Icon(
-                                                    modifier = Modifier.size(24.dp),
-                                                    painter = painterResource(id = iconRes),
-                                                    contentDescription = null
-                                                )
-                                            }
-                                        },
-                                        onClick = {
-                                            onAppSettingItemClick(appSettingsItem)
-                                        }
-                                    )
-                                } else {
-                                    DefaultSettingsItem(
-                                        title = stringResource(id = appSettingsItem.descriptionRes()),
-                                        icon = appSettingsItem.getIcon(),
-                                        onClick = {
-                                            onAppSettingItemClick(appSettingsItem)
-                                        }
-                                    )
-                                }
-                                Divider(color = RadixTheme.colors.gray5)
+                                DefaultSettingsItem(
+                                    title = stringResource(id = appSettingsItem.descriptionRes()),
+                                    icon = appSettingsItem.getIcon(),
+                                    onClick = {
+                                        onAppSettingItemClick(appSettingsItem)
+                                    }
+                                )
                             }
                         }
+                        Divider(color = RadixTheme.colors.gray5)
                     }
                 }
             }

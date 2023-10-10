@@ -13,6 +13,8 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.text.InlineTextContent
+import androidx.compose.foundation.text.appendInlineContent
 import androidx.compose.material.LocalTextStyle
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -32,8 +34,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.Placeholder
+import androidx.compose.ui.text.PlaceholderVerticalAlign
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.core.content.getSystemService
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
@@ -56,13 +62,14 @@ import timber.log.Timber
 @OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun ActionableAddressView(
-    modifier: Modifier = Modifier,
     address: String,
+    modifier: Modifier = Modifier,
+    truncateAddressForDisplay: Boolean = true,
     textStyle: TextStyle = LocalTextStyle.current,
     textColor: Color = Color.Unspecified,
     iconColor: Color = textColor
 ) {
-    val actionableAddress = resolveAddress(address = address)
+    val actionableAddress = resolveAddress(address = address, truncateAddressForDisplay = truncateAddressForDisplay)
     val context = LocalContext.current
     var actions by remember(actionableAddress) {
         mutableStateOf(
@@ -130,18 +137,28 @@ fun ActionableAddressView(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingXSmall)
         ) {
-            Text(
-                text = actionableAddress.displayAddress,
-                color = textColor,
-                maxLines = 1,
-                style = textStyle
+            val inlineContentId = "icon"
+            val text = buildAnnotatedString {
+                append(actionableAddress.displayAddress)
+                append(" ")
+                appendInlineContent(inlineContentId)
+            }
+            val inlineContent = mapOf(
+                inlineContentId to InlineTextContent(Placeholder(14.sp, 14.sp, PlaceholderVerticalAlign.Center)) {
+                    Icon(
+                        modifier = Modifier.size(14.dp),
+                        painter = painterResource(id = actions.primary.icon),
+                        contentDescription = actions.primary.name,
+                        tint = iconColor,
+                    )
+                }
             )
-
-            Icon(
-                modifier = Modifier.size(14.dp),
-                painter = painterResource(id = actions.primary.icon),
-                contentDescription = actions.primary.name,
-                tint = iconColor,
+            Text(
+                text = text,
+                color = textColor,
+                maxLines = if (truncateAddressForDisplay) 1 else 2,
+                style = textStyle,
+                inlineContent = inlineContent
             )
         }
 
@@ -195,8 +212,9 @@ fun ActionableAddressView(
 
 @Composable
 private fun resolveAddress(
-    address: String
-): ActionableAddress = remember(address) { ActionableAddress(address) }
+    address: String,
+    truncateAddressForDisplay: Boolean
+): ActionableAddress = remember(address) { ActionableAddress(address, truncateAddressForDisplay) }
 
 private fun resolveStaticActions(
     actionableAddress: ActionableAddress,
@@ -355,5 +373,6 @@ private interface ActionableAddressViewEntryPoint {
 
     fun verifyAddressOnLedgerUseCase(): VerifyAddressOnLedgerUseCase
 
-    @ApplicationScope fun applicationScope(): CoroutineScope
+    @ApplicationScope
+    fun applicationScope(): CoroutineScope
 }

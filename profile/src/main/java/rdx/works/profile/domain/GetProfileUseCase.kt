@@ -1,3 +1,5 @@
+@file:Suppress("TooManyFunctions")
+
 package rdx.works.profile.domain
 
 import com.radixdlt.ret.Address
@@ -10,9 +12,11 @@ import rdx.works.core.toByteArray
 import rdx.works.profile.data.model.ProfileState
 import rdx.works.profile.data.model.currentNetwork
 import rdx.works.profile.data.model.factorsources.DeviceFactorSource
+import rdx.works.profile.data.model.factorsources.EntityFlag
 import rdx.works.profile.data.model.factorsources.FactorSource
 import rdx.works.profile.data.model.factorsources.LedgerHardwareWalletFactorSource
 import rdx.works.profile.data.model.pernetwork.DerivationPath
+import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.data.model.pernetwork.nextAccountIndex
 import rdx.works.profile.data.repository.ProfileRepository
 import rdx.works.profile.data.repository.profile
@@ -34,7 +38,12 @@ class GetProfileUseCase @Inject constructor(private val profileRepository: Profi
  * Accounts on network
  */
 val GetProfileUseCase.accountsOnCurrentNetwork
-    get() = invoke().map { it.currentNetwork.accounts }
+    get() = invoke().map { it.currentNetwork.accounts.notHiddenAccounts() }
+
+val GetProfileUseCase.hiddenAccountsOnCurrentNetwork
+    get() = invoke().map {
+        it.currentNetwork.accounts.filter { account -> account.flags.contains(EntityFlag.DeletedByUser) }
+    }
 
 val GetProfileUseCase.factorSources
     get() = invoke().map { profile -> profile.factorSources }
@@ -45,7 +54,7 @@ val GetProfileUseCase.deviceFactorSources
 val GetProfileUseCase.deviceFactorSourcesWithAccounts
     get() = invoke().map { profile ->
         val deviceFactorSources = profile.factorSources.filterIsInstance<DeviceFactorSource>()
-        val allAccountsOnNetwork = profile.currentNetwork.accounts
+        val allAccountsOnNetwork = profile.currentNetwork.accounts.notHiddenAccounts()
         deviceFactorSources.associateWith { deviceFactorSource ->
             allAccountsOnNetwork.filter { it.factorSourceId() == deviceFactorSource.id }
         }
@@ -98,7 +107,12 @@ suspend fun GetProfileUseCase.currentNetworkAccountHashes(): Set<ByteArray> {
  * Personas on network
  */
 val GetProfileUseCase.personasOnCurrentNetwork
-    get() = invoke().map { it.currentNetwork.personas }
+    get() = invoke().map { it.currentNetwork.personas.notHiddenPersonas() }
+
+val GetProfileUseCase.hiddenPersonasOnCurrentNetwork
+    get() = invoke().map {
+        it.currentNetwork.personas.filter { persona -> persona.flags.contains(EntityFlag.DeletedByUser) }
+    }
 
 suspend fun GetProfileUseCase.personasOnCurrentNetwork() = personasOnCurrentNetwork.first()
 
@@ -136,3 +150,11 @@ val GetProfileUseCase.p2pLinks
  */
 suspend fun GetProfileUseCase.defaultDepositGuarantee() =
     invoke().map { it.appPreferences.transaction.defaultDepositGuarantee }.first()
+
+private fun List<Network.Account>.notHiddenAccounts(): List<Network.Account> {
+    return filter { it.flags.contains(EntityFlag.DeletedByUser).not() }
+}
+
+private fun List<Network.Persona>.notHiddenPersonas(): List<Network.Persona> {
+    return filter { it.flags.contains(EntityFlag.DeletedByUser).not() }
+}

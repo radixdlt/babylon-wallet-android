@@ -8,6 +8,9 @@ import com.babylon.wallet.android.data.transaction.ROLAClient
 import com.babylon.wallet.android.domain.common.value
 import com.babylon.wallet.android.domain.model.DAppWithMetadataAndAssociatedResources
 import com.babylon.wallet.android.domain.usecases.GetDAppWithMetadataAndAssociatedResourcesUseCase
+import com.babylon.wallet.android.presentation.common.OneOffEvent
+import com.babylon.wallet.android.presentation.common.OneOffEventHandler
+import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.utils.AppEvent
@@ -26,6 +29,7 @@ import rdx.works.profile.data.model.pernetwork.FactorInstance
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.data.repository.DAppConnectionRepository
 import rdx.works.profile.data.utils.hasAuthSigning
+import rdx.works.profile.domain.ChangeEntityVisibilityUseCase
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.account.AddAuthSigningFactorInstanceUseCase
 import rdx.works.profile.domain.personaOnCurrentNetworkFlow
@@ -41,8 +45,9 @@ class PersonaDetailViewModel @Inject constructor(
     private val rolaClient: ROLAClient,
     private val incomingRequestRepository: IncomingRequestRepository,
     private val dAppWithAssociatedResourcesUseCase: GetDAppWithMetadataAndAssociatedResourcesUseCase,
-    savedStateHandle: SavedStateHandle
-) : StateViewModel<PersonaDetailUiState>() {
+    savedStateHandle: SavedStateHandle,
+    private val changeEntityVisibilityUseCase: ChangeEntityVisibilityUseCase
+) : StateViewModel<PersonaDetailUiState>(), OneOffEventHandler<Event> by OneOffEventHandlerImpl() {
 
     private val args = PersonaDetailScreenArgs(savedStateHandle)
     private var authSigningFactorInstance: FactorInstance? = null
@@ -83,12 +88,14 @@ class PersonaDetailViewModel @Inject constructor(
                         is AppEvent.Status.Transaction.Fail -> {
                             _state.update { it.copy(loading = false) }
                         }
+
                         is AppEvent.Status.Transaction.Success -> {
                             val persona = requireNotNull(state.value.persona)
                             val authSigningFactorInstance = requireNotNull(authSigningFactorInstance)
                             addAuthSigningFactorInstanceUseCase(persona, authSigningFactorInstance)
                             _state.update { it.copy(loading = false) }
                         }
+
                         else -> {}
                     }
                 }
@@ -98,6 +105,13 @@ class PersonaDetailViewModel @Inject constructor(
     fun onDAppClick(dApp: DAppWithMetadataAndAssociatedResources) {
         _state.update { state ->
             state.copy(selectedDApp = dApp)
+        }
+    }
+
+    fun onHidePersona() {
+        viewModelScope.launch {
+            state.value.persona?.address?.let { changeEntityVisibilityUseCase.hide(it) }
+            sendEvent(Event.Close)
         }
     }
 
@@ -128,6 +142,10 @@ class PersonaDetailViewModel @Inject constructor(
             }
         }
     }
+}
+
+sealed interface Event : OneOffEvent {
+    data object Close : Event
 }
 
 data class PersonaDetailUiState(

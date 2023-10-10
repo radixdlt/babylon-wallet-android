@@ -11,6 +11,9 @@ import com.babylon.wallet.android.data.transaction.ROLAClient
 import com.babylon.wallet.android.di.coroutines.ApplicationScope
 import com.babylon.wallet.android.domain.usecases.FaucetState
 import com.babylon.wallet.android.domain.usecases.GetFreeXrdUseCase
+import com.babylon.wallet.android.presentation.common.OneOffEvent
+import com.babylon.wallet.android.presentation.common.OneOffEventHandler
+import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
@@ -23,12 +26,13 @@ import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.UUIDGenerator
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.data.utils.hasAuthSigning
+import rdx.works.profile.domain.ChangeEntityVisibilityUseCase
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.account.AddAuthSigningFactorInstanceUseCase
 import rdx.works.profile.domain.account.RenameAccountDisplayNameUseCase
@@ -48,8 +52,9 @@ class AccountSettingsViewModel @Inject constructor(
     private val transactionStatusClient: TransactionStatusClient,
     @ApplicationScope private val appScope: CoroutineScope,
     savedStateHandle: SavedStateHandle,
-    private val appEventBus: AppEventBus
-) : StateViewModel<AccountPreferenceUiState>() {
+    private val appEventBus: AppEventBus,
+    private val changeEntityVisibilityUseCase: ChangeEntityVisibilityUseCase
+) : StateViewModel<AccountPreferenceUiState>(), OneOffEventHandler<Event> by OneOffEventHandlerImpl() {
 
     private val args = AccountSettingsArgs(savedStateHandle)
     private var createAndUploadAuthKeyJob: Job? = null
@@ -76,10 +81,10 @@ class AccountSettingsViewModel @Inject constructor(
 
     private fun loadAccount() {
         viewModelScope.launch {
-            getProfileUseCase.accountsOnCurrentNetwork.map { accounts -> accounts.first { it.address == args.address } }
+            getProfileUseCase.accountsOnCurrentNetwork.mapNotNull { accounts -> accounts.firstOrNull { it.address == args.address } }
                 .collect { account ->
-                    _state.update {
-                        it.copy(
+                    _state.update { state ->
+                        state.copy(
                             accountName = account.displayName,
                             accountNameChanged = account.displayName,
                             account = account,
@@ -216,6 +221,17 @@ class AccountSettingsViewModel @Inject constructor(
             }
         }
     }
+
+    fun onHideAccount() {
+        viewModelScope.launch {
+            changeEntityVisibilityUseCase.hide(state.value.accountAddress)
+            sendEvent(Event.AccountHidden)
+        }
+    }
+}
+
+sealed interface Event : OneOffEvent {
+    data object AccountHidden : Event
 }
 
 data class AccountPreferenceUiState(
