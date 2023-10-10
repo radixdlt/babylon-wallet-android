@@ -224,7 +224,7 @@ class AccountSettingsViewModel @Inject constructor(
 
     fun onHideAccount() {
         viewModelScope.launch {
-            changeEntityVisibilityUseCase.hide(state.value.accountAddress)
+            changeEntityVisibilityUseCase.hideAccount(state.value.accountAddress)
             sendEvent(Event.AccountHidden)
         }
     }
@@ -258,7 +258,8 @@ data class AccountPreferenceUiState(
     companion object {
         val defaultSettings = persistentListOf(
             AccountSettingsSection.PersonalizeSection(listOf(AccountSettingItem.AccountLabel)),
-            AccountSettingsSection.AccountSection(listOf(AccountSettingItem.ThirdPartyDeposits))
+            AccountSettingsSection.AccountSection(listOf(AccountSettingItem.ThirdPartyDeposits)),
+            AccountSettingsSection.DevelopmentSection(listOf(AccountSettingItem.ThirdPartyDeposits)),
         )
     }
 }

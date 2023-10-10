@@ -28,6 +28,7 @@ import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Test
 import rdx.works.profile.data.model.currentNetwork
+import rdx.works.profile.domain.ChangeEntityVisibilityUseCase
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.account.AddAuthSigningFactorInstanceUseCase
 import rdx.works.profile.domain.account.RenameAccountDisplayNameUseCase
@@ -42,6 +43,7 @@ internal class AccountSettingsViewModelTest : StateViewModelTest<AccountSettings
     private val incomingRequestRepository = mockk<IncomingRequestRepository>()
     private val addAuthSigningFactorInstanceUseCase = mockk<AddAuthSigningFactorInstanceUseCase>()
     private val transactionStatusClient = mockk<TransactionStatusClient>()
+    private val changeEntityVisibilityUseCase = mockk<ChangeEntityVisibilityUseCase>()
     private val rolaClient = mockk<ROLAClient>()
     private val eventBus = mockk<AppEventBus>()
     private val sampleTxId = "txId1"
@@ -59,7 +61,8 @@ internal class AccountSettingsViewModelTest : StateViewModelTest<AccountSettings
             transactionStatusClient,
             TestScope(),
             savedStateHandle,
-            eventBus
+            eventBus,
+            changeEntityVisibilityUseCase
         )
     }
 

@@ -110,7 +110,7 @@ class PersonaDetailViewModel @Inject constructor(
 
     fun onHidePersona() {
         viewModelScope.launch {
-            state.value.persona?.address?.let { changeEntityVisibilityUseCase.hide(it) }
+            state.value.persona?.address?.let { changeEntityVisibilityUseCase.hidePersona(it) }
             sendEvent(Event.Close)
         }
     }

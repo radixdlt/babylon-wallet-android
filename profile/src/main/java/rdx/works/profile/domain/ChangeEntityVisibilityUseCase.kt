@@ -3,7 +3,8 @@ package rdx.works.profile.domain
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
-import rdx.works.profile.data.model.pernetwork.hideEntity
+import rdx.works.profile.data.model.pernetwork.hideAccount
+import rdx.works.profile.data.model.pernetwork.hidePersona
 import rdx.works.profile.data.model.pernetwork.unhideAllEntities
 import rdx.works.profile.data.repository.ProfileRepository
 import rdx.works.profile.data.repository.profile
@@ -15,10 +16,18 @@ class ChangeEntityVisibilityUseCase @Inject constructor(
     @DefaultDispatcher private val defaultDispatcher: CoroutineDispatcher
 ) {
 
-    suspend fun hide(entityAddress: String) {
+    suspend fun hideAccount(entityAddress: String) {
         return withContext(defaultDispatcher) {
             val profile = profileRepository.profile.first()
-            val updatedProfile = profile.hideEntity(address = entityAddress)
+            val updatedProfile = profile.hideAccount(address = entityAddress)
+            profileRepository.saveProfile(updatedProfile)
+        }
+    }
+
+    suspend fun hidePersona(entityAddress: String) {
+        return withContext(defaultDispatcher) {
+            val profile = profileRepository.profile.first()
+            val updatedProfile = profile.hidePersona(address = entityAddress)
             profileRepository.saveProfile(updatedProfile)
         }
     }

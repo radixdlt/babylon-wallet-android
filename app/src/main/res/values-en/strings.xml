@@ -790,6 +790,8 @@ Only the **current configuration** of your wallet is backed up with each manual 
 
 You can always change the guarantee from this default in each transaction.</string>
 
+  <string name="accountSettings_developmentHeading">Set development preferences</string>
+  <string name="accountSettings_devPreferences">Dev Preferences</string>
   <string name="accountSettings_hideThisAccount">Hide This Account</string>
   <string name="accountSettings_hideAccountConfirmation">Are you sure you want to hide this account?</string>
   <string name="personaDetails_hideThisPersona">Hide This Persona</string>
