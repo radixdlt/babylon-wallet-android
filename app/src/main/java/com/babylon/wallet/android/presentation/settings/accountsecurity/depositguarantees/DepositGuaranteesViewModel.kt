@@ -90,7 +90,7 @@ class DepositGuaranteesViewModel @Inject constructor(
     ) : UiState
 
     companion object {
-        private val DEPOSIT_CHANGE_THRESHOLD = BigDecimal("0.001")
+        private val DEPOSIT_CHANGE_THRESHOLD = BigDecimal("0.01")
         private val HUNDRED = BigDecimal("100")
     }
 }
