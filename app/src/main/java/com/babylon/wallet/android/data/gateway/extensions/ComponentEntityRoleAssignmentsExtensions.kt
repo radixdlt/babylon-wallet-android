@@ -74,6 +74,7 @@ fun ComponentEntityRoleAssignments.assetBehaviours(): AssetBehaviours {
             behaviors = setOf(AssetBehaviour.SUPPLY_INCREASABLE, AssetBehaviour.SUPPLY_DECREASABLE),
             with = AssetBehaviour.SUPPLY_FLEXIBLE
         )
+        .sorted()
         .toSet()
 }
 
