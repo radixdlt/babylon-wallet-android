@@ -81,6 +81,7 @@ import com.babylon.wallet.android.presentation.ui.composables.AccountCardWithSta
 import com.babylon.wallet.android.presentation.ui.composables.AddLedgerDeviceScreen
 import com.babylon.wallet.android.presentation.ui.composables.AddLinkConnectorScreen
 import com.babylon.wallet.android.presentation.ui.composables.BackIconType
+import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.InfoLink
 import com.babylon.wallet.android.presentation.ui.composables.LedgerListItem
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
@@ -170,7 +171,8 @@ fun ImportLegacyWalletScreen(
         onCloseSettings = viewModel::onCloseSettings,
         onWordSelected = viewModel::onWordSelected,
         importAllAccounts = viewModel::importAllAccounts,
-        onInvalidConnectionPasswordShown = addLinkConnectorViewModel::onInvalidConnectionPasswordShown
+        onInvalidConnectionPasswordShown = addLinkConnectorViewModel::onInvalidConnectionPasswordShown,
+        seedPhraseValid = state.seedPhraseValid
     )
 }
 
@@ -215,7 +217,8 @@ private fun ImportLegacyWalletContent(
     onCloseSettings: () -> Unit,
     onWordSelected: (Int, String) -> Unit,
     importAllAccounts: () -> Unit,
-    onInvalidConnectionPasswordShown: KFunction0<Unit>
+    onInvalidConnectionPasswordShown: KFunction0<Unit>,
+    seedPhraseValid: Boolean
 ) {
     val focusManager = LocalFocusManager.current
     val cameraPermissionState = rememberPermissionState(permission = Manifest.permission.CAMERA)
@@ -357,7 +360,8 @@ private fun ImportLegacyWalletContent(
                             onImportSoftwareAccounts = onValidateSoftwareAccounts,
                             onFocusedWordIndexChanged = {
                                 focusedWordIndex = it
-                            }
+                            },
+                            seedPhraseValid = seedPhraseValid
                         )
                     }
 
@@ -759,8 +763,29 @@ private fun VerifyWithYourSeedPhrasePage(
     onWordChanged: (Int, String) -> Unit,
     onPassphraseChanged: (String) -> Unit,
     onImportSoftwareAccounts: () -> Unit,
-    onFocusedWordIndexChanged: (Int) -> Unit
+    onFocusedWordIndexChanged: (Int) -> Unit,
+    seedPhraseValid: Boolean
 ) {
+    var showOlympiaSeedPhrasePrompt by remember { mutableStateOf(false) }
+    if (showOlympiaSeedPhrasePrompt) {
+        BasicPromptAlertDialog(
+            finish = { confirmed ->
+                if (confirmed) {
+                    onImportSoftwareAccounts()
+                }
+                showOlympiaSeedPhrasePrompt = false
+            },
+            text = {
+                Text(
+                    text = stringResource(id = R.string.importOlympiaAccounts_verifySeedPhrase_keepSeedPhrasePrompt),
+                    style = RadixTheme.typography.body2Regular,
+                    color = RadixTheme.colors.gray1
+                )
+            },
+            confirmText = stringResource(id = R.string.importOlympiaAccounts_verifySeedPhrase_keepSeedPhrasePromptConfirmation),
+            dismissText = null
+        )
+    }
     SecureScreen()
     Column(
         modifier = modifier
@@ -802,9 +827,12 @@ private fun VerifyWithYourSeedPhrasePage(
         )
         RadixPrimaryButton(
             text = stringResource(R.string.importOlympiaAccounts_importLabel),
-            onClick = onImportSoftwareAccounts,
+            onClick = {
+                showOlympiaSeedPhrasePrompt = true
+            },
             modifier = Modifier.fillMaxWidth(),
-            throttleClicks = true
+            throttleClicks = true,
+            enabled = seedPhraseValid
         )
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
     }
@@ -833,7 +861,8 @@ fun InputSeedPhrasePagePreview() {
             onWordChanged = { _, _ -> },
             onPassphraseChanged = {},
             onImportSoftwareAccounts = {},
-            onFocusedWordIndexChanged = {}
+            onFocusedWordIndexChanged = {},
+            seedPhraseValid = false
         )
     }
 }
