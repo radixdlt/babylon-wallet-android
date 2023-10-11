@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.presentation.accountpreference
+package com.babylon.wallet.android.presentation.accountsettings
 
 import androidx.lifecycle.SavedStateHandle
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
@@ -8,7 +8,7 @@ import com.babylon.wallet.android.domain.usecases.FaucetState
 import com.babylon.wallet.android.domain.usecases.GetFreeXrdUseCase
 import com.babylon.wallet.android.presentation.StateViewModelTest
 import com.babylon.wallet.android.presentation.account.settings.ARG_ACCOUNT_SETTINGS_ADDRESS
-import com.babylon.wallet.android.presentation.account.settings.AccountSettingsViewModel
+import com.babylon.wallet.android.presentation.account.settings.devsettings.DevAccountSettingsViewModel
 import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
 import io.mockk.Runs
@@ -28,41 +28,35 @@ import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Test
 import rdx.works.profile.data.model.currentNetwork
-import rdx.works.profile.domain.ChangeEntityVisibilityUseCase
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.account.AddAuthSigningFactorInstanceUseCase
-import rdx.works.profile.domain.account.RenameAccountDisplayNameUseCase
 
 @OptIn(ExperimentalCoroutinesApi::class)
-internal class AccountSettingsViewModelTest : StateViewModelTest<AccountSettingsViewModel>() {
+internal class DevAccountSettingsViewModelTest : StateViewModelTest<DevAccountSettingsViewModel>() {
 
     private val getFreeXrdUseCase = mockk<GetFreeXrdUseCase>()
     private val savedStateHandle = mockk<SavedStateHandle>()
     private val getProfileUseCase = mockk<GetProfileUseCase>()
-    private val renameAccountDisplayNameUseCase = mockk<RenameAccountDisplayNameUseCase>()
     private val incomingRequestRepository = mockk<IncomingRequestRepository>()
     private val addAuthSigningFactorInstanceUseCase = mockk<AddAuthSigningFactorInstanceUseCase>()
     private val transactionStatusClient = mockk<TransactionStatusClient>()
-    private val changeEntityVisibilityUseCase = mockk<ChangeEntityVisibilityUseCase>()
     private val rolaClient = mockk<ROLAClient>()
     private val eventBus = mockk<AppEventBus>()
     private val sampleTxId = "txId1"
     private val sampleProfile = sampleDataProvider.sampleProfile()
     private val sampleAddress = sampleProfile.currentNetwork.accounts.first().address
 
-    override fun initVM(): AccountSettingsViewModel {
-        return AccountSettingsViewModel(
+    override fun initVM(): DevAccountSettingsViewModel {
+        return DevAccountSettingsViewModel(
             getFreeXrdUseCase,
             getProfileUseCase,
-            renameAccountDisplayNameUseCase,
             rolaClient,
             incomingRequestRepository,
             addAuthSigningFactorInstanceUseCase,
             transactionStatusClient,
             TestScope(),
             savedStateHandle,
-            eventBus,
-            changeEntityVisibilityUseCase
+            eventBus
         )
     }
 

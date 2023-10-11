@@ -26,7 +26,7 @@ sealed interface AccountSettingItem {
     data object ShowAssetsWithTags : AccountSettingItem
     data object AccountSecurity : AccountSettingItem
     data object ThirdPartyDeposits : AccountSettingItem
-    data object DevPreferences : AccountSettingItem
+    data object DevSettings : AccountSettingItem
 
     @StringRes
     fun titleRes(): Int {
@@ -36,7 +36,7 @@ sealed interface AccountSettingItem {
             AccountSecurity -> R.string.accountSettings_accountSecurity
             ShowAssetsWithTags -> R.string.accountSettings_showAssets
             ThirdPartyDeposits -> R.string.accountSettings_thirdPartyDeposits
-            DevPreferences -> R.string.accountSettings_devPreferences
+            DevSettings -> R.string.accountSettings_devPreferences
         }
     }
 
@@ -48,7 +48,7 @@ sealed interface AccountSettingItem {
             AccountSecurity -> R.string.accountSettings_accountSecuritySubtitle
             ShowAssetsWithTags -> R.string.accountSettings_showAssetsSubtitle
             ThirdPartyDeposits -> R.string.accountSettings_thirdPartyDeposits
-            DevPreferences -> R.string.accountSettings_devPreferences
+            DevSettings -> R.string.accountSettings_devPreferences
         }
     }
 
@@ -60,7 +60,7 @@ sealed interface AccountSettingItem {
             AccountSecurity -> com.babylon.wallet.android.designsystem.R.drawable.ic_security
             ShowAssetsWithTags -> com.babylon.wallet.android.designsystem.R.drawable.ic_tags
             ThirdPartyDeposits -> com.babylon.wallet.android.designsystem.R.drawable.ic_deposits
-            DevPreferences -> com.babylon.wallet.android.designsystem.R.drawable.ic_app_settings
+            DevSettings -> com.babylon.wallet.android.designsystem.R.drawable.ic_app_settings
         }
     }
 }

@@ -26,6 +26,7 @@ import rdx.works.profile.di.ProfileSerializer
 import rdx.works.profile.di.RelaxedSerializer
 import rdx.works.profile.di.coroutines.ApplicationScope
 import rdx.works.profile.di.coroutines.IoDispatcher
+import timber.log.Timber
 import javax.inject.Inject
 
 interface ProfileRepository {
@@ -122,6 +123,7 @@ class ProfileRepositoryImpl @Inject constructor(
 
     @Suppress("SwallowedException")
     override fun deriveProfileState(content: String): ProfileState {
+        Timber.d("Profile: $content")
         val snapshotRelaxed = try {
             relaxedJson.decodeFromString<ProfileSnapshotRelaxed>(content)
         } catch (exception: IllegalArgumentException) {

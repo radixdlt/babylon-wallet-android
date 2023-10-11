@@ -707,7 +707,7 @@ fun Profile.hideAccount(address: String): Profile {
                         account.copy(flags = (account.flags + EntityFlag.DeletedByUser).distinct())
                     }
                 ),
-                authorizedDapps = updatedAuthorizedDapps
+                authorizedDapps = updatedAuthorizedDapps.filter { it.referencesToAuthorizedPersonas.isNotEmpty() }
             )
         })
     )

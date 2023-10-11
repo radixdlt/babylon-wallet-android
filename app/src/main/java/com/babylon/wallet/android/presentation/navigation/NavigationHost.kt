@@ -17,6 +17,7 @@ import com.babylon.wallet.android.presentation.account.createaccount.createAccou
 import com.babylon.wallet.android.presentation.account.createaccount.withledger.createAccountWithLedger
 import com.babylon.wallet.android.presentation.account.settings.AccountSettingItem
 import com.babylon.wallet.android.presentation.account.settings.accountSettings
+import com.babylon.wallet.android.presentation.account.settings.devsettings.accountDevSettings
 import com.babylon.wallet.android.presentation.account.settings.specificassets.specificAssets
 import com.babylon.wallet.android.presentation.account.settings.specificdepositor.specificDepositor
 import com.babylon.wallet.android.presentation.account.settings.thirdpartydeposits.accountThirdPartyDeposits
@@ -253,7 +254,9 @@ fun NavigationHost(
                     AccountSettingItem.ThirdPartyDeposits -> {
                         navController.accountThirdPartyDeposits(accountAddress)
                     }
-
+                    AccountSettingItem.DevSettings -> {
+                        navController.accountDevSettings(accountAddress)
+                    }
                     else -> {}
                 }
             },
@@ -261,6 +264,9 @@ fun NavigationHost(
                 navController.popBackStack(MAIN_ROUTE, inclusive = false)
             }
         )
+        accountDevSettings(onBackClick = {
+            navController.popBackStack()
+        })
         accountThirdPartyDeposits(
             navController = navController,
             onBackClick = {
