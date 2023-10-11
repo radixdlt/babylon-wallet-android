@@ -773,7 +773,4 @@ Only the **current configuration** of your wallet is backed up with each manual 
   <string name="depositGuarantees_text">Set the guaranteed minimum deposit to be applied whenever a deposit in a transaction can only be estimated.
 
 You can always change the guarantee from this default in each transaction.</string>
-
-  <string name="importOlympiaAccounts_verifySeedPhrase_keepSeedPhrasePrompt">Do not throw away this seed phrase! You will still need it if you need to recover access to your Olympia accounts in the future.</string>
-  <string name="importOlympiaAccounts_verifySeedPhrase_keepSeedPhrasePromptConfirmation">I Understand</string>
 </resources>
