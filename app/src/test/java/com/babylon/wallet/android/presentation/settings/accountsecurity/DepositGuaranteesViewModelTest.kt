@@ -48,7 +48,6 @@ class DepositGuaranteesViewModelTest : StateViewModelTest<DepositGuaranteesViewM
             val item = expectMostRecentItem()
             assert(item.isDepositInputValid)
             assert(item.depositGuarantee == "150")
-            assert(item.depositGuaranteeDouble == 1.5)
         }
     }
 
@@ -66,7 +65,6 @@ class DepositGuaranteesViewModelTest : StateViewModelTest<DepositGuaranteesViewM
         val state = vm.state.first()
         assert(state.isDepositInputValid)
         assert(state.depositGuarantee == "150.1")
-        assert(state.depositGuaranteeDouble == 1.501)
         coVerify(exactly = 1) { changeDefaultDepositGuaranteeUseCase.invoke(1.501) }
     }
 
@@ -84,7 +82,6 @@ class DepositGuaranteesViewModelTest : StateViewModelTest<DepositGuaranteesViewM
         val state = vm.state.first()
         assert(state.isDepositInputValid)
         assert(state.depositGuarantee == "149.9")
-        assert(state.depositGuaranteeDouble == 1.499)
         coVerify(exactly = 1) { changeDefaultDepositGuaranteeUseCase.invoke(1.499) }
     }
 
@@ -105,7 +102,6 @@ class DepositGuaranteesViewModelTest : StateViewModelTest<DepositGuaranteesViewM
         val state = vm.state.first()
         assert(state.isDepositInputValid)
         assert(state.depositGuarantee == "200")
-        assert(state.depositGuaranteeDouble == 2.0)
         coVerify(exactly = 1) { changeDefaultDepositGuaranteeUseCase.invoke(2.0) }
     }
 
@@ -127,7 +123,27 @@ class DepositGuaranteesViewModelTest : StateViewModelTest<DepositGuaranteesViewM
         val state = vm.state.first()
         assert(!state.isDepositInputValid)
         assert(state.depositGuarantee == ".")
-        assert(state.depositGuaranteeDouble == null)
         coVerify(exactly = 0) { changeDefaultDepositGuaranteeUseCase.invoke(any()) }
+    }
+
+    @Test
+    fun `when longer input is entered, do not round number and save it as is`() = runTest {
+        // given
+        coEvery { changeDefaultDepositGuaranteeUseCase.invoke(any()) } returns Unit
+        coEvery { getProfileUseCase() } returns flowOf(
+            profile(transaction = Transaction(defaultDepositGuarantee = 2.0))
+        )
+        val vm = vm.value
+        advanceUntilIdle()
+
+        // when
+        vm.onDepositGuaranteeChanged("99.9999")
+        advanceUntilIdle()
+
+        // then
+        val state = vm.state.first()
+        assert(state.isDepositInputValid)
+        assert(state.depositGuarantee == "99.9999")
+        coVerify(exactly = 1) { changeDefaultDepositGuaranteeUseCase.invoke(any()) }
     }
 }
