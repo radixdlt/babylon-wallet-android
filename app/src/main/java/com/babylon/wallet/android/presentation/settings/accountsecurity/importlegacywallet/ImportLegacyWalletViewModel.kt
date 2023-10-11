@@ -115,7 +115,8 @@ class ImportLegacyWalletViewModel @Inject constructor(
                     uiState.copy(
                         bip39Passphrase = delegateState.bip39Passphrase,
                         seedPhraseWords = delegateState.seedPhraseWords,
-                        wordAutocompleteCandidates = delegateState.wordAutocompleteCandidates
+                        wordAutocompleteCandidates = delegateState.wordAutocompleteCandidates,
+                        seedPhraseValid = delegateState.seedPhraseValid
                     )
                 }
             }
@@ -528,7 +529,8 @@ data class ImportLegacyWalletUiState(
     val shouldShowAddLinkConnectorScreen: Boolean = false,
     val shouldShowAddLedgerDeviceScreen: Boolean = false,
     var existingOlympiaFactorSourceId: FactorSourceID.FromHash? = null,
-    val isLinkConnectionEstablished: Boolean = false
+    val isLinkConnectionEstablished: Boolean = false,
+    val seedPhraseValid: Boolean = false
 ) : UiState {
 
     fun mnemonicWithPassphrase(): MnemonicWithPassphrase {
