@@ -23,6 +23,7 @@ class BackupProfileToCloudUseCase @Inject constructor(
             writeEntityHeader(tag, len)
             writeEntityData(byteArray, len)
             preferencesManager.updateLastBackupInstant(InstantGenerator())
+            backupProfileRepository.saveTemporaryRestoringSnapshot(snapshot, BackupType.Cloud)
         }
 
         return Result.success(Unit)
