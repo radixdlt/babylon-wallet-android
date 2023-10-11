@@ -64,8 +64,8 @@ class DepositGuaranteesViewModelTest : StateViewModelTest<DepositGuaranteesViewM
         // then
         val state = vm.state.first()
         assert(state.isDepositInputValid)
-        assert(state.depositGuarantee == "150.1")
-        coVerify(exactly = 1) { changeDefaultDepositGuaranteeUseCase.invoke(1.501) }
+        assert(state.depositGuarantee == "151")
+        coVerify(exactly = 1) { changeDefaultDepositGuaranteeUseCase.invoke(1.51) }
     }
 
     @Test
@@ -81,8 +81,8 @@ class DepositGuaranteesViewModelTest : StateViewModelTest<DepositGuaranteesViewM
         // then
         val state = vm.state.first()
         assert(state.isDepositInputValid)
-        assert(state.depositGuarantee == "149.9")
-        coVerify(exactly = 1) { changeDefaultDepositGuaranteeUseCase.invoke(1.499) }
+        assert(state.depositGuarantee == "149")
+        coVerify(exactly = 1) { changeDefaultDepositGuaranteeUseCase.invoke(1.49) }
     }
 
     @Test
