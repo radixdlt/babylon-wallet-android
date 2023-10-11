@@ -143,6 +143,10 @@
   <string name="accountSettings_behaviors_freezableByAnyone">Anyone can freeze this asset in place.</string>
   <string name="accountSettings_behaviors_nftDataChangeable">Data that is set on these NFTs can be changed.</string>
   <string name="accountSettings_behaviors_nftDataChangeableByAnyone">Anyone can change data that is set on these NFTs.</string>
+  <string name="accountSettings_developmentHeading">Set development preferences</string>
+  <string name="accountSettings_devPreferences">Dev Preferences</string>
+  <string name="accountSettings_hideThisAccount">Hide This Account</string>
+  <string name="accountSettings_hideAccountConfirmation">Are you sure you want to hide this account?</string>
   <string name="settings_title">Settings</string>
   <string name="settings_linkedConnectors">Linked Connectors</string>
   <string name="settings_gateways">Gateways</string>
@@ -678,6 +682,16 @@
   <string name="appSettings_resetWalletDialog_resetButtonTitle">Reset Wallet</string>
   <string name="appSettings_resetWalletDialog_resetAndDeleteBackupButtonTitle">Reset and Delete iCloud Backup</string>
   <string name="appSettings_resetWalletDialog_message">WARNING. This will clear all contents of your Wallet. If you have no backup, you will lose access to your Accounts and Personas permanently.</string>
+  <string name="appSettings_entityHiding_title">Account &amp; Persona Hiding</string>
+  <string name="appSettings_entityHiding_subtitle">Manage hiding</string>
+  <string name="appSettings_entityHiding_info">Accounts and Personas you have created can be hidden in your Radix Wallet, acting as if “deleted”.</string>
+  <string name="appSettings_entityHiding_hiddenPersona">%d Persona currently hidden</string>
+  <string name="appSettings_entityHiding_hiddenPersonas">%d Personas currently hidden</string>
+  <string name="appSettings_entityHiding_hiddenAccount">%d Account currently hidden</string>
+  <string name="appSettings_entityHiding_hiddenAccounts">%d Accounts currently hidden</string>
+  <string name="appSettings_entityHiding_unhideAllSection">Unhide Accounts &amp; Personas</string>
+  <string name="appSettings_entityHiding_unhideAllButton">Unhide All</string>
+  <string name="appSettings_entityHiding_unhideAllConfirmation">Are you sure you wish to unhide all Accounts and Personas? This cannot be undone.</string>
   <string name="addLedgerDevice_alreadyAddedAlert_title">Ledger Already Added</string>
   <string name="addLedgerDevice_alreadyAddedAlert_message">You have already added this Ledger as: %s</string>
   <string name="addLedgerDevice_addDevice_title">Add Ledger Device</string>
