@@ -37,7 +37,11 @@ class ProfileSnapshotBackupHelper(context: Context) : BackupHelper {
         log("Backup started")
 
         runBlocking {
-            backupProfileToCloudUseCase(data, ENTITY_HEADER)
+            backupProfileToCloudUseCase(data, ENTITY_HEADER).onSuccess {
+                log("Backup successful")
+            }.onFailure {
+                log("Backup failed $it")
+            }
         }
 
         FileOutputStream(newState.fileDescriptor).also {

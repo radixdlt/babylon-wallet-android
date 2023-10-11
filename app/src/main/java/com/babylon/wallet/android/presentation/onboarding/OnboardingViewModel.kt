@@ -8,21 +8,17 @@ import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
-import rdx.works.profile.domain.backup.BackupType
-import rdx.works.profile.domain.backup.DiscardTemporaryRestoredFileForBackupUseCase
 import javax.inject.Inject
 
 @HiltViewModel
-class OnboardingViewModel @Inject constructor(
-    private val discardTemporaryRestoredFileForBackupUseCase: DiscardTemporaryRestoredFileForBackupUseCase
-) : StateViewModel<OnboardingViewModel.OnBoardingUiState>(),
+class OnboardingViewModel @Inject constructor() :
+    StateViewModel<OnboardingViewModel.OnBoardingUiState>(),
     OneOffEventHandler<OnboardingViewModel.OnBoardingEvent> by OneOffEventHandlerImpl() {
 
     override fun initialState(): OnBoardingUiState = OnBoardingUiState()
 
     fun onCreateNewWalletClick() {
         viewModelScope.launch {
-            discardTemporaryRestoredFileForBackupUseCase(BackupType.Cloud)
             sendEvent(OnBoardingEvent.CreateNewWallet)
         }
     }

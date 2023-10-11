@@ -46,18 +46,17 @@ class AppSettingsViewModel @Inject constructor(
         viewModelScope.launch {
             getBackupStateUseCase().collect { backupState ->
                 _state.update { settingsUiState ->
-                    val settingsList = settingsUiState.settings.toMutableList()
-                    if (settingsList.any { it is SettingsItem.AppSettingsItem.Backups }) {
-                        settingsList.mapWhen(
+                    val settingsList = if (settingsUiState.settings.any { it is SettingsItem.AppSettingsItem.Backups }) {
+                        settingsUiState.settings.mapWhen(
                             predicate = { it is SettingsItem.AppSettingsItem.Backups },
                             mutation = { SettingsItem.AppSettingsItem.Backups(backupState = backupState) }
                         )
                     } else {
-                        settingsList.add(2, SettingsItem.AppSettingsItem.Backups(backupState))
+                        settingsUiState.settings.toMutableList().apply {
+                            add(2, SettingsItem.AppSettingsItem.Backups(backupState))
+                        }
                     }
-                    settingsUiState.copy(
-                        settings = settingsList.toPersistentSet()
-                    )
+                    settingsUiState.copy(settings = settingsList.toPersistentSet())
                 }
             }
         }

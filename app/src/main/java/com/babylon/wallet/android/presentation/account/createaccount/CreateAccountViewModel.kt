@@ -26,6 +26,8 @@ import rdx.works.profile.domain.GetProfileStateUseCase
 import rdx.works.profile.domain.account.CreateAccountWithDeviceFactorSourceUseCase
 import rdx.works.profile.domain.account.CreateAccountWithLedgerFactorSourceUseCase
 import rdx.works.profile.domain.account.SwitchNetworkUseCase
+import rdx.works.profile.domain.backup.BackupType
+import rdx.works.profile.domain.backup.DiscardTemporaryRestoredFileForBackupUseCase
 import rdx.works.profile.domain.isInitialized
 import javax.inject.Inject
 
@@ -38,6 +40,7 @@ class CreateAccountViewModel @Inject constructor(
     private val deleteProfileUseCase: DeleteProfileUseCase,
     private val createAccountWithDeviceFactorSourceUseCase: CreateAccountWithDeviceFactorSourceUseCase,
     private val createAccountWithLedgerFactorSourceUseCase: CreateAccountWithLedgerFactorSourceUseCase,
+    private val discardTemporaryRestoredFileForBackupUseCase: DiscardTemporaryRestoredFileForBackupUseCase,
     private val switchNetworkUseCase: SwitchNetworkUseCase,
     private val appEventBus: AppEventBus
 ) : StateViewModel<CreateAccountViewModel.CreateAccountState>(),
@@ -120,6 +123,10 @@ class CreateAccountViewModel @Inject constructor(
         viewModelScope.launch {
             if (!getProfileStateUseCase.isInitialized()) {
                 generateProfileUseCase()
+                // Since we choose to create a new profile, this is the time
+                // we discard the data copied from the cloud backup, since they represent
+                // a previous instance.
+                discardTemporaryRestoredFileForBackupUseCase(BackupType.Cloud)
             }
 
             if (state.value.useLedgerSelected) {
