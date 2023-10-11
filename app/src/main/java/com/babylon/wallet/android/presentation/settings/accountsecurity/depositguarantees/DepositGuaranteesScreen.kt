@@ -176,8 +176,7 @@ fun DepositGuaranteesContentPreview() {
         DepositGuaranteesContent(
             state = DepositGuaranteesViewModel.State(
                 isDepositInputValid = true,
-                depositGuarantee = "100",
-                depositGuaranteeBigDecimal = null
+                depositGuarantee = "100"
             ),
             onDepositGuaranteeChanged = {},
             onDepositGuaranteeIncreased = {},

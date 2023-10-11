@@ -17,7 +17,6 @@ import org.junit.Test
 import rdx.works.profile.data.model.apppreferences.Transaction
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.depositguarantees.ChangeDefaultDepositGuaranteeUseCase
-import java.math.BigDecimal
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class DepositGuaranteesViewModelTest : StateViewModelTest<DepositGuaranteesViewModel>() {
@@ -49,7 +48,6 @@ class DepositGuaranteesViewModelTest : StateViewModelTest<DepositGuaranteesViewM
             val item = expectMostRecentItem()
             assert(item.isDepositInputValid)
             assert(item.depositGuarantee == "150")
-            assert(item.depositGuaranteeBigDecimal == BigDecimal("1.5"))
         }
     }
 
@@ -67,7 +65,6 @@ class DepositGuaranteesViewModelTest : StateViewModelTest<DepositGuaranteesViewM
         val state = vm.state.first()
         assert(state.isDepositInputValid)
         assert(state.depositGuarantee == "150.1")
-        assert(state.depositGuaranteeBigDecimal == BigDecimal("1.501"))
         coVerify(exactly = 1) { changeDefaultDepositGuaranteeUseCase.invoke(1.501) }
     }
 
@@ -85,7 +82,6 @@ class DepositGuaranteesViewModelTest : StateViewModelTest<DepositGuaranteesViewM
         val state = vm.state.first()
         assert(state.isDepositInputValid)
         assert(state.depositGuarantee == "149.9")
-        assert(state.depositGuaranteeBigDecimal == BigDecimal("1.499"))
         coVerify(exactly = 1) { changeDefaultDepositGuaranteeUseCase.invoke(1.499) }
     }
 
@@ -106,7 +102,6 @@ class DepositGuaranteesViewModelTest : StateViewModelTest<DepositGuaranteesViewM
         val state = vm.state.first()
         assert(state.isDepositInputValid)
         assert(state.depositGuarantee == "200")
-        assert(state.depositGuaranteeBigDecimal == BigDecimal("2.0"))
         coVerify(exactly = 1) { changeDefaultDepositGuaranteeUseCase.invoke(2.0) }
     }
 
@@ -128,7 +123,6 @@ class DepositGuaranteesViewModelTest : StateViewModelTest<DepositGuaranteesViewM
         val state = vm.state.first()
         assert(!state.isDepositInputValid)
         assert(state.depositGuarantee == ".")
-        assert(state.depositGuaranteeBigDecimal == null)
         coVerify(exactly = 0) { changeDefaultDepositGuaranteeUseCase.invoke(any()) }
     }
 
@@ -150,7 +144,6 @@ class DepositGuaranteesViewModelTest : StateViewModelTest<DepositGuaranteesViewM
         val state = vm.state.first()
         assert(state.isDepositInputValid)
         assert(state.depositGuarantee == "99.9999")
-        assert(state.depositGuaranteeBigDecimal == BigDecimal("0.999999"))
         coVerify(exactly = 1) { changeDefaultDepositGuaranteeUseCase.invoke(any()) }
     }
 }

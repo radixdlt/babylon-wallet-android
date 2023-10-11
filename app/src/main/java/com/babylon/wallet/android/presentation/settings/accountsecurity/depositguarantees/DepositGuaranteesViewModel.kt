@@ -33,8 +33,7 @@ class DepositGuaranteesViewModel @Inject constructor(
         _state.update { state ->
             state.copy(
                 isDepositInputValid = updatedDepositGuarantee != null,
-                depositGuarantee = depositGuarantee,
-                depositGuaranteeBigDecimal = updatedDepositGuarantee
+                depositGuarantee = depositGuarantee
             )
         }
 
@@ -73,8 +72,7 @@ class DepositGuaranteesViewModel @Inject constructor(
             _state.update { state ->
                 state.copy(
                     isDepositInputValid = true,
-                    depositGuarantee = depositGuarantee.multiply(HUNDRED).stripTrailingZeros().toPlainString(),
-                    depositGuaranteeBigDecimal = depositGuarantee
+                    depositGuarantee = depositGuarantee.multiply(HUNDRED).stripTrailingZeros().toPlainString()
                 )
             }
         } else {
@@ -88,8 +86,7 @@ class DepositGuaranteesViewModel @Inject constructor(
 
     data class State(
         val isDepositInputValid: Boolean = true,
-        val depositGuarantee: String? = null,
-        val depositGuaranteeBigDecimal: BigDecimal? = null
+        val depositGuarantee: String? = null
     ) : UiState
 
     companion object {
