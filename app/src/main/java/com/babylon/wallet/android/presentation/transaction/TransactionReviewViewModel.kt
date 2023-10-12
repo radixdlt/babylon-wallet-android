@@ -545,8 +545,8 @@ sealed interface AccountWithPredictedGuarantee {
         }
     }
 
-    fun isTheSameGuaranteeItem(with: AccountWithPredictedGuarantee): Boolean = address == with.address
-            && transferableAmount.resourceAddress == with.transferableAmount.resourceAddress
+    fun isTheSameGuaranteeItem(with: AccountWithPredictedGuarantee): Boolean = address == with.address &&
+        transferableAmount.resourceAddress == with.transferableAmount.resourceAddress
 
     data class Owned(
         val account: Network.Account,
