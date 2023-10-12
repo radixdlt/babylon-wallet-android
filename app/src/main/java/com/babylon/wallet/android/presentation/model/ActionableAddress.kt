@@ -8,7 +8,7 @@ import rdx.works.profile.derivation.model.NetworkId
 
 data class ActionableAddress(
     val address: String,
-    val truncateAddressForDisplay: Boolean = false
+    val truncateAddressForDisplay: Boolean = true
 ) {
 
     val type: Type? = Type.from(address)
