@@ -8,8 +8,8 @@ import com.babylon.wallet.android.data.gateway.generated.models.TransactionPrevi
 import com.babylon.wallet.android.data.gateway.generated.models.TransactionReceipt
 import com.babylon.wallet.android.data.repository.TransactionStatusClient
 import com.babylon.wallet.android.data.transaction.DappRequestException
+import com.babylon.wallet.android.data.transaction.DappRequestFailure
 import com.babylon.wallet.android.data.transaction.NotaryAndSigners
-import com.babylon.wallet.android.data.transaction.TransactionApprovalFailure
 import com.babylon.wallet.android.data.transaction.TransactionClient
 import com.babylon.wallet.android.data.transaction.model.FeePayerSearchResult
 import com.babylon.wallet.android.domain.SampleDataProvider
@@ -269,7 +269,7 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
     fun `transaction approval sign and submit error`() = runTest {
         coEvery { transactionClient.signAndSubmitTransaction(any(), any(), any(), any()) } returns Result.failure(
             DappRequestException(
-                TransactionApprovalFailure.SubmitNotarizedTransaction
+                DappRequestFailure.TransactionApprovalFailure.SubmitNotarizedTransaction
             )
         )
         val vm = vm.value
