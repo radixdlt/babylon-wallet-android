@@ -71,7 +71,7 @@ class TransactionGuaranteesDelegate(
             state.copy(
                 sheetState = sheet.copy(
                     accountsWithPredictedGuarantees = sheet.accountsWithPredictedGuarantees.mapWhen(
-                        predicate = { it.address == account.address },
+                        predicate = { it.isTheSameGuaranteeItem(with = account) },
                         mutation = { it.change(value) }
                     )
                 )
@@ -86,7 +86,7 @@ class TransactionGuaranteesDelegate(
             state.copy(
                 sheetState = sheet.copy(
                     accountsWithPredictedGuarantees = sheet.accountsWithPredictedGuarantees.mapWhen(
-                        predicate = { it.address == account.address },
+                        predicate = { it.isTheSameGuaranteeItem(with = account) },
                         mutation = { it.increase() }
                     )
                 )
@@ -101,7 +101,7 @@ class TransactionGuaranteesDelegate(
             state.copy(
                 sheetState = sheet.copy(
                     accountsWithPredictedGuarantees = sheet.accountsWithPredictedGuarantees.mapWhen(
-                        predicate = { it.address == account.address },
+                        predicate = { it.isTheSameGuaranteeItem(with = account) },
                         mutation = { it.decrease() }
                     )
                 )
