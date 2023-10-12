@@ -13,6 +13,7 @@ import rdx.works.profile.data.repository.MnemonicRepository
 import rdx.works.profile.data.repository.ProfileRepository
 import rdx.works.profile.data.repository.profile
 import rdx.works.profile.data.utils.updateLastUsed
+import rdx.works.profile.domain.NoMnemonicException
 import javax.inject.Inject
 
 class SignWithDeviceFactorSourceUseCase @Inject constructor(
@@ -25,7 +26,7 @@ class SignWithDeviceFactorSourceUseCase @Inject constructor(
         signers: List<Entity>,
         dataToSign: ByteArray,
         signingPurpose: SigningPurpose = SigningPurpose.SignTransaction
-    ): List<SignatureWithPublicKey> {
+    ): Result<List<SignatureWithPublicKey>> {
         val result = mutableListOf<SignatureWithPublicKey>()
 
         signers.forEach { signer ->
@@ -37,6 +38,8 @@ class SignWithDeviceFactorSourceUseCase @Inject constructor(
                                 ?: securityState.unsecuredEntityControl.transactionSigning
                         SigningPurpose.SignTransaction -> securityState.unsecuredEntityControl.transactionSigning
                     }
+                    val mnemonicExist = mnemonicRepository.mnemonicExist(deviceFactorSource.id)
+                    if (mnemonicExist.not()) return Result.failure(NoMnemonicException)
                     val mnemonic = requireNotNull(mnemonicRepository.readMnemonic(deviceFactorSource.id).getOrNull())
                     val hierarchicalDeterministicVirtualSource = factorInstance.badge
                         as? FactorInstance.Badge.VirtualSource.HierarchicalDeterministic ?: return@forEach
@@ -51,6 +54,6 @@ class SignWithDeviceFactorSourceUseCase @Inject constructor(
                 }
             }
         }
-        return result
+        return Result.success(result)
     }
 }

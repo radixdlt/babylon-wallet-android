@@ -162,12 +162,21 @@ class TransactionSubmitDelegate(
                 )
             }
         }.onFailure { error ->
-            val exception = error as? DappRequestException
-            val cancelled = exception?.e is SignatureCancelledException
-            val failedToCollectLedgerSignature = (exception?.e as? DappRequestException)
-                ?.failure is DappRequestFailure.LedgerCommunicationFailure
-            if (cancelled || failedToCollectLedgerSignature) {
-                state.update { it.copy(isSubmitting = false) }
+            val dappRequestException = error as? DappRequestException
+            val cancelled = dappRequestException?.e is SignatureCancelledException
+            val failedToSign = dappRequestException?.failure is DappRequestFailure.TransactionApprovalFailure.SignCompiledTransactionIntent
+            val failedToCollectLedgerSignature = dappRequestException?.failure is DappRequestFailure.LedgerCommunicationFailure
+            if (cancelled || failedToCollectLedgerSignature || failedToSign) {
+                state.update {
+                    it.copy(
+                        isSubmitting = false,
+                        error = if (failedToSign) {
+                            UiMessage.ErrorMessage.from(dappRequestException?.failure)
+                        } else {
+                            it.error
+                        }
+                    )
+                }
                 approvalJob = null
                 return
             }

@@ -9,3 +9,4 @@ sealed class ProfileException : Exception() {
 
 object InvalidSnapshotException : java.lang.Exception("The snapshot is invalid")
 object InvalidPasswordException : java.lang.Exception("The password is invalid")
+object NoMnemonicException : java.lang.Exception("Please restore your Seed Phrase and try again")

@@ -30,7 +30,7 @@ class CollectSignersSignaturesUseCase @Inject constructor(
     private val _interactionState = MutableStateFlow<InteractionState?>(null)
     val interactionState: Flow<InteractionState?> = _interactionState.asSharedFlow()
 
-    @Suppress("ReturnCount")
+    @Suppress("ReturnCount", "LongMethod")
     suspend operator fun invoke(
         signers: List<Entity>,
         signRequest: SignRequest,
@@ -54,15 +54,19 @@ class CollectSignersSignaturesUseCase @Inject constructor(
                         _interactionState.update { null }
                         return Result.failure(SignatureCancelledException("Failed to collect device factor source signatures"))
                     }
-                    val signatures = signWithDeviceFactorSourceUseCase(
+                    signWithDeviceFactorSourceUseCase(
                         deviceFactorSource = factorSource,
                         signers = signers,
                         dataToSign = signRequest.hashedDataToSign,
                         signingPurpose = signingPurpose
-                    )
-                    signaturesWithPublicKeys.addAll(signatures)
-                    // _signingState.update { SigningState.Device.Success(factorSource) }
+                    ).onSuccess { signatures ->
+                        signaturesWithPublicKeys.addAll(signatures)
+                    }.onFailure {
+                        _interactionState.update { null }
+                        return Result.failure(it)
+                    }
                 }
+
                 FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET -> {
                     if (!deviceAuthenticated) {
                         deviceAuthenticated = deviceBiometricAuthenticationProvider()
@@ -92,7 +96,11 @@ class CollectSignersSignaturesUseCase @Inject constructor(
                         return Result.failure(error)
                     }
                 }
-                FactorSourceKind.OFF_DEVICE_MNEMONIC -> { /*TODO when we have off device mnemonic*/ }
+
+                FactorSourceKind.OFF_DEVICE_MNEMONIC -> {
+                    /*TODO when we have off device mnemonic*/
+                }
+
                 FactorSourceKind.TRUSTED_CONTACT -> error("trusted contact cannot sign")
             }
         }
