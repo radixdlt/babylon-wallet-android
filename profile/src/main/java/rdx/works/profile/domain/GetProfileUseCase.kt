@@ -129,7 +129,7 @@ val GetProfileUseCase.security
  * P2P Links preferences
  */
 val GetProfileUseCase.p2pLinks
-    get() = invoke().map { it.appPreferences.p2pLinks }.distinctUntilChanged()
+    get() = invoke().map { it.appPreferences.p2pLinks }
 
 /**
  * Default deposit guarantee
