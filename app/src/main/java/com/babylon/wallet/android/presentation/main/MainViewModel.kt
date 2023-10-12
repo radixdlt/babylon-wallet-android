@@ -71,7 +71,6 @@ class MainViewModel @Inject constructor(
             }
         }
         .onCompletion {
-            Timber.d("Peerdroid is terminating")
             terminatePeerdroid()
         }
         .shareIn(
@@ -125,9 +124,8 @@ class MainViewModel @Inject constructor(
         if (encryptionKey != null) {
             when (val result = peerdroidClient.connect(encryptionKey = encryptionKey)) {
                 is Result.Success -> {
-                    Timber.d("Link connection established")
                     if (incomingDappRequestsJob == null) {
-                        Timber.d("Listen for incoming requests from dapps")
+                        Timber.d("\uD83E\uDD16 Listen for incoming requests from dapps")
                         // We must run this only once
                         // otherwise for each new link connection
                         // we create a new job to collect messages from the same stream (messagesFromRemoteClients).
@@ -140,7 +138,7 @@ class MainViewModel @Inject constructor(
                                     val remoteConnectorId = incomingRequest.remoteConnectorId
                                     val requestId = incomingRequest.id
                                     Timber.d(
-                                        "📯 wallet received incoming request from remote connector $remoteConnectorId with id $requestId"
+                                        "\uD83E\uDD16 wallet received incoming request from remote connector $remoteConnectorId with id $requestId"
                                     )
                                     processIncomingRequest(incomingRequest)
                                 }
@@ -159,7 +157,7 @@ class MainViewModel @Inject constructor(
                 }
 
                 is Result.Error -> {
-                    Timber.e("Failed to establish link connection: ${result.message}")
+                    Timber.e("\uD83E\uDD16 Failed to establish link connection: ${result.message}")
                 }
 
                 else -> {}
@@ -208,6 +206,7 @@ class MainViewModel @Inject constructor(
     }
 
     private fun terminatePeerdroid() {
+        Timber.d("\uD83E\uDD16 Peerdroid is terminating")
         incomingDappRequestsJob?.cancel()
         incomingDappRequestsJob = null
         processingDappRequestJob?.cancel()
@@ -216,7 +215,6 @@ class MainViewModel @Inject constructor(
         incomingDappRequestErrorsJob = null
         peerdroidClient.terminate()
         incomingRequestRepository.removeAll()
-        Timber.d("Peerdroid terminated")
     }
 
     fun onInvalidRequestMessageShown() {
