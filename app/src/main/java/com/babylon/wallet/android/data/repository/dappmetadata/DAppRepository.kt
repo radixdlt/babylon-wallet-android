@@ -19,11 +19,11 @@ import com.babylon.wallet.android.data.repository.entity.EntityRepositoryImpl
 import com.babylon.wallet.android.data.repository.execute
 import com.babylon.wallet.android.data.transaction.DappRequestException
 import com.babylon.wallet.android.data.transaction.DappRequestFailure
-import com.babylon.wallet.android.data.transaction.RadixWalletException
 import com.babylon.wallet.android.di.JsonConverterFactory
 import com.babylon.wallet.android.di.SimpleHttpClient
 import com.babylon.wallet.android.di.buildApi
 import com.babylon.wallet.android.di.coroutines.IoDispatcher
+import com.babylon.wallet.android.domain.RadixWalletException
 import com.babylon.wallet.android.domain.common.Result
 import com.babylon.wallet.android.domain.common.asKotlinResult
 import com.babylon.wallet.android.domain.common.map

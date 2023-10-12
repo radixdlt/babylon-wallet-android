@@ -11,6 +11,7 @@ import com.babylon.wallet.android.data.manifest.toPrettyString
 import com.babylon.wallet.android.data.repository.transaction.TransactionRepository
 import com.babylon.wallet.android.data.transaction.model.FeePayerSearchResult
 import com.babylon.wallet.android.data.transaction.model.TransactionApprovalRequest
+import com.babylon.wallet.android.domain.RadixWalletException
 import com.babylon.wallet.android.domain.common.asKotlinResult
 import com.babylon.wallet.android.domain.common.value
 import com.babylon.wallet.android.domain.model.findAccountWithEnoughXRDBalance
@@ -78,7 +79,9 @@ class TransactionClient @Inject constructor(
         val notaryAndSigners = getNotaryAndSigners(
             manifest = manifestWithTransactionFee,
             ephemeralNotaryPrivateKey = request.ephemeralNotaryPrivateKey
-        )
+        ).getOrElse {
+            return Result.failure(it)
+        }
         return buildTransactionHeader(
             networkId = request.networkId.value,
             notaryAndSigners = notaryAndSigners,
@@ -334,25 +337,34 @@ class TransactionClient @Inject constructor(
         }
     }
 
-    suspend fun getSigningEntities(manifest: TransactionManifest): List<Entity> {
+    suspend fun getSigningEntities(manifest: TransactionManifest): Result<List<Entity>> {
         val manifestAccountsRequiringAuth = manifest.accountsRequiringAuth().map { it.addressString() }
         val manifestIdentitiesRequiringAuth = manifest.identitiesRequiringAuth().map { it.addressString() }
+        val requiredEntityAddresses = (manifestAccountsRequiringAuth + manifestIdentitiesRequiringAuth).toSet()
 
-        return getProfileUseCase.accountsOnCurrentNetwork().filter { account ->
+        val signingEntities = getProfileUseCase.accountsOnCurrentNetwork().filter { account ->
             manifestAccountsRequiringAuth.contains(account.address)
         } + getProfileUseCase.personasOnCurrentNetwork().filter { account ->
             manifestIdentitiesRequiringAuth.contains(account.address)
+        }
+        val foundEntityAddresses = signingEntities.map { it.address }
+        return if (foundEntityAddresses.containsAll(requiredEntityAddresses)) {
+            Result.success(signingEntities)
+        } else {
+            Result.failure(RadixWalletException.FailedToCollectSigners)
         }
     }
 
     suspend fun getNotaryAndSigners(
         manifest: TransactionManifest,
         ephemeralNotaryPrivateKey: PrivateKey
-    ): NotaryAndSigners {
-        return NotaryAndSigners(
-            signers = getSigningEntities(manifest),
-            ephemeralNotaryPrivateKey = ephemeralNotaryPrivateKey
-        )
+    ): Result<NotaryAndSigners> {
+        return getSigningEntities(manifest).mapCatching { signingEntities ->
+            NotaryAndSigners(
+                signers = signingEntities,
+                ephemeralNotaryPrivateKey = ephemeralNotaryPrivateKey
+            )
+        }
     }
 
     suspend fun getTransactionPreview(

@@ -88,7 +88,7 @@ fun PersonaDetailScreen(
             },
             text = {
                 Text(
-                    text = stringResource(id = R.string.personaDetails_hidePersonaConfirmation),
+                    text = stringResource(id = R.string.authorizedDapps_personaDetails_hidePersonaConfirmation),
                     style = RadixTheme.typography.body2Regular,
                     color = RadixTheme.colors.gray1
                 )
@@ -305,7 +305,7 @@ private fun PersonaDetailList(
             RedButton(
                 modifier = Modifier
                     .padding(horizontal = dimensions.paddingDefault),
-                text = stringResource(id = R.string.personaDetails_hideThisPersona),
+                text = stringResource(id = R.string.authorizedDapps_personaDetails_hideThisPersona),
                 onClick = onHidePersona
             )
         }

@@ -28,5 +28,4 @@ object SerializerModule {
             }
         }
     }
-
 }

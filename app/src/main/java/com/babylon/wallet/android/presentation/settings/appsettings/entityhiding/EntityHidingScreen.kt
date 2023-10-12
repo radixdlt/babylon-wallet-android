@@ -106,7 +106,11 @@ private fun EntityHidingContent(
                     .fillMaxWidth()
                     .padding(RadixTheme.dimensions.paddingMedium),
                 text = stringResource(
-                    if (hiddenAccounts == 1) R.string.appSettings_entityHiding_hiddenAccount else R.string.appSettings_entityHiding_hiddenAccounts,
+                    if (hiddenAccounts == 1) {
+                        R.string.appSettings_entityHiding_hiddenAccount
+                    } else {
+                        R.string.appSettings_entityHiding_hiddenAccounts
+                    },
                     hiddenAccounts
                 ),
                 style = RadixTheme.typography.body1Header,
@@ -118,7 +122,11 @@ private fun EntityHidingContent(
                     .fillMaxWidth()
                     .padding(RadixTheme.dimensions.paddingMedium),
                 text = stringResource(
-                    if (hiddenAccounts == 1) R.string.appSettings_entityHiding_hiddenPersona else R.string.appSettings_entityHiding_hiddenPersonas,
+                    if (hiddenAccounts == 1) {
+                        R.string.appSettings_entityHiding_hiddenPersona
+                    } else {
+                        R.string.appSettings_entityHiding_hiddenPersonas
+                    },
                     hiddenPersonas
                 ),
                 style = RadixTheme.typography.body1Header,

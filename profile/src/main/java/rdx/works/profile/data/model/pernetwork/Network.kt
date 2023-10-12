@@ -92,6 +92,7 @@ data class Network(
          */
         @SerialName("onLedgerSettings") val onLedgerSettings: OnLedgerSettings,
 
+        @EncodeDefault
         override val flags: List<EntityFlag> = emptyList()
 
     ) : Entity() {
@@ -302,6 +303,7 @@ data class Network(
          */
         @SerialName("securityState") override val securityState: SecurityState,
 
+        @EncodeDefault
         override val flags: List<EntityFlag> = emptyList()
     ) : Entity() {
 
