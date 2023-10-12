@@ -73,7 +73,7 @@ private fun EntityHidingContent(
             },
             text = {
                 Text(
-                    text = stringResource(id = R.string.entityHiding_unhideAllConfirmation),
+                    text = stringResource(id = R.string.appSettings_entityHiding_unhideAllConfirmation),
                     style = RadixTheme.typography.body2Regular,
                     color = RadixTheme.colors.gray1
                 )
@@ -83,7 +83,7 @@ private fun EntityHidingContent(
     }
     Scaffold(modifier = modifier, topBar = {
         RadixCenteredTopAppBar(
-            title = stringResource(R.string.entityHiding_title),
+            title = stringResource(R.string.appSettings_entityHiding_title),
             onBackClick = onBackClick,
             windowInsets = WindowInsets.statusBars
         )
@@ -97,7 +97,7 @@ private fun EntityHidingContent(
             Divider(color = RadixTheme.colors.gray5)
             Text(
                 modifier = Modifier.padding(RadixTheme.dimensions.paddingMedium),
-                text = stringResource(R.string.entityHiding_subtitle),
+                text = stringResource(R.string.appSettings_entityHiding_subtitle),
                 style = RadixTheme.typography.body1Regular,
                 color = RadixTheme.colors.gray2
             )
@@ -106,7 +106,7 @@ private fun EntityHidingContent(
                     .fillMaxWidth()
                     .padding(RadixTheme.dimensions.paddingMedium),
                 text = stringResource(
-                    if (hiddenAccounts == 1) R.string.entityHiding_hiddenAccount else R.string.entityHiding_hiddenAccounts,
+                    if (hiddenAccounts == 1) R.string.appSettings_entityHiding_hiddenAccount else R.string.appSettings_entityHiding_hiddenAccounts,
                     hiddenAccounts
                 ),
                 style = RadixTheme.typography.body1Header,
@@ -118,7 +118,7 @@ private fun EntityHidingContent(
                     .fillMaxWidth()
                     .padding(RadixTheme.dimensions.paddingMedium),
                 text = stringResource(
-                    if (hiddenAccounts == 1) R.string.entityHiding_hiddenPersona else R.string.entityHiding_hiddenPersonas,
+                    if (hiddenAccounts == 1) R.string.appSettings_entityHiding_hiddenPersona else R.string.appSettings_entityHiding_hiddenPersonas,
                     hiddenPersonas
                 ),
                 style = RadixTheme.typography.body1Header,
@@ -127,7 +127,7 @@ private fun EntityHidingContent(
             )
             Text(
                 modifier = Modifier.padding(RadixTheme.dimensions.paddingMedium),
-                text = stringResource(R.string.entityHiding_unhideAllSection),
+                text = stringResource(R.string.appSettings_entityHiding_unhideAllSection),
                 style = RadixTheme.typography.body1Regular,
                 color = RadixTheme.colors.gray2
             )
@@ -140,7 +140,7 @@ private fun EntityHidingContent(
                     modifier = Modifier
                         .align(Alignment.Center)
                         .fillMaxWidth(),
-                    text = stringResource(id = R.string.entityHiding_unhideAllButton),
+                    text = stringResource(id = R.string.appSettings_entityHiding_unhideAllButton),
                     onClick = {
                         showUnhideAllPrompt = true
                     }

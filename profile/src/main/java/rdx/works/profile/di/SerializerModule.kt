@@ -14,10 +14,6 @@ import javax.inject.Qualifier
 @Qualifier
 annotation class ProfileSerializer
 
-@Retention(AnnotationRetention.BINARY)
-@Qualifier
-annotation class RelaxedSerializer
-
 @Module
 @InstallIn(SingletonComponent::class)
 object SerializerModule {
@@ -33,14 +29,4 @@ object SerializerModule {
         }
     }
 
-    @Provides
-    @RelaxedSerializer
-    fun provideRelaxedProfileSerializer(): Json {
-        return Json {
-            ignoreUnknownKeys = true
-            serializersModule = SerializersModule {
-                contextual(Instant::class, InstantSerializer)
-            }
-        }
-    }
 }

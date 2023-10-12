@@ -709,54 +709,54 @@
   <string name="profileBackup_headerTitle">Backing up your wallet ensures that you can restore access to your Accounts, Personas, and wallet settings on a new phone by re-entering your seed phrase(s).
 
 **For security, backups do not contain any seed phrases or private keys. You must write them down separately.**</string>
-    <string name="profileBackup_automaticBackups_title">Automatic Backups (recommended)</string>
-    <string name="profileBackup_manualBackups_title">Manual Backups</string>
-    <string name="profileBackup_manualBackups_subtitle">A manually exported wallet backup file may also be used for recovery, along with your seed phrase(s).
+  <string name="profileBackup_automaticBackups_title">Automatic Backups (recommended)</string>
+  <string name="profileBackup_manualBackups_title">Manual Backups</string>
+  <string name="profileBackup_manualBackups_subtitle">A manually exported wallet backup file may also be used for recovery, along with your seed phrase(s).
 
 Only the **current configuration** of your wallet is backed up with each manual export.</string>
-    <string name="profileBackup_manualBackups_exportButtonTitle">Export Wallet Backup File</string>
-    <string name="profileBackup_manualBackups_encryptBackupDialogTitle">Encrypt this backup with a password?</string>
-    <string name="profileBackup_manualBackups_successMessage">Exported wallet backup file</string>
-    <string name="profileBackup_manualBackups_encryptBackupDialogConfirm">Yes</string>
-    <string name="profileBackup_manualBackups_encryptBackupDialogDeny">No</string>
-    <string name="profileBackup_manualBackups_encryptBackupTitle">Encrypt Wallet Backup File</string>
-    <string name="profileBackup_manualBackups_encryptBackupSubtitle">Enter a password to encrypt this wallet backup file. You will be required to enter this password when recovering your Wallet from this file.</string>
-    <string name="profileBackup_manualBackups_enterPasswordPlaceholder">Enter password</string>
-    <string name="profileBackup_manualBackups_confirmPasswordPlaceholder">Confirm password</string>
-    <string name="profileBackup_manualBackups_passwordsMissmatchError">Passwords do not match</string>
-    <string name="profileBackup_deleteWallet_title">Delete Wallet</string>
-    <string name="profileBackup_deleteWalletDialog_message">WARNING. This will clear all contents of your Wallet. If you have no backup, you will lose access to your Accounts and Personas permanently.</string>
-    <string name="profileBackup_deleteWalletDialog_confirm">Delete Wallet</string>
-    <string name="androidProfileBackup_disabledText">Back up is turned off</string>
-    <string name="androidProfileBackup_lastBackedUp">Last Backed up: %s</string>
-    <string name="androidProfileBackup_noLastBackUp">Not backed up yet</string>
-    <string name="androidProfileBackup_openSystemBackupSettings">Open System Backup Settings</string>
-    <string name="androidProfileBackup_backupWalletData_title">Backup Wallet Data to Cloud</string>
-    <string name="androidProfileBackup_backupWalletData_message">Warning: If disabled you might lose access to your Accounts and Personas.</string>
-    <string name="androidProfileBackup_deleteWallet_subtitle">You may delete your wallet. This will clear the Radix Wallet app, clears its contents, and delete any cloud backup.
+  <string name="profileBackup_manualBackups_exportButtonTitle">Export Wallet Backup File</string>
+  <string name="profileBackup_manualBackups_encryptBackupDialogTitle">Encrypt this backup with a password?</string>
+  <string name="profileBackup_manualBackups_successMessage">Exported wallet backup file</string>
+  <string name="profileBackup_manualBackups_encryptBackupDialogConfirm">Yes</string>
+  <string name="profileBackup_manualBackups_encryptBackupDialogDeny">No</string>
+  <string name="profileBackup_manualBackups_encryptBackupTitle">Encrypt Wallet Backup File</string>
+  <string name="profileBackup_manualBackups_encryptBackupSubtitle">Enter a password to encrypt this wallet backup file. You will be required to enter this password when recovering your Wallet from this file.</string>
+  <string name="profileBackup_manualBackups_enterPasswordPlaceholder">Enter password</string>
+  <string name="profileBackup_manualBackups_confirmPasswordPlaceholder">Confirm password</string>
+  <string name="profileBackup_manualBackups_passwordsMissmatchError">Passwords do not match</string>
+  <string name="profileBackup_deleteWallet_title">Delete Wallet</string>
+  <string name="profileBackup_deleteWalletDialog_message">WARNING. This will clear all contents of your Wallet. If you have no backup, you will lose access to your Accounts and Personas permanently.</string>
+  <string name="profileBackup_deleteWalletDialog_confirm">Delete Wallet</string>
+  <string name="androidProfileBackup_disabledText">Back up is turned off</string>
+  <string name="androidProfileBackup_lastBackedUp">Last Backed up: %s</string>
+  <string name="androidProfileBackup_noLastBackUp">Not backed up yet</string>
+  <string name="androidProfileBackup_openSystemBackupSettings">Open System Backup Settings</string>
+  <string name="androidProfileBackup_backupWalletData_title">Backup Wallet Data to Cloud</string>
+  <string name="androidProfileBackup_backupWalletData_message">Warning: If disabled you might lose access to your Accounts and Personas.</string>
+  <string name="androidProfileBackup_deleteWallet_subtitle">You may delete your wallet. This will clear the Radix Wallet app, clears its contents, and delete any cloud backup.
 
 **Access to any Accounts or Personas will be permanently lost unless you have a manual backup file.**</string>
-    <string name="androidProfileBackup_deleteWallet_confirmButton">Delete Wallet</string>
-    <string name="iOSProfileBackup_automaticBackups_enable">Enable Backup to iCloud</string>
-    <string name="iOSProfileBackup_automaticBackups_disable">Disable Backup to iCloud</string>
-    <string name="iOSProfileBackup_automaticBackups_subtitle">Automatic continuous backups</string>
-    <string name="iOSProfileBackup_profileSync_title">Sync Wallet Data to iCloud</string>
-    <string name="iOSProfileBackup_profileSync_subtitle">Warning: If disabled you might lose access to your Accounts and Personas.</string>
-    <string name="iOSProfileBackup_navigationTitle">Wallet Data Backup</string>
-    <string name="iOSProfileBackup_importBackupWallet">Import From Backup</string>
-    <string name="iOSProfileBackup_cloudBackupWallet">Available backups:</string>
-    <string name="iOSProfileBackup_useICloudBackup">Use iCloud Backup Data</string>
-    <string name="iOSProfileBackup_noCloudBackup">No backups found in iCloud</string>
-    <string name="iOSProfileBackup_thisDevice">This Device</string>
-    <string name="iOSProfileBackup_creatingDevice">Backup created by: %s</string>
-    <string name="iOSProfileBackup_creationDateLabel">Creation date: %s</string>
-    <string name="iOSProfileBackup_lastUsedOnDeviceLabel">Last used on device: %s</string>
-    <string name="iOSProfileBackup_lastModifedDateLabel">Last modified date: %s</string>
-    <string name="iOSProfileBackup_numberOfNetworksLabel">Number of networks: %d</string>
-    <string name="iOSProfileBackup_totalAccountsNumberLabel">Number of Accounts: %d</string>
-    <string name="iOSProfileBackup_totalPersonasNumberLabel">Number of Personas: %d</string>
-    <string name="iOSProfileBackup_incompatibleWalletDataLabel">Incompatible Wallet data</string>
-    <string name="iOSProfileBackup_deleteWallet_subtitle">You may delete your wallet. This will clear the Radix Wallet app, clears its contents, and delete any iCloud backup.
+  <string name="androidProfileBackup_deleteWallet_confirmButton">Delete Wallet</string>
+  <string name="iOSProfileBackup_automaticBackups_enable">Enable Backup to iCloud</string>
+  <string name="iOSProfileBackup_automaticBackups_disable">Disable Backup to iCloud</string>
+  <string name="iOSProfileBackup_automaticBackups_subtitle">Automatic continuous backups</string>
+  <string name="iOSProfileBackup_profileSync_title">Sync Wallet Data to iCloud</string>
+  <string name="iOSProfileBackup_profileSync_subtitle">Warning: If disabled you might lose access to your Accounts and Personas.</string>
+  <string name="iOSProfileBackup_navigationTitle">Wallet Data Backup</string>
+  <string name="iOSProfileBackup_importBackupWallet">Import From Backup</string>
+  <string name="iOSProfileBackup_cloudBackupWallet">Available backups:</string>
+  <string name="iOSProfileBackup_useICloudBackup">Use iCloud Backup Data</string>
+  <string name="iOSProfileBackup_noCloudBackup">No backups found in iCloud</string>
+  <string name="iOSProfileBackup_thisDevice">This Device</string>
+  <string name="iOSProfileBackup_creatingDevice">Backup created by: %s</string>
+  <string name="iOSProfileBackup_creationDateLabel">Creation date: %s</string>
+  <string name="iOSProfileBackup_lastUsedOnDeviceLabel">Last used on device: %s</string>
+  <string name="iOSProfileBackup_lastModifedDateLabel">Last modified date: %s</string>
+  <string name="iOSProfileBackup_numberOfNetworksLabel">Number of networks: %d</string>
+  <string name="iOSProfileBackup_totalAccountsNumberLabel">Number of Accounts: %d</string>
+  <string name="iOSProfileBackup_totalPersonasNumberLabel">Number of Personas: %d</string>
+  <string name="iOSProfileBackup_incompatibleWalletDataLabel">Incompatible Wallet data</string>
+  <string name="iOSProfileBackup_deleteWallet_subtitle">You may delete your wallet. This will clear the Radix Wallet app, clears its contents, and delete any iCloud backup.
 
 **Access to any Accounts or Personas will be permanently lost unless you have a manual backup file.**</string>
   <string name="iOSProfileBackup_deleteWallet_confirmButton">Delete Wallet and iCloud Backup</string>
@@ -789,22 +789,4 @@ Only the **current configuration** of your wallet is backed up with each manual 
   <string name="depositGuarantees_text">Set the guaranteed minimum deposit to be applied whenever a deposit in a transaction can only be estimated.
 
 You can always change the guarantee from this default in each transaction.</string>
-
-  <string name="accountSettings_developmentHeading">Set development preferences</string>
-  <string name="accountSettings_devPreferences">Dev Preferences</string>
-  <string name="accountSettings_hideThisAccount">Hide This Account</string>
-  <string name="accountSettings_hideAccountConfirmation">Are you sure you want to hide this account?</string>
-  <string name="personaDetails_hideThisPersona">Hide This Persona</string>
-  <string name="personaDetails_hidePersonaConfirmation">Are you sure you want to hide this persona?</string>
-  <string name="appSettings_entityHiding_title">Account &amp; Persona Hiding</string>
-  <string name="appSettings_entityHiding_subtitle">Manage hiding</string>
-  <string name="entityHiding_title">Account &amp; Persona Hiding</string>
-  <string name="entityHiding_subtitle">Accounts and Personas you have created can be hidden in your Radix Wallet, acting as if “deleted”.</string>
-  <string name="entityHiding_hiddenPersona">%d Persona currently hidden</string>
-  <string name="entityHiding_hiddenPersonas">%d Personas currently hidden</string>
-  <string name="entityHiding_hiddenAccount">%d Account currently hidden</string>
-  <string name="entityHiding_hiddenAccounts">%d Accounts currently hidden</string>
-  <string name="entityHiding_unhideAllSection">Unhide Accounts &amp; Personas</string>
-  <string name="entityHiding_unhideAllButton">Unhide All</string>
-  <string name="entityHiding_unhideAllConfirmation">Are you sure you wish to unhide all Accounts and Personas? This cannot be undone.</string>
 </resources>
