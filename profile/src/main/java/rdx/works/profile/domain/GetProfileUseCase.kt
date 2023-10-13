@@ -1,7 +1,6 @@
 package rdx.works.profile.domain
 
 import com.radixdlt.ret.Address
-import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapNotNull
