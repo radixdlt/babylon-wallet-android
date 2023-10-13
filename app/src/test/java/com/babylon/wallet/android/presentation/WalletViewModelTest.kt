@@ -8,6 +8,7 @@ import com.babylon.wallet.android.domain.model.resources.XrdResource
 import com.babylon.wallet.android.domain.model.resources.metadata.SymbolMetadataItem
 import com.babylon.wallet.android.domain.usecases.GetAccountsForSecurityPromptUseCase
 import com.babylon.wallet.android.domain.usecases.GetAccountsWithAssetsUseCase
+import com.babylon.wallet.android.domain.usecases.assets.GetWalletAssetsUseCase
 import com.babylon.wallet.android.mockdata.account
 import com.babylon.wallet.android.mockdata.profile
 import com.babylon.wallet.android.presentation.wallet.WalletUiState
@@ -36,6 +37,7 @@ class WalletViewModelTest : StateViewModelTest<WalletViewModel>() {
 
     private val getAccountsWithAssetsUseCase = mockk<GetAccountsWithAssetsUseCase>()
     private val getBackupStateUseCase = mockk<GetBackupStateUseCase>()
+    private val getWalletAssetsUseCase = mockk<GetWalletAssetsUseCase>()
     private val getProfileUseCase = mockk<GetProfileUseCase>()
     private val getAccountsForSecurityPromptUseCase = mockk<GetAccountsForSecurityPromptUseCase>()
     private val ensureBabylonFactorSourceExistUseCase = mockk<EnsureBabylonFactorSourceExistUseCase>()
@@ -50,6 +52,7 @@ class WalletViewModelTest : StateViewModelTest<WalletViewModel>() {
 
     override fun initVM(): WalletViewModel = WalletViewModel(
         getAccountsWithAssetsUseCase,
+        getWalletAssetsUseCase,
         getProfileUseCase,
         getAccountsForSecurityPromptUseCase,
         appEventBus,
