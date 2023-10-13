@@ -5,6 +5,7 @@ import com.babylon.wallet.android.domain.model.assets.AccountWithAssets
 import com.babylon.wallet.android.domain.usecases.AccountWithSecurityPrompt
 import com.babylon.wallet.android.domain.usecases.GetAccountsForSecurityPromptUseCase
 import com.babylon.wallet.android.domain.usecases.GetAccountsWithAssetsUseCase
+import com.babylon.wallet.android.domain.usecases.assets.GetWalletAssetsUseCase
 import com.babylon.wallet.android.domain.usecases.SecurityPromptType
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
@@ -38,10 +39,12 @@ import rdx.works.profile.domain.backup.GetBackupStateUseCase
 import rdx.works.profile.domain.factorSources
 import timber.log.Timber
 import javax.inject.Inject
+import kotlin.time.measureTime
 
 @HiltViewModel
 class WalletViewModel @Inject constructor(
     private val getAccountsWithAssetsUseCase: GetAccountsWithAssetsUseCase,
+    private val getWalletAssetsUseCase: GetWalletAssetsUseCase,
     private val getProfileUseCase: GetProfileUseCase,
     private val getAccountsForSecurityPromptUseCase: GetAccountsForSecurityPromptUseCase,
     private val appEventBus: AppEventBus,
@@ -93,16 +96,14 @@ class WalletViewModel @Inject constructor(
                     state.loadingResources(accounts = accounts, isRefreshing = state.isRefreshing)
                 }
 
-                getAccountsWithAssetsUseCase(
-                    accounts = accounts,
-                    isNftItemDataNeeded = false,
-                    isRefreshing = _state.value.isRefreshing
-                ).onSuccess { resources ->
-                    _state.update { it.onResourcesReceived(resources) }
-                }.onFailure { error ->
-                    _state.update { it.onResourcesError(error) }
-                    Timber.w(error)
-                }
+                val newDuration = measureTime {
+                    getWalletAssetsUseCase(accounts = accounts).onSuccess { resources ->
+                        Timber.tag("Bakos").d("Fungibles: ${resources[1].resources?.fungibleResources?.size.toString()}")
+                        _state.update { it.onResourcesReceived(resources) }
+                    }.onFailure { error ->
+                        _state.update { it.onResourcesError(error) }
+                        Timber.w(error)
+                    }
             }
         }
     }
