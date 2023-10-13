@@ -57,8 +57,8 @@ class MainViewModel @Inject constructor(
     private val isAnyEntityCreatedWithOlympiaUseCase: IsAnyEntityCreatedWithOlympiaUseCase
 ) : StateViewModel<MainUiState>(), OneOffEventHandler<MainEvent> by OneOffEventHandlerImpl() {
 
+    private var verifyingDappRequestJob: Job? = null
     private var incomingDappRequestsJob: Job? = null
-    private var processingDappRequestJob: Job? = null
     private var incomingDappRequestErrorsJob: Job? = null
     private var countdownJob: Job? = null
 
@@ -138,9 +138,10 @@ class MainViewModel @Inject constructor(
                                     val remoteConnectorId = incomingRequest.remoteConnectorId
                                     val requestId = incomingRequest.id
                                     Timber.d(
-                                        "\uD83E\uDD16 wallet received incoming request from remote connector $remoteConnectorId with id $requestId"
+                                        "\uD83E\uDD16 wallet received incoming request from " +
+                                            "remote connector $remoteConnectorId with id $requestId"
                                     )
-                                    processIncomingRequest(incomingRequest)
+                                    verifyIncomingRequest(incomingRequest)
                                 }
                         }
                         incomingDappRequestErrorsJob = viewModelScope.launch {
@@ -191,8 +192,8 @@ class MainViewModel @Inject constructor(
         }
     }
 
-    private fun processIncomingRequest(request: IncomingRequest) {
-        processingDappRequestJob = viewModelScope.launch {
+    private fun verifyIncomingRequest(request: IncomingRequest) {
+        verifyingDappRequestJob = viewModelScope.launch {
             verifyDappUseCase(request).onSuccess { verified ->
                 if (verified) {
                     incomingRequestRepository.add(request)
@@ -209,8 +210,8 @@ class MainViewModel @Inject constructor(
         Timber.d("\uD83E\uDD16 Peerdroid is terminating")
         incomingDappRequestsJob?.cancel()
         incomingDappRequestsJob = null
-        processingDappRequestJob?.cancel()
-        processingDappRequestJob = null
+        verifyingDappRequestJob?.cancel()
+        verifyingDappRequestJob = null
         incomingDappRequestErrorsJob?.cancel()
         incomingDappRequestErrorsJob = null
         peerdroidClient.terminate()
