@@ -49,10 +49,7 @@ class TransactionAnalysisDelegate(
         val notaryAndSigners = transactionClient.getNotaryAndSigners(
             manifest = manifest,
             ephemeralNotaryPrivateKey = state.value.ephemeralNotaryPrivateKey
-        ).getOrElse {
-            reportFailure(it)
-            return
-        }
+        )
         transactionClient.getTransactionPreview(
             manifest = manifest,
             notaryAndSigners = notaryAndSigners
