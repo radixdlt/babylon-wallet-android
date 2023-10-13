@@ -67,4 +67,4 @@ data class ValidatorWithStakeResources(
     val stakeClaimNft: StakeClaim? = null
 )
 
-fun List<Resource.NonFungibleResource>.allNftItemsSize() = map { it.items }.flatten().size
+fun List<Resource.NonFungibleResource>.allNftItemsSize() = sumOf { it.amount }
