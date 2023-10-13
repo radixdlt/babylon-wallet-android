@@ -190,6 +190,10 @@ dependencies {
     implementation libs.retrofit
     implementation libs.retrofitKoltinxConverter
 
+    // Database
+    implementation libs.roomRuntime
+    kapt libs.roomCompiler
+
     //Timber
     implementation libs.timber
 
