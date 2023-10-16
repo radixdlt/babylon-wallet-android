@@ -53,7 +53,7 @@ internal class PeerdroidLinkImpl(
         addConnectionDeferred = CompletableDeferred()
         // get connection id from encryption key
         val connectionId = encryptionKey.blake2Hash().toHexString()
-        Timber.d("🛠️️ add new connection for connection id: $connectionId")
+        Timber.d("🛠️️ add new link connection with connection id: $connectionId")
 
         withContext(ioDispatcher) {
             // Leave this method here because WebRTC takes too long to initialize its components
@@ -94,7 +94,7 @@ internal class PeerdroidLinkImpl(
                         Timber.d("🛠️️ ⬇️ connector extension is connected with id: ${incomingMessage.remoteClientId} 📬")
                     }
                     is SignalingServerMessage.RemoteData.Offer -> {
-                        Timber.d("🛠️️ ⬇️  offer received from connector extension: ${incomingMessage.remoteClientId}")
+                        Timber.d("🛠️️ ⬇️ offer received from connector extension: ${incomingMessage.remoteClientId}")
                         setRemoteDescriptionFromOffer(incomingMessage)
                         createAndSendAnswerToRemoteClient()
                     }

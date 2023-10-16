@@ -1,7 +1,6 @@
 package rdx.works.profile.domain
 
 import com.radixdlt.ret.Address
-import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapNotNull
@@ -129,7 +128,7 @@ val GetProfileUseCase.security
  * P2P Links preferences
  */
 val GetProfileUseCase.p2pLinks
-    get() = invoke().map { it.appPreferences.p2pLinks }.distinctUntilChanged()
+    get() = invoke().map { it.appPreferences.p2pLinks }
 
 /**
  * Default deposit guarantee

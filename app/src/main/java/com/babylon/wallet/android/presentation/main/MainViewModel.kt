@@ -57,8 +57,8 @@ class MainViewModel @Inject constructor(
     private val isAnyEntityCreatedWithOlympiaUseCase: IsAnyEntityCreatedWithOlympiaUseCase
 ) : StateViewModel<MainUiState>(), OneOffEventHandler<MainEvent> by OneOffEventHandlerImpl() {
 
+    private var verifyingDappRequestJob: Job? = null
     private var incomingDappRequestsJob: Job? = null
-    private var processingDappRequestJob: Job? = null
     private var incomingDappRequestErrorsJob: Job? = null
     private var countdownJob: Job? = null
 
@@ -71,7 +71,6 @@ class MainViewModel @Inject constructor(
             }
         }
         .onCompletion {
-            Timber.d("Peerdroid is terminating")
             terminatePeerdroid()
         }
         .shareIn(
@@ -125,9 +124,8 @@ class MainViewModel @Inject constructor(
         if (encryptionKey != null) {
             when (val result = peerdroidClient.connect(encryptionKey = encryptionKey)) {
                 is Result.Success -> {
-                    Timber.d("Link connection established")
                     if (incomingDappRequestsJob == null) {
-                        Timber.d("Listen for incoming requests from dapps")
+                        Timber.d("\uD83E\uDD16 Listen for incoming requests from dapps")
                         // We must run this only once
                         // otherwise for each new link connection
                         // we create a new job to collect messages from the same stream (messagesFromRemoteClients).
@@ -140,9 +138,10 @@ class MainViewModel @Inject constructor(
                                     val remoteConnectorId = incomingRequest.remoteConnectorId
                                     val requestId = incomingRequest.id
                                     Timber.d(
-                                        "📯 wallet received incoming request from remote connector $remoteConnectorId with id $requestId"
+                                        "\uD83E\uDD16 wallet received incoming request from " +
+                                            "remote connector $remoteConnectorId with id $requestId"
                                     )
-                                    processIncomingRequest(incomingRequest)
+                                    verifyIncomingRequest(incomingRequest)
                                 }
                         }
                         incomingDappRequestErrorsJob = viewModelScope.launch {
@@ -159,7 +158,7 @@ class MainViewModel @Inject constructor(
                 }
 
                 is Result.Error -> {
-                    Timber.e("Failed to establish link connection: ${result.message}")
+                    Timber.e("\uD83E\uDD16 Failed to establish link connection: ${result.message}")
                 }
 
                 else -> {}
@@ -193,8 +192,8 @@ class MainViewModel @Inject constructor(
         }
     }
 
-    private fun processIncomingRequest(request: IncomingRequest) {
-        processingDappRequestJob = viewModelScope.launch {
+    private fun verifyIncomingRequest(request: IncomingRequest) {
+        verifyingDappRequestJob = viewModelScope.launch {
             verifyDappUseCase(request).onSuccess { verified ->
                 if (verified) {
                     incomingRequestRepository.add(request)
@@ -208,15 +207,15 @@ class MainViewModel @Inject constructor(
     }
 
     private fun terminatePeerdroid() {
+        Timber.d("\uD83E\uDD16 Peerdroid is terminating")
         incomingDappRequestsJob?.cancel()
         incomingDappRequestsJob = null
-        processingDappRequestJob?.cancel()
-        processingDappRequestJob = null
+        verifyingDappRequestJob?.cancel()
+        verifyingDappRequestJob = null
         incomingDappRequestErrorsJob?.cancel()
         incomingDappRequestErrorsJob = null
         peerdroidClient.terminate()
         incomingRequestRepository.removeAll()
-        Timber.d("Peerdroid terminated")
     }
 
     fun onInvalidRequestMessageShown() {

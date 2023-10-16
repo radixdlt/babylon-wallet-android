@@ -34,6 +34,7 @@ import javax.inject.Inject
 interface PeerdroidClient {
 
     val hasAtLeastOneConnection: Flow<Boolean>
+
     suspend fun connect(encryptionKey: ByteArray): Result<Unit>
 
     suspend fun sendMessage(
@@ -46,7 +47,9 @@ interface PeerdroidClient {
     ): Result<Unit>
 
     fun listenForIncomingRequests(): Flow<MessageFromDataChannel.IncomingRequest>
+
     fun listenForLedgerResponses(): Flow<MessageFromDataChannel.LedgerResponse>
+
     fun listenForIncomingRequestErrors(): Flow<MessageFromDataChannel.Error.DappRequest>
 
     suspend fun deleteLink(connectionPassword: String)
@@ -58,6 +61,9 @@ class PeerdroidClientImpl @Inject constructor(
     private val peerdroidConnector: PeerdroidConnector,
     @IoDispatcher private val ioDispatcher: CoroutineDispatcher
 ) : PeerdroidClient {
+
+    override val hasAtLeastOneConnection: Flow<Boolean>
+        get() = peerdroidConnector.anyChannelConnected
 
     override suspend fun connect(encryptionKey: ByteArray): Result<Unit> {
         return peerdroidConnector.connectToConnectorExtension(encryptionKey = encryptionKey)
@@ -87,7 +93,7 @@ class PeerdroidClientImpl @Inject constructor(
                     messageInJsonString = messageFromRemoteClient.messageInJsonString
                 )
             }.catch { exception ->
-                Timber.e("caught exception: ${exception.localizedMessage}")
+                Timber.e("\uD83E\uDD16 caught exception: ${exception.localizedMessage}")
             }
             .cancellable()
             .flowOn(ioDispatcher)
@@ -101,9 +107,6 @@ class PeerdroidClientImpl @Inject constructor(
         return listenForIncomingMessages().filterIsInstance()
     }
 
-    override val hasAtLeastOneConnection: Flow<Boolean>
-        get() = peerdroidConnector.anyChannelConnected
-
     override fun listenForLedgerResponses(): Flow<MessageFromDataChannel.LedgerResponse> {
         return listenForIncomingMessages().filterIsInstance()
     }
@@ -115,7 +118,7 @@ class PeerdroidClientImpl @Inject constructor(
         encryptionKey?.let {
             val connectionIdHolder = ConnectionIdHolder(id = it.blake2Hash().toHexString())
             peerdroidConnector.deleteConnector(connectionIdHolder)
-        } ?: Timber.e("Failed to close peer connection because connection password is wrong")
+        } ?: Timber.e("\uD83E\uDD16 Failed to delete connector because connection password is wrong")
     }
 
     override fun terminate() {
