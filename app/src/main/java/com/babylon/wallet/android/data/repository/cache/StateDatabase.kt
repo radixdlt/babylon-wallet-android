@@ -1,6 +1,8 @@
 package com.babylon.wallet.android.data.repository.cache
 
+import android.content.Context
 import androidx.room.Database
+import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 
@@ -23,6 +25,17 @@ import androidx.room.TypeConverters
     BehavioursColumnConverter::class,
     StringMetadataColumnConverter::class
 )
-abstract class StateDatabase: RoomDatabase() {
+abstract class StateDatabase : RoomDatabase() {
+
+    companion object {
+
+        private const val NAME = "STATE_DATABASE"
+
+        fun factory(applicationContext: Context): StateDatabase = Room
+            .databaseBuilder(applicationContext, StateDatabase::class.java, NAME)
+            .fallbackToDestructiveMigration() // Reconstruct database when schema changes.
+            .build()
+    }
+
 }
 
