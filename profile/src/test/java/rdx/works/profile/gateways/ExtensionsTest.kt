@@ -35,7 +35,7 @@ class ExtensionsTest {
     }
 
     @Test
-    fun `containsGateway extension with custom gateway`() {
+    fun `existing custom gateway with slash and new gateway with same id but without path then containsGateway returns true`() {
         val savedGateways = mutableListOf<Radix.Gateway>()
 
         val myGatewayWithoutPath = Radix.Gateway(
@@ -60,7 +60,7 @@ class ExtensionsTest {
     }
 
     @Test
-    fun `containsGateway extension with custom gateway that contains also path`() {
+    fun `existing gateway with path and new gateway with same id but without path then containsGateway returns false`() {
         val savedGateways = mutableListOf<Radix.Gateway>()
 
         val myGatewayWithPath = Radix.Gateway(
@@ -82,6 +82,21 @@ class ExtensionsTest {
             )
         )
         Assert.assertFalse(savedGateways.containsGateway(myGatewayWithoutPath))
+    }
+
+    @Test
+    fun `existing gateway with path and new gateway with same id and with slash then containsGateway returns true`() {
+        val savedGateways = mutableListOf<Radix.Gateway>()
+
+        val myGatewayWithPath = Radix.Gateway(
+            url = "https://my.gateway.com/path/morepath",
+            network = Radix.Network(
+                id = 11,
+                name = "mygateway",
+                displayDescription = "Gateway"
+            )
+        )
+        savedGateways.add(myGatewayWithPath)
 
         val myGatewayWithPathAndSlash = Radix.Gateway(
             url = "https://my.gateway.com/path/morepath/",
@@ -95,7 +110,7 @@ class ExtensionsTest {
     }
 
     @Test
-    fun `containsGateway extension with custom IP gateway`() {
+    fun `existing gateway with slash and new gateway with same id but without slash then containsGateway returns true`() {
         val savedGateways = mutableListOf<Radix.Gateway>()
 
         val mainnet = Radix.Gateway(
@@ -112,7 +127,7 @@ class ExtensionsTest {
             url = "https://1.1.1.1",
             network = Radix.Network(
                 id = 1,
-                name = "mainnet", // name fixed
+                name = "mainnet",
                 displayDescription = "Mainnet"
             )
         )
@@ -121,7 +136,7 @@ class ExtensionsTest {
     }
 
     @Test
-    fun `containsGateway extension with custom IP gateway and different id`() {
+    fun `existing gateway with slash and new gateway with different id and without slash then containsGateway returns false`() {
         val savedGateways = mutableListOf<Radix.Gateway>()
 
         val mainnet = Radix.Gateway(
@@ -138,7 +153,7 @@ class ExtensionsTest {
             url = "https://1.1.1.1",
             network = Radix.Network(
                 id = 1,
-                name = "mainnet", // name fixed
+                name = "mainnet",
                 displayDescription = "Mainnet"
             )
         )
