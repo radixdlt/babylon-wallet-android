@@ -64,10 +64,17 @@ fun Profile.deleteGateway(
 
 fun List<Radix.Gateway>.containsGateway(gateway: Radix.Gateway): Boolean {
     return this.any {
+        val existingGatewayUri = URI.create(it.url)
+        val gatewayUri = URI.create(gateway.url)
+
         // example: if the url is "https://mainnet.radixdlt.com" then the host is mainnet.radixdlt.com
         // example: if the url is "https://mainnet.radixdlt.com/" then the host is mainnet.radixdlt.com
-        val existingGateway = URI.create(it.url).host
-        val gatewayHost = URI.create(gateway.url).host
-        it.network.id == gateway.network.id && existingGateway == gatewayHost
+        val existingGatewayHost = existingGatewayUri.host
+        val gatewayHost = gatewayUri.host
+
+        val existingGatewayPath = existingGatewayUri.path.removePrefix("/").removeSuffix("/")
+        val gatewayPath = gatewayUri.path.removePrefix("/").removeSuffix("/")
+
+        it.network.id == gateway.network.id && existingGatewayHost == gatewayHost && existingGatewayPath == gatewayPath
     }
 }
