@@ -77,14 +77,14 @@ fun PersonaDetailScreen(
             }
         }
     }
-    var hidePersonaPrompt by remember { mutableStateOf(false) }
-    if (hidePersonaPrompt) {
+    var showHidePersonaPrompt by remember { mutableStateOf(false) }
+    if (showHidePersonaPrompt) {
         BasicPromptAlertDialog(
             finish = {
                 if (it) {
                     viewModel.onHidePersona()
                 }
-                hidePersonaPrompt = false
+                showHidePersonaPrompt = false
             },
             text = {
                 Text(
@@ -114,7 +114,7 @@ fun PersonaDetailScreen(
         },
         loading = state.loading,
         onHidePersona = {
-            hidePersonaPrompt = true
+            showHidePersonaPrompt = true
         }
     )
 }

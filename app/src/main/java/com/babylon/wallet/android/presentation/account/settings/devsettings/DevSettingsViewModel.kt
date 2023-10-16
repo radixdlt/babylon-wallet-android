@@ -33,7 +33,7 @@ import javax.inject.Inject
 
 @Suppress("LongParameterList", "TooManyFunctions")
 @HiltViewModel
-class DevAccountSettingsViewModel @Inject constructor(
+class DevSettingsViewModel @Inject constructor(
     private val getFreeXrdUseCase: GetFreeXrdUseCase,
     private val getProfileUseCase: GetProfileUseCase,
     private val rolaClient: ROLAClient,
@@ -43,12 +43,12 @@ class DevAccountSettingsViewModel @Inject constructor(
     @ApplicationScope private val appScope: CoroutineScope,
     savedStateHandle: SavedStateHandle,
     private val appEventBus: AppEventBus,
-) : StateViewModel<DevAccountPreferenceUiState>() {
+) : StateViewModel<DevSettingsUiState>() {
 
-    private val args = DevAccountSettingsArgs(savedStateHandle)
+    private val args = DevSettingsArgs(savedStateHandle)
     private var createAndUploadAuthKeyJob: Job? = null
 
-    override fun initialState(): DevAccountPreferenceUiState = DevAccountPreferenceUiState(
+    override fun initialState(): DevSettingsUiState = DevSettingsUiState(
         accountAddress = args.address,
     )
 
@@ -159,7 +159,7 @@ class DevAccountSettingsViewModel @Inject constructor(
     }
 }
 
-data class DevAccountPreferenceUiState(
+data class DevSettingsUiState(
     val account: Network.Account? = null,
     val accountAddress: String,
     val faucetState: FaucetState = FaucetState.Unavailable,

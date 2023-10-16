@@ -64,12 +64,12 @@ import timber.log.Timber
 fun ActionableAddressView(
     address: String,
     modifier: Modifier = Modifier,
-    truncateAddressForDisplay: Boolean = true,
+    shouldTruncateAddressForDisplay: Boolean = true,
     textStyle: TextStyle = LocalTextStyle.current,
     textColor: Color = Color.Unspecified,
     iconColor: Color = textColor
 ) {
-    val actionableAddress = resolveAddress(address = address, truncateAddressForDisplay = truncateAddressForDisplay)
+    val actionableAddress = resolveAddress(address = address, shouldTruncateAddressForDisplay = shouldTruncateAddressForDisplay)
     val context = LocalContext.current
     var actions by remember(actionableAddress) {
         mutableStateOf(
@@ -156,7 +156,7 @@ fun ActionableAddressView(
             Text(
                 text = text,
                 color = textColor,
-                maxLines = if (truncateAddressForDisplay) 1 else 2,
+                maxLines = if (shouldTruncateAddressForDisplay) 1 else 2,
                 style = textStyle,
                 inlineContent = inlineContent
             )
@@ -213,8 +213,8 @@ fun ActionableAddressView(
 @Composable
 private fun resolveAddress(
     address: String,
-    truncateAddressForDisplay: Boolean
-): ActionableAddress = remember(address) { ActionableAddress(address, truncateAddressForDisplay) }
+    shouldTruncateAddressForDisplay: Boolean
+): ActionableAddress = remember(address) { ActionableAddress(address, shouldTruncateAddressForDisplay) }
 
 private fun resolveStaticActions(
     actionableAddress: ActionableAddress,

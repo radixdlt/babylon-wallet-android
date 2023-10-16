@@ -64,7 +64,7 @@ fun AccountSettingsScreen(
     onBackClick: () -> Unit,
     modifier: Modifier = Modifier,
     onSettingItemClick: (AccountSettingItem, address: String) -> Unit,
-    onHideAccount: () -> Unit,
+    onHideAccountClick: () -> Unit,
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val scope = rememberCoroutineScope()
@@ -95,7 +95,7 @@ fun AccountSettingsScreen(
     LaunchedEffect(Unit) {
         viewModel.oneOffEvent.collect { event ->
             when (event) {
-                Event.AccountHidden -> onHideAccount()
+                Event.AccountHidden -> onHideAccountClick()
             }
         }
     }
@@ -218,7 +218,7 @@ private fun AccountSettingsContent(
                     ),
                     textStyle = RadixTheme.typography.body2Regular,
                     textColor = RadixTheme.colors.gray2,
-                    truncateAddressForDisplay = false
+                    shouldTruncateAddressForDisplay = false
                 )
                 RadixSecondaryButton(
                     modifier = Modifier

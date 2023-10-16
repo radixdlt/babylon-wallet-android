@@ -8,7 +8,7 @@ import rdx.works.profile.derivation.model.NetworkId
 
 data class ActionableAddress(
     val address: String,
-    val truncateAddressForDisplay: Boolean = true
+    val shouldTruncateAddressForDisplay: Boolean = true
 ) {
 
     val type: Type? = Type.from(address)
@@ -21,7 +21,7 @@ data class ActionableAddress(
         val localId = address.split(NFT_DELIMITER)[1]
         Resource.NonFungibleResource.Item.ID.from(localId).displayable
     } else {
-        if (truncateAddressForDisplay) address.truncatedHash() else address
+        if (shouldTruncateAddressForDisplay) address.truncatedHash() else address
     }
 
     fun toDashboardUrl(): String {

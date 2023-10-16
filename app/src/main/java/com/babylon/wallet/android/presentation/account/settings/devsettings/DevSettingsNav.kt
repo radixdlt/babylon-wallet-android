@@ -15,7 +15,7 @@ import com.google.accompanist.navigation.animation.composable
 @VisibleForTesting
 internal const val ARG_ACCOUNT_SETTINGS_ADDRESS = "arg_account_settings_address"
 
-internal class DevAccountSettingsArgs(
+internal class DevSettingsArgs(
     val address: String
 ) {
     constructor(savedStateHandle: SavedStateHandle) : this(
@@ -23,12 +23,12 @@ internal class DevAccountSettingsArgs(
     )
 }
 
-fun NavController.accountDevSettings(address: String) {
+fun NavController.devSettings(address: String) {
     navigate("dev_account_settings_route/$address")
 }
 
 @OptIn(ExperimentalAnimationApi::class)
-fun NavGraphBuilder.accountDevSettings(
+fun NavGraphBuilder.devSettings(
     onBackClick: () -> Unit
 ) {
     composable(
@@ -49,7 +49,7 @@ fun NavGraphBuilder.accountDevSettings(
             EnterTransition.None
         }
     ) {
-        AccountDevSettingsScreen(
+        DevSettingsScreen(
             viewModel = hiltViewModel(),
             onBackClick = onBackClick
         )

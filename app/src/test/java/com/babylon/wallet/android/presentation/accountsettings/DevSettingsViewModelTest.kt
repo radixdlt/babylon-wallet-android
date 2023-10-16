@@ -8,7 +8,7 @@ import com.babylon.wallet.android.domain.usecases.FaucetState
 import com.babylon.wallet.android.domain.usecases.GetFreeXrdUseCase
 import com.babylon.wallet.android.presentation.StateViewModelTest
 import com.babylon.wallet.android.presentation.account.settings.ARG_ACCOUNT_SETTINGS_ADDRESS
-import com.babylon.wallet.android.presentation.account.settings.devsettings.DevAccountSettingsViewModel
+import com.babylon.wallet.android.presentation.account.settings.devsettings.DevSettingsViewModel
 import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
 import io.mockk.Runs
@@ -32,7 +32,7 @@ import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.account.AddAuthSigningFactorInstanceUseCase
 
 @OptIn(ExperimentalCoroutinesApi::class)
-internal class DevAccountSettingsViewModelTest : StateViewModelTest<DevAccountSettingsViewModel>() {
+internal class DevSettingsViewModelTest : StateViewModelTest<DevSettingsViewModel>() {
 
     private val getFreeXrdUseCase = mockk<GetFreeXrdUseCase>()
     private val savedStateHandle = mockk<SavedStateHandle>()
@@ -46,8 +46,8 @@ internal class DevAccountSettingsViewModelTest : StateViewModelTest<DevAccountSe
     private val sampleProfile = sampleDataProvider.sampleProfile()
     private val sampleAddress = sampleProfile.currentNetwork.accounts.first().address
 
-    override fun initVM(): DevAccountSettingsViewModel {
-        return DevAccountSettingsViewModel(
+    override fun initVM(): DevSettingsViewModel {
+        return DevSettingsViewModel(
             getFreeXrdUseCase,
             getProfileUseCase,
             rolaClient,

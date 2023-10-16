@@ -10,6 +10,7 @@ import rdx.works.profile.data.model.Profile
 import rdx.works.profile.data.model.apppreferences.AppPreferences
 import rdx.works.profile.data.model.apppreferences.Transaction
 import rdx.works.profile.data.model.currentGateway
+import rdx.works.profile.data.model.factorsources.EntityFlag
 import rdx.works.profile.data.model.factorsources.FactorSource
 import rdx.works.profile.data.model.factorsources.Slip10Curve
 import rdx.works.profile.data.model.pernetwork.Entity
@@ -189,4 +190,73 @@ fun Network.Account.OnLedgerSettings.ThirdPartyDeposits.DepositAddressExceptionR
         Network.Account.OnLedgerSettings.ThirdPartyDeposits.DepositAddressExceptionRule.Allow -> ResourcePreference.ALLOWED
         Network.Account.OnLedgerSettings.ThirdPartyDeposits.DepositAddressExceptionRule.Deny -> ResourcePreference.DISALLOWED
     }
+}
+
+fun Profile.hidePersona(address: String): Profile {
+    val networkId = currentGateway.network.networkId()
+    return copy(
+        networks = networks.mapWhen(predicate = { it.networkID == networkId.value }, mutation = { network ->
+            val updatedAuthorizedDapps = network.authorizedDapps.mapWhen(predicate = { authorizedDapp ->
+                authorizedDapp.referencesToAuthorizedPersonas.any { it.identityAddress == address }
+            }, mutation = { authorizedDapp ->
+                val updatedReferences = authorizedDapp.referencesToAuthorizedPersonas.filter { it.identityAddress != address }
+                authorizedDapp.copy(referencesToAuthorizedPersonas = updatedReferences)
+            })
+            network.copy(
+                personas = network.personas.mapWhen(
+                    predicate = { it.address == address },
+                    mutation = { persona ->
+                        persona.copy(flags = (persona.flags + EntityFlag.DeletedByUser).distinct())
+                    }
+                ),
+                authorizedDapps = updatedAuthorizedDapps.filter { it.referencesToAuthorizedPersonas.isNotEmpty() }
+            )
+        })
+    )
+}
+
+fun Profile.hideAccount(address: String): Profile {
+    val networkId = currentGateway.network.networkId()
+
+    return copy(
+        networks = networks.mapWhen(predicate = { it.networkID == networkId.value }, mutation = { network ->
+            val updatedAuthorizedDapps = network.authorizedDapps.mapWhen(predicate = { authorizedDapp ->
+                authorizedDapp.referencesToAuthorizedPersonas.any { reference ->
+                    reference.sharedAccounts.ids.any { it == address }
+                }
+            }, mutation = { authorizedDapp ->
+                val updatedReferences =
+                    authorizedDapp.referencesToAuthorizedPersonas.filter { reference ->
+                        reference.sharedAccounts.ids.none { it == address }
+                    }
+                authorizedDapp.copy(referencesToAuthorizedPersonas = updatedReferences)
+            })
+            network.copy(
+                accounts = network.accounts.mapWhen(
+                    predicate = { it.address == address },
+                    mutation = { account ->
+                        account.copy(flags = (account.flags + EntityFlag.DeletedByUser).distinct())
+                    }
+                ),
+                authorizedDapps = updatedAuthorizedDapps.filter { it.referencesToAuthorizedPersonas.isNotEmpty() }
+            )
+        })
+    )
+}
+
+fun Profile.unhideAllEntities(): Profile {
+    val networkId = currentGateway.network.networkId()
+
+    return copy(
+        networks = networks.mapWhen(predicate = { it.networkID == networkId.value }, mutation = { network ->
+            network.copy(
+                personas = network.personas.map { persona ->
+                    persona.copy(flags = persona.flags - EntityFlag.DeletedByUser)
+                },
+                accounts = network.accounts.map { persona ->
+                    persona.copy(flags = persona.flags - EntityFlag.DeletedByUser)
+                }
+            )
+        })
+    )
 }

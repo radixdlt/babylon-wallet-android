@@ -3,11 +3,11 @@ package rdx.works.profile.domain
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
-import rdx.works.profile.data.model.pernetwork.hideAccount
-import rdx.works.profile.data.model.pernetwork.hidePersona
-import rdx.works.profile.data.model.pernetwork.unhideAllEntities
 import rdx.works.profile.data.repository.ProfileRepository
 import rdx.works.profile.data.repository.profile
+import rdx.works.profile.data.utils.hideAccount
+import rdx.works.profile.data.utils.hidePersona
+import rdx.works.profile.data.utils.unhideAllEntities
 import rdx.works.profile.di.coroutines.DefaultDispatcher
 import javax.inject.Inject
 

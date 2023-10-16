@@ -34,14 +34,14 @@ import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
 import com.babylon.wallet.android.utils.biometricAuthenticate
 
 @Composable
-fun AccountDevSettingsScreen(
-    viewModel: DevAccountSettingsViewModel,
+fun DevSettingsScreen(
+    viewModel: DevSettingsViewModel,
     onBackClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
     val state by viewModel.state.collectAsStateWithLifecycle()
-    AccountDevSettingsContent(
+    DevSettingsContent(
         modifier = modifier.navigationBarsPadding(),
         onBackClick = onBackClick,
         onGetFreeXrdClick = viewModel::onGetFreeXrdClick,
@@ -62,7 +62,7 @@ fun AccountDevSettingsScreen(
 }
 
 @Composable
-private fun AccountDevSettingsContent(
+private fun DevSettingsContent(
     onBackClick: () -> Unit,
     onGetFreeXrdClick: () -> Unit,
     faucetState: FaucetState,
@@ -152,9 +152,9 @@ private fun AccountDevSettingsContent(
 
 @Preview(showBackground = true)
 @Composable
-fun AccountSettingsPreview() {
+fun DevSettingsPreview() {
     RadixWalletTheme {
-        AccountDevSettingsContent(
+        DevSettingsContent(
             onBackClick = {},
             onGetFreeXrdClick = {},
             faucetState = FaucetState.Available(isEnabled = true),
