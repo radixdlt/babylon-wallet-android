@@ -28,6 +28,10 @@ class DepositGuaranteesViewModel @Inject constructor(
     }
 
     fun onDepositGuaranteeChanged(depositGuarantee: String) {
+        if (depositGuarantee.contains("-")) {
+            return
+        }
+        
         val updatedDepositGuarantee = depositGuarantee.toBigDecimalOrNull()?.divide(HUNDRED)
 
         _state.update { state ->
