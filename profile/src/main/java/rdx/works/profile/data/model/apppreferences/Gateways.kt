@@ -66,8 +66,8 @@ fun List<Radix.Gateway>.containsGateway(gateway: Radix.Gateway): Boolean {
     return this.any {
         // example: if the url is "https://mainnet.radixdlt.com" then the host is mainnet.radixdlt.com
         // example: if the url is "https://mainnet.radixdlt.com/" then the host is mainnet.radixdlt.com
-        val existedGateway = URI.create(it.url).host
+        val existingGateway = URI.create(it.url).host
         val gatewayHost = URI.create(gateway.url).host
-        it.network.id == gateway.network.id && existedGateway == gatewayHost
+        it.network.id == gateway.network.id && existingGateway == gatewayHost
     }
 }
