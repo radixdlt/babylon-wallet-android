@@ -71,7 +71,7 @@ import com.babylon.wallet.android.presentation.ui.composables.DefaultModalSheetL
 import com.babylon.wallet.android.presentation.ui.composables.NotBackedUpWarning
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
-import com.babylon.wallet.android.presentation.ui.composables.RedButton
+import com.babylon.wallet.android.presentation.ui.composables.WarningButton
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
 import com.babylon.wallet.android.presentation.ui.composables.SwitchSettingsItem
 import com.babylon.wallet.android.utils.biometricAuthenticateSuspend
@@ -352,7 +352,7 @@ private fun BackupScreenContent(
                             color = RadixTheme.colors.gray2,
                             style = RadixTheme.typography.body1HighImportance
                         )
-                        RedButton(
+                        WarningButton(
                             text = stringResource(R.string.androidProfileBackup_deleteWallet_confirmButton),
                             onClick = onDeleteWalletClick
                         )

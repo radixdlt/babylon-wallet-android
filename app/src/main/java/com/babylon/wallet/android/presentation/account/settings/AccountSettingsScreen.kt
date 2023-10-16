@@ -52,7 +52,7 @@ import com.babylon.wallet.android.presentation.ui.composables.BottomDialogDragHa
 import com.babylon.wallet.android.presentation.ui.composables.DefaultModalSheetLayout
 import com.babylon.wallet.android.presentation.ui.composables.DefaultSettingsItem
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
-import com.babylon.wallet.android.presentation.ui.composables.RedButton
+import com.babylon.wallet.android.presentation.ui.composables.WarningButton
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.launch
@@ -269,7 +269,7 @@ private fun AccountSettingsContent(
                 }
             }
             item {
-                RedButton(
+                WarningButton(
                     modifier = Modifier.padding(
                         horizontal = RadixTheme.dimensions.paddingLarge,
                         vertical = RadixTheme.dimensions.paddingDefault

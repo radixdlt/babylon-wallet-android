@@ -10,7 +10,7 @@ import androidx.compose.ui.graphics.Color
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 
 @Composable
-fun RedButton(text: String, onClick: () -> Unit, modifier: Modifier = Modifier) {
+fun WarningButton(text: String, onClick: () -> Unit, modifier: Modifier = Modifier) {
     Button(
         modifier = modifier.fillMaxWidth(),
         onClick = onClick,
