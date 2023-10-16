@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-  <string name="homePage_securityPromptBackup">Please back up your seed phrase</string>
+  <string name="homePage_securityPromptBackup">Please write down this Account\'s seed phrase</string>
   <string name="homePage_securityPromptRecover">Please recover your seed phrase</string>
-  <string name="homePage_backedUpMnemonicHeading">I have backed up this seed phrase</string>
+  <string name="homePage_backedUpMnemonicHeading">I have written down this seed phrase</string>
   <string name="homePage_createNewAccount">Create a New Account</string>
   <string name="homePage_legacyAccountHeading">Legacy</string>
   <string name="homePage_subtitle">Welcome. Here are all your Accounts on the Radix Network.</string>
@@ -649,21 +649,21 @@
   <string name="ledgerHardwareDevices_subtitleFailure">Could not find Ledger devices</string>
   <string name="displayMnemonics_cautionAlert_title">Use Caution</string>
   <string name="displayMnemonics_cautionAlert_revealButtonLabel">Reveal Seed Phrase</string>
-  <string name="displayMnemonics_cautionAlert_message">A seed phrase provides full control of its Accounts. Do not view in a public area. Back up the seed phrase words securely. Screenshots are disabled.</string>
+  <string name="displayMnemonics_cautionAlert_message">A seed phrase provides full control of its Accounts. Do not view in a public area. Write down the seed phrase words securely. Screenshots are disabled.</string>
   <string name="displayMnemonics_seedPhrases">Seed Phrases</string>
   <string name="displayMnemonics_connectedAccountsPersonasLabel_one">Connected to Personas and %d Account</string>
   <string name="displayMnemonics_connectedAccountsPersonasLabel_many">Connected to Personas and to %d Accounts</string>
   <string name="displayMnemonics_connectedAccountsLabel_one">Connected to %d Account</string>
   <string name="displayMnemonics_connectedAccountsLabel_many">Connected to %d Accounts</string>
   <string name="displayMnemonics_seedPhraseSecurityInfo">You are responsible for the security of your Seed Phrase</string>
-  <string name="displayMnemonics_backUpWarning">Back up this Seed Phrase</string>
+  <string name="displayMnemonics_backUpWarning">Write Down this Seed Phrase</string>
   <string name="revealSeedPhrase_title">Reveal Seed Phrase</string>
   <string name="revealSeedPhrase_warning">For your safety, make sure no one is looking at your screen. Taking a screen shot has been disabled.</string>
   <string name="revealSeedPhrase_wordLabel">Word %d</string>
   <string name="revealSeedPhrase_passphrase">Passphrase</string>
   <string name="revealSeedPhrase_warningDialog_title">Use Caution</string>
-  <string name="revealSeedPhrase_warningDialog_subtitle">Are you sure you have backed up your seed phrase?</string>
-  <string name="revealSeedPhrase_warningDialog_confirmButton">I have backed up this seed phrase</string>
+  <string name="revealSeedPhrase_warningDialog_subtitle">Are you sure you have written down your seed phrase?</string>
+  <string name="revealSeedPhrase_warningDialog_confirmButton">I have written down this seed phrase</string>
   <string name="seedPhrases_title">Seed Phrases</string>
   <string name="seedPhrases_message">A Seed Phrase provides full access to your accounts and funds. When viewing, ensure you’re in a safe environment and no one is looking at your screen.</string>
   <string name="seedPhrases_warning">You are responsible for the security of your Seed Phrase</string>
