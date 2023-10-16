@@ -10,6 +10,7 @@ import com.babylon.wallet.android.data.repository.cache.TagsColumn
 import com.babylon.wallet.android.data.repository.cache.TagsColumnConverter
 import com.babylon.wallet.android.domain.model.behaviours.AssetBehaviour
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNull
 import org.junit.Test
 
 class ProvidedConvertersTest {
@@ -68,4 +69,19 @@ class ProvidedConvertersTest {
         assertEquals(stringMetadataColumn, result)
     }
 
+    @Test
+    fun `assert null objects`() {
+        with(TagsColumnConverter()) {
+            assertNull(stringToTags(tagsToString(null)))
+        }
+        with(DappDefinitionsColumnConverter()) {
+            assertNull(stringToDappDefinitions(dAppDefinitionsToString(null)))
+        }
+        with(BehavioursColumnConverter()) {
+            assertNull(stringToBehaviours(behavioursToString(null)))
+        }
+        with(StringMetadataColumnConverter()) {
+            assertNull(stringToStringMetadata(stringMetadataToString(null)))
+        }
+    }
 }
