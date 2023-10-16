@@ -3,6 +3,7 @@ package rdx.works.profile.data.model.apppreferences
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import rdx.works.profile.data.model.Profile
+import java.net.URI
 
 @Serializable
 data class Gateways(
@@ -17,7 +18,7 @@ data class Gateways(
     }
 
     fun changeCurrent(gateway: Radix.Gateway): Gateways {
-        require(saved.contains(gateway))
+        require(saved.containsGateway(gateway))
         return copy(currentGatewayUrl = gateway.url)
     }
 
@@ -59,4 +60,14 @@ fun Profile.deleteGateway(
 ): Profile {
     val updatedGateways = appPreferences.gateways.delete(gateway)
     return copy(appPreferences = appPreferences.copy(gateways = updatedGateways))
+}
+
+fun List<Radix.Gateway>.containsGateway(gateway: Radix.Gateway): Boolean {
+    return this.any {
+        // example: if the url is "https://mainnet.radixdlt.com" then the host is mainnet.radixdlt.com
+        // example: if the url is "https://mainnet.radixdlt.com/" then the host is mainnet.radixdlt.com
+        val existedGateway = URI.create(it.url).host
+        val gatewayHost = URI.create(gateway.url).host
+        it.network.id == gateway.network.id && existedGateway == gatewayHost
+    }
 }
