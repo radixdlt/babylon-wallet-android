@@ -72,14 +72,14 @@ fun AccountSettingsScreen(
         initialValue = ModalBottomSheetValue.Hidden,
         skipHalfExpanded = true
     )
-    var hideAccountPrompt by remember { mutableStateOf(false) }
-    if (hideAccountPrompt) {
+    var showHideAccountPrompt by remember { mutableStateOf(false) }
+    if (showHideAccountPrompt) {
         BasicPromptAlertDialog(
             finish = {
                 if (it) {
                     viewModel.onHideAccount()
                 }
-                hideAccountPrompt = false
+                showHideAccountPrompt = false
             },
             text = {
                 Text(
@@ -174,7 +174,7 @@ fun AccountSettingsScreen(
             },
             accountAddress = state.accountAddress,
             onHideAccount = {
-                hideAccountPrompt = true
+                showHideAccountPrompt = true
             }
         )
     }
