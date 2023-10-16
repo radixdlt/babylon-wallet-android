@@ -81,6 +81,24 @@ class StringMetadataColumnConverter {
 
 }
 
+@Serializable
+data class NFTIdsColumn(val ids: List<String>)
+
+@ProvidedTypeConverter
+class NFTIdsColumnConverter {
+
+    @TypeConverter
+    fun stringToNFTIds(string: String?): NFTIdsColumn? {
+        return string?.let { NFTIdsColumn(ids = Json.decodeFromString(string)) }
+    }
+
+    @TypeConverter
+    fun nftIdsToString(column: NFTIdsColumn?): String? {
+        return column?.let { Json.encodeToString(it.ids) }
+    }
+
+}
+
 @ProvidedTypeConverter
 class BigDecimalColumnConverter {
 
