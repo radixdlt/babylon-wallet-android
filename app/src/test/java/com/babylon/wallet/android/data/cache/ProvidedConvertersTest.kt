@@ -4,6 +4,8 @@ import com.babylon.wallet.android.data.repository.cache.BehavioursColumn
 import com.babylon.wallet.android.data.repository.cache.BehavioursColumnConverter
 import com.babylon.wallet.android.data.repository.cache.DappDefinitionsColumn
 import com.babylon.wallet.android.data.repository.cache.DappDefinitionsColumnConverter
+import com.babylon.wallet.android.data.repository.cache.NFTIdsColumn
+import com.babylon.wallet.android.data.repository.cache.NFTIdsColumnConverter
 import com.babylon.wallet.android.data.repository.cache.StringMetadataColumn
 import com.babylon.wallet.android.data.repository.cache.StringMetadataColumnConverter
 import com.babylon.wallet.android.data.repository.cache.TagsColumn
@@ -70,6 +72,21 @@ class ProvidedConvertersTest {
     }
 
     @Test
+    fun `test nft ids column conversion`() {
+        val nftIdsColumn = NFTIdsColumn(ids = listOf(
+            "#1#",
+            "#2#",
+            "#3#"
+        ))
+        val converter = NFTIdsColumnConverter()
+
+        val string = converter.nftIdsToString(nftIdsColumn)
+        val result = converter.stringToNFTIds(string)
+
+        assertEquals(nftIdsColumn, result)
+    }
+
+    @Test
     fun `assert null objects`() {
         with(TagsColumnConverter()) {
             assertNull(stringToTags(tagsToString(null)))
@@ -82,6 +99,9 @@ class ProvidedConvertersTest {
         }
         with(StringMetadataColumnConverter()) {
             assertNull(stringToStringMetadata(stringMetadataToString(null)))
+        }
+        with(NFTIdsColumnConverter()) {
+            assertNull(stringToNFTIds(nftIdsToString(null)))
         }
     }
 }

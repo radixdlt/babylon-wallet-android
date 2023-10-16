@@ -6,6 +6,8 @@ import androidx.room.TypeConverters
 
 @Database(
     entities = [
+        OwnedFungibleEntity::class,
+        OwnedNonFungibleEntity::class,
         FungibleResourceEntity::class,
         NonFungibleResourceEntity::class,
         NFTEntity::class
@@ -15,6 +17,7 @@ import androidx.room.TypeConverters
 @TypeConverters(
     BigDecimalColumnConverter::class,
     InstantColumnConverter::class,
+    NFTIdsColumnConverter::class,
     TagsColumnConverter::class,
     DappDefinitionsColumnConverter::class,
     BehavioursColumnConverter::class,
