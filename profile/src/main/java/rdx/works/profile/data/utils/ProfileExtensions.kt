@@ -206,7 +206,7 @@ fun Profile.hidePersona(address: String): Profile {
                 personas = network.personas.mapWhen(
                     predicate = { it.address == address },
                     mutation = { persona ->
-                        persona.copy(flags = (persona.flags + EntityFlag.DeletedByUser).distinct())
+                        persona.copy(flags = persona.flags + EntityFlag.DeletedByUser)
                     }
                 ),
                 authorizedDapps = updatedAuthorizedDapps.filter { it.referencesToAuthorizedPersonas.isNotEmpty() }
@@ -235,7 +235,7 @@ fun Profile.hideAccount(address: String): Profile {
                 accounts = network.accounts.mapWhen(
                     predicate = { it.address == address },
                     mutation = { account ->
-                        account.copy(flags = (account.flags + EntityFlag.DeletedByUser).distinct())
+                        account.copy(flags = account.flags + EntityFlag.DeletedByUser)
                     }
                 ),
                 authorizedDapps = updatedAuthorizedDapps.filter { it.referencesToAuthorizedPersonas.isNotEmpty() }

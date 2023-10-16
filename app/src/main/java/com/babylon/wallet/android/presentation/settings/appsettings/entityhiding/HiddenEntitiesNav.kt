@@ -9,12 +9,12 @@ import com.google.accompanist.navigation.animation.composable
 
 private const val ROUTE = "entity_hiding_route"
 
-fun NavController.entityHidingScreen() {
+fun NavController.hiddenEntitiesScreen() {
     navigate(ROUTE)
 }
 
 @OptIn(ExperimentalAnimationApi::class)
-fun NavGraphBuilder.entityHidingScreen(
+fun NavGraphBuilder.hiddenEntitiesScreen(
     onBackClick: () -> Unit
 ) {
     composable(
@@ -26,7 +26,7 @@ fun NavGraphBuilder.entityHidingScreen(
             slideOutOfContainer(AnimatedContentScope.SlideDirection.Right)
         }
     ) {
-        EntityHidingScreen(
+        HiddenEntitiesScreen(
             viewModel = hiltViewModel(),
             onBackClick = onBackClick
         )

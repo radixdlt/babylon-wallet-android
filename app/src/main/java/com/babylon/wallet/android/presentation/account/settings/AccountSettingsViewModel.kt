@@ -64,7 +64,7 @@ class AccountSettingsViewModel @Inject constructor(
     }
 
     private fun shouldShowDeveloperSettings(faucetState: FaucetState) =
-        faucetState is FaucetState.Available || BuildConfig.DEBUG_MODE || BuildConfig.EXPERIMENTAL_FEATURES_ENABLED
+        faucetState is FaucetState.Available || BuildConfig.EXPERIMENTAL_FEATURES_ENABLED
 
     private fun loadAccount() {
         viewModelScope.launch {

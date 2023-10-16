@@ -17,7 +17,7 @@ import rdx.works.profile.domain.hiddenPersonasOnCurrentNetwork
 import javax.inject.Inject
 
 @HiltViewModel
-class EntityHidingViewModel @Inject constructor(
+class HiddenEntitiesViewModel @Inject constructor(
     private val getProfileUseCase: GetProfileUseCase,
     private val changeEntityVisibilityUseCase: ChangeEntityVisibilityUseCase
 ) : StateViewModel<State>(), OneOffEventHandler<Event> by OneOffEventHandlerImpl() {

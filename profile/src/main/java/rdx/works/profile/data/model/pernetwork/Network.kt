@@ -93,7 +93,7 @@ data class Network(
         @SerialName("onLedgerSettings") val onLedgerSettings: OnLedgerSettings,
 
         @EncodeDefault
-        override val flags: List<EntityFlag> = emptyList()
+        override val flags: Set<EntityFlag> = emptySet()
 
     ) : Entity() {
 
@@ -304,7 +304,7 @@ data class Network(
         @SerialName("securityState") override val securityState: SecurityState,
 
         @EncodeDefault
-        override val flags: List<EntityFlag> = emptyList()
+        override val flags: Set<EntityFlag> = emptySet()
     ) : Entity() {
 
         companion object {

@@ -9,5 +9,5 @@ sealed class Entity {
     abstract val securityState: SecurityState
 
     @SerialName("flags")
-    abstract val flags: List<EntityFlag>
+    abstract val flags: Set<EntityFlag>
 }

@@ -31,8 +31,8 @@ import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDi
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 
 @Composable
-fun EntityHidingScreen(
-    viewModel: EntityHidingViewModel,
+fun HiddenEntitiesScreen(
+    viewModel: HiddenEntitiesViewModel,
     onBackClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -45,7 +45,7 @@ fun EntityHidingScreen(
             }
         }
     }
-    EntityHidingContent(
+    HiddenEntitiesContent(
         modifier = modifier,
         onBackClick = onBackClick,
         hiddenAccounts = state.hiddenAccounts,
@@ -55,7 +55,7 @@ fun EntityHidingScreen(
 }
 
 @Composable
-private fun EntityHidingContent(
+private fun HiddenEntitiesContent(
     modifier: Modifier = Modifier,
     onBackClick: () -> Unit,
     hiddenAccounts: Int,
@@ -122,7 +122,7 @@ private fun EntityHidingContent(
                     .fillMaxWidth()
                     .padding(RadixTheme.dimensions.paddingMedium),
                 text = stringResource(
-                    if (hiddenAccounts == 1) {
+                    if (hiddenPersonas == 1) {
                         R.string.appSettings_entityHiding_hiddenPersona
                     } else {
                         R.string.appSettings_entityHiding_hiddenPersonas
@@ -160,9 +160,9 @@ private fun EntityHidingContent(
 
 @Preview(showBackground = true)
 @Composable
-fun EntityHidingContentPreview() {
+fun HiddenEntitiesContentPreview() {
     RadixWalletTheme {
-        EntityHidingContent(
+        HiddenEntitiesContent(
             onBackClick = {},
             hiddenAccounts = 1,
             hiddenPersonas = 2,
