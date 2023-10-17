@@ -31,7 +31,7 @@ class DepositGuaranteesViewModel @Inject constructor(
         if (depositGuarantee.contains("-")) {
             return
         }
-        
+
         val updatedDepositGuarantee = depositGuarantee.toBigDecimalOrNull()?.divide(HUNDRED)
 
         _state.update { state ->
