@@ -91,6 +91,7 @@ hiltCompiler = { module = "com.google.dagger:hilt-android-compiler", version.ref
 biometricKtx = { module = "androidx.biometric:biometric-ktx", version.ref = "biometricKtx" }
 coilCompose = { module = "io.coil-kt:coil-compose", version.ref = "coilCompose" }
 coilComposeSvg = { module = "io.coil-kt:coil-svg", version.ref = "coilCompose" }
+coilComposeGif = { module = "io.coil-kt:coil-gif", version.ref = "coilCompose" }
 kotlinxSerialization = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinxSerialization" }
 retAndroid = { module = "com.radixdlt:radix-engine-toolkit-android", version.ref = "ret" }
 retKotlin = { module = "com.radixdlt:radix-engine-toolkit-kotlin", version.ref = "ret" }
