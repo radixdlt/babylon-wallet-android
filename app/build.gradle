@@ -70,6 +70,7 @@ android {
         // keep the default build types (debug, release) at the TOP of the closure
         // if you want your other custom build types to inherit the properties of the default ones
         debug {
+            applicationIdSuffix ".debug"
             signingConfig signingConfigs.debug
             testCoverageEnabled true
             versionNameSuffix "-" + rootProject.ext.internalVersionName + "-" + getCommitHash()

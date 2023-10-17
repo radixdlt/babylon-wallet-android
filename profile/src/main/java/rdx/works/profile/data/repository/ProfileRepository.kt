@@ -23,7 +23,6 @@ import rdx.works.profile.data.model.ProfileSnapshotRelaxed
 import rdx.works.profile.data.model.ProfileState
 import rdx.works.profile.datastore.EncryptedPreferencesManager
 import rdx.works.profile.di.ProfileSerializer
-import rdx.works.profile.di.RelaxedSerializer
 import rdx.works.profile.di.coroutines.ApplicationScope
 import rdx.works.profile.di.coroutines.IoDispatcher
 import javax.inject.Inject
@@ -57,9 +56,8 @@ val ProfileRepository.profile: Flow<Profile>
 class ProfileRepositoryImpl @Inject constructor(
     private val encryptedPreferencesManager: EncryptedPreferencesManager,
     private val preferencesManager: PreferencesManager,
-    @RelaxedSerializer private val relaxedJson: Json,
     private val backupManager: BackupManager,
-    @ProfileSerializer private val profileSnapshotJson: Json,
+    @ProfileSerializer private val profileJson: Json,
     @IoDispatcher private val ioDispatcher: CoroutineDispatcher,
     @ApplicationScope applicationScope: CoroutineScope
 ) : ProfileRepository {
@@ -93,7 +91,7 @@ class ProfileRepositoryImpl @Inject constructor(
             header = profile.header.copy(lastModified = InstantGenerator())
         )
         withContext(ioDispatcher) {
-            val profileContent = profileSnapshotJson.encodeToString(profileToSave.snapshot())
+            val profileContent = profileJson.encodeToString(profileToSave.snapshot())
             // Store profile
             encryptedPreferencesManager.putProfileSnapshot(profileContent)
 
@@ -123,13 +121,13 @@ class ProfileRepositoryImpl @Inject constructor(
     @Suppress("SwallowedException")
     override fun deriveProfileState(content: String): ProfileState {
         val snapshotRelaxed = try {
-            relaxedJson.decodeFromString<ProfileSnapshotRelaxed>(content)
+            profileJson.decodeFromString<ProfileSnapshotRelaxed>(content)
         } catch (exception: IllegalArgumentException) {
             return ProfileState.Incompatible
         }
 
         return if (snapshotRelaxed.isValid) {
-            val snapshot = profileSnapshotJson.decodeFromString<ProfileSnapshot>(content)
+            val snapshot = profileJson.decodeFromString<ProfileSnapshot>(content)
             ProfileState.Restored(snapshot.toProfile())
         } else {
             ProfileState.Incompatible

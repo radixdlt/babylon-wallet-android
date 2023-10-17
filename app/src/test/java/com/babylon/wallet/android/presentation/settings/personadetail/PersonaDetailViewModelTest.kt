@@ -24,6 +24,7 @@ import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Test
+import rdx.works.profile.domain.ChangeEntityVisibilityUseCase
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.account.AddAuthSigningFactorInstanceUseCase
 
@@ -35,6 +36,7 @@ internal class PersonaDetailViewModelTest : StateViewModelTest<PersonaDetailView
     private val savedStateHandle = mockk<SavedStateHandle>()
     private val getDAppWithAssociatedResourcesUseCase = mockk<GetDAppWithMetadataAndAssociatedResourcesUseCase>()
     private val incomingRequestRepository = mockk<IncomingRequestRepository>()
+    private val changeEntityVisibilityUseCase = mockk<ChangeEntityVisibilityUseCase>()
     private val addAuthSigningFactorInstanceUseCase = mockk<AddAuthSigningFactorInstanceUseCase>()
     private val rolaClient = mockk<ROLAClient>()
     private val eventBus = mockk<AppEventBus>()
@@ -48,7 +50,8 @@ internal class PersonaDetailViewModelTest : StateViewModelTest<PersonaDetailView
             rolaClient,
             incomingRequestRepository,
             getDAppWithAssociatedResourcesUseCase,
-            savedStateHandle
+            savedStateHandle,
+            changeEntityVisibilityUseCase
         )
     }
 

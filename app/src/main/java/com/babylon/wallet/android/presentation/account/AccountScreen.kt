@@ -432,8 +432,8 @@ fun AssetsContent(
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         ActionableAddressView(
-                            modifier = Modifier.padding(bottom = RadixTheme.dimensions.paddingXLarge),
                             address = accountAddress,
+                            modifier = Modifier.padding(bottom = RadixTheme.dimensions.paddingXLarge),
                             textStyle = RadixTheme.typography.body2HighImportance,
                             textColor = RadixTheme.colors.white
                         )

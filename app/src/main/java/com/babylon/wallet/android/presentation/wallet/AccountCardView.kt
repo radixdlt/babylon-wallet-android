@@ -75,11 +75,11 @@ fun AccountCardView(
         )
 
         ActionableAddressView(
+            address = accountWithResources.account.address,
             modifier = Modifier.constrainAs(addressLabel) {
                 top.linkTo(nameLabel.bottom, margin = 8.dp)
                 start.linkTo(parent.start)
             },
-            address = accountWithResources.account.address,
             textStyle = RadixTheme.typography.body2HighImportance,
             textColor = RadixTheme.colors.white.copy(alpha = 0.8f)
         )

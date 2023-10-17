@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -25,56 +24,81 @@ import androidx.compose.material3.Divider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.babylon.wallet.android.BuildConfig
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
 import com.babylon.wallet.android.designsystem.composable.RadixSecondaryButton
 import com.babylon.wallet.android.designsystem.composable.RadixTextField
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
-import com.babylon.wallet.android.domain.usecases.FaucetState
-import com.babylon.wallet.android.presentation.common.UiMessage
-import com.babylon.wallet.android.presentation.status.signing.SigningStatusBottomDialog
+import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.presentation.ui.composables.AccountQRCodeView
+import com.babylon.wallet.android.presentation.ui.composables.ActionableAddressView
+import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.BottomDialogDragHandle
 import com.babylon.wallet.android.presentation.ui.composables.DefaultModalSheetLayout
 import com.babylon.wallet.android.presentation.ui.composables.DefaultSettingsItem
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
-import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
-import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
-import com.babylon.wallet.android.utils.biometricAuthenticate
+import com.babylon.wallet.android.presentation.ui.composables.WarningButton
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.launch
 
+@OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun AccountSettingsScreen(
     viewModel: AccountSettingsViewModel,
     onBackClick: () -> Unit,
     modifier: Modifier = Modifier,
-    onSettingItemClick: (AccountSettingItem, address: String) -> Unit
+    onSettingItemClick: (AccountSettingItem, address: String) -> Unit,
+    onHideAccountClick: () -> Unit,
 ) {
-    val context = LocalContext.current
     val state by viewModel.state.collectAsStateWithLifecycle()
     val scope = rememberCoroutineScope()
     val bottomSheetState = rememberModalBottomSheetState(
         initialValue = ModalBottomSheetValue.Hidden,
         skipHalfExpanded = true
     )
+    var showHideAccountPrompt by remember { mutableStateOf(false) }
+    if (showHideAccountPrompt) {
+        BasicPromptAlertDialog(
+            finish = {
+                if (it) {
+                    viewModel.onHideAccount()
+                }
+                showHideAccountPrompt = false
+            },
+            text = {
+                Text(
+                    text = stringResource(id = R.string.accountSettings_hideAccountConfirmation),
+                    style = RadixTheme.typography.body2Regular,
+                    color = RadixTheme.colors.gray1
+                )
+            },
+            confirmText = stringResource(id = R.string.common_continue)
+        )
+    }
 
+    LaunchedEffect(Unit) {
+        viewModel.oneOffEvent.collect { event ->
+            when (event) {
+                Event.AccountHidden -> onHideAccountClick()
+            }
+        }
+    }
     BackHandler(enabled = bottomSheetState.isVisible) {
         scope.launch {
             bottomSheetState.hide()
@@ -111,6 +135,7 @@ fun AccountSettingsScreen(
                         }
                     )
                 }
+
                 AccountPreferenceUiState.BottomSheetContent.AddressQRCode -> {
                     AddressQRCodeSheet(
                         accountAddress = state.accountAddress,
@@ -122,15 +147,14 @@ fun AccountSettingsScreen(
                         }
                     )
                 }
+
                 AccountPreferenceUiState.BottomSheetContent.None -> {}
             }
         }
     ) {
         AccountSettingsContent(
-            modifier = Modifier.navigationBarsPadding(),
             onBackClick = onBackClick,
             accountName = state.accountName,
-            onGetFreeXrdClick = viewModel::onGetFreeXrdClick,
             onShowRenameAccountClick = {
                 scope.launch {
                     viewModel.setBottomSheetContentToRenameAccount()
@@ -143,31 +167,16 @@ fun AccountSettingsScreen(
                     bottomSheetState.show()
                 }
             },
-            faucetState = state.faucetState,
-            isXrdLoading = state.isFreeXRDLoading,
-            isAuthSigningLoading = state.isLoading,
-            onMessageShown = viewModel::onMessageShown,
-            error = state.error,
-            hasAuthKey = state.hasAuthKey,
-            onCreateAndUploadAuthKey = {
-                context.biometricAuthenticate {
-                    if (it) {
-                        viewModel.onCreateAndUploadAuthKey()
-                    }
-                }
-            },
+            modifier = Modifier.navigationBarsPadding(),
             settingsSections = state.settingsSections,
             onSettingClick = {
                 onSettingItemClick(it, state.accountAddress)
+            },
+            accountAddress = state.accountAddress,
+            onHideAccount = {
+                showHideAccountPrompt = true
             }
         )
-        state.interactionState?.let {
-            SigningStatusBottomDialog(
-                modifier = Modifier.fillMaxHeight(0.8f),
-                onDismissDialogClick = viewModel::onDismissSigning,
-                interactionState = it
-            )
-        }
     }
 }
 
@@ -175,26 +184,14 @@ fun AccountSettingsScreen(
 private fun AccountSettingsContent(
     onBackClick: () -> Unit,
     accountName: String,
-    onGetFreeXrdClick: () -> Unit,
     onShowRenameAccountClick: () -> Unit,
     onShowAddressQRCodeClick: () -> Unit,
-    faucetState: FaucetState,
-    isXrdLoading: Boolean,
-    isAuthSigningLoading: Boolean,
-    onMessageShown: () -> Unit,
-    error: UiMessage?,
     modifier: Modifier = Modifier,
-    hasAuthKey: Boolean,
-    onCreateAndUploadAuthKey: () -> Unit,
     settingsSections: ImmutableList<AccountSettingsSection>,
-    onSettingClick: (AccountSettingItem) -> Unit
+    onSettingClick: (AccountSettingItem) -> Unit,
+    accountAddress: String,
+    onHideAccount: () -> Unit
 ) {
-    val snackBarHostState = remember { SnackbarHostState() }
-    SnackbarUIMessage(
-        message = error,
-        snackbarHostState = snackBarHostState,
-        onMessageShown = onMessageShown
-    )
     Scaffold(
         modifier = modifier,
         topBar = {
@@ -204,21 +201,34 @@ private fun AccountSettingsContent(
                 windowInsets = WindowInsets.statusBars
             )
         },
-        snackbarHost = {
-            RadixSnackbarHost(
-                modifier = Modifier.padding(RadixTheme.dimensions.paddingDefault),
-                hostState = snackBarHostState
-            )
-        },
         containerColor = RadixTheme.colors.gray5
     ) { padding ->
-        val context = LocalContext.current
         LazyColumn(
             modifier = Modifier
                 .padding(padding)
                 .fillMaxSize()
                 .background(RadixTheme.colors.gray5)
         ) {
+            item {
+                ActionableAddressView(
+                    address = accountAddress,
+                    modifier = Modifier.padding(
+                        horizontal = RadixTheme.dimensions.paddingLarge,
+                        vertical = RadixTheme.dimensions.paddingSmall
+                    ),
+                    textStyle = RadixTheme.typography.body2Regular,
+                    textColor = RadixTheme.colors.gray2,
+                    shouldTruncateAddressForDisplay = false
+                )
+                RadixSecondaryButton(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = RadixTheme.dimensions.paddingLarge),
+                    text = stringResource(R.string.addressAction_showAccountQR),
+                    onClick = onShowAddressQRCodeClick
+                )
+                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
+            }
             settingsSections.forEach { section ->
                 item {
                     Text(
@@ -259,56 +269,13 @@ private fun AccountSettingsContent(
                 }
             }
             item {
-                if (faucetState is FaucetState.Available) {
-                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSmall))
-                    RadixSecondaryButton(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = RadixTheme.dimensions.paddingLarge),
-                        text = stringResource(R.string.accountSettings_getXrdTestTokens),
-                        onClick = {
-                            context.biometricAuthenticate { authenticatedSuccessfully ->
-                                if (authenticatedSuccessfully) {
-                                    onGetFreeXrdClick()
-                                }
-                            }
-                        },
-                        isLoading = isXrdLoading,
-                        enabled = !isXrdLoading && faucetState.isEnabled
-                    )
-                }
-                if (isXrdLoading) {
-                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSmall))
-                    Text(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = RadixTheme.dimensions.paddingLarge),
-                        text = stringResource(R.string.accountSettings_loadingPrompt),
-                        style = RadixTheme.typography.body2Regular,
-                        color = RadixTheme.colors.gray1,
-                    )
-                }
-                if (BuildConfig.EXPERIMENTAL_FEATURES_ENABLED && !hasAuthKey) {
-                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSmall))
-                    RadixSecondaryButton(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = RadixTheme.dimensions.paddingLarge),
-                        text = stringResource(id = R.string.biometrics_prompt_createSignAuthKey),
-                        onClick = onCreateAndUploadAuthKey,
-                        isLoading = isAuthSigningLoading,
-                        enabled = !isAuthSigningLoading,
-                        throttleClicks = true
-                    )
-                }
-                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSmall))
-                RadixSecondaryButton(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = RadixTheme.dimensions.paddingLarge),
-                    text = stringResource(R.string.addressAction_showAccountQR),
-                    onClick = onShowAddressQRCodeClick,
-                    enabled = !isXrdLoading
+                WarningButton(
+                    modifier = Modifier.padding(
+                        horizontal = RadixTheme.dimensions.paddingLarge,
+                        vertical = RadixTheme.dimensions.paddingDefault
+                    ),
+                    text = stringResource(R.string.accountSettings_hideThisAccount),
+                    onClick = onHideAccount
                 )
             }
         }
@@ -417,16 +384,8 @@ fun AccountSettingsPreview() {
         AccountSettingsContent(
             onBackClick = {},
             accountName = "my cool account",
-            onGetFreeXrdClick = {},
             onShowRenameAccountClick = {},
             onShowAddressQRCodeClick = {},
-            faucetState = FaucetState.Available(isEnabled = true),
-            isXrdLoading = false,
-            isAuthSigningLoading = false,
-            onMessageShown = {},
-            error = null,
-            hasAuthKey = false,
-            onCreateAndUploadAuthKey = {},
             settingsSections = persistentListOf(
                 AccountSettingsSection.AccountSection(
                     listOf(
@@ -435,7 +394,9 @@ fun AccountSettingsPreview() {
                     )
                 )
             ),
-            onSettingClick = {}
+            onSettingClick = {},
+            accountAddress = SampleDataProvider().randomAddress(),
+            onHideAccount = {}
         )
     }
 }

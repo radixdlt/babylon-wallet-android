@@ -31,8 +31,6 @@ import androidx.compose.material.ModalBottomSheetState
 import androidx.compose.material.ModalBottomSheetValue
 import androidx.compose.material.rememberModalBottomSheetState
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHostState
@@ -47,7 +45,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.onFocusChanged
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
@@ -76,6 +73,7 @@ import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAp
 import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
 import com.babylon.wallet.android.presentation.ui.composables.SwitchSettingsItem
+import com.babylon.wallet.android.presentation.ui.composables.WarningButton
 import com.babylon.wallet.android.utils.biometricAuthenticateSuspend
 import com.babylon.wallet.android.utils.formattedSpans
 import kotlinx.coroutines.launch
@@ -354,22 +352,10 @@ private fun BackupScreenContent(
                             color = RadixTheme.colors.gray2,
                             style = RadixTheme.typography.body1HighImportance
                         )
-
-                        Button(
-                            modifier = Modifier.fillMaxWidth(),
-                            onClick = onDeleteWalletClick,
-                            shape = RadixTheme.shapes.roundedRectSmall,
-                            colors = ButtonDefaults.buttonColors(
-                                contentColor = Color.White,
-                                containerColor = RadixTheme.colors.red1
-                            )
-                        ) {
-                            Text(
-                                text = stringResource(R.string.androidProfileBackup_deleteWallet_confirmButton),
-                                style = RadixTheme.typography.body1Header,
-                                maxLines = 1,
-                            )
-                        }
+                        WarningButton(
+                            text = stringResource(R.string.androidProfileBackup_deleteWallet_confirmButton),
+                            onClick = onDeleteWalletClick
+                        )
                     }
                 }
 

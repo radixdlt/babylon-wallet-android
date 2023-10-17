@@ -1,4 +1,5 @@
 @file:OptIn(ExperimentalSerializationApi::class)
+@file:Suppress("TooManyFunctions")
 
 package rdx.works.profile.data.model.pernetwork
 
@@ -20,6 +21,7 @@ import rdx.works.profile.data.model.Profile
 import rdx.works.profile.data.model.compressedPublicKey
 import rdx.works.profile.data.model.currentGateway
 import rdx.works.profile.data.model.factorsources.DeviceFactorSource
+import rdx.works.profile.data.model.factorsources.EntityFlag
 import rdx.works.profile.data.model.factorsources.FactorSourceKind
 import rdx.works.profile.data.model.factorsources.LedgerHardwareWalletFactorSource
 import rdx.works.profile.data.model.factorsources.Slip10Curve
@@ -88,9 +90,12 @@ data class Network(
         /**
          * The on ledger synced settings for this account
          */
-        @SerialName("onLedgerSettings") val onLedgerSettings: OnLedgerSettings
+        @SerialName("onLedgerSettings") val onLedgerSettings: OnLedgerSettings,
 
-    ) : Entity {
+        @EncodeDefault
+        override val flags: Set<EntityFlag> = emptySet()
+
+    ) : Entity() {
 
         @Serializable
         data class OnLedgerSettings(
@@ -296,8 +301,11 @@ data class Network(
         /**
          * Security of this persona
          */
-        @SerialName("securityState") override val securityState: SecurityState
-    ) : Entity {
+        @SerialName("securityState") override val securityState: SecurityState,
+
+        @EncodeDefault
+        override val flags: Set<EntityFlag> = emptySet()
+    ) : Entity() {
 
         companion object {
             @Suppress("LongParameterList") // TODO refine this later on

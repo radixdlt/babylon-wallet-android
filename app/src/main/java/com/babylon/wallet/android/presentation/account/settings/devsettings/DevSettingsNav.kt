@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.presentation.account.settings
+package com.babylon.wallet.android.presentation.account.settings.devsettings
 
 import androidx.annotation.VisibleForTesting
 import androidx.compose.animation.AnimatedContentScope
@@ -15,7 +15,7 @@ import com.google.accompanist.navigation.animation.composable
 @VisibleForTesting
 internal const val ARG_ACCOUNT_SETTINGS_ADDRESS = "arg_account_settings_address"
 
-internal class AccountSettingsArgs(
+internal class DevSettingsArgs(
     val address: String
 ) {
     constructor(savedStateHandle: SavedStateHandle) : this(
@@ -23,22 +23,16 @@ internal class AccountSettingsArgs(
     )
 }
 
-fun NavController.accountSettings(
-    address: String
-) {
-    navigate("account_settings_route/$address") {
-        launchSingleTop = true
-    }
+fun NavController.devSettings(address: String) {
+    navigate("dev_account_settings_route/$address")
 }
 
 @OptIn(ExperimentalAnimationApi::class)
-fun NavGraphBuilder.accountSettings(
-    onBackClick: () -> Unit,
-    onAccountSettingItemClick: (AccountSettingItem, address: String) -> Unit,
-    onHideAccountClick: () -> Unit
+fun NavGraphBuilder.devSettings(
+    onBackClick: () -> Unit
 ) {
     composable(
-        route = "account_settings_route/{$ARG_ACCOUNT_SETTINGS_ADDRESS}",
+        route = "dev_account_settings_route/{$ARG_ACCOUNT_SETTINGS_ADDRESS}",
         arguments = listOf(
             navArgument(ARG_ACCOUNT_SETTINGS_ADDRESS) { type = NavType.StringType }
         ),
@@ -55,11 +49,9 @@ fun NavGraphBuilder.accountSettings(
             EnterTransition.None
         }
     ) {
-        AccountSettingsScreen(
+        DevSettingsScreen(
             viewModel = hiltViewModel(),
-            onBackClick = onBackClick,
-            onSettingItemClick = onAccountSettingItemClick,
-            onHideAccountClick = onHideAccountClick
+            onBackClick = onBackClick
         )
     }
 }

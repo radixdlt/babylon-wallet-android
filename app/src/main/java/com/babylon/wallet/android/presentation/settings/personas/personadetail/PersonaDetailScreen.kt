@@ -22,8 +22,12 @@ import androidx.compose.material3.Divider
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -41,12 +45,14 @@ import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.domain.model.DAppWithMetadataAndAssociatedResources
 import com.babylon.wallet.android.presentation.common.FullscreenCircularProgressContent
 import com.babylon.wallet.android.presentation.settings.authorizeddapps.dappdetail.DAppDetailsSheetContent
+import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.DefaultModalSheetLayout
 import com.babylon.wallet.android.presentation.ui.composables.GrayBackgroundWrapper
 import com.babylon.wallet.android.presentation.ui.composables.PersonaDataFieldRow
 import com.babylon.wallet.android.presentation.ui.composables.PersonaDataStringField
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
+import com.babylon.wallet.android.presentation.ui.composables.WarningButton
 import com.babylon.wallet.android.presentation.ui.composables.card.DappCard
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import com.babylon.wallet.android.utils.biometricAuthenticate
@@ -64,22 +70,51 @@ fun PersonaDetailScreen(
 ) {
     val context = LocalContext.current
     val state by viewModel.state.collectAsStateWithLifecycle()
+    LaunchedEffect(Unit) {
+        viewModel.oneOffEvent.collect { event ->
+            when (event) {
+                Event.Close -> onBackClick()
+            }
+        }
+    }
+    var showHidePersonaPrompt by remember { mutableStateOf(false) }
+    if (showHidePersonaPrompt) {
+        BasicPromptAlertDialog(
+            finish = {
+                if (it) {
+                    viewModel.onHidePersona()
+                }
+                showHidePersonaPrompt = false
+            },
+            text = {
+                Text(
+                    text = stringResource(id = R.string.authorizedDapps_personaDetails_hidePersonaConfirmation),
+                    style = RadixTheme.typography.body2Regular,
+                    color = RadixTheme.colors.gray1
+                )
+            },
+            confirmText = stringResource(id = R.string.common_continue)
+        )
+    }
     PersonaDetailContent(
-        onBackClick = onBackClick,
         modifier = modifier,
+        onBackClick = onBackClick,
         persona = state.persona,
         onEditPersona = onEditPersona,
         authorizedDapps = state.authorizedDapps,
         selectedDApp = state.selectedDApp,
         onDAppClick = viewModel::onDAppClick,
         hasAuthKey = state.hasAuthKey,
-        loading = state.loading,
         onCreateAndUploadAuthKey = {
             context.biometricAuthenticate {
                 if (it) {
                     viewModel.onCreateAndUploadAuthKey()
                 }
             }
+        },
+        loading = state.loading,
+        onHidePersona = {
+            showHidePersonaPrompt = true
         }
     )
 }
@@ -96,7 +131,8 @@ private fun PersonaDetailContent(
     onDAppClick: (DAppWithMetadataAndAssociatedResources) -> Unit,
     hasAuthKey: Boolean,
     onCreateAndUploadAuthKey: () -> Unit,
-    loading: Boolean
+    loading: Boolean,
+    onHidePersona: () -> Unit
 ) {
     val bottomSheetState =
         rememberModalBottomSheetState(initialValue = ModalBottomSheetValue.Hidden, skipHalfExpanded = true)
@@ -149,7 +185,8 @@ private fun PersonaDetailContent(
                     onEditPersona = onEditPersona,
                     hasAuthKey = hasAuthKey,
                     onCreateAndUploadAuthKey = onCreateAndUploadAuthKey,
-                    loading = loading
+                    loading = loading,
+                    onHidePersona = onHidePersona
                 )
             } else {
                 FullscreenCircularProgressContent()
@@ -167,7 +204,8 @@ private fun PersonaDetailList(
     onEditPersona: (String) -> Unit,
     hasAuthKey: Boolean,
     onCreateAndUploadAuthKey: () -> Unit,
-    loading: Boolean
+    loading: Boolean,
+    onHidePersona: () -> Unit
 ) {
     LazyColumn(
         contentPadding = PaddingValues(vertical = dimensions.paddingDefault),
@@ -262,16 +300,25 @@ private fun PersonaDetailList(
                 }
             }
         }
+        item {
+            Spacer(modifier = Modifier.height(dimensions.paddingDefault))
+            WarningButton(
+                modifier = Modifier
+                    .padding(horizontal = dimensions.paddingDefault),
+                text = stringResource(id = R.string.authorizedDapps_personaDetails_hideThisPersona),
+                onClick = onHidePersona
+            )
+        }
     }
 }
 
 @Preview(showBackground = true)
 @Composable
-fun DappDetailContentPreview() {
+fun PersonaDetailContentPreview() {
     RadixWalletTheme {
         PersonaDetailContent(
-            onBackClick = {},
             modifier = Modifier.fillMaxSize(),
+            onBackClick = {},
             persona = SampleDataProvider().samplePersona(),
             onEditPersona = {},
             authorizedDapps = persistentListOf(),
@@ -279,7 +326,8 @@ fun DappDetailContentPreview() {
             onDAppClick = {},
             hasAuthKey = false,
             onCreateAndUploadAuthKey = {},
-            loading = false
+            loading = false,
+            onHidePersona = {}
         )
     }
 }
