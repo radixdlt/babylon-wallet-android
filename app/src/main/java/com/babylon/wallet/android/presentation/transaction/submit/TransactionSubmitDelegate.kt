@@ -225,35 +225,42 @@ class TransactionSubmitDelegate @Inject constructor(
 //                }
 //            }
             (error as? RadixWalletException)?.let { radixWalletException ->
-                val cancelled = radixWalletException is RadixWalletException.SignatureCancelledException
-                val failedToSign = radixWalletException is RadixWalletException.PrepareTransactionException.SignCompiledTransactionIntent
-                val failedToCollectLedgerSignature = radixWalletException is RadixWalletException.LedgerCommunicationFailure
-                if (cancelled || failedToCollectLedgerSignature || failedToSign) {
-                    state.update {
-                        it.copy(
-                            isSubmitting = false,
-                            error = if (failedToSign) {
-                                UiMessage.ErrorMessage(radixWalletException)
-                            } else {
-                                it.error
-                            }
+                when (radixWalletException) {
+                    is RadixWalletException.SignatureCancelledException,
+                    is RadixWalletException.PrepareTransactionException.SignCompiledTransactionIntent,
+                    is RadixWalletException.LedgerCommunicationFailure -> {
+                        val failedToSign =
+                            radixWalletException is RadixWalletException.PrepareTransactionException.SignCompiledTransactionIntent
+                        state.update {
+                            it.copy(
+                                isSubmitting = false,
+                                error = if (failedToSign) {
+                                    UiMessage.ErrorMessage(radixWalletException)
+                                } else {
+                                    it.error
+                                }
+                            )
+                        }
+                        approvalJob = null
+                        return
+                    }
+
+                    else -> {
+                        reportFailure(error)
+                        appEventBus.sendEvent(
+                            AppEvent.Status.Transaction.Fail(
+                                requestId = transactionRequest.requestId,
+                                transactionId = "",
+                                isInternal = transactionRequest.isInternal,
+                                errorMessage = UiMessage.ErrorMessage.from((error as? DappRequestException)?.failure),
+                                blockUntilComplete = transactionRequest.blockUntilComplete,
+                                txProcessingTime = _state.value.txProcessingTime,
+                                walletErrorType = walletErrorType
+                            )
                         )
                     }
-                    approvalJob = null
-                    return
+                    }
                 }
-                reportFailure(error)
-                appEventBus.sendEvent(
-                    AppEvent.Status.Transaction.Fail(
-                        requestId = transactionRequest.requestId,
-                        transactionId = "",
-                        isInternal = transactionRequest.isInternal,
-                        errorMessage = UiMessage.ErrorMessage.from((error as? DappRequestException)?.failure),
-                        blockUntilComplete = transactionRequest.blockUntilComplete,
-                        txProcessingTime = _state.value.txProcessingTime,
-                        walletErrorType = walletErrorType
-                    )
-                )
             }
         }
     }
