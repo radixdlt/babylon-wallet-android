@@ -28,6 +28,7 @@ data class ActionableAddress(
         val suffix = when {
             isNft -> "nft/$address"
             type == Type.TRANSACTION -> "transaction/$address"
+            type == Type.VALIDATOR -> "component/$address"
             type != null -> "${type.prefix}/$address"
             else -> address
         }
@@ -49,6 +50,7 @@ data class ActionableAddress(
         PACKAGE(HRP.PACKAGE),
         RESOURCE(HRP.RESOURCE),
         ACCOUNT(HRP.ACCOUNT),
+        VALIDATOR(HRP.VALIDATOR),
         TRANSACTION(HRP.TRANSACTION),
         COMPONENT(HRP.COMPONENT);
 
@@ -57,6 +59,7 @@ data class ActionableAddress(
                 const val ACCOUNT = "account"
                 const val RESOURCE = "resource"
                 const val PACKAGE = "package"
+                const val VALIDATOR = "validator"
                 const val COMPONENT = "component"
                 const val TRANSACTION = "txid"
             }
