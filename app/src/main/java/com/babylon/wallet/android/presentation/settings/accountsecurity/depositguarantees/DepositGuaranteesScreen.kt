@@ -145,7 +145,7 @@ fun DepositGuaranteesContent(
                             singleLine = true,
                             textStyle = RadixTheme.typography.body1Regular.copy(textAlign = TextAlign.Center),
                             keyboardOptions = KeyboardOptions(
-                                imeAction = ImeAction.None,
+                                imeAction = ImeAction.Done,
                                 keyboardType = KeyboardType.Number
                             )
                         )
