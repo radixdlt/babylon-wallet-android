@@ -41,6 +41,7 @@ import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import coil.compose.AsyncImagePainter
 import coil.compose.SubcomposeAsyncImage
+import coil.decode.GifDecoder
 import coil.decode.SvgDecoder
 import coil.request.ImageRequest
 import coil.request.NullRequestDataException
@@ -144,6 +145,7 @@ object Thumbnail {
                     .data(imageType.cloudFlareUri)
                     .error(R.drawable.ic_broken_image)
                     .decoderFactory(SvgDecoder.Factory())
+                    .decoderFactory(GifDecoder.Factory())
                     // Needed for cloudflare
                     .addHeader("accept", "text/html")
                     .build()
@@ -326,6 +328,7 @@ object Thumbnail {
                     }
                 }
                 .decoderFactory(SvgDecoder.Factory())
+                .decoderFactory(GifDecoder.Factory())
                 // Needed for cloudflare
                 .addHeader("accept", "text/html")
                 .build()
