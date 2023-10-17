@@ -197,7 +197,7 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
                 }
 
                 ongoingPersonaDataRequestItem != null &&
-                        ongoingPersonaDataRequestItem.isValid() && (!requestedDataAlreadyGranted || resetPersonaData) -> {
+                    ongoingPersonaDataRequestItem.isValid() && (!requestedDataAlreadyGranted || resetPersonaData) -> {
                     _state.update { state ->
                         state.copy(
                             initialAuthorizedLoginRoute = InitialAuthorizedLoginRoute.OngoingPersonaData(

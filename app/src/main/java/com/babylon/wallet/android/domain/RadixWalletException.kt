@@ -139,8 +139,12 @@ sealed class RadixWalletException(msg: String? = null, cause: Throwable? = null)
 fun RadixWalletException.LedgerCommunicationFailure.toUserFriendlyMessage(): String {
     return stringResource(
         id = when (this) {
-            RadixWalletException.LedgerCommunicationFailure.FailedToDerivePublicKeys -> R.string.common_somethingWentWrong // TODO consider different copy
-            RadixWalletException.LedgerCommunicationFailure.FailedToGetDeviceId -> R.string.common_somethingWentWrong // TODO consider different copy
+            RadixWalletException.LedgerCommunicationFailure.FailedToDerivePublicKeys -> {
+                R.string.common_somethingWentWrong
+            } // TODO consider different copy
+            RadixWalletException.LedgerCommunicationFailure.FailedToGetDeviceId -> {
+                R.string.common_somethingWentWrong
+            } // TODO consider different copy
             is RadixWalletException.LedgerCommunicationFailure.FailedToSignTransaction -> when (this.reason) {
                 LedgerErrorCode.Generic -> R.string.common_somethingWentWrong
                 LedgerErrorCode.BlindSigningNotEnabledButRequired -> R.string.error_transactionFailure_blindSigningNotEnabledButRequired
@@ -156,12 +160,18 @@ fun RadixWalletException.LedgerCommunicationFailure.toUserFriendlyMessage(): Str
 fun RadixWalletException.DappVerificationException.toUserFriendlyMessage(): String {
     return stringResource(
         id = when (this) {
-            RadixWalletException.DappVerificationException.RadixJsonNotFound -> R.string.dAppRequest_validationOutcome_shortExplanationBadContent
-            RadixWalletException.DappVerificationException.UnknownDefinitionAddress ->
+            RadixWalletException.DappVerificationException.RadixJsonNotFound -> {
+                R.string.dAppRequest_validationOutcome_shortExplanationBadContent
+            }
+            RadixWalletException.DappVerificationException.UnknownDefinitionAddress -> {
                 R.string.dAppRequest_validationOutcome_devExplanationInvalidDappDefinitionAddress
-
-            RadixWalletException.DappVerificationException.UnknownWebsite -> R.string.dAppRequest_validationOutcome_devExplanationInvalidOrigin
-            RadixWalletException.DappVerificationException.WrongAccountType -> R.string.dAppRequest_validationOutcome_devExplanationInvalidDappDefinitionAddress
+            }
+            RadixWalletException.DappVerificationException.UnknownWebsite -> {
+                R.string.dAppRequest_validationOutcome_devExplanationInvalidOrigin
+            }
+            RadixWalletException.DappVerificationException.WrongAccountType -> {
+                R.string.dAppRequest_validationOutcome_devExplanationInvalidDappDefinitionAddress
+            }
             RadixWalletException.DappVerificationException.ClaimedEntityAddressNotPresent -> R.string.common_somethingWentWrong // TODO consider different copy
         }
     )
@@ -171,14 +181,22 @@ fun RadixWalletException.DappVerificationException.toUserFriendlyMessage(): Stri
 fun RadixWalletException.DappRequestException.toUserFriendlyMessage(): String {
     return when (this) {
         RadixWalletException.DappRequestException.InvalidPersona -> stringResource(R.string.error_dappRequest_invalidPersonaId)
-        RadixWalletException.DappRequestException.InvalidRequest -> stringResource(R.string.dAppRequest_validationOutcome_invalidRequestMessage)
-        RadixWalletException.DappRequestException.UnacceptableManifest -> stringResource(R.string.transactionReview_unacceptableManifest_rejected)
-        is RadixWalletException.DappRequestException.InvalidRequestChallenge -> stringResource(R.string.dAppRequest_requestMalformedAlert_message)
+        RadixWalletException.DappRequestException.InvalidRequest -> stringResource(
+            R.string.dAppRequest_validationOutcome_invalidRequestMessage
+        )
+        RadixWalletException.DappRequestException.UnacceptableManifest -> stringResource(
+            R.string.transactionReview_unacceptableManifest_rejected
+        )
+        is RadixWalletException.DappRequestException.InvalidRequestChallenge -> stringResource(
+            R.string.dAppRequest_requestMalformedAlert_message
+        )
         is RadixWalletException.DappRequestException.WrongNetwork -> {
             stringResource(R.string.dAppRequest_requestWrongNetworkAlert_message, currentNetworkName, requestNetworkName)
         }
 
-        is RadixWalletException.DappRequestException.FailedToSignAuthChallenge -> stringResource(R.string.common_somethingWentWrong) // TODO consider different copy
+        is RadixWalletException.DappRequestException.FailedToSignAuthChallenge -> stringResource(
+            R.string.common_somethingWentWrong
+        ) // TODO consider different copy
         RadixWalletException.DappRequestException.GetEpoch -> stringResource(R.string.error_transactionFailure_epoch)
         RadixWalletException.DappRequestException.RejectedByUser -> stringResource(R.string.error_transactionFailure_rejectedByUser)
     }
@@ -216,12 +234,18 @@ fun RadixWalletException.PrepareTransactionException.toUserFriendlyMessage(): St
 @Composable
 fun RadixWalletException.toUserFriendlyMessage(): String {
     return when (this) {
-        RadixWalletException.FailedToCollectLedgerSignature -> stringResource(id = R.string.common_somethingWentWrong) // TODO consider different copy
-        RadixWalletException.FailedToCollectSigners -> stringResource(id = R.string.common_somethingWentWrong) // TODO consider different copy
+        RadixWalletException.FailedToCollectLedgerSignature -> stringResource(
+            id = R.string.common_somethingWentWrong
+        ) // TODO consider different copy
+        RadixWalletException.FailedToCollectSigners -> stringResource(
+            id = R.string.common_somethingWentWrong
+        ) // TODO consider different copy
         RadixWalletException.DappMetadataEmpty -> stringResource(id = R.string.common_somethingWentWrong)
         RadixWalletException.SignatureCancelledException -> stringResource(id = R.string.common_somethingWentWrong)
 
-        is RadixWalletException.IncomingMessageException -> stringResource(id = R.string.common_somethingWentWrong) // TODO consider different copy
+        is RadixWalletException.IncomingMessageException -> stringResource(
+            id = R.string.common_somethingWentWrong
+        ) // TODO consider different copy
         is RadixWalletException.DappRequestException -> toUserFriendlyMessage()
         is RadixWalletException.DappVerificationException -> toUserFriendlyMessage()
         is RadixWalletException.LedgerCommunicationFailure -> toUserFriendlyMessage()

@@ -113,6 +113,9 @@ class BuildAuthorizedDappResponseUseCase @Inject constructor(
                 )
             if (oneTimeAccountsResponseItem.isFailure) {
                 return Result.failure(oneTimeAccountsResponseItem.exceptionOrNull() ?: DappRequestFailure.FailedToSignAuthChallenge())
+                return Result.failure(
+                    authResponse.exceptionOrNull() ?: RadixWalletException.DappRequestException.FailedToSignAuthChallenge()
+                )
             }
             val ongoingAccountsResponseItem =
                 buildAccountsResponseItem(
@@ -123,6 +126,9 @@ class BuildAuthorizedDappResponseUseCase @Inject constructor(
                 )
             if (ongoingAccountsResponseItem.isFailure) {
                 return Result.failure(ongoingAccountsResponseItem.exceptionOrNull() ?: DappRequestFailure.FailedToSignAuthChallenge())
+                return Result.failure(
+                    authResponse.exceptionOrNull() ?: RadixWalletException.DappRequestException.FailedToSignAuthChallenge()
+                )
             }
             return Result.success(
                 WalletInteractionSuccessResponse(

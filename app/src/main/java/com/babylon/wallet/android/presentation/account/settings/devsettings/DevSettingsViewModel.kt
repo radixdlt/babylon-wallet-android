@@ -94,7 +94,7 @@ class DevSettingsViewModel @Inject constructor(
                 _state.update {
                     it.copy(
                         isFreeXRDLoading = false,
-                        error = UiMessage.ErrorMessage.from(error = error)
+                        error = UiMessage.ErrorMessage(error = error)
                     )
                 }
             }

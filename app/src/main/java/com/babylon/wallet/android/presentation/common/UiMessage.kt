@@ -57,7 +57,7 @@ sealed class UiMessage(val id: String = UUIDGenerator.uuid().toString()) {
             NoMnemonicForAccounts -> stringResource(id = R.string.importOlympiaAccounts_noMnemonicFound)
             NoAccountsForLedger ->
                 "No addresses verified. The currently connected Ledger device is not related " +
-                        "to any accounts to be imported, or has already been used."
+                    "to any accounts to be imported, or has already been used."
 
             is LedgerAlreadyExist -> stringResource(id = R.string.addLedgerDevice_alreadyAddedAlert_message, label)
             WalletExported -> stringResource(id = R.string.profileBackup_manualBackups_successMessage)
@@ -73,6 +73,6 @@ sealed class UiMessage(val id: String = UUIDGenerator.uuid().toString()) {
         @Composable
         override fun getMessage(): String =
             (error as? RadixWalletException)?.toUserFriendlyMessage() ?: error?.message
-            ?: stringResource(id = R.string.common_somethingWentWrong)
+                ?: stringResource(id = R.string.common_somethingWentWrong)
     }
 }
