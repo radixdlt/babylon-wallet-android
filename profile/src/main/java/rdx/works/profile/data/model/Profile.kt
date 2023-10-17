@@ -9,6 +9,7 @@ import rdx.works.profile.data.model.apppreferences.Transaction
 import rdx.works.profile.data.model.factorsources.DeviceFactorSource
 import rdx.works.profile.data.model.factorsources.FactorSource
 import rdx.works.profile.data.model.pernetwork.Network
+import rdx.works.profile.data.utils.isNotHidden
 import java.time.Instant
 
 data class Profile(
@@ -44,8 +45,8 @@ data class Profile(
         header = header.copy(
             contentHint = Header.ContentHint(
                 numberOfNetworks = networks.size,
-                numberOfAccountsOnAllNetworksInTotal = networks.map { it.accounts }.flatten().size,
-                numberOfPersonasOnAllNetworksInTotal = networks.map { it.personas }.flatten().size
+                numberOfAccountsOnAllNetworksInTotal = networks.sumOf { network -> network.accounts.count { it.isNotHidden() } },
+                numberOfPersonasOnAllNetworksInTotal = networks.sumOf { network -> network.personas.count { it.isNotHidden() } }
             )
         )
     )

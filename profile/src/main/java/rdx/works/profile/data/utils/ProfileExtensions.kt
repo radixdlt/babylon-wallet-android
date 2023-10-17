@@ -213,14 +213,7 @@ fun Profile.hidePersona(address: String): Profile {
             authorizedDapps = updatedAuthorizedDapps.filter { it.referencesToAuthorizedPersonas.isNotEmpty() }
         )
     })
-    val numberOfPersonasOnAllNetworks = updatedNetworks.sumOf { network ->
-        network.personas.count { it.isNotHidden() }
-    }
-    val updatedContentHint = header.contentHint.copy(numberOfPersonasOnAllNetworksInTotal = numberOfPersonasOnAllNetworks)
-    return copy(
-        header = header.copy(contentHint = updatedContentHint),
-        networks = updatedNetworks
-    )
+    return copy(networks = updatedNetworks).withUpdatedContentHint()
 }
 
 fun Profile.hideAccount(address: String): Profile {
@@ -248,14 +241,7 @@ fun Profile.hideAccount(address: String): Profile {
             authorizedDapps = updatedAuthorizedDapps.filter { it.referencesToAuthorizedPersonas.isNotEmpty() }
         )
     })
-    val numberOfAccountsOnAllNetworks = updatedNetworks.sumOf { network ->
-        network.accounts.count { it.isNotHidden() }
-    }
-    val updatedContentHint = header.contentHint.copy(numberOfAccountsOnAllNetworksInTotal = numberOfAccountsOnAllNetworks)
-    return copy(
-        header = header.copy(contentHint = updatedContentHint),
-        networks = updatedNetworks
-    )
+    return copy(networks = updatedNetworks).withUpdatedContentHint()
 }
 
 fun Profile.unhideAllEntities(): Profile {
@@ -270,20 +256,7 @@ fun Profile.unhideAllEntities(): Profile {
             }
         )
     })
-    val numberOfAccountsOnAllNetworks = updatedNetworks.sumOf { network ->
-        network.accounts.count { it.isNotHidden() }
-    }
-    val numberOfPersonasOnAllNetworks = updatedNetworks.sumOf { network ->
-        network.personas.count { it.isNotHidden() }
-    }
-    val updatedContentHint = header.contentHint.copy(
-        numberOfAccountsOnAllNetworksInTotal = numberOfAccountsOnAllNetworks,
-        numberOfPersonasOnAllNetworksInTotal = numberOfPersonasOnAllNetworks
-    )
-    return copy(
-        header = header.copy(contentHint = updatedContentHint),
-        networks = updatedNetworks
-    )
+    return copy(networks = updatedNetworks).withUpdatedContentHint()
 }
 
 fun Entity.isNotHidden(): Boolean {
