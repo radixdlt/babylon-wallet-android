@@ -78,11 +78,11 @@ class DAppRepositoryImpl @Inject constructor(
             ).mapCatching { gatewayMetadata ->
                 when {
                     !gatewayMetadata.isDappDefinition -> {
-                        throw DappRequestException(DappRequestFailure.DappVerificationFailure.WrongAccountType)
+                        throw RadixWalletException.DappVerificationException.WrongAccountType
                     }
 
                     !gatewayMetadata.isRelatedWith(origin) -> {
-                        throw DappRequestException(DappRequestFailure.DappVerificationFailure.UnknownWebsite)
+                        throw RadixWalletException.DappVerificationException.UnknownWebsite
                     }
 
                     else -> {
@@ -95,7 +95,7 @@ class DAppRepositoryImpl @Inject constructor(
                 }
             }
         } else {
-            Result.failure(DappRequestException(DappRequestFailure.DappVerificationFailure.UnknownWebsite))
+            Result.failure(RadixWalletException.DappVerificationException.UnknownWebsite)
         }
     }
 
@@ -108,7 +108,7 @@ class DAppRepositoryImpl @Inject constructor(
             if (isWellKnown) {
                 true
             } else {
-                throw DappRequestException(DappRequestFailure.DappVerificationFailure.UnknownDefinitionAddress)
+                throw RadixWalletException.DappVerificationException.UnknownDefinitionAddress
             }
         }
     }
@@ -176,7 +176,7 @@ class DAppRepositoryImpl @Inject constructor(
             ).wellKnownDAppDefinition().execute(
                 map = { response -> response.dApps.map { it.dAppDefinitionAddress } },
                 error = {
-                    DappRequestException(DappRequestFailure.DappVerificationFailure.RadixJsonNotFound)
+                    RadixWalletException.DappVerificationException.RadixJsonNotFound
                 }
             )
         }

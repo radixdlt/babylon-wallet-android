@@ -6,7 +6,8 @@ import com.babylon.wallet.android.data.dapp.DappMessenger
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.data.dapp.model.WalletErrorType
 import com.babylon.wallet.android.data.repository.TransactionStatusClient
-import com.babylon.wallet.android.data.transaction.DappRequestException
+import com.babylon.wallet.android.domain.RadixWalletException
+import com.babylon.wallet.android.domain.getDappMessage
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
@@ -84,13 +85,13 @@ class TransactionStatusDialogViewModel @Inject constructor(
                     )
                 }.onFailure { error ->
                     if (!status.isInternal) {
-                        (error as? DappRequestException)?.let { exception ->
+                        (error as? RadixWalletException.TransactionSubmitException)?.let { exception ->
                             incomingRequestRepository.getTransactionWriteRequest(status.requestId)?.let { transactionRequest ->
                                 dAppMessenger.sendWalletInteractionResponseFailure(
                                     remoteConnectorId = transactionRequest.remoteConnectorId,
                                     requestId = status.requestId,
-                                    error = exception.failure.toWalletErrorType(),
-                                    message = exception.failure.getDappMessage()
+                                    error = exception.toWalletErrorType(),
+                                    message = exception.getDappMessage()
                                 )
                             }
                         }
@@ -164,7 +165,7 @@ class TransactionStatusDialogViewModel @Inject constructor(
     }
 
     sealed interface Event : OneOffEvent {
-        object DismissDialog : Event
+        data object DismissDialog : Event
     }
 }
 

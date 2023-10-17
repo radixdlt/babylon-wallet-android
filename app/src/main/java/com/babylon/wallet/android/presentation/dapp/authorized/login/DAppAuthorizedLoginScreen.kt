@@ -17,9 +17,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
-import com.babylon.wallet.android.data.transaction.DappRequestFailure
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.domain.model.RequiredPersonaFields
+import com.babylon.wallet.android.domain.toUserFriendlyMessage
 import com.babylon.wallet.android.presentation.common.FullscreenCircularProgressContent
 import com.babylon.wallet.android.presentation.dapp.InitialAuthorizedLoginRoute
 import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDialog
@@ -93,21 +93,8 @@ fun DappAuthorizedLoginScreen(
                         )
                     },
                     text = {
-                        val failure = dialogState.dappRequestException.failure
-                        val errorMessage = if (failure is DappRequestFailure.WrongNetwork) {
-                            // This shows why we need to improve the exception structure.
-                            // It was impossible to define this resource as toDescriptionRes() since it also needs
-                            // parameters passed into it.
-                            stringResource(
-                                id = R.string.dAppRequest_requestWrongNetworkAlert_message,
-                                failure.requestNetworkName,
-                                failure.currentNetworkName
-                            )
-                        } else {
-                            stringResource(id = dialogState.dappRequestException.failure.toDescriptionRes())
-                        }
                         Text(
-                            text = errorMessage,
+                            text = dialogState.dappRequestException.toUserFriendlyMessage(),
                             style = RadixTheme.typography.body2Regular,
                             color = RadixTheme.colors.gray1
                         )

@@ -6,9 +6,9 @@ import com.babylon.wallet.android.data.dapp.DappMessenger
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.data.dapp.model.WalletErrorType
 import com.babylon.wallet.android.data.repository.dappmetadata.DAppRepository
-import com.babylon.wallet.android.data.transaction.DappRequestException
-import com.babylon.wallet.android.data.transaction.DappRequestFailure
 import com.babylon.wallet.android.data.transaction.InteractionState
+import com.babylon.wallet.android.domain.RadixWalletException
+import com.babylon.wallet.android.domain.getDappMessage
 import com.babylon.wallet.android.domain.model.DAppWithMetadata
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel.IncomingRequest.AccountsRequestItem
@@ -17,7 +17,6 @@ import com.babylon.wallet.android.domain.model.RequiredPersonaFields
 import com.babylon.wallet.android.domain.model.toProfileShareAccountsQuantifier
 import com.babylon.wallet.android.domain.model.toRequiredFields
 import com.babylon.wallet.android.domain.usecases.BuildAuthorizedDappResponseUseCase
-import com.babylon.wallet.android.domain.usecases.transaction.SignatureCancelledException
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
@@ -95,17 +94,15 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
             val currentNetworkId = getCurrentGatewayUseCase().network.networkId().value
             if (currentNetworkId != request.requestMetadata.networkId) {
                 handleRequestError(
-                    DappRequestException(
-                        DappRequestFailure.WrongNetwork(
-                            currentNetworkId,
-                            request.requestMetadata.networkId
-                        )
+                    RadixWalletException.DappRequestException.WrongNetwork(
+                        currentNetworkId,
+                        request.requestMetadata.networkId
                     )
                 )
                 return@launch
             }
             if (!request.isValidRequest()) {
-                handleRequestError(DappRequestException(DappRequestFailure.InvalidRequest))
+                handleRequestError(RadixWalletException.DappRequestException.InvalidRequest)
                 return@launch
             }
             authorizedDapp = dAppConnectionRepository.getAuthorizedDapp(
@@ -120,7 +117,7 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
                     it.copy(dappWithMetadata = dappWithMetadata)
                 }
             }.onFailure { error ->
-                _state.update { it.copy(uiMessage = UiMessage.ErrorMessage.from(error)) }
+                _state.update { it.copy(uiMessage = UiMessage.ErrorMessage(error)) }
             }
             setInitialDappLoginRoute()
         }
@@ -200,7 +197,7 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
                 }
 
                 ongoingPersonaDataRequestItem != null &&
-                    ongoingPersonaDataRequestItem.isValid() && (!requestedDataAlreadyGranted || resetPersonaData) -> {
+                        ongoingPersonaDataRequestItem.isValid() && (!requestedDataAlreadyGranted || resetPersonaData) -> {
                     _state.update { state ->
                         state.copy(
                             initialAuthorizedLoginRoute = InitialAuthorizedLoginRoute.OngoingPersonaData(
@@ -746,6 +743,6 @@ data class DAppLoginUiState(
 
     sealed interface FailureDialog {
         data object Closed : FailureDialog
-        data class Open(val dappRequestException: DappRequestException) : FailureDialog
+        data class Open(val dappRequestException: RadixWalletException.DappRequestException) : FailureDialog
     }
 }

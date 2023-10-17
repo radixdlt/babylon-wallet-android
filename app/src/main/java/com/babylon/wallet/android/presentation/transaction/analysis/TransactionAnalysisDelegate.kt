@@ -1,10 +1,10 @@
 package com.babylon.wallet.android.presentation.transaction.analysis
 
-import com.babylon.wallet.android.data.transaction.DappRequestException
-import com.babylon.wallet.android.data.transaction.DappRequestFailure
 import com.babylon.wallet.android.data.transaction.NotaryAndSigners
 import com.babylon.wallet.android.data.transaction.TransactionClient
 import com.babylon.wallet.android.domain.usecases.GetAccountsWithAssetsUseCase
+import com.babylon.wallet.android.domain.RadixWalletException
+import com.babylon.wallet.android.domain.usecases.GetAccountsWithResourcesUseCase
 import com.babylon.wallet.android.domain.usecases.GetResourcesMetadataUseCase
 import com.babylon.wallet.android.domain.usecases.GetResourcesUseCase
 import com.babylon.wallet.android.domain.usecases.ResolveDAppsUseCase
@@ -70,7 +70,7 @@ class TransactionAnalysisDelegate @Inject constructor(
             // wallet unacceptable manifest
             _state.update {
                 it.copy(
-                    error = UiMessage.ErrorMessage.from(DappRequestException(DappRequestFailure.UnacceptableManifest))
+                    error = UiMessage.ErrorMessage(RadixWalletException.DappRequestException.UnacceptableManifest)
                 )
             }
             PreviewType.UnacceptableManifest
@@ -160,7 +160,7 @@ class TransactionAnalysisDelegate @Inject constructor(
                 isLoading = false,
                 isNetworkFeeLoading = false,
                 previewType = PreviewType.None,
-                error = UiMessage.ErrorMessage.from(error)
+                error = UiMessage.ErrorMessage(error)
             )
         }
     }

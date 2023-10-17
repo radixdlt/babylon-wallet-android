@@ -1,6 +1,8 @@
 package com.babylon.wallet.android.data.transaction
 
 import com.babylon.wallet.android.data.repository.entity.EntityRepository
+import com.babylon.wallet.android.domain.RadixWalletException
+import com.babylon.wallet.android.domain.common.value
 import com.babylon.wallet.android.domain.usecases.transaction.CollectSignersSignaturesUseCase
 import com.babylon.wallet.android.domain.usecases.transaction.GenerateAuthSigningFactorInstanceUseCase
 import com.babylon.wallet.android.domain.usecases.transaction.SignRequest
@@ -91,19 +93,22 @@ class ROLAClient @Inject constructor(
         signRequest: SignRequest,
         deviceBiometricAuthenticationProvider: suspend () -> Boolean
     ): Result<SignatureWithPublicKey> {
-        return collectSignersSignaturesUseCase(
+        val result = collectSignersSignaturesUseCase(
             signers = listOf(entity),
             signRequest = signRequest,
             signingPurpose = SigningPurpose.SignAuth,
             deviceBiometricAuthenticationProvider = deviceBiometricAuthenticationProvider
-        ).mapCatching { signatures ->
-            if (signatures.size == 1) {
-                signatures.first()
-            } else {
-                throw DappRequestFailure.FailedToSignAuthChallenge(
-                    msg = "Failed to sign request $signRequest by entity: ${entity.address}"
-                )
+        )
+        return when (val exception = result.exceptionOrNull()) {
+            null -> result.mapCatching { signatures ->
+                if (signatures.size == 1) {
+                    signatures.first()
+                } else {
+                    // msg = "Failed to sign request $signRequest by entity: ${entity.address}"
+                    throw RadixWalletException.DappRequestException.FailedToSignAuthChallenge()
+                }
             }
+            else -> Result.failure(RadixWalletException.DappRequestException.FailedToSignAuthChallenge(exception))
         }
     }
 }

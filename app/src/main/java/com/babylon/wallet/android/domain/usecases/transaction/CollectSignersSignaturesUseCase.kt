@@ -1,7 +1,7 @@
 package com.babylon.wallet.android.domain.usecases.transaction
 
-import com.babylon.wallet.android.data.transaction.DappRequestException
 import com.babylon.wallet.android.data.transaction.InteractionState
+import com.babylon.wallet.android.domain.RadixWalletException
 import com.radixdlt.hex.extensions.toHexString
 import com.radixdlt.ret.SignatureWithPublicKey
 import com.radixdlt.ret.hash
@@ -52,7 +52,7 @@ class CollectSignersSignaturesUseCase @Inject constructor(
                     }
                     if (!deviceAuthenticated) {
                         _interactionState.update { null }
-                        return Result.failure(SignatureCancelledException("Failed to collect device factor source signatures"))
+                        return Result.failure(RadixWalletException.SignatureCancelledException)
                     }
                     signWithDeviceFactorSourceUseCase(
                         deviceFactorSource = factorSource,
@@ -73,7 +73,7 @@ class CollectSignersSignaturesUseCase @Inject constructor(
                     }
                     if (!deviceAuthenticated) {
                         _interactionState.update { null }
-                        return Result.failure(SignatureCancelledException("Failed to collect device factor source signatures"))
+                        return Result.failure(RadixWalletException.SignatureCancelledException)
                     }
                     factorSource as LedgerHardwareWalletFactorSource
                     _interactionState.update { InteractionState.Ledger.Pending(factorSource, signingPurpose) }
@@ -87,8 +87,8 @@ class CollectSignersSignaturesUseCase @Inject constructor(
                         signaturesWithPublicKeys.addAll(signatures)
                     }.onFailure { error ->
                         _interactionState.update {
-                            if (error is DappRequestException) {
-                                InteractionState.Ledger.Error(factorSource, signingPurpose, error.failure)
+                            if (error is RadixWalletException.DappRequestException) {
+                                InteractionState.Ledger.Error(factorSource, signingPurpose, error)
                             } else {
                                 null
                             }

@@ -2,8 +2,7 @@ package com.babylon.wallet.android.domain.usecases.transaction
 
 import com.babylon.wallet.android.data.repository.cache.HttpCache
 import com.babylon.wallet.android.data.repository.transaction.TransactionRepository
-import com.babylon.wallet.android.data.transaction.DappRequestException
-import com.babylon.wallet.android.data.transaction.DappRequestFailure
+import com.babylon.wallet.android.domain.RadixWalletException
 import javax.inject.Inject
 
 class SubmitTransactionUseCase @Inject constructor(
@@ -26,10 +25,8 @@ class SubmitTransactionUseCase @Inject constructor(
 
             if (result.duplicate) {
                 Result.failure(
-                    DappRequestException(
-                        DappRequestFailure.TransactionApprovalFailure.InvalidTXDuplicate(
-                            txIDHash
-                        )
+                    RadixWalletException.TransactionSubmitException.InvalidTXDuplicate(
+                        txIDHash
                     )
                 )
             } else {
@@ -41,10 +38,7 @@ class SubmitTransactionUseCase @Inject constructor(
                 )
             }
         } ?: Result.failure(
-            DappRequestException(
-                DappRequestFailure.TransactionApprovalFailure.SubmitNotarizedTransaction,
-                e = submitResult.exceptionOrNull(),
-            )
+            Result.failure(RadixWalletException.PrepareTransactionException.SubmitNotarizedTransaction(submitResult.exception))
         )
     }
 

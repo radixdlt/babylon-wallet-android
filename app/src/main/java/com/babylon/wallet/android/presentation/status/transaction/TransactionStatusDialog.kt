@@ -44,7 +44,6 @@ import com.babylon.wallet.android.R
 import com.babylon.wallet.android.data.dapp.model.WalletErrorType
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
-import com.babylon.wallet.android.presentation.common.getMessage
 import com.babylon.wallet.android.presentation.ui.composables.ActionableAddressView
 import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.BottomDialogDragHandle
@@ -107,7 +106,6 @@ fun TransactionStatusDialog(
                                     maxHeight to SwipeState.Collapsed
                                 ),
                                 orientation = Orientation.Vertical,
-
                             )
                             .offset {
                                 IntOffset(

@@ -103,7 +103,6 @@ fun WalletTransactionItems.SendTransactionItem.toDomainModel(
         requestMetadata = metadata
     )
 
-@Suppress("SwallowedException")
 fun WalletInteraction.toDomainModel(remoteConnectorId: String): MessageFromDataChannel.IncomingRequest {
     try {
         val metadata = MessageFromDataChannel.IncomingRequest.RequestMetadata(
@@ -124,7 +123,7 @@ fun WalletInteraction.toDomainModel(remoteConnectorId: String): MessageFromDataC
             }
         }
     } catch (e: Exception) {
-        throw RadixWalletException.ErrorParsingIncomingRequest(e)
+        throw RadixWalletException.IncomingMessageException.MessageParseException(e)
     }
 }
 

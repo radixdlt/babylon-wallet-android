@@ -14,6 +14,7 @@ import com.babylon.wallet.android.data.dapp.model.WalletUnauthorizedRequestRespo
 import com.babylon.wallet.android.data.dapp.model.toProof
 import com.babylon.wallet.android.data.transaction.DappRequestFailure
 import com.babylon.wallet.android.data.transaction.ROLAClient
+import com.babylon.wallet.android.domain.RadixWalletException
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel.IncomingRequest.AuthorizedRequest
 import com.babylon.wallet.android.domain.usecases.transaction.SignRequest
@@ -136,7 +137,7 @@ class BuildAuthorizedDappResponseUseCase @Inject constructor(
                 )
             )
         } else {
-            return Result.failure(authResponse.exceptionOrNull() ?: DappRequestFailure.FailedToSignAuthChallenge())
+            return Result.failure(authResponse.exceptionOrNull() ?: RadixWalletException.DappRequestException.FailedToSignAuthChallenge())
         }
     }
 
@@ -148,7 +149,7 @@ class BuildAuthorizedDappResponseUseCase @Inject constructor(
         val authResponse: Result<AuthRequestResponseItem> = when (val authRequest = request.authRequest) {
             is AuthorizedRequest.AuthRequest.LoginRequest.WithChallenge -> {
                 var response: Result<AuthRequestResponseItem> = Result.failure(
-                    DappRequestFailure.FailedToSignAuthChallenge()
+                    RadixWalletException.DappRequestException.FailedToSignAuthChallenge()
                 )
                 val signRequest = SignRequest.SignAuthChallengeRequest(
                     challengeHex = authRequest.challenge.value,

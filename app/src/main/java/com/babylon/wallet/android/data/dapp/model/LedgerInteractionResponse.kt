@@ -168,7 +168,7 @@ fun LedgerInteractionResponse.toDomainModel(): MessageFromDataChannel {
             is DeriveAndDisplayAddressResponse -> toDomainModel()
         }
     } catch (e: Exception) {
-        throw RadixWalletException.ErrorParsingLedgerResponse(e)
+        throw RadixWalletException.IncomingMessageException.LedgerResponseParseException(e)
     }
 }
 

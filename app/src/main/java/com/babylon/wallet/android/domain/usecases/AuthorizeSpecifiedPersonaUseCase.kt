@@ -1,6 +1,7 @@
 package com.babylon.wallet.android.domain.usecases
 
 import com.babylon.wallet.android.data.dapp.DappMessenger
+import com.babylon.wallet.android.domain.RadixWalletException
 import com.babylon.wallet.android.data.dapp.model.WalletErrorType
 import com.babylon.wallet.android.data.transaction.DappRequestFailure
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel.IncomingRequest
@@ -128,7 +129,7 @@ class AuthorizeSpecifiedPersonaUseCase @Inject constructor(
         hasOngoingPersonaDataRequest: Boolean,
         persona: Network.Persona
     ): Result<String?> {
-        var operationResult: Result<String?> = Result.failure(DappRequestFailure.InvalidRequest)
+        var operationResult: Result<String?> = Result.failure(RadixWalletException.DappRequestException.InvalidRequest)
         val selectedAccounts: List<Selectable<Network.Account>> = getAccountsWithGrantedAccess(
             request,
             authorizedDapp,
@@ -194,16 +195,18 @@ class AuthorizeSpecifiedPersonaUseCase @Inject constructor(
             ongoingAccounts = selectedAccounts.map { it.data },
             ongoingSharedPersonaData = selectedPersonaData
         ).mapCatching { response ->
-            return dAppMessenger.sendWalletInteractionSuccessResponse(
-                remoteConnectorId = request.remoteConnectorId,
-                response = response
-            ).getOrNull()?.let {
-                val updatedDapp = updateDappPersonaWithLastUsedTimestamp(authorizedDapp, persona.address)
-                dAppConnectionRepository.updateOrCreateAuthorizedDApp(updatedDapp)
-                Result.success(
-                    authorizedDapp.displayName
+            return when (
+                dAppMessenger.sendWalletInteractionSuccessResponse(
+                    remoteConnectorId = request.remoteConnectorId,
+                    response = response
                 )
-            } ?: Result.failure(DappRequestFailure.InvalidRequest)
+            ).getOrNull()?.let {
+                    val updatedDapp = updateDappPersonaWithLastUsedTimestamp(authorizedDapp, persona.address)
+                    dAppConnectionRepository.updateOrCreateAuthorizedDApp(updatedDapp)
+                    Result.success(
+                        authorizedDapp.displayName
+                    )
+            } ?: Result.failure(RadixWalletException.DappRequestException.InvalidRequest)
         }
     }
 

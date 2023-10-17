@@ -1,5 +1,6 @@
 package com.babylon.wallet.android.data.transaction
 
+import com.babylon.wallet.android.domain.RadixWalletException
 import rdx.works.profile.data.model.factorsources.DeviceFactorSource
 import rdx.works.profile.data.model.factorsources.FactorSource
 import rdx.works.profile.data.model.factorsources.LedgerHardwareWalletFactorSource
@@ -47,7 +48,7 @@ sealed class InteractionState(val factorSource: FactorSource) {
         data class Error(
             private val ledgerFactorSource: LedgerHardwareWalletFactorSource,
             override val signingPurpose: SigningPurpose?,
-            val failure: DappRequestFailure
+            val failure: RadixWalletException.DappRequestException
         ) : Ledger(ledgerFactorSource)
 
         override val label: String

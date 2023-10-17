@@ -1,12 +1,10 @@
 package com.babylon.wallet.android.presentation.common
 
-import android.content.Context
-import androidx.annotation.StringRes
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import com.babylon.wallet.android.R
-import com.babylon.wallet.android.data.transaction.DappRequestException
-import com.babylon.wallet.android.data.transaction.DappRequestFailure
+import com.babylon.wallet.android.domain.RadixWalletException
+import com.babylon.wallet.android.domain.toUserFriendlyMessage
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import rdx.works.core.UUIDGenerator
@@ -14,7 +12,8 @@ import rdx.works.core.UUIDGenerator
 @Serializable
 sealed class UiMessage(val id: String = UUIDGenerator.uuid().toString()) {
 
-    abstract fun getMessage(context: Context): String
+    @Composable
+    abstract fun getMessage(): String
 
     @Serializable
     @SerialName("info_message")
@@ -51,44 +50,29 @@ sealed class UiMessage(val id: String = UUIDGenerator.uuid().toString()) {
         @SerialName("wallet_exported")
         data object WalletExported : InfoMessage()
 
-        override fun getMessage(context: Context): String = when (this) {
-            InvalidMnemonic -> context.getString(R.string.importOlympiaAccounts_invalidMnemonic)
-            InvalidPayload -> context.getString(R.string.importOlympiaAccounts_invalidPayload)
-            NoMnemonicForAccounts -> context.getString(R.string.importOlympiaAccounts_noMnemonicFound)
+        @Composable
+        override fun getMessage(): String = when (this) {
+            InvalidMnemonic -> stringResource(id = R.string.importOlympiaAccounts_invalidMnemonic)
+            InvalidPayload -> stringResource(id = R.string.importOlympiaAccounts_invalidPayload)
+            NoMnemonicForAccounts -> stringResource(id = R.string.importOlympiaAccounts_noMnemonicFound)
             NoAccountsForLedger ->
                 "No addresses verified. The currently connected Ledger device is not related " +
-                    "to any accounts to be imported, or has already been used."
-            is LedgerAlreadyExist -> context.getString(R.string.addLedgerDevice_alreadyAddedAlert_message, label)
-            WalletExported -> context.getString(R.string.profileBackup_manualBackups_successMessage)
-            InvalidSnapshot -> context.getString(R.string.recoverProfileBackup_incompatibleWalletDataLabel)
-            InvalidPassword -> context.getString(R.string.recoverProfileBackup_passwordWrong)
+                        "to any accounts to be imported, or has already been used."
+
+            is LedgerAlreadyExist -> stringResource(id = R.string.addLedgerDevice_alreadyAddedAlert_message, label)
+            WalletExported -> stringResource(id = R.string.profileBackup_manualBackups_successMessage)
+            InvalidSnapshot -> stringResource(id = R.string.recoverProfileBackup_incompatibleWalletDataLabel)
+            InvalidPassword -> stringResource(id = R.string.recoverProfileBackup_passwordWrong)
         }
     }
 
-    @Serializable
-    @SerialName("error_message")
     data class ErrorMessage(
-        @StringRes
-        private val userFriendlyDescription: Int?,
-        private val nonUserFriendlyDescription: String?
+        private val error: Throwable?
     ) : UiMessage() {
 
-        val errorMessageStringRes: Int?
-            get() = userFriendlyDescription // TODO figure out better way how to propagate arg errors
-
-        override fun getMessage(context: Context): String = userFriendlyDescription?.let {
-            context.getString(it)
-        } ?: nonUserFriendlyDescription ?: context.getString(R.string.common_somethingWentWrong)
-
-        companion object {
-            fun from(error: Throwable?) = ErrorMessage(
-                userFriendlyDescription = (error as? DappRequestException)?.failure?.toDescriptionRes()
-                    ?: (error as? DappRequestFailure)?.toDescriptionRes(),
-                nonUserFriendlyDescription = error?.message
-            )
-        }
+        @Composable
+        override fun getMessage(): String =
+            (error as? RadixWalletException)?.toUserFriendlyMessage() ?: error?.message
+            ?: stringResource(id = R.string.common_somethingWentWrong)
     }
 }
-
-@Composable
-fun UiMessage.getMessage(): String = getMessage(context = LocalContext.current)
