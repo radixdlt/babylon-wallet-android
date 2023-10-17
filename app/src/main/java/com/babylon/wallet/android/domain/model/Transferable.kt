@@ -45,7 +45,7 @@ sealed interface Transferable {
 
     fun updateGuarantee(
         @FloatRange(from = 0.0)
-        guaranteeOffset: Float
+        guaranteeOffset: Double
     ): Transferable {
         return when (this) {
             is Depositing -> {
@@ -77,11 +77,11 @@ sealed interface GuaranteeType {
     data class Predicted(
         val instructionIndex: Long,
         @FloatRange(from = 0.0, to = 1.0)
-        val guaranteeOffset: Float
+        val guaranteeOffset: Double
     ) : GuaranteeType {
 
         @Suppress("MagicNumber")
-        val guaranteePercent: Float
+        val guaranteePercent: Double
             get() = guaranteeOffset * 100
     }
 }

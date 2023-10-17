@@ -506,9 +506,9 @@ sealed interface AccountWithPredictedGuarantee {
     val instructionIndex: Long
     val guaranteeAmountString: String
 
-    val guaranteeOffsetDecimal: Float
+    val guaranteeOffsetDecimal: Double
         @FloatRange(from = 0.0)
-        get() = (guaranteeAmountString.toFloatOrNull() ?: 0f) / 100f
+        get() = (guaranteeAmountString.toDoubleOrNull() ?: 0.0).div(100.0)
 
     val guaranteedAmount: BigDecimal
         get() = transferableAmount.amount * guaranteeOffsetDecimal.toBigDecimal()
