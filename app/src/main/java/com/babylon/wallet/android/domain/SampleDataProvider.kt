@@ -3,13 +3,13 @@
 package com.babylon.wallet.android.domain
 
 import com.babylon.wallet.android.data.transaction.TransactionVersion
-import com.babylon.wallet.android.domain.model.AccountWithResources
+import com.babylon.wallet.android.domain.model.AccountWithAssets
+import com.babylon.wallet.android.domain.model.Assets
 import com.babylon.wallet.android.domain.model.DAppResources
 import com.babylon.wallet.android.domain.model.DAppWithMetadata
 import com.babylon.wallet.android.domain.model.DAppWithMetadataAndAssociatedResources
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.babylon.wallet.android.domain.model.Resource
-import com.babylon.wallet.android.domain.model.Resources
 import com.babylon.wallet.android.domain.model.TransactionManifestData
 import com.babylon.wallet.android.domain.model.Transferable
 import com.babylon.wallet.android.domain.model.TransferableResource
@@ -259,12 +259,12 @@ class SampleDataProvider {
     fun sampleAccountWithResources(
         address: String = randomAddress(),
         withFungibleTokens: List<Resource.FungibleResource> = sampleFungibleResources()
-    ): AccountWithResources {
-        return AccountWithResources(
+    ): AccountWithAssets {
+        return AccountWithAssets(
             account = sampleAccount(address = address),
-            resources = Resources(
-                fungibleResources = withFungibleTokens,
-                nonFungibleResources = emptyList(),
+            assets = Assets(
+                fungibles = withFungibleTokens,
+                nonFungibles = emptyList(),
                 poolUnits = emptyList(),
                 validatorsWithStakeResources = ValidatorsWithStakeResources()
             )

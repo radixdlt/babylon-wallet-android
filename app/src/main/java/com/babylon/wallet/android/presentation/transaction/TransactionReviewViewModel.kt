@@ -22,7 +22,7 @@ import com.babylon.wallet.android.domain.model.Resource.NonFungibleResource
 import com.babylon.wallet.android.domain.model.Transferable
 import com.babylon.wallet.android.domain.model.TransferableResource
 import com.babylon.wallet.android.domain.model.isXrd
-import com.babylon.wallet.android.domain.usecases.GetAccountsWithResourcesUseCase
+import com.babylon.wallet.android.domain.usecases.GetAccountsWithAssetsUseCase
 import com.babylon.wallet.android.domain.usecases.GetResourcesMetadataUseCase
 import com.babylon.wallet.android.domain.usecases.GetResourcesUseCase
 import com.babylon.wallet.android.domain.usecases.ResolveDAppsUseCase
@@ -60,7 +60,7 @@ import javax.inject.Inject
 @HiltViewModel
 class TransactionReviewViewModel @Inject constructor(
     private val transactionClient: TransactionClient,
-    getAccountsWithResourcesUseCase: GetAccountsWithResourcesUseCase,
+    getAccountsWithAssetsUseCase: GetAccountsWithAssetsUseCase,
     getResourcesMetadataUseCase: GetResourcesMetadataUseCase,
     getProfileUseCase: GetProfileUseCase,
     getResourcesUseCase: GetResourcesUseCase,
@@ -87,7 +87,7 @@ class TransactionReviewViewModel @Inject constructor(
     private val analysis: TransactionAnalysisDelegate = TransactionAnalysisDelegate(
         state = _state,
         getProfileUseCase = getProfileUseCase,
-        getAccountsWithResourcesUseCase = getAccountsWithResourcesUseCase,
+        getAccountsWithAssetsUseCase = getAccountsWithAssetsUseCase,
         getTransactionBadgesUseCase = getTransactionBadgesUseCase,
         getResourcesMetadataUseCase = getResourcesMetadataUseCase,
         resolveDAppsUseCase = resolveDAppsUseCase,

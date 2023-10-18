@@ -4,8 +4,7 @@ import androidx.lifecycle.SavedStateHandle
 import app.cash.turbine.ReceiveTurbine
 import app.cash.turbine.test
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
-import com.babylon.wallet.android.domain.model.Resource
-import com.babylon.wallet.android.domain.usecases.GetAccountsWithResourcesUseCase
+import com.babylon.wallet.android.domain.usecases.GetAccountsWithAssetsUseCase
 import com.babylon.wallet.android.mockdata.account
 import com.babylon.wallet.android.mockdata.profile
 import com.babylon.wallet.android.presentation.StateViewModelTest
@@ -22,7 +21,6 @@ import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
-import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.data.repository.MnemonicRepository
 import rdx.works.profile.domain.GetProfileUseCase
@@ -32,7 +30,7 @@ class TransferViewModelTest : StateViewModelTest<TransferViewModel>() {
 
     private val savedStateHandle = mockk<SavedStateHandle>()
     private val getProfileUseCase = mockk<GetProfileUseCase>()
-    private val getAccountsWithResourcesUseCase = mockk<GetAccountsWithResourcesUseCase>()
+    private val getAccountsWithAssetsUseCase = mockk<GetAccountsWithAssetsUseCase>()
     private val incomingRequestRepository = mockk<IncomingRequestRepository>()
     private val mnemonicRepository = mockk<MnemonicRepository>()
 
@@ -58,7 +56,7 @@ class TransferViewModelTest : StateViewModelTest<TransferViewModel>() {
     override fun initVM(): TransferViewModel {
         return TransferViewModel(
             getProfileUseCase = getProfileUseCase,
-            getAccountsWithResourcesUseCase = getAccountsWithResourcesUseCase,
+            getAccountsWithAssetsUseCase = getAccountsWithAssetsUseCase,
             incomingRequestRepository = incomingRequestRepository,
             mnemonicRepository = mnemonicRepository,
             savedStateHandle = savedStateHandle

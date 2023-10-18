@@ -214,9 +214,9 @@ private fun WalletAccountList(
                     .throttleClickable {
                         onAccountClick(accountWithResources.account)
                     },
-                accountWithResources = accountWithResources,
+                accountWithAssets = accountWithResources,
                 accountTag = state.getTag(accountWithResources.account),
-                isLoadingResources = state.isLoadingResources,
+                isLoadingResources = state.isLoadingAssets,
                 securityPromptType = state.securityPrompt(accountWithResources.account),
                 onApplySecuritySettings = {
                     onApplySecuritySettings(accountWithResources.account, it)

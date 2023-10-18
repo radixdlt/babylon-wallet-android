@@ -24,10 +24,11 @@ import com.babylon.wallet.android.designsystem.theme.AccountGradientList
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.SampleDataProvider
-import com.babylon.wallet.android.domain.model.AccountWithResources
+import com.babylon.wallet.android.domain.model.AccountWithAssets
+import com.babylon.wallet.android.domain.model.Assets
 import com.babylon.wallet.android.domain.model.Resource
-import com.babylon.wallet.android.domain.model.Resources
 import com.babylon.wallet.android.domain.model.ValidatorsWithStakeResources
+import com.babylon.wallet.android.domain.model.XrdResource
 import com.babylon.wallet.android.domain.model.metadata.NameMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.SymbolMetadataItem
 import com.babylon.wallet.android.domain.usecases.SecurityPromptType
@@ -39,15 +40,15 @@ import java.math.BigDecimal
 @Suppress("DestructuringDeclarationWithTooManyEntries")
 @Composable
 fun AccountCardView(
-    accountWithResources: AccountWithResources,
+    accountWithAssets: AccountWithAssets,
     accountTag: WalletUiState.AccountTag?,
     isLoadingResources: Boolean,
     securityPromptType: SecurityPromptType?,
     modifier: Modifier = Modifier,
     onApplySecuritySettings: (SecurityPromptType) -> Unit
 ) {
-    val gradient = remember(accountWithResources.account.appearanceID) {
-        AccountGradientList[accountWithResources.account.appearanceID % AccountGradientList.size]
+    val gradient = remember(accountWithAssets.account.appearanceID) {
+        AccountGradientList[accountWithAssets.account.appearanceID % AccountGradientList.size]
     }
 
     ConstraintLayout(
@@ -67,7 +68,7 @@ fun AccountCardView(
                 linkTo(start = parent.start, end = parent.end, bias = 0f)
                 top.linkTo(parent.top)
             },
-            text = accountWithResources.account.displayName,
+            text = accountWithAssets.account.displayName,
             style = RadixTheme.typography.body1Header,
             maxLines = 1,
             color = RadixTheme.colors.white,
@@ -75,7 +76,7 @@ fun AccountCardView(
         )
 
         ActionableAddressView(
-            address = accountWithResources.account.address,
+            address = accountWithAssets.account.address,
             modifier = Modifier.constrainAs(addressLabel) {
                 top.linkTo(nameLabel.bottom, margin = 8.dp)
                 start.linkTo(parent.start)
@@ -123,7 +124,7 @@ fun AccountCardView(
                 )
                 width = Dimension.fillToConstraints
             },
-            resources = accountWithResources.resources,
+            assets = accountWithAssets.assets,
             isLoading = isLoadingResources
         )
 
@@ -194,18 +195,18 @@ fun AccountCardPreview() {
     RadixWalletTheme {
         Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
             AccountCardView(
-                accountWithResources = AccountWithResources(
+                accountWithAssets = AccountWithAssets(
                     account = SampleDataProvider().sampleAccount(),
-                    resources = Resources(
-                        fungibleResources = listOf(
+                    assets = Assets(
+                        fungibles = listOf(
                             Resource.FungibleResource(
-                                resourceAddress = "resource_address",
+                                resourceAddress = XrdResource.officialAddress,
                                 ownedAmount = BigDecimal.valueOf(237659),
                                 nameMetadataItem = NameMetadataItem("cool XRD"),
                                 symbolMetadataItem = SymbolMetadataItem("XRD")
                             )
                         ),
-                        nonFungibleResources = listOf(),
+                        nonFungibles = listOf(),
                         poolUnits = emptyList(),
                         validatorsWithStakeResources = ValidatorsWithStakeResources()
                     )

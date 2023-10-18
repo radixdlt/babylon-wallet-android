@@ -3,10 +3,10 @@ package com.babylon.wallet.android.presentation.wallet
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.domain.common.onError
 import com.babylon.wallet.android.domain.common.onValue
-import com.babylon.wallet.android.domain.model.AccountWithResources
+import com.babylon.wallet.android.domain.model.AccountWithAssets
 import com.babylon.wallet.android.domain.usecases.AccountWithSecurityPrompt
 import com.babylon.wallet.android.domain.usecases.GetAccountsForSecurityPromptUseCase
-import com.babylon.wallet.android.domain.usecases.GetAccountsWithResourcesUseCase
+import com.babylon.wallet.android.domain.usecases.GetAccountsWithAssetsUseCase
 import com.babylon.wallet.android.domain.usecases.SecurityPromptType
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
@@ -42,7 +42,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class WalletViewModel @Inject constructor(
-    private val getAccountsWithResourcesUseCase: GetAccountsWithResourcesUseCase,
+    private val getAccountsWithAssetsUseCase: GetAccountsWithAssetsUseCase,
     private val getProfileUseCase: GetProfileUseCase,
     private val getAccountsForSecurityPromptUseCase: GetAccountsForSecurityPromptUseCase,
     private val appEventBus: AppEventBus,
@@ -94,7 +94,7 @@ class WalletViewModel @Inject constructor(
                     state.loadingResources(accounts = accounts, isRefreshing = state.isRefreshing)
                 }
 
-                getAccountsWithResourcesUseCase(
+                getAccountsWithAssetsUseCase(
                     accounts = accounts,
                     isNftItemDataNeeded = false,
                     isRefreshing = _state.value.isRefreshing
@@ -176,7 +176,7 @@ internal sealed interface WalletEvent : OneOffEvent {
 }
 
 data class WalletUiState(
-    private val accountsWithResources: List<AccountWithResources>? = null,
+    private val accountsWithResources: List<AccountWithAssets>? = null,
     private val loading: Boolean = true,
     private val refreshing: Boolean = false,
     private val accountsNeedSecurityPrompt: List<AccountWithSecurityPrompt> = emptyList(),
@@ -185,7 +185,7 @@ data class WalletUiState(
     val error: UiMessage? = null,
 ) : UiState {
 
-    val accountResources: List<AccountWithResources>
+    val accountResources: List<AccountWithAssets>
         get() = accountsWithResources.orEmpty()
 
     /**
@@ -194,8 +194,8 @@ data class WalletUiState(
     val isLoading: Boolean
         get() = accountsWithResources == null && loading
 
-    val isLoadingResources: Boolean
-        get() = accountsWithResources != null && accountsWithResources.none { it.resources != null } && loading
+    val isLoadingAssets: Boolean
+        get() = accountsWithResources != null && accountsWithResources.none { it.assets != null } && loading
 
     /**
      * Used in pull to refresh mode.
@@ -204,15 +204,15 @@ data class WalletUiState(
         get() = refreshing
 
     fun securityPrompt(forAccount: Network.Account): SecurityPromptType? {
-        val resourcesForAccount = accountsWithResources?.find {
+        val assetsForAccount = accountsWithResources?.find {
             it.account.address == forAccount.address
-        }?.resources ?: return null
+        }?.assets ?: return null
 
         val accountWithSecurityPrompt = accountsNeedSecurityPrompt.find {
             it.account.address == forAccount.address
         } ?: return null
         return if (accountWithSecurityPrompt.prompt == SecurityPromptType.NEEDS_BACKUP) {
-            if (resourcesForAccount.hasXrd()) SecurityPromptType.NEEDS_BACKUP else null
+            if (assetsForAccount.hasXrd()) SecurityPromptType.NEEDS_BACKUP else null
         } else {
             accountWithSecurityPrompt.prompt
         }
@@ -247,16 +247,16 @@ data class WalletUiState(
 
     fun loadingResources(accounts: List<Network.Account>, isRefreshing: Boolean): WalletUiState = copy(
         accountsWithResources = accounts.map { account ->
-            AccountWithResources(
+            AccountWithAssets(
                 account = account,
-                resources = accountsWithResources?.find { account == it.account }?.resources
+                assets = accountsWithResources?.find { account == it.account }?.assets
             )
         },
         loading = true,
         refreshing = isRefreshing
     )
 
-    fun onResourcesReceived(accountsWithResources: List<AccountWithResources>): WalletUiState = copy(
+    fun onResourcesReceived(accountsWithResources: List<AccountWithAssets>): WalletUiState = copy(
         accountsWithResources = accountsWithResources,
         loading = false,
         refreshing = false

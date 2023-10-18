@@ -5,13 +5,13 @@ import com.babylon.wallet.android.data.manifest.addLockFeeInstructionToManifest
 import com.babylon.wallet.android.data.repository.entity.EntityRepository
 import com.babylon.wallet.android.data.repository.transaction.TransactionRepository
 import com.babylon.wallet.android.domain.common.Result
-import com.babylon.wallet.android.domain.model.AccountWithResources
+import com.babylon.wallet.android.domain.model.AccountWithAssets
+import com.babylon.wallet.android.domain.model.Assets
 import com.babylon.wallet.android.domain.model.Resource
-import com.babylon.wallet.android.domain.model.Resources
 import com.babylon.wallet.android.domain.model.XrdResource
 import com.babylon.wallet.android.domain.model.metadata.OwnerKeyHashesMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.SymbolMetadataItem
-import com.babylon.wallet.android.domain.usecases.GetAccountsWithResourcesUseCase
+import com.babylon.wallet.android.domain.usecases.GetAccountsWithAssetsUseCase
 import com.babylon.wallet.android.domain.usecases.transaction.CollectSignersSignaturesUseCase
 import com.babylon.wallet.android.domain.usecases.transaction.SubmitTransactionUseCase
 import com.babylon.wallet.android.mockdata.account
@@ -47,7 +47,7 @@ internal class TransactionClientTest {
 
     private val transactionRepository = mockk<TransactionRepository>()
     private val getProfileUseCase = GetProfileUseCase(ProfileRepositoryFake)
-    private val getAccountsWithResourcesUseCase = GetAccountsWithResourcesUseCase(
+    private val getAccountsWithAssetsUseCase = GetAccountsWithAssetsUseCase(
         EntityRepositoryFake,
         getProfileUseCase
     )
@@ -63,7 +63,7 @@ internal class TransactionClientTest {
             transactionRepository,
             getProfileUseCase,
             collectSignersSignaturesUseCase,
-            getAccountsWithResourcesUseCase,
+            getAccountsWithAssetsUseCase,
             submitTransactionUseCase
         )
     }
@@ -119,34 +119,33 @@ internal class TransactionClientTest {
         const val addressWithNoFunds = "account_rdx12y06gluaaf3h4slnwwjacxnamkv90f0m6tmpwh5ky7avjg5x5y7cpc"
 
         val account1 = account(address = addressWithFunds)
-        val accountResourcesWithFunds = AccountWithResources(
+        val accountResourcesWithFunds = AccountWithAssets(
             account = account1,
-            resources = Resources(
-                fungibleResources = listOf(
+            assets = Assets(
+                fungibles = listOf(
                     Resource.FungibleResource(
                         resourceAddress = XrdResource.officialAddresses.first(),
                         ownedAmount = 30.toBigDecimal(),
                         symbolMetadataItem = SymbolMetadataItem("XRD")
                     )
                 ),
-                nonFungibleResources = emptyList(),
-                poolUnits = emptyList()
+                nonFungibles = emptyList()
             )
         )
 
         val account2 = account(address = addressWithNoFunds)
-        val accountResourcesWithNoFunds = AccountWithResources(
+        val accountResourcesWithNoFunds = AccountWithAssets(
             account = account2,
-            resources = Resources.EMPTY
+            assets = Assets()
         )
 
 
-        override suspend fun getAccountsWithResources(
+        override suspend fun getAccountsWithAssets(
             accounts: List<Network.Account>,
             explicitMetadataForAssets: Set<ExplicitMetadataKey>,
             isDetailedBreakdown: Boolean,
             isRefreshing: Boolean
-        ): Result<List<AccountWithResources>> = Result.Success(accounts.map {
+        ): Result<List<AccountWithAssets>> = Result.Success(accounts.map {
             when (it.address) {
                 addressWithFunds -> accountResourcesWithFunds
                 addressWithNoFunds -> accountResourcesWithNoFunds

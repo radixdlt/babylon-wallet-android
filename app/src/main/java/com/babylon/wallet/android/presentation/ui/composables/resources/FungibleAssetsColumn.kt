@@ -20,15 +20,15 @@ import androidx.compose.ui.graphics.drawscope.clipRect
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
+import com.babylon.wallet.android.domain.model.Assets
 import com.babylon.wallet.android.domain.model.Resource
-import com.babylon.wallet.android.domain.model.Resources
 import com.babylon.wallet.android.presentation.account.composable.EmptyResourcesContent
 import com.babylon.wallet.android.presentation.transfer.assets.ResourceTab
 
 @Composable
-fun FungibleResourcesColumn(
+fun FungibleAssetsColumn(
     modifier: Modifier,
-    resources: Resources?,
+    assets: Assets?,
     contentPadding: PaddingValues = PaddingValues(
         start = RadixTheme.dimensions.paddingMedium,
         end = RadixTheme.dimensions.paddingMedium,
@@ -37,8 +37,8 @@ fun FungibleResourcesColumn(
     ),
     item: @Composable (index: Int, resource: Resource.FungibleResource) -> Unit
 ) {
-    val xrdItem = resources?.xrd
-    val restResources = resources?.nonXrdFungibles.orEmpty()
+    val xrdItem = assets?.xrd
+    val restResources = assets?.nonXrdFungibles.orEmpty()
 
     LazyColumn(
         contentPadding = contentPadding,

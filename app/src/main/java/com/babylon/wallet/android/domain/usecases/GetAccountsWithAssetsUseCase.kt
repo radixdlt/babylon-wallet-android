@@ -2,13 +2,13 @@ package com.babylon.wallet.android.domain.usecases
 
 import com.babylon.wallet.android.data.repository.entity.EntityRepository
 import com.babylon.wallet.android.domain.common.Result
-import com.babylon.wallet.android.domain.model.AccountWithResources
+import com.babylon.wallet.android.domain.model.AccountWithAssets
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.accountsOnCurrentNetwork
 import javax.inject.Inject
 
-class GetAccountsWithResourcesUseCase @Inject constructor(
+class GetAccountsWithAssetsUseCase @Inject constructor(
     private val entityRepository: EntityRepository,
     private val getProfileUseCase: GetProfileUseCase
 ) {
@@ -17,8 +17,8 @@ class GetAccountsWithResourcesUseCase @Inject constructor(
         accounts: List<Network.Account>,
         isNftItemDataNeeded: Boolean = true,
         isRefreshing: Boolean,
-    ): Result<List<AccountWithResources>> {
-        return entityRepository.getAccountsWithResources(
+    ): Result<List<AccountWithAssets>> {
+        return entityRepository.getAccountsWithAssets(
             accounts = accounts,
             isNftItemDataNeeded = isNftItemDataNeeded,
             isRefreshing = isRefreshing
@@ -28,7 +28,7 @@ class GetAccountsWithResourcesUseCase @Inject constructor(
     suspend operator fun invoke(
         isNftItemDataNeeded: Boolean,
         isRefreshing: Boolean
-    ): Result<List<AccountWithResources>> {
+    ): Result<List<AccountWithAssets>> {
         val accounts = getProfileUseCase.accountsOnCurrentNetwork()
         return invoke(accounts = accounts, isNftItemDataNeeded = isNftItemDataNeeded, isRefreshing = isRefreshing)
     }

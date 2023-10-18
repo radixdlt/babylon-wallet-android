@@ -2,8 +2,8 @@ package com.babylon.wallet.android.presentation.transfer.assets
 
 import com.babylon.wallet.android.domain.common.onError
 import com.babylon.wallet.android.domain.common.onValue
-import com.babylon.wallet.android.domain.model.Resources
-import com.babylon.wallet.android.domain.usecases.GetAccountsWithResourcesUseCase
+import com.babylon.wallet.android.domain.model.Assets
+import com.babylon.wallet.android.domain.usecases.GetAccountsWithAssetsUseCase
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.transfer.SpendingAsset
 import com.babylon.wallet.android.presentation.transfer.TargetAccount
@@ -15,7 +15,7 @@ import rdx.works.profile.data.model.pernetwork.Network
 
 class AssetsChooserDelegate(
     private val state: MutableStateFlow<TransferViewModel.State>,
-    private val getAccountsWithResourcesUseCase: GetAccountsWithResourcesUseCase
+    private val getAccountsWithAssetsUseCase: GetAccountsWithAssetsUseCase
 ) {
 
     /**
@@ -32,15 +32,15 @@ class AssetsChooserDelegate(
             it.copy(sheet = Sheet.ChooseAssets.init(forTargetAccount = targetAccount))
         }
 
-        getAccountsWithResourcesUseCase(accounts = listOf(fromAccount), isRefreshing = false)
+        getAccountsWithAssetsUseCase(accounts = listOf(fromAccount), isRefreshing = false)
             .onValue { accountWithResources ->
-                val resources = accountWithResources.firstOrNull()?.resources
+                val assets = accountWithResources.firstOrNull()?.assets
 
-                updateSheetState { it.copy(resources = resources) }
+                updateSheetState { it.copy(assets = assets) }
             }.onError { error ->
                 updateSheetState {
                     it.copy(
-                        resources = Resources.EMPTY,
+                        assets = Assets(),
                         uiMessage = UiMessage.ErrorMessage.from(error)
                     )
                 }

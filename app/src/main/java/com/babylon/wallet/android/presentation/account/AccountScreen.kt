@@ -66,9 +66,9 @@ import com.babylon.wallet.android.designsystem.theme.AccountGradientList
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.SampleDataProvider
-import com.babylon.wallet.android.domain.model.AccountWithResources
+import com.babylon.wallet.android.domain.model.AccountWithAssets
+import com.babylon.wallet.android.domain.model.Assets
 import com.babylon.wallet.android.domain.model.Resource
-import com.babylon.wallet.android.domain.model.Resources
 import com.babylon.wallet.android.domain.model.ValidatorDetail
 import com.babylon.wallet.android.domain.model.ValidatorsWithStakeResources
 import com.babylon.wallet.android.domain.usecases.SecurityPromptType
@@ -160,8 +160,8 @@ private fun AccountScreenContent(
     onPoolUnitClick: (Resource.PoolUnitResource) -> Unit,
     onLSUUnitClicked: (Resource.LiquidStakeUnitResource, ValidatorDetail) -> Unit
 ) {
-    val gradient = remember(state.accountWithResources) {
-        val appearanceId = state.accountWithResources?.account?.appearanceID ?: 0
+    val gradient = remember(state.accountWithAssets) {
+        val appearanceId = state.accountWithAssets?.account?.appearanceID ?: 0
         AccountGradientList[appearanceId % AccountGradientList.size]
     }.toPersistentList()
 
@@ -232,7 +232,7 @@ private fun AccountScreenContent(
                         Spacer(modifier = Modifier.weight(1f))
                         Text(
                             modifier = Modifier,
-                            text = state.accountWithResources?.account?.displayName.orEmpty(),
+                            text = state.accountWithAssets?.account?.displayName.orEmpty(),
                             style = RadixTheme.typography.body1Header.copy(textAlign = TextAlign.Center),
                             color = RadixTheme.colors.white,
                             maxLines = 2,
@@ -241,7 +241,7 @@ private fun AccountScreenContent(
                         Spacer(modifier = Modifier.weight(1f))
                         IconButton(
                             onClick = {
-                                onAccountPreferenceClick(state.accountWithResources?.account?.address.orEmpty())
+                                onAccountPreferenceClick(state.accountWithAssets?.account?.address.orEmpty())
                             }
                         ) {
                             Icon(
@@ -398,18 +398,18 @@ fun AssetsContent(
         color = RadixTheme.colors.gray5
     ) {
         var selectedTab by remember { mutableStateOf(ResourceTab.Tokens) }
-        val resources = state.accountWithResources?.resources
-        val xrdItem = resources?.xrd
-        val restOfFungibles = resources?.nonXrdFungibles.orEmpty()
+        val assets = state.accountWithAssets?.assets
+        val xrdItem = assets?.xrd
+        val restOfFungibles = assets?.nonXrdFungibles.orEmpty()
 
-        val nonFungibleCollections = resources?.nonFungibleResources.orEmpty()
+        val nonFungibleCollections = assets?.nonFungibles.orEmpty()
         val collapsedState = remember(nonFungibleCollections) {
             nonFungibleCollections.map { true }.toMutableStateList()
         }
-        var collapsedStakeState by remember(resources?.validatorsWithStakeResources) { mutableStateOf(true) }
+        var collapsedStakeState by remember(assets?.validatorsWithStakeResources) { mutableStateOf(true) }
 
-        val accountAddress = remember(state.accountWithResources) {
-            state.accountWithResources?.account?.address.orEmpty()
+        val accountAddress = remember(state.accountWithAssets) {
+            state.accountWithAssets?.account?.address.orEmpty()
         }
 
         Box(
@@ -493,7 +493,7 @@ fun AssetsContent(
                     }
                 }
 
-                if (resources != null) {
+                if (assets != null) {
                     val contentModifier = Modifier.padding(
                         horizontal = horizontalPadding
                     )
@@ -530,8 +530,8 @@ fun AssetsContent(
                             poolUnitsResources(
                                 modifier = contentModifier,
                                 collapsedState = collapsedStakeState,
-                                validatorsWithStakeResources = resources.validatorsWithStakeResources,
-                                poolUnits = resources.poolUnits,
+                                validatorsWithStakeResources = assets.validatorsWithStakeResources,
+                                poolUnits = assets.poolUnits,
                                 parentSectionClick = {
                                     collapsedStakeState = !collapsedStakeState
                                 },
@@ -608,11 +608,11 @@ fun AccountContentPreview() {
         with(SampleDataProvider()) {
             AccountScreenContent(
                 state = AccountUiState(
-                    accountWithResources = AccountWithResources(
+                    accountWithAssets = AccountWithAssets(
                         account = sampleAccount("acount_rdx_abcde"),
-                        resources = Resources(
-                            fungibleResources = sampleFungibleResources(),
-                            nonFungibleResources = listOf(),
+                        assets = Assets(
+                            fungibles = sampleFungibleResources(),
+                            nonFungibles = listOf(),
                             poolUnits = listOf(),
                             validatorsWithStakeResources = ValidatorsWithStakeResources()
                         ),

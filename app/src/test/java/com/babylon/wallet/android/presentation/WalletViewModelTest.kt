@@ -2,12 +2,12 @@ package com.babylon.wallet.android.presentation
 
 import app.cash.turbine.test
 import com.babylon.wallet.android.domain.common.Result
-import com.babylon.wallet.android.domain.model.AccountWithResources
+import com.babylon.wallet.android.domain.model.AccountWithAssets
+import com.babylon.wallet.android.domain.model.Assets
 import com.babylon.wallet.android.domain.model.Resource
-import com.babylon.wallet.android.domain.model.Resources
 import com.babylon.wallet.android.domain.model.metadata.SymbolMetadataItem
 import com.babylon.wallet.android.domain.usecases.GetAccountsForSecurityPromptUseCase
-import com.babylon.wallet.android.domain.usecases.GetAccountsWithResourcesUseCase
+import com.babylon.wallet.android.domain.usecases.GetAccountsWithAssetsUseCase
 import com.babylon.wallet.android.mockdata.account
 import com.babylon.wallet.android.mockdata.profile
 import com.babylon.wallet.android.presentation.wallet.WalletUiState
@@ -34,7 +34,7 @@ import java.math.BigDecimal
 @ExperimentalCoroutinesApi
 class WalletViewModelTest : StateViewModelTest<WalletViewModel>() {
 
-    private val getAccountsWithResourcesUseCase = mockk<GetAccountsWithResourcesUseCase>()
+    private val getAccountsWithAssetsUseCase = mockk<GetAccountsWithAssetsUseCase>()
     private val getBackupStateUseCase = mockk<GetBackupStateUseCase>()
     private val getProfileUseCase = mockk<GetProfileUseCase>()
     private val getAccountsForSecurityPromptUseCase = mockk<GetAccountsForSecurityPromptUseCase>()
@@ -49,7 +49,7 @@ class WalletViewModelTest : StateViewModelTest<WalletViewModel>() {
     )
 
     override fun initVM(): WalletViewModel = WalletViewModel(
-        getAccountsWithResourcesUseCase,
+        getAccountsWithAssetsUseCase,
         getProfileUseCase,
         getAccountsForSecurityPromptUseCase,
         appEventBus,
@@ -71,23 +71,23 @@ class WalletViewModelTest : StateViewModelTest<WalletViewModel>() {
         val viewModel = vm.value
         advanceUntilIdle()
         coEvery {
-            getAccountsWithResourcesUseCase(
+            getAccountsWithAssetsUseCase(
                 accounts = sampleProfile.currentNetwork.accounts,
                 isRefreshing = false
             )
         } returns Result.Success(
             listOf(
-                AccountWithResources(
+                AccountWithAssets(
                     account = sampleProfile.currentNetwork.accounts[0],
-                    resources = Resources(
-                        fungibleResources = listOf(sampleXrdResource),
-                        nonFungibleResources = emptyList(),
+                    assets = Assets(
+                        fungibles = listOf(sampleXrdResource),
+                        nonFungibles = emptyList(),
                         poolUnits = emptyList()
                     )
                 ),
-                AccountWithResources(
+                AccountWithAssets(
                     account = sampleProfile.currentNetwork.accounts[0],
-                    resources = Resources(fungibleResources = emptyList(), nonFungibleResources = emptyList(), poolUnits = emptyList())
+                    assets = Assets(fungibles = emptyList(), nonFungibles = emptyList())
                 )
             )
         )

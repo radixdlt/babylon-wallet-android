@@ -4,11 +4,11 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.domain.common.onError
 import com.babylon.wallet.android.domain.common.onValue
-import com.babylon.wallet.android.domain.model.AccountWithResources
+import com.babylon.wallet.android.domain.model.AccountWithAssets
 import com.babylon.wallet.android.domain.model.Resource
 import com.babylon.wallet.android.domain.model.ValidatorDetail
 import com.babylon.wallet.android.domain.usecases.GetAccountsForSecurityPromptUseCase
-import com.babylon.wallet.android.domain.usecases.GetAccountsWithResourcesUseCase
+import com.babylon.wallet.android.domain.usecases.GetAccountsWithAssetsUseCase
 import com.babylon.wallet.android.domain.usecases.SecurityPromptType
 import com.babylon.wallet.android.presentation.account.AccountEvent.NavigateToMnemonicBackup
 import com.babylon.wallet.android.presentation.account.AccountEvent.NavigateToMnemonicRestore
@@ -35,7 +35,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class AccountViewModel @Inject constructor(
-    private val getAccountsWithResourcesUseCase: GetAccountsWithResourcesUseCase,
+    private val getAccountsWithAssetsUseCase: GetAccountsWithAssetsUseCase,
     private val getProfileUseCase: GetProfileUseCase,
     private val getAccountsForSecurityPromptUseCase: GetAccountsForSecurityPromptUseCase,
     private val appEventBus: AppEventBus,
@@ -44,14 +44,14 @@ class AccountViewModel @Inject constructor(
 
     private val accountAddress: String = savedStateHandle.get<String>(ARG_ACCOUNT_ADDRESS).orEmpty()
 
-    override fun initialState(): AccountUiState = AccountUiState(accountWithResources = null)
+    override fun initialState(): AccountUiState = AccountUiState(accountWithAssets = null)
 
     init {
         viewModelScope.launch {
             getProfileUseCase.accountOnCurrentNetworkWithAddress(accountAddress).collectLatest { account ->
                 account?.let {
                     _state.update { state ->
-                        state.copy(accountWithResources = AccountWithResources(account = account, resources = null))
+                        state.copy(accountWithAssets = AccountWithAssets(account = account, assets = null))
                     }
                     loadAccountData(isRefreshing = false)
                 }
@@ -89,9 +89,9 @@ class AccountViewModel @Inject constructor(
     }
 
     private fun loadAccountData(isRefreshing: Boolean) {
-        val account = _state.value.accountWithResources?.account ?: return
+        val account = _state.value.accountWithAssets?.account ?: return
         viewModelScope.launch {
-            val result = getAccountsWithResourcesUseCase(
+            val result = getAccountsWithAssetsUseCase(
                 accounts = listOf(account),
                 isRefreshing = isRefreshing
             )
@@ -108,7 +108,7 @@ class AccountViewModel @Inject constructor(
             result.onValue { accountsWithResources ->
                 _state.update { accountUiState ->
                     accountUiState.copy(
-                        accountWithResources = accountsWithResources.first(),
+                        accountWithAssets = accountsWithResources.first(),
                         isLoading = false,
                         refreshing = false
                     )
@@ -151,7 +151,7 @@ class AccountViewModel @Inject constructor(
 
     fun onApplySecuritySettings(securityPromptType: SecurityPromptType) {
         viewModelScope.launch {
-            val factorSourceId = _state.value.accountWithResources?.account
+            val factorSourceId = _state.value.accountWithAssets?.account
                 ?.factorSourceId() as? FactorSourceID.FromHash ?: return@launch
 
             when (securityPromptType) {
@@ -172,7 +172,7 @@ internal sealed interface AccountEvent : OneOffEvent {
 }
 
 data class AccountUiState(
-    val accountWithResources: AccountWithResources? = null,
+    val accountWithAssets: AccountWithAssets? = null,
     private val securityPromptType: SecurityPromptType? = null,
     val isLoading: Boolean = true,
     private val refreshing: Boolean = false,
@@ -183,7 +183,7 @@ data class AccountUiState(
     val visiblePrompt: SecurityPromptType?
         get() = when (securityPromptType) {
             SecurityPromptType.NEEDS_RESTORE -> securityPromptType
-            SecurityPromptType.NEEDS_BACKUP -> if (accountWithResources?.resources?.hasXrd() == true && !isLoading) {
+            SecurityPromptType.NEEDS_BACKUP -> if (accountWithAssets?.assets?.hasXrd() == true && !isLoading) {
                 SecurityPromptType.NEEDS_BACKUP
             } else {
                 null

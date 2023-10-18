@@ -36,8 +36,8 @@ import com.babylon.wallet.android.designsystem.theme.AccountGradientList
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.designsystem.theme.White
+import com.babylon.wallet.android.domain.model.Assets
 import com.babylon.wallet.android.domain.model.Resource
-import com.babylon.wallet.android.domain.model.Resources
 import com.babylon.wallet.android.domain.model.ValidatorsWithStakeResources
 import com.babylon.wallet.android.domain.model.allNftItemsSize
 import com.babylon.wallet.android.domain.model.metadata.IconUrlMetadataItem
@@ -52,7 +52,7 @@ import java.math.BigDecimal
 @Composable
 fun AccountAssetsRow(
     modifier: Modifier = Modifier,
-    resources: Resources?,
+    assets: Assets?,
     isLoading: Boolean,
     iconSize: Dp = 30.dp,
     bordersSize: Dp = 1.dp,
@@ -72,7 +72,7 @@ fun AccountAssetsRow(
                 placeholderFadeTransitionSpec = { tween() },
                 contentFadeTransitionSpec = { tween() }
             ),
-        resources = resources ?: Resources.EMPTY,
+        assets = assets ?: Assets(),
         iconSize = iconSize,
         bordersSize = bordersSize,
         maxVisibleFungibles = maxVisibleFungibles
@@ -83,7 +83,7 @@ fun AccountAssetsRow(
 @Suppress("CyclomaticComplexMethod")
 private fun AssetsContent(
     modifier: Modifier = Modifier,
-    resources: Resources,
+    assets: Assets,
     iconSize: Dp,
     bordersSize: Dp,
     maxVisibleFungibles: Int,
@@ -92,13 +92,13 @@ private fun AssetsContent(
     ConstraintLayout(
         modifier = modifier
     ) {
-        val (visibleFungibles, remainingFungiblesCount) = remember(resources.fungibleResources) {
-            resources.fungibleResources.take(maxVisibleFungibles) to (resources.fungibleResources.size - maxVisibleFungibles)
+        val (visibleFungibles, remainingFungiblesCount) = remember(assets.fungibles) {
+            assets.fungibles.take(maxVisibleFungibles) to (assets.fungibles.size - maxVisibleFungibles)
                 .coerceAtLeast(minimumValue = 0)
         }
-        val nftsCount = remember(resources.nonFungibleResources) { resources.nonFungibleResources.allNftItemsSize() }
-        val poolUnitCount = remember(resources.poolUnits, resources.validatorsWithStakeResources) {
-            resources.poolUnitsSize()
+        val nftsCount = remember(assets.nonFungibles) { assets.nonFungibles.allNftItemsSize() }
+        val poolUnitCount = remember(assets.poolUnits, assets.validatorsWithStakeResources) {
+            assets.poolUnitsSize()
         }
 
         val fungibleRefs = visibleFungibles.map { createRef() }
@@ -162,7 +162,7 @@ private fun AssetsContent(
                     modifier = Modifier
                         .align(Alignment.CenterStart)
                         .height(iconSize),
-                    text = "${resources.nonFungibleResources.allNftItemsSize()}",
+                    text = "${assets.nonFungibles.allNftItemsSize()}",
                     contentPadding = PaddingValues(
                         start = iconSize + RadixTheme.dimensions.paddingSmall,
                         end = RadixTheme.dimensions.paddingSmall
@@ -207,7 +207,7 @@ private fun AssetsContent(
                     modifier = Modifier
                         .align(Alignment.CenterStart)
                         .height(iconSize),
-                    text = resources.poolUnitsSize().toString(),
+                    text = assets.poolUnitsSize().toString(),
                     contentPadding = PaddingValues(
                         start = iconSize + RadixTheme.dimensions.paddingSmall,
                         end = RadixTheme.dimensions.paddingSmall
@@ -279,7 +279,7 @@ fun AssetsContentRowPreview() {
                 .padding(all = 16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            AccountAssetsRow(resources = null, isLoading = true)
+            AccountAssetsRow(assets = null, isLoading = true)
 
             val allFungibles = List(117) {
                 Resource.FungibleResource(
@@ -325,9 +325,9 @@ fun AssetsContentRowPreview() {
             )
 
             AccountAssetsRow(
-                resources = Resources(
-                    fungibleResources = allFungibles,
-                    nonFungibleResources = nonFungibles,
+                assets = Assets(
+                    fungibles = allFungibles,
+                    nonFungibles = nonFungibles,
                     poolUnits = emptyList(),
                     validatorsWithStakeResources = ValidatorsWithStakeResources()
                 ),
