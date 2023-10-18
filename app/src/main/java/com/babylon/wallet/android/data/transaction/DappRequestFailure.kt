@@ -14,6 +14,7 @@ sealed class DappRequestFailure(msg: String? = null) : Exception(msg.orEmpty()) 
     data object InvalidRequest : DappRequestFailure()
     data object UnacceptableManifest : DappRequestFailure()
     data object InvalidPersona : DappRequestFailure()
+    data object NotPossibleToAuthenticateAutomatically : DappRequestFailure() // TODO after refactor move it out of DappRequestFailure
     data object InvalidRequestChallenge : DappRequestFailure("Invalid challenge in dApp request")
     data class FailedToSignAuthChallenge(val msg: String = "") : DappRequestFailure(msg)
     data class WrongNetwork(
@@ -91,6 +92,7 @@ sealed class DappRequestFailure(msg: String? = null) : Exception(msg.orEmpty()) 
             DappVerificationFailure.ClaimedEntityAddressNotPresent -> WalletErrorType.WrongAccountType
             UnacceptableManifest -> WalletErrorType.FailedToPrepareTransaction
             is InvalidRequestChallenge -> WalletErrorType.InvalidRequest
+            NotPossibleToAuthenticateAutomatically -> WalletErrorType.InvalidRequest // TODO change after exception refactor
         }
     }
 
@@ -132,6 +134,7 @@ sealed class DappRequestFailure(msg: String? = null) : Exception(msg.orEmpty()) 
             DappVerificationFailure.ClaimedEntityAddressNotPresent -> R.string.common_somethingWentWrong // TODO consider different copy
             UnacceptableManifest -> R.string.transactionReview_unacceptableManifest_rejected
             is InvalidRequestChallenge -> R.string.dAppRequest_requestMalformedAlert_message
+            NotPossibleToAuthenticateAutomatically -> R.string.common_somethingWentWrong // TODO consider different copy
         }
     }
 

@@ -176,16 +176,28 @@ class MainViewModel @Inject constructor(
                     sendEvent(MainEvent.IncomingRequestEvent(request))
                 } else {
                     delay(REQUEST_HANDLING_DELAY)
-                    val dAppData = authorizeSpecifiedPersonaUseCase(request)
-                    if (dAppData.isSuccess) {
+                    authorizeSpecifiedPersonaUseCase(request).onSuccess { dAppData ->
                         appEventBus.sendEvent(
                             AppEvent.Status.DappInteraction(
-                                requestId = dAppData.getOrThrow().requestId,
-                                dAppName = dAppData.getOrThrow().name
+                                requestId = dAppData.requestId,
+                                dAppName = dAppData.name
                             )
                         )
-                    } else {
-                        sendEvent(MainEvent.IncomingRequestEvent(request))
+                    }.onFailure { exception ->
+                        (exception as? DappRequestFailure)?.let { dappRequestFailure ->
+                            when (dappRequestFailure) {
+                                DappRequestFailure.InvalidPersona,
+                                DappRequestFailure.InvalidRequest -> {
+                                    _state.update { state ->
+                                        state.copy(dappRequestFailure = dappRequestFailure)
+                                    }
+                                }
+
+                                else -> {
+                                    sendEvent(MainEvent.IncomingRequestEvent(request))
+                                }
+                            }
+                        }
                     }
                 }
             }
