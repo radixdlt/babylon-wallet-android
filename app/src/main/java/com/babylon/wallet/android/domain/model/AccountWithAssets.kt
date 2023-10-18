@@ -22,7 +22,7 @@ fun List<AccountWithAssets>.findAccountWithEnoughXRDBalance(minimumBalance: BigD
 data class Assets(
     val fungibles: List<Resource.FungibleResource> = emptyList(),
     val nonFungibles: List<Resource.NonFungibleResource> = emptyList(),
-    val poolUnits: List<Resource.PoolUnitResource> = emptyList(),
+    val poolUnits: List<PoolUnit> = emptyList(),
     val validatorsWithStakeResources: ValidatorsWithStakeResources = ValidatorsWithStakeResources()
 ) {
 
@@ -46,40 +46,8 @@ data class Assets(
 
 data class Resources(
     val fungibleResources: List<Resource.FungibleResource>,
-    val nonFungibleResources: List<Resource.NonFungibleResource>,
-    val poolUnits: List<Resource.PoolUnitResource>,
-    val validatorsWithStakeResources: ValidatorsWithStakeResources = ValidatorsWithStakeResources()
-) {
-
-    val xrd: Resource.FungibleResource? by lazy {
-        fungibleResources.find { it.isXrd }
-    }
-    val nonXrdFungibles: List<Resource.FungibleResource> by lazy {
-        fungibleResources.filterNot { it.isXrd }
-    }
-
-    val isNotEmpty: Boolean
-        get() = fungibleResources.isNotEmpty() || nonFungibleResources.isNotEmpty()
-
-    fun hasXrd(minimumBalance: BigDecimal = BigDecimal(1)): Boolean = xrd?.let {
-        it.ownedAmount?.let { amount ->
-            amount >= minimumBalance
-        }
-    } == true
-
-    fun poolUnitsSize(): Int {
-        return poolUnits.size + validatorsWithStakeResources.validators.size
-    }
-
-    companion object {
-        val EMPTY = Resources(
-            fungibleResources = emptyList(),
-            nonFungibleResources = emptyList(),
-            poolUnits = emptyList(),
-            validatorsWithStakeResources = ValidatorsWithStakeResources()
-        )
-    }
-}
+    val nonFungibleResources: List<Resource.NonFungibleResource>
+)
 
 data class ValidatorsWithStakeResources(
     val validators: List<ValidatorWithStakeResources> = emptyList()
@@ -98,8 +66,8 @@ data class ValidatorDetail(
 
 data class ValidatorWithStakeResources(
     val validatorDetail: ValidatorDetail,
-    val liquidStakeUnits: List<Resource.LiquidStakeUnitResource> = emptyList(),
-    val stakeClaimNft: Resource.StakeClaimResource? = null
+    val liquidStakeUnits: List<LiquidStakeUnit> = emptyList(),
+    val stakeClaimNft: StakeClaim? = null
 )
 
 fun List<Resource.NonFungibleResource>.allNftItemsSize() = map { it.items }.flatten().size

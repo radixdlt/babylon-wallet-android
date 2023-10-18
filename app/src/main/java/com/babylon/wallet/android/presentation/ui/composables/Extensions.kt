@@ -5,16 +5,16 @@ import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import com.babylon.wallet.android.R
-import com.babylon.wallet.android.domain.model.Resource
+import com.babylon.wallet.android.domain.model.Tag
 import com.babylon.wallet.android.domain.model.behaviours.AssetBehaviour
 
 typealias DSR = com.babylon.wallet.android.designsystem.R.drawable
 
 @Composable
-fun Resource.Tag.name(): String {
+fun Tag.name(): String {
     return when (this) {
-        is Resource.Tag.Official -> "RADIX NETWORK"
-        is Resource.Tag.Dynamic -> name
+        is Tag.Official -> "RADIX NETWORK"
+        is Tag.Dynamic -> name
     }
 }
 

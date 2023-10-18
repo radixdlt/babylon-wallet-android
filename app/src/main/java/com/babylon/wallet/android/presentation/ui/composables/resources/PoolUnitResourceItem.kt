@@ -25,6 +25,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
+import com.babylon.wallet.android.domain.model.PoolUnit
 import com.babylon.wallet.android.domain.model.Resource
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
 import rdx.works.core.displayableQuantity
@@ -32,7 +33,7 @@ import java.math.BigDecimal
 
 @Composable
 fun PoolUnitItem(
-    resource: Resource.PoolUnitResource,
+    resource: PoolUnit,
     modifier: Modifier = Modifier,
     trailingContent: @Composable () -> Unit = {}
 ) {
@@ -79,7 +80,7 @@ fun PoolUnitItem(
 }
 
 @Composable
-fun PoolResourcesValues(resource: Resource.PoolUnitResource, modifier: Modifier = Modifier) {
+fun PoolResourcesValues(resource: PoolUnit, modifier: Modifier = Modifier) {
     Column(modifier = modifier.border(1.dp, RadixTheme.colors.gray4, RadixTheme.shapes.roundedRectMedium)) {
         val itemsSize = resource.poolResources.size
         resource.poolResources.forEachIndexed { index, poolResource ->

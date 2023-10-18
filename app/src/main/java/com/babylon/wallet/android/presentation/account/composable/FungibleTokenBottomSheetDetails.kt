@@ -32,6 +32,7 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.domain.model.Resource
+import com.babylon.wallet.android.domain.model.Tag
 import com.babylon.wallet.android.domain.model.isXrd
 import com.babylon.wallet.android.presentation.ui.composables.BackIconType
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
@@ -210,14 +211,14 @@ fun Behaviour(
 @Composable
 fun Tag(
     modifier: Modifier = Modifier,
-    tag: Resource.Tag
+    tag: Tag
 ) {
     Row(
         modifier = modifier,
         verticalAlignment = Alignment.CenterVertically
     ) {
         Icon(
-            painter = if (tag == Resource.Tag.Official) {
+            painter = if (tag == Tag.Official) {
                 painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_radix_tag)
             } else {
                 painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_token_tag)

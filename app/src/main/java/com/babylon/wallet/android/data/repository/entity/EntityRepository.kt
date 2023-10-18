@@ -43,7 +43,10 @@ import com.babylon.wallet.android.domain.common.switchMap
 import com.babylon.wallet.android.domain.common.value
 import com.babylon.wallet.android.domain.model.AccountWithAssets
 import com.babylon.wallet.android.domain.model.Assets
+import com.babylon.wallet.android.domain.model.LiquidStakeUnit
+import com.babylon.wallet.android.domain.model.PoolUnit
 import com.babylon.wallet.android.domain.model.Resource
+import com.babylon.wallet.android.domain.model.StakeClaim
 import com.babylon.wallet.android.domain.model.ValidatorDetail
 import com.babylon.wallet.android.domain.model.ValidatorWithStakeResources
 import com.babylon.wallet.android.domain.model.ValidatorsWithStakeResources
@@ -133,13 +136,13 @@ class EntityRepositoryImpl @Inject constructor(
 
             val mapOfAccountsWithLiquidStakeUnitResources = mapOfAccountsWithFungibleResources.mapValues { fungibleResources ->
                 fungibleResources.value.filter { validatorResourceAddresses.contains(it.resourceAddress) }.map {
-                    Resource.LiquidStakeUnitResource(it)
+                    LiquidStakeUnit(it)
                 }
             }.filter { it.value.isNotEmpty() }
             val mapOfAccountsWithStakeClaimNFT = mapOfAccountsWithNonFungibleResources.mapValues { nftResource ->
                 nftResource.value.filter {
                     validatorResourceAddresses.contains(it.resourceAddress)
-                }.map { Resource.StakeClaimResource(it) }
+                }.map { StakeClaim(it) }
             }.filter { it.value.isNotEmpty() }
             val mapOfAccountsWithPoolUnits = mapOfAccountsWithFungibleResources.mapValues { fungibleResources ->
                 fungibleResources.value.filter { poolAddresses.contains(it.poolAddress) }.map { poolUnitResource ->
@@ -149,7 +152,7 @@ class EntityRepositoryImpl @Inject constructor(
                             mapToFungibleResource(it)
                         }
                     }.orEmpty()
-                    Resource.PoolUnitResource(poolUnitResource, poolResources)
+                    PoolUnit(poolUnitResource, poolResources)
                 }
             }.filter { it.value.isNotEmpty() }
 
@@ -257,8 +260,8 @@ class EntityRepositoryImpl @Inject constructor(
     }
 
     private fun buildMapOfAccountAddressesWithLiquidStakeResources(
-        accountAddressToLiquidStakeUnits: Map<String, List<Resource.LiquidStakeUnitResource>>,
-        accountAddressToStakeClaimNtfs: Map<String, List<Resource.StakeClaimResource>>,
+        accountAddressToLiquidStakeUnits: Map<String, List<LiquidStakeUnit>>,
+        accountAddressToStakeClaimNtfs: Map<String, List<StakeClaim>>,
         validatorDetailsList: List<StateEntityDetailsResponseItem>,
     ): Map<String, ValidatorsWithStakeResources> {
         if (validatorDetailsList.isEmpty()) return emptyMap()

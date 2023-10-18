@@ -5,6 +5,8 @@ import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.domain.common.onError
 import com.babylon.wallet.android.domain.common.onValue
 import com.babylon.wallet.android.domain.model.AccountWithAssets
+import com.babylon.wallet.android.domain.model.LiquidStakeUnit
+import com.babylon.wallet.android.domain.model.PoolUnit
 import com.babylon.wallet.android.domain.model.Resource
 import com.babylon.wallet.android.domain.model.ValidatorDetail
 import com.babylon.wallet.android.domain.usecases.GetAccountsForSecurityPromptUseCase
@@ -137,13 +139,13 @@ class AccountViewModel @Inject constructor(
         }
     }
 
-    fun onLSUUnitClicked(resource: Resource.LiquidStakeUnitResource, validatorDetail: ValidatorDetail) {
+    fun onLSUUnitClicked(resource: LiquidStakeUnit, validatorDetail: ValidatorDetail) {
         _state.update { accountUiState ->
             accountUiState.copy(selectedResource = SelectedResource.SelectedLSUUnit(resource, validatorDetail))
         }
     }
 
-    fun onPoolUnitClicked(resource: Resource.PoolUnitResource) {
+    fun onPoolUnitClicked(resource: PoolUnit) {
         _state.update { accountUiState ->
             accountUiState.copy(selectedResource = SelectedResource.SelectedPoolUnit(resource))
         }
@@ -207,6 +209,6 @@ sealed interface SelectedResource {
         val item: Resource.NonFungibleResource.Item
     ) : SelectedResource
 
-    data class SelectedLSUUnit(val lsuUnit: Resource.LiquidStakeUnitResource, val validatorDetail: ValidatorDetail) : SelectedResource
-    data class SelectedPoolUnit(val poolUnit: Resource.PoolUnitResource) : SelectedResource
+    data class SelectedLSUUnit(val lsuUnit: LiquidStakeUnit, val validatorDetail: ValidatorDetail) : SelectedResource
+    data class SelectedPoolUnit(val poolUnit: PoolUnit) : SelectedResource
 }

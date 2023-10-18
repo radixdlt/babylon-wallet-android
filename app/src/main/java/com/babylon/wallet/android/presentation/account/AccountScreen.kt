@@ -68,6 +68,8 @@ import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.domain.model.AccountWithAssets
 import com.babylon.wallet.android.domain.model.Assets
+import com.babylon.wallet.android.domain.model.LiquidStakeUnit
+import com.babylon.wallet.android.domain.model.PoolUnit
 import com.babylon.wallet.android.domain.model.Resource
 import com.babylon.wallet.android.domain.model.ValidatorDetail
 import com.babylon.wallet.android.domain.model.ValidatorsWithStakeResources
@@ -157,8 +159,8 @@ private fun AccountScreenContent(
     onFungibleResourceClicked: (Resource.FungibleResource) -> Unit,
     onNonFungibleItemClicked: (Resource.NonFungibleResource, Resource.NonFungibleResource.Item) -> Unit,
     onApplySecuritySettings: (SecurityPromptType) -> Unit,
-    onPoolUnitClick: (Resource.PoolUnitResource) -> Unit,
-    onLSUUnitClicked: (Resource.LiquidStakeUnitResource, ValidatorDetail) -> Unit
+    onPoolUnitClick: (PoolUnit) -> Unit,
+    onLSUUnitClicked: (LiquidStakeUnit, ValidatorDetail) -> Unit
 ) {
     val gradient = remember(state.accountWithAssets) {
         val appearanceId = state.accountWithAssets?.account?.appearanceID ?: 0
@@ -387,11 +389,11 @@ fun AssetsContent(
     state: AccountUiState,
     onFungibleTokenClick: (Resource.FungibleResource) -> Unit,
     onNonFungibleItemClick: (Resource.NonFungibleResource, Resource.NonFungibleResource.Item) -> Unit,
-    onPoolUnitClick: (Resource.PoolUnitResource) -> Unit,
+    onPoolUnitClick: (PoolUnit) -> Unit,
     gradient: ImmutableList<Color>,
     onTransferClick: (String) -> Unit,
     onApplySecuritySettings: (SecurityPromptType) -> Unit,
-    onLSUUnitClicked: (Resource.LiquidStakeUnitResource, ValidatorDetail) -> Unit
+    onLSUUnitClicked: (LiquidStakeUnit, ValidatorDetail) -> Unit
 ) {
     Surface(
         modifier = modifier,

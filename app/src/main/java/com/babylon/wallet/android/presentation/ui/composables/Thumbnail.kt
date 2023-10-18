@@ -52,6 +52,8 @@ import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.domain.model.Badge
 import com.babylon.wallet.android.domain.model.DAppWithMetadata
+import com.babylon.wallet.android.domain.model.LiquidStakeUnit
+import com.babylon.wallet.android.domain.model.PoolUnit
 import com.babylon.wallet.android.domain.model.Resource
 import com.babylon.wallet.android.domain.model.ValidatorDetail
 import com.babylon.wallet.android.domain.model.isXrd
@@ -253,7 +255,7 @@ object Thumbnail {
     @Composable
     fun LSU(
         modifier: Modifier = Modifier,
-        liquidStakeUnit: Resource.LiquidStakeUnitResource
+        liquidStakeUnit: LiquidStakeUnit
     ) {
         Custom(
             modifier = modifier,
@@ -268,7 +270,7 @@ object Thumbnail {
     @Composable
     fun PoolUnit(
         modifier: Modifier = Modifier,
-        poolUnit: Resource.PoolUnitResource
+        poolUnit: PoolUnit
     ) {
         Custom(
             modifier = modifier,

@@ -22,6 +22,7 @@ import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.SampleDataProvider
+import com.babylon.wallet.android.domain.model.LiquidStakeUnit
 import com.babylon.wallet.android.domain.model.Resource
 import com.babylon.wallet.android.domain.model.ValidatorDetail
 import com.babylon.wallet.android.domain.model.XrdResource
@@ -39,7 +40,7 @@ import java.math.BigDecimal
 
 @Composable
 fun LSUBottomSheetDetails(
-    lsuUnit: Resource.LiquidStakeUnitResource,
+    lsuUnit: LiquidStakeUnit,
     validatorDetail: ValidatorDetail,
     onCloseClick: () -> Unit,
     modifier: Modifier = Modifier,
@@ -188,7 +189,7 @@ fun LSUBottomSheetDetails(
 
 @Composable
 private fun LSUResourceValue(
-    resource: Resource.LiquidStakeUnitResource,
+    resource: LiquidStakeUnit,
     validatorDetail: ValidatorDetail,
     modifier: Modifier = Modifier
 ) {

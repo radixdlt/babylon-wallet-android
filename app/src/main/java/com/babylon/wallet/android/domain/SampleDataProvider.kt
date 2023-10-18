@@ -8,7 +8,9 @@ import com.babylon.wallet.android.domain.model.Assets
 import com.babylon.wallet.android.domain.model.DAppResources
 import com.babylon.wallet.android.domain.model.DAppWithMetadata
 import com.babylon.wallet.android.domain.model.DAppWithMetadataAndAssociatedResources
+import com.babylon.wallet.android.domain.model.LiquidStakeUnit
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
+import com.babylon.wallet.android.domain.model.PoolUnit
 import com.babylon.wallet.android.domain.model.Resource
 import com.babylon.wallet.android.domain.model.TransactionManifestData
 import com.babylon.wallet.android.domain.model.Transferable
@@ -345,12 +347,12 @@ class SampleDataProvider {
         )
     }
 
-    fun samplePoolUnit(): Resource.PoolUnitResource {
-        return Resource.PoolUnitResource(sampleFungibleResources().first(), sampleFungibleResources())
+    fun samplePoolUnit(): PoolUnit {
+        return PoolUnit(sampleFungibleResources().first(), sampleFungibleResources())
     }
 
-    fun sampleLSUUnit(): Resource.LiquidStakeUnitResource {
-        return Resource.LiquidStakeUnitResource(
+    fun sampleLSUUnit(): LiquidStakeUnit {
+        return LiquidStakeUnit(
             sampleFungibleResources().first()
         )
     }

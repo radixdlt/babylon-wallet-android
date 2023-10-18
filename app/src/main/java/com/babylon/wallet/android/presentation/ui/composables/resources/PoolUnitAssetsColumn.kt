@@ -26,7 +26,10 @@ import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.domain.model.Assets
+import com.babylon.wallet.android.domain.model.LiquidStakeUnit
+import com.babylon.wallet.android.domain.model.PoolUnit
 import com.babylon.wallet.android.domain.model.Resource
+import com.babylon.wallet.android.domain.model.StakeClaim
 import com.babylon.wallet.android.domain.model.ValidatorDetail
 import com.babylon.wallet.android.domain.model.ValidatorsWithStakeResources
 import com.babylon.wallet.android.presentation.account.composable.EmptyResourcesContent
@@ -42,9 +45,9 @@ fun PoolUnitAssetsColumn(
         top = RadixTheme.dimensions.paddingLarge,
         bottom = 100.dp
     ),
-    poolUnitItem: @Composable (Resource.PoolUnitResource) -> Unit,
-    liquidStakeItem: @Composable (Resource.LiquidStakeUnitResource, ValidatorDetail) -> Unit,
-    stakeClaimItem: @Composable (Resource.StakeClaimResource, Resource.NonFungibleResource.Item) -> Unit
+    poolUnitItem: @Composable (PoolUnit) -> Unit,
+    liquidStakeItem: @Composable (LiquidStakeUnit, ValidatorDetail) -> Unit,
+    stakeClaimItem: @Composable (StakeClaim, Resource.NonFungibleResource.Item) -> Unit
 ) {
     var collapsedStakeState by remember(assets) {
         mutableStateOf(true)
@@ -72,11 +75,11 @@ fun LazyListScope.poolUnitsResources(
     modifier: Modifier = Modifier,
     collapsedState: Boolean,
     validatorsWithStakeResources: ValidatorsWithStakeResources?,
-    poolUnits: List<Resource.PoolUnitResource>,
+    poolUnits: List<PoolUnit>,
     parentSectionClick: () -> Unit,
-    poolUnitItem: @Composable (Resource.PoolUnitResource) -> Unit,
-    liquidStakeItem: @Composable (Resource.LiquidStakeUnitResource, ValidatorDetail) -> Unit,
-    stakeClaimItem: @Composable (Resource.StakeClaimResource, Resource.NonFungibleResource.Item) -> Unit
+    poolUnitItem: @Composable (PoolUnit) -> Unit,
+    liquidStakeItem: @Composable (LiquidStakeUnit, ValidatorDetail) -> Unit,
+    stakeClaimItem: @Composable (StakeClaim, Resource.NonFungibleResource.Item) -> Unit
 ) {
     if ((validatorsWithStakeResources == null || validatorsWithStakeResources.isEmpty) && poolUnits.isEmpty()) {
         item {
