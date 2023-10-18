@@ -257,6 +257,10 @@ class TransactionReviewViewModel @Inject constructor(
         }
     }
 
+    fun dismissNoMnemonicError() {
+        _state.update { it.copy(isNoMnemonicErrorVisible = false) }
+    }
+
     data class State(
         val request: MessageFromDataChannel.IncomingRequest.TransactionRequest? = null,
         val isLoading: Boolean,
@@ -269,6 +273,7 @@ class TransactionReviewViewModel @Inject constructor(
         val sheetState: Sheet = Sheet.None,
         private val latestFeesMode: Sheet.CustomizeFees.FeesMode = Sheet.CustomizeFees.FeesMode.Default,
         val error: UiMessage? = null,
+        val isNoMnemonicErrorVisible: Boolean = false,
         val ephemeralNotaryPrivateKey: PrivateKey = PrivateKey.EddsaEd25519.newRandom(),
         val interactionState: InteractionState? = null
     ) : UiState {

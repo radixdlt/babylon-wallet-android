@@ -23,6 +23,7 @@ import com.babylon.wallet.android.presentation.dapp.authorized.account.AccountIt
 import com.babylon.wallet.android.presentation.dapp.unauthorized.login.DAppUnauthorizedLoginViewModel
 import com.babylon.wallet.android.presentation.dapp.unauthorized.login.Event
 import com.babylon.wallet.android.presentation.status.signing.SigningStatusBottomDialog
+import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.ChooseAccountContent
 import com.babylon.wallet.android.utils.biometricAuthenticate
 import com.babylon.wallet.android.utils.biometricAuthenticateSuspend
@@ -40,6 +41,17 @@ fun OneTimeChooseAccountsScreen(
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
+    val sharedViewModelState by sharedViewModel.state.collectAsStateWithLifecycle()
+    if (sharedViewModelState.isNoMnemonicErrorVisible) {
+        BasicPromptAlertDialog(
+            finish = {
+                sharedViewModel.dismissNoMnemonicError()
+            },
+            title = stringResource(id = R.string.transactionReview_noMnemonicError_title),
+            text = stringResource(id = R.string.transactionReview_noMnemonicError_text),
+            dismissText = null
+        )
+    }
     LaunchedEffect(Unit) {
         sharedViewModel.oneOffEvent.collect { event ->
             when (event) {

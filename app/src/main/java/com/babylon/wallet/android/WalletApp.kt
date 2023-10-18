@@ -4,8 +4,6 @@ import android.content.Intent
 import android.provider.Settings
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.ExperimentalAnimationApi
-import androidx.compose.material.ExperimentalMaterialApi
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -20,7 +18,6 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
-import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.babylon.wallet.android.presentation.dapp.authorized.login.dAppLoginAuthorized
 import com.babylon.wallet.android.presentation.dapp.unauthorized.login.dAppLoginUnauthorized
@@ -43,7 +40,7 @@ import com.google.accompanist.navigation.animation.rememberAnimatedNavController
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import kotlinx.coroutines.flow.Flow
 
-@OptIn(ExperimentalAnimationApi::class, ExperimentalMaterialApi::class)
+@OptIn(ExperimentalAnimationApi::class)
 @Composable
 @Suppress("ModifierMissing")
 fun WalletApp(
@@ -138,20 +135,8 @@ fun WalletApp(
                     mainViewModel.clearOlympiaError()
                 }
             },
-            title = {
-                Text(
-                    text = stringResource(id = R.string.homePage_profileOlympiaError_title),
-                    style = RadixTheme.typography.body1Header,
-                    color = RadixTheme.colors.gray1
-                )
-            },
-            text = {
-                Text(
-                    text = stringResource(id = R.string.homePage_profileOlympiaError_subtitle),
-                    style = RadixTheme.typography.body2Regular,
-                    color = RadixTheme.colors.gray1
-                )
-            },
+            title = stringResource(id = R.string.homePage_profileOlympiaError_title),
+            text = stringResource(id = R.string.homePage_profileOlympiaError_subtitle),
             confirmText = confirmText,
             dismissText = null
         )
@@ -161,20 +146,8 @@ fun WalletApp(
             finish = {
                 mainViewModel.onInvalidRequestMessageShown()
             },
-            title = {
-                Text(
-                    text = stringResource(id = R.string.dAppRequest_validationOutcome_invalidRequestTitle),
-                    style = RadixTheme.typography.body1Header,
-                    color = RadixTheme.colors.gray1
-                )
-            },
-            text = {
-                Text(
-                    text = stringResource(id = it.toDescriptionRes()),
-                    style = RadixTheme.typography.body2Regular,
-                    color = RadixTheme.colors.gray1
-                )
-            },
+            title = stringResource(id = R.string.dAppRequest_validationOutcome_invalidRequestTitle),
+            text = stringResource(id = it.toDescriptionRes()),
             confirmText = stringResource(
                 id = R.string.common_ok
             ),

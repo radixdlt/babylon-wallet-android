@@ -10,13 +10,13 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.AlertDialog
 import androidx.compose.material.IconButton
-import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.SheetState
+import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -136,6 +136,50 @@ fun BasicPromptAlertDialog(
         },
         title = title,
         text = text
+    )
+}
+
+@Composable
+fun BasicPromptAlertDialog(
+    modifier: Modifier = Modifier,
+    finish: (accepted: Boolean) -> Unit,
+    title: String? = null,
+    text: String? = null,
+    confirmText: String = stringResource(id = R.string.common_confirm),
+    dismissText: String? = stringResource(id = R.string.common_cancel),
+    confirmTextColor: Color = RadixTheme.colors.blue2
+) {
+    AlertDialog(
+        modifier = modifier
+            .background(RadixTheme.colors.defaultBackground, shape = RadixTheme.shapes.roundedRectSmall)
+            .clip(RadixTheme.shapes.roundedRectSmall),
+        onDismissRequest = { finish(false) },
+        confirmButton = {
+            RadixTextButton(text = confirmText, onClick = { finish(true) }, contentColor = confirmTextColor)
+        },
+        dismissButton = dismissText?.let {
+            {
+                RadixTextButton(text = it, onClick = { finish(false) })
+            }
+        },
+        title = title?.let {
+            {
+                Text(
+                    text = title,
+                    style = RadixTheme.typography.body1Header,
+                    color = RadixTheme.colors.gray1
+                )
+            }
+        },
+        text = text?.let {
+            {
+                Text(
+                    text = text,
+                    style = RadixTheme.typography.body2Regular,
+                    color = RadixTheme.colors.gray1
+                )
+            }
+        }
     )
 }
 
