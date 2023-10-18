@@ -74,7 +74,7 @@ suspend fun TransactionType.GeneralTransaction.resolve(
         isRefreshing = false
     ).value().orEmpty()
 
-    val defaultDepositGuarantee = getProfileUseCase.defaultDepositGuarantee().toFloat()
+    val defaultDepositGuarantee = getProfileUseCase.defaultDepositGuarantee()
 
     return PreviewType.Transfer(
         from = resolveFromAccounts(allResources, allAccounts),
@@ -127,7 +127,7 @@ private fun TransactionType.GeneralTransaction.resolveToAccounts(
     allResources: List<Resources>,
     allAccounts: List<Network.Account>,
     thirdPartyMetadata: Map<String, List<MetadataItem>> = emptyMap(),
-    defaultDepositGuarantees: Float
+    defaultDepositGuarantees: Double
 ) = accountDeposits.map { depositEntry ->
     val transferables = depositEntry.value.map {
         it.toDepositingTransferableResource(
