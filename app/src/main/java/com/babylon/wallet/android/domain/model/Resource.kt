@@ -298,13 +298,11 @@ sealed class Resource {
 
         companion object
     }
-
-    companion object {
-        const val XRD_SYMBOL = "XRD"
-    }
 }
 
 object XrdResource {
+    const val SYMBOL = "XRD"
+
     // todo Needs to be revisited. Having default network in param does not work on different networks
     val officialAddresses: List<String>
         get() = Radix.Network.allKnownNetworks().map { network ->

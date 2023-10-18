@@ -212,7 +212,7 @@ private fun LSUResourceValue(
         )
         Text(
             modifier = Modifier.weight(1f),
-            text = Resource.XRD_SYMBOL,
+            text = XrdResource.SYMBOL,
             style = RadixTheme.typography.body2HighImportance,
             color = RadixTheme.colors.gray1,
             maxLines = 2

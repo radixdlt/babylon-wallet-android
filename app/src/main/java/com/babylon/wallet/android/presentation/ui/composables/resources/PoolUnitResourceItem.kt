@@ -27,6 +27,7 @@ import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.domain.model.PoolUnit
 import com.babylon.wallet.android.domain.model.Resource
+import com.babylon.wallet.android.domain.model.XrdResource
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
 import rdx.works.core.displayableQuantity
 import java.math.BigDecimal
@@ -195,7 +196,7 @@ fun LiquidStakeUnitItem(
         )
         Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.Center) {
             Text(
-                Resource.XRD_SYMBOL,
+                XrdResource.SYMBOL,
                 style = RadixTheme.typography.body2HighImportance,
                 color = RadixTheme.colors.gray1,
                 maxLines = 2
