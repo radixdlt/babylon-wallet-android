@@ -30,7 +30,7 @@ fun StateEntityDetailsResponseItemDetails.divisibility(): Int? {
 fun StateEntityDetailsResponseItem.getXRDVaultAmount(vaultAddress: String): BigDecimal? {
     return when (
         val resource = fungibleResources?.items?.find {
-            XrdResource.officialAddresses.contains(it.resourceAddress)
+            XrdResource.addressesPerNetwork.containsValue(it.resourceAddress)
         }
     ) {
         is FungibleResourcesCollectionItemVaultAggregated -> {

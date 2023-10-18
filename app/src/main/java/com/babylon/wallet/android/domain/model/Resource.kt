@@ -1,7 +1,7 @@
 package com.babylon.wallet.android.domain.model
 
 import android.net.Uri
-import com.babylon.wallet.android.domain.model.XrdResource.officialAddresses
+import com.babylon.wallet.android.domain.model.XrdResource.addressesPerNetwork
 import com.babylon.wallet.android.domain.model.behaviours.AssetBehaviours
 import com.babylon.wallet.android.domain.model.metadata.ClaimAmountMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.DAppDefinitionsMetadataItem
@@ -19,6 +19,7 @@ import com.radixdlt.ret.nonFungibleLocalIdAsStr
 import com.radixdlt.ret.nonFungibleLocalIdFromStr
 import rdx.works.core.displayableQuantity
 import rdx.works.profile.data.model.apppreferences.Radix
+import rdx.works.profile.derivation.model.NetworkId
 import java.math.BigDecimal
 import java.math.MathContext
 import java.math.RoundingMode
@@ -303,15 +304,14 @@ sealed class Resource {
 object XrdResource {
     const val SYMBOL = "XRD"
 
-    // todo Needs to be revisited. Having default network in param does not work on different networks
-    val officialAddresses: List<String>
-        get() = Radix.Network.allKnownNetworks().map { network ->
-            knownAddresses(networkId = network.networkId().value.toUByte()).resourceAddresses.xrd.addressString()
+    val addressesPerNetwork: Map<NetworkId, String> by lazy {
+        NetworkId.values().associateWith { id ->
+            knownAddresses(networkId = id.value.toUByte()).resourceAddresses.xrd.addressString()
         }
+    }
 
-    val officialAddress: String
-        get() = knownAddresses(networkId = Radix.Gateway.default.network.id.toUByte()).resourceAddresses.xrd.addressString()
+    fun address(networkId: NetworkId = Radix.Gateway.default.network.networkId()) = addressesPerNetwork[networkId].orEmpty()
 }
 
 val Resource.FungibleResource.isXrd: Boolean
-    get() = officialAddresses.contains(resourceAddress)
+    get() = addressesPerNetwork.containsValue(resourceAddress)

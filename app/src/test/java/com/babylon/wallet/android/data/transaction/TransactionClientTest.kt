@@ -124,7 +124,7 @@ internal class TransactionClientTest {
             assets = Assets(
                 fungibles = listOf(
                     Resource.FungibleResource(
-                        resourceAddress = XrdResource.officialAddresses.first(),
+                        resourceAddress = XrdResource.addressesPerNetwork.first(),
                         ownedAmount = 30.toBigDecimal(),
                         symbolMetadataItem = SymbolMetadataItem("XRD")
                     )
