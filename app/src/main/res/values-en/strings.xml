@@ -446,6 +446,8 @@
   <string name="transactionReview_accountDepositSettings_depositorChangeAdd">Add Depositor</string>
   <string name="transactionReview_accountDepositSettings_depositorChangeRemove">Remove Depositor</string>
   <string name="transactionReview_unacceptableManifest_rejected">A proposed transaction was rejected because it contains one or more reserved instructions.</string>
+  <string name="transactionReview_noMnemonicError_title">Could Not Complete</string>
+  <string name="transactionReview_noMnemonicError_text">The required seed phrase is missing. Please return to the account and begin the recovery process.</string>
   <string name="transaction_status_completing_text">Completing Transaction…</string>
   <string name="transaction_status_success_title">Success</string>
   <string name="transaction_status_success_text">Your transaction was successful</string>
