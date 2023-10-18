@@ -19,6 +19,7 @@ import com.babylon.wallet.android.domain.model.Badge
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.babylon.wallet.android.domain.model.Resource
 import com.babylon.wallet.android.domain.model.TransactionManifestData
+import com.babylon.wallet.android.domain.model.XrdResource
 import com.babylon.wallet.android.domain.model.metadata.SymbolMetadataItem
 import com.babylon.wallet.android.domain.usecases.GetAccountsWithAssetsUseCase
 import com.babylon.wallet.android.domain.usecases.GetResourcesMetadataUseCase
@@ -120,9 +121,9 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
         )
     )
     private val sampleXrdResource = Resource.FungibleResource(
-        resourceAddress = "addr_xrd",
+        resourceAddress = XrdResource.address(),
         ownedAmount = BigDecimal.TEN,
-        symbolMetadataItem = SymbolMetadataItem("XRD")
+        symbolMetadataItem = SymbolMetadataItem(XrdResource.SYMBOL)
     )
 
     @Before

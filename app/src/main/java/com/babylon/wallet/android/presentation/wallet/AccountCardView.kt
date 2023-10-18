@@ -203,7 +203,7 @@ fun AccountCardPreview() {
                                 resourceAddress = XrdResource.address(),
                                 ownedAmount = BigDecimal.valueOf(237659),
                                 nameMetadataItem = NameMetadataItem("cool XRD"),
-                                symbolMetadataItem = SymbolMetadataItem("XRD")
+                                symbolMetadataItem = SymbolMetadataItem(XrdResource.SYMBOL)
                             )
                         ),
                         nonFungibles = listOf(),

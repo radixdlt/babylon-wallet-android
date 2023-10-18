@@ -44,11 +44,6 @@ data class Assets(
     }
 }
 
-data class Resources(
-    val fungibleResources: List<Resource.FungibleResource>,
-    val nonFungibleResources: List<Resource.NonFungibleResource>
-)
-
 data class ValidatorsWithStakeResources(
     val validators: List<ValidatorWithStakeResources> = emptyList()
 ) {

@@ -16,6 +16,7 @@ import com.babylon.wallet.android.domain.model.TransactionManifestData
 import com.babylon.wallet.android.domain.model.Transferable
 import com.babylon.wallet.android.domain.model.TransferableResource
 import com.babylon.wallet.android.domain.model.ValidatorsWithStakeResources
+import com.babylon.wallet.android.domain.model.XrdResource
 import com.babylon.wallet.android.domain.model.metadata.DescriptionMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.NameMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.SymbolMetadataItem
@@ -316,7 +317,7 @@ class SampleDataProvider {
     }
 
     fun sampleFungibleResources(
-        amount: Pair<BigDecimal, String> = BigDecimal.valueOf(100000) to "XRD"
+        amount: Pair<BigDecimal, String> = BigDecimal.valueOf(100000) to XrdResource.SYMBOL
     ): List<Resource.FungibleResource> {
         val result = mutableListOf<Resource.FungibleResource>()
         return result.apply {

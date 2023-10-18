@@ -5,6 +5,7 @@ import com.babylon.wallet.android.domain.common.Result
 import com.babylon.wallet.android.domain.model.AccountWithAssets
 import com.babylon.wallet.android.domain.model.Assets
 import com.babylon.wallet.android.domain.model.Resource
+import com.babylon.wallet.android.domain.model.XrdResource
 import com.babylon.wallet.android.domain.model.metadata.SymbolMetadataItem
 import com.babylon.wallet.android.domain.usecases.GetAccountsForSecurityPromptUseCase
 import com.babylon.wallet.android.domain.usecases.GetAccountsWithAssetsUseCase
@@ -43,9 +44,9 @@ class WalletViewModelTest : StateViewModelTest<WalletViewModel>() {
 
     private val sampleProfile = profile(accounts = listOf(account(address = "adr_1", name = "primary")))
     private val sampleXrdResource = Resource.FungibleResource(
-        resourceAddress = "addr_xrd",
+        resourceAddress = XrdResource.address(),
         ownedAmount = BigDecimal.TEN,
-        symbolMetadataItem = SymbolMetadataItem("XRD")
+        symbolMetadataItem = SymbolMetadataItem(XrdResource.SYMBOL)
     )
 
     override fun initVM(): WalletViewModel = WalletViewModel(

@@ -315,3 +315,8 @@ object XrdResource {
 
 val Resource.FungibleResource.isXrd: Boolean
     get() = addressesPerNetwork.containsValue(resourceAddress)
+
+data class Resources(
+    val fungibles: List<Resource.FungibleResource>,
+    val nonFungibles: List<Resource.NonFungibleResource>
+)
