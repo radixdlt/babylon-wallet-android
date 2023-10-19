@@ -348,7 +348,7 @@ fun SpendingAssetItemsPreview() {
             SpendingAssetItem(
                 asset = SpendingAsset.Fungible(
                     Resource.FungibleResource(
-                        resourceAddress = XrdResource.address(),
+                        resourceAddress = "resource_rdx_abcd",
                         ownedAmount = BigDecimal.TEN,
                         nameMetadataItem = NameMetadataItem("Radix"),
                         symbolMetadataItem = SymbolMetadataItem(XrdResource.SYMBOL)
@@ -367,7 +367,7 @@ fun SpendingAssetItemsPreview() {
             SpendingAssetItem(
                 asset = SpendingAsset.Fungible(
                     resource = Resource.FungibleResource(
-                        resourceAddress = XrdResource.address(),
+                        resourceAddress = "resource_rdx_abcd",
                         ownedAmount = BigDecimal.TEN,
                         nameMetadataItem = NameMetadataItem("Radix"),
                         symbolMetadataItem = SymbolMetadataItem(XrdResource.SYMBOL)
