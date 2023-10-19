@@ -26,6 +26,7 @@ import rdx.works.core.UUIDGenerator
 import rdx.works.core.mapWhen
 import rdx.works.profile.data.model.factorsources.FactorSource
 import rdx.works.profile.data.model.pernetwork.Network
+import rdx.works.profile.data.model.pernetwork.Network.Account.OnLedgerSettings.ThirdPartyDeposits
 import rdx.works.profile.data.repository.MnemonicRepository
 import rdx.works.profile.data.utils.factorSourceId
 import rdx.works.profile.domain.GetProfileUseCase
@@ -403,12 +404,6 @@ sealed class TargetAccount {
             is Skeleton -> assets.isEmpty()
         }
 
-    val isUserAccount: Boolean
-        get() = this is Owned
-
-    val isLedgerAccount: Boolean
-        get() = (this as? Owned)?.account?.isLedgerAccount == true
-
     val factorSourceId: FactorSource.FactorSourceID.FromHash?
         get() = (this as? Owned)?.account?.factorSourceId() as? FactorSource.FactorSourceID.FromHash
 
@@ -477,6 +472,22 @@ sealed class TargetAccount {
     ) : TargetAccount() {
         override val address: String
             get() = account.address
+
+        val hasAnyDenyDepositRule: Boolean
+            get() {
+                val thirdPartyDeposits = this.account.onLedgerSettings.thirdPartyDeposits
+
+                val hasDenyAll = thirdPartyDeposits.depositRule == ThirdPartyDeposits.DepositRule.DenyAll
+                val hasAnyDenyExceptionRule = thirdPartyDeposits.assetsExceptionList.any {
+                    it.exceptionRule == Network.Account.OnLedgerSettings.ThirdPartyDeposits.DepositAddressExceptionRule.Deny
+                }
+
+                if (hasDenyAll || hasAnyDenyExceptionRule) {
+                    return true
+                }
+
+                return false
+            }
     }
 }
 
