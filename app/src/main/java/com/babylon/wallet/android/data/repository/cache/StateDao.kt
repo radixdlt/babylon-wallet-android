@@ -4,6 +4,8 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import androidx.room.Transaction
+import kotlinx.coroutines.flow.Flow
 import kotlin.time.DurationUnit
 import kotlin.time.toDuration
 
@@ -12,23 +14,34 @@ interface StateDao {
 
     @Query(
         "SELECT * FROM OwnedFungibleEntity " +
-        "INNER JOIN FungibleResourceEntity ON OwnedFungibleEntity.resource_address = FungibleResourceEntity.address " +
-        "WHERE OwnedFungibleEntity.account_address IN (:accountAddresses)"
+                "INNER JOIN FungibleResourceEntity ON OwnedFungibleEntity.resource_address = FungibleResourceEntity.address " +
+                "WHERE OwnedFungibleEntity.account_address IN (:accountAddresses)"
     )
-    fun getAccountFungibles(
+    fun observeAccountFungibles(
         accountAddresses: List<String>,
 //        syncedUntil: Long = InstantGenerator().toEpochMilli() - accountsCacheDuration.inWholeMilliseconds
-    ): Map<OwnedFungibleEntity, FungibleResourceEntity>
+    ): Flow<Map<OwnedFungibleEntity, FungibleResourceEntity>>
 
     @Query(
         "SELECT * FROM OwnedNonFungibleEntity " +
-        "INNER JOIN NonFungibleResourceEntity ON OwnedNonFungibleEntity.resource_address = NonFungibleResourceEntity.address " +
-        "WHERE OwnedNonFungibleEntity.account_address IN (:accountAddresses)"
+                "INNER JOIN NonFungibleResourceEntity ON OwnedNonFungibleEntity.resource_address = NonFungibleResourceEntity.address " +
+                "WHERE OwnedNonFungibleEntity.account_address IN (:accountAddresses)"
     )
-    fun getAccountNonFungibles(
+    fun observeAccountNonFungibles(
         accountAddresses: List<String>,
 //        syncedUntil: Long = InstantGenerator().toEpochMilli() - accountsCacheDuration.inWholeMilliseconds
-    ): Map<OwnedNonFungibleEntity, NonFungibleResourceEntity>
+    ): Flow<Map<OwnedNonFungibleEntity, NonFungibleResourceEntity>>
+
+    @Transaction
+    fun updateOwnedResources(
+        fungibles: List<Pair<OwnedFungibleEntity, FungibleResourceEntity>>,
+        nonFungibles: List<Pair<OwnedNonFungibleEntity, NonFungibleResourceEntity>>
+    ) {
+        insertFungibles(fungibles.map { it.second })
+        insertOwnedFungibles(fungibles.map { it.first })
+        insertNonFungibles(nonFungibles.map { it.second })
+        insertOwnedNonFungibles(nonFungibles.map { it.first })
+    }
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insertFungibles(fungibles: List<FungibleResourceEntity>)

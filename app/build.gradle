@@ -198,6 +198,7 @@ dependencies {
 
     // Database
     implementation libs.roomRuntime
+    implementation libs.roomKtx
     kapt libs.roomCompiler
 
     //Timber

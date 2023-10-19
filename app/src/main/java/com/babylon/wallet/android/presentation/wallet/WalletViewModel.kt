@@ -67,7 +67,6 @@ class WalletViewModel @Inject constructor(
         getProfileUseCase.accountsOnCurrentNetwork.distinctUntilChanged(),
         refreshFlow
     ) { accounts, _ ->
-        Timber.tag("Bakos").d("New Accounts Received")
         accounts
     }
 
@@ -102,9 +101,6 @@ class WalletViewModel @Inject constructor(
 
     private fun observeAccounts() {
         accountsFlow
-            .onStart {
-                Timber.tag("Bakos").d("Started")
-            }
             .flatMapLatest { accounts ->
                 _state.update { it.loadingResources(accounts = accounts, isRefreshing = it.isRefreshing) }
                 getWalletAssetsUseCase(accounts = accounts).catch { error ->
@@ -113,11 +109,7 @@ class WalletViewModel @Inject constructor(
                 }
             }
             .onEach { resources ->
-                Timber.tag("Bakos").d("Resources received")
                 _state.update { it.onResourcesReceived(resources) }
-            }
-            .onCompletion {
-                Timber.tag("Bakos").d("Completed")
             }
             .launchIn(viewModelScope)
     }

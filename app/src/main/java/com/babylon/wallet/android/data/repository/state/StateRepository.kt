@@ -4,13 +4,14 @@ import com.babylon.wallet.android.data.gateway.apis.StateApi
 import com.babylon.wallet.android.data.repository.cache.StateDao
 import com.babylon.wallet.android.domain.model.resources.Resources
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.onEach
 import rdx.works.profile.data.model.pernetwork.Network
+import timber.log.Timber
 import javax.inject.Inject
 
 interface StateRepository {
 
-    fun getAccountsState(accounts: List<Network.Account>): Flow<Map<Network.Account, Resources>>
+    fun observeAccountsResources(accounts: List<Network.Account>): Flow<Map<Network.Account, Resources>>
 
 }
 
@@ -22,29 +23,27 @@ class StateRepositoryImpl @Inject constructor(
     private val cacheDelegate = StateCacheDelegate(stateDao = stateDao)
     private val stateApiDelegate = StateApiDelegate(stateApi = stateApi)
 
-    override fun getAccountsState(
+    override fun observeAccountsResources(
         accounts: List<Network.Account>
-    ): Flow<Map<Network.Account, Resources>> = flow {
+    ): Flow<Map<Network.Account, Resources>> = cacheDelegate
+        .observeAllResources(accounts)
+        .onEach { cachedAccountsWithResources ->
+            Timber.tag("Bakos").d("Found data for accounts: ${cachedAccountsWithResources.keys.map { it.displayName }}")
+            val remainingAccounts = accounts.toSet() - cachedAccountsWithResources.keys
 
-        val cachedResources = cacheDelegate.getAllResources(accounts)
-
-        if (cachedResources.isNotEmpty()) {
-            emit(cachedResources)
+            if (remainingAccounts.isEmpty()) return@onEach
+            Timber.tag("Bakos").d("Fetching for account ${remainingAccounts.first().displayName}")
+            stateApiDelegate.fetchAllResources(
+                accounts = listOf(remainingAccounts.first())
+            ) { account, ledgerState, fungibles, nonFungibles ->
+                Timber.tag("Bakos").d("API received for account ${account.displayName}")
+                cacheDelegate.insertResources(
+                    accountAddress = account.address,
+                    ledgerState = ledgerState,
+                    fungibles = fungibles,
+                    nonFungibles = nonFungibles
+                )
+            }
         }
-
-        val remainingAccounts = accounts.toSet() - cachedResources.keys
-        if (remainingAccounts.isEmpty()) return@flow
-
-        stateApiDelegate.fetchAllResources(
-            accounts = remainingAccounts
-        ) { account, ledgerState, fungibles, nonFungibles ->
-            cacheDelegate.insertResources(
-                accountAddress = account.address,
-                ledgerState = ledgerState,
-                fungibles = fungibles,
-                nonFungibles = nonFungibles
-            )
-        }
-    }
 
 }
