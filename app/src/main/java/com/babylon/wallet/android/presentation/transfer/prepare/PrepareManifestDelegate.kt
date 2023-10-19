@@ -94,7 +94,8 @@ class PrepareManifestDelegate(
 
                     deposit(
                         targetAccount = targetAccount,
-                        bucket = bucket
+                        bucket = bucket,
+                        spendingAsset = spendingFungibleAsset
                     )
                 }
             }
@@ -126,7 +127,8 @@ class PrepareManifestDelegate(
 
                 deposit(
                     targetAccount = targetAccount,
-                    bucket = bucket
+                    bucket = bucket,
+                    spendingAsset = nft
                 )
             }
         }
@@ -134,7 +136,8 @@ class PrepareManifestDelegate(
 
     private suspend fun BabylonManifestBuilder.deposit(
         targetAccount: TargetAccount,
-        bucket: ManifestBuilderBucket
+        bucket: ManifestBuilderBucket,
+        spendingAsset: SpendingAsset
     ) = apply {
         val isAccountAbleToSign = targetAccount.factorSourceId?.let {
             it.kind == FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET ||
@@ -142,7 +145,7 @@ class PrepareManifestDelegate(
         } ?: false
 
         if (targetAccount is TargetAccount.Owned && isAccountAbleToSign) {
-            if (targetAccount.hasAnyDenyDepositRule) {
+            if (targetAccount.hasAnyDenyDepositRule(forSpecificAssetAddress = spendingAsset.address)) {
                 // if for example account has deny all we don't want to prevent transfer between our OWN accounts
                 // therefore ask user to sign
                 accountDeposit(

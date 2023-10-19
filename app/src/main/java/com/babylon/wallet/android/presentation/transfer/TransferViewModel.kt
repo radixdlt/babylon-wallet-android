@@ -473,21 +473,21 @@ sealed class TargetAccount {
         override val address: String
             get() = account.address
 
-        val hasAnyDenyDepositRule: Boolean
-            get() {
-                val thirdPartyDeposits = this.account.onLedgerSettings.thirdPartyDeposits
+        fun hasAnyDenyDepositRule(forSpecificAssetAddress: String): Boolean {
+            val thirdPartyDeposits = this.account.onLedgerSettings.thirdPartyDeposits
 
-                val hasDenyAll = thirdPartyDeposits.depositRule == ThirdPartyDeposits.DepositRule.DenyAll
-                val hasAnyDenyExceptionRule = thirdPartyDeposits.assetsExceptionList.any {
-                    it.exceptionRule == Network.Account.OnLedgerSettings.ThirdPartyDeposits.DepositAddressExceptionRule.Deny
-                }
-
-                if (hasDenyAll || hasAnyDenyExceptionRule) {
-                    return true
-                }
-
-                return false
+            val hasDenyAll = thirdPartyDeposits.depositRule == ThirdPartyDeposits.DepositRule.DenyAll
+            val hasAnyDenyExceptionRule = thirdPartyDeposits.assetsExceptionList.any {
+                it.exceptionRule == Network.Account.OnLedgerSettings.ThirdPartyDeposits.DepositAddressExceptionRule.Deny &&
+                    it.address == forSpecificAssetAddress
             }
+
+            if (hasDenyAll || hasAnyDenyExceptionRule) {
+                return true
+            }
+
+            return false
+        }
     }
 }
 
