@@ -20,6 +20,7 @@ import com.babylon.wallet.android.data.gateway.generated.models.StateEntityNonFu
 import com.babylon.wallet.android.data.gateway.model.ExplicitMetadataKey.*
 import com.babylon.wallet.android.data.repository.executeSafe
 import com.babylon.wallet.android.domain.model.Resource
+import com.babylon.wallet.android.domain.model.Resources
 import com.babylon.wallet.android.domain.model.metadata.MetadataItem.Companion.consume
 import rdx.works.profile.data.model.pernetwork.Network
 import java.lang.RuntimeException
@@ -27,7 +28,7 @@ import javax.inject.Inject
 
 interface StateRepository {
 
-    suspend fun getAccountsState(accounts: List<Network.Account>): Result<Map<Network.Account, List<Resource>>>
+    suspend fun getAccountsState(accounts: List<Network.Account>): Result<Map<Network.Account, Resources>>
 
 }
 
@@ -35,8 +36,8 @@ class StateRepositoryImpl @Inject constructor(
     private val stateApi: StateApi
 ): StateRepository {
 
-    override suspend fun getAccountsState(accounts: List<Network.Account>): Result<Map<Network.Account, List<Resource>>> {
-        val state = mutableMapOf<Network.Account, List<Resource>>()
+    override suspend fun getAccountsState(accounts: List<Network.Account>): Result<Map<Network.Account, Resources>> {
+        val state = mutableMapOf<Network.Account, Resources>()
         accounts.chunked(ENTITY_DETAILS_PAGE_LIMIT).map { accountsChunked ->
             stateApi.entityDetails(
                 StateEntityDetailsRequest(
@@ -61,13 +62,12 @@ class StateRepositoryImpl @Inject constructor(
                 )
             ).executeSafe().mapCatching { response ->
                 accountsChunked.associateWith { account ->
-                    val resources = mutableListOf<Resource>()
                     val stateForAccount = response.items.find { it.address == account.address }
 
-                    resources.addAll(stateForAccount?.getAllFungibles(atLedgerState = response.ledgerState).orEmpty())
-                    resources.addAll(stateForAccount?.getAllNonFungibles(atLedgerState = response.ledgerState).orEmpty())
-
-                    resources.toList()
+                    Resources(
+                        fungibles = stateForAccount?.getAllFungibles(atLedgerState = response.ledgerState).orEmpty(),
+                        nonFungibles = stateForAccount?.getAllNonFungibles(atLedgerState = response.ledgerState).orEmpty()
+                    )
                 }
             }.fold(
                 onSuccess = { state.putAll(it) },

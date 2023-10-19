@@ -18,8 +18,8 @@ class GetWalletAssetsUseCase @Inject constructor(
                 AccountWithAssets(
                     account = entry.key,
                     assets = Assets(
-                        fungibles = entry.value.filterIsInstance<Resource.FungibleResource>(),
-                        nonFungibles = entry.value.filterIsInstance<Resource.NonFungibleResource>(),
+                        fungibles = entry.value.fungibles,
+                        nonFungibles = entry.value.nonFungibles,
                         poolUnits = listOf(),
                         validatorsWithStakeResources = ValidatorsWithStakeResources()
                     )
