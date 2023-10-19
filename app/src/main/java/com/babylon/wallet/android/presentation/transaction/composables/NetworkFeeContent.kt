@@ -1,5 +1,6 @@
 package com.babylon.wallet.android.presentation.transaction.composables
 
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -14,8 +15,12 @@ import androidx.compose.ui.tooling.preview.Preview
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixTextButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
+import com.babylon.wallet.android.designsystem.theme.White
 import com.babylon.wallet.android.presentation.transaction.fees.TransactionFees
 import com.babylon.wallet.android.presentation.ui.composables.InfoLink
+import com.google.accompanist.placeholder.PlaceholderHighlight
+import com.google.accompanist.placeholder.placeholder
+import com.google.accompanist.placeholder.shimmer
 import rdx.works.core.displayableQuantity
 
 @Composable
@@ -23,6 +28,7 @@ fun NetworkFeeContent(
     fees: TransactionFees,
     noFeePayerSelected: Boolean,
     insufficientBalanceToPayTheFee: Boolean,
+    isNetworkFeeLoading: Boolean,
     modifier: Modifier = Modifier,
     onCustomizeClick: () -> Unit
 ) {
@@ -48,6 +54,17 @@ fun NetworkFeeContent(
 //            )
             Spacer(modifier = Modifier.weight(1f))
             Text(
+                modifier = Modifier
+                    .placeholder(
+                        visible = isNetworkFeeLoading,
+                        color = RadixTheme.colors.defaultText.copy(alpha = 0.2f),
+                        shape = RadixTheme.shapes.roundedRectSmall,
+                        highlight = PlaceholderHighlight.shimmer(
+                            highlightColor = White
+                        ),
+                        placeholderFadeTransitionSpec = { tween() },
+                        contentFadeTransitionSpec = { tween() }
+                    ),
                 text = "${fees.transactionFeeToLock.displayableQuantity()} XRD",
                 style = RadixTheme.typography.body1Link,
                 color = RadixTheme.colors.gray1
@@ -68,17 +85,19 @@ fun NetworkFeeContent(
         }
 
         if (noFeePayerSelected) {
-            InfoLink(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(
-                        horizontal = RadixTheme.dimensions.paddingDefault,
-                        vertical = RadixTheme.dimensions.paddingSmall
-                    ),
-                text = stringResource(id = R.string.transactionReview_customizeNetworkFeeSheet_selectFeePayer_warning),
-                contentColor = RadixTheme.colors.orange1,
-                iconRes = com.babylon.wallet.android.designsystem.R.drawable.ic_warning_error
-            )
+            if (!isNetworkFeeLoading) {
+                InfoLink(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(
+                            horizontal = RadixTheme.dimensions.paddingDefault,
+                            vertical = RadixTheme.dimensions.paddingSmall
+                        ),
+                    text = stringResource(id = R.string.transactionReview_customizeNetworkFeeSheet_selectFeePayer_warning),
+                    contentColor = RadixTheme.colors.orange1,
+                    iconRes = com.babylon.wallet.android.designsystem.R.drawable.ic_warning_error
+                )
+            }
         } else if (insufficientBalanceToPayTheFee) {
             InfoLink(
                 modifier = Modifier
@@ -95,7 +114,8 @@ fun NetworkFeeContent(
 
         RadixTextButton(
             text = stringResource(id = R.string.transactionReview_networkFee_customizeButtonTitle),
-            onClick = onCustomizeClick
+            onClick = onCustomizeClick,
+            enabled = !isNetworkFeeLoading
         )
     }
 }
@@ -107,6 +127,7 @@ fun NetworkFeeContentPreview() {
         fees = TransactionFees(),
         noFeePayerSelected = false,
         insufficientBalanceToPayTheFee = false,
+        isNetworkFeeLoading = false,
         onCustomizeClick = {}
     )
 }

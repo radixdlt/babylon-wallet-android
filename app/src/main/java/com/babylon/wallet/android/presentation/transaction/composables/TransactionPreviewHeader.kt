@@ -141,6 +141,7 @@ fun TransactionPreviewHeaderPreview() {
                     requestMetadata = MessageFromDataChannel.IncomingRequest.RequestMetadata.internal(Radix.Gateway.default.network.id)
                 ),
                 isLoading = false,
+                isNetworkFeeLoading = false,
                 previewType = PreviewType.None
             ),
             onRawManifestClick = {},

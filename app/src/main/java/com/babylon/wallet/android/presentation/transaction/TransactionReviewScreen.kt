@@ -260,6 +260,7 @@ private fun TransactionPreviewContent(
                                 fees = state.transactionFees,
                                 noFeePayerSelected = state.noFeePayerSelected,
                                 insufficientBalanceToPayTheFee = state.isBalanceInsufficientToPayTheFee,
+                                isNetworkFeeLoading = state.isNetworkFeeLoading,
                                 onCustomizeClick = onCustomizeClick
                             )
                             SlideToSignButton(
@@ -317,6 +318,7 @@ private fun TransactionPreviewContent(
                                 fees = state.transactionFees,
                                 noFeePayerSelected = state.noFeePayerSelected,
                                 insufficientBalanceToPayTheFee = state.isBalanceInsufficientToPayTheFee,
+                                isNetworkFeeLoading = state.isNetworkFeeLoading,
                                 onCustomizeClick = onCustomizeClick
                             )
                             SlideToSignButton(
@@ -462,6 +464,7 @@ fun TransactionPreviewContentPreview() {
                     requestMetadata = MessageFromDataChannel.IncomingRequest.RequestMetadata.internal(Radix.Gateway.default.network.id)
                 ),
                 isLoading = false,
+                isNetworkFeeLoading = false,
                 previewType = PreviewType.NonConforming
             ),
             onApproveTransaction = {},
