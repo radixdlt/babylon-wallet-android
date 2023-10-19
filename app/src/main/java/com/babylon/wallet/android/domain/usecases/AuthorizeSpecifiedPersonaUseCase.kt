@@ -58,11 +58,6 @@ class AuthorizeSpecifiedPersonaUseCase @Inject constructor(
                     }
                 if (authorizedPersonaSimple == null) {
                     respondWithInvalidPersona(incomingRequest)
-                    dAppMessenger.sendWalletInteractionResponseFailure(
-                        incomingRequest.remoteConnectorId,
-                        incomingRequest.interactionId,
-                        WalletErrorType.InvalidPersona
-                    )
                     return Result.failure(DappRequestFailure.InvalidPersona)
                 }
 
