@@ -1,9 +1,9 @@
 package com.babylon.wallet.android.domain.usecases.assets
 
 import com.babylon.wallet.android.data.repository.state.StateRepository
-import com.babylon.wallet.android.domain.model.AccountWithResources
+import com.babylon.wallet.android.domain.model.AccountWithAssets
+import com.babylon.wallet.android.domain.model.Assets
 import com.babylon.wallet.android.domain.model.Resource
-import com.babylon.wallet.android.domain.model.Resources
 import com.babylon.wallet.android.domain.model.ValidatorsWithStakeResources
 import rdx.works.profile.data.model.pernetwork.Network
 import javax.inject.Inject
@@ -12,14 +12,14 @@ class GetWalletAssetsUseCase @Inject constructor(
     private val stateRepository: StateRepository
 ) {
 
-    suspend operator fun invoke(accounts: List<Network.Account>): Result<List<AccountWithResources>> {
+    suspend operator fun invoke(accounts: List<Network.Account>): Result<List<AccountWithAssets>> {
         return stateRepository.getAccountsState(accounts).map { accountsAndResources ->
             accountsAndResources.map { entry ->
-                AccountWithResources(
+                AccountWithAssets(
                     account = entry.key,
-                    resources = Resources(
-                        fungibleResources = entry.value.filterIsInstance<Resource.FungibleResource>(),
-                        nonFungibleResources = entry.value.filterIsInstance<Resource.NonFungibleResource>(),
+                    assets = Assets(
+                        fungibles = entry.value.filterIsInstance<Resource.FungibleResource>(),
+                        nonFungibles = entry.value.filterIsInstance<Resource.NonFungibleResource>(),
                         poolUnits = listOf(),
                         validatorsWithStakeResources = ValidatorsWithStakeResources()
                     )
