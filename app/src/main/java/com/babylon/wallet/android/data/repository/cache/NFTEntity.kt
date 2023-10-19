@@ -3,7 +3,6 @@ package com.babylon.wallet.android.data.repository.cache
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import com.google.android.material.search.SearchView.Behavior
 import java.math.BigDecimal
 import java.time.Instant
 
@@ -21,7 +20,6 @@ data class NFTEntity(
     val claimEpoch: Long?,
     @ColumnInfo("metadata")
     val metadata: StringMetadataColumn?,
-    @ColumnInfo("updated_at")
-    override val updatedAt: Instant,
+    override val synced: Instant,
     override val epoch: Long
 ): CachedEntity

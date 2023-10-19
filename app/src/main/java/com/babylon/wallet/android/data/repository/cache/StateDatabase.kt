@@ -16,16 +16,10 @@ import androidx.room.TypeConverters
     ],
     version = 1
 )
-@TypeConverters(
-    BigDecimalColumnConverter::class,
-    InstantColumnConverter::class,
-    NFTIdsColumnConverter::class,
-    TagsColumnConverter::class,
-    DappDefinitionsColumnConverter::class,
-    BehavioursColumnConverter::class,
-    StringMetadataColumnConverter::class
-)
+@TypeConverters(StateDatabaseConverters::class)
 abstract class StateDatabase : RoomDatabase() {
+
+    abstract fun stateDao(): StateDao
 
     companion object {
 
@@ -33,6 +27,7 @@ abstract class StateDatabase : RoomDatabase() {
 
         fun factory(applicationContext: Context): StateDatabase = Room
             .databaseBuilder(applicationContext, StateDatabase::class.java, NAME)
+            .addTypeConverter(StateDatabaseConverters())
             .fallbackToDestructiveMigration() // Reconstruct database when schema changes.
             .build()
     }
