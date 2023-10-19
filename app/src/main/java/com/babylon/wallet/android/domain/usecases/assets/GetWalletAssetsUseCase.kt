@@ -18,13 +18,15 @@ class GetWalletAssetsUseCase @Inject constructor(
 ) {
 
     operator fun invoke(accounts: List<Network.Account>): Flow<List<AccountWithAssets>> {
-        return stateRepository.getAccountsState(accounts).map { accountsAndResources ->
-            accountsAndResources.map { entry ->
+        return stateRepository.observeAccountsResources(accounts).map { accountsAndResources ->
+            accounts.map { account ->
+                val resources = accountsAndResources[account]
+
                 AccountWithAssets(
-                    account = entry.key,
+                    account = account,
                     assets = Assets(
-                        fungibles = entry.value.fungibles,
-                        nonFungibles = entry.value.nonFungibles,
+                        fungibles = resources?.fungibles.orEmpty(),
+                        nonFungibles = resources?.nonFungibles.orEmpty(),
                         poolUnits = listOf(),
                         validatorsWithStakeResources = ValidatorsWithStakeResources()
                     )

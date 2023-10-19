@@ -110,6 +110,7 @@ camera2 = { module = "androidx.camera:camera-camera2", version.ref = "camera2" }
 cameraLifecycle = { module = "androidx.camera:camera-lifecycle", version.ref = "cameraLifecycle" }
 cameraView = { module = "androidx.camera:camera-view", version.ref = "cameraView" }
 roomRuntime = { module = "androidx.room:room-runtime", version.ref = "room" }
+roomKtx = { module = "androidx.room:room-ktx", version.ref = "room" }
 roomCompiler = { module = "androidx.room:room-compiler", version.ref = "room" }
 junit = { module = "junit:junit", version.ref = "junit" }
 mockk = { module = "io.mockk:mockk", version.ref = "mockk" }

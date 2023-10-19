@@ -23,7 +23,7 @@ class StateApiDelegate(
 ) {
 
     suspend fun fetchAllResources(
-        accounts: Set<Network.Account>,
+        accounts: List<Network.Account>,
         onAccount: (
             account: Network.Account,
             ledgerState: LedgerState,
