@@ -97,13 +97,23 @@ class WalletViewModel @Inject constructor(
                 }
 
                 val newDuration = measureTime {
-                    getWalletAssetsUseCase(accounts = accounts).onSuccess { resources ->
-                        Timber.tag("Bakos").d("Fungibles: ${resources[1].resources?.fungibleResources?.size.toString()}")
-                        _state.update { it.onResourcesReceived(resources) }
+                    getWalletAssetsUseCase(accounts = accounts).onSuccess { assets ->
+                        _state.update { it.onResourcesReceived(assets) }
                     }.onFailure { error ->
                         _state.update { it.onResourcesError(error) }
                         Timber.w(error)
                     }
+//                getAccountsWithAssetsUseCase(
+//                    accounts = accounts,
+//                    isNftItemDataNeeded = false,
+//                    isRefreshing = _state.value.isRefreshing
+//                ).onValue { resources ->
+//                    _state.update { it.onResourcesReceived(resources) }
+//                }.onError { error ->
+//                    _state.update { it.onResourcesError(error) }
+//                    Timber.w(error)
+//                }
+                }
             }
         }
     }
