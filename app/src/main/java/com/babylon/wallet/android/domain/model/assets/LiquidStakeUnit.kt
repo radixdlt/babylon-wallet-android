@@ -1,6 +1,7 @@
-package com.babylon.wallet.android.domain.model
+package com.babylon.wallet.android.domain.model.assets
 
 import android.net.Uri
+import com.babylon.wallet.android.domain.model.resources.Resource
 import java.math.BigDecimal
 
 data class LiquidStakeUnit(

@@ -9,7 +9,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
-import com.babylon.wallet.android.domain.model.ValidatorDetail
+import com.babylon.wallet.android.domain.model.assets.ValidatorDetail
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
 
 @Composable

@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.domain.model
+package com.babylon.wallet.android.domain.model.resources
 
 import android.net.Uri
 import com.babylon.wallet.android.domain.model.metadata.IconUrlMetadataItem

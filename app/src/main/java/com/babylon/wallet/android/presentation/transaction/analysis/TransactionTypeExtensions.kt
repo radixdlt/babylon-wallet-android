@@ -4,11 +4,10 @@ package com.babylon.wallet.android.presentation.transaction.analysis
 
 import android.net.Uri
 import com.babylon.wallet.android.data.gateway.model.ExplicitMetadataKey
-import com.babylon.wallet.android.domain.model.Assets
 import com.babylon.wallet.android.domain.model.GuaranteeType
-import com.babylon.wallet.android.domain.model.Resource
 import com.babylon.wallet.android.domain.model.Transferable
 import com.babylon.wallet.android.domain.model.TransferableResource
+import com.babylon.wallet.android.domain.model.assets.Assets
 import com.babylon.wallet.android.domain.model.metadata.DescriptionMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.IconUrlMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.MetadataItem
@@ -16,6 +15,7 @@ import com.babylon.wallet.android.domain.model.metadata.MetadataItem.Companion.c
 import com.babylon.wallet.android.domain.model.metadata.NameMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.SymbolMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.TagsMetadataItem
+import com.babylon.wallet.android.domain.model.resources.Resource
 import com.radixdlt.ret.Address
 import com.radixdlt.ret.DecimalSource
 import com.radixdlt.ret.MetadataValue

@@ -5,8 +5,8 @@ import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import com.babylon.wallet.android.R
-import com.babylon.wallet.android.domain.model.Tag
-import com.babylon.wallet.android.domain.model.behaviours.AssetBehaviour
+import com.babylon.wallet.android.domain.model.assets.AssetBehaviour
+import com.babylon.wallet.android.domain.model.resources.Tag
 
 typealias DSR = com.babylon.wallet.android.designsystem.R.drawable
 

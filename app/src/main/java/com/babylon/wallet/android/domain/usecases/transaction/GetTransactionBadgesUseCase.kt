@@ -1,9 +1,9 @@
 package com.babylon.wallet.android.domain.usecases.transaction
 
 import com.babylon.wallet.android.data.repository.dappmetadata.DAppRepository
-import com.babylon.wallet.android.domain.model.Badge
 import com.babylon.wallet.android.domain.model.metadata.IconUrlMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.NameMetadataItem
+import com.babylon.wallet.android.domain.model.resources.Badge
 import com.radixdlt.ret.Address
 import javax.inject.Inject
 

@@ -2,7 +2,7 @@ package com.babylon.wallet.android.presentation.transfer.assets
 
 import com.babylon.wallet.android.domain.common.onError
 import com.babylon.wallet.android.domain.common.onValue
-import com.babylon.wallet.android.domain.model.Assets
+import com.babylon.wallet.android.domain.model.assets.Assets
 import com.babylon.wallet.android.domain.usecases.GetAccountsWithAssetsUseCase
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.transfer.SpendingAsset

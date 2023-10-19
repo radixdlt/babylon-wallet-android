@@ -1,8 +1,9 @@
 package com.babylon.wallet.android.domain.model
 
-import com.babylon.wallet.android.domain.model.Resource.NonFungibleResource.Item
+import com.babylon.wallet.android.domain.model.resources.Resource.NonFungibleResource.Item
 import com.babylon.wallet.android.domain.model.metadata.NameMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.SymbolMetadataItem
+import com.babylon.wallet.android.domain.model.resources.Resource
 import org.junit.Assert
 import org.junit.Test
 import java.math.BigDecimal

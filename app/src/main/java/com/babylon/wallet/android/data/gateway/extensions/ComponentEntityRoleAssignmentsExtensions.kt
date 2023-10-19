@@ -5,8 +5,8 @@ import com.babylon.wallet.android.data.gateway.generated.models.ComponentEntityR
 import com.babylon.wallet.android.data.gateway.generated.models.ComponentEntityRoleAssignmentOwner
 import com.babylon.wallet.android.data.gateway.generated.models.ComponentEntityRoleAssignments
 import com.babylon.wallet.android.data.gateway.generated.models.RoleAssignmentResolution
-import com.babylon.wallet.android.domain.model.behaviours.AssetBehaviour
-import com.babylon.wallet.android.domain.model.behaviours.AssetBehaviours
+import com.babylon.wallet.android.domain.model.assets.AssetBehaviour
+import com.babylon.wallet.android.domain.model.assets.AssetBehaviours
 
 @Suppress("LongMethod")
 fun ComponentEntityRoleAssignments.assetBehaviours(): AssetBehaviours {
