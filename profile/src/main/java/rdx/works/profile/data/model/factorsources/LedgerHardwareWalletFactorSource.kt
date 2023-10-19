@@ -54,4 +54,7 @@ data class LedgerHardwareWalletFactorSource(
             )
         }
     }
+
+    override val identifier: String
+        get() = id.body.value
 }

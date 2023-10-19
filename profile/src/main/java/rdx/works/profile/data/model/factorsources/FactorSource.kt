@@ -7,6 +7,7 @@ import kotlinx.serialization.EncodeDefault
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import rdx.works.core.Distinct
 import rdx.works.core.HexCoded32Bytes
 import rdx.works.profile.data.model.MnemonicWithPassphrase
 import rdx.works.profile.data.model.compressedPublicKey
@@ -15,7 +16,7 @@ import rdx.works.profile.data.utils.hashToFactorId
 import java.time.Instant
 
 @Serializable(with = FactorSourceSerializer::class)
-sealed class FactorSource {
+sealed class FactorSource : Distinct {
 
     @SerialName("id")
     abstract val id: FactorSourceID

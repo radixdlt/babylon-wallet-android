@@ -50,7 +50,6 @@ fun AccountCardView(
     val gradient = remember(accountWithAssets.account.appearanceID) {
         AccountGradientList[accountWithAssets.account.appearanceID % AccountGradientList.size]
     }
-
     ConstraintLayout(
         modifier
             .background(Brush.linearGradient(gradient), shape = RadixTheme.shapes.roundedRectMedium)

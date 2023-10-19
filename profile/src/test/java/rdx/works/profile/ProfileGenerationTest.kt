@@ -6,6 +6,7 @@ import org.junit.Assert
 import org.junit.Assert.assertEquals
 import org.junit.Test
 import rdx.works.core.InstantGenerator
+import rdx.works.core.toDistinctList
 import rdx.works.profile.data.model.MnemonicWithPassphrase
 import rdx.works.profile.data.model.Profile
 import rdx.works.profile.data.model.apppreferences.P2PLink
@@ -42,7 +43,7 @@ class ProfileGenerationTest {
             id = "BABE1442-3C98-41FF-AFB0-D0F5829B020D",
             deviceInfo = TestData.deviceInfo,
             creationDate = InstantGenerator()
-        ).copy(factorSources = listOf(babylonFactorSource))
+        ).copy(factorSources = listOf(babylonFactorSource).toDistinctList())
 
         val defaultNetwork = Radix.Gateway.default.network
         assertEquals(profile.networks.count(), 1)

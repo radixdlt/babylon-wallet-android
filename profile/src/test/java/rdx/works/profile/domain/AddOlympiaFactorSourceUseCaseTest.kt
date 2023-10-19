@@ -6,13 +6,13 @@ import io.mockk.coVerify
 import io.mockk.just
 import io.mockk.mockk
 import io.mockk.slot
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest
 import org.junit.Test
 import rdx.works.core.HexCoded32Bytes
 import rdx.works.core.InstantGenerator
 import rdx.works.core.preferences.PreferencesManager
+import rdx.works.core.toDistinctList
 import rdx.works.profile.data.model.Header
 import rdx.works.profile.data.model.MnemonicWithPassphrase
 import rdx.works.profile.data.model.Profile
@@ -35,10 +35,10 @@ import rdx.works.profile.data.repository.MnemonicRepository
 import rdx.works.profile.data.repository.ProfileRepository
 import rdx.works.profile.derivation.model.KeyType
 
-@OptIn(ExperimentalCoroutinesApi::class)
 internal class AddOlympiaFactorSourceUseCaseTest {
 
     private val profileRepository = mockk<ProfileRepository>()
+    private val getProfileUseCase = mockk<GetProfileUseCase>()
     private val mnemonicRepository = mockk<MnemonicRepository>()
     private val preferencesManager = mockk<PreferencesManager>()
 
@@ -74,7 +74,7 @@ internal class AddOlympiaFactorSourceUseCaseTest {
                     )
                 )
             ),
-            factorSources = listOf(DeviceFactorSource.babylon(mnemonicWithPassphrase = mnemonicWithPassphrase)),
+            factorSources = listOf(DeviceFactorSource.babylon(mnemonicWithPassphrase = mnemonicWithPassphrase)).toDistinctList(),
             networks = listOf(
                 Network(
                     accounts = listOf(
@@ -117,8 +117,9 @@ internal class AddOlympiaFactorSourceUseCaseTest {
         coEvery { profileRepository.profileState } returns flowOf(ProfileState.Restored(profile))
         coEvery { profileRepository.saveProfile(any()) } just Runs
         coEvery { preferencesManager.markFactorSourceBackedUp(any()) } just Runs
+        coEvery { getProfileUseCase.factorSourceById(any()) } returns null
 
-        val usecase = AddOlympiaFactorSourceUseCase(profileRepository, mnemonicRepository, preferencesManager)
+        val usecase = AddOlympiaFactorSourceUseCase(getProfileUseCase, profileRepository, mnemonicRepository, preferencesManager)
         val capturedProfile = slot<Profile>()
         usecase(olympiaMnemonic)
         coVerify(exactly = 1) { profileRepository.saveProfile(capture(capturedProfile)) }
