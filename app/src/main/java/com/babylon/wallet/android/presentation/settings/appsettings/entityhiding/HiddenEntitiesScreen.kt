@@ -96,8 +96,11 @@ private fun HiddenEntitiesContent(
         ) {
             Divider(color = RadixTheme.colors.gray5)
             Text(
-                modifier = Modifier.padding(RadixTheme.dimensions.paddingMedium),
-                text = stringResource(R.string.appSettings_entityHiding_subtitle),
+                modifier = Modifier.padding(
+                    vertical = RadixTheme.dimensions.paddingMedium,
+                    horizontal = RadixTheme.dimensions.paddingDefault
+                ),
+                text = stringResource(R.string.appSettings_entityHiding_info),
                 style = RadixTheme.typography.body1Regular,
                 color = RadixTheme.colors.gray2
             )
@@ -134,7 +137,10 @@ private fun HiddenEntitiesContent(
                 textAlign = TextAlign.Center
             )
             Text(
-                modifier = Modifier.padding(RadixTheme.dimensions.paddingMedium),
+                modifier = Modifier.padding(
+                    vertical = RadixTheme.dimensions.paddingMedium,
+                    horizontal = RadixTheme.dimensions.paddingDefault
+                ),
                 text = stringResource(R.string.appSettings_entityHiding_unhideAllSection),
                 style = RadixTheme.typography.body1Regular,
                 color = RadixTheme.colors.gray2
