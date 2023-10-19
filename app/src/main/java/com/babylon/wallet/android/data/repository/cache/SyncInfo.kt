@@ -2,9 +2,7 @@ package com.babylon.wallet.android.data.repository.cache
 
 import java.time.Instant
 
-interface CachedEntity {
-    val synced: Instant
+data class SyncInfo(
+    val synced: Instant,
     val epoch: Long
-}
-
-
+)

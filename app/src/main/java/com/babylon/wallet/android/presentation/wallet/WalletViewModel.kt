@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalCoroutinesApi::class)
+
 package com.babylon.wallet.android.presentation.wallet
 
 import androidx.lifecycle.viewModelScope
@@ -5,8 +7,8 @@ import com.babylon.wallet.android.domain.model.assets.AccountWithAssets
 import com.babylon.wallet.android.domain.usecases.AccountWithSecurityPrompt
 import com.babylon.wallet.android.domain.usecases.GetAccountsForSecurityPromptUseCase
 import com.babylon.wallet.android.domain.usecases.GetAccountsWithAssetsUseCase
-import com.babylon.wallet.android.domain.usecases.assets.GetWalletAssetsUseCase
 import com.babylon.wallet.android.domain.usecases.SecurityPromptType
+import com.babylon.wallet.android.domain.usecases.assets.GetWalletAssetsUseCase
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
@@ -18,11 +20,18 @@ import com.babylon.wallet.android.utils.AppEvent.RestoredMnemonic
 import com.babylon.wallet.android.utils.AppEventBus
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.toPersistentList
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.filterIsInstance
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onCompletion
+import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.profile.data.model.extensions.factorSourceId
@@ -39,7 +48,6 @@ import rdx.works.profile.domain.backup.GetBackupStateUseCase
 import rdx.works.profile.domain.factorSources
 import timber.log.Timber
 import javax.inject.Inject
-import kotlin.time.measureTime
 
 @HiltViewModel
 class WalletViewModel @Inject constructor(
@@ -58,7 +66,10 @@ class WalletViewModel @Inject constructor(
     private val accountsFlow = combine(
         getProfileUseCase.accountsOnCurrentNetwork.distinctUntilChanged(),
         refreshFlow
-    ) { accounts, _ -> accounts }
+    ) { accounts, _ ->
+        Timber.tag("Bakos").d("New Accounts Received")
+        accounts
+    }
 
     val babylonFactorSourceDoesNotExistEvent =
         appEventBus.events.filterIsInstance<AppEvent.BabylonFactorSourceDoesNotExist>()
@@ -90,32 +101,25 @@ class WalletViewModel @Inject constructor(
     }
 
     private fun observeAccounts() {
-        viewModelScope.launch {
-            accountsFlow.collect { accounts ->
-                _state.update { state ->
-                    state.loadingResources(accounts = accounts, isRefreshing = state.isRefreshing)
-                }
-
-                val newDuration = measureTime {
-                    getWalletAssetsUseCase(accounts = accounts).onSuccess { assets ->
-                        _state.update { it.onResourcesReceived(assets) }
-                    }.onFailure { error ->
-                        _state.update { it.onResourcesError(error) }
-                        Timber.w(error)
-                    }
-//                getAccountsWithAssetsUseCase(
-//                    accounts = accounts,
-//                    isNftItemDataNeeded = false,
-//                    isRefreshing = _state.value.isRefreshing
-//                ).onValue { resources ->
-//                    _state.update { it.onResourcesReceived(resources) }
-//                }.onError { error ->
-//                    _state.update { it.onResourcesError(error) }
-//                    Timber.w(error)
-//                }
+        accountsFlow
+            .onStart {
+                Timber.tag("Bakos").d("Started")
+            }
+            .flatMapLatest { accounts ->
+                _state.update { it.loadingResources(accounts = accounts, isRefreshing = it.isRefreshing) }
+                getWalletAssetsUseCase(accounts = accounts).catch { error ->
+                    _state.update { it.onResourcesError(error) }
+                    Timber.w(error)
                 }
             }
-        }
+            .onEach { resources ->
+                Timber.tag("Bakos").d("Resources received")
+                _state.update { it.onResourcesReceived(resources) }
+            }
+            .onCompletion {
+                Timber.tag("Bakos").d("Completed")
+            }
+            .launchIn(viewModelScope)
     }
 
     private fun observeDeviceFactorSources() {

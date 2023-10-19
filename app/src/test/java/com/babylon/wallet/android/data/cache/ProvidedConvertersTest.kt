@@ -1,26 +1,26 @@
 package com.babylon.wallet.android.data.cache
 
 import com.babylon.wallet.android.data.repository.cache.BehavioursColumn
-import com.babylon.wallet.android.data.repository.cache.BehavioursColumnConverter
 import com.babylon.wallet.android.data.repository.cache.DappDefinitionsColumn
-import com.babylon.wallet.android.data.repository.cache.DappDefinitionsColumnConverter
 import com.babylon.wallet.android.data.repository.cache.NFTIdsColumn
-import com.babylon.wallet.android.data.repository.cache.NFTIdsColumnConverter
+import com.babylon.wallet.android.data.repository.cache.StateDatabaseConverters
 import com.babylon.wallet.android.data.repository.cache.StringMetadataColumn
-import com.babylon.wallet.android.data.repository.cache.StringMetadataColumnConverter
 import com.babylon.wallet.android.data.repository.cache.TagsColumn
-import com.babylon.wallet.android.data.repository.cache.TagsColumnConverter
+import com.babylon.wallet.android.domain.model.Resource
+import com.babylon.wallet.android.domain.model.Resources
+import com.babylon.wallet.android.domain.model.XrdConstants
 import com.babylon.wallet.android.domain.model.behaviours.AssetBehaviour
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Test
+import java.math.BigDecimal
 
 class ProvidedConvertersTest {
 
     @Test
     fun `test tags column conversion`() {
         val tagsColumn = TagsColumn(tags = listOf("foo", "bar", "baz"))
-        val converter = TagsColumnConverter()
+        val converter = StateDatabaseConverters()
 
         val string = converter.tagsToString(tagsColumn)
         val result = converter.stringToTags(string)
@@ -37,7 +37,7 @@ class ProvidedConvertersTest {
                 "account_tdx_2_128vqf2fes4y7zpj5yfndmuzhavlyn6acda4vxurv7pg4psz4wv0laj"
             )
         )
-        val converter = DappDefinitionsColumnConverter()
+        val converter = StateDatabaseConverters()
 
         val string = converter.dAppDefinitionsToString(dappDefinitionsColumn)
         val result = converter.stringToDappDefinitions(string)
@@ -48,7 +48,7 @@ class ProvidedConvertersTest {
     @Test
     fun `test behaviours column conversion`() {
         val behavioursColumn = BehavioursColumn(behaviours = AssetBehaviour.values().toList())
-        val converter = BehavioursColumnConverter()
+        val converter = StateDatabaseConverters()
 
         val string = converter.behavioursToString(behavioursColumn)
         val result = converter.stringToBehaviours(string)
@@ -63,7 +63,7 @@ class ProvidedConvertersTest {
             "two" to "10",
             "-%$#" to "%$#%$*&^*,"
         ))
-        val converter = StringMetadataColumnConverter()
+        val converter = StateDatabaseConverters()
 
         val string = converter.stringMetadataToString(stringMetadataColumn)
         val result = converter.stringToStringMetadata(string)
@@ -78,7 +78,7 @@ class ProvidedConvertersTest {
             "#2#",
             "#3#"
         ))
-        val converter = NFTIdsColumnConverter()
+        val converter = StateDatabaseConverters()
 
         val string = converter.nftIdsToString(nftIdsColumn)
         val result = converter.stringToNFTIds(string)
@@ -88,19 +88,11 @@ class ProvidedConvertersTest {
 
     @Test
     fun `assert null objects`() {
-        with(TagsColumnConverter()) {
+        with(StateDatabaseConverters()) {
             assertNull(stringToTags(tagsToString(null)))
-        }
-        with(DappDefinitionsColumnConverter()) {
             assertNull(stringToDappDefinitions(dAppDefinitionsToString(null)))
-        }
-        with(BehavioursColumnConverter()) {
             assertNull(stringToBehaviours(behavioursToString(null)))
-        }
-        with(StringMetadataColumnConverter()) {
             assertNull(stringToStringMetadata(stringMetadataToString(null)))
-        }
-        with(NFTIdsColumnConverter()) {
             assertNull(stringToNFTIds(nftIdsToString(null)))
         }
     }
