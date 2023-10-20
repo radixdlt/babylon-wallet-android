@@ -24,6 +24,7 @@ data class StringMetadataColumn(val metadata: List<Pair<String, String>>)
 @Serializable
 data class NFTIdsColumn(val ids: List<String>)
 
+@Suppress("TooManyFunctions")
 @ProvidedTypeConverter
 class StateDatabaseConverters {
 

@@ -37,7 +37,6 @@ class GetWalletAssetsUseCase @Inject constructor(
                 )
             }
         }
-        .flowOn(dispatcher)
+            .flowOn(dispatcher)
     }
-
 }

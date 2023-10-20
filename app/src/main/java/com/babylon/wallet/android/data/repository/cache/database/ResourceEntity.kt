@@ -53,8 +53,9 @@ data class ResourceEntity(
     val supply: BigDecimal?,
     override val synced: Instant,
     override val epoch: Long
-): CachedEntity {
+) : CachedEntity {
 
+    @Suppress("CyclomaticComplexMethod")
     fun toResource(amount: BigDecimal): Resource = when (type) {
         ResourceEntityType.FUNGIBLE -> Resource.FungibleResource(
             resourceAddress = address,
@@ -78,7 +79,7 @@ data class ResourceEntity(
             descriptionMetadataItem = description?.let { DescriptionMetadataItem(it) },
             iconMetadataItem = iconUrl?.let { IconUrlMetadataItem(Uri.parse(it)) },
             tagsMetadataItem = tags?.let { TagsMetadataItem(it.tags) },
-            behaviours= behaviours?.behaviours.orEmpty().toSet(),
+            behaviours = behaviours?.behaviours.orEmpty().toSet(),
             items = emptyList(),
             currentSupply = supply?.toInt(),
             validatorMetadataItem = validatorAddress?.let { ValidatorMetadataItem(it) },
@@ -164,5 +165,4 @@ data class ResourceEntity(
             )
         }
     }
-
 }

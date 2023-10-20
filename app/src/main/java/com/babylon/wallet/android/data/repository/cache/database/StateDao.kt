@@ -6,29 +6,31 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Transaction
-import com.babylon.wallet.android.domain.model.metadata.AccountTypeMetadataItem
 import kotlinx.coroutines.flow.Flow
-import rdx.works.core.InstantGenerator
 import kotlin.time.DurationUnit
 import kotlin.time.toDuration
 
 @Dao
 interface StateDao {
 
-    @Query("""
+    @Query(
+        """
         SELECT AR.account_address AS account_address, AR.amount, AR.synced AS amount_synced, AR.epoch AS amount_epoch, R.* FROM AccountResourcesPortfolio AS AR
         INNER JOIN ResourceEntity AS R ON AR.resource_address = R.address
         WHERE AR.account_address in (:accountAddresses)
-    """)
+    """
+    )
     fun observeAccountsPortfolio(
         accountAddresses: List<String>,
 //        minValidity: Long = InstantGenerator().toEpochMilli() - accountsCacheDuration.inWholeMilliseconds
     ): Flow<List<AccountResourceWrapper>>
 
-    @Query("""
+    @Query(
+        """
         SELECT * FROM AccountDetailsEntity
         WHERE address in (:accountAddresses)
-    """)
+    """
+    )
     fun observeAccountDetails(accountAddresses: List<String>): Flow<List<AccountDetailsEntity>>
 
     @Transaction
