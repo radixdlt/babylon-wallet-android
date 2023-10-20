@@ -14,25 +14,25 @@ import com.babylon.wallet.android.data.gateway.generated.models.MetadataUrlArray
 import com.babylon.wallet.android.data.gateway.generated.models.MetadataUrlValue
 import com.babylon.wallet.android.data.gateway.generated.models.PublicKeyHashEcdsaSecp256k1
 import com.babylon.wallet.android.data.gateway.generated.models.PublicKeyHashEddsaEd25519
-import com.babylon.wallet.android.domain.model.metadata.AccountTypeMetadataItem
-import com.babylon.wallet.android.domain.model.metadata.ClaimAmountMetadataItem
-import com.babylon.wallet.android.domain.model.metadata.ClaimEpochMetadataItem
-import com.babylon.wallet.android.domain.model.metadata.ClaimNftMetadataItem
-import com.babylon.wallet.android.domain.model.metadata.ClaimedEntitiesMetadataItem
-import com.babylon.wallet.android.domain.model.metadata.ClaimedWebsitesMetadataItem
-import com.babylon.wallet.android.domain.model.metadata.DAppDefinitionsMetadataItem
-import com.babylon.wallet.android.domain.model.metadata.DescriptionMetadataItem
-import com.babylon.wallet.android.domain.model.metadata.IconUrlMetadataItem
-import com.babylon.wallet.android.domain.model.metadata.InfoUrlMetadataItem
-import com.babylon.wallet.android.domain.model.metadata.NameMetadataItem
-import com.babylon.wallet.android.domain.model.metadata.OwnerKeyHashesMetadataItem
-import com.babylon.wallet.android.domain.model.metadata.PoolMetadataItem
-import com.babylon.wallet.android.domain.model.metadata.PoolUnitMetadataItem
-import com.babylon.wallet.android.domain.model.metadata.RelatedWebsitesMetadataItem
-import com.babylon.wallet.android.domain.model.metadata.StandardMetadataItem
-import com.babylon.wallet.android.domain.model.metadata.SymbolMetadataItem
-import com.babylon.wallet.android.domain.model.metadata.TagsMetadataItem
-import com.babylon.wallet.android.domain.model.metadata.ValidatorMetadataItem
+import com.babylon.wallet.android.domain.model.resources.metadata.AccountTypeMetadataItem
+import com.babylon.wallet.android.domain.model.resources.metadata.ClaimAmountMetadataItem
+import com.babylon.wallet.android.domain.model.resources.metadata.ClaimEpochMetadataItem
+import com.babylon.wallet.android.domain.model.resources.metadata.ClaimNftMetadataItem
+import com.babylon.wallet.android.domain.model.resources.metadata.ClaimedEntitiesMetadataItem
+import com.babylon.wallet.android.domain.model.resources.metadata.ClaimedWebsitesMetadataItem
+import com.babylon.wallet.android.domain.model.resources.metadata.DAppDefinitionsMetadataItem
+import com.babylon.wallet.android.domain.model.resources.metadata.DescriptionMetadataItem
+import com.babylon.wallet.android.domain.model.resources.metadata.IconUrlMetadataItem
+import com.babylon.wallet.android.domain.model.resources.metadata.InfoUrlMetadataItem
+import com.babylon.wallet.android.domain.model.resources.metadata.NameMetadataItem
+import com.babylon.wallet.android.domain.model.resources.metadata.OwnerKeyHashesMetadataItem
+import com.babylon.wallet.android.domain.model.resources.metadata.PoolMetadataItem
+import com.babylon.wallet.android.domain.model.resources.metadata.PoolUnitMetadataItem
+import com.babylon.wallet.android.domain.model.resources.metadata.RelatedWebsitesMetadataItem
+import com.babylon.wallet.android.domain.model.resources.metadata.StandardMetadataItem
+import com.babylon.wallet.android.domain.model.resources.metadata.SymbolMetadataItem
+import com.babylon.wallet.android.domain.model.resources.metadata.TagsMetadataItem
+import com.babylon.wallet.android.domain.model.resources.metadata.ValidatorMetadataItem
 
 /**
  * Common metadata keys used in the wallet app and defined

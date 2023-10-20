@@ -2,7 +2,7 @@ package com.babylon.wallet.android.domain.usecases
 
 import com.babylon.wallet.android.data.repository.dappmetadata.DAppRepository
 import com.babylon.wallet.android.domain.model.DAppWithMetadataAndAssociatedResources
-import com.babylon.wallet.android.domain.model.metadata.ClaimedWebsitesMetadataItem
+import com.babylon.wallet.android.domain.model.resources.metadata.ClaimedWebsitesMetadataItem
 import javax.inject.Inject
 
 class GetDAppWithMetadataAndAssociatedResourcesUseCase @Inject constructor(

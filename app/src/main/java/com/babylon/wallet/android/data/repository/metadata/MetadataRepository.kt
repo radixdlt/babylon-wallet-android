@@ -16,7 +16,7 @@ import com.babylon.wallet.android.domain.common.Result
 import com.babylon.wallet.android.domain.common.map
 import com.babylon.wallet.android.domain.common.switchMap
 import com.babylon.wallet.android.domain.common.value
-import com.babylon.wallet.android.domain.model.metadata.MetadataItem
+import com.babylon.wallet.android.domain.model.resources.metadata.MetadataItem
 import javax.inject.Inject
 
 interface MetadataRepository {

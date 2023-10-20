@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.domain.model.metadata
+package com.babylon.wallet.android.domain.model.resources.metadata
 
 import com.babylon.wallet.android.data.gateway.model.ExplicitMetadataKey
 

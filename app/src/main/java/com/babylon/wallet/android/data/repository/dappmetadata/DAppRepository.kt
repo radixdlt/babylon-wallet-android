@@ -31,7 +31,7 @@ import com.babylon.wallet.android.domain.common.switchMap
 import com.babylon.wallet.android.domain.common.value
 import com.babylon.wallet.android.domain.model.DAppResources
 import com.babylon.wallet.android.domain.model.DAppWithMetadata
-import com.babylon.wallet.android.domain.model.metadata.MetadataItem.Companion.consume
+import com.babylon.wallet.android.domain.model.resources.metadata.MetadataItem.Companion.consume
 import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.presentation.model.ActionableAddress
 import com.babylon.wallet.android.utils.isValidHttpsUrl

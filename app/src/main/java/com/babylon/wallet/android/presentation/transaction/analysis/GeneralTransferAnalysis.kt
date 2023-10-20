@@ -2,7 +2,7 @@ package com.babylon.wallet.android.presentation.transaction.analysis
 
 import com.babylon.wallet.android.domain.common.value
 import com.babylon.wallet.android.domain.model.assets.Assets
-import com.babylon.wallet.android.domain.model.metadata.MetadataItem
+import com.babylon.wallet.android.domain.model.resources.metadata.MetadataItem
 import com.babylon.wallet.android.domain.usecases.GetAccountsWithAssetsUseCase
 import com.babylon.wallet.android.domain.usecases.GetResourcesMetadataUseCase
 import com.babylon.wallet.android.domain.usecases.ResolveDAppsUseCase
