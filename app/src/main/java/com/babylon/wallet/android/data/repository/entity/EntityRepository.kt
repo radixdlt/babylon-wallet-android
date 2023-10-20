@@ -49,6 +49,7 @@ import com.babylon.wallet.android.domain.model.assets.StakeClaim
 import com.babylon.wallet.android.domain.model.assets.ValidatorDetail
 import com.babylon.wallet.android.domain.model.assets.ValidatorWithStakeResources
 import com.babylon.wallet.android.domain.model.assets.ValidatorsWithStakeResources
+import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.domain.model.resources.metadata.ClaimAmountMetadataItem
 import com.babylon.wallet.android.domain.model.resources.metadata.DescriptionMetadataItem
 import com.babylon.wallet.android.domain.model.resources.metadata.IconUrlMetadataItem
@@ -57,7 +58,6 @@ import com.babylon.wallet.android.domain.model.resources.metadata.MetadataItem.C
 import com.babylon.wallet.android.domain.model.resources.metadata.NameMetadataItem
 import com.babylon.wallet.android.domain.model.resources.metadata.OwnerKeyHashesMetadataItem
 import com.babylon.wallet.android.domain.model.resources.metadata.StringMetadataItem
-import com.babylon.wallet.android.domain.model.resources.Resource
 import rdx.works.profile.data.model.pernetwork.Network
 import timber.log.Timber
 import java.io.IOException

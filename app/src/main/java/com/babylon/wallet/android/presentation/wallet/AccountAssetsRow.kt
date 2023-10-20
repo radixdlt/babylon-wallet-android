@@ -39,10 +39,10 @@ import com.babylon.wallet.android.designsystem.theme.White
 import com.babylon.wallet.android.domain.model.assets.Assets
 import com.babylon.wallet.android.domain.model.assets.ValidatorsWithStakeResources
 import com.babylon.wallet.android.domain.model.assets.allNftItemsSize
+import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.domain.model.resources.metadata.IconUrlMetadataItem
 import com.babylon.wallet.android.domain.model.resources.metadata.NameMetadataItem
 import com.babylon.wallet.android.domain.model.resources.metadata.SymbolMetadataItem
-import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
 import com.google.accompanist.placeholder.PlaceholderHighlight
 import com.google.accompanist.placeholder.placeholder

@@ -1,9 +1,9 @@
 package com.babylon.wallet.android.domain.model.assets
 
 import android.net.Uri
-import com.babylon.wallet.android.domain.model.resources.metadata.AccountTypeMetadataItem
 import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.domain.model.resources.isXrd
+import com.babylon.wallet.android.domain.model.resources.metadata.AccountTypeMetadataItem
 import rdx.works.profile.data.model.pernetwork.Network
 import java.math.BigDecimal
 

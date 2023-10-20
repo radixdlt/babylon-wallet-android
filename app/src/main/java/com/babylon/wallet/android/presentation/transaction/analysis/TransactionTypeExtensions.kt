@@ -8,6 +8,7 @@ import com.babylon.wallet.android.domain.model.GuaranteeType
 import com.babylon.wallet.android.domain.model.Transferable
 import com.babylon.wallet.android.domain.model.TransferableResource
 import com.babylon.wallet.android.domain.model.assets.Assets
+import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.domain.model.resources.metadata.DescriptionMetadataItem
 import com.babylon.wallet.android.domain.model.resources.metadata.IconUrlMetadataItem
 import com.babylon.wallet.android.domain.model.resources.metadata.MetadataItem
@@ -15,7 +16,6 @@ import com.babylon.wallet.android.domain.model.resources.metadata.MetadataItem.C
 import com.babylon.wallet.android.domain.model.resources.metadata.NameMetadataItem
 import com.babylon.wallet.android.domain.model.resources.metadata.SymbolMetadataItem
 import com.babylon.wallet.android.domain.model.resources.metadata.TagsMetadataItem
-import com.babylon.wallet.android.domain.model.resources.Resource
 import com.radixdlt.ret.Address
 import com.radixdlt.ret.DecimalSource
 import com.radixdlt.ret.MetadataValue

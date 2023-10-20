@@ -2,6 +2,7 @@ package com.babylon.wallet.android.domain.model.resources
 
 import android.net.Uri
 import com.babylon.wallet.android.domain.model.assets.AssetBehaviours
+import com.babylon.wallet.android.domain.model.resources.XrdResource.addressesPerNetwork
 import com.babylon.wallet.android.domain.model.resources.metadata.ClaimAmountMetadataItem
 import com.babylon.wallet.android.domain.model.resources.metadata.DAppDefinitionsMetadataItem
 import com.babylon.wallet.android.domain.model.resources.metadata.DescriptionMetadataItem
@@ -12,7 +13,6 @@ import com.babylon.wallet.android.domain.model.resources.metadata.StringMetadata
 import com.babylon.wallet.android.domain.model.resources.metadata.SymbolMetadataItem
 import com.babylon.wallet.android.domain.model.resources.metadata.TagsMetadataItem
 import com.babylon.wallet.android.domain.model.resources.metadata.ValidatorMetadataItem
-import com.babylon.wallet.android.domain.model.resources.XrdResource.addressesPerNetwork
 import com.radixdlt.ret.NonFungibleLocalId
 import com.radixdlt.ret.knownAddresses
 import com.radixdlt.ret.nonFungibleLocalIdAsStr
