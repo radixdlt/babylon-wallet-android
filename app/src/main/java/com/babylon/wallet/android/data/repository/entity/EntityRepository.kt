@@ -44,6 +44,7 @@ import com.babylon.wallet.android.domain.model.assets.StakeClaim
 import com.babylon.wallet.android.domain.model.assets.ValidatorDetail
 import com.babylon.wallet.android.domain.model.assets.ValidatorWithStakeResources
 import com.babylon.wallet.android.domain.model.assets.ValidatorsWithStakeResources
+import com.babylon.wallet.android.domain.model.resources.AccountDetails
 import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.domain.model.resources.metadata.ClaimAmountMetadataItem
 import com.babylon.wallet.android.domain.model.resources.metadata.DescriptionMetadataItem
@@ -176,7 +177,7 @@ class EntityRepositoryImpl @Inject constructor(
                         val metaDataItems = mapOfAccountsWithMetadata[account.address].orEmpty().toMutableList()
                         AccountWithAssets(
                             account = account,
-                            accountTypeMetadataItem = metaDataItems.consume(),
+                            details = AccountDetails(typeMetadataItem = metaDataItems.consume()),
                             assets = Assets(
                                 fungibles = mapOfAccountsWithFungibleResources[account.address].orEmpty().sorted(),
                                 nonFungibles = mapOfAccountsWithNonFungibleResources[account.address].orEmpty().sorted(),

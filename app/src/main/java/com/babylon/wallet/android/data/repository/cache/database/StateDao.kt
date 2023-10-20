@@ -18,7 +18,7 @@ interface StateDao {
         SELECT AR.account_address AS account_address, AR.amount, AR.synced AS amount_synced, AR.epoch AS amount_epoch, R.* FROM AccountResourcesPortfolio AS AR
         INNER JOIN ResourceEntity AS R ON AR.resource_address = R.address
         WHERE AR.account_address in (:accountAddresses)
-    """
+        """
     )
     fun observeAccountsPortfolio(
         accountAddresses: List<String>,
@@ -29,7 +29,7 @@ interface StateDao {
         """
         SELECT * FROM AccountDetailsEntity
         WHERE address in (:accountAddresses)
-    """
+        """
     )
     fun observeAccountDetails(accountAddresses: List<String>): Flow<List<AccountDetailsEntity>>
 

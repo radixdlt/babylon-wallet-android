@@ -5,6 +5,7 @@ import com.babylon.wallet.android.di.coroutines.DefaultDispatcher
 import com.babylon.wallet.android.domain.model.assets.AccountWithAssets
 import com.babylon.wallet.android.domain.model.assets.Assets
 import com.babylon.wallet.android.domain.model.assets.ValidatorsWithStakeResources
+import com.babylon.wallet.android.domain.model.resources.AccountDetails
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOn
@@ -22,11 +23,12 @@ class GetWalletAssetsUseCase @Inject constructor(
         return stateRepository.observeAccountsResources(accounts).map { accountsAndResources ->
             Timber.tag("Bakos").d("Received in UI: ${accountsAndResources.keys.map { it.displayName }}")
             accounts.map { account ->
-                val resources = accountsAndResources[account]
+                val detailsAndResources = accountsAndResources[account]
 
                 AccountWithAssets(
                     account = account,
-                    assets = resources?.let {
+                    details = detailsAndResources?.first ?: AccountDetails(),
+                    assets = detailsAndResources?.second?.let {
                         Assets(
                             fungibles = it.fungibles,
                             nonFungibles = it.nonFungibles,
