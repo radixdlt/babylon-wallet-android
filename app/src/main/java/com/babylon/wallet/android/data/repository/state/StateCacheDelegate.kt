@@ -7,12 +7,13 @@ import com.babylon.wallet.android.data.repository.cache.database.AccountDetailsE
 import com.babylon.wallet.android.data.repository.cache.database.AccountResourcesPortfolio.Companion.asEntityPair
 import com.babylon.wallet.android.data.repository.cache.database.StateDao
 import com.babylon.wallet.android.data.repository.cache.database.SyncInfo
-import com.babylon.wallet.android.domain.model.resources.metadata.AccountTypeMetadataItem
+import com.babylon.wallet.android.domain.model.resources.AccountDetails
 import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.domain.model.resources.Resources
+import com.babylon.wallet.android.domain.model.resources.metadata.AccountTypeMetadataItem
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import rdx.works.core.InstantGenerator
 import rdx.works.profile.data.model.pernetwork.Network
@@ -21,17 +22,9 @@ class StateCacheDelegate(
     private val stateDao: StateDao
 ) {
 
-    fun observeAllResources(accounts: List<Network.Account>): Flow<Map<Network.Account, Resources>> {
+    fun observeAllResources(accounts: List<Network.Account>): Flow<Map<Network.Account, Pair<AccountDetails, Resources>>> {
         val accountAddresses = accounts.map { it.address }
-        return combine(
-            stateDao.observeAccountDetails(accountAddresses),
-            stateDao.observeAccountsPortfolio(accountAddresses)
-        ) { accountsDetails, accountsWithResources ->
-            accountsDetails to accountsWithResources
-        }.map { pair ->
-            val accountsDetails = pair.first
-            val accountsWithResources = pair.second
-
+        return stateDao.observeAccountsPortfolio(accountAddresses).map { accountsWithResources ->
             val result = mutableMapOf<Network.Account, MutableResources>()
             // First collect resources for all accounts
             accountsWithResources.forEach { accountWithResource ->
@@ -50,18 +43,27 @@ class StateCacheDelegate(
                 }
             }
 
-            // Then add accounts which may have no resources but appear in account details
+            // Every account that has no resources in AccountResourcesPortfolio, may mean that either it owns no accounts
+            // or we have not received any information from Gateway yet regarding this account.
+
+            // So we check if we have received any account details. If so that means that accounts that don't exist in
+            // accountsWithResources map but exist in details, mean that they own no accounts so we should update the client
+            // to know definitely that this account is not yet pending to receive all the data.
+            val accountsDetails = stateDao.observeAccountDetails(accountAddresses).first()
             accountsDetails.forEach { accountDetails ->
                 val account = accounts.find { it.address == accountDetails.address } ?: return@forEach
+
                 if (!result.contains(account)) {
                     result[account] = MutableResources()
                 }
             }
 
-            result.mapValues {
-                Resources(
-                    fungibles = it.value.fungibles,
-                    nonFungibles = it.value.nonFungibles
+            result.mapValues { entry ->
+                val account = entry.key
+                val details = accountsDetails.find { it.address == account.address }?.toAccountDetails() ?: AccountDetails()
+                details to Resources(
+                    fungibles = entry.value.fungibles,
+                    nonFungibles = entry.value.nonFungibles
                 )
             }
         }.distinctUntilChanged()

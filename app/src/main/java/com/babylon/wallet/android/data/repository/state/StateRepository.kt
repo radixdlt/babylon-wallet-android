@@ -3,10 +3,12 @@ package com.babylon.wallet.android.data.repository.state
 import com.babylon.wallet.android.data.gateway.apis.StateApi
 import com.babylon.wallet.android.data.gateway.extensions.asMetadataItems
 import com.babylon.wallet.android.data.repository.cache.database.StateDao
+import com.babylon.wallet.android.domain.model.resources.AccountDetails
 import com.babylon.wallet.android.domain.model.resources.metadata.MetadataItem.Companion.consume
 import com.babylon.wallet.android.domain.model.resources.Resources
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.transform
 import rdx.works.profile.data.model.pernetwork.Network
 import timber.log.Timber
@@ -14,7 +16,7 @@ import javax.inject.Inject
 
 interface StateRepository {
 
-    fun observeAccountsResources(accounts: List<Network.Account>): Flow<Map<Network.Account, Resources>>
+    fun observeAccountsResources(accounts: List<Network.Account>): Flow<Map<Network.Account, Pair<AccountDetails, Resources>>>
 }
 
 class StateRepositoryImpl @Inject constructor(
@@ -27,13 +29,13 @@ class StateRepositoryImpl @Inject constructor(
 
     override fun observeAccountsResources(
         accounts: List<Network.Account>
-    ): Flow<Map<Network.Account, Resources>> = cacheDelegate
+    ): Flow<Map<Network.Account, Pair<AccountDetails, Resources>>> = cacheDelegate
         .observeAllResources(accounts)
-        .transform { cachedAccountsWithResources ->
-            emit(cachedAccountsWithResources)
+        .transform { accountDetailsAndResources ->
+            emit(accountDetailsAndResources)
 
-            Timber.tag("Bakos").d("Found data for accounts: ${cachedAccountsWithResources.keys.map { it.displayName }}")
-            val remainingAccounts = accounts.toSet() - cachedAccountsWithResources.keys
+            Timber.tag("Bakos").d("Found data for accounts: ${accountDetailsAndResources.keys.map { it.displayName }}")
+            val remainingAccounts = accounts.toSet() - accountDetailsAndResources.keys
             if (remainingAccounts.isNotEmpty()) {
                 Timber.tag("Bakos").d("Fetching for account ${remainingAccounts.first().displayName}")
                 stateApiDelegate.fetchAllResources(

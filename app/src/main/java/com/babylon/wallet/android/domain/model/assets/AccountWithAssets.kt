@@ -1,6 +1,7 @@
 package com.babylon.wallet.android.domain.model.assets
 
 import android.net.Uri
+import com.babylon.wallet.android.domain.model.resources.AccountDetails
 import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.domain.model.resources.isXrd
 import com.babylon.wallet.android.domain.model.resources.metadata.AccountTypeMetadataItem
@@ -9,12 +10,12 @@ import java.math.BigDecimal
 
 data class AccountWithAssets(
     val account: Network.Account,
-    private val accountTypeMetadataItem: AccountTypeMetadataItem? = null,
-    val assets: Assets?,
+    val details: AccountDetails = AccountDetails(),
+    val assets: Assets? = null,
 ) {
 
     val isDappDefinitionAccountType: Boolean
-        get() = accountTypeMetadataItem?.type == AccountTypeMetadataItem.AccountType.DAPP_DEFINITION
+        get() = details.type == AccountTypeMetadataItem.AccountType.DAPP_DEFINITION
 }
 
 fun List<AccountWithAssets>.findAccountWithEnoughXRDBalance(minimumBalance: BigDecimal) = find {
