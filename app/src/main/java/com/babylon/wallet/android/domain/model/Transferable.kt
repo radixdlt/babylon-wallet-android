@@ -1,6 +1,7 @@
 package com.babylon.wallet.android.domain.model
 
 import androidx.annotation.FloatRange
+import com.babylon.wallet.android.domain.model.resources.Resource
 import java.math.BigDecimal
 
 sealed interface Transferable {

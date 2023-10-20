@@ -13,8 +13,8 @@ import com.babylon.wallet.android.data.transaction.model.FeePayerSearchResult
 import com.babylon.wallet.android.data.transaction.model.TransactionApprovalRequest
 import com.babylon.wallet.android.domain.common.asKotlinResult
 import com.babylon.wallet.android.domain.common.value
-import com.babylon.wallet.android.domain.model.findAccountWithEnoughXRDBalance
-import com.babylon.wallet.android.domain.usecases.GetAccountsWithResourcesUseCase
+import com.babylon.wallet.android.domain.model.assets.findAccountWithEnoughXRDBalance
+import com.babylon.wallet.android.domain.usecases.GetAccountsWithAssetsUseCase
 import com.babylon.wallet.android.domain.usecases.transaction.CollectSignersSignaturesUseCase
 import com.babylon.wallet.android.domain.usecases.transaction.SignRequest
 import com.babylon.wallet.android.domain.usecases.transaction.SubmitTransactionUseCase
@@ -49,7 +49,7 @@ class TransactionClient @Inject constructor(
     private val transactionRepository: TransactionRepository,
     private val getProfileUseCase: GetProfileUseCase,
     private val collectSignersSignaturesUseCase: CollectSignersSignaturesUseCase,
-    private val getAccountsWithResourcesUseCase: GetAccountsWithResourcesUseCase,
+    private val getAccountsWithAssetsUseCase: GetAccountsWithAssetsUseCase,
     private val submitTransactionUseCase: SubmitTransactionUseCase
 ) {
     val signingState = collectSignersSignaturesUseCase.interactionState
@@ -219,14 +219,14 @@ class TransactionClient @Inject constructor(
 
     suspend fun findFeePayerInManifest(manifest: TransactionManifest, lockFee: BigDecimal): Result<FeePayerSearchResult> {
         val allAccounts = getProfileUseCase.accountsOnCurrentNetwork()
-        val allAccountsWithResources = getAccountsWithResourcesUseCase(
+        val allAccountsWithResources = getAccountsWithAssetsUseCase(
             accounts = allAccounts,
             isRefreshing = false
         ).value()
         val candidates = allAccountsWithResources?.map {
             FeePayerSearchResult.FeePayerCandidate(
                 account = it.account,
-                xrdAmount = it.resources?.xrd?.ownedAmount ?: BigDecimal.ZERO
+                xrdAmount = it.assets?.xrd?.ownedAmount ?: BigDecimal.ZERO
             )
         }.orEmpty()
 
@@ -296,7 +296,7 @@ class TransactionClient @Inject constructor(
         accounts: List<Network.Account>,
         lockFee: BigDecimal
     ): String? {
-        return getAccountsWithResourcesUseCase(accounts = accounts, isRefreshing = true)
+        return getAccountsWithAssetsUseCase(accounts = accounts, isRefreshing = true)
             .value()?.findAccountWithEnoughXRDBalance(lockFee)?.account?.address
     }
 

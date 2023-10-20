@@ -1,24 +1,25 @@
-package com.babylon.wallet.android.domain.model
+package com.babylon.wallet.android.domain.model.resources
 
 import android.net.Uri
-import com.babylon.wallet.android.domain.model.XrdResource.officialAddresses
-import com.babylon.wallet.android.domain.model.behaviours.AssetBehaviours
-import com.babylon.wallet.android.domain.model.metadata.ClaimAmountMetadataItem
-import com.babylon.wallet.android.domain.model.metadata.DAppDefinitionsMetadataItem
-import com.babylon.wallet.android.domain.model.metadata.DescriptionMetadataItem
-import com.babylon.wallet.android.domain.model.metadata.IconUrlMetadataItem
-import com.babylon.wallet.android.domain.model.metadata.NameMetadataItem
-import com.babylon.wallet.android.domain.model.metadata.PoolMetadataItem
-import com.babylon.wallet.android.domain.model.metadata.StringMetadataItem
-import com.babylon.wallet.android.domain.model.metadata.SymbolMetadataItem
-import com.babylon.wallet.android.domain.model.metadata.TagsMetadataItem
-import com.babylon.wallet.android.domain.model.metadata.ValidatorMetadataItem
+import com.babylon.wallet.android.domain.model.assets.AssetBehaviours
+import com.babylon.wallet.android.domain.model.resources.XrdResource.addressesPerNetwork
+import com.babylon.wallet.android.domain.model.resources.metadata.ClaimAmountMetadataItem
+import com.babylon.wallet.android.domain.model.resources.metadata.DAppDefinitionsMetadataItem
+import com.babylon.wallet.android.domain.model.resources.metadata.DescriptionMetadataItem
+import com.babylon.wallet.android.domain.model.resources.metadata.IconUrlMetadataItem
+import com.babylon.wallet.android.domain.model.resources.metadata.NameMetadataItem
+import com.babylon.wallet.android.domain.model.resources.metadata.PoolMetadataItem
+import com.babylon.wallet.android.domain.model.resources.metadata.StringMetadataItem
+import com.babylon.wallet.android.domain.model.resources.metadata.SymbolMetadataItem
+import com.babylon.wallet.android.domain.model.resources.metadata.TagsMetadataItem
+import com.babylon.wallet.android.domain.model.resources.metadata.ValidatorMetadataItem
 import com.radixdlt.ret.NonFungibleLocalId
 import com.radixdlt.ret.knownAddresses
 import com.radixdlt.ret.nonFungibleLocalIdAsStr
 import com.radixdlt.ret.nonFungibleLocalIdFromStr
 import rdx.works.core.displayableQuantity
 import rdx.works.profile.data.model.apppreferences.Radix
+import rdx.works.profile.derivation.model.NetworkId
 import java.math.BigDecimal
 import java.math.MathContext
 import java.math.RoundingMode
@@ -298,92 +299,24 @@ sealed class Resource {
 
         companion object
     }
-
-    data class LiquidStakeUnitResource(
-        val fungibleResource: FungibleResource
-    ) : Resource() {
-
-        val validatorAddress: String
-            get() = fungibleResource.validatorAddress.orEmpty()
-
-        override val resourceAddress: String
-            get() = fungibleResource.resourceAddress
-        override val name: String
-            get() = fungibleResource.name
-
-        override val iconUrl: Uri?
-            get() = fungibleResource.iconUrl
-
-        private val percentageOwned: BigDecimal?
-            get() = fungibleResource.ownedAmount?.divide(fungibleResource.currentSupply, fungibleResource.mathContext)
-
-        fun stakeValueInXRD(totalXrdStake: BigDecimal?): BigDecimal? {
-            return percentageOwned?.multiply(totalXrdStake, fungibleResource.mathContext)
-        }
-    }
-
-    data class StakeClaimResource(
-        val nonFungibleResource: NonFungibleResource,
-        val validator: ValidatorWithStakeResources? = null
-    ) : Resource() {
-
-        val validatorAddress: String
-            get() = nonFungibleResource.validatorAddress.orEmpty()
-
-        override val resourceAddress: String
-            get() = nonFungibleResource.resourceAddress
-
-        override val name: String
-            get() = nonFungibleResource.name
-
-        override val iconUrl: Uri?
-            get() = nonFungibleResource.iconUrl
-    }
-
-    data class PoolUnitResource(
-        val poolUnitResource: FungibleResource,
-        val poolResources: List<FungibleResource> = emptyList()
-    ) : Resource() {
-
-        override val resourceAddress: String
-            get() = poolUnitResource.resourceAddress
-
-        override val name: String
-            get() = poolUnitResource.name
-
-        override val iconUrl: Uri?
-            get() = poolUnitResource.iconUrl
-
-        fun resourceRedemptionValue(resourceAddress: String): BigDecimal? {
-            val resourceVaultBalance = poolResources.find { it.resourceAddress == resourceAddress }?.ownedAmount
-            return poolUnitResource.ownedAmount?.multiply(resourceVaultBalance)
-                ?.divide(poolUnitResource.currentSupply, poolUnitResource.mathContext)
-        }
-    }
-
-    sealed interface Tag {
-        data object Official : Tag
-
-        data class Dynamic(
-            val name: String
-        ) : Tag
-    }
-
-    companion object {
-        const val XRD_SYMBOL = "XRD"
-    }
 }
 
 object XrdResource {
-    // todo Needs to be revisited. Having default network in param does not work on different networks
-    val officialAddresses: List<String>
-        get() = Radix.Network.allKnownNetworks().map { network ->
-            knownAddresses(networkId = network.networkId().value.toUByte()).resourceAddresses.xrd.addressString()
-        }
+    const val SYMBOL = "XRD"
 
-    val officialAddress: String
-        get() = knownAddresses(networkId = Radix.Gateway.default.network.id.toUByte()).resourceAddresses.xrd.addressString()
+    val addressesPerNetwork: Map<NetworkId, String> by lazy {
+        NetworkId.values().associateWith { id ->
+            knownAddresses(networkId = id.value.toUByte()).resourceAddresses.xrd.addressString()
+        }
+    }
+
+    fun address(networkId: NetworkId = Radix.Gateway.default.network.networkId()) = addressesPerNetwork[networkId].orEmpty()
 }
 
 val Resource.FungibleResource.isXrd: Boolean
-    get() = officialAddresses.contains(resourceAddress)
+    get() = addressesPerNetwork.containsValue(resourceAddress)
+
+data class Resources(
+    val fungibles: List<Resource.FungibleResource>,
+    val nonFungibles: List<Resource.NonFungibleResource>
+)

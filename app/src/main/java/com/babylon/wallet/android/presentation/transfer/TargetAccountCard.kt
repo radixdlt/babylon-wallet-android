@@ -29,9 +29,10 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.designsystem.theme.getAccountGradientColorsFor
 import com.babylon.wallet.android.domain.SampleDataProvider
-import com.babylon.wallet.android.domain.model.Resource
-import com.babylon.wallet.android.domain.model.metadata.NameMetadataItem
-import com.babylon.wallet.android.domain.model.metadata.SymbolMetadataItem
+import com.babylon.wallet.android.domain.model.resources.Resource
+import com.babylon.wallet.android.domain.model.resources.XrdResource
+import com.babylon.wallet.android.domain.model.resources.metadata.NameMetadataItem
+import com.babylon.wallet.android.domain.model.resources.metadata.SymbolMetadataItem
 import com.babylon.wallet.android.presentation.transfer.assets.SpendingAssetItem
 import com.babylon.wallet.android.presentation.ui.composables.ActionableAddressView
 import kotlinx.collections.immutable.persistentSetOf
@@ -230,7 +231,7 @@ fun TargetAccountCardPreview() {
                                 resourceAddress = "resource_rdx_abcd",
                                 ownedAmount = BigDecimal.TEN,
                                 nameMetadataItem = NameMetadataItem("Radix"),
-                                symbolMetadataItem = SymbolMetadataItem("XRD")
+                                symbolMetadataItem = SymbolMetadataItem(XrdResource.SYMBOL)
                             )
                         ),
                         SpendingAsset.NFT(

@@ -21,7 +21,7 @@ import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.SampleDataProvider
-import com.babylon.wallet.android.domain.model.Resource
+import com.babylon.wallet.android.domain.model.assets.PoolUnit
 import com.babylon.wallet.android.presentation.ui.composables.BackIconType
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
@@ -34,7 +34,7 @@ import com.babylon.wallet.android.presentation.ui.composables.resources.poolName
 
 @Composable
 fun PoolUnitBottomSheetDetails(
-    poolUnit: Resource.PoolUnitResource,
+    poolUnit: PoolUnit,
     onCloseClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {

@@ -8,8 +8,8 @@ import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetai
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponseItem
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponseItemDetails
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponseNonFungibleResourceDetails
-import com.babylon.wallet.android.domain.model.XrdResource
-import com.babylon.wallet.android.domain.model.behaviours.AssetBehaviours
+import com.babylon.wallet.android.domain.model.assets.AssetBehaviours
+import com.babylon.wallet.android.domain.model.resources.XrdResource
 import java.math.BigDecimal
 
 fun StateEntityDetailsResponseItemDetails.totalSupply(): String? {
@@ -30,7 +30,7 @@ fun StateEntityDetailsResponseItemDetails.divisibility(): Int? {
 fun StateEntityDetailsResponseItem.getXRDVaultAmount(vaultAddress: String): BigDecimal? {
     return when (
         val resource = fungibleResources?.items?.find {
-            XrdResource.officialAddresses.contains(it.resourceAddress)
+            XrdResource.addressesPerNetwork.containsValue(it.resourceAddress)
         }
     ) {
         is FungibleResourcesCollectionItemVaultAggregated -> {

@@ -7,7 +7,7 @@ import com.babylon.wallet.android.data.dapp.model.TransactionType
 import com.babylon.wallet.android.data.manifest.prepareInternalTransactionRequest
 import com.babylon.wallet.android.data.repository.TransactionStatusClient
 import com.babylon.wallet.android.data.repository.entity.EntityRepository
-import com.babylon.wallet.android.domain.model.Resource
+import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.presentation.account.settings.specificassets.DeleteDialogState
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiMessage

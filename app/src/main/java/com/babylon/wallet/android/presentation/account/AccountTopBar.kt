@@ -49,8 +49,8 @@ fun AccountTopBar(
     onTransferClick: (String) -> Unit,
     onApplySecuritySettings: (SecurityPromptType) -> Unit
 ) {
-    val accountAddress = remember(state.accountWithResources) {
-        state.accountWithResources?.account?.address.orEmpty()
+    val accountAddress = remember(state.accountWithAssets) {
+        state.accountWithAssets?.account?.address.orEmpty()
     }
 
     val progressTargetValue by remember {
@@ -89,7 +89,7 @@ fun AccountTopBar(
             modifier = Modifier
                 .layoutId("titleLabel")
                 .padding(bottom = RadixTheme.dimensions.paddingDefault),
-            text = state.accountWithResources?.account?.displayName.orEmpty(),
+            text = state.accountWithAssets?.account?.displayName.orEmpty(),
             style = RadixTheme.typography.body1Header.copy(textAlign = TextAlign.Center),
             color = RadixTheme.colors.white,
             maxLines = 2,
@@ -98,7 +98,7 @@ fun AccountTopBar(
 
         IconButton(
             modifier = Modifier.layoutId("moreButton"),
-            onClick = { onAccountPreferenceClick(state.accountWithResources?.account?.address.orEmpty()) }
+            onClick = { onAccountPreferenceClick(state.accountWithAssets?.account?.address.orEmpty()) }
         ) {
             Icon(
                 painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_more_horiz),

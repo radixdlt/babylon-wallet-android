@@ -22,9 +22,10 @@ import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.SampleDataProvider
-import com.babylon.wallet.android.domain.model.Resource
-import com.babylon.wallet.android.domain.model.ValidatorDetail
-import com.babylon.wallet.android.domain.model.XrdResource
+import com.babylon.wallet.android.domain.model.assets.LiquidStakeUnit
+import com.babylon.wallet.android.domain.model.assets.ValidatorDetail
+import com.babylon.wallet.android.domain.model.resources.Resource
+import com.babylon.wallet.android.domain.model.resources.XrdResource
 import com.babylon.wallet.android.presentation.ui.composables.BackIconType
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
@@ -39,7 +40,7 @@ import java.math.BigDecimal
 
 @Composable
 fun LSUBottomSheetDetails(
-    lsuUnit: Resource.LiquidStakeUnitResource,
+    lsuUnit: LiquidStakeUnit,
     validatorDetail: ValidatorDetail,
     onCloseClick: () -> Unit,
     modifier: Modifier = Modifier,
@@ -188,7 +189,7 @@ fun LSUBottomSheetDetails(
 
 @Composable
 private fun LSUResourceValue(
-    resource: Resource.LiquidStakeUnitResource,
+    resource: LiquidStakeUnit,
     validatorDetail: ValidatorDetail,
     modifier: Modifier = Modifier
 ) {
@@ -205,13 +206,13 @@ private fun LSUResourceValue(
         Thumbnail.Fungible(
             modifier = Modifier.size(44.dp),
             token = Resource.FungibleResource(
-                resourceAddress = XrdResource.officialAddress,
+                resourceAddress = XrdResource.address(),
                 ownedAmount = null
             )
         )
         Text(
             modifier = Modifier.weight(1f),
-            text = Resource.XRD_SYMBOL,
+            text = XrdResource.SYMBOL,
             style = RadixTheme.typography.body2HighImportance,
             color = RadixTheme.colors.gray1,
             maxLines = 2

@@ -5,17 +5,17 @@ package com.babylon.wallet.android.presentation.transaction.analysis
 import android.net.Uri
 import com.babylon.wallet.android.data.gateway.model.ExplicitMetadataKey
 import com.babylon.wallet.android.domain.model.GuaranteeType
-import com.babylon.wallet.android.domain.model.Resource
-import com.babylon.wallet.android.domain.model.Resources
 import com.babylon.wallet.android.domain.model.Transferable
 import com.babylon.wallet.android.domain.model.TransferableResource
-import com.babylon.wallet.android.domain.model.metadata.DescriptionMetadataItem
-import com.babylon.wallet.android.domain.model.metadata.IconUrlMetadataItem
-import com.babylon.wallet.android.domain.model.metadata.MetadataItem
-import com.babylon.wallet.android.domain.model.metadata.MetadataItem.Companion.consume
-import com.babylon.wallet.android.domain.model.metadata.NameMetadataItem
-import com.babylon.wallet.android.domain.model.metadata.SymbolMetadataItem
-import com.babylon.wallet.android.domain.model.metadata.TagsMetadataItem
+import com.babylon.wallet.android.domain.model.assets.Assets
+import com.babylon.wallet.android.domain.model.resources.Resource
+import com.babylon.wallet.android.domain.model.resources.metadata.DescriptionMetadataItem
+import com.babylon.wallet.android.domain.model.resources.metadata.IconUrlMetadataItem
+import com.babylon.wallet.android.domain.model.resources.metadata.MetadataItem
+import com.babylon.wallet.android.domain.model.resources.metadata.MetadataItem.Companion.consume
+import com.babylon.wallet.android.domain.model.resources.metadata.NameMetadataItem
+import com.babylon.wallet.android.domain.model.resources.metadata.SymbolMetadataItem
+import com.babylon.wallet.android.domain.model.resources.metadata.TagsMetadataItem
 import com.radixdlt.ret.Address
 import com.radixdlt.ret.DecimalSource
 import com.radixdlt.ret.MetadataValue
@@ -29,7 +29,7 @@ typealias RETResources = com.radixdlt.ret.Resources
 typealias RETResourcesAmount = com.radixdlt.ret.Resources.Amount
 typealias RETResourcesIds = com.radixdlt.ret.Resources.Ids
 
-fun List<Resources>.allPoolUnits(): List<Resource.FungibleResource> {
+fun List<Assets>.allPoolUnits(): List<Resource.FungibleResource> {
     return map { resource ->
         resource.poolUnits.map { poolUnit ->
             poolUnit.poolUnitResource
@@ -39,10 +39,10 @@ fun List<Resources>.allPoolUnits(): List<Resource.FungibleResource> {
     }.flatten()
 }
 
-fun RETResources.toTransferableResource(resourceAddress: String, allResources: List<Resources>): TransferableResource {
-    val allFungibles = allResources.map { it.fungibleResources }.flatten()
-    val allNFTCollections = allResources.map { it.nonFungibleResources }.flatten()
-    val allPoolUnits = allResources.allPoolUnits()
+fun RETResources.toTransferableResource(resourceAddress: String, allAssets: List<Assets>): TransferableResource {
+    val allFungibles = allAssets.map { it.fungibles }.flatten()
+    val allNFTCollections = allAssets.map { it.nonFungibles }.flatten()
+    val allPoolUnits = allAssets.allPoolUnits()
 
     return when (this) {
         is RETResourcesAmount -> TransferableResource.Amount(
@@ -80,15 +80,15 @@ fun RETResources.toTransferableResource(resourceAddress: String, allResources: L
 }
 
 fun ResourceTracker.toDepositingTransferableResource(
-    allResources: List<Resources>,
+    allAssets: List<Assets>,
     newlyCreatedMetadata: Map<String, Map<String, MetadataValue?>>,
     newlyCreatedEntities: List<Address>,
     thirdPartyMetadata: Map<String, List<MetadataItem>>,
     defaultDepositGuarantees: Double
 ): Transferable.Depositing {
-    val allFungibles = allResources.map { it.fungibleResources }.flatten()
-    val allNFTCollections = allResources.map { it.nonFungibleResources }.flatten()
-    val allPoolUnits = allResources.allPoolUnits()
+    val allFungibles = allAssets.map { it.fungibles }.flatten()
+    val allNFTCollections = allAssets.map { it.nonFungibles }.flatten()
+    val allPoolUnits = allAssets.allPoolUnits()
 
     return when (this) {
         is ResourceTracker.Fungible -> Transferable.Depositing(
@@ -117,12 +117,12 @@ fun ResourceTracker.toDepositingTransferableResource(
 }
 
 fun ResourceTracker.toWithdrawingTransferableResource(
-    allResources: List<Resources>,
+    allResources: List<Assets>,
     newlyCreatedMetadata: Map<String, Map<String, MetadataValue?>> = emptyMap(),
     newlyCreatedEntities: List<Address>
 ): Transferable.Withdrawing {
-    val allFungibles = allResources.map { it.fungibleResources }.flatten()
-    val allNFTCollections = allResources.map { it.nonFungibleResources }.flatten()
+    val allFungibles = allResources.map { it.fungibles }.flatten()
+    val allNFTCollections = allResources.map { it.nonFungibles }.flatten()
     val allPoolUnits = allResources.allPoolUnits()
 
     return when (this) {
@@ -146,12 +146,12 @@ fun ResourceTracker.toWithdrawingTransferableResource(
 }
 
 fun ResourceSpecifier.toTransferableResource(
-    allResources: List<Resources>,
+    allAssets: List<Assets>,
     newlyCreated: Map<String, Map<String, MetadataValue>> = emptyMap()
 ): TransferableResource {
-    val allFungibles = allResources.map { it.fungibleResources }.flatten()
-    val allNFTCollections = allResources.map { it.nonFungibleResources }.flatten()
-    val allPoolUnits = allResources.allPoolUnits()
+    val allFungibles = allAssets.map { it.fungibles }.flatten()
+    val allNFTCollections = allAssets.map { it.nonFungibles }.flatten()
+    val allPoolUnits = allAssets.allPoolUnits()
 
     return when (this) {
         is ResourceSpecifier.Amount -> TransferableResource.Amount(

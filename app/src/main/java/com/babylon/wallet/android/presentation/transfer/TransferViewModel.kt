@@ -3,9 +3,9 @@ package com.babylon.wallet.android.presentation.transfer
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
-import com.babylon.wallet.android.domain.model.Resource
-import com.babylon.wallet.android.domain.model.Resources
-import com.babylon.wallet.android.domain.usecases.GetAccountsWithResourcesUseCase
+import com.babylon.wallet.android.domain.model.assets.Assets
+import com.babylon.wallet.android.domain.model.resources.Resource
+import com.babylon.wallet.android.domain.usecases.GetAccountsWithAssetsUseCase
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
@@ -37,7 +37,7 @@ import javax.inject.Inject
 @HiltViewModel
 class TransferViewModel @Inject constructor(
     getProfileUseCase: GetProfileUseCase,
-    getAccountsWithResourcesUseCase: GetAccountsWithResourcesUseCase,
+    getAccountsWithAssetsUseCase: GetAccountsWithAssetsUseCase,
     incomingRequestRepository: IncomingRequestRepository,
     mnemonicRepository: MnemonicRepository,
     savedStateHandle: SavedStateHandle,
@@ -54,7 +54,7 @@ class TransferViewModel @Inject constructor(
 
     private val assetsChooserDelegate = AssetsChooserDelegate(
         state = _state,
-        getAccountsWithResourcesUseCase = getAccountsWithResourcesUseCase
+        getAccountsWithAssetsUseCase = getAccountsWithAssetsUseCase
     )
 
     private val prepareManifestDelegate = PrepareManifestDelegate(
@@ -343,7 +343,7 @@ class TransferViewModel @Inject constructor(
             }
 
             data class ChooseAssets(
-                val resources: Resources? = null,
+                val assets: Assets? = null,
                 private val initialAssetAddress: ImmutableSet<String>, // Used to compute the difference between chosen assets
                 val targetAccount: TargetAccount,
                 val selectedTab: Tab = Tab.Tokens,

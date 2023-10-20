@@ -33,9 +33,9 @@ import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
-import com.babylon.wallet.android.domain.model.ValidatorDetail
-import com.babylon.wallet.android.domain.model.ValidatorWithStakeResources
-import com.babylon.wallet.android.domain.model.ValidatorsWithStakeResources
+import com.babylon.wallet.android.domain.model.assets.ValidatorDetail
+import com.babylon.wallet.android.domain.model.assets.ValidatorWithStakeResources
+import com.babylon.wallet.android.domain.model.assets.ValidatorsWithStakeResources
 import java.math.BigDecimal
 
 @Composable

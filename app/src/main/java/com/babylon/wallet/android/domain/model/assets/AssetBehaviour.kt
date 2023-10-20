@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.domain.model.behaviours
+package com.babylon.wallet.android.domain.model.assets
 
 enum class AssetBehaviour {
     SIMPLE_ASSET,

@@ -3,20 +3,23 @@
 package com.babylon.wallet.android.domain
 
 import com.babylon.wallet.android.data.transaction.TransactionVersion
-import com.babylon.wallet.android.domain.model.AccountWithResources
 import com.babylon.wallet.android.domain.model.DAppResources
 import com.babylon.wallet.android.domain.model.DAppWithMetadata
 import com.babylon.wallet.android.domain.model.DAppWithMetadataAndAssociatedResources
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
-import com.babylon.wallet.android.domain.model.Resource
-import com.babylon.wallet.android.domain.model.Resources
 import com.babylon.wallet.android.domain.model.TransactionManifestData
 import com.babylon.wallet.android.domain.model.Transferable
 import com.babylon.wallet.android.domain.model.TransferableResource
-import com.babylon.wallet.android.domain.model.ValidatorsWithStakeResources
-import com.babylon.wallet.android.domain.model.metadata.DescriptionMetadataItem
-import com.babylon.wallet.android.domain.model.metadata.NameMetadataItem
-import com.babylon.wallet.android.domain.model.metadata.SymbolMetadataItem
+import com.babylon.wallet.android.domain.model.assets.AccountWithAssets
+import com.babylon.wallet.android.domain.model.assets.Assets
+import com.babylon.wallet.android.domain.model.assets.LiquidStakeUnit
+import com.babylon.wallet.android.domain.model.assets.PoolUnit
+import com.babylon.wallet.android.domain.model.assets.ValidatorsWithStakeResources
+import com.babylon.wallet.android.domain.model.resources.Resource
+import com.babylon.wallet.android.domain.model.resources.XrdResource
+import com.babylon.wallet.android.domain.model.resources.metadata.DescriptionMetadataItem
+import com.babylon.wallet.android.domain.model.resources.metadata.NameMetadataItem
+import com.babylon.wallet.android.domain.model.resources.metadata.SymbolMetadataItem
 import com.babylon.wallet.android.presentation.account.settings.thirdpartydeposits.AssetType
 import com.babylon.wallet.android.presentation.transaction.AccountWithTransferableResources
 import rdx.works.core.HexCoded32Bytes
@@ -259,12 +262,12 @@ class SampleDataProvider {
     fun sampleAccountWithResources(
         address: String = randomAddress(),
         withFungibleTokens: List<Resource.FungibleResource> = sampleFungibleResources()
-    ): AccountWithResources {
-        return AccountWithResources(
+    ): AccountWithAssets {
+        return AccountWithAssets(
             account = sampleAccount(address = address),
-            resources = Resources(
-                fungibleResources = withFungibleTokens,
-                nonFungibleResources = emptyList(),
+            assets = Assets(
+                fungibles = withFungibleTokens,
+                nonFungibles = emptyList(),
                 poolUnits = emptyList(),
                 validatorsWithStakeResources = ValidatorsWithStakeResources()
             )
@@ -314,7 +317,7 @@ class SampleDataProvider {
     }
 
     fun sampleFungibleResources(
-        amount: Pair<BigDecimal, String> = BigDecimal.valueOf(100000) to "XRD"
+        amount: Pair<BigDecimal, String> = BigDecimal.valueOf(100000) to XrdResource.SYMBOL
     ): List<Resource.FungibleResource> {
         val result = mutableListOf<Resource.FungibleResource>()
         return result.apply {
@@ -345,12 +348,12 @@ class SampleDataProvider {
         )
     }
 
-    fun samplePoolUnit(): Resource.PoolUnitResource {
-        return Resource.PoolUnitResource(sampleFungibleResources().first(), sampleFungibleResources())
+    fun samplePoolUnit(): PoolUnit {
+        return PoolUnit(sampleFungibleResources().first(), sampleFungibleResources())
     }
 
-    fun sampleLSUUnit(): Resource.LiquidStakeUnitResource {
-        return Resource.LiquidStakeUnitResource(
+    fun sampleLSUUnit(): LiquidStakeUnit {
+        return LiquidStakeUnit(
             sampleFungibleResources().first()
         )
     }

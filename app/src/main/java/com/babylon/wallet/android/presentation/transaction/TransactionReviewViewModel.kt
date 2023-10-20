@@ -12,17 +12,17 @@ import com.babylon.wallet.android.data.transaction.InteractionState
 import com.babylon.wallet.android.data.transaction.TransactionClient
 import com.babylon.wallet.android.data.transaction.model.FeePayerSearchResult
 import com.babylon.wallet.android.di.coroutines.ApplicationScope
-import com.babylon.wallet.android.domain.model.Badge
 import com.babylon.wallet.android.domain.model.DAppWithMetadataAndAssociatedResources
 import com.babylon.wallet.android.domain.model.GuaranteeAssertion
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
-import com.babylon.wallet.android.domain.model.Resource
-import com.babylon.wallet.android.domain.model.Resource.FungibleResource
-import com.babylon.wallet.android.domain.model.Resource.NonFungibleResource
 import com.babylon.wallet.android.domain.model.Transferable
 import com.babylon.wallet.android.domain.model.TransferableResource
-import com.babylon.wallet.android.domain.model.isXrd
-import com.babylon.wallet.android.domain.usecases.GetAccountsWithResourcesUseCase
+import com.babylon.wallet.android.domain.model.resources.Badge
+import com.babylon.wallet.android.domain.model.resources.Resource
+import com.babylon.wallet.android.domain.model.resources.Resource.FungibleResource
+import com.babylon.wallet.android.domain.model.resources.Resource.NonFungibleResource
+import com.babylon.wallet.android.domain.model.resources.isXrd
+import com.babylon.wallet.android.domain.usecases.GetAccountsWithAssetsUseCase
 import com.babylon.wallet.android.domain.usecases.GetResourcesMetadataUseCase
 import com.babylon.wallet.android.domain.usecases.GetResourcesUseCase
 import com.babylon.wallet.android.domain.usecases.ResolveDAppsUseCase
@@ -60,7 +60,7 @@ import javax.inject.Inject
 @HiltViewModel
 class TransactionReviewViewModel @Inject constructor(
     private val transactionClient: TransactionClient,
-    getAccountsWithResourcesUseCase: GetAccountsWithResourcesUseCase,
+    getAccountsWithAssetsUseCase: GetAccountsWithAssetsUseCase,
     getResourcesMetadataUseCase: GetResourcesMetadataUseCase,
     getProfileUseCase: GetProfileUseCase,
     getResourcesUseCase: GetResourcesUseCase,
@@ -87,7 +87,7 @@ class TransactionReviewViewModel @Inject constructor(
     private val analysis: TransactionAnalysisDelegate = TransactionAnalysisDelegate(
         state = _state,
         getProfileUseCase = getProfileUseCase,
-        getAccountsWithResourcesUseCase = getAccountsWithResourcesUseCase,
+        getAccountsWithAssetsUseCase = getAccountsWithAssetsUseCase,
         getTransactionBadgesUseCase = getTransactionBadgesUseCase,
         getResourcesMetadataUseCase = getResourcesMetadataUseCase,
         resolveDAppsUseCase = resolveDAppsUseCase,

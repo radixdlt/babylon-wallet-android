@@ -39,11 +39,11 @@ import com.babylon.wallet.android.presentation.transfer.TargetAccount
 import com.babylon.wallet.android.presentation.transfer.TransferViewModel.State.Sheet.ChooseAssets
 import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
-import com.babylon.wallet.android.presentation.ui.composables.resources.FungibleResourcesColumn
+import com.babylon.wallet.android.presentation.ui.composables.resources.FungibleAssetsColumn
 import com.babylon.wallet.android.presentation.ui.composables.resources.LiquidStakeUnitItem
-import com.babylon.wallet.android.presentation.ui.composables.resources.NonFungibleResourcesColumn
+import com.babylon.wallet.android.presentation.ui.composables.resources.NonFungibleAssetsColumn
+import com.babylon.wallet.android.presentation.ui.composables.resources.PoolUnitAssetsColumn
 import com.babylon.wallet.android.presentation.ui.composables.resources.PoolUnitItem
-import com.babylon.wallet.android.presentation.ui.composables.resources.PoolUnitResourcesColumn
 import com.babylon.wallet.android.presentation.ui.composables.resources.SelectableFungibleResourceItem
 import com.babylon.wallet.android.presentation.ui.composables.resources.SelectableNonFungibleResourceItem
 import com.babylon.wallet.android.presentation.ui.composables.resources.StakeClaimNftItem
@@ -134,7 +134,7 @@ fun ChooseAssetsSheet(
             )
 
             Box(modifier = Modifier.fillMaxSize()) {
-                if (state.resources != null) {
+                if (state.assets != null) {
                     HorizontalPager(
                         pageCount = ChooseAssets.Tab.values().size,
                         state = pagerState,
@@ -145,9 +145,9 @@ fun ChooseAssetsSheet(
                         }
 
                         when (tab) {
-                            ChooseAssets.Tab.Tokens -> FungibleResourcesColumn(
+                            ChooseAssets.Tab.Tokens -> FungibleAssetsColumn(
                                 modifier = Modifier.fillMaxSize(),
-                                resources = state.resources
+                                assets = state.assets
                             ) { _, resource ->
                                 val isSelected = state.targetAccount.assets.any { it.address == resource.resourceAddress }
                                 SelectableFungibleResourceItem(
@@ -166,8 +166,8 @@ fun ChooseAssetsSheet(
                                 )
                             }
 
-                            ChooseAssets.Tab.NFTs -> NonFungibleResourcesColumn(
-                                resources = state.resources,
+                            ChooseAssets.Tab.NFTs -> NonFungibleAssetsColumn(
+                                assets = state.assets,
                                 modifier = Modifier.fillMaxSize(),
                             ) { resource, item ->
                                 val isSelected = state.targetAccount.assets.any { it.address == item.globalAddress }
@@ -186,9 +186,9 @@ fun ChooseAssetsSheet(
                             }
 
                             ChooseAssets.Tab.PoolUnits -> {
-                                PoolUnitResourcesColumn(
+                                PoolUnitAssetsColumn(
                                     modifier = Modifier.fillMaxSize(),
-                                    resources = state.resources,
+                                    assets = state.assets,
                                     poolUnitItem = { poolUnit ->
                                         val isSelected = state.targetAccount.assets.any { it.address == poolUnit.resourceAddress }
                                         PoolUnitItem(

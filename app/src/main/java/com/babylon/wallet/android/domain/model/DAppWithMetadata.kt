@@ -1,17 +1,17 @@
 package com.babylon.wallet.android.domain.model
 
 import android.net.Uri
-import com.babylon.wallet.android.domain.model.metadata.AccountTypeMetadataItem
-import com.babylon.wallet.android.domain.model.metadata.ClaimedEntitiesMetadataItem
-import com.babylon.wallet.android.domain.model.metadata.ClaimedWebsitesMetadataItem
-import com.babylon.wallet.android.domain.model.metadata.DAppDefinitionsMetadataItem
-import com.babylon.wallet.android.domain.model.metadata.DescriptionMetadataItem
-import com.babylon.wallet.android.domain.model.metadata.IconUrlMetadataItem
-import com.babylon.wallet.android.domain.model.metadata.MetadataItem
-import com.babylon.wallet.android.domain.model.metadata.MetadataItem.Companion.consume
-import com.babylon.wallet.android.domain.model.metadata.NameMetadataItem
-import com.babylon.wallet.android.domain.model.metadata.RelatedWebsitesMetadataItem
-import com.babylon.wallet.android.domain.model.metadata.StringMetadataItem
+import com.babylon.wallet.android.domain.model.resources.metadata.AccountTypeMetadataItem
+import com.babylon.wallet.android.domain.model.resources.metadata.ClaimedEntitiesMetadataItem
+import com.babylon.wallet.android.domain.model.resources.metadata.ClaimedWebsitesMetadataItem
+import com.babylon.wallet.android.domain.model.resources.metadata.DAppDefinitionsMetadataItem
+import com.babylon.wallet.android.domain.model.resources.metadata.DescriptionMetadataItem
+import com.babylon.wallet.android.domain.model.resources.metadata.IconUrlMetadataItem
+import com.babylon.wallet.android.domain.model.resources.metadata.MetadataItem
+import com.babylon.wallet.android.domain.model.resources.metadata.MetadataItem.Companion.consume
+import com.babylon.wallet.android.domain.model.resources.metadata.NameMetadataItem
+import com.babylon.wallet.android.domain.model.resources.metadata.RelatedWebsitesMetadataItem
+import com.babylon.wallet.android.domain.model.resources.metadata.StringMetadataItem
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toPersistentList
 

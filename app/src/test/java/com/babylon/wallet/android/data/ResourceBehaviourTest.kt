@@ -9,10 +9,8 @@ import com.babylon.wallet.android.data.gateway.generated.models.ComponentEntityR
 import com.babylon.wallet.android.data.gateway.generated.models.ObjectModuleId
 import com.babylon.wallet.android.data.gateway.generated.models.RoleAssignmentResolution
 import com.babylon.wallet.android.data.gateway.generated.models.RoleKey
-import com.babylon.wallet.android.domain.model.behaviours.AssetBehaviour
-import com.babylon.wallet.android.domain.model.behaviours.AssetBehaviours
-import com.google.android.material.search.SearchView.Behavior
-import org.junit.Assert
+import com.babylon.wallet.android.domain.model.assets.AssetBehaviour
+import com.babylon.wallet.android.domain.model.assets.AssetBehaviours
 import org.junit.Assert.assertEquals
 import org.junit.Test
 import org.junit.runner.RunWith

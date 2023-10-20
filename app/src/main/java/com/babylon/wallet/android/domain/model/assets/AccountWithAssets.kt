@@ -1,32 +1,39 @@
-package com.babylon.wallet.android.domain.model
+package com.babylon.wallet.android.domain.model.assets
 
 import android.net.Uri
-import com.babylon.wallet.android.domain.model.metadata.AccountTypeMetadataItem
+import com.babylon.wallet.android.domain.model.resources.Resource
+import com.babylon.wallet.android.domain.model.resources.isXrd
+import com.babylon.wallet.android.domain.model.resources.metadata.AccountTypeMetadataItem
 import rdx.works.profile.data.model.pernetwork.Network
 import java.math.BigDecimal
 
-data class AccountWithResources(
+data class AccountWithAssets(
     val account: Network.Account,
     private val accountTypeMetadataItem: AccountTypeMetadataItem? = null,
-    val resources: Resources?,
+    val assets: Assets?,
 ) {
 
     val isDappDefinitionAccountType: Boolean
         get() = accountTypeMetadataItem?.type == AccountTypeMetadataItem.AccountType.DAPP_DEFINITION
 }
 
-data class Resources(
-    val fungibleResources: List<Resource.FungibleResource>,
-    val nonFungibleResources: List<Resource.NonFungibleResource>,
-    val poolUnits: List<Resource.PoolUnitResource>,
+fun List<AccountWithAssets>.findAccountWithEnoughXRDBalance(minimumBalance: BigDecimal) = find {
+    it.assets?.hasXrd(minimumBalance) ?: false
+}
+
+data class Assets(
+    val fungibles: List<Resource.FungibleResource> = emptyList(),
+    val nonFungibles: List<Resource.NonFungibleResource> = emptyList(),
+    val poolUnits: List<PoolUnit> = emptyList(),
     val validatorsWithStakeResources: ValidatorsWithStakeResources = ValidatorsWithStakeResources()
 ) {
 
-    val xrd: Resource.FungibleResource? = fungibleResources.find { it.isXrd }
-    val nonXrdFungibles: List<Resource.FungibleResource> = fungibleResources.filterNot { it.isXrd }
-
-    val isNotEmpty: Boolean
-        get() = fungibleResources.isNotEmpty() || nonFungibleResources.isNotEmpty()
+    val xrd: Resource.FungibleResource? by lazy {
+        fungibles.find { it.isXrd }
+    }
+    val nonXrdFungibles: List<Resource.FungibleResource> by lazy {
+        fungibles.filterNot { it.isXrd }
+    }
 
     fun hasXrd(minimumBalance: BigDecimal = BigDecimal(1)): Boolean = xrd?.let {
         it.ownedAmount?.let { amount ->
@@ -36,15 +43,6 @@ data class Resources(
 
     fun poolUnitsSize(): Int {
         return poolUnits.size + validatorsWithStakeResources.validators.size
-    }
-
-    companion object {
-        val EMPTY = Resources(
-            fungibleResources = emptyList(),
-            nonFungibleResources = emptyList(),
-            poolUnits = emptyList(),
-            validatorsWithStakeResources = ValidatorsWithStakeResources()
-        )
     }
 }
 
@@ -65,12 +63,8 @@ data class ValidatorDetail(
 
 data class ValidatorWithStakeResources(
     val validatorDetail: ValidatorDetail,
-    val liquidStakeUnits: List<Resource.LiquidStakeUnitResource> = emptyList(),
-    val stakeClaimNft: Resource.StakeClaimResource? = null
+    val liquidStakeUnits: List<LiquidStakeUnit> = emptyList(),
+    val stakeClaimNft: StakeClaim? = null
 )
-
-fun List<AccountWithResources>.findAccountWithEnoughXRDBalance(minimumBalance: BigDecimal) = find {
-    it.resources?.hasXrd(minimumBalance) ?: false
-}
 
 fun List<Resource.NonFungibleResource>.allNftItemsSize() = map { it.items }.flatten().size

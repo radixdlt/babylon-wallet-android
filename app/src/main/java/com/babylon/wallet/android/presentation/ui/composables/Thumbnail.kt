@@ -50,12 +50,14 @@ import com.babylon.wallet.android.designsystem.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.SampleDataProvider
-import com.babylon.wallet.android.domain.model.Badge
 import com.babylon.wallet.android.domain.model.DAppWithMetadata
-import com.babylon.wallet.android.domain.model.Resource
-import com.babylon.wallet.android.domain.model.ValidatorDetail
-import com.babylon.wallet.android.domain.model.isXrd
-import com.babylon.wallet.android.domain.model.metadata.IconUrlMetadataItem
+import com.babylon.wallet.android.domain.model.assets.LiquidStakeUnit
+import com.babylon.wallet.android.domain.model.assets.PoolUnit
+import com.babylon.wallet.android.domain.model.assets.ValidatorDetail
+import com.babylon.wallet.android.domain.model.resources.Badge
+import com.babylon.wallet.android.domain.model.resources.Resource
+import com.babylon.wallet.android.domain.model.resources.isXrd
+import com.babylon.wallet.android.domain.model.resources.metadata.IconUrlMetadataItem
 import com.babylon.wallet.android.presentation.ui.modifier.applyIf
 import rdx.works.core.toEncodedString
 import rdx.works.profile.data.model.pernetwork.Network
@@ -253,7 +255,7 @@ object Thumbnail {
     @Composable
     fun LSU(
         modifier: Modifier = Modifier,
-        liquidStakeUnit: Resource.LiquidStakeUnitResource
+        liquidStakeUnit: LiquidStakeUnit
     ) {
         Custom(
             modifier = modifier,
@@ -268,7 +270,7 @@ object Thumbnail {
     @Composable
     fun PoolUnit(
         modifier: Modifier = Modifier,
-        poolUnit: Resource.PoolUnitResource
+        poolUnit: PoolUnit
     ) {
         Custom(
             modifier = modifier,

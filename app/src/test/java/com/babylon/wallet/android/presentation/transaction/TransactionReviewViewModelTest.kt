@@ -13,14 +13,15 @@ import com.babylon.wallet.android.data.transaction.NotaryAndSigners
 import com.babylon.wallet.android.data.transaction.TransactionClient
 import com.babylon.wallet.android.data.transaction.model.FeePayerSearchResult
 import com.babylon.wallet.android.domain.SampleDataProvider
-import com.babylon.wallet.android.domain.model.AccountWithResources
-import com.babylon.wallet.android.domain.model.Badge
+import com.babylon.wallet.android.domain.model.assets.AccountWithAssets
+import com.babylon.wallet.android.domain.model.assets.Assets
+import com.babylon.wallet.android.domain.model.resources.Badge
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
-import com.babylon.wallet.android.domain.model.Resource
-import com.babylon.wallet.android.domain.model.Resources
+import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.domain.model.TransactionManifestData
-import com.babylon.wallet.android.domain.model.metadata.SymbolMetadataItem
-import com.babylon.wallet.android.domain.usecases.GetAccountsWithResourcesUseCase
+import com.babylon.wallet.android.domain.model.resources.XrdResource
+import com.babylon.wallet.android.domain.model.resources.metadata.SymbolMetadataItem
+import com.babylon.wallet.android.domain.usecases.GetAccountsWithAssetsUseCase
 import com.babylon.wallet.android.domain.usecases.GetResourcesMetadataUseCase
 import com.babylon.wallet.android.domain.usecases.GetResourcesUseCase
 import com.babylon.wallet.android.domain.usecases.ResolveDAppsUseCase
@@ -75,7 +76,7 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
 
     private val transactionClient = mockk<TransactionClient>()
     private val getCurrentGatewayUseCase = mockk<GetCurrentGatewayUseCase>()
-    private val getAccountsWithResourcesUseCase = mockk<GetAccountsWithResourcesUseCase>()
+    private val getAccountsWithAssetsUseCase = mockk<GetAccountsWithAssetsUseCase>()
     private val getResourcesUseCase = mockk<GetResourcesUseCase>()
     private val getResourcesMetadataUseCase = mockk<GetResourcesMetadataUseCase>()
     private val getProfileUseCase = mockk<GetProfileUseCase>()
@@ -120,9 +121,9 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
         )
     )
     private val sampleXrdResource = Resource.FungibleResource(
-        resourceAddress = "addr_xrd",
+        resourceAddress = XrdResource.address(),
         ownedAmount = BigDecimal.TEN,
-        symbolMetadataItem = SymbolMetadataItem("XRD")
+        symbolMetadataItem = SymbolMetadataItem(XrdResource.SYMBOL)
     )
 
     @Before
@@ -177,26 +178,25 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
         )
         every { getProfileUseCase() } returns flowOf(profile(accounts = listOf(fromAccount) + otherAccounts))
         coEvery {
-            getAccountsWithResourcesUseCase(
+            getAccountsWithAssetsUseCase(
                 accounts = any(),
                 isRefreshing = false
             )
         } returns com.babylon.wallet.android.domain.common.Result.Success(
             listOf(
-                AccountWithResources(
+                AccountWithAssets(
                     account = sampleProfile.currentNetwork.accounts[0],
-                    resources = Resources(
-                        fungibleResources = listOf(sampleXrdResource),
-                        nonFungibleResources = emptyList(),
+                    assets = Assets(
+                        fungibles = listOf(sampleXrdResource),
+                        nonFungibles = emptyList(),
                         poolUnits = emptyList()
                     )
                 ),
-                AccountWithResources(
+                AccountWithAssets(
                     account = sampleProfile.currentNetwork.accounts[0],
-                    resources = Resources(
-                        fungibleResources = emptyList(),
-                        nonFungibleResources = emptyList(),
-                        poolUnits = emptyList()
+                    assets = Assets(
+                        fungibles = emptyList(),
+                        nonFungibles = emptyList()
                     )
                 )
             )
@@ -214,7 +214,7 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
     override fun initVM(): TransactionReviewViewModel {
         return TransactionReviewViewModel(
             transactionClient = transactionClient,
-            getAccountsWithResourcesUseCase = getAccountsWithResourcesUseCase,
+            getAccountsWithAssetsUseCase = getAccountsWithAssetsUseCase,
             getResourcesMetadataUseCase = getResourcesMetadataUseCase,
             getProfileUseCase = getProfileUseCase,
             getTransactionBadgesUseCase = getTransactionBadgesUseCase,

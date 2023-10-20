@@ -1,5 +1,7 @@
 package com.babylon.wallet.android.domain.model
 
+import com.babylon.wallet.android.domain.model.resources.Resource
+
 data class DAppWithMetadataAndAssociatedResources(
     val dAppWithMetadata: DAppWithMetadata,
     val resources: DAppResources,

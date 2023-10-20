@@ -20,15 +20,15 @@ import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
-import com.babylon.wallet.android.domain.model.Resource
-import com.babylon.wallet.android.domain.model.Resources
+import com.babylon.wallet.android.domain.model.assets.Assets
+import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.presentation.account.composable.EmptyResourcesContent
 import com.babylon.wallet.android.presentation.transfer.assets.ResourceTab
 
 @Composable
-fun NonFungibleResourcesColumn(
+fun NonFungibleAssetsColumn(
     modifier: Modifier = Modifier,
-    resources: Resources?,
+    assets: Assets?,
     contentPadding: PaddingValues = PaddingValues(
         start = RadixTheme.dimensions.paddingMedium,
         end = RadixTheme.dimensions.paddingMedium,
@@ -37,7 +37,7 @@ fun NonFungibleResourcesColumn(
     ),
     nftItem: @Composable (Resource.NonFungibleResource, Resource.NonFungibleResource.Item) -> Unit,
 ) {
-    val collections = resources?.nonFungibleResources.orEmpty()
+    val collections = assets?.nonFungibles.orEmpty()
     val collapsedState = remember(collections) {
         collections.map { true }.toMutableStateList()
     }

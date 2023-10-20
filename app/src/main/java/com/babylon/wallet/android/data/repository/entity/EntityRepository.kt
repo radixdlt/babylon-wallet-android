@@ -41,20 +41,23 @@ import com.babylon.wallet.android.domain.common.map
 import com.babylon.wallet.android.domain.common.onValue
 import com.babylon.wallet.android.domain.common.switchMap
 import com.babylon.wallet.android.domain.common.value
-import com.babylon.wallet.android.domain.model.AccountWithResources
-import com.babylon.wallet.android.domain.model.Resource
-import com.babylon.wallet.android.domain.model.Resources
-import com.babylon.wallet.android.domain.model.ValidatorDetail
-import com.babylon.wallet.android.domain.model.ValidatorWithStakeResources
-import com.babylon.wallet.android.domain.model.ValidatorsWithStakeResources
-import com.babylon.wallet.android.domain.model.metadata.ClaimAmountMetadataItem
-import com.babylon.wallet.android.domain.model.metadata.DescriptionMetadataItem
-import com.babylon.wallet.android.domain.model.metadata.IconUrlMetadataItem
-import com.babylon.wallet.android.domain.model.metadata.MetadataItem
-import com.babylon.wallet.android.domain.model.metadata.MetadataItem.Companion.consume
-import com.babylon.wallet.android.domain.model.metadata.NameMetadataItem
-import com.babylon.wallet.android.domain.model.metadata.OwnerKeyHashesMetadataItem
-import com.babylon.wallet.android.domain.model.metadata.StringMetadataItem
+import com.babylon.wallet.android.domain.model.assets.AccountWithAssets
+import com.babylon.wallet.android.domain.model.assets.Assets
+import com.babylon.wallet.android.domain.model.assets.LiquidStakeUnit
+import com.babylon.wallet.android.domain.model.assets.PoolUnit
+import com.babylon.wallet.android.domain.model.assets.StakeClaim
+import com.babylon.wallet.android.domain.model.assets.ValidatorDetail
+import com.babylon.wallet.android.domain.model.assets.ValidatorWithStakeResources
+import com.babylon.wallet.android.domain.model.assets.ValidatorsWithStakeResources
+import com.babylon.wallet.android.domain.model.resources.Resource
+import com.babylon.wallet.android.domain.model.resources.metadata.ClaimAmountMetadataItem
+import com.babylon.wallet.android.domain.model.resources.metadata.DescriptionMetadataItem
+import com.babylon.wallet.android.domain.model.resources.metadata.IconUrlMetadataItem
+import com.babylon.wallet.android.domain.model.resources.metadata.MetadataItem
+import com.babylon.wallet.android.domain.model.resources.metadata.MetadataItem.Companion.consume
+import com.babylon.wallet.android.domain.model.resources.metadata.NameMetadataItem
+import com.babylon.wallet.android.domain.model.resources.metadata.OwnerKeyHashesMetadataItem
+import com.babylon.wallet.android.domain.model.resources.metadata.StringMetadataItem
 import rdx.works.profile.data.model.pernetwork.Network
 import timber.log.Timber
 import java.io.IOException
@@ -63,13 +66,13 @@ import javax.inject.Inject
 
 interface EntityRepository {
 
-    suspend fun getAccountsWithResources(
+    suspend fun getAccountsWithAssets(
         accounts: List<Network.Account>,
         // we pass a combination of fungible AND non fungible explicit metadata keys
         explicitMetadataForAssets: Set<ExplicitMetadataKey> = ExplicitMetadataKey.forAssets,
         isNftItemDataNeeded: Boolean = true,
         isRefreshing: Boolean = true
-    ): Result<List<AccountWithResources>>
+    ): Result<List<AccountWithAssets>>
 
     suspend fun getResources(
         resourceAddresses: List<String>,
@@ -89,12 +92,12 @@ class EntityRepositoryImpl @Inject constructor(
     private val cache: HttpCache
 ) : EntityRepository {
 
-    override suspend fun getAccountsWithResources(
+    override suspend fun getAccountsWithAssets(
         accounts: List<Network.Account>,
         explicitMetadataForAssets: Set<ExplicitMetadataKey>,
         isNftItemDataNeeded: Boolean,
         isRefreshing: Boolean
-    ): Result<List<AccountWithResources>> {
+    ): Result<List<AccountWithAssets>> {
         if (accounts.isEmpty()) return Result.Success(emptyList())
 
         val listOfEntityDetailsResponsesResult = getStateEntityDetailsResponse(
@@ -133,13 +136,13 @@ class EntityRepositoryImpl @Inject constructor(
 
             val mapOfAccountsWithLiquidStakeUnitResources = mapOfAccountsWithFungibleResources.mapValues { fungibleResources ->
                 fungibleResources.value.filter { validatorResourceAddresses.contains(it.resourceAddress) }.map {
-                    Resource.LiquidStakeUnitResource(it)
+                    LiquidStakeUnit(it)
                 }
             }.filter { it.value.isNotEmpty() }
             val mapOfAccountsWithStakeClaimNFT = mapOfAccountsWithNonFungibleResources.mapValues { nftResource ->
                 nftResource.value.filter {
                     validatorResourceAddresses.contains(it.resourceAddress)
-                }.map { Resource.StakeClaimResource(it) }
+                }.map { StakeClaim(it) }
             }.filter { it.value.isNotEmpty() }
             val mapOfAccountsWithPoolUnits = mapOfAccountsWithFungibleResources.mapValues { fungibleResources ->
                 fungibleResources.value.filter { poolAddresses.contains(it.poolAddress) }.map { poolUnitResource ->
@@ -149,7 +152,7 @@ class EntityRepositoryImpl @Inject constructor(
                             mapToFungibleResource(it)
                         }
                     }.orEmpty()
-                    Resource.PoolUnitResource(poolUnitResource, poolResources)
+                    PoolUnit(poolUnitResource, poolResources)
                 }
             }.filter { it.value.isNotEmpty() }
 
@@ -172,12 +175,12 @@ class EntityRepositoryImpl @Inject constructor(
             // build result list of accounts with resources
             val listOfAccountsWithResources = accounts.map { account ->
                 val metaDataItems = mapOfAccountsWithMetadata[account.address].orEmpty().toMutableList()
-                AccountWithResources(
+                AccountWithAssets(
                     account = account,
                     accountTypeMetadataItem = metaDataItems.consume(),
-                    resources = Resources(
-                        fungibleResources = mapOfAccountsWithFungibleResources[account.address].orEmpty().sorted(),
-                        nonFungibleResources = mapOfAccountsWithNonFungibleResources[account.address].orEmpty().sorted(),
+                    assets = Assets(
+                        fungibles = mapOfAccountsWithFungibleResources[account.address].orEmpty().sorted(),
+                        nonFungibles = mapOfAccountsWithNonFungibleResources[account.address].orEmpty().sorted(),
                         validatorsWithStakeResources = liquidStakeCollectionPerAccountAddress[account.address]
                             ?: ValidatorsWithStakeResources(),
                         poolUnits = mapOfAccountsWithPoolUnits[account.address].orEmpty()
@@ -257,8 +260,8 @@ class EntityRepositoryImpl @Inject constructor(
     }
 
     private fun buildMapOfAccountAddressesWithLiquidStakeResources(
-        accountAddressToLiquidStakeUnits: Map<String, List<Resource.LiquidStakeUnitResource>>,
-        accountAddressToStakeClaimNtfs: Map<String, List<Resource.StakeClaimResource>>,
+        accountAddressToLiquidStakeUnits: Map<String, List<LiquidStakeUnit>>,
+        accountAddressToStakeClaimNtfs: Map<String, List<StakeClaim>>,
         validatorDetailsList: List<StateEntityDetailsResponseItem>,
     ): Map<String, ValidatorsWithStakeResources> {
         if (validatorDetailsList.isEmpty()) return emptyMap()

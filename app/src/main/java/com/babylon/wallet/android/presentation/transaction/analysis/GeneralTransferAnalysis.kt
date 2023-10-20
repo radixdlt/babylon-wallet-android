@@ -1,9 +1,9 @@
 package com.babylon.wallet.android.presentation.transaction.analysis
 
 import com.babylon.wallet.android.domain.common.value
-import com.babylon.wallet.android.domain.model.Resources
-import com.babylon.wallet.android.domain.model.metadata.MetadataItem
-import com.babylon.wallet.android.domain.usecases.GetAccountsWithResourcesUseCase
+import com.babylon.wallet.android.domain.model.assets.Assets
+import com.babylon.wallet.android.domain.model.resources.metadata.MetadataItem
+import com.babylon.wallet.android.domain.usecases.GetAccountsWithAssetsUseCase
 import com.babylon.wallet.android.domain.usecases.GetResourcesMetadataUseCase
 import com.babylon.wallet.android.domain.usecases.ResolveDAppsUseCase
 import com.babylon.wallet.android.domain.usecases.transaction.GetTransactionBadgesUseCase
@@ -24,7 +24,7 @@ import rdx.works.profile.domain.defaultDepositGuarantee
 suspend fun TransactionType.GeneralTransaction.resolve(
     getTransactionBadgesUseCase: GetTransactionBadgesUseCase,
     getProfileUseCase: GetProfileUseCase,
-    getAccountsWithResourcesUseCase: GetAccountsWithResourcesUseCase,
+    getAccountsWithAssetsUseCase: GetAccountsWithAssetsUseCase,
     getResourcesMetadataUseCase: GetResourcesMetadataUseCase,
     resolveDAppsUseCase: ResolveDAppsUseCase
 ): PreviewType {
@@ -36,11 +36,11 @@ suspend fun TransactionType.GeneralTransaction.resolve(
     val allAccounts = getProfileUseCase.accountsOnCurrentNetwork().filter {
         it.address in accountWithdraws.keys || it.address in accountDeposits.keys
     }
-    val allResources = getAccountsWithResourcesUseCase(
+    val allAssets = getAccountsWithAssetsUseCase(
         accounts = allAccounts,
         isRefreshing = false
     ).value().orEmpty().mapNotNull {
-        it.resources
+        it.assets
     }
 
     val depositResourcesInvolvedInTransaction = this.accountDeposits.values.map {
@@ -56,11 +56,11 @@ suspend fun TransactionType.GeneralTransaction.resolve(
         }
     }.flatten()
 
-    val allResourcesAddresses = allResources.map { resources ->
-        val fungibleResourceAddresses = resources.fungibleResources.map { fungibleResource ->
+    val allResourcesAddresses = allAssets.map { resources ->
+        val fungibleResourceAddresses = resources.fungibles.map { fungibleResource ->
             fungibleResource.resourceAddress
         }
-        val nonFungibleResourceAddresses = resources.nonFungibleResources.map { nonFungibleResource ->
+        val nonFungibleResourceAddresses = resources.nonFungibles.map { nonFungibleResource ->
             nonFungibleResource.resourceAddress
         }
         fungibleResourceAddresses + nonFungibleResourceAddresses
@@ -77,8 +77,8 @@ suspend fun TransactionType.GeneralTransaction.resolve(
     val defaultDepositGuarantee = getProfileUseCase.defaultDepositGuarantee()
 
     return PreviewType.Transfer(
-        from = resolveFromAccounts(allResources, allAccounts),
-        to = resolveToAccounts(allResources, allAccounts, thirdPartyMetadata, defaultDepositGuarantee),
+        from = resolveFromAccounts(allAssets, allAccounts),
+        to = resolveToAccounts(allAssets, allAccounts, thirdPartyMetadata, defaultDepositGuarantee),
         badges = badges,
         dApps = dApps
     )
@@ -98,7 +98,7 @@ private suspend fun TransactionType.GeneralTransaction.resolveDApps(
 }
 
 private fun TransactionType.GeneralTransaction.resolveFromAccounts(
-    allResources: List<Resources>,
+    allResources: List<Assets>,
     allAccounts: List<Network.Account>
 ) = accountWithdraws.map { withdrawEntry ->
     val transferables = withdrawEntry.value.map {
@@ -124,14 +124,14 @@ private fun TransactionType.GeneralTransaction.resolveFromAccounts(
 }
 
 private fun TransactionType.GeneralTransaction.resolveToAccounts(
-    allResources: List<Resources>,
+    allAssets: List<Assets>,
     allAccounts: List<Network.Account>,
     thirdPartyMetadata: Map<String, List<MetadataItem>> = emptyMap(),
     defaultDepositGuarantees: Double
 ) = accountDeposits.map { depositEntry ->
     val transferables = depositEntry.value.map {
         it.toDepositingTransferableResource(
-            allResources = allResources,
+            allAssets = allAssets,
             newlyCreatedMetadata = metadataOfNewlyCreatedEntities,
             newlyCreatedEntities = addressesOfNewlyCreatedEntities,
             thirdPartyMetadata = thirdPartyMetadata,

@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.domain.model.metadata
+package com.babylon.wallet.android.domain.model.resources.metadata
 
 /**
  * The common denominator for all metadata items, either

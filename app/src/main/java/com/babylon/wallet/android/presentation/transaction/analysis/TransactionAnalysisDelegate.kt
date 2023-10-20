@@ -4,7 +4,7 @@ import com.babylon.wallet.android.data.transaction.DappRequestException
 import com.babylon.wallet.android.data.transaction.DappRequestFailure
 import com.babylon.wallet.android.data.transaction.NotaryAndSigners
 import com.babylon.wallet.android.data.transaction.TransactionClient
-import com.babylon.wallet.android.domain.usecases.GetAccountsWithResourcesUseCase
+import com.babylon.wallet.android.domain.usecases.GetAccountsWithAssetsUseCase
 import com.babylon.wallet.android.domain.usecases.GetResourcesMetadataUseCase
 import com.babylon.wallet.android.domain.usecases.GetResourcesUseCase
 import com.babylon.wallet.android.domain.usecases.ResolveDAppsUseCase
@@ -28,7 +28,7 @@ import java.math.BigDecimal
 class TransactionAnalysisDelegate(
     private val state: MutableStateFlow<State>,
     private val getProfileUseCase: GetProfileUseCase,
-    private val getAccountsWithResourcesUseCase: GetAccountsWithResourcesUseCase,
+    private val getAccountsWithAssetsUseCase: GetAccountsWithAssetsUseCase,
     private val getResourcesMetadataUseCase: GetResourcesMetadataUseCase,
     private val getResourcesUseCase: GetResourcesUseCase,
     private val getTransactionBadgesUseCase: GetTransactionBadgesUseCase,
@@ -120,19 +120,19 @@ class TransactionAnalysisDelegate(
             is TransactionType.GeneralTransaction -> transactionType.resolve(
                 getTransactionBadgesUseCase = getTransactionBadgesUseCase,
                 getProfileUseCase = getProfileUseCase,
-                getAccountsWithResourcesUseCase = getAccountsWithResourcesUseCase,
+                getAccountsWithAssetsUseCase = getAccountsWithAssetsUseCase,
                 getResourcesMetadataUseCase = getResourcesMetadataUseCase,
                 resolveDAppsUseCase = resolveDAppsUseCase
             )
 
             is TransactionType.SimpleTransfer -> transactionType.resolve(
                 getProfileUseCase = getProfileUseCase,
-                getAccountsWithResourcesUseCase = getAccountsWithResourcesUseCase
+                getAccountsWithAssetsUseCase = getAccountsWithAssetsUseCase
             )
 
             is TransactionType.Transfer -> transactionType.resolve(
                 getProfileUseCase = getProfileUseCase,
-                getAccountsWithResourcesUseCase = getAccountsWithResourcesUseCase
+                getAccountsWithAssetsUseCase = getAccountsWithAssetsUseCase
             )
 
             is TransactionType.AccountDepositSettings -> transactionType.resolve(getProfileUseCase, getResourcesUseCase)

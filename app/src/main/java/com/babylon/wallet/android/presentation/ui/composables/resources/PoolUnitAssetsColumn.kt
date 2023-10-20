@@ -25,28 +25,31 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
-import com.babylon.wallet.android.domain.model.Resource
-import com.babylon.wallet.android.domain.model.Resources
-import com.babylon.wallet.android.domain.model.ValidatorDetail
-import com.babylon.wallet.android.domain.model.ValidatorsWithStakeResources
+import com.babylon.wallet.android.domain.model.assets.Assets
+import com.babylon.wallet.android.domain.model.assets.LiquidStakeUnit
+import com.babylon.wallet.android.domain.model.assets.PoolUnit
+import com.babylon.wallet.android.domain.model.assets.StakeClaim
+import com.babylon.wallet.android.domain.model.assets.ValidatorDetail
+import com.babylon.wallet.android.domain.model.assets.ValidatorsWithStakeResources
+import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.presentation.account.composable.EmptyResourcesContent
 import com.babylon.wallet.android.presentation.transfer.assets.ResourceTab
 
 @Composable
-fun PoolUnitResourcesColumn(
+fun PoolUnitAssetsColumn(
     modifier: Modifier,
-    resources: Resources?,
+    assets: Assets?,
     contentPadding: PaddingValues = PaddingValues(
         start = RadixTheme.dimensions.paddingMedium,
         end = RadixTheme.dimensions.paddingMedium,
         top = RadixTheme.dimensions.paddingLarge,
         bottom = 100.dp
     ),
-    poolUnitItem: @Composable (Resource.PoolUnitResource) -> Unit,
-    liquidStakeItem: @Composable (Resource.LiquidStakeUnitResource, ValidatorDetail) -> Unit,
-    stakeClaimItem: @Composable (Resource.StakeClaimResource, Resource.NonFungibleResource.Item) -> Unit
+    poolUnitItem: @Composable (PoolUnit) -> Unit,
+    liquidStakeItem: @Composable (LiquidStakeUnit, ValidatorDetail) -> Unit,
+    stakeClaimItem: @Composable (StakeClaim, Resource.NonFungibleResource.Item) -> Unit
 ) {
-    var collapsedStakeState by remember(resources) {
+    var collapsedStakeState by remember(assets) {
         mutableStateOf(true)
     }
     LazyColumn(
@@ -55,8 +58,8 @@ fun PoolUnitResourcesColumn(
     ) {
         poolUnitsResources(
             collapsedState = collapsedStakeState,
-            validatorsWithStakeResources = resources?.validatorsWithStakeResources,
-            poolUnits = resources?.poolUnits.orEmpty(),
+            validatorsWithStakeResources = assets?.validatorsWithStakeResources,
+            poolUnits = assets?.poolUnits.orEmpty(),
             parentSectionClick = {
                 collapsedStakeState = !collapsedStakeState
             },
@@ -72,11 +75,11 @@ fun LazyListScope.poolUnitsResources(
     modifier: Modifier = Modifier,
     collapsedState: Boolean,
     validatorsWithStakeResources: ValidatorsWithStakeResources?,
-    poolUnits: List<Resource.PoolUnitResource>,
+    poolUnits: List<PoolUnit>,
     parentSectionClick: () -> Unit,
-    poolUnitItem: @Composable (Resource.PoolUnitResource) -> Unit,
-    liquidStakeItem: @Composable (Resource.LiquidStakeUnitResource, ValidatorDetail) -> Unit,
-    stakeClaimItem: @Composable (Resource.StakeClaimResource, Resource.NonFungibleResource.Item) -> Unit
+    poolUnitItem: @Composable (PoolUnit) -> Unit,
+    liquidStakeItem: @Composable (LiquidStakeUnit, ValidatorDetail) -> Unit,
+    stakeClaimItem: @Composable (StakeClaim, Resource.NonFungibleResource.Item) -> Unit
 ) {
     if ((validatorsWithStakeResources == null || validatorsWithStakeResources.isEmpty) && poolUnits.isEmpty()) {
         item {

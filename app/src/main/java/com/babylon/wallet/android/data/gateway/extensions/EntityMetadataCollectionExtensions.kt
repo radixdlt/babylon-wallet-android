@@ -3,7 +3,7 @@ package com.babylon.wallet.android.data.gateway.extensions
 import com.babylon.wallet.android.data.gateway.generated.models.EntityMetadataCollection
 import com.babylon.wallet.android.data.gateway.generated.models.EntityMetadataItem
 import com.babylon.wallet.android.data.gateway.model.ExplicitMetadataKey
-import com.babylon.wallet.android.domain.model.metadata.MetadataItem
+import com.babylon.wallet.android.domain.model.resources.metadata.MetadataItem
 
 fun EntityMetadataItem.toMetadataItem(): MetadataItem? {
     val explicitMetadataKey = ExplicitMetadataKey.from(key = key)
