@@ -16,6 +16,7 @@ import kotlinx.coroutines.flow.update
 import rdx.works.core.ret.BabylonManifestBuilder
 import rdx.works.core.ret.buildSafely
 import rdx.works.core.toRETDecimal
+import rdx.works.profile.data.model.extensions.hasAnyDenyDepositRule
 import rdx.works.profile.data.model.factorsources.FactorSourceKind
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.data.repository.MnemonicRepository
@@ -94,7 +95,8 @@ class PrepareManifestDelegate(
 
                     deposit(
                         targetAccount = targetAccount,
-                        bucket = bucket
+                        bucket = bucket,
+                        spendingAsset = spendingFungibleAsset
                     )
                 }
             }
@@ -126,25 +128,27 @@ class PrepareManifestDelegate(
 
                 deposit(
                     targetAccount = targetAccount,
-                    bucket = bucket
+                    bucket = bucket,
+                    spendingAsset = nft
                 )
             }
         }
     }
 
-    private suspend fun BabylonManifestBuilder.deposit(targetAccount: TargetAccount, bucket: ManifestBuilderBucket) =
-        apply {
-            val isUserAccount = targetAccount.isUserAccount
-            // TODO Temporary revert of checking if the receiving account is a ledger account
-            val isSoftwareAccount = true // !targetAccount.isLedgerAccount
+    private suspend fun BabylonManifestBuilder.deposit(
+        targetAccount: TargetAccount,
+        bucket: ManifestBuilderBucket,
+        spendingAsset: SpendingAsset
+    ) = apply {
+        val isAccountAbleToSign = targetAccount.factorSourceId?.let {
+            it.kind == FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET ||
+                (it.kind == FactorSourceKind.DEVICE && mnemonicRepository.mnemonicExist(it))
+        } ?: false
 
-            val isAccountAbleToSign = targetAccount.factorSourceId?.let {
-                it.kind == FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET ||
-                    (it.kind == FactorSourceKind.DEVICE && mnemonicRepository.mnemonicExist(it))
-            } ?: false
-
-            // we want to use try_deposit_or_abort for account that we are not controlling and are not able to sign tx
-            if (isUserAccount && isSoftwareAccount && isAccountAbleToSign) {
+        if (targetAccount is TargetAccount.Owned && isAccountAbleToSign) {
+            if (targetAccount.account.hasAnyDenyDepositRule(forSpecificAssetAddress = spendingAsset.address)) {
+                // if for example account has deny all we don't want to prevent transfer between our OWN accounts
+                // therefore ask user to sign
                 accountDeposit(
                     toAddress = Address(targetAccount.address),
                     fromBucket = bucket
@@ -155,7 +159,13 @@ class PrepareManifestDelegate(
                     fromBucket = bucket
                 )
             }
+        } else { // try_deposit_or_abort for account that we are not controlling and are not able to sign tx
+            accountTryDepositOrAbort(
+                toAddress = Address(targetAccount.address),
+                fromBucket = bucket
+            )
         }
+    }
 
     /**
      * Sums all the amount needed to be withdrawn for each fungible

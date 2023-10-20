@@ -2,7 +2,6 @@ package rdx.works.profile.data.model.apppreferences
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import rdx.works.profile.data.model.Profile
 
 @Serializable
 data class P2PLink(
@@ -33,46 +32,4 @@ data class P2PLink(
             displayName = displayName
         )
     }
-}
-
-fun Profile.addP2PLink(
-    p2pLink: P2PLink
-): Profile {
-    val updatedP2PLinks = appPreferences.p2pLinks.toMutableList()
-    updatedP2PLinks.add(
-        p2pLink
-    )
-
-    val newAppPreferences = AppPreferences(
-        transaction = appPreferences.transaction,
-        display = appPreferences.display,
-        security = appPreferences.security,
-        gateways = appPreferences.gateways,
-        p2pLinks = updatedP2PLinks.toList()
-    )
-
-    return this.copy(
-        appPreferences = newAppPreferences,
-        networks = networks,
-    )
-}
-
-fun Profile.deleteP2PLink(connectionPassword: String): Profile {
-    val updatedP2PLinks = appPreferences.p2pLinks.toMutableList()
-    updatedP2PLinks.removeIf { p2pLink ->
-        p2pLink.connectionPassword == connectionPassword
-    }
-
-    val newAppPreferences = AppPreferences(
-        transaction = appPreferences.transaction,
-        display = appPreferences.display,
-        security = appPreferences.security,
-        gateways = appPreferences.gateways,
-        p2pLinks = updatedP2PLinks.toList()
-    )
-
-    return this.copy(
-        appPreferences = newAppPreferences,
-        networks = networks,
-    )
 }

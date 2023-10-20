@@ -24,10 +24,10 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.UUIDGenerator
 import rdx.works.core.mapWhen
+import rdx.works.profile.data.model.extensions.factorSourceId
 import rdx.works.profile.data.model.factorsources.FactorSource
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.data.repository.MnemonicRepository
-import rdx.works.profile.data.utils.factorSourceId
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.accountOnCurrentNetwork
 import java.math.BigDecimal
@@ -402,12 +402,6 @@ sealed class TargetAccount {
             is Owned -> assets.isNotEmpty() && assets.all { it.isValidForSubmission }
             is Skeleton -> assets.isEmpty()
         }
-
-    val isUserAccount: Boolean
-        get() = this is Owned
-
-    val isLedgerAccount: Boolean
-        get() = (this as? Owned)?.account?.isLedgerAccount == true
 
     val factorSourceId: FactorSource.FactorSourceID.FromHash?
         get() = (this as? Owned)?.account?.factorSourceId() as? FactorSource.FactorSourceID.FromHash

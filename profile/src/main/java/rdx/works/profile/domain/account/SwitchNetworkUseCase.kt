@@ -4,8 +4,8 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
 import rdx.works.profile.data.model.apppreferences.Radix
-import rdx.works.profile.data.model.apppreferences.changeGateway
 import rdx.works.profile.data.model.currentNetwork
+import rdx.works.profile.data.model.extensions.changeGateway
 import rdx.works.profile.data.model.pernetwork.addNetworkIfDoesNotExist
 import rdx.works.profile.data.repository.ProfileRepository
 import rdx.works.profile.data.repository.profile

@@ -2,8 +2,7 @@ package rdx.works.profile.data.model.apppreferences
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import rdx.works.profile.data.model.Profile
-import java.net.URI
+import rdx.works.profile.data.model.extensions.containsGateway
 
 @Serializable
 data class Gateways(
@@ -37,36 +36,5 @@ data class Gateways(
             currentGatewayUrl = Radix.Gateway.mainnet.url,
             saved = listOf(Radix.Gateway.mainnet, Radix.Gateway.stokenet)
         )
-    }
-}
-
-fun Profile.changeGateway(
-    gateway: Radix.Gateway
-): Profile {
-    val gateways = appPreferences.gateways.changeCurrent(gateway)
-    val appPreferences = appPreferences.copy(gateways = gateways)
-    return copy(appPreferences = appPreferences)
-}
-
-fun Profile.addGateway(
-    gateway: Radix.Gateway
-): Profile {
-    val updatedGateways = appPreferences.gateways.add(gateway)
-    return copy(appPreferences = appPreferences.copy(gateways = updatedGateways))
-}
-
-fun Profile.deleteGateway(
-    gateway: Radix.Gateway
-): Profile {
-    val updatedGateways = appPreferences.gateways.delete(gateway)
-    return copy(appPreferences = appPreferences.copy(gateways = updatedGateways))
-}
-
-fun List<Radix.Gateway>.containsGateway(gateway: Radix.Gateway): Boolean {
-    return this.any {
-        val existingGatewayUri = URI.create(it.url.removeSuffix("/"))
-        val gatewayUri = URI.create(gateway.url.removeSuffix("/"))
-
-        it.network.id == gateway.network.id && gatewayUri.equals(existingGatewayUri)
     }
 }

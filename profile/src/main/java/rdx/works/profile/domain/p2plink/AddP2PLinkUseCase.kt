@@ -2,7 +2,7 @@ package rdx.works.profile.domain.p2plink
 
 import kotlinx.coroutines.flow.first
 import rdx.works.profile.data.model.apppreferences.P2PLink
-import rdx.works.profile.data.model.apppreferences.addP2PLink
+import rdx.works.profile.data.model.extensions.addP2PLink
 import rdx.works.profile.data.repository.ProfileRepository
 import rdx.works.profile.data.repository.profile
 import javax.inject.Inject

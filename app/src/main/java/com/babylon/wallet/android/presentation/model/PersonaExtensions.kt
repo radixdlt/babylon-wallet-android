@@ -113,6 +113,27 @@ fun PersonaData.PersonaDataField.Name.Variant.toVariantDTO(): PersonaDataName.Va
     }
 }
 
+fun PersonaData.PersonaDataField.sortOrderInt(): Int {
+    return kind.ordinal
+}
+
+@Suppress("TooGenericExceptionThrown")
+fun PersonaData.PersonaDataField.Kind.empty(): IdentifiedEntry<PersonaData.PersonaDataField> {
+    val value = when (this) {
+        PersonaData.PersonaDataField.Kind.Name -> PersonaData.PersonaDataField.Name(
+            variant = PersonaData.PersonaDataField.Name.Variant.Western,
+            given = "",
+            family = "",
+            nickname = ""
+        )
+
+        PersonaData.PersonaDataField.Kind.EmailAddress -> PersonaData.PersonaDataField.Email("")
+        PersonaData.PersonaDataField.Kind.PhoneNumber -> PersonaData.PersonaDataField.PhoneNumber("")
+        else -> throw RuntimeException("Field $this not supported")
+    }
+    return IdentifiedEntry.init(value)
+}
+
 fun Network.Persona.getPersonaDataForFieldKinds(requiredPersonaFields: List<RequiredPersonaField>): PersonaData {
     return PersonaData(
         name = if (requiredPersonaFields.any { it.kind == PersonaData.PersonaDataField.Kind.Name }) personaData.name else null,
