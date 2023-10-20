@@ -2,7 +2,9 @@ package com.babylon.wallet.android.presentation.common
 
 import com.babylon.wallet.android.presentation.model.PersonaDisplayNameFieldWrapper
 import com.babylon.wallet.android.presentation.model.PersonaFieldWrapper
+import com.babylon.wallet.android.presentation.model.empty
 import com.babylon.wallet.android.presentation.model.isValid
+import com.babylon.wallet.android.presentation.model.sortOrderInt
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.persistentListOf
@@ -16,8 +18,6 @@ import rdx.works.profile.data.model.pernetwork.IdentifiedEntry
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.data.model.pernetwork.PersonaData
 import rdx.works.profile.data.model.pernetwork.PersonaDataEntryID
-import rdx.works.profile.data.utils.empty
-import rdx.works.profile.data.utils.sortOrderInt
 
 interface PersonaEditable {
     val personaEditState: StateFlow<PersonaEditLogicState>

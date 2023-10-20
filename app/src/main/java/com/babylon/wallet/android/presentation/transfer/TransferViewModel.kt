@@ -24,11 +24,10 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.UUIDGenerator
 import rdx.works.core.mapWhen
+import rdx.works.profile.data.model.extensions.factorSourceId
 import rdx.works.profile.data.model.factorsources.FactorSource
 import rdx.works.profile.data.model.pernetwork.Network
-import rdx.works.profile.data.model.pernetwork.Network.Account.OnLedgerSettings.ThirdPartyDeposits
 import rdx.works.profile.data.repository.MnemonicRepository
-import rdx.works.profile.data.utils.factorSourceId
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.accountOnCurrentNetwork
 import java.math.BigDecimal
@@ -472,22 +471,6 @@ sealed class TargetAccount {
     ) : TargetAccount() {
         override val address: String
             get() = account.address
-
-        fun hasAnyDenyDepositRule(forSpecificAssetAddress: String): Boolean {
-            val thirdPartyDeposits = this.account.onLedgerSettings.thirdPartyDeposits
-
-            val hasDenyAll = thirdPartyDeposits.depositRule == ThirdPartyDeposits.DepositRule.DenyAll
-            val hasDenyExceptionRuleForAsset = thirdPartyDeposits.assetsExceptionList.any {
-                it.exceptionRule == Network.Account.OnLedgerSettings.ThirdPartyDeposits.DepositAddressExceptionRule.Deny &&
-                    it.address == forSpecificAssetAddress
-            }
-
-            if (hasDenyAll || hasDenyExceptionRuleForAsset) {
-                return true
-            }
-
-            return false
-        }
     }
 }
 

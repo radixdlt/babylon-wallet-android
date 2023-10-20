@@ -3,7 +3,7 @@ package rdx.works.profile.gateways
 import org.junit.Assert
 import org.junit.Test
 import rdx.works.profile.data.model.apppreferences.Radix
-import rdx.works.profile.data.model.apppreferences.containsGateway
+import rdx.works.profile.data.model.extensions.containsGateway
 
 class ExtensionsTest {
 

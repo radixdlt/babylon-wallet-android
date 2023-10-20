@@ -1,7 +1,7 @@
 package rdx.works.profile.domain.security
 
 import kotlinx.coroutines.flow.first
-import rdx.works.profile.data.model.apppreferences.updateDeveloperMode
+import rdx.works.profile.data.model.extensions.updateDeveloperMode
 import rdx.works.profile.data.repository.ProfileRepository
 import rdx.works.profile.data.repository.profile
 import javax.inject.Inject

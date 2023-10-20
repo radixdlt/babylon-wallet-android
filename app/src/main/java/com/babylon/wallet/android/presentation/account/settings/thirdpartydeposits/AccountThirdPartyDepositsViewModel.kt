@@ -31,10 +31,10 @@ import rdx.works.core.UUIDGenerator
 import rdx.works.core.mapWhen
 import rdx.works.core.ret.BabylonManifestBuilder
 import rdx.works.core.ret.buildSafely
+import rdx.works.profile.data.model.extensions.toRETDepositRule
+import rdx.works.profile.data.model.extensions.toRETResourcePreference
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.data.model.pernetwork.Network.Account.OnLedgerSettings.ThirdPartyDeposits
-import rdx.works.profile.data.utils.toRETDepositRule
-import rdx.works.profile.data.utils.toRETResourcePreference
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.UpdateProfileThirdPartySettingsUseCase
 import rdx.works.profile.domain.accountsOnCurrentNetwork

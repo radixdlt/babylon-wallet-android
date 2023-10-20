@@ -10,7 +10,7 @@ import rdx.works.profile.data.model.MnemonicWithPassphrase
 import rdx.works.profile.data.model.Profile
 import rdx.works.profile.data.model.apppreferences.P2PLink
 import rdx.works.profile.data.model.apppreferences.Radix
-import rdx.works.profile.data.model.apppreferences.addP2PLink
+import rdx.works.profile.data.model.extensions.addP2PLink
 import rdx.works.profile.data.model.factorsources.DeviceFactorSource
 import rdx.works.profile.data.model.pernetwork.Network.Account.Companion.initAccountWithDeviceFactorSource
 import rdx.works.profile.data.model.pernetwork.Network.Persona.Companion.init
@@ -19,7 +19,7 @@ import rdx.works.profile.data.model.pernetwork.addPersona
 import rdx.works.profile.data.model.pernetwork.nextAccountIndex
 import rdx.works.profile.data.model.pernetwork.nextPersonaIndex
 import rdx.works.profile.data.repository.MnemonicRepository
-import rdx.works.profile.data.utils.renameAccountDisplayName
+import rdx.works.profile.data.model.extensions.renameAccountDisplayName
 import rdx.works.profile.domain.TestData
 
 class ProfileGenerationTest {

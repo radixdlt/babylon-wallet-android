@@ -10,6 +10,7 @@ import rdx.works.core.PUBLIC_KEY_HASH_LENGTH
 import rdx.works.core.toByteArray
 import rdx.works.profile.data.model.ProfileState
 import rdx.works.profile.data.model.currentNetwork
+import rdx.works.profile.data.model.extensions.factorSourceId
 import rdx.works.profile.data.model.factorsources.DeviceFactorSource
 import rdx.works.profile.data.model.factorsources.EntityFlag
 import rdx.works.profile.data.model.factorsources.FactorSource
@@ -19,7 +20,6 @@ import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.data.model.pernetwork.nextAccountIndex
 import rdx.works.profile.data.repository.ProfileRepository
 import rdx.works.profile.data.repository.profile
-import rdx.works.profile.data.utils.factorSourceId
 import rdx.works.profile.derivation.model.KeyType
 import rdx.works.profile.derivation.model.NetworkId
 import javax.inject.Inject

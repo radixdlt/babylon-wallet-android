@@ -7,13 +7,13 @@ import kotlinx.coroutines.flow.map
 import rdx.works.core.mapWhen
 import rdx.works.profile.data.model.Profile
 import rdx.works.profile.data.model.currentGateway
+import rdx.works.profile.data.model.extensions.toSharedPersonaData
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.data.model.pernetwork.PersonaData
 import rdx.works.profile.data.model.pernetwork.PersonaDataEntryID
 import rdx.works.profile.data.model.pernetwork.RequestedNumber
 import rdx.works.profile.data.model.pernetwork.Shared
 import rdx.works.profile.data.model.pernetwork.ensurePersonaDataExist
-import rdx.works.profile.data.utils.toSharedPersonaData
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.personaOnCurrentNetwork
 import timber.log.Timber

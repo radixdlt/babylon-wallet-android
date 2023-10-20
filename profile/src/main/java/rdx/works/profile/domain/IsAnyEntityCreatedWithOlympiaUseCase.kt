@@ -1,8 +1,8 @@
 package rdx.works.profile.domain
 
 import kotlinx.coroutines.flow.firstOrNull
-import rdx.works.profile.data.utils.factorSourceId
-import rdx.works.profile.data.utils.usesCurve25519
+import rdx.works.profile.data.model.extensions.factorSourceId
+import rdx.works.profile.data.model.extensions.usesCurve25519
 import javax.inject.Inject
 
 class IsAnyEntityCreatedWithOlympiaUseCase @Inject constructor(

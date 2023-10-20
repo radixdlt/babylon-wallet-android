@@ -2,7 +2,7 @@ package rdx.works.profile.domain.gateway
 
 import kotlinx.coroutines.flow.first
 import rdx.works.profile.data.model.apppreferences.Radix
-import rdx.works.profile.data.model.apppreferences.changeGateway
+import rdx.works.profile.data.model.extensions.changeGateway
 import rdx.works.profile.data.repository.ProfileRepository
 import rdx.works.profile.data.repository.profile
 import javax.inject.Inject

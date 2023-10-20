@@ -3,7 +3,7 @@ package rdx.works.profile.domain.backup
 import rdx.works.core.InstantGenerator
 import rdx.works.core.preferences.PreferencesManager
 import rdx.works.profile.data.model.apppreferences.Radix
-import rdx.works.profile.data.model.apppreferences.changeGateway
+import rdx.works.profile.data.model.extensions.changeGateway
 import rdx.works.profile.data.repository.BackupProfileRepository
 import rdx.works.profile.data.repository.DeviceInfoRepository
 import rdx.works.profile.data.repository.ProfileRepository

@@ -1,7 +1,7 @@
 package rdx.works.profile.domain.backup
 
 import kotlinx.coroutines.flow.first
-import rdx.works.profile.data.model.apppreferences.updateCloudSyncEnabled
+import rdx.works.profile.data.model.extensions.updateCloudSyncEnabled
 import rdx.works.profile.data.repository.ProfileRepository
 import rdx.works.profile.data.repository.profile
 import javax.inject.Inject
