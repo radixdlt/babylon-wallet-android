@@ -3,9 +3,11 @@ package com.babylon.wallet.android.presentation.settings.appsettings.entityhidin
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.material3.Divider
@@ -22,6 +24,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixSecondaryButton
@@ -96,18 +99,16 @@ private fun HiddenEntitiesContent(
         ) {
             Divider(color = RadixTheme.colors.gray5)
             Text(
-                modifier = Modifier.padding(
-                    vertical = RadixTheme.dimensions.paddingMedium,
-                    horizontal = RadixTheme.dimensions.paddingDefault
-                ),
+                modifier = Modifier.padding(RadixTheme.dimensions.paddingDefault),
                 text = stringResource(R.string.appSettings_entityHiding_info),
                 style = RadixTheme.typography.body1Regular,
                 color = RadixTheme.colors.gray2
             )
+            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSmall))
             Text(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(RadixTheme.dimensions.paddingMedium),
+                    .padding(horizontal = RadixTheme.dimensions.paddingMedium),
                 text = stringResource(
                     if (hiddenAccounts == 1) {
                         R.string.appSettings_entityHiding_hiddenAccount
@@ -116,14 +117,14 @@ private fun HiddenEntitiesContent(
                     },
                     hiddenAccounts
                 ),
-                style = RadixTheme.typography.body1Header,
+                style = RadixTheme.typography.body2Header.copy(fontSize = 16.sp),
                 color = RadixTheme.colors.gray2,
                 textAlign = TextAlign.Center
             )
             Text(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(RadixTheme.dimensions.paddingMedium),
+                    .padding(horizontal = RadixTheme.dimensions.paddingMedium),
                 text = stringResource(
                     if (hiddenPersonas == 1) {
                         R.string.appSettings_entityHiding_hiddenPersona
@@ -132,15 +133,13 @@ private fun HiddenEntitiesContent(
                     },
                     hiddenPersonas
                 ),
-                style = RadixTheme.typography.body1Header,
+                style = RadixTheme.typography.body2Header.copy(fontSize = 16.sp),
                 color = RadixTheme.colors.gray2,
                 textAlign = TextAlign.Center
             )
+            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSmall))
             Text(
-                modifier = Modifier.padding(
-                    vertical = RadixTheme.dimensions.paddingMedium,
-                    horizontal = RadixTheme.dimensions.paddingDefault
-                ),
+                modifier = Modifier.padding(RadixTheme.dimensions.paddingDefault),
                 text = stringResource(R.string.appSettings_entityHiding_unhideAllSection),
                 style = RadixTheme.typography.body1Regular,
                 color = RadixTheme.colors.gray2
