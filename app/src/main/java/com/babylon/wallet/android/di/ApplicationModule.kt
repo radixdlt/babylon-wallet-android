@@ -8,8 +8,8 @@ import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.preferencesDataStore
 import com.babylon.wallet.android.data.repository.cache.CacheClient
 import com.babylon.wallet.android.data.repository.cache.EncryptedDiskCacheClient
-import com.babylon.wallet.android.data.repository.cache.StateDao
-import com.babylon.wallet.android.data.repository.cache.StateDatabase
+import com.babylon.wallet.android.data.repository.cache.database.StateDao
+import com.babylon.wallet.android.data.repository.cache.database.StateDatabase
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn

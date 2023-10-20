@@ -200,9 +200,6 @@ data class WalletUiState(
     val isLoading: Boolean
         get() = accountsWithResources == null && loading
 
-    val isLoadingAssets: Boolean
-        get() = accountsWithResources != null && accountsWithResources.none { it.assets != null } && loading
-
     /**
      * Used in pull to refresh mode.
      */

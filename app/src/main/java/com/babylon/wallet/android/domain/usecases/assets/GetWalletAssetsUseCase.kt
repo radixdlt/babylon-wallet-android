@@ -10,6 +10,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import rdx.works.profile.data.model.pernetwork.Network
+import timber.log.Timber
 import javax.inject.Inject
 
 class GetWalletAssetsUseCase @Inject constructor(
@@ -19,17 +20,20 @@ class GetWalletAssetsUseCase @Inject constructor(
 
     operator fun invoke(accounts: List<Network.Account>): Flow<List<AccountWithAssets>> {
         return stateRepository.observeAccountsResources(accounts).map { accountsAndResources ->
+            Timber.tag("Bakos").d("Received in UI: ${accountsAndResources.keys.map { it.displayName }}")
             accounts.map { account ->
                 val resources = accountsAndResources[account]
 
                 AccountWithAssets(
                     account = account,
-                    assets = Assets(
-                        fungibles = resources?.fungibles.orEmpty(),
-                        nonFungibles = resources?.nonFungibles.orEmpty(),
-                        poolUnits = listOf(),
-                        validatorsWithStakeResources = ValidatorsWithStakeResources()
-                    )
+                    assets = resources?.let {
+                        Assets(
+                            fungibles = it.fungibles,
+                            nonFungibles = it.nonFungibles,
+                            poolUnits = listOf(),
+                            validatorsWithStakeResources = ValidatorsWithStakeResources()
+                        )
+                    }
                 )
             }
         }

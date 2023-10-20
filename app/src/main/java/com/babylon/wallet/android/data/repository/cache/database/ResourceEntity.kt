@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.data.repository.cache
+package com.babylon.wallet.android.data.repository.cache.database
 
 import android.net.Uri
 import androidx.room.ColumnInfo
@@ -9,8 +9,11 @@ import com.babylon.wallet.android.data.gateway.extensions.divisibility
 import com.babylon.wallet.android.data.gateway.extensions.extractBehaviours
 import com.babylon.wallet.android.data.gateway.extensions.totalSupply
 import com.babylon.wallet.android.data.gateway.generated.models.FungibleResourcesCollectionItem
+import com.babylon.wallet.android.data.gateway.generated.models.NonFungibleResourcesCollectionItem
+import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponseFungibleResourceDetails
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponseItem
-import com.babylon.wallet.android.domain.model.resources.Resource
+import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponseNonFungibleResourceDetails
+import com.babylon.wallet.android.data.repository.cache.CachedEntity
 import com.babylon.wallet.android.domain.model.metadata.DAppDefinitionsMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.DescriptionMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.IconUrlMetadataItem
@@ -20,12 +23,19 @@ import com.babylon.wallet.android.domain.model.metadata.PoolMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.SymbolMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.TagsMetadataItem
 import com.babylon.wallet.android.domain.model.metadata.ValidatorMetadataItem
+import com.babylon.wallet.android.domain.model.resources.Resource
 import java.math.BigDecimal
 import java.time.Instant
 
+enum class ResourceEntityType {
+    FUNGIBLE,
+    NON_FUNGIBLE
+}
+
 @Entity
-data class FungibleResourceEntity(
+data class ResourceEntity(
     @PrimaryKey val address: String,
+    val type: ResourceEntityType,
     val name: String?,
     val symbol: String?,
     val description: String?,
@@ -45,30 +55,46 @@ data class FungibleResourceEntity(
     override val epoch: Long
 ): CachedEntity {
 
-    fun toResource(withOwnedAmount: BigDecimal? = null) = Resource.FungibleResource(
-        resourceAddress = address,
-        ownedAmount = withOwnedAmount,
-        nameMetadataItem = name?.let { NameMetadataItem(it) },
-        symbolMetadataItem = symbol?.let { SymbolMetadataItem(it) },
-        descriptionMetadataItem = description?.let { DescriptionMetadataItem(it) },
-        iconUrlMetadataItem = iconUrl?.let { IconUrlMetadataItem(Uri.parse(it)) },
-        tagsMetadataItem = tags?.let { TagsMetadataItem(tags = it.tags) },
-        behaviours = behaviours?.behaviours?.toSet().orEmpty(),
-        currentSupply = supply,
-        validatorMetadataItem = validatorAddress?.let { ValidatorMetadataItem(it) },
-        poolMetadataItem = poolAddress?.let { PoolMetadataItem(it) },
-        dAppDefinitionsMetadataItem = dAppDefinitions?.let { DAppDefinitionsMetadataItem(it.dappDefinitions) },
-        divisibility = divisibility
-    )
+    fun toResource(amount: BigDecimal): Resource = when (type) {
+        ResourceEntityType.FUNGIBLE -> Resource.FungibleResource(
+            resourceAddress = address,
+            ownedAmount = amount,
+            nameMetadataItem = name?.let { NameMetadataItem(it) },
+            symbolMetadataItem = symbol?.let { SymbolMetadataItem(it) },
+            descriptionMetadataItem = description?.let { DescriptionMetadataItem(it) },
+            iconUrlMetadataItem = iconUrl?.let { IconUrlMetadataItem(Uri.parse(it)) },
+            tagsMetadataItem = tags?.let { TagsMetadataItem(it.tags) },
+            behaviours = behaviours?.behaviours.orEmpty().toSet(),
+            currentSupply = supply,
+            validatorMetadataItem = validatorAddress?.let { ValidatorMetadataItem(it) },
+            poolMetadataItem = poolAddress?.let { PoolMetadataItem(it) },
+            dAppDefinitionsMetadataItem = dAppDefinitions?.let { DAppDefinitionsMetadataItem(it.dappDefinitions) },
+            divisibility = divisibility
+        )
+        ResourceEntityType.NON_FUNGIBLE -> Resource.NonFungibleResource(
+            resourceAddress = address,
+            amount = amount.toLong(),
+            nameMetadataItem = name?.let { NameMetadataItem(it) },
+            descriptionMetadataItem = description?.let { DescriptionMetadataItem(it) },
+            iconMetadataItem = iconUrl?.let { IconUrlMetadataItem(Uri.parse(it)) },
+            tagsMetadataItem = tags?.let { TagsMetadataItem(it.tags) },
+            behaviours= behaviours?.behaviours.orEmpty().toSet(),
+            items = emptyList(),
+            currentSupply = supply?.toInt(),
+            validatorMetadataItem = validatorAddress?.let { ValidatorMetadataItem(it) },
+            dAppDefinitionsMetadataItem = dAppDefinitions?.let { DAppDefinitionsMetadataItem(it.dappDefinitions) },
+        )
+    }
 
     companion object {
         // Response from an account state request
-        fun FungibleResourcesCollectionItem.asFungibleEntity(
+        fun FungibleResourcesCollectionItem.asEntity(
             syncInfo: SyncInfo
-        ): FungibleResourceEntity {
+        ): ResourceEntity {
             val metaDataItems = explicitMetadata?.asMetadataItems().orEmpty().toMutableList()
-            return FungibleResourceEntity(
+            return ResourceEntity(
                 address = resourceAddress,
+                type = ResourceEntityType.FUNGIBLE,
                 name = metaDataItems.consume<NameMetadataItem>()?.name,
                 symbol = metaDataItems.consume<SymbolMetadataItem>()?.symbol,
                 description = metaDataItems.consume<DescriptionMetadataItem>()?.description,
@@ -85,13 +111,43 @@ data class FungibleResourceEntity(
             )
         }
 
-        // Response from details request
-        fun StateEntityDetailsResponseItem.asEntity(
+        // Response from an account state request
+        fun NonFungibleResourcesCollectionItem.asEntity(
             syncInfo: SyncInfo
-        ): FungibleResourceEntity {
+        ): ResourceEntity {
             val metaDataItems = explicitMetadata?.asMetadataItems().orEmpty().toMutableList()
-            return FungibleResourceEntity(
+            return ResourceEntity(
+                address = resourceAddress,
+                type = ResourceEntityType.NON_FUNGIBLE,
+                name = metaDataItems.consume<NameMetadataItem>()?.name,
+                description = metaDataItems.consume<DescriptionMetadataItem>()?.description,
+                iconUrl = metaDataItems.consume<IconUrlMetadataItem>()?.url.toString(),
+                tags = metaDataItems.consume<TagsMetadataItem>()?.tags?.let { TagsColumn(tags = it) },
+                validatorAddress = metaDataItems.consume<ValidatorMetadataItem>()?.validatorAddress,
+                dAppDefinitions = metaDataItems.consume<DAppDefinitionsMetadataItem>()?.addresses?.let { DappDefinitionsColumn(it) },
+                behaviours = null,
+                supply = null,
+                synced = syncInfo.synced,
+                epoch = syncInfo.epoch,
+                divisibility = null,
+                poolAddress = null,
+                symbol = null,
+            )
+        }
+
+        // Response from details request
+        fun StateEntityDetailsResponseItem.asResourceEntity(
+            syncInfo: SyncInfo
+        ): ResourceEntity {
+            val metaDataItems = explicitMetadata?.asMetadataItems().orEmpty().toMutableList()
+            val type = when (details) {
+                is StateEntityDetailsResponseFungibleResourceDetails -> ResourceEntityType.FUNGIBLE
+                is StateEntityDetailsResponseNonFungibleResourceDetails -> ResourceEntityType.NON_FUNGIBLE
+                else -> ResourceEntityType.FUNGIBLE // TODO CHECK THAT
+            }
+            return ResourceEntity(
                 address = address,
+                type = type,
                 name = metaDataItems.consume<NameMetadataItem>()?.name,
                 symbol = metaDataItems.consume<SymbolMetadataItem>()?.symbol,
                 description = metaDataItems.consume<DescriptionMetadataItem>()?.description,

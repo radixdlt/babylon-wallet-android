@@ -3,72 +3,98 @@ package com.babylon.wallet.android.data.repository.state
 import com.babylon.wallet.android.data.gateway.generated.models.FungibleResourcesCollectionItem
 import com.babylon.wallet.android.data.gateway.generated.models.LedgerState
 import com.babylon.wallet.android.data.gateway.generated.models.NonFungibleResourcesCollectionItem
-import com.babylon.wallet.android.data.repository.cache.FungibleResourceEntity
-import com.babylon.wallet.android.data.repository.cache.NonFungibleResourceEntity
-import com.babylon.wallet.android.data.repository.cache.OwnedFungibleEntity
-import com.babylon.wallet.android.data.repository.cache.OwnedFungibleEntity.Companion.asEntityPair
-import com.babylon.wallet.android.data.repository.cache.OwnedNonFungibleEntity
-import com.babylon.wallet.android.data.repository.cache.OwnedNonFungibleEntity.Companion.asEntityPair
-import com.babylon.wallet.android.data.repository.cache.StateDao
-import com.babylon.wallet.android.data.repository.cache.SyncInfo
+import com.babylon.wallet.android.data.repository.cache.database.AccountDetailsEntity
+import com.babylon.wallet.android.data.repository.cache.database.AccountResourcesPortfolio.Companion.asEntityPair
+import com.babylon.wallet.android.data.repository.cache.database.StateDao
+import com.babylon.wallet.android.data.repository.cache.database.SyncInfo
+import com.babylon.wallet.android.domain.model.metadata.AccountTypeMetadataItem
 import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.domain.model.resources.Resources
-import com.babylon.wallet.android.utils.truncatedHash
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.merge
 import rdx.works.core.InstantGenerator
 import rdx.works.profile.data.model.pernetwork.Network
-import timber.log.Timber
 
 class StateCacheDelegate(
     private val stateDao: StateDao
 ) {
 
     fun observeAllResources(accounts: List<Network.Account>): Flow<Map<Network.Account, Resources>> {
-        val accountAddresses = accounts.associateBy { it.address }
-        val allAddresses = accountAddresses.keys.toList()
+        val accountAddresses = accounts.map { it.address }
         return combine(
-            stateDao.observeAccountFungibles(allAddresses),
-            stateDao.observeAccountNonFungibles(allAddresses)
-        ) { ownedFungiblesPerAccount: Map<OwnedFungibleEntity, FungibleResourceEntity>,
-            ownedNonFungiblesPerAccount: Map<OwnedNonFungibleEntity, NonFungibleResourceEntity> ->
+            stateDao.observeAccountDetails(accountAddresses),
+            stateDao.observeAccountsPortfolio(accountAddresses)
+        ) { accountsDetails, accountsWithResources ->
+            accountsDetails to accountsWithResources
+        }.map { pair ->
+            val accountsDetails = pair.first
+            val accountsWithResources = pair.second
 
-            val cachedResults = mutableMapOf<
-                    Network.Account,
-                    Pair<MutableList<Resource.FungibleResource>, MutableList<Resource.NonFungibleResource>>
-            >()
-
-            ownedFungiblesPerAccount.forEach { entry ->
-                val account = accountAddresses[entry.key.accountAddress] ?: return@forEach
-                val resources = cachedResults.getOrPut(account) { mutableListOf<Resource.FungibleResource>() to mutableListOf() }
-                resources.first.add(entry.value.toResource(withOwnedAmount = entry.key.amount))
+            val result = mutableMapOf<Network.Account, MutableResources>()
+            // First collect resources for all accounts
+            accountsWithResources.forEach { accountWithResource ->
+                val account = accounts.find { it.address == accountWithResource.address } ?: return@forEach
+                when (val resource = accountWithResource.resource.toResource(accountWithResource.amount)) {
+                    is Resource.FungibleResource -> {
+                        result[account] = result.getOrDefault(account, MutableResources()).also {
+                            it.fungibles.add(resource)
+                        }
+                    }
+                    is Resource.NonFungibleResource -> {
+                        result[account] = result.getOrDefault(account, MutableResources()).also {
+                            it.nonFungibles.add(resource)
+                        }
+                    }
+                }
             }
 
-            ownedNonFungiblesPerAccount.forEach { entry ->
-                val account = accountAddresses[entry.key.accountAddress] ?: return@forEach
-                val resources = cachedResults.getOrPut(account) { mutableListOf<Resource.FungibleResource>() to mutableListOf() }
-                resources.second.add(entry.value.toResource(withOwnedAmount = entry.key.amount))
+            // Then add accounts which may have no resources but appear in account details
+            accountsDetails.forEach { accountDetails ->
+                val account = accounts.find { it.address == accountDetails.address } ?: return@forEach
+                if (!result.contains(account)) {
+                    result[account] = MutableResources()
+                }
             }
 
-            cachedResults.mapValues {
-                Resources(fungibles = it.value.first, nonFungibles = it.value.second)
+
+            result.mapValues {
+                Resources(
+                    fungibles = it.value.fungibles,
+                    nonFungibles = it.value.nonFungibles
+                )
             }
-        }
+        }.distinctUntilChanged()
     }
 
-    fun insertResources(
+    fun insertAccountDetails(
         accountAddress: String,
+        accountType: AccountTypeMetadataItem?,
         ledgerState: LedgerState,
         fungibles: List<FungibleResourcesCollectionItem>,
         nonFungibles: List<NonFungibleResourcesCollectionItem>
     ) {
         val syncInfo = SyncInfo(synced = InstantGenerator(), epoch = ledgerState.epoch)
-        stateDao.updateOwnedResources(
-            fungibles = fungibles.map { item -> item.asEntityPair(accountAddress = accountAddress, syncInfo = syncInfo) },
-            nonFungibles = nonFungibles.map { item -> item.asEntityPair(accountAddress = accountAddress, syncInfo = syncInfo) }
+
+        stateDao.updateAccountData(
+            accountDetails = AccountDetailsEntity(
+                address = accountAddress,
+                accountType = accountType?.type,
+                synced = syncInfo.synced,
+                epoch = syncInfo.epoch
+            ),
+            accountWithResources = fungibles.map { item ->
+                item.asEntityPair(accountAddress, syncInfo)
+            } + nonFungibles.map { item ->
+                item.asEntityPair(accountAddress, syncInfo)
+            }
         )
     }
 
+    private data class MutableResources(
+        val fungibles: MutableList<Resource.FungibleResource> = mutableListOf(),
+        val nonFungibles: MutableList<Resource.NonFungibleResource> = mutableListOf()
+    )
 }

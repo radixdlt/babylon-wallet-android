@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.data.repository.cache
+package com.babylon.wallet.android.data.repository.cache.database
 
 import android.content.Context
 import androidx.room.Database
@@ -8,10 +8,10 @@ import androidx.room.TypeConverters
 
 @Database(
     entities = [
-        OwnedFungibleEntity::class,
-        OwnedNonFungibleEntity::class,
-        FungibleResourceEntity::class,
-        NonFungibleResourceEntity::class,
+        AccountResourcesPortfolio::class,
+        AccountDetailsEntity::class,
+        AccountNFTsPortfolio::class,
+        ResourceEntity::class,
         NFTEntity::class
     ],
     version = 1

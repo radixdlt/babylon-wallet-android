@@ -1,19 +1,15 @@
 package com.babylon.wallet.android.data.cache
 
-import com.babylon.wallet.android.data.repository.cache.BehavioursColumn
-import com.babylon.wallet.android.data.repository.cache.DappDefinitionsColumn
-import com.babylon.wallet.android.data.repository.cache.NFTIdsColumn
-import com.babylon.wallet.android.data.repository.cache.StateDatabaseConverters
-import com.babylon.wallet.android.data.repository.cache.StringMetadataColumn
-import com.babylon.wallet.android.data.repository.cache.TagsColumn
-import com.babylon.wallet.android.domain.model.Resource
-import com.babylon.wallet.android.domain.model.Resources
-import com.babylon.wallet.android.domain.model.XrdConstants
+import com.babylon.wallet.android.data.repository.cache.database.BehavioursColumn
+import com.babylon.wallet.android.data.repository.cache.database.DappDefinitionsColumn
+import com.babylon.wallet.android.data.repository.cache.database.NFTIdsColumn
+import com.babylon.wallet.android.data.repository.cache.database.StateDatabaseConverters
+import com.babylon.wallet.android.data.repository.cache.database.StringMetadataColumn
+import com.babylon.wallet.android.data.repository.cache.database.TagsColumn
 import com.babylon.wallet.android.domain.model.behaviours.AssetBehaviour
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Test
-import java.math.BigDecimal
 
 class ProvidedConvertersTest {
 
