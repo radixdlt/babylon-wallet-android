@@ -1,12 +1,11 @@
 package com.babylon.wallet.android.presentation.settings.accountsecurity.importlegacywallet
 
-import androidx.compose.animation.AnimatedContentScope
-import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
+import androidx.navigation.compose.composable
 import com.babylon.wallet.android.presentation.navigation.markAsHighPriority
-import com.google.accompanist.navigation.animation.composable
 
 private const val ROUTE = "import_legacy_wallet_route"
 
@@ -16,7 +15,6 @@ fun NavController.importLegacyWalletScreen() {
     }
 }
 
-@OptIn(ExperimentalAnimationApi::class)
 fun NavGraphBuilder.importLegacyWalletScreen(
     onBackClick: () -> Unit
 ) {
@@ -24,10 +22,10 @@ fun NavGraphBuilder.importLegacyWalletScreen(
     composable(
         route = ROUTE,
         enterTransition = {
-            slideIntoContainer(AnimatedContentScope.SlideDirection.Left)
+            slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Left)
         },
         exitTransition = {
-            slideOutOfContainer(AnimatedContentScope.SlideDirection.Right)
+            slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Right)
         }
     ) {
         ImportLegacyWalletScreen(

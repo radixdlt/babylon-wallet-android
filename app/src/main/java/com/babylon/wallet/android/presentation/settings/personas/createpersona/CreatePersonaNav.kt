@@ -1,12 +1,13 @@
 package com.babylon.wallet.android.presentation.settings.personas.createpersona
 
-import androidx.compose.animation.AnimatedContentScope
+import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
+import androidx.navigation.compose.composable
 import com.babylon.wallet.android.presentation.navigation.markAsHighPriority
 import com.babylon.wallet.android.presentation.settings.personas.PersonasScreen
 import com.babylon.wallet.android.presentation.settings.personas.personadetail.ROUTE_PERSONA_DETAIL
@@ -41,7 +42,6 @@ fun NavController.popPersonaCreation() {
     popBackStack(entryToPop.destination.id, true)
 }
 
-@OptIn(ExperimentalAnimationApi::class)
 fun NavGraphBuilder.personaInfoScreen(
     onBackClick: () -> Unit,
     onContinueClick: () -> Unit
@@ -50,7 +50,7 @@ fun NavGraphBuilder.personaInfoScreen(
         route = ROUTE_PERSONA_INFO,
         arguments = listOf(),
         enterTransition = {
-            slideIntoContainer(AnimatedContentScope.SlideDirection.Up)
+            slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Up)
         },
         exitTransition = {
             null
@@ -79,13 +79,13 @@ fun NavGraphBuilder.createPersonaScreen(
         route = ROUTE_CREATE_PERSONA,
         arguments = listOf(),
         enterTransition = {
-            slideIntoContainer(AnimatedContentScope.SlideDirection.Up)
+            slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Up)
         },
         exitTransition = {
             null
         },
         popExitTransition = {
-            slideOutOfContainer(AnimatedContentScope.SlideDirection.Down)
+            slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Down)
         },
         popEnterTransition = {
             EnterTransition.None
@@ -109,12 +109,12 @@ fun NavGraphBuilder.personasScreen(
     composable(
         route = ROUTE_PERSONAS,
         enterTransition = {
-            slideIntoContainer(AnimatedContentScope.SlideDirection.Left)
+            slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Left)
         },
         exitTransition = {
             when (targetState.destination.route) {
                 ROUTE_PERSONAS, ROUTE_PERSONA_DETAIL, ROUTE_CREATE_PERSONA, ROUTE_PERSONA_INFO -> null
-                else -> slideOutOfContainer(AnimatedContentScope.SlideDirection.Right)
+                else -> slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Right)
             }
         },
         popEnterTransition = {

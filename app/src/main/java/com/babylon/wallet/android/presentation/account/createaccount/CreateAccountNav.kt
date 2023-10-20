@@ -1,7 +1,7 @@
 package com.babylon.wallet.android.presentation.account.createaccount
 
 import androidx.annotation.VisibleForTesting
-import androidx.compose.animation.AnimatedContentScope
+import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.SavedStateHandle
@@ -9,12 +9,12 @@ import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavOptions
 import androidx.navigation.NavType
+import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.babylon.wallet.android.presentation.account.createaccount.confirmation.ARG_REQUEST_SOURCE
 import com.babylon.wallet.android.presentation.account.createaccount.confirmation.CreateAccountRequestSource
 import com.babylon.wallet.android.presentation.navigation.markAsHighPriority
 import com.babylon.wallet.android.utils.Constants
-import com.google.accompanist.navigation.animation.composable
 
 @VisibleForTesting
 const val ARG_NETWORK_URL = "arg_network_url"
@@ -98,10 +98,10 @@ fun NavGraphBuilder.createAccountScreen(
             }
         ),
         enterTransition = {
-            slideIntoContainer(AnimatedContentScope.SlideDirection.Up)
+            slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Up)
         },
         exitTransition = {
-            slideOutOfContainer(AnimatedContentScope.SlideDirection.Down)
+            slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Down)
         }
     ) {
         CreateAccountScreen(

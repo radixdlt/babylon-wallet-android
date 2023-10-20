@@ -335,7 +335,9 @@ private fun SpecificAssetsDepositsContent(
         mutableStateOf(SpecificAssetsTab.Allowed)
     }
     val scope = rememberCoroutineScope()
-    val pagerState = rememberPagerState()
+    val pagerState = rememberPagerState(0) {
+        SpecificAssetsTab.values().size
+    }
     val snackBarHostState = remember { SnackbarHostState() }
 
     SnackbarUIMessage(
@@ -402,9 +404,8 @@ private fun SpecificAssetsDepositsContent(
                 modifier = Modifier
                     .fillMaxWidth()
                     .weight(1f),
-                pageCount = SpecificAssetsTab.values().size,
                 state = pagerState,
-                userScrollEnabled = false
+                userScrollEnabled = false,
             ) { tabIndex ->
                 when (SpecificAssetsTab.values()[tabIndex]) {
                     SpecificAssetsTab.Allowed -> {

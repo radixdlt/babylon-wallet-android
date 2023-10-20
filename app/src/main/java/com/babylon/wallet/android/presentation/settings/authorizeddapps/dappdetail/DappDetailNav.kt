@@ -1,19 +1,18 @@
 package com.babylon.wallet.android.presentation.settings.authorizeddapps.dappdetail
 
 import androidx.annotation.VisibleForTesting
-import androidx.compose.animation.AnimatedContentScope
+import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.EnterTransition
-import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.SavedStateHandle
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavType
+import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.babylon.wallet.android.domain.model.RequiredPersonaFields
 import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.presentation.settings.personas.personaedit.ROUTE_EDIT_PERSONA
-import com.google.accompanist.navigation.animation.composable
 
 @VisibleForTesting
 internal const val ARG_DAPP_ADDRESS = "dapp_definition_address"
@@ -30,7 +29,6 @@ fun NavController.dAppDetailScreen(dappDefinitionAddress: String) {
     navigate("settings_dapp_detail/$dappDefinitionAddress")
 }
 
-@OptIn(ExperimentalAnimationApi::class)
 fun NavGraphBuilder.dAppDetailScreen(
     onBackClick: () -> Unit,
     onEditPersona: (String, RequiredPersonaFields?) -> Unit,
@@ -40,16 +38,16 @@ fun NavGraphBuilder.dAppDetailScreen(
     composable(
         route = ROUTE_DAPP_DETAIL,
         enterTransition = {
-            slideIntoContainer(AnimatedContentScope.SlideDirection.Left)
+            slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Left)
         },
         exitTransition = {
             when (targetState.destination.route) {
                 ROUTE_EDIT_PERSONA -> null
-                else -> slideOutOfContainer(AnimatedContentScope.SlideDirection.Right)
+                else -> slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Right)
             }
         },
         popExitTransition = {
-            slideOutOfContainer(AnimatedContentScope.SlideDirection.Right)
+            slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Right)
         },
         popEnterTransition = {
             EnterTransition.None

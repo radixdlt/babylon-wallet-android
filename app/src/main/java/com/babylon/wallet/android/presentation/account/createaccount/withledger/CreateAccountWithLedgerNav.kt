@@ -1,17 +1,16 @@
 package com.babylon.wallet.android.presentation.account.createaccount.withledger
 
 import androidx.annotation.VisibleForTesting
-import androidx.compose.animation.AnimatedContentScope
-import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.SavedStateHandle
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavType
+import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.babylon.wallet.android.presentation.navigation.markAsHighPriority
 import com.babylon.wallet.android.utils.Constants
-import com.google.accompanist.navigation.animation.composable
 
 @VisibleForTesting
 const val ARG_NETWORK_ID = "arg_network_id"
@@ -32,7 +31,6 @@ fun NavController.createAccountWithLedger(networkId: Int = Constants.USE_CURRENT
     )
 }
 
-@OptIn(ExperimentalAnimationApi::class)
 fun NavGraphBuilder.createAccountWithLedger(
     onBackClick: () -> Unit,
     goBackToCreateAccount: () -> Unit
@@ -41,10 +39,10 @@ fun NavGraphBuilder.createAccountWithLedger(
     composable(
         route = ROUTE_CREATE_ACCOUNT_WITH_LEDGER,
         enterTransition = {
-            slideIntoContainer(AnimatedContentScope.SlideDirection.Up)
+            slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Up)
         },
         exitTransition = {
-            slideOutOfContainer(AnimatedContentScope.SlideDirection.Down)
+            slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Down)
         },
         arguments = listOf(
             navArgument(ARG_NETWORK_ID) {

@@ -1,11 +1,8 @@
-@file:OptIn(ExperimentalAnimationApi::class)
-
 package com.babylon.wallet.android.presentation.onboarding.eula
 
-import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
-import com.google.accompanist.navigation.animation.composable
+import androidx.navigation.compose.composable
 
 private const val ROUTE = "eula_screen"
 

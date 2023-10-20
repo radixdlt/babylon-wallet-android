@@ -2,12 +2,12 @@
 
 package com.babylon.wallet.android.presentation.onboarding.restore.backup
 
-import androidx.compose.animation.AnimatedContentScope
+import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
-import com.google.accompanist.navigation.animation.composable
+import androidx.navigation.compose.composable
 
 private const val ROUTE_RESTORE_FROM_BACKUP = "restore_from_backup"
 
@@ -22,10 +22,10 @@ fun NavGraphBuilder.restoreFromBackupScreen(
     composable(
         route = ROUTE_RESTORE_FROM_BACKUP,
         enterTransition = {
-            slideIntoContainer(AnimatedContentScope.SlideDirection.Up)
+            slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Up)
         },
         exitTransition = {
-            slideOutOfContainer(AnimatedContentScope.SlideDirection.Down)
+            slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Down)
         }
     ) {
         RestoreFromBackupScreen(

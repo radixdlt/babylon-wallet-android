@@ -221,7 +221,7 @@ private fun ImportLegacyWalletContent(
 ) {
     val focusManager = LocalFocusManager.current
     val cameraPermissionState = rememberPermissionState(permission = Manifest.permission.CAMERA)
-    val pagerState = rememberPagerState()
+    val pagerState = rememberPagerState(0) { pages.size }
     val scope = rememberCoroutineScope()
     var cameraVisible by remember {
         mutableStateOf(false)
@@ -325,7 +325,6 @@ private fun ImportLegacyWalletContent(
         ) { padding ->
             HorizontalPager(
                 modifier = Modifier.padding(padding),
-                pageCount = pages.size,
                 state = pagerState,
                 userScrollEnabled = false
             ) { page ->

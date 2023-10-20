@@ -1,18 +1,17 @@
 package com.babylon.wallet.android.presentation.dapp.authorized.selectpersona
 
 import androidx.annotation.VisibleForTesting
-import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.runtime.remember
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.SavedStateHandle
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavType
+import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.babylon.wallet.android.presentation.dapp.authorized.login.DAppAuthorizedLoginViewModel
 import com.babylon.wallet.android.presentation.dapp.authorized.login.Event
 import com.babylon.wallet.android.presentation.dapp.authorized.login.ROUTE_DAPP_LOGIN_AUTHORIZED_GRAPH
-import com.google.accompanist.navigation.animation.composable
 
 @VisibleForTesting
 internal const val ARG_DAPP_DEFINITION_ADDRESS = "dapp_definition_address"
@@ -29,7 +28,6 @@ fun NavController.selectPersona(
     navigate("select_persona/$dappDefinitionAddress")
 }
 
-@OptIn(ExperimentalAnimationApi::class)
 @Suppress("LongParameterList")
 fun NavGraphBuilder.selectPersona(
     navController: NavController,

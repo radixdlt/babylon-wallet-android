@@ -8,6 +8,8 @@ import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.babylon.wallet.android.presentation.account.AccountScreen
 import com.babylon.wallet.android.presentation.account.createaccount.ROUTE_CREATE_ACCOUNT
@@ -58,8 +60,6 @@ import com.babylon.wallet.android.presentation.status.transaction.transactionSta
 import com.babylon.wallet.android.presentation.transaction.transactionReviewScreen
 import com.babylon.wallet.android.presentation.transfer.transfer
 import com.babylon.wallet.android.presentation.transfer.transferScreen
-import com.google.accompanist.navigation.animation.AnimatedNavHost
-import com.google.accompanist.navigation.animation.composable
 import kotlinx.coroutines.flow.StateFlow
 import rdx.works.profile.domain.backup.BackupType
 
@@ -72,7 +72,7 @@ fun NavigationHost(
     mainUiState: StateFlow<MainUiState>,
     onCloseApp: () -> Unit,
 ) {
-    AnimatedNavHost(
+    NavHost(
         modifier = modifier,
         navController = navController,
         startDestination = startDestination

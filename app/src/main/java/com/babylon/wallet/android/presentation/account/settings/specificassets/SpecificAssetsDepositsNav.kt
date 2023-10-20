@@ -1,15 +1,15 @@
 package com.babylon.wallet.android.presentation.account.settings.specificassets
 
-import androidx.compose.animation.AnimatedContentScope
+import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.runtime.remember
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
+import androidx.navigation.compose.composable
 import com.babylon.wallet.android.presentation.account.settings.thirdpartydeposits.AccountThirdPartyDepositsViewModel
 import com.babylon.wallet.android.presentation.account.settings.thirdpartydeposits.ROUTE_ACCOUNT_THIRD_PARTY_DEPOSITS
-import com.google.accompanist.navigation.animation.composable
 
 fun NavController.specificAssets() {
     navigate("account_specific_assets_route")
@@ -20,13 +20,13 @@ fun NavGraphBuilder.specificAssets(navController: NavController, onBackClick: ()
     composable(
         route = "account_specific_assets_route",
         enterTransition = {
-            slideIntoContainer(AnimatedContentScope.SlideDirection.Left)
+            slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Left)
         },
         exitTransition = {
             null
         },
         popExitTransition = {
-            slideOutOfContainer(AnimatedContentScope.SlideDirection.Right)
+            slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Right)
         },
         popEnterTransition = {
             EnterTransition.None

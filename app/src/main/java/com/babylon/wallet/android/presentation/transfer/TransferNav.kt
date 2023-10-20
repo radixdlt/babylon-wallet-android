@@ -1,14 +1,13 @@
 package com.babylon.wallet.android.presentation.transfer
 
-import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.SavedStateHandle
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavType
+import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.babylon.wallet.android.presentation.navigation.markAsHighPriority
-import com.google.accompanist.navigation.animation.composable
 import org.jetbrains.annotations.VisibleForTesting
 
 @VisibleForTesting
@@ -25,7 +24,6 @@ fun NavController.transfer(accountId: String) {
     navigate("transfer/$accountId")
 }
 
-@OptIn(ExperimentalAnimationApi::class)
 fun NavGraphBuilder.transferScreen(
     onBackClick: () -> Unit,
 ) {
