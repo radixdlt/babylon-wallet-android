@@ -78,6 +78,16 @@ fun TransactionReviewScreen(
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val context = LocalContext.current
+    if (state.isNoMnemonicErrorVisible) {
+        BasicPromptAlertDialog(
+            finish = {
+                viewModel.dismissNoMnemonicErrorDialog()
+            },
+            title = stringResource(id = R.string.transactionReview_noMnemonicError_title),
+            text = stringResource(id = R.string.transactionReview_noMnemonicError_text),
+            dismissText = null
+        )
+    }
     TransactionPreviewContent(
         onBackClick = viewModel::onBackClick,
         state = state,
@@ -120,6 +130,7 @@ fun TransactionReviewScreen(
                     dismissText = null
                 )
             }
+
             else -> SigningStatusBottomDialog(
                 modifier = Modifier.fillMaxHeight(0.8f),
                 onDismissDialogClick = viewModel::onBackClick,
@@ -288,6 +299,7 @@ private fun TransactionPreviewContent(
                                 is PreviewType.UnacceptableManifest -> {
                                     return@AnimatedVisibility
                                 }
+
                                 is PreviewType.NonConforming -> {}
                                 is PreviewType.Transfer -> {
                                     TransactionPreviewTypeContent(

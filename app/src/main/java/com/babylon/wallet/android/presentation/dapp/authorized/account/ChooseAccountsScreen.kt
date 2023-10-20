@@ -21,10 +21,12 @@ import com.babylon.wallet.android.domain.model.metadata.NameMetadataItem
 import com.babylon.wallet.android.presentation.dapp.authorized.login.DAppAuthorizedLoginViewModel
 import com.babylon.wallet.android.presentation.dapp.authorized.login.Event
 import com.babylon.wallet.android.presentation.status.signing.SigningStatusBottomDialog
+import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.ChooseAccountContent
 import com.babylon.wallet.android.utils.biometricAuthenticate
 import com.babylon.wallet.android.utils.biometricAuthenticateSuspend
 import kotlinx.collections.immutable.persistentListOf
+import kotlinx.coroutines.flow.Flow
 
 @Composable
 fun ChooseAccountsScreen(
@@ -39,35 +41,26 @@ fun ChooseAccountsScreen(
     onPersonaDataOnetime: (Event.PersonaDataOnetime) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val context = LocalContext.current
-    LaunchedEffect(Unit) {
-        sharedViewModel.oneOffEvent.collect { event ->
-            when (event) {
-                is Event.ChooseAccounts -> onChooseAccounts(event)
-                is Event.LoginFlowCompleted -> onLoginFlowComplete()
-                is Event.PersonaDataOngoing -> onPersonaOngoingData(event)
-                is Event.PersonaDataOnetime -> onPersonaDataOnetime(event)
-                is Event.CloseLoginFlow -> onLoginFlowComplete()
-                is Event.RequestCompletionBiometricPrompt -> {
-                    if (event.requestDuringSigning) {
-                        sharedViewModel.completeRequestHandling(deviceBiometricAuthenticationProvider = {
-                            context.biometricAuthenticateSuspend()
-                        })
-                    } else {
-                        context.biometricAuthenticate { authenticated ->
-                            if (authenticated) {
-                                sharedViewModel.completeRequestHandling()
-                            }
-                        }
-                    }
-                }
-                else -> {}
-            }
-        }
-    }
-
     val state by viewModel.state.collectAsStateWithLifecycle()
     val sharedState by sharedViewModel.state.collectAsStateWithLifecycle()
+    if (sharedState.isNoMnemonicErrorVisible) {
+        BasicPromptAlertDialog(
+            finish = {
+                sharedViewModel.dismissNoMnemonicError()
+            },
+            title = stringResource(id = R.string.transactionReview_noMnemonicError_title),
+            text = stringResource(id = R.string.transactionReview_noMnemonicError_text),
+            dismissText = null
+        )
+    }
+    HandleOneOffEvents(
+        oneOffEvent = sharedViewModel.oneOffEvent,
+        onChooseAccounts = onChooseAccounts,
+        onLoginFlowComplete = onLoginFlowComplete,
+        onPersonaOngoingData = onPersonaOngoingData,
+        onPersonaDataOnetime = onPersonaDataOnetime,
+        completeRequestHandling = sharedViewModel::completeRequestHandling
+    )
     BackHandler {
         if (state.showBackButton) {
             onBackClick()
@@ -113,6 +106,44 @@ fun ChooseAccountsScreen(
             onDismissDialogClick = sharedViewModel::onDismissSigningStatusDialog,
             interactionState = it
         )
+    }
+}
+
+@Composable
+private fun HandleOneOffEvents(
+    oneOffEvent: Flow<Event>,
+    onChooseAccounts: (Event.ChooseAccounts) -> Unit,
+    onLoginFlowComplete: () -> Unit,
+    onPersonaOngoingData: (Event.PersonaDataOngoing) -> Unit,
+    onPersonaDataOnetime: (Event.PersonaDataOnetime) -> Unit,
+    completeRequestHandling: (deviceBiometricAuthenticationProvider: (suspend () -> Boolean)) -> Unit
+) {
+    val context = LocalContext.current
+    LaunchedEffect(Unit) {
+        oneOffEvent.collect { event ->
+            when (event) {
+                is Event.ChooseAccounts -> onChooseAccounts(event)
+                is Event.LoginFlowCompleted -> onLoginFlowComplete()
+                is Event.PersonaDataOngoing -> onPersonaOngoingData(event)
+                is Event.PersonaDataOnetime -> onPersonaDataOnetime(event)
+                is Event.CloseLoginFlow -> onLoginFlowComplete()
+                is Event.RequestCompletionBiometricPrompt -> {
+                    if (event.requestDuringSigning) {
+                        completeRequestHandling {
+                            context.biometricAuthenticateSuspend()
+                        }
+                    } else {
+                        context.biometricAuthenticate { authenticated ->
+                            if (authenticated) {
+                                completeRequestHandling { true }
+                            }
+                        }
+                    }
+                }
+
+                else -> {}
+            }
+        }
     }
 }
 

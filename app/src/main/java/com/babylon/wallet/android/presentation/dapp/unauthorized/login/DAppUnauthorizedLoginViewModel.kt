@@ -37,6 +37,7 @@ import kotlinx.coroutines.launch
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.data.model.pernetwork.PersonaData
 import rdx.works.profile.domain.GetProfileUseCase
+import rdx.works.profile.domain.NoMnemonicException
 import rdx.works.profile.domain.accountOnCurrentNetwork
 import rdx.works.profile.domain.gateway.GetCurrentGatewayUseCase
 import rdx.works.profile.domain.personaOnCurrentNetwork
@@ -114,6 +115,10 @@ class DAppUnauthorizedLoginViewModel @Inject constructor(
         _state.update { it.copy(interactionState = null) }
     }
 
+    fun dismissNoMnemonicError() {
+        _state.update { it.copy(isNoMnemonicErrorVisible = false) }
+    }
+
     private fun setInitialDappLoginRoute() {
         val request = request
         when {
@@ -143,17 +148,23 @@ class DAppUnauthorizedLoginViewModel @Inject constructor(
         }
     }
 
-    private suspend fun handleRequestError(exception: DappRequestException) {
-        if (exception.e is SignatureCancelledException) {
-            return
+    private suspend fun handleRequestError(exception: Throwable) {
+        if (exception is DappRequestException) {
+            if (exception.e is SignatureCancelledException) {
+                return
+            }
+            dAppMessenger.sendWalletInteractionResponseFailure(
+                remoteConnectorId = request.remoteConnectorId,
+                requestId = args.requestId,
+                error = exception.failure.toWalletErrorType(),
+                message = exception.failure.getDappMessage()
+            )
+            _state.update { it.copy(failureDialog = DAppUnauthorizedLoginUiState.FailureDialog.Open(exception)) }
+        } else {
+            if (exception is NoMnemonicException) {
+                _state.update { it.copy(isNoMnemonicErrorVisible = true) }
+            }
         }
-        dAppMessenger.sendWalletInteractionResponseFailure(
-            remoteConnectorId = request.remoteConnectorId,
-            requestId = args.requestId,
-            error = exception.failure.toWalletErrorType(),
-            message = exception.failure.getDappMessage()
-        )
-        _state.update { it.copy(failureDialog = DAppUnauthorizedLoginUiState.FailureDialog.Open(exception)) }
     }
 
     fun onAcknowledgeFailureDialog() = viewModelScope.launch {
@@ -242,9 +253,7 @@ class DAppUnauthorizedLoginViewModel @Inject constructor(
                     )
                 )
             }.onFailure { exception ->
-                if (exception is DappRequestException) {
-                    handleRequestError(exception)
-                }
+                handleRequestError(exception)
             }
         }
     }
@@ -272,7 +281,8 @@ data class DAppUnauthorizedLoginUiState(
     val selectedPersonaData: PersonaData? = null,
     val selectedAccountsOneTime: ImmutableList<AccountItemUiModel> = persistentListOf(),
     val selectedPersona: PersonaUiModel? = null,
-    val interactionState: InteractionState? = null
+    val interactionState: InteractionState? = null,
+    val isNoMnemonicErrorVisible: Boolean = false
 ) : UiState {
 
     sealed interface FailureDialog {

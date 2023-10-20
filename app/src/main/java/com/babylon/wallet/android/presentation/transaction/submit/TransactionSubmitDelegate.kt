@@ -24,6 +24,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.profile.derivation.model.NetworkId
+import rdx.works.profile.domain.NoMnemonicException
 import rdx.works.profile.domain.gateway.GetCurrentGatewayUseCase
 import timber.log.Timber
 
@@ -162,34 +163,46 @@ class TransactionSubmitDelegate(
                 )
             }
         }.onFailure { error ->
-            val dappRequestException = error as? DappRequestException
-            val cancelled = dappRequestException?.e is SignatureCancelledException
-            val failedToSign = dappRequestException?.failure is DappRequestFailure.TransactionApprovalFailure.SignCompiledTransactionIntent
-            val failedToCollectLedgerSignature = dappRequestException?.failure is DappRequestFailure.LedgerCommunicationFailure
-            if (cancelled || failedToCollectLedgerSignature || failedToSign) {
-                state.update {
-                    it.copy(
-                        isSubmitting = false,
-                        error = if (failedToSign) {
-                            UiMessage.ErrorMessage.from(dappRequestException?.failure)
+            // we always wrap exception returned from signing/submitting flow in DappRequestException
+            (error as? DappRequestException)?.let { dappRequestException ->
+                val cancelled = dappRequestException.e is SignatureCancelledException
+                val failedToSign =
+                    dappRequestException.failure is DappRequestFailure.TransactionApprovalFailure.SignCompiledTransactionIntent
+                val failedToCollectLedgerSignature = dappRequestException.failure is DappRequestFailure.LedgerCommunicationFailure
+                when {
+                    cancelled || failedToCollectLedgerSignature -> {
+                        state.update { it.copy(isSubmitting = false) }
+                        approvalJob = null
+                    }
+
+                    failedToSign -> {
+                        val noMnemonicException = dappRequestException.e is NoMnemonicException
+                        if (noMnemonicException) {
+                            state.update {
+                                it.copy(isNoMnemonicErrorVisible = true, isSubmitting = false)
+                            }
                         } else {
-                            it.error
+                            state.update {
+                                it.copy(isSubmitting = false, error = UiMessage.ErrorMessage.from(dappRequestException.failure))
+                            }
                         }
-                    )
+                        approvalJob = null
+                    }
+
+                    else -> {
+                        reportFailure(error)
+                        appEventBus.sendEvent(
+                            AppEvent.Status.Transaction.Fail(
+                                requestId = transactionRequest.requestId,
+                                transactionId = "",
+                                isInternal = transactionRequest.isInternal,
+                                errorMessage = UiMessage.ErrorMessage.from((error as? DappRequestException)?.failure),
+                                blockUntilComplete = transactionRequest.blockUntilComplete
+                            )
+                        )
+                    }
                 }
-                approvalJob = null
-                return
             }
-            reportFailure(error)
-            appEventBus.sendEvent(
-                AppEvent.Status.Transaction.Fail(
-                    requestId = transactionRequest.requestId,
-                    transactionId = "",
-                    isInternal = transactionRequest.isInternal,
-                    errorMessage = UiMessage.ErrorMessage.from((error as? DappRequestException)?.failure),
-                    blockUntilComplete = transactionRequest.blockUntilComplete
-                )
-            )
         }
     }
 
