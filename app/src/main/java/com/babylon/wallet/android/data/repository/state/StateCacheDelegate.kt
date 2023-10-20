@@ -14,7 +14,6 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.merge
 import rdx.works.core.InstantGenerator
 import rdx.works.profile.data.model.pernetwork.Network
 
@@ -58,7 +57,6 @@ class StateCacheDelegate(
                     result[account] = MutableResources()
                 }
             }
-
 
             result.mapValues {
                 Resources(

@@ -22,4 +22,4 @@ data class NFTEntity(
     val metadata: StringMetadataColumn?,
     override val synced: Instant,
     override val epoch: Long
-): CachedEntity
+) : CachedEntity

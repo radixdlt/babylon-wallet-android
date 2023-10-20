@@ -13,4 +13,4 @@ data class AccountDetailsEntity(
     val accountType: AccountTypeMetadataItem.AccountType?,
     override val synced: Instant,
     override val epoch: Long
-): CachedEntity
+) : CachedEntity

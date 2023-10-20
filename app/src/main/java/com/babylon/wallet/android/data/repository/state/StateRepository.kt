@@ -15,7 +15,6 @@ import javax.inject.Inject
 interface StateRepository {
 
     fun observeAccountsResources(accounts: List<Network.Account>): Flow<Map<Network.Account, Resources>>
-
 }
 
 class StateRepositoryImpl @Inject constructor(
@@ -36,7 +35,6 @@ class StateRepositoryImpl @Inject constructor(
             Timber.tag("Bakos").d("Found data for accounts: ${cachedAccountsWithResources.keys.map { it.displayName }}")
             val remainingAccounts = accounts.toSet() - cachedAccountsWithResources.keys
             if (remainingAccounts.isNotEmpty()) {
-
                 Timber.tag("Bakos").d("Fetching for account ${remainingAccounts.first().displayName}")
                 stateApiDelegate.fetchAllResources(
                     accounts = listOf(remainingAccounts.first())
@@ -53,5 +51,4 @@ class StateRepositoryImpl @Inject constructor(
                 }
             }
         }.distinctUntilChanged()
-
 }

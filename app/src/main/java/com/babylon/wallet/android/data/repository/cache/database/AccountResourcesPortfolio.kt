@@ -36,7 +36,7 @@ data class AccountResourcesPortfolio(
     val amount: BigDecimal,
     override val synced: Instant,
     override val epoch: Long
-): CachedEntity {
+) : CachedEntity {
 
     companion object {
         fun FungibleResourcesCollectionItem.asEntityPair(
@@ -61,7 +61,6 @@ data class AccountResourcesPortfolio(
             epoch = syncInfo.epoch
         ) to asEntity(syncInfo)
     }
-
 }
 
 data class AccountResourceWrapper(
@@ -95,4 +94,4 @@ data class AccountNFTsPortfolio(
     val localId: String,
     override val synced: Instant,
     override val epoch: Long
-): CachedEntity
+) : CachedEntity

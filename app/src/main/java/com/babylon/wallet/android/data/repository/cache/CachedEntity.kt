@@ -6,5 +6,3 @@ interface CachedEntity {
     val synced: Instant
     val epoch: Long
 }
-
-

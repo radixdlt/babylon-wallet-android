@@ -31,6 +31,4 @@ abstract class StateDatabase : RoomDatabase() {
             .fallbackToDestructiveMigration() // Reconstruct database when schema changes.
             .build()
     }
-
 }
-
