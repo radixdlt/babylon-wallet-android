@@ -81,7 +81,7 @@ fun TransactionReviewScreen(
     if (state.isNoMnemonicErrorVisible) {
         BasicPromptAlertDialog(
             finish = {
-                viewModel.dismissNoMnemonicError()
+                viewModel.dismissNoMnemonicErrorDialog()
             },
             title = stringResource(id = R.string.transactionReview_noMnemonicError_title),
             text = stringResource(id = R.string.transactionReview_noMnemonicError_text),

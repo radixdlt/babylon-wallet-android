@@ -257,7 +257,7 @@ class TransactionReviewViewModel @Inject constructor(
         }
     }
 
-    fun dismissNoMnemonicError() {
+    fun dismissNoMnemonicErrorDialog() {
         _state.update { it.copy(isNoMnemonicErrorVisible = false) }
     }
 
