@@ -3,6 +3,7 @@ package rdx.works.profile.domain
 import io.mockk.Runs
 import io.mockk.coEvery
 import io.mockk.coVerify
+import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
 import io.mockk.slot
@@ -117,7 +118,7 @@ internal class AddOlympiaFactorSourceUseCaseTest {
         coEvery { profileRepository.profileState } returns flowOf(ProfileState.Restored(profile))
         coEvery { profileRepository.saveProfile(any()) } just Runs
         coEvery { preferencesManager.markFactorSourceBackedUp(any()) } just Runs
-        coEvery { getProfileUseCase.factorSourceById(any()) } returns null
+        every { getProfileUseCase() } returns flowOf(profile)
 
         val usecase = AddOlympiaFactorSourceUseCase(getProfileUseCase, profileRepository, mnemonicRepository, preferencesManager)
         val capturedProfile = slot<Profile>()
