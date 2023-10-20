@@ -1,7 +1,7 @@
 package com.babylon.wallet.android.domain.usecases
 
 import com.babylon.wallet.android.data.dapp.DappMessenger
-import com.babylon.wallet.android.data.transaction.DappRequestException
+import com.babylon.wallet.android.data.dapp.model.WalletErrorType
 import com.babylon.wallet.android.data.transaction.DappRequestFailure
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel.IncomingRequest
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel.IncomingRequest.AuthorizedRequest
@@ -40,23 +40,34 @@ class AuthorizeSpecifiedPersonaUseCase @Inject constructor(
 
     @Suppress("ReturnCount", "NestedBlockDepth", "LongMethod")
     suspend operator fun invoke(incomingRequest: IncomingRequest): Result<DAppData> {
-        var operationResult: Result<DAppData> = Result.failure(DappRequestFailure.InvalidRequest)
+        var operationResult: Result<DAppData> = Result.failure(DappRequestFailure.NotPossibleToAuthenticateAutomatically)
         (incomingRequest as? AuthorizedRequest)?.let { request ->
             (request.authRequest as? AuthorizedRequest.AuthRequest.UsePersonaRequest)?.let {
                 val authorizedDapp = dAppConnectionRepository.getAuthorizedDapp(
                     dAppDefinitionAddress = request.metadata.dAppDefinitionAddress
-                ) ?: return Result.failure(DappRequestFailure.InvalidRequest)
-
+                )
+                if (authorizedDapp == null) {
+                    respondWithInvalidPersona(incomingRequest)
+                    return Result.failure(DappRequestFailure.InvalidPersona)
+                }
                 val authorizedPersonaSimple = authorizedDapp
                     .referencesToAuthorizedPersonas
                     .firstOrNull { authorizedPersonaSimple ->
                         authorizedPersonaSimple.identityAddress ==
                             (request.authRequest as? AuthorizedRequest.AuthRequest.UsePersonaRequest)?.personaAddress
-                    } ?: return Result.failure(DappRequestException(DappRequestFailure.InvalidPersona))
+                    }
+                if (authorizedPersonaSimple == null) {
+                    respondWithInvalidPersona(incomingRequest)
+                    return Result.failure(DappRequestFailure.InvalidPersona)
+                }
 
                 val persona = getProfileUseCase.personaOnCurrentNetwork(
                     withAddress = authorizedPersonaSimple.identityAddress
-                ) ?: return Result.failure(DappRequestFailure.InvalidRequest)
+                )
+                if (persona == null) {
+                    respondWithInvalidPersona(incomingRequest)
+                    return Result.failure(DappRequestFailure.InvalidPersona)
+                }
 
                 if (request.hasOngoingRequestItemsOnly()) {
                     val hasOngoingAccountsRequest = request.ongoingAccountsRequestItem != null
@@ -101,6 +112,14 @@ class AuthorizeSpecifiedPersonaUseCase @Inject constructor(
             }
         }
         return operationResult
+    }
+
+    private suspend fun respondWithInvalidPersona(incomingRequest: AuthorizedRequest) {
+        dAppMessenger.sendWalletInteractionResponseFailure(
+            incomingRequest.remoteConnectorId,
+            incomingRequest.interactionId,
+            WalletErrorType.InvalidPersona
+        )
     }
 
     private suspend fun handleOngoingAccountsRequest(

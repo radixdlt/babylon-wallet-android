@@ -68,9 +68,20 @@ fun Profile.hideAccount(address: String): Profile {
             }
         }, mutation = { authorizedDapp ->
             val updatedReferences =
-                authorizedDapp.referencesToAuthorizedPersonas.filter { reference ->
-                    reference.sharedAccounts.ids.none { it == address }
-                }
+                authorizedDapp.referencesToAuthorizedPersonas.mapWhen(
+                    predicate = { reference ->
+                        reference.sharedAccounts.ids.any { it == address }
+                    },
+                    mutation = { reference ->
+                        reference.copy(
+                            sharedAccounts = reference.sharedAccounts.copy(
+                                reference.sharedAccounts.ids.filter {
+                                    it != address
+                                }
+                            )
+                        )
+                    }
+                )
             authorizedDapp.copy(referencesToAuthorizedPersonas = updatedReferences)
         })
         val updatedAccounts = network.accounts.mapWhen(
