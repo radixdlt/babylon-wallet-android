@@ -477,12 +477,12 @@ sealed class TargetAccount {
             val thirdPartyDeposits = this.account.onLedgerSettings.thirdPartyDeposits
 
             val hasDenyAll = thirdPartyDeposits.depositRule == ThirdPartyDeposits.DepositRule.DenyAll
-            val hasAnyDenyExceptionRule = thirdPartyDeposits.assetsExceptionList.any {
+            val hasDenyExceptionRuleForAsset = thirdPartyDeposits.assetsExceptionList.any {
                 it.exceptionRule == Network.Account.OnLedgerSettings.ThirdPartyDeposits.DepositAddressExceptionRule.Deny &&
                     it.address == forSpecificAssetAddress
             }
 
-            if (hasDenyAll || hasAnyDenyExceptionRule) {
+            if (hasDenyAll || hasDenyExceptionRuleForAsset) {
                 return true
             }
 
