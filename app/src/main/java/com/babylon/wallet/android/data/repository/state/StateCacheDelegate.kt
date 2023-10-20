@@ -7,7 +7,7 @@ import com.babylon.wallet.android.data.repository.cache.database.AccountDetailsE
 import com.babylon.wallet.android.data.repository.cache.database.AccountResourcesPortfolio.Companion.asEntityPair
 import com.babylon.wallet.android.data.repository.cache.database.StateDao
 import com.babylon.wallet.android.data.repository.cache.database.SyncInfo
-import com.babylon.wallet.android.domain.model.metadata.AccountTypeMetadataItem
+import com.babylon.wallet.android.domain.model.resources.metadata.AccountTypeMetadataItem
 import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.domain.model.resources.Resources
 import kotlinx.coroutines.flow.Flow
