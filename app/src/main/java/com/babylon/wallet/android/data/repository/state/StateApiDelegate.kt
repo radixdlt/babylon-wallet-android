@@ -1,6 +1,7 @@
 package com.babylon.wallet.android.data.repository.state
 
 import com.babylon.wallet.android.data.gateway.apis.StateApi
+import com.babylon.wallet.android.data.gateway.generated.models.EntityMetadataCollection
 import com.babylon.wallet.android.data.gateway.generated.models.FungibleResourcesCollectionItem
 import com.babylon.wallet.android.data.gateway.generated.models.LedgerState
 import com.babylon.wallet.android.data.gateway.generated.models.LedgerStateSelector
@@ -27,6 +28,7 @@ class StateApiDelegate(
         onAccount: (
             account: Network.Account,
             ledgerState: LedgerState,
+            accountMetadata: EntityMetadataCollection?,
             fungibles: List<FungibleResourcesCollectionItem>,
             nonFungibles: List<NonFungibleResourcesCollectionItem>
         ) -> Unit
@@ -84,7 +86,7 @@ class StateApiDelegate(
                         awaitAll(allFungiblePagesForAccount, allNonFungiblePagesForAccount)
                     }
 
-                    onAccount(account, details.ledgerState, allFungibles, allNonFungibles)
+                    onAccount(account, details.ledgerState, accountOnLedger?.explicitMetadata, allFungibles, allNonFungibles)
                 }
             }
     }

@@ -216,7 +216,7 @@ private fun WalletAccountList(
                     },
                 accountWithAssets = accountWithResources,
                 accountTag = state.getTag(accountWithResources.account),
-                isLoadingResources = state.isLoadingAssets,
+                isLoadingResources = accountWithResources.assets == null,
                 securityPromptType = state.securityPrompt(accountWithResources.account),
                 onApplySecuritySettings = {
                     onApplySecuritySettings(accountWithResources.account, it)
