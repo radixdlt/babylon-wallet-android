@@ -10,7 +10,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -27,12 +26,10 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.Icon
-import androidx.compose.material.IconButton
 import androidx.compose.material.ModalBottomSheetLayout
 import androidx.compose.material.ModalBottomSheetState
 import androidx.compose.material.ModalBottomSheetValue
 import androidx.compose.material.Surface
-import androidx.compose.material.Text
 import androidx.compose.material.pullrefresh.PullRefreshIndicator
 import androidx.compose.material.pullrefresh.pullRefresh
 import androidx.compose.material.pullrefresh.rememberPullRefreshState
@@ -52,10 +49,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -83,8 +80,10 @@ import com.babylon.wallet.android.presentation.transfer.assets.ResourcesTabs
 import com.babylon.wallet.android.presentation.ui.composables.ActionableAddressView
 import com.babylon.wallet.android.presentation.ui.composables.ApplySecuritySettingsLabel
 import com.babylon.wallet.android.presentation.ui.composables.LocalDevBannerState
+import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
+import com.babylon.wallet.android.presentation.ui.composables.ThrottleIconButton
 import com.babylon.wallet.android.presentation.ui.composables.resources.FungibleResourceItem
 import com.babylon.wallet.android.presentation.ui.composables.resources.LiquidStakeUnitItem
 import com.babylon.wallet.android.presentation.ui.composables.resources.NonFungibleResourceItem
@@ -218,41 +217,30 @@ private fun AccountScreenContent(
             Scaffold(
                 modifier = Modifier,
                 topBar = {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        IconButton(
-                            onClick = onBackClick
-                        ) {
-                            Icon(
-                                painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_arrow_back),
-                                tint = RadixTheme.colors.white,
-                                contentDescription = "navigate back"
-                            )
-                        }
-                        Spacer(modifier = Modifier.weight(1f))
-                        Text(
-                            modifier = Modifier,
-                            text = state.accountWithAssets?.account?.displayName.orEmpty(),
-                            style = RadixTheme.typography.body1Header.copy(textAlign = TextAlign.Center),
-                            color = RadixTheme.colors.white,
-                            maxLines = 2,
-                            overflow = TextOverflow.Ellipsis
-                        )
-                        Spacer(modifier = Modifier.weight(1f))
-                        IconButton(
-                            onClick = {
-                                onAccountPreferenceClick(state.accountWithAssets?.account?.address.orEmpty())
+                    RadixCenteredTopAppBar(
+                        title = state.accountWithResources?.account?.displayName.orEmpty(),
+                        onBackClick = onBackClick,
+                        contentColor = RadixTheme.colors.white,
+                        containerColor = Color.Transparent,
+                        actions = {
+                            // TODO revisit after compose update and remove if library update fixes the issue
+                            // https://radixdlt.atlassian.net/browse/ABW-2504
+                            ThrottleIconButton(
+                                onClick = {
+                                    onAccountPreferenceClick(state.accountWithResources?.account?.address.orEmpty())
+                                },
+                                thresholdMs = 1000L
+                            ) {
+                                Icon(
+                                    imageVector = ImageVector.vectorResource(
+                                        id = com.babylon.wallet.android.designsystem.R.drawable.ic_more_horiz
+                                    ),
+                                    tint = RadixTheme.colors.white,
+                                    contentDescription = "account settings"
+                                )
                             }
-                        ) {
-                            Icon(
-                                painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_more_horiz),
-                                tint = RadixTheme.colors.white,
-                                contentDescription = "account settings"
-                            )
                         }
-                    }
+                    )
                 },
                 containerColor = Color.Transparent,
                 floatingActionButton = {
