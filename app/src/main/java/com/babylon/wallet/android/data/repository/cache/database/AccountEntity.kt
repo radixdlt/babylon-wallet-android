@@ -8,10 +8,11 @@ import com.babylon.wallet.android.domain.model.resources.metadata.AccountTypeMet
 import java.time.Instant
 
 @Entity(primaryKeys = ["address"])
-data class AccountDetailsEntity(
+data class AccountEntity(
     val address: String,
     @ColumnInfo("account_type")
     val accountType: AccountTypeMetadataItem.AccountType?,
+    val progress: AccountInfoProgress,
     override val synced: Instant,
     override val epoch: Long
 ) : CachedEntity {
@@ -20,4 +21,9 @@ data class AccountDetailsEntity(
         typeMetadataItem = accountType?.let { AccountTypeMetadataItem(it) }
     )
 
+}
+
+enum class AccountInfoProgress {
+    PENDING,
+    UPDATED
 }

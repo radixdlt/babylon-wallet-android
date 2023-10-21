@@ -8,9 +8,9 @@ import androidx.room.TypeConverters
 
 @Database(
     entities = [
-        AccountResourcesPortfolio::class,
-        AccountDetailsEntity::class,
-        AccountNFTsPortfolio::class,
+        AccountResourceJoin::class,
+        AccountEntity::class,
+        AccountNFTJoin::class,
         ResourceEntity::class,
         NFTEntity::class
     ],
