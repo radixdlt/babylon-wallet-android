@@ -132,6 +132,6 @@ class StateApiDelegate(
     }
 
     companion object {
-        private const val ENTITY_DETAILS_PAGE_LIMIT = 20
+        const val ENTITY_DETAILS_PAGE_LIMIT = 20
     }
 }

@@ -1,25 +1,24 @@
 package com.babylon.wallet.android.data.repository.cache.database
 
 import androidx.room.ColumnInfo
-import androidx.room.Embedded
 import androidx.room.Entity
 import androidx.room.ForeignKey
+import androidx.room.Index
 import com.babylon.wallet.android.data.gateway.extensions.amount
 import com.babylon.wallet.android.data.gateway.extensions.amountDecimal
 import com.babylon.wallet.android.data.gateway.generated.models.FungibleResourcesCollectionItem
 import com.babylon.wallet.android.data.gateway.generated.models.NonFungibleResourcesCollectionItem
-import com.babylon.wallet.android.data.repository.cache.CachedEntity
 import com.babylon.wallet.android.data.repository.cache.database.ResourceEntity.Companion.asEntity
 import java.math.BigDecimal
-import java.time.Instant
 
 @Entity(
     primaryKeys = ["account_address", "resource_address"],
     foreignKeys = [
         ForeignKey(
-            entity = AccountDetailsEntity::class,
+            entity = AccountEntity::class,
             parentColumns = ["address"],
-            childColumns = ["account_address"]
+            childColumns = ["account_address"],
+            onDelete = ForeignKey.CASCADE,
         ),
         ForeignKey(
             entity = ResourceEntity::class,
@@ -28,55 +27,38 @@ import java.time.Instant
         )
     ]
 )
-data class AccountResourcesPortfolio(
+data class AccountResourceJoin(
     @ColumnInfo("account_address")
     val accountAddress: String,
-    @ColumnInfo("resource_address")
+    @ColumnInfo("resource_address", index = true)
     val resourceAddress: String,
-    val amount: BigDecimal,
-    override val synced: Instant,
-    override val epoch: Long
-) : CachedEntity {
+    val amount: BigDecimal
+) {
 
     companion object {
         fun FungibleResourcesCollectionItem.asEntityPair(
             accountAddress: String,
             syncInfo: SyncInfo
-        ): Pair<AccountResourcesPortfolio, ResourceEntity> = AccountResourcesPortfolio(
+        ): Pair<AccountResourceJoin, ResourceEntity> = AccountResourceJoin(
             accountAddress = accountAddress,
             resourceAddress = resourceAddress,
-            amount = amountDecimal,
-            synced = syncInfo.synced,
-            epoch = syncInfo.epoch
+            amount = amountDecimal
         ) to asEntity(syncInfo)
 
         fun NonFungibleResourcesCollectionItem.asEntityPair(
             accountAddress: String,
             syncInfo: SyncInfo
-        ): Pair<AccountResourcesPortfolio, ResourceEntity> = AccountResourcesPortfolio(
+        ): Pair<AccountResourceJoin, ResourceEntity> = AccountResourceJoin(
             accountAddress = accountAddress,
             resourceAddress = resourceAddress,
-            amount = amount.toBigDecimal(),
-            synced = syncInfo.synced,
-            epoch = syncInfo.epoch
+            amount = amount.toBigDecimal()
         ) to asEntity(syncInfo)
     }
 }
 
-data class AccountResourceWrapper(
-    @ColumnInfo("account_address")
-    val address: String,
-    val amount: BigDecimal,
-    @Embedded
-    val resource: ResourceEntity,
-    @ColumnInfo("amount_synced")
-    val amountSynced: Instant,
-    @ColumnInfo("amount_epoch")
-    val amountEpoch: Long
-)
-
 @Entity(
     primaryKeys = ["account_address", "resource_address", "local_id"],
+    indices = [Index("resource_address", "local_id")],
     foreignKeys = [
         ForeignKey(
             entity = NFTEntity::class,
@@ -85,13 +67,11 @@ data class AccountResourceWrapper(
         )
     ]
 )
-data class AccountNFTsPortfolio(
+data class AccountNFTJoin(
     @ColumnInfo("account_address")
     val accountAddress: String,
     @ColumnInfo("resource_address")
     val resourceAddress: String,
     @ColumnInfo("local_id")
-    val localId: String,
-    override val synced: Instant,
-    override val epoch: Long
-) : CachedEntity
+    val localId: String
+)

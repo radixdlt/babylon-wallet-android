@@ -9,6 +9,8 @@ import com.babylon.wallet.android.domain.model.resources.Resources
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.transform
 import rdx.works.profile.data.model.pernetwork.Network
 import timber.log.Timber

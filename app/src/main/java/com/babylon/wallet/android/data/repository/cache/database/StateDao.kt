@@ -6,6 +6,7 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Transaction
+import com.babylon.wallet.android.domain.model.resources.metadata.AccountTypeMetadataItem
 import kotlinx.coroutines.flow.Flow
 import kotlin.time.DurationUnit
 import kotlin.time.toDuration
@@ -15,7 +16,7 @@ interface StateDao {
 
     @Query(
         """
-        SELECT AR.account_address AS account_address, AR.amount, AR.synced AS amount_synced, AR.epoch AS amount_epoch, R.* FROM AccountResourcesPortfolio AS AR
+        SELECT AR.account_address AS account_address, AR.amount, R.* FROM AccountResourceJoin AS AR
         INNER JOIN ResourceEntity AS R ON AR.resource_address = R.address
         WHERE AR.account_address in (:accountAddresses)
         """
@@ -27,36 +28,59 @@ interface StateDao {
 
     @Query(
         """
-        SELECT * FROM AccountDetailsEntity
-        WHERE address in (:accountAddresses)
+        SELECT * FROM AccountEntity
+        WHERE address in (:accountAddresses) AND progress = :withProgress
         """
     )
-    fun observeAccountDetails(accountAddresses: List<String>): Flow<List<AccountDetailsEntity>>
+    fun observeAccountDetails(
+        accountAddresses: List<String>,
+        withProgress: AccountInfoProgress = AccountInfoProgress.UPDATED
+    ): Flow<List<AccountEntity>>
 
     @Transaction
     fun updateAccountData(
-        accountDetails: AccountDetailsEntity,
-        accountWithResources: List<Pair<AccountResourcesPortfolio, ResourceEntity>>,
+        accountAddress: String,
+        accountTypeMetadataItem: AccountTypeMetadataItem?,
+        syncInfo: SyncInfo,
+        accountWithResources: List<Pair<AccountResourceJoin, ResourceEntity>>,
     ) {
-        insertAccountDetails(accountDetails)
+        insertAccountDetails(
+            AccountEntity(
+                address = accountAddress,
+                accountType = accountTypeMetadataItem?.type,
+                progress = AccountInfoProgress.PENDING,
+                synced = syncInfo.synced,
+                epoch = syncInfo.epoch
+            )
+        )
         insertResources(accountWithResources.map { it.second })
         insertAccountResourcesPortfolio(accountWithResources.map { it.first })
+        changeAccountDetailsProgress(accountAddress, progress = AccountInfoProgress.UPDATED)
     }
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insertResources(resources: List<ResourceEntity>)
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun insertAccountResourcesPortfolio(accountPortfolios: List<AccountResourcesPortfolio>)
+    fun insertAccountResourcesPortfolio(accountPortfolios: List<AccountResourceJoin>)
 
     @Insert(
-        entity = AccountDetailsEntity::class,
+        entity = AccountEntity::class,
         onConflict = OnConflictStrategy.REPLACE
     )
-    fun insertAccountDetails(account: AccountDetailsEntity)
+    fun insertAccountDetails(details: AccountEntity)
 
-    @Delete(entity = AccountDetailsEntity::class)
-    fun removeAccountDetails(account: AccountDetailsEntity)
+    @Query(
+        """
+        UPDATE AccountEntity 
+        SET progress = :progress
+        WHERE address = :accountAddresses
+        """
+    )
+    fun changeAccountDetailsProgress(accountAddresses: String, progress: AccountInfoProgress)
+
+    @Delete(entity = AccountEntity::class)
+    fun removeAccountDetails(account: AccountEntity)
 
     companion object {
         val accountsCacheDuration = 2.toDuration(DurationUnit.SECONDS)
