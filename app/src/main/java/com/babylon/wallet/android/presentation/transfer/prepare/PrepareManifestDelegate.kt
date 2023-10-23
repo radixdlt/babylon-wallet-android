@@ -5,13 +5,13 @@ import com.babylon.wallet.android.data.manifest.prepareInternalTransactionReques
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.presentation.common.UiMessage
+import com.babylon.wallet.android.presentation.common.ViewModelDelegate
 import com.babylon.wallet.android.presentation.transfer.SpendingAsset
 import com.babylon.wallet.android.presentation.transfer.TargetAccount
 import com.babylon.wallet.android.presentation.transfer.TransferViewModel
 import com.radixdlt.ret.Address
 import com.radixdlt.ret.ManifestBuilderBucket
 import com.radixdlt.ret.NonFungibleGlobalId
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
 import rdx.works.core.ret.BabylonManifestBuilder
 import rdx.works.core.ret.buildSafely
@@ -23,22 +23,22 @@ import rdx.works.profile.data.repository.MnemonicRepository
 import timber.log.Timber
 import java.math.BigDecimal
 import java.math.RoundingMode
+import javax.inject.Inject
 
-class PrepareManifestDelegate(
-    private val state: MutableStateFlow<TransferViewModel.State>,
+class PrepareManifestDelegate @Inject constructor(
     private val incomingRequestRepository: IncomingRequestRepository,
     private val mnemonicRepository: MnemonicRepository
-) {
+) : ViewModelDelegate<TransferViewModel.State>() {
 
     suspend fun onSubmit() {
-        val fromAccount = state.value.fromAccount ?: return
-        prepareRequest(fromAccount, state.value).onSuccess { request ->
-            state.update { it.copy(transferRequestId = request.requestId) }
+        val fromAccount = _state.value.fromAccount ?: return
+        prepareRequest(fromAccount, _state.value).onSuccess { request ->
+            _state.update { it.copy(transferRequestId = request.requestId) }
             Timber.d("Manifest for ${request.requestId} prepared:")
             Timber.d(request.transactionManifestData.instructions)
             incomingRequestRepository.add(request)
         }.onFailure { error ->
-            state.update { it.copy(error = UiMessage.ErrorMessage.from(error)) }
+            _state.update { it.copy(error = UiMessage.ErrorMessage.from(error)) }
         }
     }
 
@@ -68,7 +68,7 @@ class PrepareManifestDelegate(
         fromAccount: Network.Account,
         targetAccounts: List<TargetAccount>
     ) = apply {
-        state.value.withdrawingFungibles().forEach { (resource, amount) ->
+        _state.value.withdrawingFungibles().forEach { (resource, amount) ->
             // Withdraw the total amount for each fungible
             withdrawFromAccount(
                 fromAddress = Address(fromAccount.address),

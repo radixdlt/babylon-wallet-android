@@ -8,6 +8,9 @@ import com.babylon.wallet.android.domain.usecases.GetAccountsWithAssetsUseCase
 import com.babylon.wallet.android.mockdata.account
 import com.babylon.wallet.android.mockdata.profile
 import com.babylon.wallet.android.presentation.StateViewModelTest
+import com.babylon.wallet.android.presentation.transfer.accounts.AccountsChooserDelegate
+import com.babylon.wallet.android.presentation.transfer.assets.AssetsChooserDelegate
+import com.babylon.wallet.android.presentation.transfer.prepare.PrepareManifestDelegate
 import io.mockk.every
 import io.mockk.mockk
 import kotlinx.collections.immutable.persistentListOf
@@ -56,9 +59,16 @@ class TransferViewModelTest : StateViewModelTest<TransferViewModel>() {
     override fun initVM(): TransferViewModel {
         return TransferViewModel(
             getProfileUseCase = getProfileUseCase,
-            getAccountsWithAssetsUseCase = getAccountsWithAssetsUseCase,
-            incomingRequestRepository = incomingRequestRepository,
-            mnemonicRepository = mnemonicRepository,
+            accountsChooserDelegate = AccountsChooserDelegate(
+                getProfileUseCase = getProfileUseCase
+            ),
+            assetsChooserDelegate = AssetsChooserDelegate(
+                getAccountsWithAssetsUseCase = getAccountsWithAssetsUseCase
+            ),
+            prepareManifestDelegate = PrepareManifestDelegate(
+                incomingRequestRepository = incomingRequestRepository,
+                mnemonicRepository = mnemonicRepository
+            ),
             savedStateHandle = savedStateHandle
         )
     }

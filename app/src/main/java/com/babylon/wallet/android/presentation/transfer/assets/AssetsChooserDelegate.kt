@@ -5,18 +5,18 @@ import com.babylon.wallet.android.domain.common.onValue
 import com.babylon.wallet.android.domain.model.assets.Assets
 import com.babylon.wallet.android.domain.usecases.GetAccountsWithAssetsUseCase
 import com.babylon.wallet.android.presentation.common.UiMessage
+import com.babylon.wallet.android.presentation.common.ViewModelDelegate
 import com.babylon.wallet.android.presentation.transfer.SpendingAsset
 import com.babylon.wallet.android.presentation.transfer.TargetAccount
 import com.babylon.wallet.android.presentation.transfer.TransferViewModel
 import com.babylon.wallet.android.presentation.transfer.TransferViewModel.State.Sheet
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
 import rdx.works.profile.data.model.pernetwork.Network
+import javax.inject.Inject
 
-class AssetsChooserDelegate(
-    private val state: MutableStateFlow<TransferViewModel.State>,
+class AssetsChooserDelegate @Inject constructor(
     private val getAccountsWithAssetsUseCase: GetAccountsWithAssetsUseCase
-) {
+) : ViewModelDelegate<TransferViewModel.State>() {
 
     /**
      * Starts the assets chooser flow
@@ -28,7 +28,7 @@ class AssetsChooserDelegate(
         fromAccount: Network.Account,
         targetAccount: TargetAccount
     ) {
-        state.update {
+        _state.update {
             it.copy(sheet = Sheet.ChooseAssets.init(forTargetAccount = targetAccount))
         }
 
@@ -66,7 +66,7 @@ class AssetsChooserDelegate(
     }
 
     fun onChooseAssetsSubmitted() {
-        state.update { state ->
+        _state.update { state ->
             val chooseAssetState = (state.sheet as? Sheet.ChooseAssets) ?: return@update state
 
             state
@@ -78,7 +78,7 @@ class AssetsChooserDelegate(
     private fun updateSheetState(
         onUpdate: (Sheet.ChooseAssets) -> Sheet.ChooseAssets
     ) {
-        state.update { state ->
+        _state.update { state ->
             if (state.sheet is Sheet.ChooseAssets) {
                 state.copy(sheet = onUpdate(state.sheet))
             } else {

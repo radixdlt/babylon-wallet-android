@@ -1,28 +1,28 @@
 package com.babylon.wallet.android.presentation.transfer.accounts
 
+import com.babylon.wallet.android.presentation.common.ViewModelDelegate
 import com.babylon.wallet.android.presentation.transfer.TargetAccount
 import com.babylon.wallet.android.presentation.transfer.TransferViewModel
 import com.babylon.wallet.android.presentation.transfer.TransferViewModel.State.Sheet.ChooseAccounts
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toPersistentList
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
 import rdx.works.core.AddressValidator
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.accountsOnCurrentNetwork
+import javax.inject.Inject
 
-class AccountsChooserDelegate(
-    private val state: MutableStateFlow<TransferViewModel.State>,
+class AccountsChooserDelegate @Inject constructor(
     private val getProfileUseCase: GetProfileUseCase
-) {
+) : ViewModelDelegate<TransferViewModel.State>() {
 
     suspend fun onChooseAccount(
         fromAccount: Network.Account,
         slotAccount: TargetAccount,
         selectedAccounts: List<TargetAccount>
     ) {
-        state.update {
+        _state.update {
             it.copy(
                 sheet = ChooseAccounts(
                     selectedAccount = slotAccount,
@@ -39,13 +39,13 @@ class AccountsChooserDelegate(
     }
 
     fun addressTyped(address: String) {
-        val currentNetworkId = state.value.fromAccount?.networkID ?: return
+        val currentNetworkId = _state.value.fromAccount?.networkID ?: return
         updateSheetState { sheetState ->
             val validity = if (!AddressValidator.isValid(address = address, networkId = currentNetworkId)) {
                 TargetAccount.Other.AddressValidity.INVALID
             } else {
-                val selectedAccountAddresses = state.value.targetAccounts.map { it.address }
-                if (address in selectedAccountAddresses || address == state.value.fromAccount?.address) {
+                val selectedAccountAddresses = _state.value.targetAccounts.map { it.address }
+                if (address in selectedAccountAddresses || address == _state.value.fromAccount?.address) {
                     TargetAccount.Other.AddressValidity.USED
                 } else {
                     TargetAccount.Other.AddressValidity.VALID
@@ -86,11 +86,11 @@ class AccountsChooserDelegate(
     }
 
     fun chooseAccountSubmitted() {
-        val sheetState = state.value.sheet as? ChooseAccounts ?: return
+        val sheetState = _state.value.sheet as? ChooseAccounts ?: return
 
         if (!sheetState.isChooseButtonEnabled) return
 
-        state.update { state ->
+        _state.update { state ->
             val ownedAccount = sheetState.ownedAccounts.find { it.address == sheetState.selectedAccount.address }
             val selectedAccount = if (ownedAccount != null) {
                 TargetAccount.Owned(
@@ -120,7 +120,7 @@ class AccountsChooserDelegate(
     private fun updateSheetState(
         onUpdate: (ChooseAccounts) -> ChooseAccounts
     ) {
-        state.update { state ->
+        _state.update { state ->
             if (state.sheet is ChooseAccounts) {
                 state.copy(sheet = onUpdate(state.sheet))
             } else {
