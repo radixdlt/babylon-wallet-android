@@ -13,8 +13,9 @@ class SubmitTransactionUseCase @Inject constructor(
 
     suspend operator fun invoke(
         txIDHash: String,
-        notarizedTransactionHex: String
-    ): Result<String> {
+        notarizedTransactionHex: String,
+        txProcessingTime: String
+    ): Result<SubmitTransactionResult> {
         val submitResult = transactionRepository.submitTransaction(
             notarizedTransaction = notarizedTransactionHex
         )
@@ -41,9 +42,19 @@ class SubmitTransactionUseCase @Inject constructor(
                         )
                     )
                 } else {
-                    Result.success(txIDHash)
+                    Result.success(
+                        SubmitTransactionResult(
+                            txId = txIDHash,
+                            txProcessingTime = txProcessingTime
+                        )
+                    )
                 }
             }
         }
     }
+
+    data class SubmitTransactionResult(
+        val txId: String,
+        val txProcessingTime: String
+    )
 }

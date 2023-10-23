@@ -1,6 +1,7 @@
 package com.babylon.wallet.android.data.repository
 
 import com.babylon.wallet.android.data.dapp.model.TransactionType
+import com.babylon.wallet.android.data.gateway.generated.models.TransactionPayloadStatus
 import com.babylon.wallet.android.di.coroutines.ApplicationScope
 import com.babylon.wallet.android.domain.usecases.transaction.PollTransactionStatusUseCase
 import com.babylon.wallet.android.utils.AppEvent
@@ -42,10 +43,14 @@ class TransactionStatusClient @Inject constructor(
         }.filterNotNull().cancellable()
     }
 
-    @Suppress("MagicNumber", "LongMethod")
-    fun pollTransactionStatus(txID: String, requestId: String, transactionType: TransactionType = TransactionType.Generic) {
+    fun pollTransactionStatus(
+        txID: String,
+        requestId: String,
+        transactionType: TransactionType = TransactionType.Generic,
+        txProcessingTime: String
+    ) {
         appScope.launch {
-            val pollResult = pollTransactionStatusUseCase(txID, requestId, transactionType)
+            val pollResult = pollTransactionStatusUseCase(txID, requestId, transactionType, txProcessingTime)
             pollResult.result.onSuccess {
                 appEventBus.sendEvent(AppEvent.RefreshResourcesNeeded)
             }
@@ -85,6 +90,7 @@ class TransactionStatusClient @Inject constructor(
 data class TransactionData(
     val txId: String,
     val requestId: String,
-    val result: Result<Unit>,
-    val transactionType: TransactionType = TransactionType.Generic
+    val result: Result<TransactionPayloadStatus>,
+    val transactionType: TransactionType = TransactionType.Generic,
+    val txProcessingTime: String
 )

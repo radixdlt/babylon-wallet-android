@@ -39,6 +39,8 @@ sealed class DappRequestFailure(msg: String? = null) : Exception(msg.orEmpty()) 
         data class FailedToPollTXStatus(val txId: String) : TransactionApprovalFailure()
         data class GatewayRejected(val txId: String) : TransactionApprovalFailure()
         data class GatewayCommittedFailure(val txId: String) : TransactionApprovalFailure()
+        data class GatewayPermanentlyRejected(val txId: String) : TransactionApprovalFailure()
+        data class GatewayTemporarilyRejected(val txId: String) : TransactionApprovalFailure()
     }
 
     sealed class DappVerificationFailure : DappRequestFailure() {
@@ -66,6 +68,12 @@ sealed class DappRequestFailure(msg: String? = null) : Exception(msg.orEmpty()) 
             }
             is TransactionApprovalFailure.GatewayRejected -> {
                 WalletErrorType.SubmittedTransactionHasRejectedTransactionStatus
+            }
+            is TransactionApprovalFailure.GatewayPermanentlyRejected -> {
+                WalletErrorType.SubmittedTransactionHasPermanentlyRejectedTransactionStatus
+            }
+            is TransactionApprovalFailure.GatewayTemporarilyRejected -> {
+                WalletErrorType.SubmittedTransactionHasTemporarilyRejectedTransactionStatus
             }
             GetEpoch -> WalletErrorType.FailedToPrepareTransaction
             is TransactionApprovalFailure.InvalidTXDuplicate -> WalletErrorType.SubmittedTransactionWasDuplicate
@@ -102,8 +110,10 @@ sealed class DappRequestFailure(msg: String? = null) : Exception(msg.orEmpty()) 
             TransactionApprovalFailure.BuildTransactionHeader -> R.string.error_transactionFailure_header
             TransactionApprovalFailure.ConvertManifest -> R.string.error_transactionFailure_manifest
             is TransactionApprovalFailure.FailedToPollTXStatus -> R.string.error_transactionFailure_pollStatus
-            is TransactionApprovalFailure.GatewayCommittedFailure -> R.string.error_transactionFailure_commit
+            is TransactionApprovalFailure.GatewayCommittedFailure -> R.string.transaction_status_failed_text
             is TransactionApprovalFailure.GatewayRejected -> R.string.error_transactionFailure_rejected
+            is TransactionApprovalFailure.GatewayPermanentlyRejected -> R.string.transaction_status_rejected_text // TODO Crowdin
+            is TransactionApprovalFailure.GatewayTemporarilyRejected -> R.string.transaction_status_error_text // TODO Crowdin
             GetEpoch -> R.string.error_transactionFailure_epoch
             is TransactionApprovalFailure.InvalidTXDuplicate -> R.string.error_transactionFailure_duplicate
             TransactionApprovalFailure.PrepareNotarizedTransaction -> R.string.error_transactionFailure_prepare

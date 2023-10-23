@@ -13,7 +13,6 @@ import com.babylon.wallet.android.domain.model.resources.metadata.OwnerKeyHashes
 import com.babylon.wallet.android.domain.model.resources.metadata.SymbolMetadataItem
 import com.babylon.wallet.android.domain.usecases.GetAccountsWithAssetsUseCase
 import com.babylon.wallet.android.domain.usecases.transaction.CollectSignersSignaturesUseCase
-import com.babylon.wallet.android.domain.usecases.transaction.SubmitTransactionUseCase
 import com.babylon.wallet.android.mockdata.account
 import com.babylon.wallet.android.mockdata.profile
 import com.babylon.wallet.android.presentation.TestDispatcherRule
@@ -52,7 +51,6 @@ internal class TransactionClientTest {
         getProfileUseCase
     )
     private val collectSignersSignaturesUseCase = mockk<CollectSignersSignaturesUseCase>()
-    private val submitTransactionUseCase = mockk<SubmitTransactionUseCase>()
 
     private lateinit var transactionClient: TransactionClient
 
@@ -63,8 +61,7 @@ internal class TransactionClientTest {
             transactionRepository,
             getProfileUseCase,
             collectSignersSignaturesUseCase,
-            getAccountsWithAssetsUseCase,
-            submitTransactionUseCase
+            getAccountsWithAssetsUseCase
         )
     }
 

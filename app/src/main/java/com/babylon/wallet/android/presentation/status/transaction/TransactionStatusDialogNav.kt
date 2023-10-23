@@ -44,6 +44,12 @@ private const val ARG_BLOCK_UNTIL_COMPLETE = "arg_blockUntilComplete"
 private const val ARG_ERROR = "arg_error"
 
 @VisibleForTesting
+private const val ARG_TX_PROCESSING_TIME = "arg_tx_processing_time"
+
+@VisibleForTesting
+private const val ARG_WALLET_ERROR_TYPE = "arg_wallet_error_type"
+
+@VisibleForTesting
 private const val ROUTE = "transaction_status_dialog"
 
 internal class TransactionStatusDialogArgs(
@@ -63,12 +69,26 @@ fun NavController.transactionStatusDialog(transactionEvent: AppEvent.Status.Tran
         null
     }
 
+    val txProcessingTime = if (transactionEvent is AppEvent.Status.Transaction.Fail) {
+        Json.encodeToString(transactionEvent.txProcessingTime)
+    } else {
+        null
+    }
+
+    val walletErrorType = if (transactionEvent is AppEvent.Status.Transaction.Fail) {
+        Json.encodeToString(transactionEvent.walletErrorType)
+    } else {
+        null
+    }
+
     val requestId = transactionEvent.requestId.ifBlank { error("Transaction id cannot be empty") }
     navigate(
         route = "$ROUTE/${transactionEvent.toType()}/$requestId" +
             "?txId=${transactionEvent.transactionId}" +
             "&isInternal=${transactionEvent.isInternal}" +
             "&error=$errorSerialized" +
+            "&txTime=$txProcessingTime" +
+            "&errorType=$walletErrorType" +
             "&$ARG_BLOCK_UNTIL_COMPLETE=${transactionEvent.blockUntilComplete}"
     ) {
         val popUpToRoute = if (this@transactionStatusDialog.routeExist(ROUTE_TRANSFER)) {
@@ -88,7 +108,8 @@ fun NavGraphBuilder.transactionStatusDialog(
 ) {
     dialog(
         route = "$ROUTE/{$ARG_STATUS}/{$ARG_REQUEST_ID}?txId={$ARG_TX_ID}&isInternal={$ARG_IS_INTERNAL}" +
-            "&error={$ARG_ERROR}&$ARG_BLOCK_UNTIL_COMPLETE={$ARG_BLOCK_UNTIL_COMPLETE}",
+            "&error={$ARG_ERROR}&txTime={$ARG_TX_PROCESSING_TIME}&errorType={$ARG_WALLET_ERROR_TYPE}" +
+            "&$ARG_BLOCK_UNTIL_COMPLETE={$ARG_BLOCK_UNTIL_COMPLETE}",
         arguments = listOf(
             navArgument(ARG_STATUS) {
                 type = NavType.StringType
@@ -113,6 +134,16 @@ fun NavGraphBuilder.transactionStatusDialog(
                 nullable = true
                 defaultValue = null
             },
+            navArgument(ARG_TX_PROCESSING_TIME) {
+                type = NavType.StringType
+                nullable = true
+                defaultValue = null
+            },
+            navArgument(ARG_WALLET_ERROR_TYPE) {
+                type = NavType.StringType
+                nullable = true
+                defaultValue = null
+            }
         ),
         dialogProperties = DialogProperties(usePlatformDefaultWidth = false)
     ) {
@@ -136,7 +167,9 @@ private fun SavedStateHandle.toStatus(): AppEvent.Status.Transaction {
             transactionId = checkNotNull(get<String>(ARG_TX_ID)),
             isInternal = checkNotNull(get<Boolean>(ARG_IS_INTERNAL)),
             errorMessage = get<String>(ARG_ERROR)?.let { Json.decodeFromString(it) },
-            blockUntilComplete = checkNotNull(get<Boolean>(ARG_BLOCK_UNTIL_COMPLETE))
+            blockUntilComplete = checkNotNull(get<Boolean>(ARG_BLOCK_UNTIL_COMPLETE)),
+            txProcessingTime = checkNotNull(get<String>(ARG_TX_PROCESSING_TIME)),
+            walletErrorType = get<String>(ARG_WALLET_ERROR_TYPE)?.let { Json.decodeFromString(it) },
         )
 
         VALUE_STATUS_SUCCESS -> AppEvent.Status.Transaction.Success(

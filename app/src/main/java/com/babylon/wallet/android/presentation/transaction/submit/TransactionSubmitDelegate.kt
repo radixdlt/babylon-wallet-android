@@ -11,6 +11,7 @@ import com.babylon.wallet.android.data.transaction.model.TransactionApprovalRequ
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.babylon.wallet.android.domain.model.Transferable
 import com.babylon.wallet.android.domain.usecases.transaction.SignatureCancelledException
+import com.babylon.wallet.android.domain.usecases.transaction.SubmitTransactionUseCase
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.transaction.PreviewType
 import com.babylon.wallet.android.presentation.transaction.TransactionReviewViewModel.Event
@@ -40,6 +41,7 @@ class TransactionSubmitDelegate(
     private val logger: Timber.Tree,
     private val transactionStatusClient: TransactionStatusClient,
     private val onSendScreenEvent: (Event) -> Unit,
+    private val submitTransactionUseCase: SubmitTransactionUseCase
 ) {
     private var approvalJob: Job? = null
 
@@ -134,32 +136,45 @@ class TransactionSubmitDelegate(
                 TransactionApprovalRequest.TransactionMessage.Public(it)
             } ?: TransactionApprovalRequest.TransactionMessage.None
         )
-        transactionClient.signAndSubmitTransaction(
-            request,
+
+        transactionClient.signTransaction(
+            request = request,
             lockFee = lockFee,
             tipPercentage = tipPercentage,
             deviceBiometricAuthenticationProvider
-        ).onSuccess { txId ->
+        ).mapCatching { notarizedTransactionResult ->
+            submitTransactionUseCase(
+                notarizedTransactionResult.txIdHash,
+                notarizedTransactionResult.notarizedTransactionIntentHex,
+                txProcessingTime = notarizedTransactionResult.txProcessingTime
+            ).getOrThrow()
+        }.onSuccess { submitTransactionResult ->
             state.update {
                 it.copy(
-                    isSubmitting = false
+                    isSubmitting = false,
+                    txProcessingTime = submitTransactionResult.txProcessingTime
                 )
             }
             appEventBus.sendEvent(
                 AppEvent.Status.Transaction.InProgress(
                     requestId = transactionRequest.requestId,
-                    transactionId = txId,
+                    transactionId = submitTransactionResult.txId,
                     isInternal = transactionRequest.isInternal,
                     blockUntilComplete = transactionRequest.blockUntilComplete
                 )
             )
-            transactionStatusClient.pollTransactionStatus(txId, transactionRequest.requestId, transactionRequest.transactionType)
+            transactionStatusClient.pollTransactionStatus(
+                txID = submitTransactionResult.txId,
+                requestId = transactionRequest.requestId,
+                transactionType = transactionRequest.transactionType,
+                txProcessingTime = submitTransactionResult.txProcessingTime
+            )
             // Send confirmation to the dApp that tx was submitted before status polling
             if (!transactionRequest.isInternal) {
                 dAppMessenger.sendTransactionWriteResponseSuccess(
                     remoteConnectorId = transactionRequest.remoteConnectorId,
                     requestId = transactionRequest.requestId,
-                    txId = txId
+                    txId = submitTransactionResult.txId
                 )
             }
         }.onFailure { error ->
@@ -190,6 +205,8 @@ class TransactionSubmitDelegate(
                     }
 
                     else -> {
+                        val walletErrorType =
+                            (dappRequestException.failure as? DappRequestFailure)?.toWalletErrorType()
                         reportFailure(error)
                         appEventBus.sendEvent(
                             AppEvent.Status.Transaction.Fail(
@@ -197,7 +214,9 @@ class TransactionSubmitDelegate(
                                 transactionId = "",
                                 isInternal = transactionRequest.isInternal,
                                 errorMessage = UiMessage.ErrorMessage.from((error as? DappRequestException)?.failure),
-                                blockUntilComplete = transactionRequest.blockUntilComplete
+                                blockUntilComplete = transactionRequest.blockUntilComplete,
+                                txProcessingTime = state.value.txProcessingTime,
+                                walletErrorType = walletErrorType
                             )
                         )
                     }

@@ -27,6 +27,7 @@ import com.babylon.wallet.android.domain.usecases.GetResourcesMetadataUseCase
 import com.babylon.wallet.android.domain.usecases.GetResourcesUseCase
 import com.babylon.wallet.android.domain.usecases.ResolveDAppsUseCase
 import com.babylon.wallet.android.domain.usecases.transaction.GetTransactionBadgesUseCase
+import com.babylon.wallet.android.domain.usecases.transaction.SubmitTransactionUseCase
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
@@ -67,6 +68,7 @@ class TransactionReviewViewModel @Inject constructor(
     getTransactionBadgesUseCase: GetTransactionBadgesUseCase,
     resolveDAppsUseCase: ResolveDAppsUseCase,
     getCurrentGatewayUseCase: GetCurrentGatewayUseCase,
+    submitTransactionUseCase: SubmitTransactionUseCase,
     dAppMessenger: DappMessenger,
     appEventBus: AppEventBus,
     transactionStatusClient: TransactionStatusClient,
@@ -117,7 +119,8 @@ class TransactionReviewViewModel @Inject constructor(
         transactionStatusClient = transactionStatusClient,
         onSendScreenEvent = {
             viewModelScope.launch { sendEvent(it) }
-        }
+        },
+        submitTransactionUseCase = submitTransactionUseCase
     )
 
     init {
@@ -263,6 +266,7 @@ class TransactionReviewViewModel @Inject constructor(
 
     data class State(
         val request: MessageFromDataChannel.IncomingRequest.TransactionRequest? = null,
+        val txProcessingTime: String? = null,
         val isLoading: Boolean,
         val isSubmitting: Boolean = false,
         val isRawManifestVisible: Boolean = false,

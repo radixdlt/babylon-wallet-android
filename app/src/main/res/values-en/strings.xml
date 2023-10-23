@@ -451,6 +451,9 @@
   <string name="transaction_status_completing_text">Completing Transaction…</string>
   <string name="transaction_status_success_title">Success</string>
   <string name="transaction_status_success_text">Your transaction was successful</string>
+  <string name="transaction_status_failed_text">Your transaction was processed, but had a problem that caused it to fail permanently</string>
+  <string name="transaction_status_error_text">Your transaction could not be processed, but could potentially still be processed within the next %s minutes</string>
+  <string name="transaction_status_rejected_text">Your transaction was improperly constructed and cannot be processed</string>
   <string name="transaction_status_failure_title">Something went wrong</string>
   <string name="transaction_status_dismiss_dialog_message">Stop waiting for transaction result? The transaction will not be canceled.</string>
   <string name="addressAction_copyAddress">Copy Address</string>
@@ -513,6 +516,7 @@
   <string name="error_transactionFailure_pollStatus">Failed to poll transaction status</string>
   <string name="error_transactionFailure_prepare">Failed to prepare transaction</string>
   <string name="error_transactionFailure_rejected">Transaction rejected</string>
+  <string name="error_transactionFailure_temporarilyRejected">Transaction temporarily rejected</string>
   <string name="error_transactionFailure_blindSigningNotEnabledButRequired">Your current Ledger settings only allow signing of simple token transfers. Please either enable \"verbose mode\" (to see full transaction manifests) or \"blind signing mode\" (to enable signing of complex transaction manifest hashes) on your Ledger app device.</string>
   <string name="error_transactionFailure_rejectedByUser">Failed to convert transaction manifest</string>
   <string name="error_transactionFailure_submit">Failed to submit transaction</string>
