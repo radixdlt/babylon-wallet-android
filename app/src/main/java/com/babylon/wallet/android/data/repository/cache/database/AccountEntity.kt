@@ -13,13 +13,7 @@ data class AccountEntity(
     val accountType: AccountTypeMetadataItem.AccountType?,
     val progress: AccountInfoProgress,
     override val synced: Instant
-) : CachedEntity {
-
-    fun toAccountDetails() = AccountDetails(
-        typeMetadataItem = accountType?.let { AccountTypeMetadataItem(it) }
-    )
-
-}
+) : CachedEntity
 
 enum class AccountInfoProgress {
     PENDING,

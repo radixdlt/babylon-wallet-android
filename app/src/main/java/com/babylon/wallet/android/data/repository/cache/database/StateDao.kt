@@ -17,27 +17,24 @@ interface StateDao {
 
     @Query(
         """
-        SELECT AR.account_address AS account_address, AR.amount, R.* FROM AccountResourceJoin AS AR
-        INNER JOIN ResourceEntity AS R ON AR.resource_address = R.address
-        WHERE AR.account_address in (:accountAddresses) AND AR.synced >= :minValidity
+        SELECT 
+            A.address AS account_address, 
+            A.account_type AS account_type, 
+            A.synced AS account_synced, 
+            A.progress, 
+            AR.amount AS amount,
+            R.address AS resource_address,
+            R.*
+        FROM AccountEntity AS A
+        LEFT JOIN AccountResourceJoin AS AR ON A.address = AR.account_address
+        LEFT JOIN ResourceEntity AS R ON AR.resource_address = R.address
+        WHERE A.address in (:accountAddresses) AND A.progress = 'UPDATED' AND A.synced >= :minValidity  
         """
     )
     fun observeAccountsPortfolio(
         accountAddresses: List<String>,
         minValidity: Long = InstantGenerator().toEpochMilli() - accountsCacheDuration.inWholeMilliseconds
-    ): Flow<List<AccountResourceWrapper>>
-
-    @Query(
-        """
-        SELECT * FROM AccountEntity
-        WHERE address in (:accountAddresses) AND progress = :withProgress AND synced >= :minValidity
-        """
-    )
-    fun observeAccountDetails(
-        accountAddresses: List<String>,
-        withProgress: AccountInfoProgress = AccountInfoProgress.UPDATED,
-        minValidity: Long = InstantGenerator().toEpochMilli() - accountsCacheDuration.inWholeMilliseconds
-    ): Flow<List<AccountEntity>>
+    ): Flow<List<AccountPortfolioResponse>>
 
     @Transaction
     fun updateAccountData(
@@ -84,7 +81,7 @@ interface StateDao {
     fun removeAccountDetails(account: AccountEntity)
 
     companion object {
-        val accountsCacheDuration = 2.toDuration(DurationUnit.HOURS)
+        val accountsCacheDuration = 2.toDuration(DurationUnit.SECONDS)
         val resourcesCacheDuration = 24.toDuration(DurationUnit.HOURS)
     }
 }
