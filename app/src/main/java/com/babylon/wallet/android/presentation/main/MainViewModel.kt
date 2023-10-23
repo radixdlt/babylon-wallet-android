@@ -179,10 +179,10 @@ class MainViewModel @Inject constructor(
                             )
                         )
                     }.onFailure { exception ->
-                        (exception as? DappRequestFailure)?.let { dappRequestFailure ->
+                        (exception as? RadixWalletException.DappRequestException)?.let { dappRequestFailure ->
                             when (dappRequestFailure) {
-                                DappRequestFailure.InvalidPersona,
-                                DappRequestFailure.InvalidRequest -> {
+                                RadixWalletException.DappRequestException.InvalidPersona,
+                                RadixWalletException.DappRequestException.InvalidRequest -> {
                                     _state.update { state ->
                                         state.copy(dappRequestFailure = dappRequestFailure)
                                     }

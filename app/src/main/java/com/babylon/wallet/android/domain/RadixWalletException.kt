@@ -28,6 +28,7 @@ sealed class RadixWalletException(msg: String? = null, cause: Throwable? = null)
         data object UnacceptableManifest : DappRequestException()
         data object InvalidPersona : DappRequestException()
         data object InvalidRequestChallenge : DappRequestException()
+        data object NotPossibleToAuthenticateAutomatically : DappRequestException()
         data class FailedToSignAuthChallenge(override val cause: Throwable? = null) : DappRequestException(cause = cause)
         data class WrongNetwork(
             val currentNetworkId: Int,
@@ -49,6 +50,7 @@ sealed class RadixWalletException(msg: String? = null, cause: Throwable? = null)
                 is FailedToSignAuthChallenge -> WalletErrorType.FailedToSignAuthChallenge
                 UnacceptableManifest -> WalletErrorType.FailedToPrepareTransaction
                 is InvalidRequestChallenge -> WalletErrorType.InvalidRequest
+                NotPossibleToAuthenticateAutomatically -> WalletErrorType.InvalidRequest
             }
         }
     }
@@ -172,7 +174,9 @@ fun RadixWalletException.DappVerificationException.toUserFriendlyMessage(): Stri
             RadixWalletException.DappVerificationException.WrongAccountType -> {
                 R.string.dAppRequest_validationOutcome_devExplanationInvalidDappDefinitionAddress
             }
-            RadixWalletException.DappVerificationException.ClaimedEntityAddressNotPresent -> R.string.common_somethingWentWrong // TODO consider different copy
+            RadixWalletException.DappVerificationException.ClaimedEntityAddressNotPresent -> {
+                R.string.common_somethingWentWrong
+            } // TODO consider different copy
         }
     )
 }
@@ -199,6 +203,9 @@ fun RadixWalletException.DappRequestException.toUserFriendlyMessage(): String {
         ) // TODO consider different copy
         RadixWalletException.DappRequestException.GetEpoch -> stringResource(R.string.error_transactionFailure_epoch)
         RadixWalletException.DappRequestException.RejectedByUser -> stringResource(R.string.error_transactionFailure_rejectedByUser)
+        RadixWalletException.DappRequestException.NotPossibleToAuthenticateAutomatically -> stringResource(
+            R.string.common_somethingWentWrong
+        ) // TODO consider different copy
     }
 }
 

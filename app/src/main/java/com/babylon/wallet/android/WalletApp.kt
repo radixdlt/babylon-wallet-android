@@ -148,7 +148,7 @@ fun WalletApp(
                 mainViewModel.onInvalidRequestMessageShown()
             },
             title = stringResource(id = R.string.dAppRequest_validationOutcome_invalidRequestTitle),
-            text = stringResource(id = it.toDescriptionRes()),
+            text = it.toUserFriendlyMessage(),
             confirmText = stringResource(
                 id = R.string.common_ok
             ),

@@ -26,7 +26,6 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.profile.derivation.model.NetworkId
-import rdx.works.profile.domain.NoMnemonicException
 import rdx.works.profile.domain.gateway.GetCurrentGatewayUseCase
 import timber.log.Timber
 import javax.inject.Inject
@@ -289,7 +288,7 @@ class TransactionSubmitDelegate @Inject constructor(
         if (currentState.requestNonNull.isInternal) {
             return
         }
-        //TODO test this flow
+        // TODO test this flow
         if (error is RadixWalletException) {
             error.toWalletErrorType()?.let { walletErrorType ->
                 dAppMessenger.sendWalletInteractionResponseFailure(

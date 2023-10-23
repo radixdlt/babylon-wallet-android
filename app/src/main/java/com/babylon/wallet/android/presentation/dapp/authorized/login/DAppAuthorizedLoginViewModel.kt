@@ -236,15 +236,15 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
     }
 
     private suspend fun handleRequestError(exception: Throwable) {
-        if (exception is DappRequestException) {
-            if (exception.e is SignatureCancelledException) {
+        if (exception is RadixWalletException.DappRequestException) {
+            if (exception.cause is RadixWalletException.SignatureCancelledException) {
                 return
             }
             dAppMessenger.sendWalletInteractionResponseFailure(
                 remoteConnectorId = request.remoteConnectorId,
                 requestId = args.interactionId,
-                error = exception.failure.toWalletErrorType(),
-                message = exception.failure.getDappMessage()
+                error = exception.toWalletErrorType(),
+                message = exception.getDappMessage()
             )
             _state.update { it.copy(failureDialog = DAppLoginUiState.FailureDialog.Open(exception)) }
         } else {
