@@ -403,7 +403,7 @@
   <string name="transactionReview_customizeNetworkFeeSheet_noneDue">None due</string>
   <string name="transactionReview_customizeNetworkFeeSheet_selectFeePayer_navigationTitle">Select Fee Payer</string>
   <string name="transactionReview_customizeNetworkFeeSheet_selectFeePayer_subtitle">Select an account to pay %s XRD transaction fee</string>
-  <string name="transactionReview_customizeNetworkFeeSheet_selectFeePayer_selectAccountButtonTitle">No account selected</string>
+  <string name="transactionReview_customizeNetworkFeeSheet_selectFeePayer_selectAccountButtonTitle">Select Account</string>
   <string name="transactionReview_customizeNetworkFeeSheet_viewNormalModeButtonTitle">View Normal Mode</string>
   <string name="transactionReview_customizeNetworkFeeSheet_viewAdvancedModeButtonTitle">View Advanced Mode</string>
   <string name="transactionReview_customizeNetworkFeeSheet_networkFee">Network Fee</string>
