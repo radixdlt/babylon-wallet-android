@@ -2,7 +2,6 @@ package com.babylon.wallet.android.data.repository.cache.database
 
 import androidx.room.ColumnInfo
 import androidx.room.Entity
-import com.babylon.wallet.android.data.repository.cache.CachedEntity
 import com.babylon.wallet.android.domain.model.resources.AccountDetails
 import com.babylon.wallet.android.domain.model.resources.metadata.AccountTypeMetadataItem
 import java.time.Instant
@@ -13,8 +12,7 @@ data class AccountEntity(
     @ColumnInfo("account_type")
     val accountType: AccountTypeMetadataItem.AccountType?,
     val progress: AccountInfoProgress,
-    override val synced: Instant,
-    override val epoch: Long
+    override val synced: Instant
 ) : CachedEntity {
 
     fun toAccountDetails() = AccountDetails(
