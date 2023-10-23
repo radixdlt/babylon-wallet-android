@@ -14,7 +14,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.Divider
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
@@ -117,7 +117,7 @@ private fun LinkedConnectorsContent(
         var connectionPasswordToDelete by remember { mutableStateOf<String?>(null) }
 
         Column(modifier = Modifier.padding(padding)) {
-            Divider(color = RadixTheme.colors.gray5)
+            HorizontalDivider(color = RadixTheme.colors.gray5)
 
             Box(modifier = Modifier.fillMaxSize()) {
                 if (isLoading) {
@@ -178,7 +178,7 @@ private fun ActiveLinkedConnectorDetails(
             style = RadixTheme.typography.body2Regular,
             color = RadixTheme.colors.gray2
         )
-        Divider(color = RadixTheme.colors.gray5)
+        HorizontalDivider(color = RadixTheme.colors.gray5)
         ActiveLinkedConnectorsListContent(
             activeLinkedConnectorsList = activeLinkedConnectorsList,
             onDeleteConnectorClick = onDeleteConnectorClick,
@@ -262,7 +262,7 @@ private fun ActiveLinkedConnectorContent(
                 )
             }
         }
-        Divider(Modifier.fillMaxWidth(), color = RadixTheme.colors.gray4)
+        HorizontalDivider(Modifier.fillMaxWidth(), color = RadixTheme.colors.gray4)
     }
 }
 

@@ -10,9 +10,9 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material.Divider
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CheckboxDefaults
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -52,7 +52,7 @@ fun AddFieldSheet(
             onBackClick = onBackClick,
             contentColor = RadixTheme.colors.gray1,
         )
-        Divider(color = RadixTheme.colors.gray5)
+        HorizontalDivider(color = RadixTheme.colors.gray5)
         LazyColumn(
             contentPadding = PaddingValues(vertical = dimensions.paddingDefault),
             horizontalAlignment = Alignment.CenterHorizontally,
@@ -83,7 +83,7 @@ fun AddFieldSheet(
                         .fillMaxWidth()
                         .padding(horizontal = dimensions.paddingDefault)
                 )
-                Divider(
+                HorizontalDivider(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = dimensions.paddingDefault),
@@ -91,7 +91,7 @@ fun AddFieldSheet(
                 )
             }
         }
-        Divider(color = RadixTheme.colors.gray5)
+        HorizontalDivider(color = RadixTheme.colors.gray5)
         RadixPrimaryButton(
             text = stringResource(id = R.string.editPersona_addAField_add),
             onClick = onAddFields,

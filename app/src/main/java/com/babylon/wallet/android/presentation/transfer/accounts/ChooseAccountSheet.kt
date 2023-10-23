@@ -20,7 +20,7 @@ import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Clear
-import androidx.compose.material3.Divider
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextFieldDefaults
@@ -285,7 +285,7 @@ private fun ChooseAccountContent(
                     }
                 )
             )
-            Divider(
+            HorizontalDivider(
                 Modifier
                     .fillMaxWidth()
                     .padding(RadixTheme.dimensions.paddingDefault),

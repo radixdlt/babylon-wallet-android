@@ -11,7 +11,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.Divider
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
@@ -76,7 +76,7 @@ fun DepositGuaranteesContent(
         containerColor = RadixTheme.colors.gray5
     ) { padding ->
         Column(modifier = Modifier.padding(padding)) {
-            Divider(color = RadixTheme.colors.gray5)
+            HorizontalDivider(color = RadixTheme.colors.gray5)
             Column(modifier, horizontalAlignment = Alignment.CenterHorizontally) {
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingMedium))
                 Text(
