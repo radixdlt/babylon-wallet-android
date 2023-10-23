@@ -8,6 +8,7 @@ import androidx.room.Query
 import androidx.room.Transaction
 import com.babylon.wallet.android.domain.model.resources.metadata.AccountTypeMetadataItem
 import kotlinx.coroutines.flow.Flow
+import rdx.works.core.InstantGenerator
 import kotlin.time.DurationUnit
 import kotlin.time.toDuration
 
@@ -18,23 +19,24 @@ interface StateDao {
         """
         SELECT AR.account_address AS account_address, AR.amount, R.* FROM AccountResourceJoin AS AR
         INNER JOIN ResourceEntity AS R ON AR.resource_address = R.address
-        WHERE AR.account_address in (:accountAddresses)
+        WHERE AR.account_address in (:accountAddresses) AND AR.synced >= :minValidity
         """
     )
     fun observeAccountsPortfolio(
         accountAddresses: List<String>,
-//        minValidity: Long = InstantGenerator().toEpochMilli() - accountsCacheDuration.inWholeMilliseconds
+        minValidity: Long = InstantGenerator().toEpochMilli() - accountsCacheDuration.inWholeMilliseconds
     ): Flow<List<AccountResourceWrapper>>
 
     @Query(
         """
         SELECT * FROM AccountEntity
-        WHERE address in (:accountAddresses) AND progress = :withProgress
+        WHERE address in (:accountAddresses) AND progress = :withProgress AND synced >= :minValidity
         """
     )
     fun observeAccountDetails(
         accountAddresses: List<String>,
-        withProgress: AccountInfoProgress = AccountInfoProgress.UPDATED
+        withProgress: AccountInfoProgress = AccountInfoProgress.UPDATED,
+        minValidity: Long = InstantGenerator().toEpochMilli() - accountsCacheDuration.inWholeMilliseconds
     ): Flow<List<AccountEntity>>
 
     @Transaction
@@ -49,8 +51,7 @@ interface StateDao {
                 address = accountAddress,
                 accountType = accountTypeMetadataItem?.type,
                 progress = AccountInfoProgress.PENDING,
-                synced = syncInfo.synced,
-                epoch = syncInfo.epoch
+                synced = syncInfo.synced
             )
         )
         insertResources(accountWithResources.map { it.second })
@@ -83,7 +84,7 @@ interface StateDao {
     fun removeAccountDetails(account: AccountEntity)
 
     companion object {
-        val accountsCacheDuration = 2.toDuration(DurationUnit.SECONDS)
+        val accountsCacheDuration = 2.toDuration(DurationUnit.HOURS)
         val resourcesCacheDuration = 24.toDuration(DurationUnit.HOURS)
     }
 }

@@ -13,7 +13,6 @@ import com.babylon.wallet.android.data.gateway.generated.models.NonFungibleResou
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponseFungibleResourceDetails
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponseItem
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponseNonFungibleResourceDetails
-import com.babylon.wallet.android.data.repository.cache.CachedEntity
 import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.domain.model.resources.metadata.DAppDefinitionsMetadataItem
 import com.babylon.wallet.android.domain.model.resources.metadata.DescriptionMetadataItem
@@ -51,8 +50,7 @@ data class ResourceEntity(
     val divisibility: Int?,
     val behaviours: BehavioursColumn?,
     val supply: BigDecimal?,
-    override val synced: Instant,
-    override val epoch: Long
+    override val synced: Instant
 ) : CachedEntity {
 
     @Suppress("CyclomaticComplexMethod")
@@ -107,8 +105,7 @@ data class ResourceEntity(
                 divisibility = null,
                 behaviours = null,
                 supply = null,
-                synced = syncInfo.synced,
-                epoch = syncInfo.epoch
+                synced = syncInfo.synced
             )
         }
 
@@ -129,7 +126,6 @@ data class ResourceEntity(
                 behaviours = null,
                 supply = null,
                 synced = syncInfo.synced,
-                epoch = syncInfo.epoch,
                 divisibility = null,
                 poolAddress = null,
                 symbol = null,
@@ -160,8 +156,7 @@ data class ResourceEntity(
                 divisibility = details?.divisibility(),
                 behaviours = details?.extractBehaviours()?.let { BehavioursColumn(it.toList()) },
                 supply = details?.totalSupply()?.toBigDecimal(),
-                synced = syncInfo.synced,
-                epoch = syncInfo.epoch
+                synced = syncInfo.synced
             )
         }
     }

@@ -10,6 +10,7 @@ import com.babylon.wallet.android.data.gateway.generated.models.FungibleResource
 import com.babylon.wallet.android.data.gateway.generated.models.NonFungibleResourcesCollectionItem
 import com.babylon.wallet.android.data.repository.cache.database.ResourceEntity.Companion.asEntity
 import java.math.BigDecimal
+import java.time.Instant
 
 @Entity(
     primaryKeys = ["account_address", "resource_address"],
@@ -32,8 +33,9 @@ data class AccountResourceJoin(
     val accountAddress: String,
     @ColumnInfo("resource_address", index = true)
     val resourceAddress: String,
-    val amount: BigDecimal
-) {
+    val amount: BigDecimal,
+    override val synced: Instant
+): CachedEntity {
 
     companion object {
         fun FungibleResourcesCollectionItem.asEntityPair(
@@ -42,7 +44,8 @@ data class AccountResourceJoin(
         ): Pair<AccountResourceJoin, ResourceEntity> = AccountResourceJoin(
             accountAddress = accountAddress,
             resourceAddress = resourceAddress,
-            amount = amountDecimal
+            amount = amountDecimal,
+            synced = syncInfo.synced
         ) to asEntity(syncInfo)
 
         fun NonFungibleResourcesCollectionItem.asEntityPair(
@@ -51,7 +54,8 @@ data class AccountResourceJoin(
         ): Pair<AccountResourceJoin, ResourceEntity> = AccountResourceJoin(
             accountAddress = accountAddress,
             resourceAddress = resourceAddress,
-            amount = amount.toBigDecimal()
+            amount = amount.toBigDecimal(),
+            synced = syncInfo.synced
         ) to asEntity(syncInfo)
     }
 }
@@ -73,5 +77,6 @@ data class AccountNFTJoin(
     @ColumnInfo("resource_address")
     val resourceAddress: String,
     @ColumnInfo("local_id")
-    val localId: String
-)
+    val localId: String,
+    override val synced: Instant
+): CachedEntity
