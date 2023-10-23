@@ -19,5 +19,7 @@ data class NFTEntity(
     val claimEpoch: Long?,
     @ColumnInfo("metadata")
     val metadata: StringMetadataColumn?,
-    override val synced: Instant
+    override val synced: Instant,
+    @ColumnInfo("state_version")
+    override val stateVersion: Long
 ) : CachedEntity

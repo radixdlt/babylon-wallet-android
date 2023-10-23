@@ -12,7 +12,9 @@ data class AccountEntity(
     @ColumnInfo("account_type")
     val accountType: AccountTypeMetadataItem.AccountType?,
     val progress: AccountInfoProgress,
-    override val synced: Instant
+    override val synced: Instant,
+    @ColumnInfo("state_version")
+    override val stateVersion: Long
 ) : CachedEntity
 
 enum class AccountInfoProgress {

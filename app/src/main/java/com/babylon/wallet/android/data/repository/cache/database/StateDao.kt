@@ -15,12 +15,19 @@ import kotlin.time.toDuration
 @Dao
 interface StateDao {
 
+    @Insert(
+        entity = StateVersionEntity::class,
+        onConflict = OnConflictStrategy.REPLACE
+    )
+    fun insertStateVersion(stateVersionEntity: StateVersionEntity)
+
     @Query(
         """
         SELECT 
             A.address AS account_address, 
             A.account_type AS account_type, 
             A.synced AS account_synced, 
+            A.state_version AS account_state_version, 
             A.progress, 
             AR.amount AS amount,
             R.address AS resource_address,
@@ -28,7 +35,11 @@ interface StateDao {
         FROM AccountEntity AS A
         LEFT JOIN AccountResourceJoin AS AR ON A.address = AR.account_address
         LEFT JOIN ResourceEntity AS R ON AR.resource_address = R.address
-        WHERE A.address in (:accountAddresses) AND A.progress = 'UPDATED' AND A.synced >= :minValidity  
+        WHERE 
+            A.address in (:accountAddresses) AND 
+            A.progress = 'UPDATED' AND 
+            A.synced >= :minValidity AND  
+            A.state_version = (SELECT version FROM StateVersionEntity WHERE id = 1)
         """
     )
     fun observeAccountsPortfolio(
@@ -48,7 +59,8 @@ interface StateDao {
                 address = accountAddress,
                 accountType = accountTypeMetadataItem?.type,
                 progress = AccountInfoProgress.PENDING,
-                synced = syncInfo.synced
+                synced = syncInfo.synced,
+                stateVersion = syncInfo.stateVersion
             )
         )
         insertResources(accountWithResources.map { it.second })
