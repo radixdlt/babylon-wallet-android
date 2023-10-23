@@ -28,7 +28,7 @@ import androidx.compose.material.ModalBottomSheetValue
 import androidx.compose.material.rememberModalBottomSheetState
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Divider
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -243,7 +243,7 @@ private fun DappDetailContent(
                             onBackClick = onBackClick,
                             windowInsets = WindowInsets.statusBars
                         )
-                        HorizontalDivider(color = RadixTheme.colors.gray5)
+                        Divider(color = RadixTheme.colors.gray5)
                     }
                 }
             ) { padding ->
@@ -303,7 +303,7 @@ private fun DappDetails(
                             .size(104.dp),
                         dapp = dApp
                     )
-                    HorizontalDivider(color = RadixTheme.colors.gray5)
+                    Divider(color = RadixTheme.colors.gray5)
                 }
             }
             dAppWithResources?.dApp?.description?.let { description ->
@@ -317,7 +317,7 @@ private fun DappDetails(
                         color = RadixTheme.colors.gray1,
                         textAlign = TextAlign.Start
                     )
-                    HorizontalDivider(color = RadixTheme.colors.gray5)
+                    Divider(color = RadixTheme.colors.gray5)
                 }
             }
             dAppWithResources?.dApp?.dAppAddress?.let { dappDefinitionAddress ->
@@ -534,7 +534,7 @@ private fun PersonaDetailsSheet(
                 onBackClick = onCloseClick,
                 contentColor = RadixTheme.colors.gray1
             )
-            HorizontalDivider(color = RadixTheme.colors.gray5)
+            Divider(color = RadixTheme.colors.gray5)
             PersonaDetailList(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -609,7 +609,7 @@ private fun PersonaDetailList(
                 value = persona.persona.displayName
             )
             Spacer(modifier = Modifier.height(dimensions.paddingXLarge))
-            HorizontalDivider(
+            Divider(
                 modifier = Modifier.padding(horizontal = dimensions.paddingDefault)
             )
         }
@@ -699,7 +699,7 @@ private fun PersonaDetailList(
                 }
             }
             item {
-                HorizontalDivider(color = RadixTheme.colors.gray5)
+                Divider(color = RadixTheme.colors.gray5)
                 Spacer(modifier = Modifier.height(dimensions.paddingDefault))
                 Button(
                     modifier = Modifier

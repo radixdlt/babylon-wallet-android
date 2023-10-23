@@ -5,6 +5,7 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
@@ -177,8 +178,8 @@ private fun ScanQrCode(
 
         CameraPreview(
             modifier = Modifier
-                .weight(1f)
                 .fillMaxWidth()
+                .aspectRatio(1f)
                 .padding(
                     horizontal = RadixTheme.dimensions.paddingLarge,
                     vertical = RadixTheme.dimensions.paddingDefault

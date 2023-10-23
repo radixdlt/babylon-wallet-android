@@ -8,7 +8,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Divider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
@@ -70,7 +70,7 @@ private fun AppSettingsContent(
             modifier = Modifier.padding(padding),
             horizontalAlignment = Alignment.Start
         ) {
-            HorizontalDivider(color = RadixTheme.colors.gray5)
+            Divider(color = RadixTheme.colors.gray5)
             LazyColumn(modifier = Modifier.fillMaxSize()) {
 //            item { // TODO when we can really customize it
 //                Text(
@@ -138,7 +138,7 @@ private fun AppSettingsContent(
                                 )
                             }
                         }
-                        HorizontalDivider(color = RadixTheme.colors.gray5)
+                        Divider(color = RadixTheme.colors.gray5)
                     }
                 }
             }

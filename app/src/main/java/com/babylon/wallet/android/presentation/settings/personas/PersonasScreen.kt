@@ -11,7 +11,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Divider
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -99,7 +99,7 @@ fun PersonasContent(
             modifier = Modifier.padding(padding),
             horizontalAlignment = Alignment.Start
         ) {
-            HorizontalDivider(color = RadixTheme.colors.gray5)
+            Divider(color = RadixTheme.colors.gray5)
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingMedium))
             Text(
                 modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingDefault),

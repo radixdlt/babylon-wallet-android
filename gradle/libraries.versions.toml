@@ -11,8 +11,8 @@ composeActivity = "1.8.0"
 composeNavigation = "2.7.4"
 material = "1.10.0"
 composeMaterial = "1.5.4"
-composeMaterial3 = "1.2.0-alpha10"
-material3WindowSizeClass = "1.2.0-alpha10"
+composeMaterial3 = "1.1.0-beta02" # don't update until https://issuetracker.google.com/issues/306657218 is fixed
+material3WindowSizeClass = "1.1.0-beta02"
 splash = "1.0.1"
 immutableCollections = "0.3.6"
 accompanist = "0.32.0"
@@ -73,6 +73,7 @@ splash = { module = "androidx.core:core-splashscreen", version.ref = "splash" }
 immutableCollections = { module = "org.jetbrains.kotlinx:kotlinx-collections-immutable", version.ref = "immutableCollections" }
 accompanistPagerIndicators = { module = "com.google.accompanist:accompanist-pager-indicators", version.ref = "accompanist" }
 accompanistDrawablePainter = { module = "com.google.accompanist:accompanist-drawablepainter", version.ref = "accompanist" }
+accompanistNavigationAnimation = { module = "com.google.accompanist:accompanist-navigation-animation", version.ref = "accompanist" }
 accompanistPermissions = { module = "com.google.accompanist:accompanist-permissions", version.ref = "accompanist" }
 accompanistSystemUiController = { module = "com.google.accompanist:accompanist-systemuicontroller", version.ref = "accompanist" }
 accompanistPlaceholder = { module = "com.google.accompanist:accompanist-placeholder", version.ref = "accompanist" }

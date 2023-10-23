@@ -12,7 +12,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBars
-import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Divider
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -73,12 +73,12 @@ fun EulaScreen(
                     textAlign = TextAlign.Center
                 )
 
-                HorizontalDivider(color = RadixTheme.colors.gray5)
+                Divider(color = RadixTheme.colors.gray5)
             }
         },
         bottomBar = {
             Column(modifier = Modifier.navigationBarsPadding()) {
-                HorizontalDivider(color = RadixTheme.colors.gray5)
+                Divider(color = RadixTheme.colors.gray5)
 
                 RadixPrimaryButton(
                     text = stringResource(id = R.string.onboarding_eula_accept),

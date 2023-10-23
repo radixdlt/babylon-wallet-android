@@ -13,7 +13,7 @@ import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CheckboxDefaults
-import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Divider
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
@@ -70,7 +70,7 @@ fun ChooseAssetsSheet(
                 modifier = Modifier
                     .background(color = RadixTheme.colors.defaultBackground)
             ) {
-                HorizontalDivider(color = RadixTheme.colors.gray5)
+                Divider(color = RadixTheme.colors.gray5)
 
                 RadixPrimaryButton(
                     text = when (val count = state.assetsSelectedCount) {

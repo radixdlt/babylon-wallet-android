@@ -2,17 +2,12 @@ package com.babylon.wallet.android.presentation.status.transaction
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.animateContentSize
-import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.AnchoredDraggableState
-import androidx.compose.foundation.gestures.DraggableAnchors
 import androidx.compose.foundation.gestures.Orientation
-import androidx.compose.foundation.gestures.anchoredDraggable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -26,6 +21,9 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.rememberSwipeableState
+import androidx.compose.material.swipeable
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.rememberSwipeableState
 import androidx.compose.material.swipeable
@@ -58,7 +56,7 @@ import com.babylon.wallet.android.presentation.ui.modifier.applyIf
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlin.math.roundToInt
 
-@OptIn(ExperimentalFoundationApi::class)
+@OptIn(ExperimentalMaterialApi::class)
 @Composable
 @Suppress("CyclomaticComplexMethod")
 fun TransactionStatusDialog(
@@ -90,22 +88,10 @@ fun TransactionStatusDialog(
             val maxHeight = with(LocalDensity.current) {
                 maxHeight.toPx()
             }
-            val density = LocalDensity.current
-            val draggableState = remember {
-                AnchoredDraggableState(
-                    initialValue = SwipeState.Expanded,
-                    positionalThreshold = { distance: Float -> distance * 0.4f },
-                    velocityThreshold = { with(density) { 100.dp.toPx() } },
-                    animationSpec = tween(),
-                    anchors = DraggableAnchors {
-                        SwipeState.Expanded at 0f
-                        SwipeState.Collapsed at maxHeight
-                    }
-                )
-            }
-            LaunchedEffect(draggableState) {
+            val swipeableState = rememberSwipeableState(initialValue = SwipeState.Expanded)
+            LaunchedEffect(swipeableState) {
                 snapshotFlow {
-                    draggableState.currentValue
+                    swipeableState.currentValue
                 }.distinctUntilChanged().collect {
                     if (it == SwipeState.Collapsed) {
                         dismissHandler()
@@ -117,14 +103,21 @@ fun TransactionStatusDialog(
                     .applyIf(
                         !state.blockUntilComplete,
                         Modifier
-                            .anchoredDraggable(
-                                state = draggableState,
+                            .swipeable(
+                                state = swipeableState,
+                                anchors = mapOf(
+                                    0f to SwipeState.Expanded,
+                                    maxHeight to SwipeState.Collapsed
+                                ),
                                 orientation = Orientation.Vertical,
+
                             )
                             .offset {
                                 IntOffset(
                                     x = 0,
-                                    y = draggableState.requireOffset().roundToInt().coerceIn(0, maxHeight.roundToInt())
+                                    y = swipeableState.offset.value
+                                        .roundToInt()
+                                        .coerceIn(0, maxHeight.roundToInt())
                                 )
                             }
                     )

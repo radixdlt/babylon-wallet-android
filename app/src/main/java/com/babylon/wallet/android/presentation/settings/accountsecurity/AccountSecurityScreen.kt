@@ -6,7 +6,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Divider
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -62,7 +62,7 @@ private fun AccountSecurityContent(
             modifier = Modifier.padding(padding),
             horizontalAlignment = Alignment.Start
         ) {
-            HorizontalDivider(color = RadixTheme.colors.gray5)
+            Divider(color = RadixTheme.colors.gray5)
             LazyColumn(modifier = Modifier.fillMaxSize()) {
                 appSettings.forEachIndexed { index, accountSecurityAndSettingsItem ->
                     item {
@@ -79,7 +79,7 @@ private fun AccountSecurityContent(
                                 null
                             }
                         )
-                        HorizontalDivider(color = RadixTheme.colors.gray5)
+                        Divider(color = RadixTheme.colors.gray5)
                     }
                 }
             }

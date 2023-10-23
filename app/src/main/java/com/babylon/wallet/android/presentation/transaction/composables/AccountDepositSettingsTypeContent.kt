@@ -8,7 +8,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Divider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment.Companion.CenterVertically
@@ -82,7 +82,7 @@ fun AccountDepositSettingsTypeContent(
                     )
                 }
                 if (accountWithSettings.defaultDepositRule != null && accountWithSettings.onlyDepositRuleChanged.not()) {
-                    HorizontalDivider(color = RadixTheme.colors.gray4)
+                    Divider(color = RadixTheme.colors.gray4)
                 }
                 accountWithSettings.assetChanges.forEachIndexed { index, assetChange ->
                     val lastItem = accountWithSettings.assetChanges.lastIndex == index && accountWithSettings.depositorChanges.isEmpty()
@@ -96,7 +96,7 @@ fun AccountDepositSettingsTypeContent(
                             .padding(RadixTheme.dimensions.paddingDefault)
                     )
                     if (!lastItem) {
-                        HorizontalDivider(color = RadixTheme.colors.gray4)
+                        Divider(color = RadixTheme.colors.gray4)
                     }
                 }
                 accountWithSettings.depositorChanges.forEachIndexed { index, depositorChange ->
@@ -111,7 +111,7 @@ fun AccountDepositSettingsTypeContent(
                             .padding(RadixTheme.dimensions.paddingDefault)
                     )
                     if (!lastItem) {
-                        HorizontalDivider(color = RadixTheme.colors.gray4)
+                        Divider(color = RadixTheme.colors.gray4)
                     }
                 }
             }

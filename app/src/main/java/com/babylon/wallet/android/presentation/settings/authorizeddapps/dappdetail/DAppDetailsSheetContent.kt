@@ -10,7 +10,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Divider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -40,7 +40,7 @@ fun DAppDetailsSheetContent(
             onBackClick = onBackClick,
             contentColor = RadixTheme.colors.gray1
         )
-        HorizontalDivider(color = RadixTheme.colors.gray5)
+        Divider(color = RadixTheme.colors.gray5)
         LazyColumn(
             contentPadding = PaddingValues(vertical = RadixTheme.dimensions.paddingDefault),
             horizontalAlignment = Alignment.CenterHorizontally,
@@ -53,7 +53,7 @@ fun DAppDetailsSheetContent(
                         .size(104.dp),
                     dapp = dApp.dApp
                 )
-                HorizontalDivider(color = RadixTheme.colors.gray5)
+                Divider(color = RadixTheme.colors.gray5)
             }
             dApp.dApp.description?.let { description ->
                 item {
@@ -66,7 +66,7 @@ fun DAppDetailsSheetContent(
                         color = RadixTheme.colors.gray1,
                         textAlign = TextAlign.Start
                     )
-                    HorizontalDivider(color = RadixTheme.colors.gray5)
+                    Divider(color = RadixTheme.colors.gray5)
                 }
             }
             dApp.dApp.dAppAddress.let { dappDefinitionAddress ->

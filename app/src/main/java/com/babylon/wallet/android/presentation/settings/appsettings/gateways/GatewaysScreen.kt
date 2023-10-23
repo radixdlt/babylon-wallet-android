@@ -24,7 +24,7 @@ import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.ModalBottomSheetValue
 import androidx.compose.material.Scaffold
 import androidx.compose.material.rememberModalBottomSheetState
-import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Divider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
@@ -160,7 +160,7 @@ private fun GatewaysContent(
                 modifier = Modifier.padding(padding).fillMaxSize(),
                 horizontalAlignment = Alignment.Start
             ) {
-                HorizontalDivider(color = RadixTheme.colors.gray5)
+                Divider(color = RadixTheme.colors.gray5)
                 LazyColumn(
                     modifier = Modifier.fillMaxSize(),
                     horizontalAlignment = Alignment.CenterHorizontally
@@ -181,7 +181,7 @@ private fun GatewaysContent(
 //                            .padding(horizontal = RadixTheme.dimensions.paddingDefault)
 //                    )
                         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
-                        HorizontalDivider(
+                        Divider(
                             color = RadixTheme.colors.gray5,
                             modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingDefault)
                         )
@@ -197,7 +197,7 @@ private fun GatewaysContent(
                                 .fillMaxWidth()
                                 .padding(RadixTheme.dimensions.paddingDefault)
                         )
-                        HorizontalDivider(
+                        Divider(
                             color = RadixTheme.colors.gray5,
                             modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingDefault)
                         )

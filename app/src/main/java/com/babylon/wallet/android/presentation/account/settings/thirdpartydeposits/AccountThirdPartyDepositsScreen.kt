@@ -20,7 +20,7 @@ import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Text
-import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Divider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHostState
@@ -144,7 +144,7 @@ private fun AccountThirdPartyDepositsContent(
         Column(
             modifier = Modifier.navigationBarsPadding().background(color = RadixTheme.colors.defaultBackground)
         ) {
-            HorizontalDivider(color = RadixTheme.colors.gray5)
+            Divider(color = RadixTheme.colors.gray5)
             RadixPrimaryButton(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -198,7 +198,7 @@ private fun AccountThirdPartyDepositsContent(
                     {}
                 }
             )
-            HorizontalDivider(
+            Divider(
                 modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingDefault),
                 color = RadixTheme.colors.gray5
             )
@@ -217,7 +217,7 @@ private fun AccountThirdPartyDepositsContent(
                     {}
                 }
             )
-            HorizontalDivider(
+            Divider(
                 modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingDefault),
                 color = RadixTheme.colors.gray5
             )

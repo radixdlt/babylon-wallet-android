@@ -18,7 +18,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.ModalBottomSheetValue
 import androidx.compose.material.rememberModalBottomSheetState
-import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Divider
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -209,7 +209,7 @@ private fun PersonaEditContent(
                             backIconType = BackIconType.Close,
                             windowInsets = WindowInsets.statusBars
                         )
-                        HorizontalDivider(color = RadixTheme.colors.gray5)
+                        Divider(color = RadixTheme.colors.gray5)
                     }
                 },
                 bottomBar = {
@@ -309,7 +309,7 @@ private fun PersonaDetailList(
                 }
             )
             Spacer(modifier = Modifier.height(dimensions.paddingXLarge))
-            HorizontalDivider(
+            Divider(
                 modifier = Modifier.padding(horizontal = dimensions.paddingDefault)
             )
         }
@@ -362,7 +362,7 @@ private fun PersonaDetailList(
                     null
                 },
             )
-            HorizontalDivider(
+            Divider(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = dimensions.paddingDefault, vertical = dimensions.paddingLarge),

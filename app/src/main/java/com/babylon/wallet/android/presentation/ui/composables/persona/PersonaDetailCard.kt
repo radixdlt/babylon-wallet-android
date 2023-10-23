@@ -9,7 +9,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.Text
-import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Divider
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.RadioButtonDefaults
 import androidx.compose.runtime.Composable
@@ -71,7 +71,7 @@ fun PersonaDetailCard(
                 )
             }
         }
-        HorizontalDivider(color = RadixTheme.colors.gray4)
+        Divider(color = RadixTheme.colors.gray4)
         val personalInfo = persona.personalInfoFormatted()
         if (personalInfo.isNotEmpty()) {
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))

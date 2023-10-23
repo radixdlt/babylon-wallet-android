@@ -10,7 +10,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
-import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Divider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextFieldDefaults
@@ -75,7 +75,7 @@ fun TransferMessage(
                 }
             }
 
-            HorizontalDivider(Modifier.fillMaxWidth(), 1.dp, RadixTheme.colors.gray4)
+            Divider(Modifier.fillMaxWidth(), 1.dp, RadixTheme.colors.gray4)
 
             Row(
                 modifier = Modifier

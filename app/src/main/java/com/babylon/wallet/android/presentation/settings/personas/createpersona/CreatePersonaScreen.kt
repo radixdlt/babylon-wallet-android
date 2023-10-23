@@ -19,7 +19,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.ModalBottomSheetValue
 import androidx.compose.material.rememberModalBottomSheetState
-import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Divider
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -167,7 +167,7 @@ fun CreatePersonaContent(
                 Column {
                     val context = LocalContext.current
 
-                    HorizontalDivider(color = RadixTheme.colors.gray5)
+                    Divider(color = RadixTheme.colors.gray5)
                     RadixPrimaryButton(
                         text = stringResource(id = R.string.createPersona_saveAndContinueButtonTitle),
                         onClick = {
@@ -309,7 +309,7 @@ private fun CreatePersonaContentList(
             Spacer(modifier = Modifier.height(dimensions.paddingLarge))
         }
         item {
-            HorizontalDivider(color = RadixTheme.colors.gray5)
+            Divider(color = RadixTheme.colors.gray5)
             Spacer(modifier = Modifier.height(dimensions.paddingDefault))
             Text(
                 text = stringResource(id = R.string.createPersona_explanation_someDappsMayRequest),

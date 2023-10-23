@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -20,7 +21,7 @@ import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Clear
-import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Divider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextFieldDefaults
@@ -285,7 +286,7 @@ private fun ChooseAccountContent(
                     }
                 )
             )
-            HorizontalDivider(
+            Divider(
                 Modifier
                     .fillMaxWidth()
                     .padding(RadixTheme.dimensions.paddingDefault),
@@ -358,8 +359,8 @@ fun ScanQRContent(
 
         CameraPreview(
             modifier = Modifier
-                .weight(1f)
                 .fillMaxWidth()
+                .aspectRatio(1f)
                 .padding(horizontal = RadixTheme.dimensions.paddingDefault)
                 .clip(RadixTheme.shapes.roundedRectMedium)
         ) {

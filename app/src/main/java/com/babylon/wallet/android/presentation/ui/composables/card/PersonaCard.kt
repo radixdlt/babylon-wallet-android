@@ -9,7 +9,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Divider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.RadioButtonDefaults
@@ -130,7 +130,7 @@ fun PersonaSelectableCard(modifier: Modifier, persona: PersonaUiModel, onSelectP
         }
         persona.lastUsedOn?.let {
             Column(modifier = Modifier.fillMaxWidth()) {
-                HorizontalDivider(color = RadixTheme.colors.gray4)
+                Divider(color = RadixTheme.colors.gray4)
                 Spacer(modifier = Modifier.height(paddingDefault))
                 Text(
                     modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingDefault),
