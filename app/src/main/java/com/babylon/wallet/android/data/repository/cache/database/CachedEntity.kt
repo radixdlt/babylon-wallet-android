@@ -4,4 +4,5 @@ import java.time.Instant
 
 interface CachedEntity {
     val synced: Instant
+    val stateVersion: Long
 }

@@ -1,10 +1,13 @@
 package com.babylon.wallet.android.data.repository.state
 
+import androidx.room.Insert
+import androidx.room.OnConflictStrategy
 import com.babylon.wallet.android.data.gateway.generated.models.FungibleResourcesCollectionItem
 import com.babylon.wallet.android.data.gateway.generated.models.LedgerState
 import com.babylon.wallet.android.data.gateway.generated.models.NonFungibleResourcesCollectionItem
 import com.babylon.wallet.android.data.repository.cache.database.AccountResourceJoin.Companion.asEntityPair
 import com.babylon.wallet.android.data.repository.cache.database.StateDao
+import com.babylon.wallet.android.data.repository.cache.database.StateVersionEntity
 import com.babylon.wallet.android.data.repository.cache.database.SyncInfo
 import com.babylon.wallet.android.domain.model.resources.AccountDetails
 import com.babylon.wallet.android.domain.model.resources.Resource

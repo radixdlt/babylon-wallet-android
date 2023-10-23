@@ -14,6 +14,8 @@ data class AccountPortfolioResponse(
     val accountType: AccountTypeMetadataItem.AccountType?,
     @ColumnInfo("account_synced")
     val accountSynced: Instant,
+    @ColumnInfo("account_state_version")
+    val accountStateVersion: Long,
     val progress: AccountInfoProgress,
 
     // From AccountResourceJoin
@@ -39,7 +41,9 @@ data class AccountPortfolioResponse(
     private val behaviours: BehavioursColumn?,
     private val supply: BigDecimal?,
     @ColumnInfo("synced")
-    private val resourceSynced: Instant?
+    private val resourceSynced: Instant?,
+    @ColumnInfo("state_version")
+    private val resourceStateVersion: Long
 ) {
 
     @Ignore
@@ -61,7 +65,8 @@ data class AccountPortfolioResponse(
             divisibility = divisibility,
             behaviours = behaviours,
             supply = supply,
-            synced = resourceSynced
+            synced = resourceSynced,
+            stateVersion = resourceStateVersion
         )
     } else {
         null

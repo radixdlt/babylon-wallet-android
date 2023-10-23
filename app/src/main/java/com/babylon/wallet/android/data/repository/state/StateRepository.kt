@@ -3,6 +3,7 @@ package com.babylon.wallet.android.data.repository.state
 import com.babylon.wallet.android.data.gateway.apis.StateApi
 import com.babylon.wallet.android.data.gateway.extensions.asMetadataItems
 import com.babylon.wallet.android.data.repository.cache.database.StateDao
+import com.babylon.wallet.android.data.repository.cache.database.StateVersionEntity
 import com.babylon.wallet.android.data.repository.cache.database.SyncInfo
 import com.babylon.wallet.android.domain.model.resources.AccountDetails
 import com.babylon.wallet.android.domain.model.resources.metadata.MetadataItem.Companion.consume
@@ -43,18 +44,22 @@ class StateRepositoryImpl @Inject constructor(
             if (remainingAccounts.isNotEmpty()) {
                 Timber.tag("Bakos").d("Fetching for account ${remainingAccounts.first().displayName}")
                 stateApiDelegate.fetchAllResources(
-                    accounts = listOf(remainingAccounts.first())
-                ) { account, _, accountMetadata, fungibles, nonFungibles ->
-                    val accountMetadataItems = accountMetadata?.asMetadataItems()?.toMutableList()
+                    accounts = listOf(remainingAccounts.first()),
+                    onStateVersion = { stateVersion ->
+                        stateDao.insertStateVersion(StateVersionEntity(stateVersion))
+                    },
+                    onAccount = { account, ledgerState, accountMetadata, fungibles, nonFungibles ->
+                        val accountMetadataItems = accountMetadata?.asMetadataItems()?.toMutableList()
 
-                    cacheDelegate.insertAccountDetails(
-                        accountAddress = account.address,
-                        accountType = accountMetadataItems?.consume(),
-                        fungibles = fungibles,
-                        nonFungibles = nonFungibles,
-                        syncInfo = SyncInfo(synced = InstantGenerator())
-                    )
-                }
+                        cacheDelegate.insertAccountDetails(
+                            accountAddress = account.address,
+                            accountType = accountMetadataItems?.consume(),
+                            fungibles = fungibles,
+                            nonFungibles = nonFungibles,
+                            syncInfo = SyncInfo(synced = InstantGenerator(), stateVersion = ledgerState.stateVersion)
+                        )
+                    }
+                )
             }
         }.distinctUntilChanged()
 }

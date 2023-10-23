@@ -50,7 +50,9 @@ data class ResourceEntity(
     val divisibility: Int?,
     val behaviours: BehavioursColumn?,
     val supply: BigDecimal?,
-    override val synced: Instant
+    override val synced: Instant,
+    @ColumnInfo("state_version")
+    override val stateVersion: Long
 ) : CachedEntity {
 
     @Suppress("CyclomaticComplexMethod")
@@ -105,7 +107,8 @@ data class ResourceEntity(
                 divisibility = null,
                 behaviours = null,
                 supply = null,
-                synced = syncInfo.synced
+                synced = syncInfo.synced,
+                stateVersion = syncInfo.stateVersion
             )
         }
 
@@ -129,6 +132,7 @@ data class ResourceEntity(
                 divisibility = null,
                 poolAddress = null,
                 symbol = null,
+                stateVersion = syncInfo.stateVersion
             )
         }
 
@@ -156,7 +160,8 @@ data class ResourceEntity(
                 divisibility = details?.divisibility(),
                 behaviours = details?.extractBehaviours()?.let { BehavioursColumn(it.toList()) },
                 supply = details?.totalSupply()?.toBigDecimal(),
-                synced = syncInfo.synced
+                synced = syncInfo.synced,
+                stateVersion = syncInfo.stateVersion
             )
         }
     }

@@ -12,7 +12,8 @@ import androidx.room.TypeConverters
         AccountEntity::class,
         AccountNFTJoin::class,
         ResourceEntity::class,
-        NFTEntity::class
+        NFTEntity::class,
+        StateVersionEntity::class
     ],
     version = 1
 )

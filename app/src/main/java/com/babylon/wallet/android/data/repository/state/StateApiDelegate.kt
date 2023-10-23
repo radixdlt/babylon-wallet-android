@@ -25,6 +25,7 @@ class StateApiDelegate(
 
     suspend fun fetchAllResources(
         accounts: List<Network.Account>,
+        onStateVersion: (Long) -> Unit,
         onAccount: (
             account: Network.Account,
             ledgerState: LedgerState,
@@ -33,6 +34,7 @@ class StateApiDelegate(
             nonFungibles: List<NonFungibleResourcesCollectionItem>
         ) -> Unit
     ) {
+        var stateVersion: Long? = null
         accounts
             .chunked(ENTITY_DETAILS_PAGE_LIMIT)
             .map { accountsChunked ->
@@ -40,6 +42,7 @@ class StateApiDelegate(
                     StateEntityDetailsRequest(
                         addresses = accountsChunked.map { it.address },
                         aggregationLevel = ResourceAggregationLevel.vault,
+                        atLedgerState = stateVersion?.let { LedgerStateSelector(stateVersion = it) },
                         optIns = StateEntityDetailsOptIns(
                             explicitMetadata = listOf(
                                 ExplicitMetadataKey.ACCOUNT_TYPE,
@@ -58,6 +61,13 @@ class StateApiDelegate(
                         )
                     )
                 ).executeSafe().getOrThrow()
+
+                // When first chunk is received we save the state version, so we can query the rest
+                // of the chunks at the same state version
+                if (stateVersion == null) {
+                    onStateVersion(details.ledgerState.stateVersion)
+                    stateVersion = details.ledgerState.stateVersion
+                }
 
                 accountsChunked.forEach { account ->
                     val accountOnLedger = details.items.find { it.address == account.address }
