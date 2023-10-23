@@ -33,9 +33,8 @@ data class AccountResourceJoin(
     val accountAddress: String,
     @ColumnInfo("resource_address", index = true)
     val resourceAddress: String,
-    val amount: BigDecimal,
-    override val synced: Instant
-): CachedEntity {
+    val amount: BigDecimal
+) {
 
     companion object {
         fun FungibleResourcesCollectionItem.asEntityPair(
@@ -44,8 +43,7 @@ data class AccountResourceJoin(
         ): Pair<AccountResourceJoin, ResourceEntity> = AccountResourceJoin(
             accountAddress = accountAddress,
             resourceAddress = resourceAddress,
-            amount = amountDecimal,
-            synced = syncInfo.synced
+            amount = amountDecimal
         ) to asEntity(syncInfo)
 
         fun NonFungibleResourcesCollectionItem.asEntityPair(
@@ -54,8 +52,7 @@ data class AccountResourceJoin(
         ): Pair<AccountResourceJoin, ResourceEntity> = AccountResourceJoin(
             accountAddress = accountAddress,
             resourceAddress = resourceAddress,
-            amount = amount.toBigDecimal(),
-            synced = syncInfo.synced
+            amount = amount.toBigDecimal()
         ) to asEntity(syncInfo)
     }
 }
@@ -77,6 +74,5 @@ data class AccountNFTJoin(
     @ColumnInfo("resource_address")
     val resourceAddress: String,
     @ColumnInfo("local_id")
-    val localId: String,
-    override val synced: Instant
-): CachedEntity
+    val localId: String
+)
