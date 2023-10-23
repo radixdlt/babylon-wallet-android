@@ -6,7 +6,7 @@ import com.babylon.wallet.android.data.repository.cache.database.NFTIdsColumn
 import com.babylon.wallet.android.data.repository.cache.database.StateDatabaseConverters
 import com.babylon.wallet.android.data.repository.cache.database.StringMetadataColumn
 import com.babylon.wallet.android.data.repository.cache.database.TagsColumn
-import com.babylon.wallet.android.domain.model.behaviours.AssetBehaviour
+import com.babylon.wallet.android.domain.model.assets.AssetBehaviour
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Test

@@ -33,7 +33,7 @@ fun List<Assets>.allPoolUnits(): List<Resource.FungibleResource> {
     return map { resource ->
         resource.poolUnits.map { poolUnit ->
             poolUnit.poolUnitResource
-        } + resource.validatorsWithStakeResources.validators.map { validator ->
+        } + resource.validatorsWithStakeResources.map { validator ->
             validator.liquidStakeUnits.map { it.fungibleResource }
         }.flatten()
     }.flatten()

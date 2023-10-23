@@ -68,7 +68,6 @@ import com.babylon.wallet.android.domain.model.assets.Assets
 import com.babylon.wallet.android.domain.model.assets.LiquidStakeUnit
 import com.babylon.wallet.android.domain.model.assets.PoolUnit
 import com.babylon.wallet.android.domain.model.assets.ValidatorDetail
-import com.babylon.wallet.android.domain.model.assets.ValidatorsWithStakeResources
 import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.domain.usecases.SecurityPromptType
 import com.babylon.wallet.android.presentation.account.composable.FungibleTokenBottomSheetDetails
@@ -604,7 +603,7 @@ fun AccountContentPreview() {
                             fungibles = sampleFungibleResources(),
                             nonFungibles = listOf(),
                             poolUnits = listOf(),
-                            validatorsWithStakeResources = ValidatorsWithStakeResources()
+                            validatorsWithStakeResources = emptyList()
                         ),
                     )
                 ),

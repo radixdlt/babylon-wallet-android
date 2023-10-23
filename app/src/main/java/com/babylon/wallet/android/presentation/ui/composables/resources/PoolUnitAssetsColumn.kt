@@ -30,7 +30,7 @@ import com.babylon.wallet.android.domain.model.assets.LiquidStakeUnit
 import com.babylon.wallet.android.domain.model.assets.PoolUnit
 import com.babylon.wallet.android.domain.model.assets.StakeClaim
 import com.babylon.wallet.android.domain.model.assets.ValidatorDetail
-import com.babylon.wallet.android.domain.model.assets.ValidatorsWithStakeResources
+import com.babylon.wallet.android.domain.model.assets.ValidatorWithStakeResources
 import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.presentation.account.composable.EmptyResourcesContent
 import com.babylon.wallet.android.presentation.transfer.assets.ResourceTab
@@ -74,14 +74,14 @@ fun PoolUnitAssetsColumn(
 fun LazyListScope.poolUnitsResources(
     modifier: Modifier = Modifier,
     collapsedState: Boolean,
-    validatorsWithStakeResources: ValidatorsWithStakeResources?,
+    validatorsWithStakeResources: List<ValidatorWithStakeResources>?,
     poolUnits: List<PoolUnit>,
     parentSectionClick: () -> Unit,
     poolUnitItem: @Composable (PoolUnit) -> Unit,
     liquidStakeItem: @Composable (LiquidStakeUnit, ValidatorDetail) -> Unit,
     stakeClaimItem: @Composable (StakeClaim, Resource.NonFungibleResource.Item) -> Unit
 ) {
-    if ((validatorsWithStakeResources == null || validatorsWithStakeResources.isEmpty) && poolUnits.isEmpty()) {
+    if ((validatorsWithStakeResources == null || validatorsWithStakeResources.isEmpty()) && poolUnits.isEmpty()) {
         item {
             EmptyResourcesContent(
                 modifier = modifier.fillMaxWidth(),
@@ -89,7 +89,7 @@ fun LazyListScope.poolUnitsResources(
             )
         }
     } else {
-        if (validatorsWithStakeResources != null && !validatorsWithStakeResources.isEmpty) {
+        if (validatorsWithStakeResources != null && !validatorsWithStakeResources.isEmpty()) {
             item {
                 LiquidStakeUnitResourceHeader(
                     modifier = modifier,
@@ -102,8 +102,8 @@ fun LazyListScope.poolUnitsResources(
                 }
             }
             if (!collapsedState) {
-                val validatorsSize = validatorsWithStakeResources.validators.size
-                validatorsWithStakeResources.validators.forEachIndexed { index, validator ->
+                val validatorsSize = validatorsWithStakeResources.size
+                validatorsWithStakeResources.forEachIndexed { index, validator ->
                     val lastValidator = validatorsSize - 1 == index
                     item(key = validator.validatorDetail.address) {
                         CardWrapper(modifier) {

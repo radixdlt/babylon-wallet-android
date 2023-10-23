@@ -4,7 +4,6 @@ import com.babylon.wallet.android.data.repository.state.StateRepository
 import com.babylon.wallet.android.di.coroutines.DefaultDispatcher
 import com.babylon.wallet.android.domain.model.assets.AccountWithAssets
 import com.babylon.wallet.android.domain.model.assets.Assets
-import com.babylon.wallet.android.domain.model.assets.ValidatorsWithStakeResources
 import com.babylon.wallet.android.domain.model.resources.AccountDetails
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
@@ -33,7 +32,7 @@ class GetWalletAssetsUseCase @Inject constructor(
                             fungibles = it.fungibles,
                             nonFungibles = it.nonFungibles,
                             poolUnits = listOf(),
-                            validatorsWithStakeResources = ValidatorsWithStakeResources()
+                            validatorsWithStakeResources = emptyList()
                         )
                     }
                 )

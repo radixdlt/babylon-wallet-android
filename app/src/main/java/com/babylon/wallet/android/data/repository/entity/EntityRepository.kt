@@ -43,7 +43,6 @@ import com.babylon.wallet.android.domain.model.assets.PoolUnit
 import com.babylon.wallet.android.domain.model.assets.StakeClaim
 import com.babylon.wallet.android.domain.model.assets.ValidatorDetail
 import com.babylon.wallet.android.domain.model.assets.ValidatorWithStakeResources
-import com.babylon.wallet.android.domain.model.assets.ValidatorsWithStakeResources
 import com.babylon.wallet.android.domain.model.resources.AccountDetails
 import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.domain.model.resources.metadata.ClaimAmountMetadataItem
@@ -182,7 +181,7 @@ class EntityRepositoryImpl @Inject constructor(
                                 fungibles = mapOfAccountsWithFungibleResources[account.address].orEmpty().sorted(),
                                 nonFungibles = mapOfAccountsWithNonFungibleResources[account.address].orEmpty().sorted(),
                                 validatorsWithStakeResources = liquidStakeCollectionPerAccountAddress[account.address]
-                                    ?: ValidatorsWithStakeResources(),
+                                    ?: emptyList(),
                                 poolUnits = mapOfAccountsWithPoolUnits[account.address].orEmpty()
                             )
                         )
@@ -267,7 +266,7 @@ class EntityRepositoryImpl @Inject constructor(
         accountAddressToLiquidStakeUnits: Map<String, List<LiquidStakeUnit>>,
         accountAddressToStakeClaimNtfs: Map<String, List<StakeClaim>>,
         validatorDetailsList: List<StateEntityDetailsResponseItem>,
-    ): Map<String, ValidatorsWithStakeResources> {
+    ): Map<String, List<ValidatorWithStakeResources>> {
         if (validatorDetailsList.isEmpty()) return emptyMap()
         val accountAddresses = accountAddressToLiquidStakeUnits.keys + accountAddressToStakeClaimNtfs.keys
         return accountAddresses.associateWith { address ->
@@ -305,9 +304,8 @@ class EntityRepositoryImpl @Inject constructor(
                         stakeClaimNft = nftPerValidator[validatorAddress].orEmpty().firstOrNull()
                     )
                 }
-            ValidatorsWithStakeResources(
-                validators = accountValidators
-            )
+
+            accountValidators
         }
     }
 
