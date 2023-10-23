@@ -13,6 +13,7 @@ import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.babylon.wallet.android.domain.model.Transferable
 import com.babylon.wallet.android.domain.usecases.transaction.SignatureCancelledException
 import com.babylon.wallet.android.domain.usecases.transaction.SubmitTransactionUseCase
+import com.babylon.wallet.android.domain.toWalletErrorType
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.ViewModelDelegate
 import com.babylon.wallet.android.presentation.transaction.PreviewType
@@ -284,16 +285,21 @@ class TransactionSubmitDelegate @Inject constructor(
             it.copy(isSubmitting = false, error = UiMessage.ErrorMessage(error))
         }
 
-        val currentState = _state.value
-        if (error is RadixWalletException.DappRequestException && !currentState.requestNonNull.isInternal) {
-            dAppMessenger.sendWalletInteractionResponseFailure(
-                remoteConnectorId = currentState.requestNonNull.remoteConnectorId,
-                requestId = currentState.requestNonNull.requestId,
-                error = error.toWalletErrorType(),
-                message = error.getDappMessage()
-            )
+        val currentState = state.value
+        if (currentState.requestNonNull.isInternal) {
+            return
         }
-
+        //TODO test this flow
+        if (error is RadixWalletException) {
+            error.toWalletErrorType()?.let { walletErrorType ->
+                dAppMessenger.sendWalletInteractionResponseFailure(
+                    remoteConnectorId = currentState.requestNonNull.remoteConnectorId,
+                    requestId = currentState.requestNonNull.requestId,
+                    error = walletErrorType,
+                    message = error.getDappMessage()
+                )
+            }
+        }
         approvalJob = null
     }
 }
