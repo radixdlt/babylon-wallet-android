@@ -26,7 +26,7 @@ data class Assets(
     val fungibles: List<Resource.FungibleResource> = emptyList(),
     val nonFungibles: List<Resource.NonFungibleResource> = emptyList(),
     val poolUnits: List<PoolUnit> = emptyList(),
-    val validatorsWithStakeResources: ValidatorsWithStakeResources = ValidatorsWithStakeResources()
+    val validatorsWithStakeResources: List<ValidatorWithStakeResources> = emptyList()
 ) {
 
     val xrd: Resource.FungibleResource? by lazy {
@@ -43,15 +43,8 @@ data class Assets(
     } == true
 
     fun poolUnitsSize(): Int {
-        return poolUnits.size + validatorsWithStakeResources.validators.size
+        return poolUnits.size + validatorsWithStakeResources.size
     }
-}
-
-data class ValidatorsWithStakeResources(
-    val validators: List<ValidatorWithStakeResources> = emptyList()
-) {
-    val isEmpty
-        get() = validators.isEmpty()
 }
 
 data class ValidatorDetail(

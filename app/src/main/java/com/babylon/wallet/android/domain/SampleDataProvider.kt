@@ -14,7 +14,6 @@ import com.babylon.wallet.android.domain.model.assets.AccountWithAssets
 import com.babylon.wallet.android.domain.model.assets.Assets
 import com.babylon.wallet.android.domain.model.assets.LiquidStakeUnit
 import com.babylon.wallet.android.domain.model.assets.PoolUnit
-import com.babylon.wallet.android.domain.model.assets.ValidatorsWithStakeResources
 import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.domain.model.resources.XrdResource
 import com.babylon.wallet.android.domain.model.resources.metadata.DescriptionMetadataItem
@@ -270,7 +269,7 @@ class SampleDataProvider {
                 fungibles = withFungibleTokens,
                 nonFungibles = emptyList(),
                 poolUnits = emptyList(),
-                validatorsWithStakeResources = ValidatorsWithStakeResources()
+                validatorsWithStakeResources = emptyList()
             )
         )
     }

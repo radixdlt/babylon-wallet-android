@@ -35,13 +35,12 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.model.assets.ValidatorDetail
 import com.babylon.wallet.android.domain.model.assets.ValidatorWithStakeResources
-import com.babylon.wallet.android.domain.model.assets.ValidatorsWithStakeResources
 import java.math.BigDecimal
 
 @Composable
 fun LiquidStakeUnitResourceHeader(
     modifier: Modifier = Modifier,
-    collection: ValidatorsWithStakeResources,
+    collection: List<ValidatorWithStakeResources>,
     cardHeight: Dp = 103.dp,
     collapsed: Boolean = true,
     groupInnerPadding: Dp = 6.dp,
@@ -53,7 +52,7 @@ fun LiquidStakeUnitResourceHeader(
         modifier = modifier
     ) {
         if (collapsed) {
-            if (collection.validators.isNotEmpty()) {
+            if (collection.isNotEmpty()) {
                 val scaleFactor = 0.9f
                 val topOffset = cardHeight * (1 - scaleFactor) + groupInnerPadding
                 Surface(
@@ -106,7 +105,7 @@ fun LiquidStakeUnitResourceHeader(
                         maxLines = 2
                     )
                     Text(
-                        stringResource(id = R.string.account_poolUnits_numberOfStakes, collection.validators.size),
+                        stringResource(id = R.string.account_poolUnits_numberOfStakes, collection.size),
                         style = RadixTheme.typography.body2HighImportance,
                         color = RadixTheme.colors.gray2,
                         maxLines = 1
@@ -149,11 +148,9 @@ fun LiquidStakeUnitResourceHeaderPreview() {
         LiquidStakeUnitResourceHeader(
             modifier = Modifier.padding(all = 30.dp),
             collapsed = true,
-            collection = ValidatorsWithStakeResources(
-                listOf(
-                    ValidatorWithStakeResources(ValidatorDetail("address1", "Validator 1", null, null, BigDecimal(100000))),
-                    ValidatorWithStakeResources(ValidatorDetail("address1", "Validator 1", null, null, BigDecimal(100000)))
-                )
+            collection = listOf(
+                ValidatorWithStakeResources(ValidatorDetail("address1", "Validator 1", null, null, BigDecimal(100000))),
+                ValidatorWithStakeResources(ValidatorDetail("address1", "Validator 1", null, null, BigDecimal(100000)))
             ),
             parentSectionClick = {}
         )
