@@ -3,6 +3,7 @@ package com.babylon.wallet.android.data.repository.state
 import com.babylon.wallet.android.data.gateway.apis.StateApi
 import com.babylon.wallet.android.data.gateway.extensions.asMetadataItems
 import com.babylon.wallet.android.data.repository.cache.database.StateDao
+import com.babylon.wallet.android.data.repository.cache.database.SyncInfo
 import com.babylon.wallet.android.domain.model.resources.AccountDetails
 import com.babylon.wallet.android.domain.model.resources.metadata.MetadataItem.Companion.consume
 import com.babylon.wallet.android.domain.model.resources.Resources
@@ -12,6 +13,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.transform
+import rdx.works.core.InstantGenerator
 import rdx.works.profile.data.model.pernetwork.Network
 import timber.log.Timber
 import javax.inject.Inject
@@ -42,15 +44,15 @@ class StateRepositoryImpl @Inject constructor(
                 Timber.tag("Bakos").d("Fetching for account ${remainingAccounts.first().displayName}")
                 stateApiDelegate.fetchAllResources(
                     accounts = listOf(remainingAccounts.first())
-                ) { account, ledgerState, accountMetadata, fungibles, nonFungibles ->
+                ) { account, _, accountMetadata, fungibles, nonFungibles ->
                     val accountMetadataItems = accountMetadata?.asMetadataItems()?.toMutableList()
 
                     cacheDelegate.insertAccountDetails(
                         accountAddress = account.address,
                         accountType = accountMetadataItems?.consume(),
-                        ledgerState = ledgerState,
                         fungibles = fungibles,
-                        nonFungibles = nonFungibles
+                        nonFungibles = nonFungibles,
+                        syncInfo = SyncInfo(synced = InstantGenerator())
                     )
                 }
             }

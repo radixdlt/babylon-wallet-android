@@ -27,9 +27,13 @@ class StateCacheDelegate(
 
             detailsWithResources.forEach { accountDetailsAndResources ->
                 val account = accounts.find { it.address == accountDetailsAndResources.address } ?: return@forEach
+
+                // Parse details for this account
                 val accountDetails = AccountDetails(
                     typeMetadataItem = accountDetailsAndResources.accountType?.let { AccountTypeMetadataItem(it) }
                 )
+
+                // Compile all resources owned by this account
                 if (accountDetailsAndResources.resource != null && accountDetailsAndResources.amount != null) {
                     when (val resource = accountDetailsAndResources.resource.toResource(accountDetailsAndResources.amount)) {
                         is Resource.FungibleResource -> {
@@ -64,12 +68,10 @@ class StateCacheDelegate(
     fun insertAccountDetails(
         accountAddress: String,
         accountType: AccountTypeMetadataItem?,
-        ledgerState: LedgerState,
         fungibles: List<FungibleResourcesCollectionItem>,
-        nonFungibles: List<NonFungibleResourcesCollectionItem>
+        nonFungibles: List<NonFungibleResourcesCollectionItem>,
+        syncInfo: SyncInfo
     ) {
-        val syncInfo = SyncInfo(synced = InstantGenerator(), epoch = ledgerState.epoch)
-
         stateDao.updateAccountData(
             accountAddress = accountAddress,
             accountTypeMetadataItem = accountType,
