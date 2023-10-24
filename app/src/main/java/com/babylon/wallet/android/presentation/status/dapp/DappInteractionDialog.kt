@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -22,9 +21,8 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
-import com.babylon.wallet.android.presentation.ui.composables.BottomSheetWrapper
+import com.babylon.wallet.android.presentation.ui.composables.BottomSheetDialogWrapper
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DappInteractionDialog(
     modifier: Modifier = Modifier,
@@ -45,8 +43,8 @@ fun DappInteractionDialog(
         viewModel.onDismiss()
     }
     BackHandler(onBack = dismissHandler)
-    BottomSheetWrapper(
-        onDismissRequest = dismissHandler
+    BottomSheetDialogWrapper(
+        onDismiss = dismissHandler
     ) {
         DappInteractionDialogContent(
             modifier = modifier,

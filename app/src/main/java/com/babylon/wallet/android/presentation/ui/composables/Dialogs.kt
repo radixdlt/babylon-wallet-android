@@ -1,13 +1,25 @@
 package com.babylon.wallet.android.presentation.ui.composables
 
+import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.AnchoredDraggableState
+import androidx.compose.foundation.gestures.DraggableAnchors
+import androidx.compose.foundation.gestures.Orientation
+import androidx.compose.foundation.gestures.anchoredDraggable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -22,24 +34,28 @@ import androidx.compose.material3.SheetState
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.Dialog
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixTextButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
+import com.babylon.wallet.android.presentation.ui.modifier.applyIf
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlin.math.roundToInt
 
-/**
- * use this as a Root composable of new dialog composable
- */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BottomSheetWrapper(
@@ -74,24 +90,87 @@ fun BottomSheetWrapper(
 /**
  * use this if you want AlertDialog style usage, like BasicPromptAlertDialog - not using new route
  */
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun BottomSheetDialogWrapper(
     modifier: Modifier = Modifier,
-    title: String? = null,
-    onDismissRequest: () -> Unit,
-    bottomSheetState: SheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
-    content: @Composable ColumnScope.() -> Unit,
+    dragToDismissEnabled: Boolean = true,
+    onDismiss: () -> Unit,
+    content: @Composable () -> Unit
 ) {
-    Dialog(onDismissRequest = onDismissRequest) {
-        BottomSheetWrapper(
-            modifier = modifier,
-            title = title,
-            onDismissRequest = onDismissRequest,
-            bottomSheetState = bottomSheetState,
-            content = content,
-        )
+    val interactionSource = remember { MutableInteractionSource() }
+    Box(
+        modifier = modifier
+            .fillMaxSize()
+            .clickable(interactionSource = interactionSource, indication = null) { onDismiss() }
+    ) {
+        BoxWithConstraints(Modifier.align(Alignment.BottomCenter)) {
+            val maxHeight = with(LocalDensity.current) {
+                maxHeight.toPx()
+            }
+            val density = LocalDensity.current
+            val draggableState = remember {
+                AnchoredDraggableState(
+                    initialValue = DragState.Expanded,
+                    positionalThreshold = { distance: Float -> distance * 0.4f },
+                    velocityThreshold = { with(density) { 100.dp.toPx() } },
+                    animationSpec = tween(),
+                    anchors = DraggableAnchors {
+                        DragState.Expanded at 0f
+                        DragState.Collapsed at maxHeight
+                    }
+                )
+            }
+            LaunchedEffect(draggableState) {
+                snapshotFlow {
+                    draggableState.currentValue
+                }.distinctUntilChanged().collect {
+                    if (it == DragState.Collapsed) {
+                        onDismiss()
+                    }
+                }
+            }
+            Column(
+                modifier = Modifier
+                    .applyIf(
+                        dragToDismissEnabled,
+                        Modifier
+                            .anchoredDraggable(
+                                state = draggableState,
+                                orientation = Orientation.Vertical,
+                            )
+                            .offset {
+                                IntOffset(
+                                    x = 0,
+                                    y = draggableState
+                                        .requireOffset()
+                                        .roundToInt()
+                                        .coerceIn(0, maxHeight.roundToInt())
+                                )
+                            }
+                    )
+                    .animateContentSize()
+                    .background(RadixTheme.colors.defaultBackground, shape = RadixTheme.shapes.roundedRectTopMedium)
+                    .clip(RadixTheme.shapes.roundedRectTopMedium)
+
+            ) {
+                if (dragToDismissEnabled) {
+                    BottomDialogDragHandle(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(RadixTheme.colors.defaultBackground, shape = RadixTheme.shapes.roundedRectTopDefault)
+                            .padding(vertical = RadixTheme.dimensions.paddingSmall),
+                        onDismissRequest = onDismiss
+                    )
+                }
+                content()
+            }
+        }
     }
+}
+
+enum class DragState {
+    Expanded, Collapsed
 }
 
 @Composable
