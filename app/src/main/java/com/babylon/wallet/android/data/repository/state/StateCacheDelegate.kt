@@ -10,6 +10,7 @@ import com.babylon.wallet.android.data.repository.cache.database.PoolResourceJoi
 import com.babylon.wallet.android.data.repository.cache.database.StateDao
 import com.babylon.wallet.android.data.repository.cache.database.SyncInfo
 import com.babylon.wallet.android.data.repository.cache.database.ValidatorEntity
+import com.babylon.wallet.android.domain.model.assets.ValidatorDetail
 import com.babylon.wallet.android.domain.model.resources.AccountDetails
 import com.babylon.wallet.android.domain.model.resources.AccountOnLedger
 import com.babylon.wallet.android.domain.model.resources.Resource
@@ -61,6 +62,28 @@ class StateCacheDelegate(
                 } else {
                     result[account] = cachedDetails
                 }
+
+                // Compile all pools
+                val poolAddresses = result[account]?.poolAddresses().orEmpty()
+                stateDao.getPoolDetails(poolAddresses, accountDetailsAndResources.accountStateVersion).onEach { poolWithResource ->
+                    if (poolWithResource.resource != null && poolWithResource.amount != null) {
+                        result[account]?.pools?.getOrDefault(poolWithResource.address, mutableListOf())?.also {
+                            it.add(poolWithResource.resource.toResource(poolWithResource.amount) as Resource.FungibleResource)
+                        }
+                    }
+                }
+                val remainingPools = poolAddresses - result[account]?.pools?.keys
+                if (remainingPools.isNotEmpty()) {
+                    result.remove(account)
+                }
+
+                // Compile all validators
+                val validatorsAddresses = result[account]?.validatorAddresses().orEmpty()
+                val validators = stateDao.getValidators(validatorsAddresses, accountDetailsAndResources.accountStateVersion)
+                if (validators.size != validatorsAddresses.size) {
+                    result.remove(account)
+                }
+                result[account]?.validators?.addAll(validators.map { it.asValidatorDetail() })
             }
 
             emit(result)
@@ -103,15 +126,21 @@ class StateCacheDelegate(
         val stateVersion: Long,
         val accountDetails: AccountDetails,
         val fungibles: MutableList<Resource.FungibleResource> = mutableListOf(),
-        val nonFungibles: MutableList<Resource.NonFungibleResource> = mutableListOf()
+        val nonFungibles: MutableList<Resource.NonFungibleResource> = mutableListOf(),
+        val pools: MutableMap<String, MutableList<Resource.FungibleResource>> = mutableMapOf(),
+        val validators: MutableList<ValidatorDetail> = mutableListOf()
     ) {
+
+        fun poolAddresses() = fungibles.mapNotNull { it.poolAddress }.toSet()
+
+        fun validatorAddresses() = (fungibles.mapNotNull { it.validatorAddress } + nonFungibles.mapNotNull { it.validatorAddress }).toSet()
 
         fun toAccountDetails() = AccountOnLedger(
             accountDetails,
             fungibles,
             nonFungibles,
-            emptyList(),
-            mapOf()
+            validators,
+            pools
         )
 
     }
