@@ -41,26 +41,38 @@ fun StateEntityDetailsResponseItem.getXRDVaultAmount(vaultAddress: String): BigD
     }
 }
 
-fun StateEntityDetailsResponseItemDetails.xrdVaultAddress(): String? {
-    return when (val details = this) {
+val StateEntityDetailsResponseItemDetails.xrdVaultAddress: String?
+    get() = when (val details = this) {
         is StateEntityDetailsResponseComponentDetails -> details.state?.stakeXrdVault?.entityAddress
         else -> null
     }
-}
 
-fun StateEntityDetailsResponseItemDetails.stakeUnitResourceAddress(): String? {
-    return when (val details = this) {
-        is StateEntityDetailsResponseComponentDetails -> details.state?.stakeUnitResourceAddress
+
+val StateEntityDetailsResponseItem.totalXRDStake: BigDecimal?
+    get() {
+        val xrdVaultAddress = details?.xrdVaultAddress ?: return null
+
+        val xrdResource = fungibleResources?.items?.find {
+            XrdResource.addressesPerNetwork.containsValue(it.resourceAddress)
+        }
+
+        return if (xrdResource is FungibleResourcesCollectionItemVaultAggregated) {
+            xrdResource.vaults.items.find { it.vaultAddress == xrdVaultAddress }?.amount?.toBigDecimal()
+        } else {
+            null
+        }
+    }
+
+val StateEntityDetailsResponseItemDetails.stakeUnitResourceAddress: String?
+    get() = when (this) {
+        is StateEntityDetailsResponseComponentDetails -> state?.stakeUnitResourceAddress
         else -> null
     }
-}
 
 val StateEntityDetailsResponseItemDetails.claimTokenResourceAddress: String?
-    get() {
-        return when (val details = this) {
-            is StateEntityDetailsResponseComponentDetails -> details.state?.claimTokenResourceAddress
-            else -> null
-        }
+    get() = when (this) {
+        is StateEntityDetailsResponseComponentDetails -> state?.claimTokenResourceAddress
+        else -> null
     }
 
 fun StateEntityDetailsResponseItemDetails.extractBehaviours(): AssetBehaviours = when (val details = this) {

@@ -129,7 +129,7 @@ class EntityRepositoryImpl @Inject constructor(
                         stateVersion = stateVersion
                     )
                     val validatorResourceAddresses = validatorDetails.map { item ->
-                        listOfNotNull(item.details?.stakeUnitResourceAddress(), item.details?.claimTokenResourceAddress)
+                        listOfNotNull(item.details?.stakeUnitResourceAddress, item.details?.claimTokenResourceAddress)
                     }.flatten().toSet()
                     val poolAddresses = poolsList.map { item -> item.address }.toSet()
 
@@ -284,7 +284,7 @@ class EntityRepositoryImpl @Inject constructor(
                 .map { validatorAddress ->
                     val validatorDetails = validatorDetailsList.firstOrNull { it.address == validatorAddress }
                     val totalXrdStake = validatorDetails?.details
-                        ?.xrdVaultAddress()
+                        ?.xrdVaultAddress
                         ?.let {
                             validatorDetails.getXRDVaultAmount(it)
                         }
