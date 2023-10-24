@@ -55,6 +55,7 @@ class StateRepositoryImpl @Inject constructor(
                             item.asAccountResourceJoin(account.address, syncInfo)
                         }
 
+                        // Store account details
                         stateDao.updateAccountData(
                             accountAddress = account.address,
                             accountTypeMetadataItem = accountMetadataItems?.consume(),
@@ -62,10 +63,12 @@ class StateRepositoryImpl @Inject constructor(
                             accountWithResources = fungibleEntityPairs + nonFungibleEntityPairs
                         )
 
+                        // Gather and store pool details
                         val poolAddresses = fungibleEntityPairs.mapNotNull { it.second.poolAddress }.toSet()
                         val pools = stateApiDelegate.getPoolDetails(poolAddresses = poolAddresses, stateVersion = syncInfo.stateVersion)
                         cacheDelegate.storePoolDetails(pools, syncInfo)
 
+                        // Gather and store validator details
                         val validatorAddresses = (fungibleEntityPairs.mapNotNull {
                             it.second.validatorAddress
                         } + nonFungibleEntityPairs.mapNotNull {

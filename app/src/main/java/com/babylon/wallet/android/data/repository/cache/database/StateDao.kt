@@ -108,8 +108,26 @@ interface StateDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insertPoolResources(poolResources: List<PoolResourceJoin>)
 
+    @Query("""
+        SELECT 
+            PoolEntity.address AS pool_entity_address, 
+            PoolEntity.state_version AS pool_state_version, 
+            PoolResourceJoin.amount AS amount,
+            ResourceEntity.*
+        FROM PoolEntity
+        LEFT JOIN PoolResourceJoin ON PoolEntity.address IN (:addresses) AND PoolEntity.state_version = :atStateVersion
+        LEFT JOIN ResourceEntity ON PoolResourceJoin.resource_address = ResourceEntity.address
+    """)
+    fun getPoolDetails(addresses: Set<String>, atStateVersion: Long): List<PoolWithResourceResponse>
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insertValidators(validators: List<ValidatorEntity>)
+
+    @Query("""
+        SELECT * FROM ValidatorEntity
+        WHERE address in (:addresses) AND state_version = :atStateVersion
+    """)
+    fun getValidators(addresses: Set<String>, atStateVersion: Long): List<ValidatorEntity>
 
     companion object {
         val accountsCacheDuration = 2.toDuration(DurationUnit.HOURS)

@@ -1,8 +1,10 @@
 package com.babylon.wallet.android.data.repository.cache.database
 
+import android.net.Uri
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import com.babylon.wallet.android.domain.model.assets.ValidatorDetail
 import java.math.BigDecimal
 
 @Entity
@@ -21,4 +23,16 @@ data class ValidatorEntity(
     val totalStake: BigDecimal?,
     @ColumnInfo("state_version")
     val stateVersion: Long
-)
+) {
+
+    fun asValidatorDetail() = ValidatorDetail(
+        address = address,
+        name = name.orEmpty(),
+        url = iconUrl?.let { Uri.parse(it) },
+        description = description,
+        totalXrdStake = totalStake,
+        stakeUnitResourceAddress = stakeUnitResourceAddress,
+        claimTokenResourceAddress = claimTokenResourceAddress
+    )
+
+}
