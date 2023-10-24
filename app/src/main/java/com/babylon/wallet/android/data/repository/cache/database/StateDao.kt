@@ -93,7 +93,7 @@ interface StateDao {
     fun removeAccountDetails(account: AccountEntity)
 
     companion object {
-        val accountsCacheDuration = 2.toDuration(DurationUnit.SECONDS)
+        val accountsCacheDuration = 2.toDuration(DurationUnit.HOURS)
         val resourcesCacheDuration = 24.toDuration(DurationUnit.HOURS)
     }
 }

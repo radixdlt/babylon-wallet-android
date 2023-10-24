@@ -76,3 +76,26 @@ data class AccountNFTJoin(
     @ColumnInfo("local_id")
     val localId: String
 )
+
+@Entity(
+    primaryKeys = ["pool_address", "resource_address"],
+    foreignKeys = [
+        ForeignKey(
+            entity = PoolEntity::class,
+            parentColumns = ["address"],
+            childColumns = ["pool_address"]
+        ),
+        ForeignKey(
+            entity = ResourceEntity::class,
+            parentColumns = ["address"],
+            childColumns = ["resource_address"]
+        )
+    ]
+)
+data class PoolResourceJoin(
+    @ColumnInfo("pool_address")
+    val poolAddress: String,
+    @ColumnInfo("resource_address")
+    val resourceAddress: String,
+    val amount: BigDecimal?
+)
