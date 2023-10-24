@@ -81,6 +81,7 @@ class TransactionReviewViewModel @Inject constructor(
 
     override fun initialState(): State = State(
         isLoading = true,
+        isNetworkFeeLoading = true,
         previewType = PreviewType.None
     )
 
@@ -264,6 +265,7 @@ class TransactionReviewViewModel @Inject constructor(
     data class State(
         val request: MessageFromDataChannel.IncomingRequest.TransactionRequest? = null,
         val isLoading: Boolean,
+        val isNetworkFeeLoading: Boolean,
         val isSubmitting: Boolean = false,
         val isRawManifestVisible: Boolean = false,
         val previewType: PreviewType,

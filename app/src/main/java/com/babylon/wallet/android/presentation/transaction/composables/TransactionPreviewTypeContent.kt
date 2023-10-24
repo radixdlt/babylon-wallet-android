@@ -86,6 +86,7 @@ fun TransactionPreviewTypePreview() {
             state = TransactionReviewViewModel.State(
                 request = SampleDataProvider().transactionRequest,
                 isLoading = false,
+                isNetworkFeeLoading = false,
                 previewType = PreviewType.NonConforming
             ),
             preview = PreviewType.Transfer(

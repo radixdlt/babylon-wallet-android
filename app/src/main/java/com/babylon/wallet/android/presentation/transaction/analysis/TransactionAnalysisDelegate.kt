@@ -89,6 +89,15 @@ class TransactionAnalysisDelegate(
             signersCount = notaryAndSigners.signers.count()
         )
 
+        state.update {
+            it.copy(
+                isRawManifestVisible = previewType == PreviewType.NonConforming,
+                isLoading = false,
+                previewType = previewType,
+                defaultSignersCount = notaryAndSigners.signers.count()
+            )
+        }
+
         if (transactionFees.defaultTransactionFee > BigDecimal.ZERO) {
             // There will be a lock fee so update lock fee cost
             transactionFees = transactionFees.copy(
@@ -102,12 +111,9 @@ class TransactionAnalysisDelegate(
         ).onSuccess { feePayerResult ->
             state.update {
                 it.copy(
-                    isRawManifestVisible = previewType == PreviewType.NonConforming,
+                    isNetworkFeeLoading = false,
                     transactionFees = transactionFees,
-                    isLoading = false,
-                    previewType = previewType,
-                    feePayerSearchResult = feePayerResult,
-                    defaultSignersCount = notaryAndSigners.signers.count()
+                    feePayerSearchResult = feePayerResult
                 )
             }
         }
@@ -149,6 +155,7 @@ class TransactionAnalysisDelegate(
         state.update {
             it.copy(
                 isLoading = false,
+                isNetworkFeeLoading = false,
                 previewType = PreviewType.None,
                 error = UiMessage.ErrorMessage.from(error)
             )
