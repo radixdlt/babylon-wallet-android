@@ -20,24 +20,16 @@ class GetWalletAssetsUseCase @Inject constructor(
 
     operator fun invoke(accounts: List<Network.Account>): Flow<List<AccountWithAssets>> {
         return stateRepository.observeAccountsResources(accounts).map { accountsAndResources ->
-            Timber.tag("Bakos").d("Received in UI: ${accountsAndResources.keys.map { it.displayName }}")
             accounts.map { account ->
                 val detailsAndResources = accountsAndResources[account]
 
                 AccountWithAssets(
                     account = account,
-                    details = detailsAndResources?.first ?: AccountDetails(),
-                    assets = detailsAndResources?.second?.let {
-                        Assets(
-                            fungibles = it.fungibles,
-                            nonFungibles = it.nonFungibles,
-                            poolUnits = listOf(),
-                            validatorsWithStakeResources = emptyList()
-                        )
-                    }
+                    details = detailsAndResources?.details ?: AccountDetails(),
+                    assets = detailsAndResources?.toAssets()
                 )
             }
         }
-            .flowOn(dispatcher)
+        .flowOn(dispatcher)
     }
 }

@@ -52,7 +52,9 @@ data class ValidatorDetail(
     val name: String,
     val url: Uri?,
     val description: String?,
-    val totalXrdStake: BigDecimal?
+    val totalXrdStake: BigDecimal?,
+    val stakeUnitResourceAddress: String? = null,
+    val claimTokenResourceAddress: String? = null
 )
 
 data class ValidatorWithStakeResources(

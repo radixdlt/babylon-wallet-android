@@ -14,6 +14,7 @@ import com.babylon.wallet.android.data.gateway.generated.models.StateEntityFungi
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityNonFungiblesPageRequest
 import com.babylon.wallet.android.data.gateway.model.ExplicitMetadataKey
 import com.babylon.wallet.android.data.repository.executeSafe
+import com.babylon.wallet.android.domain.model.resources.AccountOnLedger
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
