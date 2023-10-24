@@ -37,7 +37,6 @@ sealed class DappRequestFailure(msg: String? = null) : Exception(msg.orEmpty()) 
         data object SubmitNotarizedTransaction : TransactionApprovalFailure()
         data class InvalidTXDuplicate(val txId: String) : TransactionApprovalFailure()
         data class FailedToPollTXStatus(val txId: String) : TransactionApprovalFailure()
-        data class GatewayRejected(val txId: String) : TransactionApprovalFailure()
         data class GatewayCommittedFailure(val txId: String) : TransactionApprovalFailure()
         data class GatewayPermanentlyRejected(val txId: String) : TransactionApprovalFailure()
         data class GatewayTemporarilyRejected(val txId: String) : TransactionApprovalFailure()
@@ -65,9 +64,6 @@ sealed class DappRequestFailure(msg: String? = null) : Exception(msg.orEmpty()) 
             is TransactionApprovalFailure.FailedToPollTXStatus -> WalletErrorType.FailedToPollSubmittedTransaction
             is TransactionApprovalFailure.GatewayCommittedFailure -> {
                 WalletErrorType.SubmittedTransactionHasFailedTransactionStatus
-            }
-            is TransactionApprovalFailure.GatewayRejected -> {
-                WalletErrorType.SubmittedTransactionHasRejectedTransactionStatus
             }
             is TransactionApprovalFailure.GatewayPermanentlyRejected -> {
                 WalletErrorType.SubmittedTransactionHasPermanentlyRejectedTransactionStatus
@@ -111,7 +107,6 @@ sealed class DappRequestFailure(msg: String? = null) : Exception(msg.orEmpty()) 
             TransactionApprovalFailure.ConvertManifest -> R.string.error_transactionFailure_manifest
             is TransactionApprovalFailure.FailedToPollTXStatus -> R.string.error_transactionFailure_pollStatus
             is TransactionApprovalFailure.GatewayCommittedFailure -> R.string.transaction_status_failed_text
-            is TransactionApprovalFailure.GatewayRejected -> R.string.error_transactionFailure_rejected
             is TransactionApprovalFailure.GatewayPermanentlyRejected -> R.string.transaction_status_rejected_text // TODO Crowdin
             is TransactionApprovalFailure.GatewayTemporarilyRejected -> R.string.transaction_status_error_text // TODO Crowdin
             GetEpoch -> R.string.error_transactionFailure_epoch
@@ -152,7 +147,6 @@ sealed class DappRequestFailure(msg: String? = null) : Exception(msg.orEmpty()) 
         return when (this) {
             is TransactionApprovalFailure.FailedToPollTXStatus -> "TXID: $txId"
             is TransactionApprovalFailure.GatewayCommittedFailure -> "TXID: $txId"
-            is TransactionApprovalFailure.GatewayRejected -> "TXID: $txId"
             is TransactionApprovalFailure.InvalidTXDuplicate -> "TXID: $txId"
             is WrongNetwork -> {
                 "Wallet is using network ID: $currentNetworkId, request sent specified network ID: $requestNetworkId"
