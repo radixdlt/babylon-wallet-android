@@ -1,20 +1,26 @@
 package com.babylon.wallet.android.data.repository.state
 
 import com.babylon.wallet.android.data.gateway.extensions.asMetadataItems
-import com.babylon.wallet.android.data.gateway.generated.models.FungibleResourcesCollectionItem
-import com.babylon.wallet.android.data.gateway.generated.models.NonFungibleResourcesCollectionItem
-import com.babylon.wallet.android.data.repository.cache.database.AccountResourceJoin.Companion.asEntityPair
+import com.babylon.wallet.android.data.gateway.extensions.claimTokenResourceAddress
+import com.babylon.wallet.android.data.gateway.extensions.stakeUnitResourceAddress
+import com.babylon.wallet.android.data.gateway.extensions.totalXRDStake
+import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponseItem
+import com.babylon.wallet.android.data.repository.cache.database.PoolEntity
+import com.babylon.wallet.android.data.repository.cache.database.PoolResourceJoin.Companion.asPoolResourceJoin
 import com.babylon.wallet.android.data.repository.cache.database.StateDao
 import com.babylon.wallet.android.data.repository.cache.database.SyncInfo
+import com.babylon.wallet.android.data.repository.cache.database.ValidatorEntity
 import com.babylon.wallet.android.domain.model.resources.AccountDetails
 import com.babylon.wallet.android.domain.model.resources.AccountOnLedger
 import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.domain.model.resources.metadata.AccountTypeMetadataItem
+import com.babylon.wallet.android.domain.model.resources.metadata.DescriptionMetadataItem
+import com.babylon.wallet.android.domain.model.resources.metadata.IconUrlMetadataItem
 import com.babylon.wallet.android.domain.model.resources.metadata.MetadataItem.Companion.consume
+import com.babylon.wallet.android.domain.model.resources.metadata.NameMetadataItem
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.transform
-import rdx.works.core.InstantGenerator
 import rdx.works.profile.data.model.pernetwork.Network
 
 class StateCacheDelegate(
@@ -61,24 +67,36 @@ class StateCacheDelegate(
         }.distinctUntilChanged()
     }
 
-    fun insertAccountDetails(
-        accountAddress: String,
-        gatewayDetails: StateApiDelegate.AccountGatewayDetails
-    ) {
-        val accountMetadataItems = gatewayDetails.accountMetadata?.asMetadataItems()?.toMutableList()
-        val syncInfo = SyncInfo(synced = InstantGenerator(), stateVersion = gatewayDetails.ledgerState.stateVersion)
-        val accountWithResources = gatewayDetails.fungibles.map { item ->
-            item.asEntityPair(accountAddress, syncInfo)
-        } + gatewayDetails.nonFungibles.map { item ->
-            item.asEntityPair(accountAddress, syncInfo)
+    fun storePoolDetails(pools: List<StateEntityDetailsResponseItem>, syncInfo: SyncInfo) {
+        val poolsWithResources = pools.associate { pool ->
+            val address = pool.address
+            val resourcesInPool = pool.fungibleResources?.items.orEmpty().map {
+                it.asPoolResourceJoin(pool.address, syncInfo)
+            }
+
+            address to resourcesInPool
+        }.mapKeys {
+            PoolEntity(it.key, syncInfo.stateVersion)
         }
 
-        stateDao.updateAccountData(
-            accountAddress = accountAddress,
-            accountTypeMetadataItem = accountMetadataItems?.consume(),
-            syncInfo = syncInfo,
-            accountWithResources = accountWithResources
-        )
+        stateDao.insertPools(poolsWithResources)
+    }
+
+    fun storeValidatorDetails(validators: List<StateEntityDetailsResponseItem>, syncInfo: SyncInfo) {
+        val entities = validators.map { validatorDetails ->
+            val metadataItems = validatorDetails.explicitMetadata?.asMetadataItems().orEmpty().toMutableList()
+            ValidatorEntity(
+                address = validatorDetails.address,
+                name = metadataItems.consume<NameMetadataItem>()?.name,
+                description = metadataItems.consume<DescriptionMetadataItem>()?.description,
+                iconUrl = metadataItems.consume<IconUrlMetadataItem>()?.url?.toString(),
+                stakeUnitResourceAddress = validatorDetails.details?.stakeUnitResourceAddress.orEmpty(),
+                claimTokenResourceAddress = validatorDetails.details?.claimTokenResourceAddress.orEmpty(),
+                totalStake = validatorDetails.totalXRDStake,
+                stateVersion = syncInfo.stateVersion
+            )
+        }
+        stateDao.insertValidators(entities)
     }
 
     data class CachedDetails(

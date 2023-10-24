@@ -9,6 +9,7 @@ import com.babylon.wallet.android.data.gateway.generated.models.NonFungibleResou
 import com.babylon.wallet.android.data.gateway.generated.models.ResourceAggregationLevel
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsOptIns
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsRequest
+import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponse
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponseItem
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityFungiblesPageRequest
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityNonFungiblesPageRequest
@@ -25,85 +26,140 @@ class StateApiDelegate(
 ) {
 
     suspend fun fetchAllResources(
-        accounts: List<Network.Account>,
+        accounts: Set<Network.Account>,
         onStateVersion: (Long) -> Unit,
-        onAccount: (
+        onAccount: suspend (
             account: Network.Account,
             accountGatewayDetails: AccountGatewayDetails
         ) -> Unit
     ) {
         var stateVersion: Long? = null
-        accounts
-            .chunked(ENTITY_DETAILS_PAGE_LIMIT)
-            .map { accountsChunked ->
-                val details = stateApi.entityDetails(
-                    StateEntityDetailsRequest(
-                        addresses = accountsChunked.map { it.address },
-                        aggregationLevel = ResourceAggregationLevel.vault,
-                        atLedgerState = stateVersion?.let { LedgerStateSelector(stateVersion = it) },
-                        optIns = StateEntityDetailsOptIns(
-                            explicitMetadata = listOf(
-                                ExplicitMetadataKey.ACCOUNT_TYPE,
 
-                                ExplicitMetadataKey.NAME,
-                                ExplicitMetadataKey.SYMBOL,
-                                ExplicitMetadataKey.DESCRIPTION,
-                                ExplicitMetadataKey.RELATED_WEBSITES,
-                                ExplicitMetadataKey.ICON_URL,
-                                ExplicitMetadataKey.INFO_URL,
-                                ExplicitMetadataKey.VALIDATOR,
-                                ExplicitMetadataKey.POOL,
-                                ExplicitMetadataKey.TAGS,
-                                ExplicitMetadataKey.DAPP_DEFINITIONS,
-                            ).map { it.key }
+        entityDetails(
+            addresses = accounts.map { it.address }.toSet(),
+            metadataKeys = setOf(
+                ExplicitMetadataKey.ACCOUNT_TYPE,
+
+                ExplicitMetadataKey.NAME,
+                ExplicitMetadataKey.SYMBOL,
+                ExplicitMetadataKey.DESCRIPTION,
+                ExplicitMetadataKey.RELATED_WEBSITES,
+                ExplicitMetadataKey.ICON_URL,
+                ExplicitMetadataKey.INFO_URL,
+                ExplicitMetadataKey.VALIDATOR,
+                ExplicitMetadataKey.POOL,
+                ExplicitMetadataKey.TAGS,
+                ExplicitMetadataKey.DAPP_DEFINITIONS
+            )
+        ) { chunkedAccounts ->
+            // When first chunk is received we save the state version, so we can query the rest
+            // of the chunks at the same state version
+            if (stateVersion == null) {
+                onStateVersion(chunkedAccounts.ledgerState.stateVersion)
+                stateVersion = chunkedAccounts.ledgerState.stateVersion
+            }
+
+            chunkedAccounts.items.forEach { accountOnLedger ->
+                val account = accounts.find { it.address == accountOnLedger.address } ?: return@forEach
+
+                val allFungibles = mutableListOf<FungibleResourcesCollectionItem>()
+                val allNonFungibles = mutableListOf<NonFungibleResourcesCollectionItem>()
+
+                allFungibles.addAll(accountOnLedger.fungibleResources?.items.orEmpty())
+                allNonFungibles.addAll(accountOnLedger.nonFungibleResources?.items.orEmpty())
+
+                coroutineScope {
+                    val allFungiblePagesForAccount = async {
+                        accountOnLedger.paginateFungibles(
+                            ledgerState = chunkedAccounts.ledgerState,
+                            onPage = allFungibles::addAll
                         )
-                    )
-                ).executeSafe().getOrThrow()
-
-                // When first chunk is received we save the state version, so we can query the rest
-                // of the chunks at the same state version
-                if (stateVersion == null) {
-                    onStateVersion(details.ledgerState.stateVersion)
-                    stateVersion = details.ledgerState.stateVersion
-                }
-
-                accountsChunked.forEach { account ->
-                    val accountOnLedger = details.items.find { it.address == account.address }
-
-                    val allFungibles = mutableListOf<FungibleResourcesCollectionItem>()
-                    val allNonFungibles = mutableListOf<NonFungibleResourcesCollectionItem>()
-
-                    allFungibles.addAll(accountOnLedger?.fungibleResources?.items.orEmpty())
-                    allNonFungibles.addAll(accountOnLedger?.nonFungibleResources?.items.orEmpty())
-
-                    coroutineScope {
-                        val allFungiblePagesForAccount = async {
-                            accountOnLedger?.paginateFungibles(
-                                ledgerState = details.ledgerState,
-                                onPage = allFungibles::addAll
-                            )
-                        }
-
-                        val allNonFungiblePagesForAccount = async {
-                            accountOnLedger?.paginateNonFungibles(
-                                ledgerState = details.ledgerState,
-                                onPage = allNonFungibles::addAll
-                            )
-                        }
-
-                        awaitAll(allFungiblePagesForAccount, allNonFungiblePagesForAccount)
                     }
 
-                    val gatewayDetails = AccountGatewayDetails(
-                        ledgerState = details.ledgerState,
-                        accountMetadata = accountOnLedger?.explicitMetadata,
-                        fungibles = allFungibles,
-                        nonFungibles = allNonFungibles
-                    )
-                    onAccount(account, gatewayDetails)
+                    val allNonFungiblePagesForAccount = async {
+                        accountOnLedger.paginateNonFungibles(
+                            ledgerState = chunkedAccounts.ledgerState,
+                            onPage = allNonFungibles::addAll
+                        )
+                    }
+
+                    awaitAll(allFungiblePagesForAccount, allNonFungiblePagesForAccount)
                 }
+
+                val gatewayDetails = AccountGatewayDetails(
+                    ledgerState = chunkedAccounts.ledgerState,
+                    accountMetadata = accountOnLedger.explicitMetadata,
+                    fungibles = allFungibles,
+                    nonFungibles = allNonFungibles
+                )
+                onAccount(account, gatewayDetails)
             }
+        }
     }
+
+    suspend fun getPoolDetails(
+        poolAddresses: Set<String>,
+        stateVersion: Long
+    ): List<StateEntityDetailsResponseItem> {
+        val pools = mutableListOf<StateEntityDetailsResponseItem>()
+        entityDetails(
+            addresses = poolAddresses,
+            metadataKeys = setOf(
+                ExplicitMetadataKey.NAME,
+                ExplicitMetadataKey.ICON_URL,
+                ExplicitMetadataKey.POOL_UNIT,
+            ),
+            stateVersion = stateVersion,
+        ) { poolsChunked ->
+            pools.addAll(poolsChunked.items)
+        }
+
+        return pools
+    }
+
+    suspend fun getValidatorsDetails(
+        validatorsAddresses: Set<String>,
+        stateVersion: Long
+    ): List<StateEntityDetailsResponseItem> {
+        val validators = mutableListOf<StateEntityDetailsResponseItem>()
+        entityDetails(
+            addresses = validatorsAddresses,
+            metadataKeys = setOf(
+                ExplicitMetadataKey.NAME,
+                ExplicitMetadataKey.ICON_URL,
+                ExplicitMetadataKey.DESCRIPTION,
+                ExplicitMetadataKey.CLAIM_NFT,
+            ),
+            stateVersion = stateVersion,
+        ) { poolsChunked ->
+            validators.addAll(poolsChunked.items)
+        }
+
+        return validators
+    }
+
+    private suspend fun entityDetails(
+        addresses: Set<String>,
+        metadataKeys: Set<ExplicitMetadataKey>,
+        aggregationLevel: ResourceAggregationLevel = ResourceAggregationLevel.vault,
+        stateVersion: Long? = null,
+        onPage: suspend (StateEntityDetailsResponse) -> Unit
+    ) = addresses
+        .chunked(ENTITY_DETAILS_PAGE_LIMIT)
+        .forEach { addressesChunk ->
+            val response = stateApi.entityDetails(
+                StateEntityDetailsRequest(
+                    addresses = addressesChunk,
+                    aggregationLevel = aggregationLevel,
+                    atLedgerState = stateVersion?.let { LedgerStateSelector(stateVersion = it) },
+                    optIns = StateEntityDetailsOptIns(
+                        explicitMetadata = metadataKeys.map { it.key }
+                    )
+                )
+            ).executeSafe().getOrThrow()
+
+            onPage(response)
+        }
 
     private suspend fun StateEntityDetailsResponseItem.paginateFungibles(
         ledgerState: LedgerState,

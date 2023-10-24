@@ -10,7 +10,6 @@ import com.babylon.wallet.android.data.gateway.generated.models.FungibleResource
 import com.babylon.wallet.android.data.gateway.generated.models.NonFungibleResourcesCollectionItem
 import com.babylon.wallet.android.data.repository.cache.database.ResourceEntity.Companion.asEntity
 import java.math.BigDecimal
-import java.time.Instant
 
 @Entity(
     primaryKeys = ["account_address", "resource_address"],
@@ -37,7 +36,7 @@ data class AccountResourceJoin(
 ) {
 
     companion object {
-        fun FungibleResourcesCollectionItem.asEntityPair(
+        fun FungibleResourcesCollectionItem.asAccountResourceJoin(
             accountAddress: String,
             syncInfo: SyncInfo
         ): Pair<AccountResourceJoin, ResourceEntity> = AccountResourceJoin(
@@ -46,7 +45,7 @@ data class AccountResourceJoin(
             amount = amountDecimal
         ) to asEntity(syncInfo)
 
-        fun NonFungibleResourcesCollectionItem.asEntityPair(
+        fun NonFungibleResourcesCollectionItem.asAccountResourceJoin(
             accountAddress: String,
             syncInfo: SyncInfo
         ): Pair<AccountResourceJoin, ResourceEntity> = AccountResourceJoin(
@@ -98,4 +97,17 @@ data class PoolResourceJoin(
     @ColumnInfo("resource_address")
     val resourceAddress: String,
     val amount: BigDecimal?
-)
+) {
+
+    companion object {
+        fun FungibleResourcesCollectionItem.asPoolResourceJoin(
+            poolAddress: String,
+            syncInfo: SyncInfo
+        ): Pair<PoolResourceJoin, ResourceEntity> = PoolResourceJoin(
+            poolAddress = poolAddress,
+            resourceAddress = resourceAddress,
+            amount = amountDecimal
+        ) to asEntity(syncInfo)
+    }
+
+}

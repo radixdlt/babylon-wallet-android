@@ -10,6 +10,7 @@ data class ValidatorEntity(
     @PrimaryKey
     val address: String,
     val name: String?,
+    val description: String?,
     @ColumnInfo("icon_url")
     val iconUrl: String?,
     @ColumnInfo("stake_unit_resource_address")

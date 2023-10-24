@@ -2,10 +2,11 @@ package com.babylon.wallet.android.data.repository.state
 
 import com.babylon.wallet.android.data.gateway.apis.StateApi
 import com.babylon.wallet.android.data.gateway.extensions.asMetadataItems
+import com.babylon.wallet.android.data.repository.cache.database.AccountResourceJoin.Companion.asAccountResourceJoin
+import com.babylon.wallet.android.data.repository.cache.database.PoolResourceJoin.Companion.asPoolResourceJoin
 import com.babylon.wallet.android.data.repository.cache.database.StateDao
 import com.babylon.wallet.android.data.repository.cache.database.StateVersionEntity
 import com.babylon.wallet.android.data.repository.cache.database.SyncInfo
-import com.babylon.wallet.android.domain.model.resources.AccountDetails
 import com.babylon.wallet.android.domain.model.resources.metadata.MetadataItem.Companion.consume
 import com.babylon.wallet.android.domain.model.resources.AccountOnLedger
 import kotlinx.coroutines.flow.Flow
@@ -40,15 +41,41 @@ class StateRepositoryImpl @Inject constructor(
             if (remainingAccounts.isNotEmpty()) {
                 Timber.tag("Bakos").d("Fetching for account ${remainingAccounts.first().displayName}")
                 stateApiDelegate.fetchAllResources(
-                    accounts = listOf(remainingAccounts.first()),
+                    accounts = setOf(remainingAccounts.first()),
                     onStateVersion = { stateVersion ->
                         stateDao.insertStateVersion(StateVersionEntity(stateVersion))
                     },
                     onAccount = { account, gatewayDetails ->
-                        cacheDelegate.insertAccountDetails(
+                        val accountMetadataItems = gatewayDetails.accountMetadata?.asMetadataItems()?.toMutableList()
+                        val syncInfo = SyncInfo(synced = InstantGenerator(), stateVersion = gatewayDetails.ledgerState.stateVersion)
+                        val fungibleEntityPairs = gatewayDetails.fungibles.map { item ->
+                            item.asAccountResourceJoin(account.address, syncInfo)
+                        }
+                        val nonFungibleEntityPairs = gatewayDetails.nonFungibles.map { item ->
+                            item.asAccountResourceJoin(account.address, syncInfo)
+                        }
+
+                        stateDao.updateAccountData(
                             accountAddress = account.address,
-                            gatewayDetails = gatewayDetails
+                            accountTypeMetadataItem = accountMetadataItems?.consume(),
+                            syncInfo = syncInfo,
+                            accountWithResources = fungibleEntityPairs + nonFungibleEntityPairs
                         )
+
+                        val poolAddresses = fungibleEntityPairs.mapNotNull { it.second.poolAddress }.toSet()
+                        val pools = stateApiDelegate.getPoolDetails(poolAddresses = poolAddresses, stateVersion = syncInfo.stateVersion)
+                        cacheDelegate.storePoolDetails(pools, syncInfo)
+
+                        val validatorAddresses = (fungibleEntityPairs.mapNotNull {
+                            it.second.validatorAddress
+                        } + nonFungibleEntityPairs.mapNotNull {
+                            it.second.validatorAddress
+                        }).toSet()
+                        val validators = stateApiDelegate.getValidatorsDetails(
+                            validatorsAddresses = validatorAddresses,
+                            stateVersion = syncInfo.stateVersion
+                        )
+                        cacheDelegate.storeValidatorDetails(validators, syncInfo)
                     }
                 )
             }

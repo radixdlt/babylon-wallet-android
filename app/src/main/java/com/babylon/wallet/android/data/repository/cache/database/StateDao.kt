@@ -92,6 +92,25 @@ interface StateDao {
     @Delete(entity = AccountEntity::class)
     fun removeAccountDetails(account: AccountEntity)
 
+    @Transaction
+    fun insertPools(
+        poolsWithResources: Map<PoolEntity, List<Pair<PoolResourceJoin, ResourceEntity>>>
+    ) {
+        insertPoolDetails(poolsWithResources.keys.toList())
+        val allValues = poolsWithResources.values.flatten()
+        insertResources(allValues.map { it.second })
+        insertPoolResources(allValues.map { it.first })
+    }
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    fun insertPoolDetails(pools: List<PoolEntity>)
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    fun insertPoolResources(poolResources: List<PoolResourceJoin>)
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    fun insertValidators(validators: List<ValidatorEntity>)
+
     companion object {
         val accountsCacheDuration = 2.toDuration(DurationUnit.HOURS)
         val resourcesCacheDuration = 24.toDuration(DurationUnit.HOURS)
