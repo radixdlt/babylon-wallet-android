@@ -1,5 +1,6 @@
 package com.babylon.wallet.android.data.repository.state
 
+import com.babylon.wallet.android.data.gateway.extensions.asMetadataItems
 import com.babylon.wallet.android.data.gateway.generated.models.FungibleResourcesCollectionItem
 import com.babylon.wallet.android.data.gateway.generated.models.NonFungibleResourcesCollectionItem
 import com.babylon.wallet.android.data.repository.cache.database.AccountResourceJoin.Companion.asEntityPair
@@ -9,9 +10,11 @@ import com.babylon.wallet.android.domain.model.resources.AccountDetails
 import com.babylon.wallet.android.domain.model.resources.AccountOnLedger
 import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.domain.model.resources.metadata.AccountTypeMetadataItem
+import com.babylon.wallet.android.domain.model.resources.metadata.MetadataItem.Companion.consume
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.transform
+import rdx.works.core.InstantGenerator
 import rdx.works.profile.data.model.pernetwork.Network
 
 class StateCacheDelegate(
@@ -60,20 +63,21 @@ class StateCacheDelegate(
 
     fun insertAccountDetails(
         accountAddress: String,
-        accountType: AccountTypeMetadataItem?,
-        fungibles: List<FungibleResourcesCollectionItem>,
-        nonFungibles: List<NonFungibleResourcesCollectionItem>,
-        syncInfo: SyncInfo
+        gatewayDetails: StateApiDelegate.AccountGatewayDetails
     ) {
+        val accountMetadataItems = gatewayDetails.accountMetadata?.asMetadataItems()?.toMutableList()
+        val syncInfo = SyncInfo(synced = InstantGenerator(), stateVersion = gatewayDetails.ledgerState.stateVersion)
+        val accountWithResources = gatewayDetails.fungibles.map { item ->
+            item.asEntityPair(accountAddress, syncInfo)
+        } + gatewayDetails.nonFungibles.map { item ->
+            item.asEntityPair(accountAddress, syncInfo)
+        }
+
         stateDao.updateAccountData(
             accountAddress = accountAddress,
-            accountTypeMetadataItem = accountType,
+            accountTypeMetadataItem = accountMetadataItems?.consume(),
             syncInfo = syncInfo,
-            accountWithResources = fungibles.map { item ->
-                item.asEntityPair(accountAddress, syncInfo)
-            } + nonFungibles.map { item ->
-                item.asEntityPair(accountAddress, syncInfo)
-            }
+            accountWithResources = accountWithResources
         )
     }
 

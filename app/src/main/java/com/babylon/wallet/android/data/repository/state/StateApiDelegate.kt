@@ -29,10 +29,7 @@ class StateApiDelegate(
         onStateVersion: (Long) -> Unit,
         onAccount: (
             account: Network.Account,
-            ledgerState: LedgerState,
-            accountMetadata: EntityMetadataCollection?,
-            fungibles: List<FungibleResourcesCollectionItem>,
-            nonFungibles: List<NonFungibleResourcesCollectionItem>
+            accountGatewayDetails: AccountGatewayDetails
         ) -> Unit
     ) {
         var stateVersion: Long? = null
@@ -97,7 +94,13 @@ class StateApiDelegate(
                         awaitAll(allFungiblePagesForAccount, allNonFungiblePagesForAccount)
                     }
 
-                    onAccount(account, details.ledgerState, accountOnLedger?.explicitMetadata, allFungibles, allNonFungibles)
+                    val gatewayDetails = AccountGatewayDetails(
+                        ledgerState = details.ledgerState,
+                        accountMetadata = accountOnLedger?.explicitMetadata,
+                        fungibles = allFungibles,
+                        nonFungibles = allNonFungibles
+                    )
+                    onAccount(account, gatewayDetails)
                 }
             }
     }
@@ -141,6 +144,13 @@ class StateApiDelegate(
             nextCursor = pageResponse.nextCursor
         }
     }
+
+    data class AccountGatewayDetails(
+        val ledgerState: LedgerState,
+        val accountMetadata: EntityMetadataCollection?,
+        val fungibles: List<FungibleResourcesCollectionItem>,
+        val nonFungibles: List<NonFungibleResourcesCollectionItem>
+    )
 
     companion object {
         const val ENTITY_DETAILS_PAGE_LIMIT = 20

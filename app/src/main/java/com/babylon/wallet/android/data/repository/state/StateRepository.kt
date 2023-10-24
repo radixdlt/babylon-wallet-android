@@ -44,15 +44,10 @@ class StateRepositoryImpl @Inject constructor(
                     onStateVersion = { stateVersion ->
                         stateDao.insertStateVersion(StateVersionEntity(stateVersion))
                     },
-                    onAccount = { account, ledgerState, accountMetadata, fungibles, nonFungibles ->
-                        val accountMetadataItems = accountMetadata?.asMetadataItems()?.toMutableList()
-
+                    onAccount = { account, gatewayDetails ->
                         cacheDelegate.insertAccountDetails(
                             accountAddress = account.address,
-                            accountType = accountMetadataItems?.consume(),
-                            fungibles = fungibles,
-                            nonFungibles = nonFungibles,
-                            syncInfo = SyncInfo(synced = InstantGenerator(), stateVersion = ledgerState.stateVersion)
+                            gatewayDetails = gatewayDetails
                         )
                     }
                 )
