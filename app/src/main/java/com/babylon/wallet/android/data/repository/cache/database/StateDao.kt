@@ -95,8 +95,9 @@ interface StateDao {
             PoolResourceJoin.amount AS amount,
             ResourceEntity.*
         FROM PoolEntity
-        LEFT JOIN PoolResourceJoin ON PoolEntity.address IN (:addresses) AND PoolEntity.state_version = :atStateVersion
+        LEFT JOIN PoolResourceJoin ON PoolEntity.address = PoolResourceJoin.pool_address
         LEFT JOIN ResourceEntity ON PoolResourceJoin.resource_address = ResourceEntity.address
+        WHERE PoolEntity.address IN (:addresses) AND PoolEntity.state_version = :atStateVersion
     """)
     fun getPoolDetails(addresses: Set<String>, atStateVersion: Long): List<PoolWithResourceResponse>
 

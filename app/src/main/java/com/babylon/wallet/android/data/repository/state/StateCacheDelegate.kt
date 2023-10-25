@@ -51,28 +51,37 @@ class StateCacheDelegate(
                     } else {
                         result[account] = cachedDetails
                     }
+                }
+
+                val iterator = result.entries.iterator()
+                while (iterator.hasNext()) {
+                    val cachedData = iterator.next().value
 
                     // Compile all pools
-                    val poolAddresses = result[account]?.poolAddresses().orEmpty()
-                    stateDao.getPoolDetails(poolAddresses, accountDetailsAndResources.accountStateVersion).onEach { poolWithResource ->
-                        if (poolWithResource.resource != null && poolWithResource.amount != null) {
-                            result[account]?.pools?.getOrDefault(poolWithResource.address, mutableListOf())?.also {
-                                it.add(poolWithResource.resource.toResource(poolWithResource.amount) as Resource.FungibleResource)
+                    val poolAddresses = cachedData.poolAddresses()
+                    val cachedPoolsWithTokens = stateDao.getPoolDetails(poolAddresses, cachedData.stateVersion)
+                    cachedPoolsWithTokens.forEach { tokenInPool ->
+                        if (tokenInPool.resource != null && tokenInPool.amount != null) {
+                            cachedData.pools[tokenInPool.address] = cachedData.pools.getOrDefault(
+                                tokenInPool.address,
+                                mutableListOf()
+                            ).also {
+                                it.add(tokenInPool.resource.toResource(tokenInPool.amount) as Resource.FungibleResource)
                             }
                         }
                     }
-                    val remainingPools = poolAddresses - result[account]?.pools?.keys
+                    val remainingPools = poolAddresses - cachedData.pools.keys
                     if (remainingPools.isNotEmpty()) {
-                        result.remove(account)
+                        iterator.remove()
                     }
 
                     // Compile all validators
-                    val validatorsAddresses = result[account]?.validatorAddresses().orEmpty()
-                    val validators = stateDao.getValidators(validatorsAddresses, accountDetailsAndResources.accountStateVersion)
-                    if (validators.size != validatorsAddresses.size) {
-                        result.remove(account)
+                    val validatorsAddresses = cachedData.validatorAddresses()
+                    val cachedValidators = stateDao.getValidators(validatorsAddresses, cachedData.stateVersion)
+                    if (cachedValidators.size != validatorsAddresses.size) {
+                        iterator.remove()
                     }
-                    result[account]?.validators?.addAll(validators.map { it.asValidatorDetail() })
+                    cachedData.validators.addAll(cachedValidators.map { it.asValidatorDetail() })
                 }
 
                 result
@@ -85,7 +94,7 @@ class StateCacheDelegate(
         val fungibles: MutableList<Resource.FungibleResource> = mutableListOf(),
         val nonFungibles: MutableList<Resource.NonFungibleResource> = mutableListOf(),
         val pools: MutableMap<String, MutableList<Resource.FungibleResource>> = mutableMapOf(),
-        val validators: MutableList<ValidatorDetail> = mutableListOf()
+        val validators: MutableSet<ValidatorDetail> = mutableSetOf()
     ) {
 
         fun poolAddresses() = fungibles.mapNotNull { it.poolAddress }.toSet()
@@ -96,7 +105,7 @@ class StateCacheDelegate(
             accountDetails,
             fungibles,
             nonFungibles,
-            validators,
+            validators.toList(),
             pools
         )
 

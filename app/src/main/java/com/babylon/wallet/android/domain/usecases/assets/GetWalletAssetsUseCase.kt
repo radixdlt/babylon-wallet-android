@@ -23,6 +23,12 @@ class GetWalletAssetsUseCase @Inject constructor(
             accounts.map { account ->
                 val detailsAndResources = accountsAndResources[account]
 
+                Timber.tag("Bakos").d("Account: ${account.displayName}")
+                Timber.tag("Bakos").d(" - Fungibles: ${detailsAndResources?.fungibles?.size ?: 0}")
+                Timber.tag("Bakos").d(" - Non Fungibles: ${detailsAndResources?.nonFungibles?.size ?: 0}")
+                Timber.tag("Bakos").d(" - Validators: ${detailsAndResources?.validators?.size ?: 0}")
+                Timber.tag("Bakos").d(" - Pools: ${detailsAndResources?.pools?.size ?: 0}")
+
                 AccountWithAssets(
                     account = account,
                     details = detailsAndResources?.details ?: AccountDetails(),
