@@ -16,7 +16,7 @@ data class TagsColumn(val tags: List<String>)
 data class DappDefinitionsColumn(val dappDefinitions: List<String>)
 
 @Serializable
-data class BehavioursColumn(val behaviours: List<AssetBehaviour>)
+data class BehavioursColumn(val behaviours: Set<AssetBehaviour>)
 
 @Serializable
 data class StringMetadataColumn(val metadata: List<Pair<String, String>>)

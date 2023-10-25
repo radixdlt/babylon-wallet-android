@@ -11,6 +11,7 @@ import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetai
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsRequest
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponse
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponseItem
+import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponseItemDetails
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityFungiblesPageRequest
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityNonFungiblesPageRequest
 import com.babylon.wallet.android.data.gateway.model.ExplicitMetadataKey
@@ -32,8 +33,6 @@ class StateApiDelegate(
             accountGatewayDetails: AccountGatewayDetails
         ) -> Unit
     ) {
-
-
         entityDetails(
             addresses = accounts.map { it.address }.toSet(),
             metadataKeys = setOf(
@@ -92,7 +91,8 @@ class StateApiDelegate(
     suspend fun getPoolDetails(
         poolAddresses: Set<String>,
         stateVersion: Long
-    ): List<StateEntityDetailsResponseItem> {
+    ): Map<StateEntityDetailsResponseItem, Map<String, StateEntityDetailsResponseItemDetails>> {
+        if (poolAddresses.isEmpty()) return emptyMap()
         val pools = mutableListOf<StateEntityDetailsResponseItem>()
         entityDetails(
             addresses = poolAddresses,
@@ -106,13 +106,42 @@ class StateApiDelegate(
             pools.addAll(poolsChunked.items)
         }
 
-        return pools
+        val poolsWithPoolUnits = mutableMapOf<StateEntityDetailsResponseItem, MutableMap<String, StateEntityDetailsResponseItemDetails>>()
+
+        // We actually need to fetch details for each item involved in the pool
+        // since total supply and divisibility of each item are needed in order
+        // to know what is the user's owned amount out of each item
+        return pools.associateWith { pool ->
+            val itemsWithDetails = mutableMapOf<String, StateEntityDetailsResponseItemDetails>()
+            val itemsInPool = pool.fungibleResources?.items?.map { it.resourceAddress }.orEmpty().toSet()
+
+            entityDetails(
+                addresses = itemsInPool,
+                metadataKeys = setOf(
+                    ExplicitMetadataKey.NAME,
+                    ExplicitMetadataKey.SYMBOL,
+                    ExplicitMetadataKey.ICON_URL
+                ),
+                stateVersion = stateVersion
+            ) { itemsChuncked ->
+                itemsChuncked.items.forEach { item ->
+                    val details = item.details
+                    if (details != null) {
+                        itemsWithDetails[item.address] = details
+                    }
+                }
+            }
+
+            itemsWithDetails
+        }
     }
 
     suspend fun getValidatorsDetails(
         validatorsAddresses: Set<String>,
         stateVersion: Long
     ): List<StateEntityDetailsResponseItem> {
+        if (validatorsAddresses.isEmpty()) return emptyList()
+
         val validators = mutableListOf<StateEntityDetailsResponseItem>()
         entityDetails(
             addresses = validatorsAddresses,

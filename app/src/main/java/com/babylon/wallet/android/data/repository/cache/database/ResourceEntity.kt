@@ -12,6 +12,7 @@ import com.babylon.wallet.android.data.gateway.generated.models.FungibleResource
 import com.babylon.wallet.android.data.gateway.generated.models.NonFungibleResourcesCollectionItem
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponseFungibleResourceDetails
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponseItem
+import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponseItemDetails
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponseNonFungibleResourceDetails
 import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.domain.model.resources.metadata.DAppDefinitionsMetadataItem
@@ -90,7 +91,8 @@ data class ResourceEntity(
     companion object {
         // Response from an account state request
         fun FungibleResourcesCollectionItem.asEntity(
-            syncInfo: SyncInfo
+            syncInfo: SyncInfo,
+            details: StateEntityDetailsResponseItemDetails? = null
         ): ResourceEntity {
             val metaDataItems = explicitMetadata?.asMetadataItems().orEmpty().toMutableList()
             return ResourceEntity(
@@ -104,9 +106,9 @@ data class ResourceEntity(
                 validatorAddress = metaDataItems.consume<ValidatorMetadataItem>()?.validatorAddress,
                 poolAddress = metaDataItems.consume<PoolMetadataItem>()?.poolAddress,
                 dAppDefinitions = metaDataItems.consume<DAppDefinitionsMetadataItem>()?.addresses?.let { DappDefinitionsColumn(it) },
-                divisibility = null,
-                behaviours = null,
-                supply = null,
+                divisibility = details?.divisibility(),
+                behaviours = details?.let { BehavioursColumn(it.extractBehaviours()) },
+                supply = details?.totalSupply()?.toBigDecimalOrNull(),
                 synced = syncInfo.synced,
                 stateVersion = syncInfo.stateVersion
             )
@@ -114,7 +116,8 @@ data class ResourceEntity(
 
         // Response from an account state request
         fun NonFungibleResourcesCollectionItem.asEntity(
-            syncInfo: SyncInfo
+            syncInfo: SyncInfo,
+            details: StateEntityDetailsResponseItemDetails? = null
         ): ResourceEntity {
             val metaDataItems = explicitMetadata?.asMetadataItems().orEmpty().toMutableList()
             return ResourceEntity(
@@ -126,41 +129,12 @@ data class ResourceEntity(
                 tags = metaDataItems.consume<TagsMetadataItem>()?.tags?.let { TagsColumn(tags = it) },
                 validatorAddress = metaDataItems.consume<ValidatorMetadataItem>()?.validatorAddress,
                 dAppDefinitions = metaDataItems.consume<DAppDefinitionsMetadataItem>()?.addresses?.let { DappDefinitionsColumn(it) },
-                behaviours = null,
-                supply = null,
+                behaviours = details?.let { BehavioursColumn(it.extractBehaviours()) },
+                supply = details?.totalSupply()?.toBigDecimalOrNull(),
                 synced = syncInfo.synced,
                 divisibility = null,
                 poolAddress = null,
                 symbol = null,
-                stateVersion = syncInfo.stateVersion
-            )
-        }
-
-        // Response from details request
-        fun StateEntityDetailsResponseItem.asResourceEntity(
-            syncInfo: SyncInfo
-        ): ResourceEntity {
-            val metaDataItems = explicitMetadata?.asMetadataItems().orEmpty().toMutableList()
-            val type = when (details) {
-                is StateEntityDetailsResponseFungibleResourceDetails -> ResourceEntityType.FUNGIBLE
-                is StateEntityDetailsResponseNonFungibleResourceDetails -> ResourceEntityType.NON_FUNGIBLE
-                else -> ResourceEntityType.FUNGIBLE // TODO CHECK THAT
-            }
-            return ResourceEntity(
-                address = address,
-                type = type,
-                name = metaDataItems.consume<NameMetadataItem>()?.name,
-                symbol = metaDataItems.consume<SymbolMetadataItem>()?.symbol,
-                description = metaDataItems.consume<DescriptionMetadataItem>()?.description,
-                iconUrl = metaDataItems.consume<IconUrlMetadataItem>()?.url?.toString(),
-                tags = metaDataItems.consume<TagsMetadataItem>()?.tags?.let { TagsColumn(tags = it) },
-                validatorAddress = metaDataItems.consume<ValidatorMetadataItem>()?.validatorAddress,
-                poolAddress = metaDataItems.consume<PoolMetadataItem>()?.poolAddress,
-                dAppDefinitions = metaDataItems.consume<DAppDefinitionsMetadataItem>()?.addresses?.let { DappDefinitionsColumn(it) },
-                divisibility = details?.divisibility(),
-                behaviours = details?.extractBehaviours()?.let { BehavioursColumn(it.toList()) },
-                supply = details?.totalSupply()?.toBigDecimal(),
-                synced = syncInfo.synced,
                 stateVersion = syncInfo.stateVersion
             )
         }
