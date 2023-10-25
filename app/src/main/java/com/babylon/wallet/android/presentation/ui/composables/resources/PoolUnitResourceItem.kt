@@ -16,6 +16,7 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Divider
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -62,7 +63,7 @@ fun PoolUnitItem(
                     poolUnit = resource
                 )
                 Text(
-                    poolName(resource.poolUnitResource.displayTitle),
+                    poolName(resource.pool.displayTitle),
                     style = RadixTheme.typography.secondaryHeader,
                     color = RadixTheme.colors.gray1,
                     maxLines = 2
@@ -73,7 +74,7 @@ fun PoolUnitItem(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = spacedBy(RadixTheme.dimensions.paddingMedium)
             ) {
-                PoolResourcesValues(modifier = Modifier.weight(1f), resource = resource)
+                PoolResourcesValues(modifier = Modifier.weight(1f), poolUnit = resource)
                 trailingContent()
             }
         }
@@ -81,10 +82,10 @@ fun PoolUnitItem(
 }
 
 @Composable
-fun PoolResourcesValues(resource: PoolUnit, modifier: Modifier = Modifier) {
+fun PoolResourcesValues(poolUnit: PoolUnit, modifier: Modifier = Modifier) {
     Column(modifier = modifier.border(1.dp, RadixTheme.colors.gray4, RadixTheme.shapes.roundedRectMedium)) {
-        val itemsSize = resource.poolResources.size
-        resource.poolResources.forEachIndexed { index, poolResource ->
+        val itemsSize = poolUnit.items.size
+        poolUnit.items.forEachIndexed { index, poolResource ->
             Row(
                 modifier = Modifier.padding(
                     horizontal = RadixTheme.dimensions.paddingDefault,
@@ -105,7 +106,7 @@ fun PoolResourcesValues(resource: PoolUnit, modifier: Modifier = Modifier) {
                     maxLines = 2
                 )
                 Text(
-                    resource.resourceRedemptionValue(poolResource.resourceAddress)?.displayableQuantity().orEmpty(),
+                    poolUnit.resourceRedemptionValue(poolResource)?.displayableQuantity().orEmpty(),
                     style = RadixTheme.typography.secondaryHeader,
                     color = RadixTheme.colors.gray1,
                     maxLines = 1
