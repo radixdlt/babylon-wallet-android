@@ -2,7 +2,7 @@ package rdx.works.profile.domain
 
 import kotlinx.coroutines.flow.first
 import rdx.works.core.HexCoded32Bytes
-import rdx.works.core.toDistinctList
+import rdx.works.core.toIdentifiedArrayList
 import rdx.works.profile.data.model.factorsources.FactorSource
 import rdx.works.profile.data.model.factorsources.FactorSourceKind
 import rdx.works.profile.data.model.factorsources.LedgerHardwareWalletFactorSource
@@ -38,7 +38,7 @@ class AddLedgerFactorSourceUseCase @Inject constructor(
             return AddLedgerFactorSourceResult.AlreadyExist(existingLedgerFactorSource as LedgerHardwareWalletFactorSource)
         }
 
-        val updatedProfile = profile.copy(factorSources = (profile.factorSources + listOf(ledgerFactorSource)).toDistinctList())
+        val updatedProfile = profile.copy(factorSources = (profile.factorSources + ledgerFactorSource).toIdentifiedArrayList())
         profileRepository.saveProfile(updatedProfile)
         return AddLedgerFactorSourceResult.Added(ledgerFactorSource)
     }

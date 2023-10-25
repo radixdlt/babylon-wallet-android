@@ -7,8 +7,8 @@ import kotlinx.serialization.EncodeDefault
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import rdx.works.core.Distinct
 import rdx.works.core.HexCoded32Bytes
+import rdx.works.core.Identified
 import rdx.works.profile.data.model.MnemonicWithPassphrase
 import rdx.works.profile.data.model.compressedPublicKey
 import rdx.works.profile.data.model.pernetwork.DerivationPath
@@ -16,7 +16,15 @@ import rdx.works.profile.data.utils.hashToFactorId
 import java.time.Instant
 
 @Serializable(with = FactorSourceSerializer::class)
-sealed class FactorSource : Distinct {
+sealed class FactorSource : Identified {
+
+    override val identifier: String
+        get() = when (this) {
+            is DeviceFactorSource -> id.body.value
+            is LedgerHardwareWalletFactorSource -> id.body.value
+            is OffDeviceMnemonicFactorSource -> id.body.value
+            is TrustedContactFactorSource -> id.body.value
+        }
 
     @SerialName("id")
     abstract val id: FactorSourceID

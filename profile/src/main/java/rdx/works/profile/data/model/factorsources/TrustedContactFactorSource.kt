@@ -47,7 +47,4 @@ data class TrustedContactFactorSource(
             )
         }
     }
-
-    override val identifier: String
-        get() = id.body.value
 }

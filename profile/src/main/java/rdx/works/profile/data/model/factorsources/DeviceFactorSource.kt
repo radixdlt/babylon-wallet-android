@@ -89,7 +89,4 @@ data class DeviceFactorSource(
             )
         )
     }
-
-    override val identifier: String
-        get() = id.body.value
 }

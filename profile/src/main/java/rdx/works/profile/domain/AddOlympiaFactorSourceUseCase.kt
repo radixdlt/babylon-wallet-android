@@ -1,7 +1,7 @@
 package rdx.works.profile.domain
 
 import rdx.works.core.preferences.PreferencesManager
-import rdx.works.core.toDistinctList
+import rdx.works.core.toIdentifiedArrayList
 import rdx.works.profile.data.model.MnemonicWithPassphrase
 import rdx.works.profile.data.model.factorsources.DeviceFactorSource
 import rdx.works.profile.data.model.factorsources.FactorSource
@@ -35,7 +35,7 @@ class AddOlympiaFactorSourceUseCase @Inject constructor(
         if (existingFactorSource == null) {
             profileRepository.updateProfile { profile ->
                 profile.copy(
-                    factorSources = (profile.factorSources + listOf(olympiaFactorSource)).toDistinctList()
+                    factorSources = (profile.factorSources + olympiaFactorSource).toIdentifiedArrayList()
                 )
             }
         }

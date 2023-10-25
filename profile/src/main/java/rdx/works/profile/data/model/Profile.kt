@@ -1,7 +1,7 @@
 package rdx.works.profile.data.model
 
-import rdx.works.core.DistinctList
-import rdx.works.core.emptyDistinctList
+import rdx.works.core.IdentifiedArrayList
+import rdx.works.core.emptyIdentifiedArrayList
 import rdx.works.profile.data.model.apppreferences.AppPreferences
 import rdx.works.profile.data.model.apppreferences.Display
 import rdx.works.profile.data.model.apppreferences.Gateways
@@ -26,7 +26,7 @@ data class Profile(
      * The known sources of factors, used for authorization such as spending funds.
      * Always contains at least one DeviceFactorSource.
      */
-    val factorSources: DistinctList<FactorSource>,
+    val factorSources: IdentifiedArrayList<FactorSource>,
 
     /**
      * Effectively **per network**: a list of accounts, personas and connected dApps.
@@ -106,7 +106,7 @@ data class Profile(
                     numberOfNetworks = networks.size
                 ),
                 appPreferences = appPreferences,
-                factorSources = emptyDistinctList(),
+                factorSources = emptyIdentifiedArrayList(),
                 networks = networks
             )
         }

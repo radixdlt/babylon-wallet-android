@@ -62,7 +62,4 @@ data class OffDeviceMnemonicFactorSource(
             )
         }
     }
-
-    override val identifier: String
-        get() = id.body.value
 }

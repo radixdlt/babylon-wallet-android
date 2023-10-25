@@ -2,7 +2,7 @@ package rdx.works.profile.data.model
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import rdx.works.core.DistinctList
+import rdx.works.core.IdentifiedArrayList
 import rdx.works.profile.data.model.apppreferences.AppPreferences
 import rdx.works.profile.data.model.factorsources.FactorSource
 import rdx.works.profile.data.model.pernetwork.Network
@@ -23,7 +23,7 @@ internal data class ProfileSnapshot(
      * Always contains at least one DeviceFactorSource.
      */
     @SerialName("factorSources")
-    private val factorSources: DistinctList<FactorSource>,
+    private val factorSources: IdentifiedArrayList<FactorSource>,
 
     /**
      * A list of accounts, personas and connected dApps.

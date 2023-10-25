@@ -12,8 +12,8 @@ import kotlinx.coroutines.test.runTest
 import org.junit.Test
 import rdx.works.core.HexCoded32Bytes
 import rdx.works.core.InstantGenerator
+import rdx.works.core.identifiedArrayListOf
 import rdx.works.core.preferences.PreferencesManager
-import rdx.works.core.toDistinctList
 import rdx.works.profile.data.model.Header
 import rdx.works.profile.data.model.MnemonicWithPassphrase
 import rdx.works.profile.data.model.Profile
@@ -75,7 +75,7 @@ internal class AddOlympiaFactorSourceUseCaseTest {
                     )
                 )
             ),
-            factorSources = listOf(DeviceFactorSource.babylon(mnemonicWithPassphrase = mnemonicWithPassphrase)).toDistinctList(),
+            factorSources = identifiedArrayListOf(DeviceFactorSource.babylon(mnemonicWithPassphrase = mnemonicWithPassphrase)),
             networks = listOf(
                 Network(
                     accounts = listOf(

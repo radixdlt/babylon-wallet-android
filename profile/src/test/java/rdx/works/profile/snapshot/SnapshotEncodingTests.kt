@@ -8,7 +8,6 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.Parameterized
 import org.skyscreamer.jsonassert.JSONAssert
-import rdx.works.core.HexCoded32Bytes
 import rdx.works.profile.data.model.EncryptedProfileSnapshot
 import rdx.works.profile.data.model.MnemonicWithPassphrase
 import rdx.works.profile.data.model.ProfileSnapshot
@@ -83,8 +82,8 @@ class SnapshotEncodingTests(private val versionUnderTest: Int) {
             // Validate that all device backed accounts/personas use the same id as the one derived from mnemonics
             val plaintextProfile = plaintext.toProfile()
             plaintextProfile.networks.forEach { network ->
-                network.accounts.forEach { it.validateWithMnemonic(plaintextProfile.factorSources) }
-                network.personas.forEach { it.validateWithMnemonic(plaintextProfile.factorSources) }
+                network.accounts.forEach { it.validateWithMnemonic(plaintextProfile.factorSources.toList()) }
+                network.personas.forEach { it.validateWithMnemonic(plaintextProfile.factorSources.toList()) }
             }
 
             return decrypted
