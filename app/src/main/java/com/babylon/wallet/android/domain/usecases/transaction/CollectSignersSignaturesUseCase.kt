@@ -47,13 +47,13 @@ class CollectSignersSignaturesUseCase @Inject constructor(
                     // here I assume that in the future we will grant
                     // access to keystore key for few seconds, so I ask for auth only once, instead of on every DEVICE signature
                     if (!deviceAuthenticated) {
-                        _interactionState.update { InteractionState.Device.Pending(factorSource, signingPurpose) }
                         deviceAuthenticated = deviceBiometricAuthenticationProvider()
                     }
                     if (!deviceAuthenticated) {
                         _interactionState.update { null }
                         return Result.failure(RadixWalletException.SignatureCancelled)
                     }
+                    _interactionState.update { InteractionState.Device.Pending(factorSource, signingPurpose) }
                     signWithDeviceFactorSourceUseCase(
                         deviceFactorSource = factorSource,
                         signers = signers,
