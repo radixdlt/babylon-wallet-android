@@ -43,7 +43,7 @@ class ProvidedConvertersTest {
 
     @Test
     fun `test behaviours column conversion`() {
-        val behavioursColumn = BehavioursColumn(behaviours = AssetBehaviour.values().toList())
+        val behavioursColumn = BehavioursColumn(behaviours = AssetBehaviour.values().toSet())
         val converter = StateDatabaseConverters()
 
         val string = converter.behavioursToString(behavioursColumn)
