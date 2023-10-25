@@ -1,7 +1,6 @@
 package com.babylon.wallet.android.data.repository
 
 import com.babylon.wallet.android.data.dapp.model.TransactionType
-import com.babylon.wallet.android.data.gateway.generated.models.TransactionPayloadStatus
 import com.babylon.wallet.android.di.coroutines.ApplicationScope
 import com.babylon.wallet.android.domain.usecases.transaction.PollTransactionStatusUseCase
 import com.babylon.wallet.android.utils.AppEvent
@@ -27,17 +26,17 @@ class TransactionStatusClient @Inject constructor(
     @ApplicationScope private val appScope: CoroutineScope
 ) {
 
-    private val _transactionPollResult = MutableStateFlow(emptyList<TransactionData>())
+    private val _transactionPollResult = MutableStateFlow(emptyList<TransactionStatusData>())
     private val transactionStatuses = _transactionPollResult.asSharedFlow()
     private val mutex = Mutex()
 
-    fun listenForPollStatus(txId: String): Flow<TransactionData> {
+    fun listenForPollStatus(txId: String): Flow<TransactionStatusData> {
         return transactionStatuses.map { statuses ->
             statuses.find { it.txId == txId }
         }.filterNotNull().cancellable()
     }
 
-    fun listenForPollStatusByRequestId(requestId: String): Flow<TransactionData> {
+    fun listenForPollStatusByRequestId(requestId: String): Flow<TransactionStatusData> {
         return transactionStatuses.map { statuses ->
             statuses.find { it.requestId == requestId }
         }.filterNotNull().cancellable()
@@ -68,7 +67,7 @@ class TransactionStatusClient @Inject constructor(
         }
     }
 
-    private suspend fun updateTransactionStatus(data: TransactionData) {
+    private suspend fun updateTransactionStatus(data: TransactionStatusData) {
         mutex.withLock {
             _transactionPollResult.update { statuses ->
                 if (statuses.any { data.txId == it.txId }) {
@@ -87,10 +86,10 @@ class TransactionStatusClient @Inject constructor(
     }
 }
 
-data class TransactionData(
+data class TransactionStatusData(
     val txId: String,
     val requestId: String,
-    val result: Result<TransactionPayloadStatus>,
+    val result: Result<Unit>,
     val transactionType: TransactionType = TransactionType.Generic,
     val txProcessingTime: String
 )

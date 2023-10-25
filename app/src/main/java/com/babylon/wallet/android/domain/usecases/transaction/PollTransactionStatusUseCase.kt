@@ -2,7 +2,7 @@ package com.babylon.wallet.android.domain.usecases.transaction
 
 import com.babylon.wallet.android.data.dapp.model.TransactionType
 import com.babylon.wallet.android.data.gateway.generated.models.TransactionPayloadStatus
-import com.babylon.wallet.android.data.repository.TransactionData
+import com.babylon.wallet.android.data.repository.TransactionStatusData
 import com.babylon.wallet.android.data.repository.transaction.TransactionRepository
 import com.babylon.wallet.android.data.transaction.DappRequestException
 import com.babylon.wallet.android.data.transaction.DappRequestFailure
@@ -18,42 +18,34 @@ class PollTransactionStatusUseCase @Inject constructor(
         requestId: String,
         transactionType: TransactionType = TransactionType.Generic,
         txProcessingTime: String
-    ): TransactionData {
-        return pollTransactionStatus(txID, requestId, transactionType, txProcessingTime)
-    }
-
-    @Suppress("ReturnCount", "LongMethod")
-    private suspend fun pollTransactionStatus(
-        txID: String,
-        requestId: String,
-        transactionType: TransactionType = TransactionType.Generic,
-        txProcessingTime: String
-    ): TransactionData {
+    ): TransactionStatusData {
         while (true) {
             val statusCheckResult = transactionRepository.getTransactionStatus(txID)
             if (statusCheckResult is Result.Success) {
                 when (statusCheckResult.data.knownPayloads.firstOrNull()?.payloadStatus) {
-                    TransactionPayloadStatus.unknown -> {
+                    TransactionPayloadStatus.unknown,
+                    TransactionPayloadStatus.commitPendingOutcomeUnknown,
+                    TransactionPayloadStatus.pending -> {
                         // Keep Polling
                     }
                     TransactionPayloadStatus.committedSuccess -> {
                         // Stop Polling: MESSAGE 1
-                        return TransactionData(
+                        return TransactionStatusData(
                             txId = txID,
                             requestId = requestId,
-                            result = kotlin.Result.success(TransactionPayloadStatus.committedSuccess),
+                            result = kotlin.Result.success(Unit),
                             transactionType = transactionType,
                             txProcessingTime = txProcessingTime
                         )
                     }
                     TransactionPayloadStatus.committedFailure -> {
                         // Stop Polling: MESSAGE 2
-                        return TransactionData(
+                        return TransactionStatusData(
                             txId = txID,
                             requestId = requestId,
                             result = kotlin.Result.failure(
                                 DappRequestException(
-                                    DappRequestFailure.TransactionApprovalFailure.GatewayCommittedFailure(
+                                    DappRequestFailure.TransactionApprovalFailure.TransactionCommitted.Failure(
                                         txID
                                     )
                                 )
@@ -62,17 +54,14 @@ class PollTransactionStatusUseCase @Inject constructor(
                             txProcessingTime = txProcessingTime
                         )
                     }
-                    TransactionPayloadStatus.commitPendingOutcomeUnknown -> {
-                        // Keep polling
-                    }
                     TransactionPayloadStatus.permanentlyRejected -> {
                         // Stop Polling: MESSAGE 4
-                        return TransactionData(
+                        return TransactionStatusData(
                             txId = txID,
                             requestId = requestId,
                             result = kotlin.Result.failure(
                                 DappRequestException(
-                                    DappRequestFailure.TransactionApprovalFailure.GatewayPermanentlyRejected(
+                                    DappRequestFailure.TransactionApprovalFailure.TransactionRejected.Permanently(
                                         txID
                                     )
                                 )
@@ -83,12 +72,12 @@ class PollTransactionStatusUseCase @Inject constructor(
                     }
                     TransactionPayloadStatus.temporarilyRejected -> {
                         // Stop Polling: MESSAGE 3
-                        return TransactionData(
+                        return TransactionStatusData(
                             txId = txID,
                             requestId = requestId,
                             result = kotlin.Result.failure(
                                 DappRequestException(
-                                    DappRequestFailure.TransactionApprovalFailure.GatewayTemporarilyRejected(
+                                    DappRequestFailure.TransactionApprovalFailure.TransactionRejected.Temporary(
                                         txID
                                     )
                                 )
@@ -97,10 +86,7 @@ class PollTransactionStatusUseCase @Inject constructor(
                             txProcessingTime = txProcessingTime
                         )
                     }
-                    TransactionPayloadStatus.pending -> {
-                        // Keep polling
-                    }
-                    else -> {}
+                    null -> {}
                 }
             }
         }
