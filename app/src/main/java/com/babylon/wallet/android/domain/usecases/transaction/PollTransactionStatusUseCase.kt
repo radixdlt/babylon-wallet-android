@@ -13,6 +13,7 @@ class PollTransactionStatusUseCase @Inject constructor(
     private val transactionRepository: TransactionRepository
 ) {
 
+    @Suppress("LongMethod", "ReturnCount")
     suspend operator fun invoke(
         txID: String,
         requestId: String,
