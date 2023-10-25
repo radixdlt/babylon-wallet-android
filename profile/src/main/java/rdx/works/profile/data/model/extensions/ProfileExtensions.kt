@@ -2,6 +2,7 @@ package rdx.works.profile.data.model.extensions
 
 import rdx.works.core.InstantGenerator
 import rdx.works.core.mapWhen
+import rdx.works.core.toIdentifiedArrayList
 import rdx.works.profile.data.model.Profile
 import rdx.works.profile.data.model.apppreferences.AppPreferences
 import rdx.works.profile.data.model.apppreferences.Transaction
@@ -16,7 +17,7 @@ fun Profile.updateLastUsed(id: FactorSource.FactorSourceID): Profile {
         factorSources = this.factorSources.mapWhen(predicate = { it.id == id }) { factorSource ->
             factorSource.common.lastUsedOn = InstantGenerator()
             factorSource
-        }
+        }.toIdentifiedArrayList()
     )
 }
 
