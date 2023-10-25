@@ -106,8 +106,6 @@ class StateApiDelegate(
             pools.addAll(poolsChunked.items)
         }
 
-        val poolsWithPoolUnits = mutableMapOf<StateEntityDetailsResponseItem, MutableMap<String, StateEntityDetailsResponseItemDetails>>()
-
         // We actually need to fetch details for each item involved in the pool
         // since total supply and divisibility of each item are needed in order
         // to know what is the user's owned amount out of each item

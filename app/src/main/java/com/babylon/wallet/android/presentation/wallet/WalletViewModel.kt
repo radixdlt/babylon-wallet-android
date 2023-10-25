@@ -49,7 +49,6 @@ import javax.inject.Inject
 
 @HiltViewModel
 class WalletViewModel @Inject constructor(
-    private val getAccountsWithAssetsUseCase: GetAccountsWithAssetsUseCase,
     private val getWalletAssetsUseCase: GetWalletAssetsUseCase,
     private val getProfileUseCase: GetProfileUseCase,
     private val getAccountsForSecurityPromptUseCase: GetAccountsForSecurityPromptUseCase,

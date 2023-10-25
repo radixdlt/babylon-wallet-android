@@ -35,7 +35,6 @@ import java.math.BigDecimal
 @ExperimentalCoroutinesApi
 class WalletViewModelTest : StateViewModelTest<WalletViewModel>() {
 
-    private val getAccountsWithAssetsUseCase = mockk<GetAccountsWithAssetsUseCase>()
     private val getBackupStateUseCase = mockk<GetBackupStateUseCase>()
     private val getWalletAssetsUseCase = mockk<GetWalletAssetsUseCase>()
     private val getProfileUseCase = mockk<GetProfileUseCase>()
@@ -51,7 +50,6 @@ class WalletViewModelTest : StateViewModelTest<WalletViewModel>() {
     )
 
     override fun initVM(): WalletViewModel = WalletViewModel(
-        getAccountsWithAssetsUseCase,
         getWalletAssetsUseCase,
         getProfileUseCase,
         getAccountsForSecurityPromptUseCase,
@@ -74,11 +72,10 @@ class WalletViewModelTest : StateViewModelTest<WalletViewModel>() {
         val viewModel = vm.value
         advanceUntilIdle()
         coEvery {
-            getAccountsWithAssetsUseCase(
+            getWalletAssetsUseCase(
                 accounts = sampleProfile.currentNetwork.accounts,
-                isRefreshing = false
             )
-        } returns Result.success(
+        } returns flowOf(
             listOf(
                 AccountWithAssets(
                     account = sampleProfile.currentNetwork.accounts[0],
