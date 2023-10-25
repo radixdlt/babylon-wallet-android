@@ -19,7 +19,7 @@ import javax.inject.Inject
 
 interface StateRepository {
 
-    fun observeAccountsResources(accounts: List<Network.Account>): Flow<Map<Network.Account, AccountOnLedger>>
+    fun observeAccountsOnLedger(accounts: List<Network.Account>): Flow<Map<Network.Account, AccountOnLedger>>
 }
 
 class StateRepositoryImpl @Inject constructor(
@@ -30,10 +30,10 @@ class StateRepositoryImpl @Inject constructor(
     private val cacheDelegate = StateCacheDelegate(stateDao = stateDao)
     private val stateApiDelegate = StateApiDelegate(stateApi = stateApi)
 
-    override fun observeAccountsResources(
+    override fun observeAccountsOnLedger(
         accounts: List<Network.Account>
     ): Flow<Map<Network.Account, AccountOnLedger>> = cacheDelegate
-        .observeAllResources(accounts)
+        .observeCachedAccounts(accounts)
         .transform { cachedAccounts ->
             emit(cachedAccounts.mapValues { it.value.toAccountDetails() })
 

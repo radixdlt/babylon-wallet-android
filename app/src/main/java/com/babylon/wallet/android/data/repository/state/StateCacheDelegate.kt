@@ -15,7 +15,7 @@ class StateCacheDelegate(
     private val stateDao: StateDao
 ) {
 
-    fun observeAllResources(accounts: List<Network.Account>): Flow<Map<Network.Account, CachedDetails>> {
+    fun observeCachedAccounts(accounts: List<Network.Account>): Flow<Map<Network.Account, CachedDetails>> {
         val accountAddresses = accounts.map { it.address }
         return stateDao.observeAccountsPortfolio(accountAddresses)
             .distinctUntilChanged()
