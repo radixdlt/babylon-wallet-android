@@ -11,8 +11,9 @@ import com.babylon.wallet.android.domain.model.assets.ValidatorWithStakeResource
  * Account data as received from gateway, or from database cache.
  *
  * It is just a medium to transfer all known data for a given account from the repository
- * to the domain layer. There is only one more step ([toAssets]) that "translates" these data to pure [Assets]
- * since some of the [fungibles] or [nonFungibles] are involved in stakes.
+ * to the domain layer. There is only one more step ([extractAssets]) that "translates" these data to pure [Assets]
+ * since some of the [fungibles] or [nonFungibles] are involved in stakes. This is the reason that most of the parameters
+ * are private, since they are unusable in this state by the app.
  *
  * @param details The details associated with this account
  * @param fungibles All the actual fungible assets and the stake units
@@ -22,10 +23,10 @@ import com.babylon.wallet.android.domain.model.assets.ValidatorWithStakeResource
  */
 data class AccountOnLedger(
     val details: AccountDetails,
-    val fungibles: List<Resource.FungibleResource>?,
-    val nonFungibles: List<Resource.NonFungibleResource>?,
-    val validators: List<ValidatorDetail>?,
-    val pools: Map<String, List<Resource.FungibleResource>>?
+    private val fungibles: List<Resource.FungibleResource>?,
+    private val nonFungibles: List<Resource.NonFungibleResource>?,
+    private val validators: List<ValidatorDetail>?,
+    private val pools: Map<String, List<Resource.FungibleResource>>?
 ) {
 
     // Just two maps that associate stake/claim addresses with validators
@@ -38,7 +39,7 @@ data class AccountOnLedger(
         var stakeClaim: StakeClaim? = null
     )
 
-    fun toAssets() = if (fungibles != null && nonFungibles != null && validators != null && pools != null) {
+    fun extractAssets() = if (fungibles != null && nonFungibles != null && validators != null && pools != null) {
         val resultingPoolUnits = mutableListOf<PoolUnit>()
         val resultingValidators = mutableMapOf<ValidatorDetail, ValidatorAssets>()
 

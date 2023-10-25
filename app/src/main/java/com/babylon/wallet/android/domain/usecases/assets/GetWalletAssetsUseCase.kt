@@ -9,7 +9,6 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import rdx.works.profile.data.model.pernetwork.Network
-import timber.log.Timber
 import javax.inject.Inject
 
 class GetWalletAssetsUseCase @Inject constructor(
@@ -25,7 +24,7 @@ class GetWalletAssetsUseCase @Inject constructor(
                 AccountWithAssets(
                     account = account,
                     details = detailsAndResources?.details ?: AccountDetails(),
-                    assets = detailsAndResources?.toAssets()
+                    assets = detailsAndResources?.extractAssets()
                 )
             }
         }
