@@ -5,22 +5,27 @@ import com.babylon.wallet.android.domain.model.resources.Resource
 import java.math.BigDecimal
 
 data class PoolUnit(
-    val poolUnitResource: Resource.FungibleResource,
-    val poolResources: List<Resource.FungibleResource> = emptyList()
+    val pool: Resource.FungibleResource,
+    val items: List<Resource.FungibleResource> = emptyList()
 ) {
 
     val resourceAddress: String
-        get() = poolUnitResource.resourceAddress
+        get() = pool.resourceAddress
 
     val name: String
-        get() = poolUnitResource.name
+        get() = pool.name
 
     val iconUrl: Uri?
-        get() = poolUnitResource.iconUrl
+        get() = pool.iconUrl
 
-    fun resourceRedemptionValue(resourceAddress: String): BigDecimal? {
-        val resourceVaultBalance = poolResources.find { it.resourceAddress == resourceAddress }?.ownedAmount
-        return poolUnitResource.ownedAmount?.multiply(resourceVaultBalance)
-            ?.divide(poolUnitResource.currentSupply, poolUnitResource.mathContext)
+    fun resourceRedemptionValue(item: Resource.FungibleResource): BigDecimal? {
+        val resourceVaultBalance = items.find { it.resourceAddress == item.resourceAddress }?.ownedAmount ?: return null
+        return if (pool.ownedAmount != null && pool.divisibility != null && pool.currentSupply != null) {
+            pool.ownedAmount
+                .multiply(resourceVaultBalance)
+                .divide(pool.currentSupply, pool.mathContext)
+        } else {
+            null
+        }
     }
 }

@@ -56,8 +56,8 @@ data class AccountOnLedger(
 
                 resultingPoolUnits.add(
                     PoolUnit(
-                        poolUnitResource = fungible,
-                        poolResources = poolItems
+                        pool = fungible,
+                        items = poolItems
                     )
                 )
 

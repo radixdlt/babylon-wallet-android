@@ -43,7 +43,7 @@ fun PoolUnitBottomSheetDetails(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         RadixCenteredTopAppBar(
-            title = poolName(poolUnit.poolUnitResource.name),
+            title = poolName(poolUnit.pool.name),
             onBackClick = onCloseClick,
             modifier = Modifier.fillMaxWidth(),
             contentColor = RadixTheme.colors.gray1,
@@ -61,7 +61,7 @@ fun PoolUnitBottomSheetDetails(
                 poolUnit = poolUnit
             )
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
-            TokenBalance(poolUnit.poolUnitResource)
+            TokenBalance(poolUnit.pool)
             Divider(
                 Modifier
                     .fillMaxWidth()
@@ -74,7 +74,7 @@ fun PoolUnitBottomSheetDetails(
                 color = RadixTheme.colors.gray1
             )
             PoolResourcesValues(
-                resource = poolUnit,
+                poolUnit = poolUnit,
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(top = RadixTheme.dimensions.paddingLarge, bottom = RadixTheme.dimensions.paddingDefault)
@@ -85,9 +85,9 @@ fun PoolUnitBottomSheetDetails(
                     .padding(vertical = RadixTheme.dimensions.paddingLarge),
                 color = RadixTheme.colors.gray4
             )
-            if (poolUnit.poolUnitResource.description.isNotBlank()) {
+            if (poolUnit.pool.description.isNotBlank()) {
                 Text(
-                    text = poolUnit.poolUnitResource.description,
+                    text = poolUnit.pool.description,
                     style = RadixTheme.typography.body2Regular,
                     color = RadixTheme.colors.gray1
                 )
@@ -103,10 +103,10 @@ fun PoolUnitBottomSheetDetails(
             }
             AddressRow(
                 modifier = Modifier.fillMaxWidth(),
-                address = poolUnit.poolUnitResource.resourceAddress
+                address = poolUnit.pool.resourceAddress
             )
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
-            if (poolUnit.poolUnitResource.displayTitle.isNotEmpty()) {
+            if (poolUnit.pool.displayTitle.isNotEmpty()) {
                 Row(
                     modifier = Modifier,
                     verticalAlignment = Alignment.CenterVertically,
@@ -119,7 +119,7 @@ fun PoolUnitBottomSheetDetails(
                     )
                     Spacer(modifier = Modifier.weight(1f))
                     Text(
-                        text = poolUnit.poolUnitResource.displayTitle,
+                        text = poolUnit.pool.displayTitle,
                         style = RadixTheme.typography.body1HighImportance,
                         color = RadixTheme.colors.gray1
                     )
@@ -141,14 +141,14 @@ fun PoolUnitBottomSheetDetails(
                 Text(
                     modifier = Modifier
                         .padding(start = RadixTheme.dimensions.paddingDefault),
-                    text = poolUnit.poolUnitResource.currentSupplyToDisplay ?: stringResource(id = R.string.assetDetails_supplyUnkown),
+                    text = poolUnit.pool.currentSupplyToDisplay ?: stringResource(id = R.string.assetDetails_supplyUnkown),
                     style = RadixTheme.typography.body1HighImportance,
                     color = RadixTheme.colors.gray1,
                     textAlign = TextAlign.End
                 )
             }
 
-            if (poolUnit.poolUnitResource.resourceBehaviours.isNotEmpty()) {
+            if (poolUnit.pool.resourceBehaviours.isNotEmpty()) {
                 Column {
                     Text(
                         modifier = Modifier
@@ -161,7 +161,7 @@ fun PoolUnitBottomSheetDetails(
                         style = RadixTheme.typography.body1Regular,
                         color = RadixTheme.colors.gray2
                     )
-                    poolUnit.poolUnitResource.resourceBehaviours.forEach { behaviour ->
+                    poolUnit.pool.resourceBehaviours.forEach { behaviour ->
                         Behaviour(
                             icon = behaviour.icon(),
                             name = behaviour.name()
