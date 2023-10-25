@@ -15,20 +15,13 @@ import kotlin.time.toDuration
 @Dao
 interface StateDao {
 
-    @Insert(
-        entity = StateVersionEntity::class,
-        onConflict = OnConflictStrategy.REPLACE
-    )
-    fun insertStateVersion(stateVersionEntity: StateVersionEntity)
-
     @Query(
         """
         SELECT 
             A.address AS account_address, 
             A.account_type AS account_type, 
             A.synced AS account_synced, 
-            A.state_version AS account_state_version, 
-            A.progress, 
+            A.state_version AS account_state_version,
             AR.amount AS amount,
             R.address AS resource_address,
             R.*
@@ -36,10 +29,8 @@ interface StateDao {
         LEFT JOIN AccountResourceJoin AS AR ON A.address = AR.account_address
         LEFT JOIN ResourceEntity AS R ON AR.resource_address = R.address
         WHERE 
-            A.address in (:accountAddresses) AND 
-            A.progress = 'UPDATED' AND 
-            A.synced >= :minValidity AND  
-            A.state_version = (SELECT version FROM StateVersionEntity WHERE id = 1)
+            A.address in (:accountAddresses) AND
+            A.synced >= :minValidity
         """
     )
     fun observeAccountsPortfolio(
@@ -53,19 +44,27 @@ interface StateDao {
         accountTypeMetadataItem: AccountTypeMetadataItem?,
         syncInfo: SyncInfo,
         accountWithResources: List<Pair<AccountResourceJoin, ResourceEntity>>,
+        poolsWithResources: Map<PoolEntity, List<Pair<PoolResourceJoin, ResourceEntity>>>,
+        validators: List<ValidatorEntity>
     ) {
+        val allPoolsWithResources = poolsWithResources.values.flatten()
+
+        // Insert parent entities
         insertAccountDetails(
             AccountEntity(
                 address = accountAddress,
                 accountType = accountTypeMetadataItem?.type,
-                progress = AccountInfoProgress.PENDING,
                 synced = syncInfo.synced,
                 stateVersion = syncInfo.stateVersion
             )
         )
-        insertResources(accountWithResources.map { it.second })
+        insertPoolDetails(poolsWithResources.keys.toList())
+        insertValidators(validators)
+        insertResources(accountWithResources.map { it.second } + allPoolsWithResources.map { it.second })
+
+        // Insert joins
         insertAccountResourcesPortfolio(accountWithResources.map { it.first })
-        changeAccountDetailsProgress(accountAddress, progress = AccountInfoProgress.UPDATED)
+        insertPoolResources(allPoolsWithResources.map { it.first })
     }
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
@@ -80,27 +79,8 @@ interface StateDao {
     )
     fun insertAccountDetails(details: AccountEntity)
 
-    @Query(
-        """
-        UPDATE AccountEntity 
-        SET progress = :progress
-        WHERE address = :accountAddresses
-        """
-    )
-    fun changeAccountDetailsProgress(accountAddresses: String, progress: AccountInfoProgress)
-
     @Delete(entity = AccountEntity::class)
     fun removeAccountDetails(account: AccountEntity)
-
-    @Transaction
-    fun insertPools(
-        poolsWithResources: Map<PoolEntity, List<Pair<PoolResourceJoin, ResourceEntity>>>
-    ) {
-        insertPoolDetails(poolsWithResources.keys.toList())
-        val allValues = poolsWithResources.values.flatten()
-        insertResources(allValues.map { it.second })
-        insertPoolResources(allValues.map { it.first })
-    }
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insertPoolDetails(pools: List<PoolEntity>)

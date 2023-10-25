@@ -27,13 +27,12 @@ class StateApiDelegate(
 
     suspend fun fetchAllResources(
         accounts: Set<Network.Account>,
-        onStateVersion: (Long) -> Unit,
         onAccount: suspend (
             account: Network.Account,
             accountGatewayDetails: AccountGatewayDetails
         ) -> Unit
     ) {
-        var stateVersion: Long? = null
+
 
         entityDetails(
             addresses = accounts.map { it.address }.toSet(),
@@ -52,13 +51,6 @@ class StateApiDelegate(
                 ExplicitMetadataKey.DAPP_DEFINITIONS
             )
         ) { chunkedAccounts ->
-            // When first chunk is received we save the state version, so we can query the rest
-            // of the chunks at the same state version
-            if (stateVersion == null) {
-                onStateVersion(chunkedAccounts.ledgerState.stateVersion)
-                stateVersion = chunkedAccounts.ledgerState.stateVersion
-            }
-
             chunkedAccounts.items.forEach { accountOnLedger ->
                 val account = accounts.find { it.address == accountOnLedger.address } ?: return@forEach
 

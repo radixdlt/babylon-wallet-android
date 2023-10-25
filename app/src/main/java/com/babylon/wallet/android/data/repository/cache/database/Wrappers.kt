@@ -16,7 +16,6 @@ data class AccountPortfolioResponse(
     val accountSynced: Instant,
     @ColumnInfo("account_state_version")
     val accountStateVersion: Long,
-    val progress: AccountInfoProgress,
 
     // From AccountResourceJoin
     val amount: BigDecimal?,

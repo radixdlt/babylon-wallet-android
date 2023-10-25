@@ -13,7 +13,6 @@ import androidx.room.TypeConverters
         AccountNFTJoin::class,
         ResourceEntity::class,
         NFTEntity::class,
-        StateVersionEntity::class,
         PoolEntity::class,
         ValidatorEntity::class,
         PoolResourceJoin::class
