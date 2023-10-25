@@ -3,6 +3,7 @@ package com.babylon.wallet.android.mockdata
 import com.babylon.wallet.android.domain.SampleDataProvider
 import rdx.works.core.HexCoded32Bytes
 import rdx.works.core.InstantGenerator
+import rdx.works.core.identifiedArrayListOf
 import rdx.works.profile.data.model.Header
 import rdx.works.profile.data.model.MnemonicWithPassphrase
 import rdx.works.profile.data.model.Profile
@@ -39,7 +40,7 @@ fun profile(
         gateways = Gateways(gateway.url, listOf(gateway)),
         p2pLinks = emptyList()
     ),
-    factorSources = listOf(
+    factorSources = identifiedArrayListOf(
         DeviceFactorSource.babylon(
             mnemonicWithPassphrase = MnemonicWithPassphrase(
                 mnemonic = "zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo vote",
@@ -51,7 +52,7 @@ fun profile(
             model = LedgerHardwareWalletFactorSource.DeviceModel.NANO_S,
             name = "My Ledger"
         )
-    ).toIdentifiedHashSet(),
+    ),
     networks = listOf(
         Network(
             networkID = gateway.network.id,
