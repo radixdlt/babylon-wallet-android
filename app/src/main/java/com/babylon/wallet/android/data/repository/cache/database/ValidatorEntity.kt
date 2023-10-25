@@ -4,7 +4,16 @@ import android.net.Uri
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import com.babylon.wallet.android.data.gateway.extensions.asMetadataItems
+import com.babylon.wallet.android.data.gateway.extensions.claimTokenResourceAddress
+import com.babylon.wallet.android.data.gateway.extensions.stakeUnitResourceAddress
+import com.babylon.wallet.android.data.gateway.extensions.totalXRDStake
+import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponseItem
 import com.babylon.wallet.android.domain.model.assets.ValidatorDetail
+import com.babylon.wallet.android.domain.model.resources.metadata.DescriptionMetadataItem
+import com.babylon.wallet.android.domain.model.resources.metadata.IconUrlMetadataItem
+import com.babylon.wallet.android.domain.model.resources.metadata.MetadataItem.Companion.consume
+import com.babylon.wallet.android.domain.model.resources.metadata.NameMetadataItem
 import java.math.BigDecimal
 
 @Entity
@@ -34,5 +43,25 @@ data class ValidatorEntity(
         stakeUnitResourceAddress = stakeUnitResourceAddress,
         claimTokenResourceAddress = claimTokenResourceAddress
     )
+
+    companion object {
+
+        fun List<StateEntityDetailsResponseItem>.asValidatorEntities(syncInfo: SyncInfo) = map { it.asValidatorEntity(syncInfo) }
+
+        fun StateEntityDetailsResponseItem.asValidatorEntity(syncInfo: SyncInfo): ValidatorEntity {
+            val metadataItems = explicitMetadata?.asMetadataItems().orEmpty().toMutableList()
+            return ValidatorEntity(
+                address = address,
+                name = metadataItems.consume<NameMetadataItem>()?.name,
+                description = metadataItems.consume<DescriptionMetadataItem>()?.description,
+                iconUrl = metadataItems.consume<IconUrlMetadataItem>()?.url?.toString(),
+                stakeUnitResourceAddress = details?.stakeUnitResourceAddress.orEmpty(),
+                claimTokenResourceAddress = details?.claimTokenResourceAddress.orEmpty(),
+                totalStake = totalXRDStake,
+                stateVersion = syncInfo.stateVersion
+            )
+        }
+
+    }
 
 }

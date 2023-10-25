@@ -11,13 +11,7 @@ data class AccountEntity(
     val address: String,
     @ColumnInfo("account_type")
     val accountType: AccountTypeMetadataItem.AccountType?,
-    val progress: AccountInfoProgress,
     override val synced: Instant,
     @ColumnInfo("state_version")
     override val stateVersion: Long
 ) : CachedEntity
-
-enum class AccountInfoProgress {
-    PENDING,
-    UPDATED
-}

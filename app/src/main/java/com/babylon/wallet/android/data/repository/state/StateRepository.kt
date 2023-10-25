@@ -3,10 +3,10 @@ package com.babylon.wallet.android.data.repository.state
 import com.babylon.wallet.android.data.gateway.apis.StateApi
 import com.babylon.wallet.android.data.gateway.extensions.asMetadataItems
 import com.babylon.wallet.android.data.repository.cache.database.AccountResourceJoin.Companion.asAccountResourceJoin
-import com.babylon.wallet.android.data.repository.cache.database.PoolResourceJoin.Companion.asPoolResourceJoin
+import com.babylon.wallet.android.data.repository.cache.database.PoolEntity.Companion.asPoolsWithResources
 import com.babylon.wallet.android.data.repository.cache.database.StateDao
-import com.babylon.wallet.android.data.repository.cache.database.StateVersionEntity
 import com.babylon.wallet.android.data.repository.cache.database.SyncInfo
+import com.babylon.wallet.android.data.repository.cache.database.ValidatorEntity.Companion.asValidatorEntities
 import com.babylon.wallet.android.domain.model.resources.metadata.MetadataItem.Companion.consume
 import com.babylon.wallet.android.domain.model.resources.AccountOnLedger
 import kotlinx.coroutines.flow.Flow
@@ -39,12 +39,9 @@ class StateRepositoryImpl @Inject constructor(
 
             val remainingAccounts = accounts.toSet() - cachedAccounts.keys
             if (remainingAccounts.isNotEmpty()) {
-                Timber.tag("Bakos").d("Fetching for account ${remainingAccounts.first().displayName}")
+                Timber.tag("Bakos").d("=> ${remainingAccounts.first().displayName}")
                 stateApiDelegate.fetchAllResources(
                     accounts = setOf(remainingAccounts.first()),
-                    onStateVersion = { stateVersion ->
-                        stateDao.insertStateVersion(StateVersionEntity(stateVersion))
-                    },
                     onAccount = { account, gatewayDetails ->
                         val accountMetadataItems = gatewayDetails.accountMetadata?.asMetadataItems()?.toMutableList()
                         val syncInfo = SyncInfo(synced = InstantGenerator(), stateVersion = gatewayDetails.ledgerState.stateVersion)
@@ -55,18 +52,9 @@ class StateRepositoryImpl @Inject constructor(
                             item.asAccountResourceJoin(account.address, syncInfo)
                         }
 
-                        // Store account details
-                        stateDao.updateAccountData(
-                            accountAddress = account.address,
-                            accountTypeMetadataItem = accountMetadataItems?.consume(),
-                            syncInfo = syncInfo,
-                            accountWithResources = fungibleEntityPairs + nonFungibleEntityPairs
-                        )
-
                         // Gather and store pool details
                         val poolAddresses = fungibleEntityPairs.mapNotNull { it.second.poolAddress }.toSet()
                         val pools = stateApiDelegate.getPoolDetails(poolAddresses = poolAddresses, stateVersion = syncInfo.stateVersion)
-                        cacheDelegate.storePoolDetails(pools, syncInfo)
 
                         // Gather and store validator details
                         val validatorAddresses = (fungibleEntityPairs.mapNotNull {
@@ -78,7 +66,16 @@ class StateRepositoryImpl @Inject constructor(
                             validatorsAddresses = validatorAddresses,
                             stateVersion = syncInfo.stateVersion
                         )
-                        cacheDelegate.storeValidatorDetails(validators, syncInfo)
+
+                        // Store account details
+                        stateDao.updateAccountData(
+                            accountAddress = account.address,
+                            accountTypeMetadataItem = accountMetadataItems?.consume(),
+                            syncInfo = syncInfo,
+                            accountWithResources = fungibleEntityPairs + nonFungibleEntityPairs,
+                            poolsWithResources = pools.asPoolsWithResources(syncInfo),
+                            validators = validators.asValidatorEntities(syncInfo)
+                        )
                     }
                 )
             }
