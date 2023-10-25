@@ -3,7 +3,10 @@ package com.babylon.wallet.android.data.repository.cache.database
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import com.babylon.wallet.android.data.gateway.extensions.divisibility
+import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponse
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponseItem
+import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponseItemDetails
 import com.babylon.wallet.android.data.repository.cache.database.PoolResourceJoin.Companion.asPoolResourceJoin
 
 @Entity
@@ -16,18 +19,22 @@ data class PoolEntity(
 
     companion object {
 
-        fun List<StateEntityDetailsResponseItem>.asPoolsWithResources(
+        fun Map<StateEntityDetailsResponseItem, Map<String, StateEntityDetailsResponseItemDetails>>.asPoolsWithResources(
             syncInfo: SyncInfo
         ): Map<PoolEntity, List<Pair<PoolResourceJoin, ResourceEntity>>> {
-            val poolsWithResources = associate { pool ->
-                val address = pool.address
-                val resourcesInPool = pool.fungibleResources?.items.orEmpty().map {
-                    it.asPoolResourceJoin(pool.address, syncInfo)
+            val poolsWithResources = mutableMapOf<PoolEntity, List<Pair<PoolResourceJoin, ResourceEntity>>>()
+
+            forEach { entry ->
+                val poolDetails = entry.key
+                val itemsInPool = entry.value
+
+                val resourcesInPool = poolDetails.fungibleResources?.items.orEmpty().mapNotNull { fungibleItem ->
+                    val itemDetails = itemsInPool[fungibleItem.resourceAddress] ?: return@mapNotNull null
+                    fungibleItem.asPoolResourceJoin(poolDetails.address, itemDetails, syncInfo)
                 }
 
-                address to resourcesInPool
-            }.mapKeys {
-                PoolEntity(it.key, syncInfo.stateVersion)
+                val poolEntity = PoolEntity(poolDetails.address, syncInfo.stateVersion)
+                poolsWithResources[poolEntity] = resourcesInPool
             }
 
             return poolsWithResources
@@ -36,3 +43,4 @@ data class PoolEntity(
     }
 
 }
+
