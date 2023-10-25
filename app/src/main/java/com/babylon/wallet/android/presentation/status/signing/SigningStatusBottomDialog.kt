@@ -47,7 +47,8 @@ fun SigningStatusBottomDialog(
         onDismissDialogClick()
     }
     BottomSheetDialogWrapper(
-        onDismiss = dismissHandler
+        onDismiss = dismissHandler,
+        addScrim = true
     ) {
         SigningStatusBottomDialogContent(
             modifier = modifier,

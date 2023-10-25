@@ -95,13 +95,14 @@ fun BottomSheetWrapper(
 fun BottomSheetDialogWrapper(
     modifier: Modifier = Modifier,
     dragToDismissEnabled: Boolean = true,
+    addScrim: Boolean = false,
     onDismiss: () -> Unit,
     content: @Composable () -> Unit
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     Box(
         modifier = modifier
-            .fillMaxSize()
+            .fillMaxSize().applyIf(addScrim, Modifier.background(Color.Black.copy(alpha = 0.4f)))
             .clickable(interactionSource = interactionSource, indication = null) { onDismiss() }
     ) {
         BoxWithConstraints(Modifier.align(Alignment.BottomCenter)) {
