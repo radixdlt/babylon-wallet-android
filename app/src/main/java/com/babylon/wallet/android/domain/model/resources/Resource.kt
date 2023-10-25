@@ -2,8 +2,6 @@ package com.babylon.wallet.android.domain.model.resources
 
 import android.net.Uri
 import com.babylon.wallet.android.domain.model.assets.AssetBehaviours
-import com.babylon.wallet.android.domain.model.assets.Assets
-import com.babylon.wallet.android.domain.model.assets.ValidatorDetail
 import com.babylon.wallet.android.domain.model.resources.XrdResource.addressesPerNetwork
 import com.babylon.wallet.android.domain.model.resources.metadata.ClaimAmountMetadataItem
 import com.babylon.wallet.android.domain.model.resources.metadata.DAppDefinitionsMetadataItem
@@ -325,23 +323,3 @@ object XrdResource {
 val Resource.FungibleResource.isXrd: Boolean
     get() = addressesPerNetwork.containsValue(resourceAddress)
 
-data class AccountOnLedger(
-    val details: AccountDetails,
-    val fungibles: List<Resource.FungibleResource>?,
-    val nonFungibles: List<Resource.NonFungibleResource>?,
-    val validators: List<ValidatorDetail>?,
-    val pools: Map<String, List<Resource.FungibleResource>>?
-) {
-
-    fun toAssets() = if (fungibles != null && nonFungibles != null && validators != null && pools != null) {
-        Assets(
-            fungibles = fungibles,
-            nonFungibles = nonFungibles,
-            poolUnits = listOf(),
-            validatorsWithStakeResources = emptyList()
-        )
-    } else {
-        null
-    }
-
-}
