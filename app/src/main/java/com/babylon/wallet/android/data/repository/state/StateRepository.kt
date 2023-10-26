@@ -100,9 +100,17 @@ class StateRepositoryImpl @Inject constructor(
         // No more pages to return
         if (resource.amount.toInt() == resource.items.size) throw StateRepository.NFTPageError.NoMorePages
 
-        val cachedNFTItems = stateDao.getOwnedNfts(
+        val accountNftPortfolio = stateDao.getAccountNFTPortfolio(
             accountAddress = account.address,
             resourceAddress = resource.resourceAddress
+        ).firstOrNull()
+
+        val stateVersion: Long = accountNftPortfolio?.accountStateVersion ?: throw StateRepository.NFTPageError.StateVersionMissing
+
+        val cachedNFTItems = stateDao.getOwnedNfts(
+            accountAddress = account.address,
+            resourceAddress = resource.resourceAddress,
+            stateVersion = stateVersion
         )
 
         // All items cached, return the result
@@ -110,15 +118,10 @@ class StateRepositoryImpl @Inject constructor(
             return@runCatching resource.copy(items = cachedNFTItems.map { it.toItem() })
         }
 
-        val accountNftPortfolio = stateDao.getAccountNFTPortfolio(
-            accountAddress = account.address,
-            resourceAddress = resource.resourceAddress
-        ).firstOrNull()
+        val vaultAddress = accountNftPortfolio.accountNonFungibleResourceJoin.vaultAddress ?: throw StateRepository.NFTPageError.VaultAddressMissing
+        val nextCursor = accountNftPortfolio.accountNonFungibleResourceJoin.nextCursor
 
-        val vaultAddress = accountNftPortfolio?.accountNFTJoin?.vaultAddress ?: throw StateRepository.NFTPageError.VaultAddressMissing
-        val stateVersion: Long = accountNftPortfolio.accountStateVersion ?: throw StateRepository.NFTPageError.StateVersionMissing
-        val nextCursor = accountNftPortfolio.accountNFTJoin.nextCursor
-
+        Timber.tag("Bakos").d("Fetching NFT items ($nextCursor)")
         val page = stateApiDelegate.getNextNftItems(
             accountAddress = account.address,
             resourceAddress = resource.resourceAddress,
