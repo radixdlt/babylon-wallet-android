@@ -19,11 +19,12 @@ interface StateDao {
             A.account_type AS account_type, 
             A.synced AS account_synced, 
             A.state_version AS account_state_version,
+            AR.account_state_version AS join_state_version,
             AR.amount AS amount,
             R.address AS resource_address,
             R.*
         FROM AccountEntity AS A
-        LEFT JOIN AccountResourceJoin AS AR ON A.address = AR.account_address AND account_state_version = AR.account_state_version
+        LEFT JOIN AccountResourceJoin AS AR ON A.address = AR.account_address
         LEFT JOIN ResourceEntity AS R ON AR.resource_address = R.address
         WHERE 
             A.address in (:accountAddresses) AND

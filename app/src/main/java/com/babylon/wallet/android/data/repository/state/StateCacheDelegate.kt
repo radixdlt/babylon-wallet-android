@@ -34,9 +34,14 @@ class StateCacheDelegate(
                 detailsWithResources.forEach { accountDetailsAndResources ->
                     val account = accounts.find { it.address == accountDetailsAndResources.address } ?: return@forEach
 
+                    // If for some reason the account's state version has changed but its joins have an older one
+                    // that means that the amount information is stale so we need to treat this account as if it does
+                    // not exist in the cache. So we avoid adding it into the result.
+                    if (accountDetailsAndResources.stateVersionsMismatch) return@forEach
+
                     // Parse details for this account
                     val cachedDetails = CachedDetails(
-                        stateVersion = accountDetailsAndResources.accountStateVersion,
+                        accountStateVersion = accountDetailsAndResources.accountStateVersion,
                         accountDetails = AccountDetails(
                             typeMetadataItem = accountDetailsAndResources.accountType?.let { AccountTypeMetadataItem(it) }
                         )
@@ -68,7 +73,7 @@ class StateCacheDelegate(
 
                     // Compile all pools
                     val poolAddresses = cachedData.poolAddresses()
-                    val cachedPoolsWithTokens = stateDao.getPoolDetails(poolAddresses, cachedData.stateVersion)
+                    val cachedPoolsWithTokens = stateDao.getPoolDetails(poolAddresses, cachedData.accountStateVersion)
                     cachedPoolsWithTokens.forEach { tokenInPool ->
                         if (tokenInPool.resource != null && tokenInPool.amount != null) {
                             cachedData.pools[tokenInPool.address] = cachedData.pools.getOrDefault(
@@ -86,7 +91,7 @@ class StateCacheDelegate(
 
                     // Compile all validators
                     val validatorsAddresses = cachedData.validatorAddresses()
-                    val cachedValidators = stateDao.getValidators(validatorsAddresses, cachedData.stateVersion)
+                    val cachedValidators = stateDao.getValidators(validatorsAddresses, cachedData.accountStateVersion)
                     if (cachedValidators.size != validatorsAddresses.size) {
                         iterator.remove()
                     }
@@ -121,7 +126,7 @@ class StateCacheDelegate(
     }
 
     data class CachedDetails(
-        val stateVersion: Long,
+        val accountStateVersion: Long,
         val accountDetails: AccountDetails,
         val fungibles: MutableList<Resource.FungibleResource> = mutableListOf(),
         val nonFungibles: MutableList<Resource.NonFungibleResource> = mutableListOf(),
