@@ -19,37 +19,34 @@ class SubmitTransactionUseCase @Inject constructor(
         val submitResult = transactionRepository.submitTransaction(
             notarizedTransaction = notarizedTransactionHex
         )
-        return when (submitResult) {
-            is com.babylon.wallet.android.domain.common.Result.Error -> {
+        return submitResult.getOrNull()?.let { result ->
+            // Invalidate all cached information stored, since a transaction may mutate
+            // some resource information
+            cache.invalidate()
+
+            if (result.duplicate) {
                 Result.failure(
                     DappRequestException(
-                        DappRequestFailure.TransactionApprovalFailure.SubmitNotarizedTransaction,
-                        e = submitResult.exception,
+                        DappRequestFailure.TransactionApprovalFailure.InvalidTXDuplicate(
+                            txIDHash
+                        )
+                    )
+                )
+            } else {
+                Result.success(
+                    SubmitTransactionResult(
+                        txId = txIDHash,
+                        txProcessingTime = txProcessingTime
                     )
                 )
             }
-            is com.babylon.wallet.android.domain.common.Result.Success -> {
-                // Invalidate all cached information stored, since a transaction may mutate
-                // some resource information
-                cache.invalidate()
-
-                if (submitResult.data.duplicate) {
-                    Result.failure(
-                        DappRequestException(
-                            DappRequestFailure.TransactionApprovalFailure.InvalidTXDuplicate(
-                                txIDHash
-                            )
-                        )
-                    )
-                } else {
-                    Result.success(
-                        SubmitTransactionResult(
-                            txId = txIDHash,
-                            txProcessingTime = txProcessingTime
-                        )
-                    )
-                }
-            }
+        } ?: run {
+            Result.failure(
+                DappRequestException(
+                    DappRequestFailure.TransactionApprovalFailure.SubmitNotarizedTransaction,
+                    e = submitResult.exceptionOrNull(),
+                )
+            )
         }
     }
 

@@ -1,7 +1,6 @@
 package com.babylon.wallet.android.data.transaction
 
 import com.babylon.wallet.android.data.repository.entity.EntityRepository
-import com.babylon.wallet.android.domain.common.value
 import com.babylon.wallet.android.domain.usecases.transaction.CollectSignersSignaturesUseCase
 import com.babylon.wallet.android.domain.usecases.transaction.GenerateAuthSigningFactorInstanceUseCase
 import com.babylon.wallet.android.domain.usecases.transaction.SignRequest
@@ -50,7 +49,7 @@ class ROLAClient @Inject constructor(
                 }
             }
         }
-        val ownerKeys = entityRepository.getEntityOwnerKeyHashes(entity.address, true).value()
+        val ownerKeys = entityRepository.getEntityOwnerKeyHashes(entity.address, true).getOrNull()
         val publicKeyHashes = mutableListOf<FactorInstance.PublicKey>()
         val ownerKeysHashes = ownerKeys?.keyHashes.orEmpty()
         val authSigningPublicKey = when (val badge = authSigningFactorInstance.badge) {

@@ -1,7 +1,5 @@
 package com.babylon.wallet.android.presentation.transfer.assets
 
-import com.babylon.wallet.android.domain.common.onError
-import com.babylon.wallet.android.domain.common.onValue
 import com.babylon.wallet.android.domain.model.assets.Assets
 import com.babylon.wallet.android.domain.usecases.GetAccountsWithAssetsUseCase
 import com.babylon.wallet.android.presentation.common.UiMessage
@@ -33,11 +31,11 @@ class AssetsChooserDelegate @Inject constructor(
         }
 
         getAccountsWithAssetsUseCase(accounts = listOf(fromAccount), isRefreshing = false)
-            .onValue { accountWithResources ->
+            .onSuccess { accountWithResources ->
                 val assets = accountWithResources.firstOrNull()?.assets
 
                 updateSheetState { it.copy(assets = assets) }
-            }.onError { error ->
+            }.onFailure { error ->
                 updateSheetState {
                     it.copy(
                         assets = Assets(),

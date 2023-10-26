@@ -56,18 +56,16 @@ class AddLinkConnectorViewModel @Inject constructor(
             }
             if (encryptionKey != null) {
                 val connectionPassword = requireNotNull(currentConnectionPassword)
-                when (peerdroidLink.addConnection(encryptionKey)) {
-                    is rdx.works.peerdroid.helpers.Result.Success -> {
+                peerdroidLink.addConnection(encryptionKey)
+                    .onSuccess {
                         addP2PLinkUseCase(
                             displayName = state.value.connectorDisplayName,
                             connectionPassword = connectionPassword.value
                         )
                     }
-
-                    is rdx.works.peerdroid.helpers.Result.Error -> {
+                    .onFailure {
                         Timber.d("Failed to connect to remote peer.")
                     }
-                }
             }
             _state.value = AddLinkConnectorUiState.init
         }

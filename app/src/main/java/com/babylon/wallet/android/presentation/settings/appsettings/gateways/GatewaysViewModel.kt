@@ -3,8 +3,6 @@ package com.babylon.wallet.android.presentation.settings.appsettings.gateways
 import androidx.annotation.VisibleForTesting
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.repository.networkinfo.NetworkInfoRepository
-import com.babylon.wallet.android.domain.common.onError
-import com.babylon.wallet.android.domain.common.onValue
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
@@ -105,14 +103,14 @@ class GatewaysViewModel @Inject constructor(
             _state.update { state -> state.copy(addingGateway = true) }
 
             val newGatewayInfo = networkInfoRepository.getNetworkInfo(newUrl)
-            newGatewayInfo.onValue { networkName ->
+            newGatewayInfo.onSuccess { networkName ->
                 addGatewayUseCase(Radix.Gateway(newUrl, Radix.Network.fromName(networkName)))
                 _state.update { state ->
                     state.copy(addingGateway = false, newUrl = "", newUrlValid = false)
                 }
                 sendEvent(SettingsEditGatewayEvent.GatewayAdded)
             }
-            newGatewayInfo.onError {
+            newGatewayInfo.onFailure {
                 _state.update { state ->
                     state.copy(
                         gatewayAddFailure = GatewayAddFailure.ErrorWhileAdding,

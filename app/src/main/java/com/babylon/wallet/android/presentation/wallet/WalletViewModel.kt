@@ -1,8 +1,6 @@
 package com.babylon.wallet.android.presentation.wallet
 
 import androidx.lifecycle.viewModelScope
-import com.babylon.wallet.android.domain.common.onError
-import com.babylon.wallet.android.domain.common.onValue
 import com.babylon.wallet.android.domain.model.assets.AccountWithAssets
 import com.babylon.wallet.android.domain.usecases.AccountWithSecurityPrompt
 import com.babylon.wallet.android.domain.usecases.GetAccountsForSecurityPromptUseCase
@@ -98,9 +96,9 @@ class WalletViewModel @Inject constructor(
                     accounts = accounts,
                     isNftItemDataNeeded = false,
                     isRefreshing = _state.value.isRefreshing
-                ).onValue { resources ->
+                ).onSuccess { resources ->
                     _state.update { it.onResourcesReceived(resources) }
-                }.onError { error ->
+                }.onFailure { error ->
                     _state.update { it.onResourcesError(error) }
                     Timber.w(error)
                 }

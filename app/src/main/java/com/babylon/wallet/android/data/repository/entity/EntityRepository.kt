@@ -36,11 +36,8 @@ import com.babylon.wallet.android.data.repository.cache.HttpCache
 import com.babylon.wallet.android.data.repository.cache.TimeoutDuration
 import com.babylon.wallet.android.data.repository.cache.TimeoutDuration.NO_CACHE
 import com.babylon.wallet.android.data.repository.execute
-import com.babylon.wallet.android.domain.common.Result
 import com.babylon.wallet.android.domain.common.map
-import com.babylon.wallet.android.domain.common.onValue
 import com.babylon.wallet.android.domain.common.switchMap
-import com.babylon.wallet.android.domain.common.value
 import com.babylon.wallet.android.domain.model.assets.AccountWithAssets
 import com.babylon.wallet.android.domain.model.assets.Assets
 import com.babylon.wallet.android.domain.model.assets.LiquidStakeUnit
@@ -98,7 +95,7 @@ class EntityRepositoryImpl @Inject constructor(
         isNftItemDataNeeded: Boolean,
         isRefreshing: Boolean
     ): Result<List<AccountWithAssets>> {
-        if (accounts.isEmpty()) return Result.Success(emptyList())
+        if (accounts.isEmpty()) return Result.success(emptyList())
 
         val listOfEntityDetailsResponsesResult = getStateEntityDetailsResponse(
             addresses = accounts.map { it.address },
@@ -107,7 +104,9 @@ class EntityRepositoryImpl @Inject constructor(
         )
 
         return listOfEntityDetailsResponsesResult.switchMap { accountDetailsResponses ->
-            val stateVersion = accountDetailsResponses.firstOrNull()?.ledgerState?.stateVersion ?: return Result.Error()
+            val stateVersion = accountDetailsResponses.firstOrNull()?.ledgerState?.stateVersion ?: return Result.failure(
+                Throwable()
+            )
             val mapOfAccountsWithMetadata = buildMapOfAccountsAddressesWithMetadata(accountDetailsResponses)
             var mapOfAccountsWithFungibleResources =
                 buildMapOfAccountsWithFungibles(accountDetailsResponses, stateVersion)
@@ -188,7 +187,7 @@ class EntityRepositoryImpl @Inject constructor(
                 )
             }
 
-            Result.Success(listOfAccountsWithResources)
+            Result.success(listOfAccountsWithResources)
         }
     }
 
@@ -233,7 +232,7 @@ class EntityRepositoryImpl @Inject constructor(
             explicitMetadata = ExplicitMetadataKey.forValidatorsAndPools,
             isRefreshing = isRefreshing,
             stateVersion = stateVersion
-        ).value().orEmpty().map {
+        ).getOrNull().orEmpty().map {
             it.items
         }.flatten()
     }
@@ -254,7 +253,7 @@ class EntityRepositoryImpl @Inject constructor(
             explicitMetadata = ExplicitMetadataKey.forValidatorsAndPools,
             isRefreshing = isRefreshing,
             stateVersion = stateVersion
-        ).value().orEmpty().map {
+        ).getOrNull().orEmpty().map {
             it.items
         }.flatten()
     }
@@ -479,7 +478,7 @@ class EntityRepositoryImpl @Inject constructor(
                                 resourceAddress = nonFungibleResourcesItem.resourceAddress,
                                 stateVersion = stateVersion,
                                 isRefreshing = isRefreshing,
-                            ).value().orEmpty().sorted()
+                            ).getOrNull().orEmpty().sorted()
                         } else {
                             getNonFungibleIdsForAccount(
                                 accountAddress = entityItem.address,
@@ -548,14 +547,14 @@ class EntityRepositoryImpl @Inject constructor(
             }
 
         // if you find any error response in the list of StateEntityDetailsResponses then return error
-        return if (responses.any { response -> response is Result.Error }) {
-            val errorResponse = responses.first { response -> response is Result.Error }.map {
+        return if (responses.any { response -> response.isFailure }) {
+            val errorResponse = responses.first { response -> response.isFailure }.map {
                 listOf(it)
             }
             Timber.e("Found errors when requesting entity details")
             errorResponse
         } else { // otherwise all StateEntityDetailsResponses are success so return the list
-            Result.Success(responses.mapNotNull { it.value() })
+            Result.success(responses.mapNotNull { it.getOrNull() })
         }
     }
 
@@ -657,9 +656,9 @@ class EntityRepositoryImpl @Inject constructor(
         }
 
         // if you find any error response in the list of StateNonFungibleDataResponse then return error
-        return if (nonFungibleDataResponsesListResult.any { response -> response is Result.Error }) {
+        return if (nonFungibleDataResponsesListResult.any { response -> response.isFailure }) {
             Timber.e("Found errors when requesting NonFungibleIds")
-            Result.Error(IOException("Failed to fetch the nonFungibleData"))
+            Result.failure(IOException("Failed to fetch the nonFungibleData"))
         } else {
             val nonFungibleResourceItemsList =
                 nonFungibleDataResponsesListResult.mapNotNull { nonFungibleDataResponse ->
@@ -698,9 +697,9 @@ class EntityRepositoryImpl @Inject constructor(
                                     }.orEmpty()
                             )
                         }
-                    }.value()
+                    }.getOrNull()
                 }.flatten()
-            Result.Success(nonFungibleResourceItemsList)
+            Result.success(nonFungibleResourceItemsList)
         }
     }
 
@@ -729,7 +728,7 @@ class EntityRepositoryImpl @Inject constructor(
                     timeoutDuration = if (isRefreshing) NO_CACHE else TimeoutDuration.FIVE_MINUTES
                 ),
                 map = { it }
-            ).onValue { page ->
+            ).onSuccess { page ->
                 nftIds.addAll(page.items)
                 nextIdsCursor = page.nextCursor
                 latestEpoch = page.ledgerState.epoch
@@ -823,7 +822,7 @@ class EntityRepositoryImpl @Inject constructor(
         explicitMetadata = ExplicitMetadataKey.forResources,
         isRefreshing = false,
         stateVersion = stateVersion
-    ).value().orEmpty().map {
+    ).getOrNull().orEmpty().map {
         it.items
     }.flatten()
 

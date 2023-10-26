@@ -6,7 +6,6 @@ import com.babylon.wallet.android.data.repository.TransactionStatusData
 import com.babylon.wallet.android.data.repository.transaction.TransactionRepository
 import com.babylon.wallet.android.data.transaction.DappRequestException
 import com.babylon.wallet.android.data.transaction.DappRequestFailure
-import com.babylon.wallet.android.domain.common.Result
 import javax.inject.Inject
 
 class PollTransactionStatusUseCase @Inject constructor(
@@ -21,75 +20,75 @@ class PollTransactionStatusUseCase @Inject constructor(
         txProcessingTime: String
     ): TransactionStatusData {
         while (true) {
-            val statusCheckResult = transactionRepository.getTransactionStatus(txID)
-            if (statusCheckResult is Result.Success) {
-                when (statusCheckResult.data.knownPayloads.firstOrNull()?.payloadStatus) {
-                    TransactionPayloadStatus.unknown,
-                    TransactionPayloadStatus.commitPendingOutcomeUnknown,
-                    TransactionPayloadStatus.pending -> {
-                        // Keep Polling
-                    }
-                    TransactionPayloadStatus.committedSuccess -> {
-                        // Stop Polling: MESSAGE 1
-                        return TransactionStatusData(
-                            txId = txID,
-                            requestId = requestId,
-                            result = kotlin.Result.success(Unit),
-                            transactionType = transactionType,
-                            txProcessingTime = txProcessingTime
-                        )
-                    }
-                    TransactionPayloadStatus.committedFailure -> {
-                        // Stop Polling: MESSAGE 2
-                        return TransactionStatusData(
-                            txId = txID,
-                            requestId = requestId,
-                            result = kotlin.Result.failure(
-                                DappRequestException(
-                                    DappRequestFailure.TransactionApprovalFailure.TransactionCommitted.Failure(
-                                        txID
+            transactionRepository.getTransactionStatus(txID)
+                .onSuccess { statusCheckResult ->
+                    when (statusCheckResult.knownPayloads.firstOrNull()?.payloadStatus) {
+                        TransactionPayloadStatus.unknown,
+                        TransactionPayloadStatus.commitPendingOutcomeUnknown,
+                        TransactionPayloadStatus.pending -> {
+                            // Keep Polling
+                        }
+                        TransactionPayloadStatus.committedSuccess -> {
+                            // Stop Polling: MESSAGE 1
+                            return TransactionStatusData(
+                                txId = txID,
+                                requestId = requestId,
+                                result = kotlin.Result.success(Unit),
+                                transactionType = transactionType,
+                                txProcessingTime = txProcessingTime
+                            )
+                        }
+                        TransactionPayloadStatus.committedFailure -> {
+                            // Stop Polling: MESSAGE 2
+                            return TransactionStatusData(
+                                txId = txID,
+                                requestId = requestId,
+                                result = kotlin.Result.failure(
+                                    DappRequestException(
+                                        DappRequestFailure.TransactionApprovalFailure.TransactionCommitted.Failure(
+                                            txID
+                                        )
                                     )
-                                )
-                            ),
-                            transactionType = transactionType,
-                            txProcessingTime = txProcessingTime
-                        )
-                    }
-                    TransactionPayloadStatus.permanentlyRejected -> {
-                        // Stop Polling: MESSAGE 4
-                        return TransactionStatusData(
-                            txId = txID,
-                            requestId = requestId,
-                            result = kotlin.Result.failure(
-                                DappRequestException(
-                                    DappRequestFailure.TransactionApprovalFailure.TransactionRejected.Permanently(
-                                        txID
+                                ),
+                                transactionType = transactionType,
+                                txProcessingTime = txProcessingTime
+                            )
+                        }
+                        TransactionPayloadStatus.permanentlyRejected -> {
+                            // Stop Polling: MESSAGE 4
+                            return TransactionStatusData(
+                                txId = txID,
+                                requestId = requestId,
+                                result = kotlin.Result.failure(
+                                    DappRequestException(
+                                        DappRequestFailure.TransactionApprovalFailure.TransactionRejected.Permanently(
+                                            txID
+                                        )
                                     )
-                                )
-                            ),
-                            transactionType = transactionType,
-                            txProcessingTime = txProcessingTime
-                        )
-                    }
-                    TransactionPayloadStatus.temporarilyRejected -> {
-                        // Stop Polling: MESSAGE 3
-                        return TransactionStatusData(
-                            txId = txID,
-                            requestId = requestId,
-                            result = kotlin.Result.failure(
-                                DappRequestException(
-                                    DappRequestFailure.TransactionApprovalFailure.TransactionRejected.Temporary(
-                                        txID
+                                ),
+                                transactionType = transactionType,
+                                txProcessingTime = txProcessingTime
+                            )
+                        }
+                        TransactionPayloadStatus.temporarilyRejected -> {
+                            // Stop Polling: MESSAGE 3
+                            return TransactionStatusData(
+                                txId = txID,
+                                requestId = requestId,
+                                result = kotlin.Result.failure(
+                                    DappRequestException(
+                                        DappRequestFailure.TransactionApprovalFailure.TransactionRejected.Temporary(
+                                            txID
+                                        )
                                     )
-                                )
-                            ),
-                            transactionType = transactionType,
-                            txProcessingTime = txProcessingTime
-                        )
+                                ),
+                                transactionType = transactionType,
+                                txProcessingTime = txProcessingTime
+                            )
+                        }
+                        null -> {}
                     }
-                    null -> {}
                 }
-            }
         }
     }
 }

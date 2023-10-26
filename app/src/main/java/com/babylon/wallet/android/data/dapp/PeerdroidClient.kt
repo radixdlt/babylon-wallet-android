@@ -27,7 +27,6 @@ import rdx.works.peerdroid.data.PeerdroidConnector
 import rdx.works.peerdroid.di.IoDispatcher
 import rdx.works.peerdroid.domain.ConnectionIdHolder
 import rdx.works.peerdroid.domain.DataChannelWrapperEvent
-import rdx.works.peerdroid.helpers.Result
 import timber.log.Timber
 import javax.inject.Inject
 

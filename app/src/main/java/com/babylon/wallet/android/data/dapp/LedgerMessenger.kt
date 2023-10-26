@@ -14,8 +14,6 @@ import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
 import kotlinx.serialization.encodeToString
-import rdx.works.peerdroid.helpers.Result.Error
-import rdx.works.peerdroid.helpers.Result.Success
 import rdx.works.profile.data.model.factorsources.Slip10Curve
 import javax.inject.Inject
 
@@ -153,8 +151,8 @@ class LedgerMessengerImpl @Inject constructor(
         request: LedgerInteractionRequest,
         crossinline onError: (MessageFromDataChannel.LedgerResponse.LedgerErrorResponse) -> DappRequestException
     ): Result<R> = flow<Result<R>> {
-        when (val result = peerdroidClient.sendMessage(peerdroidRequestJson.encodeToString(request))) {
-            is Success -> {
+        peerdroidClient.sendMessage(peerdroidRequestJson.encodeToString(request))
+            .onSuccess {
                 peerdroidClient.listenForLedgerResponses().filter {
                     it.id == request.interactionId
                 }.catch { e ->
@@ -169,9 +167,8 @@ class LedgerMessengerImpl @Inject constructor(
                     }
                 }
             }
-            is Error -> {
-                emit(Result.failure(Exception("Failed to connect Ledger device ", result.exception)))
+            .onFailure { throwable ->
+                emit(Result.failure(Exception("Failed to connect Ledger device ", throwable)))
             }
-        }
     }.first()
 }

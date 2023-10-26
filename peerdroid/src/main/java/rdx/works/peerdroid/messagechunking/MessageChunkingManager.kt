@@ -3,7 +3,6 @@ package rdx.works.peerdroid.messagechunking
 import rdx.works.core.blake2Hash
 import rdx.works.core.toHexString
 import rdx.works.peerdroid.data.PackageDto
-import rdx.works.peerdroid.helpers.Result
 import timber.log.Timber
 
 private const val ERROR_MESSAGE_HASHES_MISMATCH = "Message hashes mismatch"
@@ -25,16 +24,17 @@ fun verifyAssembledMessage(
     return try {
         if (!expectedHashOfMessage.contentEquals(assembledMessage.blake2Hash().toHexString())) {
             Timber.d("📯 🧱 failed to verify hash of assembled message: hash mismatch")
-            Result.Error(
-                message = ERROR_MESSAGE_HASHES_MISMATCH,
-                data = ""
+            Result.failure<Throwable>(
+                Throwable(ERROR_MESSAGE_HASHES_MISMATCH)
             )
         }
 
         Timber.d("📯 🧱 hash of assembled message verified successfully")
-        Result.Success(Unit)
+        Result.success(Unit)
     } catch (exception: Exception) {
         Timber.e("📯 🧱 failed to verify hash of assembled message: ${exception.localizedMessage}")
-        Result.Error(message = "no metadata chunk")
+        Result.failure(
+            Throwable("no metadata chunk")
+        )
     }
 }

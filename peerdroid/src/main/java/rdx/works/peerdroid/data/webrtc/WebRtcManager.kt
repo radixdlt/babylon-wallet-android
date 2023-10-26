@@ -20,7 +20,6 @@ import rdx.works.peerdroid.data.webrtc.wrappers.peerconnection.createSuspendingA
 import rdx.works.peerdroid.data.webrtc.wrappers.peerconnection.createSuspendingOffer
 import rdx.works.peerdroid.data.webrtc.wrappers.peerconnection.setSuspendingLocalDescription
 import rdx.works.peerdroid.data.webrtc.wrappers.peerconnection.setSuspendingRemoteDescription
-import rdx.works.peerdroid.helpers.Result
 import timber.log.Timber
 
 private val STUN_SERVERS_LIST = listOf(
@@ -145,17 +144,15 @@ internal class WebRtcManager(applicationContext: Context) {
     ): Result<Unit> = peerConnection.setSuspendingRemoteDescription(sessionDescription = sessionDescription)
 
     suspend fun addRemoteIceCandidate(remoteIceCandidate: RemoteIceCandidate): Result<Unit> {
-        return when (val result = peerConnection.addSuspendingIceCandidate(remoteIceCandidate = remoteIceCandidate)) {
-            is Result.Success -> {
+        return peerConnection.addSuspendingIceCandidate(remoteIceCandidate = remoteIceCandidate)
+            .onSuccess {
                 Timber.d("🔌 added successfully ice candidate")
-                Result.Success(Unit)
+                Result.success(Unit)
             }
-
-            is Result.Error -> {
-                Timber.e("🔌 failed to add ice candidate with error: ${result.message}")
-                Result.Error("failed to add ice candidate")
+            .onFailure { throwable ->
+                Timber.e("🔌 failed to add ice candidate with error: ${throwable.message}")
+                Result.failure<Throwable>(throwable)
             }
-        }
     }
 
     fun close() {

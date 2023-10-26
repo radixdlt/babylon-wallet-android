@@ -24,7 +24,6 @@ import rdx.works.peerdroid.data.websocket.model.RpcMessage.AnswerPayload.Compani
 import rdx.works.peerdroid.data.websocket.model.SignalingServerMessage
 import rdx.works.peerdroid.di.ApplicationScope
 import rdx.works.peerdroid.di.IoDispatcher
-import rdx.works.peerdroid.helpers.Result
 import timber.log.Timber
 
 interface PeerdroidLink {
@@ -61,18 +60,16 @@ internal class PeerdroidLinkImpl(
             // So by the time the web socket is open and listening the peer connection will be ready to negotiate.
             observePeerConnectionUntilEstablished()
             // and now establish the web socket
-            val result = webSocketClient.initSession(
+            webSocketClient.initSession(
                 connectionId = connectionId,
                 encryptionKey = encryptionKey
             )
-            when (result) {
-                is Result.Success -> {
+                .onSuccess {
                     listenForIncomingMessagesFromSignalingServer(webSocketClient)
                 }
-                is Result.Error -> {
+                .onFailure {
                     terminateWithError()
                 }
-            }
         }
 
         return addConnectionDeferred.await()
@@ -168,7 +165,7 @@ internal class PeerdroidLinkImpl(
                     is PeerConnectionEvent.Disconnected -> {
                         Timber.d("🛠️ signaling state changed: peer connection disconnected 🔴")
                         terminate()
-                        addConnectionDeferred.complete(Result.Success(Unit))
+                        addConnectionDeferred.complete(Result.success(Unit))
                     }
                     is PeerConnectionEvent.Failed -> {
                         Timber.d("🛠️ signaling state changed: peer connection failed ❌")
@@ -186,9 +183,8 @@ internal class PeerdroidLinkImpl(
     }
 
     private suspend fun createAndSendAnswerToRemoteClient() {
-        when (val result = webRtcManager.createAnswer()) {
-            is Result.Success -> {
-                val sessionDescriptionValue = result.data
+        webRtcManager.createAnswer()
+            .onSuccess { sessionDescriptionValue ->
                 val localSessionDescription = SessionDescriptionWrapper(
                     type = SessionDescriptionWrapper.Type.ANSWER,
                     sessionDescriptionValue = sessionDescriptionValue
@@ -208,24 +204,21 @@ internal class PeerdroidLinkImpl(
                     terminateWithError()
                 }
             }
-            is Result.Error -> {
-                Timber.e("🛠️️ failed to create answer: ${result.message}")
+            .onFailure { throwable ->
+                Timber.e("🛠️️ failed to create answer: ${throwable.message}")
                 terminateWithError()
             }
-        }
     }
 
     private suspend fun setLocalDescription(localSessionDescription: SessionDescriptionWrapper): Boolean {
-        return when (val result = webRtcManager.setLocalDescription(localSessionDescription)) {
-            is Result.Success -> {
+        return webRtcManager.setLocalDescription(localSessionDescription)
+            .onSuccess {
                 Timber.d("🛠️️ local description is set")
-                true
             }
-            is Result.Error -> {
-                Timber.e("🛠️️ failed to set local description:${result.message} ")
-                false
+            .onFailure { throwable ->
+                Timber.e("🛠️️ failed to set local description:${throwable.message} ")
             }
-        }
+            .isSuccess
     }
 
     private suspend fun setRemoteDescriptionFromOffer(offer: SignalingServerMessage.RemoteData.Offer) {
@@ -233,15 +226,14 @@ internal class PeerdroidLinkImpl(
             type = SessionDescriptionWrapper.Type.OFFER,
             sessionDescriptionValue = SessionDescriptionWrapper.SessionDescriptionValue(offer.sdp)
         )
-        when (val result = webRtcManager.setRemoteDescription(sessionDescription)) {
-            is Result.Success -> {
+        webRtcManager.setRemoteDescription(sessionDescription)
+            .onSuccess {
                 Timber.d("🛠️️ remote description is set")
             }
-            is Result.Error -> {
-                Timber.e("🛠️️ failed to set remote description:${result.message} ")
+            .onFailure { throwable ->
+                Timber.e("🛠️️ failed to set remote description:${throwable.message} ")
                 terminateWithError()
             }
-        }
     }
 
     private suspend fun sendIceCandidateToRemoteClient(iceCandidateData: PeerConnectionEvent.IceCandidate.Data) {
@@ -262,7 +254,7 @@ internal class PeerdroidLinkImpl(
 
     private suspend fun terminateWithError() {
         terminate()
-        addConnectionDeferred.complete(Result.Error("data channel couldn't initialize"))
+        addConnectionDeferred.complete(Result.failure(Throwable("data channel couldn't initialize")))
     }
 
     private suspend fun terminate() {

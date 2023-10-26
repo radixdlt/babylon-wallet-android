@@ -12,10 +12,8 @@ import com.babylon.wallet.android.data.repository.cache.HttpCache
 import com.babylon.wallet.android.data.repository.cache.TimeoutDuration
 import com.babylon.wallet.android.data.repository.entity.EntityRepositoryImpl
 import com.babylon.wallet.android.data.repository.execute
-import com.babylon.wallet.android.domain.common.Result
 import com.babylon.wallet.android.domain.common.map
 import com.babylon.wallet.android.domain.common.switchMap
-import com.babylon.wallet.android.domain.common.value
 import com.babylon.wallet.android.domain.model.resources.metadata.MetadataItem
 import javax.inject.Inject
 
@@ -40,7 +38,7 @@ class MetadataRepositoryImpl @Inject constructor(
         explicitMetadata = ExplicitMetadataKey.forAssets,
         isRefreshing = isRefreshing
     ).switchMap { entityDetailsResponses ->
-        Result.Success(buildMapOfResourceAddressesWithMetadata(entityDetailsResponses))
+        Result.success(buildMapOfResourceAddressesWithMetadata(entityDetailsResponses))
     }
 
     private fun buildMapOfResourceAddressesWithMetadata(
@@ -89,13 +87,13 @@ class MetadataRepositoryImpl @Inject constructor(
             }
 
         // if you find any error response in the list of StateEntityDetailsResponses then return error
-        return if (responses.any { response -> response is Result.Error }) {
-            val errorResponse = responses.first { response -> response is Result.Error }.map {
+        return if (responses.any { response -> response.isFailure }) {
+            val errorResponse = responses.first { response -> response.isFailure }.map {
                 listOf(it)
             }
             errorResponse
         } else { // otherwise all StateEntityDetailsResponses are success so return the list
-            Result.Success(responses.mapNotNull { it.value() })
+            Result.success(responses.mapNotNull { it.getOrNull() })
         }
     }
 }
