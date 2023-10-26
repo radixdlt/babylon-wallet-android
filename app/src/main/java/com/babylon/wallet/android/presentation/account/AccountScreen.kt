@@ -218,7 +218,7 @@ private fun AccountScreenContent(
                 modifier = Modifier,
                 topBar = {
                     RadixCenteredTopAppBar(
-                        title = state.accountWithResources?.account?.displayName.orEmpty(),
+                        title = state.accountWithAssets?.account?.displayName.orEmpty(),
                         onBackClick = onBackClick,
                         contentColor = RadixTheme.colors.white,
                         containerColor = Color.Transparent,
@@ -227,7 +227,7 @@ private fun AccountScreenContent(
                             // https://radixdlt.atlassian.net/browse/ABW-2504
                             ThrottleIconButton(
                                 onClick = {
-                                    onAccountPreferenceClick(state.accountWithResources?.account?.address.orEmpty())
+                                    onAccountPreferenceClick(state.accountWithAssets?.account?.address.orEmpty())
                                 },
                                 thresholdMs = 1000L
                             ) {
