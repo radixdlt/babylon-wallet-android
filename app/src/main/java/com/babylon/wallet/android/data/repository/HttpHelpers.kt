@@ -10,7 +10,7 @@ import retrofit2.Call
 import retrofit2.awaitResponse
 
 @Suppress("SwallowedException")
-suspend inline fun <T> Call<T>.executeSafe(): Result<T> {
+suspend inline fun <T> Call<T>.toResult(): Result<T> {
     return try {
         val response = awaitResponse()
         val responseBody = response.body()

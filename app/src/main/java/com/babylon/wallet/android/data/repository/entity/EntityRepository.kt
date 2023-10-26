@@ -46,6 +46,7 @@ import com.babylon.wallet.android.domain.model.assets.ValidatorWithStakeResource
 import com.babylon.wallet.android.domain.model.resources.AccountDetails
 import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.domain.model.resources.metadata.ClaimAmountMetadataItem
+import com.babylon.wallet.android.domain.model.resources.metadata.ClaimEpochMetadataItem
 import com.babylon.wallet.android.domain.model.resources.metadata.DescriptionMetadataItem
 import com.babylon.wallet.android.domain.model.resources.metadata.IconUrlMetadataItem
 import com.babylon.wallet.android.domain.model.resources.metadata.MetadataItem
@@ -683,7 +684,8 @@ class EntityRepositoryImpl @Inject constructor(
                                         field.field_name == ExplicitMetadataKey.KEY_IMAGE_URL.key
                                     }?.value?.let { imageUrl -> IconUrlMetadataItem(url = Uri.parse(imageUrl)) },
                                 readyToClaim = claimEpoch != null && ledgerEpoch != null && ledgerEpoch >= claimEpoch,
-                                claimAmountMetadataItem = stateNonFungibleDetailsResponseItem.claimAmount()
+                                claimEpochMetadataItem = claimEpoch?.let { epoch -> ClaimEpochMetadataItem(epoch) },
+                                claimAmountMetadataItem = stateNonFungibleDetailsResponseItem.claimAmount()?.toBigDecimalOrNull()
                                     ?.let { claimAmount -> ClaimAmountMetadataItem(claimAmount) },
                                 remainingMetadata = stateNonFungibleDetailsResponseItem.data?.programmaticJson?.fields
                                     ?.filterNot { field ->

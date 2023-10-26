@@ -1,6 +1,9 @@
 package com.babylon.wallet.android.data.repository.state
 
+import com.babylon.wallet.android.data.gateway.generated.models.StateNonFungibleDetailsResponseItem
+import com.babylon.wallet.android.data.repository.cache.database.AccountNFTJoin.Companion.asAccountNFTJoin
 import com.babylon.wallet.android.data.repository.cache.database.StateDao
+import com.babylon.wallet.android.data.repository.cache.database.SyncInfo
 import com.babylon.wallet.android.domain.model.assets.ValidatorDetail
 import com.babylon.wallet.android.domain.model.resources.AccountDetails
 import com.babylon.wallet.android.domain.model.resources.AccountOnLedger
@@ -86,6 +89,29 @@ class StateCacheDelegate(
 
                 result
             }.distinctUntilChanged()
+    }
+
+    fun storeAccountNFTsPortfolio(
+        accountAddress: String,
+        resourceAddress: String,
+        nextCursor: String?,
+        items: List<StateNonFungibleDetailsResponseItem>,
+        syncInfo: SyncInfo
+    ): List<Resource.NonFungibleResource.Item> {
+        val pair = items.map {
+            it.asAccountNFTJoin(accountAddress, resourceAddress, syncInfo)
+        }
+
+        val nfts = pair.map { it.second }
+        stateDao.storeAccountNFTsPortfolio(
+            accountAddress = accountAddress,
+            resourceAddress = resourceAddress,
+            cursor = nextCursor,
+            accountNFTsJoin = pair.map { it.first },
+            nfts = nfts
+        )
+
+        return nfts.map { it.toItem() }
     }
 
     data class CachedDetails(

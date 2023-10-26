@@ -9,17 +9,29 @@ import com.babylon.wallet.android.data.repository.cache.database.SyncInfo
 import com.babylon.wallet.android.data.repository.cache.database.ValidatorEntity.Companion.asValidatorEntities
 import com.babylon.wallet.android.domain.model.resources.metadata.MetadataItem.Companion.consume
 import com.babylon.wallet.android.domain.model.resources.AccountOnLedger
+import com.babylon.wallet.android.domain.model.resources.Resource
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.transform
 import rdx.works.core.InstantGenerator
 import rdx.works.profile.data.model.pernetwork.Network
 import timber.log.Timber
+import java.lang.RuntimeException
 import javax.inject.Inject
 
 interface StateRepository {
 
     fun observeAccountsOnLedger(accounts: List<Network.Account>): Flow<Map<Network.Account, AccountOnLedger>>
+
+    suspend fun getMoreNFTs(account: Network.Account, resource: Resource.NonFungibleResource): Result<Resource.NonFungibleResource>
+
+    sealed class NFTPageError(cause: Throwable): Exception(cause) {
+        data object NoMorePages: NFTPageError(RuntimeException("No more NFTs for this resource."))
+
+        data object VaultAddressMissing: NFTPageError(RuntimeException("No vault address to fetch NFTs"))
+
+        data object StateVersionMissing : NFTPageError(RuntimeException("State version missing for account."))
+    }
 }
 
 class StateRepositoryImpl @Inject constructor(
@@ -80,4 +92,52 @@ class StateRepositoryImpl @Inject constructor(
                 )
             }
         }.distinctUntilChanged()
+
+    override suspend fun getMoreNFTs(
+        account: Network.Account,
+        resource: Resource.NonFungibleResource
+    ): Result<Resource.NonFungibleResource> = runCatching {
+        // No more pages to return
+        if (resource.amount.toInt() == resource.items.size) throw StateRepository.NFTPageError.NoMorePages
+
+        val cachedNFTItems = stateDao.getOwnedNfts(
+            accountAddress = account.address,
+            resourceAddress = resource.resourceAddress
+        )
+
+        // All items cached, return the result
+        if (cachedNFTItems.size == resource.amount.toInt()) {
+            return@runCatching resource.copy(items = cachedNFTItems.map { it.toItem() })
+        }
+
+        val accountNftPortfolio = stateDao.getAccountNFTPortfolio(
+            accountAddress = account.address,
+            resourceAddress = resource.resourceAddress
+        ).firstOrNull()
+
+        val vaultAddress = accountNftPortfolio?.accountNFTJoin?.vaultAddress ?: throw StateRepository.NFTPageError.VaultAddressMissing
+        val stateVersion: Long = accountNftPortfolio.accountStateVersion ?: throw StateRepository.NFTPageError.StateVersionMissing
+        val nextCursor = accountNftPortfolio.accountNFTJoin.nextCursor
+
+        val page = stateApiDelegate.getNextNftItems(
+            accountAddress = account.address,
+            resourceAddress = resource.resourceAddress,
+            vaultAddress = vaultAddress,
+            nextCursor = nextCursor,
+            stateVersion = stateVersion
+        )
+        val syncInfo = SyncInfo(synced = InstantGenerator(), stateVersion = stateVersion)
+
+        val newItems = cacheDelegate.storeAccountNFTsPortfolio(
+            accountAddress = account.address,
+            resourceAddress = resource.resourceAddress,
+            nextCursor = page.first,
+            items = page.second,
+            syncInfo = syncInfo
+        )
+        val currentItems = resource.items
+        val allNewItems = (currentItems + newItems).distinctBy { it.localId }
+
+        resource.copy(items = allNewItems)
+    }
 }

@@ -13,10 +13,13 @@ import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetai
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponseItem
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponseItemDetails
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityFungiblesPageRequest
+import com.babylon.wallet.android.data.gateway.generated.models.StateEntityNonFungibleIdsPageRequest
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityNonFungiblesPageRequest
+import com.babylon.wallet.android.data.gateway.generated.models.StateNonFungibleDataRequest
+import com.babylon.wallet.android.data.gateway.generated.models.StateNonFungibleDataResponse
+import com.babylon.wallet.android.data.gateway.generated.models.StateNonFungibleDetailsResponseItem
 import com.babylon.wallet.android.data.gateway.model.ExplicitMetadataKey
-import com.babylon.wallet.android.data.repository.executeSafe
-import com.babylon.wallet.android.domain.model.resources.AccountOnLedger
+import com.babylon.wallet.android.data.repository.toResult
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
@@ -157,6 +160,36 @@ class StateApiDelegate(
         return validators
     }
 
+    suspend fun getNextNftItems(
+        accountAddress: String,
+        resourceAddress: String,
+        vaultAddress: String,
+        nextCursor: String?,
+        stateVersion: Long
+    ): Pair<String?, List<StateNonFungibleDetailsResponseItem>> = stateApi.entityNonFungibleIdsPage(
+        StateEntityNonFungibleIdsPageRequest(
+            address = accountAddress,
+            vaultAddress = vaultAddress,
+            resourceAddress = resourceAddress,
+            cursor = nextCursor,
+            atLedgerState = LedgerStateSelector(stateVersion = stateVersion)
+        )
+    ).toResult().map { ids ->
+        val data = mutableListOf<StateNonFungibleDetailsResponseItem>()
+        ids.items.chunked(ENTITY_DETAILS_PAGE_LIMIT).forEach { idsPage ->
+            stateApi.nonFungibleData(
+                StateNonFungibleDataRequest(
+                    resourceAddress = resourceAddress,
+                    nonFungibleIds = idsPage,
+                    atLedgerState = LedgerStateSelector(stateVersion = stateVersion)
+                )
+            ).toResult().onSuccess {
+                data.addAll(it.nonFungibleIds)
+            }
+        }
+        ids.nextCursor to data
+    }.getOrThrow()
+
     private suspend fun entityDetails(
         addresses: Set<String>,
         metadataKeys: Set<ExplicitMetadataKey>,
@@ -175,7 +208,7 @@ class StateApiDelegate(
                         explicitMetadata = metadataKeys.map { it.key }
                     )
                 )
-            ).executeSafe().getOrThrow()
+            ).toResult().getOrThrow()
 
             onPage(response)
         }
@@ -193,7 +226,7 @@ class StateApiDelegate(
                     aggregationLevel = ResourceAggregationLevel.vault,
                     atLedgerState = LedgerStateSelector(stateVersion = ledgerState.stateVersion)
                 )
-            ).executeSafe().getOrThrow()
+            ).toResult().getOrThrow()
 
             onPage(pageResponse.items)
             nextCursor = pageResponse.nextCursor
@@ -213,7 +246,7 @@ class StateApiDelegate(
                     aggregationLevel = ResourceAggregationLevel.vault,
                     atLedgerState = LedgerStateSelector(stateVersion = ledgerState.stateVersion)
                 )
-            ).executeSafe().getOrThrow()
+            ).toResult().getOrThrow()
 
             onPage(pageResponse.items)
             nextCursor = pageResponse.nextCursor

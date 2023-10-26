@@ -1,6 +1,7 @@
 package com.babylon.wallet.android.data.repository.cache.database
 
 import androidx.room.ColumnInfo
+import androidx.room.Embedded
 import androidx.room.Ignore
 import com.babylon.wallet.android.domain.model.resources.AccountDetails
 import com.babylon.wallet.android.domain.model.resources.metadata.AccountTypeMetadataItem
@@ -128,3 +129,10 @@ data class PoolWithResourceResponse(
         null
     }
 }
+
+data class AccountNFTPortfolioResponse(
+    @Embedded
+    val accountNFTJoin: AccountResourceJoin,
+    @ColumnInfo("state_version")
+    val accountStateVersion: Long?
+)
