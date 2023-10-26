@@ -2,10 +2,8 @@ package com.babylon.wallet.android.presentation.transfer
 
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
-import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.domain.model.assets.Assets
 import com.babylon.wallet.android.domain.model.resources.Resource
-import com.babylon.wallet.android.domain.usecases.GetAccountsWithAssetsUseCase
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
@@ -27,7 +25,6 @@ import rdx.works.core.mapWhen
 import rdx.works.profile.data.model.extensions.factorSourceId
 import rdx.works.profile.data.model.factorsources.FactorSource
 import rdx.works.profile.data.model.pernetwork.Network
-import rdx.works.profile.data.repository.MnemonicRepository
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.accountOnCurrentNetwork
 import java.math.BigDecimal
@@ -37,9 +34,9 @@ import javax.inject.Inject
 @HiltViewModel
 class TransferViewModel @Inject constructor(
     getProfileUseCase: GetProfileUseCase,
-    getAccountsWithAssetsUseCase: GetAccountsWithAssetsUseCase,
-    incomingRequestRepository: IncomingRequestRepository,
-    mnemonicRepository: MnemonicRepository,
+    private val accountsChooserDelegate: AccountsChooserDelegate,
+    private val assetsChooserDelegate: AssetsChooserDelegate,
+    private val prepareManifestDelegate: PrepareManifestDelegate,
     savedStateHandle: SavedStateHandle,
 ) : StateViewModel<TransferViewModel.State>() {
 
@@ -47,23 +44,11 @@ class TransferViewModel @Inject constructor(
 
     override fun initialState(): State = State()
 
-    private val accountsChooserDelegate = AccountsChooserDelegate(
-        state = _state,
-        getProfileUseCase = getProfileUseCase
-    )
-
-    private val assetsChooserDelegate = AssetsChooserDelegate(
-        state = _state,
-        getAccountsWithAssetsUseCase = getAccountsWithAssetsUseCase
-    )
-
-    private val prepareManifestDelegate = PrepareManifestDelegate(
-        state = _state,
-        incomingRequestRepository = incomingRequestRepository,
-        mnemonicRepository = mnemonicRepository
-    )
-
     init {
+        accountsChooserDelegate(viewModelScope, _state)
+        assetsChooserDelegate(viewModelScope, _state)
+        prepareManifestDelegate(viewModelScope, _state)
+
         viewModelScope.launch {
             val sourceAccount = getProfileUseCase.accountOnCurrentNetwork(args.accountId)
 

@@ -31,6 +31,10 @@ import com.babylon.wallet.android.domain.usecases.transaction.SubmitTransactionU
 import com.babylon.wallet.android.mockdata.account
 import com.babylon.wallet.android.mockdata.profile
 import com.babylon.wallet.android.presentation.StateViewModelTest
+import com.babylon.wallet.android.presentation.transaction.analysis.TransactionAnalysisDelegate
+import com.babylon.wallet.android.presentation.transaction.fees.TransactionFeesDelegate
+import com.babylon.wallet.android.presentation.transaction.guarantees.TransactionGuaranteesDelegate
+import com.babylon.wallet.android.presentation.transaction.submit.TransactionSubmitDelegate
 import com.babylon.wallet.android.utils.AppEventBus
 import com.babylon.wallet.android.utils.DeviceSecurityHelper
 import com.radixdlt.ret.Decimal
@@ -55,6 +59,7 @@ import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -232,20 +237,31 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
     override fun initVM(): TransactionReviewViewModel {
         return TransactionReviewViewModel(
             transactionClient = transactionClient,
-            getAccountsWithAssetsUseCase = getAccountsWithAssetsUseCase,
-            getResourcesMetadataUseCase = getResourcesMetadataUseCase,
-            getProfileUseCase = getProfileUseCase,
-            getTransactionBadgesUseCase = getTransactionBadgesUseCase,
-            resolveDAppsUseCase = resolveDAppsUseCase,
-            getCurrentGatewayUseCase = getCurrentGatewayUseCase,
-            dAppMessenger = dAppMessenger,
-            appEventBus = appEventBus,
+            analysis = TransactionAnalysisDelegate(
+                getProfileUseCase = getProfileUseCase,
+                getAccountsWithAssetsUseCase = getAccountsWithAssetsUseCase,
+                getResourcesMetadataUseCase = getResourcesMetadataUseCase,
+                getResourcesUseCase = getResourcesUseCase,
+                getTransactionBadgesUseCase = getTransactionBadgesUseCase,
+                resolveDAppsUseCase = resolveDAppsUseCase,
+                transactionClient = transactionClient,
+            ),
+            guarantees = TransactionGuaranteesDelegate(),
+            fees = TransactionFeesDelegate(
+                getProfileUseCase = getProfileUseCase,
+            ),
+            submit = TransactionSubmitDelegate(
+                transactionClient = transactionClient,
+                dAppMessenger = dAppMessenger,
+                getCurrentGatewayUseCase = getCurrentGatewayUseCase,
+                incomingRequestRepository = incomingRequestRepository,
+                appEventBus = appEventBus,
+                transactionStatusClient = transactionStatusClient,
+                submitTransactionUseCase = submitTransactionUseCase,
+                applicationScope = TestScope(),
+            ),
             incomingRequestRepository = incomingRequestRepository,
-            appScope = TestScope(),
             savedStateHandle = savedStateHandle,
-            transactionStatusClient = transactionStatusClient,
-            getResourcesUseCase = getResourcesUseCase,
-            submitTransactionUseCase = submitTransactionUseCase
         )
     }
 
@@ -281,7 +297,7 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
             )
         }
         assertEquals(WalletErrorType.WrongNetwork, errorSlot.captured)
-        assertEquals(TransactionReviewViewModel.Event.Dismiss, vm.oneOffEvent.first())
+        assertTrue(vm.state.value.isTransactionDismissed)
     }
 
     @Test

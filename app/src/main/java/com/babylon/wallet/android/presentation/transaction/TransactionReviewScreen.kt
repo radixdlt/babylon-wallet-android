@@ -139,13 +139,9 @@ fun TransactionReviewScreen(
         }
     }
 
-    LaunchedEffect(Unit) {
-        viewModel.oneOffEvent.collect { event ->
-            when (event) {
-                TransactionReviewViewModel.Event.Dismiss -> {
-                    onDismiss()
-                }
-            }
+    LaunchedEffect(state.isTransactionDismissed) {
+        if (state.isTransactionDismissed) {
+            onDismiss()
         }
     }
 }
