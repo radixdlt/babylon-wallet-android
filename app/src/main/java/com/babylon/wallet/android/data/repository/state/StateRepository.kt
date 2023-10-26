@@ -7,16 +7,15 @@ import com.babylon.wallet.android.data.repository.cache.database.PoolEntity.Comp
 import com.babylon.wallet.android.data.repository.cache.database.StateDao
 import com.babylon.wallet.android.data.repository.cache.database.SyncInfo
 import com.babylon.wallet.android.data.repository.cache.database.ValidatorEntity.Companion.asValidatorEntities
-import com.babylon.wallet.android.domain.model.resources.metadata.MetadataItem.Companion.consume
 import com.babylon.wallet.android.domain.model.resources.AccountOnLedger
 import com.babylon.wallet.android.domain.model.resources.Resource
+import com.babylon.wallet.android.domain.model.resources.metadata.MetadataItem.Companion.consume
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.transform
 import rdx.works.core.InstantGenerator
 import rdx.works.profile.data.model.pernetwork.Network
 import timber.log.Timber
-import java.lang.RuntimeException
 import javax.inject.Inject
 
 interface StateRepository {
