@@ -8,6 +8,7 @@ import androidx.room.TypeConverters
 
 @Database(
     entities = [
+        LedgerStateEntity::class,
         AccountResourceJoin::class,
         AccountEntity::class,
         AccountNFTJoin::class,
