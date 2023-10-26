@@ -10,12 +10,12 @@ import java.math.BigDecimal
 
 data class AccountWithAssets(
     val account: Network.Account,
-    val details: AccountDetails = AccountDetails(),
+    val details: AccountDetails? = null,
     val assets: Assets? = null,
 ) {
 
     val isDappDefinitionAccountType: Boolean
-        get() = details.type == AccountTypeMetadataItem.AccountType.DAPP_DEFINITION
+        get() = details?.type == AccountTypeMetadataItem.AccountType.DAPP_DEFINITION
 }
 
 fun List<AccountWithAssets>.findAccountWithEnoughXRDBalance(minimumBalance: BigDecimal) = find {

@@ -49,7 +49,10 @@ data class AccountPortfolioResponse(
     val stateVersionsMismatch: Boolean = joinStateVersion != null && accountStateVersion != joinStateVersion
 
     @Ignore
-    val details: AccountDetails = AccountDetails(typeMetadataItem = accountType?.let { AccountTypeMetadataItem(it) })
+    val details: AccountDetails = AccountDetails(
+        stateVersion = accountStateVersion,
+        typeMetadataItem = accountType?.let { AccountTypeMetadataItem(it) }
+    )
 
     @Ignore
     val resource: ResourceEntity? = if (resourceAddress != null && type != null && resourceSynced != null) {
