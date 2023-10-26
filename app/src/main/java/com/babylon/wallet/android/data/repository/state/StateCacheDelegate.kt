@@ -41,8 +41,8 @@ class StateCacheDelegate(
 
                     // Parse details for this account
                     val cachedDetails = CachedDetails(
-                        accountStateVersion = accountDetailsAndResources.accountStateVersion,
                         accountDetails = AccountDetails(
+                            stateVersion = accountDetailsAndResources.accountStateVersion,
                             typeMetadataItem = accountDetailsAndResources.accountType?.let { AccountTypeMetadataItem(it) }
                         )
                     )
@@ -73,7 +73,7 @@ class StateCacheDelegate(
 
                     // Compile all pools
                     val poolAddresses = cachedData.poolAddresses()
-                    val cachedPoolsWithTokens = stateDao.getPoolDetails(poolAddresses, cachedData.accountStateVersion)
+                    val cachedPoolsWithTokens = stateDao.getPoolDetails(poolAddresses, cachedData.accountDetails.stateVersion)
                     cachedPoolsWithTokens.forEach { tokenInPool ->
                         if (tokenInPool.resource != null && tokenInPool.amount != null) {
                             cachedData.pools[tokenInPool.address] = cachedData.pools.getOrDefault(
@@ -91,7 +91,7 @@ class StateCacheDelegate(
 
                     // Compile all validators
                     val validatorsAddresses = cachedData.validatorAddresses()
-                    val cachedValidators = stateDao.getValidators(validatorsAddresses, cachedData.accountStateVersion)
+                    val cachedValidators = stateDao.getValidators(validatorsAddresses, cachedData.accountDetails.stateVersion)
                     if (cachedValidators.size != validatorsAddresses.size) {
                         iterator.remove()
                     }
@@ -126,7 +126,6 @@ class StateCacheDelegate(
     }
 
     data class CachedDetails(
-        val accountStateVersion: Long,
         val accountDetails: AccountDetails,
         val fungibles: MutableList<Resource.FungibleResource> = mutableListOf(),
         val nonFungibles: MutableList<Resource.NonFungibleResource> = mutableListOf(),

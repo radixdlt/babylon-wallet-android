@@ -47,13 +47,17 @@ class StateRepositoryImpl @Inject constructor(
     ): Flow<Map<Network.Account, AccountOnLedger>> = cacheDelegate
         .observeCachedAccounts(accounts, isRefreshing)
         .transform { cachedAccounts ->
-            emit(cachedAccounts.mapValues { it.value.toAccountDetails() })
+            val cachedAccountsWithDetails = cachedAccounts.mapValues { it.value.toAccountDetails() }
+            emit(cachedAccountsWithDetails)
+
+            val prevAccountsStateVersion = cachedAccountsWithDetails.values.lastOrNull()?.details?.stateVersion
 
             val remainingAccounts = accounts.toSet() - cachedAccounts.keys
             if (remainingAccounts.isNotEmpty()) {
                 Timber.tag("Bakos").d("=> ${remainingAccounts.first().displayName}")
                 stateApiDelegate.fetchAllResources(
                     accounts = setOf(remainingAccounts.first()),
+                    onStateVersion = prevAccountsStateVersion,
                     onAccount = { account, gatewayDetails ->
                         val accountMetadataItems = gatewayDetails.accountMetadata?.asMetadataItems()?.toMutableList()
                         val syncInfo = SyncInfo(synced = InstantGenerator(), accountStateVersion = gatewayDetails.ledgerState.stateVersion)

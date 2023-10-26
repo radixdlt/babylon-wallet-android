@@ -23,7 +23,7 @@ class GetAccountAssetsUseCase @Inject constructor(
 
         AccountWithAssets(
             account = account,
-            details = accountOnLedger?.details ?: AccountDetails(),
+            details = accountOnLedger?.details,
             assets = accountOnLedger?.extractAssets()
         )
     }.flowOn(dispatcher)

@@ -31,6 +31,7 @@ class StateApiDelegate(
 
     suspend fun fetchAllResources(
         accounts: Set<Network.Account>,
+        onStateVersion: Long? = null,
         onAccount: suspend (
             account: Network.Account,
             accountGatewayDetails: AccountGatewayDetails
@@ -51,7 +52,8 @@ class StateApiDelegate(
                 ExplicitMetadataKey.POOL,
                 ExplicitMetadataKey.TAGS,
                 ExplicitMetadataKey.DAPP_DEFINITIONS
-            )
+            ),
+            stateVersion = onStateVersion
         ) { chunkedAccounts ->
             chunkedAccounts.items.forEach { accountOnLedger ->
                 val account = accounts.find { it.address == accountOnLedger.address } ?: return@forEach
