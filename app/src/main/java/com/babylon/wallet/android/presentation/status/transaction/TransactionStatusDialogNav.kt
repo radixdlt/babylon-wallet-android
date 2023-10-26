@@ -1,6 +1,5 @@
 package com.babylon.wallet.android.presentation.status.transaction
 
-import android.net.Uri
 import androidx.annotation.VisibleForTesting
 import androidx.compose.ui.window.DialogProperties
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -9,7 +8,6 @@ import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.dialog
 import androidx.navigation.navArgument
-import com.babylon.wallet.android.data.gateway.generated.infrastructure.Serializer
 import com.babylon.wallet.android.domain.model.transaction.TransactionStatusFields
 import com.babylon.wallet.android.domain.model.transaction.TransactionStatusParameterType
 import com.babylon.wallet.android.presentation.transaction.ROUTE_TRANSACTION_REVIEW
@@ -45,7 +43,7 @@ fun NavController.transactionStatusDialog(transactionEvent: AppEvent.Status.Tran
     // New requests will be handled from the view model itself
     if (currentBackStackEntry?.destination?.route?.startsWith(ROUTE) == true) return
 
-    val argument = Uri.encode(Serializer.kotlinxSerializationJson.encodeToString(transactionEvent.toTransactionStatusFields()))
+    val argument = Json.encodeToString(transactionEvent.toTransactionStatusFields())
     navigate("transaction_status_dialog/$argument") {
         val popUpToRoute = if (this@transactionStatusDialog.routeExist(ROUTE_TRANSFER)) {
             ROUTE_TRANSFER
