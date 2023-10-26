@@ -30,8 +30,8 @@ data class ValidatorEntity(
     val claimTokenResourceAddress: String?,
     @ColumnInfo("total_stake")
     val totalStake: BigDecimal?,
-    @ColumnInfo("state_version")
-    val stateVersion: Long
+    @ColumnInfo("account_state_version")
+    val accountStateVersion: Long
 ) {
 
     fun asValidatorDetail() = ValidatorDetail(
@@ -58,7 +58,7 @@ data class ValidatorEntity(
                 stakeUnitResourceAddress = details?.stakeUnitResourceAddress.orEmpty(),
                 claimTokenResourceAddress = details?.claimTokenResourceAddress.orEmpty(),
                 totalStake = totalXRDStake,
-                stateVersion = syncInfo.stateVersion
+                accountStateVersion = syncInfo.accountStateVersion
             )
         }
 

@@ -9,7 +9,6 @@ import com.babylon.wallet.android.data.gateway.extensions.amountDecimal
 import com.babylon.wallet.android.data.gateway.extensions.vaultAddress
 import com.babylon.wallet.android.data.gateway.generated.models.FungibleResourcesCollectionItem
 import com.babylon.wallet.android.data.gateway.generated.models.NonFungibleResourcesCollectionItem
-import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponseItem
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponseItemDetails
 import com.babylon.wallet.android.data.gateway.generated.models.StateNonFungibleDetailsResponseItem
 import com.babylon.wallet.android.data.repository.cache.database.NFTEntity.Companion.asEntity
@@ -38,6 +37,8 @@ data class AccountResourceJoin(
     @ColumnInfo("resource_address", index = true)
     val resourceAddress: String,
     val amount: BigDecimal,
+    @ColumnInfo("account_state_version")
+    val accountStateVersion: Long,
 
     // Owners of non fungible collections need to store
     // the vault address so we can query their owned ids
@@ -59,6 +60,7 @@ data class AccountResourceJoin(
             accountAddress = accountAddress,
             resourceAddress = resourceAddress,
             amount = amountDecimal,
+            accountStateVersion = syncInfo.accountStateVersion,
             vaultAddress = null,
             nextCursor = null
         ) to asEntity(syncInfo)
@@ -70,6 +72,7 @@ data class AccountResourceJoin(
             accountAddress = accountAddress,
             resourceAddress = resourceAddress,
             amount = amount.toBigDecimal(),
+            accountStateVersion = syncInfo.accountStateVersion,
             vaultAddress = vaultAddress,
             nextCursor = null
         ) to asEntity(syncInfo)
@@ -93,7 +96,9 @@ data class AccountNFTJoin(
     @ColumnInfo("resource_address")
     val resourceAddress: String,
     @ColumnInfo("local_id")
-    val localId: String
+    val localId: String,
+    @ColumnInfo("account_state_version")
+    val accountStateVersion: Long
 ) {
 
     companion object {
@@ -104,7 +109,8 @@ data class AccountNFTJoin(
         ): Pair<AccountNFTJoin, NFTEntity> = AccountNFTJoin(
             accountAddress = accountAddress,
             resourceAddress = resourceAddress,
-            localId = nonFungibleId
+            localId = nonFungibleId,
+            accountStateVersion = syncInfo.accountStateVersion
         ) to asEntity(resourceAddress, syncInfo)
     }
 
@@ -130,7 +136,9 @@ data class PoolResourceJoin(
     val poolAddress: String,
     @ColumnInfo("resource_address")
     val resourceAddress: String,
-    val amount: BigDecimal?
+    val amount: BigDecimal?,
+    @ColumnInfo("account_state_version")
+    val accountStateVersion: Long
 ) {
 
     companion object {
@@ -141,7 +149,8 @@ data class PoolResourceJoin(
         ): Pair<PoolResourceJoin, ResourceEntity> = PoolResourceJoin(
             poolAddress = poolAddress,
             resourceAddress = resourceAddress,
-            amount = amountDecimal
+            amount = amountDecimal,
+            accountStateVersion = syncInfo.accountStateVersion
         ) to asEntity(syncInfo, details)
     }
 

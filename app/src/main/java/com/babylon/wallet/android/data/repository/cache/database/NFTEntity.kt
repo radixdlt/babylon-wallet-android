@@ -32,9 +32,7 @@ data class NFTEntity(
     val claimEpoch: Long?,
     @ColumnInfo("metadata")
     val metadata: StringMetadataColumn?,
-    val synced: Instant,
-    @ColumnInfo("account_state_version")
-    val accountStateVersion: Long
+    val synced: Instant
 ) {
 
     fun toItem() = Resource.NonFungibleResource.Item(
@@ -61,8 +59,7 @@ data class NFTEntity(
             metadata = stringMetadata()?.let { metadata ->
                 StringMetadataColumn(metadata.map { it.key to it.value })
             },
-            synced = syncInfo.synced,
-            accountStateVersion = syncInfo.stateVersion
+            synced = syncInfo.synced
         )
     }
 
