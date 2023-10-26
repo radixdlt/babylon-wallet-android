@@ -119,8 +119,8 @@ class StateRepositoryImpl @Inject constructor(
             return@runCatching resource.copy(items = cachedNFTItems.map { it.toItem() })
         }
 
-        val vaultAddress = accountNftPortfolio.accountNonFungibleResourceJoin.vaultAddress ?: throw StateRepository.NFTPageError.VaultAddressMissing
-        val nextCursor = accountNftPortfolio.accountNonFungibleResourceJoin.nextCursor
+        val vaultAddress = accountNftPortfolio.vaultAddress ?: throw StateRepository.NFTPageError.VaultAddressMissing
+        val nextCursor = accountNftPortfolio.nextCursor
 
         Timber.tag("Bakos").d("Fetching NFT items ($nextCursor)")
         val page = stateApiDelegate.getNextNftItems(
