@@ -10,35 +10,36 @@ import com.babylon.wallet.android.domain.usecases.GetResourcesUseCase
 import com.babylon.wallet.android.domain.usecases.ResolveDAppsUseCase
 import com.babylon.wallet.android.domain.usecases.transaction.GetTransactionBadgesUseCase
 import com.babylon.wallet.android.presentation.common.UiMessage
+import com.babylon.wallet.android.presentation.common.ViewModelDelegate
 import com.babylon.wallet.android.presentation.transaction.PreviewType
-import com.babylon.wallet.android.presentation.transaction.TransactionReviewViewModel.State
+import com.babylon.wallet.android.presentation.transaction.TransactionReviewViewModel
 import com.babylon.wallet.android.presentation.transaction.fees.TransactionFees
 import com.babylon.wallet.android.presentation.transaction.guaranteesCount
 import com.radixdlt.ret.ExecutionAnalysis
 import com.radixdlt.ret.TransactionManifest
 import com.radixdlt.ret.TransactionType
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
 import rdx.works.core.then
 import rdx.works.profile.domain.GetProfileUseCase
 import timber.log.Timber
 import java.math.BigDecimal
+import javax.inject.Inject
 
 @Suppress("LongParameterList")
-class TransactionAnalysisDelegate(
-    private val state: MutableStateFlow<State>,
+class TransactionAnalysisDelegate @Inject constructor(
     private val getProfileUseCase: GetProfileUseCase,
     private val getAccountsWithAssetsUseCase: GetAccountsWithAssetsUseCase,
     private val getResourcesMetadataUseCase: GetResourcesMetadataUseCase,
     private val getResourcesUseCase: GetResourcesUseCase,
     private val getTransactionBadgesUseCase: GetTransactionBadgesUseCase,
     private val resolveDAppsUseCase: ResolveDAppsUseCase,
-    private val transactionClient: TransactionClient,
-    private val logger: Timber.Tree
-) {
+    private val transactionClient: TransactionClient
+) : ViewModelDelegate<TransactionReviewViewModel.State>() {
+
+    private val logger = Timber.tag("TransactionAnalysis")
 
     suspend fun analyse() {
-        state.value.requestNonNull.transactionManifestData.toTransactionManifest().onSuccess {
+        _state.value.requestNonNull.transactionManifestData.toTransactionManifest().onSuccess {
             startAnalysis(it)
         }.onFailure { error ->
             reportFailure(error)
@@ -48,7 +49,7 @@ class TransactionAnalysisDelegate(
     private suspend fun startAnalysis(manifest: TransactionManifest) {
         val notaryAndSigners = transactionClient.getNotaryAndSigners(
             manifest = manifest,
-            ephemeralNotaryPrivateKey = state.value.ephemeralNotaryPrivateKey
+            ephemeralNotaryPrivateKey = _state.value.ephemeralNotaryPrivateKey
         )
         transactionClient.getTransactionPreview(
             manifest = manifest,
@@ -63,9 +64,11 @@ class TransactionAnalysisDelegate(
         manifest: TransactionManifest,
         notaryAndSigners: NotaryAndSigners
     ) = this.onSuccess { analysis ->
-        val previewType = if (state.value.requestNonNull.isInternal.not() && analysis.reservedInstructions.isNotEmpty()) {
+        val previewType = if (_state.value.requestNonNull.isInternal.not() &&
+            analysis.reservedInstructions.isNotEmpty()
+        ) {
             // wallet unacceptable manifest
-            state.update {
+            _state.update {
                 it.copy(
                     error = UiMessage.ErrorMessage.from(DappRequestException(DappRequestFailure.UnacceptableManifest))
                 )
@@ -109,7 +112,7 @@ class TransactionAnalysisDelegate(
             manifest = manifest,
             lockFee = transactionFees.defaultTransactionFee
         ).onSuccess { feePayerResult ->
-            state.update {
+            _state.update {
                 it.copy(
                     isNetworkFeeLoading = false,
                     transactionFees = transactionFees,
@@ -152,7 +155,7 @@ class TransactionAnalysisDelegate(
     private fun reportFailure(error: Throwable) {
         logger.w(error)
 
-        state.update {
+        _state.update {
             it.copy(
                 isLoading = false,
                 isNetworkFeeLoading = false,

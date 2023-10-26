@@ -8,49 +8,50 @@ import com.babylon.wallet.android.data.transaction.DappRequestException
 import com.babylon.wallet.android.data.transaction.DappRequestFailure
 import com.babylon.wallet.android.data.transaction.TransactionClient
 import com.babylon.wallet.android.data.transaction.model.TransactionApprovalRequest
+import com.babylon.wallet.android.di.coroutines.ApplicationScope
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.babylon.wallet.android.domain.model.Transferable
 import com.babylon.wallet.android.domain.usecases.transaction.SignatureCancelledException
 import com.babylon.wallet.android.domain.usecases.transaction.SubmitTransactionUseCase
 import com.babylon.wallet.android.presentation.common.UiMessage
+import com.babylon.wallet.android.presentation.common.ViewModelDelegate
 import com.babylon.wallet.android.presentation.transaction.PreviewType
-import com.babylon.wallet.android.presentation.transaction.TransactionReviewViewModel.Event
-import com.babylon.wallet.android.presentation.transaction.TransactionReviewViewModel.State
+import com.babylon.wallet.android.presentation.transaction.TransactionReviewViewModel
 import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
 import com.radixdlt.ret.TransactionManifest
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.profile.derivation.model.NetworkId
 import rdx.works.profile.domain.NoMnemonicException
 import rdx.works.profile.domain.gateway.GetCurrentGatewayUseCase
 import timber.log.Timber
+import javax.inject.Inject
 
 @Suppress("LongParameterList")
-class TransactionSubmitDelegate(
-    private val state: MutableStateFlow<State>,
+class TransactionSubmitDelegate @Inject constructor(
     private val transactionClient: TransactionClient,
     private val dAppMessenger: DappMessenger,
     private val getCurrentGatewayUseCase: GetCurrentGatewayUseCase,
     private val incomingRequestRepository: IncomingRequestRepository,
-    private val appScope: CoroutineScope,
+    private val submitTransactionUseCase: SubmitTransactionUseCase,
     private val appEventBus: AppEventBus,
-    private val logger: Timber.Tree,
     private val transactionStatusClient: TransactionStatusClient,
-    private val onSendScreenEvent: (Event) -> Unit,
-    private val submitTransactionUseCase: SubmitTransactionUseCase
-) {
+    @ApplicationScope private val applicationScope: CoroutineScope
+) : ViewModelDelegate<TransactionReviewViewModel.State>() {
+
+    private val logger = Timber.tag("TransactionSubmit")
+
     private var approvalJob: Job? = null
 
     fun onSubmit(deviceBiometricAuthenticationProvider: suspend () -> Boolean) {
         // Do not re-submit while submission is in progress
         if (approvalJob != null) return
 
-        approvalJob = appScope.launch {
-            val currentState = state.value
+        approvalJob = applicationScope.launch {
+            val currentState = _state.value
             val currentNetworkId = getCurrentGatewayUseCase().network.networkId().value
             val manifestNetworkId = currentState.requestNonNull.transactionManifestData.networkId
 
@@ -61,10 +62,13 @@ class TransactionSubmitDelegate(
                 return@launch
             }
 
-            state.update { it.copy(isSubmitting = true) }
+            _state.update { it.copy(isSubmitting = true) }
 
             currentState.requestNonNull.transactionManifestData.toTransactionManifest().onSuccess { manifest ->
-                resolveFeePayerAndSubmit(manifest.attachGuarantees(currentState.previewType), deviceBiometricAuthenticationProvider)
+                resolveFeePayerAndSubmit(
+                    manifest.attachGuarantees(currentState.previewType),
+                    deviceBiometricAuthenticationProvider
+                )
             }.onFailure { error ->
                 reportFailure(error)
             }
@@ -73,7 +77,7 @@ class TransactionSubmitDelegate(
 
     suspend fun onDismiss(failure: DappRequestFailure) {
         if (approvalJob == null) {
-            val request = state.value.requestNonNull
+            val request = _state.value.requestNonNull
             if (!request.isInternal) {
                 dAppMessenger.sendWalletInteractionResponseFailure(
                     remoteConnectorId = request.remoteConnectorId,
@@ -82,13 +86,15 @@ class TransactionSubmitDelegate(
                     message = failure.getDappMessage()
                 )
             }
-            onSendScreenEvent(Event.Dismiss)
+            _state.update {
+                it.copy(isTransactionDismissed = true)
+            }
             incomingRequestRepository.requestHandled(request.id)
-        } else if (state.value.interactionState != null) {
+        } else if (_state.value.interactionState != null) {
             approvalJob?.cancel()
             approvalJob = null
             transactionClient.cancelSigning()
-            state.update {
+            _state.update {
                 it.copy(isSubmitting = false)
             }
         } else {
@@ -100,11 +106,11 @@ class TransactionSubmitDelegate(
         manifest: TransactionManifest,
         deviceBiometricAuthenticationProvider: suspend () -> Boolean
     ) {
-        state.value.feePayerSearchResult?.let { feePayerResult ->
-            state.update { it.copy(isSubmitting = false) }
+        _state.value.feePayerSearchResult?.let { feePayerResult ->
+            _state.update { it.copy(isSubmitting = false) }
             if (feePayerResult.feePayerAddress != null) {
                 signAndSubmit(
-                    transactionRequest = state.value.requestNonNull,
+                    transactionRequest = _state.value.requestNonNull,
                     feePayerAddress = feePayerResult.feePayerAddress,
                     manifest = manifest,
                     deviceBiometricAuthenticationProvider = deviceBiometricAuthenticationProvider
@@ -120,17 +126,17 @@ class TransactionSubmitDelegate(
         manifest: TransactionManifest,
         deviceBiometricAuthenticationProvider: suspend () -> Boolean
     ) {
-        state.update {
+        _state.update {
             it.copy(
                 isSubmitting = true,
             )
         }
-        val lockFee = state.value.transactionFees.transactionFeeToLock
-        val tipPercentage = state.value.transactionFees.tipPercentageForTransaction
+        val lockFee = _state.value.transactionFees.transactionFeeToLock
+        val tipPercentage = _state.value.transactionFees.tipPercentageForTransaction
         val request = TransactionApprovalRequest(
             manifest = manifest,
             networkId = NetworkId.from(transactionRequest.requestMetadata.networkId),
-            ephemeralNotaryPrivateKey = state.value.ephemeralNotaryPrivateKey,
+            ephemeralNotaryPrivateKey = _state.value.ephemeralNotaryPrivateKey,
             feePayerAddress = feePayerAddress,
             message = transactionRequest.transactionManifestData.message?.let {
                 TransactionApprovalRequest.TransactionMessage.Public(it)
@@ -149,7 +155,7 @@ class TransactionSubmitDelegate(
                 txProcessingTime = notarizedTransactionResult.txProcessingTime
             ).getOrThrow()
         }.onSuccess { submitTransactionResult ->
-            state.update {
+            _state.update {
                 it.copy(
                     isSubmitting = false,
                     txProcessingTime = submitTransactionResult.txProcessingTime
@@ -183,22 +189,26 @@ class TransactionSubmitDelegate(
                 val cancelled = dappRequestException.e is SignatureCancelledException
                 val failedToSign =
                     dappRequestException.failure is DappRequestFailure.TransactionApprovalFailure.SignCompiledTransactionIntent
-                val failedToCollectLedgerSignature = dappRequestException.failure is DappRequestFailure.LedgerCommunicationFailure
+                val failedToCollectLedgerSignature =
+                    dappRequestException.failure is DappRequestFailure.LedgerCommunicationFailure
                 when {
                     cancelled || failedToCollectLedgerSignature -> {
-                        state.update { it.copy(isSubmitting = false) }
+                        _state.update { it.copy(isSubmitting = false) }
                         approvalJob = null
                     }
 
                     failedToSign -> {
                         val noMnemonicException = dappRequestException.e is NoMnemonicException
                         if (noMnemonicException) {
-                            state.update {
+                            _state.update {
                                 it.copy(isNoMnemonicErrorVisible = true, isSubmitting = false)
                             }
                         } else {
-                            state.update {
-                                it.copy(isSubmitting = false, error = UiMessage.ErrorMessage.from(dappRequestException.failure))
+                            _state.update {
+                                it.copy(
+                                    isSubmitting = false,
+                                    error = UiMessage.ErrorMessage.from(dappRequestException.failure)
+                                )
                             }
                         }
                         approvalJob = null
@@ -240,11 +250,11 @@ class TransactionSubmitDelegate(
 
     private suspend fun reportFailure(error: Throwable) {
         logger.w(error)
-        state.update {
+        _state.update {
             it.copy(isSubmitting = false, error = UiMessage.ErrorMessage.from(error = error))
         }
 
-        val currentState = state.value
+        val currentState = _state.value
         if (error is DappRequestException && !currentState.requestNonNull.isInternal) {
             dAppMessenger.sendWalletInteractionResponseFailure(
                 remoteConnectorId = currentState.requestNonNull.remoteConnectorId,

@@ -3,15 +3,12 @@ package com.babylon.wallet.android.presentation.transaction
 import androidx.annotation.FloatRange
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
-import com.babylon.wallet.android.data.dapp.DappMessenger
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.data.manifest.toPrettyString
-import com.babylon.wallet.android.data.repository.TransactionStatusClient
 import com.babylon.wallet.android.data.transaction.DappRequestFailure
 import com.babylon.wallet.android.data.transaction.InteractionState
 import com.babylon.wallet.android.data.transaction.TransactionClient
 import com.babylon.wallet.android.data.transaction.model.FeePayerSearchResult
-import com.babylon.wallet.android.di.coroutines.ApplicationScope
 import com.babylon.wallet.android.domain.model.DAppWithMetadataAndAssociatedResources
 import com.babylon.wallet.android.domain.model.GuaranteeAssertion
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
@@ -22,37 +19,22 @@ import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.domain.model.resources.Resource.FungibleResource
 import com.babylon.wallet.android.domain.model.resources.Resource.NonFungibleResource
 import com.babylon.wallet.android.domain.model.resources.isXrd
-import com.babylon.wallet.android.domain.usecases.GetAccountsWithAssetsUseCase
-import com.babylon.wallet.android.domain.usecases.GetResourcesMetadataUseCase
-import com.babylon.wallet.android.domain.usecases.GetResourcesUseCase
-import com.babylon.wallet.android.domain.usecases.ResolveDAppsUseCase
-import com.babylon.wallet.android.domain.usecases.transaction.GetTransactionBadgesUseCase
-import com.babylon.wallet.android.domain.usecases.transaction.SubmitTransactionUseCase
-import com.babylon.wallet.android.presentation.common.OneOffEvent
-import com.babylon.wallet.android.presentation.common.OneOffEventHandler
-import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
-import com.babylon.wallet.android.presentation.transaction.TransactionReviewViewModel.Event
 import com.babylon.wallet.android.presentation.transaction.TransactionReviewViewModel.State
 import com.babylon.wallet.android.presentation.transaction.analysis.TransactionAnalysisDelegate
 import com.babylon.wallet.android.presentation.transaction.fees.TransactionFees
 import com.babylon.wallet.android.presentation.transaction.fees.TransactionFeesDelegate
 import com.babylon.wallet.android.presentation.transaction.guarantees.TransactionGuaranteesDelegate
 import com.babylon.wallet.android.presentation.transaction.submit.TransactionSubmitDelegate
-import com.babylon.wallet.android.utils.AppEventBus
 import com.radixdlt.ret.AccountDefaultDepositRule
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.mapWhen
 import rdx.works.core.ret.crypto.PrivateKey
 import rdx.works.profile.data.model.pernetwork.Network
-import rdx.works.profile.domain.GetProfileUseCase
-import rdx.works.profile.domain.gateway.GetCurrentGatewayUseCase
-import timber.log.Timber
 import java.math.BigDecimal
 import java.math.RoundingMode
 import javax.inject.Inject
@@ -61,25 +43,15 @@ import javax.inject.Inject
 @HiltViewModel
 class TransactionReviewViewModel @Inject constructor(
     private val transactionClient: TransactionClient,
-    getAccountsWithAssetsUseCase: GetAccountsWithAssetsUseCase,
-    getResourcesMetadataUseCase: GetResourcesMetadataUseCase,
-    getProfileUseCase: GetProfileUseCase,
-    getResourcesUseCase: GetResourcesUseCase,
-    getTransactionBadgesUseCase: GetTransactionBadgesUseCase,
-    resolveDAppsUseCase: ResolveDAppsUseCase,
-    getCurrentGatewayUseCase: GetCurrentGatewayUseCase,
-    submitTransactionUseCase: SubmitTransactionUseCase,
-    dAppMessenger: DappMessenger,
-    appEventBus: AppEventBus,
-    transactionStatusClient: TransactionStatusClient,
+    private val analysis: TransactionAnalysisDelegate,
+    private val guarantees: TransactionGuaranteesDelegate,
+    private val fees: TransactionFeesDelegate,
+    private val submit: TransactionSubmitDelegate,
     incomingRequestRepository: IncomingRequestRepository,
-    @ApplicationScope private val appScope: CoroutineScope,
     savedStateHandle: SavedStateHandle,
-) : StateViewModel<State>(),
-    OneOffEventHandler<Event> by OneOffEventHandlerImpl() {
+) : StateViewModel<State>() {
 
     private val args = TransactionReviewArgs(savedStateHandle)
-    private val logger = Timber.tag("TransactionApproval")
 
     override fun initialState(): State = State(
         isLoading = true,
@@ -87,47 +59,19 @@ class TransactionReviewViewModel @Inject constructor(
         previewType = PreviewType.None
     )
 
-    private val analysis: TransactionAnalysisDelegate = TransactionAnalysisDelegate(
-        state = _state,
-        getProfileUseCase = getProfileUseCase,
-        getAccountsWithAssetsUseCase = getAccountsWithAssetsUseCase,
-        getTransactionBadgesUseCase = getTransactionBadgesUseCase,
-        getResourcesMetadataUseCase = getResourcesMetadataUseCase,
-        resolveDAppsUseCase = resolveDAppsUseCase,
-        transactionClient = transactionClient,
-        logger = logger,
-        getResourcesUseCase = getResourcesUseCase
-    )
-
-    private val guarantees: TransactionGuaranteesDelegate = TransactionGuaranteesDelegate(
-        state = _state
-    )
-
-    private val fees: TransactionFeesDelegate = TransactionFeesDelegate(
-        state = _state,
-        getProfileUseCase = getProfileUseCase
-    )
-
-    private val submit: TransactionSubmitDelegate = TransactionSubmitDelegate(
-        state = _state,
-        transactionClient = transactionClient,
-        dAppMessenger = dAppMessenger,
-        incomingRequestRepository = incomingRequestRepository,
-        getCurrentGatewayUseCase = getCurrentGatewayUseCase,
-        appScope = appScope,
-        appEventBus = appEventBus,
-        logger = logger,
-        transactionStatusClient = transactionStatusClient,
-        onSendScreenEvent = {
-            viewModelScope.launch { sendEvent(it) }
-        },
-        submitTransactionUseCase = submitTransactionUseCase
-    )
-
     init {
+        analysis(scope = viewModelScope, state = _state)
+        guarantees(scope = viewModelScope, state = _state)
+        fees(scope = viewModelScope, state = _state)
+        submit(scope = viewModelScope, state = _state)
+
         val request = incomingRequestRepository.getTransactionWriteRequest(args.requestId)
         if (request == null) {
-            viewModelScope.launch { sendEvent(Event.Dismiss) }
+            viewModelScope.launch {
+                _state.update { state ->
+                    state.copy(isTransactionDismissed = true)
+                }
+            }
         } else {
             _state.update { it.copy(request = request) }
             viewModelScope.launch {
@@ -218,10 +162,14 @@ class TransactionReviewViewModel @Inject constructor(
 
         val customizeFeesSheet = state.value.sheetState as? State.Sheet.CustomizeFees ?: return
 
-        val selectedFeePayerInvolvedInTransaction = state.value.request?.transactionManifestData?.toTransactionManifest()
-            ?.getOrNull()?.let {
-                it.accountsWithdrawnFrom() + it.accountsDepositedInto() + it.accountsRequiringAuth()
-            }.orEmpty().any { it.addressString() == selectedFeePayer.address }
+        val selectedFeePayerInvolvedInTransaction = state.value.request?.transactionManifestData
+            ?.toTransactionManifest()
+            ?.getOrNull()
+            ?.let { manifest ->
+                manifest.accountsWithdrawnFrom() + manifest.accountsDepositedInto() + manifest.accountsRequiringAuth()
+            }.orEmpty().any { accountAddress ->
+                accountAddress.addressString() == selectedFeePayer.address
+            }
 
         val updatedSignersCount = if (selectedFeePayerInvolvedInTransaction) signersCount else signersCount + 1
 
@@ -281,7 +229,8 @@ class TransactionReviewViewModel @Inject constructor(
         val error: UiMessage? = null,
         val isNoMnemonicErrorVisible: Boolean = false,
         val ephemeralNotaryPrivateKey: PrivateKey = PrivateKey.EddsaEd25519.newRandom(),
-        val interactionState: InteractionState? = null
+        val interactionState: InteractionState? = null,
+        val isTransactionDismissed: Boolean = false
     ) : UiState {
 
         val requestNonNull: MessageFromDataChannel.IncomingRequest.TransactionRequest
@@ -345,7 +294,10 @@ class TransactionReviewViewModel @Inject constructor(
         val isRawManifestToggleVisible: Boolean
             get() = previewType is PreviewType.Transfer
 
-        val rawManifest: String = request?.transactionManifestData?.toTransactionManifest()?.getOrNull()?.toPrettyString().orEmpty()
+        val rawManifest: String = request
+            ?.transactionManifestData
+            ?.toTransactionManifest()
+            ?.getOrNull()?.toPrettyString().orEmpty()
 
         val isSheetVisible: Boolean
             get() = sheetState != Sheet.None
@@ -405,11 +357,6 @@ class TransactionReviewViewModel @Inject constructor(
 
             data object None : Sheet
 
-//            data class ResourceDetails(
-//                val resource: Resource, // it can be token or nft
-//                val item: Resource.NonFungibleResource.Item? = null // if resource nft then pass item the user clicked
-//            ) : Sheet()
-
             sealed interface ResourceSelected : Sheet {
 
                 data class Fungible(val token: FungibleResource) : ResourceSelected
@@ -455,10 +402,6 @@ class TransactionReviewViewModel @Inject constructor(
                 val dApp: DAppWithMetadataAndAssociatedResources
             ) : Sheet
         }
-    }
-
-    sealed interface Event : OneOffEvent {
-        data object Dismiss : Event
     }
 }
 

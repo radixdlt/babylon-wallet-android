@@ -3,20 +3,20 @@ package com.babylon.wallet.android.presentation.transaction.guarantees
 import com.babylon.wallet.android.domain.model.GuaranteeType
 import com.babylon.wallet.android.domain.model.Transferable
 import com.babylon.wallet.android.domain.model.TransferableResource
+import com.babylon.wallet.android.presentation.common.ViewModelDelegate
 import com.babylon.wallet.android.presentation.transaction.AccountWithPredictedGuarantee
 import com.babylon.wallet.android.presentation.transaction.AccountWithTransferableResources
 import com.babylon.wallet.android.presentation.transaction.PreviewType
-import com.babylon.wallet.android.presentation.transaction.TransactionReviewViewModel.State
-import kotlinx.coroutines.flow.MutableStateFlow
+import com.babylon.wallet.android.presentation.transaction.TransactionReviewViewModel
+import com.babylon.wallet.android.presentation.transaction.TransactionReviewViewModel.State.Sheet
 import kotlinx.coroutines.flow.update
 import rdx.works.core.mapWhen
+import javax.inject.Inject
 
-class TransactionGuaranteesDelegate(
-    private val state: MutableStateFlow<State>
-) {
+class TransactionGuaranteesDelegate @Inject constructor() : ViewModelDelegate<TransactionReviewViewModel.State>() {
 
     fun onEdit() {
-        val transaction = (state.value.previewType as? PreviewType.Transfer) ?: return
+        val transaction = (_state.value.previewType as? PreviewType.Transfer) ?: return
 
         val accountsWithPredictedGuarantee = mutableListOf<AccountWithPredictedGuarantee>()
         transaction.to.forEach { depositing ->
@@ -40,6 +40,7 @@ class TransactionGuaranteesDelegate(
                         )
                     }
                 }
+
                 is AccountWithTransferableResources.Owned -> {
                     predictedAmounts.forEach { amount ->
                         accountsWithPredictedGuarantee.add(
@@ -55,9 +56,9 @@ class TransactionGuaranteesDelegate(
             }
         }
 
-        state.update {
+        _state.update {
             it.copy(
-                sheetState = State.Sheet.CustomizeGuarantees(
+                sheetState = Sheet.CustomizeGuarantees(
                     accountsWithPredictedGuarantees = accountsWithPredictedGuarantee
                 )
             )
@@ -65,9 +66,9 @@ class TransactionGuaranteesDelegate(
     }
 
     fun onValueChange(account: AccountWithPredictedGuarantee, value: String) {
-        val sheet = (state.value.sheetState as? State.Sheet.CustomizeGuarantees) ?: return
+        val sheet = (_state.value.sheetState as? Sheet.CustomizeGuarantees) ?: return
 
-        state.update { state ->
+        _state.update { state ->
             state.copy(
                 sheetState = sheet.copy(
                     accountsWithPredictedGuarantees = sheet.accountsWithPredictedGuarantees.mapWhen(
@@ -80,9 +81,9 @@ class TransactionGuaranteesDelegate(
     }
 
     fun onValueIncreased(account: AccountWithPredictedGuarantee) {
-        val sheet = (state.value.sheetState as? State.Sheet.CustomizeGuarantees) ?: return
+        val sheet = (_state.value.sheetState as? Sheet.CustomizeGuarantees) ?: return
 
-        state.update { state ->
+        _state.update { state ->
             state.copy(
                 sheetState = sheet.copy(
                     accountsWithPredictedGuarantees = sheet.accountsWithPredictedGuarantees.mapWhen(
@@ -95,9 +96,9 @@ class TransactionGuaranteesDelegate(
     }
 
     fun onValueDecreased(account: AccountWithPredictedGuarantee) {
-        val sheet = (state.value.sheetState as? State.Sheet.CustomizeGuarantees) ?: return
+        val sheet = (_state.value.sheetState as? Sheet.CustomizeGuarantees) ?: return
 
-        state.update { state ->
+        _state.update { state ->
             state.copy(
                 sheetState = sheet.copy(
                     accountsWithPredictedGuarantees = sheet.accountsWithPredictedGuarantees.mapWhen(
@@ -110,14 +111,14 @@ class TransactionGuaranteesDelegate(
     }
 
     fun onClose() {
-        state.update { it.copy(sheetState = State.Sheet.None) }
+        _state.update { it.copy(sheetState = Sheet.None) }
     }
 
     fun onApply() {
-        val sheet = (state.value.sheetState as? State.Sheet.CustomizeGuarantees) ?: return
-        val preview = (state.value.previewType as? PreviewType.Transfer) ?: return
+        val sheet = (_state.value.sheetState as? Sheet.CustomizeGuarantees) ?: return
+        val preview = (_state.value.previewType as? PreviewType.Transfer) ?: return
 
-        state.update {
+        _state.update {
             it.copy(
                 previewType = preview.copy(
                     to = preview.to.mapWhen(
@@ -129,7 +130,7 @@ class TransactionGuaranteesDelegate(
                         }
                     )
                 ),
-                sheetState = State.Sheet.None
+                sheetState = Sheet.None
             )
         }
     }

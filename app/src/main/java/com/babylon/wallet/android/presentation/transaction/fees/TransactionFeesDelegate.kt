@@ -1,37 +1,37 @@
 package com.babylon.wallet.android.presentation.transaction.fees
 
-import com.babylon.wallet.android.presentation.transaction.TransactionReviewViewModel.State
-import kotlinx.coroutines.flow.MutableStateFlow
+import com.babylon.wallet.android.presentation.common.ViewModelDelegate
+import com.babylon.wallet.android.presentation.transaction.TransactionReviewViewModel
 import kotlinx.coroutines.flow.update
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.accountOnCurrentNetwork
 import java.math.BigDecimal
+import javax.inject.Inject
 
-class TransactionFeesDelegate(
-    private val state: MutableStateFlow<State>,
+class TransactionFeesDelegate @Inject constructor(
     private val getProfileUseCase: GetProfileUseCase
-) {
+) : ViewModelDelegate<TransactionReviewViewModel.State>() {
 
     @Suppress("NestedBlockDepth")
     suspend fun onCustomizeClick() {
-        if (state.value.transactionFees.defaultTransactionFee == BigDecimal.ZERO) {
+        if (_state.value.transactionFees.defaultTransactionFee == BigDecimal.ZERO) {
             // None required
-            state.update { state ->
+            _state.update { state ->
                 state.noneRequiredState()
             }
         } else {
-            state.value.feePayerSearchResult?.let { feePayerResult ->
+            _state.value.feePayerSearchResult?.let { feePayerResult ->
                 if (feePayerResult.feePayerAddress != null) {
                     // Candidate selected
                     getProfileUseCase.accountOnCurrentNetwork(withAddress = feePayerResult.feePayerAddress)
                         ?.let { feePayerCandidate ->
-                            state.update { state ->
+                            _state.update { state ->
                                 state.candidateSelectedState(feePayerCandidate)
                             }
                         }
                 } else {
                     // No candidate selected
-                    state.update { state ->
+                    _state.update { state ->
                         state.noCandidateSelectedState()
                     }
                 }
@@ -48,8 +48,8 @@ class TransactionFeesDelegate(
     }
 
     fun onFeePaddingAmountChanged(feePaddingAmount: String) {
-        val transactionFees = state.value.transactionFees
-        state.update { state ->
+        val transactionFees = _state.value.transactionFees
+        _state.update { state ->
             state.copy(
                 transactionFees = transactionFees.copy(
                     feePaddingAmount = feePaddingAmount
@@ -60,9 +60,9 @@ class TransactionFeesDelegate(
 
     @Suppress("MagicNumber")
     fun onTipPercentageChanged(tipPercentage: String) {
-        val transactionFees = state.value.transactionFees
+        val transactionFees = _state.value.transactionFees
 
-        state.update { state ->
+        _state.update { state ->
             state.copy(
                 transactionFees = transactionFees.copy(
                     tipPercentage = tipPercentage.filter { it.isDigit() }
@@ -72,19 +72,19 @@ class TransactionFeesDelegate(
     }
 
     fun onViewDefaultModeClick() {
-        state.update { state ->
+        _state.update { state ->
             state.defaultModeState()
         }
     }
 
     fun onViewAdvancedModeClick() {
-        state.update { state ->
+        _state.update { state ->
             state.advancedModeState()
         }
     }
 
     private fun switchToFeePayerSelection() {
-        state.update { state ->
+        _state.update { state ->
             state.feePayerSelectionState()
         }
     }
