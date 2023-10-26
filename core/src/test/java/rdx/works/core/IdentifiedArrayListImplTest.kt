@@ -1,5 +1,7 @@
 package rdx.works.core
 
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 
@@ -25,46 +27,46 @@ class IdentifiedArrayListImplTest {
 
     @Test
     fun `test adding duplicate element`() {
-        assert(identifiedArrayList.add(IdentifiedString("1")).not())
+        assertTrue(!identifiedArrayList.add(IdentifiedString("1")))
     }
 
     @Test
     fun `test adding duplicate elements`() {
-        assert(identifiedArrayList.addAll(listOf(IdentifiedString("1"), IdentifiedString("2"))).not())
-        assert(identifiedArrayList.addAll(listOf(IdentifiedString("6"))))
+        assertFalse(identifiedArrayList.addAll(listOf(IdentifiedString("1"), IdentifiedString("2"))))
+        assertTrue(identifiedArrayList.addAll(listOf(IdentifiedString("6"))))
     }
 
     @Test
     fun `test adding duplicate elements with plus operator`() {
-        assert((identifiedArrayList + listOf(IdentifiedString("1"), IdentifiedString("2"))).size == 5)
-        assert((identifiedArrayList + listOf(IdentifiedString("6"))).size == 6)
+        assertTrue((identifiedArrayList + listOf(IdentifiedString("1"), IdentifiedString("2"))).size == 5)
+        assertTrue((identifiedArrayList + listOf(IdentifiedString("6"))).size == 6)
     }
 
     @Test
     fun `test adding duplicate with toIdentifiedHashSet()`() {
         val listWithDuplicates = listOf(IdentifiedString("1"), IdentifiedString("2"), IdentifiedString("1"))
         val identifiedArrayList = listWithDuplicates.toIdentifiedArrayList()
-        assert(identifiedArrayList.size == 2)
-        assert(identifiedArrayList.add(IdentifiedString("2")).not())
-        assert(identifiedArrayList.add(IdentifiedString("3")))
-        assert(identifiedArrayList.size == 3)
+        assertTrue(identifiedArrayList.size == 2)
+        assertFalse(identifiedArrayList.add(IdentifiedString("2")))
+        assertTrue(identifiedArrayList.add(IdentifiedString("3")))
+        assertTrue(identifiedArrayList.size == 3)
     }
 
     @Test
     fun `test removing items`() {
-        assert(identifiedArrayList.remove(IdentifiedString("1")))
-        assert(identifiedArrayList.remove(IdentifiedString("1")).not())
-        assert(identifiedArrayList.remove(IdentifiedString("2")))
-        assert(identifiedArrayList.size == 3)
+        assertTrue(identifiedArrayList.remove(IdentifiedString("1")))
+        assertFalse(identifiedArrayList.remove(IdentifiedString("1")))
+        assertTrue(identifiedArrayList.remove(IdentifiedString("2")))
+        assertTrue(identifiedArrayList.size == 3)
     }
 
     @Test
     fun `test removeAll`() {
-        assert(identifiedArrayList.removeAll(listOf(IdentifiedString("1"), IdentifiedString("2"))))
-        assert(identifiedArrayList.removeAll(listOf(IdentifiedString("1"), IdentifiedString("2"))).not())
-        assert(identifiedArrayList.size == 3)
-        assert(identifiedArrayList.remove(IdentifiedString("4")))
-        assert(identifiedArrayList.size == 2)
+        assertTrue(identifiedArrayList.removeAll(listOf(IdentifiedString("1"), IdentifiedString("2"))))
+        assertFalse(identifiedArrayList.removeAll(listOf(IdentifiedString("1"), IdentifiedString("2"))))
+        assertTrue(identifiedArrayList.size == 3)
+        assertTrue(identifiedArrayList.remove(IdentifiedString("4")))
+        assertTrue(identifiedArrayList.size == 2)
     }
 
 }
