@@ -7,6 +7,7 @@ import org.mockito.Mockito.mock
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import rdx.works.core.InstantGenerator
+import rdx.works.core.emptyIdentifiedArrayList
 import rdx.works.profile.data.model.Header
 import rdx.works.profile.data.model.Profile
 import rdx.works.profile.data.model.apppreferences.AppPreferences
@@ -48,7 +49,7 @@ class AddP2PLinkUseCaseTest {
                 gateways = Gateways(Radix.Gateway.hammunet.url, listOf(Radix.Gateway.hammunet)),
                 p2pLinks = emptyList()
             ),
-            factorSources = listOf(),
+            factorSources = emptyIdentifiedArrayList(),
             networks = emptyList()
         )
         whenever(profileRepository.profile).thenReturn(flowOf(initialProfile))

@@ -17,6 +17,7 @@ import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import rdx.works.core.HexCoded32Bytes
 import rdx.works.core.InstantGenerator
+import rdx.works.core.identifiedArrayListOf
 import rdx.works.profile.data.model.Header
 import rdx.works.profile.data.model.MnemonicWithPassphrase
 import rdx.works.profile.data.model.Profile
@@ -86,7 +87,7 @@ class CreatePersonaWithDeviceFactorSourceUseCaseTest {
                         )
                     )
                 ),
-                factorSources = listOf(
+                factorSources = identifiedArrayListOf(
                     DeviceFactorSource.babylon(mnemonicWithPassphrase = mnemonicWithPassphrase)
                 ),
                 networks = listOf(

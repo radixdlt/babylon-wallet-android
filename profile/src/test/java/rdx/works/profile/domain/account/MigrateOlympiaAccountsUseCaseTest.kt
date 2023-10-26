@@ -22,6 +22,7 @@ import kotlinx.coroutines.test.runTest
 import org.junit.Test
 import rdx.works.core.HexCoded32Bytes
 import rdx.works.core.InstantGenerator
+import rdx.works.core.identifiedArrayListOf
 import rdx.works.core.toHexString
 import rdx.works.core.toUByteList
 import rdx.works.profile.data.model.Header
@@ -87,7 +88,7 @@ internal class MigrateOlympiaAccountsUseCaseTest {
                     )
                 )
             ),
-            factorSources = listOf(DeviceFactorSource.olympia(mnemonicWithPassphrase = olympiaMnemonic)),
+            factorSources = identifiedArrayListOf(DeviceFactorSource.olympia(mnemonicWithPassphrase = olympiaMnemonic)),
             networks = listOf(
                 Network(
                     accounts = listOf(

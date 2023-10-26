@@ -11,6 +11,7 @@ import org.mockito.Mockito
 import org.mockito.kotlin.whenever
 import rdx.works.core.HexCoded32Bytes
 import rdx.works.core.InstantGenerator
+import rdx.works.core.identifiedArrayListOf
 import rdx.works.profile.data.model.DeviceInfo
 import rdx.works.profile.data.model.Header
 import rdx.works.profile.data.model.MnemonicWithPassphrase
@@ -72,7 +73,7 @@ class GenerateProfileUseCaseTest {
                         )
                     )
                 ),
-                factorSources = listOf(
+                factorSources = identifiedArrayListOf(
                     DeviceFactorSource.babylon(mnemonicWithPassphrase = mnemonicWithPassphrase)
                 ),
                 networks = listOf(
@@ -145,7 +146,7 @@ class GenerateProfileUseCaseTest {
 
             whenever(profileRepository.profileState).thenReturn(flowOf(ProfileState.None))
 
-            val profile = generateProfileUseCase().copy(factorSources = listOf(babylonFactorSource))
+            val profile = generateProfileUseCase().copy(factorSources = identifiedArrayListOf(babylonFactorSource))
 
             Assert.assertEquals(
                 "Factor Source ID",
@@ -173,7 +174,7 @@ class GenerateProfileUseCaseTest {
             )
 
             whenever(profileRepository.profileState).thenReturn(flowOf(ProfileState.None))
-            val profile = generateProfileUseCase().copy(factorSources = listOf(babylonFactorSource))
+            val profile = generateProfileUseCase().copy(factorSources = identifiedArrayListOf(babylonFactorSource))
 
             Assert.assertEquals(
                 "Factor Source ID",

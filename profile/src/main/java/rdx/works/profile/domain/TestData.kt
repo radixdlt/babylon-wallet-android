@@ -2,6 +2,7 @@ package rdx.works.profile.domain
 
 import rdx.works.core.HexCoded32Bytes
 import rdx.works.core.InstantGenerator
+import rdx.works.core.identifiedArrayListOf
 import rdx.works.profile.data.model.DeviceInfo
 import rdx.works.profile.data.model.Header
 import rdx.works.profile.data.model.MnemonicWithPassphrase
@@ -62,7 +63,7 @@ object TestData {
                     )
                 )
             ),
-            factorSources = listOf(
+            factorSources = identifiedArrayListOf(
                 DeviceFactorSource.babylon(mnemonicWithPassphrase = mnemonicWithPassphrase),
                 ledgerFactorSource
             ),

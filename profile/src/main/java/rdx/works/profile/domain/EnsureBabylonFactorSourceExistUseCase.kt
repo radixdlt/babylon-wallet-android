@@ -1,6 +1,7 @@
 package rdx.works.profile.domain
 
 import kotlinx.coroutines.flow.first
+import rdx.works.core.toIdentifiedArrayList
 import rdx.works.profile.data.model.Profile
 import rdx.works.profile.data.model.factorsources.DeviceFactorSource
 import rdx.works.profile.data.repository.DeviceInfoRepository
@@ -27,7 +28,7 @@ class EnsureBabylonFactorSourceExistUseCase @Inject constructor(
             name = deviceInfo.name,
             createdAt = Instant.now()
         )
-        val updatedProfile = profile.copy(factorSources = listOf(factorSource) + profile.factorSources)
+        val updatedProfile = profile.copy(factorSources = (listOf(factorSource) + profile.factorSources).toIdentifiedArrayList())
         profileRepository.saveProfile(updatedProfile)
         return updatedProfile
     }

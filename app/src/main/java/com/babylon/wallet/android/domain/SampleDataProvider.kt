@@ -24,6 +24,7 @@ import com.babylon.wallet.android.presentation.account.settings.thirdpartydeposi
 import com.babylon.wallet.android.presentation.transaction.AccountWithTransferableResources
 import rdx.works.core.HexCoded32Bytes
 import rdx.works.core.InstantGenerator
+import rdx.works.core.identifiedArrayListOf
 import rdx.works.profile.data.model.Header
 import rdx.works.profile.data.model.MnemonicWithPassphrase
 import rdx.works.profile.data.model.Profile
@@ -296,7 +297,7 @@ class SampleDataProvider {
                 gateways = Gateways(Radix.Gateway.default.url, listOf(Radix.Gateway.default)),
                 p2pLinks = emptyList()
             ),
-            factorSources = listOf(
+            factorSources = identifiedArrayListOf(
                 DeviceFactorSource.babylon(mnemonicWithPassphrase = mnemonicWithPassphrase)
             ),
             networks = emptyList()

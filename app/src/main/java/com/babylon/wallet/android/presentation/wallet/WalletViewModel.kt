@@ -18,6 +18,7 @@ import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEvent.RestoredMnemonic
 import com.babylon.wallet.android.utils.AppEventBus
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -112,7 +113,7 @@ class WalletViewModel @Inject constructor(
         viewModelScope.launch {
             getProfileUseCase.factorSources.collect { factorSourcesList ->
                 _state.update { state ->
-                    state.copy(factorSources = factorSourcesList)
+                    state.copy(factorSources = factorSourcesList.toPersistentList())
                 }
             }
         }

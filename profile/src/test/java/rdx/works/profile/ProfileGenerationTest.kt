@@ -6,6 +6,8 @@ import org.junit.Assert
 import org.junit.Assert.assertEquals
 import org.junit.Test
 import rdx.works.core.InstantGenerator
+import rdx.works.core.identifiedArrayListOf
+import rdx.works.core.toIdentifiedArrayList
 import rdx.works.profile.data.model.MnemonicWithPassphrase
 import rdx.works.profile.data.model.Profile
 import rdx.works.profile.data.model.apppreferences.P2PLink
@@ -42,7 +44,7 @@ class ProfileGenerationTest {
             id = "BABE1442-3C98-41FF-AFB0-D0F5829B020D",
             deviceInfo = TestData.deviceInfo,
             creationDate = InstantGenerator()
-        ).copy(factorSources = listOf(babylonFactorSource))
+        ).copy(factorSources = identifiedArrayListOf(babylonFactorSource))
 
         val defaultNetwork = Radix.Gateway.default.network
         assertEquals(profile.networks.count(), 1)
@@ -118,5 +120,32 @@ class ProfileGenerationTest {
         )
         assertEquals(profile.networks.first().accounts.count(), 1)
         assertEquals(profile.networks.first().accounts[0].displayName, newDisplayNameForAccount)
+    }
+
+    @Test
+    fun `test adding duplicate factor sources to profile`() {
+        val mnemonicWithPassphrase = MnemonicWithPassphrase(
+            mnemonic = "bright club bacon dinner achieve pull grid save ramp cereal blush woman " +
+                    "humble limb repeat video sudden possible story mask neutral prize goose mandate",
+            bip39Passphrase = ""
+        )
+        val babylonFactorSource1 = DeviceFactorSource.babylon(
+            mnemonicWithPassphrase, model = TestData.deviceInfo.displayName,
+            name = "Samsung"
+        )
+        val babylonFactorSource2 = DeviceFactorSource.babylon(
+            mnemonicWithPassphrase, model = TestData.deviceInfo.displayName,
+            name = "Samsung2"
+        )
+        val mnemonicRepository = mockk<MnemonicRepository>()
+        coEvery { mnemonicRepository() } returns mnemonicWithPassphrase
+
+        val profile = Profile.init(
+            id = "BABE1442-3C98-41FF-AFB0-D0F5829B020D",
+            deviceInfo = TestData.deviceInfo,
+            creationDate = InstantGenerator()
+        ).copy(factorSources = identifiedArrayListOf(babylonFactorSource1))
+        val updatedProfile = profile.copy(factorSources = (profile.factorSources + babylonFactorSource2).toIdentifiedArrayList())
+        assertEquals(1, updatedProfile.factorSources.count())
     }
 }
