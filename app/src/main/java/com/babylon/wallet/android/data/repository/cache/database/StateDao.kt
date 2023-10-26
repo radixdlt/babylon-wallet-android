@@ -8,9 +8,6 @@ import androidx.room.Query
 import androidx.room.Transaction
 import com.babylon.wallet.android.domain.model.resources.metadata.AccountTypeMetadataItem
 import kotlinx.coroutines.flow.Flow
-import rdx.works.core.InstantGenerator
-import kotlin.time.DurationUnit
-import kotlin.time.toDuration
 
 @Dao
 interface StateDao {
@@ -111,11 +108,12 @@ interface StateDao {
     fun getValidators(addresses: Set<String>, atStateVersion: Long): List<ValidatorEntity>
 
     @Query("""
-        SELECT AccountResourceJoin.*, AccountEntity.state_version FROM AccountResourceJoin
-        INNER JOIN AccountEntity ON AccountResourceJoin.account_address = AccountEntity.address
-        WHERE AccountResourceJoin.account_address = :accountAddress AND AccountResourceJoin.resource_address = :resourceAddress
+        SELECT ARJ.account_address, ARJ.resource_address, ARJ.vault_address, ARJ.next_cursor, AccountEntity.state_version 
+        FROM AccountResourceJoin AS ARJ
+        INNER JOIN AccountEntity ON ARJ.account_address = AccountEntity.address
+        WHERE ARJ.account_address = :accountAddress AND ARJ.resource_address = :resourceAddress
     """)
-    fun getAccountNFTPortfolio(accountAddress: String, resourceAddress: String): List<AccountNFTPortfolioResponse>
+    fun getAccountNFTPortfolio(accountAddress: String, resourceAddress: String): List<AccountOnNonFungibleCollectionStateResponse>
 
     @Query(
         """

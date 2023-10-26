@@ -124,9 +124,15 @@ data class PoolWithResourceResponse(
     }
 }
 
-data class AccountNFTPortfolioResponse(
-    @Embedded
-    val accountNonFungibleResourceJoin: AccountResourceJoin,
+data class AccountOnNonFungibleCollectionStateResponse(
+    @ColumnInfo("account_address")
+    val accountAddress: String,
+    @ColumnInfo("resource_address")
+    val resourceAddress: String,
+    @ColumnInfo("vault_address")
+    val vaultAddress: String?,
+    @ColumnInfo("vault_address")
+    val nextCursor: String?,
     @ColumnInfo("state_version")
     val accountStateVersion: Long?
 )
