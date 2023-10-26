@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -214,7 +215,8 @@ fun NotSecureAlertDialog(
 fun SomethingWentWrongDialogContent(
     modifier: Modifier = Modifier,
     title: String,
-    subtitle: String?
+    subtitle: String?,
+    transactionAddress: String
 ) {
     Column(
         modifier
@@ -244,8 +246,27 @@ fun SomethingWentWrongDialogContent(
             Text(
                 text = it,
                 style = RadixTheme.typography.body1Regular,
-                color = RadixTheme.colors.gray1
+                color = RadixTheme.colors.gray1,
+                textAlign = TextAlign.Center
             )
+        }
+
+        if (transactionAddress.isNotEmpty()) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.Center
+            ) {
+                Text(
+                    text = "Transaction ID: ",
+                    style = RadixTheme.typography.body1Regular,
+                    color = RadixTheme.colors.gray1
+                )
+                ActionableAddressView(
+                    address = transactionAddress,
+                    textStyle = RadixTheme.typography.body1Regular,
+                    textColor = RadixTheme.colors.gray1
+                )
+            }
         }
     }
 }
@@ -254,6 +275,10 @@ fun SomethingWentWrongDialogContent(
 @Preview
 fun SomethingWentWrongDialogPreview() {
     RadixWalletTheme {
-        SomethingWentWrongDialogContent(title = "Title", subtitle = "Subtitle")
+        SomethingWentWrongDialogContent(
+            title = "Title",
+            subtitle = "Subtitle",
+            transactionAddress = "rdx1239j329fj292r32e23"
+        )
     }
 }

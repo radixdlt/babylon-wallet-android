@@ -8,6 +8,7 @@ import com.babylon.wallet.android.data.transaction.TransactionConfig.TIP_PERCENT
 import com.babylon.wallet.android.data.transaction.model.TransactionApprovalRequest
 import com.babylon.wallet.android.di.coroutines.IoDispatcher
 import com.babylon.wallet.android.domain.usecases.transaction.PollTransactionStatusUseCase
+import com.babylon.wallet.android.domain.usecases.transaction.SubmitTransactionUseCase
 import com.radixdlt.ret.Address
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
@@ -34,6 +35,7 @@ class GetFreeXrdUseCase @Inject constructor(
     private val getProfileUseCase: GetProfileUseCase,
     private val preferencesManager: PreferencesManager,
     private val pollTransactionStatusUseCase: PollTransactionStatusUseCase,
+    private val submitTransactionUseCase: SubmitTransactionUseCase,
     @IoDispatcher private val ioDispatcher: CoroutineDispatcher,
 ) {
 
@@ -62,16 +64,31 @@ class GetFreeXrdUseCase @Inject constructor(
                         hasLockFee = true
                     )
                     val lockFee = BigDecimal.valueOf(TransactionConfig.DEFAULT_LOCK_FEE)
-                    transactionClient.signAndSubmitTransaction(
+
+                    transactionClient.signTransaction(
                         request = request,
                         lockFee = lockFee,
                         tipPercentage = TIP_PERCENTAGE,
                         deviceBiometricAuthenticationProvider = { true }
-                    ).onSuccess { txId ->
-                        pollTransactionStatusUseCase(txId, "").result.onSuccess {
-                            preferencesManager.updateEpoch(address, epochResult.data)
+                    )
+                        .mapCatching { notarizedTransactionResult ->
+                            submitTransactionUseCase(
+                                notarizedTransactionResult.txIdHash,
+                                notarizedTransactionResult.notarizedTransactionIntentHex,
+                                txProcessingTime = notarizedTransactionResult.txProcessingTime
+                            ).getOrThrow()
                         }
-                    }
+                        .onSuccess { submitTransactionResult ->
+                            pollTransactionStatusUseCase(
+                                txID = submitTransactionResult.txId,
+                                requestId = "",
+                                txProcessingTime = submitTransactionResult.txProcessingTime
+                            ).result.onSuccess {
+                                preferencesManager.updateEpoch(address, epochResult.data)
+                            }
+                        }.mapCatching {
+                            it.txId
+                        }
                 }
             }
         }

@@ -73,6 +73,9 @@ sealed class UiMessage(val id: String = UUIDGenerator.uuid().toString()) {
         private val nonUserFriendlyDescription: String?
     ) : UiMessage() {
 
+        val errorMessageStringRes: Int?
+            get() = userFriendlyDescription // TODO figure out better way how to propagate arg errors
+
         override fun getMessage(context: Context): String = userFriendlyDescription?.let {
             context.getString(it)
         } ?: nonUserFriendlyDescription ?: context.getString(R.string.common_somethingWentWrong)

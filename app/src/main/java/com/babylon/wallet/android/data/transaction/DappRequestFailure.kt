@@ -37,8 +37,15 @@ sealed class DappRequestFailure(msg: String? = null) : Exception(msg.orEmpty()) 
         data object SubmitNotarizedTransaction : TransactionApprovalFailure()
         data class InvalidTXDuplicate(val txId: String) : TransactionApprovalFailure()
         data class FailedToPollTXStatus(val txId: String) : TransactionApprovalFailure()
-        data class GatewayRejected(val txId: String) : TransactionApprovalFailure()
-        data class GatewayCommittedFailure(val txId: String) : TransactionApprovalFailure()
+
+        sealed class TransactionRejected : TransactionApprovalFailure() {
+            data class Permanently(val txId: String) : TransactionApprovalFailure()
+            data class Temporary(val txId: String) : TransactionApprovalFailure()
+        }
+
+        sealed class TransactionCommitted : TransactionApprovalFailure() {
+            data class Failure(val txId: String) : TransactionApprovalFailure()
+        }
     }
 
     sealed class DappVerificationFailure : DappRequestFailure() {
@@ -61,11 +68,14 @@ sealed class DappRequestFailure(msg: String? = null) : Exception(msg.orEmpty()) 
             TransactionApprovalFailure.BuildTransactionHeader -> WalletErrorType.FailedToPrepareTransaction
             TransactionApprovalFailure.ConvertManifest -> WalletErrorType.FailedToPrepareTransaction
             is TransactionApprovalFailure.FailedToPollTXStatus -> WalletErrorType.FailedToPollSubmittedTransaction
-            is TransactionApprovalFailure.GatewayCommittedFailure -> {
+            is TransactionApprovalFailure.TransactionCommitted.Failure -> {
                 WalletErrorType.SubmittedTransactionHasFailedTransactionStatus
             }
-            is TransactionApprovalFailure.GatewayRejected -> {
-                WalletErrorType.SubmittedTransactionHasRejectedTransactionStatus
+            is TransactionApprovalFailure.TransactionRejected.Permanently -> {
+                WalletErrorType.SubmittedTransactionHasPermanentlyRejectedTransactionStatus
+            }
+            is TransactionApprovalFailure.TransactionRejected.Temporary -> {
+                WalletErrorType.SubmittedTransactionHasTemporarilyRejectedTransactionStatus
             }
             GetEpoch -> WalletErrorType.FailedToPrepareTransaction
             is TransactionApprovalFailure.InvalidTXDuplicate -> WalletErrorType.SubmittedTransactionWasDuplicate
@@ -102,8 +112,9 @@ sealed class DappRequestFailure(msg: String? = null) : Exception(msg.orEmpty()) 
             TransactionApprovalFailure.BuildTransactionHeader -> R.string.error_transactionFailure_header
             TransactionApprovalFailure.ConvertManifest -> R.string.error_transactionFailure_manifest
             is TransactionApprovalFailure.FailedToPollTXStatus -> R.string.error_transactionFailure_pollStatus
-            is TransactionApprovalFailure.GatewayCommittedFailure -> R.string.error_transactionFailure_commit
-            is TransactionApprovalFailure.GatewayRejected -> R.string.error_transactionFailure_rejected
+            is TransactionApprovalFailure.TransactionCommitted.Failure -> R.string.transaction_status_failed_text
+            is TransactionApprovalFailure.TransactionRejected.Permanently -> R.string.transaction_status_rejected_text // TODO Crowdin
+            is TransactionApprovalFailure.TransactionRejected.Temporary -> R.string.transaction_status_error_text // TODO Crowdin
             GetEpoch -> R.string.error_transactionFailure_epoch
             is TransactionApprovalFailure.InvalidTXDuplicate -> R.string.error_transactionFailure_duplicate
             TransactionApprovalFailure.PrepareNotarizedTransaction -> R.string.error_transactionFailure_prepare
@@ -141,8 +152,7 @@ sealed class DappRequestFailure(msg: String? = null) : Exception(msg.orEmpty()) 
     fun getDappMessage(): String? {
         return when (this) {
             is TransactionApprovalFailure.FailedToPollTXStatus -> "TXID: $txId"
-            is TransactionApprovalFailure.GatewayCommittedFailure -> "TXID: $txId"
-            is TransactionApprovalFailure.GatewayRejected -> "TXID: $txId"
+            is TransactionApprovalFailure.TransactionCommitted.Failure -> "TXID: $txId"
             is TransactionApprovalFailure.InvalidTXDuplicate -> "TXID: $txId"
             is WrongNetwork -> {
                 "Wallet is using network ID: $currentNetworkId, request sent specified network ID: $requestNetworkId"

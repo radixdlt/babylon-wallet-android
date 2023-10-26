@@ -4,6 +4,7 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.dapp.DappMessenger
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
+import com.babylon.wallet.android.data.dapp.model.WalletErrorType
 import com.babylon.wallet.android.data.repository.TransactionStatusClient
 import com.babylon.wallet.android.data.transaction.DappRequestException
 import com.babylon.wallet.android.presentation.common.OneOffEvent
@@ -102,7 +103,9 @@ class TransactionStatusDialogViewModel @Inject constructor(
                             transactionId = status.transactionId,
                             isInternal = status.isInternal,
                             errorMessage = UiMessage.ErrorMessage.from(error),
-                            blockUntilComplete = status.blockUntilComplete
+                            blockUntilComplete = status.blockUntilComplete,
+                            txProcessingTime = pollResult.txProcessingTime,
+                            walletErrorType = (error as? DappRequestException)?.failure?.toWalletErrorType()
                         )
                     )
                 }
@@ -150,6 +153,12 @@ class TransactionStatusDialogViewModel @Inject constructor(
         val failureError: UiMessage.ErrorMessage?
             get() = (status as? TransactionStatus.Failed)?.errorMessage
 
+        val walletErrorType: WalletErrorType?
+            get() = (status as? TransactionStatus.Failed)?.walletErrorType
+
+        val txProcessingTime: String
+            get() = (status as? TransactionStatus.Failed)?.txProcessingTime.orEmpty()
+
         val transactionId: String
             get() = status.transactionId
     }
@@ -185,7 +194,9 @@ sealed interface TransactionStatus {
         override val transactionId: String,
         override val isInternal: Boolean,
         override val blockUntilComplete: Boolean,
-        val errorMessage: UiMessage.ErrorMessage?
+        val errorMessage: UiMessage.ErrorMessage?,
+        val txProcessingTime: String?,
+        val walletErrorType: WalletErrorType?
     ) : TransactionStatus
 
     companion object {
@@ -195,7 +206,9 @@ sealed interface TransactionStatus {
                 transactionId = event.transactionId,
                 isInternal = event.isInternal,
                 errorMessage = event.errorMessage,
-                blockUntilComplete = event.blockUntilComplete
+                blockUntilComplete = event.blockUntilComplete,
+                txProcessingTime = event.txProcessingTime,
+                walletErrorType = event.walletErrorType
             )
 
             is AppEvent.Status.Transaction.InProgress -> Completing(

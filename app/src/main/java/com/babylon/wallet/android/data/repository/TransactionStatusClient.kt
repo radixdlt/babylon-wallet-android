@@ -26,26 +26,30 @@ class TransactionStatusClient @Inject constructor(
     @ApplicationScope private val appScope: CoroutineScope
 ) {
 
-    private val _transactionPollResult = MutableStateFlow(emptyList<TransactionData>())
+    private val _transactionPollResult = MutableStateFlow(emptyList<TransactionStatusData>())
     private val transactionStatuses = _transactionPollResult.asSharedFlow()
     private val mutex = Mutex()
 
-    fun listenForPollStatus(txId: String): Flow<TransactionData> {
+    fun listenForPollStatus(txId: String): Flow<TransactionStatusData> {
         return transactionStatuses.map { statuses ->
             statuses.find { it.txId == txId }
         }.filterNotNull().cancellable()
     }
 
-    fun listenForPollStatusByRequestId(requestId: String): Flow<TransactionData> {
+    fun listenForPollStatusByRequestId(requestId: String): Flow<TransactionStatusData> {
         return transactionStatuses.map { statuses ->
             statuses.find { it.requestId == requestId }
         }.filterNotNull().cancellable()
     }
 
-    @Suppress("MagicNumber", "LongMethod")
-    fun pollTransactionStatus(txID: String, requestId: String, transactionType: TransactionType = TransactionType.Generic) {
+    fun pollTransactionStatus(
+        txID: String,
+        requestId: String,
+        transactionType: TransactionType = TransactionType.Generic,
+        txProcessingTime: String
+    ) {
         appScope.launch {
-            val pollResult = pollTransactionStatusUseCase(txID, requestId, transactionType)
+            val pollResult = pollTransactionStatusUseCase(txID, requestId, transactionType, txProcessingTime)
             pollResult.result.onSuccess {
                 appEventBus.sendEvent(AppEvent.RefreshResourcesNeeded)
             }
@@ -63,7 +67,7 @@ class TransactionStatusClient @Inject constructor(
         }
     }
 
-    private suspend fun updateTransactionStatus(data: TransactionData) {
+    private suspend fun updateTransactionStatus(data: TransactionStatusData) {
         mutex.withLock {
             _transactionPollResult.update { statuses ->
                 if (statuses.any { data.txId == it.txId }) {
@@ -82,9 +86,10 @@ class TransactionStatusClient @Inject constructor(
     }
 }
 
-data class TransactionData(
+data class TransactionStatusData(
     val txId: String,
     val requestId: String,
     val result: Result<Unit>,
-    val transactionType: TransactionType = TransactionType.Generic
+    val transactionType: TransactionType = TransactionType.Generic,
+    val txProcessingTime: String
 )

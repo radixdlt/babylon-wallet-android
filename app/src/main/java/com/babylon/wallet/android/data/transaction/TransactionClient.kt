@@ -7,7 +7,6 @@ import com.babylon.wallet.android.data.gateway.generated.models.TransactionPrevi
 import com.babylon.wallet.android.data.gateway.generated.models.TransactionPreviewRequestFlags
 import com.babylon.wallet.android.data.gateway.generated.models.TransactionPreviewResponse
 import com.babylon.wallet.android.data.manifest.addLockFeeInstructionToManifest
-import com.babylon.wallet.android.data.manifest.toPrettyString
 import com.babylon.wallet.android.data.repository.transaction.TransactionRepository
 import com.babylon.wallet.android.data.transaction.model.FeePayerSearchResult
 import com.babylon.wallet.android.data.transaction.model.TransactionApprovalRequest
@@ -17,13 +16,10 @@ import com.babylon.wallet.android.domain.model.assets.findAccountWithEnoughXRDBa
 import com.babylon.wallet.android.domain.usecases.GetAccountsWithAssetsUseCase
 import com.babylon.wallet.android.domain.usecases.transaction.CollectSignersSignaturesUseCase
 import com.babylon.wallet.android.domain.usecases.transaction.SignRequest
-import com.babylon.wallet.android.domain.usecases.transaction.SubmitTransactionUseCase
 import com.radixdlt.hex.extensions.toHexString
 import com.radixdlt.ret.Address
 import com.radixdlt.ret.Intent
 import com.radixdlt.ret.NotarizedTransaction
-import com.radixdlt.ret.Signature
-import com.radixdlt.ret.SignatureWithPublicKey
 import com.radixdlt.ret.SignedIntent
 import com.radixdlt.ret.TransactionHeader
 import com.radixdlt.ret.TransactionManifest
@@ -49,8 +45,7 @@ class TransactionClient @Inject constructor(
     private val transactionRepository: TransactionRepository,
     private val getProfileUseCase: GetProfileUseCase,
     private val collectSignersSignaturesUseCase: CollectSignersSignaturesUseCase,
-    private val getAccountsWithAssetsUseCase: GetAccountsWithAssetsUseCase,
-    private val submitTransactionUseCase: SubmitTransactionUseCase
+    private val getAccountsWithAssetsUseCase: GetAccountsWithAssetsUseCase
 ) {
     val signingState = collectSignersSignaturesUseCase.interactionState
 
@@ -166,7 +161,8 @@ class TransactionClient @Inject constructor(
             Result.success(
                 NotarizedTransactionResult(
                     txIdHash = transactionIntentHash.asStr(),
-                    notarizedTransactionIntentHex = compiledNotarizedIntent.toByteArray().toHexString()
+                    notarizedTransactionIntentHex = compiledNotarizedIntent.toByteArray().toHexString(),
+                    transactionHeader = header
                 )
             )
         }.onFailure {
@@ -174,48 +170,17 @@ class TransactionClient @Inject constructor(
         }
     }
 
-    suspend fun signAndSubmitTransaction(
+    suspend fun signTransaction(
         request: TransactionApprovalRequest,
         lockFee: BigDecimal,
         tipPercentage: UShort,
         deviceBiometricAuthenticationProvider: suspend () -> Boolean
-    ): Result<String> {
-        return prepareSignedTransactionIntent(
-            request = request,
-            lockFee = lockFee,
-            tipPercentage = tipPercentage,
-            deviceBiometricAuthenticationProvider = deviceBiometricAuthenticationProvider
-        ).mapCatching { notarizedTransactionResult ->
-            submitTransactionUseCase(
-                notarizedTransactionResult.txIdHash,
-                notarizedTransactionResult.notarizedTransactionIntentHex
-            ).getOrThrow()
-        }
-    }
-
-    @Suppress("UnusedPrivateMember")
-    /**
-     * this might be handy in case of further signing changes
-     */
-    private fun printDebug(compiledNotarizedTransactionIntent: List<UByte>) {
-        val decompiled = NotarizedTransaction.decompile(compiledNotarizedTransaction = compiledNotarizedTransactionIntent)
-        val signedIntent = decompiled.signedIntent()
-        val signatures = signedIntent.intentSignatures().map { it as SignatureWithPublicKey.Ed25519 }
-        val intent = signedIntent.intent()
-
-        logger.d("================= Transaction")
-        logger.d("== Header:")
-        logger.d(intent.header().toPrettyString())
-        logger.d("== Manifest:")
-        logger.d(intent.manifest().toPrettyString())
-        logger.d("== Signatures:")
-        signatures.forEach { signature ->
-            logger.d("Public key: ${signature.publicKey}, signature: ${signature.signature}")
-        }
-        logger.d("Notary Signature: ${(decompiled.notarySignature() as Signature.Ed25519)}")
-        logger.d("== Compiled tx intent: ${intent.compile()}")
-        logger.d("== Compiled Notarized tx intent: ${compiledNotarizedTransactionIntent.toByteArray().toHexString()}")
-    }
+    ): Result<NotarizedTransactionResult> = prepareSignedTransactionIntent(
+        request = request,
+        lockFee = lockFee,
+        tipPercentage = tipPercentage,
+        deviceBiometricAuthenticationProvider = deviceBiometricAuthenticationProvider
+    )
 
     suspend fun findFeePayerInManifest(manifest: TransactionManifest, lockFee: BigDecimal): Result<FeePayerSearchResult> {
         val allAccounts = getProfileUseCase.accountsOnCurrentNetwork()
@@ -308,12 +273,13 @@ class TransactionClient @Inject constructor(
         val epochResult = transactionRepository.getLedgerEpoch()
         if (epochResult is ResultInternal.Success) {
             val epoch = epochResult.data
+            val expiryEpoch = epoch.toULong() + TransactionConfig.EPOCH_WINDOW
             return try {
                 Result.success(
                     TransactionHeader(
                         networkId = networkId.toUByte(),
                         startEpochInclusive = epoch.toULong(),
-                        endEpochExclusive = epoch.toULong() + TransactionConfig.EPOCH_WINDOW,
+                        endEpochExclusive = expiryEpoch,
                         nonce = generateNonce(),
                         notaryPublicKey = notaryAndSigners.notaryPublicKey(),
                         notaryIsSignatory = notaryAndSigners.notaryIsSignatory,
@@ -415,5 +381,9 @@ class TransactionClient @Inject constructor(
 
 data class NotarizedTransactionResult(
     val txIdHash: String,
-    val notarizedTransactionIntentHex: String
-)
+    val notarizedTransactionIntentHex: String,
+    val transactionHeader: TransactionHeader
+) {
+    val txProcessingTime: String
+        get() = ((transactionHeader.endEpochExclusive - transactionHeader.startEpochInclusive) * 5u).toString()
+}

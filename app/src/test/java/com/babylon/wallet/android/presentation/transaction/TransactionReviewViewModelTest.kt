@@ -9,6 +9,7 @@ import com.babylon.wallet.android.data.gateway.generated.models.TransactionRecei
 import com.babylon.wallet.android.data.repository.TransactionStatusClient
 import com.babylon.wallet.android.data.transaction.DappRequestException
 import com.babylon.wallet.android.data.transaction.DappRequestFailure
+import com.babylon.wallet.android.data.transaction.NotarizedTransactionResult
 import com.babylon.wallet.android.data.transaction.NotaryAndSigners
 import com.babylon.wallet.android.data.transaction.TransactionClient
 import com.babylon.wallet.android.data.transaction.model.FeePayerSearchResult
@@ -26,6 +27,7 @@ import com.babylon.wallet.android.domain.usecases.GetResourcesMetadataUseCase
 import com.babylon.wallet.android.domain.usecases.GetResourcesUseCase
 import com.babylon.wallet.android.domain.usecases.ResolveDAppsUseCase
 import com.babylon.wallet.android.domain.usecases.transaction.GetTransactionBadgesUseCase
+import com.babylon.wallet.android.domain.usecases.transaction.SubmitTransactionUseCase
 import com.babylon.wallet.android.mockdata.account
 import com.babylon.wallet.android.mockdata.profile
 import com.babylon.wallet.android.presentation.StateViewModelTest
@@ -34,6 +36,7 @@ import com.babylon.wallet.android.utils.DeviceSecurityHelper
 import com.radixdlt.ret.Decimal
 import com.radixdlt.ret.ExecutionAnalysis
 import com.radixdlt.ret.FeeLocks
+import com.radixdlt.ret.TransactionHeader
 import com.radixdlt.ret.TransactionType
 import io.mockk.Runs
 import io.mockk.coEvery
@@ -62,6 +65,7 @@ import rdx.works.core.displayableQuantity
 import rdx.works.core.ret.crypto.PrivateKey
 import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.data.model.currentNetwork
+import rdx.works.profile.data.model.pernetwork.FactorInstance
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.gateway.GetCurrentGatewayUseCase
 import java.math.BigDecimal
@@ -81,6 +85,7 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
     private val getResourcesMetadataUseCase = mockk<GetResourcesMetadataUseCase>()
     private val getProfileUseCase = mockk<GetProfileUseCase>()
     private val getTransactionBadgesUseCase = mockk<GetTransactionBadgesUseCase>()
+    private val submitTransactionUseCase = mockk<SubmitTransactionUseCase>()
     private val transactionStatusClient = mockk<TransactionStatusClient>()
     private val resolveDAppsUseCase = mockk<ResolveDAppsUseCase>()
     private val incomingRequestRepository = IncomingRequestRepositoryImpl()
@@ -132,17 +137,30 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
         every { deviceSecurityHelper.isDeviceSecure() } returns true
         every { savedStateHandle.get<String>(ARG_TRANSACTION_REQUEST_ID) } returns sampleRequestId
         coEvery { getCurrentGatewayUseCase() } returns Radix.Gateway.nebunet
+        coEvery { submitTransactionUseCase(any(), any(), any()) } returns Result.success(
+            SubmitTransactionUseCase.SubmitTransactionResult(sampleTxId, "50")
+        )
         coEvery { getTransactionBadgesUseCase.invoke(any()) } returns listOf(
             Badge(address = "", nameMetadataItem = null, iconMetadataItem = null)
         )
-        coEvery { transactionClient.signAndSubmitTransaction(any(), any(), any(), any()) } returns Result.success(sampleTxId)
+        coEvery { transactionClient.signTransaction(any(), any(), any(), any()) } returns Result.success(
+            NotarizedTransactionResult("sampleTxId", "", TransactionHeader(
+                11u,
+                1U,
+                5U,
+                10u,
+                com.radixdlt.ret.PublicKey.Ed25519(emptyList()),
+                false,
+                10u
+            ))
+        )
         coEvery { transactionClient.getNotaryAndSigners(any(), any()) } returns NotaryAndSigners(emptyList(), PrivateKey.EddsaEd25519.newRandom())
         coEvery { transactionClient.findFeePayerInManifest(any(), any()) } returns Result.success(FeePayerSearchResult("feePayer"))
         coEvery { transactionClient.signingState } returns emptyFlow()
         coEvery { transactionClient.getTransactionPreview(any(), any()) } returns Result.success(
             previewResponse()
         )
-        coEvery { transactionStatusClient.pollTransactionStatus(any(), any(), any()) } just Runs
+        coEvery { transactionStatusClient.pollTransactionStatus(any(), any(), any(), any()) } just Runs
         coEvery {
             dAppMessenger.sendTransactionWriteResponseSuccess(
                 remoteConnectorId = "remoteConnectorId",
@@ -226,7 +244,8 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
             appScope = TestScope(),
             savedStateHandle = savedStateHandle,
             transactionStatusClient = transactionStatusClient,
-            getResourcesUseCase = getResourcesUseCase
+            getResourcesUseCase = getResourcesUseCase,
+            submitTransactionUseCase = submitTransactionUseCase
         )
     }
 
@@ -267,7 +286,7 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
 
     @Test
     fun `transaction approval sign and submit error`() = runTest {
-        coEvery { transactionClient.signAndSubmitTransaction(any(), any(), any(), any()) } returns Result.failure(
+        coEvery { transactionClient.signTransaction(any(), any(), any(), any()) } returns Result.failure(
             DappRequestException(
                 DappRequestFailure.TransactionApprovalFailure.SubmitNotarizedTransaction
             )

@@ -39,6 +39,12 @@ enum class WalletErrorType {
     @SerialName("submittedTransactionHasRejectedTransactionStatus")
     SubmittedTransactionHasRejectedTransactionStatus,
 
+    @SerialName("submittedTransactionHasPermanentlyRejectedTransactionStatus")
+    SubmittedTransactionHasPermanentlyRejectedTransactionStatus,
+
+    @SerialName("submittedTransactionHasTemporarilyRejectedTransactionStatus")
+    SubmittedTransactionHasTemporarilyRejectedTransactionStatus,
+
     @SerialName("unknownWebsite")
     UnknownWebsite,
 

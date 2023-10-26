@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -40,6 +41,7 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
+import com.babylon.wallet.android.data.dapp.model.WalletErrorType
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.presentation.common.getMessage
@@ -53,6 +55,7 @@ import kotlin.math.roundToInt
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
+@Suppress("CyclomaticComplexMethod")
 fun TransactionStatusDialog(
     modifier: Modifier = Modifier,
     viewModel: TransactionStatusDialogViewModel,
@@ -144,9 +147,36 @@ fun TransactionStatusDialog(
                         enter = fadeIn(),
                         exit = fadeOut()
                     ) {
+                        val title = when (state.walletErrorType) {
+                            WalletErrorType.SubmittedTransactionHasFailedTransactionStatus -> {
+                                "Transaction Failed" // TODO Crowdin
+                            }
+                            WalletErrorType.SubmittedTransactionHasPermanentlyRejectedTransactionStatus -> {
+                                "Transaction Rejected" // TODO Crowdin
+                            }
+                            WalletErrorType.SubmittedTransactionHasTemporarilyRejectedTransactionStatus -> {
+                                "Transaction Error" // TODO Crowdin
+                            }
+                            else -> {
+                                stringResource(id = R.string.common_somethingWentWrong)
+                            }
+                        }
+                        val subtitle = when (state.walletErrorType) {
+                            WalletErrorType.SubmittedTransactionHasTemporarilyRejectedTransactionStatus -> {
+                                state.failureError?.errorMessageStringRes?.let {
+                                    stringResource(id = it, state.txProcessingTime)
+                                } ?: run {
+                                    state.failureError?.getMessage()
+                                }
+                            }
+                            else -> {
+                                state.failureError?.getMessage()
+                            }
+                        }
                         SomethingWentWrongDialogContent(
-                            title = stringResource(id = R.string.common_somethingWentWrong),
-                            subtitle = state.failureError?.getMessage()
+                            title = title,
+                            subtitle = subtitle,
+                            transactionAddress = state.transactionId
                         )
                     }
 
@@ -205,7 +235,7 @@ private fun SuccessContent(
             contentDescription = null
         )
         Text(
-            text = stringResource(id = R.string.transaction_status_success_title),
+            text = "Transaction Success", // stringResource(id = R.string.transaction_status_success_title),
             style = RadixTheme.typography.title,
             color = RadixTheme.colors.gray1
         )
@@ -218,11 +248,21 @@ private fun SuccessContent(
         )
 
         if (transactionAddress.isNotEmpty()) {
-            ActionableAddressView(
-                address = transactionAddress,
-                textStyle = RadixTheme.typography.body1Regular,
-                textColor = RadixTheme.colors.gray1
-            )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.Center
+            ) {
+                Text(
+                    text = "Transaction ID: ",
+                    style = RadixTheme.typography.body1Regular,
+                    color = RadixTheme.colors.gray1
+                )
+                ActionableAddressView(
+                    address = transactionAddress,
+                    textStyle = RadixTheme.typography.body1Regular,
+                    textColor = RadixTheme.colors.gray1
+                )
+            }
         }
     }
 }
