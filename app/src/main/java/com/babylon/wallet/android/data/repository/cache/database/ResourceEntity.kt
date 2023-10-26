@@ -48,10 +48,8 @@ data class ResourceEntity(
     val divisibility: Int?,
     val behaviours: BehavioursColumn?,
     val supply: BigDecimal?,
-    override val synced: Instant,
-    @ColumnInfo("state_version")
-    override val stateVersion: Long
-) : CachedEntity {
+    val synced: Instant
+) {
 
     @Suppress("CyclomaticComplexMethod")
     fun toResource(amount: BigDecimal): Resource = when (type) {
@@ -106,8 +104,7 @@ data class ResourceEntity(
                 divisibility = details?.divisibility(),
                 behaviours = details?.let { BehavioursColumn(it.extractBehaviours()) },
                 supply = details?.totalSupply()?.toBigDecimalOrNull(),
-                synced = syncInfo.synced,
-                stateVersion = syncInfo.stateVersion
+                synced = syncInfo.synced
             )
         }
 
@@ -131,8 +128,7 @@ data class ResourceEntity(
                 synced = syncInfo.synced,
                 divisibility = null,
                 poolAddress = null,
-                symbol = null,
-                stateVersion = syncInfo.stateVersion
+                symbol = null
             )
         }
     }

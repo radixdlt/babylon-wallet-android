@@ -11,7 +11,7 @@ data class AccountEntity(
     val address: String,
     @ColumnInfo("account_type")
     val accountType: AccountTypeMetadataItem.AccountType?,
-    override val synced: Instant,
+    val synced: Instant,
     @ColumnInfo("state_version")
-    override val stateVersion: Long
-) : CachedEntity
+    val stateVersion: Long
+)
