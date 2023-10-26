@@ -3,7 +3,7 @@ package com.babylon.wallet.android.presentation.common
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
 import com.babylon.wallet.android.R
-import com.babylon.wallet.android.domain.RadixWalletException
+import com.babylon.wallet.android.domain.asRadixWalletException
 import com.babylon.wallet.android.domain.toUserFriendlyMessage
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -72,7 +72,7 @@ sealed class UiMessage(val id: String = UUIDGenerator.uuid().toString()) {
 
         @Composable
         override fun getMessage(): String =
-            (error as? RadixWalletException)?.toUserFriendlyMessage() ?: error?.message
+            error?.asRadixWalletException()?.toUserFriendlyMessage() ?: error?.message
                 ?: stringResource(id = R.string.common_somethingWentWrong)
     }
 }

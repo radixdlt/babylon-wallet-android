@@ -2,11 +2,11 @@ package rdx.works.profile.domain
 
 import rdx.works.profile.data.model.pernetwork.Entity
 
-sealed class ProfileException : Exception() {
+sealed class ProfileException(msg: String? = null, cause: Throwable? = null) : Throwable(msg, cause) {
     data class AuthenticationSigningAlreadyExist(val entity: Entity) :
-        Exception("Signing Entity $entity already has authenticationSigning")
-}
+        ProfileException("Signing Entity $entity already has authenticationSigning")
 
-object InvalidSnapshotException : java.lang.Exception("The snapshot is invalid")
-object InvalidPasswordException : java.lang.Exception("The password is invalid")
-object NoMnemonicException : java.lang.Exception("Please restore your Seed Phrase and try again")
+    data object InvalidSnapshot : ProfileException("The snapshot is invalid")
+    data object InvalidPassword : ProfileException("The password is invalid")
+    data object NoMnemonic : ProfileException("Please restore your Seed Phrase and try again")
+}

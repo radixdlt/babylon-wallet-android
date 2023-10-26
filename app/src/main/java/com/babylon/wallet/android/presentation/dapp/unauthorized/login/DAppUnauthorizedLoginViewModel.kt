@@ -36,7 +36,7 @@ import kotlinx.coroutines.launch
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.data.model.pernetwork.PersonaData
 import rdx.works.profile.domain.GetProfileUseCase
-import rdx.works.profile.domain.NoMnemonicException
+import rdx.works.profile.domain.ProfileException
 import rdx.works.profile.domain.accountOnCurrentNetwork
 import rdx.works.profile.domain.gateway.GetCurrentGatewayUseCase
 import rdx.works.profile.domain.personaOnCurrentNetwork
@@ -158,7 +158,7 @@ class DAppUnauthorizedLoginViewModel @Inject constructor(
             )
             _state.update { it.copy(failureDialog = DAppUnauthorizedLoginUiState.FailureDialog.Open(exception)) }
         } else {
-            if (exception is NoMnemonicException) {
+            if (exception is ProfileException.NoMnemonic) {
                 _state.update { it.copy(isNoMnemonicErrorVisible = true) }
             }
         }

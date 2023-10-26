@@ -48,7 +48,7 @@ import rdx.works.profile.data.repository.updateAuthorizedDappPersonaFields
 import rdx.works.profile.data.repository.updateAuthorizedDappPersonas
 import rdx.works.profile.data.repository.updateDappAuthorizedPersonaSharedAccounts
 import rdx.works.profile.domain.GetProfileUseCase
-import rdx.works.profile.domain.NoMnemonicException
+import rdx.works.profile.domain.ProfileException
 import rdx.works.profile.domain.accountOnCurrentNetwork
 import rdx.works.profile.domain.gateway.GetCurrentGatewayUseCase
 import rdx.works.profile.domain.personaOnCurrentNetwork
@@ -248,7 +248,7 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
             )
             _state.update { it.copy(failureDialog = DAppLoginUiState.FailureDialog.Open(exception)) }
         } else {
-            if (exception is NoMnemonicException) {
+            if (exception is ProfileException.NoMnemonic) {
                 _state.update { it.copy(isNoMnemonicErrorVisible = true) }
             }
         }

@@ -171,7 +171,7 @@ class MainViewModel @Inject constructor(
                     sendEvent(MainEvent.IncomingRequestEvent(request))
                 } else {
                     delay(REQUEST_HANDLING_DELAY)
-                    authorizeSpecifiedPersonaUseCase(request).onSuccess { dAppData ->
+                    authorizeSpecifiedPersonaUseCase.invoke(request).onSuccess { dAppData ->
                         appEventBus.sendEvent(
                             AppEvent.Status.DappInteraction(
                                 requestId = dAppData.requestId,

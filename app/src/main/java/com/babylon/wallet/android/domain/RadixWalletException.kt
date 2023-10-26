@@ -35,9 +35,13 @@ sealed class RadixWalletException(msg: String? = null, cause: Throwable? = null)
             val requestNetworkId: Int
         ) : DappRequestException() {
             val currentNetworkName: String
-                get() = runCatching { Radix.Network.fromId(currentNetworkId) }.getOrNull()?.name.orEmpty().replaceFirstChar(Char::titlecase)
+                get() = runCatching {
+                    Radix.Network.fromId(currentNetworkId)
+                }.getOrNull()?.name.orEmpty().replaceFirstChar(Char::titlecase)
             val requestNetworkName: String
-                get() = runCatching { Radix.Network.fromId(requestNetworkId) }.getOrNull()?.name.orEmpty().replaceFirstChar(Char::titlecase)
+                get() = runCatching {
+                    Radix.Network.fromId(requestNetworkId)
+                }.getOrNull()?.name.orEmpty().replaceFirstChar(Char::titlecase)
         }
 
         fun toWalletErrorType(): WalletErrorType {
@@ -280,4 +284,8 @@ fun RadixWalletException.toWalletErrorType(): WalletErrorType? {
         is RadixWalletException.TransactionSubmitException -> toWalletErrorType()
         else -> null
     }
+}
+
+fun Throwable.asRadixWalletException(): RadixWalletException? {
+    return this as? RadixWalletException
 }

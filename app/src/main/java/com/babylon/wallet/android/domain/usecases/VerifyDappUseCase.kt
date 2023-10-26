@@ -6,6 +6,8 @@ import com.babylon.wallet.android.data.repository.dappmetadata.DAppRepository
 import com.babylon.wallet.android.domain.RadixWalletException
 import com.babylon.wallet.android.domain.getDappMessage
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel.IncomingRequest
+import com.babylon.wallet.android.domain.toWalletErrorType
+import com.babylon.wallet.android.utils.onFailure
 import com.radixdlt.ret.Address
 import kotlinx.coroutines.flow.first
 import rdx.works.profile.domain.GetProfileUseCase
@@ -36,15 +38,14 @@ class VerifyDappUseCase @Inject constructor(
                 origin = request.metadata.origin,
                 dAppDefinitionAddress = request.metadata.dAppDefinitionAddress
             )
-            validationResult.onFailure { e ->
-                (e as? RadixWalletException.DappRequestException)?.let {
-                    dAppMessenger.sendWalletInteractionResponseFailure(
-                        remoteConnectorId = request.remoteConnectorId,
-                        requestId = request.id,
-                        error = it.toWalletErrorType(),
-                        message = it.getDappMessage()
-                    )
-                }
+            validationResult.onFailure { radixException ->
+                val walletErrorType = radixException.toWalletErrorType() ?: return@onFailure
+                dAppMessenger.sendWalletInteractionResponseFailure(
+                    remoteConnectorId = request.remoteConnectorId,
+                    requestId = request.id,
+                    error = walletErrorType,
+                    message = radixException.getDappMessage()
+                )
             }
             validationResult
         }

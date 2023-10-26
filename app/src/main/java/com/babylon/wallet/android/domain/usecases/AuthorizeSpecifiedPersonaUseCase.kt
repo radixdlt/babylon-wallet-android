@@ -71,6 +71,9 @@ class AuthorizeSpecifiedPersonaUseCase @Inject constructor(
                 }
 
                 if (request.hasOngoingRequestItemsOnly()) {
+                    if (request.needSignatures()) {
+                        return@let
+                    }
                     val hasOngoingAccountsRequest = request.ongoingAccountsRequestItem != null
                     val hasOngoingPersonaDataRequest = request.ongoingPersonaDataRequestItem != null
                     val selectedAccounts: List<Selectable<Network.Account>> = emptyList()
