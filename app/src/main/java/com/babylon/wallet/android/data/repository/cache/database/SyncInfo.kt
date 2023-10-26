@@ -4,5 +4,5 @@ import java.time.Instant
 
 data class SyncInfo(
     val synced: Instant,
-    val stateVersion: Long
+    val accountStateVersion: Long
 )

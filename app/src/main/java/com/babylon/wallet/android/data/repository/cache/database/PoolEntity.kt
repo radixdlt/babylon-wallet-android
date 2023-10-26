@@ -1,10 +1,7 @@
 package com.babylon.wallet.android.data.repository.cache.database
 
-import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import com.babylon.wallet.android.data.gateway.extensions.divisibility
-import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponse
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponseItem
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponseItemDetails
 import com.babylon.wallet.android.data.repository.cache.database.PoolResourceJoin.Companion.asPoolResourceJoin
@@ -12,9 +9,7 @@ import com.babylon.wallet.android.data.repository.cache.database.PoolResourceJoi
 @Entity
 data class PoolEntity(
     @PrimaryKey
-    val address: String,
-    @ColumnInfo("state_version")
-    val stateVersion: Long
+    val address: String
 ) {
 
     companion object {
@@ -33,7 +28,7 @@ data class PoolEntity(
                     fungibleItem.asPoolResourceJoin(poolDetails.address, itemDetails, syncInfo)
                 }
 
-                val poolEntity = PoolEntity(poolDetails.address, syncInfo.stateVersion)
+                val poolEntity = PoolEntity(poolDetails.address)
                 poolsWithResources[poolEntity] = resourcesInPool
             }
 

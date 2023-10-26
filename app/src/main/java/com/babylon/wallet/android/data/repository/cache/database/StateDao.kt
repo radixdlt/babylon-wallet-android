@@ -23,7 +23,7 @@ interface StateDao {
             R.address AS resource_address,
             R.*
         FROM AccountEntity AS A
-        LEFT JOIN AccountResourceJoin AS AR ON A.address = AR.account_address
+        LEFT JOIN AccountResourceJoin AS AR ON A.address = AR.account_address AND account_state_version = AR.account_state_version
         LEFT JOIN ResourceEntity AS R ON AR.resource_address = R.address
         WHERE 
             A.address in (:accountAddresses) AND
@@ -52,7 +52,7 @@ interface StateDao {
                 address = accountAddress,
                 accountType = accountTypeMetadataItem?.type,
                 synced = syncInfo.synced,
-                stateVersion = syncInfo.stateVersion
+                stateVersion = syncInfo.accountStateVersion
             )
         )
         insertPoolDetails(poolsWithResources.keys.toList())
@@ -88,13 +88,13 @@ interface StateDao {
     @Query("""
         SELECT 
             PoolEntity.address AS pool_entity_address, 
-            PoolEntity.state_version AS pool_state_version, 
+            PoolResourceJoin.account_state_version AS account_state_version, 
             PoolResourceJoin.amount AS amount,
             ResourceEntity.*
         FROM PoolEntity
         LEFT JOIN PoolResourceJoin ON PoolEntity.address = PoolResourceJoin.pool_address
         LEFT JOIN ResourceEntity ON PoolResourceJoin.resource_address = ResourceEntity.address
-        WHERE PoolEntity.address IN (:addresses) AND PoolEntity.state_version = :atStateVersion
+        WHERE PoolEntity.address IN (:addresses) AND account_state_version = :atStateVersion
     """)
     fun getPoolDetails(addresses: Set<String>, atStateVersion: Long): List<PoolWithResourceResponse>
 
@@ -103,7 +103,7 @@ interface StateDao {
 
     @Query("""
         SELECT * FROM ValidatorEntity
-        WHERE address in (:addresses) AND state_version = :atStateVersion
+        WHERE address in (:addresses) AND account_state_version = :atStateVersion
     """)
     fun getValidators(addresses: Set<String>, atStateVersion: Long): List<ValidatorEntity>
 
@@ -122,7 +122,7 @@ interface StateDao {
         WHERE 
             AccountNFTJoin.account_address = :accountAddress AND 
             AccountNFTJoin.resource_address = :resourceAddress AND 
-            NFTEntity.account_state_version = :stateVersion
+            AccountNFTJoin.account_state_version = :stateVersion
         """
     )
     fun getOwnedNfts(accountAddress: String, resourceAddress: String, stateVersion: Long): List<NFTEntity>

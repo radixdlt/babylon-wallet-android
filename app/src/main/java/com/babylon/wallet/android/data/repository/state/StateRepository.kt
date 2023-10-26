@@ -57,7 +57,7 @@ class StateRepositoryImpl @Inject constructor(
                     accounts = setOf(remainingAccounts.first()),
                     onAccount = { account, gatewayDetails ->
                         val accountMetadataItems = gatewayDetails.accountMetadata?.asMetadataItems()?.toMutableList()
-                        val syncInfo = SyncInfo(synced = InstantGenerator(), stateVersion = gatewayDetails.ledgerState.stateVersion)
+                        val syncInfo = SyncInfo(synced = InstantGenerator(), accountStateVersion = gatewayDetails.ledgerState.stateVersion)
                         val fungibleEntityPairs = gatewayDetails.fungibles.map { item ->
                             item.asAccountResourceJoin(account.address, syncInfo)
                         }
@@ -67,7 +67,7 @@ class StateRepositoryImpl @Inject constructor(
 
                         // Gather and store pool details
                         val poolAddresses = fungibleEntityPairs.mapNotNull { it.second.poolAddress }.toSet()
-                        val pools = stateApiDelegate.getPoolDetails(poolAddresses = poolAddresses, stateVersion = syncInfo.stateVersion)
+                        val pools = stateApiDelegate.getPoolDetails(poolAddresses = poolAddresses, stateVersion = syncInfo.accountStateVersion)
 
                         // Gather and store validator details
                         val validatorAddresses = (fungibleEntityPairs.mapNotNull {
@@ -77,7 +77,7 @@ class StateRepositoryImpl @Inject constructor(
                         }).toSet()
                         val validators = stateApiDelegate.getValidatorsDetails(
                             validatorsAddresses = validatorAddresses,
-                            stateVersion = syncInfo.stateVersion
+                            stateVersion = syncInfo.accountStateVersion
                         )
 
                         // Store account details
@@ -106,12 +106,12 @@ class StateRepositoryImpl @Inject constructor(
             resourceAddress = resource.resourceAddress
         ).firstOrNull()
 
-        val stateVersion: Long = accountNftPortfolio?.accountStateVersion ?: throw StateRepository.NFTPageError.StateVersionMissing
+        val accountStateVersion: Long = accountNftPortfolio?.accountStateVersion ?: throw StateRepository.NFTPageError.StateVersionMissing
 
         val cachedNFTItems = stateDao.getOwnedNfts(
             accountAddress = account.address,
             resourceAddress = resource.resourceAddress,
-            stateVersion = stateVersion
+            stateVersion = accountStateVersion
         )
 
         // All items cached, return the result
@@ -128,9 +128,9 @@ class StateRepositoryImpl @Inject constructor(
             resourceAddress = resource.resourceAddress,
             vaultAddress = vaultAddress,
             nextCursor = nextCursor,
-            stateVersion = stateVersion
+            stateVersion = accountStateVersion
         )
-        val syncInfo = SyncInfo(synced = InstantGenerator(), stateVersion = stateVersion)
+        val syncInfo = SyncInfo(synced = InstantGenerator(), accountStateVersion = accountStateVersion)
 
         val newItems = cacheDelegate.storeAccountNFTsPortfolio(
             accountAddress = account.address,
