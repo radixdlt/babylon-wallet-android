@@ -121,10 +121,13 @@ interface StateDao {
         """
         SELECT NFTEntity.* FROM AccountNFTJoin
         INNER JOIN NFTEntity ON AccountNFTJoin.resource_address = NFTEntity.address AND AccountNFTJoin.local_id = NFTEntity.local_id
-        WHERE AccountNFTJoin.account_address = :accountAddress AND AccountNFTJoin.resource_address = :resourceAddress
+        WHERE 
+            AccountNFTJoin.account_address = :accountAddress AND 
+            AccountNFTJoin.resource_address = :resourceAddress AND 
+            NFTEntity.state_version = :stateVersion
         """
     )
-    fun getOwnedNfts(accountAddress: String, resourceAddress: String): List<NFTEntity>
+    fun getOwnedNfts(accountAddress: String, resourceAddress: String, stateVersion: Long): List<NFTEntity>
 
     @Query("""
         UPDATE AccountResourceJoin

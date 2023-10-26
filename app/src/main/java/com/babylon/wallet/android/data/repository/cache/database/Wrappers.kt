@@ -132,7 +132,7 @@ data class PoolWithResourceResponse(
 
 data class AccountNFTPortfolioResponse(
     @Embedded
-    val accountNFTJoin: AccountResourceJoin,
+    val accountNonFungibleResourceJoin: AccountResourceJoin,
     @ColumnInfo("state_version")
     val accountStateVersion: Long?
 )
