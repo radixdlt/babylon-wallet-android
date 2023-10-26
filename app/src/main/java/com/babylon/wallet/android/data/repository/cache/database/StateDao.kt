@@ -35,7 +35,7 @@ interface StateDao {
     )
     fun observeAccountsPortfolio(
         accountAddresses: List<String>,
-        minValidity: Long = InstantGenerator().toEpochMilli() - accountsCacheDuration.inWholeMilliseconds
+        minValidity: Long
     ): Flow<List<AccountPortfolioResponse>>
 
     @Transaction
@@ -153,10 +153,5 @@ interface StateDao {
         updateNextCursor(accountAddress, resourceAddress, cursor)
         insertNFTs(nfts)
         insertAccountNFTsJoin(accountNFTsJoin)
-    }
-
-    companion object {
-        val accountsCacheDuration = 2.toDuration(DurationUnit.HOURS)
-        val resourcesCacheDuration = 24.toDuration(DurationUnit.HOURS)
     }
 }

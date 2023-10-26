@@ -100,7 +100,7 @@ class WalletViewModel @Inject constructor(
         accountsFlow
             .flatMapLatest { accounts ->
                 _state.update { it.loadingResources(accounts = accounts, isRefreshing = it.isRefreshing) }
-                getWalletAssetsUseCase(accounts = accounts).catch { error ->
+                getWalletAssetsUseCase(accounts = accounts, isRefreshing = state.value.isRefreshing).catch { error ->
                     _state.update { it.onResourcesError(error) }
                     Timber.w(error)
                 }

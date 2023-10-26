@@ -21,7 +21,7 @@ import javax.inject.Inject
 
 interface StateRepository {
 
-    fun observeAccountsOnLedger(accounts: List<Network.Account>): Flow<Map<Network.Account, AccountOnLedger>>
+    fun observeAccountsOnLedger(accounts: List<Network.Account>, isRefreshing: Boolean): Flow<Map<Network.Account, AccountOnLedger>>
 
     suspend fun getMoreNFTs(account: Network.Account, resource: Resource.NonFungibleResource): Result<Resource.NonFungibleResource>
 
@@ -43,9 +43,10 @@ class StateRepositoryImpl @Inject constructor(
     private val stateApiDelegate = StateApiDelegate(stateApi = stateApi)
 
     override fun observeAccountsOnLedger(
-        accounts: List<Network.Account>
+        accounts: List<Network.Account>,
+        isRefreshing: Boolean
     ): Flow<Map<Network.Account, AccountOnLedger>> = cacheDelegate
-        .observeCachedAccounts(accounts)
+        .observeCachedAccounts(accounts, isRefreshing)
         .transform { cachedAccounts ->
             emit(cachedAccounts.mapValues { it.value.toAccountDetails() })
 
