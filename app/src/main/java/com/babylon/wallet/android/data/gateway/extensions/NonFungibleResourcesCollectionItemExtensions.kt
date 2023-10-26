@@ -11,3 +11,10 @@ val NonFungibleResourcesCollectionItem.amount: Long
             vaults.items.sumOf { item -> item.totalCount }
         else -> 0L
     }
+
+val NonFungibleResourcesCollectionItem.vaultAddress: String?
+    get() = when (this) {
+        is NonFungibleResourcesCollectionItemVaultAggregated -> vaults.items.firstOrNull()?.vaultAddress
+        is NonFungibleResourcesCollectionItemGloballyAggregated -> null
+        else -> null
+    }

@@ -6,6 +6,7 @@ import androidx.room.ForeignKey
 import androidx.room.Index
 import com.babylon.wallet.android.data.gateway.extensions.amount
 import com.babylon.wallet.android.data.gateway.extensions.amountDecimal
+import com.babylon.wallet.android.data.gateway.extensions.vaultAddress
 import com.babylon.wallet.android.data.gateway.generated.models.FungibleResourcesCollectionItem
 import com.babylon.wallet.android.data.gateway.generated.models.NonFungibleResourcesCollectionItem
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponseItemDetails
@@ -33,7 +34,18 @@ data class AccountResourceJoin(
     val accountAddress: String,
     @ColumnInfo("resource_address", index = true)
     val resourceAddress: String,
-    val amount: BigDecimal
+    val amount: BigDecimal,
+
+    // Owners of non fungible collections need to store
+    // the vault address so we can query their owned ids
+    @ColumnInfo("vault_address")
+    val vaultAddress: String?,
+
+    // Only needed for non fungible owners were we have fetched data
+    // until a specific page but we need to request the next pages
+    // in later time
+    @ColumnInfo("next_cursor")
+    val nextCursor: String?
 ) {
 
     companion object {
@@ -43,7 +55,9 @@ data class AccountResourceJoin(
         ): Pair<AccountResourceJoin, ResourceEntity> = AccountResourceJoin(
             accountAddress = accountAddress,
             resourceAddress = resourceAddress,
-            amount = amountDecimal
+            amount = amountDecimal,
+            vaultAddress = null,
+            nextCursor = null
         ) to asEntity(syncInfo)
 
         fun NonFungibleResourcesCollectionItem.asAccountResourceJoin(
@@ -52,7 +66,9 @@ data class AccountResourceJoin(
         ): Pair<AccountResourceJoin, ResourceEntity> = AccountResourceJoin(
             accountAddress = accountAddress,
             resourceAddress = resourceAddress,
-            amount = amount.toBigDecimal()
+            amount = amount.toBigDecimal(),
+            vaultAddress = vaultAddress,
+            nextCursor = null
         ) to asEntity(syncInfo)
     }
 }
