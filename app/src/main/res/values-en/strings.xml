@@ -449,8 +449,15 @@
   <string name="transactionReview_noMnemonicError_title">Could Not Complete</string>
   <string name="transactionReview_noMnemonicError_text">The required seed phrase is missing. Please return to the account and begin the recovery process.</string>
   <string name="transaction_status_completing_text">Completing Transaction…</string>
-  <string name="transaction_status_success_title">Success</string>
+  <string name="transaction_status_transaction_id_text">Transaction ID: </string>
+  <string name="transaction_status_success_title">Transaction Success</string>
+  <string name="transaction_status_failed_title">Transaction Failed</string>
+  <string name="transaction_status_rejected_title">Transaction Rejected</string>
+  <string name="transaction_status_error_title">Transaction Error</string>
   <string name="transaction_status_success_text">Your transaction was successful</string>
+  <string name="transaction_status_failed_text">Your transaction was processed, but had a problem that caused it to fail permanently</string>
+  <string name="transaction_status_error_text">Your transaction could not be processed, but could potentially still be processed within the next %s minutes</string>
+  <string name="transaction_status_rejected_text">Your transaction was improperly constructed and cannot be processed</string>
   <string name="transaction_status_failure_title">Something went wrong</string>
   <string name="transaction_status_dismiss_dialog_message">Stop waiting for transaction result? The transaction will not be canceled.</string>
   <string name="addressAction_copyAddress">Copy Address</string>
@@ -649,6 +656,8 @@
   <string name="ledgerHardwareDevices_subtitleSelectLedgerExisting">Choose an existing Ledger or add a new one</string>
   <string name="ledgerHardwareDevices_subtitleAllLedgers">Here are all the Ledger devices you have added.</string>
   <string name="ledgerHardwareDevices_subtitleFailure">Could not find Ledger devices</string>
+  <string name="ledgerHardwareDevices_couldNotSign_message">Transaction could not be signed. To sign complex transactions, please enable either \"blind signing\" or \"verbose mode\" in the Radix app on your Ledger device.</string>
+  <string name="ledgerHardwareDevices_couldNotSign_title">Could Not Sign</string>
   <string name="displayMnemonics_cautionAlert_title">Use Caution</string>
   <string name="displayMnemonics_cautionAlert_revealButtonLabel">Reveal Seed Phrase</string>
   <string name="displayMnemonics_cautionAlert_message">A seed phrase provides full control of its Accounts. Do not view in a public area. Write down the seed phrase words securely. Screenshots are disabled.</string>
