@@ -12,6 +12,9 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface StateDao {
 
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    fun updateLedgerState(ledgerStateEntity: LedgerStateEntity)
+
     @Query(
         """
         SELECT 
@@ -28,7 +31,8 @@ interface StateDao {
         LEFT JOIN ResourceEntity AS R ON AR.resource_address = R.address
         WHERE 
             A.address in (:accountAddresses) AND
-            A.synced >= :minValidity
+            A.synced >= :minValidity AND
+            A.state_version = (SELECT state_version FROM LedgerStateEntity WHERE id = 1)
         """
     )
     fun observeAccountsPortfolio(
@@ -46,6 +50,9 @@ interface StateDao {
         validators: List<ValidatorEntity>
     ) {
         val allPoolsWithResources = poolsWithResources.values.flatten()
+
+        // Update state version
+        updateLedgerState(LedgerStateEntity(stateVersion = syncInfo.accountStateVersion))
 
         // Insert parent entities
         insertAccountDetails(
