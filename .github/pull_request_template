@@ -1,7 +1,31 @@
 ## Description
-[ticket_title](ticket_url)
+This PR solves / fixes / adds / includes functionality 1 and functionality 2.
 
-### Screenshots (optional)
+
+## How to test
+
+1. Step 1
+2. Step 2
+3. Verify
+
+## Screenshot
+
+```
 <img src="image_url" width="300">
+```
 
-### Notes (optional)
+```
+<img src="image_url" width="30%">
+```
+
+Example:
+```
+<img src="https://github.com/radixdlt/babylon-wallet-android/assets/118203440/ae340efd-61f0-4e0f-a956-f5830b93d28f" width=30%>
+```
+
+## Video
+paste link here
+
+## PR submission checklist
+- [ ] I have tested account to account transfer flow and have confirmed that it works
+- [ ] I have written unit tests
