@@ -41,9 +41,7 @@ data class AccountPortfolioResponse(
     private val behaviours: BehavioursColumn?,
     private val supply: BigDecimal?,
     @ColumnInfo("synced")
-    private val resourceSynced: Instant?,
-    @ColumnInfo("state_version")
-    private val resourceStateVersion: Long
+    private val resourceSynced: Instant?
 ) {
 
     @Ignore
@@ -65,8 +63,7 @@ data class AccountPortfolioResponse(
             divisibility = divisibility,
             behaviours = behaviours,
             supply = supply,
-            synced = resourceSynced,
-            stateVersion = resourceStateVersion
+            synced = resourceSynced
         )
     } else {
         null
@@ -102,9 +99,7 @@ data class PoolWithResourceResponse(
     private val behaviours: BehavioursColumn?,
     private val supply: BigDecimal?,
     @ColumnInfo("synced")
-    private val resourceSynced: Instant?,
-    @ColumnInfo("state_version")
-    private val resourceStateVersion: Long
+    private val resourceSynced: Instant?
 ) {
     @Ignore
     val resource: ResourceEntity? = if (resourceAddress != null && type != null && resourceSynced != null) {
@@ -122,8 +117,7 @@ data class PoolWithResourceResponse(
             divisibility = divisibility,
             behaviours = behaviours,
             supply = supply,
-            synced = resourceSynced,
-            stateVersion = resourceStateVersion
+            synced = resourceSynced
         )
     } else {
         null

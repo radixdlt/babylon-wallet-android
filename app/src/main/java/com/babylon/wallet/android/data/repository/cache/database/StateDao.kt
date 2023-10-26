@@ -124,7 +124,7 @@ interface StateDao {
         WHERE 
             AccountNFTJoin.account_address = :accountAddress AND 
             AccountNFTJoin.resource_address = :resourceAddress AND 
-            NFTEntity.state_version = :stateVersion
+            NFTEntity.account_state_version = :stateVersion
         """
     )
     fun getOwnedNfts(accountAddress: String, resourceAddress: String, stateVersion: Long): List<NFTEntity>

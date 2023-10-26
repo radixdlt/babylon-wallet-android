@@ -32,10 +32,10 @@ data class NFTEntity(
     val claimEpoch: Long?,
     @ColumnInfo("metadata")
     val metadata: StringMetadataColumn?,
-    override val synced: Instant,
-    @ColumnInfo("state_version")
-    override val stateVersion: Long
-) : CachedEntity {
+    val synced: Instant,
+    @ColumnInfo("account_state_version")
+    val accountStateVersion: Long
+) {
 
     fun toItem() = Resource.NonFungibleResource.Item(
         collectionAddress = address,
@@ -62,7 +62,7 @@ data class NFTEntity(
                 StringMetadataColumn(metadata.map { it.key to it.value })
             },
             synced = syncInfo.synced,
-            stateVersion = syncInfo.stateVersion
+            accountStateVersion = syncInfo.stateVersion
         )
     }
 
