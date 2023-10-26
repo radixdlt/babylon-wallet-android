@@ -16,8 +16,11 @@ class GetWalletAssetsUseCase @Inject constructor(
     @DefaultDispatcher private val dispatcher: CoroutineDispatcher
 ) {
 
-    operator fun invoke(accounts: List<Network.Account>): Flow<List<AccountWithAssets>> {
-        return stateRepository.observeAccountsOnLedger(accounts).map { accountsAndResources ->
+    operator fun invoke(accounts: List<Network.Account>, isRefreshing: Boolean): Flow<List<AccountWithAssets>> {
+        return stateRepository.observeAccountsOnLedger(
+            accounts = accounts,
+            isRefreshing = isRefreshing
+        ).map { accountsAndResources ->
             accounts.map { account ->
                 val detailsAndResources = accountsAndResources[account]
 
@@ -27,7 +30,6 @@ class GetWalletAssetsUseCase @Inject constructor(
                     assets = detailsAndResources?.extractAssets()
                 )
             }
-        }
-        .flowOn(dispatcher)
+        }.flowOn(dispatcher)
     }
 }

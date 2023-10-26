@@ -15,16 +15,17 @@ class GetAccountAssetsUseCase @Inject constructor(
     @DefaultDispatcher private val dispatcher: CoroutineDispatcher
 ) {
 
-    operator fun invoke(account: Network.Account) = stateRepository.observeAccountsOnLedger(listOf(account))
-        .map { accountsOnLedger ->
-            val accountOnLedger = accountsOnLedger[account]
+    operator fun invoke(account: Network.Account, isRefreshing: Boolean) = stateRepository.observeAccountsOnLedger(
+        accounts = listOf(account),
+        isRefreshing = isRefreshing
+    ).map { accountsOnLedger ->
+        val accountOnLedger = accountsOnLedger[account]
 
-            AccountWithAssets(
-                account = account,
-                details = accountOnLedger?.details ?: AccountDetails(),
-                assets = accountOnLedger?.extractAssets()
-            )
-        }
-        .flowOn(dispatcher)
+        AccountWithAssets(
+            account = account,
+            details = accountOnLedger?.details ?: AccountDetails(),
+            assets = accountOnLedger?.extractAssets()
+        )
+    }.flowOn(dispatcher)
 
 }

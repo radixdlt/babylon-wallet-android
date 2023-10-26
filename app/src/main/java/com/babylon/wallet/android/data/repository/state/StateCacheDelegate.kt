@@ -12,15 +12,21 @@ import com.babylon.wallet.android.domain.model.resources.metadata.AccountTypeMet
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
+import rdx.works.core.InstantGenerator
 import rdx.works.profile.data.model.pernetwork.Network
+import kotlin.time.DurationUnit
+import kotlin.time.toDuration
 
 class StateCacheDelegate(
     private val stateDao: StateDao
 ) {
 
-    fun observeCachedAccounts(accounts: List<Network.Account>): Flow<Map<Network.Account, CachedDetails>> {
+    fun observeCachedAccounts(
+        accounts: List<Network.Account>,
+        isRefreshing: Boolean
+    ): Flow<Map<Network.Account, CachedDetails>> {
         val accountAddresses = accounts.map { it.address }
-        return stateDao.observeAccountsPortfolio(accountAddresses)
+        return stateDao.observeAccountsPortfolio(accountAddresses, accountCacheValidity(isRefreshing))
             .distinctUntilChanged()
             .map { detailsWithResources ->
                 val result = mutableMapOf<Network.Account, CachedDetails>()
@@ -135,5 +141,16 @@ class StateCacheDelegate(
             pools
         )
 
+    }
+
+    companion object {
+        private val accountsCacheDuration = 2.toDuration(DurationUnit.HOURS)
+        private val resourcesCacheDuration = 24.toDuration(DurationUnit.HOURS)
+
+        fun accountCacheValidity(isRefreshing: Boolean) =
+            InstantGenerator().toEpochMilli() - if (isRefreshing) 0 else accountsCacheDuration.inWholeMilliseconds
+
+        fun resourcesCacheValidity(isRefreshing: Boolean) =
+            InstantGenerator().toEpochMilli() - if (isRefreshing) 0 else resourcesCacheDuration.inWholeMilliseconds
     }
 }
