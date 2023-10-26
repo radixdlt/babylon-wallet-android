@@ -257,6 +257,7 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
                 incomingRequestRepository = incomingRequestRepository,
                 appEventBus = appEventBus,
                 transactionStatusClient = transactionStatusClient,
+                submitTransactionUseCase = submitTransactionUseCase,
                 applicationScope = TestScope(),
             ),
             incomingRequestRepository = incomingRequestRepository,

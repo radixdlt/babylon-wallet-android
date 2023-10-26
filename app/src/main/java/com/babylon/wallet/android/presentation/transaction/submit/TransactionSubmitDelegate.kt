@@ -215,8 +215,7 @@ class TransactionSubmitDelegate @Inject constructor(
                     }
 
                     else -> {
-                        val walletErrorType =
-                            (dappRequestException.failure as? DappRequestFailure)?.toWalletErrorType()
+                        val walletErrorType = (dappRequestException.failure as? DappRequestFailure)?.toWalletErrorType()
                         reportFailure(error)
                         appEventBus.sendEvent(
                             AppEvent.Status.Transaction.Fail(
@@ -225,7 +224,7 @@ class TransactionSubmitDelegate @Inject constructor(
                                 isInternal = transactionRequest.isInternal,
                                 errorMessage = UiMessage.ErrorMessage.from((error as? DappRequestException)?.failure),
                                 blockUntilComplete = transactionRequest.blockUntilComplete,
-                                txProcessingTime = state.value.txProcessingTime,
+                                txProcessingTime = _state.value.txProcessingTime,
                                 walletErrorType = walletErrorType
                             )
                         )
