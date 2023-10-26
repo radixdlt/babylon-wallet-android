@@ -4,6 +4,7 @@ import android.net.Uri
 import com.babylon.wallet.android.domain.model.assets.AssetBehaviours
 import com.babylon.wallet.android.domain.model.resources.XrdResource.addressesPerNetwork
 import com.babylon.wallet.android.domain.model.resources.metadata.ClaimAmountMetadataItem
+import com.babylon.wallet.android.domain.model.resources.metadata.ClaimEpochMetadataItem
 import com.babylon.wallet.android.domain.model.resources.metadata.DAppDefinitionsMetadataItem
 import com.babylon.wallet.android.domain.model.resources.metadata.DescriptionMetadataItem
 import com.babylon.wallet.android.domain.model.resources.metadata.IconUrlMetadataItem
@@ -181,7 +182,8 @@ sealed class Resource {
             val localId: ID,
             val nameMetadataItem: NameMetadataItem? = null,
             val iconMetadataItem: IconUrlMetadataItem? = null,
-            val readyToClaim: Boolean = false,
+            val readyToClaim: Boolean = false, // TODO to remove from object
+            val claimEpochMetadataItem: ClaimEpochMetadataItem? = null,
             val claimAmountMetadataItem: ClaimAmountMetadataItem? = null,
             val remainingMetadata: List<StringMetadataItem> = emptyList()
         ) : Comparable<Item> {
@@ -193,7 +195,10 @@ sealed class Resource {
                 get() = iconMetadataItem?.url
 
             val claimAmountXrd: BigDecimal?
-                get() = claimAmountMetadataItem?.amount?.toBigDecimal()
+                get() = claimAmountMetadataItem?.amount
+
+            val claimEpoch: Long?
+                get() =  claimEpochMetadataItem?.claimEpoch
 
             override fun compareTo(other: Item): Int = when (localId) {
                 is ID.StringType -> (other.localId as? ID.StringType)?.compareTo(localId) ?: -1

@@ -110,6 +110,48 @@ interface StateDao {
     """)
     fun getValidators(addresses: Set<String>, atStateVersion: Long): List<ValidatorEntity>
 
+    @Query("""
+        SELECT AccountResourceJoin.*, AccountEntity.state_version FROM AccountResourceJoin
+        INNER JOIN AccountEntity ON AccountResourceJoin.account_address = AccountEntity.address
+        WHERE AccountResourceJoin.account_address = :accountAddress AND AccountResourceJoin.resource_address = :resourceAddress
+    """)
+    fun getAccountNFTPortfolio(accountAddress: String, resourceAddress: String): List<AccountNFTPortfolioResponse>
+
+    @Query(
+        """
+        SELECT NFTEntity.* FROM AccountNFTJoin
+        INNER JOIN NFTEntity ON AccountNFTJoin.resource_address = NFTEntity.address AND AccountNFTJoin.local_id = NFTEntity.local_id
+        WHERE AccountNFTJoin.account_address = :accountAddress AND AccountNFTJoin.resource_address = :resourceAddress
+        """
+    )
+    fun getOwnedNfts(accountAddress: String, resourceAddress: String): List<NFTEntity>
+
+    @Query("""
+        UPDATE AccountResourceJoin
+        SET next_cursor = :cursor
+        WHERE AccountResourceJoin.account_address = :accountAddress AND AccountResourceJoin.resource_address = :resourceAddress
+    """)
+    fun updateNextCursor(accountAddress: String, resourceAddress: String, cursor: String?)
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    fun insertAccountNFTsJoin(accountNFTsJoin: List<AccountNFTJoin>)
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    fun insertNFTs(nfts: List<NFTEntity>)
+
+    @Transaction
+    fun storeAccountNFTsPortfolio(
+        accountAddress: String,
+        resourceAddress: String,
+        cursor: String?,
+        nfts: List<NFTEntity>,
+        accountNFTsJoin: List<AccountNFTJoin>,
+    ) {
+        updateNextCursor(accountAddress, resourceAddress, cursor)
+        insertNFTs(nfts)
+        insertAccountNFTsJoin(accountNFTsJoin)
+    }
+
     companion object {
         val accountsCacheDuration = 2.toDuration(DurationUnit.HOURS)
         val resourcesCacheDuration = 24.toDuration(DurationUnit.HOURS)
