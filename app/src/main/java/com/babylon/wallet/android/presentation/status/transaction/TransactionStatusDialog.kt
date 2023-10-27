@@ -20,6 +20,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.rememberSwipeableState
 import androidx.compose.material.swipeable
@@ -257,6 +258,7 @@ private fun SuccessContent(
                     style = RadixTheme.typography.body1Regular,
                     color = RadixTheme.colors.gray1
                 )
+                Spacer(modifier = Modifier.width(RadixTheme.dimensions.paddingXSmall))
                 ActionableAddressView(
                     address = transactionAddress,
                     textStyle = RadixTheme.typography.body1Regular,
