@@ -1,7 +1,6 @@
 package com.babylon.wallet.android.presentation
 
 import app.cash.turbine.test
-import com.babylon.wallet.android.domain.common.Result
 import com.babylon.wallet.android.domain.model.assets.AccountWithAssets
 import com.babylon.wallet.android.domain.model.assets.Assets
 import com.babylon.wallet.android.domain.model.resources.Resource
@@ -76,7 +75,7 @@ class WalletViewModelTest : StateViewModelTest<WalletViewModel>() {
                 accounts = sampleProfile.currentNetwork.accounts,
                 isRefreshing = false
             )
-        } returns Result.Success(
+        } returns Result.success(
             listOf(
                 AccountWithAssets(
                     account = sampleProfile.currentNetwork.accounts[0],

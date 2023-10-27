@@ -4,7 +4,6 @@ import com.babylon.wallet.android.data.gateway.model.ExplicitMetadataKey
 import com.babylon.wallet.android.data.manifest.addLockFeeInstructionToManifest
 import com.babylon.wallet.android.data.repository.entity.EntityRepository
 import com.babylon.wallet.android.data.repository.transaction.TransactionRepository
-import com.babylon.wallet.android.domain.common.Result
 import com.babylon.wallet.android.domain.model.assets.AccountWithAssets
 import com.babylon.wallet.android.domain.model.assets.Assets
 import com.babylon.wallet.android.domain.model.resources.Resource
@@ -142,7 +141,7 @@ internal class TransactionClientTest {
             explicitMetadataForAssets: Set<ExplicitMetadataKey>,
             isDetailedBreakdown: Boolean,
             isRefreshing: Boolean
-        ): Result<List<AccountWithAssets>> = Result.Success(accounts.map {
+        ): Result<List<AccountWithAssets>> = Result.success(accounts.map {
             when (it.address) {
                 addressWithFunds -> accountResourcesWithFunds
                 addressWithNoFunds -> accountResourcesWithNoFunds

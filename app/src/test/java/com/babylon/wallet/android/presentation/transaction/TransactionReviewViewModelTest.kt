@@ -70,12 +70,10 @@ import rdx.works.core.displayableQuantity
 import rdx.works.core.ret.crypto.PrivateKey
 import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.data.model.currentNetwork
-import rdx.works.profile.data.model.pernetwork.FactorInstance
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.gateway.GetCurrentGatewayUseCase
 import java.math.BigDecimal
 import java.util.Locale
-import com.babylon.wallet.android.domain.common.Result as ResultInternal
 
 @OptIn(ExperimentalCoroutinesApi::class)
 internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionReviewViewModel>() {
@@ -172,7 +170,7 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
                 requestId = sampleRequestId,
                 txId = sampleTxId
             )
-        } returns ResultInternal.Success(Unit)
+        } returns Result.success(Unit)
         coEvery {
             dAppMessenger.sendWalletInteractionResponseFailure(
                 remoteConnectorId = "remoteConnectorId",
@@ -180,7 +178,7 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
                 error = any(),
                 message = any()
             )
-        } returns ResultInternal.Success(Unit)
+        } returns Result.success(Unit)
         incomingRequestRepository.add(sampleRequest)
         coEvery { appEventBus.sendEvent(any()) } returns Unit
         coEvery { transactionClient.analyzeExecution(any(), any()) } returns Result.success(
@@ -205,7 +203,7 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
                 accounts = any(),
                 isRefreshing = false
             )
-        } returns com.babylon.wallet.android.domain.common.Result.Success(
+        } returns Result.success(
             listOf(
                 AccountWithAssets(
                     account = sampleProfile.currentNetwork.accounts[0],
@@ -229,7 +227,7 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
                 resourceAddresses = any(),
                 isRefreshing = false
             )
-        } returns com.babylon.wallet.android.domain.common.Result.Success(
+        } returns Result.success(
             mapOf()
         )
     }

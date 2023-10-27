@@ -153,8 +153,8 @@ class LedgerMessengerImpl @Inject constructor(
     ): Result<R> = flow<Result<R>> {
         peerdroidClient.sendMessage(peerdroidRequestJson.encodeToString(request))
             .onSuccess {
-                peerdroidClient.listenForLedgerResponses().filter {
-                    it.id == request.interactionId
+                peerdroidClient.listenForLedgerResponses().filter { ledgerResponse ->
+                    ledgerResponse.id == request.interactionId
                 }.catch { e ->
                     emit(Result.failure(e))
                 }.collect { response ->

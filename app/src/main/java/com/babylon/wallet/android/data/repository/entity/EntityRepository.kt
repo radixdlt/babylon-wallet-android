@@ -105,7 +105,7 @@ class EntityRepositoryImpl @Inject constructor(
 
         return listOfEntityDetailsResponsesResult.switchMap { accountDetailsResponses ->
             val stateVersion = accountDetailsResponses.firstOrNull()?.ledgerState?.stateVersion ?: return Result.failure(
-                Throwable()
+                Throwable("")
             )
             val mapOfAccountsWithMetadata = buildMapOfAccountsAddressesWithMetadata(accountDetailsResponses)
             var mapOfAccountsWithFungibleResources =

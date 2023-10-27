@@ -9,6 +9,7 @@ import kotlinx.serialization.serializer
 import retrofit2.Call
 import retrofit2.awaitResponse
 
+@Suppress("SwallowedException")
 suspend inline fun <reified T, A> Call<T>.execute(
     cacheParameters: CacheParameters? = null,
     map: (T) -> A,
