@@ -7,20 +7,18 @@ import com.babylon.wallet.android.data.dapp.model.WalletErrorType
 import com.babylon.wallet.android.data.gateway.generated.models.TransactionPreviewResponse
 import com.babylon.wallet.android.data.gateway.generated.models.TransactionReceipt
 import com.babylon.wallet.android.data.repository.TransactionStatusClient
-import com.babylon.wallet.android.data.transaction.DappRequestException
-import com.babylon.wallet.android.data.transaction.DappRequestFailure
 import com.babylon.wallet.android.data.transaction.NotarizedTransactionResult
 import com.babylon.wallet.android.data.transaction.NotaryAndSigners
 import com.babylon.wallet.android.data.transaction.TransactionClient
 import com.babylon.wallet.android.data.transaction.model.FeePayerSearchResult
 import com.babylon.wallet.android.domain.RadixWalletException
 import com.babylon.wallet.android.domain.SampleDataProvider
+import com.babylon.wallet.android.domain.model.MessageFromDataChannel
+import com.babylon.wallet.android.domain.model.TransactionManifestData
 import com.babylon.wallet.android.domain.model.assets.AccountWithAssets
 import com.babylon.wallet.android.domain.model.assets.Assets
 import com.babylon.wallet.android.domain.model.resources.Badge
-import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.babylon.wallet.android.domain.model.resources.Resource
-import com.babylon.wallet.android.domain.model.TransactionManifestData
 import com.babylon.wallet.android.domain.model.resources.XrdResource
 import com.babylon.wallet.android.domain.model.resources.metadata.SymbolMetadataItem
 import com.babylon.wallet.android.domain.usecases.GetAccountsWithAssetsUseCase
@@ -38,6 +36,7 @@ import com.babylon.wallet.android.presentation.transaction.guarantees.Transactio
 import com.babylon.wallet.android.presentation.transaction.submit.TransactionSubmitDelegate
 import com.babylon.wallet.android.utils.AppEventBus
 import com.babylon.wallet.android.utils.DeviceSecurityHelper
+import com.babylon.wallet.android.utils.ExceptionMessageProvider
 import com.radixdlt.ret.Decimal
 import com.radixdlt.ret.ExecutionAnalysis
 import com.radixdlt.ret.FeeLocks
@@ -97,6 +96,7 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
     private val appEventBus = mockk<AppEventBus>()
     private val deviceSecurityHelper = mockk<DeviceSecurityHelper>()
     private val savedStateHandle = mockk<SavedStateHandle>()
+    private val exceptionMessageProvider = mockk<ExceptionMessageProvider>()
     private val sampleTxId = "txId1"
     private val sampleRequestId = "requestId1"
     private val sampleRequest = MessageFromDataChannel.IncomingRequest.TransactionRequest(
@@ -138,6 +138,7 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
     @Before
     override fun setUp() = runTest {
         super.setUp()
+        every { exceptionMessageProvider.throwableMessage(any()) } returns ""
         every { deviceSecurityHelper.isDeviceSecure() } returns true
         every { savedStateHandle.get<String>(ARG_TRANSACTION_REQUEST_ID) } returns sampleRequestId
         coEvery { getCurrentGatewayUseCase() } returns Radix.Gateway.nebunet
@@ -258,6 +259,7 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
                 transactionStatusClient = transactionStatusClient,
                 submitTransactionUseCase = submitTransactionUseCase,
                 applicationScope = TestScope(),
+                exceptionMessageProvider = exceptionMessageProvider
             ),
             incomingRequestRepository = incomingRequestRepository,
             savedStateHandle = savedStateHandle,
@@ -302,9 +304,7 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
     @Test
     fun `transaction approval sign and submit error`() = runTest {
         coEvery { transactionClient.signTransaction(any(), any(), any(), any()) } returns Result.failure(
-            DappRequestException(
-                DappRequestFailure.TransactionApprovalFailure.SubmitNotarizedTransaction
-            )
+                RadixWalletException.PrepareTransactionException.SubmitNotarizedTransaction()
         )
         val vm = vm.value
         advanceUntilIdle()
