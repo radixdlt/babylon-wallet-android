@@ -52,7 +52,7 @@ class CollectSignersSignaturesUseCase @Inject constructor(
                     }
                     if (!deviceAuthenticated) {
                         _interactionState.update { null }
-                        return Result.failure(RadixWalletException.SignatureCancelledException)
+                        return Result.failure(RadixWalletException.SignatureCancelled)
                     }
                     signWithDeviceFactorSourceUseCase(
                         deviceFactorSource = factorSource,
@@ -73,7 +73,7 @@ class CollectSignersSignaturesUseCase @Inject constructor(
                     }
                     if (!deviceAuthenticated) {
                         _interactionState.update { null }
-                        return Result.failure(RadixWalletException.SignatureCancelledException)
+                        return Result.failure(RadixWalletException.SignatureCancelled)
                     }
                     factorSource as LedgerHardwareWalletFactorSource
                     _interactionState.update { InteractionState.Ledger.Pending(factorSource, signingPurpose) }

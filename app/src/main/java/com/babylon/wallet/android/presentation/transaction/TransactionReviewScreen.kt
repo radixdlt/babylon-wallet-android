@@ -43,7 +43,7 @@ import com.babylon.wallet.android.domain.model.DAppWithMetadataAndAssociatedReso
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.babylon.wallet.android.domain.model.TransactionManifestData
 import com.babylon.wallet.android.domain.model.resources.Resource
-import com.babylon.wallet.android.domain.toUserFriendlyMessage
+import com.babylon.wallet.android.domain.userFriendlyMessage
 import com.babylon.wallet.android.presentation.account.composable.FungibleTokenBottomSheetDetails
 import com.babylon.wallet.android.presentation.account.composable.NonFungibleTokenBottomSheetDetails
 import com.babylon.wallet.android.presentation.common.FullscreenCircularProgressContent
@@ -125,7 +125,7 @@ fun TransactionReviewScreen(
                 BasicPromptAlertDialog(
                     finish = { viewModel.onCancelSigningClick() },
                     text = {
-                        Text(text = it.failure.toUserFriendlyMessage())
+                        Text(text = it.failure.userFriendlyMessage())
                     },
                     confirmText = stringResource(id = R.string.common_ok),
                     dismissText = null

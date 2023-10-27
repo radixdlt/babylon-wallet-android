@@ -1,6 +1,7 @@
 package com.babylon.wallet.android.presentation.common
 
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.domain.asRadixWalletException
@@ -72,7 +73,7 @@ sealed class UiMessage(val id: String = UUIDGenerator.uuid().toString()) {
 
         @Composable
         override fun getMessage(): String =
-            error?.asRadixWalletException()?.toUserFriendlyMessage() ?: error?.message
+            error?.asRadixWalletException()?.toUserFriendlyMessage(LocalContext.current) ?: error?.message
                 ?: stringResource(id = R.string.common_somethingWentWrong)
     }
 }

@@ -19,7 +19,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
-import com.babylon.wallet.android.domain.toUserFriendlyMessage
+import com.babylon.wallet.android.domain.userFriendlyMessage
 import com.babylon.wallet.android.presentation.dapp.authorized.login.dAppLoginAuthorized
 import com.babylon.wallet.android.presentation.dapp.unauthorized.login.dAppLoginUnauthorized
 import com.babylon.wallet.android.presentation.main.MAIN_ROUTE
@@ -37,7 +37,6 @@ import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDi
 import com.babylon.wallet.android.presentation.ui.composables.LocalDevBannerState
 import com.babylon.wallet.android.presentation.ui.composables.NotSecureAlertDialog
 import com.babylon.wallet.android.utils.AppEvent
-import com.babylon.wallet.android.utils.biometricAuthenticateSuspend
 import com.google.accompanist.navigation.animation.rememberAnimatedNavController
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import kotlinx.coroutines.flow.Flow
@@ -79,12 +78,6 @@ fun WalletApp(
                         is MessageFromDataChannel.IncomingRequest.UnauthorizedRequest -> {
                             navController.dAppLoginUnauthorized(incomingRequest.interactionId)
                         }
-                    }
-                }
-
-                is MainEvent.TryToRespondToRequestSilently -> {
-                    mainViewModel.tryToRespondToRequestSilently(event.request) {
-                        context.biometricAuthenticateSuspend()
                     }
                 }
             }
@@ -155,7 +148,7 @@ fun WalletApp(
                 mainViewModel.onInvalidRequestMessageShown()
             },
             title = stringResource(id = R.string.dAppRequest_validationOutcome_invalidRequestTitle),
-            text = it.toUserFriendlyMessage(),
+            text = it.userFriendlyMessage(),
             confirmText = stringResource(
                 id = R.string.common_ok
             ),

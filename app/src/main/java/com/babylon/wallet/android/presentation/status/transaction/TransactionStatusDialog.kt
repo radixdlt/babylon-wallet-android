@@ -149,29 +149,22 @@ fun TransactionStatusDialog(
                             WalletErrorType.SubmittedTransactionHasFailedTransactionStatus -> {
                                 "Transaction Failed" // TODO Crowdin
                             }
+
                             WalletErrorType.SubmittedTransactionHasPermanentlyRejectedTransactionStatus -> {
                                 "Transaction Rejected" // TODO Crowdin
                             }
+
                             WalletErrorType.SubmittedTransactionHasTemporarilyRejectedTransactionStatus -> {
                                 "Transaction Error" // TODO Crowdin
                             }
+
                             else -> {
                                 stringResource(id = R.string.common_somethingWentWrong)
                             }
                         }
-                        val subtitle = when (state.walletErrorType) {
-                            WalletErrorType.SubmittedTransactionHasTemporarilyRejectedTransactionStatus -> {
-                                state.failureError?.errorMessageStringRes?.let {
-                                    stringResource(id = it, state.txProcessingTime)
-                                } ?: state.failureError?.getMessage()
-                            }
-                            else -> {
-                                state.failureError?.getMessage()
-                            }
-                        }
                         SomethingWentWrongDialogContent(
                             title = title,
-                            subtitle = subtitle,
+                            subtitle = state.failureError,
                             transactionAddress = state.transactionId
                         )
                     }

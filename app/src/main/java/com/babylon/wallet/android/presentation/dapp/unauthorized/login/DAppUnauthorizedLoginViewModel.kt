@@ -147,7 +147,7 @@ class DAppUnauthorizedLoginViewModel @Inject constructor(
 
     private suspend fun handleRequestError(exception: Throwable) {
         if (exception is RadixWalletException.DappRequestException) {
-            if (exception.cause is RadixWalletException.SignatureCancelledException) {
+            if (exception.cause is RadixWalletException.SignatureCancelled) {
                 return
             }
             dAppMessenger.sendWalletInteractionResponseFailure(

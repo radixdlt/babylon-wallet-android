@@ -37,7 +37,6 @@ data class TransactionStatusFields(
     val transactionId: String,
     val isInternal: Boolean,
     val error: String?,
-    val transactionProcessingTime: String?,
     val walletErrorType: String?,
     val blockUntilComplete: Boolean
 ) : Parcelable

@@ -6,20 +6,21 @@ import com.babylon.wallet.android.data.manifest.addAssertions
 import com.babylon.wallet.android.data.repository.TransactionStatusClient
 import com.babylon.wallet.android.data.transaction.TransactionClient
 import com.babylon.wallet.android.data.transaction.model.TransactionApprovalRequest
-import com.babylon.wallet.android.domain.RadixWalletException
-import com.babylon.wallet.android.domain.getDappMessage
 import com.babylon.wallet.android.di.coroutines.ApplicationScope
+import com.babylon.wallet.android.domain.RadixWalletException
+import com.babylon.wallet.android.domain.asRadixWalletException
+import com.babylon.wallet.android.domain.getDappMessage
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.babylon.wallet.android.domain.model.Transferable
-import com.babylon.wallet.android.domain.usecases.transaction.SignatureCancelledException
-import com.babylon.wallet.android.domain.usecases.transaction.SubmitTransactionUseCase
 import com.babylon.wallet.android.domain.toWalletErrorType
+import com.babylon.wallet.android.domain.usecases.transaction.SubmitTransactionUseCase
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.ViewModelDelegate
 import com.babylon.wallet.android.presentation.transaction.PreviewType
 import com.babylon.wallet.android.presentation.transaction.TransactionReviewViewModel
 import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
+import com.babylon.wallet.android.utils.ExceptionMessageProvider
 import com.babylon.wallet.android.utils.onFailure
 import com.radixdlt.ret.TransactionManifest
 import kotlinx.coroutines.CoroutineScope
@@ -41,6 +42,7 @@ class TransactionSubmitDelegate @Inject constructor(
     private val submitTransactionUseCase: SubmitTransactionUseCase,
     private val appEventBus: AppEventBus,
     private val transactionStatusClient: TransactionStatusClient,
+    private val exceptionMessageProvider: ExceptionMessageProvider,
     @ApplicationScope private val applicationScope: CoroutineScope
 ) : ViewModelDelegate<TransactionReviewViewModel.State>() {
 
@@ -187,16 +189,16 @@ class TransactionSubmitDelegate @Inject constructor(
             }
         }.onFailure { radixWalletException ->
             when (radixWalletException) {
-                is RadixWalletException.SignatureCancelledException,
                 is RadixWalletException.PrepareTransactionException.SignCompiledTransactionIntent,
                 is RadixWalletException.LedgerCommunicationFailure -> {
                     val failedToSign =
                         radixWalletException is RadixWalletException.PrepareTransactionException.SignCompiledTransactionIntent
                     val noMnemonic = radixWalletException.cause is ProfileException.NoMnemonic
-                    state.update {
+                    val cancelled = radixWalletException.cause is RadixWalletException.SignatureCancelled
+                    _state.update {
                         it.copy(
                             isSubmitting = false,
-                            error = if (failedToSign && noMnemonic.not()) {
+                            error = if (failedToSign && noMnemonic.not() && cancelled.not()) {
                                 UiMessage.ErrorMessage(radixWalletException)
                             } else {
                                 it.error
@@ -215,10 +217,9 @@ class TransactionSubmitDelegate @Inject constructor(
                             requestId = transactionRequest.requestId,
                             transactionId = "",
                             isInternal = transactionRequest.isInternal,
-                            errorMessage = UiMessage.ErrorMessage.from((error as? DappRequestException)?.failure),
+                            errorMessage = exceptionMessageProvider.throwableMessage(radixWalletException),
                             blockUntilComplete = transactionRequest.blockUntilComplete,
-                            txProcessingTime = _state.value.txProcessingTime,
-                            walletErrorType = walletErrorType
+                            walletErrorType = radixWalletException.toWalletErrorType()
                         )
                     )
                 }
@@ -245,18 +246,18 @@ class TransactionSubmitDelegate @Inject constructor(
             it.copy(isSubmitting = false, error = UiMessage.ErrorMessage(error))
         }
 
-        val currentState = state.value
+        val currentState = _state.value
         if (currentState.requestNonNull.isInternal) {
             return
         }
-        // TODO test this flow
-        if (error is RadixWalletException) {
-            error.toWalletErrorType()?.let { walletErrorType ->
+        error.asRadixWalletException()?.let { radixWalletException ->
+            // TODO test this flow
+            radixWalletException.toWalletErrorType()?.let { walletErrorType ->
                 dAppMessenger.sendWalletInteractionResponseFailure(
                     remoteConnectorId = currentState.requestNonNull.remoteConnectorId,
                     requestId = currentState.requestNonNull.requestId,
                     error = walletErrorType,
-                    message = error.getDappMessage()
+                    message = radixWalletException.getDappMessage()
                 )
             }
         }
