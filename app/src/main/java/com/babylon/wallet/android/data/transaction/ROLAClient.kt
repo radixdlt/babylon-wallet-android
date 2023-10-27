@@ -104,7 +104,6 @@ class ROLAClient @Inject constructor(
                 if (signatures.size == 1) {
                     signatures.first()
                 } else {
-                    // msg = "Failed to sign request $signRequest by entity: ${entity.address}"
                     throw RadixWalletException.DappRequestException.FailedToSignAuthChallenge()
                 }
             }

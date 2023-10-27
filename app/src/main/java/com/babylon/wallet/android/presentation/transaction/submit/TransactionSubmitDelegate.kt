@@ -21,7 +21,7 @@ import com.babylon.wallet.android.presentation.transaction.TransactionReviewView
 import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
 import com.babylon.wallet.android.utils.ExceptionMessageProvider
-import com.babylon.wallet.android.utils.onFailure
+import com.babylon.wallet.android.utils.onFailureWithRadixException
 import com.radixdlt.ret.TransactionManifest
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
@@ -73,8 +73,8 @@ class TransactionSubmitDelegate @Inject constructor(
                     manifest.attachGuarantees(currentState.previewType),
                     deviceBiometricAuthenticationProvider
                 )
-            }.onFailure { error ->
-                reportFailure(error)
+            }.onFailure {
+                reportFailure(RadixWalletException.PrepareTransactionException.ConvertManifest)
             }
         }
     }
@@ -187,7 +187,7 @@ class TransactionSubmitDelegate @Inject constructor(
                     txId = submitTransactionResult.txId
                 )
             }
-        }.onFailure { radixWalletException ->
+        }.onFailureWithRadixException { radixWalletException ->
             when (radixWalletException) {
                 is RadixWalletException.PrepareTransactionException.SignCompiledTransactionIntent,
                 is RadixWalletException.LedgerCommunicationFailure -> {
