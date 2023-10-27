@@ -107,9 +107,8 @@ fun TransactionStatusDialog(
                                     0f to SwipeState.Expanded,
                                     maxHeight to SwipeState.Collapsed
                                 ),
-                                orientation = Orientation.Vertical,
-
-                                )
+                                orientation = Orientation.Vertical
+                            )
                             .offset {
                                 IntOffset(
                                     x = 0,
