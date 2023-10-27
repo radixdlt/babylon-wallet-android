@@ -17,6 +17,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -33,7 +34,8 @@ import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDi
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUiMessageHandler
 import com.babylon.wallet.android.utils.biometricAuthenticateSuspend
-import kotlinx.coroutines.flow.filterIsInstance
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.distinctUntilChanged
 
 @Composable
 fun DappAuthorizedLoginScreen(
@@ -44,24 +46,23 @@ fun DappAuthorizedLoginScreen(
     navigateToOneTimePersonaData: (RequiredPersonaFields) -> Unit,
     navigateToSelectPersona: (String) -> Unit,
     navigateToOngoingPersonaData: (String, RequiredPersonaFields) -> Unit,
+    onLoginFlowComplete: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
-    LaunchedEffect(Unit) {
-        viewModel.oneOffEvent.filterIsInstance<Event.CloseLoginFlow>().collect {
-            onBackClick()
-        }
-    }
+    HandleOneOffEvents(viewModel.oneOffEvent, onBackClick, onLoginFlowComplete)
     val sharedState by viewModel.state.collectAsStateWithLifecycle()
     val initialRoute = sharedState.initialAuthorizedLoginRoute
     BackHandler {
         viewModel.onAbortDappLogin()
     }
     LaunchedEffect(initialRoute) {
-        if (initialRoute == InitialAuthorizedLoginRoute.CompleteRequest) {
-            viewModel.completeRequestHandling(deviceBiometricAuthenticationProvider = {
-                context.biometricAuthenticateSuspend()
-            }, abortOnFailure = true)
+        snapshotFlow { initialRoute }.distinctUntilChanged().collect { route ->
+            if (route == InitialAuthorizedLoginRoute.CompleteRequest) {
+                viewModel.completeRequestHandling(deviceBiometricAuthenticationProvider = {
+                    context.biometricAuthenticateSuspend()
+                }, abortOnFailure = true)
+            }
         }
     }
     if (sharedState.isNoMnemonicErrorVisible) {
@@ -162,6 +163,23 @@ fun DappAuthorizedLoginScreen(
                     onDismissDialogClick = viewModel::onDismissSigningStatusDialog,
                     interactionState = it
                 )
+            }
+        }
+    }
+}
+
+@Composable
+private fun HandleOneOffEvents(
+    events: Flow<Event>,
+    onBackClick: () -> Unit,
+    onLoginFlowComplete: () -> Unit
+) {
+    LaunchedEffect(Unit) {
+        events.collect { event ->
+            when (event) {
+                Event.CloseLoginFlow -> onBackClick()
+                Event.LoginFlowCompleted -> onLoginFlowComplete()
+                else -> {}
             }
         }
     }
