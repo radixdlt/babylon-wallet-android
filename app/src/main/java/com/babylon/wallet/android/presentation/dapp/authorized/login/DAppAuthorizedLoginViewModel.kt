@@ -160,78 +160,97 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
         }
     }
 
-    @Suppress("LongMethod")
+    @Suppress("LongMethod", "CyclomaticComplexMethod", "UnsafeCallOnNullableType")
     private suspend fun setInitialDappLoginRouteForUsePersonaRequest(
         dapp: Network.AuthorizedDapp,
         authRequest: AuthorizedRequest.AuthRequest.UsePersonaRequest
     ) {
-        val hasAuthorizedPersona = dapp.hasAuthorizedPersona(
-            authRequest.personaAddress
+        val hasAuthorizedPersona = dapp.hasAuthorizedPersona(authRequest.personaAddress)
+        if (hasAuthorizedPersona.not()) {
+            onAbortDappLogin(WalletErrorType.InvalidPersona)
+            return
+        }
+        val resetAccounts = request.resetRequestItem?.accounts == true
+        val resetPersonaData = request.resetRequestItem?.personaData == true
+        val persona =
+            checkNotNull(getProfileUseCase.personaOnCurrentNetwork(authRequest.personaAddress))
+        onSelectPersona(persona)
+        val ongoingAccountsRequestItem = request.ongoingAccountsRequestItem
+        val oneTimeAccountsRequestItem = request.oneTimeAccountsRequestItem
+        val ongoingPersonaDataRequestItem = request.ongoingPersonaDataRequestItem
+        val oneTimePersonaDataRequestItem = request.oneTimePersonaDataRequestItem
+        val ongoingAccountsAlreadyGranted = requestedAccountsPermissionAlreadyGranted(
+            authRequest.personaAddress,
+            ongoingAccountsRequestItem
         )
-        if (hasAuthorizedPersona) {
-            val resetAccounts = request.resetRequestItem?.accounts == true
-            val resetPersonaData = request.resetRequestItem?.personaData == true
-            val persona =
-                checkNotNull(getProfileUseCase.personaOnCurrentNetwork(authRequest.personaAddress))
-            onSelectPersona(persona)
-            val ongoingAccountsRequestItem = request.ongoingAccountsRequestItem
-            val oneTimeAccountsRequestItem = request.oneTimeAccountsRequestItem
-            val ongoingPersonaDataRequestItem = request.ongoingPersonaDataRequestItem
-            val oneTimePersonaDataRequestItem = request.oneTimePersonaDataRequestItem
-            val requestedAccountsAlreadyGranted = requestedAccountsPermissionAlreadyGranted(
-                authRequest.personaAddress,
-                ongoingAccountsRequestItem
-            )
-            val requestedDataAlreadyGranted =
-                personaDataAccessAlreadyGranted(ongoingPersonaDataRequestItem, persona.address)
-            when {
-                ongoingAccountsRequestItem != null && (!requestedAccountsAlreadyGranted || resetAccounts) -> {
-                    _state.update {
-                        it.copy(
-                            initialAuthorizedLoginRoute = InitialAuthorizedLoginRoute.Permission(
-                                ongoingAccountsRequestItem.numberOfValues.quantity,
-                                isExactAccountsCount = ongoingAccountsRequestItem.numberOfValues.exactly()
-                            )
-                        )
-                    }
-                }
-
-                ongoingPersonaDataRequestItem != null &&
-                    ongoingPersonaDataRequestItem.isValid() && (!requestedDataAlreadyGranted || resetPersonaData) -> {
-                    _state.update { state ->
-                        state.copy(
-                            initialAuthorizedLoginRoute = InitialAuthorizedLoginRoute.OngoingPersonaData(
-                                authRequest.personaAddress,
-                                ongoingPersonaDataRequestItem.toRequiredFields()
-                            )
-                        )
-                    }
-                }
-
-                oneTimeAccountsRequestItem != null -> {
-                    _state.update {
-                        it.copy(
-                            initialAuthorizedLoginRoute = InitialAuthorizedLoginRoute.ChooseAccount(
-                                oneTimeAccountsRequestItem.numberOfValues.quantity,
-                                isExactAccountsCount = oneTimeAccountsRequestItem.numberOfValues.exactly(),
-                                oneTime = true
-                            )
-                        )
-                    }
-                }
-
-                oneTimePersonaDataRequestItem != null && oneTimePersonaDataRequestItem.isValid() -> {
-                    _state.update { state ->
-                        state.copy(
-                            initialAuthorizedLoginRoute = InitialAuthorizedLoginRoute.OneTimePersonaData(
-                                oneTimePersonaDataRequestItem.toRequiredFields()
-                            )
-                        )
-                    }
+        val needSignature = request.needSignatures()
+        val ongoingDataAlreadyGranted =
+            personaDataAccessAlreadyGranted(ongoingPersonaDataRequestItem, persona.address)
+        when {
+            needSignature && ongoingAccountsAlreadyGranted && ongoingDataAlreadyGranted && request.hasOngoingRequestItemsOnly() -> {
+                _state.update {
+                    // automatically fill in persona, the persona data, accounts and complete request
+                    it.copy(
+                        selectedAccountsOngoing = dAppConnectionRepository.dAppAuthorizedPersonaAccountAddresses(
+                            dapp.dAppDefinitionAddress,
+                            persona.address,
+                            ongoingAccountsRequestItem!!.numberOfValues.quantity,
+                            ongoingAccountsRequestItem.numberOfValues.toProfileShareAccountsQuantifier()
+                        ).mapNotNull { address ->
+                            getProfileUseCase.accountOnCurrentNetwork(address)?.toUiModel()
+                        },
+                        selectedOngoingPersonaData = persona.getPersonaDataForFieldKinds(
+                            ongoingPersonaDataRequestItem!!.toRequiredFields().fields
+                        ),
+                        initialAuthorizedLoginRoute = InitialAuthorizedLoginRoute.CompleteRequest
+                    )
                 }
             }
-        } else {
-            onAbortDappLogin(WalletErrorType.InvalidPersona)
+
+            ongoingAccountsRequestItem != null && (!ongoingAccountsAlreadyGranted || resetAccounts) -> {
+                _state.update {
+                    it.copy(
+                        initialAuthorizedLoginRoute = InitialAuthorizedLoginRoute.Permission(
+                            ongoingAccountsRequestItem.numberOfValues.quantity,
+                            isExactAccountsCount = ongoingAccountsRequestItem.numberOfValues.exactly()
+                        )
+                    )
+                }
+            }
+
+            ongoingPersonaDataRequestItem != null &&
+                ongoingPersonaDataRequestItem.isValid() && (!ongoingDataAlreadyGranted || resetPersonaData) -> {
+                _state.update { state ->
+                    state.copy(
+                        initialAuthorizedLoginRoute = InitialAuthorizedLoginRoute.OngoingPersonaData(
+                            authRequest.personaAddress,
+                            ongoingPersonaDataRequestItem.toRequiredFields()
+                        )
+                    )
+                }
+            }
+
+            oneTimeAccountsRequestItem != null -> {
+                _state.update {
+                    it.copy(
+                        initialAuthorizedLoginRoute = InitialAuthorizedLoginRoute.ChooseAccount(
+                            oneTimeAccountsRequestItem.numberOfValues.quantity,
+                            isExactAccountsCount = oneTimeAccountsRequestItem.numberOfValues.exactly(),
+                            oneTime = true
+                        )
+                    )
+                }
+            }
+
+            oneTimePersonaDataRequestItem != null && oneTimePersonaDataRequestItem.isValid() -> {
+                _state.update { state ->
+                    state.copy(
+                        initialAuthorizedLoginRoute = InitialAuthorizedLoginRoute.OneTimePersonaData(
+                            oneTimePersonaDataRequestItem.toRequiredFields()
+                        )
+                    )
+                }
+            }
         }
     }
 
@@ -651,7 +670,7 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
         sendEvent(Event.RequestCompletionBiometricPrompt(request.needSignatures()))
     }
 
-    fun completeRequestHandling(deviceBiometricAuthenticationProvider: suspend () -> Boolean = { true }) {
+    fun completeRequestHandling(deviceBiometricAuthenticationProvider: suspend () -> Boolean = { true }, abortOnFailure: Boolean = false) {
         viewModelScope.launch {
             val selectedPersona = state.value.selectedPersona?.persona
             requireNotNull(selectedPersona)
@@ -693,6 +712,9 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
                     }
                 }.onFailure { throwable ->
                     handleRequestError(throwable)
+                    if (abortOnFailure) {
+                        onAbortDappLogin()
+                    }
                 }
             }
         }

@@ -42,6 +42,9 @@ class AuthorizeSpecifiedPersonaUseCase @Inject constructor(
             RadixWalletException.DappRequestException.NotPossibleToAuthenticateAutomatically
         )
         (incomingRequest as? AuthorizedRequest)?.let { request ->
+            if (incomingRequest.needSignatures()) {
+                return@let
+            }
             (request.authRequest as? AuthorizedRequest.AuthRequest.UsePersonaRequest)?.let {
                 val authorizedDapp = dAppConnectionRepository.getAuthorizedDapp(
                     dAppDefinitionAddress = request.metadata.dAppDefinitionAddress
