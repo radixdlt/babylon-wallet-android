@@ -113,8 +113,8 @@ sealed class DappRequestFailure(msg: String? = null) : Exception(msg.orEmpty()) 
             TransactionApprovalFailure.ConvertManifest -> R.string.error_transactionFailure_manifest
             is TransactionApprovalFailure.FailedToPollTXStatus -> R.string.error_transactionFailure_pollStatus
             is TransactionApprovalFailure.TransactionCommitted.Failure -> R.string.transaction_status_failed_text
-            is TransactionApprovalFailure.TransactionRejected.Permanently -> R.string.transaction_status_rejected_text // TODO Crowdin
-            is TransactionApprovalFailure.TransactionRejected.Temporary -> R.string.transaction_status_error_text // TODO Crowdin
+            is TransactionApprovalFailure.TransactionRejected.Permanently -> R.string.transaction_status_rejected_text
+            is TransactionApprovalFailure.TransactionRejected.Temporary -> R.string.transaction_status_error_text
             GetEpoch -> R.string.error_transactionFailure_epoch
             is TransactionApprovalFailure.InvalidTXDuplicate -> R.string.error_transactionFailure_duplicate
             TransactionApprovalFailure.PrepareNotarizedTransaction -> R.string.error_transactionFailure_prepare

@@ -108,7 +108,7 @@ fun TransactionStatusDialog(
                                 ),
                                 orientation = Orientation.Vertical,
 
-                            )
+                                )
                             .offset {
                                 IntOffset(
                                     x = 0,
@@ -149,13 +149,13 @@ fun TransactionStatusDialog(
                     ) {
                         val title = when (state.walletErrorType) {
                             WalletErrorType.SubmittedTransactionHasFailedTransactionStatus -> {
-                                "Transaction Failed" // TODO Crowdin
+                                stringResource(id = R.string.transaction_status_failed_title)
                             }
                             WalletErrorType.SubmittedTransactionHasPermanentlyRejectedTransactionStatus -> {
-                                "Transaction Rejected" // TODO Crowdin
+                                stringResource(id = R.string.transaction_status_rejected_title)
                             }
                             WalletErrorType.SubmittedTransactionHasTemporarilyRejectedTransactionStatus -> {
-                                "Transaction Error" // TODO Crowdin
+                                stringResource(id = R.string.transaction_status_error_title)
                             }
                             else -> {
                                 stringResource(id = R.string.common_somethingWentWrong)
@@ -235,7 +235,7 @@ private fun SuccessContent(
             contentDescription = null
         )
         Text(
-            text = "Transaction Success", // stringResource(id = R.string.transaction_status_success_title),
+            text = stringResource(id = R.string.transaction_status_success_title),
             style = RadixTheme.typography.title,
             color = RadixTheme.colors.gray1
         )
@@ -253,7 +253,7 @@ private fun SuccessContent(
                 horizontalArrangement = Arrangement.Center
             ) {
                 Text(
-                    text = "Transaction ID: ",
+                    text = stringResource(id = R.string.transaction_status_transaction_id_text),
                     style = RadixTheme.typography.body1Regular,
                     color = RadixTheme.colors.gray1
                 )
