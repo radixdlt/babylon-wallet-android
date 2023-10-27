@@ -47,6 +47,7 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.model.resources.Resource
@@ -231,7 +232,7 @@ private fun ColumnScope.FungibleSpendingAsset(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = RadixTheme.dimensions.paddingDefault),
-            text = "Total Sum is over your current balance",
+            text = "Total Sum is over your current balance", // TODO
             style = RadixTheme.typography.body2HighImportance.copy(
                 fontSize = 12.sp,
                 color = RadixTheme.colors.red1,
@@ -257,7 +258,7 @@ private fun ColumnScope.FungibleSpendingAsset(
                 modifier = Modifier
                     .padding(horizontal = RadixTheme.dimensions.paddingXSmall)
                     .clickable { onMaxClicked() },
-                text = "Max",
+                text = stringResource(id = R.string.common_max),
                 style = RadixTheme.typography.body1Link.copy(
                     color = RadixTheme.colors.blue1,
                     fontSize = 12.sp
@@ -322,7 +323,7 @@ private fun NonFungibleSpendingAsset(
             ) {
                 Text(
                     modifier = Modifier.fillMaxWidth(),
-                    text = "This NFT is already used in another account",
+                    text = "This NFT is already used in another account", // TODO
                     style = RadixTheme.typography.body2HighImportance.copy(
                         fontSize = 12.sp,
                         color = RadixTheme.colors.red1,

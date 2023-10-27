@@ -236,5 +236,5 @@ private fun StakeSectionTitle(title: String, modifier: Modifier = Modifier) {
 }
 
 fun poolName(name: String?): String {
-    return name?.ifEmpty { "Unnamed Pool" } ?: "Unnamed Pool"
+    return name?.ifEmpty { "Unnamed Pool" } ?: "Unnamed Pool" // TODO
 }

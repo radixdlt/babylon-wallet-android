@@ -158,7 +158,7 @@ fun LSUBottomSheetDetails(
             AddressRow(
                 modifier = Modifier.fillMaxWidth(),
                 address = lsuUnit.validatorAddress,
-                label = "Validator address"
+                label = "Validator address" // TODO
             )
 
             if (lsuUnit.fungibleResource.behaviours.isNotEmpty()) {

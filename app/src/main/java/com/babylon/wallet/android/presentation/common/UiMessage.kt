@@ -57,7 +57,7 @@ sealed class UiMessage(val id: String = UUIDGenerator.uuid().toString()) {
             NoMnemonicForAccounts -> context.getString(R.string.importOlympiaAccounts_noMnemonicFound)
             NoAccountsForLedger ->
                 "No addresses verified. The currently connected Ledger device is not related " +
-                    "to any accounts to be imported, or has already been used."
+                    "to any accounts to be imported, or has already been used." // TODO
             is LedgerAlreadyExist -> context.getString(R.string.addLedgerDevice_alreadyAddedAlert_message, label)
             WalletExported -> context.getString(R.string.profileBackup_manualBackups_successMessage)
             InvalidSnapshot -> context.getString(R.string.recoverProfileBackup_incompatibleWalletDataLabel)
