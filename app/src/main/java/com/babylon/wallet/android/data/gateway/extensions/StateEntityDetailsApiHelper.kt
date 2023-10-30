@@ -36,7 +36,7 @@ suspend fun StateApi.getSingleEntityDetails(
 
 suspend fun StateApi.paginateDetails(
     addresses: Set<String>,
-    metadataKeys: Set<ExplicitMetadataKey>,
+    metadataKeys: Set<ExplicitMetadataKey> = setOf(),
     aggregationLevel: ResourceAggregationLevel = ResourceAggregationLevel.vault,
     stateVersion: Long? = null,
     onPage: suspend (StateEntityDetailsResponse) -> Unit

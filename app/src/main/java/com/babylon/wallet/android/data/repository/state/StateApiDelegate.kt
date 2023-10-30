@@ -10,6 +10,7 @@ import com.babylon.wallet.android.data.gateway.generated.models.FungibleResource
 import com.babylon.wallet.android.data.gateway.generated.models.LedgerState
 import com.babylon.wallet.android.data.gateway.generated.models.LedgerStateSelector
 import com.babylon.wallet.android.data.gateway.generated.models.NonFungibleResourcesCollectionItem
+import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponseFungibleVaultDetails
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponseItem
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponseItemDetails
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityNonFungibleIdsPageRequest
@@ -21,6 +22,7 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
 import rdx.works.profile.data.model.pernetwork.Network
+import java.math.BigDecimal
 
 class StateApiDelegate(
     private val stateApi: StateApi
@@ -190,6 +192,18 @@ class StateApiDelegate(
         }
         ids.nextCursor to data
     }.getOrThrow()
+
+    suspend fun getVaultsDetails(vaultAddresses: Set<String>): Map<String, BigDecimal> {
+        val vaultAmount = mutableMapOf<String, BigDecimal>()
+        stateApi.paginateDetails(vaultAddresses) { page ->
+            page.items.forEach { item ->
+                val vaultDetails = item.details as? StateEntityDetailsResponseFungibleVaultDetails ?: return@forEach
+                val amount = vaultDetails.balance.amount.toBigDecimalOrNull() ?: return@forEach
+                vaultAmount[vaultDetails.balance.vaultAddress] = amount
+            }
+        }
+        return vaultAmount
+    }
 
     suspend fun getResourceDetails(resourceAddress: String): StateEntityDetailsResponseItem {
         return stateApi.getSingleEntityDetails(
