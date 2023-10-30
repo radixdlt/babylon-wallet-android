@@ -2,7 +2,9 @@ package com.babylon.wallet.android.data.repository.state
 
 import com.babylon.wallet.android.data.gateway.apis.StateApi
 import com.babylon.wallet.android.data.gateway.extensions.asMetadataItems
+import com.babylon.wallet.android.data.gateway.extensions.paginateDetails
 import com.babylon.wallet.android.data.gateway.generated.models.StateNonFungibleDataRequest
+import com.babylon.wallet.android.data.gateway.model.ExplicitMetadataKey
 import com.babylon.wallet.android.data.repository.cache.database.AccountResourceJoin.Companion.asAccountResourceJoin
 import com.babylon.wallet.android.data.repository.cache.database.NFTEntity.Companion.asEntity
 import com.babylon.wallet.android.data.repository.cache.database.PoolEntity.Companion.asPoolsWithResources
@@ -15,6 +17,7 @@ import com.babylon.wallet.android.domain.model.resources.AccountOnLedger
 import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.domain.model.resources.XrdResource
 import com.babylon.wallet.android.domain.model.resources.metadata.MetadataItem.Companion.consume
+import com.babylon.wallet.android.domain.model.resources.metadata.OwnerKeyHashesMetadataItem
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -23,6 +26,7 @@ import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.transform
 import kotlinx.coroutines.withContext
 import rdx.works.core.InstantGenerator
+import rdx.works.profile.data.model.pernetwork.Entity
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.derivation.model.NetworkId
 import timber.log.Timber
@@ -40,6 +44,8 @@ interface StateRepository {
     suspend fun getNFTDetails(resourceAddress: String, localId: String): Result<Resource.NonFungibleResource.Item>
 
     suspend fun getOwnedXRD(accounts: List<Network.Account>): Result<Map<Network.Account, BigDecimal>>
+
+    suspend fun getEntityOwnerKeys(entities: List<Entity>): Result<Map<Entity, OwnerKeyHashesMetadataItem>>
 
     sealed class NFTPageError(cause: Throwable) : Exception(cause) {
         data object NoMorePages : NFTPageError(RuntimeException("No more NFTs for this resource."))
@@ -231,5 +237,23 @@ class StateRepositoryImpl @Inject constructor(
                 entry.value?.let { vaultsWithAmounts[it] } ?: BigDecimal.ZERO
             }
         }
+    }
+
+    override suspend fun getEntityOwnerKeys(entities: List<Entity>): Result<Map<Entity, OwnerKeyHashesMetadataItem>> = runCatching {
+        val entitiesWithOwnerKeys = mutableMapOf<Entity, OwnerKeyHashesMetadataItem>()
+        stateApi.paginateDetails(
+            addresses = entities.map { it.address }.toSet(),
+            metadataKeys = setOf(ExplicitMetadataKey.OWNER_KEYS),
+        ) { page ->
+            page.items.forEach { item ->
+                val keyHash = item.explicitMetadata
+                    ?.asMetadataItems()
+                    ?.toMutableList()
+                    ?.consume<OwnerKeyHashesMetadataItem>() ?: return@forEach
+                val entity = entities.find { item.address == it.address } ?: return@forEach
+                entitiesWithOwnerKeys[entity] = keyHash
+            }
+        }
+        entitiesWithOwnerKeys
     }
 }
