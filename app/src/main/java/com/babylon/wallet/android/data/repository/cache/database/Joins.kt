@@ -63,7 +63,7 @@ data class AccountResourceJoin(
             accountStateVersion = syncInfo.accountStateVersion,
             vaultAddress = null,
             nextCursor = null
-        ) to asEntity(syncInfo)
+        ) to asEntity(syncInfo.synced)
 
         fun NonFungibleResourcesCollectionItem.asAccountResourceJoin(
             accountAddress: String,
@@ -75,7 +75,7 @@ data class AccountResourceJoin(
             accountStateVersion = syncInfo.accountStateVersion,
             vaultAddress = vaultAddress,
             nextCursor = null
-        ) to asEntity(syncInfo)
+        ) to asEntity(syncInfo.synced)
     }
 }
 
@@ -111,7 +111,7 @@ data class AccountNFTJoin(
             resourceAddress = resourceAddress,
             localId = nonFungibleId,
             accountStateVersion = syncInfo.accountStateVersion
-        ) to asEntity(resourceAddress, syncInfo)
+        ) to asEntity(resourceAddress, syncInfo.synced)
     }
 
 }
@@ -151,7 +151,7 @@ data class PoolResourceJoin(
             resourceAddress = resourceAddress,
             amount = amountDecimal,
             accountStateVersion = syncInfo.accountStateVersion
-        ) to asEntity(syncInfo, details)
+        ) to asEntity(syncInfo.synced, details)
     }
 
 }

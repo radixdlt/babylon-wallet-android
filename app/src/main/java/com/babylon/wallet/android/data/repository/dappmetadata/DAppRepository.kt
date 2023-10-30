@@ -218,7 +218,7 @@ class DAppRepositoryImpl @Inject constructor(
                             symbolMetadataItem = metadataItems.consume(),
                             descriptionMetadataItem = metadataItems.consume(),
                             iconUrlMetadataItem = metadataItems.consume(),
-                            behaviours = fungibleItem.details?.extractBehaviours().orEmpty(),
+                            behaviours = fungibleItem.details?.extractBehaviours(),
                             currentSupply = fungibleItem.details?.totalSupply()?.toBigDecimal(),
                             validatorMetadataItem = metadataItems.consume(),
                             poolMetadataItem = metadataItems.consume(),
@@ -239,7 +239,7 @@ class DAppRepositoryImpl @Inject constructor(
                             tagsMetadataItem = metadataItems.consume(),
                             validatorMetadataItem = metadataItems.consume(),
                             items = emptyList(),
-                            behaviours = nonFungibleItem.details?.extractBehaviours().orEmpty(),
+                            behaviours = nonFungibleItem.details?.extractBehaviours(),
                             currentSupply = nonFungibleItem.details?.totalSupply()?.toIntOrNull()
                         )
                     }

@@ -2,16 +2,20 @@ package com.babylon.wallet.android.data.repository.state
 
 import com.babylon.wallet.android.data.gateway.apis.StateApi
 import com.babylon.wallet.android.data.gateway.extensions.asMetadataItems
+import com.babylon.wallet.android.data.gateway.generated.models.StateNonFungibleDataRequest
 import com.babylon.wallet.android.data.repository.cache.database.AccountResourceJoin.Companion.asAccountResourceJoin
+import com.babylon.wallet.android.data.repository.cache.database.NFTEntity.Companion.asEntity
 import com.babylon.wallet.android.data.repository.cache.database.PoolEntity.Companion.asPoolsWithResources
 import com.babylon.wallet.android.data.repository.cache.database.StateDao
 import com.babylon.wallet.android.data.repository.cache.database.SyncInfo
 import com.babylon.wallet.android.data.repository.cache.database.ValidatorEntity.Companion.asValidatorEntities
+import com.babylon.wallet.android.data.repository.toResult
 import com.babylon.wallet.android.domain.model.resources.AccountOnLedger
 import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.domain.model.resources.metadata.MetadataItem.Companion.consume
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.transform
 import rdx.works.core.InstantGenerator
 import rdx.works.profile.data.model.pernetwork.Network
@@ -23,6 +27,10 @@ interface StateRepository {
     fun observeAccountsOnLedger(accounts: List<Network.Account>, isRefreshing: Boolean): Flow<Map<Network.Account, AccountOnLedger>>
 
     suspend fun getMoreNFTs(account: Network.Account, resource: Resource.NonFungibleResource): Result<Resource.NonFungibleResource>
+
+    fun observeResourceDetails(resourceAddress: String, accountAddress: String?): Flow<Resource>
+
+    suspend fun getNFTDetails(resourceAddress: String, localId: String): Result<Resource.NonFungibleResource.Item>
 
     sealed class NFTPageError(cause: Throwable): Exception(cause) {
         data object NoMorePages: NFTPageError(RuntimeException("No more NFTs for this resource."))
@@ -146,5 +154,45 @@ class StateRepositoryImpl @Inject constructor(
         val allNewItems = (currentItems + newItems).distinctBy { it.localId }
 
         resource.copy(items = allNewItems)
+    }
+
+    override fun observeResourceDetails(resourceAddress: String, accountAddress: String?): Flow<Resource> = flow {
+        val cachedEntity = stateDao.getResourceDetails(
+            resourceAddress = resourceAddress,
+            minValidity = StateCacheDelegate.resourcesCacheValidity()
+        )
+        val amount = accountAddress?.let { stateDao.getOwnedAmount(resourceAddress = resourceAddress, accountAddress = accountAddress) }
+
+        val cachedResource = cachedEntity?.toResource(amount)
+        if (cachedResource != null) {
+            emit(cachedResource)
+        }
+
+        if (cachedResource?.isDetailsAvailable == false) {
+            val item = stateApiDelegate.getResourceDetails(resourceAddress = resourceAddress)
+            val updatedEntity = cacheDelegate.updateResourceDetails(item)
+
+            emit(updatedEntity.toResource(amount))
+        }
+    }
+
+    override suspend fun getNFTDetails(resourceAddress: String, localId: String): Result<Resource.NonFungibleResource.Item> {
+        val cachedItem = stateDao.getNFTDetails(resourceAddress, localId, StateCacheDelegate.resourcesCacheValidity())
+
+        if (cachedItem != null) {
+            return Result.success(cachedItem.toItem())
+        }
+
+        return stateApi.nonFungibleData(
+            StateNonFungibleDataRequest(
+                resourceAddress = resourceAddress,
+                nonFungibleIds = listOf(localId)
+            )
+        ).toResult().mapCatching { response ->
+            val item = response.nonFungibleIds.first()
+            val entity = item.asEntity(resourceAddress, InstantGenerator())
+            stateDao.insertNFTs(listOf(entity))
+            entity.toItem()
+        }
     }
 }

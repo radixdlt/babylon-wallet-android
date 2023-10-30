@@ -374,7 +374,7 @@ class EntityRepositoryImpl @Inject constructor(
         fungibleResourcesItem: FungibleResourcesCollectionItemVaultAggregated,
         fungibleDetails: StateEntityDetailsResponseItem? = null
     ): Resource.FungibleResource? {
-        val resourceBehaviours = fungibleDetails?.details?.extractBehaviours().orEmpty()
+        val resourceBehaviours = fungibleDetails?.details?.extractBehaviours()
         val currentSupply = fungibleDetails?.details?.totalSupply()?.toBigDecimal()
         val metaDataItems = (fungibleDetails?.explicitMetadata ?: fungibleResourcesItem.explicitMetadata)?.asMetadataItems().orEmpty()
         val ownedAmount = fungibleResourcesItem.vaults.items.first().amount.toBigDecimal()
@@ -398,7 +398,7 @@ class EntityRepositoryImpl @Inject constructor(
     private fun mapToFungibleResource(
         fungibleDetails: StateEntityDetailsResponseItem
     ): Resource.FungibleResource {
-        val resourceBehaviours = fungibleDetails.details?.extractBehaviours().orEmpty()
+        val resourceBehaviours = fungibleDetails.details?.extractBehaviours()
         val currentSupply = fungibleDetails.details?.totalSupply()?.toBigDecimal()
         val metaDataItems = fungibleDetails.explicitMetadata?.asMetadataItems().orEmpty()
         return Resource.FungibleResource(
@@ -418,7 +418,7 @@ class EntityRepositoryImpl @Inject constructor(
     }
 
     private fun mapToNonFungibleResource(nonFungibleDetails: StateEntityDetailsResponseItem): Resource {
-        val resourceBehaviours = nonFungibleDetails.details?.extractBehaviours().orEmpty()
+        val resourceBehaviours = nonFungibleDetails.details?.extractBehaviours()
         val currentSupply = nonFungibleDetails.details?.totalSupply()?.toIntOrNull()
 
         val metaDataItems = nonFungibleDetails.explicitMetadata?.asMetadataItems().orEmpty().toMutableList()

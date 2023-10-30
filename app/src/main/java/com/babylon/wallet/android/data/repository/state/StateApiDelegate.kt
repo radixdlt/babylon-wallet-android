@@ -1,22 +1,19 @@
 package com.babylon.wallet.android.data.repository.state
 
 import com.babylon.wallet.android.data.gateway.apis.StateApi
+import com.babylon.wallet.android.data.gateway.extensions.getSingleEntityDetails
+import com.babylon.wallet.android.data.gateway.extensions.paginateDetails
+import com.babylon.wallet.android.data.gateway.extensions.paginateFungibles
+import com.babylon.wallet.android.data.gateway.extensions.paginateNonFungibles
 import com.babylon.wallet.android.data.gateway.generated.models.EntityMetadataCollection
 import com.babylon.wallet.android.data.gateway.generated.models.FungibleResourcesCollectionItem
 import com.babylon.wallet.android.data.gateway.generated.models.LedgerState
 import com.babylon.wallet.android.data.gateway.generated.models.LedgerStateSelector
 import com.babylon.wallet.android.data.gateway.generated.models.NonFungibleResourcesCollectionItem
-import com.babylon.wallet.android.data.gateway.generated.models.ResourceAggregationLevel
-import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsOptIns
-import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsRequest
-import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponse
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponseItem
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponseItemDetails
-import com.babylon.wallet.android.data.gateway.generated.models.StateEntityFungiblesPageRequest
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityNonFungibleIdsPageRequest
-import com.babylon.wallet.android.data.gateway.generated.models.StateEntityNonFungiblesPageRequest
 import com.babylon.wallet.android.data.gateway.generated.models.StateNonFungibleDataRequest
-import com.babylon.wallet.android.data.gateway.generated.models.StateNonFungibleDataResponse
 import com.babylon.wallet.android.data.gateway.generated.models.StateNonFungibleDetailsResponseItem
 import com.babylon.wallet.android.data.gateway.model.ExplicitMetadataKey
 import com.babylon.wallet.android.data.repository.toResult
@@ -37,7 +34,7 @@ class StateApiDelegate(
             accountGatewayDetails: AccountGatewayDetails
         ) -> Unit
     ) {
-        entityDetails(
+        stateApi.paginateDetails(
             addresses = accounts.map { it.address }.toSet(),
             metadataKeys = setOf(
                 ExplicitMetadataKey.ACCOUNT_TYPE,
@@ -66,14 +63,16 @@ class StateApiDelegate(
 
                 coroutineScope {
                     val allFungiblePagesForAccount = async {
-                        accountOnLedger.paginateFungibles(
+                        stateApi.paginateFungibles(
+                            item = accountOnLedger,
                             ledgerState = chunkedAccounts.ledgerState,
                             onPage = allFungibles::addAll
                         )
                     }
 
                     val allNonFungiblePagesForAccount = async {
-                        accountOnLedger.paginateNonFungibles(
+                        stateApi.paginateNonFungibles(
+                            item = accountOnLedger,
                             ledgerState = chunkedAccounts.ledgerState,
                             onPage = allNonFungibles::addAll
                         )
@@ -99,7 +98,7 @@ class StateApiDelegate(
     ): Map<StateEntityDetailsResponseItem, Map<String, StateEntityDetailsResponseItemDetails>> {
         if (poolAddresses.isEmpty()) return emptyMap()
         val pools = mutableListOf<StateEntityDetailsResponseItem>()
-        entityDetails(
+        stateApi.paginateDetails(
             addresses = poolAddresses,
             metadataKeys = setOf(
                 ExplicitMetadataKey.NAME,
@@ -118,7 +117,7 @@ class StateApiDelegate(
             val itemsWithDetails = mutableMapOf<String, StateEntityDetailsResponseItemDetails>()
             val itemsInPool = pool.fungibleResources?.items?.map { it.resourceAddress }.orEmpty().toSet()
 
-            entityDetails(
+            stateApi.paginateDetails(
                 addresses = itemsInPool,
                 metadataKeys = setOf(
                     ExplicitMetadataKey.NAME,
@@ -146,7 +145,7 @@ class StateApiDelegate(
         if (validatorsAddresses.isEmpty()) return emptyList()
 
         val validators = mutableListOf<StateEntityDetailsResponseItem>()
-        entityDetails(
+        stateApi.paginateDetails(
             addresses = validatorsAddresses,
             metadataKeys = setOf(
                 ExplicitMetadataKey.NAME,
@@ -192,67 +191,22 @@ class StateApiDelegate(
         ids.nextCursor to data
     }.getOrThrow()
 
-    private suspend fun entityDetails(
-        addresses: Set<String>,
-        metadataKeys: Set<ExplicitMetadataKey>,
-        aggregationLevel: ResourceAggregationLevel = ResourceAggregationLevel.vault,
-        stateVersion: Long? = null,
-        onPage: suspend (StateEntityDetailsResponse) -> Unit
-    ) = addresses
-        .chunked(ENTITY_DETAILS_PAGE_LIMIT)
-        .forEach { addressesChunk ->
-            val response = stateApi.entityDetails(
-                StateEntityDetailsRequest(
-                    addresses = addressesChunk,
-                    aggregationLevel = aggregationLevel,
-                    atLedgerState = stateVersion?.let { LedgerStateSelector(stateVersion = it) },
-                    optIns = StateEntityDetailsOptIns(
-                        explicitMetadata = metadataKeys.map { it.key }
-                    )
-                )
-            ).toResult().getOrThrow()
-
-            onPage(response)
-        }
-
-    private suspend fun StateEntityDetailsResponseItem.paginateFungibles(
-        ledgerState: LedgerState,
-        onPage: (items: List<FungibleResourcesCollectionItem>) -> Unit
-    ) {
-        var nextCursor: String? = fungibleResources?.nextCursor
-        while (nextCursor != null) {
-            val pageResponse = stateApi.entityFungiblesPage(
-                StateEntityFungiblesPageRequest(
-                    address = address,
-                    cursor = nextCursor,
-                    aggregationLevel = ResourceAggregationLevel.vault,
-                    atLedgerState = LedgerStateSelector(stateVersion = ledgerState.stateVersion)
-                )
-            ).toResult().getOrThrow()
-
-            onPage(pageResponse.items)
-            nextCursor = pageResponse.nextCursor
-        }
-    }
-
-    private suspend fun StateEntityDetailsResponseItem.paginateNonFungibles(
-        ledgerState: LedgerState,
-        onPage: (items: List<NonFungibleResourcesCollectionItem>) -> Unit
-    ) {
-        var nextCursor: String? = nonFungibleResources?.nextCursor
-        while (nextCursor != null) {
-            val pageResponse = stateApi.entityNonFungiblesPage(
-                StateEntityNonFungiblesPageRequest(
-                    address = address,
-                    cursor = nextCursor,
-                    aggregationLevel = ResourceAggregationLevel.vault,
-                    atLedgerState = LedgerStateSelector(stateVersion = ledgerState.stateVersion)
-                )
-            ).toResult().getOrThrow()
-
-            onPage(pageResponse.items)
-            nextCursor = pageResponse.nextCursor
-        }
+    suspend fun getResourceDetails(resourceAddress: String): StateEntityDetailsResponseItem {
+        return stateApi.getSingleEntityDetails(
+            address = resourceAddress,
+            metadataKeys = setOf(
+                ExplicitMetadataKey.NAME,
+                ExplicitMetadataKey.SYMBOL,
+                ExplicitMetadataKey.DESCRIPTION,
+                ExplicitMetadataKey.RELATED_WEBSITES,
+                ExplicitMetadataKey.ICON_URL,
+                ExplicitMetadataKey.INFO_URL,
+                ExplicitMetadataKey.VALIDATOR,
+                ExplicitMetadataKey.POOL,
+                ExplicitMetadataKey.TAGS,
+                ExplicitMetadataKey.DAPP_DEFINITIONS
+            )
+        )
     }
 
     data class AccountGatewayDetails(

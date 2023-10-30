@@ -30,6 +30,12 @@ sealed class Resource {
     abstract val name: String
     abstract val iconUrl: Uri?
 
+    val isDetailsAvailable: Boolean
+        get() = when (this) {
+            is FungibleResource -> currentSupply != null && divisibility != null && behaviours != null
+            is NonFungibleResource -> currentSupply != null && behaviours != null
+        }
+
     data class FungibleResource(
         override val resourceAddress: String,
         val ownedAmount: BigDecimal?,
@@ -38,7 +44,7 @@ sealed class Resource {
         private val descriptionMetadataItem: DescriptionMetadataItem? = null,
         private val iconUrlMetadataItem: IconUrlMetadataItem? = null,
         private val tagsMetadataItem: TagsMetadataItem? = null,
-        private val behaviours: AssetBehaviours = emptySet(),
+        private val behaviours: AssetBehaviours? = null,
         val currentSupply: BigDecimal? = null,
         private val validatorMetadataItem: ValidatorMetadataItem? = null,
         private val poolMetadataItem: PoolMetadataItem? = null,
@@ -73,7 +79,7 @@ sealed class Resource {
                 tagsMetadataItem?.tags?.map { Tag.Dynamic(name = it) }.orEmpty()
             }
 
-        val resourceBehaviours: AssetBehaviours
+        val resourceBehaviours: AssetBehaviours?
             get() = if (isXrd) {
                 emptySet()
             } else {
@@ -143,7 +149,7 @@ sealed class Resource {
         private val descriptionMetadataItem: DescriptionMetadataItem? = null,
         private val iconMetadataItem: IconUrlMetadataItem? = null,
         private val tagsMetadataItem: TagsMetadataItem? = null,
-        val behaviours: AssetBehaviours = emptySet(),
+        val behaviours: AssetBehaviours? = null,
         val items: List<Item>,
         val currentSupply: Int? = null,
         private val validatorMetadataItem: ValidatorMetadataItem? = null,
