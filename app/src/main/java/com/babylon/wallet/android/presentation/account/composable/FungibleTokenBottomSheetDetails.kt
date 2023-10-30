@@ -117,7 +117,7 @@ fun FungibleTokenBottomSheetDetails(
                 )
             }
 
-            if (fungible.behaviours.isNotEmpty()) {
+            if (fungible.behaviours?.isNotEmpty() == true) {
                 Column {
                     Text(
                         modifier = Modifier

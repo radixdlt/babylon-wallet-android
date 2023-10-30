@@ -8,9 +8,13 @@ import com.babylon.wallet.android.data.gateway.extensions.asMetadataItems
 import com.babylon.wallet.android.data.gateway.extensions.divisibility
 import com.babylon.wallet.android.data.gateway.extensions.extractBehaviours
 import com.babylon.wallet.android.data.gateway.extensions.totalSupply
+import com.babylon.wallet.android.data.gateway.generated.models.EntityMetadataCollection
 import com.babylon.wallet.android.data.gateway.generated.models.FungibleResourcesCollectionItem
 import com.babylon.wallet.android.data.gateway.generated.models.NonFungibleResourcesCollectionItem
+import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponseFungibleResourceDetails
+import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponseItem
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponseItemDetails
+import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponseNonFungibleResourceDetails
 import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.domain.model.resources.metadata.DAppDefinitionsMetadataItem
 import com.babylon.wallet.android.domain.model.resources.metadata.DescriptionMetadataItem
@@ -21,6 +25,7 @@ import com.babylon.wallet.android.domain.model.resources.metadata.PoolMetadataIt
 import com.babylon.wallet.android.domain.model.resources.metadata.SymbolMetadataItem
 import com.babylon.wallet.android.domain.model.resources.metadata.TagsMetadataItem
 import com.babylon.wallet.android.domain.model.resources.metadata.ValidatorMetadataItem
+import java.lang.RuntimeException
 import java.math.BigDecimal
 import java.time.Instant
 
@@ -52,7 +57,7 @@ data class ResourceEntity(
 ) {
 
     @Suppress("CyclomaticComplexMethod")
-    fun toResource(amount: BigDecimal): Resource = when (type) {
+    fun toResource(amount: BigDecimal?): Resource = when (type) {
         ResourceEntityType.FUNGIBLE -> Resource.FungibleResource(
             resourceAddress = address,
             ownedAmount = amount,
@@ -61,7 +66,7 @@ data class ResourceEntity(
             descriptionMetadataItem = description?.let { DescriptionMetadataItem(it) },
             iconUrlMetadataItem = iconUrl?.let { IconUrlMetadataItem(Uri.parse(it)) },
             tagsMetadataItem = tags?.let { TagsMetadataItem(it.tags) },
-            behaviours = behaviours?.behaviours.orEmpty().toSet(),
+            behaviours = behaviours?.behaviours?.toSet(),
             currentSupply = supply,
             validatorMetadataItem = validatorAddress?.let { ValidatorMetadataItem(it) },
             poolMetadataItem = poolAddress?.let { PoolMetadataItem(it) },
@@ -70,12 +75,12 @@ data class ResourceEntity(
         )
         ResourceEntityType.NON_FUNGIBLE -> Resource.NonFungibleResource(
             resourceAddress = address,
-            amount = amount.toLong(),
+            amount = amount?.toLong() ?: 0L,
             nameMetadataItem = name?.let { NameMetadataItem(it) },
             descriptionMetadataItem = description?.let { DescriptionMetadataItem(it) },
             iconMetadataItem = iconUrl?.let { IconUrlMetadataItem(Uri.parse(it)) },
             tagsMetadataItem = tags?.let { TagsMetadataItem(it.tags) },
-            behaviours = behaviours?.behaviours.orEmpty().toSet(),
+            behaviours = behaviours?.behaviours?.toSet(),
             items = emptyList(),
             currentSupply = supply?.toInt(),
             validatorMetadataItem = validatorAddress?.let { ValidatorMetadataItem(it) },
@@ -86,13 +91,59 @@ data class ResourceEntity(
     companion object {
         // Response from an account state request
         fun FungibleResourcesCollectionItem.asEntity(
-            syncInfo: SyncInfo,
+            synced: Instant,
+            // In case we have fetched details for this item
             details: StateEntityDetailsResponseItemDetails? = null
+        ): ResourceEntity = from(
+            address = resourceAddress,
+            metadata = explicitMetadata,
+            details = details,
+            type = ResourceEntityType.FUNGIBLE,
+            synced = synced
+        )
+
+        // Response from an account state request
+        fun NonFungibleResourcesCollectionItem.asEntity(
+            synced: Instant,
+            // In case we have fetched details for this item
+            details: StateEntityDetailsResponseItemDetails? = null
+        ): ResourceEntity = from(
+            address = resourceAddress,
+            metadata = explicitMetadata,
+            details = details,
+            type = ResourceEntityType.NON_FUNGIBLE,
+            synced = synced
+        )
+
+        // When fetching details for specific resource
+        fun StateEntityDetailsResponseItem.asEntity(
+            synced: Instant
         ): ResourceEntity {
-            val metaDataItems = explicitMetadata?.asMetadataItems().orEmpty().toMutableList()
+            val type = when (details) {
+                is StateEntityDetailsResponseFungibleResourceDetails -> ResourceEntityType.FUNGIBLE
+                is StateEntityDetailsResponseNonFungibleResourceDetails -> ResourceEntityType.NON_FUNGIBLE
+                else -> throw RuntimeException("Item is neither fungible nor non-fungible")
+            }
+            return from(
+                address = address,
+                metadata = metadata,
+                details = details,
+                type = type,
+                synced = synced
+            )
+        }
+
+        private fun from(
+            address: String,
+            metadata: EntityMetadataCollection?,
+            details: StateEntityDetailsResponseItemDetails?,
+            type: ResourceEntityType,
+            synced: Instant
+        ): ResourceEntity {
+            val metaDataItems = metadata?.asMetadataItems().orEmpty().toMutableList()
             return ResourceEntity(
-                address = resourceAddress,
-                type = ResourceEntityType.FUNGIBLE,
+                address = address,
+                type = type,
                 name = metaDataItems.consume<NameMetadataItem>()?.name,
                 symbol = metaDataItems.consume<SymbolMetadataItem>()?.symbol,
                 description = metaDataItems.consume<DescriptionMetadataItem>()?.description,
@@ -104,31 +155,7 @@ data class ResourceEntity(
                 divisibility = details?.divisibility(),
                 behaviours = details?.let { BehavioursColumn(it.extractBehaviours()) },
                 supply = details?.totalSupply()?.toBigDecimalOrNull(),
-                synced = syncInfo.synced
-            )
-        }
-
-        // Response from an account state request
-        fun NonFungibleResourcesCollectionItem.asEntity(
-            syncInfo: SyncInfo,
-            details: StateEntityDetailsResponseItemDetails? = null
-        ): ResourceEntity {
-            val metaDataItems = explicitMetadata?.asMetadataItems().orEmpty().toMutableList()
-            return ResourceEntity(
-                address = resourceAddress,
-                type = ResourceEntityType.NON_FUNGIBLE,
-                name = metaDataItems.consume<NameMetadataItem>()?.name,
-                description = metaDataItems.consume<DescriptionMetadataItem>()?.description,
-                iconUrl = metaDataItems.consume<IconUrlMetadataItem>()?.url?.toString(),
-                tags = metaDataItems.consume<TagsMetadataItem>()?.tags?.let { TagsColumn(tags = it) },
-                validatorAddress = metaDataItems.consume<ValidatorMetadataItem>()?.validatorAddress,
-                dAppDefinitions = metaDataItems.consume<DAppDefinitionsMetadataItem>()?.addresses?.let { DappDefinitionsColumn(it) },
-                behaviours = details?.let { BehavioursColumn(it.extractBehaviours()) },
-                supply = details?.totalSupply()?.toBigDecimalOrNull(),
-                synced = syncInfo.synced,
-                divisibility = null,
-                poolAddress = null,
-                symbol = null
+                synced = synced
             )
         }
     }

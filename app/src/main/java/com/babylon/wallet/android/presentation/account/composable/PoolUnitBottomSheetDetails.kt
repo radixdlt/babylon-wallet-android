@@ -148,7 +148,7 @@ fun PoolUnitBottomSheetDetails(
                 )
             }
 
-            if (poolUnit.pool.behaviours.isNotEmpty()) {
+            if (poolUnit.pool.behaviours?.isNotEmpty() == true) {
                 Column {
                     Text(
                         modifier = Modifier

@@ -1,7 +1,10 @@
 package com.babylon.wallet.android.data.repository.state
 
+import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponseItem
 import com.babylon.wallet.android.data.gateway.generated.models.StateNonFungibleDetailsResponseItem
 import com.babylon.wallet.android.data.repository.cache.database.AccountNFTJoin.Companion.asAccountNFTJoin
+import com.babylon.wallet.android.data.repository.cache.database.ResourceEntity
+import com.babylon.wallet.android.data.repository.cache.database.ResourceEntity.Companion.asEntity
 import com.babylon.wallet.android.data.repository.cache.database.StateDao
 import com.babylon.wallet.android.data.repository.cache.database.SyncInfo
 import com.babylon.wallet.android.domain.model.assets.ValidatorDetail
@@ -125,6 +128,12 @@ class StateCacheDelegate(
         return nfts.map { it.toItem() }
     }
 
+    fun updateResourceDetails(item: StateEntityDetailsResponseItem): ResourceEntity {
+        val entity = item.asEntity(synced = InstantGenerator())
+        stateDao.updateResourceDetails(entity)
+        return entity
+    }
+
     data class CachedDetails(
         val accountDetails: AccountDetails,
         val fungibles: MutableList<Resource.FungibleResource> = mutableListOf(),
@@ -149,12 +158,12 @@ class StateCacheDelegate(
 
     companion object {
         private val accountsCacheDuration = 2.toDuration(DurationUnit.HOURS)
-        private val resourcesCacheDuration = 24.toDuration(DurationUnit.HOURS)
+        private val resourcesCacheDuration = 48.toDuration(DurationUnit.HOURS)
 
-        fun accountCacheValidity(isRefreshing: Boolean) =
+        fun accountCacheValidity(isRefreshing: Boolean = false) =
             InstantGenerator().toEpochMilli() - if (isRefreshing) 0 else accountsCacheDuration.inWholeMilliseconds
 
-        fun resourcesCacheValidity(isRefreshing: Boolean) =
+        fun resourcesCacheValidity(isRefreshing: Boolean = false) =
             InstantGenerator().toEpochMilli() - if (isRefreshing) 0 else resourcesCacheDuration.inWholeMilliseconds
     }
 }

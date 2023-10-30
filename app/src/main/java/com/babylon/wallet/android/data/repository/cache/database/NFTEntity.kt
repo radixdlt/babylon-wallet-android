@@ -48,7 +48,7 @@ data class NFTEntity(
     companion object {
         fun StateNonFungibleDetailsResponseItem.asEntity(
             resourceAddress: String,
-            syncInfo: SyncInfo
+            synced: Instant
         ): NFTEntity = NFTEntity(
             address = resourceAddress,
             localId = nonFungibleId,
@@ -59,7 +59,7 @@ data class NFTEntity(
             metadata = stringMetadata()?.let { metadata ->
                 StringMetadataColumn(metadata.map { it.key to it.value })
             },
-            synced = syncInfo.synced
+            synced = synced
         )
     }
 

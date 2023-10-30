@@ -8,6 +8,7 @@ import androidx.room.Query
 import androidx.room.Transaction
 import com.babylon.wallet.android.domain.model.resources.metadata.AccountTypeMetadataItem
 import kotlinx.coroutines.flow.Flow
+import java.math.BigDecimal
 
 @Dao
 interface StateDao {
@@ -160,4 +161,25 @@ interface StateDao {
         insertNFTs(nfts)
         insertAccountNFTsJoin(accountNFTsJoin)
     }
+
+    @Query("""
+        SELECT * FROM ResourceEntity
+        WHERE address = :resourceAddress AND synced >= :minValidity
+    """)
+    fun getResourceDetails(resourceAddress: String, minValidity: Long): ResourceEntity?
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    fun updateResourceDetails(entity: ResourceEntity)
+
+    @Query("""
+        SELECT amount FROM AccountResourceJoin
+        WHERE account_address = :accountAddress AND resource_address = :resourceAddress
+    """)
+    fun getOwnedAmount(resourceAddress: String, accountAddress: String): BigDecimal?
+
+    @Query("""
+        SELECT * FROM NFTEntity
+        WHERE address = :resourceAddress AND local_id = :localId and synced >= :minValidity
+    """)
+    fun getNFTDetails(resourceAddress: String, localId: String, minValidity: Long): NFTEntity?
 }

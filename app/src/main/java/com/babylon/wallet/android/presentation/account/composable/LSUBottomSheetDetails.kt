@@ -161,7 +161,7 @@ fun LSUBottomSheetDetails(
                 label = "Validator address"
             )
 
-            if (lsuUnit.fungibleResource.behaviours.isNotEmpty()) {
+            if (lsuUnit.fungibleResource.behaviours?.isNotEmpty() == true) {
                 Column {
                     Text(
                         modifier = Modifier
