@@ -19,6 +19,7 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.transform
 import kotlinx.coroutines.withContext
 import rdx.works.core.InstantGenerator
@@ -40,10 +41,10 @@ interface StateRepository {
 
     suspend fun getOwnedXRD(accounts: List<Network.Account>): Result<Map<Network.Account, BigDecimal>>
 
-    sealed class NFTPageError(cause: Throwable): Exception(cause) {
-        data object NoMorePages: NFTPageError(RuntimeException("No more NFTs for this resource."))
+    sealed class NFTPageError(cause: Throwable) : Exception(cause) {
+        data object NoMorePages : NFTPageError(RuntimeException("No more NFTs for this resource."))
 
-        data object VaultAddressMissing: NFTPageError(RuntimeException("No vault address to fetch NFTs"))
+        data object VaultAddressMissing : NFTPageError(RuntimeException("No vault address to fetch NFTs"))
 
         data object StateVersionMissing : NFTPageError(RuntimeException("State version missing for account."))
     }
@@ -87,7 +88,8 @@ class StateRepositoryImpl @Inject constructor(
 
                         // Gather and store pool details
                         val poolAddresses = fungibleEntityPairs.mapNotNull { it.second.poolAddress }.toSet()
-                        val pools = stateApiDelegate.getPoolDetails(poolAddresses = poolAddresses, stateVersion = syncInfo.accountStateVersion)
+                        val pools =
+                            stateApiDelegate.getPoolDetails(poolAddresses = poolAddresses, stateVersion = syncInfo.accountStateVersion)
 
                         // Gather and store validator details
                         val validatorAddresses = (fungibleEntityPairs.mapNotNull {
@@ -112,57 +114,62 @@ class StateRepositoryImpl @Inject constructor(
                     }
                 )
             }
-        }.distinctUntilChanged()
+        }
+        .flowOn(dispatcher)
+        .distinctUntilChanged()
 
     override suspend fun getMoreNFTs(
         account: Network.Account,
         resource: Resource.NonFungibleResource
-    ): Result<Resource.NonFungibleResource> = runCatching {
-        // No more pages to return
-        if (resource.amount.toInt() == resource.items.size) throw StateRepository.NFTPageError.NoMorePages
+    ): Result<Resource.NonFungibleResource> = withContext(dispatcher) {
+        runCatching {
+            // No more pages to return
+            if (resource.amount.toInt() == resource.items.size) throw StateRepository.NFTPageError.NoMorePages
 
-        val accountNftPortfolio = stateDao.getAccountNFTPortfolio(
-            accountAddress = account.address,
-            resourceAddress = resource.resourceAddress
-        ).firstOrNull()
+            val accountNftPortfolio = stateDao.getAccountNFTPortfolio(
+                accountAddress = account.address,
+                resourceAddress = resource.resourceAddress
+            ).firstOrNull()
 
-        val accountStateVersion: Long = accountNftPortfolio?.accountStateVersion ?: throw StateRepository.NFTPageError.StateVersionMissing
+            val accountStateVersion: Long =
+                accountNftPortfolio?.accountStateVersion ?: throw StateRepository.NFTPageError.StateVersionMissing
 
-        val cachedNFTItems = stateDao.getOwnedNfts(
-            accountAddress = account.address,
-            resourceAddress = resource.resourceAddress,
-            stateVersion = accountStateVersion
-        )
+            val cachedNFTItems = stateDao.getOwnedNfts(
+                accountAddress = account.address,
+                resourceAddress = resource.resourceAddress,
+                stateVersion = accountStateVersion
+            )
 
-        // All items cached, return the result
-        if (cachedNFTItems.size == resource.amount.toInt()) {
-            return@runCatching resource.copy(items = cachedNFTItems.map { it.toItem() })
+            // All items cached, return the result
+            if (cachedNFTItems.size == resource.amount.toInt()) {
+                return@runCatching resource.copy(items = cachedNFTItems.map { it.toItem() })
+            }
+
+            val vaultAddress = accountNftPortfolio.vaultAddress ?: throw StateRepository.NFTPageError.VaultAddressMissing
+            val nextCursor = accountNftPortfolio.nextCursor
+
+            Timber.tag("Bakos").d("Fetching NFT items ($nextCursor)")
+            val page = stateApiDelegate.getNextNftItems(
+                accountAddress = account.address,
+                resourceAddress = resource.resourceAddress,
+                vaultAddress = vaultAddress,
+                nextCursor = nextCursor,
+                stateVersion = accountStateVersion
+            )
+            val syncInfo = SyncInfo(synced = InstantGenerator(), accountStateVersion = accountStateVersion)
+
+            val newItems = cacheDelegate.storeAccountNFTsPortfolio(
+                accountAddress = account.address,
+                resourceAddress = resource.resourceAddress,
+                nextCursor = page.first,
+                items = page.second,
+                syncInfo = syncInfo
+            )
+            val currentItems = resource.items
+            val allNewItems = (currentItems + newItems).distinctBy { it.localId }
+
+            resource.copy(items = allNewItems)
         }
-
-        val vaultAddress = accountNftPortfolio.vaultAddress ?: throw StateRepository.NFTPageError.VaultAddressMissing
-        val nextCursor = accountNftPortfolio.nextCursor
-
-        Timber.tag("Bakos").d("Fetching NFT items ($nextCursor)")
-        val page = stateApiDelegate.getNextNftItems(
-            accountAddress = account.address,
-            resourceAddress = resource.resourceAddress,
-            vaultAddress = vaultAddress,
-            nextCursor = nextCursor,
-            stateVersion = accountStateVersion
-        )
-        val syncInfo = SyncInfo(synced = InstantGenerator(), accountStateVersion = accountStateVersion)
-
-        val newItems = cacheDelegate.storeAccountNFTsPortfolio(
-            accountAddress = account.address,
-            resourceAddress = resource.resourceAddress,
-            nextCursor = page.first,
-            items = page.second,
-            syncInfo = syncInfo
-        )
-        val currentItems = resource.items
-        val allNewItems = (currentItems + newItems).distinctBy { it.localId }
-
-        resource.copy(items = allNewItems)
     }
 
     override fun observeResourceDetails(resourceAddress: String, accountAddress: String?): Flow<Resource> = flow {
@@ -187,25 +194,26 @@ class StateRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun getNFTDetails(resourceAddress: String, localId: String): Result<Resource.NonFungibleResource.Item> {
-        val cachedItem = stateDao.getNFTDetails(resourceAddress, localId, StateCacheDelegate.resourcesCacheValidity())
+    override suspend fun getNFTDetails(resourceAddress: String, localId: String): Result<Resource.NonFungibleResource.Item> =
+        withContext(dispatcher) {
+            val cachedItem = stateDao.getNFTDetails(resourceAddress, localId, StateCacheDelegate.resourcesCacheValidity())
 
-        if (cachedItem != null) {
-            return Result.success(cachedItem.toItem())
-        }
+            if (cachedItem != null) {
+                return@withContext Result.success(cachedItem.toItem())
+            }
 
-        return stateApi.nonFungibleData(
-            StateNonFungibleDataRequest(
-                resourceAddress = resourceAddress,
-                nonFungibleIds = listOf(localId)
-            )
-        ).toResult().mapCatching { response ->
-            val item = response.nonFungibleIds.first()
-            val entity = item.asEntity(resourceAddress, InstantGenerator())
-            stateDao.insertNFTs(listOf(entity))
-            entity.toItem()
+            stateApi.nonFungibleData(
+                StateNonFungibleDataRequest(
+                    resourceAddress = resourceAddress,
+                    nonFungibleIds = listOf(localId)
+                )
+            ).toResult().mapCatching { response ->
+                val item = response.nonFungibleIds.first()
+                val entity = item.asEntity(resourceAddress, InstantGenerator())
+                stateDao.insertNFTs(listOf(entity))
+                entity.toItem()
+            }
         }
-    }
 
     override suspend fun getOwnedXRD(accounts: List<Network.Account>): Result<Map<Network.Account, BigDecimal>> = withContext(dispatcher) {
         if (accounts.isEmpty()) return@withContext Result.success(emptyMap())
