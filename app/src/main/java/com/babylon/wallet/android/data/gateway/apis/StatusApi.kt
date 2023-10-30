@@ -30,7 +30,4 @@ interface StatusApi {
      */
     @POST("status/network-configuration")
     fun networkConfiguration(): Call<NetworkConfigurationResponse>
-
-    @GET(".")
-    fun mainnetNetworkStatus(): Call<MainnetNetworkStatus>
 }

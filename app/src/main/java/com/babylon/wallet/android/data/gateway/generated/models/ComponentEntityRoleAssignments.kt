@@ -24,13 +24,14 @@ import kotlinx.serialization.Contextual
 /**
  * 
  *
- * @param owner 
+ * @param owner This type is defined in the Core API as `OwnerRole`. See the Core API documentation for more details. 
  * @param propertyEntries 
  */
 @Serializable
 
 data class ComponentEntityRoleAssignments (
 
+    /* This type is defined in the Core API as `OwnerRole`. See the Core API documentation for more details.  */
     @SerialName(value = "owner")
     val owner: ComponentEntityRoleAssignmentOwner,
 

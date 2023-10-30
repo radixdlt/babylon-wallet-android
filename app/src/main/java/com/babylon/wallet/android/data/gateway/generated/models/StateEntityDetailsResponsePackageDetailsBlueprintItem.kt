@@ -25,11 +25,11 @@ import kotlinx.serialization.Contextual
  *
  * @param name 
  * @param version 
- * @param definition 
+ * @param definition This type is defined in the Core API as `BlueprintDefinition`. See the Core API documentation for more details. 
  * @param dependantEntities 
- * @param authTemplate 
+ * @param authTemplate This type is defined in the Core API as `AuthConfig`. See the Core API documentation for more details. 
  * @param authTemplateIsLocked 
- * @param royaltyConfig 
+ * @param royaltyConfig This type is defined in the Core API as `BlueprintRoyaltyConfig`. See the Core API documentation for more details. 
  * @param royaltyConfigIsLocked 
  */
 @Serializable
@@ -42,18 +42,21 @@ data class StateEntityDetailsResponsePackageDetailsBlueprintItem (
     @SerialName(value = "version")
     val version: kotlin.String,
 
+    /* This type is defined in the Core API as `BlueprintDefinition`. See the Core API documentation for more details.  */
 //    @Contextual @SerialName(value = "definition")
 //    val definition: kotlin.Any,
 
     @SerialName(value = "dependant_entities")
     val dependantEntities: kotlin.collections.List<kotlin.String>? = null,
 
+    /* This type is defined in the Core API as `AuthConfig`. See the Core API documentation for more details.  */
 //    @Contextual @SerialName(value = "auth_template")
 //    val authTemplate: kotlin.Any? = null,
 
     @SerialName(value = "auth_template_is_locked")
     val authTemplateIsLocked: kotlin.Boolean? = null,
 
+    /* This type is defined in the Core API as `BlueprintRoyaltyConfig`. See the Core API documentation for more details.  */
 //    @Contextual @SerialName(value = "royalty_config")
 //    val royaltyConfig: kotlin.Any? = null,
 

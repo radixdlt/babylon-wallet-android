@@ -15,6 +15,7 @@
 
 package com.babylon.wallet.android.data.gateway.generated.models
 
+import com.babylon.wallet.android.data.gateway.generated.models.TransactionBalanceChanges
 import com.babylon.wallet.android.data.gateway.generated.models.TransactionReceipt
 import com.babylon.wallet.android.data.gateway.generated.models.TransactionStatus
 
@@ -38,7 +39,8 @@ import kotlinx.serialization.Contextual
  * @param errorMessage 
  * @param rawHex Hex-encoded binary blob.
  * @param receipt 
- * @param message defined in core api specs.
+ * @param message The optional transaction message. This type is defined in the Core API as `TransactionMessage`. See the Core API documentation for more details. 
+ * @param balanceChanges 
  */
 @Serializable
 
@@ -87,9 +89,12 @@ data class CommittedTransactionInfo (
     @SerialName(value = "receipt")
     val receipt: TransactionReceipt? = null,
 
-    /* defined in core api specs. */
+    /* The optional transaction message. This type is defined in the Core API as `TransactionMessage`. See the Core API documentation for more details.  */
 //    @Contextual @SerialName(value = "message")
-//    val message: kotlin.Any? = null
+//    val message: kotlin.Any? = null,
+
+    @SerialName(value = "balance_changes")
+    val balanceChanges: TransactionBalanceChanges? = null
 
 )
 

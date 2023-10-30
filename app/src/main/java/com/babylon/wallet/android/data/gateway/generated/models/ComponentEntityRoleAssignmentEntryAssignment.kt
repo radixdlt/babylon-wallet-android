@@ -22,8 +22,8 @@ import kotlinx.serialization.Serializable
 /**
  *
  *
- * @param resolution
- * @param explicitRule
+ * @param resolution 
+ * @param explicitRule This type is defined in the Core API as `AccessRule`. See the Core API documentation for more details. 
  */
 @Serializable
 
@@ -32,6 +32,7 @@ data class ComponentEntityRoleAssignmentEntryAssignment(
     @Contextual @SerialName(value = "resolution")
     val resolution: RoleAssignmentResolution,
 
+    /* This type is defined in the Core API as `AccessRule`. See the Core API documentation for more details.  */
     @Contextual @SerialName(value = "explicit_rule")
     val explicitRule: AccessRule? = null
 

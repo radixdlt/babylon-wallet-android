@@ -15,6 +15,7 @@
 
 package com.babylon.wallet.android.data.gateway.generated.models
 
+import com.babylon.wallet.android.data.gateway.generated.models.ProgrammaticScryptoSborValue
 
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerialName
@@ -34,8 +35,8 @@ data class StateKeyValueStoreDataRequestKeyItem (
     @SerialName(value = "key_hex")
     val keyHex: kotlin.String? = null,
 
-//    @Contextual @SerialName(value = "key_json")
-//    val keyJson: kotlin.Any? = null
+    @SerialName(value = "key_json")
+    val keyJson: ProgrammaticScryptoSborValue? = null
 
 )
 

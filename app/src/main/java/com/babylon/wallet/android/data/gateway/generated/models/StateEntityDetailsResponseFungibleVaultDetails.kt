@@ -26,13 +26,22 @@ import kotlinx.serialization.Contextual
  * 
  *
  * @param type 
+ * @param resourceAddress Bech32m-encoded human readable version of the address.
+ * @param balance 
  */
 @Serializable
 
 data class StateEntityDetailsResponseFungibleVaultDetails (
 
     @Contextual @SerialName(value = "type")
-    override val type: StateEntityDetailsResponseItemDetailsType
+    override val type: StateEntityDetailsResponseItemDetailsType,
+
+    /* Bech32m-encoded human readable version of the address. */
+    @SerialName(value = "resource_address")
+    val resourceAddress: kotlin.String,
+
+    @SerialName(value = "balance")
+    val balance: FungibleResourcesCollectionItemVaultAggregatedVaultItem
 
 ) : StateEntityDetailsResponseItemDetails()
 

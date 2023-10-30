@@ -23,12 +23,13 @@ import kotlinx.serialization.Contextual
 /**
  * 
  *
- * @param nonFungibleIncludeNfids 
+ * @param nonFungibleIncludeNfids if set to `true`, first page of non fungible ids are returned for each non fungible resource, with cursor which can be later used at `/state/entity/page/non-fungible-vault/ids` endpoint.
  */
 @Serializable
 
 data class StateEntityNonFungibleResourceVaultsPageOptIns (
 
+    /* if set to `true`, first page of non fungible ids are returned for each non fungible resource, with cursor which can be later used at `/state/entity/page/non-fungible-vault/ids` endpoint. */
     @SerialName(value = "non_fungible_include_nfids")
     val nonFungibleIncludeNfids: kotlin.Boolean? = null
 

@@ -15,7 +15,6 @@
 
 package com.babylon.wallet.android.data.gateway.generated.models
 
-import com.babylon.wallet.android.data.gateway.generated.models.LedgerStateSelector
 
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerialName
@@ -24,15 +23,11 @@ import kotlinx.serialization.Contextual
 /**
  * 
  *
- * @param fromLedgerState 
  * @param validatorAddresses 
  */
 @Serializable
 
 data class ValidatorsUptimeRequestAllOf (
-
-    @SerialName(value = "from_ledger_state")
-    val fromLedgerState: LedgerStateSelector? = null,
 
     @SerialName(value = "validator_addresses")
     val validatorAddresses: kotlin.collections.List<kotlin.String>? = null

@@ -3,16 +3,13 @@ package com.babylon.wallet.android.data.repository.cache.database
 import android.net.Uri
 import androidx.room.ColumnInfo
 import androidx.room.Entity
-import com.babylon.wallet.android.data.gateway.extensions.claimAmount
-import com.babylon.wallet.android.data.gateway.extensions.claimEpoch
-import com.babylon.wallet.android.data.gateway.extensions.image
-import com.babylon.wallet.android.data.gateway.extensions.name
-import com.babylon.wallet.android.data.gateway.extensions.stringMetadata
+import com.babylon.wallet.android.data.gateway.extensions.asMetadataItems
 import com.babylon.wallet.android.data.gateway.generated.models.StateNonFungibleDetailsResponseItem
 import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.domain.model.resources.metadata.ClaimAmountMetadataItem
 import com.babylon.wallet.android.domain.model.resources.metadata.ClaimEpochMetadataItem
 import com.babylon.wallet.android.domain.model.resources.metadata.IconUrlMetadataItem
+import com.babylon.wallet.android.domain.model.resources.metadata.MetadataItem.Companion.consume
 import com.babylon.wallet.android.domain.model.resources.metadata.NameMetadataItem
 import com.babylon.wallet.android.domain.model.resources.metadata.StringMetadataItem
 import java.math.BigDecimal
@@ -49,18 +46,19 @@ data class NFTEntity(
         fun StateNonFungibleDetailsResponseItem.asEntity(
             resourceAddress: String,
             synced: Instant
-        ): NFTEntity = NFTEntity(
-            address = resourceAddress,
-            localId = nonFungibleId,
-            name = name()?.name,
-            imageUrl = image()?.url?.toString(),
-            claimAmount = claimAmount()?.amount,
-            claimEpoch = claimEpoch()?.claimEpoch,
-            metadata = stringMetadata()?.let { metadata ->
-                StringMetadataColumn(metadata.map { it.key to it.value })
-            },
-            synced = synced
-        )
+        ): NFTEntity {
+            val metadataItems = asMetadataItems().toMutableList()
+            return NFTEntity(
+                address = resourceAddress,
+                localId = nonFungibleId,
+                name = metadataItems.consume<NameMetadataItem>()?.name,
+                imageUrl = metadataItems.consume<IconUrlMetadataItem>()?.url?.toString(),
+                claimAmount = metadataItems.consume<ClaimAmountMetadataItem>()?.amount,
+                claimEpoch = metadataItems.consume<ClaimEpochMetadataItem>()?.claimEpoch,
+                metadata = StringMetadataColumn(metadataItems.filterIsInstance<StringMetadataItem>().map { it.key to it.value }),
+                synced = synced
+            )
+        }
     }
 
 }
