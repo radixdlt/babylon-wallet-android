@@ -9,6 +9,7 @@ import com.babylon.wallet.android.domain.usecases.GetAccountsForSecurityPromptUs
 import com.babylon.wallet.android.domain.usecases.GetAccountsWithAssetsUseCase
 import com.babylon.wallet.android.domain.usecases.SecurityPromptType
 import com.babylon.wallet.android.domain.usecases.assets.GetWalletAssetsUseCase
+import com.babylon.wallet.android.domain.usecases.assets.GetXrdForAccountsUseCase
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
@@ -32,6 +33,7 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import rdx.works.core.displayableQuantity
 import rdx.works.profile.data.model.extensions.factorSourceId
 import rdx.works.profile.data.model.extensions.isOlympiaAccount
 import rdx.works.profile.data.model.factorsources.FactorSource
@@ -54,6 +56,7 @@ class WalletViewModel @Inject constructor(
     private val getAccountsForSecurityPromptUseCase: GetAccountsForSecurityPromptUseCase,
     private val appEventBus: AppEventBus,
     private val ensureBabylonFactorSourceExistUseCase: EnsureBabylonFactorSourceExistUseCase,
+    private val getXrdForAccountsUseCase: GetXrdForAccountsUseCase,
     getBackupStateUseCase: GetBackupStateUseCase
 ) : StateViewModel<WalletUiState>(), OneOffEventHandler<WalletEvent> by OneOffEventHandlerImpl() {
 
@@ -93,6 +96,12 @@ class WalletViewModel @Inject constructor(
                 // force user to authenticate until we can create Babylon Factor source
                 appEventBus.sendEvent(AppEvent.BabylonFactorSourceDoesNotExist)
             }
+        }
+    }
+
+    fun test() = viewModelScope.launch {
+        getXrdForAccountsUseCase(getProfileUseCase.accountsOnCurrentNetwork()).onSuccess {
+            Timber.tag("Bakos").d(it.map { entry -> "${entry.key.displayName} - ${entry.value.displayableQuantity()}"}.joinToString(separator = "\n"))
         }
     }
 
