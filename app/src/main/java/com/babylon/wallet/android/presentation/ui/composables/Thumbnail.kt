@@ -50,7 +50,7 @@ import com.babylon.wallet.android.designsystem.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.SampleDataProvider
-import com.babylon.wallet.android.domain.model.DAppWithMetadata
+import com.babylon.wallet.android.domain.model.DApp
 import com.babylon.wallet.android.domain.model.assets.LiquidStakeUnit
 import com.babylon.wallet.android.domain.model.assets.PoolUnit
 import com.babylon.wallet.android.domain.model.assets.ValidatorDetail
@@ -240,7 +240,7 @@ object Thumbnail {
     @Composable
     fun DApp(
         modifier: Modifier = Modifier,
-        dapp: DAppWithMetadata?,
+        dapp: DApp?,
         shape: Shape = RadixTheme.shapes.roundedRectDefault
     ) {
         Custom(

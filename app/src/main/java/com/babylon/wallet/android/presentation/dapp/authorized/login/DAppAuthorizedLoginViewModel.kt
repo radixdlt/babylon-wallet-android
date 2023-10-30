@@ -9,7 +9,7 @@ import com.babylon.wallet.android.data.repository.dappmetadata.DAppRepository
 import com.babylon.wallet.android.data.transaction.InteractionState
 import com.babylon.wallet.android.domain.RadixWalletException
 import com.babylon.wallet.android.domain.getDappMessage
-import com.babylon.wallet.android.domain.model.DAppWithMetadata
+import com.babylon.wallet.android.domain.model.DApp
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel.IncomingRequest.AccountsRequestItem
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel.IncomingRequest.AuthorizedRequest
@@ -114,7 +114,7 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
                 needMostRecentData = false
             ).onSuccess { dappWithMetadata ->
                 _state.update {
-                    it.copy(dappWithMetadata = dappWithMetadata)
+                    it.copy(dapp = dappWithMetadata)
                 }
             }.onFailure { error ->
                 _state.update { it.copy(uiMessage = UiMessage.ErrorMessage(error)) }
@@ -520,7 +520,7 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
         val dApp = authorizedDapp
         val date = LocalDateTime.now().toISO8601String()
         if (dApp == null) {
-            val dAppName = state.value.dappWithMetadata?.name?.ifEmpty { null }
+            val dAppName = state.value.dapp?.name?.ifEmpty { null }
             mutex.withLock {
                 editedDapp = Network.AuthorizedDapp(
                     request.metadata.networkId,
@@ -687,7 +687,7 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
                         appEventBus.sendEvent(
                             AppEvent.Status.DappInteraction(
                                 requestId = request.interactionId,
-                                dAppName = state.value.dappWithMetadata?.name
+                                dAppName = state.value.dapp?.name
                             )
                         )
                     }
@@ -728,7 +728,7 @@ sealed interface Event : OneOffEvent {
 }
 
 data class DAppLoginUiState(
-    val dappWithMetadata: DAppWithMetadata? = null,
+    val dapp: DApp? = null,
     val uiMessage: UiMessage? = null,
     val failureDialog: FailureDialog = FailureDialog.Closed,
     val initialAuthorizedLoginRoute: InitialAuthorizedLoginRoute? = null,

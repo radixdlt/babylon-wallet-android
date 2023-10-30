@@ -15,7 +15,7 @@ import com.babylon.wallet.android.domain.model.resources.metadata.StringMetadata
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toPersistentList
 
-data class DAppWithMetadata(
+data class DApp(
     val dAppAddress: String,
     private val nameItem: NameMetadataItem? = null,
     private val descriptionItem: DescriptionMetadataItem? = null,
@@ -63,9 +63,9 @@ data class DAppWithMetadata(
     }
 
     companion object {
-        fun from(address: String, metadataItems: List<MetadataItem> = listOf()): DAppWithMetadata {
+        fun from(address: String, metadataItems: List<MetadataItem> = listOf()): DApp {
             val remainingItems = metadataItems.toMutableList()
-            return DAppWithMetadata(
+            return DApp(
                 dAppAddress = address,
                 nameItem = remainingItems.consume(),
                 descriptionItem = remainingItems.consume(),

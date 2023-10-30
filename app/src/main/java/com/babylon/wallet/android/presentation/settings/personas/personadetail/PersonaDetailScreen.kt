@@ -42,7 +42,7 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixTheme.dimensions
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.SampleDataProvider
-import com.babylon.wallet.android.domain.model.DAppWithMetadataAndAssociatedResources
+import com.babylon.wallet.android.domain.model.DAppWithResources
 import com.babylon.wallet.android.presentation.common.FullscreenCircularProgressContent
 import com.babylon.wallet.android.presentation.settings.authorizeddapps.dappdetail.DAppDetailsSheetContent
 import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDialog
@@ -126,9 +126,9 @@ private fun PersonaDetailContent(
     onBackClick: () -> Unit,
     persona: Network.Persona?,
     onEditPersona: (String) -> Unit,
-    authorizedDapps: ImmutableList<DAppWithMetadataAndAssociatedResources>,
-    selectedDApp: DAppWithMetadataAndAssociatedResources?,
-    onDAppClick: (DAppWithMetadataAndAssociatedResources) -> Unit,
+    authorizedDapps: ImmutableList<DAppWithResources>,
+    selectedDApp: DAppWithResources?,
+    onDAppClick: (DAppWithResources) -> Unit,
     hasAuthKey: Boolean,
     onCreateAndUploadAuthKey: () -> Unit,
     loading: Boolean,
@@ -199,8 +199,8 @@ private fun PersonaDetailContent(
 private fun PersonaDetailList(
     modifier: Modifier = Modifier,
     persona: Network.Persona,
-    authorizedDapps: ImmutableList<DAppWithMetadataAndAssociatedResources>,
-    onDAppClick: (DAppWithMetadataAndAssociatedResources) -> Unit,
+    authorizedDapps: ImmutableList<DAppWithResources>,
+    onDAppClick: (DAppWithResources) -> Unit,
     onEditPersona: (String) -> Unit,
     hasAuthKey: Boolean,
     onCreateAndUploadAuthKey: () -> Unit,
@@ -294,7 +294,7 @@ private fun PersonaDetailList(
                         modifier = Modifier.throttleClickable {
                             onDAppClick(dApp)
                         },
-                        dApp = dApp.dAppWithMetadata
+                        dApp = dApp.dApp
                     )
                     Spacer(modifier = Modifier.height(dimensions.paddingLarge))
                 }

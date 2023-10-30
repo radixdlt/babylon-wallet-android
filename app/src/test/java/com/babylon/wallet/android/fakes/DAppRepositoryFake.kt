@@ -3,7 +3,7 @@ package com.babylon.wallet.android.fakes
 import com.babylon.wallet.android.data.gateway.model.ExplicitMetadataKey
 import com.babylon.wallet.android.data.repository.dappmetadata.DAppRepository
 import com.babylon.wallet.android.domain.model.DAppResources
-import com.babylon.wallet.android.domain.model.DAppWithMetadata
+import com.babylon.wallet.android.domain.model.DApp
 import com.babylon.wallet.android.domain.model.resources.metadata.NameMetadataItem
 
 class DAppRepositoryFake : DAppRepository {
@@ -16,9 +16,9 @@ class DAppRepositoryFake : DAppRepository {
         definitionAddress: String,
         explicitMetadata: Set<ExplicitMetadataKey>,
         needMostRecentData: Boolean
-    ): Result<DAppWithMetadata> {
+    ): Result<DApp> {
         return Result.success(
-            DAppWithMetadata(
+            DApp(
                 dAppAddress = "dapp_address",
                 nameItem = NameMetadataItem(name = "dApp")
             )
@@ -29,10 +29,10 @@ class DAppRepositoryFake : DAppRepository {
         definitionAddresses: List<String>,
         explicitMetadata: Set<ExplicitMetadataKey>,
         needMostRecentData: Boolean
-    ): Result<List<DAppWithMetadata>> {
+    ): Result<List<DApp>> {
         return Result.success(
             listOf(
-                DAppWithMetadata(
+                DApp(
                     dAppAddress = "dapp_address",
                     nameItem = NameMetadataItem(name = "dApp")
                 )
@@ -41,7 +41,7 @@ class DAppRepositoryFake : DAppRepository {
     }
 
     override suspend fun getDAppResources(
-        dAppMetadata: DAppWithMetadata,
+        dAppMetadata: DApp,
         isRefreshing: Boolean
     ): Result<DAppResources> {
         return Result.success(
