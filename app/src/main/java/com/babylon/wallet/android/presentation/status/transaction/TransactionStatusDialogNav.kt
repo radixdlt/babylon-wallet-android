@@ -91,12 +91,6 @@ fun AppEvent.Status.Transaction.toTransactionStatusFields(): TransactionStatusFi
         null
     }
 
-    val txProcessingTime = if (this is AppEvent.Status.Transaction.Fail) {
-        Json.encodeToString(txProcessingTime)
-    } else {
-        null
-    }
-
     val walletErrorType = if (this is AppEvent.Status.Transaction.Fail) {
         Json.encodeToString(walletErrorType)
     } else {
@@ -109,7 +103,6 @@ fun AppEvent.Status.Transaction.toTransactionStatusFields(): TransactionStatusFi
         transactionId = transactionId,
         isInternal = isInternal,
         error = errorSerialized,
-        transactionProcessingTime = txProcessingTime,
         walletErrorType = walletErrorType,
         blockUntilComplete = blockUntilComplete
     )
@@ -124,7 +117,6 @@ private fun SavedStateHandle.toStatus(): AppEvent.Status.Transaction {
             isInternal = checkNotNull(transactionStatusFields.isInternal),
             errorMessage = transactionStatusFields.error?.let { Json.decodeFromString(it) },
             blockUntilComplete = checkNotNull(transactionStatusFields.blockUntilComplete),
-            txProcessingTime = transactionStatusFields.transactionProcessingTime,
             walletErrorType = transactionStatusFields.walletErrorType?.let { Json.decodeFromString(it) },
         )
 

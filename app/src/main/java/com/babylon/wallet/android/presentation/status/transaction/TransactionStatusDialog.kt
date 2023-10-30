@@ -44,7 +44,6 @@ import com.babylon.wallet.android.R
 import com.babylon.wallet.android.data.dapp.model.WalletErrorType
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
-import com.babylon.wallet.android.presentation.common.getMessage
 import com.babylon.wallet.android.presentation.ui.composables.ActionableAddressView
 import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.BottomDialogDragHandle
@@ -107,7 +106,6 @@ fun TransactionStatusDialog(
                                     maxHeight to SwipeState.Collapsed
                                 ),
                                 orientation = Orientation.Vertical,
-
                             )
                             .offset {
                                 IntOffset(
@@ -151,29 +149,22 @@ fun TransactionStatusDialog(
                             WalletErrorType.SubmittedTransactionHasFailedTransactionStatus -> {
                                 "Transaction Failed" // TODO Crowdin
                             }
+
                             WalletErrorType.SubmittedTransactionHasPermanentlyRejectedTransactionStatus -> {
                                 "Transaction Rejected" // TODO Crowdin
                             }
+
                             WalletErrorType.SubmittedTransactionHasTemporarilyRejectedTransactionStatus -> {
                                 "Transaction Error" // TODO Crowdin
                             }
+
                             else -> {
                                 stringResource(id = R.string.common_somethingWentWrong)
                             }
                         }
-                        val subtitle = when (state.walletErrorType) {
-                            WalletErrorType.SubmittedTransactionHasTemporarilyRejectedTransactionStatus -> {
-                                state.failureError?.errorMessageStringRes?.let {
-                                    stringResource(id = it, state.txProcessingTime)
-                                } ?: state.failureError?.getMessage()
-                            }
-                            else -> {
-                                state.failureError?.getMessage()
-                            }
-                        }
                         SomethingWentWrongDialogContent(
                             title = title,
-                            subtitle = subtitle,
+                            subtitle = state.failureError,
                             transactionAddress = state.transactionId
                         )
                     }

@@ -1,12 +1,12 @@
 package com.babylon.wallet.android.domain.usecases
 
 import com.babylon.wallet.android.data.repository.transaction.TransactionRepository
-import com.babylon.wallet.android.data.transaction.DappRequestFailure
 import com.babylon.wallet.android.data.transaction.TransactionClient
 import com.babylon.wallet.android.data.transaction.TransactionConfig
 import com.babylon.wallet.android.data.transaction.TransactionConfig.TIP_PERCENTAGE
 import com.babylon.wallet.android.data.transaction.model.TransactionApprovalRequest
 import com.babylon.wallet.android.di.coroutines.IoDispatcher
+import com.babylon.wallet.android.domain.RadixWalletException
 import com.babylon.wallet.android.domain.usecases.transaction.PollTransactionStatusUseCase
 import com.babylon.wallet.android.domain.usecases.transaction.SubmitTransactionUseCase
 import com.radixdlt.ret.Address
@@ -86,7 +86,7 @@ class GetFreeXrdUseCase @Inject constructor(
                         it.txId
                     }
             } ?: Result.failure(
-                exception = epochResult.exceptionOrNull() ?: DappRequestFailure.TransactionApprovalFailure.PrepareNotarizedTransaction
+                exception = epochResult.exceptionOrNull() ?: RadixWalletException.PrepareTransactionException.PrepareNotarizedTransaction()
             )
         }
     }
@@ -115,6 +115,6 @@ class GetFreeXrdUseCase @Inject constructor(
 }
 
 sealed interface FaucetState {
-    object Unavailable : FaucetState
+    data object Unavailable : FaucetState
     data class Available(val isEnabled: Boolean) : FaucetState
 }

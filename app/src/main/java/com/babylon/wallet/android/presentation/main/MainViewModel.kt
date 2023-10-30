@@ -3,7 +3,7 @@ package com.babylon.wallet.android.presentation.main
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.data.dapp.PeerdroidClient
-import com.babylon.wallet.android.data.transaction.DappRequestFailure
+import com.babylon.wallet.android.domain.RadixWalletException
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel.IncomingRequest
 import com.babylon.wallet.android.domain.usecases.AuthorizeSpecifiedPersonaUseCase
 import com.babylon.wallet.android.domain.usecases.VerifyDappUseCase
@@ -149,7 +149,7 @@ class MainViewModel @Inject constructor(
                                 .cancellable()
                                 .collect {
                                     _state.update { state ->
-                                        state.copy(dappRequestFailure = DappRequestFailure.InvalidRequestChallenge)
+                                        state.copy(dappRequestFailure = RadixWalletException.DappRequestException.InvalidRequestChallenge)
                                     }
                                 }
                         }
@@ -171,7 +171,7 @@ class MainViewModel @Inject constructor(
                     sendEvent(MainEvent.IncomingRequestEvent(request))
                 } else {
                     delay(REQUEST_HANDLING_DELAY)
-                    authorizeSpecifiedPersonaUseCase(request).onSuccess { dAppData ->
+                    authorizeSpecifiedPersonaUseCase.invoke(request).onSuccess { dAppData ->
                         appEventBus.sendEvent(
                             AppEvent.Status.DappInteraction(
                                 requestId = dAppData.requestId,
@@ -179,10 +179,10 @@ class MainViewModel @Inject constructor(
                             )
                         )
                     }.onFailure { exception ->
-                        (exception as? DappRequestFailure)?.let { dappRequestFailure ->
+                        (exception as? RadixWalletException.DappRequestException)?.let { dappRequestFailure ->
                             when (dappRequestFailure) {
-                                DappRequestFailure.InvalidPersona,
-                                DappRequestFailure.InvalidRequest -> {
+                                RadixWalletException.DappRequestException.InvalidPersona,
+                                RadixWalletException.DappRequestException.InvalidRequest -> {
                                     _state.update { state ->
                                         state.copy(dappRequestFailure = dappRequestFailure)
                                     }
@@ -207,7 +207,7 @@ class MainViewModel @Inject constructor(
                 }
             }.onFailure {
                 _state.update { state ->
-                    state.copy(dappRequestFailure = DappRequestFailure.InvalidRequest)
+                    state.copy(dappRequestFailure = RadixWalletException.DappRequestException.InvalidRequest)
                 }
             }
         }
@@ -285,7 +285,7 @@ sealed class MainEvent : OneOffEvent {
 
 data class MainUiState(
     val initialAppState: AppState = AppState.Loading,
-    val dappRequestFailure: DappRequestFailure? = null,
+    val dappRequestFailure: RadixWalletException.DappRequestException? = null,
     val olympiaErrorState: OlympiaErrorState = OlympiaErrorState.None
 ) : UiState
 

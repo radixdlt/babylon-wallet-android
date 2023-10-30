@@ -39,7 +39,7 @@ class AssetsChooserDelegate @Inject constructor(
                 updateSheetState {
                     it.copy(
                         assets = Assets(),
-                        uiMessage = UiMessage.ErrorMessage.from(error)
+                        uiMessage = UiMessage.ErrorMessage(error)
                     )
                 }
             }

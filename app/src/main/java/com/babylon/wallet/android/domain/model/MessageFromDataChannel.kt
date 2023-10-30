@@ -3,6 +3,7 @@ package com.babylon.wallet.android.domain.model
 import android.os.Parcelable
 import com.babylon.wallet.android.data.dapp.model.LedgerErrorCode
 import com.babylon.wallet.android.data.dapp.model.TransactionType
+import com.babylon.wallet.android.domain.RadixWalletException
 import kotlinx.parcelize.Parcelize
 import kotlinx.serialization.Serializable
 import rdx.works.core.HexCoded32Bytes
@@ -237,11 +238,7 @@ sealed interface MessageFromDataChannel {
 
     data object ParsingError : MessageFromDataChannel
 
-    sealed interface Error : MessageFromDataChannel {
-        data object DappRequest : Error
-        data object LedgerResponse : Error
-        data object Unknown : Error
-    }
+    data class Error(val exception: RadixWalletException) : MessageFromDataChannel
 }
 
 fun MessageFromDataChannel.IncomingRequest.NumberOfValues.toProfileShareAccountsQuantifier(): RequestedNumber.Quantifier {

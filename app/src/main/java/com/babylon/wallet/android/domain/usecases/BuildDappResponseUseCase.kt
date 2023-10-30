@@ -12,8 +12,8 @@ import com.babylon.wallet.android.data.dapp.model.WalletInteractionResponse
 import com.babylon.wallet.android.data.dapp.model.WalletInteractionSuccessResponse
 import com.babylon.wallet.android.data.dapp.model.WalletUnauthorizedRequestResponseItems
 import com.babylon.wallet.android.data.dapp.model.toProof
-import com.babylon.wallet.android.data.transaction.DappRequestFailure
 import com.babylon.wallet.android.data.transaction.ROLAClient
+import com.babylon.wallet.android.domain.RadixWalletException
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel.IncomingRequest.AuthorizedRequest
 import com.babylon.wallet.android.domain.usecases.transaction.SignRequest
@@ -52,7 +52,7 @@ open class BuildDappResponseUseCase(private val rolaClient: ROLAClient) {
                 val signatureWithPublicKey = rolaClient.signAuthChallenge(account, signRequest, biometricAuthProvider)
                 if (signatureWithPublicKey.isFailure) {
                     return Result.failure(
-                        signatureWithPublicKey.exceptionOrNull() ?: DappRequestFailure.FailedToSignAuthChallenge()
+                        signatureWithPublicKey.exceptionOrNull() ?: RadixWalletException.DappRequestException.FailedToSignAuthChallenge()
                     )
                 }
                 AccountProof(
@@ -111,7 +111,9 @@ class BuildAuthorizedDappResponseUseCase @Inject constructor(
                     authProvider
                 )
             if (oneTimeAccountsResponseItem.isFailure) {
-                return Result.failure(oneTimeAccountsResponseItem.exceptionOrNull() ?: DappRequestFailure.FailedToSignAuthChallenge())
+                return Result.failure(
+                    oneTimeAccountsResponseItem.exceptionOrNull() ?: RadixWalletException.DappRequestException.FailedToSignAuthChallenge()
+                )
             }
             val ongoingAccountsResponseItem =
                 buildAccountsResponseItem(
@@ -121,7 +123,9 @@ class BuildAuthorizedDappResponseUseCase @Inject constructor(
                     authProvider
                 )
             if (ongoingAccountsResponseItem.isFailure) {
-                return Result.failure(ongoingAccountsResponseItem.exceptionOrNull() ?: DappRequestFailure.FailedToSignAuthChallenge())
+                return Result.failure(
+                    ongoingAccountsResponseItem.exceptionOrNull() ?: RadixWalletException.DappRequestException.FailedToSignAuthChallenge()
+                )
             }
             return Result.success(
                 WalletInteractionSuccessResponse(
@@ -136,7 +140,7 @@ class BuildAuthorizedDappResponseUseCase @Inject constructor(
                 )
             )
         } else {
-            return Result.failure(authResponse.exceptionOrNull() ?: DappRequestFailure.FailedToSignAuthChallenge())
+            return Result.failure(authResponse.exceptionOrNull() ?: RadixWalletException.DappRequestException.FailedToSignAuthChallenge())
         }
     }
 
@@ -148,7 +152,7 @@ class BuildAuthorizedDappResponseUseCase @Inject constructor(
         val authResponse: Result<AuthRequestResponseItem> = when (val authRequest = request.authRequest) {
             is AuthorizedRequest.AuthRequest.LoginRequest.WithChallenge -> {
                 var response: Result<AuthRequestResponseItem> = Result.failure(
-                    DappRequestFailure.FailedToSignAuthChallenge()
+                    RadixWalletException.DappRequestException.FailedToSignAuthChallenge()
                 )
                 val signRequest = SignRequest.SignAuthChallengeRequest(
                     challengeHex = authRequest.challenge.value,
@@ -221,7 +225,9 @@ class BuildUnauthorizedDappResponseUseCase @Inject constructor(
                 deviceBiometricAuthenticationProvider = deviceBiometricAuthenticationProvider
             )
         if (oneTimeAccountsResponseItem.isFailure) {
-            return Result.failure(oneTimeAccountsResponseItem.exceptionOrNull() ?: DappRequestFailure.FailedToSignAuthChallenge())
+            return Result.failure(
+                oneTimeAccountsResponseItem.exceptionOrNull() ?: RadixWalletException.DappRequestException.FailedToSignAuthChallenge()
+            )
         }
         return Result.success(
             WalletInteractionSuccessResponse(

@@ -129,7 +129,7 @@ class BackupViewModel @Inject constructor(
             }
         }.onFailure { error ->
             _state.update {
-                it.copy(uiMessage = UiMessage.ErrorMessage.from(error), encryptSheet = State.EncryptSheet.Closed)
+                it.copy(uiMessage = UiMessage.ErrorMessage(error), encryptSheet = State.EncryptSheet.Closed)
             }
         }
     }

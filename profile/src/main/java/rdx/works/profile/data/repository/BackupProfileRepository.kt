@@ -10,8 +10,7 @@ import rdx.works.profile.data.model.Profile
 import rdx.works.profile.data.model.ProfileState
 import rdx.works.profile.datastore.EncryptedPreferencesManager
 import rdx.works.profile.di.ProfileSerializer
-import rdx.works.profile.domain.InvalidPasswordException
-import rdx.works.profile.domain.InvalidSnapshotException
+import rdx.works.profile.domain.ProfileException
 import rdx.works.profile.domain.backup.BackupType
 import javax.inject.Inject
 
@@ -43,7 +42,7 @@ class BackupProfileRepositoryImpl @Inject constructor(
                 preferencesManager.updateLastBackupInstant(InstantGenerator())
                 Result.success(Unit)
             } else {
-                Result.failure(InvalidSnapshotException)
+                Result.failure(ProfileException.InvalidSnapshot)
             }
         }
 
@@ -58,9 +57,9 @@ class BackupProfileRepositoryImpl @Inject constructor(
                 }.getOrNull()
 
                 if (encryptedProfileSnapshot != null) {
-                    Result.failure(InvalidPasswordException)
+                    Result.failure(ProfileException.InvalidPassword)
                 } else {
-                    Result.failure(InvalidSnapshotException)
+                    Result.failure(ProfileException.InvalidSnapshot)
                 }
             }
         }
@@ -71,7 +70,7 @@ class BackupProfileRepositoryImpl @Inject constructor(
             }.getOrNull()
 
             if (encryptedProfileSnapshot == null) {
-                Result.failure(InvalidSnapshotException)
+                Result.failure(ProfileException.InvalidSnapshot)
             } else {
                 val snapshot = runCatching {
                     val decrypted = encryptedProfileSnapshot.decrypt(
@@ -85,7 +84,7 @@ class BackupProfileRepositoryImpl @Inject constructor(
                     encryptedPreferencesManager.putProfileSnapshotFromFileBackup(snapshot)
                     Result.success(Unit)
                 } else {
-                    Result.failure(InvalidPasswordException)
+                    Result.failure(ProfileException.InvalidPassword)
                 }
             }
         }

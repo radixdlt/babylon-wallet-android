@@ -3,8 +3,8 @@ package com.babylon.wallet.android.domain.usecases.transaction
 import com.babylon.wallet.android.data.dapp.LedgerMessenger
 import com.babylon.wallet.android.data.dapp.model.Curve
 import com.babylon.wallet.android.data.dapp.model.LedgerInteractionRequest
-import com.babylon.wallet.android.data.transaction.DappRequestFailure
 import com.babylon.wallet.android.data.transaction.InteractionState
+import com.babylon.wallet.android.domain.RadixWalletException
 import com.radixdlt.extensions.removeLeadingZero
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -112,7 +112,7 @@ class GenerateAuthSigningFactorInstanceUseCase @Inject constructor(
             )
         } else {
             _interactionState.update { null }
-            Result.failure(DappRequestFailure.LedgerCommunicationFailure.FailedToDerivePublicKeys)
+            Result.failure(RadixWalletException.LedgerCommunicationFailure.FailedToDerivePublicKeys)
         }
     }
 

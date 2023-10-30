@@ -2,7 +2,7 @@ package com.babylon.wallet.android.domain.usecases
 
 import com.babylon.wallet.android.data.dapp.DappMessenger
 import com.babylon.wallet.android.data.dapp.model.WalletErrorType
-import com.babylon.wallet.android.data.transaction.DappRequestFailure
+import com.babylon.wallet.android.domain.RadixWalletException
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel.IncomingRequest
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel.IncomingRequest.AuthorizedRequest
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel.IncomingRequest.PersonaRequestItem
@@ -20,7 +20,6 @@ import rdx.works.profile.domain.accountOnCurrentNetwork
 import rdx.works.profile.domain.personaOnCurrentNetwork
 import java.time.LocalDateTime
 import javax.inject.Inject
-import kotlin.Result
 
 /**
  * Purpose of this use case is to respond to dApp login request silently without showing dApp login flow.
@@ -39,7 +38,9 @@ class AuthorizeSpecifiedPersonaUseCase @Inject constructor(
 
     @Suppress("ReturnCount", "NestedBlockDepth", "LongMethod")
     suspend operator fun invoke(incomingRequest: IncomingRequest): Result<DAppData> {
-        var operationResult: Result<DAppData> = Result.failure(DappRequestFailure.NotPossibleToAuthenticateAutomatically)
+        var operationResult: Result<DAppData> = Result.failure(
+            RadixWalletException.DappRequestException.NotPossibleToAuthenticateAutomatically
+        )
         (incomingRequest as? AuthorizedRequest)?.let { request ->
             (request.authRequest as? AuthorizedRequest.AuthRequest.UsePersonaRequest)?.let {
                 val authorizedDapp = dAppConnectionRepository.getAuthorizedDapp(
@@ -47,7 +48,7 @@ class AuthorizeSpecifiedPersonaUseCase @Inject constructor(
                 )
                 if (authorizedDapp == null) {
                     respondWithInvalidPersona(incomingRequest)
-                    return Result.failure(DappRequestFailure.InvalidPersona)
+                    return Result.failure(RadixWalletException.DappRequestException.InvalidPersona)
                 }
                 val authorizedPersonaSimple = authorizedDapp
                     .referencesToAuthorizedPersonas
@@ -57,7 +58,7 @@ class AuthorizeSpecifiedPersonaUseCase @Inject constructor(
                     }
                 if (authorizedPersonaSimple == null) {
                     respondWithInvalidPersona(incomingRequest)
-                    return Result.failure(DappRequestFailure.InvalidPersona)
+                    return Result.failure(RadixWalletException.DappRequestException.InvalidPersona)
                 }
 
                 val persona = getProfileUseCase.personaOnCurrentNetwork(
@@ -65,10 +66,13 @@ class AuthorizeSpecifiedPersonaUseCase @Inject constructor(
                 )
                 if (persona == null) {
                     respondWithInvalidPersona(incomingRequest)
-                    return Result.failure(DappRequestFailure.InvalidPersona)
+                    return Result.failure(RadixWalletException.DappRequestException.InvalidPersona)
                 }
 
                 if (request.hasOngoingRequestItemsOnly()) {
+                    if (request.needSignatures()) {
+                        return@let
+                    }
                     val hasOngoingAccountsRequest = request.ongoingAccountsRequestItem != null
                     val hasOngoingPersonaDataRequest = request.ongoingPersonaDataRequestItem != null
                     val selectedAccounts: List<Selectable<Network.Account>> = emptyList()
@@ -128,7 +132,7 @@ class AuthorizeSpecifiedPersonaUseCase @Inject constructor(
         hasOngoingPersonaDataRequest: Boolean,
         persona: Network.Persona
     ): Result<String?> {
-        var operationResult: Result<String?> = Result.failure(DappRequestFailure.InvalidRequest)
+        var operationResult: Result<String?> = Result.failure(RadixWalletException.DappRequestException.InvalidRequest)
         val selectedAccounts: List<Selectable<Network.Account>> = getAccountsWithGrantedAccess(
             request,
             authorizedDapp,
@@ -203,7 +207,7 @@ class AuthorizeSpecifiedPersonaUseCase @Inject constructor(
                 Result.success(
                     authorizedDapp.displayName
                 )
-            } ?: Result.failure(DappRequestFailure.InvalidRequest)
+            } ?: Result.failure(RadixWalletException.DappRequestException.InvalidRequest)
         }
     }
 

@@ -5,8 +5,7 @@ package com.babylon.wallet.android.data.dapp
 import com.babylon.wallet.android.data.dapp.model.Curve
 import com.babylon.wallet.android.data.dapp.model.LedgerInteractionRequest
 import com.babylon.wallet.android.data.dapp.model.peerdroidRequestJson
-import com.babylon.wallet.android.data.transaction.DappRequestException
-import com.babylon.wallet.android.data.transaction.DappRequestFailure
+import com.babylon.wallet.android.domain.RadixWalletException
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
@@ -62,7 +61,7 @@ class LedgerMessengerImpl @Inject constructor(
     override suspend fun sendDeviceInfoRequest(interactionId: String): Result<MessageFromDataChannel.LedgerResponse.GetDeviceInfoResponse> {
         val ledgerRequest: LedgerInteractionRequest = LedgerInteractionRequest.GetDeviceInfo(interactionId)
         return makeLedgerRequest(request = ledgerRequest, onError = {
-            DappRequestException(DappRequestFailure.LedgerCommunicationFailure.FailedToGetDeviceId)
+            RadixWalletException.LedgerCommunicationFailure.FailedToGetDeviceId
         })
     }
 
@@ -77,7 +76,7 @@ class LedgerMessengerImpl @Inject constructor(
             ledgerDevice = ledgerDevice
         )
         return makeLedgerRequest(request = ledgerRequest, onError = {
-            DappRequestException(DappRequestFailure.LedgerCommunicationFailure.FailedToDerivePublicKeys)
+            RadixWalletException.LedgerCommunicationFailure.FailedToDerivePublicKeys
         })
     }
 
@@ -102,7 +101,7 @@ class LedgerMessengerImpl @Inject constructor(
             mode = LedgerInteractionRequest.SignTransaction.Mode.Summary
         )
         return makeLedgerRequest(request = ledgerRequest, onError = {
-            DappRequestException(DappRequestFailure.LedgerCommunicationFailure.FailedToSignTransaction(it.code))
+            RadixWalletException.LedgerCommunicationFailure.FailedToSignTransaction(it.code)
         })
     }
 
@@ -128,7 +127,7 @@ class LedgerMessengerImpl @Inject constructor(
             dAppDefinitionAddress = dAppDefinitionAddress
         )
         return makeLedgerRequest(request = ledgerRequest, onError = {
-            DappRequestException(DappRequestFailure.LedgerCommunicationFailure.FailedToDerivePublicKeys)
+            RadixWalletException.LedgerCommunicationFailure.FailedToDerivePublicKeys
         })
     }
 
@@ -143,13 +142,13 @@ class LedgerMessengerImpl @Inject constructor(
             ledgerDevice = ledgerDevice
         )
         return makeLedgerRequest(request = ledgerRequest, onError = {
-            DappRequestException(DappRequestFailure.LedgerCommunicationFailure.FailedToDeriveAndDisplayAddress)
+            RadixWalletException.LedgerCommunicationFailure.FailedToDeriveAndDisplayAddress
         })
     }
 
     private suspend inline fun <reified R : MessageFromDataChannel.LedgerResponse> makeLedgerRequest(
         request: LedgerInteractionRequest,
-        crossinline onError: (MessageFromDataChannel.LedgerResponse.LedgerErrorResponse) -> DappRequestException
+        crossinline onError: (MessageFromDataChannel.LedgerResponse.LedgerErrorResponse) -> RadixWalletException.LedgerCommunicationFailure
     ): Result<R> = flow<Result<R>> {
         peerdroidClient.sendMessage(peerdroidRequestJson.encodeToString(request))
             .onSuccess {

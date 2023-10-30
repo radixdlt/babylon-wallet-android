@@ -19,6 +19,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
+import com.babylon.wallet.android.domain.userFriendlyMessage
 import com.babylon.wallet.android.presentation.dapp.authorized.login.dAppLoginAuthorized
 import com.babylon.wallet.android.presentation.dapp.unauthorized.login.dAppLoginUnauthorized
 import com.babylon.wallet.android.presentation.main.MAIN_ROUTE
@@ -147,7 +148,7 @@ fun WalletApp(
                 mainViewModel.onInvalidRequestMessageShown()
             },
             title = stringResource(id = R.string.dAppRequest_validationOutcome_invalidRequestTitle),
-            text = stringResource(id = it.toDescriptionRes()),
+            text = it.userFriendlyMessage(),
             confirmText = stringResource(
                 id = R.string.common_ok
             ),

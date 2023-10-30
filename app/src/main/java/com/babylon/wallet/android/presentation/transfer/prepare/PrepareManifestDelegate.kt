@@ -38,7 +38,7 @@ class PrepareManifestDelegate @Inject constructor(
             Timber.d(request.transactionManifestData.instructions)
             incomingRequestRepository.add(request)
         }.onFailure { error ->
-            _state.update { it.copy(error = UiMessage.ErrorMessage.from(error)) }
+            _state.update { it.copy(error = UiMessage.ErrorMessage(error)) }
         }
     }
 

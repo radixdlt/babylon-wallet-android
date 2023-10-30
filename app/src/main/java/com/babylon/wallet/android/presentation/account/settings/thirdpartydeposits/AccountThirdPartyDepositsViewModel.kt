@@ -160,7 +160,7 @@ class AccountThirdPartyDepositsViewModel @Inject constructor(
                 handleRequestStatus(requestId)
             }.onFailure { t ->
                 _state.update { state ->
-                    state.copy(error = UiMessage.ErrorMessage.from(t))
+                    state.copy(error = UiMessage.ErrorMessage(t))
                 }
             }
         }

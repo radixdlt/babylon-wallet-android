@@ -49,7 +49,7 @@ interface PeerdroidClient {
 
     fun listenForLedgerResponses(): Flow<MessageFromDataChannel.LedgerResponse>
 
-    fun listenForIncomingRequestErrors(): Flow<MessageFromDataChannel.Error.DappRequest>
+    fun listenForIncomingRequestErrors(): Flow<MessageFromDataChannel.Error>
 
     suspend fun deleteLink(connectionPassword: String)
 
@@ -102,7 +102,7 @@ class PeerdroidClientImpl @Inject constructor(
         return listenForIncomingMessages().filterIsInstance()
     }
 
-    override fun listenForIncomingRequestErrors(): Flow<MessageFromDataChannel.Error.DappRequest> {
+    override fun listenForIncomingRequestErrors(): Flow<MessageFromDataChannel.Error> {
         return listenForIncomingMessages().filterIsInstance()
     }
 
@@ -147,13 +147,13 @@ class PeerdroidClientImpl @Inject constructor(
                 remoteConnectorId = remoteConnectorId
             )
             MessageFromDataChannel.ParsingError
-        } catch (e: RadixWalletException.ErrorParsingIncomingRequest) {
-            MessageFromDataChannel.Error.DappRequest
-        } catch (e: RadixWalletException.ErrorParsingLedgerResponse) {
-            MessageFromDataChannel.Error.LedgerResponse
+        } catch (e: RadixWalletException.IncomingMessageException.MessageParse) {
+            MessageFromDataChannel.Error(e)
+        } catch (e: RadixWalletException.IncomingMessageException.LedgerResponseParse) {
+            MessageFromDataChannel.Error(e)
         } catch (exception: Exception) {
             Timber.e("failed to parse incoming message: ${exception.localizedMessage}")
-            MessageFromDataChannel.Error.Unknown
+            MessageFromDataChannel.Error(RadixWalletException.IncomingMessageException.Unknown(exception))
         }
     }
 

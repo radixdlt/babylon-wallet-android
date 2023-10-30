@@ -13,7 +13,7 @@ import retrofit2.awaitResponse
 suspend inline fun <reified T, A> Call<T>.execute(
     cacheParameters: CacheParameters? = null,
     map: (T) -> A,
-    error: () -> Exception? = { null }
+    error: () -> Throwable? = { null }
 ): Result<A> {
     return try {
         val restored = if (cacheParameters != null && !cacheParameters.isCacheOverridden) {
@@ -47,7 +47,7 @@ suspend inline fun <reified T, A> Call<T>.execute(
             } catch (e: Exception) {
                 null
             }
-            val exception: Exception = definedError ?: RadixGatewayException(
+            val exception: Throwable = definedError ?: RadixGatewayException(
                 errorResponse?.message
             )
             return Result.failure(exception)

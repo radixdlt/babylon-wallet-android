@@ -14,8 +14,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.profile.data.model.Profile
-import rdx.works.profile.domain.InvalidPasswordException
-import rdx.works.profile.domain.InvalidSnapshotException
+import rdx.works.profile.domain.ProfileException
 import rdx.works.profile.domain.backup.BackupType
 import rdx.works.profile.domain.backup.GetTemporaryRestoringProfileForBackupUseCase
 import rdx.works.profile.domain.backup.SaveTemporaryRestoringSnapshotUseCase
@@ -48,10 +47,10 @@ class RestoreFromBackupViewModel @Inject constructor(
                 sendEvent(Event.OnRestoreConfirm(fromCloud = false))
             }.onFailure { error ->
                 when (error) {
-                    is InvalidPasswordException -> _state.update {
+                    is ProfileException.InvalidPassword -> _state.update {
                         it.copy(passwordSheetState = State.PasswordSheet.Open(file = uri))
                     }
-                    is InvalidSnapshotException -> _state.update {
+                    is ProfileException.InvalidSnapshot -> _state.update {
                         it.copy(uiMessage = UiMessage.InfoMessage.InvalidSnapshot)
                     }
                 }
@@ -100,10 +99,10 @@ class RestoreFromBackupViewModel @Inject constructor(
                         sendEvent(Event.OnRestoreConfirm(fromCloud = false))
                     }.onFailure { error ->
                         when (error) {
-                            is InvalidPasswordException -> _state.update {
+                            is ProfileException.InvalidPassword -> _state.update {
                                 it.copy(passwordSheetState = sheet.copy(isPasswordInvalid = true))
                             }
-                            is InvalidSnapshotException -> _state.update {
+                            is ProfileException.InvalidSnapshot -> _state.update {
                                 it.copy(
                                     passwordSheetState = State.PasswordSheet.Closed,
                                     uiMessage = UiMessage.InfoMessage.InvalidSnapshot
@@ -131,7 +130,7 @@ class RestoreFromBackupViewModel @Inject constructor(
             get() = isRestoringProfileChecked
 
         sealed interface PasswordSheet {
-            object Closed : PasswordSheet
+            data object Closed : PasswordSheet
             data class Open(
                 val password: String = "",
                 val isPasswordInvalid: Boolean = false,
@@ -146,7 +145,7 @@ class RestoreFromBackupViewModel @Inject constructor(
     }
 
     sealed interface Event : OneOffEvent {
-        object OnDismiss : Event
+        data object OnDismiss : Event
         data class OnRestoreConfirm(val fromCloud: Boolean) : Event
     }
 }
