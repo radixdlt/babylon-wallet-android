@@ -31,6 +31,7 @@ import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.SampleDataProvider
+import com.babylon.wallet.android.presentation.ui.composables.DSR
 import com.babylon.wallet.android.presentation.ui.composables.GrayBackgroundWrapper
 import com.babylon.wallet.android.presentation.ui.composables.InfoLink
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
@@ -152,6 +153,7 @@ private fun SeedPhraseCard(
     modifier: Modifier,
     data: DeviceFactorSourceData
 ) {
+    val mnemonicNeedsRecovery = data.mnemonicState == DeviceFactorSourceData.MnemonicState.NeedRecover
     Column(
         modifier = modifier,
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -162,16 +164,23 @@ private fun SeedPhraseCard(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingMedium)
         ) {
+            val icon = if (mnemonicNeedsRecovery) DSR.ic_warning_error else DSR.ic_seed_phrases
+            val tint = if (mnemonicNeedsRecovery) RadixTheme.colors.red1 else RadixTheme.colors.gray1
+            val text = if (mnemonicNeedsRecovery) {
+                "Seed Phrase Entry Required" // TODO add to crowdin
+            } else {
+                stringResource(id = R.string.displayMnemonics_cautionAlert_revealButtonLabel)
+            }
             Icon(
-                painter = painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_seed_phrases),
+                painter = painterResource(id = icon),
                 contentDescription = null,
-                tint = RadixTheme.colors.gray1
+                tint = tint
             )
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = stringResource(id = R.string.displayMnemonics_cautionAlert_revealButtonLabel),
+                    text = text,
                     style = RadixTheme.typography.body1Header,
-                    color = RadixTheme.colors.gray1,
+                    color = tint,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
@@ -206,19 +215,12 @@ private fun SeedPhraseCard(
                 tint = RadixTheme.colors.gray1
             )
         }
-        when (data.mnemonicState) {
-            DeviceFactorSourceData.MnemonicState.NotBackedUp -> {
-                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXSmall))
-                RedWarningText(text = AnnotatedString(stringResource(id = R.string.homePage_securityPromptBackup)))
-            }
-            DeviceFactorSourceData.MnemonicState.NeedRecover -> {
-                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXSmall))
-                RedWarningText(text = AnnotatedString(stringResource(id = R.string.homePage_securityPromptRecover)))
-            }
-            else -> {}
+        if (data.mnemonicState == DeviceFactorSourceData.MnemonicState.NotBackedUp) {
+            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXSmall))
+            RedWarningText(text = AnnotatedString(stringResource(id = R.string.homePage_securityPromptBackup)))
         }
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXSmall))
-        data.accounts.forEachIndexed { index, account ->
+        data.accounts.forEach { account ->
             SimpleAccountCard(
                 modifier = Modifier.fillMaxWidth(),
                 account = account
