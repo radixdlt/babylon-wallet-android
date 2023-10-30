@@ -153,7 +153,7 @@ class DAppUnauthorizedLoginViewModel @Inject constructor(
             dAppMessenger.sendWalletInteractionResponseFailure(
                 remoteConnectorId = request.remoteConnectorId,
                 requestId = args.requestId,
-                error = exception.toWalletErrorType(),
+                error = exception.ceError,
                 message = exception.getDappMessage()
             )
             _state.update { it.copy(failureDialog = DAppUnauthorizedLoginUiState.FailureDialog.Open(exception)) }

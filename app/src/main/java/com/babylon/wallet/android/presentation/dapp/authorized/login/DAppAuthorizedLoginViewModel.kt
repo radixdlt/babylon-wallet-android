@@ -243,7 +243,7 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
             dAppMessenger.sendWalletInteractionResponseFailure(
                 remoteConnectorId = request.remoteConnectorId,
                 requestId = args.interactionId,
-                error = exception.toWalletErrorType(),
+                error = exception.ceError,
                 message = exception.getDappMessage()
             )
             _state.update { it.copy(failureDialog = DAppLoginUiState.FailureDialog.Open(exception)) }

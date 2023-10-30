@@ -72,8 +72,13 @@ sealed class UiMessage(val id: String = UUIDGenerator.uuid().toString()) {
     ) : UiMessage() {
 
         @Composable
-        override fun getMessage(): String =
-            error?.asRadixWalletException()?.toUserFriendlyMessage(LocalContext.current) ?: error?.message
-                ?: stringResource(id = R.string.common_somethingWentWrong)
+        override fun getMessage(): String {
+            val message = error?.asRadixWalletException()?.toUserFriendlyMessage(LocalContext.current) ?: error?.message
+            return if (message.isNullOrEmpty()) {
+                stringResource(id = R.string.common_somethingWentWrong)
+            } else {
+                message
+            }
+        }
     }
 }

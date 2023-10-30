@@ -20,7 +20,7 @@ sealed class RadixWalletException(cause: Throwable? = null) : Throwable(cause = 
         data class Unknown(override val cause: Throwable? = null) : IncomingMessageException(cause)
     }
 
-    sealed class DappRequestException(cause: Throwable? = null) : RadixWalletException(cause = cause) {
+    sealed class DappRequestException(cause: Throwable? = null) : RadixWalletException(cause = cause), ConnectorExtensionThrowable {
 
         data object GetEpoch : DappRequestException()
         data object RejectedByUser : DappRequestException()
@@ -44,8 +44,8 @@ sealed class RadixWalletException(cause: Throwable? = null) : Throwable(cause = 
                 }.getOrNull()?.name.orEmpty().replaceFirstChar(Char::titlecase)
         }
 
-        fun toWalletErrorType(): WalletErrorType {
-            return when (this) {
+        override val ceError: ConnectorExtensionError
+            get() = when (this) {
                 GetEpoch -> WalletErrorType.FailedToPrepareTransaction
                 RejectedByUser -> WalletErrorType.RejectedByUser
                 is WrongNetwork -> WalletErrorType.WrongNetwork
@@ -56,10 +56,9 @@ sealed class RadixWalletException(cause: Throwable? = null) : Throwable(cause = 
                 is InvalidRequestChallenge -> WalletErrorType.InvalidRequest
                 NotPossibleToAuthenticateAutomatically -> WalletErrorType.InvalidRequest
             }
-        }
     }
 
-    sealed class PrepareTransactionException(cause: Throwable? = null) : RadixWalletException(cause = cause) {
+    sealed class PrepareTransactionException(cause: Throwable? = null) : RadixWalletException(cause = cause), ConnectorExtensionThrowable {
         data object ConvertManifest : PrepareTransactionException()
         data class BuildTransactionHeader(override val cause: Throwable) : PrepareTransactionException(cause)
         data object FailedToFindAccountWithEnoughFundsToLockFee : PrepareTransactionException()
@@ -68,8 +67,8 @@ sealed class RadixWalletException(cause: Throwable? = null) : Throwable(cause = 
         data class PrepareNotarizedTransaction(override val cause: Throwable? = null) : PrepareTransactionException(cause)
         data class SubmitNotarizedTransaction(override val cause: Throwable? = null) : PrepareTransactionException()
 
-        fun toWalletErrorType(): WalletErrorType {
-            return when (this) {
+        override val ceError: ConnectorExtensionError
+            get() = when (this) {
                 is BuildTransactionHeader -> WalletErrorType.FailedToPrepareTransaction
                 ConvertManifest -> WalletErrorType.FailedToPrepareTransaction
                 is PrepareNotarizedTransaction -> WalletErrorType.FailedToSignTransaction
@@ -81,10 +80,9 @@ sealed class RadixWalletException(cause: Throwable? = null) : Throwable(cause = 
                 CompileTransactionIntent -> WalletErrorType.FailedToCompileTransaction
                 is SignCompiledTransactionIntent -> WalletErrorType.FailedToSignTransaction
             }
-        }
     }
 
-    sealed class TransactionSubmitException : RadixWalletException() {
+    sealed class TransactionSubmitException : RadixWalletException(), ConnectorExtensionThrowable {
         data class InvalidTXDuplicate(val txId: String) : TransactionSubmitException()
         data class FailedToPollTXStatus(val txId: String) : TransactionSubmitException()
         data class GatewayRejected(val txId: String) : TransactionSubmitException()
@@ -108,8 +106,8 @@ sealed class RadixWalletException(cause: Throwable? = null) : Throwable(cause = 
             }
         }
 
-        fun toWalletErrorType(): WalletErrorType {
-            return when (this) {
+        override val ceError: ConnectorExtensionError
+            get() = when (this) {
                 is FailedToPollTXStatus -> WalletErrorType.FailedToPollSubmittedTransaction
                 is GatewayCommittedException -> {
                     WalletErrorType.SubmittedTransactionHasFailedTransactionStatus
@@ -124,42 +122,45 @@ sealed class RadixWalletException(cause: Throwable? = null) : Throwable(cause = 
                 is TransactionRejected.Permanently -> WalletErrorType.SubmittedTransactionHasPermanentlyRejectedTransactionStatus
                 is TransactionRejected.Temporary -> WalletErrorType.SubmittedTransactionHasTemporarilyRejectedTransactionStatus
             }
-        }
     }
 
-    sealed class DappVerificationException : RadixWalletException() {
+    sealed class DappVerificationException : RadixWalletException(), ConnectorExtensionThrowable {
         data object WrongAccountType : DappVerificationException()
         data object UnknownWebsite : DappVerificationException()
         data object RadixJsonNotFound : DappVerificationException()
         data object UnknownDefinitionAddress : DappVerificationException()
         data object ClaimedEntityAddressNotPresent : DappVerificationException()
 
-        fun toWalletErrorType(): WalletErrorType {
-            return when (this) {
+        override val ceError: ConnectorExtensionError
+            get() = when (this) {
                 RadixJsonNotFound -> WalletErrorType.RadixJsonNotFound
                 UnknownDefinitionAddress -> WalletErrorType.UnknownDefinitionAddress
                 UnknownWebsite -> WalletErrorType.UnknownWebsite
                 WrongAccountType -> WalletErrorType.WrongAccountType
                 ClaimedEntityAddressNotPresent -> WalletErrorType.WrongAccountType
             }
-        }
     }
 
-    sealed class LedgerCommunicationFailure : RadixWalletException() {
+    sealed class LedgerCommunicationFailure : RadixWalletException(), ConnectorExtensionThrowable {
         data object FailedToGetDeviceId : LedgerCommunicationFailure()
         data object FailedToDerivePublicKeys : LedgerCommunicationFailure()
         data object FailedToDeriveAndDisplayAddress : LedgerCommunicationFailure()
         data class FailedToSignTransaction(val reason: LedgerErrorCode) : LedgerCommunicationFailure()
 
-        fun toWalletErrorType(): WalletErrorType {
-            return when (this) {
+        override val ceError: ConnectorExtensionError
+            get() = when (this) {
                 is FailedToDerivePublicKeys -> WalletErrorType.InvalidRequest
                 FailedToGetDeviceId -> WalletErrorType.InvalidRequest
                 is FailedToSignTransaction -> WalletErrorType.InvalidRequest
                 is FailedToDeriveAndDisplayAddress -> WalletErrorType.InvalidRequest
             }
-        }
     }
+}
+
+typealias ConnectorExtensionError = WalletErrorType
+
+interface ConnectorExtensionThrowable {
+    val ceError: ConnectorExtensionError
 }
 
 fun RadixWalletException.LedgerCommunicationFailure.toUserFriendlyMessage(context: Context): String {
@@ -243,21 +244,27 @@ fun RadixWalletException.TransactionSubmitException.toUserFriendlyMessage(contex
         is RadixWalletException.TransactionSubmitException.FailedToPollTXStatus -> {
             context.getString(R.string.error_transactionFailure_pollStatus)
         }
+
         is RadixWalletException.TransactionSubmitException.GatewayCommittedException -> {
             context.getString(R.string.error_transactionFailure_commit)
         }
+
         is RadixWalletException.TransactionSubmitException.GatewayRejected -> {
             context.getString(R.string.error_transactionFailure_rejected)
         }
+
         is RadixWalletException.TransactionSubmitException.InvalidTXDuplicate -> {
             context.getString(R.string.error_transactionFailure_duplicate)
         }
+
         is RadixWalletException.TransactionSubmitException.TransactionCommitted.Failure -> {
             context.getString(R.string.transaction_status_failed_text)
         }
+
         is RadixWalletException.TransactionSubmitException.TransactionRejected.Permanently -> {
             context.getString(R.string.transaction_status_rejected_text)
         }
+
         is RadixWalletException.TransactionSubmitException.TransactionRejected.Temporary -> {
             context.getString(
                 R.string.transaction_status_error_text,
@@ -321,15 +328,8 @@ fun RadixWalletException.getDappMessage(): String? {
     }
 }
 
-fun RadixWalletException.toWalletErrorType(): WalletErrorType? {
-    return when (this) {
-        is RadixWalletException.DappRequestException -> toWalletErrorType()
-        is RadixWalletException.DappVerificationException -> toWalletErrorType()
-        is RadixWalletException.LedgerCommunicationFailure -> toWalletErrorType()
-        is RadixWalletException.PrepareTransactionException -> toWalletErrorType()
-        is RadixWalletException.TransactionSubmitException -> toWalletErrorType()
-        else -> null
-    }
+fun RadixWalletException.toConnectorExtensionError(): ConnectorExtensionError? {
+    return (this as? ConnectorExtensionThrowable?)?.ceError
 }
 
 fun Throwable.asRadixWalletException(): RadixWalletException? {
