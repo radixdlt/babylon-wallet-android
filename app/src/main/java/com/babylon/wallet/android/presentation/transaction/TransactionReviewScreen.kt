@@ -39,7 +39,7 @@ import com.babylon.wallet.android.data.transaction.InteractionState
 import com.babylon.wallet.android.data.transaction.TransactionVersion
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
-import com.babylon.wallet.android.domain.model.DAppWithMetadataAndAssociatedResources
+import com.babylon.wallet.android.domain.model.DAppWithResources
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.babylon.wallet.android.domain.model.TransactionManifestData
 import com.babylon.wallet.android.domain.model.resources.Resource
@@ -163,7 +163,7 @@ private fun TransactionPreviewContent(
     onGuaranteeValueChanged: (AccountWithPredictedGuarantee, String) -> Unit,
     onGuaranteeValueIncreased: (AccountWithPredictedGuarantee) -> Unit,
     onGuaranteeValueDecreased: (AccountWithPredictedGuarantee) -> Unit,
-    onDAppClick: (DAppWithMetadataAndAssociatedResources) -> Unit,
+    onDAppClick: (DAppWithResources) -> Unit,
     onFungibleResourceClick: (Resource.FungibleResource) -> Unit,
     onNonFungibleResourceClick: (Resource.NonFungibleResource, Resource.NonFungibleResource.Item) -> Unit,
     onChangeFeePayerClick: () -> Unit,

@@ -37,7 +37,7 @@ import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixSecondaryButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
-import com.babylon.wallet.android.domain.model.DAppWithMetadata
+import com.babylon.wallet.android.domain.model.DApp
 import com.babylon.wallet.android.domain.model.resources.metadata.NameMetadataItem
 import com.babylon.wallet.android.presentation.common.FullscreenCircularProgressContent
 import com.babylon.wallet.android.presentation.dapp.InitialAuthorizedLoginRoute
@@ -129,7 +129,7 @@ fun SelectPersonaScreen(
             sharedViewModel.onSelectPersona(it)
             viewModel.onSelectPersona(it.address)
         },
-        dappWithMetadata = sharedState.dappWithMetadata,
+        dapp = sharedState.dapp,
         firstTimeLogin = state.firstTimeLogin,
         continueButtonEnabled = state.continueButtonEnabled,
         personas = state.personaListToDisplay,
@@ -177,7 +177,7 @@ private fun SelectPersonaContent(
     onCancelClick: () -> Unit,
     onContinueClick: () -> Unit,
     onSelectPersona: (Network.Persona) -> Unit,
-    dappWithMetadata: DAppWithMetadata?,
+    dapp: DApp?,
     firstTimeLogin: Boolean,
     continueButtonEnabled: Boolean,
     personas: ImmutableList<PersonaUiModel>,
@@ -235,7 +235,7 @@ private fun SelectPersonaContent(
                     Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
                     Thumbnail.DApp(
                         modifier = Modifier.size(104.dp),
-                        dapp = dappWithMetadata
+                        dapp = dapp
                     )
                     Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
                     Text(
@@ -252,7 +252,7 @@ private fun SelectPersonaContent(
                     )
                     Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
                     LoginRequestHeader(
-                        dappName = dappWithMetadata?.name.orEmpty().ifEmpty {
+                        dappName = dapp?.name.orEmpty().ifEmpty {
                             stringResource(
                                 id = R.string.dAppRequest_metadata_unknownName
                             )
@@ -329,7 +329,7 @@ fun SelectPersonaPreview() {
             onCancelClick = {},
             onContinueClick = {},
             onSelectPersona = {},
-            dappWithMetadata = DAppWithMetadata(
+            dapp = DApp(
                 dAppAddress = "account_tdx_abc",
                 nameItem = NameMetadataItem("Collabo.fi")
             ),
@@ -351,7 +351,7 @@ fun SelectPersonaFirstTimePreview() {
             onCancelClick = {},
             onContinueClick = {},
             onSelectPersona = {},
-            dappWithMetadata = DAppWithMetadata(
+            dapp = DApp(
                 dAppAddress = "account_tdx_abc",
                 nameItem = NameMetadataItem("Collabo.fi")
             ),

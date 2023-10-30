@@ -16,7 +16,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
-import com.babylon.wallet.android.domain.model.DAppWithMetadata
+import com.babylon.wallet.android.domain.model.DApp
 import com.babylon.wallet.android.domain.model.RequiredPersonaFields
 import com.babylon.wallet.android.domain.model.resources.metadata.NameMetadataItem
 import com.babylon.wallet.android.presentation.dapp.authorized.account.AccountItemUiModel
@@ -101,7 +101,7 @@ fun OneTimeChooseAccountsScreen(
         accountItems = state.availableAccountItems,
         onAccountSelect = viewModel::onAccountSelect,
         onCreateNewAccount = onAccountCreationClick,
-        dappWithMetadata = sharedState.dappWithMetadata,
+        dapp = sharedState.dapp,
         isOneTime = true,
         isSingleChoice = state.isSingleChoice,
         numberOfAccounts = state.numberOfAccounts,
@@ -171,7 +171,7 @@ fun OneTimeAccountContentPreview() {
             ),
             onAccountSelect = {},
             onCreateNewAccount = {},
-            dappWithMetadata = DAppWithMetadata(
+            dapp = DApp(
                 dAppAddress = "account_tdx_abc",
                 nameItem = NameMetadataItem("dApp")
             ),

@@ -9,7 +9,7 @@ import com.babylon.wallet.android.data.transaction.InteractionState
 import com.babylon.wallet.android.data.transaction.TransactionClient
 import com.babylon.wallet.android.data.transaction.model.FeePayerSearchResult
 import com.babylon.wallet.android.domain.RadixWalletException
-import com.babylon.wallet.android.domain.model.DAppWithMetadataAndAssociatedResources
+import com.babylon.wallet.android.domain.model.DAppWithResources
 import com.babylon.wallet.android.domain.model.GuaranteeAssertion
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.babylon.wallet.android.domain.model.Transferable
@@ -194,7 +194,7 @@ class TransactionReviewViewModel @Inject constructor(
         }
     }
 
-    fun onDAppClick(dApp: DAppWithMetadataAndAssociatedResources) {
+    fun onDAppClick(dApp: DAppWithResources) {
         _state.update {
             it.copy(sheetState = State.Sheet.Dapp(dApp))
         }
@@ -405,7 +405,7 @@ class TransactionReviewViewModel @Inject constructor(
             }
 
             data class Dapp(
-                val dApp: DAppWithMetadataAndAssociatedResources
+                val dApp: DAppWithResources
             ) : Sheet
         }
     }
@@ -426,7 +426,7 @@ sealed interface PreviewType {
         val from: List<AccountWithTransferableResources>,
         val to: List<AccountWithTransferableResources>,
         val badges: List<Badge> = emptyList(),
-        val dApps: List<DAppWithMetadataAndAssociatedResources> = emptyList()
+        val dApps: List<DAppWithResources> = emptyList()
     ) : PreviewType
 }
 
