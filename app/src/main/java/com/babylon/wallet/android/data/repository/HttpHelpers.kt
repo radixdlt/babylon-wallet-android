@@ -25,7 +25,7 @@ suspend inline fun <T> Call<T>.toResult(): Result<T> {
             Result.failure(RadixGatewayException(errorResponse?.message))
         }
     } catch (e: Exception) {
-        Result.failure(RadixGatewayException(e.message, e.cause))
+        Result.failure(RadixGatewayException(e.message, e))
     }
 }
 

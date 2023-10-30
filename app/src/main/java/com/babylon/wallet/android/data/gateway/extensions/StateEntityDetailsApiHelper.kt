@@ -22,7 +22,7 @@ suspend fun StateApi.getSingleEntityDetails(
     aggregationLevel: ResourceAggregationLevel = ResourceAggregationLevel.vault,
     stateVersion: Long? = null
 ): StateEntityDetailsResponseItem {
-    return entityDetails(
+    return stateEntityDetails(
         StateEntityDetailsRequest(
             addresses = listOf(address),
             aggregationLevel = aggregationLevel,
@@ -43,7 +43,7 @@ suspend fun StateApi.paginateDetails(
 ) = addresses
     .chunked(StateApiDelegate.ENTITY_DETAILS_PAGE_LIMIT)
     .forEach { addressesChunk ->
-        val response = entityDetails(
+        val response = stateEntityDetails(
             StateEntityDetailsRequest(
                 addresses = addressesChunk,
                 aggregationLevel = aggregationLevel,

@@ -23,12 +23,13 @@ import kotlinx.serialization.Contextual
 /**
  * 
  *
- * @param explicitMetadata 
+ * @param explicitMetadata allows specifying explicitly metadata properties which should be returned in response, limited to max 20 items.
  */
 @Serializable
 
 data class StateEntityFungiblesPageRequestOptIns (
 
+    /* allows specifying explicitly metadata properties which should be returned in response, limited to max 20 items. */
     @SerialName(value = "explicit_metadata")
     val explicitMetadata: kotlin.collections.List<kotlin.String>? = null
 

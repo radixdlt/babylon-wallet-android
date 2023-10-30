@@ -70,7 +70,7 @@ class MetadataRepositoryImpl @Inject constructor(
         val responses = addresses
             .chunked(EntityRepositoryImpl.CHUNK_SIZE_OF_ITEMS)
             .map { chunkedAddresses ->
-                stateApi.entityDetails(
+                stateApi.stateEntityDetails(
                     StateEntityDetailsRequest(
                         addresses = chunkedAddresses,
                         aggregationLevel = ResourceAggregationLevel.vault,

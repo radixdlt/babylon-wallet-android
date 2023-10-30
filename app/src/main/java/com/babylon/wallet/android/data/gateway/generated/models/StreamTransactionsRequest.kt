@@ -15,6 +15,10 @@
 
 package com.babylon.wallet.android.data.gateway.generated.models
 
+import com.babylon.wallet.android.data.gateway.generated.models.LedgerStateSelector
+import com.babylon.wallet.android.data.gateway.generated.models.StreamTransactionsRequestEventFilterItem
+import com.babylon.wallet.android.data.gateway.generated.models.TransactionDetailsOptIns
+
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Contextual
@@ -23,9 +27,9 @@ import kotlinx.serialization.Contextual
  * 
  *
  * @param atLedgerState 
+ * @param fromLedgerState 
  * @param cursor This cursor allows forward pagination, by providing the cursor from the previous request.
  * @param limitPerPage The page size requested.
- * @param fromLedgerState 
  * @param kindFilter Limit returned transactions by their kind. Defaults to `user`.
  * @param manifestAccountsWithdrawnFromFilter 
  * @param manifestAccountsDepositedIntoFilter 
@@ -42,6 +46,9 @@ data class StreamTransactionsRequest (
     @SerialName(value = "at_ledger_state")
     val atLedgerState: LedgerStateSelector? = null,
 
+    @SerialName(value = "from_ledger_state")
+    val fromLedgerState: LedgerStateSelector? = null,
+
     /* This cursor allows forward pagination, by providing the cursor from the previous request. */
     @SerialName(value = "cursor")
     val cursor: kotlin.String? = null,
@@ -49,9 +56,6 @@ data class StreamTransactionsRequest (
     /* The page size requested. */
     @SerialName(value = "limit_per_page")
     val limitPerPage: kotlin.Int? = null,
-
-    @SerialName(value = "from_ledger_state")
-    val fromLedgerState: LedgerStateSelector? = null,
 
     /* Limit returned transactions by their kind. Defaults to `user`. */
     @SerialName(value = "kind_filter")

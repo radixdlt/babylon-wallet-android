@@ -25,7 +25,7 @@ import kotlinx.serialization.Contextual
  *
  * @param vaultAddress Bech32m-encoded human readable version of the address.
  * @param totalCount 
- * @param lastUpdatedAtStateVersion TBD
+ * @param lastUpdatedAtStateVersion The most recent state version underlying object was modified at.
  */
 @Serializable
 
@@ -38,7 +38,7 @@ data class NonFungibleResourcesCollectionItemVaultAggregatedVaultItemAllOf (
     @SerialName(value = "total_count")
     val totalCount: kotlin.Long,
 
-    /* TBD */
+    /* The most recent state version underlying object was modified at. */
     @SerialName(value = "last_updated_at_state_version")
     val lastUpdatedAtStateVersion: kotlin.Long
 

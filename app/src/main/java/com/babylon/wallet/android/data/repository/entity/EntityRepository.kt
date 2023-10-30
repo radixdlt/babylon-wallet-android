@@ -1,6 +1,5 @@
 package com.babylon.wallet.android.data.repository.entity
 
-import android.net.Uri
 import com.babylon.wallet.android.data.gateway.apis.StateApi
 import com.babylon.wallet.android.data.gateway.extensions.asMetadataItems
 import com.babylon.wallet.android.data.gateway.extensions.claimTokenResourceAddress
@@ -13,7 +12,6 @@ import com.babylon.wallet.android.data.gateway.extensions.xrdVaultAddress
 import com.babylon.wallet.android.data.gateway.generated.models.FungibleResourcesCollection
 import com.babylon.wallet.android.data.gateway.generated.models.FungibleResourcesCollectionItemVaultAggregated
 import com.babylon.wallet.android.data.gateway.generated.models.LedgerStateSelector
-import com.babylon.wallet.android.data.gateway.generated.models.MetadataValueType
 import com.babylon.wallet.android.data.gateway.generated.models.NonFungibleResourcesCollection
 import com.babylon.wallet.android.data.gateway.generated.models.NonFungibleResourcesCollectionItemVaultAggregated
 import com.babylon.wallet.android.data.gateway.generated.models.ResourceAggregationLevel
@@ -29,7 +27,6 @@ import com.babylon.wallet.android.data.gateway.generated.models.StateEntityNonFu
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityNonFungiblesPageRequest
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityNonFungiblesPageResponse
 import com.babylon.wallet.android.data.gateway.generated.models.StateNonFungibleDataRequest
-import com.babylon.wallet.android.data.gateway.generated.models.StateNonFungibleDetailsResponseItem
 import com.babylon.wallet.android.data.gateway.model.ExplicitMetadataKey
 import com.babylon.wallet.android.data.repository.cache.CacheParameters
 import com.babylon.wallet.android.data.repository.cache.HttpCache
@@ -45,7 +42,6 @@ import com.babylon.wallet.android.domain.model.assets.ValidatorDetail
 import com.babylon.wallet.android.domain.model.assets.ValidatorWithStakeResources
 import com.babylon.wallet.android.domain.model.resources.AccountDetails
 import com.babylon.wallet.android.domain.model.resources.Resource
-import com.babylon.wallet.android.domain.model.resources.metadata.ClaimAmountMetadataItem
 import com.babylon.wallet.android.domain.model.resources.metadata.ClaimEpochMetadataItem
 import com.babylon.wallet.android.domain.model.resources.metadata.DescriptionMetadataItem
 import com.babylon.wallet.android.domain.model.resources.metadata.IconUrlMetadataItem
@@ -530,7 +526,7 @@ class EntityRepositoryImpl @Inject constructor(
         val responses = addresses
             .chunked(CHUNK_SIZE_OF_ITEMS)
             .map { chunkedAddresses ->
-                stateApi.entityDetails(
+                stateApi.stateEntityDetails(
                     StateEntityDetailsRequest(
                         addresses = chunkedAddresses,
                         aggregationLevel = ResourceAggregationLevel.vault,
@@ -668,38 +664,20 @@ class EntityRepositoryImpl @Inject constructor(
                 nonFungibleDataResponsesListResult.mapNotNull { nonFungibleDataResponse ->
                     nonFungibleDataResponse.map {
                         it.nonFungibleIds.map { stateNonFungibleDetailsResponseItem ->
-                            val claimEpoch = stateNonFungibleDetailsResponseItem.claimEpoch()?.toLong()
+                            val metadataItems = stateNonFungibleDetailsResponseItem.asMetadataItems().toMutableList()
+                            val claimEpoch = metadataItems.consume<ClaimEpochMetadataItem>()
                             val ledgerEpoch = latestEpoch
                             Resource.NonFungibleResource.Item(
                                 collectionAddress = resourceAddress,
                                 localId = Resource.NonFungibleResource.Item.ID.from(
                                     stateNonFungibleDetailsResponseItem.nonFungibleId
                                 ),
-                                nameMetadataItem = stateNonFungibleDetailsResponseItem.data
-                                    ?.programmaticJson?.fields?.find { field ->
-                                        field.field_name == ExplicitMetadataKey.NAME.key
-                                    }?.value?.let { name -> NameMetadataItem(name = name) },
-                                iconMetadataItem = stateNonFungibleDetailsResponseItem.data
-                                    ?.programmaticJson?.fields?.find { field ->
-                                        field.field_name == ExplicitMetadataKey.KEY_IMAGE_URL.key
-                                    }?.value?.let { imageUrl -> IconUrlMetadataItem(url = Uri.parse(imageUrl)) },
-                                readyToClaim = claimEpoch != null && ledgerEpoch != null && ledgerEpoch >= claimEpoch,
-                                claimEpochMetadataItem = claimEpoch?.let { epoch -> ClaimEpochMetadataItem(epoch) },
-                                claimAmountMetadataItem = stateNonFungibleDetailsResponseItem.claimAmount()?.toBigDecimalOrNull()
-                                    ?.let { claimAmount -> ClaimAmountMetadataItem(claimAmount) },
-                                remainingMetadata = stateNonFungibleDetailsResponseItem.data?.programmaticJson?.fields
-                                    ?.filterNot { field ->
-                                        field.field_name == ExplicitMetadataKey.NAME.key ||
-                                            field.field_name == ExplicitMetadataKey.KEY_IMAGE_URL.key
-                                    }?.mapNotNull { field ->
-                                        val fieldName = field.field_name.orEmpty()
-                                        val value = field.valueContent.orEmpty()
-                                        if (fieldName.isNotEmpty() && value.isNotBlank()) {
-                                            StringMetadataItem(fieldName, value)
-                                        } else {
-                                            null
-                                        }
-                                    }.orEmpty()
+                                nameMetadataItem = metadataItems.consume(),
+                                iconMetadataItem = metadataItems.consume(),
+                                readyToClaim = claimEpoch != null && ledgerEpoch != null && ledgerEpoch >= claimEpoch.claimEpoch,
+                                claimEpochMetadataItem = claimEpoch,
+                                claimAmountMetadataItem = metadataItems.consume(),
+                                remainingMetadata = metadataItems.filterIsInstance<StringMetadataItem>()
                             )
                         }
                     }.getOrNull()
@@ -742,14 +720,6 @@ class EntityRepositoryImpl @Inject constructor(
 
         return Pair(nftIds, latestEpoch)
     }
-
-    private fun StateNonFungibleDetailsResponseItem.claimAmount(): String? = data?.programmaticJson?.fields?.find { element ->
-        element.kind == MetadataValueType.decimal.value
-    }?.value
-
-    private fun StateNonFungibleDetailsResponseItem.claimEpoch(): String? = data?.programmaticJson?.fields?.find { element ->
-        element.kind == MetadataValueType.u64.value
-    }?.value
 
     private suspend fun nextFungiblesPage(
         accountAddress: String,
@@ -797,7 +767,7 @@ class EntityRepositoryImpl @Inject constructor(
         entityAddress: String,
         isRefreshing: Boolean
     ): Result<OwnerKeyHashesMetadataItem?> {
-        return stateApi.entityDetails(
+        return stateApi.stateEntityDetails(
             StateEntityDetailsRequest(
                 addresses = listOf(entityAddress),
                 optIns = StateEntityDetailsOptIns(

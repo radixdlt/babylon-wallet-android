@@ -24,9 +24,9 @@ import kotlinx.serialization.Contextual
  * 
  *
  * @param address Bech32m-encoded human readable version of the address.
- * @param epochsActiveIn 
- * @param proposalsMade 
- * @param proposalsMissed 
+ * @param epochsActiveIn number of epochs validator was active in.
+ * @param proposalsMade number of proposals made.
+ * @param proposalsMissed number of proposals missed.
  */
 @Serializable
 
@@ -36,12 +36,15 @@ data class ValidatorUptimeCollectionItem (
     @SerialName(value = "address")
     val address: kotlin.String,
 
+    /* number of epochs validator was active in. */
     @SerialName(value = "epochs_active_in")
     val epochsActiveIn: kotlin.Long,
 
+    /* number of proposals made. */
     @SerialName(value = "proposals_made")
     val proposalsMade: kotlin.Long? = null,
 
+    /* number of proposals missed. */
     @SerialName(value = "proposals_missed")
     val proposalsMissed: kotlin.Long? = null
 

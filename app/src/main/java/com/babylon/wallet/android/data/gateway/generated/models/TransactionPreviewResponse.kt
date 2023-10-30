@@ -25,7 +25,7 @@ import kotlinx.serialization.Contextual
  * 
  *
  * @param encodedReceipt Hex-encoded binary blob.
- * @param receipt 
+ * @param receipt This type is defined in the Core API as `TransactionReceipt`. See the Core API documentation for more details. 
  * @param resourceChanges 
  * @param logs 
  */
@@ -37,6 +37,7 @@ data class TransactionPreviewResponse (
     @SerialName(value = "encoded_receipt")
     val encodedReceipt: kotlin.String,
 
+    /* This type is defined in the Core API as `TransactionReceipt`. See the Core API documentation for more details.  */
     @Contextual @SerialName(value = "receipt")
     val receipt: TransactionReceipt,
 

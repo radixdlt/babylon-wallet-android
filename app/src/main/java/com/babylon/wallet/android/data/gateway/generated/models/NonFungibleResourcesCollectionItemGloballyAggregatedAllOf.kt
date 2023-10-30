@@ -23,18 +23,18 @@ import kotlinx.serialization.Contextual
 /**
  * 
  *
- * @param amount TBA
- * @param lastUpdatedAtStateVersion TBD
+ * @param amount The total amount of non-fungible IDs across all vaults.
+ * @param lastUpdatedAtStateVersion The most recent state version underlying object was modified at.
  */
 @Serializable
 
 data class NonFungibleResourcesCollectionItemGloballyAggregatedAllOf (
 
-    /* TBA */
+    /* The total amount of non-fungible IDs across all vaults. */
     @SerialName(value = "amount")
     val amount: kotlin.Long,
 
-    /* TBD */
+    /* The most recent state version underlying object was modified at. */
     @SerialName(value = "last_updated_at_state_version")
     val lastUpdatedAtStateVersion: kotlin.Long
 
