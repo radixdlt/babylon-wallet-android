@@ -95,25 +95,26 @@ class AccountViewModel @Inject constructor(
                 accounts = listOf(account),
                 isRefreshing = isRefreshing
             )
-            result.onFailure { e ->
-                Timber.w(e)
-                _state.update { accountUiState ->
-                    accountUiState.copy(
-                        uiMessage = UiMessage.ErrorMessage.from(error = e),
-                        isLoading = false,
-                        refreshing = false
-                    )
+            result
+                .onFailure { e ->
+                    Timber.w(e)
+                    _state.update { accountUiState ->
+                        accountUiState.copy(
+                            uiMessage = UiMessage.ErrorMessage.from(error = e),
+                            isLoading = false,
+                            refreshing = false
+                        )
+                    }
                 }
-            }
-            result.onSuccess { accountsWithResources ->
-                _state.update { accountUiState ->
-                    accountUiState.copy(
-                        accountWithAssets = accountsWithResources.first(),
-                        isLoading = false,
-                        refreshing = false
-                    )
+                .onSuccess { accountsWithResources ->
+                    _state.update { accountUiState ->
+                        accountUiState.copy(
+                            accountWithAssets = accountsWithResources.first(),
+                            isLoading = false,
+                            refreshing = false
+                        )
+                    }
                 }
-            }
         }
     }
 

@@ -40,14 +40,12 @@ class SubmitTransactionUseCase @Inject constructor(
                     )
                 )
             }
-        } ?: run {
-            Result.failure(
-                DappRequestException(
-                    DappRequestFailure.TransactionApprovalFailure.SubmitNotarizedTransaction,
-                    e = submitResult.exceptionOrNull(),
-                )
+        } ?: Result.failure(
+            DappRequestException(
+                DappRequestFailure.TransactionApprovalFailure.SubmitNotarizedTransaction,
+                e = submitResult.exceptionOrNull(),
             )
-        }
+        )
     }
 
     data class SubmitTransactionResult(

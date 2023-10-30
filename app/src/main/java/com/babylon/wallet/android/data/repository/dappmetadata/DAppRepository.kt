@@ -24,8 +24,6 @@ import com.babylon.wallet.android.di.SimpleHttpClient
 import com.babylon.wallet.android.di.buildApi
 import com.babylon.wallet.android.di.coroutines.IoDispatcher
 import com.babylon.wallet.android.domain.RadixWalletException
-import com.babylon.wallet.android.domain.common.map
-import com.babylon.wallet.android.domain.common.switchMap
 import com.babylon.wallet.android.domain.model.DAppResources
 import com.babylon.wallet.android.domain.model.DAppWithMetadata
 import com.babylon.wallet.android.domain.model.resources.Resource
@@ -184,6 +182,7 @@ class DAppRepositoryImpl @Inject constructor(
         }
     }
 
+    @Suppress("LongMethod")
     override suspend fun getDAppResources(
         dAppMetadata: DAppWithMetadata,
         isRefreshing: Boolean
@@ -198,60 +197,70 @@ class DAppRepositoryImpl @Inject constructor(
             isRefreshing = isRefreshing
         )
 
-        return listOfEntityDetailsResponsesResult.switchMap { entityDetailsResponses ->
-            val allResources = entityDetailsResponses.map {
-                it.items
-            }.flatten()
+        return listOfEntityDetailsResponsesResult
+            .fold(
+                onSuccess = { entityDetailsResponses ->
+                    val allResources = entityDetailsResponses.map {
+                        it.items
+                    }.flatten()
 
-            val fungibleItems = allResources.filter {
-                it.details?.type == StateEntityDetailsResponseItemDetailsType.fungibleResource
-            }
-            val nonFungibleItems = allResources.filter {
-                it.details?.type == StateEntityDetailsResponseItemDetailsType.nonFungibleResource
-            }
+                    val fungibleItems = allResources.filter {
+                        it.details?.type == StateEntityDetailsResponseItemDetailsType.fungibleResource
+                    }
+                    val nonFungibleItems = allResources.filter {
+                        it.details?.type == StateEntityDetailsResponseItemDetailsType.nonFungibleResource
+                    }
 
-            val fungibleResources = fungibleItems.map { fungibleItem ->
-                val metadataItems = fungibleItem.metadata.asMetadataItems().toMutableList()
-                Resource.FungibleResource(
-                    resourceAddress = fungibleItem.address,
-                    ownedAmount = null, // No owned amount given in metadata
-                    nameMetadataItem = metadataItems.consume(),
-                    symbolMetadataItem = metadataItems.consume(),
-                    descriptionMetadataItem = metadataItems.consume(),
-                    iconUrlMetadataItem = metadataItems.consume(),
-                    behaviours = fungibleItem.details?.extractBehaviours().orEmpty(),
-                    currentSupply = fungibleItem.details?.totalSupply()?.toBigDecimal(),
-                    validatorMetadataItem = metadataItems.consume(),
-                    poolMetadataItem = metadataItems.consume(),
-                    divisibility = fungibleItem.details?.divisibility(),
-                    dAppDefinitionsMetadataItem = metadataItems.consume()
-                )
-            }
+                    val fungibleResources = fungibleItems.map { fungibleItem ->
+                        val metadataItems = fungibleItem.metadata.asMetadataItems().toMutableList()
+                        Resource.FungibleResource(
+                            resourceAddress = fungibleItem.address,
+                            ownedAmount = null, // No owned amount given in metadata
+                            nameMetadataItem = metadataItems.consume(),
+                            symbolMetadataItem = metadataItems.consume(),
+                            descriptionMetadataItem = metadataItems.consume(),
+                            iconUrlMetadataItem = metadataItems.consume(),
+                            behaviours = fungibleItem.details?.extractBehaviours().orEmpty(),
+                            currentSupply = fungibleItem.details?.totalSupply()?.toBigDecimal(),
+                            validatorMetadataItem = metadataItems.consume(),
+                            poolMetadataItem = metadataItems.consume(),
+                            divisibility = fungibleItem.details?.divisibility(),
+                            dAppDefinitionsMetadataItem = metadataItems.consume()
+                        )
+                    }
 
-            val nonFungibleResource = nonFungibleItems.map { nonFungibleItem ->
-                val metadataItems = nonFungibleItem.metadata.asMetadataItems().toMutableList()
+                    val nonFungibleResource = nonFungibleItems.map { nonFungibleItem ->
+                        val metadataItems = nonFungibleItem.metadata.asMetadataItems().toMutableList()
 
-                Resource.NonFungibleResource(
-                    resourceAddress = nonFungibleItem.address,
-                    amount = 0L,
-                    nameMetadataItem = metadataItems.consume(),
-                    descriptionMetadataItem = metadataItems.consume(),
-                    iconMetadataItem = metadataItems.consume(),
-                    tagsMetadataItem = metadataItems.consume(),
-                    validatorMetadataItem = metadataItems.consume(),
-                    items = emptyList(),
-                    behaviours = nonFungibleItem.details?.extractBehaviours().orEmpty(),
-                    currentSupply = nonFungibleItem.details?.totalSupply()?.toIntOrNull()
-                )
-            }
+                        Resource.NonFungibleResource(
+                            resourceAddress = nonFungibleItem.address,
+                            amount = 0L,
+                            nameMetadataItem = metadataItems.consume(),
+                            descriptionMetadataItem = metadataItems.consume(),
+                            iconMetadataItem = metadataItems.consume(),
+                            tagsMetadataItem = metadataItems.consume(),
+                            validatorMetadataItem = metadataItems.consume(),
+                            items = emptyList(),
+                            behaviours = nonFungibleItem.details?.extractBehaviours().orEmpty(),
+                            currentSupply = nonFungibleItem.details?.totalSupply()?.toIntOrNull()
+                        )
+                    }
 
-            val dAppResources = DAppResources(
-                fungibleResources = fungibleResources.filter { it.dappDefinitions.contains(dAppMetadata.dAppAddress) },
-                nonFungibleResources = nonFungibleResource.filter { it.dappDefinitions.contains(dAppMetadata.dAppAddress) },
+                    val dAppResources = DAppResources(
+                        fungibleResources = fungibleResources.filter {
+                            it.dappDefinitions.contains(dAppMetadata.dAppAddress)
+                        },
+                        nonFungibleResources = nonFungibleResource.filter {
+                            it.dappDefinitions.contains(dAppMetadata.dAppAddress)
+                        },
+                    )
+
+                    Result.success(dAppResources)
+                },
+                onFailure = {
+                    Result.failure(it)
+                }
             )
-
-            Result.success(dAppResources)
-        }
     }
 
     private suspend fun getStateEntityDetailsResponse(

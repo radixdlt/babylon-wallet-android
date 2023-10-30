@@ -85,11 +85,9 @@ class GetFreeXrdUseCase @Inject constructor(
                     }.mapCatching {
                         it.txId
                     }
-            } ?: run {
-                Result.failure(
-                    exception = epochResult.exceptionOrNull() ?: DappRequestFailure.TransactionApprovalFailure.PrepareNotarizedTransaction
-                )
-            }
+            } ?: Result.failure(
+                exception = epochResult.exceptionOrNull() ?: DappRequestFailure.TransactionApprovalFailure.PrepareNotarizedTransaction
+            )
         }
     }
 
@@ -110,9 +108,7 @@ class GetFreeXrdUseCase @Inject constructor(
                         currentEpoch - lastUsedEpoch >= threshold
                     }
                 }
-            } ?: run {
-                false
-            }
+            } ?: false
             FaucetState.Available(isEnabled = isEnabled)
         }
     }

@@ -203,9 +203,7 @@ class AuthorizeSpecifiedPersonaUseCase @Inject constructor(
                 Result.success(
                     authorizedDapp.displayName
                 )
-            } ?: run {
-                Result.failure(DappRequestFailure.InvalidRequest)
-            }
+            } ?: Result.failure(DappRequestFailure.InvalidRequest)
         }
     }
 

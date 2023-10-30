@@ -36,8 +36,6 @@ import com.babylon.wallet.android.data.repository.cache.HttpCache
 import com.babylon.wallet.android.data.repository.cache.TimeoutDuration
 import com.babylon.wallet.android.data.repository.cache.TimeoutDuration.NO_CACHE
 import com.babylon.wallet.android.data.repository.execute
-import com.babylon.wallet.android.domain.common.map
-import com.babylon.wallet.android.domain.common.switchMap
 import com.babylon.wallet.android.domain.model.assets.AccountWithAssets
 import com.babylon.wallet.android.domain.model.assets.Assets
 import com.babylon.wallet.android.domain.model.assets.LiquidStakeUnit
@@ -103,92 +101,98 @@ class EntityRepositoryImpl @Inject constructor(
             isRefreshing = isRefreshing
         )
 
-        return listOfEntityDetailsResponsesResult.switchMap { accountDetailsResponses ->
-            val stateVersion = accountDetailsResponses.firstOrNull()?.ledgerState?.stateVersion ?: return Result.failure(
-                Throwable("")
-            )
-            val mapOfAccountsWithMetadata = buildMapOfAccountsAddressesWithMetadata(accountDetailsResponses)
-            var mapOfAccountsWithFungibleResources =
-                buildMapOfAccountsWithFungibles(accountDetailsResponses, stateVersion)
-            var mapOfAccountsWithNonFungibleResources = buildMapOfAccountsWithNonFungibles(
-                accountDetailsResponses = accountDetailsResponses,
-                isNftItemDataNeeded = isNftItemDataNeeded,
-                isRefreshing = isRefreshing,
-                stateVersion = stateVersion
-            )
-            val validatorDetails =
-                getAllValidatorDetails(
-                    mapOfAccountsWithFungibleResources = mapOfAccountsWithFungibleResources,
-                    mapOfAccountsWithNonFungibleResources = mapOfAccountsWithNonFungibleResources,
-                    isRefreshing = isRefreshing,
-                    stateVersion = stateVersion
-                )
-            val poolsList = getPoolDetails(
-                mapOfAccountsWithFungibleResources = mapOfAccountsWithFungibleResources,
-                isRefreshing = isRefreshing,
-                stateVersion = stateVersion
-            )
-            val validatorResourceAddresses = validatorDetails.map { item ->
-                listOfNotNull(item.details?.stakeUnitResourceAddress(), item.details?.claimTokenResourceAddress)
-            }.flatten().toSet()
-            val poolAddresses = poolsList.map { item -> item.address }.toSet()
-
-            val mapOfAccountsWithLiquidStakeUnitResources = mapOfAccountsWithFungibleResources.mapValues { fungibleResources ->
-                fungibleResources.value.filter { validatorResourceAddresses.contains(it.resourceAddress) }.map {
-                    LiquidStakeUnit(it)
-                }
-            }.filter { it.value.isNotEmpty() }
-            val mapOfAccountsWithStakeClaimNFT = mapOfAccountsWithNonFungibleResources.mapValues { nftResource ->
-                nftResource.value.filter {
-                    validatorResourceAddresses.contains(it.resourceAddress)
-                }.map { StakeClaim(it) }
-            }.filter { it.value.isNotEmpty() }
-            val mapOfAccountsWithPoolUnits = mapOfAccountsWithFungibleResources.mapValues { fungibleResources ->
-                fungibleResources.value.filter { poolAddresses.contains(it.poolAddress) }.map { poolUnitResource ->
-                    val poolDetails = poolsList.find { it.address == poolUnitResource.poolAddress }
-                    val poolResources = poolDetails?.fungibleResources?.items?.mapNotNull { poolResource ->
-                        (poolResource as? FungibleResourcesCollectionItemVaultAggregated)?.let {
-                            mapToFungibleResource(it)
-                        }
-                    }.orEmpty()
-                    PoolUnit(poolUnitResource, poolResources)
-                }
-            }.filter { it.value.isNotEmpty() }
-
-            mapOfAccountsWithFungibleResources = mapOfAccountsWithFungibleResources.mapValues { fungibleResources ->
-                fungibleResources.value.filter {
-                    !validatorResourceAddresses.contains(it.resourceAddress) && !poolAddresses.contains(it.poolAddress)
-                }
-            }
-
-            mapOfAccountsWithNonFungibleResources = mapOfAccountsWithNonFungibleResources.mapValues { nonFungibleResources ->
-                nonFungibleResources.value.filter { !validatorResourceAddresses.contains(it.resourceAddress) }
-            }
-
-            val liquidStakeCollectionPerAccountAddress = buildMapOfAccountAddressesWithLiquidStakeResources(
-                mapOfAccountsWithLiquidStakeUnitResources,
-                mapOfAccountsWithStakeClaimNFT,
-                validatorDetails
-            )
-
-            // build result list of accounts with resources
-            val listOfAccountsWithResources = accounts.map { account ->
-                val metaDataItems = mapOfAccountsWithMetadata[account.address].orEmpty().toMutableList()
-                AccountWithAssets(
-                    account = account,
-                    accountTypeMetadataItem = metaDataItems.consume(),
-                    assets = Assets(
-                        fungibles = mapOfAccountsWithFungibleResources[account.address].orEmpty().sorted(),
-                        nonFungibles = mapOfAccountsWithNonFungibleResources[account.address].orEmpty().sorted(),
-                        validatorsWithStakeResources = liquidStakeCollectionPerAccountAddress[account.address]
-                            ?: ValidatorsWithStakeResources(),
-                        poolUnits = mapOfAccountsWithPoolUnits[account.address].orEmpty()
+        return listOfEntityDetailsResponsesResult
+            .fold(
+                onSuccess = { accountDetailsResponses ->
+                    val stateVersion = accountDetailsResponses.firstOrNull()?.ledgerState?.stateVersion ?: return Result.failure(
+                        Throwable("")
                     )
-                )
-            }
+                    val mapOfAccountsWithMetadata = buildMapOfAccountsAddressesWithMetadata(accountDetailsResponses)
+                    var mapOfAccountsWithFungibleResources =
+                        buildMapOfAccountsWithFungibles(accountDetailsResponses, stateVersion)
+                    var mapOfAccountsWithNonFungibleResources = buildMapOfAccountsWithNonFungibles(
+                        accountDetailsResponses = accountDetailsResponses,
+                        isNftItemDataNeeded = isNftItemDataNeeded,
+                        isRefreshing = isRefreshing,
+                        stateVersion = stateVersion
+                    )
+                    val validatorDetails =
+                        getAllValidatorDetails(
+                            mapOfAccountsWithFungibleResources = mapOfAccountsWithFungibleResources,
+                            mapOfAccountsWithNonFungibleResources = mapOfAccountsWithNonFungibleResources,
+                            isRefreshing = isRefreshing,
+                            stateVersion = stateVersion
+                        )
+                    val poolsList = getPoolDetails(
+                        mapOfAccountsWithFungibleResources = mapOfAccountsWithFungibleResources,
+                        isRefreshing = isRefreshing,
+                        stateVersion = stateVersion
+                    )
+                    val validatorResourceAddresses = validatorDetails.map { item ->
+                        listOfNotNull(item.details?.stakeUnitResourceAddress(), item.details?.claimTokenResourceAddress)
+                    }.flatten().toSet()
+                    val poolAddresses = poolsList.map { item -> item.address }.toSet()
 
-            Result.success(listOfAccountsWithResources)
-        }
+                    val mapOfAccountsWithLiquidStakeUnitResources = mapOfAccountsWithFungibleResources.mapValues { fungibleResources ->
+                        fungibleResources.value.filter { validatorResourceAddresses.contains(it.resourceAddress) }.map {
+                            LiquidStakeUnit(it)
+                        }
+                    }.filter { it.value.isNotEmpty() }
+                    val mapOfAccountsWithStakeClaimNFT = mapOfAccountsWithNonFungibleResources.mapValues { nftResource ->
+                        nftResource.value.filter {
+                            validatorResourceAddresses.contains(it.resourceAddress)
+                        }.map { StakeClaim(it) }
+                    }.filter { it.value.isNotEmpty() }
+                    val mapOfAccountsWithPoolUnits = mapOfAccountsWithFungibleResources.mapValues { fungibleResources ->
+                        fungibleResources.value.filter { poolAddresses.contains(it.poolAddress) }.map { poolUnitResource ->
+                            val poolDetails = poolsList.find { it.address == poolUnitResource.poolAddress }
+                            val poolResources = poolDetails?.fungibleResources?.items?.mapNotNull { poolResource ->
+                                (poolResource as? FungibleResourcesCollectionItemVaultAggregated)?.let {
+                                    mapToFungibleResource(it)
+                                }
+                            }.orEmpty()
+                            PoolUnit(poolUnitResource, poolResources)
+                        }
+                    }.filter { it.value.isNotEmpty() }
+
+                    mapOfAccountsWithFungibleResources = mapOfAccountsWithFungibleResources.mapValues { fungibleResources ->
+                        fungibleResources.value.filter {
+                            !validatorResourceAddresses.contains(it.resourceAddress) && !poolAddresses.contains(it.poolAddress)
+                        }
+                    }
+
+                    mapOfAccountsWithNonFungibleResources = mapOfAccountsWithNonFungibleResources.mapValues { nonFungibleResources ->
+                        nonFungibleResources.value.filter { !validatorResourceAddresses.contains(it.resourceAddress) }
+                    }
+
+                    val liquidStakeCollectionPerAccountAddress = buildMapOfAccountAddressesWithLiquidStakeResources(
+                        mapOfAccountsWithLiquidStakeUnitResources,
+                        mapOfAccountsWithStakeClaimNFT,
+                        validatorDetails
+                    )
+
+                    // build result list of accounts with resources
+                    val listOfAccountsWithResources = accounts.map { account ->
+                        val metaDataItems = mapOfAccountsWithMetadata[account.address].orEmpty().toMutableList()
+                        AccountWithAssets(
+                            account = account,
+                            accountTypeMetadataItem = metaDataItems.consume(),
+                            assets = Assets(
+                                fungibles = mapOfAccountsWithFungibleResources[account.address].orEmpty().sorted(),
+                                nonFungibles = mapOfAccountsWithNonFungibleResources[account.address].orEmpty().sorted(),
+                                validatorsWithStakeResources = liquidStakeCollectionPerAccountAddress[account.address]
+                                    ?: ValidatorsWithStakeResources(),
+                                poolUnits = mapOfAccountsWithPoolUnits[account.address].orEmpty()
+                            )
+                        )
+                    }
+
+                    Result.success(listOfAccountsWithResources)
+                },
+                onFailure = {
+                    Result.failure(it)
+                }
+            )
     }
 
     override suspend fun getResources(

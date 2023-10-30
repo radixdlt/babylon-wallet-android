@@ -12,8 +12,6 @@ import com.babylon.wallet.android.data.repository.cache.HttpCache
 import com.babylon.wallet.android.data.repository.cache.TimeoutDuration
 import com.babylon.wallet.android.data.repository.entity.EntityRepositoryImpl
 import com.babylon.wallet.android.data.repository.execute
-import com.babylon.wallet.android.domain.common.map
-import com.babylon.wallet.android.domain.common.switchMap
 import com.babylon.wallet.android.domain.model.resources.metadata.MetadataItem
 import javax.inject.Inject
 
@@ -37,9 +35,14 @@ class MetadataRepositoryImpl @Inject constructor(
         addresses = resourceAddresses,
         explicitMetadata = ExplicitMetadataKey.forAssets,
         isRefreshing = isRefreshing
-    ).switchMap { entityDetailsResponses ->
-        Result.success(buildMapOfResourceAddressesWithMetadata(entityDetailsResponses))
-    }
+    ).fold(
+        onSuccess = { entityDetailsResponses ->
+            Result.success(buildMapOfResourceAddressesWithMetadata(entityDetailsResponses))
+        },
+        onFailure = {
+            Result.failure(it)
+        }
+    )
 
     private fun buildMapOfResourceAddressesWithMetadata(
         entityDetailsResponses: List<StateEntityDetailsResponse>

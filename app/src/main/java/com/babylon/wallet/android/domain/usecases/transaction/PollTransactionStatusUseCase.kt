@@ -33,7 +33,7 @@ class PollTransactionStatusUseCase @Inject constructor(
                             return TransactionStatusData(
                                 txId = txID,
                                 requestId = requestId,
-                                result = kotlin.Result.success(Unit),
+                                result = Result.success(Unit),
                                 transactionType = transactionType,
                                 txProcessingTime = txProcessingTime
                             )
@@ -43,7 +43,7 @@ class PollTransactionStatusUseCase @Inject constructor(
                             return TransactionStatusData(
                                 txId = txID,
                                 requestId = requestId,
-                                result = kotlin.Result.failure(
+                                result = Result.failure(
                                     DappRequestException(
                                         DappRequestFailure.TransactionApprovalFailure.TransactionCommitted.Failure(
                                             txID
@@ -59,7 +59,7 @@ class PollTransactionStatusUseCase @Inject constructor(
                             return TransactionStatusData(
                                 txId = txID,
                                 requestId = requestId,
-                                result = kotlin.Result.failure(
+                                result = Result.failure(
                                     DappRequestException(
                                         DappRequestFailure.TransactionApprovalFailure.TransactionRejected.Permanently(
                                             txID
@@ -75,7 +75,7 @@ class PollTransactionStatusUseCase @Inject constructor(
                             return TransactionStatusData(
                                 txId = txID,
                                 requestId = requestId,
-                                result = kotlin.Result.failure(
+                                result = Result.failure(
                                     DappRequestException(
                                         DappRequestFailure.TransactionApprovalFailure.TransactionRejected.Temporary(
                                             txID

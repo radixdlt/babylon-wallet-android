@@ -291,9 +291,7 @@ class TransactionClient @Inject constructor(
                     )
                 )
             }
-        } ?: run {
-            Result.failure(DappRequestException(DappRequestFailure.GetEpoch))
-        }
+        } ?: Result.failure(DappRequestException(DappRequestFailure.GetEpoch))
     }
 
     suspend fun getSigningEntities(manifest: TransactionManifest): List<Entity> {
