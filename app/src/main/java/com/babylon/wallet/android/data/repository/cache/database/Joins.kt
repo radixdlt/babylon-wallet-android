@@ -39,9 +39,6 @@ data class AccountResourceJoin(
     val amount: BigDecimal,
     @ColumnInfo("account_state_version")
     val accountStateVersion: Long,
-
-    // Owners of non fungible collections need to store
-    // the vault address so we can query their owned ids
     @ColumnInfo("vault_address")
     val vaultAddress: String?,
 
@@ -61,7 +58,7 @@ data class AccountResourceJoin(
             resourceAddress = resourceAddress,
             amount = amountDecimal,
             accountStateVersion = syncInfo.accountStateVersion,
-            vaultAddress = null,
+            vaultAddress = vaultAddress,
             nextCursor = null
         ) to asEntity(syncInfo.synced)
 

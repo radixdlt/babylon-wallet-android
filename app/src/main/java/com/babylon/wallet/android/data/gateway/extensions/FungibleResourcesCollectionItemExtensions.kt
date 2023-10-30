@@ -12,3 +12,10 @@ val FungibleResourcesCollectionItem.amountDecimal: BigDecimal
             vaults.items.sumOf { item -> BigDecimal(item.amount) }
         else -> BigDecimal.ZERO
     }
+
+val FungibleResourcesCollectionItem.vaultAddress: String?
+    get() = when (this) {
+        is FungibleResourcesCollectionItemVaultAggregated -> vaults.items.firstOrNull()?.vaultAddress
+        is FungibleResourcesCollectionItemGloballyAggregated -> null
+        else -> null
+    }
