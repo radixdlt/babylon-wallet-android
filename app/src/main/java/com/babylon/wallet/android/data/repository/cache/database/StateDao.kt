@@ -8,7 +8,6 @@ import androidx.room.Query
 import androidx.room.Transaction
 import com.babylon.wallet.android.domain.model.resources.metadata.AccountTypeMetadataItem
 import kotlinx.coroutines.flow.Flow
-import java.math.BigDecimal
 
 @Dao
 interface StateDao {
@@ -172,10 +171,10 @@ interface StateDao {
     fun updateResourceDetails(entity: ResourceEntity)
 
     @Query("""
-        SELECT amount FROM AccountResourceJoin
+        SELECT * FROM AccountResourceJoin
         WHERE account_address = :accountAddress AND resource_address = :resourceAddress
     """)
-    fun getOwnedAmount(resourceAddress: String, accountAddress: String): BigDecimal?
+    fun getAccountResourceJoin(resourceAddress: String, accountAddress: String): AccountResourceJoin?
 
     @Query("""
         SELECT * FROM NFTEntity

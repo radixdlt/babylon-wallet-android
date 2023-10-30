@@ -10,16 +10,22 @@ import com.babylon.wallet.android.data.repository.cache.database.StateDao
 import com.babylon.wallet.android.data.repository.cache.database.SyncInfo
 import com.babylon.wallet.android.data.repository.cache.database.ValidatorEntity.Companion.asValidatorEntities
 import com.babylon.wallet.android.data.repository.toResult
+import com.babylon.wallet.android.di.coroutines.DefaultDispatcher
 import com.babylon.wallet.android.domain.model.resources.AccountOnLedger
 import com.babylon.wallet.android.domain.model.resources.Resource
+import com.babylon.wallet.android.domain.model.resources.XrdResource
 import com.babylon.wallet.android.domain.model.resources.metadata.MetadataItem.Companion.consume
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.transform
+import kotlinx.coroutines.withContext
 import rdx.works.core.InstantGenerator
 import rdx.works.profile.data.model.pernetwork.Network
+import rdx.works.profile.derivation.model.NetworkId
 import timber.log.Timber
+import java.math.BigDecimal
 import javax.inject.Inject
 
 interface StateRepository {
@@ -32,6 +38,8 @@ interface StateRepository {
 
     suspend fun getNFTDetails(resourceAddress: String, localId: String): Result<Resource.NonFungibleResource.Item>
 
+    suspend fun getOwnedXRD(accounts: List<Network.Account>): Result<Map<Network.Account, BigDecimal>>
+
     sealed class NFTPageError(cause: Throwable): Exception(cause) {
         data object NoMorePages: NFTPageError(RuntimeException("No more NFTs for this resource."))
 
@@ -43,7 +51,8 @@ interface StateRepository {
 
 class StateRepositoryImpl @Inject constructor(
     private val stateApi: StateApi,
-    private val stateDao: StateDao
+    private val stateDao: StateDao,
+    @DefaultDispatcher private val dispatcher: CoroutineDispatcher
 ) : StateRepository {
 
     private val cacheDelegate = StateCacheDelegate(stateDao = stateDao)
@@ -161,7 +170,9 @@ class StateRepositoryImpl @Inject constructor(
             resourceAddress = resourceAddress,
             minValidity = StateCacheDelegate.resourcesCacheValidity()
         )
-        val amount = accountAddress?.let { stateDao.getOwnedAmount(resourceAddress = resourceAddress, accountAddress = accountAddress) }
+        val amount = accountAddress?.let {
+            stateDao.getAccountResourceJoin(resourceAddress = resourceAddress, accountAddress = accountAddress)?.amount
+        }
 
         val cachedResource = cachedEntity?.toResource(amount)
         if (cachedResource != null) {
@@ -193,6 +204,24 @@ class StateRepositoryImpl @Inject constructor(
             val entity = item.asEntity(resourceAddress, InstantGenerator())
             stateDao.insertNFTs(listOf(entity))
             entity.toItem()
+        }
+    }
+
+    override suspend fun getOwnedXRD(accounts: List<Network.Account>): Result<Map<Network.Account, BigDecimal>> = withContext(dispatcher) {
+        if (accounts.isEmpty()) return@withContext Result.success(emptyMap())
+        val networkId = NetworkId.from(accounts.first().networkID)
+        val xrdAddress = XrdResource.address(networkId = networkId)
+
+        val accountsWithXRDVaults = accounts.associateWith { account ->
+            stateDao.getAccountResourceJoin(accountAddress = account.address, resourceAddress = xrdAddress)?.vaultAddress
+        }
+
+        runCatching {
+            val vaultsWithAmounts = stateApiDelegate.getVaultsDetails(accountsWithXRDVaults.mapNotNull { it.value }.toSet())
+
+            accountsWithXRDVaults.mapValues { entry ->
+                entry.value?.let { vaultsWithAmounts[it] } ?: BigDecimal.ZERO
+            }
         }
     }
 }
