@@ -10,8 +10,6 @@ import com.babylon.wallet.android.data.manifest.addLockFeeInstructionToManifest
 import com.babylon.wallet.android.data.repository.transaction.TransactionRepository
 import com.babylon.wallet.android.data.transaction.model.FeePayerSearchResult
 import com.babylon.wallet.android.data.transaction.model.TransactionApprovalRequest
-import com.babylon.wallet.android.domain.common.asKotlinResult
-import com.babylon.wallet.android.domain.common.value
 import com.babylon.wallet.android.domain.model.assets.findAccountWithEnoughXRDBalance
 import com.babylon.wallet.android.domain.usecases.GetAccountsWithAssetsUseCase
 import com.babylon.wallet.android.domain.usecases.transaction.CollectSignersSignaturesUseCase
@@ -38,7 +36,6 @@ import java.math.BigDecimal
 import java.security.SecureRandom
 import javax.inject.Inject
 import kotlin.Result
-import com.babylon.wallet.android.domain.common.Result as ResultInternal
 
 @Suppress("LongParameterList")
 class TransactionClient @Inject constructor(
@@ -187,7 +184,7 @@ class TransactionClient @Inject constructor(
         val allAccountsWithResources = getAccountsWithAssetsUseCase(
             accounts = allAccounts,
             isRefreshing = false
-        ).value()
+        ).getOrNull()
         val candidates = allAccountsWithResources?.map {
             FeePayerSearchResult.FeePayerCandidate(
                 account = it.account,
@@ -262,7 +259,7 @@ class TransactionClient @Inject constructor(
         lockFee: BigDecimal
     ): String? {
         return getAccountsWithAssetsUseCase(accounts = accounts, isRefreshing = true)
-            .value()?.findAccountWithEnoughXRDBalance(lockFee)?.account?.address
+            .getOrNull()?.findAccountWithEnoughXRDBalance(lockFee)?.account?.address
     }
 
     private suspend fun buildTransactionHeader(
@@ -271,8 +268,7 @@ class TransactionClient @Inject constructor(
         tipPercentage: UShort,
     ): Result<TransactionHeader> {
         val epochResult = transactionRepository.getLedgerEpoch()
-        if (epochResult is ResultInternal.Success) {
-            val epoch = epochResult.data
+        return epochResult.getOrNull()?.let { epoch ->
             val expiryEpoch = epoch.toULong() + TransactionConfig.EPOCH_WINDOW
             return try {
                 Result.success(
@@ -295,9 +291,7 @@ class TransactionClient @Inject constructor(
                     )
                 )
             }
-        } else {
-            return Result.failure(DappRequestException(DappRequestFailure.GetEpoch))
-        }
+        } ?: Result.failure(DappRequestException(DappRequestFailure.GetEpoch))
     }
 
     suspend fun getSigningEntities(manifest: TransactionManifest): List<Entity> {
@@ -326,7 +320,7 @@ class TransactionClient @Inject constructor(
         notaryAndSigners: NotaryAndSigners
     ): Result<TransactionPreviewResponse> {
         val (startEpochInclusive, endEpochExclusive) = with(transactionRepository.getLedgerEpoch()) {
-            val epoch = this.value() ?: return@with (0L to 0L)
+            val epoch = this.getOrNull() ?: return@with (0L to 0L)
 
             (epoch to epoch + 1L)
         }
@@ -348,7 +342,7 @@ class TransactionClient @Inject constructor(
                 notaryPublicKey = notaryAndSigners.notaryPublicKey().asGatewayPublicKey(),
                 notaryIsSignatory = notaryAndSigners.notaryIsSignatory
             )
-        ).asKotlinResult().fold(
+        ).fold(
             onSuccess = { preview ->
                 if (preview.receipt.isFailed) {
                     Result.failure(Throwable(preview.receipt.errorMessage))

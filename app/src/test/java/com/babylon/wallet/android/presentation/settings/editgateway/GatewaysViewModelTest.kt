@@ -3,7 +3,6 @@ package com.babylon.wallet.android.presentation.settings.editgateway
 import app.cash.turbine.test
 import com.babylon.wallet.android.data.repository.networkinfo.NetworkInfoRepository
 import com.babylon.wallet.android.domain.SampleDataProvider
-import com.babylon.wallet.android.domain.common.Result
 import com.babylon.wallet.android.presentation.TestDispatcherRule
 import com.babylon.wallet.android.presentation.settings.appsettings.gateways.GatewayAddFailure
 import com.babylon.wallet.android.presentation.settings.appsettings.gateways.SettingsEditGatewayEvent
@@ -54,7 +53,7 @@ class GatewaysViewModelTest {
         every { getProfileUseCase() } returns flowOf(profile)
         coEvery { changeGatewayIfNetworkExistUseCase(any()) } returns true
         coEvery { addGatewayUseCase(any()) } returns Unit
-        coEvery { networkInfoRepository.getNetworkInfo(any()) } returns Result.Success("nebunet")
+        coEvery { networkInfoRepository.getNetworkInfo(any()) } returns Result.success("nebunet")
         mockkStatic("com.babylon.wallet.android.utils.StringExtensionsKt")
         every { any<String>().isValidUrl() } returns true
     }
@@ -123,7 +122,9 @@ class GatewaysViewModelTest {
 
     @Test
     fun `network info error triggers ui error`() = runTest {
-        coEvery { networkInfoRepository.getNetworkInfo(any()) } returns Result.Error()
+        coEvery { networkInfoRepository.getNetworkInfo(any()) } returns Result.failure(
+            Throwable()
+        )
         val sampleUrl = Radix.Gateway.nebunet.url
         vm.onNewUrlChanged(sampleUrl)
         vm.onAddGateway()

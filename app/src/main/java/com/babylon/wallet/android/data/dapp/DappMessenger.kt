@@ -8,7 +8,6 @@ import com.babylon.wallet.android.data.dapp.model.WalletInteractionResponse
 import com.babylon.wallet.android.data.dapp.model.WalletInteractionSuccessResponse
 import com.babylon.wallet.android.data.dapp.model.WalletTransactionResponseItems
 import com.babylon.wallet.android.data.dapp.model.WalletTransactionResponseItems.SendTransactionResponseItem
-import com.babylon.wallet.android.domain.common.Result
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import timber.log.Timber
@@ -55,10 +54,7 @@ class DappMessengerImpl @Inject constructor(
             items = WalletTransactionResponseItems(SendTransactionResponseItem(txId))
         )
         val message = Json.encodeToString(response)
-        return when (peerdroidClient.sendMessage(remoteConnectorId, message)) {
-            is rdx.works.peerdroid.helpers.Result.Success -> Result.Success(Unit)
-            is rdx.works.peerdroid.helpers.Result.Error -> Result.Error()
-        }
+        return peerdroidClient.sendMessage(remoteConnectorId, message)
     }
 
     override suspend fun sendWalletInteractionResponseFailure(
@@ -74,10 +70,7 @@ class DappMessengerImpl @Inject constructor(
                 message = message
             )
         )
-        return when (peerdroidClient.sendMessage(remoteConnectorId, messageJson)) {
-            is rdx.works.peerdroid.helpers.Result.Success -> Result.Success(Unit)
-            is rdx.works.peerdroid.helpers.Result.Error -> Result.Error()
-        }
+        return peerdroidClient.sendMessage(remoteConnectorId, messageJson)
     }
 
     override suspend fun sendWalletInteractionSuccessResponse(
@@ -90,9 +83,6 @@ class DappMessengerImpl @Inject constructor(
             Timber.d(e)
             ""
         }
-        return when (peerdroidClient.sendMessage(remoteConnectorId, messageJson)) {
-            is rdx.works.peerdroid.helpers.Result.Success -> Result.Success(Unit)
-            is rdx.works.peerdroid.helpers.Result.Error -> Result.Error()
-        }
+        return peerdroidClient.sendMessage(remoteConnectorId, messageJson)
     }
 }

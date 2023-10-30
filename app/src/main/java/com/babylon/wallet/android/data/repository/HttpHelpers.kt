@@ -4,12 +4,12 @@ import com.babylon.wallet.android.data.gateway.RadixGatewayException
 import com.babylon.wallet.android.data.gateway.generated.infrastructure.Serializer
 import com.babylon.wallet.android.data.gateway.generated.models.ErrorResponse
 import com.babylon.wallet.android.data.repository.cache.CacheParameters
-import com.babylon.wallet.android.domain.common.Result
 import kotlinx.serialization.json.Json.Default.serializersModule
 import kotlinx.serialization.serializer
 import retrofit2.Call
 import retrofit2.awaitResponse
 
+@Suppress("SwallowedException")
 suspend inline fun <reified T, A> Call<T>.execute(
     cacheParameters: CacheParameters? = null,
     map: (T) -> A,
@@ -26,7 +26,7 @@ suspend inline fun <reified T, A> Call<T>.execute(
             null
         }
 
-        if (restored != null) return Result.Success(map(restored))
+        if (restored != null) return Result.success(map(restored))
 
         val response = awaitResponse()
         val responseBody = response.body()
@@ -37,29 +37,23 @@ suspend inline fun <reified T, A> Call<T>.execute(
                 serializer = serializersModule.serializer()
             )
 
-            Result.Success(data = map(responseBody))
+            Result.success(
+                map(responseBody)
+            )
         } else {
-            tryParseServerError(error, response.errorBody()?.string().orEmpty())
+            val definedError = error.invoke()
+            val errorResponse = try {
+                Serializer.kotlinxSerializationJson.decodeFromString<ErrorResponse>(response.errorBody()?.string().orEmpty())
+            } catch (e: Exception) {
+                null
+            }
+            val exception: Exception = definedError ?: RadixGatewayException(
+                errorResponse?.message
+            )
+            return Result.failure(exception)
         }
     } catch (e: Exception) {
         val exception = RadixGatewayException(e.message, e.cause)
-        Result.Error(exception = exception)
+        Result.failure(exception)
     }
-}
-
-@Suppress("SwallowedException")
-inline fun tryParseServerError(
-    error: () -> Exception?,
-    errorBodyString: String
-): Result.Error {
-    val definedError = error.invoke()
-    val errorResponse = try {
-        Serializer.kotlinxSerializationJson.decodeFromString<ErrorResponse>(errorBodyString)
-    } catch (e: Exception) {
-        null
-    }
-    val exception: Exception = definedError ?: RadixGatewayException(
-        errorResponse?.message
-    )
-    return Result.Error(exception = exception)
 }

@@ -6,7 +6,6 @@ import org.junit.Test
 import rdx.works.core.blake2Hash
 import rdx.works.core.toHexString
 import rdx.works.peerdroid.data.PackageDto
-import rdx.works.peerdroid.helpers.Result
 import kotlin.test.assertEquals
 
 class MessageAssemblerTest {
@@ -40,6 +39,6 @@ class MessageAssemblerTest {
             expectedHashOfMessage = actualHashOfMessageInHexString
         )
 
-        assert(result is Result.Success)
+        assert(result.isSuccess)
     }
 }

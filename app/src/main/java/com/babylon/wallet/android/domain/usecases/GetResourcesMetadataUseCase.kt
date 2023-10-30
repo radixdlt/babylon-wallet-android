@@ -1,7 +1,6 @@
 package com.babylon.wallet.android.domain.usecases
 
 import com.babylon.wallet.android.data.repository.metadata.MetadataRepository
-import com.babylon.wallet.android.domain.common.Result
 import com.babylon.wallet.android.domain.model.resources.metadata.MetadataItem
 import javax.inject.Inject
 

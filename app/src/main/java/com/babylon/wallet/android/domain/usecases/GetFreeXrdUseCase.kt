@@ -26,7 +26,6 @@ import rdx.works.profile.domain.gateways
 import java.math.BigDecimal
 import javax.inject.Inject
 import kotlin.Result
-import com.babylon.wallet.android.domain.common.Result as ResultInternal
 
 @Suppress("LongParameterList")
 class GetFreeXrdUseCase @Inject constructor(
@@ -52,45 +51,43 @@ class GetFreeXrdUseCase @Inject constructor(
                 .getOrElse {
                     return@withContext Result.failure(it)
                 }
-            when (val epochResult = transactionRepository.getLedgerEpoch()) {
-                is ResultInternal.Error -> Result.failure(
-                    exception = epochResult.exception ?: DappRequestFailure.TransactionApprovalFailure.PrepareNotarizedTransaction
+
+            val epochResult = transactionRepository.getLedgerEpoch()
+            epochResult.getOrNull()?.let { epoch ->
+                val request = TransactionApprovalRequest(
+                    manifest = manifest,
+                    networkId = gateway.network.networkId(),
+                    hasLockFee = true
                 )
+                val lockFee = BigDecimal.valueOf(TransactionConfig.DEFAULT_LOCK_FEE)
 
-                is ResultInternal.Success -> {
-                    val request = TransactionApprovalRequest(
-                        manifest = manifest,
-                        networkId = gateway.network.networkId(),
-                        hasLockFee = true
-                    )
-                    val lockFee = BigDecimal.valueOf(TransactionConfig.DEFAULT_LOCK_FEE)
-
-                    transactionClient.signTransaction(
-                        request = request,
-                        lockFee = lockFee,
-                        tipPercentage = TIP_PERCENTAGE,
-                        deviceBiometricAuthenticationProvider = { true }
-                    )
-                        .mapCatching { notarizedTransactionResult ->
-                            submitTransactionUseCase(
-                                notarizedTransactionResult.txIdHash,
-                                notarizedTransactionResult.notarizedTransactionIntentHex,
-                                txProcessingTime = notarizedTransactionResult.txProcessingTime
-                            ).getOrThrow()
+                transactionClient.signTransaction(
+                    request = request,
+                    lockFee = lockFee,
+                    tipPercentage = TIP_PERCENTAGE,
+                    deviceBiometricAuthenticationProvider = { true }
+                )
+                    .mapCatching { notarizedTransactionResult ->
+                        submitTransactionUseCase(
+                            notarizedTransactionResult.txIdHash,
+                            notarizedTransactionResult.notarizedTransactionIntentHex,
+                            txProcessingTime = notarizedTransactionResult.txProcessingTime
+                        ).getOrThrow()
+                    }
+                    .onSuccess { submitTransactionResult ->
+                        pollTransactionStatusUseCase(
+                            txID = submitTransactionResult.txId,
+                            requestId = "",
+                            txProcessingTime = submitTransactionResult.txProcessingTime
+                        ).result.onSuccess {
+                            preferencesManager.updateEpoch(address, epoch)
                         }
-                        .onSuccess { submitTransactionResult ->
-                            pollTransactionStatusUseCase(
-                                txID = submitTransactionResult.txId,
-                                requestId = "",
-                                txProcessingTime = submitTransactionResult.txProcessingTime
-                            ).result.onSuccess {
-                                preferencesManager.updateEpoch(address, epochResult.data)
-                            }
-                        }.mapCatching {
-                            it.txId
-                        }
-                }
-            }
+                    }.mapCatching {
+                        it.txId
+                    }
+            } ?: Result.failure(
+                exception = epochResult.exceptionOrNull() ?: DappRequestFailure.TransactionApprovalFailure.PrepareNotarizedTransaction
+            )
         }
     }
 
@@ -103,18 +100,15 @@ class GetFreeXrdUseCase @Inject constructor(
         } else {
             if (lastUsedEpoch == null) return@combine FaucetState.Available(isEnabled = true)
 
-            val isEnabled = when (val currentEpoch = transactionRepository.getLedgerEpoch()) {
-                is ResultInternal.Error -> false
-                is ResultInternal.Success -> {
-                    when {
-                        currentEpoch.data < lastUsedEpoch -> true // edge case ledger was reset - allow
-                        else -> {
-                            val threshold = 1
-                            currentEpoch.data - lastUsedEpoch >= threshold
-                        }
+            val isEnabled = transactionRepository.getLedgerEpoch().getOrNull()?.let { currentEpoch ->
+                when {
+                    currentEpoch < lastUsedEpoch -> true // edge case ledger was reset - allow
+                    else -> {
+                        val threshold = 1
+                        currentEpoch - lastUsedEpoch >= threshold
                     }
                 }
-            }
+            } ?: false
             FaucetState.Available(isEnabled = isEnabled)
         }
     }

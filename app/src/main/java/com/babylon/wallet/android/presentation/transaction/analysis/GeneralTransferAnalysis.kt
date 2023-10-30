@@ -1,6 +1,5 @@
 package com.babylon.wallet.android.presentation.transaction.analysis
 
-import com.babylon.wallet.android.domain.common.value
 import com.babylon.wallet.android.domain.model.assets.Assets
 import com.babylon.wallet.android.domain.model.resources.metadata.MetadataItem
 import com.babylon.wallet.android.domain.usecases.GetAccountsWithAssetsUseCase
@@ -39,7 +38,7 @@ suspend fun TransactionType.GeneralTransaction.resolve(
     val allAssets = getAccountsWithAssetsUseCase(
         accounts = allAccounts,
         isRefreshing = false
-    ).value().orEmpty().mapNotNull {
+    ).getOrNull().orEmpty().mapNotNull {
         it.assets
     }
 
@@ -72,7 +71,7 @@ suspend fun TransactionType.GeneralTransaction.resolve(
     val thirdPartyMetadata = getResourcesMetadataUseCase(
         resourceAddresses = notOwnedResources,
         isRefreshing = false
-    ).value().orEmpty()
+    ).getOrNull().orEmpty()
 
     val defaultDepositGuarantee = getProfileUseCase.defaultDepositGuarantee()
 

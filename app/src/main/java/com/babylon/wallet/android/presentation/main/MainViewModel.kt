@@ -29,7 +29,6 @@ import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
-import rdx.works.peerdroid.helpers.Result
 import rdx.works.profile.data.model.ProfileState
 import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.data.model.currentGateway
@@ -122,8 +121,8 @@ class MainViewModel @Inject constructor(
             connectionPassword = connectionPassword
         )
         if (encryptionKey != null) {
-            when (val result = peerdroidClient.connect(encryptionKey = encryptionKey)) {
-                is Result.Success -> {
+            peerdroidClient.connect(encryptionKey = encryptionKey)
+                .onSuccess {
                     if (incomingDappRequestsJob == null) {
                         Timber.d("\uD83E\uDD16 Listen for incoming requests from dapps")
                         // We must run this only once
@@ -156,13 +155,9 @@ class MainViewModel @Inject constructor(
                         }
                     }
                 }
-
-                is Result.Error -> {
-                    Timber.e("\uD83E\uDD16 Failed to establish link connection: ${result.message}")
+                .onFailure { throwable ->
+                    Timber.e("\uD83E\uDD16 Failed to establish link connection: ${throwable.message}")
                 }
-
-                else -> {}
-            }
         }
     }
 

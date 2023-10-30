@@ -5,7 +5,6 @@ import com.babylon.wallet.android.data.repository.execute
 import com.babylon.wallet.android.di.JsonConverterFactory
 import com.babylon.wallet.android.di.SimpleHttpClient
 import com.babylon.wallet.android.di.buildApi
-import com.babylon.wallet.android.domain.common.Result
 import okhttp3.OkHttpClient
 import retrofit2.Converter
 import javax.inject.Inject

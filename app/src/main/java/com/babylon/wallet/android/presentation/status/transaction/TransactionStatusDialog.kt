@@ -165,9 +165,7 @@ fun TransactionStatusDialog(
                             WalletErrorType.SubmittedTransactionHasTemporarilyRejectedTransactionStatus -> {
                                 state.failureError?.errorMessageStringRes?.let {
                                     stringResource(id = it, state.txProcessingTime)
-                                } ?: run {
-                                    state.failureError?.getMessage()
-                                }
+                                } ?: state.failureError?.getMessage()
                             }
                             else -> {
                                 state.failureError?.getMessage()

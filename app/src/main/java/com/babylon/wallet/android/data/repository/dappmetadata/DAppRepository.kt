@@ -24,11 +24,6 @@ import com.babylon.wallet.android.di.SimpleHttpClient
 import com.babylon.wallet.android.di.buildApi
 import com.babylon.wallet.android.di.coroutines.IoDispatcher
 import com.babylon.wallet.android.domain.RadixWalletException
-import com.babylon.wallet.android.domain.common.Result
-import com.babylon.wallet.android.domain.common.asKotlinResult
-import com.babylon.wallet.android.domain.common.map
-import com.babylon.wallet.android.domain.common.switchMap
-import com.babylon.wallet.android.domain.common.value
 import com.babylon.wallet.android.domain.model.DAppResources
 import com.babylon.wallet.android.domain.model.DAppWithMetadata
 import com.babylon.wallet.android.domain.model.resources.Resource
@@ -42,24 +37,24 @@ import retrofit2.Converter
 import javax.inject.Inject
 
 interface DAppRepository {
-    suspend fun verifyDapp(origin: String, dAppDefinitionAddress: String, wellKnownFileCheck: Boolean = true): kotlin.Result<Boolean>
+    suspend fun verifyDapp(origin: String, dAppDefinitionAddress: String, wellKnownFileCheck: Boolean = true): Result<Boolean>
 
     suspend fun getDAppMetadata(
         definitionAddress: String,
         explicitMetadata: Set<ExplicitMetadataKey> = ExplicitMetadataKey.forDapp,
         needMostRecentData: Boolean
-    ): kotlin.Result<DAppWithMetadata>
+    ): Result<DAppWithMetadata>
 
     suspend fun getDAppsMetadata(
         definitionAddresses: List<String>,
         explicitMetadata: Set<ExplicitMetadataKey> = ExplicitMetadataKey.forDapp,
         needMostRecentData: Boolean
-    ): kotlin.Result<List<DAppWithMetadata>>
+    ): Result<List<DAppWithMetadata>>
 
     suspend fun getDAppResources(
         dAppMetadata: DAppWithMetadata,
         isRefreshing: Boolean = true
-    ): kotlin.Result<DAppResources>
+    ): Result<DAppResources>
 }
 
 class DAppRepositoryImpl @Inject constructor(
@@ -74,7 +69,7 @@ class DAppRepositoryImpl @Inject constructor(
         origin: String,
         dAppDefinitionAddress: String,
         wellKnownFileCheck: Boolean
-    ): kotlin.Result<Boolean> = withContext(ioDispatcher) {
+    ): Result<Boolean> = withContext(ioDispatcher) {
         if (origin.isValidHttpsUrl()) {
             getDAppMetadata(
                 definitionAddress = dAppDefinitionAddress,
@@ -100,14 +95,14 @@ class DAppRepositoryImpl @Inject constructor(
                 }
             }
         } else {
-            kotlin.Result.failure(DappRequestException(DappRequestFailure.DappVerificationFailure.UnknownWebsite))
+            Result.failure(DappRequestException(DappRequestFailure.DappVerificationFailure.UnknownWebsite))
         }
     }
 
     private suspend fun verifyWellKnownFileContainsDappDefinitionAddress(
         origin: String,
         dAppDefinitionAddress: String
-    ): kotlin.Result<Boolean> {
+    ): Result<Boolean> {
         return wellKnownFileMetadata(origin).map { wellKnownFileDAppDefinitionAddresses ->
             val isWellKnown = wellKnownFileDAppDefinitionAddresses.any { it == dAppDefinitionAddress }
             if (isWellKnown) {
@@ -122,7 +117,7 @@ class DAppRepositoryImpl @Inject constructor(
         definitionAddress: String,
         explicitMetadata: Set<ExplicitMetadataKey>,
         needMostRecentData: Boolean
-    ): kotlin.Result<DAppWithMetadata> = getDAppsMetadata(
+    ): Result<DAppWithMetadata> = getDAppsMetadata(
         definitionAddresses = listOf(definitionAddress),
         explicitMetadata = explicitMetadata,
         needMostRecentData = needMostRecentData
@@ -138,8 +133,8 @@ class DAppRepositoryImpl @Inject constructor(
         definitionAddresses: List<String>,
         explicitMetadata: Set<ExplicitMetadataKey>,
         needMostRecentData: Boolean
-    ): kotlin.Result<List<DAppWithMetadata>> = withContext(ioDispatcher) {
-        if (definitionAddresses.isEmpty()) return@withContext kotlin.Result.success(emptyList())
+    ): Result<List<DAppWithMetadata>> = withContext(ioDispatcher) {
+        if (definitionAddresses.isEmpty()) return@withContext Result.success(emptyList())
 
         val optIns = if (explicitMetadata.isNotEmpty()) {
             StateEntityDetailsOptIns(
@@ -167,12 +162,12 @@ class DAppRepositoryImpl @Inject constructor(
                     )
                 }
             },
-        ).asKotlinResult()
+        )
     }
 
     private suspend fun wellKnownFileMetadata(
         origin: String
-    ): kotlin.Result<List<String>> {
+    ): Result<List<String>> {
         return withContext(ioDispatcher) {
             buildApi<DAppDefinitionApi>(
                 baseUrl = origin,
@@ -183,14 +178,15 @@ class DAppRepositoryImpl @Inject constructor(
                 error = {
                     DappRequestException(DappRequestFailure.DappVerificationFailure.RadixJsonNotFound)
                 }
-            ).asKotlinResult()
+            )
         }
     }
 
+    @Suppress("LongMethod")
     override suspend fun getDAppResources(
         dAppMetadata: DAppWithMetadata,
         isRefreshing: Boolean
-    ): kotlin.Result<DAppResources> {
+    ): Result<DAppResources> {
         val claimedResources = dAppMetadata.claimedEntities.filter {
             ActionableAddress.Type.from(it) == ActionableAddress.Type.RESOURCE
         }
@@ -201,60 +197,70 @@ class DAppRepositoryImpl @Inject constructor(
             isRefreshing = isRefreshing
         )
 
-        return listOfEntityDetailsResponsesResult.switchMap { entityDetailsResponses ->
-            val allResources = entityDetailsResponses.map {
-                it.items
-            }.flatten()
+        return listOfEntityDetailsResponsesResult
+            .fold(
+                onSuccess = { entityDetailsResponses ->
+                    val allResources = entityDetailsResponses.map {
+                        it.items
+                    }.flatten()
 
-            val fungibleItems = allResources.filter {
-                it.details?.type == StateEntityDetailsResponseItemDetailsType.fungibleResource
-            }
-            val nonFungibleItems = allResources.filter {
-                it.details?.type == StateEntityDetailsResponseItemDetailsType.nonFungibleResource
-            }
+                    val fungibleItems = allResources.filter {
+                        it.details?.type == StateEntityDetailsResponseItemDetailsType.fungibleResource
+                    }
+                    val nonFungibleItems = allResources.filter {
+                        it.details?.type == StateEntityDetailsResponseItemDetailsType.nonFungibleResource
+                    }
 
-            val fungibleResources = fungibleItems.map { fungibleItem ->
-                val metadataItems = fungibleItem.metadata.asMetadataItems().toMutableList()
-                Resource.FungibleResource(
-                    resourceAddress = fungibleItem.address,
-                    ownedAmount = null, // No owned amount given in metadata
-                    nameMetadataItem = metadataItems.consume(),
-                    symbolMetadataItem = metadataItems.consume(),
-                    descriptionMetadataItem = metadataItems.consume(),
-                    iconUrlMetadataItem = metadataItems.consume(),
-                    behaviours = fungibleItem.details?.extractBehaviours().orEmpty(),
-                    currentSupply = fungibleItem.details?.totalSupply()?.toBigDecimal(),
-                    validatorMetadataItem = metadataItems.consume(),
-                    poolMetadataItem = metadataItems.consume(),
-                    divisibility = fungibleItem.details?.divisibility(),
-                    dAppDefinitionsMetadataItem = metadataItems.consume()
-                )
-            }
+                    val fungibleResources = fungibleItems.map { fungibleItem ->
+                        val metadataItems = fungibleItem.metadata.asMetadataItems().toMutableList()
+                        Resource.FungibleResource(
+                            resourceAddress = fungibleItem.address,
+                            ownedAmount = null, // No owned amount given in metadata
+                            nameMetadataItem = metadataItems.consume(),
+                            symbolMetadataItem = metadataItems.consume(),
+                            descriptionMetadataItem = metadataItems.consume(),
+                            iconUrlMetadataItem = metadataItems.consume(),
+                            behaviours = fungibleItem.details?.extractBehaviours().orEmpty(),
+                            currentSupply = fungibleItem.details?.totalSupply()?.toBigDecimal(),
+                            validatorMetadataItem = metadataItems.consume(),
+                            poolMetadataItem = metadataItems.consume(),
+                            divisibility = fungibleItem.details?.divisibility(),
+                            dAppDefinitionsMetadataItem = metadataItems.consume()
+                        )
+                    }
 
-            val nonFungibleResource = nonFungibleItems.map { nonFungibleItem ->
-                val metadataItems = nonFungibleItem.metadata.asMetadataItems().toMutableList()
+                    val nonFungibleResource = nonFungibleItems.map { nonFungibleItem ->
+                        val metadataItems = nonFungibleItem.metadata.asMetadataItems().toMutableList()
 
-                Resource.NonFungibleResource(
-                    resourceAddress = nonFungibleItem.address,
-                    amount = 0L,
-                    nameMetadataItem = metadataItems.consume(),
-                    descriptionMetadataItem = metadataItems.consume(),
-                    iconMetadataItem = metadataItems.consume(),
-                    tagsMetadataItem = metadataItems.consume(),
-                    validatorMetadataItem = metadataItems.consume(),
-                    items = emptyList(),
-                    behaviours = nonFungibleItem.details?.extractBehaviours().orEmpty(),
-                    currentSupply = nonFungibleItem.details?.totalSupply()?.toIntOrNull()
-                )
-            }
+                        Resource.NonFungibleResource(
+                            resourceAddress = nonFungibleItem.address,
+                            amount = 0L,
+                            nameMetadataItem = metadataItems.consume(),
+                            descriptionMetadataItem = metadataItems.consume(),
+                            iconMetadataItem = metadataItems.consume(),
+                            tagsMetadataItem = metadataItems.consume(),
+                            validatorMetadataItem = metadataItems.consume(),
+                            items = emptyList(),
+                            behaviours = nonFungibleItem.details?.extractBehaviours().orEmpty(),
+                            currentSupply = nonFungibleItem.details?.totalSupply()?.toIntOrNull()
+                        )
+                    }
 
-            val dAppResources = DAppResources(
-                fungibleResources = fungibleResources.filter { it.dappDefinitions.contains(dAppMetadata.dAppAddress) },
-                nonFungibleResources = nonFungibleResource.filter { it.dappDefinitions.contains(dAppMetadata.dAppAddress) },
+                    val dAppResources = DAppResources(
+                        fungibleResources = fungibleResources.filter {
+                            it.dappDefinitions.contains(dAppMetadata.dAppAddress)
+                        },
+                        nonFungibleResources = nonFungibleResource.filter {
+                            it.dappDefinitions.contains(dAppMetadata.dAppAddress)
+                        },
+                    )
+
+                    Result.success(dAppResources)
+                },
+                onFailure = {
+                    Result.failure(it)
+                }
             )
-
-            Result.Success(dAppResources)
-        }.asKotlinResult()
     }
 
     private suspend fun getStateEntityDetailsResponse(
@@ -285,13 +291,13 @@ class DAppRepositoryImpl @Inject constructor(
             }
 
         // if you find any error response in the list of StateEntityDetailsResponses then return error
-        return if (responses.any { response -> response is Result.Error }) {
-            val errorResponse = responses.first { response -> response is Result.Error }.map {
+        return if (responses.any { response -> response.isFailure }) {
+            val errorResponse = responses.first { response -> response.isFailure }.map {
                 listOf(it)
             }
             errorResponse
         } else { // otherwise all StateEntityDetailsResponses are success so return the list
-            Result.Success(responses.mapNotNull { it.value() })
+            Result.success(responses.mapNotNull { it.getOrNull() })
         }
     }
 }
