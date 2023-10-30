@@ -5,9 +5,6 @@ import com.babylon.wallet.android.data.gateway.generated.models.TransactionPaylo
 import com.babylon.wallet.android.data.repository.TransactionStatusData
 import com.babylon.wallet.android.data.repository.transaction.TransactionRepository
 import com.babylon.wallet.android.domain.RadixWalletException
-import com.babylon.wallet.android.domain.common.Result
-import com.babylon.wallet.android.data.transaction.DappRequestException
-import com.babylon.wallet.android.data.transaction.DappRequestFailure
 import javax.inject.Inject
 
 class PollTransactionStatusUseCase @Inject constructor(
@@ -22,9 +19,8 @@ class PollTransactionStatusUseCase @Inject constructor(
         txProcessingTime: String
     ): TransactionStatusData {
         while (true) {
-            val statusCheckResult = transactionRepository.getTransactionStatus(txID)
-            if (statusCheckResult is Result.Success) {
-                when (statusCheckResult.data.knownPayloads.firstOrNull()?.payloadStatus) {
+            transactionRepository.getTransactionStatus(txID).onSuccess { statusCheckResult ->
+                when (statusCheckResult.knownPayloads.firstOrNull()?.payloadStatus) {
                     TransactionPayloadStatus.unknown,
                     TransactionPayloadStatus.commitPendingOutcomeUnknown,
                     TransactionPayloadStatus.pending -> {

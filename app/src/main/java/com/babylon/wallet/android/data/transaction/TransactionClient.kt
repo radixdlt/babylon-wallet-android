@@ -11,8 +11,6 @@ import com.babylon.wallet.android.data.repository.transaction.TransactionReposit
 import com.babylon.wallet.android.data.transaction.model.FeePayerSearchResult
 import com.babylon.wallet.android.data.transaction.model.TransactionApprovalRequest
 import com.babylon.wallet.android.domain.RadixWalletException
-import com.babylon.wallet.android.domain.common.asKotlinResult
-import com.babylon.wallet.android.domain.common.value
 import com.babylon.wallet.android.domain.model.assets.findAccountWithEnoughXRDBalance
 import com.babylon.wallet.android.domain.usecases.GetAccountsWithAssetsUseCase
 import com.babylon.wallet.android.domain.usecases.transaction.CollectSignersSignaturesUseCase
@@ -38,7 +36,6 @@ import timber.log.Timber
 import java.math.BigDecimal
 import java.security.SecureRandom
 import javax.inject.Inject
-import kotlin.Result
 
 @Suppress("LongParameterList")
 class TransactionClient @Inject constructor(

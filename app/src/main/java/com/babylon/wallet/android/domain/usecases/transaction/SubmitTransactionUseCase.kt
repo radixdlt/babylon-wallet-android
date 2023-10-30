@@ -38,7 +38,7 @@ class SubmitTransactionUseCase @Inject constructor(
                 )
             }
         } ?: Result.failure(
-            Result.failure(RadixWalletException.PrepareTransactionException.SubmitNotarizedTransaction(submitResult.exception))
+            RadixWalletException.PrepareTransactionException.SubmitNotarizedTransaction(submitResult.exceptionOrNull())
         )
     }
 

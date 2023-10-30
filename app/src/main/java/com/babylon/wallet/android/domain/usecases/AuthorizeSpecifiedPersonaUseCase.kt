@@ -20,7 +20,6 @@ import rdx.works.profile.domain.accountOnCurrentNetwork
 import rdx.works.profile.domain.personaOnCurrentNetwork
 import java.time.LocalDateTime
 import javax.inject.Inject
-import kotlin.Result
 
 /**
  * Purpose of this use case is to respond to dApp login request silently without showing dApp login flow.
@@ -199,17 +198,15 @@ class AuthorizeSpecifiedPersonaUseCase @Inject constructor(
             ongoingAccounts = selectedAccounts.map { it.data },
             ongoingSharedPersonaData = selectedPersonaData
         ).mapCatching { response ->
-            return when (
-                dAppMessenger.sendWalletInteractionSuccessResponse(
-                    remoteConnectorId = request.remoteConnectorId,
-                    response = response
-                )
+            return dAppMessenger.sendWalletInteractionSuccessResponse(
+                remoteConnectorId = request.remoteConnectorId,
+                response = response
             ).getOrNull()?.let {
-                    val updatedDapp = updateDappPersonaWithLastUsedTimestamp(authorizedDapp, persona.address)
-                    dAppConnectionRepository.updateOrCreateAuthorizedDApp(updatedDapp)
-                    Result.success(
-                        authorizedDapp.displayName
-                    )
+                val updatedDapp = updateDappPersonaWithLastUsedTimestamp(authorizedDapp, persona.address)
+                dAppConnectionRepository.updateOrCreateAuthorizedDApp(updatedDapp)
+                Result.success(
+                    authorizedDapp.displayName
+                )
             } ?: Result.failure(RadixWalletException.DappRequestException.InvalidRequest)
         }
     }

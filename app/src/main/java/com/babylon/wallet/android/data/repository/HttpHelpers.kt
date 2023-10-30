@@ -47,7 +47,7 @@ suspend inline fun <reified T, A> Call<T>.execute(
             } catch (e: Exception) {
                 null
             }
-            val exception: Exception = definedError ?: RadixGatewayException(
+            val exception: Throwable = definedError ?: RadixGatewayException(
                 errorResponse?.message
             )
             return Result.failure(exception)

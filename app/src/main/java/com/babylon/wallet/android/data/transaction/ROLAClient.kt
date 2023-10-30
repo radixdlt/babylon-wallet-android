@@ -2,7 +2,6 @@ package com.babylon.wallet.android.data.transaction
 
 import com.babylon.wallet.android.data.repository.entity.EntityRepository
 import com.babylon.wallet.android.domain.RadixWalletException
-import com.babylon.wallet.android.domain.common.value
 import com.babylon.wallet.android.domain.usecases.transaction.CollectSignersSignaturesUseCase
 import com.babylon.wallet.android.domain.usecases.transaction.GenerateAuthSigningFactorInstanceUseCase
 import com.babylon.wallet.android.domain.usecases.transaction.SignRequest
