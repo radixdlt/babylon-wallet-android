@@ -4,6 +4,7 @@ import org.junit.Assert.assertEquals
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.Parameterized
+import rdx.works.profile.derivation.model.NetworkId
 
 @RunWith(Parameterized::class)
 internal class AddressDashboardUrlTest(
@@ -13,7 +14,7 @@ internal class AddressDashboardUrlTest(
 
     @Test
     fun `convert of address to dashboard url`() {
-        assertEquals(url, ActionableAddress(address).toDashboardUrl())
+        assertEquals(url, ActionableAddress(address).toDashboardUrl(networkId = NetworkId.Mainnet))
     }
 
 
@@ -22,10 +23,10 @@ internal class AddressDashboardUrlTest(
         @Parameterized.Parameters(name = "\"{0}\" => {1}")
         fun data() : Collection<Array<Any>> {
             return listOf(
-                arrayOf(RESOURCE_ADDRESS, "$BASE_NETWORK_URL/resource/$RESOURCE_ADDRESS"),
-                arrayOf(RESOURCE_NFT_ADDRESS, "$BASE_NETWORK_URL/nft/$RESOURCE_NFT_ADDRESS"),
-                arrayOf(ACCOUNT_ADDRESS, "$BASE_NETWORK_URL/account/$ACCOUNT_ADDRESS"),
-                arrayOf(PACKAGE_ADDRESS, "$BASE_NETWORK_URL/package/$PACKAGE_ADDRESS"),
+                arrayOf(RESOURCE_ADDRESS, "$BASE_MAIN_URL/resource/$RESOURCE_ADDRESS"),
+                arrayOf(RESOURCE_NFT_ADDRESS, "$BASE_MAIN_URL/nft/$RESOURCE_NFT_ADDRESS"),
+                arrayOf(ACCOUNT_ADDRESS, "$BASE_MAIN_URL/account/$ACCOUNT_ADDRESS"),
+                arrayOf(PACKAGE_ADDRESS, "$BASE_MAIN_URL/package/$PACKAGE_ADDRESS"),
                 arrayOf(
                     "txid_tdx_e_106vpmdem94zr2x4yt2rf4l935d26pzrnlmz6wzwrwgz8s6jpyhmsa5ze2x",
                     "$BASE_MAIN_URL/transaction/txid_tdx_e_106vpmdem94zr2x4yt2rf4l935d26pzrnlmz6wzwrwgz8s6jpyhmsa5ze2x"
@@ -34,12 +35,11 @@ internal class AddressDashboardUrlTest(
                     "txid_tdx_22_1t0sdhcc6usx8sun36cd95jn6xlwzt4mw3gctz5r5yp94fjss9u3syuqcxg",
                     "$BASE_MAIN_URL/transaction/txid_tdx_22_1t0sdhcc6usx8sun36cd95jn6xlwzt4mw3gctz5r5yp94fjss9u3syuqcxg"
                 ),
-                arrayOf(COMPONENT_ADDRESS, "$BASE_NETWORK_URL/component/$COMPONENT_ADDRESS"),
+                arrayOf(COMPONENT_ADDRESS, "$BASE_MAIN_URL/component/$COMPONENT_ADDRESS"),
                 arrayOf(UNKNOWN_ADDRESS, "$BASE_MAIN_URL/$UNKNOWN_ADDRESS")
             )
         }
 
-        private const val BASE_NETWORK_URL = "https://rcnet-v3-dashboard.radixdlt.com"
         private const val BASE_MAIN_URL = "https://dashboard.radixdlt.com"
         private const val RESOURCE_ADDRESS = "resource_tdx_e_1tknxxxxxxxxxradxrdxxxxxxxxx009923554798xxxxxxxxx8rpsmc"
         private const val RESOURCE_NFT_ADDRESS = "resource_tdx_e_1t45e0q75zln8jk5z3vyxp88hrugj5p7alr8spspv2r79lv0px6rpdg:#1#"

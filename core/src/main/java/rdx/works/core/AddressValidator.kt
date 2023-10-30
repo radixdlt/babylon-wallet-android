@@ -21,8 +21,4 @@ object AddressValidator {
     fun isValidNft(address: String): Boolean = runCatching {
         NonFungibleGlobalId(address)
     }.getOrNull() != null
-
-    fun getValidNetworkId(address: String) = runCatching {
-        Address(address)
-    }.getOrNull()?.networkId()?.toInt()
 }

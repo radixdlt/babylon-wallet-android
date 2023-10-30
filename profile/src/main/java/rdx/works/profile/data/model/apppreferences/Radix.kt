@@ -148,7 +148,7 @@ object Radix {
         }
     }
 
-    fun NetworkId.dashboardUrl() =
+    fun NetworkId?.dashboardUrl() =
         when (this) {
             NetworkId.Mainnet -> {
                 DASHBOARD_MAINNET_URL

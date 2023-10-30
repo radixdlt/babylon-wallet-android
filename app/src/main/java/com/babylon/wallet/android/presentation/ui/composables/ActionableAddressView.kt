@@ -55,8 +55,10 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import rdx.works.profile.derivation.model.NetworkId
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.accountOnCurrentNetwork
+import rdx.works.profile.domain.gateway.GetCurrentGatewayUseCase
 import timber.log.Timber
 
 @OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
@@ -71,22 +73,36 @@ fun ActionableAddressView(
 ) {
     val actionableAddress = resolveAddress(address = address, shouldTruncateAddressForDisplay = shouldTruncateAddressForDisplay)
     val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+
+    var networkId: NetworkId? = NetworkId.Mainnet
+
     var actions by remember(actionableAddress) {
         mutableStateOf(
             resolveStaticActions(
                 actionableAddress = actionableAddress,
-                context = context
+                context = context,
+                onAction = {
+                    OnAction.CallbackBasedAction.OpenExternalWebView(
+                        actionableAddress = actionableAddress,
+                        networkId = networkId
+                    )
+                }
             )
         )
+    }
+    val useCaseProvider = remember(context) {
+        EntryPoints.get(context.applicationContext, ActionableAddressViewEntryPoint::class.java)
+    }
+
+    LaunchedEffect(actionableAddress) {
+        scope.launch {
+            networkId = useCaseProvider.currentGatewayUseCase().invoke().network.networkId()
+        }
     }
 
     // Resolve if address is ledger and attach another action
     if (actionableAddress.type == ActionableAddress.Type.ACCOUNT) {
-        val useCaseProvider = remember(context) {
-            EntryPoints.get(context.applicationContext, ActionableAddressViewEntryPoint::class.java)
-        }
-        val scope = rememberCoroutineScope()
-
         LaunchedEffect(actionableAddress) {
             scope.launch {
                 if (useCaseProvider.profileUseCase().accountOnCurrentNetwork(actionableAddress.address)?.isLedgerAccount == true) {
@@ -111,7 +127,6 @@ fun ActionableAddressView(
 
     var isDropdownMenuExpanded by remember { mutableStateOf(false) }
     var viewBasedAction: OnAction.ViewBasedAction? by remember { mutableStateOf(null) }
-    val scope = rememberCoroutineScope()
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
     LaunchedEffect(viewBasedAction) {
@@ -218,7 +233,8 @@ private fun resolveAddress(
 
 private fun resolveStaticActions(
     actionableAddress: ActionableAddress,
-    context: Context
+    context: Context,
+    onAction: () -> OnAction
 ): PopupActions {
     val copyAction = PopupActionItem(
         name = context.getString(
@@ -233,8 +249,9 @@ private fun resolveStaticActions(
 
     val openExternalAction = PopupActionItem(
         name = context.getString(R.string.addressAction_viewOnDashboard),
-        icon = R.drawable.ic_external_link
-    ) { OnAction.CallbackBasedAction.OpenExternalWebView(actionableAddress) }
+        icon = R.drawable.ic_external_link,
+        onAction = onAction
+    )
 
     val qrAction = PopupActionItem(
         name = context.getString(R.string.addressAction_showAccountQR),
@@ -328,11 +345,14 @@ private sealed interface OnAction {
             }
         }
 
-        data class OpenExternalWebView(private val actionableAddress: ActionableAddress) : CallbackBasedAction {
+        data class OpenExternalWebView(
+            private val actionableAddress: ActionableAddress,
+            private val networkId: NetworkId?
+        ) : CallbackBasedAction {
 
             @Suppress("SwallowedException")
             override fun onAction(context: Context) {
-                context.openUrl(actionableAddress.toDashboardUrl())
+                context.openUrl(actionableAddress.toDashboardUrl(networkId))
             }
         }
 
@@ -370,6 +390,8 @@ private sealed interface OnAction {
 @InstallIn(SingletonComponent::class)
 private interface ActionableAddressViewEntryPoint {
     fun profileUseCase(): GetProfileUseCase
+
+    fun currentGatewayUseCase(): GetCurrentGatewayUseCase
 
     fun verifyAddressOnLedgerUseCase(): VerifyAddressOnLedgerUseCase
 
