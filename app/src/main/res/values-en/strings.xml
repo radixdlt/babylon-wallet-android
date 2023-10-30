@@ -732,6 +732,7 @@ You can always change the guarantee from this default in each transaction.</stri
   <string name="displayMnemonics_connectedAccountsLabel_many">Connected to %d Accounts</string>
   <string name="displayMnemonics_seedPhraseSecurityInfo">You are responsible for the security of your Seed Phrase</string>
   <string name="displayMnemonics_backUpWarning">Write Down this Seed Phrase</string>
+  <string name="displayMnemonics_seedPhraseEntryWarning">Seed Phrase Entry Required</string>
   <string name="revealSeedPhrase_title">Reveal Seed Phrase</string>
   <string name="revealSeedPhrase_warning">For your safety, make sure no one is looking at your screen. Taking a screen shot has been disabled.</string>
   <string name="revealSeedPhrase_wordLabel">Word %d</string>
