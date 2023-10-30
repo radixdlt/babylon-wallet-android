@@ -6,6 +6,7 @@ import com.babylon.wallet.android.data.dapp.IncomingRequestRepositoryImpl
 import com.babylon.wallet.android.data.dapp.model.WalletErrorType
 import com.babylon.wallet.android.data.gateway.generated.models.TransactionPreviewResponse
 import com.babylon.wallet.android.data.gateway.generated.models.TransactionReceipt
+import com.babylon.wallet.android.data.gateway.generated.models.TransactionStatus
 import com.babylon.wallet.android.data.repository.TransactionStatusClient
 import com.babylon.wallet.android.data.transaction.NotarizedTransactionResult
 import com.babylon.wallet.android.data.transaction.NotaryAndSigners
@@ -668,7 +669,7 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
     private fun previewResponse() = TransactionPreviewResponse(
         encodedReceipt = "",
         receipt = TransactionReceipt(
-            status = "",
+            status = TransactionStatus.unknown,
             errorMessage = ""
         ),
         logs = emptyList()

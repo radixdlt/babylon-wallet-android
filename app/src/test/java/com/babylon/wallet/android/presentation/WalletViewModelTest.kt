@@ -74,6 +74,7 @@ class WalletViewModelTest : StateViewModelTest<WalletViewModel>() {
         coEvery {
             getWalletAssetsUseCase(
                 accounts = sampleProfile.currentNetwork.accounts,
+                isRefreshing = false
             )
         } returns flowOf(
             listOf(

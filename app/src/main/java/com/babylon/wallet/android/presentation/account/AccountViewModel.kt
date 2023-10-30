@@ -76,7 +76,7 @@ class AccountViewModel @Inject constructor(
                 .flatMapLatest { account ->
                     getAccountAssetsUseCase(account, state.value.isRefreshing).catch { error ->
                         _state.update {
-                            it.copy(isLoading = false, refreshing = false, uiMessage = UiMessage.ErrorMessage.from(error = error))
+                            it.copy(isLoading = false, refreshing = false, uiMessage = UiMessage.ErrorMessage(error = error))
                         }
                     }
                 }
