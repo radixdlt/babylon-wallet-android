@@ -670,7 +670,10 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
         sendEvent(Event.RequestCompletionBiometricPrompt(request.needSignatures()))
     }
 
-    fun completeRequestHandling(deviceBiometricAuthenticationProvider: suspend () -> Boolean = { true }, abortOnFailure: Boolean = false) {
+    fun completeRequestHandling(
+        deviceBiometricAuthenticationProvider: suspend () -> Boolean = { true },
+        abortOnFailure: Boolean = false
+    ) {
         viewModelScope.launch {
             val selectedPersona = state.value.selectedPersona?.persona
             requireNotNull(selectedPersona)
