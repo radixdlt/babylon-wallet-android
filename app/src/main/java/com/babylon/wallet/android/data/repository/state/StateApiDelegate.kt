@@ -84,6 +84,7 @@ class StateApiDelegate(
                 }
 
                 val gatewayDetails = AccountGatewayDetails(
+                    accountAddress = accountOnLedger.address,
                     ledgerState = chunkedAccounts.ledgerState,
                     accountMetadata = accountOnLedger.explicitMetadata,
                     fungibles = allFungibles,
@@ -244,6 +245,7 @@ class StateApiDelegate(
     }
 
     data class AccountGatewayDetails(
+        val accountAddress: String,
         val ledgerState: LedgerState,
         val accountMetadata: EntityMetadataCollection?,
         val fungibles: List<FungibleResourcesCollectionItem>,

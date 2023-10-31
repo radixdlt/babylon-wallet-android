@@ -95,30 +95,12 @@ class StateRepositoryImpl @Inject constructor(
                             item.asAccountResourceJoin(account.address, syncInfo)
                         }
 
-                        // Gather and store pool details
-                        val poolAddresses = fungibleEntityPairs.mapNotNull { it.second.poolAddress }.toSet()
-                        val pools =
-                            stateApiDelegate.getPoolDetails(poolAddresses = poolAddresses, stateVersion = syncInfo.accountStateVersion)
-
-                        // Gather and store validator details
-                        val validatorAddresses = (fungibleEntityPairs.mapNotNull {
-                            it.second.validatorAddress
-                        } + nonFungibleEntityPairs.mapNotNull {
-                            it.second.validatorAddress
-                        }).toSet()
-                        val validators = stateApiDelegate.getValidatorsDetails(
-                            validatorsAddresses = validatorAddresses,
-                            stateVersion = syncInfo.accountStateVersion
-                        )
-
                         // Store account details
                         stateDao.updateAccountData(
                             accountAddress = account.address,
                             accountTypeMetadataItem = accountMetadataItems?.consume(),
                             syncInfo = syncInfo,
-                            accountWithResources = fungibleEntityPairs + nonFungibleEntityPairs,
-                            poolsWithResources = pools.asPoolsWithResources(syncInfo),
-                            validators = validators.asValidatorEntities(syncInfo)
+                            accountWithResources = fungibleEntityPairs + nonFungibleEntityPairs
                         )
                     }
                 )

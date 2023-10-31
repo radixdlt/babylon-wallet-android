@@ -22,7 +22,7 @@ class GetWalletAssetsUseCase @Inject constructor(
                 AccountWithAssets(
                     account = account,
                     details = detailsAndResources?.details,
-                    assets = detailsAndResources?.extractAssets()
+                    assets = null // TODO
                 )
             }
         }

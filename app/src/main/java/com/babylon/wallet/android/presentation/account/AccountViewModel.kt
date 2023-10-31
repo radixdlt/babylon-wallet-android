@@ -8,9 +8,8 @@ import com.babylon.wallet.android.domain.model.assets.PoolUnit
 import com.babylon.wallet.android.domain.model.assets.ValidatorDetail
 import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.domain.usecases.GetAccountsForSecurityPromptUseCase
-import com.babylon.wallet.android.domain.usecases.GetAccountsWithAssetsUseCase
 import com.babylon.wallet.android.domain.usecases.SecurityPromptType
-import com.babylon.wallet.android.domain.usecases.assets.GetAccountAssetsUseCase
+import com.babylon.wallet.android.domain.usecases.assets.GetWalletAssetsUseCase
 import com.babylon.wallet.android.presentation.account.AccountEvent.NavigateToMnemonicBackup
 import com.babylon.wallet.android.presentation.account.AccountEvent.NavigateToMnemonicRestore
 import com.babylon.wallet.android.presentation.common.OneOffEvent
@@ -27,7 +26,6 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.mapNotNull
@@ -37,14 +35,13 @@ import kotlinx.coroutines.launch
 import rdx.works.profile.data.model.extensions.factorSourceId
 import rdx.works.profile.data.model.factorsources.FactorSource.FactorSourceID
 import rdx.works.profile.domain.GetProfileUseCase
-import rdx.works.profile.domain.accountOnCurrentNetworkWithAddress
 import rdx.works.profile.domain.accountsOnCurrentNetwork
 import timber.log.Timber
 import javax.inject.Inject
 
 @HiltViewModel
 class AccountViewModel @Inject constructor(
-    private val getAccountAssetsUseCase: GetAccountAssetsUseCase,
+    private val getWalletAssetsUseCase: GetWalletAssetsUseCase,
     private val getProfileUseCase: GetProfileUseCase,
     private val getAccountsForSecurityPromptUseCase: GetAccountsForSecurityPromptUseCase,
     private val appEventBus: AppEventBus,
@@ -58,7 +55,7 @@ class AccountViewModel @Inject constructor(
     private val refreshFlow = MutableSharedFlow<Unit>()
     private val accountFlow = combine(
         getProfileUseCase.accountsOnCurrentNetwork.mapNotNull { accountsInProfile ->
-                accountsInProfile.find { it.address == accountAddress }
+            accountsInProfile.find { it.address == accountAddress }
         },
         refreshFlow
     ) { account, _ -> account }
@@ -74,11 +71,13 @@ class AccountViewModel @Inject constructor(
                     }
                 }
                 .flatMapLatest { account ->
-                    getAccountAssetsUseCase(account, state.value.isRefreshing).catch { error ->
-                        _state.update {
-                            it.copy(isLoading = false, refreshing = false, uiMessage = UiMessage.ErrorMessage(error = error))
+                    getWalletAssetsUseCase(listOf(account), state.value.isRefreshing)
+                        .catch { error ->
+                            _state.update {
+                                it.copy(isLoading = false, refreshing = false, uiMessage = UiMessage.ErrorMessage(error = error))
+                            }
                         }
-                    }
+                        .mapNotNull { it.firstOrNull() }
                 }
                 .collectLatest { accountWithAssets ->
                     Timber.tag("Bakos").d("Account with assets")
@@ -198,6 +197,7 @@ data class AccountUiState(
             } else {
                 null
             }
+
             else -> null
         }
 

@@ -12,17 +12,13 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface StateDao {
 
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun updateLedgerState(ledgerStateEntity: LedgerStateEntity)
-
     @Query(
         """
         SELECT 
             A.address AS account_address, 
             A.account_type AS account_type, 
             A.synced AS account_synced, 
-            A.state_version AS account_state_version,
-            AR.account_state_version AS join_state_version,
+            A.state_version,
             AR.amount AS amount,
             R.address AS resource_address,
             R.*
@@ -31,8 +27,7 @@ interface StateDao {
         LEFT JOIN ResourceEntity AS R ON AR.resource_address = R.address
         WHERE 
             A.address in (:accountAddresses) AND
-            A.synced >= :minValidity AND
-            A.state_version = (SELECT state_version FROM LedgerStateEntity WHERE id = 1)
+            A.synced >= :minValidity
         """
     )
     fun observeAccountsPortfolio(
@@ -46,15 +41,7 @@ interface StateDao {
         accountTypeMetadataItem: AccountTypeMetadataItem?,
         syncInfo: SyncInfo,
         accountWithResources: List<Pair<AccountResourceJoin, ResourceEntity>>,
-        poolsWithResources: Map<PoolEntity, List<Pair<PoolResourceJoin, ResourceEntity>>>,
-        validators: List<ValidatorEntity>
     ) {
-        val allPoolsWithResources = poolsWithResources.values.flatten()
-
-        // Update state version
-        updateLedgerState(LedgerStateEntity(stateVersion = syncInfo.accountStateVersion))
-
-        // Insert parent entities
         insertAccountDetails(
             AccountEntity(
                 address = accountAddress,
@@ -63,13 +50,8 @@ interface StateDao {
                 stateVersion = syncInfo.accountStateVersion
             )
         )
-        insertPoolDetails(poolsWithResources.keys.toList())
-        insertValidators(validators)
-        insertResources(accountWithResources.map { it.second } + allPoolsWithResources.map { it.second })
-
-        // Insert joins
+        insertResources(accountWithResources.map { it.second })
         insertAccountResourcesPortfolio(accountWithResources.map { it.first })
-        insertPoolResources(allPoolsWithResources.map { it.first })
     }
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
@@ -96,7 +78,7 @@ interface StateDao {
     @Query("""
         SELECT 
             PoolEntity.address AS pool_entity_address, 
-            PoolResourceJoin.account_state_version AS account_state_version, 
+            PoolResourceJoin.state_version AS account_state_version, 
             PoolResourceJoin.amount AS amount,
             ResourceEntity.*
         FROM PoolEntity
@@ -111,7 +93,7 @@ interface StateDao {
 
     @Query("""
         SELECT * FROM ValidatorEntity
-        WHERE address in (:addresses) AND account_state_version = :atStateVersion
+        WHERE address in (:addresses) AND state_version = :atStateVersion
     """)
     fun getValidators(addresses: Set<String>, atStateVersion: Long): List<ValidatorEntity>
 
@@ -130,7 +112,7 @@ interface StateDao {
         WHERE 
             AccountNFTJoin.account_address = :accountAddress AND 
             AccountNFTJoin.resource_address = :resourceAddress AND 
-            AccountNFTJoin.account_state_version = :stateVersion
+            AccountNFTJoin.state_version = :stateVersion
         """
     )
     fun getOwnedNfts(accountAddress: String, resourceAddress: String, stateVersion: Long): List<NFTEntity>
