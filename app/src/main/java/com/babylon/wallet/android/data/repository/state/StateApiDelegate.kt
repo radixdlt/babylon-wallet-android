@@ -223,6 +223,26 @@ class StateApiDelegate(
         )
     }
 
+    suspend fun getDAppsDetails(definitionAddresses: Set<String>): List<StateEntityDetailsResponseItem> {
+        val items = mutableListOf<StateEntityDetailsResponseItem>()
+        stateApi.paginateDetails(
+            addresses = definitionAddresses,
+            metadataKeys = setOf(
+                ExplicitMetadataKey.NAME,
+                ExplicitMetadataKey.DESCRIPTION,
+                ExplicitMetadataKey.ACCOUNT_TYPE,
+                ExplicitMetadataKey.DAPP_DEFINITION,
+                ExplicitMetadataKey.DAPP_DEFINITIONS,
+                ExplicitMetadataKey.CLAIMED_WEBSITES,
+                ExplicitMetadataKey.CLAIMED_ENTITIES,
+                ExplicitMetadataKey.ICON_URL
+            )
+        ) { page ->
+            items.addAll(page.items)
+        }
+        return items
+    }
+
     data class AccountGatewayDetails(
         val ledgerState: LedgerState,
         val accountMetadata: EntityMetadataCollection?,

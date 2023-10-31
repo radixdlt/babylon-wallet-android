@@ -13,6 +13,7 @@ import com.babylon.wallet.android.data.repository.cache.database.SyncInfo
 import com.babylon.wallet.android.data.repository.cache.database.ValidatorEntity.Companion.asValidatorEntities
 import com.babylon.wallet.android.data.repository.toResult
 import com.babylon.wallet.android.di.coroutines.DefaultDispatcher
+import com.babylon.wallet.android.domain.model.DApp
 import com.babylon.wallet.android.domain.model.resources.AccountOnLedger
 import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.domain.model.resources.XrdResource
@@ -46,6 +47,8 @@ interface StateRepository {
     suspend fun getOwnedXRD(accounts: List<Network.Account>): Result<Map<Network.Account, BigDecimal>>
 
     suspend fun getEntityOwnerKeys(entities: List<Entity>): Result<Map<Entity, OwnerKeyHashesMetadataItem>>
+
+    suspend fun getDAppsDetails(definitionAddresses: List<String>): Result<List<DApp>>
 
     sealed class NFTPageError(cause: Throwable) : Exception(cause) {
         data object NoMorePages : NFTPageError(RuntimeException("No more NFTs for this resource."))
@@ -240,6 +243,8 @@ class StateRepositoryImpl @Inject constructor(
     }
 
     override suspend fun getEntityOwnerKeys(entities: List<Entity>): Result<Map<Entity, OwnerKeyHashesMetadataItem>> = runCatching {
+        if (entities.isEmpty()) return@runCatching mapOf()
+
         val entitiesWithOwnerKeys = mutableMapOf<Entity, OwnerKeyHashesMetadataItem>()
         stateApi.paginateDetails(
             addresses = entities.map { it.address }.toSet(),
@@ -255,5 +260,13 @@ class StateRepositoryImpl @Inject constructor(
             }
         }
         entitiesWithOwnerKeys
+    }
+
+    override suspend fun getDAppsDetails(definitionAddresses: List<String>): Result<List<DApp>> = runCatching {
+        if (definitionAddresses.isEmpty()) return@runCatching listOf()
+
+        stateApiDelegate.getDAppsDetails(definitionAddresses.toSet()).map { item ->
+            DApp.from(address = item.address, metadataItems = item.explicitMetadata?.asMetadataItems().orEmpty())
+        }
     }
 }
