@@ -61,6 +61,7 @@ val PersonaData.PersonaDataField.Name.fullName: String
         } else {
             listOf(given, family)
         }.filter { it.isNotEmpty() }.joinToString(" ")
+        val nickname = if (nickname.isNotEmpty()) "\"$nickname\"" else nickname
         return listOf(fullName, nickname).filter { it.isNotEmpty() }.joinToString("\n")
     }
 
