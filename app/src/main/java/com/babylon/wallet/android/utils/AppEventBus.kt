@@ -1,7 +1,6 @@
 package com.babylon.wallet.android.utils
 
 import com.babylon.wallet.android.data.dapp.model.WalletErrorType
-import com.babylon.wallet.android.presentation.common.UiMessage
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -68,8 +67,7 @@ sealed interface AppEvent {
                 override val transactionId: String,
                 override val isInternal: Boolean,
                 override val blockUntilComplete: Boolean,
-                val errorMessage: UiMessage.ErrorMessage?,
-                val txProcessingTime: String?,
+                val errorMessage: String?,
                 val walletErrorType: WalletErrorType?
             ) : Transaction()
         }

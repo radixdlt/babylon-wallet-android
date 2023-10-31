@@ -2,8 +2,6 @@ package com.babylon.wallet.android.presentation.account
 
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
-import com.babylon.wallet.android.domain.common.onError
-import com.babylon.wallet.android.domain.common.onValue
 import com.babylon.wallet.android.domain.model.assets.AccountWithAssets
 import com.babylon.wallet.android.domain.model.assets.LiquidStakeUnit
 import com.babylon.wallet.android.domain.model.assets.PoolUnit
@@ -97,17 +95,17 @@ class AccountViewModel @Inject constructor(
                 accounts = listOf(account),
                 isRefreshing = isRefreshing
             )
-            result.onError { e ->
+            result.onFailure { e ->
                 Timber.w(e)
                 _state.update { accountUiState ->
                     accountUiState.copy(
-                        uiMessage = UiMessage.ErrorMessage.from(error = e),
+                        uiMessage = UiMessage.ErrorMessage(e),
                         isLoading = false,
                         refreshing = false
                     )
                 }
             }
-            result.onValue { accountsWithResources ->
+            result.onSuccess { accountsWithResources ->
                 _state.update { accountUiState ->
                     accountUiState.copy(
                         accountWithAssets = accountsWithResources.first(),

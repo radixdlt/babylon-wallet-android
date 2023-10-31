@@ -8,7 +8,6 @@ import com.babylon.wallet.android.data.gateway.generated.models.TransactionStatu
 import com.babylon.wallet.android.data.gateway.generated.models.TransactionSubmitRequest
 import com.babylon.wallet.android.data.gateway.generated.models.TransactionSubmitResponse
 import com.babylon.wallet.android.data.repository.execute
-import com.babylon.wallet.android.domain.common.Result
 import javax.inject.Inject
 
 // TODO translate from network models to domain models

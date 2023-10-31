@@ -362,9 +362,7 @@ fun NetworkFeesDefaultView(
                 Text(
                     text = transactionFees?.networkFeeDisplayed?.let {
                         stringResource(id = R.string.transactionReview_xrdAmount, it)
-                    } ?: run {
-                        stringResource(id = R.string.transactionReview_customizeNetworkFeeSheet_noneDue)
-                    },
+                    } ?: stringResource(id = R.string.transactionReview_customizeNetworkFeeSheet_noneDue),
                     style = RadixTheme.typography.body1Header,
                     color = RadixTheme.colors.gray1,
                     textAlign = TextAlign.End

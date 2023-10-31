@@ -6,15 +6,17 @@ import com.babylon.wallet.android.data.dapp.DappMessenger
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.data.dapp.model.WalletErrorType
 import com.babylon.wallet.android.data.repository.TransactionStatusClient
-import com.babylon.wallet.android.data.transaction.DappRequestException
+import com.babylon.wallet.android.domain.RadixWalletException
+import com.babylon.wallet.android.domain.asRadixWalletException
+import com.babylon.wallet.android.domain.toConnectorExtensionError
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.presentation.common.StateViewModel
-import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
+import com.babylon.wallet.android.utils.ExceptionMessageProvider
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.filterIsInstance
@@ -28,6 +30,7 @@ class TransactionStatusDialogViewModel @Inject constructor(
     private val transactionStatusClient: TransactionStatusClient,
     private val dAppMessenger: DappMessenger,
     private val appEventBus: AppEventBus,
+    private val exceptionMessageProvider: ExceptionMessageProvider,
     savedStateHandle: SavedStateHandle
 ) : StateViewModel<TransactionStatusDialogViewModel.State>(),
     OneOffEventHandler<TransactionStatusDialogViewModel.Event> by OneOffEventHandlerImpl() {
@@ -84,13 +87,13 @@ class TransactionStatusDialogViewModel @Inject constructor(
                     )
                 }.onFailure { error ->
                     if (!status.isInternal) {
-                        (error as? DappRequestException)?.let { exception ->
+                        (error as? RadixWalletException.TransactionSubmitException)?.let { exception ->
                             incomingRequestRepository.getTransactionWriteRequest(status.requestId)?.let { transactionRequest ->
                                 dAppMessenger.sendWalletInteractionResponseFailure(
                                     remoteConnectorId = transactionRequest.remoteConnectorId,
                                     requestId = status.requestId,
-                                    error = exception.failure.toWalletErrorType(),
-                                    message = exception.failure.getDappMessage()
+                                    error = exception.ceError,
+                                    message = exception.getDappMessage()
                                 )
                             }
                         }
@@ -102,10 +105,9 @@ class TransactionStatusDialogViewModel @Inject constructor(
                             requestId = status.requestId,
                             transactionId = status.transactionId,
                             isInternal = status.isInternal,
-                            errorMessage = UiMessage.ErrorMessage.from(error),
+                            errorMessage = exceptionMessageProvider.throwableMessage(error),
                             blockUntilComplete = status.blockUntilComplete,
-                            txProcessingTime = pollResult.txProcessingTime,
-                            walletErrorType = (error as? DappRequestException)?.failure?.toWalletErrorType()
+                            walletErrorType = error.asRadixWalletException()?.toConnectorExtensionError()
                         )
                     )
                 }
@@ -150,21 +152,18 @@ class TransactionStatusDialogViewModel @Inject constructor(
         val isFailed: Boolean
             get() = status is TransactionStatus.Failed
 
-        val failureError: UiMessage.ErrorMessage?
+        val failureError: String?
             get() = (status as? TransactionStatus.Failed)?.errorMessage
 
         val walletErrorType: WalletErrorType?
             get() = (status as? TransactionStatus.Failed)?.walletErrorType
-
-        val txProcessingTime: String
-            get() = (status as? TransactionStatus.Failed)?.txProcessingTime.orEmpty()
 
         val transactionId: String
             get() = status.transactionId
     }
 
     sealed interface Event : OneOffEvent {
-        object DismissDialog : Event
+        data object DismissDialog : Event
     }
 }
 
@@ -194,8 +193,7 @@ sealed interface TransactionStatus {
         override val transactionId: String,
         override val isInternal: Boolean,
         override val blockUntilComplete: Boolean,
-        val errorMessage: UiMessage.ErrorMessage?,
-        val txProcessingTime: String?,
+        val errorMessage: String?,
         val walletErrorType: WalletErrorType?
     ) : TransactionStatus
 
@@ -207,7 +205,6 @@ sealed interface TransactionStatus {
                 isInternal = event.isInternal,
                 errorMessage = event.errorMessage,
                 blockUntilComplete = event.blockUntilComplete,
-                txProcessingTime = event.txProcessingTime,
                 walletErrorType = event.walletErrorType
             )
 

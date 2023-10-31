@@ -32,13 +32,16 @@
   <string name="account_poolUnits_unknownSymbolName">Unknown</string>
   <string name="account_poolUnits_unknownPoolUnitName">Unknown</string>
   <string name="account_poolUnits_details_currentRedeemableValue">Current Redeemable Value</string>
+  <string name="account_poolUnits_noTotalSupply">Missing Total supply - could not calculate redemption value</string>
   <string name="account_badges">Badges</string>
   <string name="assetDetails_resourceAddress">Address</string>
+  <string name="assetDetails_validator">Validator</string>
   <string name="assetDetails_name">Name</string>
   <string name="assetDetails_currentSupply">Current Supply</string>
   <string name="assetDetails_supplyUnkown">Unknown</string>
   <string name="assetDetails_behavior">Behavior</string>
   <string name="assetDetails_tags">Tags</string>
+  <string name="assetDetails_tags_officialRadix">Official Radix</string>
   <string name="assetDetails_associatedDapps">Associated dApps</string>
   <string name="assetDetails_tokenDetails_noTokens">You have no Tokens</string>
   <string name="assetDetails_tokenDetails_whatAreTokens">What are Tokens?</string>
@@ -61,6 +64,25 @@
   <string name="assetDetails_hideAsset_title">Hide Asset</string>
   <string name="assetDetails_hideAsset_message">Hide this asset in your Radix Wallet? You can always unhide it in your account settings.</string>
   <string name="assetDetails_hideAsset_button">Hide Asset</string>
+  <string name="assetDetails_behaviors_simpleAsset">This is a simple asset</string>
+  <string name="assetDetails_behaviors_supplyIncreasable">The supply of this asset can be increased.</string>
+  <string name="assetDetails_behaviors_supplyDecreasable">The supply of this asset can be decreased.</string>
+  <string name="assetDetails_behaviors_supplyFlexible">The supply of this asset can be increased or decreased.</string>
+  <string name="assetDetails_behaviors_supplyFlexibleXrd">Only the Radix Network may increase or decrease the supply of XRD.</string>
+  <string name="assetDetails_behaviors_supplyIncreasableByAnyone">Anyone can increase the supply of this asset.</string>
+  <string name="assetDetails_behaviors_supplyDecreasableByAnyone">Anyone can decrease the supply of this asset.</string>
+  <string name="assetDetails_behaviors_supplyFlexibleByAnyone">Anyone can increase or decrease the supply of this asset.</string>
+  <string name="assetDetails_behaviors_movementRestricted">Movement of this asset is restricted.</string>
+  <string name="assetDetails_behaviors_movementRestrictableInFuture">Movement of this asset can be restricted in the future.</string>
+  <string name="assetDetails_behaviors_movementRestrictableInFutureByAnyone">Anyone can restrict movement of this token in the future.</string>
+  <string name="assetDetails_behaviors_informationChangeable">Naming and information about this asset can be changed.</string>
+  <string name="assetDetails_behaviors_informationChangeableByAnyone">Anyone can change naming and information about this asset.</string>
+  <string name="assetDetails_behaviors_removableByThirdParty">A third party can remove this asset from accounts and dApps.</string>
+  <string name="assetDetails_behaviors_removableByAnyone">Anyone can remove this asset from accounts and dApps.</string>
+  <string name="assetDetails_behaviors_freezableByThirdParty">A third party can freeze this asset in place.</string>
+  <string name="assetDetails_behaviors_freezableByAnyone">Anyone can freeze this asset in place.</string>
+  <string name="assetDetails_behaviors_nftDataChangeable">Data that is set on these NFTs can be changed.</string>
+  <string name="assetDetails_behaviors_nftDataChangeableByAnyone">Anyone can change data that is set on these NFTs.</string>
   <string name="accountSettings_title">Account Settings</string>
   <string name="accountSettings_personalizeHeading">Personalize this Account</string>
   <string name="accountSettings_accountLabel">Account Label</string>
@@ -68,6 +90,7 @@
   <string name="accountSettings_accountColorSubtitle">Select from a list of unique colors</string>
   <string name="accountSettings_showAssets">Show Assets with Tags</string>
   <string name="accountSettings_showQR">Show Account QR Code</string>
+  <string name="accountSettings_updatedAccountHUDMessage">Updated</string>
   <string name="accountSettings_showAssetsSubtitle">Select which tags to show for assets in this Account</string>
   <string name="accountSettings_setBehaviorHeading">Set how you want this Account to work</string>
   <string name="accountSettings_accountSecurity">Account Security</string>
@@ -105,6 +128,7 @@
   <string name="accountSettings_specificAssetsDeposits_removeAsset">Remove Asset</string>
   <string name="accountSettings_specificAssetsDeposits_removeAssetMessageDeny">The asset will be removed from the deny list</string>
   <string name="accountSettings_specificAssetsDeposits_removeAssetMessageAllow">The asset will be removed from the allow list</string>
+  <string name="accountSettings_specificAssetsDeposits_removeBadgeMessageDepositors">The badge will be removed from the list</string>
   <string name="accountSettings_specificAssetsDeposits_removeDepositor">Remove Depositor</string>
   <string name="accountSettings_specificAssetsDeposits_removeDepositorMessage">The depositor will be removed from the allow list</string>
   <string name="accountSettings_specificAssetsDeposits">Allow/Deny Specific Assets</string>
@@ -121,6 +145,9 @@
   <string name="accountSettings_specificAssetsDeposits_addAnAssetButton">Add Asset</string>
   <string name="accountSettings_specificAssetsDeposits_allowInfo">The following resource addresses may always be deposited to this account by third parties.</string>
   <string name="accountSettings_specificAssetsDeposits_denyInfo">The following resource addresses may never be deposited to this account by third parties.</string>
+  <string name="accountSettings_specificAssetsDeposits_allowDepositorsNoResources">Add a specific badge by its resource address to allow all deposits from its holder.</string>
+  <string name="accountSettings_specificAssetsDeposits_allowDepositors">The holder of the following badges may always deposit accounts to this account.</string>
+  <string name="accountSettings_specificAssetsDeposits_resourceListPicker">Select exception list</string>
   <string name="accountSettings_showAssets_text">Asset creators can add tags to them. You can choose which tags you want to see in this Account.</string>
   <string name="accountSettings_showAssets_selectShown">Select the ones you’d like shown on all your assets.</string>
   <string name="accountSettings_showAssets_recommended">Recommended</string>
@@ -158,7 +185,11 @@
   <string name="settings_importFromLegacyWallet">Import from a Legacy Wallet</string>
   <string name="settings_ledgerHardwareWallets">Ledger Hardware Wallets</string>
   <string name="settings_depositGuarantees">Deposit Guarantees</string>
+  <string name="settings_depositGuarantees_title">Deposit Guarantees</string>
   <string name="settings_depositGuarantees_subtitle">Set your default guaranteed minimum for estimated deposits</string>
+  <string name="settings_depositGuarantees_text">Set the guaranteed minimum deposit to be applied whenever a deposit in a transaction can only be estimated.
+
+You can always change the guarantee from this default in each transaction.</string>
   <string name="settings_multiFactor">Multi-Factor Setup</string>
   <string name="settings_appVersion">Version: %s build #%s</string>
   <string name="settings_deleteWalletData">Delete Wallet Data</string>
@@ -365,6 +396,7 @@
   <string name="dAppRequest_metadataLoadingAlert_message">Danger! Bad dApp configuration, or you\'re being spoofed!</string>
   <string name="dAppRequest_metadataLoadingPrompt">Loading…</string>
   <string name="dAppRequest_metadata_unknownName">Unknown dApp</string>
+  <string name="dAppRequest_metadata_wallet">Radix Wallet</string>
   <string name="dAppRequest_personalDataBox_edit">Edit</string>
   <string name="dAppRequest_personalDataBox_requiredInformation">Required information:</string>
   <string name="transactionReview_title">Review Your Transaction</string>
@@ -380,6 +412,7 @@
   <string name="transactionReview_rawTransactionTitle">Raw Transaction</string>
   <string name="transactionReview_sendingToHeading">Sending to</string>
   <string name="transactionReview_unknown">Unknown</string>
+  <string name="transactionReview_unnamedDapp">Unnamed dApp</string>
   <string name="transactionReview_usingDappsHeading">Using dApps</string>
   <string name="transactionReview_unknownComponents">%d Unknown Components</string>
   <string name="transactionReview_withdrawalsHeading">Withdrawing From</string>
@@ -459,7 +492,10 @@
   <string name="transaction_status_error_text">Your transaction could not be processed, but could potentially still be processed within the next %s minutes</string>
   <string name="transaction_status_rejected_text">Your transaction was improperly constructed and cannot be processed</string>
   <string name="transaction_status_failure_title">Something went wrong</string>
+  <string name="transaction_status_failure_text">Transaction was rejected as invalid by the Radix Network.</string>
   <string name="transaction_status_dismiss_dialog_message">Stop waiting for transaction result? The transaction will not be canceled.</string>
+  <string name="transaction_status_dismissalDisabledDialog_title">Dismiss</string>
+  <string name="transaction_status_dismissalDisabledDialog_text">This transaction requires to be completed</string>
   <string name="addressAction_copyAddress">Copy Address</string>
   <string name="addressAction_copiedToClipboard">Copied to Clipboard</string>
   <string name="addressAction_copyNftId">Copy NFT ID</string>
@@ -520,10 +556,18 @@
   <string name="error_transactionFailure_pollStatus">Failed to poll transaction status</string>
   <string name="error_transactionFailure_prepare">Failed to prepare transaction</string>
   <string name="error_transactionFailure_rejected">Transaction rejected</string>
+  <string name="error_transactionFailure_unknown">Unknown error</string>
+  <string name="error_transactionFailure_failedToFindLedger">Failed to find ledger</string>
+  <string name="error_transactionFailure_failedToAddLockFee">Failed to add Transaction Fee, try a different amount of fee payer.</string>
+  <string name="error_transactionFailure_failedToAddGuarantee">Failed to add Guarantee, try a different percentage, or try skip adding a guarantee.</string>
+  <string name="error_transactionFailure_reviewFailure">A proposed transaction could not be processed.</string>
   <string name="error_transactionFailure_temporarilyRejected">Transaction temporarily rejected</string>
   <string name="error_transactionFailure_blindSigningNotEnabledButRequired">Your current Ledger settings only allow signing of simple token transfers. Please either enable \"verbose mode\" (to see full transaction manifests) or \"blind signing mode\" (to enable signing of complex transaction manifest hashes) on your Ledger app device.</string>
   <string name="error_transactionFailure_rejectedByUser">Failed to convert transaction manifest</string>
   <string name="error_transactionFailure_submit">Failed to submit transaction</string>
+  <string name="error_personaLabel_tooLong">Persona label too long</string>
+  <string name="error_accountLabel_tooLong">Account label too long</string>
+  <string name="error_accountLabel_missing">Account label required</string>
   <string name="importOlympiaAccounts_scanQR_title">Import Legacy Olympia Accounts</string>
   <string name="importOlympiaAccounts_scanQR_instructions">Scan the QR code shown in the Export section of the Radix Desktop Wallet for Olympia.</string>
   <string name="importOlympiaAccounts_scanQR_scannedLabel">Scanned: %d/%d</string>
@@ -539,6 +583,7 @@
   <string name="importOlympiaAccounts_verifySeedPhrase_title">Verify With Your Seed Phrase</string>
   <string name="importOlympiaAccounts_verifySeedPhrase_subtitle">To complete importing your accounts, please view your seed phrase in the Radix Desktop Wallet and enter the words here.</string>
   <string name="importOlympiaAccounts_verifySeedPhrase_warning">This will give this Radix Wallet control of your accounts. Never give your seed phrase to anyone for any reason.</string>
+  <string name="importOlympiaAccounts_verifySeedPhrase_keepSeedPhraseTitle">Warning</string>
   <string name="importOlympiaAccounts_verifySeedPhrase_keepSeedPhrasePrompt">Do not throw away this seed phrase! You will still need it if you need to recover access to your Olympia accounts in the future.</string>
   <string name="importOlympiaAccounts_verifySeedPhrase_keepSeedPhrasePromptConfirmation">I Understand</string>
   <string name="importOlympiaAccounts_completion_title">Congratulations</string>
@@ -552,6 +597,7 @@
   <string name="importOlympiaAccounts_invalidMnemonic">Invalid Mnemonic</string>
   <string name="importOlympiaAccounts_invalidPayload">Invalid QR code</string>
   <string name="importOlympiaAccounts_noMnemonicFound">No mnemonic found for accounts</string>
+  <string name="importOlympiaAccounts_noNewAccounts">No new accounts were found on this Ledger device</string>
   <string name="importOlympiaAccounts_passphrase">Passphrase</string>
   <string name="importOlympiaAccounts_seedPhrase">Seed phrase</string>
   <string name="importProfile_importProfile">Import Radix Wallet backup</string>
@@ -578,6 +624,7 @@
   <string name="transactionSigning_signTransactionButtonTitle">Approve Transaction</string>
   <string name="transactionSigning_signingAndSubmittingTransaction">Submitting transaction…</string>
   <string name="importMnemonic_navigationTitle">Import Seed Phrase</string>
+  <string name="importMnemonic_navigationTitleBackup">Backup Seed Phrase</string>
   <string name="importMnemonic_wordHeading">Word %d</string>
   <string name="importMnemonic_passphrase">Passphrase</string>
   <string name="importMnemonic_passphrasePlaceholder">Passphrase</string>
@@ -588,6 +635,13 @@
   <string name="importMnemonic_advancedModeButton">Advanced Mode</string>
   <string name="importMnemonic_regularModeButton">Regular Mode</string>
   <string name="importMnemonic_importSeedPhrase">Import</string>
+  <string name="importMnemonic_seedPhraseImported">Imported Seed Phrase</string>
+  <string name="importMnemonic_backedUpAlert_title">Confirm Backup</string>
+  <string name="importMnemonic_backedUpAlert_message">Are you sure you have securely written down this seed phrase? You will need it to recover access if you lose your phone.</string>
+  <string name="importMnemonic_backedUpAlert_confirmAction">Yes, I have backed it up</string>
+  <string name="importMnemonic_backedUpAlert_noAction">No, not yet</string>
+  <string name="importMnemonic_failedToValidateAllAccounts">Failed to validate all accounts against mnemonic</string>
+  <string name="importMnemonic_wrongMnemonicHUD">Wrong mnemmonic</string>
   <string name="importMnemonic_offDevice_storyPrimaryHeading">Tell a story</string>
   <string name="importMnemonic_offDevice_storyPlaceholder">Hitchcock\'s The Birds mixed with Office space</string>
   <string name="importMnemonic_offDevice_storyHint">Without revealing the words, what comes to mind when reading this seed phrase?</string>
@@ -596,6 +650,8 @@
   <string name="importMnemonic_offDevice_locationHint">Without revealing location, vague hint on where this mnemonic is backed up, if anywhere.</string>
   <string name="importMnemonic_offDevice_saveWithDescription">Save with description</string>
   <string name="importMnemonic_offDevice_saveWithoutDescription">Save without description</string>
+  <string name="importMnemonic_shieldPrompt_enterSeedPhrase">Enter this Account\'s seed phrase</string>
+  <string name="importMnemonic_shieldPrompt_backupSeedPhrase">Backup this Account\'s seed phrase</string>
   <string name="importMnemonic_tempAndroid_changeSeedPhrase">Change seed phrase length</string>
   <string name="importMnemonic_tempAndroid_seedLength">%d word seed phrase</string>
   <string name="importMnemonic_tempAndroid_heading">Recover Mnemonic</string>
@@ -625,6 +681,9 @@
   <string name="assetTransfer_fungibleResource_balance">Balance: %s</string>
   <string name="assetTransfer_receivingAccount_chooseAccountButton">Choose Account</string>
   <string name="assetTransfer_receivingAccount_addAssetsButton">Add Assets</string>
+  <string name="assetTransfer_error_wrongNetwork">Address is not valid on current network</string>
+  <string name="assetTransfer_error_resourceAlreadyAdded">Resource already added</string>
+  <string name="assetTransfer_error_insufficientBalance">Total amount exceeds your current balance</string>
   <string name="importOlympiaLedgerAccounts_title">Verify With Ledger Device</string>
   <string name="importOlympiaLedgerAccounts_subtitle">You are attempting to import one or more Olympia accounts that must be verified with a Ledger hardware wallet device.</string>
   <string name="importOlympiaLedgerAccounts_listHeading">Already verified Ledger devices:</string>
@@ -659,6 +718,10 @@
   <string name="ledgerHardwareDevices_subtitleFailure">Could not find Ledger devices</string>
   <string name="ledgerHardwareDevices_couldNotSign_message">Transaction could not be signed. To sign complex transactions, please enable either \"blind signing\" or \"verbose mode\" in the Radix app on your Ledger device.</string>
   <string name="ledgerHardwareDevices_couldNotSign_title">Could Not Sign</string>
+  <string name="ledgerHardwareDevices_verification_addressVerified">Address verified</string>
+  <string name="ledgerHardwareDevices_verification_mismatch">Verify address: Mismatched addresses</string>
+  <string name="ledgerHardwareDevices_verification_badResponse">Verify address: Returned bad response</string>
+  <string name="ledgerHardwareDevices_verification_requestFailed">Verify address: Request failed</string>
   <string name="displayMnemonics_cautionAlert_title">Use Caution</string>
   <string name="displayMnemonics_cautionAlert_revealButtonLabel">Reveal Seed Phrase</string>
   <string name="displayMnemonics_cautionAlert_message">A seed phrase provides full control of its Accounts. Do not view in a public area. Write down the seed phrase words securely. Screenshots are disabled.</string>
@@ -669,6 +732,7 @@
   <string name="displayMnemonics_connectedAccountsLabel_many">Connected to %d Accounts</string>
   <string name="displayMnemonics_seedPhraseSecurityInfo">You are responsible for the security of your Seed Phrase</string>
   <string name="displayMnemonics_backUpWarning">Write Down this Seed Phrase</string>
+  <string name="displayMnemonics_seedPhraseEntryWarning">Seed Phrase Entry Required</string>
   <string name="revealSeedPhrase_title">Reveal Seed Phrase</string>
   <string name="revealSeedPhrase_warning">For your safety, make sure no one is looking at your screen. Taking a screen shot has been disabled.</string>
   <string name="revealSeedPhrase_wordLabel">Word %d</string>
@@ -688,6 +752,8 @@
   <string name="appSettings_developerMode_subtitle">Warning: Disables website validity checks</string>
   <string name="appSettings_verboseLedgerMode_title">Verbose Ledger transaction signing</string>
   <string name="appSettings_verboseLedgerMode_subtitle">When signing with your Ledger hardware wallet, should all instructions be displayed?</string>
+  <string name="appSettings_iCloudSyncEnabledAlert_title">Enabling iCloud sync</string>
+  <string name="appSettings_iCloudSyncEnabledAlert_message">iCloud sync is now enabled, but it might take up to an hour before your wallet data is uploaded to iCloud.</string>
   <string name="appSettings_confirmCloudSyncDisableAlert_title">Disabling iCloud sync will delete the iCloud backup data, are you sure you want to disable iCloud sync?</string>
   <string name="appSettings_resetWallet_title">Reset Wallet</string>
   <string name="appSettings_resetWallet_subtitle">Clear all data in this Wallet</string>
@@ -733,9 +799,17 @@ Only the **current configuration** of your wallet is backed up with each manual 
   <string name="profileBackup_manualBackups_encryptBackupDialogDeny">No</string>
   <string name="profileBackup_manualBackups_encryptBackupTitle">Encrypt Wallet Backup File</string>
   <string name="profileBackup_manualBackups_encryptBackupSubtitle">Enter a password to encrypt this wallet backup file. You will be required to enter this password when recovering your Wallet from this file.</string>
+  <string name="profileBackup_manualBackups_decryptBackupTitle">Decrypt Wallet Backup File</string>
+  <string name="profileBackup_manualBackups_decryptBackupSubtitle">Enter the password you chose when you originally encrypted this Wallet Backup file.</string>
   <string name="profileBackup_manualBackups_enterPasswordPlaceholder">Enter password</string>
   <string name="profileBackup_manualBackups_confirmPasswordPlaceholder">Confirm password</string>
   <string name="profileBackup_manualBackups_passwordsMissmatchError">Passwords do not match</string>
+  <string name="profileBackup_manualBackups_nonConformingEncryptionPasswordPlaceholder">Encryption password</string>
+  <string name="profileBackup_manualBackups_nonConformingDecryptionPasswordPlaceholder">Decryption password</string>
+  <string name="profileBackup_incorrectPasswordAlert_title">Incorrect password</string>
+  <string name="profileBackup_incorrectPasswordAlert_okAction">OK</string>
+  <string name="profileBackup_incorrectPasswordAlert_messageEncryption">Failed to encrypt using provided password.</string>
+  <string name="profileBackup_incorrectPasswordAlert_messageDecryption">Failed to decrypt using provided password.</string>
   <string name="profileBackup_deleteWallet_title">Delete Wallet</string>
   <string name="profileBackup_deleteWalletDialog_message">WARNING. This will clear all contents of your Wallet. If you have no backup, you will lose access to your Accounts and Personas permanently.</string>
   <string name="profileBackup_deleteWalletDialog_confirm">Delete Wallet</string>
@@ -772,6 +846,7 @@ Only the **current configuration** of your wallet is backed up with each manual 
 
 **Access to any Accounts or Personas will be permanently lost unless you have a manual backup file.**</string>
   <string name="iOSProfileBackup_deleteWallet_confirmButton">Delete Wallet and iCloud Backup</string>
+  <string name="iOSProfileBackup_profileNotFoundInCloud">Unable to find wallet backup in iCloud.</string>
   <string name="encryptProfileBackup_header_title">Encrypt Wallet Backup File</string>
   <string name="encryptProfileBackup_header_subtitle">Enter a password to encrypt this wallet backup file. You will be required to enter this password when recovering your Wallet from this file.</string>
   <string name="encryptProfileBackup_enterPasswordField_placeholder">Enter password</string>
@@ -801,4 +876,9 @@ Only the **current configuration** of your wallet is backed up with each manual 
   <string name="depositGuarantees_text">Set the guaranteed minimum deposit to be applied whenever a deposit in a transaction can only be estimated.
 
 You can always change the guarantee from this default in each transaction.</string>
+  <string name="factorSources_kind_device">Phone</string>
+  <string name="factorSources_kind_ledgerHQHardwareWallet">Ledger</string>
+  <string name="factorSources_kind_offDeviceMnemonic">Seed phrase</string>
+  <string name="factorSources_kind_trustedContact">Third-party</string>
+  <string name="factorSources_kind_securityQuestions">Security Questions</string>
 </resources>

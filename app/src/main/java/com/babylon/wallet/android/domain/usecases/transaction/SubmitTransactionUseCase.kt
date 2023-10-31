@@ -2,8 +2,7 @@ package com.babylon.wallet.android.domain.usecases.transaction
 
 import com.babylon.wallet.android.data.repository.cache.HttpCache
 import com.babylon.wallet.android.data.repository.transaction.TransactionRepository
-import com.babylon.wallet.android.data.transaction.DappRequestException
-import com.babylon.wallet.android.data.transaction.DappRequestFailure
+import com.babylon.wallet.android.domain.RadixWalletException
 import javax.inject.Inject
 
 class SubmitTransactionUseCase @Inject constructor(
@@ -19,38 +18,28 @@ class SubmitTransactionUseCase @Inject constructor(
         val submitResult = transactionRepository.submitTransaction(
             notarizedTransaction = notarizedTransactionHex
         )
-        return when (submitResult) {
-            is com.babylon.wallet.android.domain.common.Result.Error -> {
+        return submitResult.getOrNull()?.let { result ->
+            // Invalidate all cached information stored, since a transaction may mutate
+            // some resource information
+            cache.invalidate()
+
+            if (result.duplicate) {
                 Result.failure(
-                    DappRequestException(
-                        DappRequestFailure.TransactionApprovalFailure.SubmitNotarizedTransaction,
-                        e = submitResult.exception,
+                    RadixWalletException.TransactionSubmitException.InvalidTXDuplicate(
+                        txIDHash
+                    )
+                )
+            } else {
+                Result.success(
+                    SubmitTransactionResult(
+                        txId = txIDHash,
+                        txProcessingTime = txProcessingTime
                     )
                 )
             }
-            is com.babylon.wallet.android.domain.common.Result.Success -> {
-                // Invalidate all cached information stored, since a transaction may mutate
-                // some resource information
-                cache.invalidate()
-
-                if (submitResult.data.duplicate) {
-                    Result.failure(
-                        DappRequestException(
-                            DappRequestFailure.TransactionApprovalFailure.InvalidTXDuplicate(
-                                txIDHash
-                            )
-                        )
-                    )
-                } else {
-                    Result.success(
-                        SubmitTransactionResult(
-                            txId = txIDHash,
-                            txProcessingTime = txProcessingTime
-                        )
-                    )
-                }
-            }
-        }
+        } ?: Result.failure(
+            RadixWalletException.PrepareTransactionException.SubmitNotarizedTransaction(submitResult.exceptionOrNull())
+        )
     }
 
     data class SubmitTransactionResult(

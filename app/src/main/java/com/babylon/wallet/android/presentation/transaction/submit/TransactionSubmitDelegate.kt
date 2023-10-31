@@ -4,14 +4,15 @@ import com.babylon.wallet.android.data.dapp.DappMessenger
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.data.manifest.addAssertions
 import com.babylon.wallet.android.data.repository.TransactionStatusClient
-import com.babylon.wallet.android.data.transaction.DappRequestException
-import com.babylon.wallet.android.data.transaction.DappRequestFailure
 import com.babylon.wallet.android.data.transaction.TransactionClient
 import com.babylon.wallet.android.data.transaction.model.TransactionApprovalRequest
 import com.babylon.wallet.android.di.coroutines.ApplicationScope
+import com.babylon.wallet.android.domain.RadixWalletException
+import com.babylon.wallet.android.domain.asRadixWalletException
+import com.babylon.wallet.android.domain.getDappMessage
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.babylon.wallet.android.domain.model.Transferable
-import com.babylon.wallet.android.domain.usecases.transaction.SignatureCancelledException
+import com.babylon.wallet.android.domain.toConnectorExtensionError
 import com.babylon.wallet.android.domain.usecases.transaction.SubmitTransactionUseCase
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.ViewModelDelegate
@@ -19,13 +20,14 @@ import com.babylon.wallet.android.presentation.transaction.PreviewType
 import com.babylon.wallet.android.presentation.transaction.TransactionReviewViewModel
 import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
+import com.babylon.wallet.android.utils.ExceptionMessageProvider
 import com.radixdlt.ret.TransactionManifest
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.profile.derivation.model.NetworkId
-import rdx.works.profile.domain.NoMnemonicException
+import rdx.works.profile.domain.ProfileException
 import rdx.works.profile.domain.gateway.GetCurrentGatewayUseCase
 import timber.log.Timber
 import javax.inject.Inject
@@ -39,6 +41,7 @@ class TransactionSubmitDelegate @Inject constructor(
     private val submitTransactionUseCase: SubmitTransactionUseCase,
     private val appEventBus: AppEventBus,
     private val transactionStatusClient: TransactionStatusClient,
+    private val exceptionMessageProvider: ExceptionMessageProvider,
     @ApplicationScope private val applicationScope: CoroutineScope
 ) : ViewModelDelegate<TransactionReviewViewModel.State>() {
 
@@ -57,8 +60,8 @@ class TransactionSubmitDelegate @Inject constructor(
 
             if (currentNetworkId != manifestNetworkId) {
                 approvalJob = null
-                val failure = DappRequestFailure.WrongNetwork(currentNetworkId, manifestNetworkId)
-                onDismiss(failure = failure)
+                val failure = RadixWalletException.DappRequestException.WrongNetwork(currentNetworkId, manifestNetworkId)
+                onDismiss(exception = failure)
                 return@launch
             }
 
@@ -69,21 +72,21 @@ class TransactionSubmitDelegate @Inject constructor(
                     manifest.attachGuarantees(currentState.previewType),
                     deviceBiometricAuthenticationProvider
                 )
-            }.onFailure { error ->
-                reportFailure(error)
+            }.onFailure {
+                reportFailure(RadixWalletException.PrepareTransactionException.ConvertManifest)
             }
         }
     }
 
-    suspend fun onDismiss(failure: DappRequestFailure) {
+    suspend fun onDismiss(exception: RadixWalletException.DappRequestException) {
         if (approvalJob == null) {
             val request = _state.value.requestNonNull
             if (!request.isInternal) {
                 dAppMessenger.sendWalletInteractionResponseFailure(
                     remoteConnectorId = request.remoteConnectorId,
                     requestId = request.id,
-                    error = failure.toWalletErrorType(),
-                    message = failure.getDappMessage()
+                    error = exception.ceError,
+                    message = exception.getDappMessage()
                 )
             }
             _state.update {
@@ -183,49 +186,40 @@ class TransactionSubmitDelegate @Inject constructor(
                     txId = submitTransactionResult.txId
                 )
             }
-        }.onFailure { error ->
-            // we always wrap exception returned from signing/submitting flow in DappRequestException
-            (error as? DappRequestException)?.let { dappRequestException ->
-                val cancelled = dappRequestException.e is SignatureCancelledException
-                val failedToSign =
-                    dappRequestException.failure is DappRequestFailure.TransactionApprovalFailure.SignCompiledTransactionIntent
-                val failedToCollectLedgerSignature =
-                    dappRequestException.failure is DappRequestFailure.LedgerCommunicationFailure
-                when {
-                    cancelled || failedToCollectLedgerSignature -> {
-                        _state.update { it.copy(isSubmitting = false) }
-                        approvalJob = null
-                    }
-
-                    failedToSign -> {
-                        val noMnemonicException = dappRequestException.e is NoMnemonicException
-                        if (noMnemonicException) {
-                            _state.update {
-                                it.copy(isNoMnemonicErrorVisible = true, isSubmitting = false)
-                            }
-                        } else {
-                            _state.update {
-                                it.copy(
-                                    isSubmitting = false,
-                                    error = UiMessage.ErrorMessage.from(dappRequestException.failure)
-                                )
-                            }
+        }.onFailure { throwable ->
+            throwable.asRadixWalletException()?.let { radixWalletException ->
+                when (radixWalletException) {
+                    is RadixWalletException.PrepareTransactionException.SignCompiledTransactionIntent,
+                    is RadixWalletException.LedgerCommunicationFailure -> {
+                        val failedToSign =
+                            radixWalletException is RadixWalletException.PrepareTransactionException.SignCompiledTransactionIntent
+                        val noMnemonic = radixWalletException.cause is ProfileException.NoMnemonic
+                        val cancelled = radixWalletException.cause is RadixWalletException.SignatureCancelled
+                        _state.update {
+                            it.copy(
+                                isSubmitting = false,
+                                error = if (failedToSign && noMnemonic.not() && cancelled.not()) {
+                                    UiMessage.ErrorMessage(radixWalletException)
+                                } else {
+                                    it.error
+                                },
+                                isNoMnemonicErrorVisible = noMnemonic
+                            )
                         }
                         approvalJob = null
+                        return
                     }
 
                     else -> {
-                        val walletErrorType = (dappRequestException.failure as? DappRequestFailure)?.toWalletErrorType()
-                        reportFailure(error)
+                        reportFailure(radixWalletException)
                         appEventBus.sendEvent(
                             AppEvent.Status.Transaction.Fail(
                                 requestId = transactionRequest.requestId,
                                 transactionId = "",
                                 isInternal = transactionRequest.isInternal,
-                                errorMessage = UiMessage.ErrorMessage.from((error as? DappRequestException)?.failure),
+                                errorMessage = exceptionMessageProvider.throwableMessage(radixWalletException),
                                 blockUntilComplete = transactionRequest.blockUntilComplete,
-                                txProcessingTime = _state.value.txProcessingTime,
-                                walletErrorType = walletErrorType
+                                walletErrorType = radixWalletException.toConnectorExtensionError()
                             )
                         )
                     }
@@ -250,19 +244,23 @@ class TransactionSubmitDelegate @Inject constructor(
     private suspend fun reportFailure(error: Throwable) {
         logger.w(error)
         _state.update {
-            it.copy(isSubmitting = false, error = UiMessage.ErrorMessage.from(error = error))
+            it.copy(isSubmitting = false, error = UiMessage.ErrorMessage(error))
         }
 
         val currentState = _state.value
-        if (error is DappRequestException && !currentState.requestNonNull.isInternal) {
-            dAppMessenger.sendWalletInteractionResponseFailure(
-                remoteConnectorId = currentState.requestNonNull.remoteConnectorId,
-                requestId = currentState.requestNonNull.requestId,
-                error = error.failure.toWalletErrorType(),
-                message = error.failure.getDappMessage()
-            )
+        if (currentState.requestNonNull.isInternal) {
+            return
         }
-
+        error.asRadixWalletException()?.let { radixWalletException ->
+            radixWalletException.toConnectorExtensionError()?.let { walletErrorType ->
+                dAppMessenger.sendWalletInteractionResponseFailure(
+                    remoteConnectorId = currentState.requestNonNull.remoteConnectorId,
+                    requestId = currentState.requestNonNull.requestId,
+                    error = walletErrorType,
+                    message = radixWalletException.getDappMessage()
+                )
+            }
+        }
         approvalJob = null
     }
 }

@@ -1,7 +1,7 @@
 package com.babylon.wallet.android.domain.usecases
 
 import com.babylon.wallet.android.data.repository.dappmetadata.DAppRepository
-import com.babylon.wallet.android.data.transaction.DappRequestFailure
+import com.babylon.wallet.android.domain.RadixWalletException
 import com.babylon.wallet.android.domain.model.DAppWithMetadataAndAssociatedResources
 import rdx.works.core.then
 import javax.inject.Inject
@@ -33,7 +33,7 @@ class ResolveDAppsUseCase @Inject constructor(
                     claimedEntityValidation = ClaimedEntityValidation.PerformFor(componentAddress)
                 )
             } else {
-                Result.failure(DappRequestFailure.DappVerificationFailure.WrongAccountType)
+                Result.failure(RadixWalletException.DappVerificationException.WrongAccountType)
             }
         }
     }

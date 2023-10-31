@@ -5,7 +5,6 @@ import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.data.manifest.prepareInternalTransactionRequest
 import com.babylon.wallet.android.data.transaction.ROLAClient
-import com.babylon.wallet.android.domain.common.value
 import com.babylon.wallet.android.domain.model.DAppWithMetadataAndAssociatedResources
 import com.babylon.wallet.android.domain.usecases.GetDAppWithMetadataAndAssociatedResourcesUseCase
 import com.babylon.wallet.android.presentation.common.OneOffEvent

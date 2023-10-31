@@ -1,6 +1,5 @@
 package com.babylon.wallet.android.presentation.transaction.analysis
 
-import com.babylon.wallet.android.domain.common.value
 import com.babylon.wallet.android.domain.model.Transferable
 import com.babylon.wallet.android.domain.model.TransferableResource
 import com.babylon.wallet.android.domain.model.assets.Assets
@@ -22,7 +21,7 @@ suspend fun TransactionType.Transfer.resolve(
     val allAssets = getAccountsWithAssetsUseCase(
         accounts = allAccounts,
         isRefreshing = false
-    ).value().orEmpty().mapNotNull {
+    ).getOrNull().orEmpty().mapNotNull {
         it.assets
     }
 

@@ -6,7 +6,6 @@ import org.junit.Test
 import rdx.works.core.blake2Hash
 import rdx.works.core.toHexString
 import rdx.works.peerdroid.data.PackageDto
-import rdx.works.peerdroid.helpers.Result
 import kotlin.random.Random
 
 @Ignore("refactored the MessageChunkingManager")
@@ -29,8 +28,8 @@ class MessageChunkingTest {
         val result = verifyAssembledMessage(assembledMessage, hashOfMessage)
 
         // then
-        assert(result is Result.Success)
-        Assert.assertEquals(messageId, (result as Result.Success).data)
+        assert(result.isSuccess)
+        Assert.assertEquals(messageId, result.getOrNull())
     }
 
     @Test

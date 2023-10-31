@@ -13,7 +13,6 @@ import org.webrtc.DataChannel
 import rdx.works.peerdroid.data.PackageDto
 import rdx.works.peerdroid.domain.ConnectionIdHolder
 import rdx.works.peerdroid.domain.DataChannelWrapperEvent
-import rdx.works.peerdroid.helpers.Result
 import rdx.works.peerdroid.messagechunking.assembleChunks
 import rdx.works.peerdroid.messagechunking.splitMessage
 import rdx.works.peerdroid.messagechunking.verifyAssembledMessage
@@ -47,16 +46,16 @@ data class DataChannelWrapper(
                     send(packageDto = chunk)
                 }
             }
-            Result.Success(Unit)
+            Result.success(Unit)
         } catch (iobe: IndexOutOfBoundsException) {
             Timber.e("📯 failed to wrap byte array to byte buffer: ${iobe.localizedMessage}")
-            Result.Error("failed to wrap byte array to byte buffer: ${iobe.localizedMessage}")
+            Result.failure(Throwable("failed to wrap byte array to byte buffer: ${iobe.localizedMessage}"))
         } catch (exception: Exception) {
             if (exception is CancellationException) {
                 throw exception
             }
             Timber.e("📯 failed to convert and send the message: ${exception.localizedMessage}")
-            Result.Error("failed to send message with exception: ${exception.localizedMessage}")
+            Result.failure(Throwable("failed to send message with exception: ${exception.localizedMessage}"))
         }
     }
 
@@ -116,12 +115,10 @@ data class DataChannelWrapper(
                 when (dataChannelEvent) {
                     is DataChannelEvent.CompleteMessage -> {
                         val completeChunkList = dataChannelEvent.listOfChunks
-                        val result = assembleAndVerifyMessageFromPackageList(
+                        assembleAndVerifyMessageFromPackageList(
                             packageList = ArrayList(completeChunkList)
                         )
-                        when (result) {
-                            is Result.Success -> {
-                                val incomingMessageByteArray = result.data
+                            .onSuccess { incomingMessageByteArray ->
                                 emit(
                                     DataChannelWrapperEvent.MessageFromRemoteConnectionId(
                                         connectionIdHolder = connectionIdHolder,
@@ -133,10 +130,9 @@ data class DataChannelWrapper(
                                         "from remote connector ${connectionIdHolder.id} to the wallet ✅"
                                 )
                             }
-                            is Result.Error -> {
+                            .onFailure {
                                 emit(DataChannelWrapperEvent.Error(connectionIdHolder))
                             }
-                        }
                     }
                     is DataChannelEvent.StateChanged -> {
                         Timber.d("📯 state for remote connector: ${connectionIdHolder.id} changed: ${dataChannelEvent.state} 📶️")
@@ -172,22 +168,19 @@ data class DataChannelWrapper(
     private suspend fun assembleAndVerifyMessageFromPackageList(packageList: List<PackageDto.Chunk>): Result<ByteArray> {
         Timber.d("📯 assemble and verify complete message from packageList with size: ${packageList.size}")
         val assembledMessageInByteArray = assembleChunks(currentMessageId, packageList)
+
         val result = verifyAssembledMessage(
             assembledMessage = assembledMessageInByteArray,
             expectedHashOfMessage = currentHashOfMessage
         )
-
-        return when (result) {
-            is Result.Error -> {
-                sendReceiveMessageError(messageId = currentMessageId) // inform remote connector
-                clearMetaDataFromMemory()
-                Result.Error("failed to assemble and verify incoming message")
-            }
-            is Result.Success -> {
-                sendReceiveMessageConfirmation(messageId = currentMessageId) // inform remote connector
-                clearMetaDataFromMemory()
-                Result.Success(assembledMessageInByteArray)
-            }
+        return result.getOrNull()?.let {
+            sendReceiveMessageConfirmation(messageId = currentMessageId) // inform remote connector
+            clearMetaDataFromMemory()
+            Result.success(assembledMessageInByteArray)
+        } ?: run {
+            sendReceiveMessageError(messageId = currentMessageId) // inform remote connector
+            clearMetaDataFromMemory()
+            Result.failure(Throwable("failed to assemble and verify incoming message"))
         }
     }
 

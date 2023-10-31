@@ -3,7 +3,7 @@ package com.babylon.wallet.android.presentation.main
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.data.dapp.PeerdroidClient
-import com.babylon.wallet.android.data.transaction.DappRequestFailure
+import com.babylon.wallet.android.domain.RadixWalletException
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel.IncomingRequest
 import com.babylon.wallet.android.domain.usecases.AuthorizeSpecifiedPersonaUseCase
 import com.babylon.wallet.android.domain.usecases.VerifyDappUseCase
@@ -29,7 +29,6 @@ import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
-import rdx.works.peerdroid.helpers.Result
 import rdx.works.profile.data.model.ProfileState
 import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.data.model.currentGateway
@@ -122,8 +121,8 @@ class MainViewModel @Inject constructor(
             connectionPassword = connectionPassword
         )
         if (encryptionKey != null) {
-            when (val result = peerdroidClient.connect(encryptionKey = encryptionKey)) {
-                is Result.Success -> {
+            peerdroidClient.connect(encryptionKey = encryptionKey)
+                .onSuccess {
                     if (incomingDappRequestsJob == null) {
                         Timber.d("\uD83E\uDD16 Listen for incoming requests from dapps")
                         // We must run this only once
@@ -150,19 +149,15 @@ class MainViewModel @Inject constructor(
                                 .cancellable()
                                 .collect {
                                     _state.update { state ->
-                                        state.copy(dappRequestFailure = DappRequestFailure.InvalidRequestChallenge)
+                                        state.copy(dappRequestFailure = RadixWalletException.DappRequestException.InvalidRequestChallenge)
                                     }
                                 }
                         }
                     }
                 }
-
-                is Result.Error -> {
-                    Timber.e("\uD83E\uDD16 Failed to establish link connection: ${result.message}")
+                .onFailure { throwable ->
+                    Timber.e("\uD83E\uDD16 Failed to establish link connection: ${throwable.message}")
                 }
-
-                else -> {}
-            }
         }
     }
 
@@ -176,7 +171,7 @@ class MainViewModel @Inject constructor(
                     sendEvent(MainEvent.IncomingRequestEvent(request))
                 } else {
                     delay(REQUEST_HANDLING_DELAY)
-                    authorizeSpecifiedPersonaUseCase(request).onSuccess { dAppData ->
+                    authorizeSpecifiedPersonaUseCase.invoke(request).onSuccess { dAppData ->
                         appEventBus.sendEvent(
                             AppEvent.Status.DappInteraction(
                                 requestId = dAppData.requestId,
@@ -184,10 +179,10 @@ class MainViewModel @Inject constructor(
                             )
                         )
                     }.onFailure { exception ->
-                        (exception as? DappRequestFailure)?.let { dappRequestFailure ->
+                        (exception as? RadixWalletException.DappRequestException)?.let { dappRequestFailure ->
                             when (dappRequestFailure) {
-                                DappRequestFailure.InvalidPersona,
-                                DappRequestFailure.InvalidRequest -> {
+                                RadixWalletException.DappRequestException.InvalidPersona,
+                                RadixWalletException.DappRequestException.InvalidRequest -> {
                                     _state.update { state ->
                                         state.copy(dappRequestFailure = dappRequestFailure)
                                     }
@@ -212,7 +207,7 @@ class MainViewModel @Inject constructor(
                 }
             }.onFailure {
                 _state.update { state ->
-                    state.copy(dappRequestFailure = DappRequestFailure.InvalidRequest)
+                    state.copy(dappRequestFailure = RadixWalletException.DappRequestException.InvalidRequest)
                 }
             }
         }
@@ -290,7 +285,7 @@ sealed class MainEvent : OneOffEvent {
 
 data class MainUiState(
     val initialAppState: AppState = AppState.Loading,
-    val dappRequestFailure: DappRequestFailure? = null,
+    val dappRequestFailure: RadixWalletException.DappRequestException? = null,
     val olympiaErrorState: OlympiaErrorState = OlympiaErrorState.None
 ) : UiState
 

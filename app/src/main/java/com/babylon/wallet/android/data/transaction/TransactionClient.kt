@@ -10,8 +10,7 @@ import com.babylon.wallet.android.data.manifest.addLockFeeInstructionToManifest
 import com.babylon.wallet.android.data.repository.transaction.TransactionRepository
 import com.babylon.wallet.android.data.transaction.model.FeePayerSearchResult
 import com.babylon.wallet.android.data.transaction.model.TransactionApprovalRequest
-import com.babylon.wallet.android.domain.common.asKotlinResult
-import com.babylon.wallet.android.domain.common.value
+import com.babylon.wallet.android.domain.RadixWalletException
 import com.babylon.wallet.android.domain.model.assets.findAccountWithEnoughXRDBalance
 import com.babylon.wallet.android.domain.usecases.GetAccountsWithAssetsUseCase
 import com.babylon.wallet.android.domain.usecases.transaction.CollectSignersSignaturesUseCase
@@ -37,8 +36,6 @@ import timber.log.Timber
 import java.math.BigDecimal
 import java.security.SecureRandom
 import javax.inject.Inject
-import kotlin.Result
-import com.babylon.wallet.android.domain.common.Result as ResultInternal
 
 @Suppress("LongParameterList")
 class TransactionClient @Inject constructor(
@@ -86,19 +83,19 @@ class TransactionClient @Inject constructor(
                     message = request.message.toEngineMessage()
                 )
             }.getOrElse {
-                return Result.failure(DappRequestException(DappRequestFailure.TransactionApprovalFailure.SignCompiledTransactionIntent))
+                return Result.failure(RadixWalletException.PrepareTransactionException.SignCompiledTransactionIntent())
             }
 
             val transactionIntentHash = runCatching {
                 transactionIntent.intentHash()
             }.getOrElse {
-                return Result.failure(DappRequestException(DappRequestFailure.TransactionApprovalFailure.SignCompiledTransactionIntent))
+                return Result.failure(RadixWalletException.PrepareTransactionException.SignCompiledTransactionIntent())
             }
 
             val compiledTransactionIntent = runCatching {
                 transactionIntent.compile()
             }.getOrElse {
-                return Result.failure(DappRequestException(DappRequestFailure.TransactionApprovalFailure.PrepareNotarizedTransaction))
+                return Result.failure(RadixWalletException.PrepareTransactionException.PrepareNotarizedTransaction())
             }
 
             val signatures = collectSignersSignaturesUseCase(
@@ -109,12 +106,7 @@ class TransactionClient @Inject constructor(
                 ),
                 deviceBiometricAuthenticationProvider = deviceBiometricAuthenticationProvider
             ).getOrElse {
-                return Result.failure(
-                    DappRequestException(
-                        DappRequestFailure.TransactionApprovalFailure.SignCompiledTransactionIntent,
-                        e = it
-                    )
-                )
+                return Result.failure(RadixWalletException.PrepareTransactionException.SignCompiledTransactionIntent(it))
             }
 
             val signedTransactionIntent = runCatching {
@@ -123,24 +115,13 @@ class TransactionClient @Inject constructor(
                     intentSignatures = signatures
                 )
             }.getOrElse {
-                return Result.failure(
-                    DappRequestException(
-                        DappRequestFailure.TransactionApprovalFailure.SignCompiledTransactionIntent,
-                        e = it
-                    )
-                )
+                return Result.failure(RadixWalletException.PrepareTransactionException.SignCompiledTransactionIntent(it))
             }
 
             val signedIntentHash = runCatching {
                 signedTransactionIntent.signedIntentHash()
             }.getOrElse { error ->
-                return Result.failure(
-                    DappRequestException(
-                        DappRequestFailure.TransactionApprovalFailure.PrepareNotarizedTransaction,
-                        msg = error.message,
-                        e = error
-                    )
-                )
+                return Result.failure(RadixWalletException.PrepareTransactionException.PrepareNotarizedTransaction(error))
             }
 
             val notarySignature = notaryAndSigners.signWithNotary(hashedData = signedIntentHash.bytes().toByteArray())
@@ -150,13 +131,7 @@ class TransactionClient @Inject constructor(
                     notarySignature = notarySignature
                 ).compile()
             }.getOrElse { e ->
-                return Result.failure(
-                    DappRequestException(
-                        DappRequestFailure.TransactionApprovalFailure.PrepareNotarizedTransaction,
-                        msg = e.message,
-                        e = e
-                    )
-                )
+                return Result.failure(RadixWalletException.PrepareTransactionException.PrepareNotarizedTransaction(e))
             }
             Result.success(
                 NotarizedTransactionResult(
@@ -187,7 +162,7 @@ class TransactionClient @Inject constructor(
         val allAccountsWithResources = getAccountsWithAssetsUseCase(
             accounts = allAccounts,
             isRefreshing = false
-        ).value()
+        ).getOrNull()
         val candidates = allAccountsWithResources?.map {
             FeePayerSearchResult.FeePayerCandidate(
                 account = it.account,
@@ -262,7 +237,7 @@ class TransactionClient @Inject constructor(
         lockFee: BigDecimal
     ): String? {
         return getAccountsWithAssetsUseCase(accounts = accounts, isRefreshing = true)
-            .value()?.findAccountWithEnoughXRDBalance(lockFee)?.account?.address
+            .getOrNull()?.findAccountWithEnoughXRDBalance(lockFee)?.account?.address
     }
 
     private suspend fun buildTransactionHeader(
@@ -271,8 +246,7 @@ class TransactionClient @Inject constructor(
         tipPercentage: UShort,
     ): Result<TransactionHeader> {
         val epochResult = transactionRepository.getLedgerEpoch()
-        if (epochResult is ResultInternal.Success) {
-            val epoch = epochResult.data
+        return epochResult.getOrNull()?.let { epoch ->
             val expiryEpoch = epoch.toULong() + TransactionConfig.EPOCH_WINDOW
             return try {
                 Result.success(
@@ -287,17 +261,9 @@ class TransactionClient @Inject constructor(
                     )
                 )
             } catch (e: Exception) {
-                Result.failure(
-                    DappRequestException(
-                        DappRequestFailure.TransactionApprovalFailure.BuildTransactionHeader,
-                        e.message,
-                        e
-                    )
-                )
+                Result.failure(RadixWalletException.PrepareTransactionException.BuildTransactionHeader(cause = e))
             }
-        } else {
-            return Result.failure(DappRequestException(DappRequestFailure.GetEpoch))
-        }
+        } ?: Result.failure(RadixWalletException.DappRequestException.GetEpoch)
     }
 
     suspend fun getSigningEntities(manifest: TransactionManifest): List<Entity> {
@@ -326,7 +292,7 @@ class TransactionClient @Inject constructor(
         notaryAndSigners: NotaryAndSigners
     ): Result<TransactionPreviewResponse> {
         val (startEpochInclusive, endEpochExclusive) = with(transactionRepository.getLedgerEpoch()) {
-            val epoch = this.value() ?: return@with (0L to 0L)
+            val epoch = this.getOrNull() ?: return@with (0L to 0L)
 
             (epoch to epoch + 1L)
         }
@@ -348,7 +314,7 @@ class TransactionClient @Inject constructor(
                 notaryPublicKey = notaryAndSigners.notaryPublicKey().asGatewayPublicKey(),
                 notaryIsSignatory = notaryAndSigners.notaryIsSignatory
             )
-        ).asKotlinResult().fold(
+        ).fold(
             onSuccess = { preview ->
                 if (preview.receipt.isFailed) {
                     Result.failure(Throwable(preview.receipt.errorMessage))

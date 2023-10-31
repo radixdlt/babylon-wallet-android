@@ -4,9 +4,7 @@ import com.babylon.wallet.android.data.dapp.model.TransactionType
 import com.babylon.wallet.android.data.gateway.generated.models.TransactionPayloadStatus
 import com.babylon.wallet.android.data.repository.TransactionStatusData
 import com.babylon.wallet.android.data.repository.transaction.TransactionRepository
-import com.babylon.wallet.android.data.transaction.DappRequestException
-import com.babylon.wallet.android.data.transaction.DappRequestFailure
-import com.babylon.wallet.android.domain.common.Result
+import com.babylon.wallet.android.domain.RadixWalletException
 import javax.inject.Inject
 
 class PollTransactionStatusUseCase @Inject constructor(
@@ -21,14 +19,14 @@ class PollTransactionStatusUseCase @Inject constructor(
         txProcessingTime: String
     ): TransactionStatusData {
         while (true) {
-            val statusCheckResult = transactionRepository.getTransactionStatus(txID)
-            if (statusCheckResult is Result.Success) {
-                when (statusCheckResult.data.knownPayloads.firstOrNull()?.payloadStatus) {
+            transactionRepository.getTransactionStatus(txID).onSuccess { statusCheckResult ->
+                when (statusCheckResult.knownPayloads.firstOrNull()?.payloadStatus) {
                     TransactionPayloadStatus.unknown,
                     TransactionPayloadStatus.commitPendingOutcomeUnknown,
                     TransactionPayloadStatus.pending -> {
                         // Keep Polling
                     }
+
                     TransactionPayloadStatus.committedSuccess -> {
                         // Stop Polling: MESSAGE 1
                         return TransactionStatusData(
@@ -39,54 +37,53 @@ class PollTransactionStatusUseCase @Inject constructor(
                             txProcessingTime = txProcessingTime
                         )
                     }
+
                     TransactionPayloadStatus.committedFailure -> {
                         // Stop Polling: MESSAGE 2
                         return TransactionStatusData(
                             txId = txID,
                             requestId = requestId,
                             result = kotlin.Result.failure(
-                                DappRequestException(
-                                    DappRequestFailure.TransactionApprovalFailure.TransactionCommitted.Failure(
-                                        txID
-                                    )
+                                RadixWalletException.TransactionSubmitException.TransactionCommitted.Failure(
+                                    txID
                                 )
                             ),
                             transactionType = transactionType,
                             txProcessingTime = txProcessingTime
                         )
                     }
+
                     TransactionPayloadStatus.permanentlyRejected -> {
                         // Stop Polling: MESSAGE 4
                         return TransactionStatusData(
                             txId = txID,
                             requestId = requestId,
                             result = kotlin.Result.failure(
-                                DappRequestException(
-                                    DappRequestFailure.TransactionApprovalFailure.TransactionRejected.Permanently(
-                                        txID
-                                    )
+                                RadixWalletException.TransactionSubmitException.TransactionRejected.Permanently(
+                                    txID
                                 )
                             ),
                             transactionType = transactionType,
                             txProcessingTime = txProcessingTime
                         )
                     }
+
                     TransactionPayloadStatus.temporarilyRejected -> {
                         // Stop Polling: MESSAGE 3
                         return TransactionStatusData(
                             txId = txID,
                             requestId = requestId,
                             result = kotlin.Result.failure(
-                                DappRequestException(
-                                    DappRequestFailure.TransactionApprovalFailure.TransactionRejected.Temporary(
-                                        txID
-                                    )
+                                RadixWalletException.TransactionSubmitException.TransactionRejected.Temporary(
+                                    txID,
+                                    txProcessingTime
                                 )
                             ),
                             transactionType = transactionType,
                             txProcessingTime = txProcessingTime
                         )
                     }
+
                     null -> {}
                 }
             }

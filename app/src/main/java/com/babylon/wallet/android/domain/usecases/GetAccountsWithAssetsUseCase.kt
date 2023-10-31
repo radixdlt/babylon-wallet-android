@@ -1,7 +1,6 @@
 package com.babylon.wallet.android.domain.usecases
 
 import com.babylon.wallet.android.data.repository.entity.EntityRepository
-import com.babylon.wallet.android.domain.common.Result
 import com.babylon.wallet.android.domain.model.assets.AccountWithAssets
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.domain.GetProfileUseCase

@@ -34,7 +34,6 @@ import rdx.works.peerdroid.data.websocket.model.RpcMessage
 import rdx.works.peerdroid.data.websocket.model.RpcMessage.IceCandidatePayload.Companion.toJsonPayload
 import rdx.works.peerdroid.data.websocket.model.SignalingServerDto
 import rdx.works.peerdroid.data.websocket.model.SignalingServerMessage
-import rdx.works.peerdroid.helpers.Result
 import timber.log.Timber
 import java.nio.charset.StandardCharsets
 
@@ -86,17 +85,17 @@ internal class WebSocketClient(applicationContext: Context) {
             }
             if (socket?.isActive == true) {
                 Timber.d("🛰 successfully connected to signaling server")
-                Result.Success(Unit)
+                Result.success(Unit)
             } else {
                 Timber.e("🛰 failed to connect to signaling server")
-                Result.Error("Couldn't establish a connection")
+                Result.failure(Exception("Couldn't establish a connection"))
             }
         } catch (exception: Exception) {
             if (exception is CancellationException) {
                 throw exception
             }
             Timber.e("🛰 connection exception: ${exception.localizedMessage}")
-            Result.Error(exception.localizedMessage ?: "Unknown error")
+            Result.failure(exception)
         }
     }
 
