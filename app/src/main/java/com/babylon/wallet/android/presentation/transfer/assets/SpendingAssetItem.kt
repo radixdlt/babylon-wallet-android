@@ -232,7 +232,7 @@ private fun ColumnScope.FungibleSpendingAsset(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = RadixTheme.dimensions.paddingDefault),
-            text = "Total Sum is over your current balance", // TODO
+            text = stringResource(id = R.string.assetTransfer_error_insufficientBalance),
             style = RadixTheme.typography.body2HighImportance.copy(
                 fontSize = 12.sp,
                 color = RadixTheme.colors.red1,
@@ -323,7 +323,7 @@ private fun NonFungibleSpendingAsset(
             ) {
                 Text(
                     modifier = Modifier.fillMaxWidth(),
-                    text = "This NFT is already used in another account", // TODO
+                    text = stringResource(id = R.string.assetTransfer_error_resourceAlreadyAdded),
                     style = RadixTheme.typography.body2HighImportance.copy(
                         fontSize = 12.sp,
                         color = RadixTheme.colors.red1,
