@@ -83,8 +83,8 @@ fun PoolUnitItem(
 @Composable
 fun PoolResourcesValues(poolUnit: PoolUnit, modifier: Modifier = Modifier) {
     Column(modifier = modifier.border(1.dp, RadixTheme.colors.gray4, RadixTheme.shapes.roundedRectMedium)) {
-        val itemsSize = poolUnit.items.size
-        poolUnit.items.forEachIndexed { index, poolResource ->
+        val itemsSize = poolUnit.pool?.resources?.size ?: 0
+        poolUnit.pool?.resources?.forEachIndexed { index, poolResource ->
             Row(
                 modifier = Modifier.padding(
                     horizontal = RadixTheme.dimensions.paddingDefault,

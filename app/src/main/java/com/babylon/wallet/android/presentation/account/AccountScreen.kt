@@ -395,7 +395,7 @@ fun AssetsContent(
         val collapsedState = remember(nonFungibleCollections) {
             nonFungibleCollections.map { true }.toMutableStateList()
         }
-        var collapsedStakeState by remember(assets?.validatorsWithStakeResources) { mutableStateOf(true) }
+        var collapsedStakeState by remember(assets?.validatorsWithStakes) { mutableStateOf(true) }
 
         val accountAddress = remember(state.accountWithAssets) {
             state.accountWithAssets?.account?.address.orEmpty()
@@ -519,7 +519,7 @@ fun AssetsContent(
                             poolUnitsResources(
                                 modifier = contentModifier,
                                 collapsedState = collapsedStakeState,
-                                validatorsWithStakeResources = assets.validatorsWithStakeResources,
+                                validatorsWithStakeResources = assets.validatorsWithStakes,
                                 poolUnits = assets.poolUnits,
                                 parentSectionClick = {
                                     collapsedStakeState = !collapsedStakeState
@@ -603,7 +603,7 @@ fun AccountContentPreview() {
                             fungibles = sampleFungibleResources(),
                             nonFungibles = listOf(),
                             poolUnits = listOf(),
-                            validatorsWithStakeResources = emptyList()
+                            validatorsWithStakes = emptyList()
                         ),
                     )
                 ),

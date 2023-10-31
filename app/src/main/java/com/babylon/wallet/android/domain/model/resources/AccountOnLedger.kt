@@ -5,7 +5,7 @@ import com.babylon.wallet.android.domain.model.assets.LiquidStakeUnit
 import com.babylon.wallet.android.domain.model.assets.PoolUnit
 import com.babylon.wallet.android.domain.model.assets.StakeClaim
 import com.babylon.wallet.android.domain.model.assets.ValidatorDetail
-import com.babylon.wallet.android.domain.model.assets.ValidatorWithStakeResources
+import com.babylon.wallet.android.domain.model.assets.ValidatorWithStakes
 
 /**
  * Account data as received from gateway, or from database cache.
@@ -34,14 +34,9 @@ data class AccountOnLedger(
     private val stakeUnitAddressToValidators = validators?.associate { it.stakeUnitResourceAddress to it }.orEmpty()
     private val claimTokenAddressToValidators = validators?.associate { it.claimTokenResourceAddress to it }.orEmpty()
 
-    private data class ValidatorAssets(
-        val liquidStakeUnits: MutableList<LiquidStakeUnit> = mutableListOf(),
-        var stakeClaim: StakeClaim? = null
-    )
-
     fun extractAssets() = if (fungibles != null && nonFungibles != null && validators != null && pools != null) {
         val resultingPoolUnits = mutableListOf<PoolUnit>()
-        val resultingValidators = mutableMapOf<ValidatorDetail, ValidatorAssets>()
+        val resultingStakeUnits = mutableMapOf<ValidatorDetail, ValidatorWithStakes>()
 
         val resultingFungibles = fungibles.toMutableList()
         val resultingNonFungibles = nonFungibles.toMutableList()
@@ -68,9 +63,10 @@ data class AccountOnLedger(
             if (validatorDetails != null) {
                 val lsu = LiquidStakeUnit(fungible)
 
-                val assetsForValidator = resultingValidators.getOrDefault(validatorDetails, ValidatorAssets())
-                assetsForValidator.liquidStakeUnits.add(lsu)
-                resultingValidators[validatorDetails] = assetsForValidator
+                resultingStakeUnits[validatorDetails] = ValidatorWithStakes(
+                    validatorDetail = validatorDetails,
+                    liquidStakeUnit = lsu
+                )
 
                 // Remove this fungible from the list as it will be included as an lsu
                 fungiblesIterator.remove()
@@ -83,27 +79,27 @@ data class AccountOnLedger(
 
             val validatorDetails = claimTokenAddressToValidators[nonFungible.resourceAddress]
             if (validatorDetails != null) {
-                val assetsForValidator = resultingValidators.getOrDefault(validatorDetails, ValidatorAssets())
-                assetsForValidator.stakeClaim = StakeClaim(nonFungible)
-                resultingValidators[validatorDetails] = assetsForValidator
+                resultingStakeUnits[validatorDetails]?.copy(stakeClaimNft = StakeClaim(nonFungible))?.let {
+                    resultingStakeUnits[validatorDetails] = it
+                }
 
                 // Remove this non-fungible from the list as it will be included as a stake claim
                 nonFungiblesIterator.remove()
             }
         }
 
-        val resultingValidatorsWithStakeResources = resultingValidators.map {
-            ValidatorWithStakeResources(
+        val resultingValidatorsWithStakeResources = resultingStakeUnits.map {
+            ValidatorWithStakes(
                 validatorDetail = it.key,
-                liquidStakeUnits = it.value.liquidStakeUnits,
-                stakeClaimNft = it.value.stakeClaim
+                liquidStakeUnit = it.value.liquidStakeUnit,
+                stakeClaimNft = it.value.stakeClaimNft
             )
         }
         Assets(
             fungibles = resultingFungibles,
             nonFungibles = resultingNonFungibles,
             poolUnits = resultingPoolUnits,
-            validatorsWithStakeResources = resultingValidatorsWithStakeResources
+            validatorsWithStakes = resultingValidatorsWithStakeResources
         )
     } else {
         null

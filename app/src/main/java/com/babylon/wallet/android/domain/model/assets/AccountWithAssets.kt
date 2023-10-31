@@ -26,7 +26,7 @@ data class Assets(
     val fungibles: List<Resource.FungibleResource> = emptyList(),
     val nonFungibles: List<Resource.NonFungibleResource> = emptyList(),
     val poolUnits: List<PoolUnit> = emptyList(),
-    val validatorsWithStakeResources: List<ValidatorWithStakeResources> = emptyList()
+    val validatorsWithStakes: List<ValidatorWithStakes> = emptyList()
 ) {
 
     val xrd: Resource.FungibleResource? by lazy {
@@ -43,7 +43,7 @@ data class Assets(
     } == true
 
     fun poolUnitsSize(): Int {
-        return poolUnits.size + validatorsWithStakeResources.size
+        return poolUnits.size + validatorsWithStakes.size
     }
 }
 
@@ -57,9 +57,9 @@ data class ValidatorDetail(
     val claimTokenResourceAddress: String? = null
 )
 
-data class ValidatorWithStakeResources(
+data class ValidatorWithStakes(
     val validatorDetail: ValidatorDetail,
-    val liquidStakeUnits: List<LiquidStakeUnit> = emptyList(),
+    val liquidStakeUnit: LiquidStakeUnit,
     val stakeClaimNft: StakeClaim? = null
 )
 
