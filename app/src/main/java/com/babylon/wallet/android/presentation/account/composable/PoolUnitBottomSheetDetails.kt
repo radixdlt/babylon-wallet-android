@@ -43,7 +43,7 @@ fun PoolUnitBottomSheetDetails(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         RadixCenteredTopAppBar(
-            title = poolName(poolUnit.pool.name),
+            title = poolName(poolUnit.stake.name),
             onBackClick = onCloseClick,
             modifier = Modifier.fillMaxWidth(),
             contentColor = RadixTheme.colors.gray1,
@@ -61,7 +61,7 @@ fun PoolUnitBottomSheetDetails(
                 poolUnit = poolUnit
             )
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
-            TokenBalance(poolUnit.pool)
+            TokenBalance(poolUnit.stake)
             Divider(
                 Modifier
                     .fillMaxWidth()
@@ -85,9 +85,9 @@ fun PoolUnitBottomSheetDetails(
                     .padding(vertical = RadixTheme.dimensions.paddingLarge),
                 color = RadixTheme.colors.gray4
             )
-            if (poolUnit.pool.description.isNotBlank()) {
+            if (poolUnit.stake.description.isNotBlank()) {
                 Text(
-                    text = poolUnit.pool.description,
+                    text = poolUnit.stake.description,
                     style = RadixTheme.typography.body2Regular,
                     color = RadixTheme.colors.gray1
                 )
@@ -103,10 +103,10 @@ fun PoolUnitBottomSheetDetails(
             }
             AddressRow(
                 modifier = Modifier.fillMaxWidth(),
-                address = poolUnit.pool.resourceAddress
+                address = poolUnit.stake.resourceAddress
             )
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
-            if (poolUnit.pool.displayTitle.isNotEmpty()) {
+            if (poolUnit.stake.displayTitle.isNotEmpty()) {
                 Row(
                     modifier = Modifier,
                     verticalAlignment = Alignment.CenterVertically,
@@ -119,7 +119,7 @@ fun PoolUnitBottomSheetDetails(
                     )
                     Spacer(modifier = Modifier.weight(1f))
                     Text(
-                        text = poolUnit.pool.displayTitle,
+                        text = poolUnit.stake.displayTitle,
                         style = RadixTheme.typography.body1HighImportance,
                         color = RadixTheme.colors.gray1
                     )
@@ -141,14 +141,14 @@ fun PoolUnitBottomSheetDetails(
                 Text(
                     modifier = Modifier
                         .padding(start = RadixTheme.dimensions.paddingDefault),
-                    text = poolUnit.pool.currentSupplyToDisplay ?: stringResource(id = R.string.assetDetails_supplyUnkown),
+                    text = poolUnit.stake.currentSupplyToDisplay ?: stringResource(id = R.string.assetDetails_supplyUnkown),
                     style = RadixTheme.typography.body1HighImportance,
                     color = RadixTheme.colors.gray1,
                     textAlign = TextAlign.End
                 )
             }
 
-            if (poolUnit.pool.resourceBehaviours.isNotEmpty()) {
+            if (!poolUnit.stake.resourceBehaviours.isNullOrEmpty()) {
                 Column {
                     Text(
                         modifier = Modifier

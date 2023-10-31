@@ -41,6 +41,7 @@ import com.babylon.wallet.android.domain.model.assets.StakeClaim
 import com.babylon.wallet.android.domain.model.assets.ValidatorDetail
 import com.babylon.wallet.android.domain.model.assets.ValidatorWithStakeResources
 import com.babylon.wallet.android.domain.model.resources.AccountDetails
+import com.babylon.wallet.android.domain.model.resources.Pool
 import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.domain.model.resources.metadata.ClaimEpochMetadataItem
 import com.babylon.wallet.android.domain.model.resources.metadata.DescriptionMetadataItem
@@ -141,14 +142,15 @@ class EntityRepositoryImpl @Inject constructor(
                         }.map { StakeClaim(it) }
                     }.filter { it.value.isNotEmpty() }
                     val mapOfAccountsWithPoolUnits = mapOfAccountsWithFungibleResources.mapValues { fungibleResources ->
-                        fungibleResources.value.filter { poolAddresses.contains(it.poolAddress) }.map { poolUnitResource ->
-                            val poolDetails = poolsList.find { it.address == poolUnitResource.poolAddress }
+                        fungibleResources.value.filter { poolAddresses.contains(it.poolAddress) }.map { stake ->
+                            val poolDetails = poolsList.find { it.address == stake.poolAddress }
                             val poolResources = poolDetails?.fungibleResources?.items?.mapNotNull { poolResource ->
                                 (poolResource as? FungibleResourcesCollectionItemVaultAggregated)?.let {
                                     mapToFungibleResource(it)
                                 }
                             }.orEmpty()
-                            PoolUnit(poolUnitResource, poolResources)
+                            val pool = Pool(address = stake.poolAddress.orEmpty(), resources = poolResources)
+                            PoolUnit(stake, pool)
                         }
                     }.filter { it.value.isNotEmpty() }
 
