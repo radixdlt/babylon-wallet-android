@@ -167,7 +167,7 @@ private fun SeedPhraseCard(
             val icon = if (mnemonicNeedsRecovery) DSR.ic_warning_error else DSR.ic_seed_phrases
             val tint = if (mnemonicNeedsRecovery) RadixTheme.colors.red1 else RadixTheme.colors.gray1
             val text = if (mnemonicNeedsRecovery) {
-                "Seed Phrase Entry Required" // TODO add to crowdin
+                stringResource(id = R.string.displayMnemonics_seedPhraseEntryWarning)
             } else {
                 stringResource(id = R.string.displayMnemonics_cautionAlert_revealButtonLabel)
             }

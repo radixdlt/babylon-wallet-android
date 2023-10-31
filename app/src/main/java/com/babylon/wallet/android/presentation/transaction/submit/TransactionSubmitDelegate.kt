@@ -252,7 +252,6 @@ class TransactionSubmitDelegate @Inject constructor(
             return
         }
         error.asRadixWalletException()?.let { radixWalletException ->
-            // TODO test this flow
             radixWalletException.toConnectorExtensionError()?.let { walletErrorType ->
                 dAppMessenger.sendWalletInteractionResponseFailure(
                     remoteConnectorId = currentState.requestNonNull.remoteConnectorId,

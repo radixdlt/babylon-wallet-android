@@ -147,15 +147,15 @@ fun TransactionStatusDialog(
                     ) {
                         val title = when (state.walletErrorType) {
                             WalletErrorType.SubmittedTransactionHasFailedTransactionStatus -> {
-                                "Transaction Failed" // TODO Crowdin
+                                stringResource(id = R.string.transaction_status_failed_title)
                             }
 
                             WalletErrorType.SubmittedTransactionHasPermanentlyRejectedTransactionStatus -> {
-                                "Transaction Rejected" // TODO Crowdin
+                                stringResource(id = R.string.transaction_status_rejected_title)
                             }
 
                             WalletErrorType.SubmittedTransactionHasTemporarilyRejectedTransactionStatus -> {
-                                "Transaction Error" // TODO Crowdin
+                                stringResource(id = R.string.transaction_status_error_title)
                             }
 
                             else -> {
