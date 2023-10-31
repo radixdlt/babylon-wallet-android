@@ -74,8 +74,7 @@ private fun AccountSecurityContent(
                             },
                             subtitle =
                             if (accountSecurityAndSettingsItem is AccountSecurityAndSettingsItem.DepositGuarantees) {
-                                // TODO Add Crowdin
-                                "Set your default guaranteed minimum for estimated deposits"
+                                stringResource(id = R.string.settings_depositGuarantees_subtitle)
                             } else {
                                 null
                             }
