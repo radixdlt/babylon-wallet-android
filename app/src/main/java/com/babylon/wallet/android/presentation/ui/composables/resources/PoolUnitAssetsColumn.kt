@@ -30,7 +30,7 @@ import com.babylon.wallet.android.domain.model.assets.LiquidStakeUnit
 import com.babylon.wallet.android.domain.model.assets.PoolUnit
 import com.babylon.wallet.android.domain.model.assets.StakeClaim
 import com.babylon.wallet.android.domain.model.assets.ValidatorDetail
-import com.babylon.wallet.android.domain.model.assets.ValidatorWithStakeResources
+import com.babylon.wallet.android.domain.model.assets.ValidatorWithStakes
 import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.presentation.account.composable.EmptyResourcesContent
 import com.babylon.wallet.android.presentation.transfer.assets.ResourceTab
@@ -58,7 +58,7 @@ fun PoolUnitAssetsColumn(
     ) {
         poolUnitsResources(
             collapsedState = collapsedStakeState,
-            validatorsWithStakeResources = assets?.validatorsWithStakeResources,
+            validatorsWithStakeResources = assets?.validatorsWithStakes,
             poolUnits = assets?.poolUnits.orEmpty(),
             parentSectionClick = {
                 collapsedStakeState = !collapsedStakeState
@@ -74,7 +74,7 @@ fun PoolUnitAssetsColumn(
 fun LazyListScope.poolUnitsResources(
     modifier: Modifier = Modifier,
     collapsedState: Boolean,
-    validatorsWithStakeResources: List<ValidatorWithStakeResources>?,
+    validatorsWithStakeResources: List<ValidatorWithStakes>?,
     poolUnits: List<PoolUnit>,
     parentSectionClick: () -> Unit,
     poolUnitItem: @Composable (PoolUnit) -> Unit,
@@ -113,31 +113,25 @@ fun LazyListScope.poolUnitsResources(
                             )
                         }
                     }
-                    if (validator.liquidStakeUnits.isNotEmpty()) {
-                        val lastCollection = validator.stakeClaimNft == null
-                        item {
-                            CardWrapper(modifier = modifier) {
-                                StakeSectionTitle(
-                                    title = stringResource(id = R.string.account_poolUnits_liquidStakeUnits)
-                                )
-                                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSmall))
-                            }
+
+                    val lastCollection = validator.stakeClaimNft == null
+                    item {
+                        CardWrapper(modifier = modifier) {
+                            StakeSectionTitle(
+                                title = stringResource(id = R.string.account_poolUnits_liquidStakeUnits)
+                            )
+                            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSmall))
                         }
-                        val last = validator.liquidStakeUnits.last()
-                        items(
-                            items = validator.liquidStakeUnits,
-                            key = { it.fungibleResource.resourceAddress }
-                        ) { liquidStakeUnit ->
-                            val lastItem = liquidStakeUnit == last
-                            CardWrapper(
-                                modifier = modifier,
-                                lastItem = lastCollection && lastItem && lastValidator
-                            ) {
-                                liquidStakeItem(liquidStakeUnit, validator.validatorDetail)
-                                ItemSpacer(lastItem)
-                                if (lastCollection && !lastValidator) {
-                                    Divider(Modifier.fillMaxWidth(), color = RadixTheme.colors.gray4)
-                                }
+                    }
+                    item {
+                        CardWrapper(
+                            modifier = modifier,
+                            lastItem = lastCollection && lastValidator
+                        ) {
+                            liquidStakeItem(validator.liquidStakeUnit, validator.validatorDetail)
+                            ItemSpacer(true)
+                            if (lastCollection && !lastValidator) {
+                                Divider(Modifier.fillMaxWidth(), color = RadixTheme.colors.gray4)
                             }
                         }
                     }

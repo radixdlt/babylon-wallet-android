@@ -96,7 +96,7 @@ private fun AssetsContent(
                 .coerceAtLeast(minimumValue = 0)
         }
         val nftsCount = remember(assets.nonFungibles) { assets.nonFungibles.allNftItemsSize() }
-        val poolUnitCount = remember(assets.poolUnits, assets.validatorsWithStakeResources) {
+        val poolUnitCount = remember(assets.poolUnits, assets.validatorsWithStakes) {
             assets.poolUnitsSize()
         }
 
@@ -328,7 +328,7 @@ fun AssetsContentRowPreview() {
                     fungibles = allFungibles,
                     nonFungibles = nonFungibles,
                     poolUnits = emptyList(),
-                    validatorsWithStakeResources = emptyList()
+                    validatorsWithStakes = emptyList()
                 ),
                 isLoading = false
             )

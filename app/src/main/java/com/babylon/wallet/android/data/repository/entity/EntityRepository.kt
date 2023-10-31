@@ -39,7 +39,7 @@ import com.babylon.wallet.android.domain.model.assets.LiquidStakeUnit
 import com.babylon.wallet.android.domain.model.assets.PoolUnit
 import com.babylon.wallet.android.domain.model.assets.StakeClaim
 import com.babylon.wallet.android.domain.model.assets.ValidatorDetail
-import com.babylon.wallet.android.domain.model.assets.ValidatorWithStakeResources
+import com.babylon.wallet.android.domain.model.assets.ValidatorWithStakes
 import com.babylon.wallet.android.domain.model.resources.AccountDetails
 import com.babylon.wallet.android.domain.model.resources.Pool
 import com.babylon.wallet.android.domain.model.resources.Resource
@@ -179,7 +179,7 @@ class EntityRepositoryImpl @Inject constructor(
                             assets = Assets(
                                 fungibles = mapOfAccountsWithFungibleResources[account.address].orEmpty().sorted(),
                                 nonFungibles = mapOfAccountsWithNonFungibleResources[account.address].orEmpty().sorted(),
-                                validatorsWithStakeResources = liquidStakeCollectionPerAccountAddress[account.address]
+                                validatorsWithStakes = liquidStakeCollectionPerAccountAddress[account.address]
                                     ?: emptyList(),
                                 poolUnits = mapOfAccountsWithPoolUnits[account.address].orEmpty()
                             )
@@ -265,7 +265,7 @@ class EntityRepositoryImpl @Inject constructor(
         accountAddressToLiquidStakeUnits: Map<String, List<LiquidStakeUnit>>,
         accountAddressToStakeClaimNtfs: Map<String, List<StakeClaim>>,
         validatorDetailsList: List<StateEntityDetailsResponseItem>,
-    ): Map<String, List<ValidatorWithStakeResources>> {
+    ): Map<String, List<ValidatorWithStakes>> {
         if (validatorDetailsList.isEmpty()) return emptyMap()
         val accountAddresses = accountAddressToLiquidStakeUnits.keys + accountAddressToStakeClaimNtfs.keys
         return accountAddresses.associateWith { address ->
@@ -280,7 +280,7 @@ class EntityRepositoryImpl @Inject constructor(
                 it.validatorAddress
             }
             val accountValidators = allValidatorAddresses
-                .map { validatorAddress ->
+                .mapNotNull { validatorAddress ->
                     val validatorDetails = validatorDetailsList.firstOrNull { it.address == validatorAddress }
                     val totalXrdStake = validatorDetails?.details
                         ?.xrdVaultAddress
@@ -291,7 +291,8 @@ class EntityRepositoryImpl @Inject constructor(
                     val nameMetadata: NameMetadataItem? = validatorMetadata.consume()
                     val descriptionMetadataItem: DescriptionMetadataItem? = validatorMetadata.consume()
                     val iconUrlMetadataItem: IconUrlMetadataItem? = validatorMetadata.consume()
-                    ValidatorWithStakeResources(
+                    val lsu = lsuPerValidator[validatorAddress]?.firstOrNull() ?: return@mapNotNull null
+                    ValidatorWithStakes(
                         validatorDetail = ValidatorDetail(
                             address = validatorAddress,
                             name = nameMetadata?.name.orEmpty(),
@@ -299,7 +300,7 @@ class EntityRepositoryImpl @Inject constructor(
                             url = iconUrlMetadataItem?.url,
                             totalXrdStake = totalXrdStake
                         ),
-                        liquidStakeUnits = lsuPerValidator[validatorAddress].orEmpty(),
+                        liquidStakeUnit = lsu,
                         stakeClaimNft = nftPerValidator[validatorAddress].orEmpty().firstOrNull()
                     )
                 }

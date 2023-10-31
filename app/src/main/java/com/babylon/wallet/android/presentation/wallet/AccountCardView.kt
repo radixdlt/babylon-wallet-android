@@ -206,7 +206,7 @@ fun AccountCardPreview() {
                         ),
                         nonFungibles = listOf(),
                         poolUnits = emptyList(),
-                        validatorsWithStakeResources = emptyList()
+                        validatorsWithStakes = emptyList()
                     )
                 ),
                 accountTag = WalletUiState.AccountTag.DAPP_DEFINITION,

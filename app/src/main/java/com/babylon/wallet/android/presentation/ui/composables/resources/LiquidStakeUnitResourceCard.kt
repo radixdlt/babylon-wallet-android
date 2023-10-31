@@ -33,14 +33,16 @@ import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
+import com.babylon.wallet.android.domain.SampleDataProvider
+import com.babylon.wallet.android.domain.model.assets.LiquidStakeUnit
 import com.babylon.wallet.android.domain.model.assets.ValidatorDetail
-import com.babylon.wallet.android.domain.model.assets.ValidatorWithStakeResources
+import com.babylon.wallet.android.domain.model.assets.ValidatorWithStakes
 import java.math.BigDecimal
 
 @Composable
 fun LiquidStakeUnitResourceHeader(
     modifier: Modifier = Modifier,
-    collection: List<ValidatorWithStakeResources>,
+    collection: List<ValidatorWithStakes>,
     cardHeight: Dp = 103.dp,
     collapsed: Boolean = true,
     groupInnerPadding: Dp = 6.dp,
@@ -149,8 +151,14 @@ fun LiquidStakeUnitResourceHeaderPreview() {
             modifier = Modifier.padding(all = 30.dp),
             collapsed = true,
             collection = listOf(
-                ValidatorWithStakeResources(ValidatorDetail("address1", "Validator 1", null, null, BigDecimal(100000))),
-                ValidatorWithStakeResources(ValidatorDetail("address1", "Validator 1", null, null, BigDecimal(100000)))
+                ValidatorWithStakes(
+                    validatorDetail = ValidatorDetail("address1", "Validator 1", null, null, BigDecimal(100000)),
+                    liquidStakeUnit = LiquidStakeUnit(fungibleResource = SampleDataProvider().sampleFungibleResources().first())
+                ),
+                ValidatorWithStakes(
+                    validatorDetail = ValidatorDetail("address2", "Validator 2", null, null, BigDecimal(100000)),
+                    liquidStakeUnit = LiquidStakeUnit(fungibleResource = SampleDataProvider().sampleFungibleResources().first())
+                )
             ),
             parentSectionClick = {}
         )

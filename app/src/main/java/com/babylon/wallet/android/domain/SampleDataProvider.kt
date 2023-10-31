@@ -270,7 +270,7 @@ class SampleDataProvider {
                 fungibles = withFungibleTokens,
                 nonFungibles = emptyList(),
                 poolUnits = emptyList(),
-                validatorsWithStakeResources = emptyList()
+                validatorsWithStakes = emptyList()
             )
         )
     }
