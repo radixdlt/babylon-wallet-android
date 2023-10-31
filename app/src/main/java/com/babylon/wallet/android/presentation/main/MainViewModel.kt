@@ -183,6 +183,7 @@ class MainViewModel @Inject constructor(
                             when (dappRequestFailure) {
                                 RadixWalletException.DappRequestException.InvalidPersona,
                                 RadixWalletException.DappRequestException.InvalidRequest -> {
+                                    incomingRequestRepository.requestHandled(request.id)
                                     _state.update { state ->
                                         state.copy(dappRequestFailure = dappRequestFailure)
                                     }
