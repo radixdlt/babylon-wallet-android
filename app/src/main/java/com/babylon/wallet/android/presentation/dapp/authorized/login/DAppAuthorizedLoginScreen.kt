@@ -127,30 +127,30 @@ fun DappAuthorizedLoginScreen(
                 FullscreenCircularProgressContent()
             }
 
-        when (val dialogState = state.failureDialog) {
-            is DAppLoginUiState.FailureDialog.Closed -> {}
-            is DAppLoginUiState.FailureDialog.Open -> {
-                BasicPromptAlertDialog(
-                    finish = { viewModel.onAcknowledgeFailureDialog() },
-                    title = {
-                        Text(
-                            text = stringResource(id = R.string.error_dappRequest_invalidRequest),
-                            style = RadixTheme.typography.body1Header,
-                            color = RadixTheme.colors.gray1
-                        )
-                    },
-                    text = {
-                        Text(
-                            text = dialogState.dappRequestException.userFriendlyMessage(),
-                            style = RadixTheme.typography.body2Regular,
-                            color = RadixTheme.colors.gray1
-                        )
-                    },
-                    confirmText = stringResource(id = R.string.common_cancel),
-                    dismissText = null
-                )
+            when (val dialogState = state.failureDialog) {
+                is DAppLoginUiState.FailureDialog.Closed -> {}
+                is DAppLoginUiState.FailureDialog.Open -> {
+                    BasicPromptAlertDialog(
+                        finish = { viewModel.onAcknowledgeFailureDialog() },
+                        title = {
+                            Text(
+                                text = stringResource(id = R.string.error_dappRequest_invalidRequest),
+                                style = RadixTheme.typography.body1Header,
+                                color = RadixTheme.colors.gray1
+                            )
+                        },
+                        text = {
+                            Text(
+                                text = dialogState.dappRequestException.userFriendlyMessage(),
+                                style = RadixTheme.typography.body2Regular,
+                                color = RadixTheme.colors.gray1
+                            )
+                        },
+                        confirmText = stringResource(id = R.string.common_cancel),
+                        dismissText = null
+                    )
+                }
             }
-        }
 
             SnackbarUiMessageHandler(
                 message = state.uiMessage,
