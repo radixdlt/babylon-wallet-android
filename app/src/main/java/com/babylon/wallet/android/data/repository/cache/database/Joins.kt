@@ -37,8 +37,8 @@ data class AccountResourceJoin(
     @ColumnInfo("resource_address", index = true)
     val resourceAddress: String,
     val amount: BigDecimal,
-    @ColumnInfo("account_state_version")
-    val accountStateVersion: Long,
+    @ColumnInfo("state_version")
+    val stateVersion: Long,
     @ColumnInfo("vault_address")
     val vaultAddress: String?,
 
@@ -57,7 +57,7 @@ data class AccountResourceJoin(
             accountAddress = accountAddress,
             resourceAddress = resourceAddress,
             amount = amountDecimal,
-            accountStateVersion = syncInfo.accountStateVersion,
+            stateVersion = syncInfo.accountStateVersion,
             vaultAddress = vaultAddress,
             nextCursor = null
         ) to asEntity(syncInfo.synced)
@@ -69,7 +69,7 @@ data class AccountResourceJoin(
             accountAddress = accountAddress,
             resourceAddress = resourceAddress,
             amount = amount.toBigDecimal(),
-            accountStateVersion = syncInfo.accountStateVersion,
+            stateVersion = syncInfo.accountStateVersion,
             vaultAddress = vaultAddress,
             nextCursor = null
         ) to asEntity(syncInfo.synced)
@@ -94,8 +94,8 @@ data class AccountNFTJoin(
     val resourceAddress: String,
     @ColumnInfo("local_id")
     val localId: String,
-    @ColumnInfo("account_state_version")
-    val accountStateVersion: Long
+    @ColumnInfo("state_version")
+    val stateVersion: Long
 ) {
 
     companion object {
@@ -107,7 +107,7 @@ data class AccountNFTJoin(
             accountAddress = accountAddress,
             resourceAddress = resourceAddress,
             localId = nonFungibleId,
-            accountStateVersion = syncInfo.accountStateVersion
+            stateVersion = syncInfo.accountStateVersion
         ) to asEntity(resourceAddress, syncInfo.synced)
     }
 
@@ -134,8 +134,8 @@ data class PoolResourceJoin(
     @ColumnInfo("resource_address")
     val resourceAddress: String,
     val amount: BigDecimal?,
-    @ColumnInfo("account_state_version")
-    val accountStateVersion: Long
+    @ColumnInfo("state_version")
+    val stateVersion: Long
 ) {
 
     companion object {
@@ -147,7 +147,7 @@ data class PoolResourceJoin(
             poolAddress = poolAddress,
             resourceAddress = resourceAddress,
             amount = amountDecimal,
-            accountStateVersion = syncInfo.accountStateVersion
+            stateVersion = syncInfo.accountStateVersion
         ) to asEntity(syncInfo.synced, details)
     }
 

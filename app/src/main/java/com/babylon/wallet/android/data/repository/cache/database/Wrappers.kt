@@ -14,10 +14,8 @@ data class AccountPortfolioResponse(
     val accountType: AccountTypeMetadataItem.AccountType?,
     @ColumnInfo("account_synced")
     val accountSynced: Instant,
-    @ColumnInfo("account_state_version")
-    val accountStateVersion: Long,
-    @ColumnInfo("join_state_version")
-    val joinStateVersion: Long?,
+    @ColumnInfo("state_version")
+    val stateVersion: Long,
 
     // From AccountResourceJoin
     val amount: BigDecimal?,
@@ -46,11 +44,8 @@ data class AccountPortfolioResponse(
 ) {
 
     @Ignore
-    val stateVersionsMismatch: Boolean = joinStateVersion != null && accountStateVersion != joinStateVersion
-
-    @Ignore
     val details: AccountDetails = AccountDetails(
-        stateVersion = accountStateVersion,
+        stateVersion = stateVersion,
         typeMetadataItem = accountType?.let { AccountTypeMetadataItem(it) }
     )
 

@@ -7,7 +7,6 @@ import com.babylon.wallet.android.data.repository.cache.database.ResourceEntity
 import com.babylon.wallet.android.data.repository.cache.database.ResourceEntity.Companion.asEntity
 import com.babylon.wallet.android.data.repository.cache.database.StateDao
 import com.babylon.wallet.android.data.repository.cache.database.SyncInfo
-import com.babylon.wallet.android.domain.model.assets.ValidatorDetail
 import com.babylon.wallet.android.domain.model.resources.AccountDetails
 import com.babylon.wallet.android.domain.model.resources.AccountOnLedger
 import com.babylon.wallet.android.domain.model.resources.Resource
@@ -37,15 +36,10 @@ class StateCacheDelegate(
                 detailsWithResources.forEach { accountDetailsAndResources ->
                     val account = accounts.find { it.address == accountDetailsAndResources.address } ?: return@forEach
 
-                    // If for some reason the account's state version has changed but its joins have an older one
-                    // that means that the amount information is stale so we need to treat this account as if it does
-                    // not exist in the cache. So we avoid adding it into the result.
-                    if (accountDetailsAndResources.stateVersionsMismatch) return@forEach
-
                     // Parse details for this account
                     val cachedDetails = CachedDetails(
                         accountDetails = AccountDetails(
-                            stateVersion = accountDetailsAndResources.accountStateVersion,
+                            stateVersion = accountDetailsAndResources.stateVersion,
                             typeMetadataItem = accountDetailsAndResources.accountType?.let { AccountTypeMetadataItem(it) }
                         )
                     )
@@ -68,37 +62,6 @@ class StateCacheDelegate(
                     } else {
                         result[account] = cachedDetails
                     }
-                }
-
-                val iterator = result.entries.iterator()
-                while (iterator.hasNext()) {
-                    val cachedData = iterator.next().value
-
-                    // Compile all pools
-                    val poolAddresses = cachedData.poolAddresses()
-                    val cachedPoolsWithTokens = stateDao.getPoolDetails(poolAddresses, cachedData.accountDetails.stateVersion)
-                    cachedPoolsWithTokens.forEach { tokenInPool ->
-                        if (tokenInPool.resource != null && tokenInPool.amount != null) {
-                            cachedData.pools[tokenInPool.address] = cachedData.pools.getOrDefault(
-                                tokenInPool.address,
-                                mutableListOf()
-                            ).also {
-                                it.add(tokenInPool.resource.toResource(tokenInPool.amount) as Resource.FungibleResource)
-                            }
-                        }
-                    }
-                    val remainingPools = poolAddresses - cachedData.pools.keys
-                    if (remainingPools.isNotEmpty()) {
-                        iterator.remove()
-                    }
-
-                    // Compile all validators
-                    val validatorsAddresses = cachedData.validatorAddresses()
-                    val cachedValidators = stateDao.getValidators(validatorsAddresses, cachedData.accountDetails.stateVersion)
-                    if (cachedValidators.size != validatorsAddresses.size) {
-                        iterator.remove()
-                    }
-                    cachedData.validators.addAll(cachedValidators.map { it.asValidatorDetail() })
                 }
 
                 result
@@ -138,20 +101,12 @@ class StateCacheDelegate(
         val accountDetails: AccountDetails,
         val fungibles: MutableList<Resource.FungibleResource> = mutableListOf(),
         val nonFungibles: MutableList<Resource.NonFungibleResource> = mutableListOf(),
-        val pools: MutableMap<String, MutableList<Resource.FungibleResource>> = mutableMapOf(),
-        val validators: MutableSet<ValidatorDetail> = mutableSetOf()
     ) {
-
-        fun poolAddresses() = fungibles.mapNotNull { it.poolAddress }.toSet()
-
-        fun validatorAddresses() = (fungibles.mapNotNull { it.validatorAddress } + nonFungibles.mapNotNull { it.validatorAddress }).toSet()
 
         fun toAccountDetails() = AccountOnLedger(
             accountDetails,
             fungibles,
-            nonFungibles,
-            validators.toList(),
-            pools
+            nonFungibles
         )
 
     }
