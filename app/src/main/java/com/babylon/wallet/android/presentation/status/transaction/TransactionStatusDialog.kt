@@ -226,7 +226,8 @@ private fun SuccessContent(
         Text(
             text = "Transaction Success", // stringResource(id = R.string.transaction_status_success_title),
             style = RadixTheme.typography.title,
-            color = RadixTheme.colors.gray1
+            color = RadixTheme.colors.gray1,
+            textAlign = TextAlign.Center
         )
 
         Text(
