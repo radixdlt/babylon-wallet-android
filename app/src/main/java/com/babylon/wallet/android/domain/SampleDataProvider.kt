@@ -14,6 +14,7 @@ import com.babylon.wallet.android.domain.model.assets.AccountWithAssets
 import com.babylon.wallet.android.domain.model.assets.Assets
 import com.babylon.wallet.android.domain.model.assets.LiquidStakeUnit
 import com.babylon.wallet.android.domain.model.assets.PoolUnit
+import com.babylon.wallet.android.domain.model.resources.Pool
 import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.domain.model.resources.XrdResource
 import com.babylon.wallet.android.domain.model.resources.metadata.DescriptionMetadataItem
@@ -349,7 +350,7 @@ class SampleDataProvider {
     }
 
     fun samplePoolUnit(): PoolUnit {
-        return PoolUnit(sampleFungibleResources().first(), sampleFungibleResources())
+        return PoolUnit(sampleFungibleResources().first(), Pool(address = "pool_tdx_abc", sampleFungibleResources()))
     }
 
     fun sampleLSUUnit(): LiquidStakeUnit {

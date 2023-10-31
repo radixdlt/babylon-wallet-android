@@ -32,7 +32,7 @@ typealias RETResourcesIds = com.radixdlt.ret.Resources.Ids
 fun List<Assets>.allPoolUnits(): List<Resource.FungibleResource> {
     return map { resource ->
         resource.poolUnits.map { poolUnit ->
-            poolUnit.pool
+            poolUnit.stake
         } + resource.validatorsWithStakeResources.map { validator ->
             validator.liquidStakeUnits.map { it.fungibleResource }
         }.flatten()

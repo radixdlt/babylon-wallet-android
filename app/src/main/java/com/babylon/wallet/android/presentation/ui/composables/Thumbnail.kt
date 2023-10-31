@@ -274,11 +274,11 @@ object Thumbnail {
     ) {
         Custom(
             modifier = modifier,
-            imageType = poolUnit.pool.iconUrl?.let { ImageType.External(it, ThumbnailRequestSize.LARGE) },
+            imageType = poolUnit.stake.iconUrl?.let { ImageType.External(it, ThumbnailRequestSize.LARGE) },
             emptyDrawable = R.drawable.ic_pool_units,
             emptyContentScale = CustomContentScale.standard(density = LocalDensity.current),
             shape = RadixTheme.shapes.roundedRectMedium,
-            contentDescription = poolUnit.pool.displayTitle
+            contentDescription = poolUnit.stake.displayTitle
         )
     }
 
