@@ -122,32 +122,58 @@ private fun TransactionType.GeneralTransaction.resolveFromAccounts(
     }
 }
 
+/**
+ * The account deposits order that comes from RET does not take into account the order we maintain in the app.
+ * This method sorts accounts in the same order they are appearing in the dashboard.
+ * TODO revisit if this can be done using Comparator.comparing { item -> allAccounts.map { it.address }.indexOf(item) }
+ */
+fun Map<String, List<ResourceTracker>>.sort(allAccounts: List<Network.Account>): Map<String, List<ResourceTracker>> {
+    val allAccountsAddresses = allAccounts.map { it.address }
+
+    // Only account deposits that we own
+    val ownedAccountDeposits = this.toList().filter {
+        allAccountsAddresses.indexOf(it.first) != -1
+    }
+
+    // Sorted owned accounts deposits according to the all accounts order
+    val ownedAccountDepositsSorted = ownedAccountDeposits.sortedBy {
+        allAccountsAddresses.indexOf(it.first)
+    }.toMap()
+
+    // The rest of account deposits (ones we do not own)
+    val thirdPartyAccountDeposits = this.minus(ownedAccountDepositsSorted.keys)
+
+    return ownedAccountDepositsSorted.plus(thirdPartyAccountDeposits)
+}
+
 private fun TransactionType.GeneralTransaction.resolveToAccounts(
     allAssets: List<Assets>,
     allAccounts: List<Network.Account>,
     thirdPartyMetadata: Map<String, List<MetadataItem>> = emptyMap(),
     defaultDepositGuarantees: Double
-) = accountDeposits.map { depositEntry ->
-    val transferables = depositEntry.value.map {
-        it.toDepositingTransferableResource(
-            allAssets = allAssets,
-            newlyCreatedMetadata = metadataOfNewlyCreatedEntities,
-            newlyCreatedEntities = addressesOfNewlyCreatedEntities,
-            thirdPartyMetadata = thirdPartyMetadata,
-            defaultDepositGuarantees = defaultDepositGuarantees
-        )
-    }
+): List<AccountWithTransferableResources> {
+    return accountDeposits.sort(allAccounts).map { depositEntry ->
+        val transferables = depositEntry.value.map {
+            it.toDepositingTransferableResource(
+                allAssets = allAssets,
+                newlyCreatedMetadata = metadataOfNewlyCreatedEntities,
+                newlyCreatedEntities = addressesOfNewlyCreatedEntities,
+                thirdPartyMetadata = thirdPartyMetadata,
+                defaultDepositGuarantees = defaultDepositGuarantees
+            )
+        }
 
-    val ownedAccount = allAccounts.find { it.address == depositEntry.key }
-    if (ownedAccount != null) {
-        AccountWithTransferableResources.Owned(
-            account = ownedAccount,
-            resources = transferables
-        )
-    } else {
-        AccountWithTransferableResources.Other(
-            address = depositEntry.key,
-            resources = transferables
-        )
+        val ownedAccount = allAccounts.find { it.address == depositEntry.key }
+        if (ownedAccount != null) {
+            AccountWithTransferableResources.Owned(
+                account = ownedAccount,
+                resources = transferables
+            )
+        } else {
+            AccountWithTransferableResources.Other(
+                address = depositEntry.key,
+                resources = transferables
+            )
+        }
     }
 }
