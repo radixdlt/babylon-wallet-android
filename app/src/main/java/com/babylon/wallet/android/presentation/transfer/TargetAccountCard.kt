@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
@@ -20,7 +21,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.R
@@ -175,6 +178,29 @@ fun TargetAccountCard(
                             imageVector = Icons.Filled.Clear,
                             tint = RadixTheme.colors.gray2,
                             contentDescription = "clear"
+                        )
+                    }
+                }
+                if (targetAccount.isSignatureRequiredForTransfer(forSpendingAsset = spendingAsset)) {
+                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXXSmall))
+                    Row(
+                        modifier = Modifier
+                            .padding(start = RadixTheme.dimensions.paddingXSmall)
+                            .align(Alignment.Start)
+                    ) {
+                        Icon(
+                            modifier = Modifier.size(14.dp).align(Alignment.CenterVertically),
+                            painter = painterResource(
+                                id = com.babylon.wallet.android.designsystem.R.drawable.ic_warning_error
+                            ),
+                            contentDescription = null
+                        )
+                        Text(
+                            text = "Additional signature is required.",
+                            modifier = Modifier.padding(start = RadixTheme.dimensions.paddingXSmall),
+                            style = RadixTheme.typography.body2Regular,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
                         )
                     }
                 }
