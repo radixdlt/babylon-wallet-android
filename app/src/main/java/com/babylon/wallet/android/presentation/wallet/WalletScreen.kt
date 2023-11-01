@@ -68,7 +68,7 @@ fun WalletScreen(
     WalletContent(
         modifier = modifier,
         state = walletState,
-        onMenuClick = viewModel::test,
+        onMenuClick = onMenuClick,
         onAccountClick = onAccountClick,
         onAccountCreationClick = onAccountCreationClick,
         onRefresh = viewModel::onRefresh,

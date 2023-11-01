@@ -13,9 +13,9 @@ data class AccountPortfolioResponse(
     @ColumnInfo("account_type")
     val accountType: AccountTypeMetadataItem.AccountType?,
     @ColumnInfo("account_synced")
-    val accountSynced: Instant,
+    val accountSynced: Instant?,
     @ColumnInfo("state_version")
-    val stateVersion: Long,
+    val stateVersion: Long?,
 
     // From AccountResourceJoin
     val amount: BigDecimal?,
@@ -44,10 +44,12 @@ data class AccountPortfolioResponse(
 ) {
 
     @Ignore
-    val details: AccountDetails = AccountDetails(
-        stateVersion = stateVersion,
-        typeMetadataItem = accountType?.let { AccountTypeMetadataItem(it) }
-    )
+    val details: AccountDetails? = stateVersion?.let {
+        AccountDetails(
+            stateVersion = it,
+            typeMetadataItem = accountType?.let { AccountTypeMetadataItem(it) }
+        )
+    }
 
     @Ignore
     val resource: ResourceEntity? = if (resourceAddress != null && type != null && resourceSynced != null) {

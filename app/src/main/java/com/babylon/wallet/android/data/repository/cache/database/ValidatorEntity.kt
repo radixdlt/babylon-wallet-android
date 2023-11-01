@@ -45,19 +45,28 @@ data class ValidatorEntity(
     )
 
     companion object {
-
-        fun List<StateEntityDetailsResponseItem>.asValidatorEntities(syncInfo: SyncInfo) = map { it.asValidatorEntity(syncInfo) }
-
-        fun StateEntityDetailsResponseItem.asValidatorEntity(syncInfo: SyncInfo): ValidatorEntity {
-            val metadataItems = explicitMetadata?.asMetadataItems().orEmpty().toMutableList()
-            return ValidatorEntity(
-                address = address,
-                name = metadataItems.consume<NameMetadataItem>()?.name,
+        fun List<StateEntityDetailsResponseItem>.asValidators() = map { item ->
+            val metadataItems = item.explicitMetadata?.asMetadataItems().orEmpty().toMutableList()
+            ValidatorDetail(
+                address = item.address,
+                name = metadataItems.consume<NameMetadataItem>()?.name.orEmpty(),
+                url = metadataItems.consume<IconUrlMetadataItem>()?.url,
                 description = metadataItems.consume<DescriptionMetadataItem>()?.description,
-                iconUrl = metadataItems.consume<IconUrlMetadataItem>()?.url?.toString(),
-                stakeUnitResourceAddress = details?.stakeUnitResourceAddress.orEmpty(),
-                claimTokenResourceAddress = details?.claimTokenResourceAddress.orEmpty(),
-                totalStake = totalXRDStake,
+                totalXrdStake = item.totalXRDStake,
+                stakeUnitResourceAddress = item.details?.stakeUnitResourceAddress.orEmpty(),
+                claimTokenResourceAddress = item.details?.claimTokenResourceAddress.orEmpty()
+            )
+        }
+
+        fun List<ValidatorDetail>.asValidatorEntities(syncInfo: SyncInfo) = map { item ->
+            ValidatorEntity(
+                address = item.address,
+                name = item.name.takeIf { it.isNotBlank() },
+                description = item.description,
+                iconUrl = item.url?.toString(),
+                stakeUnitResourceAddress = item.stakeUnitResourceAddress,
+                claimTokenResourceAddress = item.claimTokenResourceAddress,
+                totalStake = item.totalXrdStake,
                 stateVersion = syncInfo.accountStateVersion
             )
         }

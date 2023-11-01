@@ -11,7 +11,7 @@ data class AccountEntity(
     val address: String,
     @ColumnInfo("account_type")
     val accountType: AccountTypeMetadataItem.AccountType?,
-    val synced: Instant,
+    val synced: Instant?,
     @ColumnInfo("state_version")
-    val stateVersion: Long
+    val stateVersion: Long?
 )

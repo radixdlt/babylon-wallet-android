@@ -22,6 +22,7 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
 import rdx.works.profile.data.model.pernetwork.Network
+import timber.log.Timber
 import java.math.BigDecimal
 
 class StateApiDelegate(
@@ -31,11 +32,9 @@ class StateApiDelegate(
     suspend fun fetchAllResources(
         accounts: Set<Network.Account>,
         onStateVersion: Long? = null,
-        onAccount: suspend (
-            account: Network.Account,
-            accountGatewayDetails: AccountGatewayDetails
-        ) -> Unit
+        onAccount: suspend (accountGatewayDetails: AccountGatewayDetails) -> Unit
     ) {
+        Timber.tag("Bakos").d("=> ${accounts.joinToString { it.displayName }}")
         stateApi.paginateDetails(
             addresses = accounts.map { it.address }.toSet(),
             metadataKeys = setOf(
@@ -55,8 +54,6 @@ class StateApiDelegate(
             stateVersion = onStateVersion
         ) { chunkedAccounts ->
             chunkedAccounts.items.forEach { accountOnLedger ->
-                val account = accounts.find { it.address == accountOnLedger.address } ?: return@forEach
-
                 val allFungibles = mutableListOf<FungibleResourcesCollectionItem>()
                 val allNonFungibles = mutableListOf<NonFungibleResourcesCollectionItem>()
 
@@ -90,7 +87,7 @@ class StateApiDelegate(
                     fungibles = allFungibles,
                     nonFungibles = allNonFungibles
                 )
-                onAccount(account, gatewayDetails)
+                onAccount(gatewayDetails)
             }
         }
     }
