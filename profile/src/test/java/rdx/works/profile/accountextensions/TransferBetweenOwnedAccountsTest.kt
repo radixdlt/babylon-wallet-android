@@ -234,7 +234,7 @@ class TransferBetweenOwnedAccountsTest {
             account = targetAccount,
             thirdPartyDeposits = acceptKnownAndAllowAsset1
         )
-        assertFalse(profile.networks[0].accounts[0].isSignatureRequiredBasedOnDepositRules(asset1address, targetAccountWithAsset1))
+        assertFalse(profile.networks[0].accounts[0].isSignatureRequiredBasedOnDepositRules(asset1address))
     }
 
     @Test
@@ -243,7 +243,7 @@ class TransferBetweenOwnedAccountsTest {
             account = targetAccount,
             thirdPartyDeposits = acceptKnownAndDenyAsset1
         )
-        assertTrue(profile.networks[0].accounts[0].isSignatureRequiredBasedOnDepositRules(asset1address, targetAccountWithAsset1))
+        assertTrue(profile.networks[0].accounts[0].isSignatureRequiredBasedOnDepositRules(asset1address))
     }
 
     @Test
@@ -252,7 +252,7 @@ class TransferBetweenOwnedAccountsTest {
             account = targetAccount,
             thirdPartyDeposits = acceptKnownAndAllowAsset1
         )
-        assertTrue(profile.networks[0].accounts[0].isSignatureRequiredBasedOnDepositRules(asset2address, targetAccountWithAsset1))
+        assertTrue(profile.networks[0].accounts[0].isSignatureRequiredBasedOnDepositRules(asset2address))
     }
 
 }
