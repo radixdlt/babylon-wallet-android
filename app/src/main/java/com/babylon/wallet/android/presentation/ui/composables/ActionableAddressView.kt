@@ -53,12 +53,16 @@ import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import rdx.works.profile.derivation.model.NetworkId
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.accountOnCurrentNetwork
+import rdx.works.profile.domain.gateways
 import timber.log.Timber
 
+@Suppress("CyclomaticComplexMethod")
 @OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun ActionableAddressView(
@@ -71,24 +75,66 @@ fun ActionableAddressView(
 ) {
     val actionableAddress = resolveAddress(address = address, shouldTruncateAddressForDisplay = shouldTruncateAddressForDisplay)
     val context = LocalContext.current
-    var actions by remember(actionableAddress) {
-        mutableStateOf(
-            resolveStaticActions(
-                actionableAddress = actionableAddress,
-                context = context
-            )
-        )
+    val scope = rememberCoroutineScope()
+
+    var actions: PopupActions? by remember(actionableAddress) {
+        mutableStateOf(null)
     }
 
-    // Resolve if address is ledger and attach another action
-    if (actionableAddress.type == ActionableAddress.Type.ACCOUNT) {
-        val useCaseProvider = remember(context) {
-            EntryPoints.get(context.applicationContext, ActionableAddressViewEntryPoint::class.java)
-        }
-        val scope = rememberCoroutineScope()
+    val useCaseProvider = remember(context) {
+        EntryPoints.get(context.applicationContext, ActionableAddressViewEntryPoint::class.java)
+    }
 
-        LaunchedEffect(actionableAddress) {
-            scope.launch {
+    LaunchedEffect(actionableAddress) {
+        scope.launch {
+            val networkId = useCaseProvider.profileUseCase().gateways.first().current().network.networkId()
+
+            val copyAction = PopupActionItem(
+                name = context.getString(
+                    when {
+                        actionableAddress.type == ActionableAddress.Type.TRANSACTION -> R.string.addressAction_copyTransactionId
+                        actionableAddress.isNft -> R.string.addressAction_copyNftId
+                        else -> R.string.addressAction_copyAddress
+                    }
+                ),
+                icon = R.drawable.ic_copy
+            ) { OnAction.CallbackBasedAction.CopyToClipboard(actionableAddress) }
+
+            val openExternalAction = PopupActionItem(
+                name = context.getString(R.string.addressAction_viewOnDashboard),
+                icon = R.drawable.ic_external_link,
+            ) {
+                OnAction.CallbackBasedAction.OpenExternalWebView(
+                    actionableAddress = actionableAddress,
+                    networkId = networkId
+                )
+            }
+
+            val qrAction = PopupActionItem(
+                name = context.getString(R.string.addressAction_showAccountQR),
+                icon = com.babylon.wallet.android.designsystem.R.drawable.ic_qr_code_scanner
+            ) { OnAction.ViewBasedAction.QRCode(actionableAddress) }
+
+            actions = if (actionableAddress.isCopyPrimaryAction) {
+                val secondaryActions = if (actionableAddress.type == ActionableAddress.Type.ACCOUNT) {
+                    listOf(qrAction, openExternalAction)
+                } else {
+                    listOf(openExternalAction)
+                }
+
+                PopupActions(
+                    primary = copyAction,
+                    secondary = secondaryActions
+                )
+            } else {
+                PopupActions(
+                    primary = openExternalAction,
+                    secondary = listOf(copyAction)
+                )
+            }
+
+            // Resolve if address is ledger and attach another action
+            if (actionableAddress.type == ActionableAddress.Type.ACCOUNT) {
                 if (useCaseProvider.profileUseCase().accountOnCurrentNetwork(actionableAddress.address)?.isLedgerAccount == true) {
                     val verifyOnLedgerAction = PopupActionItem(
                         name = context.getString(R.string.addressAction_verifyAddressLedger),
@@ -101,8 +147,10 @@ fun ActionableAddressView(
                         )
                     }
 
-                    actions = actions.copy(
-                        secondary = actions.secondary.toMutableList().apply { add(verifyOnLedgerAction) }.toList()
+                    actions = actions?.copy(
+                        secondary = actions?.secondary?.toMutableList()?.apply {
+                            this.add(verifyOnLedgerAction)
+                        }?.toList().orEmpty()
                     )
                 }
             }
@@ -111,7 +159,6 @@ fun ActionableAddressView(
 
     var isDropdownMenuExpanded by remember { mutableStateOf(false) }
     var viewBasedAction: OnAction.ViewBasedAction? by remember { mutableStateOf(null) }
-    val scope = rememberCoroutineScope()
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
     LaunchedEffect(viewBasedAction) {
@@ -127,9 +174,11 @@ fun ActionableAddressView(
             modifier = Modifier
                 .combinedClickable(
                     onClick = {
-                        when (val actionData = actions.primary.onAction()) {
-                            is OnAction.CallbackBasedAction -> actionData.onAction(context)
-                            is OnAction.ViewBasedAction -> viewBasedAction = actionData
+                        actions?.let { popupActions ->
+                            when (val actionData = popupActions.primary.onAction()) {
+                                is OnAction.CallbackBasedAction -> actionData.onAction(context)
+                                is OnAction.ViewBasedAction -> viewBasedAction = actionData
+                            }
                         }
                     },
                     onLongClick = { isDropdownMenuExpanded = true }
@@ -145,12 +194,14 @@ fun ActionableAddressView(
             }
             val inlineContent = mapOf(
                 inlineContentId to InlineTextContent(Placeholder(14.sp, 14.sp, PlaceholderVerticalAlign.Center)) {
-                    Icon(
-                        modifier = Modifier.size(14.dp),
-                        painter = painterResource(id = actions.primary.icon),
-                        contentDescription = actions.primary.name,
-                        tint = iconColor,
-                    )
+                    actions?.let { popupActions ->
+                        Icon(
+                            modifier = Modifier.size(14.dp),
+                            painter = painterResource(id = popupActions.primary.icon),
+                            contentDescription = popupActions.primary.name,
+                            tint = iconColor,
+                        )
+                    }
                 }
             )
             Text(
@@ -167,35 +218,37 @@ fun ActionableAddressView(
             expanded = isDropdownMenuExpanded,
             onDismissRequest = { isDropdownMenuExpanded = false }
         ) {
-            actions.all.forEach {
-                DropdownMenuItem(
-                    text = {
-                        Text(
-                            text = it.name,
-                            style = RadixTheme.typography.body1Regular,
-                            color = RadixTheme.colors.defaultText
+            actions?.let { popupActions ->
+                popupActions.all.forEach {
+                    DropdownMenuItem(
+                        text = {
+                            Text(
+                                text = it.name,
+                                style = RadixTheme.typography.body1Regular,
+                                color = RadixTheme.colors.defaultText
+                            )
+                        },
+                        leadingIcon = {
+                            Icon(
+                                modifier = Modifier.size(20.dp),
+                                painter = painterResource(id = it.icon),
+                                contentDescription = it.name,
+                                tint = RadixTheme.colors.defaultText
+                            )
+                        },
+                        onClick = {
+                            isDropdownMenuExpanded = false
+                            when (val actionData = it.onAction()) {
+                                is OnAction.CallbackBasedAction -> actionData.onAction(context)
+                                is OnAction.ViewBasedAction -> viewBasedAction = actionData
+                            }
+                        },
+                        contentPadding = PaddingValues(
+                            horizontal = RadixTheme.dimensions.paddingDefault,
+                            vertical = RadixTheme.dimensions.paddingXSmall
                         )
-                    },
-                    leadingIcon = {
-                        Icon(
-                            modifier = Modifier.size(20.dp),
-                            painter = painterResource(id = it.icon),
-                            contentDescription = it.name,
-                            tint = RadixTheme.colors.defaultText
-                        )
-                    },
-                    onClick = {
-                        isDropdownMenuExpanded = false
-                        when (val actionData = it.onAction()) {
-                            is OnAction.CallbackBasedAction -> actionData.onAction(context)
-                            is OnAction.ViewBasedAction -> viewBasedAction = actionData
-                        }
-                    },
-                    contentPadding = PaddingValues(
-                        horizontal = RadixTheme.dimensions.paddingDefault,
-                        vertical = RadixTheme.dimensions.paddingXSmall
                     )
-                )
+                }
             }
         }
 
@@ -215,50 +268,6 @@ private fun resolveAddress(
     address: String,
     shouldTruncateAddressForDisplay: Boolean
 ): ActionableAddress = remember(address) { ActionableAddress(address, shouldTruncateAddressForDisplay) }
-
-private fun resolveStaticActions(
-    actionableAddress: ActionableAddress,
-    context: Context
-): PopupActions {
-    val copyAction = PopupActionItem(
-        name = context.getString(
-            when {
-                actionableAddress.type == ActionableAddress.Type.TRANSACTION -> R.string.addressAction_copyTransactionId
-                actionableAddress.isNft -> R.string.addressAction_copyNftId
-                else -> R.string.addressAction_copyAddress
-            }
-        ),
-        icon = R.drawable.ic_copy
-    ) { OnAction.CallbackBasedAction.CopyToClipboard(actionableAddress) }
-
-    val openExternalAction = PopupActionItem(
-        name = context.getString(R.string.addressAction_viewOnDashboard),
-        icon = R.drawable.ic_external_link
-    ) { OnAction.CallbackBasedAction.OpenExternalWebView(actionableAddress) }
-
-    val qrAction = PopupActionItem(
-        name = context.getString(R.string.addressAction_showAccountQR),
-        icon = com.babylon.wallet.android.designsystem.R.drawable.ic_qr_code_scanner
-    ) { OnAction.ViewBasedAction.QRCode(actionableAddress) }
-
-    return if (actionableAddress.isCopyPrimaryAction) {
-        val secondaryActions = if (actionableAddress.type == ActionableAddress.Type.ACCOUNT) {
-            listOf(qrAction, openExternalAction)
-        } else {
-            listOf(openExternalAction)
-        }
-
-        PopupActions(
-            primary = copyAction,
-            secondary = secondaryActions
-        )
-    } else {
-        PopupActions(
-            primary = openExternalAction,
-            secondary = listOf(copyAction)
-        )
-    }
-}
 
 private data class PopupActions(
     val primary: PopupActionItem,
@@ -328,11 +337,14 @@ private sealed interface OnAction {
             }
         }
 
-        data class OpenExternalWebView(private val actionableAddress: ActionableAddress) : CallbackBasedAction {
+        data class OpenExternalWebView(
+            private val actionableAddress: ActionableAddress,
+            private val networkId: NetworkId
+        ) : CallbackBasedAction {
 
             @Suppress("SwallowedException")
             override fun onAction(context: Context) {
-                context.openUrl(actionableAddress.toDashboardUrl())
+                context.openUrl(actionableAddress.toDashboardUrl(networkId))
             }
         }
 

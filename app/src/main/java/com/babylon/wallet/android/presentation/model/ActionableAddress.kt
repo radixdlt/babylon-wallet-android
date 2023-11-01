@@ -2,7 +2,6 @@ package com.babylon.wallet.android.presentation.model
 
 import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.utils.truncatedHash
-import rdx.works.core.AddressValidator
 import rdx.works.profile.data.model.apppreferences.Radix.dashboardUrl
 import rdx.works.profile.derivation.model.NetworkId
 
@@ -24,7 +23,7 @@ data class ActionableAddress(
         if (shouldTruncateAddressForDisplay) address.truncatedHash() else address
     }
 
-    fun toDashboardUrl(): String {
+    fun toDashboardUrl(networkId: NetworkId): String {
         val suffix = when {
             isNft -> "nft/$address"
             type == Type.TRANSACTION -> "transaction/$address"
@@ -33,14 +32,8 @@ data class ActionableAddress(
             else -> address
         }
 
-        val url = if (type == Type.TRANSACTION) {
-            NetworkId.Mainnet.dashboardUrl()
-        } else {
-            val globalAddress = address.split(NFT_DELIMITER)[0]
-            AddressValidator.getValidNetworkId(globalAddress)?.let {
-                NetworkId.from(it)
-            }?.dashboardUrl() ?: NetworkId.Mainnet.dashboardUrl()
-        }
+        val url = networkId.dashboardUrl()
+
         return "$url/$suffix"
     }
 
