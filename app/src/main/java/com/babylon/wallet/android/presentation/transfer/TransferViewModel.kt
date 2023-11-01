@@ -23,6 +23,7 @@ import kotlinx.coroutines.launch
 import rdx.works.core.UUIDGenerator
 import rdx.works.core.mapWhen
 import rdx.works.profile.data.model.extensions.factorSourceId
+import rdx.works.profile.data.model.extensions.isSignatureRequiredBasedOnDepositRules
 import rdx.works.profile.data.model.factorsources.FactorSource
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.domain.GetProfileUseCase
@@ -374,6 +375,8 @@ sealed class TargetAccount {
     abstract val id: String
     abstract val assets: ImmutableSet<SpendingAsset>
 
+    abstract fun isSignatureRequiredForTransfer(forSpendingAsset: SpendingAsset): Boolean
+
     val isAddressValid: Boolean
         get() = when (this) {
             is Owned -> true
@@ -433,6 +436,8 @@ sealed class TargetAccount {
         override val assets: ImmutableSet<SpendingAsset> = persistentSetOf()
     ) : TargetAccount() {
         override val address: String = ""
+
+        override fun isSignatureRequiredForTransfer(forSpendingAsset: SpendingAsset): Boolean = false
     }
 
     data class Other(
@@ -441,6 +446,8 @@ sealed class TargetAccount {
         override val id: String,
         override val assets: ImmutableSet<SpendingAsset> = persistentSetOf()
     ) : TargetAccount() {
+
+        override fun isSignatureRequiredForTransfer(forSpendingAsset: SpendingAsset): Boolean = false
 
         enum class AddressValidity {
             VALID,
@@ -456,6 +463,10 @@ sealed class TargetAccount {
     ) : TargetAccount() {
         override val address: String
             get() = account.address
+
+        override fun isSignatureRequiredForTransfer(forSpendingAsset: SpendingAsset): Boolean {
+            return account.isSignatureRequiredBasedOnDepositRules(forSpecificAssetAddress = forSpendingAsset.address)
+        }
     }
 }
 
