@@ -125,6 +125,7 @@ private fun TransactionType.GeneralTransaction.resolveFromAccounts(
 /**
  * The account deposits order that comes from RET does not take into account the order we maintain in the app.
  * This method sorts accounts in the same order they are appearing in the dashboard.
+ * TODO revisit if this can be done using Comparator.comparing { item -> allAccounts.map { it.address }.indexOf(item) }
  */
 fun Map<String, List<ResourceTracker>>.sort(allAccounts: List<Network.Account>): Map<String, List<ResourceTracker>> {
     val allAccountsAddresses = allAccounts.map { it.address }
