@@ -23,7 +23,7 @@ data class ActionableAddress(
         if (shouldTruncateAddressForDisplay) address.truncatedHash() else address
     }
 
-    fun toDashboardUrl(networkId: NetworkId?): String {
+    fun toDashboardUrl(networkId: NetworkId): String {
         val suffix = when {
             isNft -> "nft/$address"
             type == Type.TRANSACTION -> "transaction/$address"
@@ -32,7 +32,7 @@ data class ActionableAddress(
             else -> address
         }
 
-        val url = networkId?.dashboardUrl()
+        val url = networkId.dashboardUrl()
 
         return "$url/$suffix"
     }
