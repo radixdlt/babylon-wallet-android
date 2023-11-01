@@ -87,7 +87,7 @@ fun PersonaDataOnetimeScreen(
             when (event) {
                 is Event.LoginFlowCompleted -> onLoginFlowComplete()
                 is Event.RequestCompletionBiometricPrompt -> {
-                    if (event.requestDuringSigning) {
+                    if (event.signatureRequired) {
                         sharedViewModel.completeRequestHandling(deviceBiometricAuthenticationProvider = {
                             context.biometricAuthenticateSuspend()
                         })

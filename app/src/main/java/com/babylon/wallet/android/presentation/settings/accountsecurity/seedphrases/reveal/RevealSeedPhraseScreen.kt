@@ -25,11 +25,15 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.babylon.wallet.android.BuildConfig
 import com.babylon.wallet.android.R
+import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDialog
@@ -156,6 +160,15 @@ private fun RevealSeedPhraseContent(
                             label = stringResource(id = R.string.revealSeedPhrase_passphrase),
                             word = passphrase
                         )
+                    }
+                }
+                if (BuildConfig.DEBUG_MODE) {
+                    item {
+                        val clipboardManager = LocalClipboardManager.current
+                        RadixPrimaryButton(text = "(DEBUG) Copy seed phrase", onClick = {
+                            val phrase = mnemonicWords.joinToString(" ") { it.joinToString(" ") }
+                            clipboardManager.setText(buildAnnotatedString { append(phrase) })
+                        })
                     }
                 }
             }

@@ -259,6 +259,10 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
             if (exception.cause is RadixWalletException.SignatureCancelled) {
                 return
             }
+            if (exception.cause is ProfileException.NoMnemonic) {
+                _state.update { it.copy(isNoMnemonicErrorVisible = true) }
+                return
+            }
             dAppMessenger.sendWalletInteractionResponseFailure(
                 remoteConnectorId = request.remoteConnectorId,
                 requestId = args.interactionId,
@@ -266,10 +270,6 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
                 message = exception.getDappMessage()
             )
             _state.update { it.copy(failureDialog = DAppLoginUiState.FailureDialog.Open(exception)) }
-        } else {
-            if (exception is ProfileException.NoMnemonic) {
-                _state.update { it.copy(isNoMnemonicErrorVisible = true) }
-            }
         }
     }
 
@@ -727,7 +727,7 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
 sealed interface Event : OneOffEvent {
 
     data object CloseLoginFlow : Event
-    data class RequestCompletionBiometricPrompt(val requestDuringSigning: Boolean) : Event
+    data class RequestCompletionBiometricPrompt(val signatureRequired: Boolean) : Event
 
     data object LoginFlowCompleted : Event
 

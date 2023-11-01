@@ -128,7 +128,7 @@ private fun HandleOneOffEvents(
                 is Event.PersonaDataOnetime -> onPersonaDataOnetime(event)
                 is Event.CloseLoginFlow -> onLoginFlowComplete()
                 is Event.RequestCompletionBiometricPrompt -> {
-                    if (event.requestDuringSigning) {
+                    if (event.signatureRequired) {
                         completeRequestHandling {
                             context.biometricAuthenticateSuspend()
                         }
