@@ -7,34 +7,58 @@ import com.babylon.wallet.android.data.gateway.generated.models.StateNonFungible
 import com.babylon.wallet.android.data.gateway.model.ExplicitMetadataKey
 import com.babylon.wallet.android.data.repository.cache.database.NFTEntity.Companion.asEntity
 import com.babylon.wallet.android.data.repository.cache.database.PoolEntity.Companion.asPools
+import com.babylon.wallet.android.data.repository.cache.database.PoolEntity.Companion.toPoolsJoin
 import com.babylon.wallet.android.data.repository.cache.database.StateDao
 import com.babylon.wallet.android.data.repository.cache.database.SyncInfo
+import com.babylon.wallet.android.data.repository.cache.database.ValidatorEntity.Companion.asValidatorEntities
 import com.babylon.wallet.android.data.repository.cache.database.ValidatorEntity.Companion.asValidators
 import com.babylon.wallet.android.data.repository.toResult
+import com.babylon.wallet.android.di.coroutines.ApplicationScope
 import com.babylon.wallet.android.di.coroutines.DefaultDispatcher
 import com.babylon.wallet.android.domain.model.DApp
 import com.babylon.wallet.android.domain.model.assets.AccountWithAssets
+import com.babylon.wallet.android.domain.model.assets.Assets
 import com.babylon.wallet.android.domain.model.assets.ValidatorDetail
+import com.babylon.wallet.android.domain.model.resources.AccountDetails
 import com.babylon.wallet.android.domain.model.resources.Pool
 import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.domain.model.resources.XrdResource
 import com.babylon.wallet.android.domain.model.resources.metadata.MetadataItem.Companion.consume
 import com.babylon.wallet.android.domain.model.resources.metadata.OwnerKeyHashesMetadataItem
+import com.babylon.wallet.android.utils.truncatedHash
 import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.mapNotNull
+import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.onStart
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.transform
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import rdx.works.core.InstantGenerator
+import rdx.works.profile.data.model.currentGateway
+import rdx.works.profile.data.model.currentNetwork
 import rdx.works.profile.data.model.pernetwork.Entity
 import rdx.works.profile.data.model.pernetwork.Network
+import rdx.works.profile.data.repository.BackupProfileRepository
+import rdx.works.profile.data.repository.ProfileRepository
+import rdx.works.profile.data.repository.profile
 import rdx.works.profile.derivation.model.NetworkId
+import rdx.works.profile.domain.notHiddenAccounts
 import timber.log.Timber
 import java.math.BigDecimal
 import javax.inject.Inject
+import javax.inject.Singleton
 
 interface StateRepository {
 
@@ -61,42 +85,107 @@ interface StateRepository {
     }
 }
 
+@Singleton
 class StateRepositoryImpl @Inject constructor(
     private val stateApi: StateApi,
     private val stateDao: StateDao,
-    @DefaultDispatcher private val dispatcher: CoroutineDispatcher
+    private val profileRepository: ProfileRepository,
+    @DefaultDispatcher private val dispatcher: CoroutineDispatcher,
+    @ApplicationScope private val applicationScope: CoroutineScope
 ) : StateRepository {
+
+    private val accountsState = MutableStateFlow<List<AccountsWithAssetsFromCache>?>(null)
 
     private val cacheDelegate = StateCacheDelegate(stateDao = stateDao)
     private val stateApiDelegate = StateApiDelegate(stateApi = stateApi)
 
+    init {
+        applicationScope.launch {
+            cacheDelegate.observeCachedAccounts().onEach { Timber.tag("Bakos").d("Cache invoked") }
+            .transform { cached ->
+                val stateVersion = cached.values.mapNotNull { it.stateVersion }.maxOrNull() ?: run {
+                    emit(emptyList())
+                    return@transform
+                }
+
+                val allValidatorAddresses = cached.map { it.value.validatorAddresses() }.flatten().toSet()
+                val cachedValidators = cacheDelegate.getValidatorDetails(allValidatorAddresses, stateVersion).toMutableMap()
+                val newValidators = stateApiDelegate.getValidatorsDetails(
+                    allValidatorAddresses - cachedValidators.keys,
+                    stateVersion
+                ).asValidators().onEach {
+                    cachedValidators[it.address] = it
+                }
+                if (newValidators.isNotEmpty()) {
+                    Timber.tag("Bakos").d("\uD83D\uDCBD Inserting validators")
+                    stateDao.insertValidators(newValidators.asValidatorEntities(SyncInfo(InstantGenerator(), stateVersion)))
+                }
+
+                val allPoolAddresses = cached.map { it.value.poolAddresses() }.flatten().toSet()
+                val cachedPools = cacheDelegate.getPoolDetails(allPoolAddresses, stateVersion).toMutableMap()
+                val newPools = stateApiDelegate.getPoolDetails(allPoolAddresses - cachedPools.keys, stateVersion).asPools().onEach {
+                    cachedPools[it.address] = it
+                }
+
+                if (newPools.isNotEmpty()) {
+                    Timber.tag("Bakos").d("\uD83D\uDCBD Inserting pools")
+                    stateDao.updatePools(newPools.toPoolsJoin(SyncInfo(InstantGenerator(), stateVersion)))
+                } else {
+                    emit(
+                        cached.mapNotNull {
+                            it.value.toAccountWithAssets(
+                                accountAddress = it.key,
+                                pools = cachedPools,
+                                validators = cachedValidators
+                            )
+                        }
+                    )
+                }
+            }
+            .distinctUntilChanged()
+            .collect { accountsWithAssets ->
+                accountsState.value = accountsWithAssets
+            }
+        }
+    }
+
     override fun observeAccountsOnLedger(
         accounts: List<Network.Account>,
         isRefreshing: Boolean
-    ): Flow<List<AccountWithAssets>> = cacheDelegate
-        .observeCachedAccounts(accounts, isRefreshing)
-        .map(::toAccountsWithAssets)
-        .transform { cached ->
-            emit(accounts.map { account ->
-                cached.completed[account] ?: AccountWithAssets(account = account)
-            })
-
-            val remainingAccounts = cacheDelegate.markPendingRemainingAccounts(
-                allAccounts = accounts,
-                cached = cached
-            )
-            if (remainingAccounts.isNotEmpty()) {
-                stateApiDelegate.fetchAllResources(
-                    accounts = remainingAccounts.take(StateApiDelegate.ENTITY_DETAILS_PAGE_LIMIT).toSet(),
-                    onStateVersion = cached.stateVersion,
-                    onAccount = { gatewayDetails ->
-                        stateDao.updateAccountData(accountGatewayDetails = gatewayDetails)
-                    }
+    ): Flow<List<AccountWithAssets>> = accountsState
+        .filterNotNull()
+        .onStart {
+            if (isRefreshing) {
+                Timber.tag("Bakos").d("\uD83D\uDCBD Deleting accounts")
+                stateDao.deleteAccounts(accounts.map { it.address }.toSet())
+            }
+        }
+        .transform { cachedAccounts ->
+            val accountsToReturn = accounts.map { account ->
+                val cachedAccount = cachedAccounts.find { it.address == account.address }
+                AccountWithAssets(
+                    account = account,
+                    details = cachedAccount?.details,
+                    assets = cachedAccount?.assets
                 )
+            }.onEach {
+                //Timber.tag("Bakos").d("${it.account.displayName} - ${it.assets?.allSize()}")
+            }
+            emit(accountsToReturn)
+
+            // Put this on a different class that returns the GW ing
+            val accountsOnGateway = stateApiDelegate.fetchAllResources(
+                accountAddresses = accountsToReturn.filterNot { it.assets != null }.map { it.account.address }.toSet(),
+                onStateVersion = cachedAccounts.maxOfOrNull { it.details?.stateVersion ?: -1L }?.takeIf { it > 0L },
+            )
+            if (accountsOnGateway.isNotEmpty()) {
+                withContext(dispatcher) {
+                    Timber.tag("Bakos").d("\uD83D\uDCBD Inserting accounts ${accountsOnGateway.map { it.accountAddress.truncatedHash() }}")
+                    stateDao.updateAccountData(accountsOnGateway)
+                }
             }
         }
         .flowOn(dispatcher)
-        .distinctUntilChanged()
 
     override suspend fun getMoreNFTs(
         account: Network.Account,
@@ -241,54 +330,9 @@ class StateRepositoryImpl @Inject constructor(
         }
     }
 
-    private suspend fun toAccountsWithAssets(cached: Map<Network.Account, StateCacheDelegate.CachedDetails>): AccountsWithAssetsFromCache {
-        if (cached.isEmpty()) return AccountsWithAssetsFromCache()
-
-        val stateVersion = cached.values.mapNotNull { it.stateVersion }.maxOrNull()
-        val pending = cached.mapNotNull {
-            if (it.value.stateVersion == null) it.key.address else null
-        }
-        return if (stateVersion != null) {
-            val allPoolAddresses = cached.map { it.value.poolAddresses() }.flatten().toSet()
-            val cachedPools = cacheDelegate.getPoolDetails(allPoolAddresses, stateVersion).toMutableMap()
-            val newPools = stateApiDelegate.getPoolDetails(allPoolAddresses - cachedPools.keys, stateVersion).asPools().onEach {
-                cachedPools[it.address] = it
-            }
-
-            val allValidatorAddresses = cached.map { it.value.validatorAddresses() }.flatten().toSet()
-            val cachedValidators = cacheDelegate.getValidatorDetails(allValidatorAddresses, stateVersion).toMutableMap()
-            val newValidators = stateApiDelegate.getValidatorsDetails(
-                allValidatorAddresses - cachedValidators.keys,
-                stateVersion
-            ).asValidators().onEach {
-                cachedValidators[it.address] = it
-            }
-
-            AccountsWithAssetsFromCache(
-                inProgress = pending,
-                completed = cached.mapNotNull {
-                    it.value.toAccountWithAssets(it.key, cachedPools, cachedValidators)
-                }.associateBy { it.account },
-                stateVersion = stateVersion,
-                newPools = newPools,
-                newValidators = newValidators,
-            )
-        } else {
-            AccountsWithAssetsFromCache(
-                inProgress = pending,
-                completed = emptyMap(),
-                stateVersion = null,
-                newPools = emptyList(),
-                newValidators = emptyList(),
-            )
-        }
-    }
-
     data class AccountsWithAssetsFromCache(
-        val inProgress: List<String> = emptyList(),
-        val completed: Map<Network.Account, AccountWithAssets> = mapOf(),
-        val stateVersion: Long? = null,
-        val newPools: List<Pool> = listOf(),
-        val newValidators: List<ValidatorDetail> = listOf()
+        val address: String,
+        val details: AccountDetails?,
+        val assets: Assets?
     )
 }

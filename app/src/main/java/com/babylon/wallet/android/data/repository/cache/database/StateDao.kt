@@ -33,6 +33,22 @@ interface StateDao {
         FROM AccountEntity AS A
         LEFT JOIN AccountResourceJoin AS AR ON A.address = AR.account_address
         LEFT JOIN ResourceEntity AS R ON AR.resource_address = R.address
+        """
+    )
+    fun observeAccounts(): Flow<List<AccountPortfolioResponse>>
+
+    @Query(
+        """
+        SELECT 
+            A.address AS account_address, 
+            A.account_type AS account_type,
+            A.synced AS account_synced,
+            A.state_version,
+            AR.amount AS amount,
+            R.*
+        FROM AccountEntity AS A
+        LEFT JOIN AccountResourceJoin AS AR ON A.address = AR.account_address
+        LEFT JOIN ResourceEntity AS R ON AR.resource_address = R.address
         WHERE 
             A.address in (:accountAddresses) AND
             A.synced >= :minValidity
@@ -42,6 +58,12 @@ interface StateDao {
         accountAddresses: List<String>,
         minValidity: Long
     ): Flow<List<AccountPortfolioResponse>>
+
+    @Query("""
+        DELETE FROM AccountEntity
+        WHERE address in (:addresses)
+    """)
+    fun deleteAccounts(addresses: Set<String>)
 
     @Transaction
     fun updatePendingData(
@@ -70,25 +92,34 @@ interface StateDao {
     }
 
     @Transaction
-    fun updateAccountData(accountGatewayDetails: StateApiDelegate.AccountGatewayDetails) {
-        val syncInfo = SyncInfo(synced = InstantGenerator(), accountStateVersion = accountGatewayDetails.ledgerState.stateVersion)
-        val accountMetadataItems = accountGatewayDetails.accountMetadata?.asMetadataItems()?.toMutableList()
-        val allResources = accountGatewayDetails.fungibles.map { item ->
-            item.asAccountResourceJoin(accountGatewayDetails.accountAddress, syncInfo)
-        } + accountGatewayDetails.nonFungibles.map { item ->
-            item.asAccountResourceJoin(accountGatewayDetails.accountAddress, syncInfo)
-        }
+    fun updatePools(pools: Map<PoolEntity, List<Pair<PoolResourceJoin, ResourceEntity>>>) {
+        insertPoolDetails(pools.map { it.key })
+        insertOrReplaceResources(pools.map { entry -> entry.value.map { it.second } }.flatten())
+        insertPoolResources(pools.map { entry -> entry.value.map { it.first } }.flatten())
+    }
 
-        insertAccountDetails(
-            AccountEntity(
-                address = accountGatewayDetails.accountAddress,
-                accountType = accountMetadataItems?.consume<AccountTypeMetadataItem>()?.type,
-                synced = syncInfo.synced,
-                stateVersion = syncInfo.accountStateVersion
+    @Transaction
+    fun updateAccountData(accountsGatewayDetails: List<StateApiDelegate.AccountGatewayDetails>) {
+        accountsGatewayDetails.forEach { accountGatewayDetails ->
+            val syncInfo = SyncInfo(synced = InstantGenerator(), accountStateVersion = accountGatewayDetails.ledgerState.stateVersion)
+            val accountMetadataItems = accountGatewayDetails.accountMetadata?.asMetadataItems()?.toMutableList()
+            val allResources = accountGatewayDetails.fungibles.map { item ->
+                item.asAccountResourceJoin(accountGatewayDetails.accountAddress, syncInfo)
+            } + accountGatewayDetails.nonFungibles.map { item ->
+                item.asAccountResourceJoin(accountGatewayDetails.accountAddress, syncInfo)
+            }
+
+            insertAccountDetails(
+                AccountEntity(
+                    address = accountGatewayDetails.accountAddress,
+                    accountType = accountMetadataItems?.consume<AccountTypeMetadataItem>()?.type,
+                    synced = syncInfo.synced,
+                    stateVersion = syncInfo.accountStateVersion
+                )
             )
-        )
-        insertOrReplaceResources(allResources.map { it.second })
-        insertAccountResourcesPortfolio(allResources.map { it.first })
+            insertOrReplaceResources(allResources.map { it.second })
+            insertAccountResourcesPortfolio(allResources.map { it.first })
+        }
     }
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)

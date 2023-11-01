@@ -32,66 +32,36 @@ class StateCacheDelegate(
     private val stateDao: StateDao
 ) {
 
-    fun observeCachedAccounts(
-        accounts: List<Network.Account>,
-        isRefreshing: Boolean
-    ): Flow<Map<Network.Account, CachedDetails>> {
-        val accountAddresses = accounts.map { it.address }
-        return stateDao.observeAccountsPortfolio(accountAddresses, accountCacheValidity(isRefreshing))
-            .distinctUntilChanged()
-            .map { detailsWithResources ->
-                val result = mutableMapOf<Network.Account, CachedDetails>()
+    // TODO check which are stale
+    fun observeCachedAccounts(): Flow<Map<String, CachedDetails>> = stateDao.observeAccounts().map { detailsWithResources ->
+        val result = mutableMapOf<String, CachedDetails>()
+        detailsWithResources.forEach { cache ->
+            // Parse details for this account
+            val cachedDetails = CachedDetails(
+                stateVersion = cache.stateVersion,
+                typeMetadataItem = cache.accountType?.let { AccountTypeMetadataItem(it) },
+            )
 
-                detailsWithResources.forEach { cache ->
-                    val account = accounts.find { it.address == cache.address } ?: return@forEach
-
-                    // Parse details for this account
-                    val cachedDetails = CachedDetails(
-                        stateVersion = cache.stateVersion,
-                        typeMetadataItem = cache.accountType?.let { AccountTypeMetadataItem(it) },
-                    )
-
-                    // Compile all resources owned by this account
-                    if (cache.stateVersion != null && cache.resource != null && cache.amount != null) {
-                        when (val resource = cache.resource.toResource(cache.amount)) {
-                            is Resource.FungibleResource -> {
-                                result[account] = result.getOrDefault(account, cachedDetails).also {
-                                    it.fungibles.add(resource)
-                                }
-                            }
-
-                            is Resource.NonFungibleResource -> {
-                                result[account] = result.getOrDefault(account, cachedDetails).also {
-                                    it.nonFungibles.add(resource)
-                                }
-                            }
+            // Compile all resources owned by this account
+            if (cache.stateVersion != null && cache.resource != null && cache.amount != null) {
+                when (val resource = cache.resource.toResource(cache.amount)) {
+                    is Resource.FungibleResource -> {
+                        result[cache.address] = result.getOrDefault(cache.address, cachedDetails).also {
+                            it.fungibles.add(resource)
                         }
-                    } else {
-                        result[account] = cachedDetails
+                    }
+
+                    is Resource.NonFungibleResource -> {
+                        result[cache.address] = result.getOrDefault(cache.address, cachedDetails).also {
+                            it.nonFungibles.add(resource)
+                        }
                     }
                 }
-
-                result
+            } else {
+                result[cache.address] = cachedDetails
             }
-            .distinctUntilChanged()
-    }
-
-    fun markPendingRemainingAccounts(
-        allAccounts: List<Network.Account>,
-        cached: StateRepositoryImpl.AccountsWithAssetsFromCache
-    ): Set<Network.Account> {
-        val inProgressAccounts = allAccounts.filter { it.address in cached.inProgress }.toSet()
-        val remainingAccounts = (allAccounts.toSet() - cached.completed.keys - inProgressAccounts).take(1).toSet()
-        stateDao.updatePendingData(
-            pendingAccountAddresses = remainingAccounts.map { it.address },
-            newPools = cached.stateVersion?.let {
-                cached.newPools.toPoolsJoin(SyncInfo(synced = InstantGenerator(), accountStateVersion = it))
-            },
-            newValidators = cached.stateVersion?.let {
-                cached.newValidators.asValidatorEntities(SyncInfo(synced = InstantGenerator(), accountStateVersion = it))
-            }
-        )
-        return remainingAccounts
+        }
+        result
     }
 
     fun storeAccountNFTsPortfolio(
@@ -160,10 +130,10 @@ class StateCacheDelegate(
         fun validatorAddresses() = (fungibles.mapNotNull { it.validatorAddress } + nonFungibles.mapNotNull { it.validatorAddress }).toSet()
 
         fun toAccountWithAssets(
-            account: Network.Account,
+            accountAddress: String,
             pools: Map<String, Pool>,
             validators: Map<String, ValidatorDetail>
-        ): AccountWithAssets? {
+        ): StateRepositoryImpl.AccountsWithAssetsFromCache? {
             if (stateVersion == null) return null
 
             val stakeUnitAddressToValidator = validators.mapKeys { it.value.stakeUnitResourceAddress }
@@ -229,8 +199,8 @@ class StateCacheDelegate(
             }
 
 
-            return AccountWithAssets(
-                account = account,
+            return StateRepositoryImpl.AccountsWithAssetsFromCache(
+                address = accountAddress,
                 details = AccountDetails(
                     stateVersion = stateVersion,
                     typeMetadataItem = typeMetadataItem
