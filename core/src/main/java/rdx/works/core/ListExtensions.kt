@@ -17,3 +17,5 @@ inline fun <T> Iterable<T>.mapWhen(
         value
     }
 }
+
+infix fun <T> Set<T>.xor(other: Set<T>) = (this - other) + (other - this)

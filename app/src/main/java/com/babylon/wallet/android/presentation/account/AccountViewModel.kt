@@ -80,7 +80,6 @@ class AccountViewModel @Inject constructor(
                         .mapNotNull { it.firstOrNull() }
                 }
                 .collectLatest { accountWithAssets ->
-                    Timber.tag("Bakos").d("Account with assets")
                     // Update assets of the account each time they are updated
                     _state.update { state ->
                         state.copy(

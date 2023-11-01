@@ -18,9 +18,12 @@ import com.babylon.wallet.android.data.gateway.generated.models.StateNonFungible
 import com.babylon.wallet.android.data.gateway.generated.models.StateNonFungibleDetailsResponseItem
 import com.babylon.wallet.android.data.gateway.model.ExplicitMetadataKey
 import com.babylon.wallet.android.data.repository.toResult
+import com.babylon.wallet.android.utils.truncatedHash
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.flow.MutableStateFlow
+import rdx.works.core.xor
 import rdx.works.profile.data.model.pernetwork.Network
 import timber.log.Timber
 import java.math.BigDecimal
@@ -29,14 +32,21 @@ class StateApiDelegate(
     private val stateApi: StateApi
 ) {
 
+    // TODO remove something on catch error
+    private val accountsInProgress = MutableStateFlow<Set<String>>(emptySet())
+
     suspend fun fetchAllResources(
-        accounts: Set<Network.Account>,
+        accountAddresses: Set<String>,
         onStateVersion: Long? = null,
-        onAccount: suspend (accountGatewayDetails: AccountGatewayDetails) -> Unit
-    ) {
-        Timber.tag("Bakos").d("=> ${accounts.joinToString { it.displayName }}")
+    ): List<AccountGatewayDetails> {
+        accountsInProgress.value = accountsInProgress.value xor accountAddresses
+
+        if (accountsInProgress.value.isEmpty()) return emptyList()
+        Timber.tag("Bakos").d("☁️ ${accountsInProgress.value.joinToString { it.truncatedHash() }}")
+
+        val result = mutableListOf<AccountGatewayDetails>()
         stateApi.paginateDetails(
-            addresses = accounts.map { it.address }.toSet(),
+            addresses = accountsInProgress.value,
             metadataKeys = setOf(
                 ExplicitMetadataKey.ACCOUNT_TYPE,
 
@@ -80,16 +90,17 @@ class StateApiDelegate(
                     awaitAll(allFungiblePagesForAccount, allNonFungiblePagesForAccount)
                 }
 
-                val gatewayDetails = AccountGatewayDetails(
+                result.add(AccountGatewayDetails(
                     accountAddress = accountOnLedger.address,
                     ledgerState = chunkedAccounts.ledgerState,
                     accountMetadata = accountOnLedger.explicitMetadata,
                     fungibles = allFungibles,
                     nonFungibles = allNonFungibles
-                )
-                onAccount(gatewayDetails)
+                ))
             }
+            accountsInProgress.value = accountsInProgress.value - chunkedAccounts.items.map { it.address }.toSet()
         }
+        return result
     }
 
     suspend fun getPoolDetails(
