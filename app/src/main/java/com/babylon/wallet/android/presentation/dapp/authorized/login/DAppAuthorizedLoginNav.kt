@@ -36,6 +36,7 @@ fun NavGraphBuilder.dAppLoginAuthorized(
     navigateToOneTimePersonaData: (RequiredPersonaFields) -> Unit,
     navigateToSelectPersona: (String) -> Unit,
     navigateToOngoingPersonaData: (String, RequiredPersonaFields) -> Unit,
+    onLoginFlowComplete: () -> Unit,
 ) {
     composable(
         route = ROUTE_DAPP_LOGIN_AUTHORIZED_SCREEN,
@@ -56,8 +57,8 @@ fun NavGraphBuilder.dAppLoginAuthorized(
             navigateToPermissions = navigateToPermissions,
             navigateToOneTimePersonaData = navigateToOneTimePersonaData,
             navigateToSelectPersona = navigateToSelectPersona,
-            navigateToOngoingPersonaData = navigateToOngoingPersonaData
-
+            navigateToOngoingPersonaData = navigateToOngoingPersonaData,
+            onLoginFlowComplete = onLoginFlowComplete
         )
     }
 }

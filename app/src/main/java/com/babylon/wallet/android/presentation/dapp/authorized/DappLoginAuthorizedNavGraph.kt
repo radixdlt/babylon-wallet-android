@@ -41,10 +41,14 @@ fun NavGraphBuilder.dappLoginAuthorizedNavGraph(navController: NavController) {
             },
             navigateToSelectPersona = { dappDefinitionAddress ->
                 navController.selectPersona(dappDefinitionAddress)
+            },
+            onLoginFlowComplete = {
+                navController.popBackStack(ROUTE_DAPP_LOGIN_AUTHORIZED_GRAPH, true)
+            },
+            navigateToOngoingPersonaData = { personaAddress, requiredFields ->
+                navController.personaDataOngoing(personaAddress, requiredFields)
             }
-        ) { personaAddress, requiredFields ->
-            navController.personaDataOngoing(personaAddress, requiredFields)
-        }
+        )
         selectPersona(
             navController = navController,
             onBackClick = {
