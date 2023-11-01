@@ -34,7 +34,6 @@ import javax.inject.Inject
 
 @Suppress("LongParameterList")
 class TransactionSubmitDelegate @Inject constructor(
-    private val transactionClient: TransactionClient,
     private val dAppMessenger: DappMessenger,
     private val getCurrentGatewayUseCase: GetCurrentGatewayUseCase,
     private val incomingRequestRepository: IncomingRequestRepository,
@@ -49,7 +48,10 @@ class TransactionSubmitDelegate @Inject constructor(
 
     private var approvalJob: Job? = null
 
-    fun onSubmit(deviceBiometricAuthenticationProvider: suspend () -> Boolean) {
+    fun onSubmit(
+        transactionClient: TransactionClient,
+        deviceBiometricAuthenticationProvider: suspend () -> Boolean
+    ) {
         // Do not re-submit while submission is in progress
         if (approvalJob != null) return
 
@@ -61,7 +63,10 @@ class TransactionSubmitDelegate @Inject constructor(
             if (currentNetworkId != manifestNetworkId) {
                 approvalJob = null
                 val failure = RadixWalletException.DappRequestException.WrongNetwork(currentNetworkId, manifestNetworkId)
-                onDismiss(exception = failure)
+                onDismiss(
+                    transactionClient = transactionClient,
+                    exception = failure
+                )
                 return@launch
             }
 
@@ -69,6 +74,7 @@ class TransactionSubmitDelegate @Inject constructor(
 
             currentState.requestNonNull.transactionManifestData.toTransactionManifest().onSuccess { manifest ->
                 resolveFeePayerAndSubmit(
+                    transactionClient = transactionClient,
                     manifest.attachGuarantees(currentState.previewType),
                     deviceBiometricAuthenticationProvider
                 )
@@ -78,7 +84,10 @@ class TransactionSubmitDelegate @Inject constructor(
         }
     }
 
-    suspend fun onDismiss(exception: RadixWalletException.DappRequestException) {
+    suspend fun onDismiss(
+        transactionClient: TransactionClient,
+        exception: RadixWalletException.DappRequestException
+    ) {
         if (approvalJob == null) {
             val request = _state.value.requestNonNull
             if (!request.isInternal) {
@@ -106,6 +115,7 @@ class TransactionSubmitDelegate @Inject constructor(
     }
 
     private suspend fun resolveFeePayerAndSubmit(
+        transactionClient: TransactionClient,
         manifest: TransactionManifest,
         deviceBiometricAuthenticationProvider: suspend () -> Boolean
     ) {
@@ -113,6 +123,7 @@ class TransactionSubmitDelegate @Inject constructor(
             _state.update { it.copy(isSubmitting = false) }
             if (feePayerResult.feePayerAddress != null) {
                 signAndSubmit(
+                    transactionClient = transactionClient,
                     transactionRequest = _state.value.requestNonNull,
                     feePayerAddress = feePayerResult.feePayerAddress,
                     manifest = manifest,
@@ -124,6 +135,7 @@ class TransactionSubmitDelegate @Inject constructor(
 
     @Suppress("LongMethod")
     private suspend fun signAndSubmit(
+        transactionClient: TransactionClient,
         transactionRequest: MessageFromDataChannel.IncomingRequest.TransactionRequest,
         feePayerAddress: String,
         manifest: TransactionManifest,

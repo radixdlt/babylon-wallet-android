@@ -82,7 +82,7 @@ class TransactionReviewViewModel @Inject constructor(
                 }
             }
             viewModelScope.launch {
-                analysis.analyse()
+                analysis.analyse(transactionClient = transactionClient)
             }
         }
     }
@@ -92,7 +92,10 @@ class TransactionReviewViewModel @Inject constructor(
             _state.update { it.copy(sheetState = State.Sheet.None) }
         } else {
             viewModelScope.launch {
-                submit.onDismiss(RadixWalletException.DappRequestException.RejectedByUser)
+                submit.onDismiss(
+                    transactionClient = transactionClient,
+                    exception = RadixWalletException.DappRequestException.RejectedByUser
+                )
             }
         }
     }
@@ -106,7 +109,10 @@ class TransactionReviewViewModel @Inject constructor(
     }
 
     fun approveTransaction(deviceBiometricAuthenticationProvider: suspend () -> Boolean) {
-        submit.onSubmit(deviceBiometricAuthenticationProvider)
+        submit.onSubmit(
+            transactionClient = transactionClient,
+            deviceBiometricAuthenticationProvider
+        )
     }
 
     fun promptForGuaranteesClick() = guarantees.onEdit()

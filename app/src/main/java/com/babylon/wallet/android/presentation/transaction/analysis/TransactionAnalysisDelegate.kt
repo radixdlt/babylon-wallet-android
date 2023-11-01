@@ -31,21 +31,23 @@ class TransactionAnalysisDelegate @Inject constructor(
     private val getResourcesMetadataUseCase: GetResourcesMetadataUseCase,
     private val getResourcesUseCase: GetResourcesUseCase,
     private val getTransactionBadgesUseCase: GetTransactionBadgesUseCase,
-    private val resolveDAppsUseCase: ResolveDAppsUseCase,
-    private val transactionClient: TransactionClient
+    private val resolveDAppsUseCase: ResolveDAppsUseCase
 ) : ViewModelDelegate<TransactionReviewViewModel.State>() {
 
     private val logger = Timber.tag("TransactionAnalysis")
 
-    suspend fun analyse() {
+    suspend fun analyse(transactionClient: TransactionClient) {
         _state.value.requestNonNull.transactionManifestData.toTransactionManifest().onSuccess {
-            startAnalysis(it)
+            startAnalysis(it, transactionClient)
         }.onFailure { error ->
             reportFailure(error)
         }
     }
 
-    private suspend fun startAnalysis(manifest: TransactionManifest) {
+    private suspend fun startAnalysis(
+        manifest: TransactionManifest,
+        transactionClient: TransactionClient
+    ) {
         val notaryAndSigners = transactionClient.getNotaryAndSigners(
             manifest = manifest,
             ephemeralNotaryPrivateKey = _state.value.ephemeralNotaryPrivateKey
@@ -55,13 +57,18 @@ class TransactionAnalysisDelegate @Inject constructor(
             notaryAndSigners = notaryAndSigners
         ).then { preview ->
             transactionClient.analyzeExecution(manifest, preview)
-        }.resolve(manifest, notaryAndSigners)
+        }.resolve(
+            manifest = manifest,
+            notaryAndSigners = notaryAndSigners,
+            transactionClient = transactionClient
+        )
     }
 
     @Suppress("LongMethod")
     private suspend fun Result<ExecutionAnalysis>.resolve(
         manifest: TransactionManifest,
-        notaryAndSigners: NotaryAndSigners
+        notaryAndSigners: NotaryAndSigners,
+        transactionClient: TransactionClient
     ) = this.onSuccess { analysis ->
         val previewType = if (_state.value.requestNonNull.isInternal.not() &&
             analysis.reservedInstructions.isNotEmpty()
