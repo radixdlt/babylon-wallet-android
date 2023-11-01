@@ -166,7 +166,7 @@ private fun HandleOneOffEvents(
                 is Event.DisplayPermission -> onDisplayPermission(event)
                 is Event.PersonaDataOngoing -> onPersonaDataOngoing(event)
                 is Event.PersonaDataOnetime -> onPersonaDataOnetime(event)
-                is Event.RequestCompletionBiometricPrompt -> onBiometricPrompt(event.signatureRequired)
+                is Event.RequestCompletionBiometricPrompt -> onBiometricPrompt(event.isSignatureRequired)
             }
         }
     }

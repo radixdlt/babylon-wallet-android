@@ -727,7 +727,7 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
 sealed interface Event : OneOffEvent {
 
     data object CloseLoginFlow : Event
-    data class RequestCompletionBiometricPrompt(val signatureRequired: Boolean) : Event
+    data class RequestCompletionBiometricPrompt(val isSignatureRequired: Boolean) : Event
 
     data object LoginFlowCompleted : Event
 
