@@ -60,16 +60,36 @@ fun Network.Account.OnLedgerSettings.ThirdPartyDeposits.DepositAddressExceptionR
     }
 }
 
-fun Network.Account.hasAnyDenyDepositRule(forSpecificAssetAddress: String): Boolean {
+@Suppress("ReturnCount", "UnusedParameter")
+fun Network.Account.isSignatureRequiredBasedOnDepositRules(
+    forSpecificAssetAddress: String,
+    addressesOfAssetsOfTargetAccount: List<String> = emptyList()
+): Boolean {
     val thirdPartyDeposits = this.onLedgerSettings.thirdPartyDeposits
 
     val hasDenyAll = thirdPartyDeposits.depositRule == Network.Account.OnLedgerSettings.ThirdPartyDeposits.DepositRule.DenyAll
+
+    val hasAcceptKnown = thirdPartyDeposits.depositRule == Network.Account.OnLedgerSettings.ThirdPartyDeposits.DepositRule.AcceptKnown
+
     val hasDenyExceptionRuleForAsset = thirdPartyDeposits.assetsExceptionList.any {
         it.exceptionRule == Network.Account.OnLedgerSettings.ThirdPartyDeposits.DepositAddressExceptionRule.Deny &&
             it.address == forSpecificAssetAddress
     }
 
-    if (hasDenyAll || hasDenyExceptionRuleForAsset) {
+    val hasAllowExceptionRuleForAsset = thirdPartyDeposits.assetsExceptionList.any {
+        it.exceptionRule == Network.Account.OnLedgerSettings.ThirdPartyDeposits.DepositAddressExceptionRule.Allow &&
+            it.address == forSpecificAssetAddress
+    }
+
+    if (hasAllowExceptionRuleForAsset) {
+        return false
+    } else if (hasDenyAll || hasDenyExceptionRuleForAsset) {
+        return true
+    } else if (hasAcceptKnown) {
+        // TODO will enable when we have the new GW
+//        if (addressesOfAssetsOfTargetAccount.contains(forSpecificAssetAddress)) {
+//            return false
+//        }
         return true
     }
 
