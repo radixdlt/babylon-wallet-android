@@ -16,7 +16,7 @@ import kotlinx.coroutines.flow.update
 import rdx.works.core.ret.BabylonManifestBuilder
 import rdx.works.core.ret.buildSafely
 import rdx.works.core.toRETDecimal
-import rdx.works.profile.data.model.extensions.hasAnyDenyDepositRule
+import rdx.works.profile.data.model.extensions.isSignatureRequiredBasedOnDepositRules
 import rdx.works.profile.data.model.factorsources.FactorSourceKind
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.data.repository.MnemonicRepository
@@ -146,7 +146,7 @@ class PrepareManifestDelegate @Inject constructor(
         } ?: false
 
         if (targetAccount is TargetAccount.Owned && isAccountAbleToSign) {
-            if (targetAccount.account.hasAnyDenyDepositRule(forSpecificAssetAddress = spendingAsset.address)) {
+            if (targetAccount.account.isSignatureRequiredBasedOnDepositRules(forSpecificAssetAddress = spendingAsset.address)) {
                 // if for example account has deny all we don't want to prevent transfer between our OWN accounts
                 // therefore ask user to sign
                 accountDeposit(
