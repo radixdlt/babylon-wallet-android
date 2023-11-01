@@ -5,16 +5,17 @@ import com.babylon.wallet.android.data.gateway.extensions.asMetadataItems
 import com.babylon.wallet.android.data.gateway.extensions.paginateDetails
 import com.babylon.wallet.android.data.gateway.generated.models.StateNonFungibleDataRequest
 import com.babylon.wallet.android.data.gateway.model.ExplicitMetadataKey
-import com.babylon.wallet.android.data.repository.cache.database.AccountResourceJoin.Companion.asAccountResourceJoin
 import com.babylon.wallet.android.data.repository.cache.database.NFTEntity.Companion.asEntity
-import com.babylon.wallet.android.data.repository.cache.database.PoolEntity.Companion.asPoolsWithResources
+import com.babylon.wallet.android.data.repository.cache.database.PoolEntity.Companion.asPools
 import com.babylon.wallet.android.data.repository.cache.database.StateDao
 import com.babylon.wallet.android.data.repository.cache.database.SyncInfo
-import com.babylon.wallet.android.data.repository.cache.database.ValidatorEntity.Companion.asValidatorEntities
+import com.babylon.wallet.android.data.repository.cache.database.ValidatorEntity.Companion.asValidators
 import com.babylon.wallet.android.data.repository.toResult
 import com.babylon.wallet.android.di.coroutines.DefaultDispatcher
 import com.babylon.wallet.android.domain.model.DApp
-import com.babylon.wallet.android.domain.model.resources.AccountOnLedger
+import com.babylon.wallet.android.domain.model.assets.AccountWithAssets
+import com.babylon.wallet.android.domain.model.assets.ValidatorDetail
+import com.babylon.wallet.android.domain.model.resources.Pool
 import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.domain.model.resources.XrdResource
 import com.babylon.wallet.android.domain.model.resources.metadata.MetadataItem.Companion.consume
@@ -24,6 +25,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.transform
 import kotlinx.coroutines.withContext
 import rdx.works.core.InstantGenerator
@@ -36,7 +38,7 @@ import javax.inject.Inject
 
 interface StateRepository {
 
-    fun observeAccountsOnLedger(accounts: List<Network.Account>, isRefreshing: Boolean): Flow<Map<Network.Account, AccountOnLedger>>
+    fun observeAccountsOnLedger(accounts: List<Network.Account>, isRefreshing: Boolean): Flow<List<AccountWithAssets>>
 
     suspend fun getMoreNFTs(account: Network.Account, resource: Resource.NonFungibleResource): Result<Resource.NonFungibleResource>
 
@@ -71,37 +73,24 @@ class StateRepositoryImpl @Inject constructor(
     override fun observeAccountsOnLedger(
         accounts: List<Network.Account>,
         isRefreshing: Boolean
-    ): Flow<Map<Network.Account, AccountOnLedger>> = cacheDelegate
+    ): Flow<List<AccountWithAssets>> = cacheDelegate
         .observeCachedAccounts(accounts, isRefreshing)
-        .transform { cachedAccounts ->
-            val cachedAccountsWithDetails = cachedAccounts.mapValues { it.value.toAccountDetails() }
-            emit(cachedAccountsWithDetails)
+        .map(::toAccountsWithAssets)
+        .transform { cached ->
+            emit(accounts.map { account ->
+                cached.completed[account] ?: AccountWithAssets(account = account)
+            })
 
-            val prevAccountsStateVersion = cachedAccountsWithDetails.values.lastOrNull()?.details?.stateVersion
-
-            val remainingAccounts = accounts.toSet() - cachedAccounts.keys
+            val remainingAccounts = cacheDelegate.markPendingRemainingAccounts(
+                allAccounts = accounts,
+                cached = cached
+            )
             if (remainingAccounts.isNotEmpty()) {
-                Timber.tag("Bakos").d("=> ${remainingAccounts.first().displayName}")
                 stateApiDelegate.fetchAllResources(
-                    accounts = setOf(remainingAccounts.first()),
-                    onStateVersion = prevAccountsStateVersion,
-                    onAccount = { account, gatewayDetails ->
-                        val accountMetadataItems = gatewayDetails.accountMetadata?.asMetadataItems()?.toMutableList()
-                        val syncInfo = SyncInfo(synced = InstantGenerator(), accountStateVersion = gatewayDetails.ledgerState.stateVersion)
-                        val fungibleEntityPairs = gatewayDetails.fungibles.map { item ->
-                            item.asAccountResourceJoin(account.address, syncInfo)
-                        }
-                        val nonFungibleEntityPairs = gatewayDetails.nonFungibles.map { item ->
-                            item.asAccountResourceJoin(account.address, syncInfo)
-                        }
-
-                        // Store account details
-                        stateDao.updateAccountData(
-                            accountAddress = account.address,
-                            accountTypeMetadataItem = accountMetadataItems?.consume(),
-                            syncInfo = syncInfo,
-                            accountWithResources = fungibleEntityPairs + nonFungibleEntityPairs
-                        )
+                    accounts = remainingAccounts.take(StateApiDelegate.ENTITY_DETAILS_PAGE_LIMIT).toSet(),
+                    onStateVersion = cached.stateVersion,
+                    onAccount = { gatewayDetails ->
+                        stateDao.updateAccountData(accountGatewayDetails = gatewayDetails)
                     }
                 )
             }
@@ -251,4 +240,55 @@ class StateRepositoryImpl @Inject constructor(
             DApp.from(address = item.address, metadataItems = item.explicitMetadata?.asMetadataItems().orEmpty())
         }
     }
+
+    private suspend fun toAccountsWithAssets(cached: Map<Network.Account, StateCacheDelegate.CachedDetails>): AccountsWithAssetsFromCache {
+        if (cached.isEmpty()) return AccountsWithAssetsFromCache()
+
+        val stateVersion = cached.values.mapNotNull { it.stateVersion }.maxOrNull()
+        val pending = cached.mapNotNull {
+            if (it.value.stateVersion == null) it.key.address else null
+        }
+        return if (stateVersion != null) {
+            val allPoolAddresses = cached.map { it.value.poolAddresses() }.flatten().toSet()
+            val cachedPools = cacheDelegate.getPoolDetails(allPoolAddresses, stateVersion).toMutableMap()
+            val newPools = stateApiDelegate.getPoolDetails(allPoolAddresses - cachedPools.keys, stateVersion).asPools().onEach {
+                cachedPools[it.address] = it
+            }
+
+            val allValidatorAddresses = cached.map { it.value.validatorAddresses() }.flatten().toSet()
+            val cachedValidators = cacheDelegate.getValidatorDetails(allValidatorAddresses, stateVersion).toMutableMap()
+            val newValidators = stateApiDelegate.getValidatorsDetails(
+                allValidatorAddresses - cachedValidators.keys,
+                stateVersion
+            ).asValidators().onEach {
+                cachedValidators[it.address] = it
+            }
+
+            AccountsWithAssetsFromCache(
+                inProgress = pending,
+                completed = cached.mapNotNull {
+                    it.value.toAccountWithAssets(it.key, cachedPools, cachedValidators)
+                }.associateBy { it.account },
+                stateVersion = stateVersion,
+                newPools = newPools,
+                newValidators = newValidators,
+            )
+        } else {
+            AccountsWithAssetsFromCache(
+                inProgress = pending,
+                completed = emptyMap(),
+                stateVersion = null,
+                newPools = emptyList(),
+                newValidators = emptyList(),
+            )
+        }
+    }
+
+    data class AccountsWithAssetsFromCache(
+        val inProgress: List<String> = emptyList(),
+        val completed: Map<Network.Account, AccountWithAssets> = mapOf(),
+        val stateVersion: Long? = null,
+        val newPools: List<Pool> = listOf(),
+        val newValidators: List<ValidatorDetail> = listOf()
+    )
 }

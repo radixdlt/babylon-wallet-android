@@ -56,7 +56,6 @@ class WalletViewModel @Inject constructor(
     private val getAccountsForSecurityPromptUseCase: GetAccountsForSecurityPromptUseCase,
     private val appEventBus: AppEventBus,
     private val ensureBabylonFactorSourceExistUseCase: EnsureBabylonFactorSourceExistUseCase,
-    private val getXrdForAccountsUseCase: GetXrdForAccountsUseCase,
     getBackupStateUseCase: GetBackupStateUseCase
 ) : StateViewModel<WalletUiState>(), OneOffEventHandler<WalletEvent> by OneOffEventHandlerImpl() {
 
@@ -96,12 +95,6 @@ class WalletViewModel @Inject constructor(
                 // force user to authenticate until we can create Babylon Factor source
                 appEventBus.sendEvent(AppEvent.BabylonFactorSourceDoesNotExist)
             }
-        }
-    }
-
-    fun test() = viewModelScope.launch {
-        getXrdForAccountsUseCase(getProfileUseCase.accountsOnCurrentNetwork()).onSuccess {
-            Timber.tag("Bakos").d(it.map { entry -> "${entry.key.displayName} - ${entry.value.displayableQuantity()}"}.joinToString(separator = "\n"))
         }
     }
 

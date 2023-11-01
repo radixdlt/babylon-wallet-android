@@ -73,6 +73,7 @@ data class ResourceEntity(
             dAppDefinitionsMetadataItem = dAppDefinitions?.let { DAppDefinitionsMetadataItem(it.dappDefinitions) },
             divisibility = divisibility
         )
+
         ResourceEntityType.NON_FUNGIBLE -> Resource.NonFungibleResource(
             resourceAddress = address,
             amount = amount?.toLong() ?: 0L,
@@ -89,6 +90,42 @@ data class ResourceEntity(
     }
 
     companion object {
+        fun Resource.asEntity(synced: Instant): ResourceEntity = when (this) {
+            is Resource.FungibleResource -> ResourceEntity(
+                address = resourceAddress,
+                type = ResourceEntityType.FUNGIBLE,
+                name = nameMetadataItem?.name,
+                symbol = symbolMetadataItem?.symbol,
+                description = descriptionMetadataItem?.description,
+                iconUrl = iconUrlMetadataItem?.url?.toString(),
+                tags = tagsMetadataItem?.tags?.let { TagsColumn(it) },
+                validatorAddress = validatorMetadataItem?.validatorAddress,
+                poolAddress = poolMetadataItem?.poolAddress,
+                dAppDefinitions = dAppDefinitionsMetadataItem?.addresses?.let { DappDefinitionsColumn(it) },
+                divisibility = divisibility,
+                behaviours = behaviours?.let { BehavioursColumn(it) },
+                supply = currentSupply,
+                synced = synced
+            )
+
+            is Resource.NonFungibleResource -> ResourceEntity(
+                address = resourceAddress,
+                type = ResourceEntityType.NON_FUNGIBLE,
+                name = nameMetadataItem?.name,
+                description = descriptionMetadataItem?.description,
+                iconUrl = iconMetadataItem?.url?.toString(),
+                tags = tagsMetadataItem?.tags?.let { TagsColumn(it) },
+                behaviours = behaviours?.let { BehavioursColumn(it) },
+                validatorAddress = validatorMetadataItem?.validatorAddress,
+                supply = currentSupply?.toBigDecimal(),
+                dAppDefinitions = dAppDefinitionsMetadataItem?.addresses?.let { DappDefinitionsColumn(it) },
+                divisibility = null,
+                poolAddress = null,
+                symbol = null,
+                synced = synced
+            )
+        }
+
         // Response from an account state request
         fun FungibleResourcesCollectionItem.asEntity(
             synced: Instant,

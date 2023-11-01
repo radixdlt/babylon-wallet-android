@@ -39,16 +39,16 @@ sealed class Resource {
     data class FungibleResource(
         override val resourceAddress: String,
         val ownedAmount: BigDecimal?,
-        private val nameMetadataItem: NameMetadataItem? = null,
-        private val symbolMetadataItem: SymbolMetadataItem? = null,
-        private val descriptionMetadataItem: DescriptionMetadataItem? = null,
-        private val iconUrlMetadataItem: IconUrlMetadataItem? = null,
-        private val tagsMetadataItem: TagsMetadataItem? = null,
+        val nameMetadataItem: NameMetadataItem? = null,
+        val symbolMetadataItem: SymbolMetadataItem? = null,
+        val descriptionMetadataItem: DescriptionMetadataItem? = null,
+        val iconUrlMetadataItem: IconUrlMetadataItem? = null,
+        val tagsMetadataItem: TagsMetadataItem? = null,
         val behaviours: AssetBehaviours? = null,
         val currentSupply: BigDecimal? = null,
-        private val validatorMetadataItem: ValidatorMetadataItem? = null,
-        private val poolMetadataItem: PoolMetadataItem? = null,
-        private val dAppDefinitionsMetadataItem: DAppDefinitionsMetadataItem? = null,
+        val validatorMetadataItem: ValidatorMetadataItem? = null,
+        val poolMetadataItem: PoolMetadataItem? = null,
+        val dAppDefinitionsMetadataItem: DAppDefinitionsMetadataItem? = null,
         val divisibility: Int? = null
     ) : Resource(), Comparable<FungibleResource> {
         override val name: String
@@ -138,15 +138,15 @@ sealed class Resource {
     data class NonFungibleResource(
         override val resourceAddress: String,
         val amount: Long,
-        private val nameMetadataItem: NameMetadataItem? = null,
-        private val descriptionMetadataItem: DescriptionMetadataItem? = null,
-        private val iconMetadataItem: IconUrlMetadataItem? = null,
-        private val tagsMetadataItem: TagsMetadataItem? = null,
+        val nameMetadataItem: NameMetadataItem? = null,
+        val descriptionMetadataItem: DescriptionMetadataItem? = null,
+        val iconMetadataItem: IconUrlMetadataItem? = null,
+        val tagsMetadataItem: TagsMetadataItem? = null,
         val behaviours: AssetBehaviours? = null,
         val items: List<Item>,
         val currentSupply: Int? = null,
-        private val validatorMetadataItem: ValidatorMetadataItem? = null,
-        private val dAppDefinitionsMetadataItem: DAppDefinitionsMetadataItem? = null,
+        val validatorMetadataItem: ValidatorMetadataItem? = null,
+        val dAppDefinitionsMetadataItem: DAppDefinitionsMetadataItem? = null,
     ) : Resource(), Comparable<NonFungibleResource> {
         override val name: String
             get() = nameMetadataItem?.name.orEmpty()

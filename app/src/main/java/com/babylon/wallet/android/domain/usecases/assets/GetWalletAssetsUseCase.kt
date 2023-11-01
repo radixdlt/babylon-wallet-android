@@ -15,16 +15,6 @@ class GetWalletAssetsUseCase @Inject constructor(
         return stateRepository.observeAccountsOnLedger(
             accounts = accounts,
             isRefreshing = isRefreshing
-        ).map { accountsAndResources ->
-            accounts.map { account ->
-                val detailsAndResources = accountsAndResources[account]
-
-                AccountWithAssets(
-                    account = account,
-                    details = detailsAndResources?.details,
-                    assets = null // TODO
-                )
-            }
-        }
+        )
     }
 }
