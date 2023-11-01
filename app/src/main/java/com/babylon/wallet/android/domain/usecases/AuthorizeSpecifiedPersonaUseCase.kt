@@ -132,7 +132,9 @@ class AuthorizeSpecifiedPersonaUseCase @Inject constructor(
         hasOngoingPersonaDataRequest: Boolean,
         persona: Network.Persona
     ): Result<String?> {
-        var operationResult: Result<String?> = Result.failure(RadixWalletException.DappRequestException.InvalidRequest)
+        var operationResult: Result<String?> = Result.failure(
+            exception = RadixWalletException.DappRequestException.NotPossibleToAuthenticateAutomatically
+        )
         val selectedAccounts: List<Selectable<Network.Account>> = getAccountsWithGrantedAccess(
             request,
             authorizedDapp,
