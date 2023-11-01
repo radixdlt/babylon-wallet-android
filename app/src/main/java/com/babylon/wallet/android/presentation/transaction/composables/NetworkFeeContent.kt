@@ -66,7 +66,8 @@ fun NetworkFeeContent(
                         contentFadeTransitionSpec = { tween() }
                     ),
                 text = stringResource(
-                    id = R.string.transactionReview_xrdAmount, fees.transactionFeeToLock.displayableQuantity()
+                    id = R.string.transactionReview_xrdAmount,
+                    fees.transactionFeeToLock.displayableQuantity()
                 ),
                 style = RadixTheme.typography.body1Link,
                 color = RadixTheme.colors.gray1
