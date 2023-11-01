@@ -243,15 +243,13 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
                 getResourcesMetadataUseCase = getResourcesMetadataUseCase,
                 getResourcesUseCase = getResourcesUseCase,
                 getTransactionBadgesUseCase = getTransactionBadgesUseCase,
-                resolveDAppsUseCase = resolveDAppsUseCase,
-                transactionClient = transactionClient,
+                resolveDAppsUseCase = resolveDAppsUseCase
             ),
             guarantees = TransactionGuaranteesDelegate(),
             fees = TransactionFeesDelegate(
                 getProfileUseCase = getProfileUseCase,
             ),
             submit = TransactionSubmitDelegate(
-                transactionClient = transactionClient,
                 dAppMessenger = dAppMessenger,
                 getCurrentGatewayUseCase = getCurrentGatewayUseCase,
                 incomingRequestRepository = incomingRequestRepository,
