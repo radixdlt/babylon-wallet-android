@@ -105,8 +105,12 @@ class TransactionClient @Inject constructor(
                     hashedDataToSign = transactionIntentHash.bytes().toByteArray()
                 ),
                 deviceBiometricAuthenticationProvider = deviceBiometricAuthenticationProvider
-            ).getOrElse {
-                return Result.failure(RadixWalletException.PrepareTransactionException.SignCompiledTransactionIntent(it))
+            ).getOrElse { throwable ->
+                return if (throwable is RadixWalletException) {
+                    Result.failure(throwable)
+                } else {
+                    Result.failure(RadixWalletException.PrepareTransactionException.SignCompiledTransactionIntent(throwable))
+                }
             }
 
             val signedTransactionIntent = runCatching {

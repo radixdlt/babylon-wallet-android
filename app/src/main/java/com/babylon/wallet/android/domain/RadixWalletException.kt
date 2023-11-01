@@ -141,11 +141,11 @@ sealed class RadixWalletException(cause: Throwable? = null) : Throwable(cause = 
             }
     }
 
-    sealed class LedgerCommunicationFailure : RadixWalletException(), ConnectorExtensionThrowable {
-        data object FailedToGetDeviceId : LedgerCommunicationFailure()
-        data object FailedToDerivePublicKeys : LedgerCommunicationFailure()
-        data object FailedToDeriveAndDisplayAddress : LedgerCommunicationFailure()
-        data class FailedToSignTransaction(val reason: LedgerErrorCode) : LedgerCommunicationFailure()
+    sealed class LedgerCommunicationException : RadixWalletException(), ConnectorExtensionThrowable {
+        data object FailedToGetDeviceId : LedgerCommunicationException()
+        data object FailedToDerivePublicKeys : LedgerCommunicationException()
+        data object FailedToDeriveAndDisplayAddress : LedgerCommunicationException()
+        data class FailedToSignTransaction(val reason: LedgerErrorCode) : LedgerCommunicationException()
 
         override val ceError: ConnectorExtensionError
             get() = when (this) {
@@ -163,22 +163,22 @@ interface ConnectorExtensionThrowable {
     val ceError: ConnectorExtensionError
 }
 
-fun RadixWalletException.LedgerCommunicationFailure.toUserFriendlyMessage(context: Context): String {
+fun RadixWalletException.LedgerCommunicationException.toUserFriendlyMessage(context: Context): String {
     return context.getString(
         when (this) {
-            RadixWalletException.LedgerCommunicationFailure.FailedToDerivePublicKeys -> {
+            RadixWalletException.LedgerCommunicationException.FailedToDerivePublicKeys -> {
                 R.string.common_somethingWentWrong
             } // TODO consider different copy
-            RadixWalletException.LedgerCommunicationFailure.FailedToGetDeviceId -> {
+            RadixWalletException.LedgerCommunicationException.FailedToGetDeviceId -> {
                 R.string.common_somethingWentWrong
             } // TODO consider different copy
-            is RadixWalletException.LedgerCommunicationFailure.FailedToSignTransaction -> when (this.reason) {
+            is RadixWalletException.LedgerCommunicationException.FailedToSignTransaction -> when (this.reason) {
                 LedgerErrorCode.Generic -> R.string.common_somethingWentWrong
                 LedgerErrorCode.BlindSigningNotEnabledButRequired -> R.string.error_transactionFailure_blindSigningNotEnabledButRequired
                 LedgerErrorCode.UserRejectedSigningOfTransaction -> R.string.error_transactionFailure_rejected
             }
 
-            is RadixWalletException.LedgerCommunicationFailure.FailedToDeriveAndDisplayAddress -> R.string.common_somethingWentWrong
+            is RadixWalletException.LedgerCommunicationException.FailedToDeriveAndDisplayAddress -> R.string.common_somethingWentWrong
         }
     )
 }
@@ -306,7 +306,7 @@ fun RadixWalletException.toUserFriendlyMessage(context: Context): String {
         ) // TODO consider different copy
         is RadixWalletException.DappRequestException -> toUserFriendlyMessage(context)
         is RadixWalletException.DappVerificationException -> toUserFriendlyMessage(context)
-        is RadixWalletException.LedgerCommunicationFailure -> toUserFriendlyMessage(context)
+        is RadixWalletException.LedgerCommunicationException -> toUserFriendlyMessage(context)
         is RadixWalletException.PrepareTransactionException -> toUserFriendlyMessage(context)
         is RadixWalletException.TransactionSubmitException -> toUserFriendlyMessage(context)
     }
