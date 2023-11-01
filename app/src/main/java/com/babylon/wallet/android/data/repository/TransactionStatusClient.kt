@@ -90,6 +90,5 @@ data class TransactionStatusData(
     val txId: String,
     val requestId: String,
     val result: Result<Unit>,
-    val transactionType: TransactionType = TransactionType.Generic,
-    val txProcessingTime: String
+    val transactionType: TransactionType = TransactionType.Generic
 )
