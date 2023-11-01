@@ -16,10 +16,13 @@ class PollTransactionStatusUseCase @Inject constructor(
         txID: String,
         requestId: String,
         transactionType: TransactionType = TransactionType.Generic,
-        txProcessingTime: String
+        endEpoch: ULong
     ): TransactionStatusData {
         while (true) {
             transactionRepository.getTransactionStatus(txID).onSuccess { statusCheckResult ->
+                val currentEpoch = statusCheckResult.ledgerState.epoch.toULong()
+                val txProcessingTime = ((endEpoch - currentEpoch) * 5u).toString()
+
                 when (statusCheckResult.knownPayloads.firstOrNull()?.payloadStatus) {
                     TransactionPayloadStatus.unknown,
                     TransactionPayloadStatus.commitPendingOutcomeUnknown,

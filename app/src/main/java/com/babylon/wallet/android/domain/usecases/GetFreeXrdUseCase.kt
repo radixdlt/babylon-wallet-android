@@ -71,14 +71,14 @@ class GetFreeXrdUseCase @Inject constructor(
                         submitTransactionUseCase(
                             notarizedTransactionResult.txIdHash,
                             notarizedTransactionResult.notarizedTransactionIntentHex,
-                            txProcessingTime = notarizedTransactionResult.txProcessingTime
+                            endEpoch = notarizedTransactionResult.endEpoch
                         ).getOrThrow()
                     }
                     .onSuccess { submitTransactionResult ->
                         pollTransactionStatusUseCase(
                             txID = submitTransactionResult.txId,
                             requestId = "",
-                            txProcessingTime = submitTransactionResult.txProcessingTime
+                            endEpoch = submitTransactionResult.endEpoch
                         ).result.onSuccess {
                             preferencesManager.updateEpoch(address, epoch)
                         }

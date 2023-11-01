@@ -350,6 +350,6 @@ data class NotarizedTransactionResult(
     val notarizedTransactionIntentHex: String,
     val transactionHeader: TransactionHeader
 ) {
-    val txProcessingTime: String
-        get() = ((transactionHeader.endEpochExclusive - transactionHeader.startEpochInclusive) * 5u).toString()
+    val endEpoch: ULong
+        get() = transactionHeader.endEpochExclusive
 }

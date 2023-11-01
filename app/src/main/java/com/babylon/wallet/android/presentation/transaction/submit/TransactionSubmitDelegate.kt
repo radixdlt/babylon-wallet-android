@@ -155,13 +155,13 @@ class TransactionSubmitDelegate @Inject constructor(
             submitTransactionUseCase(
                 notarizedTransactionResult.txIdHash,
                 notarizedTransactionResult.notarizedTransactionIntentHex,
-                txProcessingTime = notarizedTransactionResult.txProcessingTime
+                endEpoch = notarizedTransactionResult.endEpoch
             ).getOrThrow()
         }.onSuccess { submitTransactionResult ->
             _state.update {
                 it.copy(
                     isSubmitting = false,
-                    txProcessingTime = submitTransactionResult.txProcessingTime
+                    endEpoch = submitTransactionResult.endEpoch
                 )
             }
             appEventBus.sendEvent(
@@ -176,7 +176,7 @@ class TransactionSubmitDelegate @Inject constructor(
                 txID = submitTransactionResult.txId,
                 requestId = transactionRequest.requestId,
                 transactionType = transactionRequest.transactionType,
-                txProcessingTime = submitTransactionResult.txProcessingTime
+                endEpoch = submitTransactionResult.endEpoch
             )
             // Send confirmation to the dApp that tx was submitted before status polling
             if (!transactionRequest.isInternal) {
