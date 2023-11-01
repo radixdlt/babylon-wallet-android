@@ -45,6 +45,7 @@ import com.babylon.wallet.android.presentation.dapp.authorized.login.DAppAuthori
 import com.babylon.wallet.android.presentation.dapp.authorized.login.Event
 import com.babylon.wallet.android.presentation.status.signing.SigningStatusBottomDialog
 import com.babylon.wallet.android.presentation.ui.composables.BackIconType
+import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.BottomPrimaryButton
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
@@ -55,6 +56,7 @@ import com.babylon.wallet.android.utils.biometricAuthenticateSuspend
 import com.babylon.wallet.android.utils.formattedSpans
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
+import kotlinx.coroutines.flow.Flow
 import rdx.works.profile.data.model.pernetwork.Network
 
 @Composable
@@ -71,31 +73,40 @@ fun SelectPersonaScreen(
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
-    LaunchedEffect(Unit) {
-        sharedViewModel.oneOffEvent.collect { event ->
-            when (event) {
-                Event.CloseLoginFlow -> onBackClick()
-                is Event.LoginFlowCompleted -> onLoginFlowComplete()
-                is Event.ChooseAccounts -> onChooseAccounts(event)
-                is Event.DisplayPermission -> onDisplayPermission(event)
-                is Event.PersonaDataOngoing -> onPersonaDataOngoing(event)
-                is Event.PersonaDataOnetime -> onPersonaDataOnetime(event)
-                is Event.RequestCompletionBiometricPrompt -> {
-                    if (event.requestDuringSigning) {
-                        sharedViewModel.completeRequestHandling(deviceBiometricAuthenticationProvider = {
-                            context.biometricAuthenticateSuspend()
-                        })
-                    } else {
-                        context.biometricAuthenticate { authenticated ->
-                            if (authenticated) {
-                                sharedViewModel.completeRequestHandling()
-                            }
-                        }
+    val state by viewModel.state.collectAsStateWithLifecycle()
+    val sharedState by sharedViewModel.state.collectAsStateWithLifecycle()
+    if (sharedState.isNoMnemonicErrorVisible) {
+        BasicPromptAlertDialog(
+            finish = {
+                sharedViewModel.dismissNoMnemonicError()
+            },
+            title = stringResource(id = R.string.transactionReview_noMnemonicError_title),
+            text = stringResource(id = R.string.transactionReview_noMnemonicError_text),
+            dismissText = null
+        )
+    }
+    HandleOneOffEvents(
+        oneOffEvent = sharedViewModel.oneOffEvent,
+        onBackClick = onBackClick,
+        onLoginFlowComplete = onLoginFlowComplete,
+        onChooseAccounts = onChooseAccounts,
+        onDisplayPermission = onDisplayPermission,
+        onPersonaDataOngoing = onPersonaDataOngoing,
+        onPersonaDataOnetime = onPersonaDataOnetime,
+        onBiometricPrompt = { signatureRequired ->
+            if (signatureRequired) {
+                sharedViewModel.completeRequestHandling(deviceBiometricAuthenticationProvider = {
+                    context.biometricAuthenticateSuspend()
+                })
+            } else {
+                context.biometricAuthenticate { authenticated ->
+                    if (authenticated) {
+                        sharedViewModel.completeRequestHandling()
                     }
                 }
             }
         }
-    }
+    )
     LaunchedEffect(Unit) {
         viewModel.oneOffEvent.collect { event ->
             when (event) {
@@ -104,8 +115,6 @@ fun SelectPersonaScreen(
             }
         }
     }
-    val state by viewModel.state.collectAsStateWithLifecycle()
-    val sharedState by sharedViewModel.state.collectAsStateWithLifecycle()
     BackHandler {
         if (sharedState.initialAuthorizedLoginRoute is InitialAuthorizedLoginRoute.SelectPersona) {
             sharedViewModel.onAbortDappLogin()
@@ -134,6 +143,32 @@ fun SelectPersonaScreen(
             onDismissDialogClick = sharedViewModel::onDismissSigningStatusDialog,
             interactionState = it
         )
+    }
+}
+
+@Composable
+private fun HandleOneOffEvents(
+    oneOffEvent: Flow<Event>,
+    onBackClick: () -> Unit,
+    onLoginFlowComplete: () -> Unit,
+    onChooseAccounts: (Event.ChooseAccounts) -> Unit,
+    onDisplayPermission: (Event.DisplayPermission) -> Unit,
+    onPersonaDataOngoing: (Event.PersonaDataOngoing) -> Unit,
+    onPersonaDataOnetime: (Event.PersonaDataOnetime) -> Unit,
+    onBiometricPrompt: (signtureReguired: Boolean) -> Unit
+) {
+    LaunchedEffect(Unit) {
+        oneOffEvent.collect { event ->
+            when (event) {
+                Event.CloseLoginFlow -> onBackClick()
+                is Event.LoginFlowCompleted -> onLoginFlowComplete()
+                is Event.ChooseAccounts -> onChooseAccounts(event)
+                is Event.DisplayPermission -> onDisplayPermission(event)
+                is Event.PersonaDataOngoing -> onPersonaDataOngoing(event)
+                is Event.PersonaDataOnetime -> onPersonaDataOnetime(event)
+                is Event.RequestCompletionBiometricPrompt -> onBiometricPrompt(event.isSignatureRequired)
+            }
+        }
     }
 }
 
