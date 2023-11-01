@@ -334,7 +334,7 @@ private fun RenameAccountSheet(
             value = accountNameChanged,
             singleLine = true,
             error = if (isNewNameLengthMoreThanTheMaximum) {
-                "Account label too long"
+                stringResource(id = R.string.error_accountLabel_tooLong)
             } else {
                 null
             }

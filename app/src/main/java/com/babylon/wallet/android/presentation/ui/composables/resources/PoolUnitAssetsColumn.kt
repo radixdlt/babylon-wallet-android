@@ -235,6 +235,9 @@ private fun StakeSectionTitle(title: String, modifier: Modifier = Modifier) {
     )
 }
 
+@Composable
 fun poolName(name: String?): String {
-    return name?.ifEmpty { "Unnamed Pool" } ?: "Unnamed Pool"
+    return name?.ifEmpty {
+        stringResource(id = R.string.account_poolUnits_unknownPoolUnitName)
+    } ?: stringResource(id = R.string.account_poolUnits_unknownPoolUnitName)
 }

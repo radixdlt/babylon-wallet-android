@@ -20,6 +20,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.rememberSwipeableState
 import androidx.compose.material.swipeable
@@ -224,7 +225,7 @@ private fun SuccessContent(
             contentDescription = null
         )
         Text(
-            text = "Transaction Success", // stringResource(id = R.string.transaction_status_success_title),
+            text = stringResource(id = R.string.transaction_status_success_title),
             style = RadixTheme.typography.title,
             color = RadixTheme.colors.gray1,
             textAlign = TextAlign.Center
@@ -243,10 +244,11 @@ private fun SuccessContent(
                 horizontalArrangement = Arrangement.Center
             ) {
                 Text(
-                    text = "Transaction ID: ",
+                    text = stringResource(id = R.string.transaction_status_transaction_id_text),
                     style = RadixTheme.typography.body1Regular,
                     color = RadixTheme.colors.gray1
                 )
+                Spacer(modifier = Modifier.width(RadixTheme.dimensions.paddingXSmall))
                 ActionableAddressView(
                     address = transactionAddress,
                     textStyle = RadixTheme.typography.body1Regular,

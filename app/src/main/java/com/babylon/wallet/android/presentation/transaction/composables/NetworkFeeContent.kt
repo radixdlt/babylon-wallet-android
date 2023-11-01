@@ -65,7 +65,10 @@ fun NetworkFeeContent(
                         placeholderFadeTransitionSpec = { tween() },
                         contentFadeTransitionSpec = { tween() }
                     ),
-                text = "${fees.transactionFeeToLock.displayableQuantity()} XRD",
+                text = stringResource(
+                    id = R.string.transactionReview_xrdAmount,
+                    fees.transactionFeeToLock.displayableQuantity()
+                ),
                 style = RadixTheme.typography.body1Link,
                 color = RadixTheme.colors.gray1
             )

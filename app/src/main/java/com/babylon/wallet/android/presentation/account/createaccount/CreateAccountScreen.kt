@@ -175,7 +175,7 @@ fun CreateAccountContent(
                 onValueChanged = onAccountNameChange,
                 value = accountName,
                 error = if (isAccountNameLengthMoreThanTheMaximum) {
-                    "Account label too long"
+                    stringResource(id = R.string.error_accountLabel_tooLong)
                 } else {
                     null
                 },

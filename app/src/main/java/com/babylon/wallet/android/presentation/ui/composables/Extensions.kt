@@ -13,7 +13,7 @@ typealias DSR = com.babylon.wallet.android.designsystem.R.drawable
 @Composable
 fun Tag.name(): String {
     return when (this) {
-        is Tag.Official -> "RADIX NETWORK"
+        is Tag.Official -> stringResource(id = R.string.assetDetails_tags_officialRadix)
         is Tag.Dynamic -> name
     }
 }
