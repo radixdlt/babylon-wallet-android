@@ -47,6 +47,10 @@ class AccountSettingsViewModel @Inject constructor(
         viewModelScope.launch {
             getFreeXrdUseCase.getFaucetState(args.address).collect { faucetState ->
                 if (shouldShowDeveloperSettings(faucetState)) {
+                    val developerSectionExist = state.value.settingsSections.any {
+                        it is AccountSettingsSection.DevelopmentSection
+                    }
+                    if (developerSectionExist) return@collect
                     _state.update {
                         it.copy(
                             settingsSections = (
@@ -55,7 +59,7 @@ class AccountSettingsViewModel @Inject constructor(
                                         AccountSettingItem.DevSettings
                                     )
                                 )
-                                ).distinct().toPersistentList()
+                                ).toPersistentList()
                         )
                     }
                 }
