@@ -3,13 +3,10 @@ package com.babylon.wallet.android.data.repository.state
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponseItem
 import com.babylon.wallet.android.data.gateway.generated.models.StateNonFungibleDetailsResponseItem
 import com.babylon.wallet.android.data.repository.cache.database.AccountNFTJoin.Companion.asAccountNFTJoin
-import com.babylon.wallet.android.data.repository.cache.database.PoolEntity.Companion.toPoolsJoin
 import com.babylon.wallet.android.data.repository.cache.database.ResourceEntity
 import com.babylon.wallet.android.data.repository.cache.database.ResourceEntity.Companion.asEntity
 import com.babylon.wallet.android.data.repository.cache.database.StateDao
 import com.babylon.wallet.android.data.repository.cache.database.SyncInfo
-import com.babylon.wallet.android.data.repository.cache.database.ValidatorEntity.Companion.asValidatorEntities
-import com.babylon.wallet.android.domain.model.assets.AccountWithAssets
 import com.babylon.wallet.android.domain.model.assets.Assets
 import com.babylon.wallet.android.domain.model.assets.LiquidStakeUnit
 import com.babylon.wallet.android.domain.model.assets.PoolUnit
@@ -20,11 +17,12 @@ import com.babylon.wallet.android.domain.model.resources.AccountDetails
 import com.babylon.wallet.android.domain.model.resources.Pool
 import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.domain.model.resources.metadata.AccountTypeMetadataItem
+import com.babylon.wallet.android.utils.truncatedHash
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 import rdx.works.core.InstantGenerator
-import rdx.works.profile.data.model.pernetwork.Network
+import timber.log.Timber
+import java.time.Instant
 import kotlin.time.DurationUnit
 import kotlin.time.toDuration
 
@@ -35,7 +33,13 @@ class StateCacheDelegate(
     // TODO check which are stale
     fun observeCachedAccounts(): Flow<Map<String, CachedDetails>> = stateDao.observeAccounts().map { detailsWithResources ->
         val result = mutableMapOf<String, CachedDetails>()
+        val cacheMinBoundary = Instant.ofEpochMilli(accountCacheValidity())
         detailsWithResources.forEach { cache ->
+            if (cache.accountSynced != null && cache.accountSynced < cacheMinBoundary) {
+                Timber.tag("Bakos").d("\uD83D\uDDD1️ Stale ${cache.address.truncatedHash()}")
+                return@forEach
+            }
+
             // Parse details for this account
             val cachedDetails = CachedDetails(
                 stateVersion = cache.stateVersion,
@@ -220,8 +224,7 @@ class StateCacheDelegate(
         private val accountsCacheDuration = 2.toDuration(DurationUnit.HOURS)
         private val resourcesCacheDuration = 48.toDuration(DurationUnit.HOURS)
 
-        fun accountCacheValidity(isRefreshing: Boolean = false) =
-            InstantGenerator().toEpochMilli() - if (isRefreshing) 0 else accountsCacheDuration.inWholeMilliseconds
+        fun accountCacheValidity() = InstantGenerator().toEpochMilli() - accountsCacheDuration.inWholeMilliseconds
 
         fun resourcesCacheValidity(isRefreshing: Boolean = false) =
             InstantGenerator().toEpochMilli() - if (isRefreshing) 0 else resourcesCacheDuration.inWholeMilliseconds
