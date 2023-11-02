@@ -48,7 +48,7 @@ sealed class InteractionState(val factorSource: FactorSource) {
         data class Error(
             private val ledgerFactorSource: LedgerHardwareWalletFactorSource,
             override val signingPurpose: SigningPurpose?,
-            val failure: RadixWalletException.DappRequestException
+            val failure: RadixWalletException.LedgerCommunicationException
         ) : Ledger(ledgerFactorSource)
 
         override val label: String

@@ -201,16 +201,20 @@ class TransactionSubmitDelegate @Inject constructor(
         }.onFailure { throwable ->
             throwable.asRadixWalletException()?.let { radixWalletException ->
                 when (radixWalletException) {
-                    is RadixWalletException.PrepareTransactionException.SignCompiledTransactionIntent,
-                    is RadixWalletException.LedgerCommunicationFailure -> {
-                        val failedToSign =
-                            radixWalletException is RadixWalletException.PrepareTransactionException.SignCompiledTransactionIntent
+                    is RadixWalletException.SignatureCancelled,
+                    is RadixWalletException.LedgerCommunicationException -> {
+                        _state.update {
+                            it.copy(isSubmitting = false)
+                        }
+                        approvalJob = null
+                        return
+                    }
+                    is RadixWalletException.PrepareTransactionException.SignCompiledTransactionIntent -> {
                         val noMnemonic = radixWalletException.cause is ProfileException.NoMnemonic
-                        val cancelled = radixWalletException.cause is RadixWalletException.SignatureCancelled
                         _state.update {
                             it.copy(
                                 isSubmitting = false,
-                                error = if (failedToSign && noMnemonic.not() && cancelled.not()) {
+                                error = if (noMnemonic.not()) {
                                     UiMessage.ErrorMessage(radixWalletException)
                                 } else {
                                     it.error

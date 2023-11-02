@@ -112,7 +112,7 @@ class GenerateAuthSigningFactorInstanceUseCase @Inject constructor(
             )
         } else {
             _interactionState.update { null }
-            Result.failure(RadixWalletException.LedgerCommunicationFailure.FailedToDerivePublicKeys)
+            Result.failure(RadixWalletException.LedgerCommunicationException.FailedToDerivePublicKeys)
         }
     }
 

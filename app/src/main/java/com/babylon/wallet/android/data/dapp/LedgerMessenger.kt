@@ -61,7 +61,7 @@ class LedgerMessengerImpl @Inject constructor(
     override suspend fun sendDeviceInfoRequest(interactionId: String): Result<MessageFromDataChannel.LedgerResponse.GetDeviceInfoResponse> {
         val ledgerRequest: LedgerInteractionRequest = LedgerInteractionRequest.GetDeviceInfo(interactionId)
         return makeLedgerRequest(request = ledgerRequest, onError = {
-            RadixWalletException.LedgerCommunicationFailure.FailedToGetDeviceId
+            RadixWalletException.LedgerCommunicationException.FailedToGetDeviceId
         })
     }
 
@@ -76,7 +76,7 @@ class LedgerMessengerImpl @Inject constructor(
             ledgerDevice = ledgerDevice
         )
         return makeLedgerRequest(request = ledgerRequest, onError = {
-            RadixWalletException.LedgerCommunicationFailure.FailedToDerivePublicKeys
+            RadixWalletException.LedgerCommunicationException.FailedToDerivePublicKeys
         })
     }
 
@@ -101,7 +101,7 @@ class LedgerMessengerImpl @Inject constructor(
             mode = LedgerInteractionRequest.SignTransaction.Mode.Summary
         )
         return makeLedgerRequest(request = ledgerRequest, onError = {
-            RadixWalletException.LedgerCommunicationFailure.FailedToSignTransaction(it.code)
+            RadixWalletException.LedgerCommunicationException.FailedToSignTransaction(it.code)
         })
     }
 
@@ -127,7 +127,7 @@ class LedgerMessengerImpl @Inject constructor(
             dAppDefinitionAddress = dAppDefinitionAddress
         )
         return makeLedgerRequest(request = ledgerRequest, onError = {
-            RadixWalletException.LedgerCommunicationFailure.FailedToDerivePublicKeys
+            RadixWalletException.LedgerCommunicationException.FailedToDerivePublicKeys
         })
     }
 
@@ -142,13 +142,15 @@ class LedgerMessengerImpl @Inject constructor(
             ledgerDevice = ledgerDevice
         )
         return makeLedgerRequest(request = ledgerRequest, onError = {
-            RadixWalletException.LedgerCommunicationFailure.FailedToDeriveAndDisplayAddress
+            RadixWalletException.LedgerCommunicationException.FailedToDeriveAndDisplayAddress
         })
     }
 
     private suspend inline fun <reified R : MessageFromDataChannel.LedgerResponse> makeLedgerRequest(
         request: LedgerInteractionRequest,
-        crossinline onError: (MessageFromDataChannel.LedgerResponse.LedgerErrorResponse) -> RadixWalletException.LedgerCommunicationFailure
+        crossinline onError: (
+            MessageFromDataChannel.LedgerResponse.LedgerErrorResponse
+        ) -> RadixWalletException.LedgerCommunicationException
     ): Result<R> = flow<Result<R>> {
         peerdroidClient.sendMessage(peerdroidRequestJson.encodeToString(request))
             .onSuccess {
