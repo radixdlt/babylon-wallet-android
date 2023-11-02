@@ -2,46 +2,34 @@ package com.babylon.wallet.android.data.repository.state
 
 import com.babylon.wallet.android.data.gateway.apis.StateApi
 import com.babylon.wallet.android.data.gateway.extensions.asMetadataItems
+import com.babylon.wallet.android.data.gateway.extensions.getNextNftItems
+import com.babylon.wallet.android.data.gateway.extensions.getSingleEntityDetails
 import com.babylon.wallet.android.data.gateway.extensions.paginateDetails
+import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponseItem
 import com.babylon.wallet.android.data.gateway.generated.models.StateNonFungibleDataRequest
 import com.babylon.wallet.android.data.gateway.model.ExplicitMetadataKey
 import com.babylon.wallet.android.data.repository.cache.database.NFTEntity.Companion.asEntity
-import com.babylon.wallet.android.data.repository.cache.database.PoolEntity.Companion.asPools
-import com.babylon.wallet.android.data.repository.cache.database.PoolEntity.Companion.toPoolsJoin
 import com.babylon.wallet.android.data.repository.cache.database.StateDao
+import com.babylon.wallet.android.data.repository.cache.database.StateDao.Companion.resourcesCacheValidity
 import com.babylon.wallet.android.data.repository.cache.database.SyncInfo
-import com.babylon.wallet.android.data.repository.cache.database.ValidatorEntity.Companion.asValidatorEntities
-import com.babylon.wallet.android.data.repository.cache.database.ValidatorEntity.Companion.asValidators
+import com.babylon.wallet.android.data.repository.cache.database.storeAccountNFTsPortfolio
+import com.babylon.wallet.android.data.repository.cache.database.updateResourceDetails
 import com.babylon.wallet.android.data.repository.toResult
 import com.babylon.wallet.android.di.coroutines.ApplicationScope
 import com.babylon.wallet.android.di.coroutines.DefaultDispatcher
 import com.babylon.wallet.android.domain.model.DApp
 import com.babylon.wallet.android.domain.model.assets.AccountWithAssets
-import com.babylon.wallet.android.domain.model.assets.Assets
-import com.babylon.wallet.android.domain.model.resources.AccountDetails
 import com.babylon.wallet.android.domain.model.resources.Resource
-import com.babylon.wallet.android.domain.model.resources.XrdResource
 import com.babylon.wallet.android.domain.model.resources.metadata.MetadataItem.Companion.consume
 import com.babylon.wallet.android.domain.model.resources.metadata.OwnerKeyHashesMetadataItem
-import com.babylon.wallet.android.utils.truncatedHash
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.flowOn
-import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.flow.onStart
-import kotlinx.coroutines.flow.transform
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import rdx.works.core.InstantGenerator
 import rdx.works.profile.data.model.pernetwork.Entity
 import rdx.works.profile.data.model.pernetwork.Network
-import rdx.works.profile.data.repository.ProfileRepository
-import rdx.works.profile.derivation.model.NetworkId
 import timber.log.Timber
 import java.math.BigDecimal
 import javax.inject.Inject
@@ -72,110 +60,20 @@ interface StateRepository {
     }
 }
 
-@Singleton
 class StateRepositoryImpl @Inject constructor(
     private val stateApi: StateApi,
     private val stateDao: StateDao,
     @DefaultDispatcher private val dispatcher: CoroutineDispatcher,
-    @ApplicationScope private val applicationScope: CoroutineScope
+    private val accountsStateCache: AccountsStateCache
 ) : StateRepository {
-
-    private val accountsState = MutableStateFlow<List<AccountsWithAssetsFromCache>?>(null)
-
-    private val cacheDelegate = StateCacheDelegate(stateDao = stateDao)
-    private val stateApiDelegate = StateApiDelegate(stateApi = stateApi)
-
-    init {
-        applicationScope.launch {
-            cacheDelegate.observeCachedAccounts().onEach { Timber.tag("Bakos").d("Cache invoked") }
-            .transform { cached ->
-                val stateVersion = cached.values.mapNotNull { it.stateVersion }.maxOrNull() ?: run {
-                    emit(emptyList())
-                    return@transform
-                }
-
-                val allValidatorAddresses = cached.map { it.value.validatorAddresses() }.flatten().toSet()
-                val cachedValidators = cacheDelegate.getValidatorDetails(allValidatorAddresses, stateVersion).toMutableMap()
-                val newValidators = stateApiDelegate.getValidatorsDetails(
-                    allValidatorAddresses - cachedValidators.keys,
-                    stateVersion
-                ).asValidators().onEach {
-                    cachedValidators[it.address] = it
-                }
-                if (newValidators.isNotEmpty()) {
-                    Timber.tag("Bakos").d("\uD83D\uDCBD Inserting validators")
-                    stateDao.insertValidators(newValidators.asValidatorEntities(SyncInfo(InstantGenerator(), stateVersion)))
-                }
-
-                val allPoolAddresses = cached.map { it.value.poolAddresses() }.flatten().toSet()
-                val cachedPools = cacheDelegate.getPoolDetails(allPoolAddresses, stateVersion).toMutableMap()
-                val newPools = stateApiDelegate.getPoolDetails(allPoolAddresses - cachedPools.keys, stateVersion).asPools().onEach {
-                    cachedPools[it.address] = it
-                }
-
-                if (newPools.isNotEmpty()) {
-                    Timber.tag("Bakos").d("\uD83D\uDCBD Inserting pools")
-                    stateDao.updatePools(newPools.toPoolsJoin(SyncInfo(InstantGenerator(), stateVersion)))
-                } else {
-                    emit(
-                        cached.mapNotNull {
-                            it.value.toAccountWithAssets(
-                                accountAddress = it.key,
-                                pools = cachedPools,
-                                validators = cachedValidators
-                            )
-                        }
-                    )
-                }
-            }
-            .distinctUntilChanged()
-            .collect { accountsWithAssets ->
-                accountsState.value = accountsWithAssets
-            }
-        }
-    }
 
     override fun observeAccountsOnLedger(
         accounts: List<Network.Account>,
         isRefreshing: Boolean
-    ): Flow<List<AccountWithAssets>> = accountsState
-        .filterNotNull()
-        .onStart {
-            if (isRefreshing) {
-                Timber.tag("Bakos").d("\uD83D\uDCBD Deleting accounts")
-                stateDao.markAccountsToRefresh(accounts.map { it.address }.toSet())
-            }
-        }
-        .transform { cachedAccounts ->
-            val accountsToReturn = accounts.map { account ->
-                val cachedAccount = cachedAccounts.find { it.address == account.address }
-                AccountWithAssets(
-                    account = account,
-                    details = cachedAccount?.details,
-                    assets = cachedAccount?.assets
-                )
-            }.onEach {
-                //Timber.tag("Bakos").d("${it.account.displayName} - ${it.assets?.allSize()}")
-            }
-            emit(accountsToReturn)
-
-            val accountsToRequest = accountsToReturn.filterNot { it.assets != null }.map { it.account.address }.toSet()
-            stateApiDelegate.fetchAllResources(
-                accountAddresses = accountsToRequest,
-                onStateVersion = cachedAccounts.maxOfOrNull { it.details?.stateVersion ?: -1L }?.takeIf { it > 0L },
-            ).onSuccess { accountsOnGateway ->
-                if (accountsOnGateway.isNotEmpty()) {
-                    withContext(dispatcher) {
-                        Timber.tag("Bakos").d("\uD83D\uDCBD Inserting accounts ${accountsOnGateway.map { it.accountAddress.truncatedHash() }}")
-                        stateDao.updateAccountData(accountsOnGateway)
-                    }
-                }
-            }.onFailure {
-                // TODO maybe check if needing to mark those accounts as stale
-                throw it
-            }
-        }
-        .flowOn(dispatcher)
+    ): Flow<List<AccountWithAssets>> = accountsStateCache.observeAccountsOnLedger(
+        accounts = accounts,
+        isRefreshing = isRefreshing
+    )
 
     override suspend fun getMoreNFTs(
         account: Network.Account,
@@ -208,7 +106,7 @@ class StateRepositoryImpl @Inject constructor(
             val nextCursor = accountNftPortfolio.nextCursor
 
             Timber.tag("Bakos").d("Fetching NFT items ($nextCursor)")
-            val page = stateApiDelegate.getNextNftItems(
+            val page = stateApi.getNextNftItems(
                 accountAddress = account.address,
                 resourceAddress = resource.resourceAddress,
                 vaultAddress = vaultAddress,
@@ -217,7 +115,7 @@ class StateRepositoryImpl @Inject constructor(
             )
             val syncInfo = SyncInfo(synced = InstantGenerator(), accountStateVersion = accountStateVersion)
 
-            val newItems = cacheDelegate.storeAccountNFTsPortfolio(
+            val newItems = stateDao.storeAccountNFTsPortfolio(
                 accountAddress = account.address,
                 resourceAddress = resource.resourceAddress,
                 nextCursor = page.first,
@@ -234,7 +132,7 @@ class StateRepositoryImpl @Inject constructor(
     override fun observeResourceDetails(resourceAddress: String, accountAddress: String?): Flow<Resource> = flow {
         val cachedEntity = stateDao.getResourceDetails(
             resourceAddress = resourceAddress,
-            minValidity = StateCacheDelegate.resourcesCacheValidity()
+            minValidity = resourcesCacheValidity()
         )
         val amount = accountAddress?.let {
             stateDao.getAccountResourceJoin(resourceAddress = resourceAddress, accountAddress = accountAddress)?.amount
@@ -246,8 +144,22 @@ class StateRepositoryImpl @Inject constructor(
         }
 
         if (cachedResource?.isDetailsAvailable == false) {
-            val item = stateApiDelegate.getResourceDetails(resourceAddress = resourceAddress)
-            val updatedEntity = cacheDelegate.updateResourceDetails(item)
+            val item = stateApi.getSingleEntityDetails(
+                address = resourceAddress,
+                metadataKeys = setOf(
+                    ExplicitMetadataKey.NAME,
+                    ExplicitMetadataKey.SYMBOL,
+                    ExplicitMetadataKey.DESCRIPTION,
+                    ExplicitMetadataKey.RELATED_WEBSITES,
+                    ExplicitMetadataKey.ICON_URL,
+                    ExplicitMetadataKey.INFO_URL,
+                    ExplicitMetadataKey.VALIDATOR,
+                    ExplicitMetadataKey.POOL,
+                    ExplicitMetadataKey.TAGS,
+                    ExplicitMetadataKey.DAPP_DEFINITIONS
+                )
+            )
+            val updatedEntity = stateDao.updateResourceDetails(item)
 
             emit(updatedEntity.toResource(amount))
         }
@@ -255,7 +167,7 @@ class StateRepositoryImpl @Inject constructor(
 
     override suspend fun getNFTDetails(resourceAddress: String, localId: String): Result<Resource.NonFungibleResource.Item> =
         withContext(dispatcher) {
-            val cachedItem = stateDao.getNFTDetails(resourceAddress, localId, StateCacheDelegate.resourcesCacheValidity())
+            val cachedItem = stateDao.getNFTDetails(resourceAddress, localId, resourcesCacheValidity())
 
             if (cachedItem != null) {
                 return@withContext Result.success(cachedItem.toItem())
@@ -274,23 +186,8 @@ class StateRepositoryImpl @Inject constructor(
             }
         }
 
-    override suspend fun getOwnedXRD(accounts: List<Network.Account>): Result<Map<Network.Account, BigDecimal>> = withContext(dispatcher) {
-        if (accounts.isEmpty()) return@withContext Result.success(emptyMap())
-        val networkId = NetworkId.from(accounts.first().networkID)
-        val xrdAddress = XrdResource.address(networkId = networkId)
-
-        val accountsWithXRDVaults = accounts.associateWith { account ->
-            stateDao.getAccountResourceJoin(accountAddress = account.address, resourceAddress = xrdAddress)?.vaultAddress
-        }
-
-        runCatching {
-            val vaultsWithAmounts = stateApiDelegate.getVaultsDetails(accountsWithXRDVaults.mapNotNull { it.value }.toSet())
-
-            accountsWithXRDVaults.mapValues { entry ->
-                entry.value?.let { vaultsWithAmounts[it] } ?: BigDecimal.ZERO
-            }
-        }
-    }
+    override suspend fun getOwnedXRD(accounts: List<Network.Account>): Result<Map<Network.Account, BigDecimal>> =
+        accountsStateCache.getOwnedXRD(accounts = accounts)
 
     override suspend fun getEntityOwnerKeys(entities: List<Entity>): Result<Map<Entity, OwnerKeyHashesMetadataItem>> = runCatching {
         if (entities.isEmpty()) return@runCatching mapOf()
@@ -315,14 +212,25 @@ class StateRepositoryImpl @Inject constructor(
     override suspend fun getDAppsDetails(definitionAddresses: List<String>): Result<List<DApp>> = runCatching {
         if (definitionAddresses.isEmpty()) return@runCatching listOf()
 
-        stateApiDelegate.getDAppsDetails(definitionAddresses.toSet()).map { item ->
+        val items = mutableListOf<StateEntityDetailsResponseItem>()
+        stateApi.paginateDetails(
+            addresses = definitionAddresses.toSet(),
+            metadataKeys = setOf(
+                ExplicitMetadataKey.NAME,
+                ExplicitMetadataKey.DESCRIPTION,
+                ExplicitMetadataKey.ACCOUNT_TYPE,
+                ExplicitMetadataKey.DAPP_DEFINITION,
+                ExplicitMetadataKey.DAPP_DEFINITIONS,
+                ExplicitMetadataKey.CLAIMED_WEBSITES,
+                ExplicitMetadataKey.CLAIMED_ENTITIES,
+                ExplicitMetadataKey.ICON_URL
+            )
+        ) { page ->
+            items.addAll(page.items)
+        }
+
+        items.map { item ->
             DApp.from(address = item.address, metadataItems = item.explicitMetadata?.asMetadataItems().orEmpty())
         }
     }
-
-    data class AccountsWithAssetsFromCache(
-        val address: String,
-        val details: AccountDetails?,
-        val assets: Assets?
-    )
 }

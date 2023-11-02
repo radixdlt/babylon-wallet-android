@@ -6,14 +6,16 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Transaction
+import com.babylon.wallet.android.data.gateway.extensions.AccountGatewayDetails
 import com.babylon.wallet.android.data.gateway.extensions.asMetadataItems
 import com.babylon.wallet.android.data.repository.cache.database.AccountResourceJoin.Companion.asAccountResourceJoin
-import com.babylon.wallet.android.data.repository.state.StateApiDelegate
 import com.babylon.wallet.android.domain.model.resources.metadata.AccountTypeMetadataItem
 import com.babylon.wallet.android.domain.model.resources.metadata.MetadataItem.Companion.consume
 import kotlinx.coroutines.flow.Flow
 import rdx.works.core.InstantGenerator
 import java.math.BigDecimal
+import kotlin.time.DurationUnit
+import kotlin.time.toDuration
 
 @Dao
 interface StateDao {
@@ -97,7 +99,7 @@ interface StateDao {
     }
 
     @Transaction
-    fun updateAccountData(accountsGatewayDetails: List<StateApiDelegate.AccountGatewayDetails>) {
+    fun updateAccountData(accountsGatewayDetails: List<AccountGatewayDetails>) {
         accountsGatewayDetails.forEach { accountGatewayDetails ->
             val syncInfo = SyncInfo(synced = InstantGenerator(), accountStateVersion = accountGatewayDetails.ledgerState.stateVersion)
             val accountMetadataItems = accountGatewayDetails.accountMetadata?.asMetadataItems()?.toMutableList()
@@ -130,7 +132,7 @@ interface StateDao {
         supply = :supply
         WHERE address = :resourceAddress
     """)
-    fun updateResourceDetails(resourceAddress: String, divisibility: Int?, behaviours: BehavioursColumn?, supply: BigDecimal?)
+    fun updateResourceEntity(resourceAddress: String, divisibility: Int?, behaviours: BehavioursColumn?, supply: BigDecimal?)
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insertAccountResourcesPortfolio(accountPortfolios: List<AccountResourceJoin>)
@@ -214,7 +216,7 @@ interface StateDao {
     fun insertNFTs(nfts: List<NFTEntity>)
 
     @Transaction
-    fun storeAccountNFTsPortfolio(
+    fun insertAccountNFTsJoin(
         accountAddress: String,
         resourceAddress: String,
         cursor: String?,
@@ -249,4 +251,13 @@ interface StateDao {
     """
     )
     fun getNFTDetails(resourceAddress: String, localId: String, minValidity: Long): NFTEntity?
+
+    companion object {
+        val accountsCacheDuration = 2.toDuration(DurationUnit.HOURS)
+        val resourcesCacheDuration = 48.toDuration(DurationUnit.HOURS)
+
+        fun accountCacheValidity() = InstantGenerator().toEpochMilli() - accountsCacheDuration.inWholeMilliseconds
+        fun resourcesCacheValidity(isRefreshing: Boolean = false) =
+            InstantGenerator().toEpochMilli() - if (isRefreshing) 0 else resourcesCacheDuration.inWholeMilliseconds
+    }
 }
