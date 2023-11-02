@@ -16,10 +16,13 @@ class PollTransactionStatusUseCase @Inject constructor(
         txID: String,
         requestId: String,
         transactionType: TransactionType = TransactionType.Generic,
-        txProcessingTime: String
+        endEpoch: ULong
     ): TransactionStatusData {
         while (true) {
             transactionRepository.getTransactionStatus(txID).onSuccess { statusCheckResult ->
+                val currentEpoch = statusCheckResult.ledgerState.epoch.toULong()
+                val txProcessingTime = ((endEpoch - currentEpoch) * 5u).toString()
+
                 when (statusCheckResult.knownPayloads.firstOrNull()?.payloadStatus) {
                     TransactionPayloadStatus.unknown,
                     TransactionPayloadStatus.commitPendingOutcomeUnknown,
@@ -32,9 +35,8 @@ class PollTransactionStatusUseCase @Inject constructor(
                         return TransactionStatusData(
                             txId = txID,
                             requestId = requestId,
-                            result = kotlin.Result.success(Unit),
-                            transactionType = transactionType,
-                            txProcessingTime = txProcessingTime
+                            result = Result.success(Unit),
+                            transactionType = transactionType
                         )
                     }
 
@@ -43,13 +45,12 @@ class PollTransactionStatusUseCase @Inject constructor(
                         return TransactionStatusData(
                             txId = txID,
                             requestId = requestId,
-                            result = kotlin.Result.failure(
+                            result = Result.failure(
                                 RadixWalletException.TransactionSubmitException.TransactionCommitted.Failure(
                                     txID
                                 )
                             ),
-                            transactionType = transactionType,
-                            txProcessingTime = txProcessingTime
+                            transactionType = transactionType
                         )
                     }
 
@@ -58,13 +59,12 @@ class PollTransactionStatusUseCase @Inject constructor(
                         return TransactionStatusData(
                             txId = txID,
                             requestId = requestId,
-                            result = kotlin.Result.failure(
+                            result = Result.failure(
                                 RadixWalletException.TransactionSubmitException.TransactionRejected.Permanently(
                                     txID
                                 )
                             ),
-                            transactionType = transactionType,
-                            txProcessingTime = txProcessingTime
+                            transactionType = transactionType
                         )
                     }
 
@@ -73,14 +73,13 @@ class PollTransactionStatusUseCase @Inject constructor(
                         return TransactionStatusData(
                             txId = txID,
                             requestId = requestId,
-                            result = kotlin.Result.failure(
+                            result = Result.failure(
                                 RadixWalletException.TransactionSubmitException.TransactionRejected.Temporary(
                                     txID,
                                     txProcessingTime
                                 )
                             ),
-                            transactionType = transactionType,
-                            txProcessingTime = txProcessingTime
+                            transactionType = transactionType
                         )
                     }
 

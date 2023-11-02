@@ -143,7 +143,7 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
         every { savedStateHandle.get<String>(ARG_TRANSACTION_REQUEST_ID) } returns sampleRequestId
         coEvery { getCurrentGatewayUseCase() } returns Radix.Gateway.nebunet
         coEvery { submitTransactionUseCase(any(), any(), any()) } returns Result.success(
-            SubmitTransactionUseCase.SubmitTransactionResult(sampleTxId, "50")
+            SubmitTransactionUseCase.SubmitTransactionResult(sampleTxId, 50u)
         )
         coEvery { getTransactionBadgesUseCase.invoke(any()) } returns listOf(
             Badge(address = "", nameMetadataItem = null, iconMetadataItem = null)

@@ -46,10 +46,10 @@ class TransactionStatusClient @Inject constructor(
         txID: String,
         requestId: String,
         transactionType: TransactionType = TransactionType.Generic,
-        txProcessingTime: String
+        endEpoch: ULong
     ) {
         appScope.launch {
-            val pollResult = pollTransactionStatusUseCase(txID, requestId, transactionType, txProcessingTime)
+            val pollResult = pollTransactionStatusUseCase(txID, requestId, transactionType, endEpoch)
             pollResult.result.onSuccess {
                 appEventBus.sendEvent(AppEvent.RefreshResourcesNeeded)
             }
@@ -90,6 +90,5 @@ data class TransactionStatusData(
     val txId: String,
     val requestId: String,
     val result: Result<Unit>,
-    val transactionType: TransactionType = TransactionType.Generic,
-    val txProcessingTime: String
+    val transactionType: TransactionType = TransactionType.Generic
 )

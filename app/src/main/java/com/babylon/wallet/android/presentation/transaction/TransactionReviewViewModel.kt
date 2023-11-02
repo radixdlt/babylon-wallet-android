@@ -221,7 +221,7 @@ class TransactionReviewViewModel @Inject constructor(
 
     data class State(
         val request: MessageFromDataChannel.IncomingRequest.TransactionRequest? = null,
-        val txProcessingTime: String? = null,
+        val endEpoch: ULong? = null,
         val isLoading: Boolean,
         val isNetworkFeeLoading: Boolean,
         val isSubmitting: Boolean = false,
