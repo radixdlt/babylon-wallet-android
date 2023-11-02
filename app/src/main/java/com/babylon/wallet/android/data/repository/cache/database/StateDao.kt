@@ -9,13 +9,10 @@ import androidx.room.Transaction
 import com.babylon.wallet.android.data.gateway.extensions.asMetadataItems
 import com.babylon.wallet.android.data.repository.cache.database.AccountResourceJoin.Companion.asAccountResourceJoin
 import com.babylon.wallet.android.data.repository.state.StateApiDelegate
-import com.babylon.wallet.android.domain.model.assets.ValidatorDetail
-import com.babylon.wallet.android.domain.model.resources.Pool
 import com.babylon.wallet.android.domain.model.resources.metadata.AccountTypeMetadataItem
 import com.babylon.wallet.android.domain.model.resources.metadata.MetadataItem.Companion.consume
 import kotlinx.coroutines.flow.Flow
 import rdx.works.core.InstantGenerator
-import timber.log.Timber
 import java.math.BigDecimal
 
 @Dao
@@ -60,10 +57,11 @@ interface StateDao {
     ): Flow<List<AccountPortfolioResponse>>
 
     @Query("""
-        DELETE FROM AccountEntity
+        UPDATE AccountEntity SET
+        synced = NULL
         WHERE address in (:addresses)
     """)
-    fun deleteAccounts(addresses: Set<String>)
+    fun markAccountsToRefresh(addresses: Set<String>)
 
     @Transaction
     fun updatePendingData(

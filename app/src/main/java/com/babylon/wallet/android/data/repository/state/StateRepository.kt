@@ -18,9 +18,7 @@ import com.babylon.wallet.android.di.coroutines.DefaultDispatcher
 import com.babylon.wallet.android.domain.model.DApp
 import com.babylon.wallet.android.domain.model.assets.AccountWithAssets
 import com.babylon.wallet.android.domain.model.assets.Assets
-import com.babylon.wallet.android.domain.model.assets.ValidatorDetail
 import com.babylon.wallet.android.domain.model.resources.AccountDetails
-import com.babylon.wallet.android.domain.model.resources.Pool
 import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.domain.model.resources.XrdResource
 import com.babylon.wallet.android.domain.model.resources.metadata.MetadataItem.Companion.consume
@@ -30,31 +28,20 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.onStart
-import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.transform
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import rdx.works.core.InstantGenerator
-import rdx.works.profile.data.model.currentGateway
-import rdx.works.profile.data.model.currentNetwork
 import rdx.works.profile.data.model.pernetwork.Entity
 import rdx.works.profile.data.model.pernetwork.Network
-import rdx.works.profile.data.repository.BackupProfileRepository
 import rdx.works.profile.data.repository.ProfileRepository
-import rdx.works.profile.data.repository.profile
 import rdx.works.profile.derivation.model.NetworkId
-import rdx.works.profile.domain.notHiddenAccounts
 import timber.log.Timber
 import java.math.BigDecimal
 import javax.inject.Inject
@@ -89,7 +76,6 @@ interface StateRepository {
 class StateRepositoryImpl @Inject constructor(
     private val stateApi: StateApi,
     private val stateDao: StateDao,
-    private val profileRepository: ProfileRepository,
     @DefaultDispatcher private val dispatcher: CoroutineDispatcher,
     @ApplicationScope private val applicationScope: CoroutineScope
 ) : StateRepository {
@@ -157,7 +143,7 @@ class StateRepositoryImpl @Inject constructor(
         .onStart {
             if (isRefreshing) {
                 Timber.tag("Bakos").d("\uD83D\uDCBD Deleting accounts")
-                stateDao.deleteAccounts(accounts.map { it.address }.toSet())
+                stateDao.markAccountsToRefresh(accounts.map { it.address }.toSet())
             }
         }
         .transform { cachedAccounts ->
@@ -173,16 +159,20 @@ class StateRepositoryImpl @Inject constructor(
             }
             emit(accountsToReturn)
 
-            // Put this on a different class that returns the GW ing
-            val accountsOnGateway = stateApiDelegate.fetchAllResources(
-                accountAddresses = accountsToReturn.filterNot { it.assets != null }.map { it.account.address }.toSet(),
+            val accountsToRequest = accountsToReturn.filterNot { it.assets != null }.map { it.account.address }.toSet()
+            stateApiDelegate.fetchAllResources(
+                accountAddresses = accountsToRequest,
                 onStateVersion = cachedAccounts.maxOfOrNull { it.details?.stateVersion ?: -1L }?.takeIf { it > 0L },
-            )
-            if (accountsOnGateway.isNotEmpty()) {
-                withContext(dispatcher) {
-                    Timber.tag("Bakos").d("\uD83D\uDCBD Inserting accounts ${accountsOnGateway.map { it.accountAddress.truncatedHash() }}")
-                    stateDao.updateAccountData(accountsOnGateway)
+            ).onSuccess { accountsOnGateway ->
+                if (accountsOnGateway.isNotEmpty()) {
+                    withContext(dispatcher) {
+                        Timber.tag("Bakos").d("\uD83D\uDCBD Inserting accounts ${accountsOnGateway.map { it.accountAddress.truncatedHash() }}")
+                        stateDao.updateAccountData(accountsOnGateway)
+                    }
                 }
+            }.onFailure {
+                // TODO maybe check if needing to mark those accounts as stale
+                throw it
             }
         }
         .flowOn(dispatcher)

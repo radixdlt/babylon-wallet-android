@@ -32,75 +32,84 @@ class StateApiDelegate(
     private val stateApi: StateApi
 ) {
 
-    // TODO remove something on catch error
     private val accountsInProgress = MutableStateFlow<Set<String>>(emptySet())
 
     suspend fun fetchAllResources(
         accountAddresses: Set<String>,
         onStateVersion: Long? = null,
-    ): List<AccountGatewayDetails> {
-        accountsInProgress.value = accountsInProgress.value xor accountAddresses
+    ): Result<List<AccountGatewayDetails>> {
+        val accountsToRequest = accountsInProgress.value xor accountAddresses
+        accountsInProgress.value = accountsToRequest
 
-        if (accountsInProgress.value.isEmpty()) return emptyList()
-        Timber.tag("Bakos").d("☁️ ${accountsInProgress.value.joinToString { it.truncatedHash() }}")
+        if (accountsToRequest.isEmpty()) return Result.success(emptyList())
+        Timber.tag("Bakos").d("☁️ ${accountsToRequest.joinToString { it.truncatedHash() }}")
 
-        val result = mutableListOf<AccountGatewayDetails>()
-        stateApi.paginateDetails(
-            addresses = accountsInProgress.value,
-            metadataKeys = setOf(
-                ExplicitMetadataKey.ACCOUNT_TYPE,
+        return runCatching {
+            val result = mutableListOf<AccountGatewayDetails>()
+            stateApi.paginateDetails(
+                addresses = accountsToRequest,
+                metadataKeys = setOf(
+                    ExplicitMetadataKey.ACCOUNT_TYPE,
 
-                ExplicitMetadataKey.NAME,
-                ExplicitMetadataKey.SYMBOL,
-                ExplicitMetadataKey.DESCRIPTION,
-                ExplicitMetadataKey.RELATED_WEBSITES,
-                ExplicitMetadataKey.ICON_URL,
-                ExplicitMetadataKey.INFO_URL,
-                ExplicitMetadataKey.VALIDATOR,
-                ExplicitMetadataKey.POOL,
-                ExplicitMetadataKey.TAGS,
-                ExplicitMetadataKey.DAPP_DEFINITIONS
-            ),
-            stateVersion = onStateVersion
-        ) { chunkedAccounts ->
-            chunkedAccounts.items.forEach { accountOnLedger ->
-                val allFungibles = mutableListOf<FungibleResourcesCollectionItem>()
-                val allNonFungibles = mutableListOf<NonFungibleResourcesCollectionItem>()
+                    ExplicitMetadataKey.NAME,
+                    ExplicitMetadataKey.SYMBOL,
+                    ExplicitMetadataKey.DESCRIPTION,
+                    ExplicitMetadataKey.RELATED_WEBSITES,
+                    ExplicitMetadataKey.ICON_URL,
+                    ExplicitMetadataKey.INFO_URL,
+                    ExplicitMetadataKey.VALIDATOR,
+                    ExplicitMetadataKey.POOL,
+                    ExplicitMetadataKey.TAGS,
+                    ExplicitMetadataKey.DAPP_DEFINITIONS
+                ),
+                stateVersion = onStateVersion
+            ) { chunkedAccounts ->
+                chunkedAccounts.items.forEach { accountOnLedger ->
+                    val allFungibles = mutableListOf<FungibleResourcesCollectionItem>()
+                    val allNonFungibles = mutableListOf<NonFungibleResourcesCollectionItem>()
 
-                allFungibles.addAll(accountOnLedger.fungibleResources?.items.orEmpty())
-                allNonFungibles.addAll(accountOnLedger.nonFungibleResources?.items.orEmpty())
+                    allFungibles.addAll(accountOnLedger.fungibleResources?.items.orEmpty())
+                    allNonFungibles.addAll(accountOnLedger.nonFungibleResources?.items.orEmpty())
 
-                coroutineScope {
-                    val allFungiblePagesForAccount = async {
-                        stateApi.paginateFungibles(
-                            item = accountOnLedger,
-                            ledgerState = chunkedAccounts.ledgerState,
-                            onPage = allFungibles::addAll
-                        )
+                    coroutineScope {
+                        val allFungiblePagesForAccount = async {
+                            stateApi.paginateFungibles(
+                                item = accountOnLedger,
+                                ledgerState = chunkedAccounts.ledgerState,
+                                onPage = allFungibles::addAll
+                            )
+                        }
+
+                        val allNonFungiblePagesForAccount = async {
+                            stateApi.paginateNonFungibles(
+                                item = accountOnLedger,
+                                ledgerState = chunkedAccounts.ledgerState,
+                                onPage = allNonFungibles::addAll
+                            )
+                        }
+
+                        awaitAll(allFungiblePagesForAccount, allNonFungiblePagesForAccount)
                     }
 
-                    val allNonFungiblePagesForAccount = async {
-                        stateApi.paginateNonFungibles(
-                            item = accountOnLedger,
+                    result.add(
+                        AccountGatewayDetails(
+                            accountAddress = accountOnLedger.address,
                             ledgerState = chunkedAccounts.ledgerState,
-                            onPage = allNonFungibles::addAll
+                            accountMetadata = accountOnLedger.explicitMetadata,
+                            fungibles = allFungibles,
+                            nonFungibles = allNonFungibles
                         )
-                    }
-
-                    awaitAll(allFungiblePagesForAccount, allNonFungiblePagesForAccount)
+                    )
                 }
-
-                result.add(AccountGatewayDetails(
-                    accountAddress = accountOnLedger.address,
-                    ledgerState = chunkedAccounts.ledgerState,
-                    accountMetadata = accountOnLedger.explicitMetadata,
-                    fungibles = allFungibles,
-                    nonFungibles = allNonFungibles
-                ))
             }
-            accountsInProgress.value = accountsInProgress.value - chunkedAccounts.items.map { it.address }.toSet()
+            result
+        }.onSuccess { result ->
+            val receivedAccountAddresses = result.map { it.accountAddress }
+            Timber.tag("Bakos").d("☁️ <= ${receivedAccountAddresses.joinToString { it.truncatedHash() }}")
+            accountsInProgress.value = accountsInProgress.value - receivedAccountAddresses.toSet()
+        }.onFailure {
+            accountsInProgress.value = accountsInProgress.value - accountsToRequest
         }
-        return result
     }
 
     suspend fun getPoolDetails(

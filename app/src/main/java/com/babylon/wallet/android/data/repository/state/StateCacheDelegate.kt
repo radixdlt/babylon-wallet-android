@@ -30,13 +30,11 @@ class StateCacheDelegate(
     private val stateDao: StateDao
 ) {
 
-    // TODO check which are stale
     fun observeCachedAccounts(): Flow<Map<String, CachedDetails>> = stateDao.observeAccounts().map { detailsWithResources ->
         val result = mutableMapOf<String, CachedDetails>()
         val cacheMinBoundary = Instant.ofEpochMilli(accountCacheValidity())
         detailsWithResources.forEach { cache ->
-            if (cache.accountSynced != null && cache.accountSynced < cacheMinBoundary) {
-                Timber.tag("Bakos").d("\uD83D\uDDD1️ Stale ${cache.address.truncatedHash()}")
+            if (cache.accountSynced == null || cache.accountSynced < cacheMinBoundary) {
                 return@forEach
             }
 
@@ -210,8 +208,8 @@ class StateCacheDelegate(
                     typeMetadataItem = typeMetadataItem
                 ),
                 assets = Assets(
-                    fungibles = resultingFungibles,
-                    nonFungibles = resultingNonFungibles,
+                    fungibles = resultingFungibles.sorted(),
+                    nonFungibles = resultingNonFungibles.sorted(),
                     poolUnits = resultingPoolUnits,
                     validatorsWithStakes = resultingValidatorsWithStakeResources
                 )
