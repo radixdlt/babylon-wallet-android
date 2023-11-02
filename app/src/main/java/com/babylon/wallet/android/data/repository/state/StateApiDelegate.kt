@@ -23,8 +23,6 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
-import rdx.works.core.xor
-import rdx.works.profile.data.model.pernetwork.Network
 import timber.log.Timber
 import java.math.BigDecimal
 
@@ -38,8 +36,8 @@ class StateApiDelegate(
         accountAddresses: Set<String>,
         onStateVersion: Long? = null,
     ): Result<List<AccountGatewayDetails>> {
-        val accountsToRequest = accountsInProgress.value xor accountAddresses
-        accountsInProgress.value = accountsToRequest
+        val accountsToRequest = accountAddresses subtract accountsInProgress.value
+        accountsInProgress.value = accountsInProgress.value union accountsToRequest
 
         if (accountsToRequest.isEmpty()) return Result.success(emptyList())
         Timber.tag("Bakos").d("☁️ ${accountsToRequest.joinToString { it.truncatedHash() }}")
@@ -106,9 +104,9 @@ class StateApiDelegate(
         }.onSuccess { result ->
             val receivedAccountAddresses = result.map { it.accountAddress }
             Timber.tag("Bakos").d("☁️ <= ${receivedAccountAddresses.joinToString { it.truncatedHash() }}")
-            accountsInProgress.value = accountsInProgress.value - receivedAccountAddresses.toSet()
+            accountsInProgress.value = accountsInProgress.value subtract receivedAccountAddresses.toSet()
         }.onFailure {
-            accountsInProgress.value = accountsInProgress.value - accountsToRequest
+            accountsInProgress.value = accountsInProgress.value subtract accountsToRequest
         }
     }
 
