@@ -39,6 +39,7 @@ import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.presentation.common.FullscreenCircularProgressContent
 import com.babylon.wallet.android.presentation.ui.composables.AddLinkConnectorScreen
 import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDialog
+import com.babylon.wallet.android.presentation.ui.composables.DSR
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
@@ -180,30 +181,10 @@ private fun ActiveLinkedConnectorDetails(
         Divider(color = RadixTheme.colors.gray5)
         ActiveLinkedConnectorsListContent(
             activeLinkedConnectorsList = activeLinkedConnectorsList,
-            onDeleteConnectorClick = onDeleteConnectorClick
+            onDeleteConnectorClick = onDeleteConnectorClick,
+            isLoading = isLoading,
+            onLinkNewConnectorClick = onLinkNewConnectorClick
         )
-        AnimatedVisibility(!isLoading) {
-            Column {
-                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
-                RadixSecondaryButton(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = RadixTheme.dimensions.paddingMedium),
-                    text = stringResource(id = R.string.linkedConnectors_linkNewConnector),
-                    onClick = {
-                        onLinkNewConnectorClick()
-                    },
-                    icon = {
-                        Icon(
-                            painter = painterResource(
-                                id = com.babylon.wallet.android.designsystem.R.drawable.ic_qr_code_scanner
-                            ),
-                            contentDescription = null
-                        )
-                    }
-                )
-            }
-        }
     }
 }
 
@@ -211,7 +192,9 @@ private fun ActiveLinkedConnectorDetails(
 private fun ActiveLinkedConnectorsListContent(
     modifier: Modifier = Modifier,
     activeLinkedConnectorsList: ImmutableList<P2PLink>,
-    onDeleteConnectorClick: (String) -> Unit
+    onDeleteConnectorClick: (String) -> Unit,
+    isLoading: Boolean,
+    onLinkNewConnectorClick: () -> Unit
 ) {
     LazyColumn(modifier) {
         items(
@@ -226,6 +209,26 @@ private fun ActiveLinkedConnectorsListContent(
                 )
             }
         )
+        item {
+            AnimatedVisibility(!isLoading) {
+                Column {
+                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
+                    RadixSecondaryButton(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = RadixTheme.dimensions.paddingMedium),
+                        text = stringResource(id = R.string.linkedConnectors_linkNewConnector),
+                        onClick = onLinkNewConnectorClick,
+                        icon = {
+                            Icon(
+                                painter = painterResource(id = DSR.ic_qr_code_scanner),
+                                contentDescription = null
+                            )
+                        }
+                    )
+                }
+            }
+        }
     }
 }
 
