@@ -6,8 +6,9 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Transaction
-import com.babylon.wallet.android.data.gateway.extensions.AccountGatewayDetails
 import com.babylon.wallet.android.data.gateway.extensions.asMetadataItems
+import com.babylon.wallet.android.data.gateway.generated.models.LedgerState
+import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponseItem
 import com.babylon.wallet.android.data.repository.cache.database.AccountResourceJoin.Companion.asAccountResourceJoin
 import com.babylon.wallet.android.domain.model.resources.metadata.AccountTypeMetadataItem
 import com.babylon.wallet.android.domain.model.resources.metadata.MetadataItem.Companion.consume
@@ -99,19 +100,22 @@ interface StateDao {
     }
 
     @Transaction
-    fun updateAccountData(accountsGatewayDetails: List<AccountGatewayDetails>) {
-        accountsGatewayDetails.forEach { accountGatewayDetails ->
-            val syncInfo = SyncInfo(synced = InstantGenerator(), accountStateVersion = accountGatewayDetails.ledgerState.stateVersion)
-            val accountMetadataItems = accountGatewayDetails.accountMetadata?.asMetadataItems()?.toMutableList()
-            val allResources = accountGatewayDetails.fungibles.map { item ->
-                item.asAccountResourceJoin(accountGatewayDetails.accountAddress, syncInfo)
-            } + accountGatewayDetails.nonFungibles.map { item ->
-                item.asAccountResourceJoin(accountGatewayDetails.accountAddress, syncInfo)
-            }
+    fun updateAccountData(accountsGatewayDetails: List<Pair<StateEntityDetailsResponseItem, LedgerState>>) {
+        accountsGatewayDetails.forEach { pair ->
+            val item = pair.first
+            val ledgerState = pair.second
 
+            val syncInfo = SyncInfo(synced = InstantGenerator(), accountStateVersion = ledgerState.stateVersion)
+            val allResources = item.fungibleResources?.items?.map { fungibleItem ->
+                fungibleItem.asAccountResourceJoin(item.address, syncInfo)
+            }.orEmpty() + item.nonFungibleResources?.items?.map { nonFungibleItem ->
+                nonFungibleItem.asAccountResourceJoin(item.address, syncInfo)
+            }.orEmpty()
+
+            val accountMetadataItems = item.explicitMetadata?.asMetadataItems()?.toMutableList()
             insertAccountDetails(
                 AccountEntity(
-                    address = accountGatewayDetails.accountAddress,
+                    address = item.address,
                     accountType = accountMetadataItems?.consume<AccountTypeMetadataItem>()?.type,
                     synced = syncInfo.synced,
                     stateVersion = syncInfo.accountStateVersion

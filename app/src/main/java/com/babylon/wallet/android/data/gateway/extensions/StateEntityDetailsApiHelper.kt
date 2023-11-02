@@ -1,10 +1,11 @@
 package com.babylon.wallet.android.data.gateway.extensions
 
 import com.babylon.wallet.android.data.gateway.apis.StateApi
-import com.babylon.wallet.android.data.gateway.generated.models.EntityMetadataCollection
+import com.babylon.wallet.android.data.gateway.generated.models.FungibleResourcesCollection
 import com.babylon.wallet.android.data.gateway.generated.models.FungibleResourcesCollectionItem
 import com.babylon.wallet.android.data.gateway.generated.models.LedgerState
 import com.babylon.wallet.android.data.gateway.generated.models.LedgerStateSelector
+import com.babylon.wallet.android.data.gateway.generated.models.NonFungibleResourcesCollection
 import com.babylon.wallet.android.data.gateway.generated.models.NonFungibleResourcesCollectionItem
 import com.babylon.wallet.android.data.gateway.generated.models.ResourceAggregationLevel
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsOptIns
@@ -27,19 +28,11 @@ import java.math.BigDecimal
 
 private const val ENTITY_DETAILS_PAGE_LIMIT = 25
 
-data class AccountGatewayDetails(
-    val accountAddress: String,
-    val ledgerState: LedgerState,
-    val accountMetadata: EntityMetadataCollection?,
-    val fungibles: List<FungibleResourcesCollectionItem>,
-    val nonFungibles: List<NonFungibleResourcesCollectionItem>
-)
-
 suspend fun StateApi.fetchAccountGatewayDetails(
     accountsToRequest: Set<String>,
     onStateVersion: Long?
 ) = runCatching {
-    val result = mutableListOf<AccountGatewayDetails>()
+    val items = mutableListOf<Pair<StateEntityDetailsResponseItem, LedgerState>>()
     paginateDetails(
         addresses = accountsToRequest,
         metadataKeys = setOf(
@@ -58,7 +51,7 @@ suspend fun StateApi.fetchAccountGatewayDetails(
         ),
         stateVersion = onStateVersion
     ) { chunkedAccounts ->
-        chunkedAccounts.items.forEach { accountOnLedger ->
+        val page = chunkedAccounts.items.map { accountOnLedger ->
             val allFungibles = mutableListOf<FungibleResourcesCollectionItem>()
             val allNonFungibles = mutableListOf<NonFungibleResourcesCollectionItem>()
 
@@ -85,18 +78,20 @@ suspend fun StateApi.fetchAccountGatewayDetails(
                 awaitAll(allFungiblePagesForAccount, allNonFungiblePagesForAccount)
             }
 
-            result.add(
-                AccountGatewayDetails(
-                    accountAddress = accountOnLedger.address,
-                    ledgerState = chunkedAccounts.ledgerState,
-                    accountMetadata = accountOnLedger.explicitMetadata,
-                    fungibles = allFungibles,
-                    nonFungibles = allNonFungibles
+            accountOnLedger.copy(
+                fungibleResources = FungibleResourcesCollection(
+                    items = allFungibles,
+                    totalCount = allFungibles.size.toLong(),
+                ),
+                nonFungibleResources = NonFungibleResourcesCollection(
+                    items = allNonFungibles,
+                    totalCount = allNonFungibles.size.toLong()
                 )
-            )
+            ) to chunkedAccounts.ledgerState
         }
+        items.addAll(page)
     }
-    result
+    items
 }
 
 suspend fun StateApi.fetchPools(
