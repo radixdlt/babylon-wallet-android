@@ -258,16 +258,16 @@ fun RadixWalletException.TransactionSubmitException.toUserFriendlyMessage(contex
         }
 
         is RadixWalletException.TransactionSubmitException.TransactionCommitted.Failure -> {
-            context.getString(R.string.transaction_status_failed_text)
+            context.getString(R.string.transactionStatus_failed_text)
         }
 
         is RadixWalletException.TransactionSubmitException.TransactionRejected.Permanently -> {
-            context.getString(R.string.transaction_status_rejected_text)
+            context.getString(R.string.transactionStatus_rejected_text)
         }
 
         is RadixWalletException.TransactionSubmitException.TransactionRejected.Temporary -> {
             context.getString(
-                R.string.transaction_status_error_text,
+                R.string.transactionStatus_error_text,
                 txProcessingTime
             )
         }

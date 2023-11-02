@@ -259,7 +259,7 @@ fun SomethingWentWrongDialogContent(
                 horizontalArrangement = Arrangement.Center
             ) {
                 Text(
-                    text = stringResource(id = R.string.transaction_status_transaction_id_text),
+                    text = stringResource(id = R.string.transactionStatus_transactionID_text),
                     style = RadixTheme.typography.body1Regular,
                     color = RadixTheme.colors.gray1
                 )

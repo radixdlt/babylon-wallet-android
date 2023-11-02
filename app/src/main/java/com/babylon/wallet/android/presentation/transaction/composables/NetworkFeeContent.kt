@@ -96,7 +96,7 @@ fun NetworkFeeContent(
                             horizontal = RadixTheme.dimensions.paddingDefault,
                             vertical = RadixTheme.dimensions.paddingSmall
                         ),
-                    text = stringResource(id = R.string.transactionReview_customizeNetworkFeeSheet_selectFeePayer_warning),
+                    text = stringResource(id = R.string.customizeNetworkFees_warning_selectFeePayer),
                     contentColor = RadixTheme.colors.orange1,
                     iconRes = com.babylon.wallet.android.designsystem.R.drawable.ic_warning_error
                 )
@@ -109,7 +109,7 @@ fun NetworkFeeContent(
                         horizontal = RadixTheme.dimensions.paddingDefault,
                         vertical = RadixTheme.dimensions.paddingSmall
                     ),
-                text = stringResource(id = R.string.transactionReview_customizeNetworkFeeSheet_insufficientBalance_warning),
+                text = stringResource(id = R.string.customizeNetworkFees_warning_insufficientBalance),
                 contentColor = RadixTheme.colors.red1,
                 iconRes = com.babylon.wallet.android.designsystem.R.drawable.ic_warning_error
             )
