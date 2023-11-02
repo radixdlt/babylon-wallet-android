@@ -1,11 +1,12 @@
 package com.babylon.wallet.android.data.repository.state
 
 import com.babylon.wallet.android.data.gateway.apis.StateApi
-import com.babylon.wallet.android.data.gateway.extensions.AccountGatewayDetails
 import com.babylon.wallet.android.data.gateway.extensions.fetchAccountGatewayDetails
 import com.babylon.wallet.android.data.gateway.extensions.fetchPools
 import com.babylon.wallet.android.data.gateway.extensions.fetchValidators
 import com.babylon.wallet.android.data.gateway.extensions.fetchVaultDetails
+import com.babylon.wallet.android.data.gateway.generated.models.LedgerState
+import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponseItem
 import com.babylon.wallet.android.data.repository.cache.database.AccountPortfolioResponse
 import com.babylon.wallet.android.data.repository.cache.database.PoolEntity.Companion.asPools
 import com.babylon.wallet.android.data.repository.cache.database.PoolEntity.Companion.toPoolsJoin
@@ -52,8 +53,6 @@ import java.math.BigDecimal
 import java.time.Instant
 import javax.inject.Inject
 import javax.inject.Singleton
-import kotlin.time.DurationUnit
-import kotlin.time.toDuration
 
 @Singleton
 class AccountsStateCache @Inject constructor(
@@ -110,7 +109,7 @@ class AccountsStateCache @Inject constructor(
                 if (accountsOnGateway.isNotEmpty()) {
                     withContext(dispatcher) {
                         Timber.tag("Bakos")
-                            .d("\uD83D\uDCBD Inserting accounts ${accountsOnGateway.map { it.accountAddress.truncatedHash() }}")
+                            .d("\uD83D\uDCBD Inserting accounts ${accountsOnGateway.map { it.first.address.truncatedHash() }}")
                         dao.updateAccountData(accountsOnGateway)
                     }
                 }
@@ -142,7 +141,7 @@ class AccountsStateCache @Inject constructor(
     private suspend fun fetchAllResources(
         accountAddresses: Set<String>,
         onStateVersion: Long? = null,
-    ): Result<List<AccountGatewayDetails>> {
+    ): Result<List<Pair<StateEntityDetailsResponseItem, LedgerState>>> {
         val accountsToRequest = accountAddresses subtract accountsRequested.value
         accountsRequested.value = accountsRequested.value union accountsToRequest
 
@@ -152,7 +151,7 @@ class AccountsStateCache @Inject constructor(
             accountsToRequest = accountsToRequest,
             onStateVersion = onStateVersion
         ).onSuccess { result ->
-            val receivedAccountAddresses = result.map { it.accountAddress }
+            val receivedAccountAddresses = result.map { it.first.address }
             Timber.tag("Bakos").d("☁️ <= ${receivedAccountAddresses.joinToString { it.truncatedHash() }}")
             accountsRequested.value = accountsRequested.value subtract receivedAccountAddresses.toSet()
         }.onFailure {
