@@ -39,6 +39,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.onStart
@@ -64,19 +65,15 @@ class AccountsStateCache @Inject constructor(
 
     private val accountsMemoryCache = MutableStateFlow<List<AccountAddressWithAssets>?>(null)
     private val accountsRequested = MutableStateFlow<Set<String>>(emptySet())
-    private val cacheStream = dao
-        .observeAccounts()
-        .collectCachedData()
-        .onEach { Timber.tag("Bakos").d("Cache invoked") }
-        .compileAccountAddressAssets()
-        .distinctUntilChanged()
 
     init {
-        applicationScope.launch {
-            cacheStream.collect {
-                accountsMemoryCache.value = it
-            }
-        }
+        dao.observeAccounts()
+            .collectCachedData()
+            .onEach { Timber.tag("Bakos").d("Cache invoked") }
+            .compileAccountAddressAssets()
+            .distinctUntilChanged()
+            .onEach { accountsMemoryCache.value = it }
+            .launchIn(applicationScope)
     }
 
     fun observeAccountsOnLedger(
