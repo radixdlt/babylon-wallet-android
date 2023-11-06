@@ -9,15 +9,16 @@ import com.babylon.wallet.android.domain.model.resources.Pool
 import com.babylon.wallet.android.domain.model.resources.Resource
 import rdx.works.core.InstantGenerator
 
-fun StateDao.getCachedPools(addresses: Set<String>, atStateVersion: Long): Map<String, Pool> {
+fun StateDao.getCachedPools(poolAddresses: Set<String>, atStateVersion: Long): Map<String, Pool> {
     val pools = mutableMapOf<String, Pool>()
-    getPoolDetails(addresses, atStateVersion).forEach { join ->
+    getPoolDetails(poolAddresses, atStateVersion).forEach { join ->
         val resource = if (join.resource != null && join.amount != null) {
             join.resource.toResource(join.amount) as Resource.FungibleResource
         } else {
             return@forEach
         }
 
+        // TODO maybe add check if pool resource is up to date with details
         val pool = pools[join.address]
         pools[join.address] = pool?.copy(
             resources = pool.resources.toMutableList().apply { add(resource) }

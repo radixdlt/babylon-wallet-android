@@ -8,8 +8,7 @@ import com.babylon.wallet.android.data.gateway.extensions.fetchVaultDetails
 import com.babylon.wallet.android.data.gateway.generated.models.LedgerState
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponseItem
 import com.babylon.wallet.android.data.repository.cache.database.AccountPortfolioResponse
-import com.babylon.wallet.android.data.repository.cache.database.PoolEntity.Companion.asPools
-import com.babylon.wallet.android.data.repository.cache.database.PoolEntity.Companion.toPoolsJoin
+import com.babylon.wallet.android.data.repository.cache.database.PoolEntity.Companion.asPoolsResourcesJoin
 import com.babylon.wallet.android.data.repository.cache.database.StateDao
 import com.babylon.wallet.android.data.repository.cache.database.StateDao.Companion.accountCacheValidity
 import com.babylon.wallet.android.data.repository.cache.database.SyncInfo
@@ -44,7 +43,6 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.transform
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import rdx.works.core.InstantGenerator
 import rdx.works.profile.data.model.pernetwork.Network
@@ -214,13 +212,13 @@ class AccountsStateCache @Inject constructor(
 
             val allPoolAddresses = cached.map { it.value.poolAddresses() }.flatten().toSet()
             val cachedPools = dao.getCachedPools(allPoolAddresses, stateVersion).toMutableMap()
-            val newPools = api.fetchPools(allPoolAddresses - cachedPools.keys, stateVersion).asPools().onEach {
-                cachedPools[it.address] = it
-            }
-
-            if (newPools.isNotEmpty()) {
+            val unknownPools = allPoolAddresses - cachedPools.keys
+            if (unknownPools.isNotEmpty()) {
                 Timber.tag("Bakos").d("\uD83D\uDCBD Inserting pools")
-                dao.updatePools(newPools.toPoolsJoin(SyncInfo(InstantGenerator(), stateVersion)))
+
+                val newPools = api.fetchPools(unknownPools, stateVersion)
+                val join = newPools.asPoolsResourcesJoin(SyncInfo(InstantGenerator(), stateVersion))
+                dao.updatePools(pools = join)
             } else {
                 emit(
                     cached.mapNotNull {

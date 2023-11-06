@@ -93,10 +93,14 @@ interface StateDao {
     }
 
     @Transaction
-    fun updatePools(pools: Map<PoolEntity, List<Pair<PoolResourceJoin, ResourceEntity>>>) {
-        insertPoolDetails(pools.map { it.key })
-        insertOrReplaceResources(pools.map { entry -> entry.value.map { it.second } }.flatten())
-        insertPoolResources(pools.map { entry -> entry.value.map { it.first } }.flatten())
+    fun updatePools(pools: Map<ResourceEntity, List<Pair<PoolResourceJoin, ResourceEntity>>>) {
+        val poolEntities = pools.keys.map { PoolEntity(it.poolAddress!!) }
+        insertPoolDetails(poolEntities)
+
+        val resourcesInvolved = pools.map { entry -> listOf(entry.key) + entry.value.map { it.second } }.flatten()
+        insertOrReplaceResources(resourcesInvolved)
+        val join = pools.values.map { poolResource -> poolResource.map { it.first } }.flatten()
+        insertPoolResources(join)
     }
 
     @Transaction

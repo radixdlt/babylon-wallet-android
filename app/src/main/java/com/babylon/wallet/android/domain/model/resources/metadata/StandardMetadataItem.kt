@@ -132,7 +132,7 @@ data class PoolMetadataItem(
 }
 
 data class PoolUnitMetadataItem(
-    val poolAddress: String
+    val resourceAddress: String
 ) : StandardMetadataItem {
     override val key: String = ExplicitMetadataKey.POOL_UNIT.key
 }

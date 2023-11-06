@@ -13,7 +13,6 @@ import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetai
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponse
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponseFungibleVaultDetails
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponseItem
-import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponseItemDetails
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityFungiblesPageRequest
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityNonFungibleIdsPageRequest
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityNonFungiblesPageRequest
@@ -21,6 +20,8 @@ import com.babylon.wallet.android.data.gateway.generated.models.StateNonFungible
 import com.babylon.wallet.android.data.gateway.generated.models.StateNonFungibleDetailsResponseItem
 import com.babylon.wallet.android.data.gateway.model.ExplicitMetadataKey
 import com.babylon.wallet.android.data.repository.toResult
+import com.babylon.wallet.android.domain.model.resources.metadata.MetadataItem.Companion.consume
+import com.babylon.wallet.android.domain.model.resources.metadata.PoolUnitMetadataItem
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
@@ -97,47 +98,53 @@ suspend fun StateApi.fetchAccountGatewayDetails(
 suspend fun StateApi.fetchPools(
     poolAddresses: Set<String>,
     stateVersion: Long
-): Map<StateEntityDetailsResponseItem, Map<String, StateEntityDetailsResponseItemDetails>> {
+): Map<StateEntityDetailsResponseItem, List<FungibleResourcesCollectionItem>> {
     if (poolAddresses.isEmpty()) return emptyMap()
-    val pools = mutableListOf<StateEntityDetailsResponseItem>()
+
+    val poolWithResources = mutableMapOf<String, List<FungibleResourcesCollectionItem>>()
+    val resourceToPoolComponentAssociation = mutableMapOf<String, String>()
+
     paginateDetails(
         addresses = poolAddresses,
         metadataKeys = setOf(
             ExplicitMetadataKey.NAME,
             ExplicitMetadataKey.ICON_URL,
-            ExplicitMetadataKey.POOL_UNIT,
+            ExplicitMetadataKey.POOL_UNIT
         ),
         stateVersion = stateVersion,
-    ) { poolsChunked ->
-        pools.addAll(poolsChunked.items)
-    }
-
-    // We actually need to fetch details for each item involved in the pool
-    // since total supply and divisibility of each item are needed in order
-    // to know what is the user's owned amount out of each item
-    return pools.associateWith { pool ->
-        val itemsWithDetails = mutableMapOf<String, StateEntityDetailsResponseItemDetails>()
-        val itemsInPool = pool.fungibleResources?.items?.map { it.resourceAddress }.orEmpty().toSet()
-
-        paginateDetails(
-            addresses = itemsInPool,
-            metadataKeys = setOf(
-                ExplicitMetadataKey.NAME,
-                ExplicitMetadataKey.SYMBOL,
-                ExplicitMetadataKey.ICON_URL
-            ),
-            stateVersion = stateVersion
-        ) { itemsChuncked ->
-            itemsChuncked.items.forEach { item ->
-                val details = item.details
-                if (details != null) {
-                    itemsWithDetails[item.address] = details
-                }
-            }
+    ) { poolComponents ->
+        poolComponents.items.forEach { pool ->
+            val metadata = pool.explicitMetadata?.asMetadataItems().orEmpty().toMutableList()
+            val associatedResource = metadata.consume<PoolUnitMetadataItem>()?.resourceAddress.orEmpty()
+            resourceToPoolComponentAssociation[associatedResource] = pool.address
+            poolWithResources[pool.address] = pool.fungibleResources?.items.orEmpty()
         }
-
-        itemsWithDetails
     }
+
+    val result = mutableMapOf<StateEntityDetailsResponseItem, List<FungibleResourcesCollectionItem>>()
+    paginateDetails(
+        addresses = resourceToPoolComponentAssociation.keys, // Request details for resources
+        metadataKeys = setOf(
+            ExplicitMetadataKey.NAME,
+            ExplicitMetadataKey.SYMBOL,
+            ExplicitMetadataKey.DESCRIPTION,
+            ExplicitMetadataKey.RELATED_WEBSITES,
+            ExplicitMetadataKey.ICON_URL,
+            ExplicitMetadataKey.INFO_URL,
+            ExplicitMetadataKey.VALIDATOR,
+            ExplicitMetadataKey.POOL,
+            ExplicitMetadataKey.TAGS,
+            ExplicitMetadataKey.DAPP_DEFINITIONS
+        ),
+        stateVersion = stateVersion
+    ) { resourcesDetails ->
+        resourcesDetails.items.forEach { resourceDetails ->
+            val poolAddress = resourceToPoolComponentAssociation[resourceDetails.address]
+            result[resourceDetails] = poolWithResources[poolAddress].orEmpty()
+        }
+    }
+
+    return result
 }
 
 suspend fun StateApi.fetchValidators(
