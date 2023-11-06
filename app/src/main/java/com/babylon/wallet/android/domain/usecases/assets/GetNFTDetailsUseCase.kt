@@ -13,5 +13,4 @@ class GetNFTDetailsUseCase @Inject constructor(
 
     suspend operator fun invoke(resourceAddress: String, localId: String): Result<Resource.NonFungibleResource.Item> =
         stateRepository.getNFTDetails(resourceAddress, localId)
-
 }

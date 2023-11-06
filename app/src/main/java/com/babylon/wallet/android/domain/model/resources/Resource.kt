@@ -204,7 +204,7 @@ sealed class Resource {
                 get() = claimAmountMetadataItem?.amount
 
             val claimEpoch: Long?
-                get() =  claimEpochMetadataItem?.claimEpoch
+                get() = claimEpochMetadataItem?.claimEpoch
 
             override fun compareTo(other: Item): Int = when (localId) {
                 is ID.StringType -> (other.localId as? ID.StringType)?.compareTo(localId) ?: -1
@@ -333,4 +333,3 @@ object XrdResource {
 
 val Resource.FungibleResource.isXrd: Boolean
     get() = addressesPerNetwork.containsValue(resourceAddress)
-

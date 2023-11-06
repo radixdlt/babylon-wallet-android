@@ -30,7 +30,10 @@ import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 
-class ProgrammaticScryptoSborValueSerializer: JsonContentPolymorphicSerializer<ProgrammaticScryptoSborValue>(ProgrammaticScryptoSborValue::class) {
+class ProgrammaticScryptoSborValueSerializer : JsonContentPolymorphicSerializer<ProgrammaticScryptoSborValue>(
+    ProgrammaticScryptoSborValue::class
+) {
+    @Suppress("CyclomaticComplexMethod")
     override fun selectDeserializer(element: JsonElement): DeserializationStrategy<ProgrammaticScryptoSborValue> {
         return when (ProgrammaticScryptoSborValueKind.decode(element.jsonObject["kind"]?.jsonPrimitive?.content.orEmpty())) {
             ProgrammaticScryptoSborValueKind.bool -> ProgrammaticScryptoSborValueBool.serializer()

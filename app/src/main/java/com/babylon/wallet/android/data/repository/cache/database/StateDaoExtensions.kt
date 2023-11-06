@@ -10,6 +10,7 @@ import com.babylon.wallet.android.domain.model.resources.Pool
 import com.babylon.wallet.android.domain.model.resources.Resource
 import rdx.works.core.InstantGenerator
 
+@Suppress("UnsafeCallOnNullableType")
 fun StateDao.getCachedPools(poolAddresses: Set<String>, atStateVersion: Long): Map<String, Pool> {
     val pools = mutableMapOf<String, Pool>()
     getPoolDetails(poolAddresses, atStateVersion).forEach { join ->

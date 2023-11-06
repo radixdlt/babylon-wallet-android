@@ -44,9 +44,9 @@ data class AccountPortfolioResponse(
 ) {
 
     @Ignore
-    val details: AccountDetails? = stateVersion?.let {
+    val details: AccountDetails? = stateVersion?.let { version ->
         AccountDetails(
-            stateVersion = it,
+            stateVersion = version,
             typeMetadataItem = accountType?.let { AccountTypeMetadataItem(it) }
         )
     }
@@ -72,9 +72,7 @@ data class AccountPortfolioResponse(
     } else {
         null
     }
-
 }
-
 
 data class PoolWithResourceResponse(
     @ColumnInfo("pool_entity_address")

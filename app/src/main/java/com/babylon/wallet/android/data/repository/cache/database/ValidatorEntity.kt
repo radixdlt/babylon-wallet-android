@@ -70,7 +70,5 @@ data class ValidatorEntity(
                 stateVersion = syncInfo.accountStateVersion
             )
         }
-
     }
-
 }

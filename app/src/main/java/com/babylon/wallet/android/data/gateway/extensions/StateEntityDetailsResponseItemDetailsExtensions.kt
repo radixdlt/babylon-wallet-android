@@ -47,7 +47,6 @@ val StateEntityDetailsResponseItemDetails.xrdVaultAddress: String?
         else -> null
     }
 
-
 val StateEntityDetailsResponseItem.totalXRDStake: BigDecimal?
     get() {
         val xrdVaultAddress = details?.xrdVaultAddress ?: return null

@@ -179,8 +179,7 @@ class EntityRepositoryImpl @Inject constructor(
                             assets = Assets(
                                 fungibles = mapOfAccountsWithFungibleResources[account.address].orEmpty().sorted(),
                                 nonFungibles = mapOfAccountsWithNonFungibleResources[account.address].orEmpty().sorted(),
-                                validatorsWithStakes = liquidStakeCollectionPerAccountAddress[account.address]
-                                    ?: emptyList(),
+                                validatorsWithStakes = liquidStakeCollectionPerAccountAddress[account.address].orEmpty(),
                                 poolUnits = mapOfAccountsWithPoolUnits[account.address].orEmpty()
                             )
                         )

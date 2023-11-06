@@ -9,5 +9,4 @@ class GetEntitiesOwnerKeysUseCase @Inject constructor(
 ) {
 
     suspend operator fun invoke(entities: List<Entity>) = stateRepository.getEntityOwnerKeys(entities)
-
 }

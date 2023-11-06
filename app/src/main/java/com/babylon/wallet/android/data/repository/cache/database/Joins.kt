@@ -109,7 +109,6 @@ data class AccountNFTJoin(
             stateVersion = syncInfo.accountStateVersion
         ) to asEntity(resourceAddress, syncInfo.synced)
     }
-
 }
 
 @Entity(
@@ -148,5 +147,4 @@ data class PoolResourceJoin(
             stateVersion = syncInfo.accountStateVersion
         ) to asEntity(syncInfo.synced)
     }
-
 }

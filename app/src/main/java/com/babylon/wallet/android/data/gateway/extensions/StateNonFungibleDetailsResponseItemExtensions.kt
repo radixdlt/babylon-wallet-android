@@ -20,12 +20,13 @@ fun StateNonFungibleDetailsResponseItem.asMetadataItems(): List<MetadataItem> {
     return fields.mapNotNull { it.asMetadataItem() }
 }
 
+@Suppress("CyclomaticComplexMethod")
 private fun ProgrammaticScryptoSborValue.asMetadataItem(): MetadataItem? = when (this) {
     is ProgrammaticScryptoSborValueString -> when (val key = fieldName) {
         ExplicitMetadataKey.NAME.key -> NameMetadataItem(name = value)
         ExplicitMetadataKey.KEY_IMAGE_URL.key -> IconUrlMetadataItem(url = value.toUri())
         null -> null
-        else -> StringMetadataItem(key,  value)
+        else -> StringMetadataItem(key, value)
     }
     is ProgrammaticScryptoSborValueDecimal -> when (fieldName) {
         ExplicitMetadataKey.CLAIM_AMOUNT.key -> value.toBigDecimalOrNull()?.let { ClaimAmountMetadataItem(amount = it) }

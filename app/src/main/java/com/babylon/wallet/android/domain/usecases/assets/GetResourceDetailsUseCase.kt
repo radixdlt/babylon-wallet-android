@@ -15,5 +15,4 @@ class GetResourceDetailsUseCase @Inject constructor(
 
     operator fun invoke(resourceAddress: String, accountAddress: String?): Flow<Resource> =
         stateRepository.observeResourceDetails(resourceAddress, accountAddress)
-
 }

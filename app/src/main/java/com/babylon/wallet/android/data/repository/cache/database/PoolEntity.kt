@@ -26,6 +26,7 @@ data class PoolEntity(
 ) {
 
     companion object {
+        @Suppress("UnsafeCallOnNullableType")
         fun Map<StateEntityDetailsResponseItem, List<FungibleResourcesCollectionItem>>.asPoolsResourcesJoin(
             syncInfo: SyncInfo
         ): Map<ResourceEntity, List<Pair<PoolResourceJoin, ResourceEntity>>> =
@@ -39,6 +40,4 @@ data class PoolEntity(
                 poolResourceEntity to resourcesInPool
             }.toMap()
     }
-
 }
-

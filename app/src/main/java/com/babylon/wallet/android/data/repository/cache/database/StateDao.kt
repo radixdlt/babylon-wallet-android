@@ -18,6 +18,7 @@ import java.math.BigDecimal
 import kotlin.time.DurationUnit
 import kotlin.time.toDuration
 
+@Suppress("TooManyFunctions") // TODO Improve DAO separation
 @Dao
 interface StateDao {
 
@@ -59,11 +60,13 @@ interface StateDao {
         minValidity: Long
     ): Flow<List<AccountPortfolioResponse>>
 
-    @Query("""
+    @Query(
+        """
         UPDATE AccountEntity SET
         synced = NULL
         WHERE address in (:addresses)
-    """)
+    """
+    )
     fun markAccountsToRefresh(addresses: Set<String>)
 
     @Transaction
@@ -92,6 +95,7 @@ interface StateDao {
         }
     }
 
+    @Suppress("UnsafeCallOnNullableType")
     @Transaction
     fun updatePools(pools: Map<ResourceEntity, List<Pair<PoolResourceJoin, ResourceEntity>>>) {
         val poolEntities = pools.keys.map {
@@ -138,13 +142,15 @@ interface StateDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insertOrReplaceResources(resources: List<ResourceEntity>)
 
-    @Query("""
+    @Query(
+        """
         UPDATE ResourceEntity SET
         divisibility = :divisibility,
         behaviours = :behaviours,
         supply = :supply
         WHERE address = :resourceAddress
-    """)
+    """
+    )
     fun updateResourceEntity(resourceAddress: String, divisibility: Int?, behaviours: BehavioursColumn?, supply: BigDecimal?)
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
@@ -180,12 +186,13 @@ interface StateDao {
     )
     fun getPoolDetails(addresses: Set<String>, atStateVersion: Long): List<PoolWithResourceResponse>
 
-
-    @Query("""
+    @Query(
+        """
         SELECT * FROM ResourceEntity AS RE
         LEFT JOIN PoolEntity ON PoolEntity.resource_address = RE.address
         WHERE RE.pool_address = :poolAddress AND RE.divisibility IS NOT NULL AND RE.supply IS NOT NULL AND RE.synced >= :minValidity
-    """)
+    """
+    )
     fun getPoolResource(poolAddress: String, minValidity: Long): ResourceEntity?
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)

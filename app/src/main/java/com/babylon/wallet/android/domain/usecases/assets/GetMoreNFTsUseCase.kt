@@ -11,5 +11,4 @@ class GetMoreNFTsUseCase @Inject constructor(
 
     suspend operator fun invoke(account: Network.Account, resource: Resource.NonFungibleResource) =
         repository.getMoreNFTs(account, resource)
-
 }

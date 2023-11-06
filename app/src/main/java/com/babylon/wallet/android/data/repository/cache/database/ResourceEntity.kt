@@ -25,7 +25,6 @@ import com.babylon.wallet.android.domain.model.resources.metadata.PoolMetadataIt
 import com.babylon.wallet.android.domain.model.resources.metadata.SymbolMetadataItem
 import com.babylon.wallet.android.domain.model.resources.metadata.TagsMetadataItem
 import com.babylon.wallet.android.domain.model.resources.metadata.ValidatorMetadataItem
-import java.lang.RuntimeException
 import java.math.BigDecimal
 import java.time.Instant
 
@@ -159,7 +158,7 @@ data class ResourceEntity(
             val type = when (details) {
                 is StateEntityDetailsResponseFungibleResourceDetails -> ResourceEntityType.FUNGIBLE
                 is StateEntityDetailsResponseNonFungibleResourceDetails -> ResourceEntityType.NON_FUNGIBLE
-                else -> throw RuntimeException("Item is neither fungible nor non-fungible")
+                else -> error("Item is neither fungible nor non-fungible")
             }
             return from(
                 address = address,

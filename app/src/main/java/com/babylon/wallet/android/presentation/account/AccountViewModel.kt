@@ -36,7 +36,6 @@ import rdx.works.profile.data.model.extensions.factorSourceId
 import rdx.works.profile.data.model.factorsources.FactorSource.FactorSourceID
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.accountsOnCurrentNetwork
-import timber.log.Timber
 import javax.inject.Inject
 
 @HiltViewModel
@@ -89,7 +88,6 @@ class AccountViewModel @Inject constructor(
                         )
                     }
                 }
-
         }
 
         viewModelScope.launch {

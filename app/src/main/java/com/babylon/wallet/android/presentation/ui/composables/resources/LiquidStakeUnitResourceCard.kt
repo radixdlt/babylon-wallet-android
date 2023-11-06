@@ -37,12 +37,14 @@ import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.domain.model.assets.LiquidStakeUnit
 import com.babylon.wallet.android.domain.model.assets.ValidatorDetail
 import com.babylon.wallet.android.domain.model.assets.ValidatorWithStakes
+import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.toPersistentList
 import java.math.BigDecimal
 
 @Composable
 fun LiquidStakeUnitResourceHeader(
     modifier: Modifier = Modifier,
-    collection: List<ValidatorWithStakes>,
+    collection: ImmutableList<ValidatorWithStakes>,
     cardHeight: Dp = 103.dp,
     collapsed: Boolean = true,
     groupInnerPadding: Dp = 6.dp,
@@ -159,7 +161,7 @@ fun LiquidStakeUnitResourceHeaderPreview() {
                     validatorDetail = ValidatorDetail("address2", "Validator 2", null, null, BigDecimal(100000)),
                     liquidStakeUnit = LiquidStakeUnit(fungibleResource = SampleDataProvider().sampleFungibleResources().first())
                 )
-            ),
+            ).toPersistentList(),
             parentSectionClick = {}
         )
     }

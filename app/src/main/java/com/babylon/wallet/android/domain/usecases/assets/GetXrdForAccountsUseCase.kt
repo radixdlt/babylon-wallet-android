@@ -11,5 +11,4 @@ class GetXrdForAccountsUseCase @Inject constructor(
 
     suspend operator fun invoke(accounts: List<Network.Account>): Result<Map<Network.Account, BigDecimal>> =
         stateRepository.getOwnedXRD(accounts)
-
 }

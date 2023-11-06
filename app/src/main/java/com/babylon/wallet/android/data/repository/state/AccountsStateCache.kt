@@ -241,8 +241,13 @@ class AccountsStateCache @Inject constructor(
 
         fun poolAddresses() = fungibles.mapNotNull { it.poolAddress }.toSet()
 
-        fun validatorAddresses() = (fungibles.mapNotNull { it.validatorAddress } + nonFungibles.mapNotNull { it.validatorAddress }).toSet()
+        fun validatorAddresses(): Set<String> = fungibles.mapNotNull {
+            it.validatorAddress
+        }.toSet() + nonFungibles.mapNotNull {
+            it.validatorAddress
+        }
 
+        @Suppress("LongMethod")
         fun toAccountAddressWithAssets(
             accountAddress: String,
             pools: Map<String, Pool>,
@@ -311,7 +316,6 @@ class AccountsStateCache @Inject constructor(
                     stakeClaimNft = it.value.stakeClaimNft
                 )
             }
-
 
             return AccountAddressWithAssets(
                 address = accountAddress,

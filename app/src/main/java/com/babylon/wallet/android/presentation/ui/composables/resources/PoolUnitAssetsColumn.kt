@@ -34,6 +34,8 @@ import com.babylon.wallet.android.domain.model.assets.ValidatorWithStakes
 import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.presentation.account.composable.EmptyResourcesContent
 import com.babylon.wallet.android.presentation.transfer.assets.ResourceTab
+import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.toPersistentList
 
 @Composable
 fun PoolUnitAssetsColumn(
@@ -58,7 +60,7 @@ fun PoolUnitAssetsColumn(
     ) {
         poolUnitsResources(
             collapsedState = collapsedStakeState,
-            validatorsWithStakeResources = assets?.validatorsWithStakes,
+            validatorsWithStakeResources = assets?.validatorsWithStakes?.toPersistentList(),
             poolUnits = assets?.poolUnits.orEmpty(),
             parentSectionClick = {
                 collapsedStakeState = !collapsedStakeState
@@ -74,14 +76,14 @@ fun PoolUnitAssetsColumn(
 fun LazyListScope.poolUnitsResources(
     modifier: Modifier = Modifier,
     collapsedState: Boolean,
-    validatorsWithStakeResources: List<ValidatorWithStakes>?,
+    validatorsWithStakeResources: ImmutableList<ValidatorWithStakes>?,
     poolUnits: List<PoolUnit>,
     parentSectionClick: () -> Unit,
     poolUnitItem: @Composable (PoolUnit) -> Unit,
     liquidStakeItem: @Composable (LiquidStakeUnit, ValidatorDetail) -> Unit,
     stakeClaimItem: @Composable (StakeClaim, Resource.NonFungibleResource.Item) -> Unit
 ) {
-    if ((validatorsWithStakeResources == null || validatorsWithStakeResources.isEmpty()) && poolUnits.isEmpty()) {
+    if (validatorsWithStakeResources.isNullOrEmpty() && poolUnits.isEmpty()) {
         item {
             EmptyResourcesContent(
                 modifier = modifier.fillMaxWidth(),
@@ -89,7 +91,7 @@ fun LazyListScope.poolUnitsResources(
             )
         }
     } else {
-        if (validatorsWithStakeResources != null && !validatorsWithStakeResources.isEmpty()) {
+        if (!validatorsWithStakeResources.isNullOrEmpty()) {
             item {
                 LiquidStakeUnitResourceHeader(
                     modifier = modifier,
