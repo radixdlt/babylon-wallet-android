@@ -4,6 +4,7 @@ import androidx.lifecycle.SavedStateHandle
 import com.babylon.wallet.android.data.dapp.DappMessenger
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepositoryImpl
 import com.babylon.wallet.android.data.dapp.model.WalletErrorType
+import com.babylon.wallet.android.data.gateway.generated.models.CoreApiTransactionReceipt
 import com.babylon.wallet.android.data.gateway.generated.models.TransactionPreviewResponse
 import com.babylon.wallet.android.data.gateway.generated.models.TransactionReceipt
 import com.babylon.wallet.android.data.gateway.generated.models.TransactionStatus
@@ -668,8 +669,8 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
 
     private fun previewResponse() = TransactionPreviewResponse(
         encodedReceipt = "",
-        receipt = TransactionReceipt(
-            status = TransactionStatus.unknown,
+        receipt = CoreApiTransactionReceipt(
+            status = "",
             errorMessage = ""
         ),
         logs = emptyList()
