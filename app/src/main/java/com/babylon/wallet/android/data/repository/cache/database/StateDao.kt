@@ -94,7 +94,12 @@ interface StateDao {
 
     @Transaction
     fun updatePools(pools: Map<ResourceEntity, List<Pair<PoolResourceJoin, ResourceEntity>>>) {
-        val poolEntities = pools.keys.map { PoolEntity(it.poolAddress!!) }
+        val poolEntities = pools.keys.map {
+            PoolEntity(
+                address = it.poolAddress!!,
+                resourceAddress = it.address
+            )
+        }
         insertPoolDetails(poolEntities)
 
         val resourcesInvolved = pools.map { entry -> listOf(entry.key) + entry.value.map { it.second } }.flatten()
@@ -174,6 +179,14 @@ interface StateDao {
     """
     )
     fun getPoolDetails(addresses: Set<String>, atStateVersion: Long): List<PoolWithResourceResponse>
+
+
+    @Query("""
+        SELECT * FROM ResourceEntity AS RE
+        LEFT JOIN PoolEntity ON PoolEntity.resource_address = RE.address
+        WHERE RE.pool_address = :poolAddress AND RE.divisibility IS NOT NULL AND RE.supply IS NOT NULL AND RE.synced >= :minValidity
+    """)
+    fun getPoolResource(poolAddress: String, minValidity: Long): ResourceEntity?
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insertValidators(validators: List<ValidatorEntity>)

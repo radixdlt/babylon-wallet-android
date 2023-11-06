@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "c3f78a8498993f68084b44178a1394bc",
+    "identityHash": "abb7c25edaab4acd62f397bff0dfb465",
     "entities": [
       {
         "tableName": "AccountResourceJoin",
@@ -354,11 +354,17 @@
       },
       {
         "tableName": "PoolEntity",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`address` TEXT NOT NULL, PRIMARY KEY(`address`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`address` TEXT NOT NULL, `resource_address` TEXT NOT NULL, PRIMARY KEY(`address`), FOREIGN KEY(`resource_address`) REFERENCES `ResourceEntity`(`address`) ON UPDATE NO ACTION ON DELETE NO ACTION )",
         "fields": [
           {
             "fieldPath": "address",
             "columnName": "address",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "resourceAddress",
+            "columnName": "resource_address",
             "affinity": "TEXT",
             "notNull": true
           }
@@ -370,7 +376,19 @@
           ]
         },
         "indices": [],
-        "foreignKeys": []
+        "foreignKeys": [
+          {
+            "table": "ResourceEntity",
+            "onDelete": "NO ACTION",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "resource_address"
+            ],
+            "referencedColumns": [
+              "address"
+            ]
+          }
+        ]
       },
       {
         "tableName": "ValidatorEntity",
@@ -500,7 +518,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'c3f78a8498993f68084b44178a1394bc')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'abb7c25edaab4acd62f397bff0dfb465')"
     ]
   }
 }
