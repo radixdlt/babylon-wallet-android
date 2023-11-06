@@ -79,11 +79,7 @@ data class TransactionReceipt (
     @SerialName(value = "error_message")
     val errorMessage: kotlin.String? = null
 
-) {
-    val isFailed
-        get() = status == TransactionStatus.committedFailure || status == TransactionStatus.rejected
-
-}
+)
 
 @Serializable
 data class FeeSummary(
