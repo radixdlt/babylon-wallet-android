@@ -38,11 +38,13 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.getAndUpdate
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.transform
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.withContext
 import rdx.works.core.InstantGenerator
 import rdx.works.profile.data.model.pernetwork.Network
@@ -136,9 +138,8 @@ class AccountsStateCache @Inject constructor(
         accountAddresses: Set<String>,
         onStateVersion: Long? = null,
     ): Result<List<Pair<StateEntityDetailsResponseItem, LedgerState>>> {
-        val accountsToRequest = accountAddresses subtract accountsRequested.value
-        accountsRequested.value = accountsRequested.value union accountsToRequest
-
+        val addressesInProgress = accountsRequested.getAndUpdate { value -> value union accountAddresses }
+        val accountsToRequest = accountAddresses subtract addressesInProgress
         if (accountsToRequest.isEmpty()) return Result.success(emptyList())
         logger.d("☁️ ${accountsToRequest.joinToString { it.truncatedHash() }}")
         return api.fetchAccountGatewayDetails(
@@ -147,9 +148,9 @@ class AccountsStateCache @Inject constructor(
         ).onSuccess { result ->
             val receivedAccountAddresses = result.map { it.first.address }
             logger.d("☁️ <= ${receivedAccountAddresses.joinToString { it.truncatedHash() }}")
-            accountsRequested.value = accountsRequested.value subtract receivedAccountAddresses.toSet()
+            accountsRequested.update { value -> value subtract receivedAccountAddresses.toSet() }
         }.onFailure {
-            accountsRequested.value = accountsRequested.value subtract accountsToRequest
+            accountsRequested.update { value -> value subtract accountsToRequest }
         }
     }
 
