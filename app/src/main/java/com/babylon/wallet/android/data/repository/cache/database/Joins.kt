@@ -124,6 +124,9 @@ data class AccountNFTJoin(
             parentColumns = ["address"],
             childColumns = ["resource_address"]
         )
+    ],
+    indices = [
+        Index("resource_address")
     ]
 )
 data class PoolResourceJoin(

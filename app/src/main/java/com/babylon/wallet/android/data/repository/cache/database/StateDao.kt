@@ -188,7 +188,7 @@ interface StateDao {
 
     @Query(
         """
-        SELECT * FROM ResourceEntity AS RE
+        SELECT RE.* FROM ResourceEntity AS RE
         LEFT JOIN PoolEntity ON PoolEntity.resource_address = RE.address
         WHERE RE.pool_address = :poolAddress AND RE.divisibility IS NOT NULL AND RE.supply IS NOT NULL AND RE.synced >= :minValidity
     """

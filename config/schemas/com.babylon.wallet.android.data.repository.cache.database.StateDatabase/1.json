@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "abb7c25edaab4acd62f397bff0dfb465",
+    "identityHash": "dac403e8fa9ea43e170f4e9cae578908",
     "entities": [
       {
         "tableName": "AccountResourceJoin",
@@ -375,7 +375,17 @@
             "address"
           ]
         },
-        "indices": [],
+        "indices": [
+          {
+            "name": "index_PoolEntity_resource_address",
+            "unique": false,
+            "columnNames": [
+              "resource_address"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_PoolEntity_resource_address` ON `${TABLE_NAME}` (`resource_address`)"
+          }
+        ],
         "foreignKeys": [
           {
             "table": "ResourceEntity",
@@ -488,7 +498,17 @@
             "resource_address"
           ]
         },
-        "indices": [],
+        "indices": [
+          {
+            "name": "index_PoolResourceJoin_resource_address",
+            "unique": false,
+            "columnNames": [
+              "resource_address"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_PoolResourceJoin_resource_address` ON `${TABLE_NAME}` (`resource_address`)"
+          }
+        ],
         "foreignKeys": [
           {
             "table": "PoolEntity",
@@ -518,7 +538,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'abb7c25edaab4acd62f397bff0dfb465')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'dac403e8fa9ea43e170f4e9cae578908')"
     ]
   }
 }

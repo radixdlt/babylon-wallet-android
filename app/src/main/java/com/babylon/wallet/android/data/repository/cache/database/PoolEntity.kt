@@ -3,6 +3,7 @@ package com.babylon.wallet.android.data.repository.cache.database
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.ForeignKey
+import androidx.room.Index
 import androidx.room.PrimaryKey
 import com.babylon.wallet.android.data.gateway.generated.models.FungibleResourcesCollectionItem
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponseItem
@@ -16,6 +17,9 @@ import com.babylon.wallet.android.data.repository.cache.database.ResourceEntity.
             parentColumns = ["address"],
             childColumns = ["resource_address"]
         )
+    ],
+    indices = [
+        Index("resource_address")
     ]
 )
 data class PoolEntity(
