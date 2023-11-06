@@ -40,60 +40,12 @@ interface StateDao {
 
     @Query(
         """
-        SELECT 
-            A.address AS account_address, 
-            A.account_type AS account_type,
-            A.synced AS account_synced,
-            A.state_version,
-            AR.amount AS amount,
-            R.*
-        FROM AccountEntity AS A
-        LEFT JOIN AccountResourceJoin AS AR ON A.address = AR.account_address
-        LEFT JOIN ResourceEntity AS R ON AR.resource_address = R.address
-        WHERE 
-            A.address in (:accountAddresses) AND
-            A.synced >= :minValidity
-        """
-    )
-    fun observeAccountsPortfolio(
-        accountAddresses: List<String>,
-        minValidity: Long
-    ): Flow<List<AccountPortfolioResponse>>
-
-    @Query(
-        """
         UPDATE AccountEntity SET
         synced = NULL
         WHERE address in (:addresses)
     """
     )
     fun markAccountsToRefresh(addresses: Set<String>)
-
-    @Transaction
-    fun updatePendingData(
-        pendingAccountAddresses: List<String>,
-        newPools: Map<PoolEntity, List<Pair<PoolResourceJoin, ResourceEntity>>>?,
-        newValidators: List<ValidatorEntity>?
-    ) {
-        pendingAccountAddresses.forEach {
-            insertAccountDetails(
-                AccountEntity(
-                    address = it,
-                    accountType = null,
-                    synced = null,
-                    stateVersion = null
-                )
-            )
-        }
-        newPools?.let { pools ->
-            insertPoolDetails(pools.map { it.key })
-            insertOrReplaceResources(pools.map { entry -> entry.value.map { it.second } }.flatten())
-            insertPoolResources(pools.map { entry -> entry.value.map { it.first } }.flatten())
-        }
-        newValidators?.let {
-            insertValidators(it)
-        }
-    }
 
     @Suppress("UnsafeCallOnNullableType")
     @Transaction
@@ -161,9 +113,6 @@ interface StateDao {
         onConflict = OnConflictStrategy.REPLACE
     )
     fun insertAccountDetails(details: AccountEntity)
-
-    @Delete(entity = AccountEntity::class)
-    fun removeAccountDetails(account: AccountEntity)
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insertPoolDetails(pools: List<PoolEntity>)
@@ -281,8 +230,8 @@ interface StateDao {
     fun getNFTDetails(resourceAddress: String, localId: String, minValidity: Long): NFTEntity?
 
     companion object {
-        val accountsCacheDuration = 2.toDuration(DurationUnit.HOURS)
-        val resourcesCacheDuration = 48.toDuration(DurationUnit.HOURS)
+        private val accountsCacheDuration = 2.toDuration(DurationUnit.HOURS)
+        private val resourcesCacheDuration = 48.toDuration(DurationUnit.HOURS)
 
         fun accountCacheValidity() = InstantGenerator().toEpochMilli() - accountsCacheDuration.inWholeMilliseconds
         fun resourcesCacheValidity(isRefreshing: Boolean = false) =
