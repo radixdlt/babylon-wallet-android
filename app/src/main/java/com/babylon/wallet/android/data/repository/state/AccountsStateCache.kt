@@ -67,7 +67,7 @@ class AccountsStateCache @Inject constructor(
     init {
         dao.observeAccounts()
             .collectCachedData()
-            .onEach { Timber.tag("Bakos").d("Cache invoked") }
+            .onEach { logger.d("Cache invoked") }
             .compileAccountAddressAssets()
             .distinctUntilChanged()
             .onEach { accountsMemoryCache.value = it }
@@ -81,7 +81,7 @@ class AccountsStateCache @Inject constructor(
         .filterNotNull()
         .onStart {
             if (isRefreshing) {
-                Timber.tag("Bakos").d("\uD83D\uDCBD Deleting accounts")
+                logger.d("\uD83D\uDCBD Deleting accounts")
                 dao.markAccountsToRefresh(accounts.map { it.address }.toSet())
             }
         }
@@ -103,8 +103,7 @@ class AccountsStateCache @Inject constructor(
             ).onSuccess { accountsOnGateway ->
                 if (accountsOnGateway.isNotEmpty()) {
                     withContext(dispatcher) {
-                        Timber.tag("Bakos")
-                            .d("\uD83D\uDCBD Inserting accounts ${accountsOnGateway.map { it.first.address.truncatedHash() }}")
+                        logger.d("\uD83D\uDCBD Inserting accounts ${accountsOnGateway.map { it.first.address.truncatedHash() }}")
                         dao.updateAccountData(accountsOnGateway)
                     }
                 }
@@ -141,13 +140,13 @@ class AccountsStateCache @Inject constructor(
         accountsRequested.value = accountsRequested.value union accountsToRequest
 
         if (accountsToRequest.isEmpty()) return Result.success(emptyList())
-        Timber.tag("Bakos").d("☁️ ${accountsToRequest.joinToString { it.truncatedHash() }}")
+        logger.d("☁️ ${accountsToRequest.joinToString { it.truncatedHash() }}")
         return api.fetchAccountGatewayDetails(
             accountsToRequest = accountsToRequest,
             onStateVersion = onStateVersion
         ).onSuccess { result ->
             val receivedAccountAddresses = result.map { it.first.address }
-            Timber.tag("Bakos").d("☁️ <= ${receivedAccountAddresses.joinToString { it.truncatedHash() }}")
+            logger.d("☁️ <= ${receivedAccountAddresses.joinToString { it.truncatedHash() }}")
             accountsRequested.value = accountsRequested.value subtract receivedAccountAddresses.toSet()
         }.onFailure {
             accountsRequested.value = accountsRequested.value subtract accountsToRequest
@@ -206,7 +205,7 @@ class AccountsStateCache @Inject constructor(
                 cachedValidators[it.address] = it
             }
             if (newValidators.isNotEmpty()) {
-                Timber.tag("Bakos").d("\uD83D\uDCBD Inserting validators")
+                logger.d("\uD83D\uDCBD Inserting validators")
                 dao.insertValidators(newValidators.asValidatorEntities(SyncInfo(InstantGenerator(), stateVersion)))
             }
 
@@ -214,7 +213,7 @@ class AccountsStateCache @Inject constructor(
             val cachedPools = dao.getCachedPools(allPoolAddresses, stateVersion).toMutableMap()
             val unknownPools = allPoolAddresses - cachedPools.keys
             if (unknownPools.isNotEmpty()) {
-                Timber.tag("Bakos").d("\uD83D\uDCBD Inserting pools")
+                logger.d("\uD83D\uDCBD Inserting pools")
 
                 val newPools = api.fetchPools(unknownPools, stateVersion)
                 val join = newPools.asPoolsResourcesJoin(SyncInfo(InstantGenerator(), stateVersion))
@@ -334,4 +333,8 @@ class AccountsStateCache @Inject constructor(
         val details: AccountDetails?,
         val assets: Assets?
     )
+
+    companion object {
+        private val logger = Timber.tag("AccountsStateCache")
+    }
 }

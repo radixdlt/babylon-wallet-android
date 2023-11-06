@@ -105,7 +105,6 @@ class StateRepositoryImpl @Inject constructor(
             val vaultAddress = accountNftPortfolio.vaultAddress ?: throw StateRepository.NFTPageError.VaultAddressMissing
             val nextCursor = accountNftPortfolio.nextCursor
 
-            Timber.tag("Bakos").d("Fetching NFT items ($nextCursor)")
             val page = stateApi.getNextNftItems(
                 accountAddress = account.address,
                 resourceAddress = resource.resourceAddress,
