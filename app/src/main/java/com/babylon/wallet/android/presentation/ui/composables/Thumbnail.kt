@@ -129,13 +129,16 @@ object Thumbnail {
         )
     }
 
+    val NFTCornerRadius = 12.dp
+    val NFTAspectRatio = 16f / 9f
+
     @Composable
     fun NFT(
         modifier: Modifier = Modifier,
         nft: Resource.NonFungibleResource.Item,
         cropped: Boolean = true, // When false the NFT will appear in full height
-        cornerRadius: Dp = 12.dp,
-        maxAspectRatio: Float = 16f / 9f
+        cornerRadius: Dp = NFTCornerRadius,
+        maxAspectRatio: Float = NFTAspectRatio
     ) {
         val image = nft.imageUrl
         if (image != null) {
