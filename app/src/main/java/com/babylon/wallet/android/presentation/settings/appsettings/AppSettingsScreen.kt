@@ -39,6 +39,7 @@ fun AppSettingsScreen(
         onAppSettingItemClick = onAppSettingItemClick,
         onDeveloperModeToggled = viewModel::onDeveloperModeToggled,
         onBackClick = onBackClick,
+        onCrashReportingToggled = viewModel::onCrashReportingToggled
     )
 }
 
@@ -49,6 +50,7 @@ private fun AppSettingsContent(
     onAppSettingItemClick: (SettingsItem.AppSettingsItem) -> Unit,
     onDeveloperModeToggled: (Boolean) -> Unit,
     onBackClick: () -> Unit,
+    onCrashReportingToggled: (Boolean) -> Unit,
 ) {
     Scaffold(
         modifier = modifier,
@@ -90,7 +92,17 @@ private fun AppSettingsContent(
                                     onCheckedChange = onDeveloperModeToggled
                                 )
                             }
-
+                            is SettingsItem.AppSettingsItem.CrashReporting -> {
+                                SwitchSettingsItem(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(all = RadixTheme.dimensions.paddingDefault),
+                                    titleRes = appSettingsItem.descriptionRes(),
+                                    iconResource = appSettingsItem.getIcon(),
+                                    checked = appSettingsItem.enabled,
+                                    onCheckedChange = onCrashReportingToggled
+                                )
+                            }
                             SettingsItem.AppSettingsItem.EntityHiding -> {
                                 DefaultSettingsItem(
                                     title = stringResource(id = appSettingsItem.descriptionRes()),
@@ -129,7 +141,8 @@ fun AppSettingsScreenPreview() {
             appSettings = AppSettingsUiState.default.settings,
             onAppSettingItemClick = {},
             onDeveloperModeToggled = {},
-            onBackClick = {}
+            onBackClick = {},
+            onCrashReportingToggled = {}
         )
     }
 }

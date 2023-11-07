@@ -28,6 +28,7 @@ import com.babylon.wallet.android.presentation.dapp.authorized.selectpersona.toU
 import com.babylon.wallet.android.presentation.model.toPersonaData
 import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
+import com.babylon.wallet.android.utils.logNonFatalException
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
@@ -148,6 +149,7 @@ class DAppUnauthorizedLoginViewModel @Inject constructor(
 
     private suspend fun handleRequestError(exception: Throwable) {
         if (exception is RadixWalletException.DappRequestException) {
+            logNonFatalException(exception)
             if (exception is RadixWalletException.LedgerCommunicationException.FailedToSignAuthChallenge) {
                 return
             }

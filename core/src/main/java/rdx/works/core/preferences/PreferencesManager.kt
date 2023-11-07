@@ -70,6 +70,11 @@ class PreferencesManager @Inject constructor(
         }
     }
 
+    val isCrashReportingEnabled: Flow<Boolean> = dataStore.data
+        .map { preferences ->
+            preferences[KEY_CRASH_REPORTING_ENABLED] ?: false
+        }
+
     suspend fun markFactorSourceBackedUp(id: String) {
         dataStore.edit { preferences ->
             val current = preferences[KEY_BACKED_UP_FACTOR_SOURCE_IDS]
@@ -81,6 +86,21 @@ class PreferencesManager @Inject constructor(
         }
     }
 
+    suspend fun enableCrashReporting(enabled: Boolean) {
+        dataStore.edit { preferences ->
+            preferences[KEY_CRASH_REPORTING_ENABLED] = enabled
+        }
+    }
+
+    fun getBackedUpFactorSourceIds(): Flow<Set<String>> {
+        return dataStore.data.map { preferences ->
+            preferences[KEY_BACKED_UP_FACTOR_SOURCE_IDS]?.split(",").orEmpty().toSet()
+        }
+    }
+
+    suspend fun markFirstPersonaCreated() {
+        dataStore.edit { preferences ->
+            preferences[KEY_FIRST_PERSONA_CREATED] = true
     val isRadixBannerVisible: Flow<Boolean> = dataStore.data
         .map { preferences ->
             preferences[KEY_RADIX_BANNER_VISIBLE] ?: false
@@ -123,6 +143,7 @@ class PreferencesManager @Inject constructor(
     suspend fun clear() = dataStore.edit { it.clear() }
 
     companion object {
+        private val KEY_CRASH_REPORTING_ENABLED = booleanPreferencesKey("crash_reporting_enabled")
         private val KEY_FIRST_PERSONA_CREATED = booleanPreferencesKey("first_persona_created")
         private val KEY_RADIX_BANNER_VISIBLE = booleanPreferencesKey("radix_banner_visible")
         private val KEY_ACCOUNT_TO_EPOCH_MAP = stringPreferencesKey("account_to_epoch_map")

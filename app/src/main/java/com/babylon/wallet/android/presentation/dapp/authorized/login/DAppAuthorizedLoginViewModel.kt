@@ -32,6 +32,7 @@ import com.babylon.wallet.android.presentation.dapp.authorized.selectpersona.toU
 import com.babylon.wallet.android.presentation.model.getPersonaDataForFieldKinds
 import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
+import com.babylon.wallet.android.utils.logNonFatalException
 import com.babylon.wallet.android.utils.toISO8601String
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.update
@@ -257,6 +258,7 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
 
     private suspend fun handleRequestError(exception: Throwable) {
         if (exception is RadixWalletException.DappRequestException) {
+            logNonFatalException(exception)
             if (exception.cause is RadixWalletException.LedgerCommunicationException) {
                 return
             }

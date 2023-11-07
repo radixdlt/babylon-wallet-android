@@ -21,6 +21,7 @@ import com.babylon.wallet.android.presentation.transaction.TransactionReviewView
 import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
 import com.babylon.wallet.android.utils.ExceptionMessageProvider
+import com.babylon.wallet.android.utils.logNonFatalException
 import com.radixdlt.ret.TransactionManifest
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
@@ -202,6 +203,7 @@ class TransactionSubmitDelegate @Inject constructor(
                 when (radixWalletException) {
                     is RadixWalletException.SignatureCancelled,
                     is RadixWalletException.LedgerCommunicationException -> {
+                        logNonFatalException(radixWalletException)
                         _state.update {
                             it.copy(isSubmitting = false)
                         }
@@ -251,6 +253,7 @@ class TransactionSubmitDelegate @Inject constructor(
     }
 
     private suspend fun reportFailure(error: Throwable) {
+        logNonFatalException(error)
         logger.w(error)
         _state.update {
             it.copy(isSubmitting = false, error = UiMessage.TransactionErrorMessage(error))

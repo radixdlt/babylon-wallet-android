@@ -81,6 +81,7 @@ sealed interface SettingsItem {
         data object Gateways : AppSettingsItem
         data object EntityHiding : AppSettingsItem
         data class DeveloperMode(val enabled: Boolean) : AppSettingsItem
+        data class CrashReporting(val enabled: Boolean) : AppSettingsItem
 
         @StringRes
         fun descriptionRes(): Int {
@@ -89,6 +90,7 @@ sealed interface SettingsItem {
                 Gateways -> R.string.appSettings_gateways_title
                 is DeveloperMode -> R.string.appSettings_developerMode_title
                 EntityHiding -> R.string.appSettings_entityHiding_title
+                is CrashReporting -> R.string.appSettings_crashReporting_title
             }
         }
 
