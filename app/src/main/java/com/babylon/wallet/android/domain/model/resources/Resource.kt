@@ -37,7 +37,7 @@ sealed class Resource {
         private val descriptionMetadataItem: DescriptionMetadataItem? = null,
         private val iconUrlMetadataItem: IconUrlMetadataItem? = null,
         private val tagsMetadataItem: TagsMetadataItem? = null,
-        val behaviours: AssetBehaviours = emptySet(),
+        private val behaviours: AssetBehaviours = emptySet(),
         val currentSupply: BigDecimal? = null,
         private val validatorMetadataItem: ValidatorMetadataItem? = null,
         private val poolMetadataItem: PoolMetadataItem? = null,
@@ -70,6 +70,13 @@ sealed class Resource {
                 tagsMetadataItem?.tags?.map { Tag.Dynamic(name = it) }?.plus(Tag.Official).orEmpty()
             } else {
                 tagsMetadataItem?.tags?.map { Tag.Dynamic(name = it) }.orEmpty()
+            }
+
+        val resourceBehaviours: AssetBehaviours
+            get() = if (isXrd) {
+                emptySet()
+            } else {
+                behaviours
             }
 
         val currentSupplyToDisplay: String?
