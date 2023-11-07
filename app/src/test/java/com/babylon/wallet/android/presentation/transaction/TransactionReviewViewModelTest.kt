@@ -41,6 +41,7 @@ import com.babylon.wallet.android.presentation.transaction.submit.TransactionSub
 import com.babylon.wallet.android.utils.AppEventBus
 import com.babylon.wallet.android.utils.DeviceCapabilityHelper
 import com.babylon.wallet.android.utils.ExceptionMessageProvider
+import com.babylon.wallet.android.utils.logNonFatalException
 import com.radixdlt.ret.Decimal
 import com.radixdlt.ret.DetailedManifestClass
 import com.radixdlt.ret.ExecutionSummary
@@ -58,6 +59,7 @@ import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
+import io.mockk.mockkStatic
 import io.mockk.slot
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.emptyFlow
@@ -189,6 +191,8 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
         coEvery { getValidatorsUseCase(any()) } returns Result.success(listOf(ValidatorDetail("addr", BigDecimal(100000))))
         every { exceptionMessageProvider.throwableMessage(any()) } returns ""
         every { deviceCapabilityHelper.isDeviceSecure() } returns true
+        mockkStatic("com.babylon.wallet.android.utils.CrashlyticsExtensionsKt")
+        every { logNonFatalException(any()) } just Runs
         every { savedStateHandle.get<String>(ARG_TRANSACTION_REQUEST_ID) } returns sampleRequestId
         coEvery { getCurrentGatewayUseCase() } returns Radix.Gateway.nebunet
         coEvery { submitTransactionUseCase(any(), any(), any()) } returns Result.success(
