@@ -1,5 +1,6 @@
 package com.babylon.wallet.android.domain.model
 
+import com.babylon.wallet.android.domain.model.assets.AssetBehaviour
 import com.babylon.wallet.android.domain.model.resources.Resource.NonFungibleResource.Item
 import com.babylon.wallet.android.domain.model.resources.metadata.NameMetadataItem
 import com.babylon.wallet.android.domain.model.resources.metadata.SymbolMetadataItem
@@ -171,6 +172,31 @@ class ResourceTests {
         Item.ID.from("{7b003d8e0b2c9e3a-516cf99882de64a1-f1cd6742ce3299e0-357f54f0333d25d0}").toRetId()
     }
 
+    @Test
+    fun `verify that xrd resource do not show behaviours `() {
+        val resource = fungibleResource(
+            address = "resource_tdx_2_1tknxxxxxxxxxradxrdxxxxxxxxx009923554798xxxxxxxxxtfd2jc",
+            name = "Radix fungible token",
+            symbol = "XRD"
+        )
+
+        Assert.assertTrue(resource.resourceBehaviours.isEmpty())
+    }
+
+    @Test
+    fun `verify that all resources except xrd show behaviours `() {
+        val resource = fungibleResource(
+            address = "resource_rdx_abcd",
+            name = "Some fungible",
+            symbol = "BUM"
+        )
+
+        Assert.assertEquals(resource.resourceBehaviours, setOf(
+            AssetBehaviour.SIMPLE_ASSET,
+            AssetBehaviour.INFORMATION_CHANGEABLE
+        ))
+    }
+
     private fun fungibleResource(
         address: String = "resource_rdx_abcd",
         name: String?,
@@ -179,7 +205,11 @@ class ResourceTests {
         resourceAddress = address,
         ownedAmount = BigDecimal(1234.5678),
         nameMetadataItem = name?.let { NameMetadataItem(it) },
-        symbolMetadataItem = symbol?.let { SymbolMetadataItem(it) }
+        symbolMetadataItem = symbol?.let { SymbolMetadataItem(it) },
+        behaviours = setOf(
+            AssetBehaviour.SIMPLE_ASSET,
+            AssetBehaviour.INFORMATION_CHANGEABLE
+        )
     )
 
     private fun nonFungibleCollection(
