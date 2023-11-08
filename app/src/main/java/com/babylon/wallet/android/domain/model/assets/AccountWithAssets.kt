@@ -42,9 +42,6 @@ data class Assets(
         }
     } == true
 
-    // todo remove
-    fun allSize() = poolUnitsSize() + fungibles.size + nonFungibles.size
-
     fun poolUnitsSize(): Int {
         return poolUnits.size + validatorsWithStakes.size
     }
