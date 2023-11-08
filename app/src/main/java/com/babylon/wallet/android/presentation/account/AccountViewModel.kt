@@ -251,7 +251,6 @@ data class AccountUiState(
             } else {
                 null
             }
-
             else -> null
         }
 
