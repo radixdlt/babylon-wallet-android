@@ -46,7 +46,7 @@ fun LazyListScope.liquidStakeUnitsTab(
             CollapsibleAssetCard(
                 modifier = Modifier
                     .padding(horizontal = RadixTheme.dimensions.paddingDefault)
-                    .padding(bottom = if (stakeUnitCollapsedState.value) RadixTheme.dimensions.paddingLarge else 1.dp),
+                    .padding(top = RadixTheme.dimensions.paddingSemiLarge),
                 isCollapsed = stakeUnitCollapsedState.value,
                 collapsedItems = assets.validatorsWithStakes.size
             ) {
@@ -94,7 +94,7 @@ fun LazyListScope.liquidStakeUnitsTab(
                 AssetCard(
                     modifier = Modifier
                         .padding(horizontal = RadixTheme.dimensions.paddingDefault)
-                        .padding(bottom = if (index == assets.validatorsWithStakes.lastIndex) RadixTheme.dimensions.paddingLarge else 1.dp),
+                        .padding(top = 1.dp),
                     itemIndex = index,
                     allItemsSize = assets.validatorsWithStakes.size,
                     roundTopCorners = false

@@ -61,7 +61,7 @@ fun LazyListScope.poolUnitsTab(
             PoolUnitItem(
                 modifier = Modifier
                     .padding(horizontal = RadixTheme.dimensions.paddingDefault)
-                    .padding(bottom = RadixTheme.dimensions.paddingDefault),
+                    .padding(top = RadixTheme.dimensions.paddingSemiLarge),
                 resource = item,
                 trailingContent = {}
             )

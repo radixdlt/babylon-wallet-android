@@ -55,7 +55,7 @@ fun LazyListScope.nftsTab(
             CollapsibleAssetCard(
                 modifier = Modifier
                     .padding(horizontal = RadixTheme.dimensions.paddingDefault)
-                    .padding(bottom = if (isCollapsed) RadixTheme.dimensions.paddingLarge else 1.dp),
+                    .padding(top = RadixTheme.dimensions.paddingSemiLarge),
                 isCollapsed = isCollapsed,
                 collapsedItems = collection.amount.toInt()
             ) {
@@ -105,11 +105,9 @@ fun LazyListScope.nftsTab(
             key = { index -> "${collection.resourceAddress}$index" },
             contentType = { "nft" }
         ) { index ->
-            val isLastIndex = index == collection.amount.toInt() - 1
-
             AssetCard(
                 modifier = Modifier
-                    .padding(top = 1.dp, bottom = if (isLastIndex) RadixTheme.dimensions.paddingLarge else 0.dp)
+                    .padding(top = 1.dp)
                     .padding(horizontal = RadixTheme.dimensions.paddingDefault),
                 itemIndex = index,
                 allItemsSize = collection.amount.toInt(),

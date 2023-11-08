@@ -47,9 +47,7 @@ fun LazyListScope.assetsView(
 ) {
     item {
         Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(bottom = RadixTheme.dimensions.paddingDefault),
+            modifier = Modifier.fillMaxWidth(),
             contentAlignment = Alignment.Center
         ) {
             ResourcesTabs(selectedTab = selectedTab, onTabSelected = onTabSelected)

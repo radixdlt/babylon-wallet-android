@@ -44,6 +44,7 @@ fun LazyListScope.tokensTab(
             AssetCard(
                 modifier = Modifier
                     .padding(horizontal = RadixTheme.dimensions.paddingDefault)
+                    .padding(top = RadixTheme.dimensions.paddingSemiLarge)
             ) {
                 FungibleResourceItem(
                     modifier = Modifier.clickable {
@@ -62,8 +63,7 @@ fun LazyListScope.tokensTab(
             AssetCard(
                 modifier = Modifier
                     .padding(
-                        top = if (index == 0) RadixTheme.dimensions.paddingDefault else 0.dp,
-                        bottom = if (index == assets.nonXrdFungibles.lastIndex) RadixTheme.dimensions.paddingDefault else 0.dp
+                        top = if (index == 0) RadixTheme.dimensions.paddingSemiLarge else 0.dp
                     )
                     .padding(horizontal = RadixTheme.dimensions.paddingDefault),
                 itemIndex = index,
