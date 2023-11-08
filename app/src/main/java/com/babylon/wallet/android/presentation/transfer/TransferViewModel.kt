@@ -338,24 +338,6 @@ class TransferViewModel @Inject constructor(
                                 is SpendingAsset.NFT -> asset.copy(
                                     exceedingBalance = nonFungibleBalances.getOrDefault(asset.item, 0) > 1
                                 )
-
-                                is SpendingAsset.LSU -> asset.copy(
-                                    exceedingBalance = fungibleBalances.getOrDefault(
-                                        asset.resource,
-                                        BigDecimal.ZERO
-                                    ) > asset.resource.ownedAmount
-                                )
-
-                                is SpendingAsset.PoolUnit -> asset.copy(
-                                    exceedingBalance = fungibleBalances.getOrDefault(
-                                        asset.resource,
-                                        BigDecimal.ZERO
-                                    ) > asset.resource.ownedAmount
-                                )
-
-                                is SpendingAsset.StakeClaimNFT -> asset.copy(
-                                    exceedingBalance = nonFungibleBalances.getOrDefault(asset.item, 0) > 1
-                                )
                             }
                         }.toPersistentSet()
                     }
@@ -564,50 +546,6 @@ sealed class SpendingAsset {
     }
 
     data class NFT(
-        val resource: Resource.NonFungibleResource,
-        val item: Resource.NonFungibleResource.Item,
-        val exceedingBalance: Boolean = false
-    ) : SpendingAsset() {
-        override val address: String
-            get() = item.globalAddress
-
-        override val isValidForSubmission: Boolean
-            get() = !exceedingBalance
-    }
-
-    data class LSU(
-        val resource: Resource.FungibleResource,
-        val amountString: String = "",
-        val exceedingBalance: Boolean = false
-    ) : SpendingAsset() {
-
-        override val address: String
-            get() = resource.resourceAddress
-
-        override val isValidForSubmission: Boolean
-            get() = !exceedingBalance && amountDecimal != BigDecimal.ZERO
-
-        val amountDecimal: BigDecimal
-            get() = amountString.toBigDecimalOrNull() ?: BigDecimal.ZERO
-    }
-
-    data class PoolUnit(
-        val resource: Resource.FungibleResource,
-        val amountString: String = "",
-        val exceedingBalance: Boolean = false
-    ) : SpendingAsset() {
-
-        override val address: String
-            get() = resource.resourceAddress
-
-        override val isValidForSubmission: Boolean
-            get() = !exceedingBalance && amountDecimal != BigDecimal.ZERO
-
-        val amountDecimal: BigDecimal
-            get() = amountString.toBigDecimalOrNull() ?: BigDecimal.ZERO
-    }
-
-    data class StakeClaimNFT(
         val resource: Resource.NonFungibleResource,
         val item: Resource.NonFungibleResource.Item,
         val exceedingBalance: Boolean = false
