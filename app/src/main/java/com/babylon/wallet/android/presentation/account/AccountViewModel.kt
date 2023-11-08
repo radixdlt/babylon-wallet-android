@@ -7,9 +7,9 @@ import com.babylon.wallet.android.domain.model.assets.LiquidStakeUnit
 import com.babylon.wallet.android.domain.model.assets.PoolUnit
 import com.babylon.wallet.android.domain.model.assets.ValidatorDetail
 import com.babylon.wallet.android.domain.model.resources.Resource
-import com.babylon.wallet.android.domain.usecases.GetAccountsWithAssetsUseCase
 import com.babylon.wallet.android.domain.usecases.GetEntitiesWithSecurityPromptUseCase
 import com.babylon.wallet.android.domain.usecases.SecurityPromptType
+import com.babylon.wallet.android.domain.usecases.assets.GetWalletAssetsUseCase
 import com.babylon.wallet.android.presentation.account.AccountEvent.NavigateToMnemonicBackup
 import com.babylon.wallet.android.presentation.account.AccountEvent.NavigateToMnemonicRestore
 import com.babylon.wallet.android.presentation.common.OneOffEvent
@@ -22,8 +22,14 @@ import com.babylon.wallet.android.presentation.navigation.Screen.Companion.ARG_A
 import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.mapNotNull
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.profile.data.model.apppreferences.Radix.dashboardUrl
@@ -31,13 +37,12 @@ import rdx.works.profile.data.model.extensions.factorSourceId
 import rdx.works.profile.data.model.factorsources.FactorSource.FactorSourceID
 import rdx.works.profile.derivation.model.NetworkId
 import rdx.works.profile.domain.GetProfileUseCase
-import rdx.works.profile.domain.accountOnCurrentNetworkWithAddress
-import timber.log.Timber
+import rdx.works.profile.domain.accountsOnCurrentNetwork
 import javax.inject.Inject
 
 @HiltViewModel
 class AccountViewModel @Inject constructor(
-    private val getAccountsWithAssetsUseCase: GetAccountsWithAssetsUseCase,
+    private val getWalletAssetsUseCase: GetWalletAssetsUseCase,
     private val getProfileUseCase: GetProfileUseCase,
     private val getEntitiesWithSecurityPromptUseCase: GetEntitiesWithSecurityPromptUseCase,
     private val appEventBus: AppEventBus,
@@ -48,29 +53,55 @@ class AccountViewModel @Inject constructor(
 
     override fun initialState(): AccountUiState = AccountUiState(accountWithAssets = null)
 
+    private val refreshFlow = MutableSharedFlow<Unit>()
+    private val accountFlow = combine(
+        getProfileUseCase.accountsOnCurrentNetwork.mapNotNull { accountsInProfile ->
+            accountsInProfile.find { it.address == accountAddress }
+        },
+        refreshFlow
+    ) { account, _ -> account }
+
     init {
         viewModelScope.launch {
-            getProfileUseCase.accountOnCurrentNetworkWithAddress(accountAddress).collectLatest { accountFromAddress ->
-                accountFromAddress?.let { account ->
+            accountFlow
+                .onEach { account ->
+                    // Update details of profile account each time it is updated
+                    _state.update { state ->
+                        val accountWithAssets = state.accountWithAssets?.copy(account = account) ?: AccountWithAssets(account = account)
+                        state.copy(accountWithAssets = accountWithAssets)
+                    }
+                }
+                .flatMapLatest { account ->
+                    getWalletAssetsUseCase(listOf(account), state.value.isRefreshing)
+                        .catch { error ->
+                            _state.update {
+                                it.copy(isLoading = false, refreshing = false, uiMessage = UiMessage.ErrorMessage(error = error))
+                            }
+                        }
+                        .mapNotNull { it.firstOrNull() }
+                }
+                .collectLatest { accountWithAssets ->
+                    // Update assets of the account each time they are updated
                     _state.update { state ->
                         state.copy(
-                            accountWithAssets = AccountWithAssets(account = account, assets = null)
+                            accountWithAssets = state.accountWithAssets?.copy(assets = accountWithAssets.assets),
+                            isLoading = false,
+                            refreshing = false
                         )
                     }
-                    loadAccountData(isRefreshing = false)
                 }
-            }
         }
 
         viewModelScope.launch {
             appEventBus.events.filter { event ->
                 event is AppEvent.RefreshResourcesNeeded || event is AppEvent.RestoredMnemonic
             }.collect {
-                refresh(fetchNewData = it !is AppEvent.RestoredMnemonic)
+                loadAccountDetails(withRefresh = it !is AppEvent.RestoredMnemonic)
             }
         }
 
         observeSecurityPrompt()
+        loadAccountDetails(withRefresh = false)
     }
 
     private fun observeSecurityPrompt() {
@@ -85,40 +116,8 @@ class AccountViewModel @Inject constructor(
         }
     }
 
-    fun refresh(fetchNewData: Boolean = true) {
-        _state.update { state ->
-            state.copy(refreshing = fetchNewData)
-        }
-        loadAccountData(isRefreshing = fetchNewData)
-    }
-
-    private fun loadAccountData(isRefreshing: Boolean) {
-        val account = _state.value.accountWithAssets?.account ?: return
-        viewModelScope.launch {
-            val result = getAccountsWithAssetsUseCase(
-                accounts = listOf(account),
-                isRefreshing = isRefreshing
-            )
-            result.onFailure { e ->
-                Timber.w(e)
-                _state.update { accountUiState ->
-                    accountUiState.copy(
-                        uiMessage = UiMessage.ErrorMessage(e),
-                        isLoading = false,
-                        refreshing = false
-                    )
-                }
-            }
-            result.onSuccess { accountsWithResources ->
-                _state.update { accountUiState ->
-                    accountUiState.copy(
-                        accountWithAssets = accountsWithResources.first(),
-                        isLoading = false,
-                        refreshing = false
-                    )
-                }
-            }
-        }
+    fun refresh() {
+        loadAccountDetails(withRefresh = true)
     }
 
     fun onFungibleResourceClicked(resource: Resource.FungibleResource) {
@@ -168,6 +167,11 @@ class AccountViewModel @Inject constructor(
     fun onMessageShown() {
         _state.update { it.copy(uiMessage = null) }
     }
+
+    private fun loadAccountDetails(withRefresh: Boolean) {
+        _state.update { it.copy(refreshing = withRefresh) }
+        viewModelScope.launch { refreshFlow.emit(Unit) }
+    }
 }
 
 internal sealed interface AccountEvent : OneOffEvent {
@@ -192,6 +196,7 @@ data class AccountUiState(
             } else {
                 null
             }
+
             else -> null
         }
 
