@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.Text
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
@@ -26,20 +25,18 @@ import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.domain.model.assets.Assets
-import com.babylon.wallet.android.domain.model.assets.LiquidStakeUnit
 import com.babylon.wallet.android.domain.model.assets.ValidatorDetail
+import com.babylon.wallet.android.domain.model.assets.ValidatorWithStakes
 import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.domain.model.resources.XrdResource
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import rdx.works.core.displayableQuantity
-import java.math.BigDecimal
 
 fun LazyListScope.liquidStakeUnitsTab(
     assets: Assets,
     stakeUnitCollapsedState: MutableState<Boolean>,
-    onLSUClick: (LiquidStakeUnit, ValidatorDetail) -> Unit,
-    onNonFungibleClick: (Resource.NonFungibleResource, Resource.NonFungibleResource.Item) -> Unit
+    action: AssetsViewAction
 ) {
     if (assets.validatorsWithStakes.isNotEmpty()) {
         item {
@@ -116,18 +113,12 @@ fun LazyListScope.liquidStakeUnitsTab(
                         title = stringResource(id = R.string.account_poolUnits_liquidStakeUnits)
                     )
 
-                    val stakeValue = remember(item) {
-                        item.liquidStakeUnit.stakeValueInXRD(item.validatorDetail.totalXrdStake)
-                    }
                     LiquidStakeUnitItem(
                         modifier = Modifier
-                            .throttleClickable {
-                                onLSUClick(item.liquidStakeUnit, item.validatorDetail)
-                            }
                             .padding(horizontal = RadixTheme.dimensions.paddingLarge)
                             .padding(bottom = RadixTheme.dimensions.paddingDefault),
-                        stakeValueInXRD = stakeValue,
-                        trailingContent = {}
+                        stake = item,
+                        action = action
                     )
 
                     if (item.stakeClaimNft != null) {
@@ -143,17 +134,13 @@ fun LazyListScope.liquidStakeUnitsTab(
                             val isLast = index == item.stakeClaimNft.nonFungibleResource.amount.toInt() - 1
                             StakeClaimNftItem(
                                 modifier = Modifier
-                                    .throttleClickable(enabled = stakeClaimNFT != null) {
-                                        if (stakeClaimNFT != null) {
-                                            onNonFungibleClick(item.stakeClaimNft.nonFungibleResource, stakeClaimNFT)
-                                        }
-                                    }
                                     .padding(horizontal = RadixTheme.dimensions.paddingLarge)
                                     .padding(
                                         top = if (index > 0) RadixTheme.dimensions.paddingSmall else 0.dp,
                                         bottom = if (isLast) RadixTheme.dimensions.paddingDefault else 0.dp
                                     ),
-                                stakeClaimNft = stakeClaimNFT
+                                stakeClaimNft = stakeClaimNFT,
+                                action = action
                             )
                         }
                     }
@@ -196,13 +183,24 @@ private fun StakeSectionTitle(title: String, modifier: Modifier = Modifier) {
 
 @Composable
 private fun LiquidStakeUnitItem(
-    stakeValueInXRD: BigDecimal?,
     modifier: Modifier = Modifier,
-    trailingContent: @Composable () -> Unit = {}
+    stake: ValidatorWithStakes,
+    action: AssetsViewAction
 ) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = modifier
+            .throttleClickable {
+                when (action) {
+                    is AssetsViewAction.Click -> {
+                        action.onLSUClick(stake.liquidStakeUnit, stake.validatorDetail)
+                    }
+                    is AssetsViewAction.Selection -> {
+                        val isSelected = action.isSelected(stake.liquidStakeUnit.resourceAddress)
+                        action.onResourceCheckChanged(stake.liquidStakeUnit.resourceAddress, !isSelected)
+                    }
+                }
+            }
             .assetOutlineBorder()
             .padding(RadixTheme.dimensions.paddingDefault),
         horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingMedium)
@@ -229,17 +227,26 @@ private fun LiquidStakeUnitItem(
                 maxLines = 1
             )
         }
+
+        val stakeValue = remember(stake) {
+            stake.liquidStakeUnit.stakeValueInXRD(stake.validatorDetail.totalXrdStake)
+        }
         Text(
             modifier = Modifier
                 .sizeIn(minWidth = 96.dp)
-                .assetPlaceholder(visible = stakeValueInXRD == null),
-            text = stakeValueInXRD?.displayableQuantity().orEmpty(),
+                .assetPlaceholder(visible = stakeValue == null),
+            text = stakeValue?.displayableQuantity().orEmpty(),
             style = RadixTheme.typography.secondaryHeader,
             color = RadixTheme.colors.gray1,
             maxLines = 1
         )
 
-        trailingContent()
+        if (action is AssetsViewAction.Selection) {
+            AssetsViewCheckBox(
+                resourceAddress = stake.liquidStakeUnit.resourceAddress,
+                action = action
+            )
+        }
     }
 }
 
@@ -247,12 +254,18 @@ private fun LiquidStakeUnitItem(
 private fun StakeClaimNftItem(
     stakeClaimNft: Resource.NonFungibleResource.Item?,
     modifier: Modifier = Modifier,
-    trailingContent: @Composable () -> Unit = {}
+    action: AssetsViewAction
 ) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = modifier
             .assetOutlineBorder()
+            .throttleClickable(enabled = action is AssetsViewAction.Selection && stakeClaimNft != null) {
+                if (action is AssetsViewAction.Selection && stakeClaimNft != null) {
+                    val isSelected = action.isSelected(stakeClaimNft.globalAddress)
+                    action.onResourceCheckChanged(stakeClaimNft.globalAddress, !isSelected)
+                }
+            }
             .padding(RadixTheme.dimensions.paddingDefault),
         horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingMedium)
     ) {
@@ -292,6 +305,11 @@ private fun StakeClaimNftItem(
             maxLines = 1
         )
 
-        trailingContent()
+        if (action is AssetsViewAction.Selection && stakeClaimNft != null) {
+            AssetsViewCheckBox(
+                resourceAddress = stakeClaimNft.globalAddress,
+                action = action
+            )
+        }
     }
 }

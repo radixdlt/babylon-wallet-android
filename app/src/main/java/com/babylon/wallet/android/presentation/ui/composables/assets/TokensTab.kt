@@ -23,11 +23,12 @@ import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.presentation.account.composable.EmptyResourcesContent
 import com.babylon.wallet.android.presentation.transfer.assets.ResourceTab
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
+import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import rdx.works.core.displayableQuantity
 
 fun LazyListScope.tokensTab(
     assets: Assets,
-    onFungibleClick: (Resource.FungibleResource) -> Unit
+    action: AssetsViewAction
 ) {
     if (assets.fungibles.isEmpty()) {
         item {
@@ -47,10 +48,8 @@ fun LazyListScope.tokensTab(
                     .padding(top = RadixTheme.dimensions.paddingSemiLarge)
             ) {
                 FungibleResourceItem(
-                    modifier = Modifier.clickable {
-                        onFungibleClick(xrdResource)
-                    },
-                    resource = xrdResource
+                    resource = xrdResource,
+                    action = action
                 )
             }
         }
@@ -70,10 +69,8 @@ fun LazyListScope.tokensTab(
                 allItemsSize = assets.nonXrdFungibles.size
             ) {
                 FungibleResourceItem(
-                    modifier = Modifier.clickable {
-                        onFungibleClick(resource)
-                    },
-                    resource = resource
+                    resource = resource,
+                    action = action
                 )
 
                 if (index != assets.nonXrdFungibles.lastIndex) {
@@ -91,47 +88,57 @@ fun LazyListScope.tokensTab(
 private fun FungibleResourceItem(
     resource: Resource.FungibleResource,
     modifier: Modifier = Modifier,
-    trailingContent: @Composable (() -> Unit) = {
-        Spacer(modifier = Modifier.width(28.dp))
-    },
-    bottomContent: @Composable (() -> Unit) = {}
+    action: AssetsViewAction
 ) {
-    Column(modifier = modifier, horizontalAlignment = Alignment.CenterHorizontally) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(
-                    horizontal = RadixTheme.dimensions.paddingDefault,
-                    vertical = RadixTheme.dimensions.paddingLarge
-                ),
-        ) {
-            Spacer(modifier = Modifier.width(RadixTheme.dimensions.paddingMedium))
-            Thumbnail.Fungible(
-                modifier = Modifier.size(44.dp),
-                token = resource
-            )
-            Spacer(modifier = Modifier.width(RadixTheme.dimensions.paddingMedium))
-            Text(
-                modifier = Modifier.weight(1f),
-                text = resource.displayTitle,
-                style = RadixTheme.typography.body2HighImportance,
-                color = RadixTheme.colors.gray1,
-                maxLines = 1
-            )
-            Spacer(modifier = Modifier.width(RadixTheme.dimensions.paddingMedium))
-
-            resource.ownedAmount?.let { amount ->
-                Text(
-                    text = amount.displayableQuantity(),
-                    style = RadixTheme.typography.secondaryHeader,
-                    color = RadixTheme.colors.gray1,
-                    maxLines = 2
-                )
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = modifier
+            .throttleClickable {
+                when (action) {
+                    is AssetsViewAction.Click -> {
+                        action.onFungibleClick(resource)
+                    }
+                    is AssetsViewAction.Selection -> {
+                        val isSelected = action.isSelected(resource.resourceAddress)
+                        action.onResourceCheckChanged(resource.resourceAddress, !isSelected)
+                    }
+                }
             }
+            .fillMaxWidth()
+            .padding(
+                horizontal = RadixTheme.dimensions.paddingDefault,
+                vertical = RadixTheme.dimensions.paddingLarge
+            ),
+    ) {
+        Spacer(modifier = Modifier.width(RadixTheme.dimensions.paddingMedium))
+        Thumbnail.Fungible(
+            modifier = Modifier.size(44.dp),
+            token = resource
+        )
+        Spacer(modifier = Modifier.width(RadixTheme.dimensions.paddingMedium))
+        Text(
+            modifier = Modifier.weight(1f),
+            text = resource.displayTitle,
+            style = RadixTheme.typography.body2HighImportance,
+            color = RadixTheme.colors.gray1,
+            maxLines = 1
+        )
+        Spacer(modifier = Modifier.width(RadixTheme.dimensions.paddingMedium))
 
-            trailingContent()
+        resource.ownedAmount?.let { amount ->
+            Text(
+                text = amount.displayableQuantity(),
+                style = RadixTheme.typography.secondaryHeader,
+                color = RadixTheme.colors.gray1,
+                maxLines = 2
+            )
         }
-        bottomContent()
+
+        if (action is AssetsViewAction.Selection) {
+            AssetsViewCheckBox(
+                resourceAddress = resource.resourceAddress,
+                action = action
+            )
+        }
     }
 }

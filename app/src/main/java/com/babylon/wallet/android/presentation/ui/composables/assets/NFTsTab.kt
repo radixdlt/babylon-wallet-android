@@ -28,6 +28,7 @@ import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.presentation.account.composable.EmptyResourcesContent
 import com.babylon.wallet.android.presentation.transfer.assets.ResourceTab
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
+import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import com.google.accompanist.placeholder.PlaceholderHighlight
 import com.google.accompanist.placeholder.placeholder
 import com.google.accompanist.placeholder.shimmer
@@ -35,7 +36,7 @@ import com.google.accompanist.placeholder.shimmer
 fun LazyListScope.nftsTab(
     assets: Assets,
     collapsedState: SnapshotStateList<Boolean>,
-    onNonFungibleItemClick: (Resource.NonFungibleResource, Resource.NonFungibleResource.Item) -> Unit
+    action: AssetsViewAction
 ) {
     if (assets.nonFungibles.isEmpty()) {
         item {
@@ -116,12 +117,9 @@ fun LazyListScope.nftsTab(
                 val nft = collection.items.getOrNull(index)
                 if (nft != null) {
                     NonFungibleResourceItem(
-                        modifier = Modifier
-                            .padding(RadixTheme.dimensions.paddingDefault)
-                            .clickable {
-                                onNonFungibleItemClick(collection, nft)
-                            },
-                        item = nft
+                        collection = collection,
+                        item = nft,
+                        action = action
                     )
                 } else {
                     NonFungibleResourcePlaceholder(
@@ -136,31 +134,58 @@ fun LazyListScope.nftsTab(
 @Composable
 private fun NonFungibleResourceItem(
     modifier: Modifier = Modifier,
+    collection: Resource.NonFungibleResource,
     item: Resource.NonFungibleResource.Item,
+    action: AssetsViewAction
 ) {
-    Column(
-        modifier = modifier,
-        verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingDefault)
+    Row(
+        modifier = modifier
+            .throttleClickable {
+                when (action) {
+                    is AssetsViewAction.Click -> {
+                        action.onNonFungibleItemClick(collection, item)
+                    }
+                    is AssetsViewAction.Selection -> {
+                        val isSelected = action.isSelected(item.globalAddress)
+                        action.onResourceCheckChanged(item.globalAddress, !isSelected)
+                    }
+                }
+            }
+            .padding(RadixTheme.dimensions.paddingDefault),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingSmall)
     ) {
-        Thumbnail.NFT(
-            modifier = Modifier.fillMaxWidth(),
-            nft = item
-        )
-        item.nameMetadataItem?.name?.let { name ->
+        Column(
+            modifier = Modifier.weight(1f),
+            verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingDefault)
+        ) {
+            Thumbnail.NFT(
+                modifier = Modifier.fillMaxWidth(),
+                nft = item
+            )
+            item.nameMetadataItem?.name?.let { name ->
+                Text(
+                    modifier = Modifier.fillMaxWidth(),
+                    text = name,
+                    style = RadixTheme.typography.body1HighImportance,
+                    color = RadixTheme.colors.gray1
+                )
+            }
+
             Text(
                 modifier = Modifier.fillMaxWidth(),
-                text = name,
+                text = item.localId.displayable,
                 style = RadixTheme.typography.body1HighImportance,
-                color = RadixTheme.colors.gray1
+                color = RadixTheme.colors.gray2
             )
         }
 
-        Text(
-            modifier = Modifier.fillMaxWidth(),
-            text = item.localId.displayable,
-            style = RadixTheme.typography.body1HighImportance,
-            color = RadixTheme.colors.gray2
-        )
+        if (action is AssetsViewAction.Selection) {
+            AssetsViewCheckBox(
+                resourceAddress = item.globalAddress,
+                action = action
+            )
+        }
     }
 }
 

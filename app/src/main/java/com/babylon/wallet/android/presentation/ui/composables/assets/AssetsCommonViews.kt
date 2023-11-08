@@ -12,8 +12,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Checkbox
+import androidx.compose.material3.CheckboxDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
@@ -147,4 +150,27 @@ fun CollapsibleAssetCard(
             content()
         }
     }
+}
+
+@Composable
+fun AssetsViewCheckBox(
+    modifier: Modifier = Modifier,
+    resourceAddress: String,
+    action: AssetsViewAction.Selection
+) {
+    val isSelected = remember(action, resourceAddress) {
+        action.isSelected(resourceAddress)
+    }
+    Checkbox(
+        modifier = modifier,
+        checked = isSelected,
+        onCheckedChange = {
+            action.onResourceCheckChanged(resourceAddress, it)
+        },
+        colors = CheckboxDefaults.colors(
+            checkedColor = RadixTheme.colors.gray1,
+            uncheckedColor = RadixTheme.colors.gray2,
+            checkmarkColor = Color.White
+        )
+    )
 }

@@ -3,16 +3,12 @@ package com.babylon.wallet.android.presentation.ui.composables.assets
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.Text
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Divider
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
@@ -21,21 +17,18 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.domain.model.assets.Assets
-import com.babylon.wallet.android.domain.model.assets.LiquidStakeUnit
 import com.babylon.wallet.android.domain.model.assets.PoolUnit
-import com.babylon.wallet.android.domain.model.assets.ValidatorDetail
-import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.presentation.account.composable.EmptyResourcesContent
 import com.babylon.wallet.android.presentation.transfer.assets.ResourceTab
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
 import com.babylon.wallet.android.presentation.ui.composables.resources.poolName
+import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import rdx.works.core.displayableQuantity
 
 fun LazyListScope.poolUnitsTab(
     assets: Assets,
     stakeUnitCollapsedState: MutableState<Boolean>,
-    onLSUClick: (LiquidStakeUnit, ValidatorDetail) -> Unit,
-    onNonFungibleClick: (Resource.NonFungibleResource, Resource.NonFungibleResource.Item) -> Unit
+    action: AssetsViewAction
 ) {
     if (assets.validatorsWithStakes.isEmpty() && assets.poolUnits.isEmpty()) {
         item {
@@ -49,8 +42,7 @@ fun LazyListScope.poolUnitsTab(
     liquidStakeUnitsTab(
         assets = assets,
         stakeUnitCollapsedState = stakeUnitCollapsedState,
-        onLSUClick = onLSUClick,
-        onNonFungibleClick = onNonFungibleClick
+        action = action
     )
 
     if (assets.poolUnits.isNotEmpty()) {
@@ -63,7 +55,7 @@ fun LazyListScope.poolUnitsTab(
                     .padding(horizontal = RadixTheme.dimensions.paddingDefault)
                     .padding(top = RadixTheme.dimensions.paddingSemiLarge),
                 resource = item,
-                trailingContent = {}
+                action = action
             )
         }
     }
@@ -73,10 +65,21 @@ fun LazyListScope.poolUnitsTab(
 private fun PoolUnitItem(
     modifier: Modifier = Modifier,
     resource: PoolUnit,
-    trailingContent: @Composable () -> Unit = {}
+    action: AssetsViewAction
 ) {
     AssetCard(
         modifier = modifier
+            .throttleClickable {
+                when (action) {
+                    is AssetsViewAction.Click -> {
+                        action.onFungibleClick(resource.stake)
+                    }
+                    is AssetsViewAction.Selection -> {
+                        val isSelected = action.isSelected(resource.resourceAddress)
+                        action.onResourceCheckChanged(resource.resourceAddress, !isSelected)
+                    }
+                }
+            }
     ) {
         Row(
             modifier = Modifier.padding(RadixTheme.dimensions.paddingLarge),
@@ -102,7 +105,13 @@ private fun PoolUnitItem(
             horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingMedium)
         ) {
             PoolResourcesValues(modifier = Modifier.weight(1f), poolUnit = resource)
-            trailingContent()
+
+            if (action is AssetsViewAction.Selection) {
+                AssetsViewCheckBox(
+                    resourceAddress = resource.resourceAddress,
+                    action = action
+                )
+            }
         }
     }
 }
