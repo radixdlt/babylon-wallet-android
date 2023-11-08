@@ -47,7 +47,7 @@ class AppSettingsViewModel @Inject constructor(
                     }
                 }
         }
-        if (BuildConfig.CRASH_REPORTING_ENABLED) {
+        if (BuildConfig.CRASH_REPORTING_AVAILABLE) {
             _state.update { settingsUiState ->
                 settingsUiState.copy(
                     settings = (settingsUiState.settings + SettingsItem.AppSettingsItem.CrashReporting(false)).toPersistentSet()
