@@ -72,7 +72,7 @@ private fun PoolUnitItem(
             .throttleClickable {
                 when (action) {
                     is AssetsViewAction.Click -> {
-                        action.onFungibleClick(resource.stake)
+                        action.onPoolUnitClick(resource)
                     }
                     is AssetsViewAction.Selection -> {
                         val isSelected = action.isSelected(resource.resourceAddress)

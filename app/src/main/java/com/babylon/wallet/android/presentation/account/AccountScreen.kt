@@ -1,31 +1,26 @@
-@file:OptIn(ExperimentalFoundationApi::class, ExperimentalMaterialApi::class)
+@file:OptIn(ExperimentalMaterialApi::class)
 
 package com.babylon.wallet.android.presentation.account
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.Icon
 import androidx.compose.material.ModalBottomSheetLayout
@@ -46,7 +41,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
@@ -71,7 +65,6 @@ import com.babylon.wallet.android.domain.model.assets.Assets
 import com.babylon.wallet.android.domain.model.assets.LiquidStakeUnit
 import com.babylon.wallet.android.domain.model.assets.PoolUnit
 import com.babylon.wallet.android.domain.model.assets.ValidatorDetail
-import com.babylon.wallet.android.domain.model.resources.AccountDetails
 import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.domain.usecases.SecurityPromptType
 import com.babylon.wallet.android.presentation.account.composable.FungibleTokenBottomSheetDetails
@@ -79,7 +72,6 @@ import com.babylon.wallet.android.presentation.account.composable.LSUBottomSheet
 import com.babylon.wallet.android.presentation.account.composable.NonFungibleTokenBottomSheetDetails
 import com.babylon.wallet.android.presentation.account.composable.PoolUnitBottomSheetDetails
 import com.babylon.wallet.android.presentation.transfer.assets.ResourceTab
-import com.babylon.wallet.android.presentation.transfer.assets.ResourcesTabs
 import com.babylon.wallet.android.presentation.ui.composables.ActionableAddressView
 import com.babylon.wallet.android.presentation.ui.composables.ApplySecuritySettingsLabel
 import com.babylon.wallet.android.presentation.ui.composables.LocalDevBannerState
@@ -87,16 +79,9 @@ import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAp
 import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
 import com.babylon.wallet.android.presentation.ui.composables.ThrottleIconButton
-import com.babylon.wallet.android.presentation.ui.composables.resources.FungibleResourceItem
-import com.babylon.wallet.android.presentation.ui.composables.resources.LiquidStakeUnitItem
-import com.babylon.wallet.android.presentation.ui.composables.resources.NonFungibleResourceItem
-import com.babylon.wallet.android.presentation.ui.composables.resources.PoolUnitItem
-import com.babylon.wallet.android.presentation.ui.composables.resources.StakeClaimNftItem
-import com.babylon.wallet.android.presentation.ui.composables.resources.fungibleResources
-import com.babylon.wallet.android.presentation.ui.composables.resources.nonFungibleResources
-import com.babylon.wallet.android.presentation.ui.composables.resources.poolUnitsResources
+import com.babylon.wallet.android.presentation.ui.composables.assets.AssetsViewAction
+import com.babylon.wallet.android.presentation.ui.composables.assets.assetsView
 import com.babylon.wallet.android.presentation.ui.composables.toText
-import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import com.babylon.wallet.android.utils.openUrl
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toPersistentList
@@ -389,38 +374,25 @@ fun AssetsContent(
         modifier = modifier,
         color = RadixTheme.colors.gray5
     ) {
-        var selectedTab by remember { mutableStateOf(ResourceTab.Tokens) }
-        val assets = state.accountWithAssets?.assets
-        val xrdItem = assets?.xrd
-        val restOfFungibles = assets?.nonXrdFungibles.orEmpty()
-
-        val nonFungibleCollections = assets?.nonFungibles.orEmpty()
-        val collapsedState = remember(nonFungibleCollections) {
-            nonFungibleCollections.map { true }.toMutableStateList()
-        }
-        var collapsedStakeState by remember(assets?.validatorsWithStakes) { mutableStateOf(true) }
-
         val accountAddress = remember(state.accountWithAssets) {
             state.accountWithAssets?.account?.address.orEmpty()
         }
 
-        Box(
-            modifier = Modifier.fillMaxSize()
+        var selectedTab by remember { mutableStateOf(ResourceTab.Tokens) }
+        LazyColumn(
+            modifier = Modifier.fillMaxSize(),
+            state = lazyListState,
         ) {
-            val horizontalPadding = RadixTheme.dimensions.paddingDefault
-
-            LazyColumn(
-                modifier = Modifier.fillMaxSize(),
-                state = lazyListState,
-            ) {
-                item {
+            item {
+                Box {
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
                             .background(
                                 brush = Brush.horizontalGradient(gradient)
                             )
-                            .padding(horizontal = RadixTheme.dimensions.paddingXLarge),
+                            .padding(horizontal = RadixTheme.dimensions.paddingXLarge)
+                            .padding(bottom = RadixTheme.dimensions.paddingSemiLarge),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         ActionableAddressView(
@@ -465,111 +437,31 @@ fun AssetsContent(
                             )
                         }
                     }
-                }
-                item {
+
                     Box(
                         modifier = Modifier
+                            .align(Alignment.BottomCenter)
                             .fillMaxWidth()
-                            .background(brush = Brush.horizontalGradient(gradient))
+                            .height(RadixTheme.dimensions.paddingSemiLarge)
                             .background(
                                 color = RadixTheme.colors.gray5,
                                 shape = RadixTheme.shapes.roundedRectTopDefault
                             )
-                            .padding(vertical = RadixTheme.dimensions.paddingLarge),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        ResourcesTabs(selectedTab = selectedTab, onTabSelected = {
-                            selectedTab = it
-                        })
-                    }
-                }
-
-                if (assets != null) {
-                    val contentModifier = Modifier.padding(
-                        horizontal = horizontalPadding
                     )
-                    when (selectedTab) {
-                        ResourceTab.Tokens -> fungibleResources(
-                            modifier = contentModifier,
-                            xrdItem = xrdItem,
-                            restOfFungibles = restOfFungibles
-                        ) { _, item ->
-                            FungibleResourceItem(
-                                modifier = Modifier.clickable {
-                                    onFungibleTokenClick(item)
-                                },
-                                resource = item
-                            )
-                        }
-
-                        ResourceTab.Nfts -> nonFungibleResources(
-                            modifier = contentModifier,
-                            collections = nonFungibleCollections,
-                            collapsedState = collapsedState,
-                        ) { collection, item ->
-                            NonFungibleResourceItem(
-                                modifier = Modifier
-                                    .padding(RadixTheme.dimensions.paddingDefault)
-                                    .clickable {
-                                        onNonFungibleItemClick(collection, item)
-                                    },
-                                item = item
-                            )
-                        }
-
-                        ResourceTab.PoolUnits -> {
-                            poolUnitsResources(
-                                modifier = contentModifier,
-                                collapsedState = collapsedStakeState,
-                                validatorsWithStakeResources = assets.validatorsWithStakes.toPersistentList(),
-                                poolUnits = assets.poolUnits,
-                                parentSectionClick = {
-                                    collapsedStakeState = !collapsedStakeState
-                                },
-                                poolUnitItem = { poolUnit ->
-                                    PoolUnitItem(
-                                        resource = poolUnit,
-                                        modifier = Modifier
-                                            .throttleClickable {
-                                                onPoolUnitClick(poolUnit)
-                                            }
-                                            .padding(horizontal = RadixTheme.dimensions.paddingDefault)
-                                    )
-                                },
-                                liquidStakeItem = { liquidStakeUnit, validatorDetail ->
-                                    LiquidStakeUnitItem(
-                                        stakeValueInXRD = liquidStakeUnit.stakeValueInXRD(
-                                            validatorDetail.totalXrdStake
-                                        ),
-                                        modifier = Modifier.throttleClickable {
-                                            onLSUUnitClicked(liquidStakeUnit, validatorDetail)
-                                        }
-                                    )
-                                },
-                                stakeClaimItem = { stakeClaim, stakeClaimNftItem ->
-                                    StakeClaimNftItem(
-                                        modifier = Modifier.throttleClickable {
-                                            // TODO for now just open NFT details
-                                            onNonFungibleItemClick(stakeClaim.nonFungibleResource, stakeClaimNftItem)
-                                        },
-                                        stakeClaimNft = stakeClaimNftItem
-                                    )
-                                }
-                            )
-                            item {
-                                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
-                            }
-                        }
-                    }
                 }
             }
 
-            if (state.isLoading) {
-                CircularProgressIndicator(
-                    modifier = Modifier.align(Alignment.Center),
-                    color = RadixTheme.colors.gray1
+            assetsView(
+                assets = state.accountWithAssets?.assets,
+                selectedTab = selectedTab,
+                onTabSelected = { selectedTab = it },
+                action = AssetsViewAction.Click(
+                    onFungibleClick = onFungibleTokenClick,
+                    onNonFungibleItemClick = onNonFungibleItemClick,
+                    onLSUClick = onLSUUnitClicked,
+                    onPoolUnitClick = onPoolUnitClick
                 )
-            }
+            )
         }
     }
 }

@@ -98,6 +98,7 @@ private fun FungibleResourceItem(
                     is AssetsViewAction.Click -> {
                         action.onFungibleClick(resource)
                     }
+
                     is AssetsViewAction.Selection -> {
                         val isSelected = action.isSelected(resource.resourceAddress)
                         action.onResourceCheckChanged(resource.resourceAddress, !isSelected)
@@ -139,6 +140,8 @@ private fun FungibleResourceItem(
                 resourceAddress = resource.resourceAddress,
                 action = action
             )
+        } else {
+            Spacer(modifier = Modifier.width(RadixTheme.dimensions.paddingMedium))
         }
     }
 }

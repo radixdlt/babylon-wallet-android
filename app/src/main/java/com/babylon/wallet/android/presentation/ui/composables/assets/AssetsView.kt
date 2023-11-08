@@ -37,8 +37,8 @@ fun LazyListScope.assetsView(
     assets: Assets?,
     selectedTab: ResourceTab,
     onTabSelected: (ResourceTab) -> Unit,
-    nonFungiblesViewState: SnapshotStateMap<String, NonFungibleViewState>,
-    stakeUnitCollapsedState: MutableState<Boolean>,
+    nonFungiblesViewState: SnapshotStateMap<String, NonFungibleViewState> = SnapshotStateMap(),
+    stakeUnitCollapsedState: MutableState<Boolean> = mutableStateOf(false),
     action: AssetsViewAction
 ) {
     item {
@@ -89,7 +89,8 @@ sealed interface AssetsViewAction {
     data class Click(
         val onFungibleClick: (Resource.FungibleResource) -> Unit,
         val onNonFungibleItemClick: (Resource.NonFungibleResource, Resource.NonFungibleResource.Item) -> Unit,
-        val onLSUClick: (LiquidStakeUnit, ValidatorDetail) -> Unit
+        val onLSUClick: (LiquidStakeUnit, ValidatorDetail) -> Unit,
+        val onPoolUnitClick: (PoolUnit) -> Unit
     ): AssetsViewAction
 
     data class Selection(
@@ -125,6 +126,7 @@ fun AssetsViewWithLoadingAssets() {
                     onFungibleClick = {},
                     onNonFungibleItemClick = { _,_ ->},
                     onLSUClick = { _,_ ->},
+                    onPoolUnitClick = {}
                 )
             )
         }
@@ -147,6 +149,7 @@ fun AssetsViewWithEmptyAssets() {
                     onFungibleClick = {},
                     onNonFungibleItemClick = { _,_ ->},
                     onLSUClick = { _,_ ->},
+                    onPoolUnitClick = {}
                 )
             )
         }
@@ -288,7 +291,8 @@ fun AssetsViewWithAssets() {
                 action = AssetsViewAction.Click(
                     onFungibleClick = {},
                     onNonFungibleItemClick = { _, _ -> },
-                    onLSUClick = { _, _ -> }
+                    onLSUClick = { _, _ -> },
+                    onPoolUnitClick = {}
                 )
             )
         }
