@@ -11,8 +11,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.snapshots.SnapshotStateList
-import androidx.compose.runtime.toMutableStateList
+import androidx.compose.runtime.snapshots.SnapshotStateMap
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
@@ -38,7 +37,7 @@ fun LazyListScope.assetsView(
     assets: Assets?,
     selectedTab: ResourceTab,
     onTabSelected: (ResourceTab) -> Unit,
-    nonFungiblesCollapseState: SnapshotStateList<Boolean>,
+    nonFungiblesViewState: SnapshotStateMap<String, NonFungibleViewState>,
     stakeUnitCollapsedState: MutableState<Boolean>,
     action: AssetsViewAction
 ) {
@@ -62,7 +61,7 @@ fun LazyListScope.assetsView(
 
             ResourceTab.Nfts -> nftsTab(
                 assets = assets,
-                collapsedState = nonFungiblesCollapseState,
+                viewState = nonFungiblesViewState,
                 action = action
             )
 
@@ -103,6 +102,13 @@ sealed interface AssetsViewAction {
     }
 }
 
+data class NonFungibleViewState(
+    val isCollapsed: Boolean,
+    val isRequestingNFTs: Boolean
+)
+
+
+
 @Preview
 @Composable
 fun AssetsViewWithLoadingAssets() {
@@ -113,7 +119,7 @@ fun AssetsViewWithLoadingAssets() {
                 assets = null,
                 selectedTab = tabs,
                 onTabSelected = {},
-                nonFungiblesCollapseState = SnapshotStateList(),
+                nonFungiblesViewState = SnapshotStateMap(),
                 stakeUnitCollapsedState = mutableStateOf(true),
                 action = AssetsViewAction.Click(
                     onFungibleClick = {},
@@ -135,7 +141,7 @@ fun AssetsViewWithEmptyAssets() {
                 assets = Assets(),
                 selectedTab = tabs,
                 onTabSelected = {},
-                nonFungiblesCollapseState = SnapshotStateList(),
+                nonFungiblesViewState = SnapshotStateMap(),
                 stakeUnitCollapsedState = mutableStateOf(true),
                 action = AssetsViewAction.Click(
                     onFungibleClick = {},
@@ -256,8 +262,15 @@ fun AssetsViewWithAssets() {
         )
     }
 
-    val collapsedState = remember(assets.nonFungibles) {
-        assets.nonFungibles.map { true }.toMutableStateList()
+    val nonFungiblesViewState = remember(assets.nonFungibles) {
+        val viewState = SnapshotStateMap<String, NonFungibleViewState>()
+        assets.nonFungibles.forEach { entry ->
+            viewState[entry.resourceAddress] = NonFungibleViewState(
+                isCollapsed = true,
+                isRequestingNFTs = false
+            )
+        }
+        viewState
     }
 
     val stakeUnitCollapsedState = remember(assets) { mutableStateOf(true) }
@@ -270,7 +283,7 @@ fun AssetsViewWithAssets() {
                 onTabSelected = {
                     selectedTab = it
                 },
-                nonFungiblesCollapseState = collapsedState,
+                nonFungiblesViewState = nonFungiblesViewState,
                 stakeUnitCollapsedState = stakeUnitCollapsedState,
                 action = AssetsViewAction.Click(
                     onFungibleClick = {},
