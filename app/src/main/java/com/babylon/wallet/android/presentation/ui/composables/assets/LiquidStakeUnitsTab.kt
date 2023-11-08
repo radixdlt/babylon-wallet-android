@@ -13,8 +13,8 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.Text
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.snapshots.SnapshotStateMap
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -35,16 +35,17 @@ import rdx.works.core.displayableQuantity
 
 fun LazyListScope.liquidStakeUnitsTab(
     assets: Assets,
-    stakeUnitCollapsedState: MutableState<Boolean>,
+    collapsibleAssetsState: SnapshotStateMap<String, CollapsibleAssetState>,
     action: AssetsViewAction
 ) {
     if (assets.validatorsWithStakes.isNotEmpty()) {
         item {
+            val viewState = collapsibleAssetsState[CollapsibleAssetState.STAKE_SECTION_ID]
             CollapsibleAssetCard(
                 modifier = Modifier
                     .padding(horizontal = RadixTheme.dimensions.paddingDefault)
                     .padding(top = RadixTheme.dimensions.paddingSemiLarge),
-                isCollapsed = stakeUnitCollapsedState.value,
+                isCollapsed = viewState?.isCollapsed ?: true,
                 collapsedItems = assets.validatorsWithStakes.size
             ) {
                 Row(
@@ -52,7 +53,11 @@ fun LazyListScope.liquidStakeUnitsTab(
                     modifier = Modifier
                         .fillMaxWidth()
                         .clickable {
-                            stakeUnitCollapsedState.value = !stakeUnitCollapsedState.value
+                            if (viewState != null) {
+                                collapsibleAssetsState[CollapsibleAssetState.STAKE_SECTION_ID] = viewState.copy(
+                                    isCollapsed = !viewState.isCollapsed
+                                )
+                            }
                         }
                         .padding(RadixTheme.dimensions.paddingLarge),
                     horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingDefault)
@@ -83,7 +88,7 @@ fun LazyListScope.liquidStakeUnitsTab(
             }
         }
 
-        if (!stakeUnitCollapsedState.value) {
+        if (collapsibleAssetsState[CollapsibleAssetState.STAKE_SECTION_ID]?.isCollapsed == false) {
             itemsIndexed(
                 items = assets.validatorsWithStakes,
                 key = { _, item -> item.validatorDetail.address }

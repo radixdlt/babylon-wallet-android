@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -37,8 +36,7 @@ fun LazyListScope.assetsView(
     assets: Assets?,
     selectedTab: ResourceTab,
     onTabSelected: (ResourceTab) -> Unit,
-    nonFungiblesViewState: SnapshotStateMap<String, NonFungibleViewState> = SnapshotStateMap(),
-    stakeUnitCollapsedState: MutableState<Boolean> = mutableStateOf(false),
+    collapsibleAssetsState: SnapshotStateMap<String, CollapsibleAssetState>,
     action: AssetsViewAction
 ) {
     item {
@@ -61,13 +59,13 @@ fun LazyListScope.assetsView(
 
             ResourceTab.Nfts -> nftsTab(
                 assets = assets,
-                viewState = nonFungiblesViewState,
+                collapsibleAssetsState = collapsibleAssetsState,
                 action = action
             )
 
             ResourceTab.PoolUnits -> poolUnitsTab(
                 assets = assets,
-                stakeUnitCollapsedState = stakeUnitCollapsedState,
+                collapsibleAssetsState = collapsibleAssetsState,
                 action = action
             )
         }
@@ -91,23 +89,51 @@ sealed interface AssetsViewAction {
         val onNonFungibleItemClick: (Resource.NonFungibleResource, Resource.NonFungibleResource.Item) -> Unit,
         val onLSUClick: (LiquidStakeUnit, ValidatorDetail) -> Unit,
         val onPoolUnitClick: (PoolUnit) -> Unit
-    ): AssetsViewAction
+    ) : AssetsViewAction
 
     data class Selection(
         val selectedResources: List<String>,
         val onResourceCheckChanged: (String, Boolean) -> Unit
-    ): AssetsViewAction {
+    ) : AssetsViewAction {
 
         fun isSelected(resourceAddress: String) = selectedResources.contains(resourceAddress)
 
     }
 }
 
-data class NonFungibleViewState(
+data class CollapsibleAssetState(
     val isCollapsed: Boolean,
     val isRequestingNFTs: Boolean
-)
+) {
 
+    companion object {
+        const val STAKE_SECTION_ID = "-1"
+
+        @Composable
+        fun rememberNonFungiblesViewState(assets: Assets?): SnapshotStateMap<String, CollapsibleAssetState> {
+            val nonFungibleAddresses = remember(assets) {
+                assets?.nonFungibles?.map { it.resourceAddress }.orEmpty().toMutableList().apply {
+                    if (assets?.validatorsWithStakes?.isNotEmpty() == true) {
+                        add(STAKE_SECTION_ID)
+                    }
+                }
+            }
+
+            return remember(nonFungibleAddresses) {
+                val state = SnapshotStateMap<String, CollapsibleAssetState>()
+                nonFungibleAddresses.forEach { address ->
+                    state[address] = CollapsibleAssetState(
+                        isCollapsed = true,
+                        isRequestingNFTs = false
+                    )
+                }
+
+                state
+            }
+        }
+    }
+
+}
 
 
 @Preview
@@ -120,12 +146,11 @@ fun AssetsViewWithLoadingAssets() {
                 assets = null,
                 selectedTab = tabs,
                 onTabSelected = {},
-                nonFungiblesViewState = SnapshotStateMap(),
-                stakeUnitCollapsedState = mutableStateOf(true),
+                collapsibleAssetsState = SnapshotStateMap(),
                 action = AssetsViewAction.Click(
                     onFungibleClick = {},
-                    onNonFungibleItemClick = { _,_ ->},
-                    onLSUClick = { _,_ ->},
+                    onNonFungibleItemClick = { _, _ -> },
+                    onLSUClick = { _, _ -> },
                     onPoolUnitClick = {}
                 )
             )
@@ -143,12 +168,11 @@ fun AssetsViewWithEmptyAssets() {
                 assets = Assets(),
                 selectedTab = tabs,
                 onTabSelected = {},
-                nonFungiblesViewState = SnapshotStateMap(),
-                stakeUnitCollapsedState = mutableStateOf(true),
+                collapsibleAssetsState = SnapshotStateMap(),
                 action = AssetsViewAction.Click(
                     onFungibleClick = {},
-                    onNonFungibleItemClick = { _,_ ->},
-                    onLSUClick = { _,_ ->},
+                    onNonFungibleItemClick = { _, _ -> },
+                    onLSUClick = { _, _ -> },
                     onPoolUnitClick = {}
                 )
             )
@@ -265,18 +289,7 @@ fun AssetsViewWithAssets() {
         )
     }
 
-    val nonFungiblesViewState = remember(assets.nonFungibles) {
-        val viewState = SnapshotStateMap<String, NonFungibleViewState>()
-        assets.nonFungibles.forEach { entry ->
-            viewState[entry.resourceAddress] = NonFungibleViewState(
-                isCollapsed = true,
-                isRequestingNFTs = false
-            )
-        }
-        viewState
-    }
-
-    val stakeUnitCollapsedState = remember(assets) { mutableStateOf(true) }
+    val collapsibleAssetsState = CollapsibleAssetState.rememberNonFungiblesViewState(assets = assets)
 
     RadixWalletTheme {
         LazyColumn(modifier = Modifier.background(RadixTheme.colors.gray5)) {
@@ -286,8 +299,7 @@ fun AssetsViewWithAssets() {
                 onTabSelected = {
                     selectedTab = it
                 },
-                nonFungiblesViewState = nonFungiblesViewState,
-                stakeUnitCollapsedState = stakeUnitCollapsedState,
+                collapsibleAssetsState = collapsibleAssetsState,
                 action = AssetsViewAction.Click(
                     onFungibleClick = {},
                     onNonFungibleItemClick = { _, _ -> },

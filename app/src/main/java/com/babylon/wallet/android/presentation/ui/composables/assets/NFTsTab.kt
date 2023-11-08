@@ -15,9 +15,6 @@ import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.runtime.snapshots.SnapshotStateMap
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -35,11 +32,10 @@ import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import com.google.accompanist.placeholder.PlaceholderHighlight
 import com.google.accompanist.placeholder.placeholder
 import com.google.accompanist.placeholder.shimmer
-import timber.log.Timber
 
 fun LazyListScope.nftsTab(
     assets: Assets,
-    viewState: SnapshotStateMap<String, NonFungibleViewState>,
+    collapsibleAssetsState: SnapshotStateMap<String, CollapsibleAssetState>,
     action: AssetsViewAction
 ) {
     if (assets.nonFungibles.isEmpty()) {
@@ -51,26 +47,26 @@ fun LazyListScope.nftsTab(
         }
     }
 
-    assets.nonFungibles.forEachIndexed { collectionIndex, collection ->
+    assets.nonFungibles.forEach { collection ->
         item(
             key = collection.resourceAddress,
             contentType = { "collection" }
         ) {
-            val collectionViewState = viewState[collection.resourceAddress]
+            val viewState = collapsibleAssetsState[collection.resourceAddress]
             CollapsibleAssetCard(
                 modifier = Modifier
                     .padding(horizontal = RadixTheme.dimensions.paddingDefault)
                     .padding(top = RadixTheme.dimensions.paddingSemiLarge),
-                isCollapsed = collectionViewState?.isCollapsed ?: true,
+                isCollapsed = viewState?.isCollapsed ?: true,
                 collapsedItems = collection.amount.toInt()
             ) {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
                         .clickable {
-                            if (collectionViewState != null) {
-                                viewState[collection.resourceAddress] = collectionViewState.copy(
-                                    isCollapsed = !collectionViewState.isCollapsed
+                            if (viewState != null) {
+                                collapsibleAssetsState[collection.resourceAddress] = viewState.copy(
+                                    isCollapsed = !viewState.isCollapsed
                                 )
                             }
                         }
@@ -110,7 +106,7 @@ fun LazyListScope.nftsTab(
         }
 
         items(
-            count = if (viewState[collection.resourceAddress]?.isCollapsed == false) collection.amount.toInt() else 0,
+            count = if (collapsibleAssetsState[collection.resourceAddress]?.isCollapsed == false) collection.amount.toInt() else 0,
             key = { index -> "${collection.resourceAddress}$index" },
             contentType = { "nft" }
         ) { index ->
@@ -130,9 +126,9 @@ fun LazyListScope.nftsTab(
                         action = action
                     )
                 } else {
-                    val collectionViewState = viewState[collection.resourceAddress]
+                    val collectionViewState = collapsibleAssetsState[collection.resourceAddress]
                     if (collectionViewState != null && !collectionViewState.isRequestingNFTs) {
-                        viewState[collection.resourceAddress] = collectionViewState.copy(isRequestingNFTs = true)
+                        collapsibleAssetsState[collection.resourceAddress] = collectionViewState.copy(isRequestingNFTs = true)
                     }
 
                     NonFungibleResourcePlaceholder(

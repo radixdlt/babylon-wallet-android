@@ -9,6 +9,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -80,6 +81,7 @@ import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
 import com.babylon.wallet.android.presentation.ui.composables.ThrottleIconButton
 import com.babylon.wallet.android.presentation.ui.composables.assets.AssetsViewAction
+import com.babylon.wallet.android.presentation.ui.composables.assets.CollapsibleAssetState
 import com.babylon.wallet.android.presentation.ui.composables.assets.assetsView
 import com.babylon.wallet.android.presentation.ui.composables.toText
 import com.babylon.wallet.android.utils.openUrl
@@ -379,9 +381,11 @@ fun AssetsContent(
         }
 
         var selectedTab by remember { mutableStateOf(ResourceTab.Tokens) }
+        val nonFungiblesViewState = CollapsibleAssetState.rememberNonFungiblesViewState(assets = state.accountWithAssets?.assets)
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
             state = lazyListState,
+            contentPadding = PaddingValues(bottom = RadixTheme.dimensions.paddingSemiLarge)
         ) {
             item {
                 Box {
@@ -455,6 +459,7 @@ fun AssetsContent(
                 assets = state.accountWithAssets?.assets,
                 selectedTab = selectedTab,
                 onTabSelected = { selectedTab = it },
+                collapsibleAssetsState = nonFungiblesViewState,
                 action = AssetsViewAction.Click(
                     onFungibleClick = onFungibleTokenClick,
                     onNonFungibleItemClick = onNonFungibleItemClick,
