@@ -126,10 +126,6 @@ jobs:
           secret_name: "github-actions/radixdlt/babylon-wallet-android/crashlytics"
           parse_json: true
 
-      - name: "Run unit tests"
-        run: |
-          env
-
       - name: Decode Firebase Crashlytics json
         uses: timheuer/base64-to-file@48657ba25c726c2e3dcf02efa3639fff9b3d587e
         id: crashlytics_credentials
@@ -139,9 +135,7 @@ jobs:
           encodedString: ${{ env.GH_CRASHLYTICS_GOOGLE_SERVICES_JSON_FILE_BASE64 }}
 
       - name: "Run unit tests"
-        run: |
-          env
-          ./gradlew testDebugUnitTest
+        run: ./gradlew testDebugUnitTest
         env:
           GPR_USER: ${{ env.GH_GPR_USER }}
           GPR_TOKEN: ${{ env.GH_GPR_TOKEN }}
@@ -254,7 +248,7 @@ jobs:
         with:
           role_name: '${{ secrets.ANDROID_WALLET_SECRETS_READ_IAM_ROLE }}'
           app_name: 'wallet-android'
-          step_name: 'unit-crash'
+          step_name: 'build-crash'
           secret_prefix: 'GH'
           secret_name: "github-actions/radixdlt/babylon-wallet-android/crashlytics"
           parse_json: true
