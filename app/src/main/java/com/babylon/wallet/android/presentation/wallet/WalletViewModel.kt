@@ -1,13 +1,11 @@
-@file:OptIn(ExperimentalCoroutinesApi::class)
-
 package com.babylon.wallet.android.presentation.wallet
 
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.domain.model.assets.AccountWithAssets
 import com.babylon.wallet.android.domain.usecases.AccountWithSecurityPrompt
 import com.babylon.wallet.android.domain.usecases.GetAccountsForSecurityPromptUseCase
+import com.babylon.wallet.android.domain.usecases.GetAccountsWithAssetsUseCase
 import com.babylon.wallet.android.domain.usecases.SecurityPromptType
-import com.babylon.wallet.android.domain.usecases.assets.GetWalletAssetsUseCase
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
@@ -19,16 +17,11 @@ import com.babylon.wallet.android.utils.AppEvent.RestoredMnemonic
 import com.babylon.wallet.android.utils.AppEventBus
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.toPersistentList
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.filterIsInstance
-import kotlinx.coroutines.flow.flatMapLatest
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.profile.data.model.extensions.factorSourceId
@@ -48,7 +41,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class WalletViewModel @Inject constructor(
-    private val getWalletAssetsUseCase: GetWalletAssetsUseCase,
+    private val getAccountsWithAssetsUseCase: GetAccountsWithAssetsUseCase,
     private val getProfileUseCase: GetProfileUseCase,
     private val getAccountsForSecurityPromptUseCase: GetAccountsForSecurityPromptUseCase,
     private val appEventBus: AppEventBus,
@@ -62,9 +55,7 @@ class WalletViewModel @Inject constructor(
     private val accountsFlow = combine(
         getProfileUseCase.accountsOnCurrentNetwork.distinctUntilChanged(),
         refreshFlow
-    ) { accounts, _ ->
-        accounts
-    }
+    ) { accounts, _ -> accounts }
 
     val babylonFactorSourceDoesNotExistEvent =
         appEventBus.events.filterIsInstance<AppEvent.BabylonFactorSourceDoesNotExist>()
@@ -96,18 +87,24 @@ class WalletViewModel @Inject constructor(
     }
 
     private fun observeAccounts() {
-        accountsFlow
-            .flatMapLatest { accounts ->
-                _state.update { it.loadingResources(accounts = accounts, isRefreshing = it.isRefreshing) }
-                getWalletAssetsUseCase(accounts = accounts, isRefreshing = state.value.isRefreshing).catch { error ->
+        viewModelScope.launch {
+            accountsFlow.collect { accounts ->
+                _state.update { state ->
+                    state.loadingResources(accounts = accounts, isRefreshing = state.isRefreshing)
+                }
+
+                getAccountsWithAssetsUseCase(
+                    accounts = accounts,
+                    isNftItemDataNeeded = false,
+                    isRefreshing = _state.value.isRefreshing
+                ).onSuccess { resources ->
+                    _state.update { it.onResourcesReceived(resources) }
+                }.onFailure { error ->
                     _state.update { it.onResourcesError(error) }
                     Timber.w(error)
                 }
             }
-            .onEach { resources ->
-                _state.update { it.onResourcesReceived(resources) }
-            }
-            .launchIn(viewModelScope)
+        }
     }
 
     private fun observeDeviceFactorSources() {
@@ -195,6 +192,9 @@ data class WalletUiState(
      */
     val isLoading: Boolean
         get() = accountsWithResources == null && loading
+
+    val isLoadingAssets: Boolean
+        get() = accountsWithResources != null && accountsWithResources.none { it.assets != null } && loading
 
     /**
      * Used in pull to refresh mode.
