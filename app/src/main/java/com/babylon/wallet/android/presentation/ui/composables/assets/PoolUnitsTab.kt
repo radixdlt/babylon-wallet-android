@@ -71,48 +71,38 @@ fun LazyListScope.poolUnitsTab(
 
 @Composable
 private fun PoolUnitItem(
-    resource: PoolUnit,
     modifier: Modifier = Modifier,
+    resource: PoolUnit,
     trailingContent: @Composable () -> Unit = {}
 ) {
-    Card(
-        modifier = modifier,
-        shape = RadixTheme.shapes.roundedRectMedium,
-        colors = CardDefaults.cardColors(
-            containerColor = RadixTheme.colors.defaultBackground
-        ),
-        elevation = CardDefaults.cardElevation(
-            defaultElevation = 4.dp
-        )
+    AssetCard(
+        modifier = modifier
     ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(RadixTheme.dimensions.paddingLarge)
+        Row(
+            modifier = Modifier.padding(RadixTheme.dimensions.paddingLarge),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingMedium)
         ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingMedium)
-            ) {
-                Thumbnail.PoolUnit(
-                    modifier = Modifier.size(44.dp),
-                    poolUnit = resource
-                )
-                Text(
-                    poolName(resource.stake.displayTitle),
-                    style = RadixTheme.typography.secondaryHeader,
-                    color = RadixTheme.colors.gray1,
-                    maxLines = 2
-                )
-            }
-            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingMedium)
-            ) {
-                PoolResourcesValues(modifier = Modifier.weight(1f), poolUnit = resource)
-                trailingContent()
-            }
+            Thumbnail.PoolUnit(
+                modifier = Modifier.size(44.dp),
+                poolUnit = resource
+            )
+            Text(
+                poolName(resource.stake.displayTitle),
+                style = RadixTheme.typography.secondaryHeader,
+                color = RadixTheme.colors.gray1,
+                maxLines = 2
+            )
+        }
+        Row(
+            modifier = Modifier
+                .padding(horizontal = RadixTheme.dimensions.paddingLarge)
+                .padding(bottom = RadixTheme.dimensions.paddingLarge),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingMedium)
+        ) {
+            PoolResourcesValues(modifier = Modifier.weight(1f), poolUnit = resource)
+            trailingContent()
         }
     }
 }

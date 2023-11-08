@@ -1,5 +1,6 @@
 package com.babylon.wallet.android.presentation.ui.composables.assets
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -133,7 +134,7 @@ fun AssetsViewWithEmptyAssets() {
 @Preview
 @Composable
 fun AssetsViewWithAssets() {
-    var tabs by remember { mutableStateOf(ResourceTab.Tokens) }
+    var tabs by remember { mutableStateOf(ResourceTab.Nfts) }
     val assets by remember {
         mutableStateOf(
             Assets(
@@ -147,7 +148,11 @@ fun AssetsViewWithAssets() {
                 nonFungibles = listOf(
                     SampleDataProvider().nonFungibleResource("abc"),
                     SampleDataProvider().nonFungibleResource("cde"),
-                    SampleDataProvider().nonFungibleResource("fgh"),
+                    Resource.NonFungibleResource(
+                        resourceAddress = SampleDataProvider().randomAddress(),
+                        amount = 10,
+                        items = emptyList()
+                    )
                 ),
                 poolUnits = listOf(
                     PoolUnit(
@@ -228,7 +233,7 @@ fun AssetsViewWithAssets() {
     val stakeUnitCollapsedState = remember(assets) { mutableStateOf(true) }
 
     RadixWalletTheme {
-        LazyColumn {
+        LazyColumn(modifier = Modifier.background(RadixTheme.colors.gray5)) {
             assetsView(
                 assets = assets,
                 selectedTab = tabs,
