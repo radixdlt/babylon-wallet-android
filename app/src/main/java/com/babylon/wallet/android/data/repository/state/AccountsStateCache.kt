@@ -339,7 +339,7 @@ class AccountsStateCache @Inject constructor(
             details = details,
             assets = details?.stateVersion?.let { stateVersion ->
                 val nonFungibles = assets?.nonFungibles?.map { nonFungible ->
-                    val items = dao.getOwnedNfts(account.address, nonFungible.resourceAddress, stateVersion).map { it.toItem() }
+                    val items = dao.getOwnedNfts(account.address, nonFungible.resourceAddress, stateVersion).map { it.toItem() }.sorted()
                     nonFungible.copy(items = items)
                 }.orEmpty()
 

@@ -95,7 +95,7 @@ class StateRepositoryImpl @Inject constructor(
 
             // All items cached, return the result
             if (cachedNFTItems.size == resource.amount.toInt()) {
-                return@runCatching resource.copy(items = cachedNFTItems.map { it.toItem() })
+                return@runCatching resource.copy(items = cachedNFTItems.map { it.toItem() }.sorted())
             }
 
             val vaultAddress = accountNftPortfolio.vaultAddress ?: throw StateRepository.NFTPageError.VaultAddressMissing
@@ -118,7 +118,7 @@ class StateRepositoryImpl @Inject constructor(
                 syncInfo = syncInfo
             )
             val currentItems = resource.items
-            val allNewItems = (currentItems + newItems).distinctBy { it.localId }
+            val allNewItems = (currentItems + newItems).distinctBy { it.localId }.sorted()
 
             resource.copy(items = allNewItems)
         }
