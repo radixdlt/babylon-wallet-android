@@ -161,7 +161,7 @@ fun LSUBottomSheetDetails(
                 label = stringResource(id = R.string.assetDetails_validator)
             )
 
-            if (lsuUnit.fungibleResource.behaviours.isNotEmpty()) {
+            if (lsuUnit.fungibleResource.resourceBehaviours.isNotEmpty()) {
                 Column {
                     Text(
                         modifier = Modifier
@@ -174,7 +174,7 @@ fun LSUBottomSheetDetails(
                         style = RadixTheme.typography.body1Regular,
                         color = RadixTheme.colors.gray2
                     )
-                    lsuUnit.fungibleResource.behaviours.forEach { behaviour ->
+                    lsuUnit.fungibleResource.resourceBehaviours.forEach { behaviour ->
                         Behaviour(
                             icon = behaviour.icon(),
                             name = behaviour.name()
