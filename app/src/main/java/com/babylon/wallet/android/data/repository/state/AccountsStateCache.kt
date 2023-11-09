@@ -5,8 +5,6 @@ import com.babylon.wallet.android.data.gateway.extensions.fetchAccountGatewayDet
 import com.babylon.wallet.android.data.gateway.extensions.fetchPools
 import com.babylon.wallet.android.data.gateway.extensions.fetchValidators
 import com.babylon.wallet.android.data.gateway.extensions.fetchVaultDetails
-import com.babylon.wallet.android.data.gateway.generated.models.LedgerState
-import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponseItem
 import com.babylon.wallet.android.data.repository.cache.database.AccountPortfolioResponse
 import com.babylon.wallet.android.data.repository.cache.database.PoolEntity.Companion.asPoolsResourcesJoin
 import com.babylon.wallet.android.data.repository.cache.database.StateDao
@@ -89,17 +87,14 @@ class AccountsStateCache @Inject constructor(
         }
         .transform { cachedAccounts ->
             val accountsToReturn = accounts.map { account ->
-                val cachedAccount = cachedAccounts.find { it.address == account.address }
-                AccountWithAssets(
+                cachedAccounts.find { it.address == account.address }?.toAccountWithAssets(
                     account = account,
-                    details = cachedAccount?.details,
-                    assets = cachedAccount?.assets
-                )
+                    dao = dao
+                ) ?: AccountWithAssets(account = account)
             }
             emit(accountsToReturn)
 
             val accountsToRequest = accountsToReturn.filter { it.assets == null }.map { it.account.address }.toSet()
-
             fetchAllResources(
                 accountAddresses = accountsToRequest,
                 onStateVersion = cachedAccounts.maxOfOrNull { it.details?.stateVersion ?: -1L }?.takeIf { it > 0L },
@@ -337,7 +332,22 @@ class AccountsStateCache @Inject constructor(
         val address: String,
         val details: AccountDetails?,
         val assets: Assets?
-    )
+    ) {
+
+        fun toAccountWithAssets(account: Network.Account, dao: StateDao) = AccountWithAssets(
+            account = account,
+            details = details,
+            assets = details?.stateVersion?.let { stateVersion ->
+                val nonFungibles = assets?.nonFungibles?.map { nonFungible ->
+                    val items = dao.getOwnedNfts(account.address, nonFungible.resourceAddress, stateVersion).map { it.toItem() }
+                    nonFungible.copy(items = items)
+                }.orEmpty()
+
+                assets?.copy(nonFungibles = nonFungibles)
+            } ?: assets
+        )
+
+    }
 
     companion object {
         private val logger = Timber.tag("AccountsStateCache")
