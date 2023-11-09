@@ -83,8 +83,8 @@ class AccountsStateCache @Inject constructor(
         .filterNotNull()
         .onStart {
             if (isRefreshing) {
-                logger.d("\uD83D\uDCBD Deleting accounts")
-                dao.markAccountsToRefresh(accounts.map { it.address }.toSet())
+                logger.d("\uD83D\uDD04 Refreshing accounts")
+                fetchAllResources(accounts.map { it.address }.toSet())
             }
         }
         .transform { cachedAccounts ->
@@ -99,20 +99,11 @@ class AccountsStateCache @Inject constructor(
             emit(accountsToReturn)
 
             val accountsToRequest = accountsToReturn.filter { it.assets == null }.map { it.account.address }.toSet()
+
             fetchAllResources(
                 accountAddresses = accountsToRequest,
                 onStateVersion = cachedAccounts.maxOfOrNull { it.details?.stateVersion ?: -1L }?.takeIf { it > 0L },
-            ).onSuccess { accountsOnGateway ->
-                if (accountsOnGateway.isNotEmpty()) {
-                    withContext(dispatcher) {
-                        logger.d("\uD83D\uDCBD Inserting accounts ${accountsOnGateway.map { it.first.address.truncatedHash() }}")
-                        dao.updateAccountData(accountsOnGateway)
-                    }
-                }
-            }.onFailure {
-                // TODO maybe check if needing to mark those accounts as stale
-                throw it
-            }
+            )
         }
         .flowOn(dispatcher)
 
@@ -137,20 +128,29 @@ class AccountsStateCache @Inject constructor(
     private suspend fun fetchAllResources(
         accountAddresses: Set<String>,
         onStateVersion: Long? = null,
-    ): Result<List<Pair<StateEntityDetailsResponseItem, LedgerState>>> {
+    ) {
         val addressesInProgress = accountsRequested.getAndUpdate { value -> value union accountAddresses }
         val accountsToRequest = accountAddresses subtract addressesInProgress
-        if (accountsToRequest.isEmpty()) return Result.success(emptyList())
+        if (accountsToRequest.isEmpty()) return
+
         logger.d("☁️ ${accountsToRequest.joinToString { it.truncatedHash() }}")
-        return api.fetchAccountGatewayDetails(
+        api.fetchAccountGatewayDetails(
             accountsToRequest = accountsToRequest,
             onStateVersion = onStateVersion
         ).onSuccess { result ->
             val receivedAccountAddresses = result.map { it.first.address }
             logger.d("☁️ <= ${receivedAccountAddresses.joinToString { it.truncatedHash() }}")
             accountsRequested.update { value -> value subtract receivedAccountAddresses.toSet() }
+
+            if (result.isNotEmpty()) {
+                withContext(dispatcher) {
+                    logger.d("\uD83D\uDCBD Inserting accounts ${result.map { it.first.address.truncatedHash() }}")
+                    dao.updateAccountData(result)
+                }
+            }
         }.onFailure {
             accountsRequested.update { value -> value subtract accountsToRequest }
+            throw it // TODO check that
         }
     }
 
