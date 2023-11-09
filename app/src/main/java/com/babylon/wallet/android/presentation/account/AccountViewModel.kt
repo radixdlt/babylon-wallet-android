@@ -9,6 +9,7 @@ import com.babylon.wallet.android.domain.model.assets.ValidatorDetail
 import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.domain.usecases.GetEntitiesWithSecurityPromptUseCase
 import com.babylon.wallet.android.domain.usecases.SecurityPromptType
+import com.babylon.wallet.android.domain.usecases.assets.GetMoreNFTsUseCase
 import com.babylon.wallet.android.domain.usecases.assets.GetWalletAssetsUseCase
 import com.babylon.wallet.android.presentation.account.AccountEvent.NavigateToMnemonicBackup
 import com.babylon.wallet.android.presentation.account.AccountEvent.NavigateToMnemonicRestore
@@ -32,12 +33,14 @@ import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import rdx.works.core.mapWhen
 import rdx.works.profile.data.model.apppreferences.Radix.dashboardUrl
 import rdx.works.profile.data.model.extensions.factorSourceId
 import rdx.works.profile.data.model.factorsources.FactorSource.FactorSourceID
 import rdx.works.profile.derivation.model.NetworkId
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.accountsOnCurrentNetwork
+import timber.log.Timber
 import javax.inject.Inject
 
 @HiltViewModel
@@ -45,6 +48,7 @@ class AccountViewModel @Inject constructor(
     private val getWalletAssetsUseCase: GetWalletAssetsUseCase,
     private val getProfileUseCase: GetProfileUseCase,
     private val getEntitiesWithSecurityPromptUseCase: GetEntitiesWithSecurityPromptUseCase,
+    private val getMoreNFTsUseCase: GetMoreNFTsUseCase,
     private val appEventBus: AppEventBus,
     savedStateHandle: SavedStateHandle
 ) : StateViewModel<AccountUiState>(), OneOffEventHandler<AccountEvent> by OneOffEventHandlerImpl() {
@@ -75,7 +79,7 @@ class AccountViewModel @Inject constructor(
                     getWalletAssetsUseCase(listOf(account), state.value.isRefreshing)
                         .catch { error ->
                             _state.update {
-                                it.copy(isLoading = false, refreshing = false, uiMessage = UiMessage.ErrorMessage(error = error))
+                                it.copy(isRefreshing = false, uiMessage = UiMessage.ErrorMessage(error = error))
                             }
                         }
                         .mapNotNull { it.firstOrNull() }
@@ -85,8 +89,7 @@ class AccountViewModel @Inject constructor(
                     _state.update { state ->
                         state.copy(
                             accountWithAssets = state.accountWithAssets?.copy(assets = accountWithAssets.assets),
-                            isLoading = false,
-                            refreshing = false
+                            isRefreshing = false
                         )
                     }
                 }
@@ -168,8 +171,27 @@ class AccountViewModel @Inject constructor(
         _state.update { it.copy(uiMessage = null) }
     }
 
+    fun onNextNftPageRequest(resource: Resource.NonFungibleResource) {
+        val account = state.value.accountWithAssets?.account ?: return
+        if (!state.value.isRefreshing && resource.resourceAddress !in state.value.nonFungiblesWithPendingNFTs) {
+            _state.update { state -> state.onNFTsLoading(resource) }
+            viewModelScope.launch {
+                getMoreNFTsUseCase(account, resource)
+                    .onSuccess { resourceWithUpdatedNFTs ->
+                        _state.update { state ->
+                            state.onNFTsReceived(resourceWithUpdatedNFTs)
+                        }
+                    }.onFailure { error ->
+                        _state.update { state ->
+                            state.onNFTsError(resource, error)
+                        }
+                    }
+            }
+        }
+    }
+
     private fun loadAccountDetails(withRefresh: Boolean) {
-        _state.update { it.copy(refreshing = withRefresh) }
+        _state.update { it.copy(isRefreshing = withRefresh) }
         viewModelScope.launch { refreshFlow.emit(Unit) }
     }
 }
@@ -181,9 +203,9 @@ internal sealed interface AccountEvent : OneOffEvent {
 
 data class AccountUiState(
     val accountWithAssets: AccountWithAssets? = null,
+    val nonFungiblesWithPendingNFTs: Set<String> = setOf(),
     private val securityPromptType: SecurityPromptType? = null,
-    val isLoading: Boolean = true,
-    private val refreshing: Boolean = false,
+    val isRefreshing: Boolean = false,
     val selectedResource: SelectedResource? = null,
     val uiMessage: UiMessage? = null
 ) : UiState {
@@ -191,7 +213,7 @@ data class AccountUiState(
     val visiblePrompt: SecurityPromptType?
         get() = when (securityPromptType) {
             SecurityPromptType.NEEDS_RESTORE -> securityPromptType
-            SecurityPromptType.NEEDS_BACKUP -> if (accountWithAssets?.assets?.hasXrd() == true && !isLoading) {
+            SecurityPromptType.NEEDS_BACKUP -> if (accountWithAssets?.assets?.hasXrd() == true) {
                 SecurityPromptType.NEEDS_BACKUP
             } else {
                 null
@@ -210,7 +232,39 @@ data class AccountUiState(
         get() = !isLoading && refreshing
 
     val isTransferEnabled: Boolean
-        get() = !isLoading
+        get() = accountWithAssets?.assets != null
+
+    fun onNFTsLoading(forResource: Resource.NonFungibleResource): AccountUiState {
+        Timber.tag("Bakos").d("Requesting for ${forResource.name}")
+        return copy(nonFungiblesWithPendingNFTs = nonFungiblesWithPendingNFTs + forResource.resourceAddress)
+    }
+
+    fun onNFTsReceived(forResource: Resource.NonFungibleResource): AccountUiState {
+        if (accountWithAssets?.assets?.nonFungibles == null) return this
+        Timber.tag("Bakos").d("Received for ${forResource.name}")
+        return copy(
+            accountWithAssets = accountWithAssets.copy(
+                assets = accountWithAssets.assets.copy(
+                    nonFungibles = accountWithAssets.assets.nonFungibles.mapWhen(
+                        predicate = {
+                            it.resourceAddress == forResource.resourceAddress && it.items.size < forResource.items.size
+                        },
+                        mutation = { forResource }
+                    )
+                )
+            ),
+            nonFungiblesWithPendingNFTs = nonFungiblesWithPendingNFTs - forResource.resourceAddress
+        )
+    }
+
+    fun onNFTsError(forResource: Resource.NonFungibleResource, error: Throwable): AccountUiState {
+        if (accountWithAssets?.assets?.nonFungibles == null) return this
+        Timber.tag("Bakos").d("Error for ${forResource.name} ${error.message}")
+        return copy(
+            nonFungiblesWithPendingNFTs = nonFungiblesWithPendingNFTs - forResource.resourceAddress,
+            uiMessage = UiMessage.ErrorMessage(error = error)
+        )
+    }
 }
 
 sealed interface SelectedResource {

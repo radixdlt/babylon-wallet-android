@@ -81,8 +81,8 @@ import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
 import com.babylon.wallet.android.presentation.ui.composables.ThrottleIconButton
 import com.babylon.wallet.android.presentation.ui.composables.assets.AssetsViewAction
-import com.babylon.wallet.android.presentation.ui.composables.assets.CollapsibleAssetState
 import com.babylon.wallet.android.presentation.ui.composables.assets.assetsView
+import com.babylon.wallet.android.presentation.ui.composables.assets.rememberAssetsViewState
 import com.babylon.wallet.android.presentation.ui.composables.toText
 import com.babylon.wallet.android.utils.openUrl
 import kotlinx.collections.immutable.ImmutableList
@@ -130,7 +130,8 @@ fun AccountScreen(
         onNonFungibleItemClicked = viewModel::onNonFungibleResourceClicked,
         onApplySecuritySettings = viewModel::onApplySecuritySettings,
         onPoolUnitClick = viewModel::onPoolUnitClicked,
-        onLSUUnitClicked = viewModel::onLSUUnitClicked
+        onLSUUnitClicked = viewModel::onLSUUnitClicked,
+        onNextNFTsPageRequest = viewModel::onNextNftPageRequest
     )
 }
 
@@ -148,7 +149,8 @@ private fun AccountScreenContent(
     onNonFungibleItemClicked: (Resource.NonFungibleResource, Resource.NonFungibleResource.Item) -> Unit,
     onApplySecuritySettings: (SecurityPromptType) -> Unit,
     onPoolUnitClick: (PoolUnit) -> Unit,
-    onLSUUnitClicked: (LiquidStakeUnit, ValidatorDetail) -> Unit
+    onLSUUnitClicked: (LiquidStakeUnit, ValidatorDetail) -> Unit,
+    onNextNFTsPageRequest: (Resource.NonFungibleResource) -> Unit
 ) {
     val context = LocalContext.current
 
@@ -277,7 +279,8 @@ private fun AccountScreenContent(
                         scope.launch {
                             bottomSheetState.show()
                         }
-                    }
+                    },
+                    onNextNFTsPageRequest = onNextNFTsPageRequest
                 )
             }
 
@@ -370,7 +373,8 @@ fun AssetsContent(
     onTransferClick: (String) -> Unit,
     onHistoryClick: () -> Unit,
     onApplySecuritySettings: (SecurityPromptType) -> Unit,
-    onLSUUnitClicked: (LiquidStakeUnit, ValidatorDetail) -> Unit
+    onLSUUnitClicked: (LiquidStakeUnit, ValidatorDetail) -> Unit,
+    onNextNFTsPageRequest: (Resource.NonFungibleResource) -> Unit
 ) {
     Surface(
         modifier = modifier,
@@ -381,7 +385,8 @@ fun AssetsContent(
         }
 
         var selectedTab by remember { mutableStateOf(ResourceTab.Tokens) }
-        val nonFungiblesViewState = CollapsibleAssetState.rememberNonFungiblesViewState(assets = state.accountWithAssets?.assets)
+        val nonFungiblesViewState = rememberAssetsViewState(assets = state.accountWithAssets?.assets)
+
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
             state = lazyListState,
@@ -464,7 +469,8 @@ fun AssetsContent(
                     onFungibleClick = onFungibleTokenClick,
                     onNonFungibleItemClick = onNonFungibleItemClick,
                     onLSUClick = onLSUUnitClicked,
-                    onPoolUnitClick = onPoolUnitClick
+                    onPoolUnitClick = onPoolUnitClick,
+                    onNextNFtsPageRequest = onNextNFTsPageRequest
                 )
             )
         }
@@ -540,7 +546,8 @@ fun AccountContentPreview() {
                 onNonFungibleItemClicked = { _, _ -> },
                 onApplySecuritySettings = {},
                 onPoolUnitClick = {},
-                onLSUUnitClicked = { _, _ -> }
+                onLSUUnitClicked = { _, _ -> },
+                onNextNFTsPageRequest = {}
             )
         }
     }

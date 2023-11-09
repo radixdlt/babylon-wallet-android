@@ -15,6 +15,7 @@ import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.snapshots.SnapshotStateMap
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -32,6 +33,7 @@ import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import com.google.accompanist.placeholder.PlaceholderHighlight
 import com.google.accompanist.placeholder.placeholder
 import com.google.accompanist.placeholder.shimmer
+import timber.log.Timber
 
 fun LazyListScope.nftsTab(
     assets: Assets,
@@ -66,7 +68,7 @@ fun LazyListScope.nftsTab(
                         .clickable {
                             if (viewState != null) {
                                 collapsibleAssetsState[collection.resourceAddress] = viewState.copy(
-                                    isCollapsed = !viewState.isCollapsed
+                                    isCollapsed = !viewState.isCollapsed,
                                 )
                             }
                         }
@@ -126,9 +128,11 @@ fun LazyListScope.nftsTab(
                         action = action
                     )
                 } else {
-                    val collectionViewState = collapsibleAssetsState[collection.resourceAddress]
-                    if (collectionViewState != null && !collectionViewState.isRequestingNFTs) {
-                        collapsibleAssetsState[collection.resourceAddress] = collectionViewState.copy(isRequestingNFTs = true)
+                    LaunchedEffect(index, collection.items.size) {
+                        // First shimmering item
+                        if (index == collection.items.size) {
+                            action.onNextNFtsPageRequest(collection)
+                        }
                     }
 
                     NonFungibleResourcePlaceholder(

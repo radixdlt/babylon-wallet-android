@@ -84,16 +84,20 @@ private fun LazyListScope.loadingAssets(
 
 sealed interface AssetsViewAction {
 
+    val onNextNFtsPageRequest: (Resource.NonFungibleResource) -> Unit
+
     data class Click(
         val onFungibleClick: (Resource.FungibleResource) -> Unit,
         val onNonFungibleItemClick: (Resource.NonFungibleResource, Resource.NonFungibleResource.Item) -> Unit,
         val onLSUClick: (LiquidStakeUnit, ValidatorDetail) -> Unit,
-        val onPoolUnitClick: (PoolUnit) -> Unit
+        val onPoolUnitClick: (PoolUnit) -> Unit,
+        override val onNextNFtsPageRequest: (Resource.NonFungibleResource) -> Unit
     ) : AssetsViewAction
 
     data class Selection(
         val selectedResources: List<String>,
-        val onResourceCheckChanged: (String, Boolean) -> Unit
+        val onResourceCheckChanged: (String, Boolean) -> Unit,
+        override val onNextNFtsPageRequest: (Resource.NonFungibleResource) -> Unit
     ) : AssetsViewAction {
 
         fun isSelected(resourceAddress: String) = selectedResources.contains(resourceAddress)
@@ -101,36 +105,36 @@ sealed interface AssetsViewAction {
     }
 }
 
+@Composable
+fun rememberAssetsViewState(assets: Assets?): SnapshotStateMap<String, CollapsibleAssetState> {
+    val nonFungibleAddresses = remember(assets) {
+        assets?.nonFungibles?.map { it.resourceAddress }.orEmpty().toMutableList().apply {
+            if (assets?.validatorsWithStakes?.isNotEmpty() == true) {
+                add(CollapsibleAssetState.STAKE_SECTION_ID)
+            }
+        }
+    }
+
+    return remember(nonFungibleAddresses) {
+        val state = SnapshotStateMap<String, CollapsibleAssetState>()
+        nonFungibleAddresses.forEach { address ->
+            state[address] = CollapsibleAssetState(
+                isCollapsed = true,
+                pendingIndex = -1
+            )
+        }
+
+        state
+    }
+}
+
 data class CollapsibleAssetState(
     val isCollapsed: Boolean,
-    val isRequestingNFTs: Boolean
+    val pendingIndex: Int = -1
 ) {
 
     companion object {
         const val STAKE_SECTION_ID = "-1"
-
-        @Composable
-        fun rememberNonFungiblesViewState(assets: Assets?): SnapshotStateMap<String, CollapsibleAssetState> {
-            val nonFungibleAddresses = remember(assets) {
-                assets?.nonFungibles?.map { it.resourceAddress }.orEmpty().toMutableList().apply {
-                    if (assets?.validatorsWithStakes?.isNotEmpty() == true) {
-                        add(STAKE_SECTION_ID)
-                    }
-                }
-            }
-
-            return remember(nonFungibleAddresses) {
-                val state = SnapshotStateMap<String, CollapsibleAssetState>()
-                nonFungibleAddresses.forEach { address ->
-                    state[address] = CollapsibleAssetState(
-                        isCollapsed = true,
-                        isRequestingNFTs = false
-                    )
-                }
-
-                state
-            }
-        }
     }
 
 }
@@ -151,7 +155,8 @@ fun AssetsViewWithLoadingAssets() {
                     onFungibleClick = {},
                     onNonFungibleItemClick = { _, _ -> },
                     onLSUClick = { _, _ -> },
-                    onPoolUnitClick = {}
+                    onPoolUnitClick = {},
+                    onNextNFtsPageRequest = {}
                 )
             )
         }
@@ -173,7 +178,8 @@ fun AssetsViewWithEmptyAssets() {
                     onFungibleClick = {},
                     onNonFungibleItemClick = { _, _ -> },
                     onLSUClick = { _, _ -> },
-                    onPoolUnitClick = {}
+                    onPoolUnitClick = {},
+                    onNextNFtsPageRequest = {}
                 )
             )
         }
@@ -289,7 +295,7 @@ fun AssetsViewWithAssets() {
         )
     }
 
-    val collapsibleAssetsState = CollapsibleAssetState.rememberNonFungiblesViewState(assets = assets)
+    val collapsibleAssetsState = rememberAssetsViewState(assets = assets)
 
     RadixWalletTheme {
         LazyColumn(modifier = Modifier.background(RadixTheme.colors.gray5)) {
@@ -304,7 +310,8 @@ fun AssetsViewWithAssets() {
                     onFungibleClick = {},
                     onNonFungibleItemClick = { _, _ -> },
                     onLSUClick = { _, _ -> },
-                    onPoolUnitClick = {}
+                    onPoolUnitClick = {},
+                    onNextNFtsPageRequest = {}
                 )
             )
         }
