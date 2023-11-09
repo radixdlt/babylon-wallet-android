@@ -9,6 +9,7 @@ import com.babylon.wallet.android.domain.model.assets.ValidatorDetail
 import com.babylon.wallet.android.domain.model.assets.ValidatorWithStakes
 import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.domain.usecases.GetEntitiesWithSecurityPromptUseCase
+import com.babylon.wallet.android.domain.usecases.GetNetworkInfoUseCase
 import com.babylon.wallet.android.domain.usecases.SecurityPromptType
 import com.babylon.wallet.android.domain.usecases.assets.GetLSUInfo
 import com.babylon.wallet.android.domain.usecases.assets.GetMoreNFTsUseCase
@@ -49,6 +50,7 @@ import javax.inject.Inject
 class AccountViewModel @Inject constructor(
     private val getWalletAssetsUseCase: GetWalletAssetsUseCase,
     private val getProfileUseCase: GetProfileUseCase,
+    private val getNetworkInfoUseCase: GetNetworkInfoUseCase,
     private val getEntitiesWithSecurityPromptUseCase: GetEntitiesWithSecurityPromptUseCase,
     private val getMoreNFTsUseCase: GetMoreNFTsUseCase,
     private val getLSUInfo: GetLSUInfo,
@@ -95,6 +97,8 @@ class AccountViewModel @Inject constructor(
                             isRefreshing = false
                         )
                     }
+
+                    onLatestEpochRequest()
                 }
         }
 
@@ -207,8 +211,10 @@ class AccountViewModel @Inject constructor(
         }
     }
 
-    fun onLatestEpochRequest() {
-        // TODO request for epoch
+    fun onLatestEpochRequest() = viewModelScope.launch {
+        getNetworkInfoUseCase().onSuccess { info ->
+            _state.update { it.copy(epoch = info.epoch) }
+        }
     }
 
     private fun loadAccountDetails(withRefresh: Boolean) {

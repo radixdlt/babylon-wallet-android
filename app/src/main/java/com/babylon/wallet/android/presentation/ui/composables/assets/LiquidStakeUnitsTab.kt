@@ -152,6 +152,7 @@ fun LazyListScope.liquidStakeUnitsTab(
                                         bottom = if (isLast) RadixTheme.dimensions.paddingDefault else 0.dp
                                     ),
                                 epoch = epoch,
+                                collection = item.stakeClaimNft.nonFungibleResource,
                                 stakeClaimNft = stakeClaimNFT,
                                 action = action
                             )
@@ -266,6 +267,7 @@ private fun LiquidStakeUnitItem(
 @Composable
 private fun StakeClaimNftItem(
     epoch: Long?,
+    collection: Resource.NonFungibleResource,
     stakeClaimNft: Resource.NonFungibleResource.Item?,
     modifier: Modifier = Modifier,
     action: AssetsViewAction
@@ -274,10 +276,17 @@ private fun StakeClaimNftItem(
         verticalAlignment = Alignment.CenterVertically,
         modifier = modifier
             .assetOutlineBorder()
-            .throttleClickable(enabled = action is AssetsViewAction.Selection && stakeClaimNft != null) {
-                if (action is AssetsViewAction.Selection && stakeClaimNft != null) {
-                    val isSelected = action.isSelected(stakeClaimNft.globalAddress)
-                    action.onResourceCheckChanged(stakeClaimNft.globalAddress, !isSelected)
+            .throttleClickable(enabled = stakeClaimNft != null) {
+                when (action) {
+                    is AssetsViewAction.Click -> {
+                        if (stakeClaimNft == null) return@throttleClickable
+                        action.onNonFungibleItemClick(collection, stakeClaimNft)
+                    }
+                    is AssetsViewAction.Selection -> {
+                        if (stakeClaimNft == null) return@throttleClickable
+                        val isSelected = action.isSelected(stakeClaimNft.globalAddress)
+                        action.onResourceCheckChanged(stakeClaimNft.globalAddress, !isSelected)
+                    }
                 }
             }
             .padding(RadixTheme.dimensions.paddingDefault),

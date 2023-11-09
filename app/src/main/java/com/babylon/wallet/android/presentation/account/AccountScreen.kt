@@ -479,7 +479,7 @@ fun AssetsContent(
 
             assetsView(
                 assets = state.accountWithAssets?.assets,
-                epoch = null,
+                epoch = state.epoch,
                 selectedTab = selectedTab,
                 onTabSelected = { selectedTab = it },
                 collapsibleAssetsState = nonFungiblesViewState,
