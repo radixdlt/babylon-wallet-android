@@ -125,16 +125,3 @@ data class PoolWithResourceResponse(
         null
     }
 }
-
-data class AccountOnNonFungibleCollectionStateResponse(
-    @ColumnInfo("account_address")
-    val accountAddress: String,
-    @ColumnInfo("resource_address")
-    val resourceAddress: String,
-    @ColumnInfo("vault_address")
-    val vaultAddress: String?,
-    @ColumnInfo("next_cursor")
-    val nextCursor: String?,
-    @ColumnInfo("state_version")
-    val accountStateVersion: Long?
-)

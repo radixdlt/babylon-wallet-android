@@ -6,9 +6,11 @@ import com.babylon.wallet.android.domain.model.assets.AccountWithAssets
 import com.babylon.wallet.android.domain.model.assets.LiquidStakeUnit
 import com.babylon.wallet.android.domain.model.assets.PoolUnit
 import com.babylon.wallet.android.domain.model.assets.ValidatorDetail
+import com.babylon.wallet.android.domain.model.assets.ValidatorWithStakes
 import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.domain.usecases.GetEntitiesWithSecurityPromptUseCase
 import com.babylon.wallet.android.domain.usecases.SecurityPromptType
+import com.babylon.wallet.android.domain.usecases.assets.GetLSUInfo
 import com.babylon.wallet.android.domain.usecases.assets.GetMoreNFTsUseCase
 import com.babylon.wallet.android.domain.usecases.assets.GetWalletAssetsUseCase
 import com.babylon.wallet.android.presentation.account.AccountEvent.NavigateToMnemonicBackup
@@ -49,6 +51,7 @@ class AccountViewModel @Inject constructor(
     private val getProfileUseCase: GetProfileUseCase,
     private val getEntitiesWithSecurityPromptUseCase: GetEntitiesWithSecurityPromptUseCase,
     private val getMoreNFTsUseCase: GetMoreNFTsUseCase,
+    private val getLSUInfo: GetLSUInfo,
     private val appEventBus: AppEventBus,
     savedStateHandle: SavedStateHandle
 ) : StateViewModel<AccountUiState>(), OneOffEventHandler<AccountEvent> by OneOffEventHandlerImpl() {
@@ -190,6 +193,24 @@ class AccountViewModel @Inject constructor(
         }
     }
 
+    fun onStakesRequest(validatorWithStakes: ValidatorWithStakes) {
+        val account = state.value.accountWithAssets?.account ?: return
+        if (!state.value.isRefreshing && validatorWithStakes.liquidStakeUnit.resourceAddress !in state.value.pendingLiquidStakeUnits) {
+            _state.update { state -> state.onLSULoading(validatorWithStakes) }
+            viewModelScope.launch {
+                getLSUInfo(account, validatorWithStakes).onSuccess { validatorWithUpdatedStakes ->
+                    _state.update { state -> state.onLSUReceived(validatorWithUpdatedStakes) }
+                }.onFailure { error ->
+                    _state.update { state -> state.onLSUError(validatorWithStakes, error) }
+                }
+            }
+        }
+    }
+
+    fun onLatestEpochRequest() {
+        // TODO request for epoch
+    }
+
     private fun loadAccountDetails(withRefresh: Boolean) {
         _state.update { it.copy(isRefreshing = withRefresh) }
         viewModelScope.launch { refreshFlow.emit(Unit) }
@@ -204,7 +225,9 @@ internal sealed interface AccountEvent : OneOffEvent {
 data class AccountUiState(
     val accountWithAssets: AccountWithAssets? = null,
     val nonFungiblesWithPendingNFTs: Set<String> = setOf(),
+    val pendingLiquidStakeUnits: Set<String> = setOf(),
     private val securityPromptType: SecurityPromptType? = null,
+    val epoch: Long? = null,
     val isRefreshing: Boolean = false,
     val selectedResource: SelectedResource? = null,
     val uiMessage: UiMessage? = null
@@ -235,13 +258,11 @@ data class AccountUiState(
         get() = accountWithAssets?.assets != null
 
     fun onNFTsLoading(forResource: Resource.NonFungibleResource): AccountUiState {
-        Timber.tag("Bakos").d("Requesting for ${forResource.name}")
         return copy(nonFungiblesWithPendingNFTs = nonFungiblesWithPendingNFTs + forResource.resourceAddress)
     }
 
     fun onNFTsReceived(forResource: Resource.NonFungibleResource): AccountUiState {
         if (accountWithAssets?.assets?.nonFungibles == null) return this
-        Timber.tag("Bakos").d("Received for ${forResource.name}")
         return copy(
             accountWithAssets = accountWithAssets.copy(
                 assets = accountWithAssets.assets.copy(
@@ -259,9 +280,35 @@ data class AccountUiState(
 
     fun onNFTsError(forResource: Resource.NonFungibleResource, error: Throwable): AccountUiState {
         if (accountWithAssets?.assets?.nonFungibles == null) return this
-        Timber.tag("Bakos").d("Error for ${forResource.name} ${error.message}")
         return copy(
             nonFungiblesWithPendingNFTs = nonFungiblesWithPendingNFTs - forResource.resourceAddress,
+            uiMessage = UiMessage.ErrorMessage(error = error)
+        )
+    }
+
+    fun onLSULoading(validatorWithStakes: ValidatorWithStakes): AccountUiState {
+        return copy(pendingLiquidStakeUnits = pendingLiquidStakeUnits + validatorWithStakes.liquidStakeUnit.resourceAddress)
+    }
+
+    fun onLSUReceived(validatorWithStakes: ValidatorWithStakes): AccountUiState {
+        if (accountWithAssets?.assets?.validatorsWithStakes == null) return this
+        return copy(
+            accountWithAssets = accountWithAssets.copy(
+                assets = accountWithAssets.assets.copy(
+                    validatorsWithStakes = accountWithAssets.assets.validatorsWithStakes.mapWhen(
+                        predicate = { it.liquidStakeUnit.resourceAddress == validatorWithStakes.liquidStakeUnit.resourceAddress },
+                        mutation = { validatorWithStakes }
+                    )
+                )
+            ),
+            pendingLiquidStakeUnits = pendingLiquidStakeUnits - validatorWithStakes.liquidStakeUnit.resourceAddress
+        )
+    }
+
+    fun onLSUError(validatorWithStakes: ValidatorWithStakes, error: Throwable): AccountUiState {
+        if (accountWithAssets?.assets?.validatorsWithStakes == null) return this
+        return copy(
+            pendingLiquidStakeUnits = pendingLiquidStakeUnits - validatorWithStakes.liquidStakeUnit.resourceAddress,
             uiMessage = UiMessage.ErrorMessage(error = error)
         )
     }

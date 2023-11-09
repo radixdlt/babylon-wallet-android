@@ -11,7 +11,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.Text
 import androidx.compose.material3.Divider
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.snapshots.SnapshotStateMap
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -28,7 +27,8 @@ import rdx.works.core.displayableQuantity
 
 fun LazyListScope.poolUnitsTab(
     assets: Assets,
-    collapsibleAssetsState: SnapshotStateMap<String, CollapsibleAssetState>,
+    epoch: Long?,
+    collapsibleAssetsState: SnapshotStateMap<String, Boolean>,
     action: AssetsViewAction
 ) {
     if (assets.validatorsWithStakes.isEmpty() && assets.poolUnits.isEmpty()) {
@@ -42,6 +42,7 @@ fun LazyListScope.poolUnitsTab(
 
     liquidStakeUnitsTab(
         assets = assets,
+        epoch = epoch,
         collapsibleAssetsState = collapsibleAssetsState,
         action = action
     )

@@ -9,6 +9,7 @@ import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetai
 import com.babylon.wallet.android.data.gateway.generated.models.StateNonFungibleDataRequest
 import com.babylon.wallet.android.data.gateway.model.ExplicitMetadataKey
 import com.babylon.wallet.android.data.repository.cache.database.NFTEntity.Companion.asEntity
+import com.babylon.wallet.android.data.repository.cache.database.ResourceEntity.Companion.asEntity
 import com.babylon.wallet.android.data.repository.cache.database.StateDao
 import com.babylon.wallet.android.data.repository.cache.database.StateDao.Companion.resourcesCacheValidity
 import com.babylon.wallet.android.data.repository.cache.database.SyncInfo
@@ -18,6 +19,8 @@ import com.babylon.wallet.android.data.repository.toResult
 import com.babylon.wallet.android.di.coroutines.DefaultDispatcher
 import com.babylon.wallet.android.domain.model.DApp
 import com.babylon.wallet.android.domain.model.assets.AccountWithAssets
+import com.babylon.wallet.android.domain.model.assets.LiquidStakeUnit
+import com.babylon.wallet.android.domain.model.assets.ValidatorWithStakes
 import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.domain.model.resources.metadata.MetadataItem.Companion.consume
 import com.babylon.wallet.android.domain.model.resources.metadata.OwnerKeyHashesMetadataItem
@@ -37,6 +40,8 @@ interface StateRepository {
 
     suspend fun getMoreNFTs(account: Network.Account, resource: Resource.NonFungibleResource): Result<Resource.NonFungibleResource>
 
+    suspend fun getLSUInfo(account: Network.Account, validatorWithStakes: ValidatorWithStakes): Result<ValidatorWithStakes>
+
     fun observeResourceDetails(resourceAddress: String, accountAddress: String?): Flow<Resource>
 
     suspend fun getNFTDetails(resourceAddress: String, localId: String): Result<Resource.NonFungibleResource.Item>
@@ -47,12 +52,12 @@ interface StateRepository {
 
     suspend fun getDAppsDetails(definitionAddresses: List<String>): Result<List<DApp>>
 
-    sealed class NFTPageError(cause: Throwable) : Exception(cause) {
-        data object NoMorePages : NFTPageError(RuntimeException("No more NFTs for this resource."))
+    sealed class Error(cause: Throwable) : Exception(cause) {
+        data object NoMorePages : Error(RuntimeException("No more NFTs for this resource."))
 
-        data object VaultAddressMissing : NFTPageError(RuntimeException("No vault address to fetch NFTs"))
+        data object VaultAddressMissing : Error(RuntimeException("No vault address to fetch NFTs"))
 
-        data object StateVersionMissing : NFTPageError(RuntimeException("State version missing for account."))
+        data object StateVersionMissing : Error(RuntimeException("State version missing for account."))
     }
 }
 
@@ -77,15 +82,15 @@ class StateRepositoryImpl @Inject constructor(
     ): Result<Resource.NonFungibleResource> = withContext(dispatcher) {
         runCatching {
             // No more pages to return
-            if (resource.amount.toInt() == resource.items.size) throw StateRepository.NFTPageError.NoMorePages
+            if (resource.amount.toInt() == resource.items.size) throw StateRepository.Error.NoMorePages
 
-            val accountNftPortfolio = stateDao.getAccountNFTPortfolio(
+            val accountStateVersion = stateDao.getAccountStateVersion(accountAddress = account.address)
+                ?: throw StateRepository.Error.StateVersionMissing
+
+            val accountResourceJoin = stateDao.getAccountResourceJoin(
                 accountAddress = account.address,
                 resourceAddress = resource.resourceAddress
-            ).firstOrNull()
-
-            val accountStateVersion: Long =
-                accountNftPortfolio?.accountStateVersion ?: throw StateRepository.NFTPageError.StateVersionMissing
+            )
 
             val cachedNFTItems = stateDao.getOwnedNfts(
                 accountAddress = account.address,
@@ -98,8 +103,8 @@ class StateRepositoryImpl @Inject constructor(
                 return@runCatching resource.copy(items = cachedNFTItems.map { it.toItem() }.sorted())
             }
 
-            val vaultAddress = accountNftPortfolio.vaultAddress ?: throw StateRepository.NFTPageError.VaultAddressMissing
-            val nextCursor = accountNftPortfolio.nextCursor
+            val vaultAddress = accountResourceJoin?.vaultAddress ?: throw StateRepository.Error.VaultAddressMissing
+            val nextCursor = accountResourceJoin.nextCursor
 
             val page = stateApi.getNextNftItems(
                 accountAddress = account.address,
@@ -121,6 +126,76 @@ class StateRepositoryImpl @Inject constructor(
             val allNewItems = (currentItems + newItems).distinctBy { it.localId }.sorted()
 
             resource.copy(items = allNewItems)
+        }
+    }
+
+    override suspend fun getLSUInfo(account: Network.Account, validatorWithStakes: ValidatorWithStakes) = withContext(dispatcher) {
+        runCatching {
+            val stateVersion = stateDao.getAccountStateVersion(account.address) ?: throw StateRepository.Error.StateVersionMissing
+
+            val lsuEntity = if (!validatorWithStakes.liquidStakeUnit.fungibleResource.isDetailsAvailable) {
+                stateApi.getSingleEntityDetails(
+                    address = validatorWithStakes.liquidStakeUnit.resourceAddress,
+                    metadataKeys = setOf(
+                        ExplicitMetadataKey.NAME,
+                        ExplicitMetadataKey.SYMBOL,
+                        ExplicitMetadataKey.DESCRIPTION,
+                        ExplicitMetadataKey.RELATED_WEBSITES,
+                        ExplicitMetadataKey.ICON_URL,
+                        ExplicitMetadataKey.INFO_URL,
+                        ExplicitMetadataKey.VALIDATOR,
+                        ExplicitMetadataKey.POOL,
+                        ExplicitMetadataKey.TAGS,
+                        ExplicitMetadataKey.DAPP_DEFINITIONS
+                    ),
+                    stateVersion = stateVersion
+                ).asEntity(synced = InstantGenerator())
+            } else {
+                null
+            }
+
+            val stakeClaimCollection = validatorWithStakes.stakeClaimNft?.nonFungibleResource
+            val claimEntities = if (stakeClaimCollection != null && stakeClaimCollection.amount.toInt() != stakeClaimCollection.items.size) {
+                stateDao.getAccountResourceJoin(
+                    resourceAddress = stakeClaimCollection.resourceAddress,
+                    accountAddress = account.address
+                )?.let { join ->
+                    stateApi.getNextNftItems(
+                        accountAddress = account.address,
+                        resourceAddress = stakeClaimCollection.resourceAddress,
+                        vaultAddress = join.vaultAddress!!,
+                        nextCursor = null,
+                        stateVersion = stateVersion
+                    ).second.let { data ->
+                        val syncedAt = InstantGenerator()
+                        data.map { it.asEntity(stakeClaimCollection.resourceAddress, syncedAt) }
+                    }
+                }
+            } else {
+                null
+            }
+
+            val updatedLsu = lsuEntity?.toResource(validatorWithStakes.liquidStakeUnit.fungibleResource.ownedAmount)?.let {
+                LiquidStakeUnit(it as Resource.FungibleResource)
+            } ?: validatorWithStakes.liquidStakeUnit
+
+            val updatedStakeClaimNFT = claimEntities?.map { it.toItem() }?.let { items ->
+                validatorWithStakes.stakeClaimNft?.copy(
+                    nonFungibleResource = validatorWithStakes.stakeClaimNft.nonFungibleResource.copy(
+                        items = items
+                    )
+                )
+            } ?: validatorWithStakes.stakeClaimNft
+
+            stateDao.storeStakeDetails(
+                stakeResourceEntity = lsuEntity,
+                claims = claimEntities
+            )
+
+            validatorWithStakes.copy(
+                liquidStakeUnit = updatedLsu,
+                stakeClaimNft = updatedStakeClaimNFT
+            )
         }
     }
 

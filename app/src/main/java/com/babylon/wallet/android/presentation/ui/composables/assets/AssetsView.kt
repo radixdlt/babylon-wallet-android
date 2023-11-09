@@ -10,6 +10,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.runtime.snapshots.SnapshotStateMap
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -34,9 +35,10 @@ import java.math.BigDecimal
 
 fun LazyListScope.assetsView(
     assets: Assets?,
+    epoch: Long?,
     selectedTab: ResourceTab,
     onTabSelected: (ResourceTab) -> Unit,
-    collapsibleAssetsState: SnapshotStateMap<String, CollapsibleAssetState>,
+    collapsibleAssetsState: SnapshotStateMap<String, Boolean>,
     action: AssetsViewAction
 ) {
     item {
@@ -65,6 +67,7 @@ fun LazyListScope.assetsView(
 
             ResourceTab.PoolUnits -> poolUnitsTab(
                 assets = assets,
+                epoch = epoch,
                 collapsibleAssetsState = collapsibleAssetsState,
                 action = action
             )
@@ -85,19 +88,22 @@ private fun LazyListScope.loadingAssets(
 sealed interface AssetsViewAction {
 
     val onNextNFtsPageRequest: (Resource.NonFungibleResource) -> Unit
+    val onStakesRequest: (ValidatorWithStakes) -> Unit
 
     data class Click(
         val onFungibleClick: (Resource.FungibleResource) -> Unit,
         val onNonFungibleItemClick: (Resource.NonFungibleResource, Resource.NonFungibleResource.Item) -> Unit,
         val onLSUClick: (LiquidStakeUnit, ValidatorDetail) -> Unit,
         val onPoolUnitClick: (PoolUnit) -> Unit,
-        override val onNextNFtsPageRequest: (Resource.NonFungibleResource) -> Unit
+        override val onNextNFtsPageRequest: (Resource.NonFungibleResource) -> Unit,
+        override val onStakesRequest: (ValidatorWithStakes) -> Unit
     ) : AssetsViewAction
 
     data class Selection(
         val selectedResources: List<String>,
         val onResourceCheckChanged: (String, Boolean) -> Unit,
-        override val onNextNFtsPageRequest: (Resource.NonFungibleResource) -> Unit
+        override val onNextNFtsPageRequest: (Resource.NonFungibleResource) -> Unit,
+        override val onStakesRequest: (ValidatorWithStakes) -> Unit
     ) : AssetsViewAction {
 
         fun isSelected(resourceAddress: String) = selectedResources.contains(resourceAddress)
@@ -106,48 +112,27 @@ sealed interface AssetsViewAction {
 }
 
 @Composable
-fun rememberAssetsViewState(assets: Assets?): SnapshotStateMap<String, CollapsibleAssetState> {
-    val nonFungibleAddresses = remember(assets) {
-        assets?.nonFungibles?.map { it.resourceAddress }.orEmpty().toMutableList().apply {
-            if (assets?.validatorsWithStakes?.isNotEmpty() == true) {
-                add(CollapsibleAssetState.STAKE_SECTION_ID)
-            }
+fun rememberAssetsViewState(assets: Assets?): SnapshotStateMap<String, Boolean> {
+    val collections = remember(assets) {
+        assets?.nonFungibles?.map { it.resourceAddress }.orEmpty() + listOf(STAKE_COLLECTION_ID)
+    }
+    return remember(collections) {
+        SnapshotStateMap<String, Boolean>().apply {
+            putAll(collections.associateWith { true })
         }
     }
-
-    return remember(nonFungibleAddresses) {
-        val state = SnapshotStateMap<String, CollapsibleAssetState>()
-        nonFungibleAddresses.forEach { address ->
-            state[address] = CollapsibleAssetState(
-                isCollapsed = true,
-                pendingIndex = -1
-            )
-        }
-
-        state
-    }
-}
-
-data class CollapsibleAssetState(
-    val isCollapsed: Boolean,
-    val pendingIndex: Int = -1
-) {
-
-    companion object {
-        const val STAKE_SECTION_ID = "-1"
-    }
-
 }
 
 
 @Preview
 @Composable
 fun AssetsViewWithLoadingAssets() {
-    var tabs by remember { mutableStateOf(ResourceTab.Tokens) }
+    val tabs by remember { mutableStateOf(ResourceTab.Tokens) }
     RadixWalletTheme {
         LazyColumn {
             assetsView(
                 assets = null,
+                epoch = null,
                 selectedTab = tabs,
                 onTabSelected = {},
                 collapsibleAssetsState = SnapshotStateMap(),
@@ -156,7 +141,8 @@ fun AssetsViewWithLoadingAssets() {
                     onNonFungibleItemClick = { _, _ -> },
                     onLSUClick = { _, _ -> },
                     onPoolUnitClick = {},
-                    onNextNFtsPageRequest = {}
+                    onNextNFtsPageRequest = {},
+                    onStakesRequest = {}
                 )
             )
         }
@@ -166,11 +152,12 @@ fun AssetsViewWithLoadingAssets() {
 @Preview
 @Composable
 fun AssetsViewWithEmptyAssets() {
-    var tabs by remember { mutableStateOf(ResourceTab.Tokens) }
+    val tabs by remember { mutableStateOf(ResourceTab.Tokens) }
     RadixWalletTheme {
         LazyColumn {
             assetsView(
-                assets = Assets(),
+                assets = null,
+                epoch = null,
                 selectedTab = tabs,
                 onTabSelected = {},
                 collapsibleAssetsState = SnapshotStateMap(),
@@ -179,7 +166,8 @@ fun AssetsViewWithEmptyAssets() {
                     onNonFungibleItemClick = { _, _ -> },
                     onLSUClick = { _, _ -> },
                     onPoolUnitClick = {},
-                    onNextNFtsPageRequest = {}
+                    onNextNFtsPageRequest = {},
+                    onStakesRequest = {}
                 )
             )
         }
@@ -301,6 +289,7 @@ fun AssetsViewWithAssets() {
         LazyColumn(modifier = Modifier.background(RadixTheme.colors.gray5)) {
             assetsView(
                 assets = assets,
+                epoch = null,
                 selectedTab = selectedTab,
                 onTabSelected = {
                     selectedTab = it
@@ -311,7 +300,8 @@ fun AssetsViewWithAssets() {
                     onNonFungibleItemClick = { _, _ -> },
                     onLSUClick = { _, _ -> },
                     onPoolUnitClick = {},
-                    onNextNFtsPageRequest = {}
+                    onNextNFtsPageRequest = {},
+                    onStakesRequest = {}
                 )
             )
         }

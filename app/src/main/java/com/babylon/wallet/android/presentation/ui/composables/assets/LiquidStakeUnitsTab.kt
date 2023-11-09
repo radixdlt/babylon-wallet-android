@@ -13,6 +13,7 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.Text
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.snapshots.SnapshotStateMap
 import androidx.compose.ui.Alignment
@@ -21,6 +22,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
@@ -33,19 +35,23 @@ import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import rdx.works.core.displayableQuantity
 
+const val STAKE_COLLECTION_ID = "-1"
+
+fun SnapshotStateMap<String, Boolean>.isStakeSectionCollapsed() = this[STAKE_COLLECTION_ID] == true
+
 fun LazyListScope.liquidStakeUnitsTab(
     assets: Assets,
-    collapsibleAssetsState: SnapshotStateMap<String, CollapsibleAssetState>,
+    epoch: Long?,
+    collapsibleAssetsState: SnapshotStateMap<String, Boolean>,
     action: AssetsViewAction
 ) {
     if (assets.validatorsWithStakes.isNotEmpty()) {
         item {
-            val viewState = collapsibleAssetsState[CollapsibleAssetState.STAKE_SECTION_ID]
             CollapsibleAssetCard(
                 modifier = Modifier
                     .padding(horizontal = RadixTheme.dimensions.paddingDefault)
                     .padding(top = RadixTheme.dimensions.paddingSemiLarge),
-                isCollapsed = viewState?.isCollapsed ?: true,
+                isCollapsed = collapsibleAssetsState.isStakeSectionCollapsed(),
                 collapsedItems = assets.validatorsWithStakes.size
             ) {
                 Row(
@@ -53,11 +59,7 @@ fun LazyListScope.liquidStakeUnitsTab(
                     modifier = Modifier
                         .fillMaxWidth()
                         .clickable {
-                            if (viewState != null) {
-                                collapsibleAssetsState[CollapsibleAssetState.STAKE_SECTION_ID] = viewState.copy(
-                                    isCollapsed = !viewState.isCollapsed
-                                )
-                            }
+                            collapsibleAssetsState[STAKE_COLLECTION_ID] = !collapsibleAssetsState.isStakeSectionCollapsed()
                         }
                         .padding(RadixTheme.dimensions.paddingLarge),
                     horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingDefault)
@@ -88,7 +90,7 @@ fun LazyListScope.liquidStakeUnitsTab(
             }
         }
 
-        if (collapsibleAssetsState[CollapsibleAssetState.STAKE_SECTION_ID]?.isCollapsed == false) {
+        if (!collapsibleAssetsState.isStakeSectionCollapsed()) {
             itemsIndexed(
                 items = assets.validatorsWithStakes,
                 key = { _, item -> item.validatorDetail.address }
@@ -101,6 +103,11 @@ fun LazyListScope.liquidStakeUnitsTab(
                     allItemsSize = assets.validatorsWithStakes.size,
                     roundTopCorners = false
                 ) {
+                    LaunchedEffect(item) {
+                        if (!item.isDetailsAvailable) {
+                            action.onStakesRequest(item)
+                        }
+                    }
                     ValidatorDetailsItem(
                         modifier = Modifier
                             .padding(horizontal = RadixTheme.dimensions.paddingLarge)
@@ -144,6 +151,7 @@ fun LazyListScope.liquidStakeUnitsTab(
                                         top = if (index > 0) RadixTheme.dimensions.paddingSmall else 0.dp,
                                         bottom = if (isLast) RadixTheme.dimensions.paddingDefault else 0.dp
                                     ),
+                                epoch = epoch,
                                 stakeClaimNft = stakeClaimNFT,
                                 action = action
                             )
@@ -200,6 +208,7 @@ private fun LiquidStakeUnitItem(
                     is AssetsViewAction.Click -> {
                         action.onLSUClick(stake.liquidStakeUnit, stake.validatorDetail)
                     }
+
                     is AssetsViewAction.Selection -> {
                         val isSelected = action.isSelected(stake.liquidStakeUnit.resourceAddress)
                         action.onResourceCheckChanged(stake.liquidStakeUnit.resourceAddress, !isSelected)
@@ -233,9 +242,7 @@ private fun LiquidStakeUnitItem(
             )
         }
 
-        val stakeValue = remember(stake) {
-            stake.liquidStakeUnit.stakeValueInXRD(stake.validatorDetail.totalXrdStake)
-        }
+        val stakeValue = remember(stake) { stake.stakeValue() }
         Text(
             modifier = Modifier
                 .sizeIn(minWidth = 96.dp)
@@ -243,6 +250,7 @@ private fun LiquidStakeUnitItem(
             text = stakeValue?.displayableQuantity().orEmpty(),
             style = RadixTheme.typography.secondaryHeader,
             color = RadixTheme.colors.gray1,
+            textAlign = TextAlign.End,
             maxLines = 1
         )
 
@@ -257,6 +265,7 @@ private fun LiquidStakeUnitItem(
 
 @Composable
 private fun StakeClaimNftItem(
+    epoch: Long?,
     stakeClaimNft: Resource.NonFungibleResource.Item?,
     modifier: Modifier = Modifier,
     action: AssetsViewAction
@@ -283,23 +292,16 @@ private fun StakeClaimNftItem(
             tint = Color.Unspecified
         )
 
+        val isReadyToClaim = remember(stakeClaimNft, epoch) {
+            epoch?.let { stakeClaimNft?.isReadyToClaim(epoch) == true } ?: false
+        }
         Text(
             modifier = Modifier
                 .weight(1f)
                 .assetPlaceholder(visible = stakeClaimNft == null),
-            text = if (stakeClaimNft != null) {
-                stringResource(
-                    id = if (stakeClaimNft.readyToClaim) R.string.account_poolUnits_readyToClaim else R.string.account_poolUnits_unstaking
-                )
-            } else {
-                ""
-            },
+            text = stringResource(id = if (isReadyToClaim) R.string.account_poolUnits_readyToClaim else R.string.account_poolUnits_unstaking),
             style = RadixTheme.typography.body2HighImportance,
-            color = if (stakeClaimNft != null) {
-                if (stakeClaimNft.readyToClaim) RadixTheme.colors.green1 else RadixTheme.colors.gray1
-            } else {
-                Color.Transparent
-            },
+            color = if (isReadyToClaim) RadixTheme.colors.green1 else RadixTheme.colors.gray1,
             maxLines = 1
         )
 

@@ -61,6 +61,16 @@ data class ValidatorWithStakes(
     val validatorDetail: ValidatorDetail,
     val liquidStakeUnit: LiquidStakeUnit,
     val stakeClaimNft: StakeClaim? = null
-)
+) {
+
+    val isDetailsAvailable: Boolean
+        get() = validatorDetail.totalXrdStake != null && liquidStakeUnit.fungibleResource.isDetailsAvailable &&
+                (stakeClaimNft == null || stakeClaimNft.nonFungibleResource.amount.toInt() == stakeClaimNft.nonFungibleResource.items.size)
+
+    fun stakeValue(): BigDecimal? {
+        if (validatorDetail.totalXrdStake == null) return null
+        return liquidStakeUnit.stakeValueInXRD(validatorDetail.totalXrdStake)
+    }
+}
 
 fun List<Resource.NonFungibleResource>.allNftItemsSize() = sumOf { it.amount }

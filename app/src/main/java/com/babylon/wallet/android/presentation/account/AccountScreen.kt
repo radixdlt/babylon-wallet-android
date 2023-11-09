@@ -66,6 +66,7 @@ import com.babylon.wallet.android.domain.model.assets.Assets
 import com.babylon.wallet.android.domain.model.assets.LiquidStakeUnit
 import com.babylon.wallet.android.domain.model.assets.PoolUnit
 import com.babylon.wallet.android.domain.model.assets.ValidatorDetail
+import com.babylon.wallet.android.domain.model.assets.ValidatorWithStakes
 import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.domain.usecases.SecurityPromptType
 import com.babylon.wallet.android.presentation.account.composable.FungibleTokenBottomSheetDetails
@@ -82,6 +83,7 @@ import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
 import com.babylon.wallet.android.presentation.ui.composables.ThrottleIconButton
 import com.babylon.wallet.android.presentation.ui.composables.assets.AssetsViewAction
 import com.babylon.wallet.android.presentation.ui.composables.assets.assetsView
+import com.babylon.wallet.android.presentation.ui.composables.assets.isStakeSectionCollapsed
 import com.babylon.wallet.android.presentation.ui.composables.assets.rememberAssetsViewState
 import com.babylon.wallet.android.presentation.ui.composables.toText
 import com.babylon.wallet.android.utils.openUrl
@@ -131,7 +133,9 @@ fun AccountScreen(
         onApplySecuritySettings = viewModel::onApplySecuritySettings,
         onPoolUnitClick = viewModel::onPoolUnitClicked,
         onLSUUnitClicked = viewModel::onLSUUnitClicked,
-        onNextNFTsPageRequest = viewModel::onNextNftPageRequest
+        onNextNFTsPageRequest = viewModel::onNextNftPageRequest,
+        onStakesRequest = viewModel::onStakesRequest,
+        onLatestEpochRequest = viewModel::onLatestEpochRequest
     )
 }
 
@@ -150,7 +154,9 @@ private fun AccountScreenContent(
     onApplySecuritySettings: (SecurityPromptType) -> Unit,
     onPoolUnitClick: (PoolUnit) -> Unit,
     onLSUUnitClicked: (LiquidStakeUnit, ValidatorDetail) -> Unit,
-    onNextNFTsPageRequest: (Resource.NonFungibleResource) -> Unit
+    onNextNFTsPageRequest: (Resource.NonFungibleResource) -> Unit,
+    onStakesRequest: (ValidatorWithStakes) -> Unit,
+    onLatestEpochRequest: () -> Unit
 ) {
     val context = LocalContext.current
 
@@ -280,7 +286,9 @@ private fun AccountScreenContent(
                             bottomSheetState.show()
                         }
                     },
-                    onNextNFTsPageRequest = onNextNFTsPageRequest
+                    onNextNFTsPageRequest = onNextNFTsPageRequest,
+                    onStakesRequest = onStakesRequest,
+                    onLatestEpochRequest = onLatestEpochRequest
                 )
             }
 
@@ -374,7 +382,9 @@ fun AssetsContent(
     onHistoryClick: () -> Unit,
     onApplySecuritySettings: (SecurityPromptType) -> Unit,
     onLSUUnitClicked: (LiquidStakeUnit, ValidatorDetail) -> Unit,
-    onNextNFTsPageRequest: (Resource.NonFungibleResource) -> Unit
+    onNextNFTsPageRequest: (Resource.NonFungibleResource) -> Unit,
+    onStakesRequest: (ValidatorWithStakes) -> Unit,
+    onLatestEpochRequest: () -> Unit
 ) {
     Surface(
         modifier = modifier,
@@ -386,6 +396,13 @@ fun AssetsContent(
 
         var selectedTab by remember { mutableStateOf(ResourceTab.Tokens) }
         val nonFungiblesViewState = rememberAssetsViewState(assets = state.accountWithAssets?.assets)
+
+        val isStakesCollapsed = nonFungiblesViewState.isStakeSectionCollapsed()
+        LaunchedEffect(isStakesCollapsed) {
+            if (!isStakesCollapsed) {
+                onLatestEpochRequest()
+            }
+        }
 
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
@@ -462,6 +479,7 @@ fun AssetsContent(
 
             assetsView(
                 assets = state.accountWithAssets?.assets,
+                epoch = null,
                 selectedTab = selectedTab,
                 onTabSelected = { selectedTab = it },
                 collapsibleAssetsState = nonFungiblesViewState,
@@ -470,7 +488,8 @@ fun AssetsContent(
                     onNonFungibleItemClick = onNonFungibleItemClick,
                     onLSUClick = onLSUUnitClicked,
                     onPoolUnitClick = onPoolUnitClick,
-                    onNextNFtsPageRequest = onNextNFTsPageRequest
+                    onNextNFtsPageRequest = onNextNFTsPageRequest,
+                    onStakesRequest = onStakesRequest
                 )
             )
         }
@@ -547,7 +566,9 @@ fun AccountContentPreview() {
                 onApplySecuritySettings = {},
                 onPoolUnitClick = {},
                 onLSUUnitClicked = { _, _ -> },
-                onNextNFTsPageRequest = {}
+                onNextNFTsPageRequest = {},
+                onStakesRequest = {},
+                onLatestEpochRequest = {}
             )
         }
     }

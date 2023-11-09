@@ -175,7 +175,10 @@ class EntityRepositoryImpl @Inject constructor(
                         val metaDataItems = mapOfAccountsWithMetadata[account.address].orEmpty().toMutableList()
                         AccountWithAssets(
                             account = account,
-                            details = AccountDetails(stateVersion = stateVersion, typeMetadataItem = metaDataItems.consume()),
+                            details = AccountDetails(
+                                stateVersion = stateVersion,
+                                typeMetadataItem = metaDataItems.consume()
+                            ),
                             assets = Assets(
                                 fungibles = mapOfAccountsWithFungibleResources[account.address].orEmpty().sorted(),
                                 nonFungibles = mapOfAccountsWithNonFungibleResources[account.address].orEmpty().sorted(),

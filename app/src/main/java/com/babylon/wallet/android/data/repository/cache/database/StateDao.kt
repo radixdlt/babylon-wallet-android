@@ -37,14 +37,11 @@ interface StateDao {
     )
     fun observeAccounts(): Flow<List<AccountPortfolioResponse>>
 
-    @Query(
-        """
-        UPDATE AccountEntity SET
-        synced = NULL
-        WHERE address in (:addresses)
-    """
-    )
-    fun markAccountsToRefresh(addresses: Set<String>)
+    @Query("""
+        SELECT state_version FROM AccountEntity
+        WHERE address = :accountAddress
+    """)
+    fun getAccountStateVersion(accountAddress: String): Long?
 
     @Suppress("UnsafeCallOnNullableType")
     @Transaction
@@ -156,16 +153,6 @@ interface StateDao {
 
     @Query(
         """
-        SELECT ARJ.account_address, ARJ.resource_address, ARJ.vault_address, ARJ.next_cursor, AccountEntity.state_version 
-        FROM AccountResourceJoin AS ARJ
-        INNER JOIN AccountEntity ON ARJ.account_address = AccountEntity.address
-        WHERE ARJ.account_address = :accountAddress AND ARJ.resource_address = :resourceAddress
-    """
-    )
-    fun getAccountNFTPortfolio(accountAddress: String, resourceAddress: String): List<AccountOnNonFungibleCollectionStateResponse>
-
-    @Query(
-        """
         SELECT NFTEntity.* FROM AccountNFTJoin
         INNER JOIN NFTEntity ON AccountNFTJoin.resource_address = NFTEntity.address AND AccountNFTJoin.local_id = NFTEntity.local_id
         WHERE 
@@ -215,7 +202,10 @@ interface StateDao {
     @Query(
         """
         SELECT * FROM AccountResourceJoin
-        WHERE account_address = :accountAddress AND resource_address = :resourceAddress
+        WHERE 
+            account_address = :accountAddress AND 
+            resource_address = :resourceAddress AND
+            state_version = (SELECT state_version FROM AccountEntity WHERE address = :accountAddress)
     """
     )
     fun getAccountResourceJoin(resourceAddress: String, accountAddress: String): AccountResourceJoin?
@@ -227,6 +217,17 @@ interface StateDao {
     """
     )
     fun getNFTDetails(resourceAddress: String, localId: String, minValidity: Long): NFTEntity?
+
+    @Transaction
+    fun storeStakeDetails(
+        stakeResourceEntity: ResourceEntity?,
+        claims: List<NFTEntity>?
+    ) {
+        stakeResourceEntity?.let {
+            insertOrReplaceResources(listOf(stakeResourceEntity))
+        }
+        claims?.let { insertNFTs(it) }
+    }
 
     companion object {
         private val accountsCacheDuration = 2.toDuration(DurationUnit.HOURS)

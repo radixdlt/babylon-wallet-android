@@ -33,11 +33,10 @@ import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import com.google.accompanist.placeholder.PlaceholderHighlight
 import com.google.accompanist.placeholder.placeholder
 import com.google.accompanist.placeholder.shimmer
-import timber.log.Timber
 
 fun LazyListScope.nftsTab(
     assets: Assets,
-    collapsibleAssetsState: SnapshotStateMap<String, CollapsibleAssetState>,
+    collapsibleAssetsState: SnapshotStateMap<String, Boolean>,
     action: AssetsViewAction
 ) {
     if (assets.nonFungibles.isEmpty()) {
@@ -54,23 +53,19 @@ fun LazyListScope.nftsTab(
             key = collection.resourceAddress,
             contentType = { "collection" }
         ) {
-            val viewState = collapsibleAssetsState[collection.resourceAddress]
+            val isCollapsed = collapsibleAssetsState[collection.resourceAddress] ?: true
             CollapsibleAssetCard(
                 modifier = Modifier
                     .padding(horizontal = RadixTheme.dimensions.paddingDefault)
                     .padding(top = RadixTheme.dimensions.paddingSemiLarge),
-                isCollapsed = viewState?.isCollapsed ?: true,
+                isCollapsed = isCollapsed,
                 collapsedItems = collection.amount.toInt()
             ) {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
                         .clickable {
-                            if (viewState != null) {
-                                collapsibleAssetsState[collection.resourceAddress] = viewState.copy(
-                                    isCollapsed = !viewState.isCollapsed,
-                                )
-                            }
+                            collapsibleAssetsState[collection.resourceAddress] = !isCollapsed
                         }
                         .padding(RadixTheme.dimensions.paddingLarge),
                     verticalAlignment = Alignment.CenterVertically,
@@ -108,7 +103,7 @@ fun LazyListScope.nftsTab(
         }
 
         items(
-            count = if (collapsibleAssetsState[collection.resourceAddress]?.isCollapsed == false) collection.amount.toInt() else 0,
+            count = if (collapsibleAssetsState[collection.resourceAddress] == false) collection.amount.toInt() else 0,
             key = { index -> "${collection.resourceAddress}$index" },
             contentType = { "nft" }
         ) { index ->
