@@ -180,7 +180,7 @@ class ResourceTests {
             symbol = "XRD"
         )
 
-        Assert.assertTrue(resource.resourceBehaviours.isEmpty())
+        Assert.assertTrue(resource.resourceBehaviours == setOf(AssetBehaviour.SUPPLY_FLEXIBLE))
     }
 
     @Test

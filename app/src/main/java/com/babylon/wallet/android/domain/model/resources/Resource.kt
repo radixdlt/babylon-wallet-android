@@ -1,6 +1,7 @@
 package com.babylon.wallet.android.domain.model.resources
 
 import android.net.Uri
+import com.babylon.wallet.android.domain.model.assets.AssetBehaviour
 import com.babylon.wallet.android.domain.model.assets.AssetBehaviours
 import com.babylon.wallet.android.domain.model.resources.XrdResource.addressesPerNetwork
 import com.babylon.wallet.android.domain.model.resources.metadata.ClaimAmountMetadataItem
@@ -74,7 +75,7 @@ sealed class Resource {
 
         val resourceBehaviours: AssetBehaviours
             get() = if (isXrd) {
-                emptySet()
+                setOf(AssetBehaviour.SUPPLY_FLEXIBLE)
             } else {
                 behaviours
             }
@@ -322,8 +323,3 @@ object XrdResource {
 
 val Resource.FungibleResource.isXrd: Boolean
     get() = addressesPerNetwork.containsValue(resourceAddress)
-
-data class Resources(
-    val fungibles: List<Resource.FungibleResource>,
-    val nonFungibles: List<Resource.NonFungibleResource>
-)
