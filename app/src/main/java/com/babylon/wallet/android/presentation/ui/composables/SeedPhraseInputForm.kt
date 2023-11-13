@@ -51,7 +51,8 @@ fun SeedPhraseInputForm(
     onWordChanged: (Int, String) -> Unit,
     onPassphraseChanged: (String) -> Unit,
     bip39Passphrase: String,
-    onFocusedWordIndexChanged: (Int) -> Unit
+    onFocusedWordIndexChanged: (Int) -> Unit,
+    showAdvancedMode: Boolean = true,
 ) {
     val focusManager = LocalFocusManager.current
     Column(
@@ -78,7 +79,8 @@ fun SeedPhraseInputForm(
                             if (it.hasFocus) {
                                 onFocusedWordIndexChanged(word.index)
                             }
-                        }
+                        },
+                        enabled = word.inputDisabled.not()
                     )
                 }
             }
@@ -97,19 +99,21 @@ fun SeedPhraseInputForm(
         }
 
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingMedium))
-        RadixTextButton(
-            modifier = Modifier.fillMaxWidth(),
-            text = stringResource(
-                id = if (advancedMode) {
-                    R.string.importMnemonic_regularModeButton
-                } else {
-                    R.string.importMnemonic_advancedModeButton
+        if (showAdvancedMode) {
+            RadixTextButton(
+                modifier = Modifier.fillMaxWidth(),
+                text = stringResource(
+                    id = if (advancedMode) {
+                        R.string.importMnemonic_regularModeButton
+                    } else {
+                        R.string.importMnemonic_advancedModeButton
+                    }
+                ),
+                onClick = {
+                    advancedMode = !advancedMode
                 }
-            ),
-            onClick = {
-                advancedMode = !advancedMode
-            }
-        )
+            )
+        }
     }
 }
 
@@ -140,7 +144,8 @@ private fun SeedPhraseWordInput(
     word: SeedPhraseWord,
     focusManager: FocusManager,
     modifier: Modifier = Modifier,
-    onFocusChanged: ((FocusState) -> Unit)?
+    onFocusChanged: ((FocusState) -> Unit)?,
+    enabled: Boolean
 ) {
     MnemonicWordTextField(
         modifier = modifier,
@@ -150,7 +155,8 @@ private fun SeedPhraseWordInput(
         value = word.value,
         label = stringResource(id = R.string.importMnemonic_wordHeading, word.index + 1),
         trailingIcon = when (word.state) {
-            SeedPhraseWord.State.Valid -> {
+            SeedPhraseWord.State.Valid,
+            SeedPhraseWord.State.ValidDisabled -> {
                 {
                     Icon(
                         modifier = Modifier.size(20.dp),
@@ -186,17 +192,23 @@ private fun SeedPhraseWordInput(
         },
         keyboardActions = KeyboardActions(onNext = { focusManager.moveFocus(FocusDirection.Next) }),
         keyboardOptions = KeyboardOptions(
-            imeAction =
-            if (word.lastWord) {
-                ImeAction.Done
-            } else {
-                ImeAction.Next
+            imeAction = when {
+                word.lastWord -> {
+                    ImeAction.Done
+                }
+                word.inputDisabled -> {
+                    ImeAction.None
+                }
+                else -> {
+                    ImeAction.Next
+                }
             }
         ),
         error = if (word.state == SeedPhraseWord.State.Invalid) stringResource(id = R.string.common_invalid) else null,
         onFocusChanged = onFocusChanged,
         errorFixedSize = true,
-        singleLine = true
+        singleLine = true,
+        enabled = enabled
     )
 }
 

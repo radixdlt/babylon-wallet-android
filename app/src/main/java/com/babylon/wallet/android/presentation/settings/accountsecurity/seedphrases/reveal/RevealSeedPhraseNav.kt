@@ -30,7 +30,8 @@ fun NavController.revealSeedPhrase(factorSourceId: String) {
 
 @OptIn(ExperimentalAnimationApi::class)
 fun NavGraphBuilder.revealSeedPhrase(
-    onBackClick: () -> Unit
+    onBackClick: () -> Unit,
+    onConfirmSeedPhraseClick: (String, Int) -> Unit
 ) {
     composable(
         route = ROUTE_REVEAL_SEED_PHRASE,
@@ -55,6 +56,7 @@ fun NavGraphBuilder.revealSeedPhrase(
         RevealSeedPhraseScreen(
             viewModel = hiltViewModel(),
             onBackClick = onBackClick,
+            onConfirmSeedPhraseClick = onConfirmSeedPhraseClick
         )
     }
 }

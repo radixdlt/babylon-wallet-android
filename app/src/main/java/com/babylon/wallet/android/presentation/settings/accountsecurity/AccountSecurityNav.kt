@@ -12,6 +12,7 @@ import com.babylon.wallet.android.presentation.settings.SettingsItem
 import com.babylon.wallet.android.presentation.settings.accountsecurity.depositguarantees.depositGuaranteesScreen
 import com.babylon.wallet.android.presentation.settings.accountsecurity.importlegacywallet.importLegacyWalletScreen
 import com.babylon.wallet.android.presentation.settings.accountsecurity.ledgerhardwarewallets.ledgerHardwareWalletsScreen
+import com.babylon.wallet.android.presentation.settings.accountsecurity.seedphrases.confirm.confirmSeedPhrase
 import com.babylon.wallet.android.presentation.settings.accountsecurity.seedphrases.reveal.revealSeedPhrase
 import com.babylon.wallet.android.presentation.settings.accountsecurity.seedphrases.seedPhrases
 import com.google.accompanist.navigation.animation.composable
@@ -58,6 +59,9 @@ fun NavGraphBuilder.accountSecurityNavGraph(
         revealSeedPhrase(
             onBackClick = {
                 navController.navigateUp()
+            },
+            onConfirmSeedPhraseClick = { factorSourceId, mnemonicSize ->
+                navController.confirmSeedPhrase(factorSourceId, mnemonicSize)
             }
         )
     }

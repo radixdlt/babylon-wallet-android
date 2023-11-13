@@ -24,6 +24,9 @@ data class MnemonicWithPassphrase(
     val wordCount: Int
         get() = mnemonic.split(mnemonicWordsDelimiter).size
 
+    val words: List<String>
+        get() = mnemonic.split(mnemonicWordsDelimiter)
+
     companion object {
         const val mnemonicWordsDelimiter = " "
     }

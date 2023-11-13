@@ -37,6 +37,8 @@ import com.babylon.wallet.android.presentation.onboarding.restore.backup.restore
 import com.babylon.wallet.android.presentation.onboarding.restore.mnemonics.RestoreMnemonicsArgs
 import com.babylon.wallet.android.presentation.onboarding.restore.mnemonics.restoreMnemonics
 import com.babylon.wallet.android.presentation.onboarding.restore.mnemonics.restoreMnemonicsScreen
+import com.babylon.wallet.android.presentation.settings.accountsecurity.seedphrases.confirm.confirmSeedPhrase
+import com.babylon.wallet.android.presentation.settings.accountsecurity.seedphrases.reveal.ROUTE_REVEAL_SEED_PHRASE
 import com.babylon.wallet.android.presentation.settings.accountsecurity.seedphrases.seedPhrases
 import com.babylon.wallet.android.presentation.settings.personas.createpersona.createPersonaConfirmationScreen
 import com.babylon.wallet.android.presentation.settings.personas.createpersona.createPersonaScreen
@@ -116,6 +118,11 @@ fun NavigationHost(
                 }
             }
         )
+        confirmSeedPhrase(onMnemonicBackedUp = {
+            navController.popBackStack(ROUTE_REVEAL_SEED_PHRASE, inclusive = true)
+        }, onDismiss = {
+            navController.popBackStack()
+        })
         main(
             mainUiState = mainUiState,
             onMenuClick = {
@@ -254,9 +261,11 @@ fun NavigationHost(
                     AccountSettingItem.ThirdPartyDeposits -> {
                         navController.accountThirdPartyDeposits(accountAddress)
                     }
+
                     AccountSettingItem.DevSettings -> {
                         navController.devSettings(accountAddress)
                     }
+
                     else -> {}
                 }
             },

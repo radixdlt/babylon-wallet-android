@@ -12,12 +12,35 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.mapWhen
+import kotlin.random.Random
 
 class SeedPhraseInputDelegate(
     private val scope: CoroutineScope
 ) : Stateful<SeedPhraseInputDelegate.State>() {
 
     private var debounceJob: Job? = null
+
+    fun initInConfirmMode(seedSize: Int, blankWords: Int = 4) {
+        val seedPhraseWords = (0 until seedSize).map { index ->
+            SeedPhraseWord(
+                index,
+                lastWord = index == seedSize - 1,
+                value = WORDLIST_ENGLISH[Random.nextInt(WORDLIST_ENGLISH.size)],
+                state = SeedPhraseWord.State.ValidDisabled
+            )
+        }.toPersistentList()
+        val wordsToFillIndexes = mutableSetOf<Int>()
+        do {
+            wordsToFillIndexes.add(Random.nextInt(seedSize))
+        } while (wordsToFillIndexes.size < blankWords)
+        _state.update { state ->
+            state.copy(
+                seedPhraseWords = seedPhraseWords.mapWhen(predicate = { wordsToFillIndexes.contains(it.index) }, mutation = { word ->
+                    word.copy(state = SeedPhraseWord.State.Empty, value = "")
+                }).toPersistentList(),
+            )
+        }
+    }
 
     fun setSeedPhraseSize(size: Int) {
         _state.update { state ->
@@ -39,7 +62,6 @@ class SeedPhraseInputDelegate(
             }).toPersistentList()
             state.copy(
                 seedPhraseWords = updatedWords,
-                seedPhraseValid = updatedWords.all { it.state == SeedPhraseWord.State.Valid },
                 wordAutocompleteCandidates = persistentListOf()
             )
         }
@@ -65,7 +87,12 @@ class SeedPhraseInputDelegate(
                     _state.update { state ->
                         state.copy(
                             seedPhraseWords = state.seedPhraseWords.mapIndexed { index, word ->
-                                word.copy(value = pastedMnemonic[index], state = SeedPhraseWord.State.Valid)
+                                val wordState = if (word.state == SeedPhraseWord.State.ValidDisabled) {
+                                    SeedPhraseWord.State.ValidDisabled
+                                } else {
+                                    SeedPhraseWord.State.Valid
+                                }
+                                word.copy(value = pastedMnemonic[index], state = wordState)
                             }.toPersistentList()
                         )
                     }
@@ -96,7 +123,6 @@ class SeedPhraseInputDelegate(
                 }).toPersistentList()
                 state.copy(
                     seedPhraseWords = updatedWords,
-                    seedPhraseValid = updatedWords.all { it.state == SeedPhraseWord.State.Valid },
                     wordAutocompleteCandidates = wordCandidates.toPersistentList()
                 )
             }
@@ -115,17 +141,10 @@ class SeedPhraseInputDelegate(
         _state.update { state ->
             state.copy(bip39Passphrase = value)
         }
-        validateMnemonic()
     }
 
     fun reset() {
         _state.update { State() }
-    }
-
-    private fun validateMnemonic() {
-        _state.update { state ->
-            state.copy(seedPhraseValid = _state.value.seedPhraseWords.all { it.state == SeedPhraseWord.State.Valid })
-        }
     }
 
     data class SeedPhraseWord(
@@ -134,20 +153,33 @@ class SeedPhraseInputDelegate(
         val state: State = State.Empty,
         val lastWord: Boolean = false
     ) {
+
+        val valid: Boolean
+            get() = state == State.Valid || state == State.ValidDisabled
+
+        val inputDisabled: Boolean
+            get() = state == State.ValidDisabled
+
         enum class State {
-            Valid, Invalid, Empty, HasValue
+            Valid, Invalid, Empty, HasValue, ValidDisabled
         }
     }
 
     data class State(
-        val seedPhraseValid: Boolean = false,
         val bip39Passphrase: String = "",
         val seedPhraseWords: ImmutableList<SeedPhraseWord> = persistentListOf(),
-        val wordAutocompleteCandidates: ImmutableList<String> = persistentListOf()
+        val wordAutocompleteCandidates: ImmutableList<String> = persistentListOf(),
+        val blankIndices: Set<Int> = emptySet()
     ) : UiState {
+
+        val seedPhraseValid: Boolean
+            get() = seedPhraseWords.all { it.valid }
 
         val wordsPhrase: String
             get() = seedPhraseWords.joinToString(separator = " ") { it.value }
+
+        val wordsToConfirm: Map<Int, String>
+            get() = blankIndices.associateWith { seedPhraseWords[it].value }
     }
 
     override fun initialState(): State {
