@@ -49,7 +49,6 @@ import com.babylon.wallet.android.domain.model.resources.metadata.IconUrlMetadat
 import com.babylon.wallet.android.domain.model.resources.metadata.MetadataItem
 import com.babylon.wallet.android.domain.model.resources.metadata.MetadataItem.Companion.consume
 import com.babylon.wallet.android.domain.model.resources.metadata.NameMetadataItem
-import com.babylon.wallet.android.domain.model.resources.metadata.OwnerKeyHashesMetadataItem
 import com.babylon.wallet.android.domain.model.resources.metadata.StringMetadataItem
 import rdx.works.profile.data.model.pernetwork.Network
 import timber.log.Timber
@@ -72,11 +71,6 @@ interface EntityRepository {
         explicitMetadataForAssets: Set<ExplicitMetadataKey> = ExplicitMetadataKey.forAssets,
         isRefreshing: Boolean = true
     ): kotlin.Result<List<Resource>>
-
-    suspend fun getEntityOwnerKeyHashes(
-        entityAddress: String,
-        isRefreshing: Boolean = false
-    ): Result<OwnerKeyHashesMetadataItem?>
 }
 
 @Suppress("TooManyFunctions", "LongMethod", "LargeClass")
@@ -765,32 +759,6 @@ class EntityRepositoryImpl @Inject constructor(
                 timeoutDuration = NO_CACHE
             ),
             map = { it }
-        )
-    }
-
-    override suspend fun getEntityOwnerKeyHashes(
-        entityAddress: String,
-        isRefreshing: Boolean
-    ): Result<OwnerKeyHashesMetadataItem?> {
-        return stateApi.stateEntityDetails(
-            StateEntityDetailsRequest(
-                addresses = listOf(entityAddress),
-                optIns = StateEntityDetailsOptIns(
-                    explicitMetadata = ExplicitMetadataKey.forEntities.map { it.key }
-                )
-            )
-        ).execute(
-            cacheParameters = CacheParameters(
-                httpCache = cache,
-                timeoutDuration = if (isRefreshing) NO_CACHE else TimeoutDuration.FIVE_MINUTES
-            ),
-            map = { response ->
-                response.items.first()
-                    .explicitMetadata
-                    ?.asMetadataItems()
-                    ?.filterIsInstance<OwnerKeyHashesMetadataItem>()
-                    ?.firstOrNull()
-            },
         )
     }
 
