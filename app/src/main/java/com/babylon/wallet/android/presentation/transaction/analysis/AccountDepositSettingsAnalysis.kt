@@ -14,25 +14,12 @@ import rdx.works.profile.domain.accountsOnCurrentNetwork
 
 suspend fun TransactionType.AccountDepositSettings.resolve(
     getProfileUseCase: GetProfileUseCase,
-    getResourcesUseCase: GetResourcesUseCase
+    allResources: List<Resource>
 ): PreviewType {
     val involvedAccountAddresses = defaultDepositRuleChanges.keys + resourcePreferenceChanges.keys + authorizedDepositorsChanges.keys
     val involvedAccounts = getProfileUseCase.accountsOnCurrentNetwork().filter { involvedAccountAddresses.contains(it.address) }
     val result = involvedAccounts.map { involvedAccount ->
         val defaultDepositRule = defaultDepositRuleChanges[involvedAccount.address]
-        val allResourceAddresses = resourcePreferenceChanges[involvedAccount.address]?.keys.orEmpty()
-            .toSet() + authorizedDepositorsChanges[involvedAccount.address]?.added?.map {
-            when (it) {
-                is ResourceOrNonFungible.NonFungible -> it.value.resourceAddress().addressString()
-                is ResourceOrNonFungible.Resource -> it.value.addressString()
-            }
-        }.orEmpty().toSet() + authorizedDepositorsChanges[involvedAccount.address]?.removed?.map {
-            when (it) {
-                is ResourceOrNonFungible.NonFungible -> it.value.resourceAddress().addressString()
-                is ResourceOrNonFungible.Resource -> it.value.addressString()
-            }
-        }.orEmpty().toSet()
-        val allResources = getResourcesUseCase(allResourceAddresses.toList()).getOrNull().orEmpty()
         val assetChanges = resolveAssetChanges(involvedAccount, allResources)
         val depositorChanges = resolveDepositorChanges(involvedAccount, allResources)
         AccountWithDepositSettingsChanges(

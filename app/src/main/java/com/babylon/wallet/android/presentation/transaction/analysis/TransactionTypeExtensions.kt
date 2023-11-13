@@ -7,68 +7,107 @@ import com.babylon.wallet.android.data.gateway.model.ExplicitMetadataKey
 import com.babylon.wallet.android.domain.model.GuaranteeType
 import com.babylon.wallet.android.domain.model.Transferable
 import com.babylon.wallet.android.domain.model.TransferableResource
-import com.babylon.wallet.android.domain.model.assets.Assets
 import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.domain.model.resources.metadata.DescriptionMetadataItem
 import com.babylon.wallet.android.domain.model.resources.metadata.IconUrlMetadataItem
-import com.babylon.wallet.android.domain.model.resources.metadata.MetadataItem
-import com.babylon.wallet.android.domain.model.resources.metadata.MetadataItem.Companion.consume
 import com.babylon.wallet.android.domain.model.resources.metadata.NameMetadataItem
 import com.babylon.wallet.android.domain.model.resources.metadata.SymbolMetadataItem
 import com.babylon.wallet.android.domain.model.resources.metadata.TagsMetadataItem
 import com.radixdlt.ret.Address
+import com.radixdlt.ret.AuthorizedDepositorsChanges
 import com.radixdlt.ret.DecimalSource
 import com.radixdlt.ret.MetadataValue
 import com.radixdlt.ret.NonFungibleLocalId
 import com.radixdlt.ret.NonFungibleLocalIdVecSource
+import com.radixdlt.ret.ResourceOrNonFungible
 import com.radixdlt.ret.ResourceSpecifier
 import com.radixdlt.ret.ResourceTracker
+import com.radixdlt.ret.TransactionType
 import java.math.BigDecimal
 
 typealias RETResources = com.radixdlt.ret.Resources
 typealias RETResourcesAmount = com.radixdlt.ret.Resources.Amount
 typealias RETResourcesIds = com.radixdlt.ret.Resources.Ids
 
-fun List<Assets>.allPoolUnits(): List<Resource.FungibleResource> {
-    return map { resource ->
-        resource.poolUnits.map { poolUnit ->
-            poolUnit.stake
-        } + resource.validatorsWithStakes.map { validator ->
-            validator.liquidStakeUnit.fungibleResource
-        }
-    }.flatten()
-}
+val ResourceTracker.resourceAddress: String
+    get() = when (this) {
+        is ResourceTracker.Fungible -> resourceAddress.addressString()
+        is ResourceTracker.NonFungible -> resourceAddress.addressString()
+    }
 
-fun RETResources.toTransferableResource(resourceAddress: String, allAssets: List<Assets>): TransferableResource {
-    val allFungibles = allAssets.map { it.fungibles }.flatten()
-    val allNFTCollections = allAssets.map { it.nonFungibles }.flatten()
-    val allPoolUnits = allAssets.allPoolUnits()
+val ResourceSpecifier.resourceAddress: String
+    get() = when (this) {
+        is ResourceSpecifier.Amount -> resourceAddress.addressString()
+        is ResourceSpecifier.Ids -> resourceAddress.addressString()
+    }
 
+val ResourceOrNonFungible.resourceAddress: String
+    get() = when (this) {
+        is ResourceOrNonFungible.NonFungible -> value.resourceAddress().addressString()
+        is ResourceOrNonFungible.Resource -> value.addressString()
+    }
+
+val AuthorizedDepositorsChanges.resourceAddresses: Set<String>
+    get() = added.map { it.resourceAddress }.toSet() union removed.map { it.resourceAddress }.toSet()
+
+val TransactionType.involvedResourceAddresses: Set<String>
+    get() = when (this) {
+        is TransactionType.GeneralTransaction -> accountWithdraws
+            .values
+            .flatten()
+            .map { it.resourceAddress }
+            .toSet() union accountDeposits
+            .values
+            .flatten()
+            .map { it.resourceAddress }
+            .toSet()
+
+        is TransactionType.SimpleTransfer -> setOf(transferred.resourceAddress)
+        is TransactionType.Transfer -> transfers
+            .map { it.value.keys }
+            .flatten()
+            .toSet()
+
+        is TransactionType.AccountDepositSettings -> resourcePreferenceChanges
+            .values
+            .map { it.keys }
+            .flatten()
+            .toSet() union authorizedDepositorsChanges
+            .map { it.value.resourceAddresses }
+            .flatten()
+
+        // TODO currently unavailable preview
+        is TransactionType.ClaimStakeTransaction -> emptySet()
+        is TransactionType.UnstakeTransaction -> emptySet()
+        is TransactionType.StakeTransaction -> emptySet()
+    }
+
+fun RETResources.toTransferableResource(resourceAddress: String, resources: List<Resource>): TransferableResource {
     return when (this) {
-        is RETResourcesAmount -> TransferableResource.Amount(
-            amount = amount.asStr().toBigDecimal(),
-            resource = (allFungibles + allPoolUnits).find { it.resourceAddress == resourceAddress }
-                ?: Resource.FungibleResource(
-                    resourceAddress = resourceAddress,
-                    ownedAmount = BigDecimal.ZERO
-                ),
-            isNewlyCreated = false
-        )
+        is RETResourcesAmount -> {
+            val resource = resources.findFungible(resourceAddress) ?: Resource.FungibleResource(
+                resourceAddress = resourceAddress,
+                ownedAmount = BigDecimal.ZERO
+            )
+            TransferableResource.Amount(
+                amount = amount.asStr().toBigDecimal(),
+                resource = resource,
+                isNewlyCreated = false
+            )
+        }
 
         is RETResourcesIds -> {
-            val collection = allNFTCollections.find { it.resourceAddress == resourceAddress }?.let { collection ->
-                collection.copy(
-                    items = collection.items.filter { it.localId.toRetId() in ids }
+            val items = ids.map { id ->
+                Resource.NonFungibleResource.Item(
+                    collectionAddress = resourceAddress,
+                    localId = Resource.NonFungibleResource.Item.ID.from(id)
                 )
-            } ?: Resource.NonFungibleResource(
+            }
+
+            val collection = resources.findNonFungible(resourceAddress)?.copy(items = items) ?: Resource.NonFungibleResource(
                 resourceAddress = resourceAddress,
                 amount = ids.size.toLong(),
-                items = ids.map { id ->
-                    Resource.NonFungibleResource.Item(
-                        collectionAddress = resourceAddress,
-                        localId = Resource.NonFungibleResource.Item.ID.from(id)
-                    )
-                }
+                items = items
             )
 
             TransferableResource.NFTs(
@@ -80,24 +119,17 @@ fun RETResources.toTransferableResource(resourceAddress: String, allAssets: List
 }
 
 fun ResourceTracker.toDepositingTransferableResource(
-    allAssets: List<Assets>,
+    resources: List<Resource>,
     newlyCreatedMetadata: Map<String, Map<String, MetadataValue?>>,
     newlyCreatedEntities: List<Address>,
-    thirdPartyMetadata: Map<String, List<MetadataItem>>,
     defaultDepositGuarantees: Double
 ): Transferable.Depositing {
-    val allFungibles = allAssets.map { it.fungibles }.flatten()
-    val allNFTCollections = allAssets.map { it.nonFungibles }.flatten()
-    val allPoolUnits = allAssets.allPoolUnits()
-
     return when (this) {
         is ResourceTracker.Fungible -> Transferable.Depositing(
             transferable = toTransferableResource(
-                allFungibles = allFungibles,
-                allPoolUnits = allPoolUnits,
+                resources = resources,
                 newlyCreated = newlyCreatedMetadata,
-                newlyCreatedEntities = newlyCreatedEntities,
-                thirdPartyMetadata = thirdPartyMetadata
+                newlyCreatedEntities = newlyCreatedEntities
             ),
             guaranteeType = amount.toGuaranteeType(defaultDepositGuarantees)
         )
@@ -105,10 +137,9 @@ fun ResourceTracker.toDepositingTransferableResource(
         is ResourceTracker.NonFungible -> {
             Transferable.Depositing(
                 transferable = toTransferableResource(
-                    allNFTCollections = allNFTCollections,
+                    resources = resources,
                     newlyCreated = newlyCreatedMetadata,
-                    newlyCreatedEntities = newlyCreatedEntities,
-                    thirdPartyMetadata = thirdPartyMetadata
+                    newlyCreatedEntities = newlyCreatedEntities
                 ),
                 guaranteeType = ids.toGuaranteeType(defaultDepositGuarantees)
             )
@@ -117,19 +148,14 @@ fun ResourceTracker.toDepositingTransferableResource(
 }
 
 fun ResourceTracker.toWithdrawingTransferableResource(
-    allResources: List<Assets>,
+    resources: List<Resource>,
     newlyCreatedMetadata: Map<String, Map<String, MetadataValue?>> = emptyMap(),
     newlyCreatedEntities: List<Address>
 ): Transferable.Withdrawing {
-    val allFungibles = allResources.map { it.fungibles }.flatten()
-    val allNFTCollections = allResources.map { it.nonFungibles }.flatten()
-    val allPoolUnits = allResources.allPoolUnits()
-
     return when (this) {
         is ResourceTracker.Fungible -> Transferable.Withdrawing(
             transferable = toTransferableResource(
-                allFungibles = allFungibles,
-                allPoolUnits = allPoolUnits,
+                resources = resources,
                 newlyCreated = newlyCreatedMetadata,
                 newlyCreatedEntities = newlyCreatedEntities
             )
@@ -137,7 +163,7 @@ fun ResourceTracker.toWithdrawingTransferableResource(
 
         is ResourceTracker.NonFungible -> Transferable.Withdrawing(
             transferable = toTransferableResource(
-                allNFTCollections = allNFTCollections,
+                resources = resources,
                 newlyCreated = newlyCreatedMetadata,
                 newlyCreatedEntities = newlyCreatedEntities,
             )
@@ -146,19 +172,13 @@ fun ResourceTracker.toWithdrawingTransferableResource(
 }
 
 fun ResourceSpecifier.toTransferableResource(
-    allAssets: List<Assets>,
+    resources: List<Resource>,
     newlyCreated: Map<String, Map<String, MetadataValue>> = emptyMap()
 ): TransferableResource {
-    val allFungibles = allAssets.map { it.fungibles }.flatten()
-    val allNFTCollections = allAssets.map { it.nonFungibles }.flatten()
-    val allPoolUnits = allAssets.allPoolUnits()
-
     return when (this) {
         is ResourceSpecifier.Amount -> TransferableResource.Amount(
             amount = amount.asStr().toBigDecimal(),
-            resource = (allFungibles + allPoolUnits).find {
-                it.resourceAddress == resourceAddress.addressString()
-            } ?: Resource.FungibleResource.from(
+            resource = resources.findFungible(resourceAddress.addressString()) ?: Resource.FungibleResource.from(
                 resourceAddress = resourceAddress,
                 metadata = newlyCreated[resourceAddress.addressString()].orEmpty()
             ),
@@ -166,19 +186,15 @@ fun ResourceSpecifier.toTransferableResource(
         )
 
         is ResourceSpecifier.Ids -> {
-            val collection = allNFTCollections.find { it.resourceAddress == resourceAddress.addressString() }
             val metadata = newlyCreated[resourceAddress.addressString()]
             val items = ids.map { id ->
-                collection?.items?.find {
-                    it.localId.toRetId() == id
-                } ?: Resource.NonFungibleResource.Item(
+                Resource.NonFungibleResource.Item(
                     collectionAddress = this.resourceAddress.addressString(),
                     localId = Resource.NonFungibleResource.Item.ID.from(id)
                 )
             }
             TransferableResource.NFTs(
-                resource = collection?.copy(
-                    amount = ids.size.toLong(),
+                resource = resources.findNonFungible(resourceAddress.addressString())?.copy(
                     items = items
                 ) ?: Resource.NonFungibleResource(
                     resourceAddress = resourceAddress.addressString(),
@@ -200,45 +216,23 @@ fun ResourceSpecifier.toTransferableResource(
 }
 
 private fun ResourceTracker.Fungible.toTransferableResource(
-    allFungibles: List<Resource.FungibleResource>,
-    allPoolUnits: List<Resource.FungibleResource>,
+    resources: List<Resource>,
     newlyCreated: Map<String, Map<String, MetadataValue?>>,
-    newlyCreatedEntities: List<Address>,
-    thirdPartyMetadata: Map<String, List<MetadataItem>> = emptyMap()
+    newlyCreatedEntities: List<Address>
 ): TransferableResource.Amount {
-    val resource = (allFungibles + allPoolUnits).find {
-        it.resourceAddress == resourceAddress.addressString()
-    } ?: if (thirdPartyMetadata[resourceAddress.addressString()] != null) {
-        Resource.FungibleResource.from(
-            resourceAddress = resourceAddress,
-            metadataItems = thirdPartyMetadata[resourceAddress.addressString()].orEmpty()
-        )
-    } else {
-        Resource.FungibleResource.from(
-            resourceAddress = resourceAddress,
-            metadata = newlyCreated[resourceAddress.addressString()].orEmpty()
-        )
-    }
+    val resource = resources.findFungible(
+        resourceAddress.addressString()
+    ) ?: Resource.FungibleResource.from(
+        resourceAddress = resourceAddress,
+        metadata = newlyCreated[resourceAddress.addressString()].orEmpty()
+    )
 
     return TransferableResource.Amount(
         amount = amount.valueDecimal,
         resource = resource,
-        isNewlyCreated = newlyCreatedEntities.map { it.addressString() }.contains(resourceAddress.addressString())
+        isNewlyCreated = newlyCreated[resourceAddress.addressString()] != null
     )
 }
-
-private fun Resource.FungibleResource.Companion.from(
-    resourceAddress: Address,
-    metadataItems: List<MetadataItem>,
-): Resource.FungibleResource = Resource.FungibleResource(
-    resourceAddress = resourceAddress.addressString(),
-    ownedAmount = BigDecimal.ZERO,
-    nameMetadataItem = metadataItems.toMutableList().consume(),
-    symbolMetadataItem = metadataItems.toMutableList().consume(),
-    descriptionMetadataItem = metadataItems.toMutableList().consume(),
-    iconUrlMetadataItem = metadataItems.toMutableList().consume(),
-    tagsMetadataItem = metadataItems.toMutableList().consume()
-)
 
 private fun Resource.FungibleResource.Companion.from(
     resourceAddress: Address,
@@ -265,60 +259,28 @@ private fun Resource.FungibleResource.Companion.from(
 )
 
 private fun ResourceTracker.NonFungible.toTransferableResource(
-    allNFTCollections: List<Resource.NonFungibleResource>,
+    resources: List<Resource>,
     newlyCreated: Map<String, Map<String, MetadataValue?>>,
-    newlyCreatedEntities: List<Address>,
-    thirdPartyMetadata: Map<String, List<MetadataItem>> = emptyMap()
+    newlyCreatedEntities: List<Address>
 ): TransferableResource.NFTs {
-    val collection = allNFTCollections.find { it.resourceAddress == resourceAddress.addressString() }
     val items = ids.valueList.map { id ->
-        collection?.items?.find {
-            it.localId.toRetId() == id
-        } ?: Resource.NonFungibleResource.Item(
+        Resource.NonFungibleResource.Item(
             collectionAddress = this.resourceAddress.addressString(),
             localId = Resource.NonFungibleResource.Item.ID.from(id)
         )
     }
-
-    val newlyCreatedResource = if (thirdPartyMetadata[resourceAddress.addressString()] != null) {
-        Resource.NonFungibleResource.from(
-            resourceAddress = resourceAddress,
-            amount = items.size.toLong(),
-            items = items,
-            metadataItems = thirdPartyMetadata[resourceAddress.addressString()].orEmpty()
-        )
-    } else {
-        Resource.NonFungibleResource.from(
-            resourceAddress = resourceAddress,
-            amount = items.size.toLong(),
-            items = items,
-            metadata = newlyCreated[resourceAddress.addressString()].orEmpty()
-        )
-    }
+    val collection = resources.findNonFungible(resourceAddress.addressString())?.copy(items = items) ?: Resource.NonFungibleResource.from(
+        resourceAddress = resourceAddress,
+        amount = items.size.toLong(),
+        items = items,
+        metadata = newlyCreated[resourceAddress.addressString()].orEmpty()
+    )
 
     return TransferableResource.NFTs(
-        resource = collection?.copy(
-            amount = items.size.toLong(),
-            items = items
-        ) ?: newlyCreatedResource,
-        isNewlyCreated = newlyCreatedEntities.map { it.addressString() }.contains(resourceAddress.addressString())
+        resource = collection,
+        isNewlyCreated = newlyCreated[resourceAddress.addressString()] != null
     )
 }
-
-private fun Resource.NonFungibleResource.Companion.from(
-    resourceAddress: Address,
-    amount: Long,
-    items: List<Resource.NonFungibleResource.Item>,
-    metadataItems: List<MetadataItem>
-): Resource.NonFungibleResource = Resource.NonFungibleResource(
-    amount = amount,
-    resourceAddress = resourceAddress.addressString(),
-    nameMetadataItem = metadataItems.toMutableList().consume(),
-    iconMetadataItem = metadataItems.toMutableList().consume(),
-    descriptionMetadataItem = metadataItems.toMutableList().consume(),
-    tagsMetadataItem = metadataItems.toMutableList().consume(),
-    items = items
-)
 
 private fun Resource.NonFungibleResource.Companion.from(
     resourceAddress: Address,
@@ -371,3 +333,6 @@ private fun NonFungibleLocalIdVecSource.toGuaranteeType(defaultDepositGuarantees
         guaranteeOffset = defaultDepositGuarantees
     )
 }
+
+private fun List<Resource>.findFungible(address: String) = find { it.resourceAddress == address } as? Resource.FungibleResource
+private fun List<Resource>.findNonFungible(address: String) = find { it.resourceAddress == address } as? Resource.NonFungibleResource

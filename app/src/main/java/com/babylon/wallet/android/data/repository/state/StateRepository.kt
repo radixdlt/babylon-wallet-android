@@ -40,7 +40,7 @@ interface StateRepository {
 
     suspend fun updateLSUsInfo(account: Network.Account, validatorsWithStakes: List<ValidatorWithStakes>): Result<Unit>
 
-    suspend fun getResources(addresses: List<String>, underAccountAddress: String?, withDetails: Boolean): Result<List<Resource>>
+    suspend fun getResources(addresses: Set<String>, underAccountAddress: String?, withDetails: Boolean): Result<List<Resource>>
 
     suspend fun getNFTDetails(resourceAddress: String, localId: String): Result<Resource.NonFungibleResource.Item>
 
@@ -196,7 +196,7 @@ class StateRepositoryImpl @Inject constructor(
     }
 
     override suspend fun getResources(
-        addresses: List<String>,
+        addresses: Set<String>,
         underAccountAddress: String?,
         withDetails: Boolean
     ): Result<List<Resource>> = withContext(dispatcher) {

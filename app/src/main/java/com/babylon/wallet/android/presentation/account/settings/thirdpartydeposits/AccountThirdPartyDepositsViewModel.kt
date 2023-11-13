@@ -196,11 +196,11 @@ class AccountThirdPartyDepositsViewModel @Inject constructor(
                 assetExceptionToAdd = AssetType.AssetException()
             )
         }
-        loadAssets(listOf(assetExceptionToAdd.assetException.address))
+        loadAssets(setOf(assetExceptionToAdd.assetException.address))
         checkIfSettingsChanged()
     }
 
-    private fun loadAssets(addresses: List<String>) = viewModelScope.launch {
+    private fun loadAssets(addresses: Set<String>) = viewModelScope.launch {
         getResourcesUseCase(addresses = addresses)
             .onSuccess { resources ->
                 val loadedResourcesAddresses = resources.map { it.resourceAddress }.toSet()
@@ -254,7 +254,7 @@ class AccountThirdPartyDepositsViewModel @Inject constructor(
                     )
                 } ?: state
             }
-            loadAssets(listOf(depositorAddress.resourceAddress()))
+            loadAssets(setOf(depositorAddress.resourceAddress()))
         }
         checkIfSettingsChanged()
     }
@@ -376,7 +376,7 @@ class AccountThirdPartyDepositsViewModel @Inject constructor(
                             } + account.onLedgerSettings.thirdPartyDeposits.depositorsAllowList.map {
                                 it.resourceAddress()
                             }
-                            ).distinct()
+                        ).toSet()
                     )
                 }
         }

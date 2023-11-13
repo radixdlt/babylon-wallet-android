@@ -1,7 +1,7 @@
 package com.babylon.wallet.android.presentation.transaction.analysis
 
 import com.babylon.wallet.android.domain.model.Transferable
-import com.babylon.wallet.android.domain.usecases.GetAccountsWithAssetsUseCase
+import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.presentation.transaction.AccountWithTransferableResources
 import com.babylon.wallet.android.presentation.transaction.PreviewType
 import com.radixdlt.ret.TransactionType
@@ -10,19 +10,13 @@ import rdx.works.profile.domain.accountsOnCurrentNetwork
 
 suspend fun TransactionType.SimpleTransfer.resolve(
     getProfileUseCase: GetProfileUseCase,
-    getAccountsWithAssetsUseCase: GetAccountsWithAssetsUseCase
+    resources: List<Resource>
 ): PreviewType {
     val allAccounts = getProfileUseCase.accountsOnCurrentNetwork().filter {
         it.address == from.addressString() || it.address == to.addressString()
     }
-    val allAssets = getAccountsWithAssetsUseCase(
-        accounts = allAccounts,
-        isRefreshing = false
-    ).getOrNull().orEmpty().mapNotNull {
-        it.assets
-    }
 
-    val transferableResource = transferred.toTransferableResource(allAssets = allAssets)
+    val transferableResource = transferred.toTransferableResource(resources = resources)
     val ownedFromAccount = allAccounts.find { it.address == from.addressString() }
     val fromAccount = if (ownedFromAccount != null) {
         AccountWithTransferableResources.Owned(

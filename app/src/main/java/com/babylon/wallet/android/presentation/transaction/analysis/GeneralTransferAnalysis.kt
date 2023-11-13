@@ -1,9 +1,6 @@
 package com.babylon.wallet.android.presentation.transaction.analysis
 
-import com.babylon.wallet.android.domain.model.assets.Assets
-import com.babylon.wallet.android.domain.model.resources.metadata.MetadataItem
-import com.babylon.wallet.android.domain.usecases.GetAccountsWithAssetsUseCase
-import com.babylon.wallet.android.domain.usecases.GetResourcesMetadataUseCase
+import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.domain.usecases.ResolveDAppsUseCase
 import com.babylon.wallet.android.domain.usecases.transaction.GetTransactionBadgesUseCase
 import com.babylon.wallet.android.presentation.transaction.AccountWithTransferableResources
@@ -21,10 +18,9 @@ import rdx.works.profile.domain.defaultDepositGuarantee
 
 // Generic transaction resolver
 suspend fun TransactionType.GeneralTransaction.resolve(
+    resources: List<Resource>,
     getTransactionBadgesUseCase: GetTransactionBadgesUseCase,
     getProfileUseCase: GetProfileUseCase,
-    getAccountsWithAssetsUseCase: GetAccountsWithAssetsUseCase,
-    getResourcesMetadataUseCase: GetResourcesMetadataUseCase,
     resolveDAppsUseCase: ResolveDAppsUseCase
 ): PreviewType {
     val badges = getTransactionBadgesUseCase(accountProofs = accountProofs)
@@ -35,49 +31,12 @@ suspend fun TransactionType.GeneralTransaction.resolve(
     val allAccounts = getProfileUseCase.accountsOnCurrentNetwork().filter {
         it.address in accountWithdraws.keys || it.address in accountDeposits.keys
     }
-    val allAssets = getAccountsWithAssetsUseCase(
-        accounts = allAccounts,
-        isRefreshing = false
-    ).getOrNull().orEmpty().mapNotNull {
-        it.assets
-    }
-
-    val depositResourcesInvolvedInTransaction = this.accountDeposits.values.map {
-        it.map { resourceTracker ->
-            when (resourceTracker) {
-                is ResourceTracker.Fungible -> {
-                    resourceTracker.resourceAddress.addressString()
-                }
-                is ResourceTracker.NonFungible -> {
-                    resourceTracker.resourceAddress.addressString()
-                }
-            }
-        }
-    }.flatten()
-
-    val allResourcesAddresses = allAssets.map { resources ->
-        val fungibleResourceAddresses = resources.fungibles.map { fungibleResource ->
-            fungibleResource.resourceAddress
-        }
-        val nonFungibleResourceAddresses = resources.nonFungibles.map { nonFungibleResource ->
-            nonFungibleResource.resourceAddress
-        }
-        fungibleResourceAddresses + nonFungibleResourceAddresses
-    }.flatten()
-
-    // Here we have "third party" resources that are not associated with accounts we hold
-    val notOwnedResources = depositResourcesInvolvedInTransaction.filterNot { allResourcesAddresses.contains(it) }
-
-    val thirdPartyMetadata = getResourcesMetadataUseCase(
-        resourceAddresses = notOwnedResources,
-        isRefreshing = false
-    ).getOrNull().orEmpty()
 
     val defaultDepositGuarantee = getProfileUseCase.defaultDepositGuarantee()
 
     return PreviewType.Transfer(
-        from = resolveFromAccounts(allAssets, allAccounts),
-        to = resolveToAccounts(allAssets, allAccounts, thirdPartyMetadata, defaultDepositGuarantee),
+        from = resolveFromAccounts(resources, allAccounts),
+        to = resolveToAccounts(resources, allAccounts, defaultDepositGuarantee),
         badges = badges,
         dApps = dApps
     )
@@ -97,12 +56,12 @@ private suspend fun TransactionType.GeneralTransaction.resolveDApps(
 }
 
 private fun TransactionType.GeneralTransaction.resolveFromAccounts(
-    allResources: List<Assets>,
+    allResources: List<Resource>,
     allAccounts: List<Network.Account>
 ) = accountWithdraws.map { withdrawEntry ->
     val transferables = withdrawEntry.value.map {
         it.toWithdrawingTransferableResource(
-            allResources = allResources,
+            resources = allResources,
             newlyCreatedMetadata = metadataOfNewlyCreatedEntities,
             newlyCreatedEntities = addressesOfNewlyCreatedEntities
         )
@@ -147,18 +106,16 @@ fun Map<String, List<ResourceTracker>>.sort(allAccounts: List<Network.Account>):
 }
 
 private fun TransactionType.GeneralTransaction.resolveToAccounts(
-    allAssets: List<Assets>,
+    allResources: List<Resource>,
     allAccounts: List<Network.Account>,
-    thirdPartyMetadata: Map<String, List<MetadataItem>> = emptyMap(),
     defaultDepositGuarantees: Double
 ): List<AccountWithTransferableResources> {
     return accountDeposits.sort(allAccounts).map { depositEntry ->
         val transferables = depositEntry.value.map {
             it.toDepositingTransferableResource(
-                allAssets = allAssets,
+                resources = allResources,
                 newlyCreatedMetadata = metadataOfNewlyCreatedEntities,
                 newlyCreatedEntities = addressesOfNewlyCreatedEntities,
-                thirdPartyMetadata = thirdPartyMetadata,
                 defaultDepositGuarantees = defaultDepositGuarantees
             )
         }

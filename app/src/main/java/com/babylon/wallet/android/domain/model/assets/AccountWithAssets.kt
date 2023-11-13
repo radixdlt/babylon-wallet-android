@@ -18,10 +18,6 @@ data class AccountWithAssets(
         get() = details?.type == AccountTypeMetadataItem.AccountType.DAPP_DEFINITION
 }
 
-fun List<AccountWithAssets>.findAccountWithEnoughXRDBalance(minimumBalance: BigDecimal) = find {
-    it.assets?.hasXrd(minimumBalance) ?: false
-}
-
 data class Assets(
     val fungibles: List<Resource.FungibleResource> = emptyList(),
     val nonFungibles: List<Resource.NonFungibleResource> = emptyList(),
