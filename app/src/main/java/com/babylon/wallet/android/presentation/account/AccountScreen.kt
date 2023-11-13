@@ -389,7 +389,7 @@ fun AssetsContent(
         }
 
         var selectedTab by remember { mutableStateOf(ResourceTab.Tokens) }
-        val nonFungiblesViewState = rememberAssetsViewState(assets = state.accountWithAssets?.assets)
+        val collapsibleAssetsState = rememberAssetsViewState(assets = state.accountWithAssets?.assets)
 
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
@@ -469,7 +469,7 @@ fun AssetsContent(
                 epoch = state.epoch,
                 selectedTab = selectedTab,
                 onTabSelected = { selectedTab = it },
-                collapsibleAssetsState = nonFungiblesViewState,
+                collapsibleAssetsState = collapsibleAssetsState,
                 action = AssetsViewAction.Click(
                     onFungibleClick = onFungibleTokenClick,
                     onNonFungibleItemClick = onNonFungibleItemClick,

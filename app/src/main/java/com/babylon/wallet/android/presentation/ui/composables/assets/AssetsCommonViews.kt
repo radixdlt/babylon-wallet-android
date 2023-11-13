@@ -155,18 +155,13 @@ fun CollapsibleAssetCard(
 @Composable
 fun AssetsViewCheckBox(
     modifier: Modifier = Modifier,
-    resourceAddress: String,
-    action: AssetsViewAction.Selection
+    isSelected: Boolean,
+    onCheckChanged: (Boolean) -> Unit
 ) {
-    val isSelected = remember(action, resourceAddress) {
-        action.isSelected(resourceAddress)
-    }
     Checkbox(
         modifier = modifier,
         checked = isSelected,
-        onCheckedChange = {
-            action.onResourceCheckChanged(resourceAddress, it)
-        },
+        onCheckedChange = onCheckChanged,
         colors = CheckboxDefaults.colors(
             checkedColor = RadixTheme.colors.gray1,
             uncheckedColor = RadixTheme.colors.gray2,

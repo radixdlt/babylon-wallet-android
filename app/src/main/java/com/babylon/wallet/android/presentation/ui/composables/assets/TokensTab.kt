@@ -98,8 +98,7 @@ private fun FungibleResourceItem(
                     }
 
                     is AssetsViewAction.Selection -> {
-                        val isSelected = action.isSelected(resource.resourceAddress)
-                        action.onResourceCheckChanged(resource.resourceAddress, !isSelected)
+                        action.onFungibleCheckChanged(resource, !action.isSelected(resource.resourceAddress))
                     }
                 }
             }
@@ -134,9 +133,14 @@ private fun FungibleResourceItem(
         }
 
         if (action is AssetsViewAction.Selection) {
+            val isSelected = remember(resource, action) {
+                action.isSelected(resource.resourceAddress)
+            }
             AssetsViewCheckBox(
-                resourceAddress = resource.resourceAddress,
-                action = action
+                isSelected = isSelected,
+                onCheckChanged = { isChecked ->
+                    action.onFungibleCheckChanged(resource, isChecked)
+                }
             )
         } else {
             Spacer(modifier = Modifier.width(RadixTheme.dimensions.paddingMedium))

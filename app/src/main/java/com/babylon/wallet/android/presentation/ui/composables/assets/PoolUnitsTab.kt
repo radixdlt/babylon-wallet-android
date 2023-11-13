@@ -11,6 +11,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.Text
 import androidx.compose.material3.Divider
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.snapshots.SnapshotStateMap
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -77,8 +78,7 @@ private fun PoolUnitItem(
                         action.onPoolUnitClick(resource)
                     }
                     is AssetsViewAction.Selection -> {
-                        val isSelected = action.isSelected(resource.resourceAddress)
-                        action.onResourceCheckChanged(resource.resourceAddress, !isSelected)
+                        action.onFungibleCheckChanged(resource.stake, !action.isSelected(resource.resourceAddress))
                     }
                 }
             }
@@ -109,9 +109,14 @@ private fun PoolUnitItem(
             PoolResourcesValues(modifier = Modifier.weight(1f), poolUnit = resource)
 
             if (action is AssetsViewAction.Selection) {
+                val isSelected = remember(resource.stake, action) {
+                    action.isSelected(resource.resourceAddress)
+                }
                 AssetsViewCheckBox(
-                    resourceAddress = resource.resourceAddress,
-                    action = action
+                    isSelected = isSelected,
+                    onCheckChanged = { isChecked ->
+                        action.onFungibleCheckChanged(resource.stake, isChecked)
+                    }
                 )
             }
         }

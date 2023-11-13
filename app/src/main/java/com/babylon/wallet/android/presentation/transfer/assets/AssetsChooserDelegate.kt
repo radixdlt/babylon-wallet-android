@@ -1,19 +1,30 @@
 package com.babylon.wallet.android.presentation.transfer.assets
 
 import com.babylon.wallet.android.domain.model.assets.Assets
-import com.babylon.wallet.android.domain.usecases.GetAccountsWithAssetsUseCase
+import com.babylon.wallet.android.domain.model.resources.Resource
+import com.babylon.wallet.android.domain.usecases.GetNetworkInfoUseCase
+import com.babylon.wallet.android.domain.usecases.assets.GetMoreNFTsUseCase
+import com.babylon.wallet.android.domain.usecases.assets.GetWalletAssetsUseCase
+import com.babylon.wallet.android.domain.usecases.assets.UpdateLSUsInfo
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.ViewModelDelegate
 import com.babylon.wallet.android.presentation.transfer.SpendingAsset
 import com.babylon.wallet.android.presentation.transfer.TargetAccount
 import com.babylon.wallet.android.presentation.transfer.TransferViewModel
 import com.babylon.wallet.android.presentation.transfer.TransferViewModel.State.Sheet
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 import rdx.works.profile.data.model.pernetwork.Network
 import javax.inject.Inject
 
 class AssetsChooserDelegate @Inject constructor(
-    private val getAccountsWithAssetsUseCase: GetAccountsWithAssetsUseCase
+    private val getWalletAssetsUseCase: GetWalletAssetsUseCase,
+    private val getMoreNFTsUseCase: GetMoreNFTsUseCase,
+    private val updateLSUsInfo: UpdateLSUsInfo,
+    private val getNetworkInfoUseCase: GetNetworkInfoUseCase,
 ) : ViewModelDelegate<TransferViewModel.State>() {
 
     /**
@@ -22,26 +33,28 @@ class AssetsChooserDelegate @Inject constructor(
      * [fromAccount] is used to fetch the resources of that account
      * [targetAccount] is the account which we target to attach assets
      */
-    suspend fun onChooseAssets(
+    fun onChooseAssets(
         fromAccount: Network.Account,
         targetAccount: TargetAccount
-    ) {
+    ) = viewModelScope.launch {
         _state.update {
             it.copy(sheet = Sheet.ChooseAssets.init(forTargetAccount = targetAccount))
         }
 
-        getAccountsWithAssetsUseCase(accounts = listOf(fromAccount), isRefreshing = false)
-            .onSuccess { accountWithResources ->
-                val assets = accountWithResources.firstOrNull()?.assets
-
-                updateSheetState { it.copy(assets = assets) }
-            }.onFailure { error ->
+        getWalletAssetsUseCase(accounts = listOf(fromAccount), isRefreshing = false)
+            .catch { error ->
                 updateSheetState {
                     it.copy(
                         assets = Assets(),
                         uiMessage = UiMessage.ErrorMessage(error)
                     )
                 }
+            }
+            .collect { accountsWithAssets ->
+                val assets = accountsWithAssets.firstOrNull()?.assets
+                updateSheetState { it.copy(assets = assets) }
+
+                onLatestEpochRequest()
             }
     }
 
@@ -70,6 +83,46 @@ class AssetsChooserDelegate @Inject constructor(
             state
                 .replace(chooseAssetState.targetAccount)
                 .copy(sheet = Sheet.None)
+        }
+    }
+
+    fun onNextNFTsPageRequest(resource: Resource.NonFungibleResource) {
+        val sheet = _state.value.sheet as? Sheet.ChooseAssets ?: return
+        val account = _state.value.fromAccount ?: return
+        if (resource.resourceAddress !in sheet.nonFungiblesWithPendingNFTs) {
+            updateSheetState { state -> state.onNFTsLoading(resource) }
+            viewModelScope.launch {
+                getMoreNFTsUseCase(account, resource)
+                    .onSuccess { resourceWithUpdatedNFTs ->
+                        updateSheetState { state -> state.onNFTsReceived(resourceWithUpdatedNFTs) }
+                    }.onFailure { error ->
+                        updateSheetState { state -> state.onNFTsError(resource, error) }
+                    }
+            }
+        }
+    }
+
+    fun onStakesRequest() {
+        val sheet = _state.value.sheet as? Sheet.ChooseAssets ?: return
+        val account = _state.value.fromAccount ?: return
+        val stakes = sheet.assets?.validatorsWithStakes ?: return
+        val unknownLSUs = stakes.any { !it.isDetailsAvailable }
+
+        if (!sheet.pendingStakeUnits && unknownLSUs) {
+            updateSheetState { state -> state.copy(pendingStakeUnits = true) }
+            viewModelScope.launch {
+                updateLSUsInfo(account, stakes).onSuccess {
+                    updateSheetState { state -> state.copy(pendingStakeUnits = false) }
+                }.onFailure { error ->
+                    updateSheetState { state -> state.copy(pendingStakeUnits = false, uiMessage = UiMessage.ErrorMessage(error)) }
+                }
+            }
+        }
+    }
+
+    private fun onLatestEpochRequest() = viewModelScope.launch {
+        getNetworkInfoUseCase().onSuccess { info ->
+            updateSheetState { state -> state.copy(epoch = info.epoch) }
         }
     }
 

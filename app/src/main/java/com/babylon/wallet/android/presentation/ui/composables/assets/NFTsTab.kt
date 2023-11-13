@@ -16,6 +16,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.snapshots.SnapshotStateMap
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -155,8 +156,7 @@ private fun NonFungibleResourceItem(
                     }
 
                     is AssetsViewAction.Selection -> {
-                        val isSelected = action.isSelected(item.globalAddress)
-                        action.onResourceCheckChanged(item.globalAddress, !isSelected)
+                        action.onNFTCheckChanged(collection, item, !action.isSelected(item.globalAddress))
                     }
                 }
             }
@@ -190,9 +190,14 @@ private fun NonFungibleResourceItem(
         }
 
         if (action is AssetsViewAction.Selection) {
+            val isSelected = remember(item, action) {
+                action.isSelected(item.globalAddress)
+            }
             AssetsViewCheckBox(
-                resourceAddress = item.globalAddress,
-                action = action
+                isSelected = isSelected,
+                onCheckChanged = { isChecked ->
+                    action.onNFTCheckChanged(collection, item, isChecked)
+                }
             )
         }
     }

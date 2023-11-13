@@ -100,7 +100,8 @@ sealed interface AssetsViewAction {
 
     data class Selection(
         val selectedResources: List<String>,
-        val onResourceCheckChanged: (String, Boolean) -> Unit,
+        val onFungibleCheckChanged: (Resource.FungibleResource, Boolean) -> Unit,
+        val onNFTCheckChanged: (Resource.NonFungibleResource, Resource.NonFungibleResource.Item, Boolean) -> Unit,
         override val onNextNFtsPageRequest: (Resource.NonFungibleResource) -> Unit,
         override val onStakesRequest: () -> Unit
     ) : AssetsViewAction {

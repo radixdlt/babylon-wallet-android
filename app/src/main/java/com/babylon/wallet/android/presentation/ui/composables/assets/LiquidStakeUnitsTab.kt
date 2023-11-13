@@ -213,8 +213,10 @@ private fun LiquidStakeUnitItem(
                     }
 
                     is AssetsViewAction.Selection -> {
-                        val isSelected = action.isSelected(stake.liquidStakeUnit.resourceAddress)
-                        action.onResourceCheckChanged(stake.liquidStakeUnit.resourceAddress, !isSelected)
+                        action.onFungibleCheckChanged(
+                            stake.liquidStakeUnit.fungibleResource,
+                            !action.isSelected(stake.liquidStakeUnit.resourceAddress)
+                        )
                     }
                 }
             }
@@ -258,9 +260,14 @@ private fun LiquidStakeUnitItem(
         )
 
         if (action is AssetsViewAction.Selection) {
+            val isSelected = remember(stake.liquidStakeUnit.resourceAddress, action) {
+                action.isSelected(stake.liquidStakeUnit.resourceAddress)
+            }
             AssetsViewCheckBox(
-                resourceAddress = stake.liquidStakeUnit.resourceAddress,
-                action = action
+                isSelected = isSelected,
+                onCheckChanged = { isChecked ->
+                    action.onFungibleCheckChanged(stake.liquidStakeUnit.fungibleResource, isChecked)
+                }
             )
         }
     }
@@ -287,8 +294,7 @@ private fun StakeClaimNftItem(
 
                     is AssetsViewAction.Selection -> {
                         if (stakeClaimNft == null) return@throttleClickable
-                        val isSelected = action.isSelected(stakeClaimNft.globalAddress)
-                        action.onResourceCheckChanged(stakeClaimNft.globalAddress, !isSelected)
+                        action.onNFTCheckChanged(collection, stakeClaimNft, !action.isSelected(stakeClaimNft.globalAddress))
                     }
                 }
             }
@@ -325,9 +331,14 @@ private fun StakeClaimNftItem(
         )
 
         if (action is AssetsViewAction.Selection && stakeClaimNft != null) {
+            val isSelected = remember(stakeClaimNft, action) {
+                action.isSelected(stakeClaimNft.globalAddress)
+            }
             AssetsViewCheckBox(
-                resourceAddress = stakeClaimNft.globalAddress,
-                action = action
+                isSelected = isSelected,
+                onCheckChanged = { isChecked ->
+                    action.onNFTCheckChanged(collection, stakeClaimNft, isChecked)
+                }
             )
         }
     }

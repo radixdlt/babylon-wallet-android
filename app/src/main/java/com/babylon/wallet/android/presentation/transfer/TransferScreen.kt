@@ -46,6 +46,7 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.designsystem.theme.plus
 import com.babylon.wallet.android.domain.SampleDataProvider
+import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.presentation.transaction.composables.StrokeLine
 import com.babylon.wallet.android.presentation.transfer.TransferViewModel.State
 import com.babylon.wallet.android.presentation.transfer.accounts.ChooseAccountSheet
@@ -93,6 +94,8 @@ fun TransferScreen(
         onAssetSelectionChanged = viewModel::onAssetSelectionChanged,
         onUiMessageShown = viewModel::onUiMessageShown,
         onChooseAssetsSubmitted = viewModel::onChooseAssetsSubmitted,
+        onNextNFTsPageRequest = viewModel::onNextNFTsPageRequest,
+        onStakesRequest = viewModel::onStakesRequest,
         onTransferSubmit = viewModel::onTransferSubmit
     )
 }
@@ -123,6 +126,8 @@ fun TransferContent(
     onMaxAmountApplied: (Boolean) -> Unit,
     onLessThanFeeApplied: (Boolean) -> Unit,
     onAssetSelectionChanged: (SpendingAsset, Boolean) -> Unit,
+    onNextNFTsPageRequest: (Resource.NonFungibleResource) -> Unit,
+    onStakesRequest: () -> Unit,
     onUiMessageShown: () -> Unit,
     onChooseAssetsSubmitted: () -> Unit,
     onTransferSubmit: () -> Unit
@@ -191,6 +196,8 @@ fun TransferContent(
                         onTabSelected = { onChooseAssetTabSelected(it) },
                         onCloseClick = onSheetClosed,
                         onAssetSelectionChanged = onAssetSelectionChanged,
+                        onNextNFtsPageRequest = onNextNFTsPageRequest,
+                        onStakesRequest = onStakesRequest,
                         onUiMessageShown = onUiMessageShown,
                         onChooseAssetsSubmitted = onChooseAssetsSubmitted
                     )
@@ -438,6 +445,8 @@ fun TransferContentPreview() {
             onAssetSelectionChanged = { _, _ -> },
             onUiMessageShown = {},
             onChooseAssetsSubmitted = {},
+            onNextNFTsPageRequest = {},
+            onStakesRequest = {},
             onTransferSubmit = {}
         )
     }
