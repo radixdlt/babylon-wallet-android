@@ -15,14 +15,15 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.snapshots.SnapshotStateMap
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.domain.model.assets.Assets
 import com.babylon.wallet.android.domain.model.assets.PoolUnit
 import com.babylon.wallet.android.presentation.account.composable.EmptyResourcesContent
 import com.babylon.wallet.android.presentation.transfer.assets.ResourceTab
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
-import com.babylon.wallet.android.presentation.ui.composables.resources.poolName
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import rdx.works.core.displayableQuantity
 
@@ -124,7 +125,7 @@ private fun PoolUnitItem(
 }
 
 @Composable
-private fun PoolResourcesValues(poolUnit: PoolUnit, modifier: Modifier = Modifier) {
+fun PoolResourcesValues(poolUnit: PoolUnit, modifier: Modifier = Modifier) {
     Column(modifier = modifier.assetOutlineBorder()) {
         val itemsSize = poolUnit.pool?.resources?.size ?: 0
         poolUnit.pool?.resources?.forEachIndexed { index, poolResource ->
@@ -159,4 +160,11 @@ private fun PoolResourcesValues(poolUnit: PoolUnit, modifier: Modifier = Modifie
             }
         }
     }
+}
+
+@Composable
+fun poolName(name: String?): String {
+    return name?.ifEmpty {
+        stringResource(id = R.string.account_poolUnits_unknownPoolUnitName)
+    } ?: stringResource(id = R.string.account_poolUnits_unknownPoolUnitName)
 }
