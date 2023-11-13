@@ -5,10 +5,10 @@ import com.babylon.wallet.android.domain.model.assets.ValidatorWithStakes
 import rdx.works.profile.data.model.pernetwork.Network
 import javax.inject.Inject
 
-class GetLSUInfo @Inject constructor(
+class UpdateLSUsInfo @Inject constructor(
     private val repository: StateRepository
 ) {
 
-    suspend operator fun invoke(account: Network.Account, validatorWithStakes: ValidatorWithStakes) =
-        repository.getLSUInfo(account, validatorWithStakes)
+    suspend operator fun invoke(account: Network.Account, validatorsWithStakes: List<ValidatorWithStakes>) =
+        repository.updateLSUsInfo(account, validatorsWithStakes)
 }

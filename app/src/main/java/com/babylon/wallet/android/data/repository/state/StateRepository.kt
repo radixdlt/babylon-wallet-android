@@ -9,6 +9,7 @@ import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetai
 import com.babylon.wallet.android.data.gateway.generated.models.StateNonFungibleDataRequest
 import com.babylon.wallet.android.data.gateway.model.ExplicitMetadataKey
 import com.babylon.wallet.android.data.repository.cache.database.NFTEntity.Companion.asEntity
+import com.babylon.wallet.android.data.repository.cache.database.ResourceEntity
 import com.babylon.wallet.android.data.repository.cache.database.ResourceEntity.Companion.asEntity
 import com.babylon.wallet.android.data.repository.cache.database.StateDao
 import com.babylon.wallet.android.data.repository.cache.database.StateDao.Companion.resourcesCacheValidity
@@ -19,7 +20,6 @@ import com.babylon.wallet.android.data.repository.toResult
 import com.babylon.wallet.android.di.coroutines.DefaultDispatcher
 import com.babylon.wallet.android.domain.model.DApp
 import com.babylon.wallet.android.domain.model.assets.AccountWithAssets
-import com.babylon.wallet.android.domain.model.assets.LiquidStakeUnit
 import com.babylon.wallet.android.domain.model.assets.ValidatorWithStakes
 import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.domain.model.resources.metadata.MetadataItem.Companion.consume
@@ -40,7 +40,7 @@ interface StateRepository {
 
     suspend fun getMoreNFTs(account: Network.Account, resource: Resource.NonFungibleResource): Result<Resource.NonFungibleResource>
 
-    suspend fun getLSUInfo(account: Network.Account, validatorWithStakes: ValidatorWithStakes): Result<ValidatorWithStakes>
+    suspend fun updateLSUsInfo(account: Network.Account, validatorsWithStakes: List<ValidatorWithStakes>): Result<Unit>
 
     fun observeResourceDetails(resourceAddress: String, accountAddress: String?): Flow<Resource>
 
@@ -129,72 +129,67 @@ class StateRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun getLSUInfo(account: Network.Account, validatorWithStakes: ValidatorWithStakes) = withContext(dispatcher) {
+    override suspend fun updateLSUsInfo(account: Network.Account, validatorsWithStakes: List<ValidatorWithStakes>) = withContext(dispatcher) {
         runCatching {
             val stateVersion = stateDao.getAccountStateVersion(account.address) ?: throw StateRepository.Error.StateVersionMissing
 
-            val lsuEntity = if (!validatorWithStakes.liquidStakeUnit.fungibleResource.isDetailsAvailable) {
-                stateApi.getSingleEntityDetails(
-                    address = validatorWithStakes.liquidStakeUnit.resourceAddress,
-                    metadataKeys = setOf(
-                        ExplicitMetadataKey.NAME,
-                        ExplicitMetadataKey.SYMBOL,
-                        ExplicitMetadataKey.DESCRIPTION,
-                        ExplicitMetadataKey.RELATED_WEBSITES,
-                        ExplicitMetadataKey.ICON_URL,
-                        ExplicitMetadataKey.INFO_URL,
-                        ExplicitMetadataKey.VALIDATOR,
-                        ExplicitMetadataKey.POOL,
-                        ExplicitMetadataKey.TAGS,
-                        ExplicitMetadataKey.DAPP_DEFINITIONS
-                    ),
-                    stateVersion = stateVersion
-                ).asEntity(synced = InstantGenerator())
-            } else {
-                null
-            }
+            val lsuAddresses = validatorsWithStakes
+                .filter { !it.liquidStakeUnit.fungibleResource.isDetailsAvailable }
+                .map { it.liquidStakeUnit.resourceAddress }
+                .toSet()
 
-            val stakeClaimCollection = validatorWithStakes.stakeClaimNft?.nonFungibleResource
-            val claimEntities = if (stakeClaimCollection != null && stakeClaimCollection.amount.toInt() != stakeClaimCollection.items.size) {
-                stateDao.getAccountResourceJoin(
-                    resourceAddress = stakeClaimCollection.resourceAddress,
-                    accountAddress = account.address
-                )?.let { join ->
-                    stateApi.getNextNftItems(
-                        accountAddress = account.address,
-                        resourceAddress = stakeClaimCollection.resourceAddress,
-                        vaultAddress = join.vaultAddress!!,
-                        nextCursor = null,
-                        stateVersion = stateVersion
-                    ).second.let { data ->
-                        val syncedAt = InstantGenerator()
-                        data.map { it.asEntity(stakeClaimCollection.resourceAddress, syncedAt) }
-                    }
+            val lsuEntities = mutableListOf<ResourceEntity>()
+            stateApi.paginateDetails(
+                addresses = lsuAddresses,
+                metadataKeys = setOf(
+                    ExplicitMetadataKey.NAME,
+                    ExplicitMetadataKey.SYMBOL,
+                    ExplicitMetadataKey.DESCRIPTION,
+                    ExplicitMetadataKey.RELATED_WEBSITES,
+                    ExplicitMetadataKey.ICON_URL,
+                    ExplicitMetadataKey.INFO_URL,
+                    ExplicitMetadataKey.VALIDATOR,
+                    ExplicitMetadataKey.POOL,
+                    ExplicitMetadataKey.TAGS,
+                    ExplicitMetadataKey.DAPP_DEFINITIONS
+                ),
+                onPage = { response ->
+                    val synced = InstantGenerator()
+                    lsuEntities.addAll(response.items.map { it.asEntity(synced) })
                 }
-            } else {
-                null
-            }
-
-            val updatedLsu = lsuEntity?.toResource(validatorWithStakes.liquidStakeUnit.fungibleResource.ownedAmount)?.let {
-                LiquidStakeUnit(it as Resource.FungibleResource)
-            } ?: validatorWithStakes.liquidStakeUnit
-
-            val updatedStakeClaimNFT = claimEntities?.map { it.toItem() }?.let { items ->
-                validatorWithStakes.stakeClaimNft?.copy(
-                    nonFungibleResource = validatorWithStakes.stakeClaimNft.nonFungibleResource.copy(
-                        items = items
-                    )
-                )
-            } ?: validatorWithStakes.stakeClaimNft
-
-            stateDao.storeStakeDetails(
-                stakeResourceEntity = lsuEntity,
-                claims = claimEntities
             )
 
-            validatorWithStakes.copy(
-                liquidStakeUnit = updatedLsu,
-                stakeClaimNft = updatedStakeClaimNFT
+            val claims = validatorsWithStakes.map { validatorWithStakes ->
+                val stakeClaimCollection = validatorWithStakes.stakeClaimNft?.nonFungibleResource
+                if (stakeClaimCollection != null && stakeClaimCollection.amount.toInt() != stakeClaimCollection.items.size) {
+                    val resourcesInAccount = stateDao.getAccountResourceJoin(
+                        resourceAddress = stakeClaimCollection.resourceAddress,
+                        accountAddress = account.address
+                    )
+                    if (resourcesInAccount?.vaultAddress != null) {
+                        val nfts = stateApi.getNextNftItems(
+                            accountAddress = account.address,
+                            resourceAddress = stakeClaimCollection.resourceAddress,
+                            vaultAddress = resourcesInAccount.vaultAddress,
+                            nextCursor = null,
+                            stateVersion = stateVersion
+                        ).second
+
+                        val syncedAt = InstantGenerator()
+                        nfts.map { it.asEntity(stakeClaimCollection.resourceAddress, syncedAt) }
+                    } else {
+                        emptyList()
+                    }
+                } else {
+                    emptyList()
+                }
+            }.flatten()
+
+            stateDao.storeStakeDetails(
+                accountAddress = account.address,
+                stateVersion = stateVersion,
+                lsuList = lsuEntities,
+                claims = claims
             )
         }
     }

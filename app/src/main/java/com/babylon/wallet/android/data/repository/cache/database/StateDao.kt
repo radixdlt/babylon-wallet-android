@@ -220,13 +220,26 @@ interface StateDao {
 
     @Transaction
     fun storeStakeDetails(
-        stakeResourceEntity: ResourceEntity?,
-        claims: List<NFTEntity>?
+        accountAddress: String,
+        stateVersion: Long,
+        lsuList: List<ResourceEntity>,
+        claims: List<NFTEntity>
     ) {
-        stakeResourceEntity?.let {
-            insertOrReplaceResources(listOf(stakeResourceEntity))
-        }
-        claims?.let { insertNFTs(it) }
+        // Update NFT details
+        insertNFTs(nfts = claims)
+        // Inserting LSUs
+        insertOrReplaceResources(lsuList)
+        // Update joins
+        insertAccountNFTsJoin(
+            claims.map { nft ->
+                AccountNFTJoin(
+                    accountAddress = accountAddress,
+                    resourceAddress = nft.address,
+                    localId = nft.localId,
+                    stateVersion = stateVersion
+                )
+            }
+        )
     }
 
     companion object {

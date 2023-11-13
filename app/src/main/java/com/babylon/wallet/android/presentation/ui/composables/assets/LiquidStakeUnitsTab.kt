@@ -47,11 +47,12 @@ fun LazyListScope.liquidStakeUnitsTab(
 ) {
     if (assets.validatorsWithStakes.isNotEmpty()) {
         item {
+            val isCollapsed = collapsibleAssetsState.isStakeSectionCollapsed()
             CollapsibleAssetCard(
                 modifier = Modifier
                     .padding(horizontal = RadixTheme.dimensions.paddingDefault)
                     .padding(top = RadixTheme.dimensions.paddingSemiLarge),
-                isCollapsed = collapsibleAssetsState.isStakeSectionCollapsed(),
+                isCollapsed = isCollapsed,
                 collapsedItems = assets.validatorsWithStakes.size
             ) {
                 Row(
@@ -105,9 +106,10 @@ fun LazyListScope.liquidStakeUnitsTab(
                 ) {
                     LaunchedEffect(item) {
                         if (!item.isDetailsAvailable) {
-                            action.onStakesRequest(item)
+                            action.onStakesRequest()
                         }
                     }
+
                     ValidatorDetailsItem(
                         modifier = Modifier
                             .padding(horizontal = RadixTheme.dimensions.paddingLarge)
@@ -282,6 +284,7 @@ private fun StakeClaimNftItem(
                         if (stakeClaimNft == null) return@throttleClickable
                         action.onNonFungibleItemClick(collection, stakeClaimNft)
                     }
+
                     is AssetsViewAction.Selection -> {
                         if (stakeClaimNft == null) return@throttleClickable
                         val isSelected = action.isSelected(stakeClaimNft.globalAddress)

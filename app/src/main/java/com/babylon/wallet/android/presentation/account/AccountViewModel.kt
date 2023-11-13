@@ -11,7 +11,7 @@ import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.domain.usecases.GetEntitiesWithSecurityPromptUseCase
 import com.babylon.wallet.android.domain.usecases.GetNetworkInfoUseCase
 import com.babylon.wallet.android.domain.usecases.SecurityPromptType
-import com.babylon.wallet.android.domain.usecases.assets.GetLSUInfo
+import com.babylon.wallet.android.domain.usecases.assets.UpdateLSUsInfo
 import com.babylon.wallet.android.domain.usecases.assets.GetMoreNFTsUseCase
 import com.babylon.wallet.android.domain.usecases.assets.GetWalletAssetsUseCase
 import com.babylon.wallet.android.presentation.account.AccountEvent.NavigateToMnemonicBackup
@@ -43,7 +43,6 @@ import rdx.works.profile.data.model.factorsources.FactorSource.FactorSourceID
 import rdx.works.profile.derivation.model.NetworkId
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.accountsOnCurrentNetwork
-import timber.log.Timber
 import javax.inject.Inject
 
 @HiltViewModel
@@ -53,7 +52,7 @@ class AccountViewModel @Inject constructor(
     private val getNetworkInfoUseCase: GetNetworkInfoUseCase,
     private val getEntitiesWithSecurityPromptUseCase: GetEntitiesWithSecurityPromptUseCase,
     private val getMoreNFTsUseCase: GetMoreNFTsUseCase,
-    private val getLSUInfo: GetLSUInfo,
+    private val updateLSUsInfo: UpdateLSUsInfo,
     private val appEventBus: AppEventBus,
     savedStateHandle: SavedStateHandle
 ) : StateViewModel<AccountUiState>(), OneOffEventHandler<AccountEvent> by OneOffEventHandlerImpl() {
@@ -97,8 +96,6 @@ class AccountViewModel @Inject constructor(
                             isRefreshing = false
                         )
                     }
-
-                    onLatestEpochRequest()
                 }
         }
 
@@ -197,21 +194,24 @@ class AccountViewModel @Inject constructor(
         }
     }
 
-    fun onStakesRequest(validatorWithStakes: ValidatorWithStakes) {
+    fun onStakesRequest() {
         val account = state.value.accountWithAssets?.account ?: return
-        if (!state.value.isRefreshing && validatorWithStakes.liquidStakeUnit.resourceAddress !in state.value.pendingLiquidStakeUnits) {
-            _state.update { state -> state.onLSULoading(validatorWithStakes) }
+        val stakes = state.value.accountWithAssets?.assets?.validatorsWithStakes ?: return
+        val unknownLSUs = stakes.any { !it.isDetailsAvailable }
+        onLatestEpochRequest()
+        if (!state.value.isRefreshing && !state.value.pendingStakeUnits && unknownLSUs) {
+            _state.update { state -> state.copy(pendingStakeUnits = true) }
             viewModelScope.launch {
-                getLSUInfo(account, validatorWithStakes).onSuccess { validatorWithUpdatedStakes ->
-                    _state.update { state -> state.onLSUReceived(validatorWithUpdatedStakes) }
+                updateLSUsInfo(account, stakes).onSuccess {
+                    _state.update { state -> state.copy(pendingStakeUnits = false) }
                 }.onFailure { error ->
-                    _state.update { state -> state.onLSUError(validatorWithStakes, error) }
+                    _state.update { state -> state.copy(pendingStakeUnits = false, uiMessage = UiMessage.ErrorMessage(error)) }
                 }
             }
         }
     }
 
-    fun onLatestEpochRequest() = viewModelScope.launch {
+    private fun onLatestEpochRequest() = viewModelScope.launch {
         getNetworkInfoUseCase().onSuccess { info ->
             _state.update { it.copy(epoch = info.epoch) }
         }
@@ -220,6 +220,7 @@ class AccountViewModel @Inject constructor(
     private fun loadAccountDetails(withRefresh: Boolean) {
         _state.update { it.copy(isRefreshing = withRefresh) }
         viewModelScope.launch { refreshFlow.emit(Unit) }
+        onLatestEpochRequest()
     }
 }
 
@@ -231,7 +232,7 @@ internal sealed interface AccountEvent : OneOffEvent {
 data class AccountUiState(
     val accountWithAssets: AccountWithAssets? = null,
     val nonFungiblesWithPendingNFTs: Set<String> = setOf(),
-    val pendingLiquidStakeUnits: Set<String> = setOf(),
+    val pendingStakeUnits: Boolean = false,
     private val securityPromptType: SecurityPromptType? = null,
     val epoch: Long? = null,
     val isRefreshing: Boolean = false,
@@ -288,33 +289,6 @@ data class AccountUiState(
         if (accountWithAssets?.assets?.nonFungibles == null) return this
         return copy(
             nonFungiblesWithPendingNFTs = nonFungiblesWithPendingNFTs - forResource.resourceAddress,
-            uiMessage = UiMessage.ErrorMessage(error = error)
-        )
-    }
-
-    fun onLSULoading(validatorWithStakes: ValidatorWithStakes): AccountUiState {
-        return copy(pendingLiquidStakeUnits = pendingLiquidStakeUnits + validatorWithStakes.liquidStakeUnit.resourceAddress)
-    }
-
-    fun onLSUReceived(validatorWithStakes: ValidatorWithStakes): AccountUiState {
-        if (accountWithAssets?.assets?.validatorsWithStakes == null) return this
-        return copy(
-            accountWithAssets = accountWithAssets.copy(
-                assets = accountWithAssets.assets.copy(
-                    validatorsWithStakes = accountWithAssets.assets.validatorsWithStakes.mapWhen(
-                        predicate = { it.liquidStakeUnit.resourceAddress == validatorWithStakes.liquidStakeUnit.resourceAddress },
-                        mutation = { validatorWithStakes }
-                    )
-                )
-            ),
-            pendingLiquidStakeUnits = pendingLiquidStakeUnits - validatorWithStakes.liquidStakeUnit.resourceAddress
-        )
-    }
-
-    fun onLSUError(validatorWithStakes: ValidatorWithStakes, error: Throwable): AccountUiState {
-        if (accountWithAssets?.assets?.validatorsWithStakes == null) return this
-        return copy(
-            pendingLiquidStakeUnits = pendingLiquidStakeUnits - validatorWithStakes.liquidStakeUnit.resourceAddress,
             uiMessage = UiMessage.ErrorMessage(error = error)
         )
     }

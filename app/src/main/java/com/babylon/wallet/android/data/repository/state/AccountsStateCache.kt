@@ -343,7 +343,18 @@ class AccountsStateCache @Inject constructor(
                     nonFungible.copy(items = items)
                 }.orEmpty()
 
-                assets?.copy(nonFungibles = nonFungibles)
+                val validatorsWithStakes = assets?.validatorsWithStakes?.map { validatorWithStakes ->
+                    val updatedClaims = validatorWithStakes.stakeClaimNft?.let { stakeClaim ->
+                        val items = dao.getOwnedNfts(account.address, stakeClaim.resourceAddress, stateVersion)
+                            .map { it.toItem() }
+                            .sorted()
+                        stakeClaim.copy(nonFungibleResource = stakeClaim.nonFungibleResource.copy(items = items))
+                    }
+
+                    validatorWithStakes.copy(stakeClaimNft = updatedClaims)
+                }.orEmpty()
+
+                assets?.copy(nonFungibles = nonFungibles, validatorsWithStakes = validatorsWithStakes)
             } ?: assets
         )
 

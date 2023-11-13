@@ -87,7 +87,7 @@ private fun LazyListScope.loadingAssets(
 sealed interface AssetsViewAction {
 
     val onNextNFtsPageRequest: (Resource.NonFungibleResource) -> Unit
-    val onStakesRequest: (ValidatorWithStakes) -> Unit
+    val onStakesRequest: () -> Unit
 
     data class Click(
         val onFungibleClick: (Resource.FungibleResource) -> Unit,
@@ -95,14 +95,14 @@ sealed interface AssetsViewAction {
         val onLSUClick: (LiquidStakeUnit, ValidatorDetail) -> Unit,
         val onPoolUnitClick: (PoolUnit) -> Unit,
         override val onNextNFtsPageRequest: (Resource.NonFungibleResource) -> Unit,
-        override val onStakesRequest: (ValidatorWithStakes) -> Unit
+        override val onStakesRequest: () -> Unit
     ) : AssetsViewAction
 
     data class Selection(
         val selectedResources: List<String>,
         val onResourceCheckChanged: (String, Boolean) -> Unit,
         override val onNextNFtsPageRequest: (Resource.NonFungibleResource) -> Unit,
-        override val onStakesRequest: (ValidatorWithStakes) -> Unit
+        override val onStakesRequest: () -> Unit
     ) : AssetsViewAction {
 
         fun isSelected(resourceAddress: String) = selectedResources.contains(resourceAddress)
