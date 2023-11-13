@@ -316,7 +316,7 @@ private fun StakeClaimNftItem(
         Text(
             modifier = Modifier
                 .weight(1f)
-                .assetPlaceholder(visible = stakeClaimNft == null),
+                .assetPlaceholder(visible = stakeClaimNft == null || epoch == null),
             text = stringResource(id = if (isReadyToClaim) R.string.account_poolUnits_readyToClaim else R.string.account_poolUnits_unstaking),
             style = RadixTheme.typography.body2HighImportance,
             color = if (isReadyToClaim) RadixTheme.colors.green1 else RadixTheme.colors.gray1,
