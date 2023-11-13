@@ -4,6 +4,7 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.domain.model.assets.Assets
 import com.babylon.wallet.android.domain.model.resources.Resource
+import com.babylon.wallet.android.domain.model.resources.isXrd
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
@@ -21,6 +22,7 @@ import kotlinx.collections.immutable.toPersistentSet
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.UUIDGenerator
+import rdx.works.core.displayableQuantity
 import rdx.works.core.mapWhen
 import rdx.works.profile.data.model.extensions.factorSourceId
 import rdx.works.profile.data.model.extensions.isSignatureRequiredBasedOnDepositRules
@@ -101,9 +103,51 @@ class TransferViewModel @Inject constructor(
         val spentAmount = _state.value.targetAccounts
             .filterNot { it.address == account.address }
             .sumOf { it.amountSpent(fungibleAsset) }
-        val remainingAmountString = (maxAmount - spentAmount).coerceAtLeast(BigDecimal.ZERO).toPlainString()
+        val remainingAmount = (maxAmount - spentAmount).coerceAtLeast(BigDecimal.ZERO)
+        val remainingAmountString = remainingAmount.toPlainString()
+        val maxAccountAmount = remainingAmount.subtract(BigDecimal.ONE)
 
-        _state.update { it.updateAssetAmount(account, fungibleAsset, remainingAmountString) }
+        if (fungibleAsset.resource.isXrd) {
+            _state.update {
+                it.copy(
+                    maxXrdError = State.MaxAmountMessage(
+                        emptyAccountAmount = remainingAmount,
+                        maxAccountAmount = maxAccountAmount,
+                        account = account,
+                        asset = asset
+                    )
+                )
+            }
+        } else {
+            _state.update { state ->
+                state.updateAssetAmount(
+                    account = account,
+                    asset = fungibleAsset,
+                    amountString = remainingAmountString
+                )
+            }
+        }
+    }
+
+    fun onMaxAmountApplied(emptyAccount: Boolean) {
+        _state.value.maxXrdError?.let { maxXrdError ->
+            val fungibleAsset = maxXrdError.asset as? SpendingAsset.Fungible ?: return
+            val remainingAmountString = if (emptyAccount) {
+                maxXrdError.emptyAccountAmount
+            } else {
+                maxXrdError.maxAccountAmount
+            }
+            _state.update { state ->
+                state.updateAssetAmount(
+                    account = maxXrdError.account,
+                    asset = fungibleAsset,
+                    amountString = remainingAmountString.toPlainString()
+                )
+                    .copy(
+                        maxXrdError = null
+                    )
+            }
+        }
     }
 
     fun onTransferSubmit() {
@@ -177,6 +221,7 @@ class TransferViewModel @Inject constructor(
         val messageState: Message = Message.None,
         val sheet: Sheet = Sheet.None,
         val error: UiMessage? = null,
+        val maxXrdError: MaxAmountMessage? = null,
         val transferRequestId: String? = null
     ) : UiState {
 
@@ -367,6 +412,13 @@ class TransferViewModel @Inject constructor(
             data object None : Message
             data class Added(val message: String = "") : Message
         }
+
+        data class MaxAmountMessage(
+            val emptyAccountAmount: BigDecimal,
+            val maxAccountAmount: BigDecimal,
+            val account: TargetAccount,
+            val asset: SpendingAsset
+        )
     }
 }
 
