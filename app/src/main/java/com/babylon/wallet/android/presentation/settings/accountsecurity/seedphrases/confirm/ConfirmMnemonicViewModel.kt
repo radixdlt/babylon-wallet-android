@@ -20,7 +20,6 @@ import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.factorSourceByIdValue
 import javax.inject.Inject
 
-@Suppress("TooManyFunctions", "LongParameterList")
 @HiltViewModel
 class ConfirmMnemonicViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
