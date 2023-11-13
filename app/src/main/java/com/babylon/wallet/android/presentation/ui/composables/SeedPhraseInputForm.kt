@@ -53,6 +53,7 @@ fun SeedPhraseInputForm(
     bip39Passphrase: String,
     onFocusedWordIndexChanged: (Int) -> Unit,
     showAdvancedMode: Boolean = true,
+    highlightFields: Boolean = false
 ) {
     val focusManager = LocalFocusManager.current
     Column(
@@ -80,7 +81,8 @@ fun SeedPhraseInputForm(
                                 onFocusedWordIndexChanged(word.index)
                             }
                         },
-                        enabled = word.inputDisabled.not()
+                        enabled = word.inputDisabled.not(),
+                        highlightField = highlightFields
                     )
                 }
             }
@@ -145,7 +147,8 @@ private fun SeedPhraseWordInput(
     focusManager: FocusManager,
     modifier: Modifier = Modifier,
     onFocusChanged: ((FocusState) -> Unit)?,
-    enabled: Boolean
+    enabled: Boolean,
+    highlightField: Boolean
 ) {
     MnemonicWordTextField(
         modifier = modifier,
@@ -208,7 +211,8 @@ private fun SeedPhraseWordInput(
         onFocusChanged = onFocusChanged,
         errorFixedSize = true,
         singleLine = true,
-        enabled = enabled
+        enabled = enabled,
+        highlightField = highlightField
     )
 }
 

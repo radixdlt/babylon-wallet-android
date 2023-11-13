@@ -206,7 +206,8 @@ private fun SeedPhraseView(
             onWordChanged = onWordChanged,
             onPassphraseChanged = onPassphraseChanged,
             onFocusedWordIndexChanged = onFocusedWordIndexChanged,
-            showAdvancedMode = false
+            showAdvancedMode = false,
+            highlightFields = true
         )
     }
 }

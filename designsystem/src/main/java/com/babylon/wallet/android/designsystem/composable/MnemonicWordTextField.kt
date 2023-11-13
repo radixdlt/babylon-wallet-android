@@ -57,7 +57,8 @@ fun MnemonicWordTextField(
     keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
     textStyle: TextStyle = RadixTheme.typography.body1Regular,
     errorFixedSize: Boolean = false,
-    enabled: Boolean = true
+    enabled: Boolean = true,
+    highlightField: Boolean = false
 ) {
     var focused by remember { mutableStateOf(false) }
     Column(
@@ -79,6 +80,7 @@ fun MnemonicWordTextField(
             else -> RadixTheme.colors.gray1
         }
         val borderColor = when {
+            enabled && highlightField -> RadixTheme.colors.green1
             error != null -> RadixTheme.colors.red1
             focused -> RadixTheme.colors.gray1
             else -> RadixTheme.colors.gray4
