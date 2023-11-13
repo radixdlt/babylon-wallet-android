@@ -42,7 +42,7 @@ interface StateRepository {
 
     suspend fun updateLSUsInfo(account: Network.Account, validatorsWithStakes: List<ValidatorWithStakes>): Result<Unit>
 
-    fun observeResourceDetails(resourceAddress: String, accountAddress: String?): Flow<Resource>
+    suspend fun getResources(addresses: List<String>, underAccountAddress: String?, withDetails: Boolean): Result<List<Resource>>
 
     suspend fun getNFTDetails(resourceAddress: String, localId: String): Result<Resource.NonFungibleResource.Item>
 
@@ -129,106 +129,122 @@ class StateRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun updateLSUsInfo(account: Network.Account, validatorsWithStakes: List<ValidatorWithStakes>) = withContext(dispatcher) {
-        runCatching {
-            val stateVersion = stateDao.getAccountStateVersion(account.address) ?: throw StateRepository.Error.StateVersionMissing
+    override suspend fun updateLSUsInfo(account: Network.Account, validatorsWithStakes: List<ValidatorWithStakes>) =
+        withContext(dispatcher) {
+            runCatching {
+                val stateVersion = stateDao.getAccountStateVersion(account.address) ?: throw StateRepository.Error.StateVersionMissing
 
-            val lsuAddresses = validatorsWithStakes
-                .filter { !it.liquidStakeUnit.fungibleResource.isDetailsAvailable }
-                .map { it.liquidStakeUnit.resourceAddress }
-                .toSet()
+                val lsuAddresses = validatorsWithStakes
+                    .filter { !it.liquidStakeUnit.fungibleResource.isDetailsAvailable }
+                    .map { it.liquidStakeUnit.resourceAddress }
+                    .toSet()
 
-            val lsuEntities = mutableListOf<ResourceEntity>()
-            stateApi.paginateDetails(
-                addresses = lsuAddresses,
-                metadataKeys = setOf(
-                    ExplicitMetadataKey.NAME,
-                    ExplicitMetadataKey.SYMBOL,
-                    ExplicitMetadataKey.DESCRIPTION,
-                    ExplicitMetadataKey.RELATED_WEBSITES,
-                    ExplicitMetadataKey.ICON_URL,
-                    ExplicitMetadataKey.INFO_URL,
-                    ExplicitMetadataKey.VALIDATOR,
-                    ExplicitMetadataKey.POOL,
-                    ExplicitMetadataKey.TAGS,
-                    ExplicitMetadataKey.DAPP_DEFINITIONS
-                ),
-                onPage = { response ->
-                    val synced = InstantGenerator()
-                    lsuEntities.addAll(response.items.map { it.asEntity(synced) })
-                }
-            )
+                val lsuEntities = mutableListOf<ResourceEntity>()
+                stateApi.paginateDetails(
+                    addresses = lsuAddresses,
+                    metadataKeys = setOf(
+                        ExplicitMetadataKey.NAME,
+                        ExplicitMetadataKey.SYMBOL,
+                        ExplicitMetadataKey.DESCRIPTION,
+                        ExplicitMetadataKey.RELATED_WEBSITES,
+                        ExplicitMetadataKey.ICON_URL,
+                        ExplicitMetadataKey.INFO_URL,
+                        ExplicitMetadataKey.VALIDATOR,
+                        ExplicitMetadataKey.POOL,
+                        ExplicitMetadataKey.TAGS,
+                        ExplicitMetadataKey.DAPP_DEFINITIONS
+                    ),
+                    onPage = { response ->
+                        val synced = InstantGenerator()
+                        lsuEntities.addAll(response.items.map { it.asEntity(synced) })
+                    }
+                )
 
-            val claims = validatorsWithStakes.map { validatorWithStakes ->
-                val stakeClaimCollection = validatorWithStakes.stakeClaimNft?.nonFungibleResource
-                if (stakeClaimCollection != null && stakeClaimCollection.amount.toInt() != stakeClaimCollection.items.size) {
-                    val resourcesInAccount = stateDao.getAccountResourceJoin(
-                        resourceAddress = stakeClaimCollection.resourceAddress,
-                        accountAddress = account.address
-                    )
-                    if (resourcesInAccount?.vaultAddress != null) {
-                        val nfts = stateApi.getNextNftItems(
-                            accountAddress = account.address,
+                val claims = validatorsWithStakes.map { validatorWithStakes ->
+                    val stakeClaimCollection = validatorWithStakes.stakeClaimNft?.nonFungibleResource
+                    if (stakeClaimCollection != null && stakeClaimCollection.amount.toInt() != stakeClaimCollection.items.size) {
+                        val resourcesInAccount = stateDao.getAccountResourceJoin(
                             resourceAddress = stakeClaimCollection.resourceAddress,
-                            vaultAddress = resourcesInAccount.vaultAddress,
-                            nextCursor = null,
-                            stateVersion = stateVersion
-                        ).second
+                            accountAddress = account.address
+                        )
+                        if (resourcesInAccount?.vaultAddress != null) {
+                            val nfts = stateApi.getNextNftItems(
+                                accountAddress = account.address,
+                                resourceAddress = stakeClaimCollection.resourceAddress,
+                                vaultAddress = resourcesInAccount.vaultAddress,
+                                nextCursor = null,
+                                stateVersion = stateVersion
+                            ).second
 
-                        val syncedAt = InstantGenerator()
-                        nfts.map { it.asEntity(stakeClaimCollection.resourceAddress, syncedAt) }
+                            val syncedAt = InstantGenerator()
+                            nfts.map { it.asEntity(stakeClaimCollection.resourceAddress, syncedAt) }
+                        } else {
+                            emptyList()
+                        }
                     } else {
                         emptyList()
                     }
-                } else {
-                    emptyList()
-                }
-            }.flatten()
+                }.flatten()
 
-            stateDao.storeStakeDetails(
-                accountAddress = account.address,
-                stateVersion = stateVersion,
-                lsuList = lsuEntities,
-                claims = claims
-            )
-        }
-    }
-
-    override fun observeResourceDetails(resourceAddress: String, accountAddress: String?): Flow<Resource> = flow {
-        val cachedEntity = stateDao.getResourceDetails(
-            resourceAddress = resourceAddress,
-            minValidity = resourcesCacheValidity()
-        )
-        val amount = accountAddress?.let {
-            stateDao.getAccountResourceJoin(resourceAddress = resourceAddress, accountAddress = accountAddress)?.amount
-        }
-
-        val cachedResource = cachedEntity?.toResource(amount)
-        if (cachedResource != null) {
-            emit(cachedResource)
-        }
-
-        if (cachedResource?.isDetailsAvailable == false) {
-            val item = stateApi.getSingleEntityDetails(
-                address = resourceAddress,
-                metadataKeys = setOf(
-                    ExplicitMetadataKey.NAME,
-                    ExplicitMetadataKey.SYMBOL,
-                    ExplicitMetadataKey.DESCRIPTION,
-                    ExplicitMetadataKey.RELATED_WEBSITES,
-                    ExplicitMetadataKey.ICON_URL,
-                    ExplicitMetadataKey.INFO_URL,
-                    ExplicitMetadataKey.VALIDATOR,
-                    ExplicitMetadataKey.POOL,
-                    ExplicitMetadataKey.TAGS,
-                    ExplicitMetadataKey.DAPP_DEFINITIONS
+                stateDao.storeStakeDetails(
+                    accountAddress = account.address,
+                    stateVersion = stateVersion,
+                    lsuList = lsuEntities,
+                    claims = claims
                 )
-            )
-            val updatedEntity = stateDao.updateResourceDetails(item)
-
-            emit(updatedEntity.toResource(amount))
+            }
         }
-    }
+
+    override suspend fun getResources(addresses: List<String>, underAccountAddress: String?, withDetails: Boolean): Result<List<Resource>> =
+        runCatching {
+            val addressesWithResources = addresses.associateWith { address ->
+                val cachedEntity = stateDao.getResourceDetails(
+                    resourceAddress = address,
+                    minValidity = resourcesCacheValidity()
+                )
+
+                val amount = underAccountAddress?.let { accountAddress ->
+                    stateDao.getAccountResourceJoin(resourceAddress = address, accountAddress = accountAddress)?.amount
+                }
+
+                cachedEntity?.toResource(amount)
+            }.toMutableMap()
+
+            val resourcesToFetch = addressesWithResources.mapNotNull { entry ->
+                val cachedResource = entry.value
+                if (cachedResource == null || !cachedResource.isDetailsAvailable && withDetails) entry.key else null
+            }
+            if (resourcesToFetch.isNotEmpty()) {
+                stateApi.paginateDetails(
+                    addresses = resourcesToFetch.toSet(),
+                    metadataKeys = setOf(
+                        ExplicitMetadataKey.NAME,
+                        ExplicitMetadataKey.SYMBOL,
+                        ExplicitMetadataKey.DESCRIPTION,
+                        ExplicitMetadataKey.RELATED_WEBSITES,
+                        ExplicitMetadataKey.ICON_URL,
+                        ExplicitMetadataKey.INFO_URL,
+                        ExplicitMetadataKey.VALIDATOR,
+                        ExplicitMetadataKey.POOL,
+                        ExplicitMetadataKey.TAGS,
+                        ExplicitMetadataKey.DAPP_DEFINITIONS
+                    ),
+                    onPage = { page ->
+                        page.items.forEach { item ->
+                            val amount = underAccountAddress?.let { accountAddress ->
+                                stateDao.getAccountResourceJoin(resourceAddress = item.address, accountAddress = accountAddress)?.amount
+                            }
+                            val updatedEntity = stateDao.updateResourceDetails(item)
+                            val resource = updatedEntity.toResource(amount)
+
+                            addressesWithResources[resource.resourceAddress] = resource
+                        }
+                    }
+                )
+            }
+
+            addressesWithResources.values.filterNotNull()
+        }
 
     override suspend fun getNFTDetails(resourceAddress: String, localId: String): Result<Resource.NonFungibleResource.Item> =
         withContext(dispatcher) {

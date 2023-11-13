@@ -18,9 +18,7 @@ import com.babylon.wallet.android.data.gateway.generated.models.ResourceAggregat
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsOptIns
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsRequest
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponse
-import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponseFungibleResourceDetails
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponseItem
-import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponseNonFungibleResourceDetails
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityFungiblesPageRequest
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityFungiblesPageResponse
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityNonFungibleIdsPageRequest
@@ -65,12 +63,6 @@ interface EntityRepository {
         isNftItemDataNeeded: Boolean = true,
         isRefreshing: Boolean = true
     ): Result<List<AccountWithAssets>>
-
-    suspend fun getResources(
-        resourceAddresses: List<String>,
-        explicitMetadataForAssets: Set<ExplicitMetadataKey> = ExplicitMetadataKey.forAssets,
-        isRefreshing: Boolean = true
-    ): kotlin.Result<List<Resource>>
 }
 
 @Suppress("TooManyFunctions", "LongMethod", "LargeClass")
@@ -188,28 +180,6 @@ class EntityRepositoryImpl @Inject constructor(
                     Result.failure(it)
                 }
             )
-    }
-
-    override suspend fun getResources(
-        resourceAddresses: List<String>,
-        explicitMetadataForAssets: Set<ExplicitMetadataKey>,
-        isRefreshing: Boolean
-    ): kotlin.Result<List<Resource>> {
-        return kotlin.Result.success(
-            getDetailsForResources(resourceAddresses).mapNotNull { resourceDetails ->
-                when (resourceDetails.details) {
-                    is StateEntityDetailsResponseFungibleResourceDetails -> {
-                        mapToFungibleResource(resourceDetails)
-                    }
-
-                    is StateEntityDetailsResponseNonFungibleResourceDetails -> {
-                        mapToNonFungibleResource(resourceDetails)
-                    }
-
-                    else -> null
-                }
-            }
-        )
     }
 
     private suspend fun getAllValidatorDetails(
@@ -409,25 +379,6 @@ class EntityRepositoryImpl @Inject constructor(
             validatorMetadataItem = metaDataItems.toMutableList().consume(),
             poolMetadataItem = metaDataItems.toMutableList().consume(),
             divisibility = fungibleDetails.details?.divisibility()
-        )
-    }
-
-    private fun mapToNonFungibleResource(nonFungibleDetails: StateEntityDetailsResponseItem): Resource {
-        val resourceBehaviours = nonFungibleDetails.details?.extractBehaviours()
-        val currentSupply = nonFungibleDetails.details?.totalSupply()?.toIntOrNull()
-
-        val metaDataItems = nonFungibleDetails.explicitMetadata?.asMetadataItems().orEmpty().toMutableList()
-
-        return Resource.NonFungibleResource(
-            resourceAddress = nonFungibleDetails.address,
-            amount = 0,
-            nameMetadataItem = metaDataItems.consume(),
-            descriptionMetadataItem = metaDataItems.consume(),
-            iconMetadataItem = metaDataItems.consume(),
-            assetBehaviours = resourceBehaviours,
-            items = emptyList(),
-            currentSupply = currentSupply,
-            validatorMetadataItem = metaDataItems.consume()
         )
     }
 

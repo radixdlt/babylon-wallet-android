@@ -1,14 +1,12 @@
 package com.babylon.wallet.android.domain.usecases
 
-import com.babylon.wallet.android.data.repository.entity.EntityRepository
-import com.babylon.wallet.android.domain.model.resources.Resource
+import com.babylon.wallet.android.data.repository.state.StateRepository
 import javax.inject.Inject
 
 class GetResourcesUseCase @Inject constructor(
-    private val entityRepository: EntityRepository
+    private val stateRepository: StateRepository
 ) {
 
-    suspend operator fun invoke(addresses: List<String>): List<Resource> {
-        return entityRepository.getResources(addresses).getOrNull().orEmpty()
-    }
+    suspend operator fun invoke(addresses: List<String>, withDetails: Boolean = false) =
+        stateRepository.getResources(addresses = addresses, underAccountAddress = null, withDetails = withDetails)
 }

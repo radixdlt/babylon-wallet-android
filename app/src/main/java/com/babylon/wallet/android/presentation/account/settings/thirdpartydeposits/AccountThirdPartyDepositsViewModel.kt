@@ -6,8 +6,8 @@ import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.data.dapp.model.TransactionType
 import com.babylon.wallet.android.data.manifest.prepareInternalTransactionRequest
 import com.babylon.wallet.android.data.repository.TransactionStatusClient
-import com.babylon.wallet.android.data.repository.entity.EntityRepository
 import com.babylon.wallet.android.domain.model.resources.Resource
+import com.babylon.wallet.android.domain.usecases.GetResourcesUseCase
 import com.babylon.wallet.android.presentation.account.settings.specificassets.DeleteDialogState
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiMessage
@@ -47,7 +47,7 @@ class AccountThirdPartyDepositsViewModel @Inject constructor(
     private val incomingRequestRepository: IncomingRequestRepository,
     private val transactionStatusClient: TransactionStatusClient,
     private val updateProfileThirdPartySettingsUseCase: UpdateProfileThirdPartySettingsUseCase,
-    private val entityRepository: EntityRepository,
+    private val getResourcesUseCase: GetResourcesUseCase,
     savedStateHandle: SavedStateHandle
 ) : StateViewModel<AccountThirdPartyDepositsUiState>() {
 
@@ -185,8 +185,8 @@ class AccountThirdPartyDepositsViewModel @Inject constructor(
     fun onAddAssetException() {
         val assetExceptionToAdd = state.value.assetExceptionToAdd
         val updatedAssetExceptionsUiModels = (
-            state.value.assetExceptionsUiModels + listOf(assetExceptionToAdd)
-            ).toPersistentList()
+                state.value.assetExceptionsUiModels + listOf(assetExceptionToAdd)
+                ).toPersistentList()
         _state.update { state ->
             state.copy(
                 updatedThirdPartyDepositSettings = state.updatedThirdPartyDepositSettings?.copy(
@@ -200,9 +200,9 @@ class AccountThirdPartyDepositsViewModel @Inject constructor(
         checkIfSettingsChanged()
     }
 
-    private fun loadAssets(addresses: List<String>) {
-        viewModelScope.launch {
-            entityRepository.getResources(addresses).onSuccess { resources ->
+    private fun loadAssets(addresses: List<String>) = viewModelScope.launch {
+        getResourcesUseCase(addresses = addresses)
+            .onSuccess { resources ->
                 val loadedResourcesAddresses = resources.map { it.resourceAddress }.toSet()
                 _state.update { state ->
                     state.copy(
@@ -237,7 +237,6 @@ class AccountThirdPartyDepositsViewModel @Inject constructor(
                     )
                 }
             }
-        }
     }
 
     fun onAddDepositor() {

@@ -32,7 +32,7 @@ suspend fun TransactionType.AccountDepositSettings.resolve(
                 is ResourceOrNonFungible.Resource -> it.value.addressString()
             }
         }.orEmpty().toSet()
-        val allResources = getResourcesUseCase(allResourceAddresses.toList())
+        val allResources = getResourcesUseCase(allResourceAddresses.toList()).getOrNull().orEmpty()
         val assetChanges = resolveAssetChanges(involvedAccount, allResources)
         val depositorChanges = resolveDepositorChanges(involvedAccount, allResources)
         AccountWithDepositSettingsChanges(
