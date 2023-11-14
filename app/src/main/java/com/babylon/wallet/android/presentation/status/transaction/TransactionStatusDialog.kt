@@ -148,15 +148,15 @@ fun TransactionStatusDialog(
                     ) {
                         val title = when (state.walletErrorType) {
                             WalletErrorType.SubmittedTransactionHasFailedTransactionStatus -> {
-                                stringResource(id = R.string.transaction_status_failed_title)
+                                stringResource(id = R.string.transactionStatus_failed_title)
                             }
 
                             WalletErrorType.SubmittedTransactionHasPermanentlyRejectedTransactionStatus -> {
-                                stringResource(id = R.string.transaction_status_rejected_title)
+                                stringResource(id = R.string.transactionStatus_rejected_title)
                             }
 
                             WalletErrorType.SubmittedTransactionHasTemporarilyRejectedTransactionStatus -> {
-                                stringResource(id = R.string.transaction_status_error_title)
+                                stringResource(id = R.string.transactionStatus_error_title)
                             }
 
                             else -> {
@@ -190,7 +190,7 @@ fun TransactionStatusDialog(
                             }
                         },
                         text = {
-                            Text(text = stringResource(id = R.string.transaction_status_dismiss_dialog_message))
+                            Text(text = stringResource(id = R.string.transactionStatus_dismissDialog_message))
                         },
                         confirmText = stringResource(id = R.string.common_ok),
                         dismissText = null
@@ -225,14 +225,14 @@ private fun SuccessContent(
             contentDescription = null
         )
         Text(
-            text = stringResource(id = R.string.transaction_status_success_title),
+            text = stringResource(id = R.string.transactionStatus_success_title),
             style = RadixTheme.typography.title,
             color = RadixTheme.colors.gray1,
             textAlign = TextAlign.Center
         )
 
         Text(
-            text = stringResource(R.string.transaction_status_success_text),
+            text = stringResource(R.string.transactionStatus_success_text),
             style = RadixTheme.typography.body1Regular,
             color = RadixTheme.colors.gray1,
             textAlign = TextAlign.Center
@@ -244,7 +244,7 @@ private fun SuccessContent(
                 horizontalArrangement = Arrangement.Center
             ) {
                 Text(
-                    text = stringResource(id = R.string.transaction_status_transaction_id_text),
+                    text = stringResource(id = R.string.transactionStatus_transactionID_text),
                     style = RadixTheme.typography.body1Regular,
                     color = RadixTheme.colors.gray1
                 )
@@ -279,7 +279,7 @@ private fun CompletingContent(
             contentDescription = null
         )
         Text(
-            text = stringResource(R.string.transaction_status_completing_text),
+            text = stringResource(R.string.transactionStatus_completing_text),
             style = RadixTheme.typography.body1Regular,
             color = RadixTheme.colors.gray1
         )
