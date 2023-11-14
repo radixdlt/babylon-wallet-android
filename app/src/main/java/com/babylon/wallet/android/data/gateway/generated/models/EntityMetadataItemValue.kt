@@ -16,6 +16,7 @@
 package com.babylon.wallet.android.data.gateway.generated.models
 
 import com.babylon.wallet.android.data.gateway.generated.models.MetadataTypedValue
+import com.babylon.wallet.android.data.gateway.generated.models.ProgrammaticScryptoSborValue
 
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerialName
@@ -24,7 +25,7 @@ import kotlinx.serialization.Contextual
 /**
  * 
  *
- * @param rawHex 
+ * @param rawHex Hex-encoded binary blob.
  * @param programmaticJson 
  * @param typed 
  */
@@ -32,11 +33,12 @@ import kotlinx.serialization.Contextual
 
 data class EntityMetadataItemValue (
 
+    /* Hex-encoded binary blob. */
     @SerialName(value = "raw_hex")
     val rawHex: kotlin.String,
 
-//    @Contextual @SerialName(value = "programmatic_json")
-//    val programmaticJson: kotlin.Any,
+    @SerialName(value = "programmatic_json")
+    val programmaticJson: ProgrammaticScryptoSborValue,
 
     @SerialName(value = "typed")
     val typed: MetadataTypedValue

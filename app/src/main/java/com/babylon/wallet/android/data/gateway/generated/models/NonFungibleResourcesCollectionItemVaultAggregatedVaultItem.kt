@@ -25,7 +25,7 @@ import kotlinx.serialization.Contextual
  *
  * @param totalCount 
  * @param vaultAddress Bech32m-encoded human readable version of the address.
- * @param lastUpdatedAtStateVersion TBD
+ * @param lastUpdatedAtStateVersion The most recent state version underlying object was modified at.
  * @param nextCursor If specified, contains a cursor to query next page of the `items` collection.
  * @param items 
  */
@@ -40,7 +40,7 @@ data class NonFungibleResourcesCollectionItemVaultAggregatedVaultItem (
     @SerialName(value = "vault_address")
     val vaultAddress: kotlin.String,
 
-    /* TBD */
+    /* The most recent state version underlying object was modified at. */
     @SerialName(value = "last_updated_at_state_version")
     val lastUpdatedAtStateVersion: kotlin.Long,
 

@@ -8,6 +8,8 @@ import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.preferencesDataStore
 import com.babylon.wallet.android.data.repository.cache.CacheClient
 import com.babylon.wallet.android.data.repository.cache.EncryptedDiskCacheClient
+import com.babylon.wallet.android.data.repository.cache.database.StateDao
+import com.babylon.wallet.android.data.repository.cache.database.StateDatabase
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -48,6 +50,21 @@ object ApplicationModule {
         jsonSerializer: Json,
     ): CacheClient {
         return EncryptedDiskCacheClient(applicationContext, jsonSerializer)
+    }
+
+    @Provides
+    @Singleton
+    fun provideStateDatabase(
+        @ApplicationContext applicationContext: Context
+    ): StateDatabase {
+        return StateDatabase.factory(applicationContext)
+    }
+
+    @Provides
+    fun provideStateDao(
+        stateDatabase: StateDatabase
+    ): StateDao {
+        return stateDatabase.stateDao()
     }
 
     @Provides

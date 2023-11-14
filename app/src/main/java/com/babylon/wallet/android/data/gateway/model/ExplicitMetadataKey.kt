@@ -110,7 +110,7 @@ enum class ExplicitMetadataKey(val key: String) {
             }.orEmpty()
         )
         VALIDATOR -> ValidatorMetadataItem(value.typed<MetadataGlobalAddressValue>()?.value.orEmpty())
-        CLAIM_AMOUNT -> ClaimAmountMetadataItem(value.typed<MetadataDecimalValue>()?.value.orEmpty())
+        CLAIM_AMOUNT -> value.typed<MetadataDecimalValue>()?.value?.toBigDecimalOrNull()?.let { ClaimAmountMetadataItem(it) }
         CLAIM_EPOCH -> ClaimEpochMetadataItem(value.typed<MetadataI64Value>()?.value?.toLong() ?: 0)
         POOL -> PoolMetadataItem(value.typed<MetadataGlobalAddressValue>()?.value.orEmpty())
         POOL_UNIT -> PoolUnitMetadataItem(value.typed<MetadataGlobalAddressValue>()?.value.orEmpty())

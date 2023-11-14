@@ -27,7 +27,7 @@ import kotlinx.serialization.Contextual
  * @param key Entity metadata key.
  * @param `value` 
  * @param isLocked 
- * @param lastUpdatedAtStateVersion TBD
+ * @param lastUpdatedAtStateVersion The most recent state version underlying object was modified at.
  */
 @Serializable
 
@@ -43,7 +43,7 @@ data class EntityMetadataItem (
     @SerialName(value = "is_locked")
     val isLocked: kotlin.Boolean,
 
-    /* TBD */
+    /* The most recent state version underlying object was modified at. */
     @SerialName(value = "last_updated_at_state_version")
     val lastUpdatedAtStateVersion: kotlin.Long
 

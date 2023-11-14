@@ -2,6 +2,7 @@ package com.babylon.wallet.android.domain.model.resources.metadata
 
 import android.net.Uri
 import com.babylon.wallet.android.data.gateway.model.ExplicitMetadataKey
+import java.math.BigDecimal
 
 /**
  * Metadata items that are known to the wallet and are prominently presented.
@@ -113,7 +114,7 @@ data class ValidatorMetadataItem(
 }
 
 data class ClaimAmountMetadataItem(
-    val amount: String
+    val amount: BigDecimal
 ) : StandardMetadataItem {
     override val key: String = ExplicitMetadataKey.CLAIM_AMOUNT.key
 }
@@ -131,7 +132,7 @@ data class PoolMetadataItem(
 }
 
 data class PoolUnitMetadataItem(
-    val poolAddress: String
+    val resourceAddress: String
 ) : StandardMetadataItem {
     override val key: String = ExplicitMetadataKey.POOL_UNIT.key
 }

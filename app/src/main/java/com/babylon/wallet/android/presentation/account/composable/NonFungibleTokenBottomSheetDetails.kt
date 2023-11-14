@@ -198,7 +198,7 @@ fun NonFungibleTokenBottomSheetDetails(
                         )
                     }
                 }
-                if (nonFungibleResource.behaviours.isNotEmpty()) {
+                if (nonFungibleResource.behaviours?.isNotEmpty() == true) {
                     Column {
                         Text(
                             modifier = Modifier

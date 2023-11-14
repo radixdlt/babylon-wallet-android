@@ -23,42 +23,60 @@ import kotlinx.serialization.Contextual
 /**
  * 
  *
- * @param rawHex 
- * @param receiptStateChanges 
- * @param receiptFeeSummary 
- * @param receiptFeeSource 
- * @param receiptFeeDestination 
- * @param receiptCostingParameters 
- * @param receiptEvents 
- * @param affectedGlobalEntities 
+ * @param rawHex if set to `true`, raw transaction hex is returned.
+ * @param receiptStateChanges if set to `true`, state changes inside receipt object are returned.
+ * @param receiptFeeSummary if set to `true`, fee summary inside receipt object is returned.
+ * @param receiptFeeSource if set to `true`, fee source inside receipt object is returned.
+ * @param receiptFeeDestination if set to `true`, fee destination inside receipt object is returned.
+ * @param receiptCostingParameters if set to `true`, costing parameters inside receipt object is returned.
+ * @param receiptEvents if set to `true`, events inside receipt object is returned.
+ * @param receiptOutput (true by default) if set to `true`, transaction receipt output is returned.
+ * @param affectedGlobalEntities if set to `true`, all affected global entities by given transaction are returned.
+ * @param balanceChanges if set to `true`, returns the fungible and non-fungible balance changes.  **Warning!** This opt-in might be missing for recently committed transactions, in that case a `null` value will be returned. Retry the request until non-null value is returned. 
  */
 @Serializable
 
 data class TransactionDetailsOptIns (
 
+    /* if set to `true`, raw transaction hex is returned. */
     @SerialName(value = "raw_hex")
-    val rawHex: kotlin.Boolean? = null,
+    val rawHex: kotlin.Boolean? = false,
 
+    /* if set to `true`, state changes inside receipt object are returned. */
     @SerialName(value = "receipt_state_changes")
-    val receiptStateChanges: kotlin.Boolean? = null,
+    val receiptStateChanges: kotlin.Boolean? = false,
 
+    /* if set to `true`, fee summary inside receipt object is returned. */
     @SerialName(value = "receipt_fee_summary")
-    val receiptFeeSummary: kotlin.Boolean? = null,
+    val receiptFeeSummary: kotlin.Boolean? = false,
 
+    /* if set to `true`, fee source inside receipt object is returned. */
     @SerialName(value = "receipt_fee_source")
-    val receiptFeeSource: kotlin.Boolean? = null,
+    val receiptFeeSource: kotlin.Boolean? = false,
 
+    /* if set to `true`, fee destination inside receipt object is returned. */
     @SerialName(value = "receipt_fee_destination")
-    val receiptFeeDestination: kotlin.Boolean? = null,
+    val receiptFeeDestination: kotlin.Boolean? = false,
 
+    /* if set to `true`, costing parameters inside receipt object is returned. */
     @SerialName(value = "receipt_costing_parameters")
-    val receiptCostingParameters: kotlin.Boolean? = null,
+    val receiptCostingParameters: kotlin.Boolean? = false,
 
+    /* if set to `true`, events inside receipt object is returned. */
     @SerialName(value = "receipt_events")
-    val receiptEvents: kotlin.Boolean? = null,
+    val receiptEvents: kotlin.Boolean? = false,
 
+    /* (true by default) if set to `true`, transaction receipt output is returned. */
+    @SerialName(value = "receipt_output")
+    val receiptOutput: kotlin.Boolean? = true,
+
+    /* if set to `true`, all affected global entities by given transaction are returned. */
     @SerialName(value = "affected_global_entities")
-    val affectedGlobalEntities: kotlin.Boolean? = null
+    val affectedGlobalEntities: kotlin.Boolean? = false,
+
+    /* if set to `true`, returns the fungible and non-fungible balance changes.  **Warning!** This opt-in might be missing for recently committed transactions, in that case a `null` value will be returned. Retry the request until non-null value is returned.  */
+    @SerialName(value = "balance_changes")
+    val balanceChanges: kotlin.Boolean? = false
 
 )
 

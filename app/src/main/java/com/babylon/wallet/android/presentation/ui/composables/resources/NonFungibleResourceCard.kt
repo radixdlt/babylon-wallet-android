@@ -47,7 +47,7 @@ fun NonFungibleResourceCollectionHeader(
         modifier = modifier
     ) {
         if (collapsed) {
-            if (collection.items.size >= 2) {
+            if (collection.amount >= 2) {
                 val scaleFactor = 0.8f
                 val topOffset = cardHeight * (1 - scaleFactor) + groupInnerPadding + groupInnerPadding * scaleFactor
                 Surface(
@@ -63,7 +63,7 @@ fun NonFungibleResourceCollectionHeader(
                 )
             }
 
-            if (collection.items.isNotEmpty()) {
+            if (collection.amount > 0) {
                 val scaleFactor = 0.9f
                 val topOffset = cardHeight * (1 - scaleFactor) + groupInnerPadding
                 Surface(

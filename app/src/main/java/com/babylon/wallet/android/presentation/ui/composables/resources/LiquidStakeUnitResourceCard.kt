@@ -33,15 +33,18 @@ import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
+import com.babylon.wallet.android.domain.SampleDataProvider
+import com.babylon.wallet.android.domain.model.assets.LiquidStakeUnit
 import com.babylon.wallet.android.domain.model.assets.ValidatorDetail
-import com.babylon.wallet.android.domain.model.assets.ValidatorWithStakeResources
-import com.babylon.wallet.android.domain.model.assets.ValidatorsWithStakeResources
+import com.babylon.wallet.android.domain.model.assets.ValidatorWithStakes
+import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.toPersistentList
 import java.math.BigDecimal
 
 @Composable
 fun LiquidStakeUnitResourceHeader(
     modifier: Modifier = Modifier,
-    collection: ValidatorsWithStakeResources,
+    collection: ImmutableList<ValidatorWithStakes>,
     cardHeight: Dp = 103.dp,
     collapsed: Boolean = true,
     groupInnerPadding: Dp = 6.dp,
@@ -53,7 +56,7 @@ fun LiquidStakeUnitResourceHeader(
         modifier = modifier
     ) {
         if (collapsed) {
-            if (collection.validators.isNotEmpty()) {
+            if (collection.isNotEmpty()) {
                 val scaleFactor = 0.9f
                 val topOffset = cardHeight * (1 - scaleFactor) + groupInnerPadding
                 Surface(
@@ -106,7 +109,7 @@ fun LiquidStakeUnitResourceHeader(
                         maxLines = 2
                     )
                     Text(
-                        stringResource(id = R.string.account_poolUnits_numberOfStakes, collection.validators.size),
+                        stringResource(id = R.string.account_poolUnits_numberOfStakes, collection.size),
                         style = RadixTheme.typography.body2HighImportance,
                         color = RadixTheme.colors.gray2,
                         maxLines = 1
@@ -149,12 +152,16 @@ fun LiquidStakeUnitResourceHeaderPreview() {
         LiquidStakeUnitResourceHeader(
             modifier = Modifier.padding(all = 30.dp),
             collapsed = true,
-            collection = ValidatorsWithStakeResources(
-                listOf(
-                    ValidatorWithStakeResources(ValidatorDetail("address1", "Validator 1", null, null, BigDecimal(100000))),
-                    ValidatorWithStakeResources(ValidatorDetail("address1", "Validator 1", null, null, BigDecimal(100000)))
+            collection = listOf(
+                ValidatorWithStakes(
+                    validatorDetail = ValidatorDetail("address1", "Validator 1", null, null, BigDecimal(100000)),
+                    liquidStakeUnit = LiquidStakeUnit(fungibleResource = SampleDataProvider().sampleFungibleResources().first())
+                ),
+                ValidatorWithStakes(
+                    validatorDetail = ValidatorDetail("address2", "Validator 2", null, null, BigDecimal(100000)),
+                    liquidStakeUnit = LiquidStakeUnit(fungibleResource = SampleDataProvider().sampleFungibleResources().first())
                 )
-            ),
+            ).toPersistentList(),
             parentSectionClick = {}
         )
     }

@@ -24,7 +24,7 @@ import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.SampleDataProvider
-import com.babylon.wallet.android.domain.model.DAppWithMetadataAndAssociatedResources
+import com.babylon.wallet.android.domain.model.DAppWithResources
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.card.DappCard
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
@@ -50,7 +50,7 @@ fun AuthorizedDAppsScreen(
 @Composable
 private fun AuthorizedDAppsContent(
     onBackClick: () -> Unit,
-    dApps: ImmutableList<DAppWithMetadataAndAssociatedResources>,
+    dApps: ImmutableList<DAppWithResources>,
     onDAppClick: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -90,9 +90,9 @@ private fun AuthorizedDAppsContent(
                 items(dApps) { dApp ->
                     DappCard(
                         modifier = Modifier.throttleClickable {
-                            onDAppClick(dApp.dAppWithMetadata.dAppAddress)
+                            onDAppClick(dApp.dApp.dAppAddress)
                         },
-                        dApp = dApp.dAppWithMetadata
+                        dApp = dApp.dApp
                     )
                     Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
                 }

@@ -15,6 +15,7 @@
 
 package com.babylon.wallet.android.data.gateway.generated.models
 
+import com.babylon.wallet.android.data.gateway.generated.models.ProgrammaticScryptoSborValue
 
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerialName
@@ -23,72 +24,19 @@ import kotlinx.serialization.Contextual
 /**
  * 
  *
- * @param rawHex 
+ * @param rawHex Hex-encoded binary blob.
  * @param programmaticJson 
  */
 @Serializable
 
 data class ScryptoSborValue (
 
+    /* Hex-encoded binary blob. */
     @SerialName(value = "raw_hex")
     val rawHex: kotlin.String,
 
     @SerialName(value = "programmatic_json")
-    val programmaticJson: ProgrammaticJson? = null,
+    val programmaticJson: ProgrammaticScryptoSborValue
 
-) {
-    @Serializable
-    data class ProgrammaticJson(
-        @SerialName(value = "kind")
-        val kind: String,
-
-        @SerialName(value = "type_name")
-        val type_name: String? = null,
-
-        @SerialName(value = "fields")
-        val fields: List<Field>
-    ) {
-
-        @Serializable
-        data class Field(
-            @SerialName(value = "kind")
-            val kind: String? = null,
-
-            @SerialName(value = "type_name")
-            val type_name: String? = null,
-
-            @SerialName(value = "field_name")
-            val field_name: String? = null,
-
-            @SerialName(value = "value")
-            val value: String? = null,
-        ) {
-            // If kind is type of array we assume its complex
-            private val isKindComplex: Boolean
-                get() = kind == MetadataValueType.boolArray.value ||
-                        kind == MetadataValueType.u8Array.value ||
-                        kind == MetadataValueType.u32Array.value ||
-                        kind == MetadataValueType.u64Array.value ||
-                        kind == MetadataValueType.i32Array.value ||
-                        kind == MetadataValueType.i64Array.value ||
-                        kind == MetadataValueType.decimalArray.value ||
-                        kind == MetadataValueType.globalAddressArray.value ||
-                        kind == MetadataValueType.publicKeyArray.value ||
-                        kind == MetadataValueType.nonFungibleGlobalIdArray.value ||
-                        kind == MetadataValueType.nonFungibleLocalIdArray.value ||
-                        kind == MetadataValueType.instantArray.value ||
-                        kind == MetadataValueType.urlArray.value ||
-                        kind == MetadataValueType.originArray.value ||
-                        kind == MetadataValueType.publicKeyHashArray.value
-
-
-            val valueContent: String?
-                get() = if (isKindComplex) COMPLEX else value
-
-            companion object {
-                private const val COMPLEX = "[Complex]"
-            }
-        }
-    }
-}
+)
 

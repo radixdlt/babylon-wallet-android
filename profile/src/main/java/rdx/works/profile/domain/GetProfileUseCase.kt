@@ -150,7 +150,7 @@ val GetProfileUseCase.p2pLinks
 suspend fun GetProfileUseCase.defaultDepositGuarantee() =
     invoke().map { it.appPreferences.transaction.defaultDepositGuarantee }.first()
 
-private fun List<Network.Account>.notHiddenAccounts(): List<Network.Account> {
+fun List<Network.Account>.notHiddenAccounts(): List<Network.Account> {
     return filter { it.flags.contains(EntityFlag.DeletedByUser).not() }
 }
 

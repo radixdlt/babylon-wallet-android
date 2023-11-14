@@ -22,7 +22,7 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Contextual
 
 /**
- * 
+ * defines upper boundary (inclusive) for queried data. i.e `{ \"at_state_version\" = {\"epoch\" = 10} }`, will return data till 10 epoch.
  *
  * @param atLedgerState 
  */

@@ -5,6 +5,8 @@ import com.babylon.wallet.android.domain.model.resources.Resource.NonFungibleRes
 import com.babylon.wallet.android.domain.model.resources.metadata.NameMetadataItem
 import com.babylon.wallet.android.domain.model.resources.metadata.SymbolMetadataItem
 import com.babylon.wallet.android.domain.model.resources.Resource
+import com.babylon.wallet.android.domain.model.resources.XrdResource
+import junit.framework.TestCase.assertEquals
 import org.junit.Assert
 import org.junit.Test
 import java.math.BigDecimal
@@ -173,14 +175,14 @@ class ResourceTests {
     }
 
     @Test
-    fun `verify that xrd resource do not show behaviours `() {
+    fun `verify that xrd resource shows only supply flexible`() {
         val resource = fungibleResource(
-            address = "resource_tdx_2_1tknxxxxxxxxxradxrdxxxxxxxxx009923554798xxxxxxxxxtfd2jc",
+            address = XrdResource.address(),
             name = "Radix fungible token",
             symbol = "XRD"
         )
 
-        Assert.assertTrue(resource.resourceBehaviours.isEmpty())
+        assertEquals(setOf(AssetBehaviour.SUPPLY_FLEXIBLE), resource.behaviours)
     }
 
     @Test
@@ -191,7 +193,7 @@ class ResourceTests {
             symbol = "BUM"
         )
 
-        Assert.assertEquals(resource.resourceBehaviours, setOf(
+        Assert.assertEquals(resource.behaviours, setOf(
             AssetBehaviour.SIMPLE_ASSET,
             AssetBehaviour.INFORMATION_CHANGEABLE
         ))
@@ -206,7 +208,7 @@ class ResourceTests {
         ownedAmount = BigDecimal(1234.5678),
         nameMetadataItem = name?.let { NameMetadataItem(it) },
         symbolMetadataItem = symbol?.let { SymbolMetadataItem(it) },
-        behaviours = setOf(
+        assetBehaviours = setOf(
             AssetBehaviour.SIMPLE_ASSET,
             AssetBehaviour.INFORMATION_CHANGEABLE
         )

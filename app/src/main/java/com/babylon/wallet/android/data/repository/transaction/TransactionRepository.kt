@@ -30,7 +30,7 @@ class TransactionRepositoryImpl @Inject constructor(private val transactionApi: 
     }
 
     override suspend fun submitTransaction(notarizedTransaction: String): Result<TransactionSubmitResponse> {
-        return transactionApi.submitTransaction(TransactionSubmitRequest(notarizedTransaction))
+        return transactionApi.transactionSubmit(TransactionSubmitRequest(notarizedTransaction))
             .execute(map = { it })
     }
 

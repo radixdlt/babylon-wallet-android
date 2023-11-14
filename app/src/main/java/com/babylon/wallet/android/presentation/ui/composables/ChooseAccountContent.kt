@@ -30,7 +30,7 @@ import com.babylon.wallet.android.designsystem.composable.RadixTextButton
 import com.babylon.wallet.android.designsystem.theme.AccountGradientList
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.plus
-import com.babylon.wallet.android.domain.model.DAppWithMetadata
+import com.babylon.wallet.android.domain.model.DApp
 import com.babylon.wallet.android.presentation.dapp.authorized.account.AccountItemUiModel
 import com.babylon.wallet.android.presentation.dapp.authorized.account.AccountSelectionCard
 import com.babylon.wallet.android.utils.formattedSpans
@@ -45,7 +45,7 @@ fun ChooseAccountContent(
     onAccountSelect: (Int) -> Unit,
     modifier: Modifier = Modifier,
     onCreateNewAccount: () -> Unit,
-    dappWithMetadata: DAppWithMetadata?,
+    dapp: DApp?,
     isOneTime: Boolean,
     isSingleChoice: Boolean,
     numberOfAccounts: Int,
@@ -83,7 +83,7 @@ fun ChooseAccountContent(
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
                 Thumbnail.DApp(
                     modifier = Modifier.size(104.dp),
-                    dapp = dappWithMetadata
+                    dapp = dapp
                 )
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
                 Text(
@@ -98,7 +98,7 @@ fun ChooseAccountContent(
                 )
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
                 ChooseAccountsSubtitle(
-                    dappName = dappWithMetadata?.name.orEmpty()
+                    dappName = dapp?.name.orEmpty()
                         .ifEmpty { stringResource(id = R.string.dAppRequest_metadata_unknownName) },
                     isOneTime = isOneTime,
                     numberOfAccounts = numberOfAccounts,

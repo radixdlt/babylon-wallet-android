@@ -58,9 +58,9 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixTheme.dimensions
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.SampleDataProvider
+import com.babylon.wallet.android.domain.model.DApp
 import com.babylon.wallet.android.domain.model.DAppResources
-import com.babylon.wallet.android.domain.model.DAppWithMetadata
-import com.babylon.wallet.android.domain.model.DAppWithMetadataAndAssociatedResources
+import com.babylon.wallet.android.domain.model.DAppWithResources
 import com.babylon.wallet.android.domain.model.RequiredPersonaFields
 import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.domain.model.resources.metadata.ClaimedWebsitesMetadataItem
@@ -137,7 +137,7 @@ private fun DappDetailContent(
     onBackClick: () -> Unit,
     modifier: Modifier = Modifier,
     personaList: ImmutableList<Network.Persona>,
-    dAppWithResources: DAppWithMetadataAndAssociatedResources?,
+    dAppWithResources: DAppWithResources?,
     onPersonaClick: (Network.Persona) -> Unit,
     onFungibleTokenClick: (Resource.FungibleResource) -> Unit,
     onNftClick: (Resource.NonFungibleResource) -> Unit,
@@ -216,7 +216,7 @@ private fun DappDetailContent(
                                     shape = RadixTheme.shapes.roundedRectTopMedium
                                 )
                                 .clip(shape = RadixTheme.shapes.roundedRectTopMedium),
-                            dappName = dAppWithResources?.dAppWithMetadata?.name.orEmpty(),
+                            dappName = dAppWithResources?.dApp?.name.orEmpty(),
                             onDisconnectPersona = { persona ->
                                 scope.launch {
                                     bottomSheetState.hide()
@@ -266,7 +266,7 @@ private fun DappDetailContent(
                 topBar = {
                     Column {
                         RadixCenteredTopAppBar(
-                            title = dAppWithResources?.dAppWithMetadata?.name.orEmpty(),
+                            title = dAppWithResources?.dApp?.name.orEmpty(),
                             onBackClick = onBackClick,
                             windowInsets = WindowInsets.statusBars
                         )
@@ -314,7 +314,7 @@ private fun DappDetailContent(
 @Composable
 private fun DappDetails(
     modifier: Modifier,
-    dAppWithResources: DAppWithMetadataAndAssociatedResources?,
+    dAppWithResources: DAppWithResources?,
     personaList: ImmutableList<Network.Persona>,
     onPersonaClick: (Network.Persona) -> Unit,
     onFungibleTokenClick: (Resource.FungibleResource) -> Unit,
@@ -328,7 +328,7 @@ private fun DappDetails(
             modifier = Modifier
                 .fillMaxSize()
         ) {
-            dAppWithResources?.dAppWithMetadata?.let { dApp ->
+            dAppWithResources?.dApp?.let { dApp ->
                 item {
                     Thumbnail.DApp(
                         modifier = Modifier
@@ -339,7 +339,7 @@ private fun DappDetails(
                     Divider(color = RadixTheme.colors.gray5)
                 }
             }
-            dAppWithResources?.dAppWithMetadata?.description?.let { description ->
+            dAppWithResources?.dApp?.description?.let { description ->
                 item {
                     Text(
                         modifier = Modifier
@@ -353,7 +353,7 @@ private fun DappDetails(
                     Divider(color = RadixTheme.colors.gray5)
                 }
             }
-            dAppWithResources?.dAppWithMetadata?.dAppAddress?.let { dappDefinitionAddress ->
+            dAppWithResources?.dApp?.dAppAddress?.let { dappDefinitionAddress ->
                 item {
                     Spacer(modifier = Modifier.height(dimensions.paddingDefault))
                     DappDefinitionAddressRow(
@@ -365,7 +365,7 @@ private fun DappDetails(
                     Spacer(modifier = Modifier.height(dimensions.paddingDefault))
                 }
             }
-            dAppWithResources?.dAppWithMetadata?.claimedWebsites?.let { websites ->
+            dAppWithResources?.dApp?.claimedWebsites?.let { websites ->
                 if (websites.isNotEmpty()) {
                     item {
                         DAppWebsiteAddressRow(
@@ -765,8 +765,8 @@ fun DappDetailContentPreview() {
         DappDetailContent(
             onBackClick = {},
             personaList = persistentListOf(SampleDataProvider().samplePersona()),
-            dAppWithResources = DAppWithMetadataAndAssociatedResources(
-                dAppWithMetadata = DAppWithMetadata(
+            dAppWithResources = DAppWithResources(
+                dApp = DApp(
                     dAppAddress = "account_tdx_abc",
                     nameItem = NameMetadataItem("Dapp"),
                     descriptionItem = DescriptionMetadataItem("Description"),

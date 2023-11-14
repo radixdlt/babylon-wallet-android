@@ -32,7 +32,7 @@ import kotlinx.serialization.Contextual
  * @param lockedOwnerStakeUnitVault 
  * @param pendingOwnerStakeUnitUnlockVault 
  * @param metadata 
- * @param state 
+ * @param state Validator inner state representation. This type is defined in the Core API as `ValidatorFieldStateValue`. See the Core API documentation for more details. 
  * @param activeInEpoch 
  */
 @Serializable
@@ -58,6 +58,7 @@ data class ValidatorCollectionItem (
     @SerialName(value = "metadata")
     val metadata: EntityMetadataCollection,
 
+    /* Validator inner state representation. This type is defined in the Core API as `ValidatorFieldStateValue`. See the Core API documentation for more details.  */
 //    @Contextual @SerialName(value = "state")
 //    val state: kotlin.Any? = null,
 

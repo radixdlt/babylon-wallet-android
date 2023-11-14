@@ -37,7 +37,6 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.designsystem.theme.White
 import com.babylon.wallet.android.domain.model.assets.Assets
-import com.babylon.wallet.android.domain.model.assets.ValidatorsWithStakeResources
 import com.babylon.wallet.android.domain.model.assets.allNftItemsSize
 import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.domain.model.resources.metadata.IconUrlMetadataItem
@@ -97,7 +96,7 @@ private fun AssetsContent(
                 .coerceAtLeast(minimumValue = 0)
         }
         val nftsCount = remember(assets.nonFungibles) { assets.nonFungibles.allNftItemsSize() }
-        val poolUnitCount = remember(assets.poolUnits, assets.validatorsWithStakeResources) {
+        val poolUnitCount = remember(assets.poolUnits, assets.validatorsWithStakes) {
             assets.poolUnitsSize()
         }
 
@@ -329,7 +328,7 @@ fun AssetsContentRowPreview() {
                     fungibles = allFungibles,
                     nonFungibles = nonFungibles,
                     poolUnits = emptyList(),
-                    validatorsWithStakeResources = ValidatorsWithStakeResources()
+                    validatorsWithStakes = emptyList()
                 ),
                 isLoading = false
             )

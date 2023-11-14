@@ -64,6 +64,12 @@ android {
         vectorDrawables {
             useSupportLibrary true
         }
+
+        javaCompileOptions {
+            annotationProcessorOptions {
+                arguments["room.schemaLocation"] = "${projectDir.getParentFile()}/config/schemas"
+            }
+        }
     }
 
     buildTypes {
@@ -189,6 +195,11 @@ dependencies {
     implementation libs.okhttpInterceptor
     implementation libs.retrofit
     implementation libs.retrofitKoltinxConverter
+
+    // Database
+    implementation libs.roomRuntime
+    implementation libs.roomKtx
+    kapt libs.roomCompiler
 
     //Timber
     implementation libs.timber

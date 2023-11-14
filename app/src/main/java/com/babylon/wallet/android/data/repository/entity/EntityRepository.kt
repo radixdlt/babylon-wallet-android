@@ -1,6 +1,5 @@
 package com.babylon.wallet.android.data.repository.entity
 
-import android.net.Uri
 import com.babylon.wallet.android.data.gateway.apis.StateApi
 import com.babylon.wallet.android.data.gateway.extensions.asMetadataItems
 import com.babylon.wallet.android.data.gateway.extensions.claimTokenResourceAddress
@@ -13,7 +12,6 @@ import com.babylon.wallet.android.data.gateway.extensions.xrdVaultAddress
 import com.babylon.wallet.android.data.gateway.generated.models.FungibleResourcesCollection
 import com.babylon.wallet.android.data.gateway.generated.models.FungibleResourcesCollectionItemVaultAggregated
 import com.babylon.wallet.android.data.gateway.generated.models.LedgerStateSelector
-import com.babylon.wallet.android.data.gateway.generated.models.MetadataValueType
 import com.babylon.wallet.android.data.gateway.generated.models.NonFungibleResourcesCollection
 import com.babylon.wallet.android.data.gateway.generated.models.NonFungibleResourcesCollectionItemVaultAggregated
 import com.babylon.wallet.android.data.gateway.generated.models.ResourceAggregationLevel
@@ -29,7 +27,6 @@ import com.babylon.wallet.android.data.gateway.generated.models.StateEntityNonFu
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityNonFungiblesPageRequest
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityNonFungiblesPageResponse
 import com.babylon.wallet.android.data.gateway.generated.models.StateNonFungibleDataRequest
-import com.babylon.wallet.android.data.gateway.generated.models.StateNonFungibleDetailsResponseItem
 import com.babylon.wallet.android.data.gateway.model.ExplicitMetadataKey
 import com.babylon.wallet.android.data.repository.cache.CacheParameters
 import com.babylon.wallet.android.data.repository.cache.HttpCache
@@ -42,10 +39,11 @@ import com.babylon.wallet.android.domain.model.assets.LiquidStakeUnit
 import com.babylon.wallet.android.domain.model.assets.PoolUnit
 import com.babylon.wallet.android.domain.model.assets.StakeClaim
 import com.babylon.wallet.android.domain.model.assets.ValidatorDetail
-import com.babylon.wallet.android.domain.model.assets.ValidatorWithStakeResources
-import com.babylon.wallet.android.domain.model.assets.ValidatorsWithStakeResources
+import com.babylon.wallet.android.domain.model.assets.ValidatorWithStakes
+import com.babylon.wallet.android.domain.model.resources.AccountDetails
+import com.babylon.wallet.android.domain.model.resources.Pool
 import com.babylon.wallet.android.domain.model.resources.Resource
-import com.babylon.wallet.android.domain.model.resources.metadata.ClaimAmountMetadataItem
+import com.babylon.wallet.android.domain.model.resources.metadata.ClaimEpochMetadataItem
 import com.babylon.wallet.android.domain.model.resources.metadata.DescriptionMetadataItem
 import com.babylon.wallet.android.domain.model.resources.metadata.IconUrlMetadataItem
 import com.babylon.wallet.android.domain.model.resources.metadata.MetadataItem
@@ -129,7 +127,7 @@ class EntityRepositoryImpl @Inject constructor(
                         stateVersion = stateVersion
                     )
                     val validatorResourceAddresses = validatorDetails.map { item ->
-                        listOfNotNull(item.details?.stakeUnitResourceAddress(), item.details?.claimTokenResourceAddress)
+                        listOfNotNull(item.details?.stakeUnitResourceAddress, item.details?.claimTokenResourceAddress)
                     }.flatten().toSet()
                     val poolAddresses = poolsList.map { item -> item.address }.toSet()
 
@@ -144,14 +142,15 @@ class EntityRepositoryImpl @Inject constructor(
                         }.map { StakeClaim(it) }
                     }.filter { it.value.isNotEmpty() }
                     val mapOfAccountsWithPoolUnits = mapOfAccountsWithFungibleResources.mapValues { fungibleResources ->
-                        fungibleResources.value.filter { poolAddresses.contains(it.poolAddress) }.map { poolUnitResource ->
-                            val poolDetails = poolsList.find { it.address == poolUnitResource.poolAddress }
+                        fungibleResources.value.filter { poolAddresses.contains(it.poolAddress) }.map { stake ->
+                            val poolDetails = poolsList.find { it.address == stake.poolAddress }
                             val poolResources = poolDetails?.fungibleResources?.items?.mapNotNull { poolResource ->
                                 (poolResource as? FungibleResourcesCollectionItemVaultAggregated)?.let {
                                     mapToFungibleResource(it)
                                 }
                             }.orEmpty()
-                            PoolUnit(poolUnitResource, poolResources)
+                            val pool = Pool(address = stake.poolAddress.orEmpty(), resources = poolResources)
+                            PoolUnit(stake, pool)
                         }
                     }.filter { it.value.isNotEmpty() }
 
@@ -176,12 +175,11 @@ class EntityRepositoryImpl @Inject constructor(
                         val metaDataItems = mapOfAccountsWithMetadata[account.address].orEmpty().toMutableList()
                         AccountWithAssets(
                             account = account,
-                            accountTypeMetadataItem = metaDataItems.consume(),
+                            details = AccountDetails(stateVersion = stateVersion, typeMetadataItem = metaDataItems.consume()),
                             assets = Assets(
                                 fungibles = mapOfAccountsWithFungibleResources[account.address].orEmpty().sorted(),
                                 nonFungibles = mapOfAccountsWithNonFungibleResources[account.address].orEmpty().sorted(),
-                                validatorsWithStakeResources = liquidStakeCollectionPerAccountAddress[account.address]
-                                    ?: ValidatorsWithStakeResources(),
+                                validatorsWithStakes = liquidStakeCollectionPerAccountAddress[account.address].orEmpty(),
                                 poolUnits = mapOfAccountsWithPoolUnits[account.address].orEmpty()
                             )
                         )
@@ -266,7 +264,7 @@ class EntityRepositoryImpl @Inject constructor(
         accountAddressToLiquidStakeUnits: Map<String, List<LiquidStakeUnit>>,
         accountAddressToStakeClaimNtfs: Map<String, List<StakeClaim>>,
         validatorDetailsList: List<StateEntityDetailsResponseItem>,
-    ): Map<String, ValidatorsWithStakeResources> {
+    ): Map<String, List<ValidatorWithStakes>> {
         if (validatorDetailsList.isEmpty()) return emptyMap()
         val accountAddresses = accountAddressToLiquidStakeUnits.keys + accountAddressToStakeClaimNtfs.keys
         return accountAddresses.associateWith { address ->
@@ -281,10 +279,10 @@ class EntityRepositoryImpl @Inject constructor(
                 it.validatorAddress
             }
             val accountValidators = allValidatorAddresses
-                .map { validatorAddress ->
+                .mapNotNull { validatorAddress ->
                     val validatorDetails = validatorDetailsList.firstOrNull { it.address == validatorAddress }
                     val totalXrdStake = validatorDetails?.details
-                        ?.xrdVaultAddress()
+                        ?.xrdVaultAddress
                         ?.let {
                             validatorDetails.getXRDVaultAmount(it)
                         }
@@ -292,7 +290,8 @@ class EntityRepositoryImpl @Inject constructor(
                     val nameMetadata: NameMetadataItem? = validatorMetadata.consume()
                     val descriptionMetadataItem: DescriptionMetadataItem? = validatorMetadata.consume()
                     val iconUrlMetadataItem: IconUrlMetadataItem? = validatorMetadata.consume()
-                    ValidatorWithStakeResources(
+                    val lsu = lsuPerValidator[validatorAddress]?.firstOrNull() ?: return@mapNotNull null
+                    ValidatorWithStakes(
                         validatorDetail = ValidatorDetail(
                             address = validatorAddress,
                             name = nameMetadata?.name.orEmpty(),
@@ -300,13 +299,12 @@ class EntityRepositoryImpl @Inject constructor(
                             url = iconUrlMetadataItem?.url,
                             totalXrdStake = totalXrdStake
                         ),
-                        liquidStakeUnits = lsuPerValidator[validatorAddress].orEmpty(),
+                        liquidStakeUnit = lsu,
                         stakeClaimNft = nftPerValidator[validatorAddress].orEmpty().firstOrNull()
                     )
                 }
-            ValidatorsWithStakeResources(
-                validators = accountValidators
-            )
+
+            accountValidators
         }
     }
 
@@ -374,7 +372,7 @@ class EntityRepositoryImpl @Inject constructor(
         fungibleResourcesItem: FungibleResourcesCollectionItemVaultAggregated,
         fungibleDetails: StateEntityDetailsResponseItem? = null
     ): Resource.FungibleResource? {
-        val resourceBehaviours = fungibleDetails?.details?.extractBehaviours().orEmpty()
+        val resourceBehaviours = fungibleDetails?.details?.extractBehaviours()
         val currentSupply = fungibleDetails?.details?.totalSupply()?.toBigDecimal()
         val metaDataItems = (fungibleDetails?.explicitMetadata ?: fungibleResourcesItem.explicitMetadata)?.asMetadataItems().orEmpty()
         val ownedAmount = fungibleResourcesItem.vaults.items.first().amount.toBigDecimal()
@@ -387,7 +385,7 @@ class EntityRepositoryImpl @Inject constructor(
             descriptionMetadataItem = metaDataItems.toMutableList().consume(),
             iconUrlMetadataItem = metaDataItems.toMutableList().consume(),
             tagsMetadataItem = metaDataItems.toMutableList().consume(),
-            behaviours = resourceBehaviours,
+            assetBehaviours = resourceBehaviours,
             currentSupply = currentSupply,
             validatorMetadataItem = metaDataItems.toMutableList().consume(),
             poolMetadataItem = metaDataItems.toMutableList().consume(),
@@ -398,7 +396,7 @@ class EntityRepositoryImpl @Inject constructor(
     private fun mapToFungibleResource(
         fungibleDetails: StateEntityDetailsResponseItem
     ): Resource.FungibleResource {
-        val resourceBehaviours = fungibleDetails.details?.extractBehaviours().orEmpty()
+        val resourceBehaviours = fungibleDetails.details?.extractBehaviours()
         val currentSupply = fungibleDetails.details?.totalSupply()?.toBigDecimal()
         val metaDataItems = fungibleDetails.explicitMetadata?.asMetadataItems().orEmpty()
         return Resource.FungibleResource(
@@ -409,7 +407,7 @@ class EntityRepositoryImpl @Inject constructor(
             descriptionMetadataItem = metaDataItems.toMutableList().consume(),
             iconUrlMetadataItem = metaDataItems.toMutableList().consume(),
             tagsMetadataItem = metaDataItems.toMutableList().consume(),
-            behaviours = resourceBehaviours,
+            assetBehaviours = resourceBehaviours,
             currentSupply = currentSupply,
             validatorMetadataItem = metaDataItems.toMutableList().consume(),
             poolMetadataItem = metaDataItems.toMutableList().consume(),
@@ -418,7 +416,7 @@ class EntityRepositoryImpl @Inject constructor(
     }
 
     private fun mapToNonFungibleResource(nonFungibleDetails: StateEntityDetailsResponseItem): Resource {
-        val resourceBehaviours = nonFungibleDetails.details?.extractBehaviours().orEmpty()
+        val resourceBehaviours = nonFungibleDetails.details?.extractBehaviours()
         val currentSupply = nonFungibleDetails.details?.totalSupply()?.toIntOrNull()
 
         val metaDataItems = nonFungibleDetails.explicitMetadata?.asMetadataItems().orEmpty().toMutableList()
@@ -429,7 +427,7 @@ class EntityRepositoryImpl @Inject constructor(
             nameMetadataItem = metaDataItems.consume(),
             descriptionMetadataItem = metaDataItems.consume(),
             iconMetadataItem = metaDataItems.consume(),
-            behaviours = resourceBehaviours,
+            assetBehaviours = resourceBehaviours,
             items = emptyList(),
             currentSupply = currentSupply,
             validatorMetadataItem = metaDataItems.consume()
@@ -507,7 +505,7 @@ class EntityRepositoryImpl @Inject constructor(
                             descriptionMetadataItem = metaDataItems.consume(),
                             iconMetadataItem = metaDataItems.consume(),
                             tagsMetadataItem = metaDataItems.consume(),
-                            behaviours = resourceBehaviours,
+                            assetBehaviours = resourceBehaviours,
                             items = nftItems,
                             currentSupply = currentSupply,
                             validatorMetadataItem = metaDataItems.consume()
@@ -530,7 +528,7 @@ class EntityRepositoryImpl @Inject constructor(
         val responses = addresses
             .chunked(CHUNK_SIZE_OF_ITEMS)
             .map { chunkedAddresses ->
-                stateApi.entityDetails(
+                stateApi.stateEntityDetails(
                     StateEntityDetailsRequest(
                         addresses = chunkedAddresses,
                         aggregationLevel = ResourceAggregationLevel.vault,
@@ -668,37 +666,20 @@ class EntityRepositoryImpl @Inject constructor(
                 nonFungibleDataResponsesListResult.mapNotNull { nonFungibleDataResponse ->
                     nonFungibleDataResponse.map {
                         it.nonFungibleIds.map { stateNonFungibleDetailsResponseItem ->
-                            val claimEpoch = stateNonFungibleDetailsResponseItem.claimEpoch()?.toLong()
+                            val metadataItems = stateNonFungibleDetailsResponseItem.asMetadataItems().toMutableList()
+                            val claimEpoch = metadataItems.consume<ClaimEpochMetadataItem>()
                             val ledgerEpoch = latestEpoch
                             Resource.NonFungibleResource.Item(
                                 collectionAddress = resourceAddress,
                                 localId = Resource.NonFungibleResource.Item.ID.from(
                                     stateNonFungibleDetailsResponseItem.nonFungibleId
                                 ),
-                                nameMetadataItem = stateNonFungibleDetailsResponseItem.data
-                                    ?.programmaticJson?.fields?.find { field ->
-                                        field.field_name == ExplicitMetadataKey.NAME.key
-                                    }?.value?.let { name -> NameMetadataItem(name = name) },
-                                iconMetadataItem = stateNonFungibleDetailsResponseItem.data
-                                    ?.programmaticJson?.fields?.find { field ->
-                                        field.field_name == ExplicitMetadataKey.KEY_IMAGE_URL.key
-                                    }?.value?.let { imageUrl -> IconUrlMetadataItem(url = Uri.parse(imageUrl)) },
-                                readyToClaim = claimEpoch != null && ledgerEpoch != null && ledgerEpoch >= claimEpoch,
-                                claimAmountMetadataItem = stateNonFungibleDetailsResponseItem.claimAmount()
-                                    ?.let { claimAmount -> ClaimAmountMetadataItem(claimAmount) },
-                                remainingMetadata = stateNonFungibleDetailsResponseItem.data?.programmaticJson?.fields
-                                    ?.filterNot { field ->
-                                        field.field_name == ExplicitMetadataKey.NAME.key ||
-                                            field.field_name == ExplicitMetadataKey.KEY_IMAGE_URL.key
-                                    }?.mapNotNull { field ->
-                                        val fieldName = field.field_name.orEmpty()
-                                        val value = field.valueContent.orEmpty()
-                                        if (fieldName.isNotEmpty() && value.isNotBlank()) {
-                                            StringMetadataItem(fieldName, value)
-                                        } else {
-                                            null
-                                        }
-                                    }.orEmpty()
+                                nameMetadataItem = metadataItems.consume(),
+                                iconMetadataItem = metadataItems.consume(),
+                                readyToClaim = claimEpoch != null && ledgerEpoch != null && ledgerEpoch >= claimEpoch.claimEpoch,
+                                claimEpochMetadataItem = claimEpoch,
+                                claimAmountMetadataItem = metadataItems.consume(),
+                                remainingMetadata = metadataItems.filterIsInstance<StringMetadataItem>()
                             )
                         }
                     }.getOrNull()
@@ -741,14 +722,6 @@ class EntityRepositoryImpl @Inject constructor(
 
         return Pair(nftIds, latestEpoch)
     }
-
-    private fun StateNonFungibleDetailsResponseItem.claimAmount(): String? = data?.programmaticJson?.fields?.find { element ->
-        element.kind == MetadataValueType.decimal.value
-    }?.value
-
-    private fun StateNonFungibleDetailsResponseItem.claimEpoch(): String? = data?.programmaticJson?.fields?.find { element ->
-        element.kind == MetadataValueType.u64.value
-    }?.value
 
     private suspend fun nextFungiblesPage(
         accountAddress: String,
@@ -796,7 +769,7 @@ class EntityRepositoryImpl @Inject constructor(
         entityAddress: String,
         isRefreshing: Boolean
     ): Result<OwnerKeyHashesMetadataItem?> {
-        return stateApi.entityDetails(
+        return stateApi.stateEntityDetails(
             StateEntityDetailsRequest(
                 addresses = listOf(entityAddress),
                 optIns = StateEntityDetailsOptIns(

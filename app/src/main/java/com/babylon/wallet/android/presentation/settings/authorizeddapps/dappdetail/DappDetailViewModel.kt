@@ -3,7 +3,7 @@ package com.babylon.wallet.android.presentation.settings.authorizeddapps.dappdet
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
-import com.babylon.wallet.android.domain.model.DAppWithMetadataAndAssociatedResources
+import com.babylon.wallet.android.domain.model.DAppWithResources
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.babylon.wallet.android.domain.model.RequiredPersonaField
 import com.babylon.wallet.android.domain.model.RequiredPersonaFields
@@ -240,7 +240,7 @@ sealed interface DappDetailEvent : OneOffEvent {
 data class DappDetailUiState(
     val loading: Boolean = true,
     val dapp: Network.AuthorizedDapp? = null,
-    val dappWithMetadata: DAppWithMetadataAndAssociatedResources? = null,
+    val dappWithMetadata: DAppWithResources? = null,
     val personas: ImmutableList<Network.Persona> = persistentListOf(),
     val sharedPersonaAccounts: ImmutableList<AccountItemUiModel> = persistentListOf(),
     val selectedSheetState: SelectedSheetState? = null

@@ -25,7 +25,7 @@ import kotlinx.serialization.Contextual
  *
  * @param nonFungibleId String-encoded non-fungible ID.
  * @param isBurned 
- * @param lastUpdatedAtStateVersion TBD
+ * @param lastUpdatedAtStateVersion The most recent state version underlying object was modified at.
  * @param owningVaultAddress Bech32m-encoded human readable version of the address.
  */
 @Serializable
@@ -39,7 +39,7 @@ data class StateNonFungibleLocationResponseItem (
     @SerialName(value = "is_burned")
     val isBurned: kotlin.Boolean,
 
-    /* TBD */
+    /* The most recent state version underlying object was modified at. */
     @SerialName(value = "last_updated_at_state_version")
     val lastUpdatedAtStateVersion: kotlin.Long,
 
