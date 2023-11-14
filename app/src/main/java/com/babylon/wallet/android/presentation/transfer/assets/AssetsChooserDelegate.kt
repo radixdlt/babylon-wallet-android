@@ -14,7 +14,6 @@ import com.babylon.wallet.android.presentation.transfer.TransferViewModel
 import com.babylon.wallet.android.presentation.transfer.TransferViewModel.State.Sheet
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.profile.data.model.pernetwork.Network

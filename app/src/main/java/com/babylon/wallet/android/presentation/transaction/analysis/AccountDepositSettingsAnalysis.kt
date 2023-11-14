@@ -1,7 +1,6 @@
 package com.babylon.wallet.android.presentation.transaction.analysis
 
 import com.babylon.wallet.android.domain.model.resources.Resource
-import com.babylon.wallet.android.domain.usecases.GetResourcesUseCase
 import com.babylon.wallet.android.presentation.transaction.AccountWithDepositSettingsChanges
 import com.babylon.wallet.android.presentation.transaction.PreviewType
 import com.radixdlt.ret.ResourceOrNonFungible

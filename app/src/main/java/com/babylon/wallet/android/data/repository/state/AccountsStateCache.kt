@@ -357,7 +357,6 @@ class AccountsStateCache @Inject constructor(
                 assets?.copy(nonFungibles = nonFungibles, validatorsWithStakes = validatorsWithStakes)
             } ?: assets
         )
-
     }
 
     companion object {

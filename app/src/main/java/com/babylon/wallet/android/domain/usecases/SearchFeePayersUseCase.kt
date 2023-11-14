@@ -25,7 +25,7 @@ class SearchFeePayersUseCase @Inject constructor(
 
             val addresses = manifest.accountsWithdrawnFrom() + manifest.accountsDepositedInto() + manifest.accountsRequiringAuth()
             val candidateAddress = addresses.map { it.addressString() }.firstOrNull { address ->
-                candidates.find { it.account.address == address && it.xrdAmount >= lockFee } != null
+                candidates.any { it.account.address == address && it.xrdAmount >= lockFee }
             }
 
             FeePayerSearchResult(
@@ -34,5 +34,4 @@ class SearchFeePayersUseCase @Inject constructor(
             )
         }
     }
-
 }

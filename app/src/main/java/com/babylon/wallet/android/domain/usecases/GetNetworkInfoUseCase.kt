@@ -21,5 +21,4 @@ class GetNetworkInfoUseCase @Inject constructor(
         onSuccess = { invoke(it) },
         onFailure = { Result.failure(it) }
     )
-
 }

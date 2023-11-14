@@ -78,7 +78,7 @@ class TransactionAnalysisDelegate @Inject constructor(
         }
     }
 
-    private suspend fun ExecutionAnalysis.resolvePreview(notaryAndSigners: NotaryAndSigners) = also {
+    private suspend fun ExecutionAnalysis.resolvePreview(notaryAndSigners: NotaryAndSigners) = apply {
         val previewType = if (_state.value.requestNonNull.isInternal.not() && reservedInstructions.isNotEmpty()) {
             // wallet unacceptable manifest
             _state.update {

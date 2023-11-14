@@ -1,9 +1,13 @@
 package com.babylon.wallet.android.presentation.transaction.analysis
 
 import com.babylon.wallet.android.domain.model.Transferable
+import com.babylon.wallet.android.domain.model.TransferableResource
 import com.babylon.wallet.android.domain.model.resources.Resource
+import com.babylon.wallet.android.domain.model.resources.findFungible
+import com.babylon.wallet.android.domain.model.resources.findNonFungible
 import com.babylon.wallet.android.presentation.transaction.AccountWithTransferableResources
 import com.babylon.wallet.android.presentation.transaction.PreviewType
+import com.radixdlt.ret.ResourceSpecifier
 import com.radixdlt.ret.TransactionType
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.accountsOnCurrentNetwork
@@ -44,4 +48,38 @@ suspend fun TransactionType.SimpleTransfer.resolve(
     }
 
     return PreviewType.Transfer(from = listOf(fromAccount), to = listOf(toAccount))
+}
+
+private fun ResourceSpecifier.toTransferableResource(
+    resources: List<Resource>,
+): TransferableResource {
+    return when (this) {
+        is ResourceSpecifier.Amount -> TransferableResource.Amount(
+            amount = amount.asStr().toBigDecimal(),
+            resource = resources.findFungible(resourceAddress.addressString()) ?: Resource.FungibleResource(
+                resourceAddress = resourceAddress.addressString(),
+                ownedAmount = null
+            ),
+            isNewlyCreated = false
+        )
+
+        is ResourceSpecifier.Ids -> {
+            val items = ids.map { id ->
+                Resource.NonFungibleResource.Item(
+                    collectionAddress = this.resourceAddress.addressString(),
+                    localId = Resource.NonFungibleResource.Item.ID.from(id)
+                )
+            }
+            TransferableResource.NFTs(
+                resource = resources.findNonFungible(resourceAddress.addressString())?.copy(
+                    items = items
+                ) ?: Resource.NonFungibleResource(
+                    resourceAddress = resourceAddress.addressString(),
+                    amount = ids.size.toLong(),
+                    items = items
+                ),
+                isNewlyCreated = false
+            )
+        }
+    }
 }

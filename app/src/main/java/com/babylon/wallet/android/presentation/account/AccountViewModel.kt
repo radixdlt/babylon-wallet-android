@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalCoroutinesApi::class)
+
 package com.babylon.wallet.android.presentation.account
 
 import androidx.lifecycle.SavedStateHandle
@@ -6,14 +8,13 @@ import com.babylon.wallet.android.domain.model.assets.AccountWithAssets
 import com.babylon.wallet.android.domain.model.assets.LiquidStakeUnit
 import com.babylon.wallet.android.domain.model.assets.PoolUnit
 import com.babylon.wallet.android.domain.model.assets.ValidatorDetail
-import com.babylon.wallet.android.domain.model.assets.ValidatorWithStakes
 import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.domain.usecases.GetEntitiesWithSecurityPromptUseCase
 import com.babylon.wallet.android.domain.usecases.GetNetworkInfoUseCase
 import com.babylon.wallet.android.domain.usecases.SecurityPromptType
-import com.babylon.wallet.android.domain.usecases.assets.UpdateLSUsInfo
 import com.babylon.wallet.android.domain.usecases.assets.GetMoreNFTsUseCase
 import com.babylon.wallet.android.domain.usecases.assets.GetWalletAssetsUseCase
+import com.babylon.wallet.android.domain.usecases.assets.UpdateLSUsInfo
 import com.babylon.wallet.android.presentation.account.AccountEvent.NavigateToMnemonicBackup
 import com.babylon.wallet.android.presentation.account.AccountEvent.NavigateToMnemonicRestore
 import com.babylon.wallet.android.presentation.common.OneOffEvent
@@ -26,6 +27,7 @@ import com.babylon.wallet.android.presentation.navigation.Screen.Companion.ARG_A
 import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collectLatest
@@ -45,6 +47,7 @@ import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.accountsOnCurrentNetwork
 import javax.inject.Inject
 
+@Suppress("LongParameterList", "TooManyFunctions")
 @HiltViewModel
 class AccountViewModel @Inject constructor(
     private val getWalletAssetsUseCase: GetWalletAssetsUseCase,

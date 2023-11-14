@@ -47,48 +47,10 @@ fun LazyListScope.liquidStakeUnitsTab(
 ) {
     if (assets.validatorsWithStakes.isNotEmpty()) {
         item {
-            val isCollapsed = collapsibleAssetsState.isStakeSectionCollapsed()
-            CollapsibleAssetCard(
-                modifier = Modifier
-                    .padding(horizontal = RadixTheme.dimensions.paddingDefault)
-                    .padding(top = RadixTheme.dimensions.paddingSemiLarge),
-                isCollapsed = isCollapsed,
-                collapsedItems = assets.validatorsWithStakes.size
-            ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clickable {
-                            collapsibleAssetsState[STAKE_COLLECTION_ID] = !collapsibleAssetsState.isStakeSectionCollapsed()
-                        }
-                        .padding(RadixTheme.dimensions.paddingLarge),
-                    horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingDefault)
-                ) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.ic_splash),
-                        contentDescription = null,
-                        modifier = Modifier
-                            .size(44.dp)
-                            .clip(RadixTheme.shapes.roundedRectSmall),
-                        tint = Color.Unspecified
-                    )
-                    Column(verticalArrangement = Arrangement.Center) {
-                        Text(
-                            stringResource(id = R.string.account_poolUnits_lsuResourceHeader),
-                            style = RadixTheme.typography.secondaryHeader,
-                            color = RadixTheme.colors.gray1,
-                            maxLines = 2
-                        )
-                        Text(
-                            stringResource(id = R.string.account_poolUnits_numberOfStakes, assets.validatorsWithStakes.size),
-                            style = RadixTheme.typography.body2HighImportance,
-                            color = RadixTheme.colors.gray2,
-                            maxLines = 1
-                        )
-                    }
-                }
-            }
+            LSUHeader(
+                collapsibleAssetsState = collapsibleAssetsState,
+                assets = assets
+            )
         }
 
         if (!collapsibleAssetsState.isStakeSectionCollapsed()) {
@@ -96,71 +58,137 @@ fun LazyListScope.liquidStakeUnitsTab(
                 items = assets.validatorsWithStakes,
                 key = { _, item -> item.validatorDetail.address }
             ) { index, item ->
-                AssetCard(
+                LSUItem(
+                    index = index,
+                    allSize = assets.validatorsWithStakes.size,
+                    epoch = epoch,
+                    item = item,
+                    action = action
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun LSUItem(
+    index: Int,
+    allSize: Int,
+    epoch: Long?,
+    item: ValidatorWithStakes,
+    action: AssetsViewAction,
+) {
+    AssetCard(
+        modifier = Modifier
+            .padding(horizontal = RadixTheme.dimensions.paddingDefault)
+            .padding(top = 1.dp),
+        itemIndex = index,
+        allItemsSize = allSize,
+        roundTopCorners = false
+    ) {
+        LaunchedEffect(item) {
+            if (!item.isDetailsAvailable) {
+                action.onStakesRequest()
+            }
+        }
+
+        ValidatorDetailsItem(
+            modifier = Modifier
+                .padding(horizontal = RadixTheme.dimensions.paddingLarge)
+                .padding(
+                    top = RadixTheme.dimensions.paddingLarge,
+                    bottom = RadixTheme.dimensions.paddingDefault
+                ),
+            validator = item.validatorDetail
+        )
+
+        StakeSectionTitle(
+            modifier = Modifier
+                .padding(horizontal = RadixTheme.dimensions.paddingXLarge)
+                .padding(bottom = RadixTheme.dimensions.paddingSmall),
+            title = stringResource(id = R.string.account_poolUnits_liquidStakeUnits)
+        )
+
+        LiquidStakeUnitItem(
+            modifier = Modifier
+                .padding(horizontal = RadixTheme.dimensions.paddingLarge)
+                .padding(bottom = RadixTheme.dimensions.paddingDefault),
+            stake = item,
+            action = action
+        )
+
+        if (item.stakeClaimNft != null) {
+            StakeSectionTitle(
+                modifier = Modifier
+                    .padding(horizontal = RadixTheme.dimensions.paddingXLarge)
+                    .padding(bottom = RadixTheme.dimensions.paddingSmall),
+                title = stringResource(id = R.string.account_poolUnits_stakeClaimNFTs)
+            )
+
+            repeat(item.stakeClaimNft.nonFungibleResource.amount.toInt()) { index ->
+                val stakeClaimNFT = item.stakeClaimNft.nonFungibleResource.items.getOrNull(index)
+                val isLast = index == item.stakeClaimNft.nonFungibleResource.amount.toInt() - 1
+                StakeClaimNftItem(
                     modifier = Modifier
-                        .padding(horizontal = RadixTheme.dimensions.paddingDefault)
-                        .padding(top = 1.dp),
-                    itemIndex = index,
-                    allItemsSize = assets.validatorsWithStakes.size,
-                    roundTopCorners = false
-                ) {
-                    LaunchedEffect(item) {
-                        if (!item.isDetailsAvailable) {
-                            action.onStakesRequest()
-                        }
-                    }
+                        .padding(horizontal = RadixTheme.dimensions.paddingLarge)
+                        .padding(
+                            top = if (index > 0) RadixTheme.dimensions.paddingSmall else 0.dp,
+                            bottom = if (isLast) RadixTheme.dimensions.paddingDefault else 0.dp
+                        ),
+                    epoch = epoch,
+                    collection = item.stakeClaimNft.nonFungibleResource,
+                    stakeClaimNft = stakeClaimNFT,
+                    action = action
+                )
+            }
+        }
+    }
+}
 
-                    ValidatorDetailsItem(
-                        modifier = Modifier
-                            .padding(horizontal = RadixTheme.dimensions.paddingLarge)
-                            .padding(
-                                top = RadixTheme.dimensions.paddingLarge,
-                                bottom = RadixTheme.dimensions.paddingDefault
-                            ),
-                        validator = item.validatorDetail
-                    )
-
-                    StakeSectionTitle(
-                        modifier = Modifier
-                            .padding(horizontal = RadixTheme.dimensions.paddingXLarge)
-                            .padding(bottom = RadixTheme.dimensions.paddingSmall),
-                        title = stringResource(id = R.string.account_poolUnits_liquidStakeUnits)
-                    )
-
-                    LiquidStakeUnitItem(
-                        modifier = Modifier
-                            .padding(horizontal = RadixTheme.dimensions.paddingLarge)
-                            .padding(bottom = RadixTheme.dimensions.paddingDefault),
-                        stake = item,
-                        action = action
-                    )
-
-                    if (item.stakeClaimNft != null) {
-                        StakeSectionTitle(
-                            modifier = Modifier
-                                .padding(horizontal = RadixTheme.dimensions.paddingXLarge)
-                                .padding(bottom = RadixTheme.dimensions.paddingSmall),
-                            title = stringResource(id = R.string.account_poolUnits_stakeClaimNFTs)
-                        )
-
-                        repeat(item.stakeClaimNft.nonFungibleResource.amount.toInt()) { index ->
-                            val stakeClaimNFT = item.stakeClaimNft.nonFungibleResource.items.getOrNull(index)
-                            val isLast = index == item.stakeClaimNft.nonFungibleResource.amount.toInt() - 1
-                            StakeClaimNftItem(
-                                modifier = Modifier
-                                    .padding(horizontal = RadixTheme.dimensions.paddingLarge)
-                                    .padding(
-                                        top = if (index > 0) RadixTheme.dimensions.paddingSmall else 0.dp,
-                                        bottom = if (isLast) RadixTheme.dimensions.paddingDefault else 0.dp
-                                    ),
-                                epoch = epoch,
-                                collection = item.stakeClaimNft.nonFungibleResource,
-                                stakeClaimNft = stakeClaimNFT,
-                                action = action
-                            )
-                        }
-                    }
+@Composable
+private fun LSUHeader(
+    collapsibleAssetsState: SnapshotStateMap<String, Boolean>,
+    assets: Assets
+) {
+    val isCollapsed = collapsibleAssetsState.isStakeSectionCollapsed()
+    CollapsibleAssetCard(
+        modifier = Modifier
+            .padding(horizontal = RadixTheme.dimensions.paddingDefault)
+            .padding(top = RadixTheme.dimensions.paddingSemiLarge),
+        isCollapsed = isCollapsed,
+        collapsedItems = assets.validatorsWithStakes.size
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable {
+                    collapsibleAssetsState[STAKE_COLLECTION_ID] = !collapsibleAssetsState.isStakeSectionCollapsed()
                 }
+                .padding(RadixTheme.dimensions.paddingLarge),
+            horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingDefault)
+        ) {
+            Icon(
+                painter = painterResource(id = R.drawable.ic_splash),
+                contentDescription = null,
+                modifier = Modifier
+                    .size(44.dp)
+                    .clip(RadixTheme.shapes.roundedRectSmall),
+                tint = Color.Unspecified
+            )
+            Column(verticalArrangement = Arrangement.Center) {
+                Text(
+                    stringResource(id = R.string.account_poolUnits_lsuResourceHeader),
+                    style = RadixTheme.typography.secondaryHeader,
+                    color = RadixTheme.colors.gray1,
+                    maxLines = 2
+                )
+                Text(
+                    stringResource(id = R.string.account_poolUnits_numberOfStakes, assets.validatorsWithStakes.size),
+                    style = RadixTheme.typography.body2HighImportance,
+                    color = RadixTheme.colors.gray2,
+                    maxLines = 1
+                )
             }
         }
     }
@@ -317,7 +345,9 @@ private fun StakeClaimNftItem(
             modifier = Modifier
                 .weight(1f)
                 .assetPlaceholder(visible = stakeClaimNft == null || epoch == null),
-            text = stringResource(id = if (isReadyToClaim) R.string.account_poolUnits_readyToClaim else R.string.account_poolUnits_unstaking),
+            text = stringResource(
+                id = if (isReadyToClaim) R.string.account_poolUnits_readyToClaim else R.string.account_poolUnits_unstaking
+            ),
             style = RadixTheme.typography.body2HighImportance,
             color = if (isReadyToClaim) RadixTheme.colors.green1 else RadixTheme.colors.gray1,
             maxLines = 1

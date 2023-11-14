@@ -252,7 +252,8 @@ class StateRepositoryImpl @Inject constructor(
     }
 
     override suspend fun getNFTDetails(
-        resourceAddress: String, localId: String
+        resourceAddress: String,
+        localId: String
     ): Result<Resource.NonFungibleResource.Item> = withContext(dispatcher) {
         val cachedItem = stateDao.getNFTDetails(resourceAddress, localId, resourcesCacheValidity())
 

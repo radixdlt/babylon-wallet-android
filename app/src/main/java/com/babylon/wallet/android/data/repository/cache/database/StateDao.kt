@@ -37,10 +37,12 @@ interface StateDao {
     )
     fun observeAccounts(): Flow<List<AccountPortfolioResponse>>
 
-    @Query("""
+    @Query(
+        """
         SELECT state_version FROM AccountEntity
         WHERE address = :accountAddress
-    """)
+    """
+    )
     fun getAccountStateVersion(accountAddress: String): Long?
 
     @Suppress("UnsafeCallOnNullableType")

@@ -54,53 +54,7 @@ fun LazyListScope.nftsTab(
             key = collection.resourceAddress,
             contentType = { "collection" }
         ) {
-            val isCollapsed = collapsibleAssetsState[collection.resourceAddress] ?: true
-            CollapsibleAssetCard(
-                modifier = Modifier
-                    .padding(horizontal = RadixTheme.dimensions.paddingDefault)
-                    .padding(top = RadixTheme.dimensions.paddingSemiLarge),
-                isCollapsed = isCollapsed,
-                collapsedItems = collection.amount.toInt()
-            ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clickable {
-                            collapsibleAssetsState[collection.resourceAddress] = !isCollapsed
-                        }
-                        .padding(RadixTheme.dimensions.paddingLarge),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingDefault)
-                ) {
-                    Thumbnail.NonFungible(
-                        modifier = Modifier.size(44.dp),
-                        collection = collection,
-                        shape = RadixTheme.shapes.roundedRectSmall
-                    )
-                    Column(verticalArrangement = Arrangement.Center) {
-                        if (collection.name.isNotEmpty()) {
-                            Text(
-                                collection.name,
-                                style = RadixTheme.typography.secondaryHeader,
-                                color = RadixTheme.colors.gray1,
-                                maxLines = 2
-                            )
-                        }
-
-                        collection.currentSupply?.let { currentSupply ->
-                            Text(
-                                stringResource(
-                                    id = R.string.assetDetails_NFTDetails_ownedOfTotal,
-                                    collection.items.size,
-                                    currentSupply
-                                ),
-                                style = RadixTheme.typography.body2HighImportance,
-                                color = RadixTheme.colors.gray2,
-                            )
-                        }
-                    }
-                }
-            }
+            NFTHeader(collapsibleAssetsState, collection)
         }
 
         items(
@@ -108,31 +62,94 @@ fun LazyListScope.nftsTab(
             key = { index -> "${collection.resourceAddress}$index" },
             contentType = { "nft" }
         ) { index ->
-            AssetCard(
-                modifier = Modifier
-                    .padding(top = 1.dp)
-                    .padding(horizontal = RadixTheme.dimensions.paddingDefault),
-                itemIndex = index,
-                allItemsSize = collection.amount.toInt(),
-                roundTopCorners = false
-            ) {
-                val nft = collection.items.getOrNull(index)
-                if (nft != null) {
-                    NonFungibleResourceItem(
-                        collection = collection,
-                        item = nft,
-                        action = action
-                    )
-                } else {
-                    LaunchedEffect(index, collection.items.size) {
-                        // First shimmering item
-                        if (index == collection.items.size) {
-                            action.onNextNFtsPageRequest(collection)
-                        }
-                    }
+            NFTItem(index, collection, action)
+        }
+    }
+}
 
-                    NonFungibleResourcePlaceholder(
-                        modifier = Modifier.padding(RadixTheme.dimensions.paddingDefault)
+@Composable
+private fun NFTItem(
+    index: Int,
+    collection: Resource.NonFungibleResource,
+    action: AssetsViewAction
+) {
+    AssetCard(
+        modifier = Modifier
+            .padding(top = 1.dp)
+            .padding(horizontal = RadixTheme.dimensions.paddingDefault),
+        itemIndex = index,
+        allItemsSize = collection.amount.toInt(),
+        roundTopCorners = false
+    ) {
+        val nft = collection.items.getOrNull(index)
+        if (nft != null) {
+            NonFungibleResourceItem(
+                collection = collection,
+                item = nft,
+                action = action
+            )
+        } else {
+            LaunchedEffect(index, collection.items.size) {
+                // First shimmering item
+                if (index == collection.items.size) {
+                    action.onNextNFtsPageRequest(collection)
+                }
+            }
+
+            NonFungibleResourcePlaceholder(
+                modifier = Modifier.padding(RadixTheme.dimensions.paddingDefault)
+            )
+        }
+    }
+}
+
+@Composable
+private fun NFTHeader(
+    collapsibleAssetsState: SnapshotStateMap<String, Boolean>,
+    collection: Resource.NonFungibleResource
+) {
+    val isCollapsed = collapsibleAssetsState[collection.resourceAddress] ?: true
+    CollapsibleAssetCard(
+        modifier = Modifier
+            .padding(horizontal = RadixTheme.dimensions.paddingDefault)
+            .padding(top = RadixTheme.dimensions.paddingSemiLarge),
+        isCollapsed = isCollapsed,
+        collapsedItems = collection.amount.toInt()
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable {
+                    collapsibleAssetsState[collection.resourceAddress] = !isCollapsed
+                }
+                .padding(RadixTheme.dimensions.paddingLarge),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingDefault)
+        ) {
+            Thumbnail.NonFungible(
+                modifier = Modifier.size(44.dp),
+                collection = collection,
+                shape = RadixTheme.shapes.roundedRectSmall
+            )
+            Column(verticalArrangement = Arrangement.Center) {
+                if (collection.name.isNotEmpty()) {
+                    Text(
+                        collection.name,
+                        style = RadixTheme.typography.secondaryHeader,
+                        color = RadixTheme.colors.gray1,
+                        maxLines = 2
+                    )
+                }
+
+                collection.currentSupply?.let { currentSupply ->
+                    Text(
+                        stringResource(
+                            id = R.string.assetDetails_NFTDetails_ownedOfTotal,
+                            collection.items.size,
+                            currentSupply
+                        ),
+                        style = RadixTheme.typography.body2HighImportance,
+                        color = RadixTheme.colors.gray2,
                     )
                 }
             }

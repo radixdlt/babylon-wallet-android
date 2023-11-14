@@ -8,6 +8,8 @@ import com.babylon.wallet.android.domain.model.GuaranteeType
 import com.babylon.wallet.android.domain.model.Transferable
 import com.babylon.wallet.android.domain.model.TransferableResource
 import com.babylon.wallet.android.domain.model.resources.Resource
+import com.babylon.wallet.android.domain.model.resources.findFungible
+import com.babylon.wallet.android.domain.model.resources.findNonFungible
 import com.babylon.wallet.android.domain.model.resources.metadata.DescriptionMetadataItem
 import com.babylon.wallet.android.domain.model.resources.metadata.IconUrlMetadataItem
 import com.babylon.wallet.android.domain.model.resources.metadata.NameMetadataItem
@@ -52,29 +54,32 @@ val AuthorizedDepositorsChanges.resourceAddresses: Set<String>
 
 val TransactionType.involvedResourceAddresses: Set<String>
     get() = when (this) {
-        is TransactionType.GeneralTransaction -> accountWithdraws
-            .values
-            .flatten()
-            .map { it.resourceAddress }
-            .toSet() union accountDeposits
-            .values
-            .flatten()
-            .map { it.resourceAddress }
-            .toSet()
+        is TransactionType.GeneralTransaction ->
+            accountWithdraws
+                .values
+                .flatten()
+                .map { it.resourceAddress }
+                .toSet() union accountDeposits
+                .values
+                .flatten()
+                .map { it.resourceAddress }
+                .toSet()
 
         is TransactionType.SimpleTransfer -> setOf(transferred.resourceAddress)
-        is TransactionType.Transfer -> transfers
-            .map { it.value.keys }
-            .flatten()
-            .toSet()
+        is TransactionType.Transfer ->
+            transfers
+                .map { it.value.keys }
+                .flatten()
+                .toSet()
 
-        is TransactionType.AccountDepositSettings -> resourcePreferenceChanges
-            .values
-            .map { it.keys }
-            .flatten()
-            .toSet() union authorizedDepositorsChanges
-            .map { it.value.resourceAddresses }
-            .flatten()
+        is TransactionType.AccountDepositSettings ->
+            resourcePreferenceChanges
+                .values
+                .map { it.keys }
+                .flatten()
+                .toSet() union authorizedDepositorsChanges
+                .map { it.value.resourceAddresses }
+                .flatten()
 
         // TODO currently unavailable preview
         is TransactionType.ClaimStakeTransaction -> emptySet()
@@ -128,7 +133,7 @@ fun ResourceTracker.toDepositingTransferableResource(
         is ResourceTracker.Fungible -> Transferable.Depositing(
             transferable = toTransferableResource(
                 resources = resources,
-                newlyCreated = newlyCreatedMetadata,
+                newlyCreatedMetadata = newlyCreatedMetadata,
                 newlyCreatedEntities = newlyCreatedEntities
             ),
             guaranteeType = amount.toGuaranteeType(defaultDepositGuarantees)
@@ -156,7 +161,7 @@ fun ResourceTracker.toWithdrawingTransferableResource(
         is ResourceTracker.Fungible -> Transferable.Withdrawing(
             transferable = toTransferableResource(
                 resources = resources,
-                newlyCreated = newlyCreatedMetadata,
+                newlyCreatedMetadata = newlyCreatedMetadata,
                 newlyCreatedEntities = newlyCreatedEntities
             )
         )
@@ -171,66 +176,22 @@ fun ResourceTracker.toWithdrawingTransferableResource(
     }
 }
 
-fun ResourceSpecifier.toTransferableResource(
-    resources: List<Resource>,
-    newlyCreated: Map<String, Map<String, MetadataValue>> = emptyMap()
-): TransferableResource {
-    return when (this) {
-        is ResourceSpecifier.Amount -> TransferableResource.Amount(
-            amount = amount.asStr().toBigDecimal(),
-            resource = resources.findFungible(resourceAddress.addressString()) ?: Resource.FungibleResource.from(
-                resourceAddress = resourceAddress,
-                metadata = newlyCreated[resourceAddress.addressString()].orEmpty()
-            ),
-            isNewlyCreated = newlyCreated[resourceAddress.addressString()] != null
-        )
-
-        is ResourceSpecifier.Ids -> {
-            val metadata = newlyCreated[resourceAddress.addressString()]
-            val items = ids.map { id ->
-                Resource.NonFungibleResource.Item(
-                    collectionAddress = this.resourceAddress.addressString(),
-                    localId = Resource.NonFungibleResource.Item.ID.from(id)
-                )
-            }
-            TransferableResource.NFTs(
-                resource = resources.findNonFungible(resourceAddress.addressString())?.copy(
-                    items = items
-                ) ?: Resource.NonFungibleResource(
-                    resourceAddress = resourceAddress.addressString(),
-                    amount = ids.size.toLong(),
-                    nameMetadataItem = metadata?.get(ExplicitMetadataKey.NAME.key)
-                        ?.let { it as? MetadataValue.StringValue }?.let {
-                            NameMetadataItem(name = it.value)
-                        },
-                    iconMetadataItem = metadata?.get(ExplicitMetadataKey.ICON_URL.key)
-                        ?.let { it as? MetadataValue.UrlValue }?.let {
-                            IconUrlMetadataItem(url = Uri.parse(it.value))
-                        },
-                    items = items
-                ),
-                isNewlyCreated = newlyCreated[resourceAddress.addressString()] != null
-            )
-        }
-    }
-}
-
 private fun ResourceTracker.Fungible.toTransferableResource(
     resources: List<Resource>,
-    newlyCreated: Map<String, Map<String, MetadataValue?>>,
+    newlyCreatedMetadata: Map<String, Map<String, MetadataValue?>>,
     newlyCreatedEntities: List<Address>
 ): TransferableResource.Amount {
     val resource = resources.findFungible(
         resourceAddress.addressString()
     ) ?: Resource.FungibleResource.from(
         resourceAddress = resourceAddress,
-        metadata = newlyCreated[resourceAddress.addressString()].orEmpty()
+        metadata = newlyCreatedMetadata[resourceAddress.addressString()].orEmpty()
     )
 
     return TransferableResource.Amount(
         amount = amount.valueDecimal,
         resource = resource,
-        isNewlyCreated = newlyCreated[resourceAddress.addressString()] != null
+        isNewlyCreated = resourceAddress.addressString() in newlyCreatedEntities.map { it.addressString() }
     )
 }
 
@@ -278,7 +239,7 @@ private fun ResourceTracker.NonFungible.toTransferableResource(
 
     return TransferableResource.NFTs(
         resource = collection,
-        isNewlyCreated = newlyCreated[resourceAddress.addressString()] != null
+        isNewlyCreated = resourceAddress.addressString() in newlyCreatedEntities.map { it.addressString() }
     )
 }
 
@@ -333,6 +294,3 @@ private fun NonFungibleLocalIdVecSource.toGuaranteeType(defaultDepositGuarantees
         guaranteeOffset = defaultDepositGuarantees
     )
 }
-
-private fun List<Resource>.findFungible(address: String) = find { it.resourceAddress == address } as? Resource.FungibleResource
-private fun List<Resource>.findNonFungible(address: String) = find { it.resourceAddress == address } as? Resource.NonFungibleResource

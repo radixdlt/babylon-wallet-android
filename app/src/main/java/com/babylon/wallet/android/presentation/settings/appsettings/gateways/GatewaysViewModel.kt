@@ -2,7 +2,6 @@ package com.babylon.wallet.android.presentation.settings.appsettings.gateways
 
 import androidx.annotation.VisibleForTesting
 import androidx.lifecycle.viewModelScope
-import com.babylon.wallet.android.data.repository.networkinfo.NetworkInfoRepository
 import com.babylon.wallet.android.domain.usecases.GetNetworkInfoUseCase
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler

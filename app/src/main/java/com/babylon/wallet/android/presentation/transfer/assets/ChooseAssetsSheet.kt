@@ -112,11 +112,13 @@ fun ChooseAssetsSheet(
                     ChooseAssets.Tab.PoolUnits -> ResourceTab.PoolUnits
                 },
                 onTabSelected = {
-                    onTabSelected(when (it) {
-                        ResourceTab.Tokens -> ChooseAssets.Tab.Tokens
-                        ResourceTab.Nfts -> ChooseAssets.Tab.NFTs
-                        ResourceTab.PoolUnits -> ChooseAssets.Tab.PoolUnits
-                    })
+                    onTabSelected(
+                        when (it) {
+                            ResourceTab.Tokens -> ChooseAssets.Tab.Tokens
+                            ResourceTab.Nfts -> ChooseAssets.Tab.NFTs
+                            ResourceTab.PoolUnits -> ChooseAssets.Tab.PoolUnits
+                        }
+                    )
                 },
                 collapsibleAssetsState = collapsibleAssetsState,
                 action = AssetsViewAction.Selection(

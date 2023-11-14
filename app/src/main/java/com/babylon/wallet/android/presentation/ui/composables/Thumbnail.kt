@@ -130,7 +130,7 @@ object Thumbnail {
     }
 
     val NFTCornerRadius = 12.dp
-    val NFTAspectRatio = 16f / 9f
+    const val NFTAspectRatio = 16f / 9f
 
     @Composable
     fun NFT(

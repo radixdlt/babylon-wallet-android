@@ -32,6 +32,7 @@ import com.babylon.wallet.android.presentation.transfer.assets.ResourceTab
 import com.babylon.wallet.android.presentation.transfer.assets.ResourcesTabs
 import java.math.BigDecimal
 
+@Suppress("LongParameterList")
 fun LazyListScope.assetsView(
     assets: Assets?,
     epoch: Long?,
@@ -107,7 +108,6 @@ sealed interface AssetsViewAction {
     ) : AssetsViewAction {
 
         fun isSelected(resourceAddress: String) = selectedResources.contains(resourceAddress)
-
     }
 }
 
@@ -122,7 +122,6 @@ fun rememberAssetsViewState(assets: Assets?): SnapshotStateMap<String, Boolean> 
         }
     }
 }
-
 
 @Preview
 @Composable
