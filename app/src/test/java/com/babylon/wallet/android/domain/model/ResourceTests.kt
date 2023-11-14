@@ -180,7 +180,7 @@ class ResourceTests {
             symbol = "XRD"
         )
 
-        Assert.assertTrue(resource.resourceBehaviours.isEmpty())
+        Assert.assertTrue(resource.assetBehaviours.isEmpty())
     }
 
     @Test
@@ -191,7 +191,7 @@ class ResourceTests {
             symbol = "BUM"
         )
 
-        Assert.assertEquals(resource.resourceBehaviours, setOf(
+        Assert.assertEquals(resource.assetBehaviours, setOf(
             AssetBehaviour.SIMPLE_ASSET,
             AssetBehaviour.INFORMATION_CHANGEABLE
         ))

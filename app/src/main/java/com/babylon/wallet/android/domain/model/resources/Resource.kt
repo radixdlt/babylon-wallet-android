@@ -1,6 +1,7 @@
 package com.babylon.wallet.android.domain.model.resources
 
 import android.net.Uri
+import com.babylon.wallet.android.domain.model.assets.AssetBehaviour
 import com.babylon.wallet.android.domain.model.assets.AssetBehaviours
 import com.babylon.wallet.android.domain.model.resources.XrdResource.addressesPerNetwork
 import com.babylon.wallet.android.domain.model.resources.metadata.ClaimAmountMetadataItem
@@ -44,7 +45,7 @@ sealed class Resource {
         val descriptionMetadataItem: DescriptionMetadataItem? = null,
         val iconUrlMetadataItem: IconUrlMetadataItem? = null,
         val tagsMetadataItem: TagsMetadataItem? = null,
-        private val behaviours: AssetBehaviours? = null,
+        private val assetBehaviours: AssetBehaviours? = null,
         val currentSupply: BigDecimal? = null,
         val validatorMetadataItem: ValidatorMetadataItem? = null,
         val poolMetadataItem: PoolMetadataItem? = null,
@@ -79,12 +80,11 @@ sealed class Resource {
                 tagsMetadataItem?.tags?.map { Tag.Dynamic(name = it) }.orEmpty()
             }
 
-        val resourceBehaviours: AssetBehaviours?
-            get() = if (isXrd) {
-                emptySet()
-            } else {
-                behaviours
-            }
+        val behaviours: AssetBehaviours? = if (assetBehaviours != null && isXrd) {
+            setOf(AssetBehaviour.SUPPLY_FLEXIBLE)
+        } else {
+            assetBehaviours
+        }
 
         val currentSupplyToDisplay: String?
             get() = currentSupply?.displayableQuantity()
@@ -149,11 +149,11 @@ sealed class Resource {
         val descriptionMetadataItem: DescriptionMetadataItem? = null,
         val iconMetadataItem: IconUrlMetadataItem? = null,
         val tagsMetadataItem: TagsMetadataItem? = null,
-        val behaviours: AssetBehaviours? = null,
+        private val assetBehaviours: AssetBehaviours? = null,
         val items: List<Item>,
         val currentSupply: Int? = null,
-        private val validatorMetadataItem: ValidatorMetadataItem? = null,
-        private val dAppDefinitionsMetadataItem: DAppDefinitionsMetadataItem? = null,
+        val validatorMetadataItem: ValidatorMetadataItem? = null,
+        val dAppDefinitionsMetadataItem: DAppDefinitionsMetadataItem? = null,
     ) : Resource(), Comparable<NonFungibleResource> {
         override val name: String
             get() = nameMetadataItem?.name.orEmpty()
@@ -172,6 +172,8 @@ sealed class Resource {
 
         val dappDefinitions: List<String>
             get() = dAppDefinitionsMetadataItem?.addresses.orEmpty()
+
+        val behaviours: AssetBehaviours? = assetBehaviours
 
         override fun compareTo(other: NonFungibleResource): Int = when {
             nameMetadataItem == null && other.nameMetadataItem != null -> 1

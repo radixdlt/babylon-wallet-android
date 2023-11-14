@@ -148,7 +148,7 @@ fun PoolUnitBottomSheetDetails(
                 )
             }
 
-            if (!poolUnit.stake.resourceBehaviours.isNullOrEmpty()) {
+            if (!poolUnit.stake.behaviours.isNullOrEmpty()) {
                 Column {
                     Text(
                         modifier = Modifier
@@ -161,7 +161,7 @@ fun PoolUnitBottomSheetDetails(
                         style = RadixTheme.typography.body1Regular,
                         color = RadixTheme.colors.gray2
                     )
-                    poolUnit.pool.resourceBehaviours.forEach { behaviour ->
+                    poolUnit.stake.behaviours.forEach { behaviour ->
                         Behaviour(
                             icon = behaviour.icon(),
                             name = behaviour.name()

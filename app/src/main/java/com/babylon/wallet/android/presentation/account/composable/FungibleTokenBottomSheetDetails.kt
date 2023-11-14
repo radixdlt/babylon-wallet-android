@@ -117,7 +117,7 @@ fun FungibleTokenBottomSheetDetails(
                 )
             }
 
-            if (fungible.resourceBehaviours.isNotEmpty()) {
+            if (!fungible.behaviours.isNullOrEmpty()) {
                 Column {
                     Text(
                         modifier = Modifier
@@ -130,7 +130,7 @@ fun FungibleTokenBottomSheetDetails(
                         style = RadixTheme.typography.body1Regular,
                         color = RadixTheme.colors.gray2
                     )
-                    fungible.resourceBehaviours.forEach { behaviour ->
+                    fungible.behaviours.forEach { behaviour ->
                         Behaviour(
                             icon = behaviour.icon(),
                             name = behaviour.name(fungible.isXrd)
