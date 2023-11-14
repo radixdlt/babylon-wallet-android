@@ -111,7 +111,6 @@ class TransferViewModel @Inject constructor(
             _state.update {
                 it.copy(
                     maxXrdError = State.MaxAmountMessage(
-                        emptyAccountAmount = remainingAmount,
                         maxAccountAmount = maxAccountAmount,
                         account = account,
                         asset = asset
@@ -133,7 +132,7 @@ class TransferViewModel @Inject constructor(
         _state.value.maxXrdError?.let { maxXrdError ->
             val fungibleAsset = maxXrdError.asset as? SpendingAsset.Fungible ?: return
             val remainingAmountString = if (emptyAccount) {
-                maxXrdError.emptyAccountAmount
+                maxXrdError.amountWithoutFees
             } else {
                 maxXrdError.maxAccountAmount
             }
@@ -414,11 +413,13 @@ class TransferViewModel @Inject constructor(
         }
 
         data class MaxAmountMessage(
-            val emptyAccountAmount: BigDecimal,
             val maxAccountAmount: BigDecimal,
             val account: TargetAccount,
             val asset: SpendingAsset
-        )
+        ) {
+            val amountWithoutFees: BigDecimal
+                get() = maxAccountAmount - BigDecimal.ONE
+        }
     }
 }
 
