@@ -48,7 +48,7 @@ jobs:
         uses: crazy-max/ghaction-dump-context@8b55fa205ab4530d36f787a4de1009afaaa7f3b4 # v2.1.0
 
       - name: Download Ruby (action)
-        uses: ruby/setup-ruby@c7079efafd956afb5d823e8999c2506e1053aefa
+        uses: ruby/setup-ruby@8575951200e472d5f2d95c625da0c7bec8217c42
         with:
           ruby-version: '3.1.2'
           bundler-cache: true
