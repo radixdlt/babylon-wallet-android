@@ -22,7 +22,6 @@ import kotlinx.collections.immutable.toPersistentSet
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.UUIDGenerator
-import rdx.works.core.displayableQuantity
 import rdx.works.core.mapWhen
 import rdx.works.profile.data.model.extensions.factorSourceId
 import rdx.works.profile.data.model.extensions.isSignatureRequiredBasedOnDepositRules
@@ -105,13 +104,12 @@ class TransferViewModel @Inject constructor(
             .sumOf { it.amountSpent(fungibleAsset) }
         val remainingAmount = (maxAmount - spentAmount).coerceAtLeast(BigDecimal.ZERO)
         val remainingAmountString = remainingAmount.toPlainString()
-        val maxAccountAmount = remainingAmount.subtract(BigDecimal.ONE)
 
         if (fungibleAsset.resource.isXrd) {
             _state.update {
                 it.copy(
                     maxXrdError = State.MaxAmountMessage(
-                        maxAccountAmount = maxAccountAmount,
+                        maxAccountAmount = remainingAmount,
                         account = account,
                         asset = asset
                     )
@@ -132,9 +130,9 @@ class TransferViewModel @Inject constructor(
         _state.value.maxXrdError?.let { maxXrdError ->
             val fungibleAsset = maxXrdError.asset as? SpendingAsset.Fungible ?: return
             val remainingAmountString = if (emptyAccount) {
-                maxXrdError.amountWithoutFees
-            } else {
                 maxXrdError.maxAccountAmount
+            } else {
+                maxXrdError.amountWithoutFees
             }
             _state.update { state ->
                 state.updateAssetAmount(
