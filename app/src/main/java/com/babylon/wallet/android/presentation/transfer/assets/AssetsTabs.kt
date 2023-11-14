@@ -1,53 +1,25 @@
-@file:OptIn(ExperimentalFoundationApi::class)
-
 package com.babylon.wallet.android.presentation.transfer.assets
 
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentWidth
-import androidx.compose.foundation.pager.PagerState
 import androidx.compose.material3.ScrollableTabRow
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.zIndex
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
-import kotlinx.coroutines.launch
 
 @Composable
-fun ResourcesTabs(
-    modifier: Modifier = Modifier,
-    pagerState: PagerState,
-    selectedTab: ResourceTab,
-    onTabSelected: (ResourceTab) -> Unit
-) {
-    val scope = rememberCoroutineScope()
-    LaunchedEffect(selectedTab) {
-        if (selectedTab.ordinal != pagerState.currentPage) {
-            scope.launch { pagerState.animateScrollToPage(page = selectedTab.ordinal) }
-        }
-    }
-
-    ResourcesTabs(
-        modifier = modifier,
-        selectedTab = selectedTab,
-        onTabSelected = onTabSelected
-    )
-}
-
-@Composable
-fun ResourcesTabs(
+fun AssetsTabs(
     modifier: Modifier = Modifier,
     selectedTab: ResourceTab,
     onTabSelected: (ResourceTab) -> Unit
