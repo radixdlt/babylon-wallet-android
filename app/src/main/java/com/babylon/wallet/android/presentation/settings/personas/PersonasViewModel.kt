@@ -1,6 +1,7 @@
 package com.babylon.wallet.android.presentation.settings.personas
 
 import androidx.lifecycle.viewModelScope
+import com.babylon.wallet.android.domain.usecases.GetEntitiesWithSecurityPromptUseCase
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
@@ -10,19 +11,23 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toPersistentList
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.preferences.PreferencesManager
+import rdx.works.profile.data.model.factorsources.DeviceFactorSource
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.domain.GetProfileUseCase
+import rdx.works.profile.domain.babylonDeviceFactorSource
 import rdx.works.profile.domain.personasOnCurrentNetwork
 import javax.inject.Inject
 
 @HiltViewModel
 class PersonasViewModel @Inject constructor(
     private val getProfileUseCase: GetProfileUseCase,
-    private val preferencesManager: PreferencesManager
+    private val preferencesManager: PreferencesManager,
+    private val getEntitiesWithSecurityPromptUseCase: GetEntitiesWithSecurityPromptUseCase
 ) : StateViewModel<PersonasViewModel.PersonasUiState>(),
     OneOffEventHandler<PersonasViewModel.PersonasEvent> by OneOffEventHandlerImpl() {
 
@@ -30,12 +35,19 @@ class PersonasViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            getProfileUseCase.personasOnCurrentNetwork
-                .collect { personas ->
-                    _state.update {
-                        it.copy(personas = personas.toPersistentList())
-                    }
+            combine(
+                getProfileUseCase.personasOnCurrentNetwork,
+                getEntitiesWithSecurityPromptUseCase.shouldShowPersonaSecurityPrompt
+            ) { personas, shouldShowSecurityPrompt ->
+                val babylonFactorSource = getProfileUseCase.babylonDeviceFactorSource()
+                _state.update {
+                    it.copy(
+                        personas = personas.toPersistentList(),
+                        showSecurityPrompt = shouldShowSecurityPrompt,
+                        babylonFactorSource = babylonFactorSource
+                    )
                 }
+            }.collect {}
         }
     }
 
@@ -46,7 +58,9 @@ class PersonasViewModel @Inject constructor(
     }
 
     data class PersonasUiState(
-        val personas: ImmutableList<Network.Persona> = persistentListOf()
+        val babylonFactorSource: DeviceFactorSource? = null,
+        val personas: ImmutableList<Network.Persona> = persistentListOf(),
+        val showSecurityPrompt: Boolean = false
     ) : UiState
 
     sealed interface PersonasEvent : OneOffEvent {

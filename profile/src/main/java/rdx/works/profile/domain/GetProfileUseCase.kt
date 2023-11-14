@@ -4,6 +4,7 @@ package rdx.works.profile.domain
 
 import com.radixdlt.ret.Address
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapNotNull
 import rdx.works.core.PUBLIC_KEY_HASH_LENGTH
@@ -36,6 +37,9 @@ class GetProfileUseCase @Inject constructor(private val profileRepository: Profi
 /**
  * Accounts on network
  */
+val GetProfileUseCase.entitiesOnCurrentNetwork
+    get() = invoke().map { it.currentNetwork.accounts.notHiddenAccounts() + it.currentNetwork.personas.notHiddenPersonas() }
+
 val GetProfileUseCase.accountsOnCurrentNetwork
     get() = invoke().map { it.currentNetwork.accounts.notHiddenAccounts() }
 
@@ -49,6 +53,10 @@ val GetProfileUseCase.factorSources
 
 val GetProfileUseCase.deviceFactorSources
     get() = invoke().map { profile -> profile.factorSources.filterIsInstance<DeviceFactorSource>() }
+
+suspend fun GetProfileUseCase.babylonDeviceFactorSource(): DeviceFactorSource? {
+    return deviceFactorSources.firstOrNull()?.find { it.isBabylon }
+}
 
 val GetProfileUseCase.deviceFactorSourcesWithAccounts
     get() = invoke().map { profile ->

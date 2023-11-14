@@ -2,9 +2,9 @@ package com.babylon.wallet.android.presentation.wallet
 
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.domain.model.assets.AccountWithAssets
-import com.babylon.wallet.android.domain.usecases.AccountWithSecurityPrompt
-import com.babylon.wallet.android.domain.usecases.GetAccountsForSecurityPromptUseCase
+import com.babylon.wallet.android.domain.usecases.EntityWithSecurityPrompt
 import com.babylon.wallet.android.domain.usecases.GetAccountsWithAssetsUseCase
+import com.babylon.wallet.android.domain.usecases.GetEntitiesWithSecurityPromptUseCase
 import com.babylon.wallet.android.domain.usecases.SecurityPromptType
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
@@ -43,7 +43,7 @@ import javax.inject.Inject
 class WalletViewModel @Inject constructor(
     private val getAccountsWithAssetsUseCase: GetAccountsWithAssetsUseCase,
     private val getProfileUseCase: GetProfileUseCase,
-    private val getAccountsForSecurityPromptUseCase: GetAccountsForSecurityPromptUseCase,
+    private val getEntitiesWithSecurityPromptUseCase: GetEntitiesWithSecurityPromptUseCase,
     private val appEventBus: AppEventBus,
     private val ensureBabylonFactorSourceExistUseCase: EnsureBabylonFactorSourceExistUseCase,
     getBackupStateUseCase: GetBackupStateUseCase
@@ -119,8 +119,8 @@ class WalletViewModel @Inject constructor(
 
     private fun observePrompts() {
         viewModelScope.launch {
-            getAccountsForSecurityPromptUseCase().collect { accounts ->
-                _state.update { it.copy(accountsNeedSecurityPrompt = accounts) }
+            getEntitiesWithSecurityPromptUseCase().collect { accounts ->
+                _state.update { it.copy(entitiesWithSecurityPrompt = accounts) }
             }
         }
     }
@@ -178,7 +178,7 @@ data class WalletUiState(
     private val accountsWithResources: List<AccountWithAssets>? = null,
     private val loading: Boolean = true,
     private val refreshing: Boolean = false,
-    private val accountsNeedSecurityPrompt: List<AccountWithSecurityPrompt> = emptyList(),
+    private val entitiesWithSecurityPrompt: List<EntityWithSecurityPrompt> = emptyList(),
     private val factorSources: List<FactorSource> = emptyList(),
     val isSettingsWarningVisible: Boolean = false,
     val error: UiMessage? = null,
@@ -207,8 +207,8 @@ data class WalletUiState(
             it.account.address == forAccount.address
         }?.assets ?: return null
 
-        val accountWithSecurityPrompt = accountsNeedSecurityPrompt.find {
-            it.account.address == forAccount.address
+        val accountWithSecurityPrompt = entitiesWithSecurityPrompt.find {
+            it.entity.address == forAccount.address
         } ?: return null
         return if (accountWithSecurityPrompt.prompt == SecurityPromptType.NEEDS_BACKUP) {
             if (assetsForAccount.hasXrd()) SecurityPromptType.NEEDS_BACKUP else null
@@ -216,6 +216,9 @@ data class WalletUiState(
             accountWithSecurityPrompt.prompt
         }
     }
+
+    val showPersonaSecurityPrompt: Boolean
+        get() = entitiesWithSecurityPrompt.any { it.entity is Network.Persona && it.prompt == SecurityPromptType.NEEDS_BACKUP }
 
     fun getTag(forAccount: Network.Account): AccountTag? {
         return when {

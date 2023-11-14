@@ -39,6 +39,7 @@ import com.babylon.wallet.android.presentation.onboarding.restore.mnemonics.rest
 import com.babylon.wallet.android.presentation.onboarding.restore.mnemonics.restoreMnemonicsScreen
 import com.babylon.wallet.android.presentation.settings.accountsecurity.seedphrases.confirm.confirmSeedPhrase
 import com.babylon.wallet.android.presentation.settings.accountsecurity.seedphrases.reveal.ROUTE_REVEAL_SEED_PHRASE
+import com.babylon.wallet.android.presentation.settings.accountsecurity.seedphrases.reveal.revealSeedPhrase
 import com.babylon.wallet.android.presentation.settings.accountsecurity.seedphrases.seedPhrases
 import com.babylon.wallet.android.presentation.settings.personas.createpersona.createPersonaConfirmationScreen
 import com.babylon.wallet.android.presentation.settings.personas.createpersona.createPersonaScreen
@@ -229,6 +230,9 @@ fun NavigationHost(
             },
             onPersonaClick = { personaAddress ->
                 navController.personaDetailScreen(personaAddress)
+            },
+            onNavigateToMnemonicBackup = {
+                navController.revealSeedPhrase(it.body.value)
             }
         )
         personaDetailScreen(

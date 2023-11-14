@@ -137,7 +137,7 @@ private fun WalletContent(
                             )
                         }
 
-                        if (state.isSettingsWarningVisible) {
+                        if (state.isSettingsWarningVisible || state.showPersonaSecurityPrompt) {
                             Badge(
                                 modifier = Modifier
                                     .align(Alignment.TopEnd)

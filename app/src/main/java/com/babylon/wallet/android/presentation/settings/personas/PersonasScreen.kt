@@ -1,5 +1,6 @@
 package com.babylon.wallet.android.presentation.settings.personas
 
+import android.content.Context
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
@@ -18,6 +19,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -28,12 +30,15 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.presentation.settings.personas.PersonasViewModel.PersonasEvent
+import com.babylon.wallet.android.presentation.ui.composables.ApplySecuritySettingsLabel
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.card.PersonaCard
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
+import com.babylon.wallet.android.utils.biometricAuthenticate
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
+import rdx.works.profile.data.model.factorsources.FactorSource
 import rdx.works.profile.data.model.pernetwork.Network
 
 @Composable
@@ -42,10 +47,11 @@ fun PersonasScreen(
     viewModel: PersonasViewModel,
     onBackClick: () -> Unit,
     createNewPersona: (Boolean) -> Unit,
-    onPersonaClick: (String) -> Unit
+    onPersonaClick: (String) -> Unit,
+    onNavigateToMnemonicBackup: (FactorSource.FactorSourceID.FromHash) -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
-
+    val context: Context = LocalContext.current
     LaunchedEffect(Unit) {
         viewModel.oneOffEvent.collect {
             when (it) {
@@ -58,7 +64,17 @@ fun PersonasScreen(
         modifier = modifier,
         onBackClick = onBackClick,
         createNewPersona = viewModel::onCreatePersona,
-        onPersonaClick = onPersonaClick
+        onPersonaClick = onPersonaClick,
+        showSecurityPrompt = state.showSecurityPrompt,
+        onApplySecuritySettings = {
+            state.babylonFactorSource?.id?.let { babylonFactorSourceID ->
+                context.biometricAuthenticate { authenticated ->
+                    if (authenticated) {
+                        onNavigateToMnemonicBackup(babylonFactorSourceID)
+                    }
+                }
+            }
+        }
     )
 }
 
@@ -68,7 +84,9 @@ fun PersonasContent(
     modifier: Modifier,
     onBackClick: () -> Unit,
     createNewPersona: () -> Unit,
-    onPersonaClick: (String) -> Unit
+    onPersonaClick: (String) -> Unit,
+    showSecurityPrompt: Boolean,
+    onApplySecuritySettings: (() -> Unit)?
 ) {
     Scaffold(
         modifier = modifier,
@@ -101,12 +119,23 @@ fun PersonasContent(
                 ),
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
-                item {
+                if (showSecurityPrompt) {
+                    item {
+                        ApplySecuritySettingsLabel(
+                            modifier = Modifier.fillMaxWidth(),
+                            onClick = onApplySecuritySettings,
+                            text = "Please write down this Persona's seed phrase",
+                            labelColor = RadixTheme.colors.backgroundAlternate.copy(alpha = 0.3f),
+                        )
+                        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
+                    }
+                }
+//                item {
 //                InfoLink( // TODO enable it when we have a link
 //                    stringResource(R.string.personas_whatIsPersona),
 //                    modifier = Modifier.fillMaxWidth()
 //                )
-                }
+//                }
                 itemsIndexed(items = personas) { _, personaItem ->
                     PersonaCard(
                         modifier = Modifier.throttleClickable {
@@ -148,7 +177,9 @@ fun PersonasScreenPreview() {
             modifier = Modifier,
             onBackClick = {},
             createNewPersona = {},
-            onPersonaClick = {}
+            onPersonaClick = {},
+            showSecurityPrompt = true,
+            onApplySecuritySettings = {}
         )
     }
 }
@@ -162,7 +193,9 @@ fun PersonasScreenEmptyPreview() {
             modifier = Modifier,
             onBackClick = {},
             createNewPersona = {},
-            onPersonaClick = {}
+            onPersonaClick = {},
+            showSecurityPrompt = false,
+            onApplySecuritySettings = {}
         )
     }
 }
