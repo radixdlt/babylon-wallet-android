@@ -143,8 +143,8 @@ fun TransferContent(
             finish = onMaxAmountApplied,
             title = "Sending All XRD", // TODO Crowdin
             text = "Sending the full amount of XRD in this account will require you to pay the transaction " +
-                    "fee from a different account. Or, the wallet can reduce the amount transferred so the fee can be " +
-                    "paid from this account. Choose the amount to transfer:",
+                "fee from a different account. Or, the wallet can reduce the amount transferred so the fee can be " +
+                "paid from this account. Choose the amount to transfer:",
             confirmText = "${error.maxAccountAmount.displayableQuantity()} (send all XRD)",
             dismissText = "${error.amountWithoutFees.displayableQuantity()} (save 1 XRD for fee)"
         )
