@@ -2,7 +2,6 @@ package com.babylon.wallet.android.presentation
 
 import androidx.lifecycle.SavedStateHandle
 import com.babylon.wallet.android.domain.SampleDataProvider
-import com.babylon.wallet.android.domain.usecases.GetAccountsWithAssetsUseCase
 import com.babylon.wallet.android.presentation.account.AccountViewModel
 import com.babylon.wallet.android.presentation.navigation.Screen
 import com.babylon.wallet.android.utils.AppEvent
@@ -30,7 +29,6 @@ class AccountViewModelTest {
 
     private lateinit var vm: AccountViewModel
 
-    private val requestAccountsUseCase = Mockito.mock(GetAccountsWithAssetsUseCase::class.java)
     private val getProfileUseCase = mockk<GetProfileUseCase>()
     private val preferencesManager = mockk<PreferencesManager>()
 

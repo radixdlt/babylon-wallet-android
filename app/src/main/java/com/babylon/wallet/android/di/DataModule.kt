@@ -10,10 +10,6 @@ import com.babylon.wallet.android.data.repository.cache.HttpCache
 import com.babylon.wallet.android.data.repository.cache.HttpCacheImpl
 import com.babylon.wallet.android.data.repository.dappmetadata.DAppRepository
 import com.babylon.wallet.android.data.repository.dappmetadata.DAppRepositoryImpl
-import com.babylon.wallet.android.data.repository.entity.EntityRepository
-import com.babylon.wallet.android.data.repository.entity.EntityRepositoryImpl
-import com.babylon.wallet.android.data.repository.metadata.MetadataRepository
-import com.babylon.wallet.android.data.repository.metadata.MetadataRepositoryImpl
 import com.babylon.wallet.android.data.repository.networkinfo.NetworkInfoRepository
 import com.babylon.wallet.android.data.repository.networkinfo.NetworkInfoRepositoryImpl
 import com.babylon.wallet.android.data.repository.state.StateRepository
@@ -31,19 +27,9 @@ import javax.inject.Singleton
 interface DataModule {
 
     @Binds
-    fun bindEntityRepository(
-        entityRepository: EntityRepositoryImpl
-    ): EntityRepository
-
-    @Binds
     fun bindStateRepository(
         stateRepository: StateRepositoryImpl
     ): StateRepository
-
-    @Binds
-    fun bindMetadataRepository(
-        metadataRepository: MetadataRepositoryImpl
-    ): MetadataRepository
 
     @Binds
     fun bindTransactionRepository(

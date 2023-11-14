@@ -17,7 +17,9 @@ import com.radixdlt.ret.ExecutionAnalysis
 import com.radixdlt.ret.TransactionManifest
 import com.radixdlt.ret.TransactionType
 import kotlinx.coroutines.flow.update
+import rdx.works.core.decodeHex
 import rdx.works.core.then
+import rdx.works.core.toUByteList
 import rdx.works.profile.domain.GetProfileUseCase
 import timber.log.Timber
 import java.math.BigDecimal
@@ -55,10 +57,9 @@ class TransactionAnalysisDelegate @Inject constructor(
         return transactionClient.getTransactionPreview(
             manifest = manifest,
             notaryAndSigners = notaryAndSigners
-        ).then { preview ->
-            transactionClient.analyzeExecution(manifest, preview)
-        }.mapCatching { analysis ->
-            analysis
+        ).mapCatching { preview ->
+            manifest
+                .analyzeExecution(transactionReceipt = preview.encodedReceipt.decodeHex().toUByteList())
                 .resolvePreview(notaryAndSigners)
                 .resolveFees(notaryAndSigners)
         }.mapCatching { transactionFees ->
