@@ -80,8 +80,8 @@ sealed class Resource {
                 tagsMetadataItem?.tags?.map { Tag.Dynamic(name = it) }.orEmpty()
             }
 
-        val behaviours: AssetBehaviours? = if (isXrd) {
-            assetBehaviours?.filterNot { it == AssetBehaviour.INFORMATION_CHANGEABLE }?.toSet()
+        val behaviours: AssetBehaviours? = if (assetBehaviours != null && isXrd) {
+            assetBehaviours.filterNot { it == AssetBehaviour.INFORMATION_CHANGEABLE }?.toSet()
         } else {
             assetBehaviours
         }
