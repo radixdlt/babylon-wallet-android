@@ -204,8 +204,8 @@ sealed class Resource {
             val claimAmountXrd: BigDecimal?
                 get() = claimAmountMetadataItem?.amount
 
-            fun isReadyToClaim(epoch: Long): Boolean {
-                return claimEpochMetadataItem?.claimEpoch != null && claimEpochMetadataItem.claimEpoch >= epoch
+            fun isReadyToClaim(currentEpoch: Long): Boolean {
+                return claimEpochMetadataItem?.claimEpoch != null && claimEpochMetadataItem.claimEpoch <= currentEpoch
             }
 
             override fun compareTo(other: Item): Int = when (localId) {
